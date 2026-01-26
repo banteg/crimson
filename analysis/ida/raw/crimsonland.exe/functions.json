@@ -6,7 +6,7 @@
     "external": false,
     "library": false,
     "name": "console_input_clear",
-    "signature": "int()",
+    "signature": "void()",
     "size": 18,
     "thunk": false
   },
@@ -39,7 +39,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004010f0",
-    "signature": "int __stdcall(int, int, int, int (__thiscall *)(int))",
+    "signature": "int(int arg1, int arg2, int arg3, int arg4)",
     "size": 42,
     "thunk": false
   },
@@ -49,8 +49,8 @@
     "end": "0x00401144",
     "external": false,
     "library": false,
-    "name": "FUN_00401120",
-    "signature": "char *__cdecl(int)",
+    "name": "console_cmd_arg_get",
+    "signature": "char *(int index)",
     "size": 36,
     "thunk": false
   },
@@ -60,7 +60,7 @@
     "end": "0x00401156",
     "external": false,
     "library": false,
-    "name": "FUN_00401150",
+    "name": "console_cmd_argc_get",
     "signature": "int()",
     "size": 6,
     "thunk": false
@@ -86,7 +86,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00401170",
-    "signature": "int(void)",
+    "signature": "int()",
     "size": 10,
     "thunk": false
   },
@@ -111,7 +111,7 @@
     "external": false,
     "library": false,
     "name": "console_clear_log",
-    "signature": "int()",
+    "signature": "void()",
     "size": 78,
     "thunk": false
   },
@@ -125,7 +125,7 @@
     "external": false,
     "library": false,
     "name": "console_log_node_free",
-    "signature": "int __thiscall(int this, char)",
+    "signature": "void(char free_self)",
     "size": 68,
     "thunk": false
   },
@@ -143,18 +143,18 @@
   {
     "address": "0x00401250",
     "calls": [
-      "FUN_00460fac",
       "_strchr",
       "console_exec_line",
       "console_printf",
       "crt_fclose",
+      "crt_fgets",
       "crt_fopen"
     ],
     "end": "0x0040133C",
     "external": false,
     "library": false,
     "name": "console_cmd_exec",
-    "signature": "int()",
+    "signature": "void()",
     "size": 236,
     "thunk": false
   },
@@ -167,7 +167,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_extend",
-    "signature": "__int64()",
+    "signature": "void()",
     "size": 17,
     "thunk": false
   },
@@ -191,7 +191,7 @@
     "external": false,
     "library": false,
     "name": "console_cmdlist",
-    "signature": "int()",
+    "signature": "void()",
     "size": 65,
     "thunk": false
   },
@@ -204,22 +204,22 @@
     "external": false,
     "library": false,
     "name": "console_vars",
-    "signature": "int()",
+    "signature": "void()",
     "size": 65,
     "thunk": false
   },
   {
     "address": "0x00401410",
     "calls": [
-      "FUN_00401120",
-      "FUN_00401150",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf"
     ],
     "end": "0x00401505",
     "external": false,
     "library": false,
     "name": "console_echo",
-    "signature": "int()",
+    "signature": "void()",
     "size": 245,
     "thunk": false
   },
@@ -233,7 +233,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_set",
-    "signature": "char()",
+    "signature": "void()",
     "size": 77,
     "thunk": false
   },
@@ -249,7 +249,7 @@
     "external": false,
     "library": false,
     "name": "console_init",
-    "signature": "_BYTE *__thiscall(_BYTE *this)",
+    "signature": "int *(int *console_state)",
     "size": 382,
     "thunk": false
   },
@@ -263,7 +263,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004016e0",
-    "signature": "int __thiscall(LPVOID **this)",
+    "signature": "void(int *arg1)",
     "size": 187,
     "thunk": false
   },
@@ -279,7 +279,7 @@
     "external": false,
     "library": false,
     "name": "console_push_line",
-    "signature": "char __thiscall(int this, char *Source)",
+    "signature": "char(char *line)",
     "size": 193,
     "thunk": false
   },
@@ -293,7 +293,7 @@
     "external": false,
     "library": false,
     "name": "console_printf",
-    "signature": "char(int, char *Format, ...)",
+    "signature": "char(void *console_state, char *fmt, ...)",
     "size": 49,
     "thunk": false
   },
@@ -304,7 +304,7 @@
     "external": false,
     "library": false,
     "name": "console_set_open",
-    "signature": "int __thiscall(_BYTE *this, char)",
+    "signature": "void(char open)",
     "size": 26,
     "thunk": false
   },
@@ -315,7 +315,7 @@
     "external": false,
     "library": false,
     "name": "console_history_apply",
-    "signature": "int __thiscall(_DWORD *this)",
+    "signature": "void(int console_state)",
     "size": 99,
     "thunk": false
   },
@@ -334,7 +334,7 @@
     "external": false,
     "library": false,
     "name": "console_exec_line",
-    "signature": "char __thiscall(char *this, int)",
+    "signature": "char(char *line)",
     "size": 254,
     "thunk": false
   },
@@ -357,7 +357,7 @@
     "external": false,
     "library": false,
     "name": "console_update",
-    "signature": "void __usercall(int@<ecx>, int@<edi>, int@<esi>)",
+    "signature": "void(int console_state)",
     "size": 904,
     "thunk": false
   },
@@ -371,7 +371,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00401dd0",
-    "signature": "void __thiscall(int this)",
+    "signature": "int(void *arg1)",
     "size": 1408,
     "thunk": false
   },
@@ -388,7 +388,7 @@
     "external": false,
     "library": false,
     "name": "console_register_cvar",
-    "signature": "char **__thiscall(char ***this, char *Source, char *String)",
+    "signature": "void *(char *name, char *value)",
     "size": 295,
     "thunk": false
   },
@@ -399,7 +399,7 @@
     "external": false,
     "library": false,
     "name": "console_cvar_find",
-    "signature": "int __thiscall(int *this, const char *)",
+    "signature": "void *(char *name)",
     "size": 92,
     "thunk": false
   },
@@ -412,7 +412,7 @@
     "external": false,
     "library": false,
     "name": "console_cvar_unregister",
-    "signature": "char __thiscall(int *this, const char *)",
+    "signature": "char(char *name)",
     "size": 72,
     "thunk": false
   },
@@ -425,7 +425,7 @@
     "external": false,
     "library": false,
     "name": "console_command_unregister",
-    "signature": "char __thiscall(_DWORD *this, int)",
+    "signature": "char(char *name)",
     "size": 74,
     "thunk": false
   },
@@ -438,7 +438,7 @@
     "external": false,
     "library": false,
     "name": "console_tokenize_line",
-    "signature": "void __stdcall(int)",
+    "signature": "void(char *line)",
     "size": 161,
     "thunk": false
   },
@@ -451,7 +451,7 @@
     "external": false,
     "library": false,
     "name": "console_cvar_autocomplete",
-    "signature": "int __thiscall(int *this, char *Str1)",
+    "signature": "char *(char *prefix)",
     "size": 164,
     "thunk": false
   },
@@ -465,7 +465,7 @@
     "external": false,
     "library": false,
     "name": "console_register_command",
-    "signature": "char *__thiscall(char **this, char *Source, int)",
+    "signature": "void(char *name, void *handler)",
     "size": 99,
     "thunk": false
   },
@@ -476,7 +476,7 @@
     "external": false,
     "library": false,
     "name": "console_command_find",
-    "signature": "int __thiscall(_DWORD *this, const char *)",
+    "signature": "void *(char *name)",
     "size": 93,
     "thunk": false
   },
@@ -489,7 +489,7 @@
     "external": false,
     "library": false,
     "name": "console_command_autocomplete",
-    "signature": "int __thiscall(_DWORD *this, char *Str1)",
+    "signature": "char *(char *prefix)",
     "size": 165,
     "thunk": false
   },
@@ -506,7 +506,7 @@
     "external": false,
     "library": false,
     "name": "console_flush_log",
-    "signature": "char __thiscall(_DWORD *this, int)",
+    "signature": "int(void *console_state, char *filename)",
     "size": 121,
     "thunk": false
   },
@@ -516,8 +516,8 @@
     "end": "0x004028E5",
     "external": false,
     "library": false,
-    "name": "sub_4028E0",
-    "signature": "",
+    "name": "j_config_init_defaults",
+    "signature": "int()",
     "size": 5,
     "thunk": true
   },
@@ -527,7 +527,7 @@
     "end": "0x00402BCE",
     "external": false,
     "library": false,
-    "name": "sub_4028F0",
+    "name": "config_init_defaults",
     "signature": "int()",
     "size": 734,
     "thunk": false
@@ -541,7 +541,7 @@
     "external": false,
     "library": false,
     "name": "game_build_path",
-    "signature": "char *__cdecl(const char *)",
+    "signature": "char *(char *filename)",
     "size": 34,
     "thunk": false
   },
@@ -554,7 +554,7 @@
     "external": false,
     "library": false,
     "name": "register_core_cvars",
-    "signature": "char **()",
+    "signature": "void()",
     "size": 326,
     "thunk": false
   },
@@ -579,7 +579,7 @@
     "external": false,
     "library": false,
     "name": "demo_setup_variant_0",
-    "signature": "int()",
+    "signature": "void()",
     "size": 263,
     "thunk": false
   },
@@ -593,7 +593,7 @@
     "external": false,
     "library": false,
     "name": "demo_setup_variant_2",
-    "signature": "int()",
+    "signature": "void()",
     "size": 271,
     "thunk": false
   },
@@ -609,7 +609,7 @@
     "external": false,
     "library": false,
     "name": "demo_setup_variant_1",
-    "signature": "int()",
+    "signature": "void()",
     "size": 338,
     "thunk": false
   },
@@ -625,7 +625,7 @@
     "external": false,
     "library": false,
     "name": "demo_setup_variant_3",
-    "signature": "int()",
+    "signature": "void()",
     "size": 278,
     "thunk": false
   },
@@ -635,7 +635,7 @@
     "end": "0x00403382",
     "external": false,
     "library": false,
-    "name": "FUN_00403370",
+    "name": "demo_purchase_interstitial_begin",
     "signature": "void()",
     "size": 18,
     "thunk": false
@@ -643,7 +643,7 @@
   {
     "address": "0x00403390",
     "calls": [
-      "FUN_00403370",
+      "demo_purchase_interstitial_begin",
       "demo_setup_variant_0",
       "demo_setup_variant_1",
       "demo_setup_variant_2",
@@ -666,7 +666,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00403430",
-    "signature": "BOOL __cdecl(float *, int, int)",
+    "signature": "int(float *arg1, int arg2, int arg3)",
     "size": 104,
     "thunk": false
   },
@@ -677,7 +677,7 @@
     "external": false,
     "library": false,
     "name": "ui_mouse_inside_rect",
-    "signature": "BOOL __cdecl(float *, int, int)",
+    "signature": "int(float *xy, int h, int w)",
     "size": 92,
     "thunk": false
   },
@@ -695,7 +695,7 @@
     "external": false,
     "library": false,
     "name": "game_core_init",
-    "signature": "char()",
+    "signature": "int()",
     "size": 73,
     "thunk": false
   },
@@ -710,7 +710,7 @@
     "external": false,
     "library": false,
     "name": "perk_prompt_update_and_render",
-    "signature": "char()",
+    "signature": "void()",
     "size": 378,
     "thunk": false
   },
@@ -723,7 +723,7 @@
     "external": false,
     "library": false,
     "name": "input_key_name",
-    "signature": "char *__cdecl(int)",
+    "signature": "char *(int key_code)",
     "size": 2970,
     "thunk": false
   },
@@ -739,7 +739,7 @@
     "external": false,
     "library": false,
     "name": "perks_generate_choices",
-    "signature": "int()",
+    "signature": "void()",
     "size": 535,
     "thunk": false
   },
@@ -760,7 +760,7 @@
     "external": false,
     "library": false,
     "name": "demo_trial_overlay_render",
-    "signature": "int __cdecl(float *, float)",
+    "signature": "void(float *xy, float alpha)",
     "size": 2413,
     "thunk": false
   },
@@ -806,7 +806,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_keybind_help",
-    "signature": "int __cdecl(float *, float)",
+    "signature": "void(float *xy, float alpha)",
     "size": 1142,
     "thunk": false
   },
@@ -824,7 +824,7 @@
     "external": false,
     "library": false,
     "name": "perk_apply",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int perk_id)",
     "size": 885,
     "thunk": false
   },
@@ -843,7 +843,7 @@
     "external": false,
     "library": false,
     "name": "gameplay_render_world",
-    "signature": "int(void)",
+    "signature": "void()",
     "size": 625,
     "thunk": false
   },
@@ -866,7 +866,7 @@
     "external": false,
     "library": false,
     "name": "perk_selection_screen_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 1347,
     "thunk": false
   },
@@ -933,8 +933,8 @@
     "end": "0x004061E0",
     "external": false,
     "library": false,
-    "name": "sub_406180",
-    "signature": "char *__cdecl(int)",
+    "name": "format_ordinal",
+    "signature": "char *(int n)",
     "size": 96,
     "thunk": false
   },
@@ -945,7 +945,7 @@
     "external": false,
     "library": false,
     "name": "ui_draw_clock_gauge",
-    "signature": "int __cdecl(int, int, int, int)",
+    "signature": "void()",
     "size": 362,
     "thunk": false
   },
@@ -1063,7 +1063,7 @@
     "external": false,
     "library": false,
     "name": "quest_mode_update",
-    "signature": "char()",
+    "signature": "void()",
     "size": 455,
     "thunk": false
   },
@@ -1077,7 +1077,7 @@
     "external": false,
     "library": false,
     "name": "rush_mode_update",
-    "signature": "char()",
+    "signature": "void()",
     "size": 594,
     "thunk": false
   },
@@ -1091,7 +1091,7 @@
     "external": false,
     "library": false,
     "name": "survival_spawn_creature",
-    "signature": "void __cdecl(_DWORD *)",
+    "signature": "void(float *pos)",
     "size": 1973,
     "thunk": false
   },
@@ -1108,7 +1108,7 @@
     "external": false,
     "library": false,
     "name": "survival_update",
-    "signature": "char()",
+    "signature": "void()",
     "size": 2102,
     "thunk": false
   },
@@ -1125,7 +1125,7 @@
     "external": false,
     "library": false,
     "name": "tutorial_prompt_dialog",
-    "signature": "char __cdecl(char *Str, int, char)",
+    "signature": "void(char *text, float alpha)",
     "size": 1084,
     "thunk": false
   },
@@ -1164,7 +1164,7 @@
     "external": false,
     "library": false,
     "name": "tutorial_timeline_update",
-    "signature": "char()",
+    "signature": "void()",
     "size": 2907,
     "thunk": false
   },
@@ -1229,7 +1229,7 @@
     "external": false,
     "library": false,
     "name": "ui_draw_clock_gauge_at",
-    "signature": "void __cdecl(float *, int, float)",
+    "signature": "void(float *xy, float radius, float progress)",
     "size": 70,
     "thunk": false
   },
@@ -1308,7 +1308,7 @@
     "external": false,
     "library": false,
     "name": "gameplay_update_and_render",
-    "signature": "void __usercall(std::codecvt_base *@<ecx>, int@<esi>)",
+    "signature": "void()",
     "size": 2840,
     "thunk": false
   },
@@ -1361,7 +1361,7 @@
     "external": false,
     "library": false,
     "name": "demo_purchase_screen_update",
-    "signature": "unsigned __int8 __thiscall(std::codecvt_base *this)",
+    "signature": "void()",
     "size": 2642,
     "thunk": false
   },
@@ -1429,7 +1429,7 @@
     "external": false,
     "library": false,
     "name": "console_hotkey_update",
-    "signature": "char __usercall@<al>(int@<edi>, int@<esi>)",
+    "signature": "void()",
     "size": 3588,
     "thunk": false
   },
@@ -1465,7 +1465,7 @@
     "external": false,
     "library": false,
     "name": "credits_line_set",
-    "signature": "char *__cdecl(int, char *Source, int)",
+    "signature": "void(int index, char *text, int flags)",
     "size": 64,
     "thunk": false
   },
@@ -1478,7 +1478,7 @@
     "external": false,
     "library": false,
     "name": "credits_line_clear_flag",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int index)",
     "size": 66,
     "thunk": false
   },
@@ -1491,7 +1491,7 @@
     "external": false,
     "library": false,
     "name": "credits_build_lines",
-    "signature": "char *()",
+    "signature": "void()",
     "size": 1897,
     "thunk": false
   },
@@ -1515,7 +1515,7 @@
     "external": false,
     "library": false,
     "name": "credits_screen_update",
-    "signature": "int __usercall@<eax>(float@<ebp>, int@<esi>)",
+    "signature": "void()",
     "size": 1857,
     "thunk": false
   },
@@ -1569,8 +1569,8 @@
     "end": "0x0040DF95",
     "external": false,
     "library": false,
-    "name": "sub_40DF90",
-    "signature": "",
+    "name": "j_mod_api_init",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -1580,7 +1580,7 @@
     "end": "0x0040DFB5",
     "external": false,
     "library": false,
-    "name": "sub_40DFA0",
+    "name": "mod_api_init",
     "signature": "void()",
     "size": 21,
     "thunk": false
@@ -1594,8 +1594,8 @@
     "end": "0x0040E032",
     "external": false,
     "library": false,
-    "name": "FUN_0040e000",
-    "signature": "void(char *Format, ...)",
+    "name": "mod_api_core_printf",
+    "signature": "void(const char *fmt, ...)",
     "size": 50,
     "thunk": false
   },
@@ -1608,7 +1608,7 @@
     "end": "0x0040E07D",
     "external": false,
     "library": false,
-    "name": "sub_40E040",
+    "name": "mod_api_core_get_var",
     "signature": "char **__stdcall(char *Source)",
     "size": 61,
     "thunk": false
@@ -1621,8 +1621,8 @@
     "end": "0x0040E092",
     "external": false,
     "library": false,
-    "name": "sub_40E080",
-    "signature": "char __stdcall(const char *)",
+    "name": "mod_api_core_del_var",
+    "signature": "unsigned __int8(const char *id)",
     "size": 18,
     "thunk": false
   },
@@ -1634,8 +1634,8 @@
     "end": "0x0040E0B2",
     "external": false,
     "library": false,
-    "name": "sub_40E0A0",
-    "signature": "char __stdcall(int)",
+    "name": "mod_api_core_execute",
+    "signature": "void(const char *string)",
     "size": 18,
     "thunk": false
   },
@@ -1647,8 +1647,8 @@
     "end": "0x0040E0D7",
     "external": false,
     "library": false,
-    "name": "sub_40E0C0",
-    "signature": "char *__stdcall(char *Source, int)",
+    "name": "mod_api_core_add_command",
+    "signature": "void(const char *id, void (*cmd)())",
     "size": 23,
     "thunk": false
   },
@@ -1660,8 +1660,8 @@
     "end": "0x0040E0F2",
     "external": false,
     "library": false,
-    "name": "sub_40E0E0",
-    "signature": "char __stdcall(int)",
+    "name": "mod_api_core_del_command",
+    "signature": "unsigned __int8(const char *id)",
     "size": 18,
     "thunk": false
   },
@@ -1671,8 +1671,8 @@
     "end": "0x0040E1E9",
     "external": false,
     "library": false,
-    "name": "sub_40E100",
-    "signature": "int __stdcall(const char *)",
+    "name": "mod_api_core_get_extension",
+    "signature": "void *(const char *ext)",
     "size": 233,
     "thunk": false
   },
@@ -1682,8 +1682,8 @@
     "end": "0x0040E212",
     "external": false,
     "library": false,
-    "name": "sub_40E1F0",
-    "signature": "int __stdcall(int, int, int, int)",
+    "name": "mod_api_gfx_clear",
+    "signature": "void(float r, float g, float b, float a)",
     "size": 34,
     "thunk": false
   },
@@ -1693,8 +1693,8 @@
     "end": "0x0040E236",
     "external": false,
     "library": false,
-    "name": "sub_40E220",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_gfx_get_string_width",
+    "signature": "int(const char *string)",
     "size": 22,
     "thunk": false
   },
@@ -1706,8 +1706,8 @@
     "end": "0x0040E275",
     "external": false,
     "library": false,
-    "name": "sub_40E240",
-    "signature": "int(int, int, int, char *Format, ...)",
+    "name": "mod_api_gfx_printf",
+    "signature": "void(float x, float y, const char *fmt, ...)",
     "size": 53,
     "thunk": false
   },
@@ -1720,8 +1720,8 @@
     "end": "0x0040E2D3",
     "external": false,
     "library": false,
-    "name": "sub_40E280",
-    "signature": "int __stdcall(const char *)",
+    "name": "mod_api_gfx_load_texture",
+    "signature": "int(const char *filename)",
     "size": 83,
     "thunk": false
   },
@@ -1731,8 +1731,8 @@
     "end": "0x0040E2F8",
     "external": false,
     "library": false,
-    "name": "sub_40E2E0",
-    "signature": "char __stdcall(int)",
+    "name": "mod_api_gfx_free_texture",
+    "signature": "unsigned __int8(int texId)",
     "size": 24,
     "thunk": false
   },
@@ -1742,8 +1742,8 @@
     "end": "0x0040E318",
     "external": false,
     "library": false,
-    "name": "sub_40E300",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_gfx_set_texture",
+    "signature": "void(int texId)",
     "size": 24,
     "thunk": false
   },
@@ -1753,8 +1753,8 @@
     "end": "0x0040E345",
     "external": false,
     "library": false,
-    "name": "sub_40E320",
-    "signature": "int __stdcall(int, int, int, int)",
+    "name": "mod_api_gfx_set_color",
+    "signature": "void(float r, float g, float b, float a)",
     "size": 37,
     "thunk": false
   },
@@ -1764,8 +1764,8 @@
     "end": "0x0040E375",
     "external": false,
     "library": false,
-    "name": "sub_40E350",
-    "signature": "int __stdcall(int, int, int, int)",
+    "name": "mod_api_gfx_set_subset",
+    "signature": "void(float x1, float y1, float x2, float y2)",
     "size": 37,
     "thunk": false
   },
@@ -1775,8 +1775,8 @@
     "end": "0x0040E39B",
     "external": false,
     "library": false,
-    "name": "sub_40E380",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_gfx_set_texture_filter",
+    "signature": "void(int filter)",
     "size": 27,
     "thunk": false
   },
@@ -1786,8 +1786,8 @@
     "end": "0x0040E3D3",
     "external": false,
     "library": false,
-    "name": "sub_40E3A0",
-    "signature": "int __stdcall(int, int)",
+    "name": "mod_api_gfx_set_blend_mode",
+    "signature": "void(int src, int dst)",
     "size": 51,
     "thunk": false
   },
@@ -1797,8 +1797,8 @@
     "end": "0x0040E3F6",
     "external": false,
     "library": false,
-    "name": "sub_40E3E0",
-    "signature": "int()",
+    "name": "mod_api_gfx_begin",
+    "signature": "void()",
     "size": 22,
     "thunk": false
   },
@@ -1808,8 +1808,8 @@
     "end": "0x0040E416",
     "external": false,
     "library": false,
-    "name": "sub_40E400",
-    "signature": "int()",
+    "name": "mod_api_gfx_end",
+    "signature": "void()",
     "size": 22,
     "thunk": false
   },
@@ -1819,8 +1819,8 @@
     "end": "0x0040E46C",
     "external": false,
     "library": false,
-    "name": "sub_40E420",
-    "signature": "char __stdcall(int, int, int, int)",
+    "name": "mod_api_gfx_quad",
+    "signature": "void(float x, float y, float w, float h)",
     "size": 76,
     "thunk": false
   },
@@ -1830,8 +1830,8 @@
     "end": "0x0040E4BF",
     "external": false,
     "library": false,
-    "name": "sub_40E470",
-    "signature": "char __stdcall(int, int, int, int, int)",
+    "name": "mod_api_gfx_quad_rot",
+    "signature": "void(float x, float y, float w, float h, float a)",
     "size": 79,
     "thunk": false
   },
@@ -1841,7 +1841,7 @@
     "end": "0x0040E524",
     "external": false,
     "library": false,
-    "name": "sub_40E4C0",
+    "name": "mod_api_gfx_draw_quads",
     "signature": "char __stdcall(int, int)",
     "size": 100,
     "thunk": false
@@ -1855,8 +1855,8 @@
     "end": "0x0040E55D",
     "external": false,
     "library": false,
-    "name": "sub_40E530",
-    "signature": "int __stdcall(const char *)",
+    "name": "mod_api_sfx_load_sample",
+    "signature": "int(const char *filename)",
     "size": 45,
     "thunk": false
   },
@@ -1868,8 +1868,8 @@
     "end": "0x0040E570",
     "external": false,
     "library": false,
-    "name": "sub_40E560",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_sfx_free_sample",
+    "signature": "unsigned __int8(int sfxId)",
     "size": 16,
     "thunk": false
   },
@@ -1881,8 +1881,8 @@
     "end": "0x0040E5A3",
     "external": false,
     "library": false,
-    "name": "sub_40E570",
-    "signature": "int __stdcall(int, float, float)",
+    "name": "mod_api_sfx_play_sample",
+    "signature": "void(int sfxId, float pan, float volume)",
     "size": 51,
     "thunk": false
   },
@@ -1895,8 +1895,8 @@
     "end": "0x0040E5DD",
     "external": false,
     "library": false,
-    "name": "sub_40E5B0",
-    "signature": "int __stdcall(const char *)",
+    "name": "mod_api_sfx_load_tune",
+    "signature": "int(const char *filename)",
     "size": 45,
     "thunk": false
   },
@@ -1908,8 +1908,8 @@
     "end": "0x0040E5F0",
     "external": false,
     "library": false,
-    "name": "sub_40E5E0",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_sfx_free_tune",
+    "signature": "unsigned __int8(int tuneId)",
     "size": 16,
     "thunk": false
   },
@@ -1921,8 +1921,8 @@
     "end": "0x0040E5FE",
     "external": false,
     "library": false,
-    "name": "sub_40E5F0",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_sfx_play_tune",
+    "signature": "void(int tuneId)",
     "size": 14,
     "thunk": false
   },
@@ -1934,8 +1934,8 @@
     "end": "0x0040E60E",
     "external": false,
     "library": false,
-    "name": "sub_40E600",
-    "signature": "int __stdcall(int)",
+    "name": "mod_api_sfx_stop_tune",
+    "signature": "void(int tuneId)",
     "size": 14,
     "thunk": false
   },
@@ -1945,8 +1945,8 @@
     "end": "0x0040E61B",
     "external": false,
     "library": false,
-    "name": "sub_40E610",
-    "signature": "int()",
+    "name": "mod_api_inp_get_pressed_char",
+    "signature": "char()",
     "size": 11,
     "thunk": false
   },
@@ -1956,8 +1956,8 @@
     "end": "0x0040E656",
     "external": false,
     "library": false,
-    "name": "sub_40E620",
-    "signature": "double __stdcall(int)",
+    "name": "mod_api_inp_get_analog",
+    "signature": "float(int key)",
     "size": 54,
     "thunk": false
   },
@@ -1967,8 +1967,8 @@
     "end": "0x0040E680",
     "external": false,
     "library": false,
-    "name": "sub_40E660",
-    "signature": "char __stdcall(int)",
+    "name": "mod_api_inp_key_down",
+    "signature": "unsigned __int8(int key)",
     "size": 32,
     "thunk": false
   },
@@ -1980,8 +1980,8 @@
     "end": "0x0040E690",
     "external": false,
     "library": false,
-    "name": "sub_40E680",
-    "signature": "char *__stdcall(int)",
+    "name": "mod_api_inp_get_key_name",
+    "signature": "char *(int key)",
     "size": 16,
     "thunk": false
   },
@@ -1991,8 +1991,8 @@
     "end": "0x0040E6F3",
     "external": false,
     "library": false,
-    "name": "FUN_0040e690",
-    "signature": "void __stdcall(const char *)",
+    "name": "mod_api_cl_enter_menu",
+    "signature": "void(const char *menu)",
     "size": 99,
     "thunk": false
   },
@@ -2010,7 +2010,7 @@
     "external": false,
     "library": false,
     "name": "mod_load_info",
-    "signature": "char *__cdecl(const char *)",
+    "signature": "void *()",
     "size": 332,
     "thunk": false
   },
@@ -2038,7 +2038,7 @@
     "external": false,
     "library": false,
     "name": "mod_load_mod",
-    "signature": "int __cdecl(const char *)",
+    "signature": "void *()",
     "size": 219,
     "thunk": false
   },
@@ -2053,7 +2053,7 @@
     "external": false,
     "library": false,
     "name": "mods_any_available",
-    "signature": "BOOL()",
+    "signature": "bool()",
     "size": 87,
     "thunk": false
   },
@@ -2118,7 +2118,7 @@
     "external": false,
     "library": false,
     "name": "credits_secret_match3_find",
-    "signature": "char __cdecl(int *, _DWORD *, _BYTE *)",
+    "signature": "uint(int *board, int *out_idx, unsigned __int8 *out_dir)",
     "size": 230,
     "thunk": false
   },
@@ -2137,7 +2137,7 @@
     "external": false,
     "library": false,
     "name": "credits_secret_alien_zookeeper_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 2612,
     "thunk": false
   },
@@ -2172,7 +2172,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0040ff50",
-    "signature": "char *__cdecl(int)",
+    "signature": "int(int arg1)",
     "size": 105,
     "thunk": false
   },
@@ -2202,7 +2202,7 @@
     "external": false,
     "library": false,
     "name": "game_over_screen_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 1999,
     "thunk": false
   },
@@ -2284,7 +2284,7 @@
     "external": false,
     "library": false,
     "name": "quest_failed_screen_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 1261,
     "thunk": false
   },
@@ -2350,7 +2350,7 @@
     "external": false,
     "library": false,
     "name": "quest_results_screen_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 4857,
     "thunk": false
   },
@@ -2511,7 +2511,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00412190",
-    "signature": "void()",
+    "signature": "int()",
     "size": 25,
     "thunk": false
   },
@@ -2667,7 +2667,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004123d0",
-    "signature": "void()",
+    "signature": "int()",
     "size": 25,
     "thunk": false
   },
@@ -2691,7 +2691,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00412410",
-    "signature": "void __thiscall(LPVOID *this)",
+    "signature": "void *(int *arg1)",
     "size": 36,
     "thunk": false
   },
@@ -2718,7 +2718,7 @@
     "external": false,
     "library": false,
     "name": "bonus_pick_random_type",
-    "signature": "int()",
+    "signature": "uint()",
     "size": 484,
     "thunk": false
   },
@@ -2732,7 +2732,7 @@
     "external": false,
     "library": false,
     "name": "bonus_metadata_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 735,
     "thunk": false
   },
@@ -2769,7 +2769,7 @@
     "external": false,
     "library": false,
     "name": "game_sequence_load",
-    "signature": "LSTATUS()",
+    "signature": "void()",
     "size": 101,
     "thunk": false
   },
@@ -2791,7 +2791,7 @@
     "external": false,
     "library": false,
     "name": "game_save_status",
-    "signature": "LSTATUS()",
+    "signature": "void()",
     "size": 399,
     "thunk": false
   },
@@ -2833,7 +2833,7 @@
     "external": false,
     "library": false,
     "name": "gameplay_reset_state",
-    "signature": "int()",
+    "signature": "void()",
     "size": 1639,
     "thunk": false
   },
@@ -2891,7 +2891,7 @@
     "external": false,
     "library": false,
     "name": "player_update",
-    "signature": "void __usercall(int@<ebp>)",
+    "signature": "void()",
     "size": 16257,
     "thunk": false
   },
@@ -2902,7 +2902,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00417640",
-    "signature": "float *__thiscall(float *this, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 26,
     "thunk": false
   },
@@ -2986,7 +2986,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00417aa0",
-    "signature": "_DWORD *__thiscall(_DWORD *this)",
+    "signature": "void *(void *arg1)",
     "size": 13,
     "thunk": false
   },
@@ -2997,7 +2997,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00417ab0",
-    "signature": "_DWORD *__thiscall(_DWORD *this)",
+    "signature": "char *(char *arg1)",
     "size": 48,
     "thunk": false
   },
@@ -3008,7 +3008,7 @@
     "external": false,
     "library": false,
     "name": "ui_draw_textured_quad",
-    "signature": "int __cdecl(int, int, int, int, int)",
+    "signature": "void(int texture_id, int x, int y, int w, int h)",
     "size": 158,
     "thunk": false
   },
@@ -3021,7 +3021,7 @@
     "external": false,
     "library": false,
     "name": "terrain_generate",
-    "signature": "int __cdecl(_DWORD *)",
+    "signature": "void(void *desc)",
     "size": 1569,
     "thunk": false
   },
@@ -3047,7 +3047,7 @@
     "external": false,
     "library": false,
     "name": "terrain_render",
-    "signature": "int()",
+    "signature": "void()",
     "size": 693,
     "thunk": false
   },
@@ -3061,7 +3061,7 @@
     "external": false,
     "library": false,
     "name": "creature_render_type",
-    "signature": "char __cdecl(int, float)",
+    "signature": "void(int type_id)",
     "size": 2834,
     "thunk": false
   },
@@ -3115,7 +3115,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_assets_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 551,
     "thunk": false
   },
@@ -3151,7 +3151,7 @@
     "external": false,
     "library": true,
     "name": "ui_cursor_render",
-    "signature": "int(void)",
+    "signature": "void()",
     "size": 730,
     "thunk": false
   },
@@ -3164,7 +3164,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_aim_enhancement",
-    "signature": "int __cdecl(float *)",
+    "signature": "void()",
     "size": 518,
     "thunk": false
   },
@@ -3182,7 +3182,7 @@
     "external": false,
     "library": false,
     "name": "ui_elements_update_and_render",
-    "signature": "int()",
+    "signature": "void()",
     "size": 409,
     "thunk": false
   },
@@ -3193,7 +3193,7 @@
     "external": false,
     "library": false,
     "name": "ui_draw_progress_bar",
-    "signature": "int __cdecl(float *, int, float, float *)",
+    "signature": "void(float *xy, float width, float ratio, float *rgba)",
     "size": 237,
     "thunk": false
   },
@@ -3239,7 +3239,7 @@
     "external": false,
     "library": false,
     "name": "bonus_hud_slot_update_and_render",
-    "signature": "void __usercall(int@<edi>, float *, int, float, float)",
+    "signature": "void(float *xy, int slot)",
     "size": 1566,
     "thunk": false
   },
@@ -3257,7 +3257,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_hud",
-    "signature": "int __cdecl(float, float)",
+    "signature": "void()",
     "size": 7081,
     "thunk": false
   },
@@ -3282,7 +3282,7 @@
     "external": false,
     "library": false,
     "name": "hud_update_and_render",
-    "signature": "char()",
+    "signature": "void()",
     "size": 531,
     "thunk": false
   },
@@ -3298,7 +3298,7 @@
     "external": false,
     "library": false,
     "name": "dx_get_version",
-    "signature": "int __cdecl(size_t *, char *Buffer, signed int BufferCount)",
+    "signature": "int(int *version, char *out, int out_len)",
     "size": 251,
     "thunk": false
   },
@@ -3332,7 +3332,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0041cfe0",
-    "signature": "int __cdecl(_DWORD *, _DWORD *, _BYTE *)",
+    "signature": "int(int *arg1, int *arg2, char *arg3)",
     "size": 2920,
     "thunk": false
   },
@@ -3349,7 +3349,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0041db50",
-    "signature": "int __cdecl(LPCSTR lptstrFilename, _DWORD *lpBuffer)",
+    "signature": "int(uint arg1, int *arg2)",
     "size": 187,
     "thunk": false
   },
@@ -3385,7 +3385,7 @@
     "external": false,
     "library": false,
     "name": "grim_load_interface",
-    "signature": "HMODULE __cdecl(LPCSTR lpLibFileName)",
+    "signature": "int(char *dll_name)",
     "size": 83,
     "thunk": false
   },
@@ -3396,7 +3396,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_mem_read",
-    "signature": "unsigned int __cdecl(void *, int, int, int)",
+    "signature": "uint(void *dst, uint size, uint count, void *datasource)",
     "size": 88,
     "thunk": false
   },
@@ -3429,7 +3429,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_mem_tell",
-    "signature": "int __cdecl(int)",
+    "signature": "int(void *datasource)",
     "size": 8,
     "thunk": false
   },
@@ -3442,7 +3442,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_pcm_seek",
-    "signature": "int __thiscall(char *this, int)",
+    "signature": "int(void *stream, uint sample_offset)",
     "size": 22,
     "thunk": false
   },
@@ -3461,7 +3461,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_mem_open",
-    "signature": "char __thiscall(unsigned int (__cdecl **this)(void *a1, int a2, int a3, int a4), unsigned int (__cdecl *)(void *a1, int a2, int a3, int a4), int)",
+    "signature": "int(void *stream, void *buffer, uint size)",
     "size": 260,
     "thunk": false
   },
@@ -3475,7 +3475,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_mem_close",
-    "signature": "int __thiscall(LPVOID *this)",
+    "signature": "void(void *stream)",
     "size": 29,
     "thunk": false
   },
@@ -3488,7 +3488,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_read_pcm16",
-    "signature": "int __thiscall(char *this, int, int)",
+    "signature": "int(void *stream, char *dst, int bytes)",
     "size": 55,
     "thunk": false
   },
@@ -3499,7 +3499,7 @@
     "external": false,
     "library": true,
     "name": "game_is_full_version",
-    "signature": "bool __thiscall(std::codecvt_base *__hidden this)",
+    "signature": "int()",
     "size": 3,
     "thunk": false
   },
@@ -3521,7 +3521,7 @@
     "external": false,
     "library": false,
     "name": "game_sequence_get",
-    "signature": "int __cdecl()",
+    "signature": "int()",
     "size": 6,
     "thunk": false
   },
@@ -3796,7 +3796,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0041e270",
-    "signature": "int __cdecl(float *, float *)",
+    "signature": "int(float *arg1, float *arg2)",
     "size": 26,
     "thunk": false
   },
@@ -3809,7 +3809,7 @@
     "external": false,
     "library": false,
     "name": "player_apply_move_with_spawn_avoidance",
-    "signature": "int __cdecl(int, float *, float *)",
+    "signature": "void(int player_index, float *pos, float *delta)",
     "size": 356,
     "thunk": false
   },
@@ -3820,7 +3820,7 @@
     "external": false,
     "library": false,
     "name": "vec2_add_inplace",
-    "signature": "int __cdecl(int, float *, float *)",
+    "signature": "void(int unused, float *pos, float *delta)",
     "size": 26,
     "thunk": false
   },
@@ -4141,7 +4141,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add",
-    "signature": "char __cdecl(int, int *, int, int, int, _DWORD *)",
+    "signature": "int(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
     "size": 140,
     "thunk": false
   },
@@ -4184,7 +4184,7 @@
     "external": false,
     "library": false,
     "name": "creature_handle_death",
-    "signature": "void __cdecl(int, char)",
+    "signature": "void(int creature_id, bool keep_corpse)",
     "size": 834,
     "thunk": false
   },
@@ -4203,7 +4203,7 @@
     "external": false,
     "library": false,
     "name": "config_sync_from_grim",
-    "signature": "char()",
+    "signature": "int()",
     "size": 1225,
     "thunk": false
   },
@@ -4219,7 +4219,7 @@
     "external": false,
     "library": false,
     "name": "config_ensure_file",
-    "signature": "FILE *()",
+    "signature": "void()",
     "size": 112,
     "thunk": false
   },
@@ -4238,7 +4238,7 @@
     "external": false,
     "library": false,
     "name": "config_load_presets",
-    "signature": "char __cdecl(char)",
+    "signature": "uint()",
     "size": 653,
     "thunk": false
   },
@@ -4249,7 +4249,7 @@
     "external": false,
     "library": false,
     "name": "angle_approach",
-    "signature": "double __cdecl(float *, float, float)",
+    "signature": "void(float *angle, float target, float rate)",
     "size": 299,
     "thunk": false
   },
@@ -4330,7 +4330,7 @@
     "external": false,
     "library": false,
     "name": "bonus_try_spawn_on_kill",
-    "signature": "int __cdecl(float *)",
+    "signature": "void(float *pos)",
     "size": 730,
     "thunk": false
   },
@@ -4343,7 +4343,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_sprite",
-    "signature": "int __cdecl(int *, int *, int)",
+    "signature": "int(float *pos, float *vel, float scale)",
     "size": 175,
     "thunk": false
   },
@@ -4354,7 +4354,7 @@
     "external": false,
     "library": false,
     "name": "weapon_table_entry",
-    "signature": "int __cdecl(int)",
+    "signature": "char *(int weapon_id)",
     "size": 19,
     "thunk": false
   },
@@ -4367,7 +4367,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0041fc80",
-    "signature": "char *()",
+    "signature": "void *()",
     "size": 584,
     "thunk": false
   },
@@ -4378,7 +4378,7 @@
     "external": false,
     "library": false,
     "name": "effect_uv_tables_init",
-    "signature": "int *()",
+    "signature": "void()",
     "size": 356,
     "thunk": false
   },
@@ -4389,7 +4389,7 @@
     "external": false,
     "library": false,
     "name": "creature_find_nearest",
-    "signature": "int __cdecl(float *, int, float)",
+    "signature": "int(float *pos, int exclude_id, float min_dist)",
     "size": 225,
     "thunk": false
   },
@@ -4402,7 +4402,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_particle",
-    "signature": "int __cdecl(int *, int, int, int)",
+    "signature": "int(float *pos, float angle, void *unused, float intensity)",
     "size": 264,
     "thunk": false
   },
@@ -4415,7 +4415,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_particle_slow",
-    "signature": "int __cdecl(int *, int)",
+    "signature": "int(float *pos, float angle)",
     "size": 274,
     "thunk": false
   },
@@ -4428,7 +4428,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_secondary_projectile",
-    "signature": "int __cdecl(_DWORD *, float, int)",
+    "signature": "int(float *pos, float angle, int type_id)",
     "size": 218,
     "thunk": false
   },
@@ -4439,7 +4439,7 @@
     "external": false,
     "library": false,
     "name": "projectile_spawn",
-    "signature": "int __cdecl(_DWORD *, float, int, int)",
+    "signature": "int(float *pos, float angle, int type_id, int owner_id)",
     "size": 400,
     "thunk": false
   },
@@ -4450,7 +4450,7 @@
     "external": false,
     "library": false,
     "name": "projectile_reset_pools",
-    "signature": "char *()",
+    "signature": "void()",
     "size": 37,
     "thunk": false
   },
@@ -4463,7 +4463,7 @@
     "external": false,
     "library": false,
     "name": "creatures_apply_radius_damage",
-    "signature": "void __cdecl(float *, float, float, int)",
+    "signature": "void(float *pos, float radius, float damage, int damage_type)",
     "size": 159,
     "thunk": false
   },
@@ -4474,7 +4474,7 @@
     "external": false,
     "library": false,
     "name": "creature_find_in_radius",
-    "signature": "int __cdecl(float *, float, int)",
+    "signature": "int(float *pos, float radius, int start_index)",
     "size": 133,
     "thunk": false
   },
@@ -4485,7 +4485,7 @@
     "external": false,
     "library": false,
     "name": "player_find_in_radius",
-    "signature": "int __cdecl(int, float *, float)",
+    "signature": "int(int owner_id, float *pos, float radius)",
     "size": 133,
     "thunk": false
   },
@@ -4502,7 +4502,7 @@
     "external": false,
     "library": false,
     "name": "creature_apply_damage",
-    "signature": "BOOL __cdecl(int, float, int, float *)",
+    "signature": "int(int creature_id, float damage, int damage_type, float *impulse)",
     "size": 963,
     "thunk": false
   },
@@ -4540,7 +4540,7 @@
     "external": false,
     "library": false,
     "name": "projectile_update",
-    "signature": "int()",
+    "signature": "void()",
     "size": 8409,
     "thunk": false
   },
@@ -4557,7 +4557,7 @@
     "external": false,
     "library": false,
     "name": "projectile_render",
-    "signature": "char __cdecl(float, float, int, float)",
+    "signature": "void()",
     "size": 12551,
     "thunk": false
   },
@@ -4585,7 +4585,7 @@
     "external": false,
     "library": false,
     "name": "player_take_damage",
-    "signature": "void __cdecl(int, float)",
+    "signature": "void(int player_index, float damage)",
     "size": 969,
     "thunk": false
   },
@@ -4614,7 +4614,7 @@
     "external": false,
     "library": false,
     "name": "creature_update_all",
-    "signature": "int()",
+    "signature": "void()",
     "size": 5330,
     "thunk": false
   },
@@ -4629,7 +4629,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add_random",
-    "signature": "char __cdecl(float *)",
+    "signature": "void(float *pos)",
     "size": 291,
     "thunk": false
   },
@@ -4651,7 +4651,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add_rotated",
-    "signature": "char __cdecl(int *, int *, float, float, int)",
+    "signature": "int(float *pos, float *rgba, float rotation, float scale, int effect_id)",
     "size": 210,
     "thunk": false
   },
@@ -4664,7 +4664,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_render",
-    "signature": "int()",
+    "signature": "void()",
     "size": 2076,
     "thunk": false
   },
@@ -4689,7 +4689,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004281e0",
-    "signature": "int *()",
+    "signature": "void *()",
     "size": 46,
     "thunk": false
   },
@@ -4700,7 +4700,7 @@
     "external": false,
     "library": false,
     "name": "creatures_none_active",
-    "signature": "char()",
+    "signature": "uint()",
     "size": 40,
     "thunk": false
   },
@@ -4714,7 +4714,7 @@
     "external": false,
     "library": false,
     "name": "creature_spawn",
-    "signature": "int __cdecl(int, int *, int)",
+    "signature": "int(float *pos, float *tint_rgba, int type_id)",
     "size": 334,
     "thunk": false
   },
@@ -4762,7 +4762,7 @@
     "external": false,
     "library": false,
     "name": "bonus_render",
-    "signature": "void __usercall(int@<edi>, int@<esi>)",
+    "signature": "void()",
     "size": 4088,
     "thunk": false
   },
@@ -4776,7 +4776,7 @@
     "external": false,
     "library": false,
     "name": "audio_resume_all",
-    "signature": "char()",
+    "signature": "int()",
     "size": 54,
     "thunk": false
   },
@@ -4790,7 +4790,7 @@
     "external": false,
     "library": false,
     "name": "audio_suspend_all",
-    "signature": "char()",
+    "signature": "void()",
     "size": 52,
     "thunk": false
   },
@@ -4803,7 +4803,7 @@
     "external": false,
     "library": false,
     "name": "texture_get_or_load",
-    "signature": "int __cdecl(int, const char *ArgList)",
+    "signature": "int(char *name, char *path)",
     "size": 133,
     "thunk": false
   },
@@ -4816,15 +4816,15 @@
     "external": false,
     "library": false,
     "name": "texture_get_or_load_alt",
-    "signature": "int __cdecl(const char *ArgList)",
+    "signature": "int(char *name, char *path)",
     "size": 126,
     "thunk": false
   },
   {
     "address": "0x0042A780",
     "calls": [
-      "FUN_00401120",
-      "FUN_00401150",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf",
       "texture_get_or_load"
     ],
@@ -4832,15 +4832,15 @@
     "external": false,
     "library": false,
     "name": "console_cmd_load_texture",
-    "signature": "char()",
+    "signature": "void()",
     "size": 60,
     "thunk": false
   },
   {
     "address": "0x0042A7C0",
     "calls": [
-      "FUN_00401120",
-      "FUN_00401150",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf",
       "crt_fclose",
       "crt_fopen"
@@ -4849,7 +4849,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_set_resource_paq",
-    "signature": "char()",
+    "signature": "void()",
     "size": 158,
     "thunk": false
   },
@@ -4863,7 +4863,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_tell_time_survived",
-    "signature": "char()",
+    "signature": "void()",
     "size": 37,
     "thunk": false
   },
@@ -4871,16 +4871,16 @@
     "address": "0x0042A890",
     "calls": [
       "0x0046F040",
-      "FUN_00401120",
-      "FUN_00401150",
       "HlinkNavigateString",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf"
     ],
     "end": "0x0042A927",
     "external": false,
     "library": false,
     "name": "console_cmd_open_url",
-    "signature": "char()",
+    "signature": "void()",
     "size": 151,
     "thunk": false
   },
@@ -4893,7 +4893,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_snd_freq_adjustment",
-    "signature": "char()",
+    "signature": "void()",
     "size": 58,
     "thunk": false
   },
@@ -4917,7 +4917,7 @@
     "external": false,
     "library": false,
     "name": "reg_read_dword_default",
-    "signature": "int __cdecl(HKEY hKey, LPCSTR lpValueName, BYTE *Type, int)",
+    "signature": "int(HKEY key, char *name, unsigned int *out, unsigned int fallback)",
     "size": 58,
     "thunk": false
   },
@@ -4930,7 +4930,7 @@
     "external": false,
     "library": false,
     "name": "reg_write_dword",
-    "signature": "unsigned int(HKEY hKey, LPCSTR lpValueName, ...)",
+    "signature": "int(HKEY key, char *name, unsigned int value)",
     "size": 37,
     "thunk": false
   },
@@ -4946,7 +4946,7 @@
     "external": false,
     "library": false,
     "name": "init_audio_and_terrain",
-    "signature": "char()",
+    "signature": "void()",
     "size": 480,
     "thunk": false
   },
@@ -4961,7 +4961,7 @@
     "external": false,
     "library": false,
     "name": "load_textures_step",
-    "signature": "BOOL()",
+    "signature": "int()",
     "size": 1203,
     "thunk": false
   },
@@ -4989,7 +4989,7 @@
     "external": false,
     "library": false,
     "name": "game_startup_init_prelude",
-    "signature": "LSTATUS()",
+    "signature": "void()",
     "size": 435,
     "thunk": false
   },
@@ -5032,15 +5032,15 @@
     "external": false,
     "library": false,
     "name": "game_startup_init",
-    "signature": "bool __usercall@<al>(int@<edi>, int@<esi>)",
+    "signature": "void()",
     "size": 4303,
     "thunk": false
   },
   {
     "address": "0x0042C360",
     "calls": [
-      "FUN_00401120",
-      "FUN_00401150",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf",
       "crt_sprintf",
       "music_load_track",
@@ -5050,15 +5050,15 @@
     "external": false,
     "library": false,
     "name": "console_cmd_snd_add_game_tune",
-    "signature": "char()",
+    "signature": "void()",
     "size": 100,
     "thunk": false
   },
   {
     "address": "0x0042C3D0",
     "calls": [
-      "FUN_00401120",
-      "FUN_00401150",
+      "console_cmd_arg_get",
+      "console_cmd_argc_get",
       "console_printf",
       "crt_atof_l"
     ],
@@ -5066,7 +5066,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_set_gamma_ramp",
-    "signature": "char()",
+    "signature": "void()",
     "size": 116,
     "thunk": false
   },
@@ -5108,7 +5108,7 @@
     "external": false,
     "library": false,
     "name": "crimsonland_main",
-    "signature": "int __stdcall(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)",
+    "signature": "int()",
     "size": 3214,
     "thunk": false
   },
@@ -5249,7 +5249,7 @@
     "external": false,
     "library": false,
     "name": "effect_init_entry",
-    "signature": "_DWORD *__cdecl(_DWORD *)",
+    "signature": "void(void *entry)",
     "size": 143,
     "thunk": false
   },
@@ -5262,7 +5262,7 @@
     "external": false,
     "library": false,
     "name": "effect_defaults_reset",
-    "signature": "_DWORD *()",
+    "signature": "void()",
     "size": 355,
     "thunk": false
   },
@@ -5273,7 +5273,7 @@
     "external": false,
     "library": false,
     "name": "effect_free",
-    "signature": "int __cdecl(int)",
+    "signature": "void(void *entry)",
     "size": 29,
     "thunk": false
   },
@@ -5284,7 +5284,7 @@
     "external": false,
     "library": false,
     "name": "effect_select_texture",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int effect_id)",
     "size": 113,
     "thunk": false
   },
@@ -5295,7 +5295,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn",
-    "signature": "_DWORD *__cdecl(int, _DWORD *)",
+    "signature": "void *(int effect_id, float *pos)",
     "size": 1507,
     "thunk": false
   },
@@ -5322,7 +5322,7 @@
     "external": false,
     "library": false,
     "name": "effects_render",
-    "signature": "int()",
+    "signature": "void()",
     "size": 740,
     "thunk": false
   },
@@ -5336,7 +5336,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_blood_splatter",
-    "signature": "unsigned __int8 __cdecl(_DWORD *, float, int)",
+    "signature": "void(float *pos, float angle, float age)",
     "size": 361,
     "thunk": false
   },
@@ -5350,7 +5350,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_freeze_shard",
-    "signature": "_DWORD *__cdecl(_DWORD *, float)",
+    "signature": "void(float *pos, float angle)",
     "size": 376,
     "thunk": false
   },
@@ -5365,7 +5365,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_freeze_shatter",
-    "signature": "_DWORD *__cdecl(_DWORD *, float)",
+    "signature": "void(float *pos, float angle)",
     "size": 339,
     "thunk": false
   },
@@ -5379,7 +5379,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_burst",
-    "signature": "int __cdecl(_DWORD *, int)",
+    "signature": "void(float *pos, int count)",
     "size": 282,
     "thunk": false
   },
@@ -5393,7 +5393,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f080",
-    "signature": "_DWORD *__cdecl(_DWORD *)",
+    "signature": "void *(float *arg1)",
     "size": 482,
     "thunk": false
   },
@@ -5406,7 +5406,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f270",
-    "signature": "_DWORD *__cdecl(_DWORD *, float, float)",
+    "signature": "void *(float *arg1, float arg2, float arg3)",
     "size": 191,
     "thunk": false
   },
@@ -5419,7 +5419,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f330",
-    "signature": "_DWORD *__cdecl(_DWORD *, float, int)",
+    "signature": "void *(float *arg1, float arg2, int arg3)",
     "size": 185,
     "thunk": false
   },
@@ -5434,7 +5434,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f3f0",
-    "signature": "int __cdecl(float *, float, int)",
+    "signature": "void *(float *arg1, float arg2, float arg3)",
     "size": 333,
     "thunk": false
   },
@@ -5449,7 +5449,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f540",
-    "signature": "int __cdecl(_DWORD *, float)",
+    "signature": "int(int arg1, float arg2)",
     "size": 378,
     "thunk": false
   },
@@ -5463,7 +5463,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_explosion_burst",
-    "signature": "_DWORD *__cdecl(_DWORD *, float)",
+    "signature": "void(float *pos, float scale)",
     "size": 964,
     "thunk": false
   },
@@ -5490,7 +5490,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042faa0",
-    "signature": "void()",
+    "signature": "int()",
     "size": 28,
     "thunk": false
   },
@@ -5527,7 +5527,7 @@
     "external": false,
     "library": false,
     "name": "perk_can_offer",
-    "signature": "char __cdecl(int)",
+    "signature": "int(int perk_index)",
     "size": 185,
     "thunk": false
   },
@@ -5553,7 +5553,7 @@
     "external": false,
     "library": false,
     "name": "perks_rebuild_available",
-    "signature": "int()",
+    "signature": "void()",
     "size": 181,
     "thunk": false
   },
@@ -5564,7 +5564,7 @@
     "external": false,
     "library": false,
     "name": "perk_count_get",
-    "signature": "int __cdecl(int)",
+    "signature": "int(int perk_id)",
     "size": 12,
     "thunk": false
   },
@@ -5591,7 +5591,7 @@
     "external": false,
     "library": false,
     "name": "perks_init_database",
-    "signature": "int()",
+    "signature": "void()",
     "size": 3211,
     "thunk": false
   },
@@ -5605,7 +5605,7 @@
     "end": "0x00430ACA",
     "external": false,
     "library": false,
-    "name": "FUN_00430a20",
+    "name": "quest_meta_init_entry",
     "signature": "int __cdecl(int, int, int, char *Source)",
     "size": 170,
     "thunk": false
@@ -5616,7 +5616,7 @@
     "end": "0x00430AEE",
     "external": false,
     "library": false,
-    "name": "sub_430AD0",
+    "name": "creature_spawn_slot_alloc",
     "signature": "int()",
     "size": 30,
     "thunk": false
@@ -5626,15 +5626,15 @@
     "calls": [
       "console_printf",
       "creature_alloc_slot",
+      "creature_spawn_slot_alloc",
       "crt_rand",
-      "effect_spawn_burst",
-      "sub_430AD0"
+      "effect_spawn_burst"
     ],
     "end": "0x00434203",
     "external": false,
     "library": false,
     "name": "creature_spawn_template",
-    "signature": "char *__cdecl(int, float *, float)",
+    "signature": "void *(int template_id, float *pos, float heading)",
     "size": 14099,
     "thunk": false
   },
@@ -5645,7 +5645,7 @@
     "external": false,
     "library": false,
     "name": "quest_spawn_table_empty",
-    "signature": "char()",
+    "signature": "int()",
     "size": 39,
     "thunk": false
   },
@@ -5669,7 +5669,7 @@
     "external": false,
     "library": false,
     "name": "quest_database_advance_slot",
-    "signature": "int *__cdecl(_DWORD *, int *)",
+    "signature": "void(int *tier, int *index)",
     "size": 30,
     "thunk": false
   },
@@ -6251,14 +6251,14 @@
   {
     "address": "0x00439230",
     "calls": [
-      "FUN_00430a20",
-      "quest_database_advance_slot"
+      "quest_database_advance_slot",
+      "quest_meta_init_entry"
     ],
     "end": "0x0043A78A",
     "external": false,
     "library": false,
     "name": "quest_database_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 5466,
     "thunk": false
   },
@@ -6277,7 +6277,7 @@
     "external": false,
     "library": false,
     "name": "quest_start_selected",
-    "signature": "int *__cdecl(int ArgList, int)",
+    "signature": "void(int tier, int index)",
     "size": 434,
     "thunk": false
   },
@@ -6288,7 +6288,7 @@
     "external": false,
     "library": false,
     "name": "highscore_date_checksum",
-    "signature": "int __cdecl(int, int, int)",
+    "signature": "int(int year, int month, int day)",
     "size": 262,
     "thunk": false
   },
@@ -6313,7 +6313,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0043aa90",
-    "signature": "char *__cdecl(int, int)",
+    "signature": "void *(void *arg1, void *arg2)",
     "size": 113,
     "thunk": false
   },
@@ -6327,7 +6327,7 @@
     "external": false,
     "library": false,
     "name": "highscore_read_record",
-    "signature": "char *__cdecl(char *Buffer, FILE *Stream)",
+    "signature": "char *(char *buffer, FILE *fp)",
     "size": 179,
     "thunk": false
   },
@@ -6338,7 +6338,7 @@
     "external": false,
     "library": false,
     "name": "highscore_record_equals",
-    "signature": "bool __cdecl(int, int)",
+    "signature": "int(byte *left, byte *right)",
     "size": 151,
     "thunk": false
   },
@@ -6358,7 +6358,7 @@
     "external": false,
     "library": false,
     "name": "highscore_update_record",
-    "signature": "char __cdecl(char *FileName, int)",
+    "signature": "int(char *path, byte *record)",
     "size": 255,
     "thunk": false
   },
@@ -6374,7 +6374,7 @@
     "external": false,
     "library": false,
     "name": "highscore_write_record",
-    "signature": "int __cdecl(_BYTE *, FILE *Stream)",
+    "signature": "void(byte *record, FILE *fp)",
     "size": 318,
     "thunk": false
   },
@@ -6384,8 +6384,8 @@
     "end": "0x0043AED0",
     "external": false,
     "library": false,
-    "name": "CompareFunction",
-    "signature": "int __cdecl(_DWORD *, _DWORD *)",
+    "name": "highscore_compare_survival_score_desc",
+    "signature": "int(const void *a, const void *b)",
     "size": 32,
     "thunk": false
   },
@@ -6395,8 +6395,8 @@
     "end": "0x0043AEF0",
     "external": false,
     "library": false,
-    "name": "sub_43AED0",
-    "signature": "int __cdecl(int, int)",
+    "name": "highscore_compare_rush_field32_desc",
+    "signature": "int(const void *a, const void *b)",
     "size": 32,
     "thunk": false
   },
@@ -6406,8 +6406,8 @@
     "end": "0x0043AF25",
     "external": false,
     "library": false,
-    "name": "sub_43AEF0",
-    "signature": "int __cdecl(int, int)",
+    "name": "highscore_compare_quest_field32_asc_nonzero_first",
+    "signature": "int(const void *a, const void *b)",
     "size": 53,
     "thunk": false
   },
@@ -6418,7 +6418,7 @@
     "external": false,
     "library": false,
     "name": "highscore_find_name_entry",
-    "signature": "int __cdecl(const char *, int)",
+    "signature": "byte *(byte *record, int count)",
     "size": 101,
     "thunk": false
   },
@@ -6438,7 +6438,7 @@
     "external": false,
     "library": false,
     "name": "highscore_load_table",
-    "signature": "char()",
+    "signature": "void()",
     "size": 1198,
     "thunk": false
   },
@@ -6458,7 +6458,7 @@
     "external": false,
     "library": false,
     "name": "highscore_save_record",
-    "signature": "char __cdecl(int)",
+    "signature": "void(byte *record)",
     "size": 182,
     "thunk": false
   },
@@ -6471,7 +6471,7 @@
     "external": false,
     "library": false,
     "name": "highscore_save_active",
-    "signature": "char()",
+    "signature": "void()",
     "size": 12,
     "thunk": false
   },
@@ -6482,7 +6482,7 @@
     "external": false,
     "library": false,
     "name": "highscore_rank_index",
-    "signature": "std::codecvt_base *()",
+    "signature": "int()",
     "size": 133,
     "thunk": false
   },
@@ -6510,7 +6510,7 @@
     "external": false,
     "library": false,
     "name": "highscore_record_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 165,
     "thunk": false
   },
@@ -6532,7 +6532,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0043b810",
-    "signature": "_DWORD *__thiscall(_DWORD *this)",
+    "signature": "void *(void *arg1)",
     "size": 54,
     "thunk": false
   },
@@ -6543,7 +6543,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_init",
-    "signature": "int __cdecl(int, int)",
+    "signature": "void(void *data, int size)",
     "size": 30,
     "thunk": false
   },
@@ -6554,7 +6554,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_seek",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int offset)",
     "size": 10,
     "thunk": false
   },
@@ -6565,7 +6565,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_read_u16",
-    "signature": "__int16()",
+    "signature": "int()",
     "size": 25,
     "thunk": false
   },
@@ -6576,7 +6576,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_read_u32",
-    "signature": "int()",
+    "signature": "uint()",
     "size": 24,
     "thunk": false
   },
@@ -6587,7 +6587,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_skip",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int count)",
     "size": 19,
     "thunk": false
   },
@@ -6598,7 +6598,7 @@
     "external": false,
     "library": false,
     "name": "buffer_reader_find_tag",
-    "signature": "char __cdecl(int, int)",
+    "signature": "int(char *tag, int tag_len)",
     "size": 87,
     "thunk": false
   },
@@ -6611,7 +6611,7 @@
     "external": false,
     "library": false,
     "name": "resource_pack_read_cstring",
-    "signature": "unsigned int __cdecl(FILE *Stream)",
+    "signature": "int(FILE *fp)",
     "size": 62,
     "thunk": false
   },
@@ -6625,7 +6625,7 @@
     "external": false,
     "library": false,
     "name": "resource_pack_set",
-    "signature": "char __cdecl(char *FileName)",
+    "signature": "int(char *path)",
     "size": 95,
     "thunk": false
   },
@@ -6644,7 +6644,7 @@
     "external": false,
     "library": false,
     "name": "resource_open_read",
-    "signature": "char __cdecl(char *String2, int *Offset)",
+    "signature": "int(byte *path, int *size_out)",
     "size": 233,
     "thunk": false
   },
@@ -6657,7 +6657,7 @@
     "external": false,
     "library": false,
     "name": "resource_close",
-    "signature": "FILE *()",
+    "signature": "void()",
     "size": 17,
     "thunk": false
   },
@@ -6670,7 +6670,7 @@
     "external": false,
     "library": false,
     "name": "dsound_init",
-    "signature": "char __cdecl(HWND, DWORD, __int16, int, unsigned __int16)",
+    "signature": "int(void *hwnd, uint coop_level)",
     "size": 289,
     "thunk": false
   },
@@ -6684,7 +6684,7 @@
     "external": false,
     "library": false,
     "name": "dsound_restore_buffer",
-    "signature": "char __cdecl(int)",
+    "signature": "int(void *buffer)",
     "size": 81,
     "thunk": false
   },
@@ -6700,7 +6700,7 @@
     "external": false,
     "library": false,
     "name": "resource_read_alloc",
-    "signature": "char __cdecl(char *String2, _DWORD *, int *Offset)",
+    "signature": "int(byte *path, void **out_data, uint *out_size)",
     "size": 75,
     "thunk": false
   },
@@ -6720,7 +6720,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_load_ogg",
-    "signature": "char __cdecl(int, char *String2)",
+    "signature": "int(void *entry, byte *path)",
     "size": 304,
     "thunk": false
   },
@@ -6733,7 +6733,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_seek",
-    "signature": "int __cdecl(int, int)",
+    "signature": "void(int entry, int sample_offset)",
     "size": 56,
     "thunk": false
   },
@@ -6750,7 +6750,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_start_playback",
-    "signature": "int __cdecl(int)",
+    "signature": "int(int entry)",
     "size": 215,
     "thunk": false
   },
@@ -6761,7 +6761,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_resume",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int entry)",
     "size": 27,
     "thunk": false
   },
@@ -6772,7 +6772,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_stop",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int entry)",
     "size": 60,
     "thunk": false
   },
@@ -6785,7 +6785,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_set_volume",
-    "signature": "void __cdecl(int, float)",
+    "signature": "void(int entry, float volume)",
     "size": 120,
     "thunk": false
   },
@@ -6801,7 +6801,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_load_wav",
-    "signature": "char __cdecl(int, char *String2)",
+    "signature": "int(void *entry, byte *path)",
     "size": 104,
     "thunk": false
   },
@@ -6815,7 +6815,7 @@
     "external": false,
     "library": false,
     "name": "sfx_release_entry",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int entry)",
     "size": 119,
     "thunk": false
   },
@@ -6834,7 +6834,7 @@
     "external": false,
     "library": false,
     "name": "wav_parse_into_entry",
-    "signature": "char __cdecl(int, int, int)",
+    "signature": "int(void *entry, void *data, int size)",
     "size": 274,
     "thunk": false
   },
@@ -6847,7 +6847,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_upload_buffer",
-    "signature": "char __cdecl(int)",
+    "signature": "int(int entry)",
     "size": 123,
     "thunk": false
   },
@@ -6861,7 +6861,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_create_buffers",
-    "signature": "char __cdecl(int)",
+    "signature": "int(int entry)",
     "size": 238,
     "thunk": false
   },
@@ -6878,7 +6878,7 @@
     "external": false,
     "library": false,
     "name": "music_entry_load_ogg",
-    "signature": "char __cdecl(int, char *ElementSize)",
+    "signature": "int(void *entry, byte *path)",
     "size": 380,
     "thunk": false
   },
@@ -6891,7 +6891,7 @@
     "external": false,
     "library": false,
     "name": "music_stream_update",
-    "signature": "int __cdecl(unsigned int)",
+    "signature": "void(int entry)",
     "size": 109,
     "thunk": false
   },
@@ -6905,7 +6905,7 @@
     "external": false,
     "library": false,
     "name": "music_stream_fill",
-    "signature": "char __cdecl(_DWORD *)",
+    "signature": "int(int entry)",
     "size": 221,
     "thunk": false
   },
@@ -6988,7 +6988,7 @@
     "external": false,
     "library": false,
     "name": "sfx_release_sample",
-    "signature": "char __cdecl(unsigned int)",
+    "signature": "int(int sfx_id)",
     "size": 57,
     "thunk": false
   },
@@ -7005,7 +7005,7 @@
     "external": false,
     "library": false,
     "name": "sfx_load_sample",
-    "signature": "int __cdecl(char *Str)",
+    "signature": "int(char *path)",
     "size": 389,
     "thunk": false
   },
@@ -7019,7 +7019,7 @@
     "external": false,
     "library": false,
     "name": "music_load_track",
-    "signature": "int __cdecl(char *ElementSize)",
+    "signature": "int(char *path)",
     "size": 139,
     "thunk": false
   },
@@ -7030,7 +7030,7 @@
     "external": false,
     "library": false,
     "name": "music_queue_track",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int track_id)",
     "size": 27,
     "thunk": false
   },
@@ -7043,7 +7043,7 @@
     "external": false,
     "library": false,
     "name": "music_release_track",
-    "signature": "char __cdecl(unsigned int)",
+    "signature": "int(int track_id)",
     "size": 57,
     "thunk": false
   },
@@ -7059,7 +7059,7 @@
     "external": false,
     "library": false,
     "name": "audio_init_music",
-    "signature": "char()",
+    "signature": "void()",
     "size": 212,
     "thunk": false
   },
@@ -7075,7 +7075,7 @@
     "external": false,
     "library": false,
     "name": "audio_init_sfx",
-    "signature": "char()",
+    "signature": "void()",
     "size": 1262,
     "thunk": false
   },
@@ -7090,7 +7090,7 @@
     "external": false,
     "library": false,
     "name": "sfx_system_init",
-    "signature": "char()",
+    "signature": "int()",
     "size": 214,
     "thunk": false
   },
@@ -7105,7 +7105,7 @@
     "external": false,
     "library": false,
     "name": "sfx_release_all",
-    "signature": "char()",
+    "signature": "void()",
     "size": 91,
     "thunk": false
   },
@@ -7119,7 +7119,7 @@
     "external": false,
     "library": false,
     "name": "music_release_all",
-    "signature": "char()",
+    "signature": "void()",
     "size": 55,
     "thunk": false
   },
@@ -7133,7 +7133,7 @@
     "external": false,
     "library": false,
     "name": "audio_shutdown_all",
-    "signature": "LPDIRECTSOUND8()",
+    "signature": "void()",
     "size": 15,
     "thunk": false
   },
@@ -7148,7 +7148,7 @@
     "external": false,
     "library": false,
     "name": "sfx_play",
-    "signature": "int __cdecl(int, float)",
+    "signature": "int(int sfx_id)",
     "size": 320,
     "thunk": false
   },
@@ -7163,7 +7163,7 @@
     "external": false,
     "library": false,
     "name": "sfx_play_panned",
-    "signature": "int __cdecl(int, float *, float)",
+    "signature": "float(float sfx_id)",
     "size": 386,
     "thunk": false
   },
@@ -7177,7 +7177,7 @@
     "external": false,
     "library": false,
     "name": "audio_update",
-    "signature": "char()",
+    "signature": "void()",
     "size": 102,
     "thunk": false
   },
@@ -7194,7 +7194,7 @@
     "external": false,
     "library": false,
     "name": "sfx_play_exclusive",
-    "signature": "void __cdecl(int)",
+    "signature": "void(int sfx_id)",
     "size": 239,
     "thunk": false
   },
@@ -7208,7 +7208,7 @@
     "external": false,
     "library": false,
     "name": "sfx_mute_all",
-    "signature": "char __cdecl(int)",
+    "signature": "void(int sfx_id)",
     "size": 87,
     "thunk": false
   },
@@ -7237,7 +7237,7 @@
     "external": false,
     "library": false,
     "name": "audio_suspend_channels",
-    "signature": "char()",
+    "signature": "void()",
     "size": 58,
     "thunk": false
   },
@@ -7250,7 +7250,7 @@
     "external": false,
     "library": false,
     "name": "audio_resume_channels",
-    "signature": "char()",
+    "signature": "void()",
     "size": 73,
     "thunk": false
   },
@@ -7261,7 +7261,7 @@
     "external": false,
     "library": false,
     "name": "sfx_is_unmuted",
-    "signature": "bool __cdecl(int)",
+    "signature": "int(int sfx_id)",
     "size": 30,
     "thunk": false
   },
@@ -7272,7 +7272,7 @@
     "external": false,
     "library": false,
     "name": "ui_focus_set",
-    "signature": "int __cdecl(int, char)",
+    "signature": "void(int id, char reset_timer)",
     "size": 75,
     "thunk": false
   },
@@ -7283,7 +7283,7 @@
     "external": false,
     "library": false,
     "name": "ui_focus_update",
-    "signature": "bool __cdecl(int)",
+    "signature": "int(int id)",
     "size": 268,
     "thunk": false
   },
@@ -7294,7 +7294,7 @@
     "external": false,
     "library": false,
     "name": "ui_focus_draw",
-    "signature": "int __cdecl(float *)",
+    "signature": "void(float *xy)",
     "size": 104,
     "thunk": false
   },
@@ -7312,7 +7312,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0043d9b0",
-    "signature": "int __cdecl(int, int)",
+    "signature": "int(int *arg1, int arg2)",
     "size": 714,
     "thunk": false
   },
@@ -7329,7 +7329,7 @@
     "external": false,
     "library": false,
     "name": "ui_checkbox_update",
-    "signature": "char __cdecl(float *, int)",
+    "signature": "int(float *xy, char *checkbox)",
     "size": 622,
     "thunk": false
   },
@@ -7347,7 +7347,7 @@
     "external": false,
     "library": false,
     "name": "ui_scrollbar_update",
-    "signature": "int __cdecl(float *, int)",
+    "signature": "void(float *xy, float *state)",
     "size": 1767,
     "thunk": false
   },
@@ -7367,7 +7367,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_item_update",
-    "signature": "char __usercall@<al>(int@<esi>, float *, int, float, int, int)",
+    "signature": "int(float *xy, int *item)",
     "size": 548,
     "thunk": false
   },
@@ -7428,7 +7428,7 @@
     "external": false,
     "library": false,
     "name": "ui_text_input_update",
-    "signature": "char __cdecl(float *, _DWORD *)",
+    "signature": "int(float *xy, int *input_state)",
     "size": 716,
     "thunk": false
   },
@@ -7446,7 +7446,7 @@
     "external": false,
     "library": false,
     "name": "ui_list_widget_update",
-    "signature": "int __cdecl(float *, int)",
+    "signature": "int(float *xy, char *list)",
     "size": 1420,
     "thunk": false
   },
@@ -7694,7 +7694,7 @@
     "calls": [
       "__ftol",
       "crt_sprintf",
-      "sub_406180",
+      "format_ordinal",
       "sub_4411C0",
       "sub_441220",
       "sub_441270",
@@ -7704,7 +7704,7 @@
     "external": false,
     "library": false,
     "name": "ui_text_input_render",
-    "signature": "void __usercall(int@<ebx>, int@<ebp>, int@<edi>, float@<esi>, int, int, float, int, int, int, int, int)",
+    "signature": "void(void *input_state, float y, float alpha)",
     "size": 3504,
     "thunk": false
   },
@@ -7718,7 +7718,7 @@
     "external": false,
     "library": false,
     "name": "ui_update_notice_update",
-    "signature": "char __cdecl(float *, float)",
+    "signature": "void(float *xy, float alpha)",
     "size": 614,
     "thunk": false
   },
@@ -7876,7 +7876,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004443c0",
-    "signature": "char __cdecl(float *, char)",
+    "signature": "int(float *arg1, char arg2)",
     "size": 1033,
     "thunk": false
   },
@@ -7934,7 +7934,7 @@
     "external": false,
     "library": false,
     "name": "creature_spawn_tinted",
-    "signature": "int __cdecl(int, int *, int)",
+    "signature": "int(float *pos, float *rgba, int type_id)",
     "size": 364,
     "thunk": false
   },
@@ -7954,7 +7954,7 @@
     "external": false,
     "library": false,
     "name": "player_fire_weapon",
-    "signature": "void __cdecl(int *, char, char)",
+    "signature": "void(char param_1, char param_2)",
     "size": 1518,
     "thunk": false
   },
@@ -7984,7 +7984,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004451b0",
-    "signature": "char *()",
+    "signature": "void *()",
     "size": 345,
     "thunk": false
   },
@@ -7995,7 +7995,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00445310",
-    "signature": "char __cdecl(const char *, int)",
+    "signature": "int(char *arg1, int arg2)",
     "size": 110,
     "thunk": false
   },
@@ -8012,7 +8012,7 @@
     "external": false,
     "library": false,
     "name": "creature_name_assign_random",
-    "signature": "int __cdecl(int)",
+    "signature": "void(int creature_id)",
     "size": 522,
     "thunk": false
   },
@@ -8023,7 +8023,7 @@
     "external": false,
     "library": false,
     "name": "creature_find_by_name",
-    "signature": "int __cdecl(const char *)",
+    "signature": "int(char *name)",
     "size": 98,
     "thunk": false
   },
@@ -8034,7 +8034,7 @@
     "external": false,
     "library": false,
     "name": "creature_name_draw_labels",
-    "signature": "char()",
+    "signature": "void()",
     "size": 434,
     "thunk": false
   },
@@ -8067,7 +8067,7 @@
     "external": false,
     "library": false,
     "name": "survival_gameplay_update_and_render",
-    "signature": "int()",
+    "signature": "void()",
     "size": 2082,
     "thunk": false
   },
@@ -8089,7 +8089,7 @@
     "external": false,
     "library": false,
     "name": "input_any_key_pressed",
-    "signature": "char()",
+    "signature": "int()",
     "size": 40,
     "thunk": false
   },
@@ -8100,7 +8100,7 @@
     "external": false,
     "library": false,
     "name": "input_primary_just_pressed",
-    "signature": "char __cdecl()",
+    "signature": "int()",
     "size": 188,
     "thunk": false
   },
@@ -8111,7 +8111,7 @@
     "external": false,
     "library": false,
     "name": "input_primary_is_down",
-    "signature": "BOOL()",
+    "signature": "int()",
     "size": 74,
     "thunk": false
   },
@@ -8144,7 +8144,7 @@
     "external": false,
     "library": false,
     "name": "ui_elements_reset_state",
-    "signature": "int *()",
+    "signature": "void()",
     "size": 31,
     "thunk": false
   },
@@ -8175,7 +8175,7 @@
     "external": false,
     "library": false,
     "name": "game_state_set",
-    "signature": "char __cdecl(int)",
+    "signature": "void(int state_id)",
     "size": 1854,
     "thunk": false
   },
@@ -8224,7 +8224,7 @@
     "end": "0x00447382",
     "external": false,
     "library": false,
-    "name": "sub_447370",
+    "name": "ui_menu_main_click_options",
     "signature": "void()",
     "size": 18,
     "thunk": false
@@ -8250,7 +8250,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004473e0",
-    "signature": "void()",
+    "signature": "int()",
     "size": 18,
     "thunk": false
   },
@@ -8260,7 +8260,7 @@
     "end": "0x00447412",
     "external": false,
     "library": false,
-    "name": "sub_447400",
+    "name": "ui_menu_main_click_play_game",
     "signature": "void()",
     "size": 18,
     "thunk": false
@@ -8272,7 +8272,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00447420",
-    "signature": "char()",
+    "signature": "int()",
     "size": 45,
     "thunk": false
   },
@@ -8284,8 +8284,8 @@
     "end": "0x0044748D",
     "external": false,
     "library": false,
-    "name": "sub_447450",
-    "signature": "char()",
+    "name": "ui_menu_main_click_quit",
+    "signature": "void()",
     "size": 61,
     "thunk": false
   },
@@ -8321,8 +8321,8 @@
     "end": "0x004475B9",
     "external": false,
     "library": false,
-    "name": "FUN_00447580",
-    "signature": "char()",
+    "name": "config_apply_detail_preset",
+    "signature": "void()",
     "size": 57,
     "thunk": false
   },
@@ -8332,8 +8332,8 @@
       "FUN_0043d9b0",
       "FUN_004473e0",
       "FUN_00447420",
-      "FUN_00447580",
       "__ftol",
+      "config_apply_detail_preset",
       "crt_atexit",
       "ui_button_update",
       "ui_checkbox_update"
@@ -8419,7 +8419,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00447c90",
-    "signature": "char *__cdecl(int)",
+    "signature": "int(int arg1)",
     "size": 58,
     "thunk": false
   },
@@ -8430,7 +8430,7 @@
     "external": false,
     "library": false,
     "name": "input_scheme_label",
-    "signature": "char *__cdecl(int)",
+    "signature": "char *(int scheme)",
     "size": 53,
     "thunk": false
   },
@@ -8608,7 +8608,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0044ecf0",
-    "signature": "float *__thiscall(float *this, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 26,
     "thunk": false
   },
@@ -8795,7 +8795,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0044faa0",
-    "signature": "char __cdecl(int)",
+    "signature": "char *(char *arg1)",
     "size": 173,
     "thunk": false
   },
@@ -8806,7 +8806,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0044fb50",
-    "signature": "int __cdecl(int)",
+    "signature": "float(float arg1)",
     "size": 288,
     "thunk": false
   },
@@ -8848,7 +8848,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_layout_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 7237,
     "thunk": false
   },
@@ -8881,7 +8881,7 @@
     "external": false,
     "library": false,
     "name": "weapon_table_init",
-    "signature": "unsigned int()",
+    "signature": "void()",
     "size": 4885,
     "thunk": false
   },
@@ -8909,7 +8909,7 @@
     "external": false,
     "library": false,
     "name": "weapon_assign_player",
-    "signature": "int __cdecl(int, int)",
+    "signature": "void(int player_index, int weapon_id)",
     "size": 254,
     "thunk": false
   },
@@ -8922,7 +8922,7 @@
     "external": false,
     "library": false,
     "name": "weapon_refresh_available",
-    "signature": "bool __fastcall(std::codecvt_base *)",
+    "signature": "void()",
     "size": 161,
     "thunk": false
   },
@@ -8933,7 +8933,7 @@
     "external": false,
     "library": false,
     "name": "float_near_equal",
-    "signature": "BOOL __cdecl(float, float)",
+    "signature": "int(float a, float b)",
     "size": 45,
     "thunk": false
   },
@@ -9456,7 +9456,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454303",
-    "signature": "int __stdcall(int, float, float, float)",
+    "signature": "float *(float *arg1, float arg2, float arg3, float arg4)",
     "size": 46,
     "thunk": false
   },
@@ -9481,7 +9481,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0045438d",
-    "signature": "int __stdcall(int, float, float, float)",
+    "signature": "float *(float *arg1, float arg2, float arg3, float arg4)",
     "size": 46,
     "thunk": false
   },
@@ -9506,7 +9506,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454417",
-    "signature": "int __stdcall(int, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 28,
     "thunk": false
   },
@@ -9517,7 +9517,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454433",
-    "signature": "float *__stdcall(float *, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 122,
     "thunk": false
   },
@@ -9531,7 +9531,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004544ad",
-    "signature": "int __stdcall(int, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 28,
     "thunk": false
   },
@@ -9542,7 +9542,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004544c9",
-    "signature": "float *__stdcall(float *, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 123,
     "thunk": false
   },
@@ -9556,7 +9556,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454544",
-    "signature": "int __stdcall(int, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 28,
     "thunk": false
   },
@@ -9567,7 +9567,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454560",
-    "signature": "float *__stdcall(float *, float)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 124,
     "thunk": false
   },
@@ -9581,7 +9581,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004545dc",
-    "signature": "int __stdcall(int, int, float)",
+    "signature": "float *(float *arg1, float *arg2, float arg3)",
     "size": 32,
     "thunk": false
   },
@@ -9594,7 +9594,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004545fc",
-    "signature": "float *__stdcall(float *, float *, float)",
+    "signature": "float *(float *arg1, float arg2, float arg3)",
     "size": 258,
     "thunk": false
   },
@@ -9643,7 +9643,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004547f3",
-    "signature": "int __stdcall(int, float, float, float)",
+    "signature": "float *(float *arg1, float arg2, float arg3, float arg4)",
     "size": 46,
     "thunk": false
   },
@@ -9722,7 +9722,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454b44",
-    "signature": "int __stdcall(int, int, float)",
+    "signature": "float *(float *arg1, float *arg2, float arg3)",
     "size": 32,
     "thunk": false
   },
@@ -9735,7 +9735,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454b64",
-    "signature": "float *__stdcall(float *, int, float)",
+    "signature": "float *(float arg1, float arg2, float arg3)",
     "size": 92,
     "thunk": false
   },
@@ -9749,7 +9749,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454bc0",
-    "signature": "int __stdcall(int, float, float, float)",
+    "signature": "float *(float *arg1, float arg2, float arg3, float arg4)",
     "size": 46,
     "thunk": false
   },
@@ -9867,7 +9867,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454f03",
-    "signature": "int __stdcall(_DWORD, _DWORD)",
+    "signature": "int()",
     "size": 6,
     "thunk": true
   },
@@ -9892,7 +9892,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00454f87",
-    "signature": "int __stdcall(_DWORD, _DWORD)",
+    "signature": "int()",
     "size": 6,
     "thunk": true
   },
@@ -9919,7 +9919,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455028",
-    "signature": "int __stdcall(int, int, int, float)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3, float arg4)",
     "size": 36,
     "thunk": false
   },
@@ -10107,7 +10107,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455587",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "int *(int *arg1, float arg2)",
     "size": 141,
     "thunk": false
   },
@@ -10118,7 +10118,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455614",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 107,
     "thunk": false
   },
@@ -10131,7 +10131,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0045567f",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 128,
     "thunk": false
   },
@@ -10142,7 +10142,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004556ff",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 60,
     "thunk": false
   },
@@ -10155,7 +10155,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0045573b",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 160,
     "thunk": false
   },
@@ -10168,7 +10168,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004557db",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 191,
     "thunk": false
   },
@@ -10197,7 +10197,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455a27",
-    "signature": "float *__stdcall(float *, float *, int, int, int, int)",
+    "signature": "float *(float *arg1, float *arg2, int *arg3, int *arg4, int *arg5, int *arg6)",
     "size": 390,
     "thunk": false
   },
@@ -10210,7 +10210,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455bcd",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "float *(float *arg1, float arg2)",
     "size": 185,
     "thunk": false
   },
@@ -10224,7 +10224,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00455c86",
-    "signature": "int __stdcall(int, float, float, float)",
+    "signature": "int(int arg1, float arg2, float arg3, float arg4)",
     "size": 57,
     "thunk": false
   },
@@ -10354,7 +10354,7 @@
     "external": false,
     "library": false,
     "name": "renderer_select_backend",
-    "signature": "int __stdcall(int Data)",
+    "signature": "int(int reset)",
     "size": 221,
     "thunk": false
   },
@@ -10466,7 +10466,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00456eec",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "float *(float *arg1, float *arg2)",
     "size": 202,
     "thunk": false
   },
@@ -10477,7 +10477,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00456fb6",
-    "signature": "_BYTE *__stdcall(_BYTE *, _BYTE *, _BYTE *)",
+    "signature": "int(int arg1, int arg2, void *arg3)",
     "size": 227,
     "thunk": false
   },
@@ -10488,7 +10488,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00457099",
-    "signature": "char *__stdcall(char *, char *, char *)",
+    "signature": "void *(void *arg1, int arg2, int arg3)",
     "size": 142,
     "thunk": false
   },
@@ -11678,7 +11678,7 @@
     "external": false,
     "library": false,
     "name": "mat4_invert",
-    "signature": "int __stdcall(__m64 *, _DWORD *, __m64 *)",
+    "signature": "float *(float *out, float *det_out, float *mat)",
     "size": 820,
     "thunk": false
   },
@@ -11768,7 +11768,7 @@
     "external": false,
     "library": false,
     "name": "vec3_transform_coord",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "float *(float *out, float *vec, float *mat)",
     "size": 139,
     "thunk": false
   },
@@ -11779,7 +11779,7 @@
     "external": false,
     "library": false,
     "name": "mat4_mul",
-    "signature": "__m64 *__userpurge@<eax>(__m64@<mm2>, __m64@<mm3>, __m64 *, __m64 *, __m64 *)",
+    "signature": "float *(float *out, float *lhs, float *rhs)",
     "size": 455,
     "thunk": false
   },
@@ -11804,7 +11804,7 @@
     "external": false,
     "library": false,
     "name": "vec3_project",
-    "signature": "__m64 *__userpurge@<eax>(__m64@<mm2>, __m64@<mm3>, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "float *(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
     "size": 360,
     "thunk": false
   },
@@ -11819,7 +11819,7 @@
     "external": false,
     "library": false,
     "name": "vec3_unproject",
-    "signature": "__m64 *__userpurge@<eax>(__m64@<mm2>, __m64@<mm3>, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "float *(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
     "size": 518,
     "thunk": false
   },
@@ -12174,7 +12174,7 @@
     "external": false,
     "library": true,
     "name": "crt_onexit",
-    "signature": "_onexit_t __cdecl(_onexit_t Func)",
+    "signature": "void *(void *func)",
     "size": 126,
     "thunk": false
   },
@@ -12187,7 +12187,7 @@
     "external": false,
     "library": true,
     "name": "crt_atexit",
-    "signature": "int __cdecl(void (__cdecl *)())",
+    "signature": "int(void *func)",
     "size": 18,
     "thunk": false
   },
@@ -12214,7 +12214,7 @@
     "external": false,
     "library": false,
     "name": "crt_free",
-    "signature": "int __cdecl(LPVOID lpMem)",
+    "signature": "void(void *ptr)",
     "size": 11,
     "thunk": false
   },
@@ -12242,7 +12242,7 @@
     "external": false,
     "library": true,
     "name": "crt_fclose",
-    "signature": "int __cdecl(FILE *Stream)",
+    "signature": "int(FILE *fp)",
     "size": 49,
     "thunk": false
   },
@@ -12283,8 +12283,8 @@
     "end": "0x0046100E",
     "external": false,
     "library": true,
-    "name": "FUN_00460fac",
-    "signature": "char *__cdecl(char *Buffer, int MaxCount, FILE *Stream)",
+    "name": "crt_fgets",
+    "signature": "char *(char *dst, int dst_len, FILE *fp)",
     "size": 98,
     "thunk": false
   },
@@ -12299,7 +12299,7 @@
     "external": false,
     "library": true,
     "name": "crt_fsopen",
-    "signature": "FILE *__cdecl(const char *FileName, const char *Mode, int ShFlag)",
+    "signature": "FILE *(char *path, char *mode, uint share)",
     "size": 49,
     "thunk": false
   },
@@ -12312,7 +12312,7 @@
     "external": false,
     "library": true,
     "name": "crt_fopen",
-    "signature": "FILE *__cdecl(const char *FileName, const char *Mode)",
+    "signature": "FILE *(char *path, char *mode)",
     "size": 19,
     "thunk": false
   },
@@ -12350,7 +12350,7 @@
     "external": false,
     "library": true,
     "name": "crt_vsprintf",
-    "signature": "int __cdecl(char *const Buffer, const char *const Format, va_list ArgList)",
+    "signature": "int(char *dst, char *fmt, void *args)",
     "size": 81,
     "thunk": false
   },
@@ -12365,7 +12365,7 @@
     "external": false,
     "library": true,
     "name": "crt_atof_l",
-    "signature": "double __cdecl(const char *String)",
+    "signature": "double(void *locale, char *str)",
     "size": 87,
     "thunk": false
   },
@@ -12378,7 +12378,7 @@
     "external": false,
     "library": true,
     "name": "crt_ci_pow",
-    "signature": "",
+    "signature": "void()",
     "size": 25,
     "thunk": false
   },
@@ -12433,7 +12433,7 @@
     "external": false,
     "library": true,
     "name": "crt_strtok",
-    "signature": "char *__cdecl(char *String, const char *Delimiter)",
+    "signature": "char *(char *str, char *delim)",
     "size": 164,
     "thunk": false
   },
@@ -12460,7 +12460,7 @@
     "external": false,
     "library": true,
     "name": "crt_fflush",
-    "signature": "int __cdecl(FILE *Stream)",
+    "signature": "int(FILE *fp)",
     "size": 47,
     "thunk": false
   },
@@ -12474,7 +12474,7 @@
     "external": false,
     "library": true,
     "name": "crt_fflush_nolock",
-    "signature": "",
+    "signature": "int(FILE *fp)",
     "size": 46,
     "thunk": false
   },
@@ -12487,7 +12487,7 @@
     "external": false,
     "library": true,
     "name": "crt_flushbuf",
-    "signature": "",
+    "signature": "int(FILE *fp)",
     "size": 92,
     "thunk": false
   },
@@ -12517,7 +12517,7 @@
     "external": false,
     "library": true,
     "name": "crt_flushall",
-    "signature": "",
+    "signature": "int(int mode)",
     "size": 164,
     "thunk": false
   },
@@ -12532,7 +12532,7 @@
     "external": false,
     "library": false,
     "name": "crt_fwrite",
-    "signature": "size_t __cdecl(void *Buffer, size_t ElementSize, size_t ElementCount, FILE *Stream)",
+    "signature": "uint(void *ptr, uint size, uint count, FILE *fp)",
     "size": 47,
     "thunk": false
   },
@@ -12548,7 +12548,7 @@
     "external": false,
     "library": true,
     "name": "crt_fwrite_nolock",
-    "signature": "size_t __cdecl(const void *Buffer, size_t ElementSize, size_t ElementCount, FILE *Stream)",
+    "signature": "uint(void *ptr, uint size, uint count, FILE *fp)",
     "size": 266,
     "thunk": false
   },
@@ -12562,7 +12562,7 @@
     "external": false,
     "library": true,
     "name": "crt_sprintf",
-    "signature": "int(char *const Buffer, const char *const Format, ...)",
+    "signature": "int(char *dst, char *fmt, ...)",
     "size": 82,
     "thunk": false
   },
@@ -12575,7 +12575,7 @@
     "external": false,
     "library": true,
     "name": "crt_srand",
-    "signature": "void __cdecl(unsigned int Seed)",
+    "signature": "void(uint seed)",
     "size": 13,
     "thunk": false
   },
@@ -12588,7 +12588,7 @@
     "external": false,
     "library": true,
     "name": "crt_rand",
-    "signature": "int __cdecl()",
+    "signature": "int()",
     "size": 34,
     "thunk": false
   },
@@ -12605,7 +12605,7 @@
     "external": false,
     "library": true,
     "name": "crt_findfirst",
-    "signature": "int __cdecl(LPCSTR lpFileName, int)",
+    "signature": "HANDLE(char *pattern, uint *finddata)",
     "size": 205,
     "thunk": false
   },
@@ -12622,7 +12622,7 @@
     "external": false,
     "library": true,
     "name": "crt_findnext",
-    "signature": "int __cdecl(HANDLE hFindFile, int)",
+    "signature": "int(HANDLE handle, uint *finddata)",
     "size": 200,
     "thunk": false
   },
@@ -12636,7 +12636,7 @@
     "external": false,
     "library": true,
     "name": "crt_findclose",
-    "signature": "int __cdecl(intptr_t FindHandle)",
+    "signature": "int(HANDLE handle)",
     "size": 32,
     "thunk": false
   },
@@ -12665,7 +12665,7 @@
     "external": false,
     "library": true,
     "name": "crt_ehvec_ctor",
-    "signature": "void __stdcall(void *, unsigned int, int, void (__thiscall *)(void *), void (__thiscall *)(void *))",
+    "signature": "void(void *ptr, uint size, int count, void *ctor, void *dtor)",
     "size": 130,
     "thunk": false
   },
@@ -12679,7 +12679,7 @@
     "external": false,
     "library": true,
     "name": "crt_ehvec_dtor",
-    "signature": "void __stdcall(void *, unsigned int, int, void (__thiscall *)(void *))",
+    "signature": "void(void *ptr, uint size, int count, void *dtor)",
     "size": 128,
     "thunk": false
   },
@@ -12692,7 +12692,7 @@
     "external": false,
     "library": true,
     "name": "crt_array_unwind",
-    "signature": "void __stdcall(void *, unsigned int, int, void (__thiscall *)(void *))",
+    "signature": "void(void *ptr, uint size, int count, void *dtor)",
     "size": 94,
     "thunk": false
   },
@@ -12718,7 +12718,7 @@
     "external": false,
     "library": false,
     "name": "crt_fread",
-    "signature": "size_t __cdecl(void *Buffer, size_t ElementSize, size_t ElementCount, FILE *Stream)",
+    "signature": "uint(void *ptr, uint size, uint count, FILE *fp)",
     "size": 47,
     "thunk": false
   },
@@ -12733,7 +12733,7 @@
     "external": false,
     "library": true,
     "name": "crt_fread_nolock",
-    "signature": "size_t __cdecl(void *Buffer, size_t ElementSize, size_t ElementCount, FILE *Stream)",
+    "signature": "uint(void *ptr, uint size, uint count, FILE *fp)",
     "size": 232,
     "thunk": false
   },
@@ -12748,7 +12748,7 @@
     "external": false,
     "library": true,
     "name": "crt_ftell",
-    "signature": "int __cdecl(FILE *Stream)",
+    "signature": "int(FILE *fp)",
     "size": 34,
     "thunk": false
   },
@@ -12762,7 +12762,7 @@
     "external": false,
     "library": true,
     "name": "crt_ftell_nolock",
-    "signature": "",
+    "signature": "int(FILE *fp)",
     "size": 353,
     "thunk": false
   },
@@ -12777,7 +12777,7 @@
     "external": false,
     "library": true,
     "name": "crt_fseek",
-    "signature": "int __cdecl(FILE *Stream, int Offset, int Origin)",
+    "signature": "int(FILE *fp, int offset, int origin)",
     "size": 44,
     "thunk": false
   },
@@ -12793,7 +12793,7 @@
     "external": false,
     "library": true,
     "name": "crt_fseek_nolock",
-    "signature": "int __cdecl(int, int Offset, int Origin)",
+    "signature": "int(FILE *fp, int offset, int origin)",
     "size": 141,
     "thunk": false
   },
@@ -12807,7 +12807,7 @@
     "external": false,
     "library": true,
     "name": "crt_snprintf",
-    "signature": "int(char *const Buffer, const size_t BufferCount, const char *const Format, ...)",
+    "signature": "int(char *dst, int size, char *fmt, ...)",
     "size": 81,
     "thunk": false
   },
@@ -12824,7 +12824,7 @@
     "external": false,
     "library": true,
     "name": "crt_tolower",
-    "signature": "int __cdecl(int C)",
+    "signature": "int(int c)",
     "size": 111,
     "thunk": false
   },
@@ -12838,7 +12838,7 @@
     "external": false,
     "library": true,
     "name": "crt_tolower_l",
-    "signature": "int __cdecl(int C)",
+    "signature": "int(void *locale, int c)",
     "size": 203,
     "thunk": false
   },
@@ -12894,7 +12894,7 @@
     "external": false,
     "library": true,
     "name": "crt_toupper",
-    "signature": "int __cdecl(int C)",
+    "signature": "int(int c)",
     "size": 111,
     "thunk": false
   },
@@ -12908,7 +12908,7 @@
     "external": false,
     "library": true,
     "name": "crt_toupper_l",
-    "signature": "int __cdecl(int C)",
+    "signature": "int(void *locale, int c)",
     "size": 204,
     "thunk": false
   },
@@ -12927,7 +12927,7 @@
     "external": false,
     "library": true,
     "name": "crt_beginthread",
-    "signature": "uintptr_t __cdecl(_beginthread_proc_type StartAddress, unsigned int StackSize, void *ArgList)",
+    "signature": "void *(void *start, unsigned int stack_size, void *arg)",
     "size": 119,
     "thunk": false
   },
@@ -12947,7 +12947,7 @@
     "external": false,
     "library": false,
     "name": "crt_thread_entry",
-    "signature": "void __stdcall __noreturn(_DWORD *lpThreadParameter)",
+    "signature": "unsigned int(void *thread_data)",
     "size": 135,
     "thunk": false
   },
@@ -12965,7 +12965,7 @@
     "external": false,
     "library": true,
     "name": "crt_endthread",
-    "signature": "void __cdecl()",
+    "signature": "void()",
     "size": 61,
     "thunk": false
   },
@@ -12981,7 +12981,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004623b2",
-    "signature": "__time32_t __cdecl(__time32_t *const Time)",
+    "signature": "int(int *arg1)",
     "size": 220,
     "thunk": false
   },
@@ -12996,7 +12996,7 @@
     "external": false,
     "library": true,
     "name": "crt_getcwd",
-    "signature": "char *__cdecl(char *DstBuf, int SizeInBytes)",
+    "signature": "char *(char *buf, unsigned int size)",
     "size": 39,
     "thunk": false
   },
@@ -13015,7 +13015,7 @@
     "external": false,
     "library": true,
     "name": "crt_getdcwd",
-    "signature": "int __cdecl(CHAR FileName, int, int)",
+    "signature": "char *(int drive, char *buf, unsigned int size)",
     "size": 213,
     "thunk": false
   },
@@ -13028,7 +13028,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046258a",
-    "signature": "int __cdecl(CHAR RootPathName)",
+    "signature": "int(int arg1)",
     "size": 55,
     "thunk": false
   },
@@ -13048,7 +13048,7 @@
     "external": false,
     "library": false,
     "name": "crt_free_base",
-    "signature": "void __cdecl(LPVOID lpMem)",
+    "signature": "void(void *ptr)",
     "size": 233,
     "thunk": false
   },
@@ -13077,7 +13077,7 @@
     "external": false,
     "library": false,
     "name": "crt_realloc",
-    "signature": "void *__cdecl(LPVOID lpMem, SIZE_T dwBytes)",
+    "signature": "void *(void *ptr, size_t size)",
     "size": 815,
     "thunk": false
   },
@@ -13122,7 +13122,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00462a17",
-    "signature": "LPVOID __cdecl(unsigned int)",
+    "signature": "void *(uint arg1)",
     "size": 252,
     "thunk": false
   },
@@ -13147,7 +13147,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00462ba0",
-    "signature": "int(const char *const Buffer, const char *const Format, ...)",
+    "signature": "int(char *arg1, char *arg2)",
     "size": 52,
     "thunk": false
   },
@@ -13161,7 +13161,7 @@
     "external": false,
     "library": true,
     "name": "crt_qsort",
-    "signature": "void __cdecl(void *Base, size_t NumOfElements, size_t SizeOfElements, _CoreCrtNonSecureSearchSortCompareFunction CompareFunction)",
+    "signature": "void(void *base, size_t num, size_t size, void *cmp)",
     "size": 340,
     "thunk": false
   },
@@ -13174,7 +13174,7 @@
     "external": false,
     "library": true,
     "name": "crt_shortsort",
-    "signature": "",
+    "signature": "void(char *lo, char *hi, size_t width, void *cmp)",
     "size": 78,
     "thunk": false
   },
@@ -13185,7 +13185,7 @@
     "external": false,
     "library": true,
     "name": "crt_swap",
-    "signature": "",
+    "signature": "void(char *a, char *b, size_t width)",
     "size": 44,
     "thunk": false
   },
@@ -13200,7 +13200,7 @@
     "external": false,
     "library": true,
     "name": "crt_getc",
-    "signature": "int __cdecl(FILE *Stream)",
+    "signature": "int(FILE *fp)",
     "size": 49,
     "thunk": false
   },
@@ -13242,7 +13242,7 @@
     "external": false,
     "library": true,
     "name": "crt_exit",
-    "signature": "void __cdecl __noreturn(int Code)",
+    "signature": "void(unsigned int code)",
     "size": 17,
     "thunk": false
   },
@@ -13273,7 +13273,7 @@
     "external": false,
     "library": true,
     "name": "crt_doexit",
-    "signature": "int __cdecl(UINT uExitCode, int, int)",
+    "signature": "void(unsigned int code, int full, int quick)",
     "size": 163,
     "thunk": false
   },
@@ -13323,7 +13323,7 @@
     "external": false,
     "library": true,
     "name": "crt_isalpha",
-    "signature": "int __cdecl(int C)",
+    "signature": "uint(void *this, int c)",
     "size": 46,
     "thunk": false
   },
@@ -13336,7 +13336,7 @@
     "external": false,
     "library": true,
     "name": "crt_isspace",
-    "signature": "int __cdecl(int C)",
+    "signature": "uint(void *this, int c)",
     "size": 40,
     "thunk": false
   },
@@ -13494,7 +13494,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00463325",
-    "signature": "",
+    "signature": "int(int arg1, void *arg2)",
     "size": 7,
     "thunk": false
   },
@@ -13505,7 +13505,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046332c",
-    "signature": "",
+    "signature": "int(int arg1, void *arg2)",
     "size": 7,
     "thunk": false
   },
@@ -13518,7 +13518,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00463333",
-    "signature": "void __stdcall(PVOID TargetFrame, PEXCEPTION_RECORD ExceptionRecord)",
+    "signature": "void *(int arg1, void *arg2)",
     "size": 79,
     "thunk": false
   },
@@ -13557,7 +13557,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046340c",
-    "signature": "enum _EXCEPTION_DISPOSITION __cdecl(struct EHExceptionRecord *, struct CatchGuardRN *, void *, void *)",
+    "signature": "int(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
     "size": 37,
     "thunk": false
   },
@@ -13584,7 +13584,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004634e7",
-    "signature": "enum _EXCEPTION_DISPOSITION __cdecl(PEXCEPTION_RECORD ExceptionRecord, PVOID TargetFrame, void *, void *)",
+    "signature": "int(EXCEPTION_RECORD *arg1, void *arg2, DWORD arg3)",
     "size": 117,
     "thunk": false
   },
@@ -13678,7 +13678,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004636c8",
-    "signature": "",
+    "signature": "void *()",
     "size": 31,
     "thunk": false
   },
@@ -13716,7 +13716,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00463737",
-    "signature": "int(void)",
+    "signature": "int()",
     "size": 41,
     "thunk": false
   },
@@ -13730,7 +13730,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00463760",
-    "signature": "",
+    "signature": "int(char *arg1)",
     "size": 90,
     "thunk": false
   },
@@ -13773,7 +13773,7 @@
     "external": false,
     "library": true,
     "name": "crt_fp_format_exp",
-    "signature": "",
+    "signature": "char *(char *dst, int precision, int caps, int *fp_info, int force_decimal)",
     "size": 194,
     "thunk": false
   },
@@ -13802,7 +13802,7 @@
     "external": false,
     "library": true,
     "name": "crt_fp_format_fixed",
-    "signature": "int __cdecl(char *Str, size_t Size, int, char)",
+    "signature": "char *(char *dst, size_t precision, int *fp_info, int force_decimal)",
     "size": 167,
     "thunk": false
   },
@@ -13847,7 +13847,7 @@
     "external": false,
     "library": true,
     "name": "crt_str_shift_right",
-    "signature": "int __cdecl(char *Str, int)",
+    "signature": "void(char *str, int count)",
     "size": 37,
     "thunk": false
   },
@@ -13865,7 +13865,7 @@
     "external": false,
     "library": false,
     "name": "crt_msize",
-    "signature": "SIZE_T __cdecl(_DWORD *lpMem)",
+    "signature": "size_t(void *ptr)",
     "size": 238,
     "thunk": false
   },
@@ -13878,7 +13878,7 @@
     "external": false,
     "library": true,
     "name": "crt_isctype",
-    "signature": "int __cdecl(int C, int Type)",
+    "signature": "uint(void *this, int c, uint mask)",
     "size": 117,
     "thunk": false
   },
@@ -13919,7 +13919,7 @@
     "external": false,
     "library": true,
     "name": "crt_lock_file",
-    "signature": "void __cdecl(FILE *Stream)",
+    "signature": "void(FILE *fp)",
     "size": 47,
     "thunk": false
   },
@@ -13933,7 +13933,7 @@
     "external": false,
     "library": true,
     "name": "crt_lock_file2",
-    "signature": "",
+    "signature": "void(int stream_index, FILE *fp)",
     "size": 35,
     "thunk": false
   },
@@ -13947,7 +13947,7 @@
     "external": false,
     "library": true,
     "name": "crt_unlock_file",
-    "signature": "void __cdecl(FILE *Stream)",
+    "signature": "void(FILE *fp)",
     "size": 47,
     "thunk": false
   },
@@ -13961,7 +13961,7 @@
     "external": false,
     "library": true,
     "name": "crt_unlock_file2",
-    "signature": "",
+    "signature": "void(int stream_index, FILE *fp)",
     "size": 35,
     "thunk": false
   },
@@ -13978,7 +13978,7 @@
     "external": false,
     "library": true,
     "name": "crt_close",
-    "signature": "int __cdecl(int FileHandle)",
+    "signature": "int(int fd)",
     "size": 93,
     "thunk": false
   },
@@ -13995,7 +13995,7 @@
     "external": false,
     "library": true,
     "name": "crt_close_nolock",
-    "signature": "int __cdecl(int FileHandle)",
+    "signature": "int(int fd)",
     "size": 131,
     "thunk": false
   },
@@ -14022,7 +14022,7 @@
     "external": false,
     "library": true,
     "name": "crt_filbuf",
-    "signature": "int __cdecl(FILE *File)",
+    "signature": "int(FILE *fp)",
     "size": 220,
     "thunk": false
   },
@@ -14035,7 +14035,7 @@
     "external": false,
     "library": true,
     "name": "crt_openfile",
-    "signature": "int __cdecl(char *FileName, int, int ShareFlag, int)",
+    "signature": "FILE *(char *filename, char *mode, int shflag, FILE *stream)",
     "size": 368,
     "thunk": false
   },
@@ -14054,7 +14054,7 @@
     "external": false,
     "library": true,
     "name": "crt_getstream",
-    "signature": "",
+    "signature": "FILE *()",
     "size": 200,
     "thunk": false
   },
@@ -14070,7 +14070,7 @@
     "external": false,
     "library": true,
     "name": "crt_flsbuf",
-    "signature": "int __cdecl(int Ch, FILE *File)",
+    "signature": "int(int ch, FILE *fp)",
     "size": 280,
     "thunk": false
   },
@@ -14095,7 +14095,7 @@
     "external": false,
     "library": false,
     "name": "crt_output",
-    "signature": "int __cdecl(FILE *File, char *, int)",
+    "signature": "int(FILE *stream, char *format, void *args)",
     "size": 1918,
     "thunk": false
   },
@@ -14108,7 +14108,7 @@
     "external": false,
     "library": true,
     "name": "crt_putc_nolock",
-    "signature": "int __cdecl(int, FILE *File, int)",
+    "signature": "void(int ch, FILE *fp, int *count)",
     "size": 53,
     "thunk": false
   },
@@ -14121,7 +14121,7 @@
     "external": false,
     "library": true,
     "name": "crt_putc_repeat_nolock",
-    "signature": "int __cdecl(int, int, FILE *File, int)",
+    "signature": "void(int ch, int count, FILE *fp, int *out_count)",
     "size": 49,
     "thunk": false
   },
@@ -14134,7 +14134,7 @@
     "external": false,
     "library": true,
     "name": "crt_putc_buffer_nolock",
-    "signature": "int __cdecl(int, int, FILE *File, int)",
+    "signature": "void(char *buf, int count, FILE *fp, int *out_count)",
     "size": 56,
     "thunk": false
   },
@@ -14145,7 +14145,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00464bbc",
-    "signature": "",
+    "signature": "int(int *arg1)",
     "size": 13,
     "thunk": false
   },
@@ -14156,7 +14156,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00464bc9",
-    "signature": "",
+    "signature": "int(int *arg1)",
     "size": 16,
     "thunk": false
   },
@@ -14167,7 +14167,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00464bd9",
-    "signature": "",
+    "signature": "void *(int *arg1)",
     "size": 14,
     "thunk": false
   },
@@ -14400,7 +14400,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004652bc",
-    "signature": "int __cdecl(double, double, int)",
+    "signature": "int(double arg1, int arg2, int arg3, double *arg4)",
     "size": 304,
     "thunk": false
   },
@@ -14443,7 +14443,7 @@
     "external": false,
     "library": true,
     "name": "crt_init_thread_data",
-    "signature": "",
+    "signature": "void(void *ptd)",
     "size": 19,
     "thunk": false
   },
@@ -14497,7 +14497,7 @@
     "external": false,
     "library": true,
     "name": "crt_commit",
-    "signature": "int __cdecl(int FileHandle)",
+    "signature": "int(int fd)",
     "size": 147,
     "thunk": false
   },
@@ -14514,7 +14514,7 @@
     "external": false,
     "library": true,
     "name": "crt_write",
-    "signature": "int __cdecl(int FileHandle, const void *Buf, unsigned int MaxCharCount)",
+    "signature": "int(int fd, char *buf, unsigned int count)",
     "size": 101,
     "thunk": false
   },
@@ -14532,7 +14532,7 @@
     "external": false,
     "library": true,
     "name": "crt_write_nolock",
-    "signature": "int __cdecl(int FileHandle, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite)",
+    "signature": "int(int fd, char *buf, unsigned int count)",
     "size": 395,
     "thunk": false
   },
@@ -14588,7 +14588,7 @@
     "external": false,
     "library": true,
     "name": "crt_bufcpy",
-    "signature": "void *__cdecl(void *, const void *Src, size_t Size)",
+    "signature": "void *(void *dst, void *src, size_t size)",
     "size": 821,
     "thunk": false
   },
@@ -14599,7 +14599,7 @@
     "external": false,
     "library": true,
     "name": "crt_strcpy",
-    "signature": "char *__cdecl(char *Destination, const char *Source)",
+    "signature": "char *(char *dst, char *src)",
     "size": 7,
     "thunk": false
   },
@@ -14610,7 +14610,7 @@
     "external": false,
     "library": true,
     "name": "crt_strcat",
-    "signature": "char *__cdecl(char *Destination, const char *Source)",
+    "signature": "char *(char *dst, char *src)",
     "size": 224,
     "thunk": false
   },
@@ -14624,7 +14624,7 @@
     "external": false,
     "library": false,
     "name": "crt_dosmaperr",
-    "signature": "int *__cdecl(unsigned int)",
+    "signature": "void(uint os_error)",
     "size": 115,
     "thunk": false
   },
@@ -14637,7 +14637,7 @@
     "external": false,
     "library": true,
     "name": "crt_errno_ptr",
-    "signature": "int *__cdecl()",
+    "signature": "int *()",
     "size": 9,
     "thunk": false
   },
@@ -14650,7 +14650,7 @@
     "external": false,
     "library": true,
     "name": "crt_doserrno_ptr",
-    "signature": "unsigned int *__cdecl()",
+    "signature": "unsigned int *()",
     "size": 9,
     "thunk": false
   },
@@ -14664,7 +14664,7 @@
     "external": false,
     "library": true,
     "name": "crt_mktime",
-    "signature": "",
+    "signature": "int(int year, int month, int day, int hour, int min, int sec, int dst)",
     "size": 194,
     "thunk": false
   },
@@ -14705,7 +14705,7 @@
     "external": false,
     "library": true,
     "name": "crt_terminate",
-    "signature": "void __cdecl __noreturn()",
+    "signature": "void()",
     "size": 97,
     "thunk": false
   },
@@ -14718,7 +14718,7 @@
     "external": false,
     "library": false,
     "name": "crt_invalid_parameter_noinfo_noreturn",
-    "signature": "void __thiscall __noreturn(EXCEPTION_POINTERS *this)",
+    "signature": "void()",
     "size": 86,
     "thunk": false
   },
@@ -14735,7 +14735,7 @@
     "external": false,
     "library": true,
     "name": "crt_read",
-    "signature": "int __cdecl(int FileHandle, void *DstBuf, unsigned int MaxCharCount)",
+    "signature": "int(int fd, char *buf, unsigned int count)",
     "size": 101,
     "thunk": false
   },
@@ -14753,7 +14753,7 @@
     "external": false,
     "library": true,
     "name": "crt_read_nolock",
-    "signature": "int __cdecl(int FileHandle, LPVOID lpBuffer, DWORD nNumberOfBytesToRead)",
+    "signature": "int(int fd, char *buf, unsigned int count)",
     "size": 473,
     "thunk": false
   },
@@ -14788,7 +14788,7 @@
     "external": false,
     "library": true,
     "name": "crt_lseek",
-    "signature": "int __cdecl(int FileHandle, int Offset, int Origin)",
+    "signature": "int(int fd, int offset, int origin)",
     "size": 101,
     "thunk": false
   },
@@ -14805,7 +14805,7 @@
     "external": false,
     "library": true,
     "name": "crt_lseek_nolock",
-    "signature": "int __cdecl(int FileHandle, LONG lDistanceToMove, DWORD dwMoveMethod)",
+    "signature": "int(int fd, int offset, int origin)",
     "size": 115,
     "thunk": false
   },
@@ -14823,7 +14823,7 @@
     "external": false,
     "library": true,
     "name": "crt_lcmap_string",
-    "signature": "int __cdecl(LCID Locale, DWORD dwMapFlags, LPCSTR lpSrcStr, int cchSrc, LPSTR lpDestStr, int cchDest, UINT CodePage, int)",
+    "signature": "int(unsigned int locale, unsigned int flags, char *src, int srclen, unsigned __int16 *dst, int dstlen, unsigned int codepage, int use_cp)",
     "size": 548,
     "thunk": false
   },
@@ -14837,7 +14837,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004666f5",
-    "signature": "",
+    "signature": "int(int *arg1)",
     "size": 141,
     "thunk": false
   },
@@ -14870,7 +14870,7 @@
     "external": false,
     "library": false,
     "name": "crt_calloc",
-    "signature": "int __cdecl(int, int)",
+    "signature": "void *(unsigned int count, unsigned int size)",
     "size": 317,
     "thunk": false
   },
@@ -14885,7 +14885,7 @@
     "external": false,
     "library": true,
     "name": "crt_exception_filter",
-    "signature": "int __cdecl(int, struct _EXCEPTION_POINTERS *ExceptionInfo)",
+    "signature": "int(int code, _EXCEPTION_POINTERS *info)",
     "size": 318,
     "thunk": false
   },
@@ -14909,7 +14909,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00466a61",
-    "signature": "char __cdecl(int)",
+    "signature": "void *(int *arg1)",
     "size": 45,
     "thunk": false
   },
@@ -14971,7 +14971,7 @@
     "external": false,
     "library": true,
     "name": "crt_sbh_find_region",
-    "signature": "",
+    "signature": "void *(void *ptr)",
     "size": 43,
     "thunk": false
   },
@@ -14986,7 +14986,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00466ca6",
-    "signature": "_DWORD *__cdecl(_DWORD *, int)",
+    "signature": "int *(void *arg1, int *arg2)",
     "size": 809,
     "thunk": false
   },
@@ -15000,7 +15000,7 @@
     "external": false,
     "library": true,
     "name": "crt_sbh_alloc",
-    "signature": "",
+    "signature": "void *(uint size)",
     "size": 777,
     "thunk": false
   },
@@ -15016,7 +15016,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004672d8",
-    "signature": "",
+    "signature": "int *()",
     "size": 177,
     "thunk": false
   },
@@ -15040,7 +15040,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00467484",
-    "signature": "",
+    "signature": "int(int *arg1, void **arg2, void *arg3)",
     "size": 758,
     "thunk": false
   },
@@ -15071,7 +15071,7 @@
     "external": false,
     "library": false,
     "name": "FUN_004678be",
-    "signature": "_UNKNOWN **__cdecl(LPVOID *lpMem)",
+    "signature": "BOOL(int *arg1)",
     "size": 86,
     "thunk": false
   },
@@ -15096,7 +15096,7 @@
     "external": false,
     "library": false,
     "name": "crt_sbh_find_block",
-    "signature": "unsigned int __cdecl(unsigned int, _DWORD *, unsigned int *)",
+    "signature": "void *(void *ptr, void **region_out, unsigned int *page_base)",
     "size": 87,
     "thunk": false
   },
@@ -15109,7 +15109,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00467a2d",
-    "signature": "void __cdecl(int, int, _BYTE *)",
+    "signature": "void *(void *arg1, int arg2, char *arg3)",
     "size": 69,
     "thunk": false
   },
@@ -15125,7 +15125,7 @@
     "external": false,
     "library": false,
     "name": "crt_sbh_alloc_units",
-    "signature": "_DWORD *__cdecl(unsigned int)",
+    "signature": "void *(uint blocks)",
     "size": 520,
     "thunk": false
   },
@@ -15147,7 +15147,7 @@
     "external": false,
     "library": false,
     "name": "FUN_00467d9e",
-    "signature": "int __cdecl(int, _DWORD *, _BYTE *, unsigned int)",
+    "signature": "int(void *arg1, void **arg2, char *arg3, int arg4)",
     "size": 169,
     "thunk": false
   },
@@ -15158,7 +15158,7 @@
     "external": false,
     "library": true,
     "name": "crt_call_new_handler",
-    "signature": "int __cdecl(size_t Size)",
+    "signature": "int(size_t size)",
     "size": 27,
     "thunk": false
   },
@@ -15207,7 +15207,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004688be",
-    "signature": "int __cdecl(FILE *Stream)",
+    "signature": "uint(int *arg1)",
     "size": 26,
     "thunk": false
   },
@@ -15234,7 +15234,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004688ef",
-    "signature": "int __cdecl(int, FILE *Stream)",
+    "signature": "uint(int *arg1, int *arg2)",
     "size": 36,
     "thunk": false
   },
@@ -15248,7 +15248,7 @@
     "external": false,
     "library": true,
     "name": "crt_skip_program_name",
-    "signature": "",
+    "signature": "unsigned __int8 *()",
     "size": 88,
     "thunk": false
   },
@@ -15314,7 +15314,7 @@
     "external": false,
     "library": true,
     "name": "crt_get_environment_strings",
-    "signature": "",
+    "signature": "char *()",
     "size": 306,
     "thunk": false
   },
@@ -15424,7 +15424,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046953d",
-    "signature": "errno_t __cdecl(int Value)",
+    "signature": "int *(int *arg1)",
     "size": 40,
     "thunk": false
   },
@@ -15483,7 +15483,7 @@
     "external": false,
     "library": true,
     "name": "crt_cxx_frame_handler",
-    "signature": "",
+    "signature": "int(PEXCEPTION_RECORD record, PVOID frame, DWORD context, void *dispatcher, int *func_info, int try_level, PVOID handler_data, char is_rethrow)",
     "size": 155,
     "thunk": false
   },
@@ -15532,7 +15532,7 @@
     "external": false,
     "library": true,
     "name": "FUN_004698f3",
-    "signature": "int __cdecl(const struct _s_HandlerType *, const struct _s_CatchableType *, const struct _s_ThrowInfo *)",
+    "signature": "int(char *arg1, char *arg2, int *arg3)",
     "size": 93,
     "thunk": false
   },
@@ -15614,7 +15614,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00469bae",
-    "signature": "void __cdecl(struct EHExceptionRecord *, struct EHRegistrationNode *, const struct _s_HandlerType *, const struct _s_CatchableType *)",
+    "signature": "void *(void *arg1, int arg2, char *arg3, char *arg4)",
     "size": 452,
     "thunk": false
   },
@@ -15627,7 +15627,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00469d72",
-    "signature": "",
+    "signature": "void *(void *arg1)",
     "size": 103,
     "thunk": false
   },
@@ -15711,7 +15711,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00469fb2",
-    "signature": "",
+    "signature": "int(int arg1, int arg2)",
     "size": 73,
     "thunk": false
   },
@@ -15724,7 +15724,7 @@
     "external": false,
     "library": true,
     "name": "FUN_00469ffb",
-    "signature": "",
+    "signature": "int(int arg1, int arg2)",
     "size": 86,
     "thunk": false
   },
@@ -15738,7 +15738,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a051",
-    "signature": "",
+    "signature": "int(int arg1, int *arg2)",
     "size": 140,
     "thunk": false
   },
@@ -15749,7 +15749,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a0dd",
-    "signature": "",
+    "signature": "int *(int arg1, int *arg2)",
     "size": 27,
     "thunk": false
   },
@@ -15760,7 +15760,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a0f8",
-    "signature": "",
+    "signature": "void(int *arg1)",
     "size": 12,
     "thunk": false
   },
@@ -15771,7 +15771,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a104",
-    "signature": "",
+    "signature": "int(int *arg1)",
     "size": 27,
     "thunk": false
   },
@@ -15782,7 +15782,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a11f",
-    "signature": "",
+    "signature": "int *(int *arg1, int arg2)",
     "size": 141,
     "thunk": false
   },
@@ -15799,7 +15799,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a1ac",
-    "signature": "",
+    "signature": "int(__int16 *arg1, int *arg2, int *arg3)",
     "size": 364,
     "thunk": false
   },
@@ -15812,7 +15812,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0046a318",
-    "signature": "int __cdecl(int, int)",
+    "signature": "int(__int16 *arg1, int *arg2)",
     "size": 22,
     "thunk": false
   },
@@ -15825,7 +15825,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0046a32e",
-    "signature": "int __cdecl(int, int)",
+    "signature": "int(__int16 *arg1, int *arg2)",
     "size": 22,
     "thunk": false
   },
@@ -15867,7 +15867,7 @@
     "external": false,
     "library": true,
     "name": "crt_fp_round_digits",
-    "signature": "int __cdecl(void *, int, int)",
+    "signature": "void(char *dst, int precision, int *fp_info)",
     "size": 119,
     "thunk": false
   },
@@ -15882,7 +15882,7 @@
     "external": false,
     "library": true,
     "name": "crt_fp_to_string",
-    "signature": "int __cdecl(char, int, int, char *Destination)",
+    "signature": "int *(double value, int *out, uint *digits)",
     "size": 92,
     "thunk": false
   },
@@ -15893,7 +15893,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a471",
-    "signature": "",
+    "signature": "int *(int *arg1, int *arg2)",
     "size": 182,
     "thunk": false
   },
@@ -15915,7 +15915,7 @@
     "external": false,
     "library": true,
     "name": "crt_memmove",
-    "signature": "void *__cdecl(void *, const void *Src, size_t Size)",
+    "signature": "void *(void *dst, void *src, size_t size)",
     "size": 821,
     "thunk": false
   },
@@ -15928,7 +15928,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046a8c5",
-    "signature": "",
+    "signature": "int()",
     "size": 7,
     "thunk": false
   },
@@ -15996,7 +15996,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046abbb",
-    "signature": "int __cdecl(int, HANDLE hHandle)",
+    "signature": "int(int arg1, HANDLE arg2)",
     "size": 124,
     "thunk": false
   },
@@ -16011,7 +16011,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046ac37",
-    "signature": "",
+    "signature": "int(int arg1)",
     "size": 127,
     "thunk": false
   },
@@ -16025,7 +16025,7 @@
     "external": false,
     "library": true,
     "name": "crt_get_osfhandle",
-    "signature": "intptr_t __cdecl(int FileHandle)",
+    "signature": "void *(int fd)",
     "size": 66,
     "thunk": false
   },
@@ -16041,7 +16041,7 @@
     "external": false,
     "library": true,
     "name": "crt_lock_fh",
-    "signature": "",
+    "signature": "void(uint fd)",
     "size": 95,
     "thunk": false
   },
@@ -16054,7 +16054,7 @@
     "external": false,
     "library": true,
     "name": "crt_unlock_fh",
-    "signature": "",
+    "signature": "void(uint fd)",
     "size": 34,
     "thunk": false
   },
@@ -16067,7 +16067,7 @@
     "external": false,
     "library": true,
     "name": "crt_file_buffer_init",
-    "signature": "",
+    "signature": "void(FILE *fp)",
     "size": 68,
     "thunk": false
   },
@@ -16093,7 +16093,7 @@
     "external": false,
     "library": true,
     "name": "crt_sopen",
-    "signature": "int(const char *FileName, int OpenFlag, int ShareFlag, ...)",
+    "signature": "int(char *filename, int oflag, int shflag, int pmode)",
     "size": 719,
     "thunk": false
   },
@@ -16172,7 +16172,7 @@
     "external": false,
     "library": true,
     "name": "crt_fp_parse",
-    "signature": "",
+    "signature": "int(void *ctx, ushort *out, int *cursor, byte *str, int flags, int width, int prec, int mode)",
     "size": 1185,
     "thunk": false
   },
@@ -16313,7 +16313,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046c4cb",
-    "signature": "",
+    "signature": "int *(int arg1, int *arg2, uint arg3)",
     "size": 208,
     "thunk": false
   },
@@ -16472,7 +16472,7 @@
     "external": false,
     "library": true,
     "name": "crt_chkstk",
-    "signature": "",
+    "signature": "void()",
     "size": 47,
     "thunk": false
   },
@@ -16485,7 +16485,7 @@
     "external": false,
     "library": true,
     "name": "crt_strtol_l",
-    "signature": "int __cdecl(const char *String, char **EndPtr, int Radix)",
+    "signature": "int(void *locale, char *str, char **endptr, int base)",
     "size": 23,
     "thunk": false
   },
@@ -16500,7 +16500,7 @@
     "external": false,
     "library": true,
     "name": "crt_strtoxl",
-    "signature": "",
+    "signature": "unsigned int(void *locale, char *str, char **endptr, int base, unsigned int flags)",
     "size": 517,
     "thunk": false
   },
@@ -16568,7 +16568,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d1ad",
-    "signature": "int __cdecl(unsigned int Ch)",
+    "signature": "int(char arg1)",
     "size": 17,
     "thunk": false
   },
@@ -16579,7 +16579,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d1be",
-    "signature": "",
+    "signature": "int(char arg1, int arg2, char arg3)",
     "size": 49,
     "thunk": false
   },
@@ -16598,7 +16598,7 @@
     "external": false,
     "library": true,
     "name": "crt_setmbcp",
-    "signature": "int __cdecl(int CodePage)",
+    "signature": "int(int codepage)",
     "size": 429,
     "thunk": false
   },
@@ -16646,7 +16646,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d442",
-    "signature": "",
+    "signature": "void *()",
     "size": 389,
     "thunk": false
   },
@@ -16659,7 +16659,7 @@
     "external": false,
     "library": true,
     "name": "crt_mbcs_init",
-    "signature": "",
+    "signature": "void()",
     "size": 28,
     "thunk": false
   },
@@ -16673,7 +16673,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d5e3",
-    "signature": "",
+    "signature": "int(int arg1, int arg2, int arg3)",
     "size": 137,
     "thunk": false
   },
@@ -16697,7 +16697,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d66f",
-    "signature": "LONG __stdcall(struct _EXCEPTION_POINTERS *ExceptionInfo)",
+    "signature": "int(int *arg1)",
     "size": 70,
     "thunk": false
   },
@@ -16779,7 +16779,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d723",
-    "signature": "int __cdecl(int Signal)",
+    "signature": "int(void *arg1)",
     "size": 386,
     "thunk": false
   },
@@ -16801,7 +16801,7 @@
     "external": false,
     "library": true,
     "name": "crt_add_u32_carry",
-    "signature": "",
+    "signature": "int(uint a, uint b, uint *out)",
     "size": 33,
     "thunk": false
   },
@@ -16825,7 +16825,7 @@
     "external": false,
     "library": true,
     "name": "crt_u96_shl1",
-    "signature": "",
+    "signature": "void(uint *value)",
     "size": 46,
     "thunk": false
   },
@@ -16836,7 +16836,7 @@
     "external": false,
     "library": true,
     "name": "crt_u96_shr1",
-    "signature": "",
+    "signature": "void(uint *value)",
     "size": 45,
     "thunk": false
   },
@@ -16850,7 +16850,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046d9bc",
-    "signature": "",
+    "signature": "int(char *arg1, int arg2, int arg3)",
     "size": 199,
     "thunk": false
   },
@@ -16890,7 +16890,7 @@
     "external": false,
     "library": true,
     "name": "crt_chsize",
-    "signature": "int __cdecl(int FileHandle, LONG lDistanceToMove)",
+    "signature": "int(int fd, int size)",
     "size": 293,
     "thunk": false
   },
@@ -16905,7 +16905,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046de3b",
-    "signature": "",
+    "signature": "__int16 *(__int16 *arg1, int *arg2)",
     "size": 544,
     "thunk": false
   },
@@ -16948,7 +16948,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046e160",
-    "signature": "int __cdecl(const char *String1, const char *String2, size_t MaxCount)",
+    "signature": "int(char *arg1, char *arg2, int arg3)",
     "size": 257,
     "thunk": false
   },
@@ -16989,7 +16989,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046e301",
-    "signature": "",
+    "signature": "int()",
     "size": 110,
     "thunk": false
   },
@@ -17040,7 +17040,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046e617",
-    "signature": "int __cdecl(char *Str, int)",
+    "signature": "int(char *arg1, int arg2)",
     "size": 391,
     "thunk": false
   },
@@ -17068,7 +17068,7 @@
     "external": false,
     "library": true,
     "name": "FUN_0046e7f6",
-    "signature": "",
+    "signature": "void *(int *arg1)",
     "size": 103,
     "thunk": false
   },
@@ -17098,7 +17098,7 @@
     "external": false,
     "library": true,
     "name": "strdup_malloc",
-    "signature": "char *__cdecl(const char *Source)",
+    "signature": "char *(char *src)",
     "size": 43,
     "thunk": false
   },

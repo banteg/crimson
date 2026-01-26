@@ -8277,15 +8277,15 @@
     "end": "0x1002072B",
     "external": false,
     "library": false,
-    "name": "sub_10020708",
-    "signature": "int()",
+    "name": "fpu_save_control_word",
+    "signature": "void()",
     "size": 35,
     "thunk": false
   },
   {
     "address": "0x1002072B",
     "calls": [
-      "sub_10020708"
+      "fpu_save_control_word"
     ],
     "end": "0x10020825",
     "external": false,
@@ -8298,7 +8298,7 @@
   {
     "address": "0x10020825",
     "calls": [
-      "sub_10020708"
+      "fpu_save_control_word"
     ],
     "end": "0x10020B2A",
     "external": false,
@@ -8311,7 +8311,7 @@
   {
     "address": "0x10020B2A",
     "calls": [
-      "sub_10020708"
+      "fpu_save_control_word"
     ],
     "end": "0x10021095",
     "external": false,
@@ -8324,10 +8324,10 @@
   {
     "address": "0x10021095",
     "calls": [
+      "fpu_save_control_word",
       "grim_dxt1_optimize_color_endpoints",
       "grim_dxt_decode_rgb565",
-      "grim_dxt_pack_rgb565",
-      "sub_10020708"
+      "grim_dxt_pack_rgb565"
     ],
     "end": "0x10021899",
     "external": false,
@@ -8392,8 +8392,8 @@
   {
     "address": "0x10021BAE",
     "calls": [
-      "grim_dxt1_encode_color_block",
-      "sub_10020708"
+      "fpu_save_control_word",
+      "grim_dxt1_encode_color_block"
     ],
     "end": "0x10021CC2",
     "external": false,
@@ -8406,9 +8406,9 @@
   {
     "address": "0x10021CC2",
     "calls": [
+      "fpu_save_control_word",
       "grim_dxt1_encode_color_block",
-      "grim_dxt5_optimize_alpha_endpoints",
-      "sub_10020708"
+      "grim_dxt5_optimize_alpha_endpoints"
     ],
     "end": "0x10022114",
     "external": false,

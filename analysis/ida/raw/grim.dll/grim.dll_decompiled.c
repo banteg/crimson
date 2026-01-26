@@ -28744,13 +28744,13 @@ int grim_dxt_premultiply_rgba_block(float *out_rgba)
   return 0;
 }
 
-// sub_10020708 @ 0x10020708
-int sub_10020708()
+// fpu_save_control_word @ 0x10020708
+// captures x87 FPU control word into DAT_1005db70 (used by DXT encode helpers)
+void fpu_save_control_word()
 {
-  int v1; // [esp+0h] [ebp-8h]
+  int v0; // [esp+0h] [ebp-8h]
 
-  dword_1005DB70 = v1;
-  return v1;
+  fpu_control_word_saved_dxt = v0;
 }
 
 // grim_dxt_pack_rgb565 @ 0x1002072B
@@ -28812,7 +28812,7 @@ LABEL_13:
   }
   v9 = v4;
 LABEL_19:
-  sub_10020708();
+  fpu_save_control_word();
   v12 = v7 * 31.0 + 0.5;
   v10 = v8 * 63.0 + 0.5;
   v5 = (int)v10;
@@ -28899,7 +28899,7 @@ void grim_dxt5_optimize_alpha_endpoints(float *min_out, float *max_out, float *a
   }
   v24 = mode - 1;
   v27 = (float)(mode - 1);
-  sub_10020708();
+  fpu_save_control_word();
   for ( i = 0; i < 8; ++i )
   {
     v9 = v34 - v35;
@@ -29207,7 +29207,7 @@ LABEL_19:
   else
   {
     v64 = (float)(unsigned int)(LODWORD(mode) - 1);
-    sub_10020708();
+    fpu_save_control_word();
     v69 = 0.0;
     v29 = 0.000015258789;
     do
@@ -29454,7 +29454,7 @@ int grim_dxt1_encode_color_block(unsigned __int16 *out_block, float mode)
     v97 = 4 - (v4 != 0);
   }
   memset(v49, 0, sizeof(v49));
-  sub_10020708();
+  fpu_save_control_word();
   v80 = (char *)&v49[2] - v3;
   v56 = (char *)&v49[3] - v3;
   v54 = (char *)&v49[4] - v3;
@@ -29626,7 +29626,7 @@ int grim_dxt1_encode_color_block(unsigned __int16 *out_block, float mode)
     memset(v49, 0, sizeof(v49));
     v94 = v30 * v28;
     v95 = v30 * v29;
-    sub_10020708();
+    fpu_save_control_word();
     *(float *)&v98 = COERCE_FLOAT(v49);
     v90 = (char *)&v49[1] - v3;
     v80 = (char *)&v49[5] - v3;
@@ -29963,7 +29963,7 @@ void grim_dxt3_encode_block(unsigned int *out_block, float *rgba)
   *out_block = 0;
   out_block[1] = 0;
   memset(v10, 0, sizeof(v10));
-  sub_10020708();
+  fpu_save_control_word();
   out_blocka = v3;
   v14 = rgba + 3;
   do
@@ -30051,7 +30051,7 @@ int grim_dxt5_encode_block(unsigned __int8 *out_block, float *rgba)
   v47 = rgba[3];
   v46 = v47;
   memset(v35, 0, sizeof(v35));
-  sub_10020708();
+  fpu_save_control_word();
   v3 = 0;
   v4 = v2;
   do
@@ -30087,7 +30087,7 @@ int grim_dxt5_encode_block(unsigned __int8 *out_block, float *rgba)
     v4 += 4;
   }
   while ( v3 < 0x10 );
-  min_out = dword_1005DB70;
+  min_out = fpu_control_word_saved_dxt;
   v12 = out_block;
   result = grim_dxt1_encode_color_block((unsigned __int16 *)out_block + 4, 0.0);
   if ( result < 0 )
@@ -30112,7 +30112,7 @@ LABEL_24:
     rgba = (float *)8;
   }
   grim_dxt5_optimize_alpha_endpoints((float *)&min_out, (float *)&out_block, alphas, v14);
-  sub_10020708();
+  fpu_save_control_word();
   *(float *)&min_out = *(float *)&min_out * 255.0 + 0.5;
   v45 = (_DWORD *)(int)*(float *)&min_out;
   *(float *)&out_block = *(float *)&out_block * 255.0 + 0.5;
@@ -30165,7 +30165,7 @@ LABEL_24:
     v24 = v43 / (v38 - v37);
   v44 = v24;
   memset(v35, 0, sizeof(v35));
-  sub_10020708();
+  fpu_save_control_word();
   v25 = 0;
   v26 = v12 + 3;
   v47 = *(float *)&v2;
@@ -30237,7 +30237,7 @@ LABEL_58:
     v26 += 3;
   }
   while ( v25 < 0x10 );
-  rgba = (float *)dword_1005DB70;
+  rgba = (float *)fpu_control_word_saved_dxt;
   return 0;
 }
 

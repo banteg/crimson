@@ -2690,4 +2690,174 @@ Syntax error near: OggVorbis_File
 Bad declaration. See the message window for details. -> OK
 IDA export complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe
 Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\crimsonland.exe.i64 already exists.
+Do you want to overwrite it? -> ~L~oad existing
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+ 10518528  1284 8192 allocating memory for b-tree...
+  2097152   256 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+ 12877824            total memory allocated
+
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading type libraries...
+Autoanalysis subsystem has been initialized.
+Database for file 'crimsonland.exe' has been loaded.
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+parse_decl failed (parse_decl): bonus_apply @ 0x00409890
+  signature: void bonus_apply(int player_index, bonus_entry_t *bonus_entry);
+parse_decl failed (parse_decl): mod_api_core_get_var @ 0x0040E040
+  signature: mod_var_t * mod_api_core_get_var(const char *id);
+parse_decl failed (parse_decl): mod_api_gfx_draw_quads @ 0x0040E4C0
+  signature: void mod_api_gfx_draw_quads(mod_vertex2_t *v, int numQuads);
+parse_decl failed (parse_decl): ui_element_set_rect @ 0x00419BA0
+  signature: void ui_element_set_rect(ui_element_t *element, float width, float height, float *offset);
+parse_decl failed (parse_decl): ui_element_load @ 0x00419D00
+  signature: void ui_element_load(ui_element_t *element, char *jaz_path);
+parse_decl failed (parse_decl): bonus_alloc_slot @ 0x0041F580
+  signature: bonus_entry_t * bonus_alloc_slot(void);
+parse_decl failed (parse_decl): bonus_spawn_at @ 0x0041F5B0
+  signature: bonus_entry_t * bonus_spawn_at(float *pos, int bonus_id, int duration_override);
+parse_decl failed (parse_decl): bonus_spawn_at_pos @ 0x0041F790
+  signature: bonus_entry_t * bonus_spawn_at_pos(float *pos);
+parse_decl failed (parse_decl): bonus_label_for_entry @ 0x00429580
+  signature: char * bonus_label_for_entry(bonus_entry_t *bonus_entry);
+parse_decl failed (parse_decl): quest_meta_init_entry @ 0x00430A20
+  signature: int quest_meta_init_entry(quest_meta_t *meta, int tier, int index, char *name);
+parse_decl failed (parse_decl): quest_build_fallback @ 0x004343E0
+  signature: void quest_build_fallback(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_nagolipoli @ 0x00434480
+  signature: void quest_build_nagolipoli(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_monster_blues @ 0x00434860
+  signature: void quest_build_monster_blues(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_gathering @ 0x004349C0
+  signature: void quest_build_the_gathering(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_army_of_three @ 0x00434CA0
+  signature: void quest_build_army_of_three(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_knee_deep_in_the_dead @ 0x00434F00
+  signature: void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_gang_wars @ 0x00435120
+  signature: void quest_build_the_gang_wars(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_fortress @ 0x004352D0
+  signature: void quest_build_the_fortress(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_cross_fire @ 0x00435480
+  signature: void quest_build_cross_fire(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_beating @ 0x00435610
+  signature: void quest_build_the_beating(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_spanking_of_the_dead @ 0x004358A0
+  signature: void quest_build_the_spanking_of_the_dead(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_hidden_evil @ 0x00435A30
+  signature: void quest_build_hidden_evil(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_land_hostile @ 0x00435BD0
+  signature: void quest_build_land_hostile(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_minor_alien_breach @ 0x00435CC0
+  signature: void quest_build_minor_alien_breach(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_alien_squads @ 0x00435EA0
+  signature: void quest_build_alien_squads(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_zombie_masters @ 0x004360A0
+  signature: void quest_build_zombie_masters(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_8_legged_terror @ 0x00436120
+  signature: void quest_build_8_legged_terror(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_ghost_patrols @ 0x00436200
+  signature: void quest_build_ghost_patrols(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_random_factor @ 0x00436350
+  signature: void quest_build_the_random_factor(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_spider_wave_syndrome @ 0x00436440
+  signature: void quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_nesting_grounds @ 0x004364A0
+  signature: void quest_build_nesting_grounds(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_alien_dens @ 0x00436720
+  signature: void quest_build_alien_dens(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_arachnoid_farm @ 0x00436820
+  signature: void quest_build_arachnoid_farm(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_gauntlet @ 0x004369A0
+  signature: void quest_build_gauntlet(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_syntax_terror @ 0x00436C10
+  signature: void quest_build_syntax_terror(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_spider_spawns @ 0x00436D70
+  signature: void quest_build_spider_spawns(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_two_fronts @ 0x00436EE0
+  signature: void quest_build_two_fronts(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_survival_of_the_fastest @ 0x00437060
+  signature: void quest_build_survival_of_the_fastest(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_spideroids @ 0x004373C0
+  signature: void quest_build_spideroids(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_evil_zombies_at_large @ 0x004374A0
+  signature: void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_everred_pastures @ 0x004375A0
+  signature: void quest_build_everred_pastures(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_lizard_kings @ 0x00437710
+  signature: void quest_build_lizard_kings(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_sweep_stakes @ 0x00437810
+  signature: void quest_build_sweep_stakes(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_deja_vu @ 0x00437920
+  signature: void quest_build_deja_vu(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_target_practice @ 0x00437A00
+  signature: void quest_build_target_practice(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_major_alien_breach @ 0x00437AF0
+  signature: void quest_build_major_alien_breach(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_land_of_lizards @ 0x00437BA0
+  signature: void quest_build_land_of_lizards(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_lizquidation @ 0x00437C70
+  signature: void quest_build_the_lizquidation(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_zombie_time @ 0x00437D70
+  signature: void quest_build_zombie_time(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_frontline_assault @ 0x00437E10
+  signature: void quest_build_frontline_assault(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_collaboration @ 0x00437F30
+  signature: void quest_build_the_collaboration(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_blighting @ 0x00438050
+  signature: void quest_build_the_blighting(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_annihilation @ 0x004382C0
+  signature: void quest_build_the_annihilation(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_massacre @ 0x004383E0
+  signature: void quest_build_the_massacre(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_killing @ 0x004384A0
+  signature: void quest_build_the_killing(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_lizard_zombie_pact @ 0x00438700
+  signature: void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_lizard_raze @ 0x00438840
+  signature: void quest_build_lizard_raze(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_surrounded_by_reptiles @ 0x00438940
+  signature: void quest_build_surrounded_by_reptiles(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_unblitzkrieg @ 0x00438A40
+  signature: void quest_build_the_unblitzkrieg(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_the_end_of_all @ 0x00438E10
+  signature: void quest_build_the_end_of_all(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): quest_build_spiders_inc @ 0x004390D0
+  signature: void quest_build_spiders_inc(quest_spawn_entry_t *entries, int *count);
+parse_decl failed (parse_decl): ui_button_update @ 0x0043E830
+  signature: int ui_button_update(float *xy, ui_button_t *button);
+parse_decl failed (parse_decl): ui_element_update @ 0x00446900
+  signature: void ui_element_update(ui_element_t *element);
+parse_decl failed (parse_decl): ui_element_render @ 0x00446C40
+  signature: void ui_element_render(ui_element_t *element);
+parse_decl failed (parse_decl): math_atan2_packed @ 0x004600C0
+  signature: ulonglong math_atan2_packed(void);
+parse_decl failed (parse_decl): math_acos_packed @ 0x004601C0
+  signature: ulonglong math_acos_packed(void);
+parse_decl failed (parse_decl): math_sincos_packed @ 0x004607A0
+  signature: ulonglong math_sincos_packed(void);
+parse_decl failed (parse_decl): math_sin_packed @ 0x004608C0
+  signature: ulonglong math_sin_packed(void);
+parse_decl failed (parse_decl): ov_pcm_seek @ 0x0046E920
+  signature: int ov_pcm_seek(OggVorbis_File * vf, ogg_int64_t pos);
+parse_decl failed (parse_decl): ov_pcm_total @ 0x0046E926
+  signature: ogg_int64_t ov_pcm_total(OggVorbis_File * vf, int i);
+parse_decl failed (parse_decl): ov_info @ 0x0046E92C
+  signature: vorbis_info * ov_info(OggVorbis_File * vf, int link);
+parse_decl failed (parse_decl): ov_open_callbacks @ 0x0046E932
+  signature: int ov_open_callbacks(void * datasource, OggVorbis_File * vf, char * initial, long ibytes, ov_callbacks callbacks);
+parse_decl failed (parse_decl): ov_clear @ 0x0046E938
+  signature: int ov_clear(OggVorbis_File * vf);
+parse_decl failed (parse_decl): ov_read @ 0x0046E93E
+  signature: long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream);
+IDA export complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe
+Flushing buffers, please wait...ok
 Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...
