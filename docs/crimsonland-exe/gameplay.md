@@ -25,7 +25,7 @@ bonuses (stride `0xd8`, base `player_health` / `DAT_004908d4`). See
 
 | Offset | Symbol | Meaning | Source / Notes |
 | --- | --- | --- | --- |
-| `0x294` | `player_spread_heat` | spread/heat | decays each frame; Sharpshooter changes decay + minimum |
+| `0x294` | `player_spread_heat` | spread/heat | decays each frame; Sharpshooter alters decay and disables per-shot heat gain |
 | `0x29c` | `player_weapon_id` | current weapon id | set by `weapon_assign_player` |
 | `0x2a0` | `player_clip_size` | clip size | from weapon table, modified by Ammo Maniac + My Favourite Weapon |
 | `0x2a8` | `player_ammo` | current ammo | reset to clip size when reload completes |
@@ -80,10 +80,53 @@ timer crosses its threshold:
 - **Living Fortress** (`DAT_004c2c28`): increments `player_living_fortress_timer` (`DAT_00490954`) while stationary
   (clamped to ~30s); likely consumed by damage scaling elsewhere.
 
+### Weapon spread ("heat") and accuracy recovery
+
+The game models continuous-fire inaccuracy as a per-player "heat" value stored in
+`player_spread_heat` (`DAT_00490b68`, offset `0x294`). [static]
+
+- **Decay (recovery):** `player_spread_heat = max(0.01, player_spread_heat - frame_dt * 0.4)`. [static]
+  - When Reflex Boost time scaling is active, `frame_dt` is pre-scaled by
+    `frame_dt *= time_scale_factor * 1.6666666` before applying the decay. [static]
+  - Sharpshooter alters the decay path; the current decompile output has
+    conflicting constants (`0.25` and `0.02`), so treat it as **unconfirmed**
+    until we validate it at runtime. [static]
+- **Gain on fire:** if Sharpshooter is **not** active,
+  `player_spread_heat += weapon_table[weapon_id].spread_heat * 1.3`. [static]
+  - It is clamped to a maximum of `0.48`. [static]
+- **Gain on damage:** when taking damage (and Unstoppable is **not** active),
+  `player_spread_heat += damage * 0.01` (also clamped to `0.48`). [static]
+
+- **Shot direction:** when firing, the game jitters the aim point inside a disc,
+  then computes the projectile heading from the jittered aim point. [static]
+
+  ```c
+  float dx = aim_x - pos_x;
+  float dy = aim_y - pos_y;
+  float d = sqrtf(dx * dx + dy * dy);
+
+  float max_offset = d * player_spread_heat * 0.5f;
+  float dir = (rand() & 0x1ff) * (6.2831853f / 512.0f);
+  float mag = (rand() & 0x1ff) * (1.0f / 512.0f); // 0..~0.998
+
+  float ax = aim_x + cosf(dir) * (max_offset * mag);
+  float ay = aim_y + sinf(dir) * (max_offset * mag);
+
+  float angle = atan2f(ay - pos_y, ax - pos_x) + 1.5707964f;
+  ```
+
+  For pellet weapons, each pellet adds an additional angular jitter:
+  `angle += (rand() % 200 - 100) * 0.0015`. [static]
+
+- **Aim indicator:** `ui_render_aim_indicators` draws an aim circle centered at
+  `(aim_x, aim_y)` with radius `max(6.0, d * player_spread_heat * 0.5)`. [static]
+  This makes the indicator scale with range: the same angular error produces a
+  larger circle when aiming farther away.
+
 ### Reload + spread interactions
 
-- **Sharpshooter** (`DAT_004c2b48`) modifies how fast `player_spread_heat` (`DAT_00490b68`) decays and
-  lowers the minimum spread value.
+- **Sharpshooter** (`DAT_004c2b48`) modifies `player_spread_heat` decay and disables the per-shot heat
+  increment (accuracy bloom). [static]
 
 - **Anxious Loader** (`DAT_004c2b90`) reduces the reload timer by `0.05` on each
   primary press while reloading.
