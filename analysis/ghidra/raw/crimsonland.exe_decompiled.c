@@ -11770,19 +11770,19 @@ void gameplay_reset_state(void)
   camera_shake_pulses = 0;
   FUN_00412940();
   _DAT_00482940 = 6;
-  _creature_type_texture =
+  creature_type_table.texture_handle =
        (*grim_interface_ptr->vtable->grim_get_texture_handle)
                  ((IGrim2D *)s_zombie_0047375c,unaff_EDI);
-  _creature_type_sfx_b0 = sfx_zombie_attack_01;
-  _creature_type_sfx_b1 = sfx_zombie_attack_02;
-  _creature_type_sfx_a0 = sfx_zombie_die_01;
-  _creature_type_sfx_a1 = sfx_zombie_die_02;
-  _DAT_00482748 = 0x3f800000;
-  _creature_type_anim_rate = 0x3f99999a;
-  _creature_type_sfx_a2 = sfx_zombie_die_03;
-  _creature_type_sfx_a3 = sfx_zombie_die_04;
-  _creature_type_base_frame = 0x20;
-  _creature_type_corpse_frame = 0;
+  creature_type_table.sfx_bank_b[0] = sfx_zombie_attack_01;
+  creature_type_table.sfx_bank_b[1] = sfx_zombie_attack_02;
+  creature_type_table.sfx_bank_a[0] = sfx_zombie_die_01;
+  creature_type_table.sfx_bank_a[1] = sfx_zombie_die_02;
+  creature_type_table.field_0x20 = 1.0;
+  creature_type_table.anim_rate = 1.2;
+  creature_type_table.sfx_bank_a[2] = sfx_zombie_die_03;
+  creature_type_table.sfx_bank_a[3] = sfx_zombie_die_04;
+  creature_type_table.base_frame = 0x20;
+  creature_type_table.corpse_frame = 0;
   _DAT_0048276c =
        (*grim_interface_ptr->vtable->grim_get_texture_handle)
                  ((IGrim2D *)s_lizard_00473754,unaff_ESI);
@@ -14688,10 +14688,10 @@ void __cdecl creature_render_type(int type_id)
   int atlas_size;
   IGrim2D_vtbl *pIVar4;
   float unaff_EBP;
+  float fVar5;
   IGrim2D *unaff_ESI;
-  float *pfVar5;
+  float *pfVar6;
   int unaff_EDI;
-  int iVar6;
   longlong lVar7;
   float unaff_retaddr;
   float in_stack_00000008;
@@ -14709,14 +14709,14 @@ void __cdecl creature_render_type(int type_id)
   float fStack_8;
   float fStack_4;
   
-  iVar6 = type_id * 0x44;
   (*grim_interface_ptr->vtable->grim_bind_texture)
-            (*(IGrim2D **)(&creature_type_texture + iVar6),0,unaff_EDI);
+            ((IGrim2D *)(&creature_type_table)[type_id].texture_handle,0,unaff_EDI);
   rgba = (IGrim2D *)0x3f800000;
   self_00 = (IGrim2D *)0x3f800000;
   pIVar10 = (IGrim2D *)0x0;
   self = (IGrim2D *)0x0;
   (*grim_interface_ptr->vtable->grim_set_uv)((IGrim2D *)0x0,0.0,1.0,1.0,(float)unaff_ESI);
+  fVar5 = (float)type_id;
   if (config_blob.reserved0[0xe] != '\0') {
     rgba = (IGrim2D *)0x418bc1;
     unaff_ESI = (IGrim2D *)perk_id_monster_vision;
@@ -14728,34 +14728,34 @@ void __cdecl creature_render_type(int type_id)
       (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x14,6,uVar9);
       self = (IGrim2D *)0x418c0a;
       (*grim_interface_ptr->vtable->grim_begin_batch)(pIVar10);
-      pfVar5 = &creature_pool.hitbox_size;
+      pfVar6 = &creature_pool.hitbox_size;
       do {
-        if ((((creature_t *)(pfVar5 + -4))->active != '\0') && (pfVar5[0x17] == (float)type_id)) {
-          fVar1 = pfVar5[0x1f];
-          fStack_14 = pfVar5[0xb];
-          IStack_10.vtable = (IGrim2D_vtbl *)pfVar5[0xc];
-          fStack_c = pfVar5[0xd];
-          fStack_8 = pfVar5[0xe] * 0.4;
-          if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
-            if (16.0 <= *pfVar5) {
+        if ((((creature_t *)(pfVar6 + -4))->active != '\0') && (pfVar6[0x17] == fVar5)) {
+          fVar5 = pfVar6[0x1f];
+          fStack_14 = pfVar6[0xb];
+          IStack_10.vtable = (IGrim2D_vtbl *)pfVar6[0xc];
+          fStack_c = pfVar6[0xd];
+          fStack_8 = pfVar6[0xe] * 0.4;
+          if ((((uint)fVar5 & 4) == 0) || (((uint)fVar5 & 0x40) != 0)) {
+            if (16.0 <= *pfVar6) {
               lVar7 = __ftol();
               iVar3 = (int)lVar7;
-              if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar3)) {
+              if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar3)) {
                 iVar3 = 0x1f - iVar3;
               }
             }
-            else if (0.0 <= *pfVar5) {
+            else if (0.0 <= *pfVar6) {
               lVar7 = __ftol();
               iVar3 = (int)lVar7;
             }
             else {
-              iVar3 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
-              fStack_8 = *pfVar5 * 0.5 + fStack_8;
+              iVar3 = (&creature_type_table)[type_id].base_frame + 0xf;
+              fStack_8 = *pfVar6 * 0.5 + fStack_8;
               if (fStack_8 < 0.0) {
                 fStack_8 = 0.0;
               }
             }
-            if (((uint)fVar1 & 0x10) != 0) {
+            if (((uint)fVar5 & 0x10) != 0) {
               iVar3 = iVar3 + 0x20;
             }
             (*grim_interface_ptr->vtable->grim_set_atlas_frame)((IGrim2D *)0x8,iVar3,(int)self_00);
@@ -14770,28 +14770,28 @@ void __cdecl creature_render_type(int type_id)
               uVar9 = 0xf - uVar9;
             }
             (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                      ((IGrim2D *)0x8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar9,
+                      ((IGrim2D *)0x8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar9,
                        (int)self_00);
-            if ((*pfVar5 < 0.0) && (fStack_4 = *pfVar5 * 0.1 + fStack_4, fStack_4 < 0.0)) {
+            if ((*pfVar6 < 0.0) && (fStack_4 = *pfVar6 * 0.1 + fStack_4, fStack_4 < 0.0)) {
               fStack_4 = 0.0;
             }
           }
           fStack_4 = fStack_4 * in_stack_00000008;
           (*grim_interface_ptr->vtable->grim_set_color_ptr)(&IStack_10,(float *)rgba);
           (*grim_interface_ptr->vtable->grim_set_rotation)
-                    ((IGrim2D *)(pfVar5[7] - 1.5707964),(float)unaff_ESI);
-          fVar1 = pfVar5[9] * 0.5 + 0.7;
-          self_00 = (IGrim2D *)((_camera_offset_y + pfVar5[2]) - fVar1);
-          rgba = (IGrim2D *)(pfVar5[9] * 1.07);
+                    ((IGrim2D *)(pfVar6[7] - 1.5707964),(float)unaff_ESI);
+          fVar5 = pfVar6[9] * 0.5 + 0.7;
+          self_00 = (IGrim2D *)((_camera_offset_y + pfVar6[2]) - fVar5);
+          rgba = (IGrim2D *)(pfVar6[9] * 1.07);
           self = (IGrim2D *)0x418e37;
           unaff_ESI = rgba;
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    ((IGrim2D *)((_camera_offset_x + pfVar5[1]) - fVar1),(float)self_00,(float)rgba,
+                    ((IGrim2D *)((_camera_offset_x + pfVar6[1]) - fVar5),(float)self_00,(float)rgba,
                      (float)rgba,unaff_EBP);
-          type_id = (int)in_stack_00000010;
+          fVar5 = in_stack_00000010;
         }
-        pfVar5 = pfVar5 + 0x26;
-      } while ((int)pfVar5 < 0x4aa348);
+        pfVar6 = pfVar6 + 0x26;
+      } while ((int)pfVar6 < 0x4aa348);
       pIVar10 = (IGrim2D *)0x418e5b;
       (*grim_interface_ptr->vtable->grim_end_batch)(self_00);
     }
@@ -14814,7 +14814,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *(float *)(iVar3 + -0x84)) {
             lVar7 = __ftol();
             atlas_size = (int)lVar7;
-            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < atlas_size)) {
+            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < atlas_size)) {
               atlas_size = 0x1f - atlas_size;
             }
           }
@@ -14823,7 +14823,7 @@ void __cdecl creature_render_type(int type_id)
             atlas_size = (int)lVar7;
           }
           else {
-            atlas_size = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
+            atlas_size = (&creature_type_table)[type_id].base_frame + 0xf;
             IStack_10.vtable = (IGrim2D_vtbl *)(*(float *)(iVar3 + -0x84) * 0.1 + IStack_10.vtable);
             if ((float)IStack_10.vtable < 0.0) {
               IStack_10.vtable = (IGrim2D_vtbl *)0x0;
@@ -14844,7 +14844,7 @@ void __cdecl creature_render_type(int type_id)
             uVar9 = 0xf - uVar9;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    ((IGrim2D *)0x8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar9,
+                    ((IGrim2D *)0x8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar9,
                      (int)self);
           if ((*(float *)(iVar3 + -0x84) < 0.0) &&
              (fStack_c = *(float *)(iVar3 + -0x84) * 0.1 + fStack_c, fStack_c < 0.0)) {
@@ -14855,13 +14855,13 @@ void __cdecl creature_render_type(int type_id)
         (*grim_interface_ptr->vtable->grim_set_color_ptr)(&IStack_18,(float *)pIVar10);
         (*grim_interface_ptr->vtable->grim_set_rotation)
                   ((IGrim2D *)(*(float *)(iVar3 + -0x68) - 1.5707964),(float)self_00);
-        fVar1 = *(float *)(iVar3 + -0x60) * 0.5;
+        fVar5 = *(float *)(iVar3 + -0x60) * 0.5;
         pIVar10 = *(IGrim2D **)(iVar3 + -0x60);
-        self = (IGrim2D *)((_camera_offset_y + *(float *)(iVar3 + -0x7c)) - fVar1);
+        self = (IGrim2D *)((_camera_offset_y + *(float *)(iVar3 + -0x7c)) - fVar5);
         uVar9 = 0x419399;
         self_00 = pIVar10;
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((IGrim2D *)((_camera_offset_x + *(float *)(iVar3 + -0x80)) - fVar1),(float)self,
+                  ((IGrim2D *)((_camera_offset_x + *(float *)(iVar3 + -0x80)) - fVar5),(float)self,
                    (float)pIVar10,(float)pIVar10,(float)rgba);
         if ((*(float *)(iVar3 + -0x84) < -10.0) &&
            (*(undefined1 *)(iVar3 + -0x94) = 0, (*(byte *)(iVar3 + -8) & 4) != 0)) {
@@ -14872,13 +14872,13 @@ void __cdecl creature_render_type(int type_id)
     } while (iVar3 < 0x4aa3cc);
   }
   else {
-    pfVar5 = &creature_pool.max_health;
+    pfVar6 = &creature_pool.max_health;
     do {
-      if ((((creature_t *)(pfVar5 + -10))->active != '\0') && (pfVar5[0x11] == (float)type_id)) {
-        if (500.0 <= *pfVar5) {
-          IStack_18.vtable = (IGrim2D_vtbl *)pfVar5[6];
-          fStack_14 = pfVar5[7];
-          IStack_10.vtable = (IGrim2D_vtbl *)pfVar5[8];
+      if ((((creature_t *)(pfVar6 + -10))->active != '\0') && (pfVar6[0x11] == fVar5)) {
+        if (500.0 <= *pfVar6) {
+          IStack_18.vtable = (IGrim2D_vtbl *)pfVar6[6];
+          fStack_14 = pfVar6[7];
+          IStack_10.vtable = (IGrim2D_vtbl *)pfVar6[8];
         }
         else {
           fVar1 = _bonus_energizer_timer;
@@ -14886,27 +14886,27 @@ void __cdecl creature_render_type(int type_id)
             fVar1 = 1.0;
           }
           fVar2 = 1.0 - fVar1;
-          IStack_18.vtable = (IGrim2D_vtbl *)(fVar2 * pfVar5[6] + fVar1 * 0.5);
-          fStack_14 = fVar2 * pfVar5[7] + fVar1;
-          IStack_10.vtable = (IGrim2D_vtbl *)(fVar2 * pfVar5[8] + fVar1);
+          IStack_18.vtable = (IGrim2D_vtbl *)(fVar2 * pfVar6[6] + fVar1 * 0.5);
+          fStack_14 = fVar2 * pfVar6[7] + fVar1;
+          IStack_10.vtable = (IGrim2D_vtbl *)(fVar2 * pfVar6[8] + fVar1);
         }
-        fVar1 = pfVar5[0x19];
+        fVar1 = pfVar6[0x19];
         if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
-          if (16.0 <= pfVar5[-6]) {
+          if (16.0 <= pfVar6[-6]) {
             lVar7 = __ftol();
             iVar3 = (int)lVar7;
-            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar3)) {
+            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar3)) {
               iVar3 = 0x1f - iVar3;
             }
           }
-          else if (0.0 <= pfVar5[-6]) {
-            unaff_ESI = (IGrim2D *)(*(int *)(&creature_type_base_frame + iVar6) + 0xf);
+          else if (0.0 <= pfVar6[-6]) {
+            unaff_ESI = (IGrim2D *)((&creature_type_table)[type_id].base_frame + 0xf);
             lVar7 = __ftol();
             iVar3 = (int)lVar7;
           }
           else {
-            iVar3 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
-            IStack_10.vtable = (IGrim2D_vtbl *)(pfVar5[-6] * 0.1 + IStack_10.vtable);
+            iVar3 = (&creature_type_table)[type_id].base_frame + 0xf;
+            IStack_10.vtable = (IGrim2D_vtbl *)(pfVar6[-6] * 0.1 + IStack_10.vtable);
             if ((float)IStack_10.vtable < 0.0) {
               IStack_10.vtable = (IGrim2D_vtbl *)0x0;
             }
@@ -14926,31 +14926,31 @@ void __cdecl creature_render_type(int type_id)
             uVar9 = 0xf - uVar9;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    ((IGrim2D *)0x8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar9,
+                    ((IGrim2D *)0x8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar9,
                      (int)self);
-          if ((pfVar5[-6] < 0.0) && (fStack_c = pfVar5[-6] * 0.1 + fStack_c, fStack_c < 0.0)) {
+          if ((pfVar6[-6] < 0.0) && (fStack_c = pfVar6[-6] * 0.1 + fStack_c, fStack_c < 0.0)) {
             fStack_c = 0.0;
           }
         }
         fStack_c = fStack_c * unaff_retaddr;
         (*grim_interface_ptr->vtable->grim_set_color_ptr)(&IStack_18,(float *)pIVar10);
         (*grim_interface_ptr->vtable->grim_set_rotation)
-                  ((IGrim2D *)(pfVar5[1] - 1.5707964),(float)self_00);
-        pIVar10 = (IGrim2D *)pfVar5[3];
-        self = (IGrim2D *)((_camera_offset_y + pfVar5[-4]) - pfVar5[3] * 0.5);
+                  ((IGrim2D *)(pfVar6[1] - 1.5707964),(float)self_00);
+        pIVar10 = (IGrim2D *)pfVar6[3];
+        self = (IGrim2D *)((_camera_offset_y + pfVar6[-4]) - pfVar6[3] * 0.5);
         uVar9 = 0x41912e;
         self_00 = pIVar10;
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((IGrim2D *)((_camera_offset_x + pfVar5[-5]) - pfVar5[3] * 0.5),(float)self,
+                  ((IGrim2D *)((_camera_offset_x + pfVar6[-5]) - pfVar6[3] * 0.5),(float)self,
                    (float)pIVar10,(float)pIVar10,(float)rgba);
-        if ((pfVar5[-6] < -10.0) &&
-           (iVar3 = (int)pfVar5[0x19], ((creature_t *)(pfVar5 + -10))->active = '\0',
+        if ((pfVar6[-6] < -10.0) &&
+           (iVar3 = (int)pfVar6[0x19], ((creature_t *)(pfVar6 + -10))->active = '\0',
            (iVar3 & 4) != 0)) {
-          (&creature_spawn_slot_owner)[(int)pfVar5[0x14] * 6] = 0;
+          (&creature_spawn_slot_owner)[(int)pfVar6[0x14] * 6] = 0;
         }
       }
-      pfVar5 = pfVar5 + 0x26;
-    } while ((int)pfVar5 < 0x4aa360);
+      pfVar6 = pfVar6 + 0x26;
+    } while ((int)pfVar6 < 0x4aa360);
   }
   pIVar8 = (IGrim2D *)0x4193eb;
   (*grim_interface_ptr->vtable->grim_end_batch)(self);
@@ -14960,32 +14960,32 @@ void __cdecl creature_render_type(int type_id)
     IStack_18.vtable = (IGrim2D_vtbl *)0x3f800000;
     uVar9 = 0x41945e;
     (*grim_interface_ptr->vtable->grim_begin_batch)(pIVar8);
-    pfVar5 = &creature_pool.hitbox_size;
+    pfVar6 = &creature_pool.hitbox_size;
     do {
-      if (((((creature_t *)(pfVar5 + -4))->active != '\0') && (pfVar5[0x17] == fStack_8)) &&
-         (0.0 < pfVar5[10])) {
-        IStack_10.vtable = (IGrim2D_vtbl *)(pfVar5[10] * 5.0);
+      if (((((creature_t *)(pfVar6 + -4))->active != '\0') && (pfVar6[0x17] == fStack_8)) &&
+         (0.0 < pfVar6[10])) {
+        IStack_10.vtable = (IGrim2D_vtbl *)(pfVar6[10] * 5.0);
         if (1.0 < (float)IStack_10.vtable) {
           IStack_10.vtable = (IGrim2D_vtbl *)0x3f800000;
         }
-        fVar1 = pfVar5[0x1f];
-        if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
-          if (16.0 <= *pfVar5) {
+        fVar5 = pfVar6[0x1f];
+        if ((((uint)fVar5 & 4) == 0) || (((uint)fVar5 & 0x40) != 0)) {
+          if (16.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar3 = (int)lVar7;
-            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar3)) {
+            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar3)) {
               iVar3 = 0x1f - iVar3;
             }
-            if (((uint)fVar1 & 0x10) != 0) {
+            if (((uint)fVar5 & 0x10) != 0) {
               iVar3 = iVar3 + 0x20;
             }
           }
-          else if (0.0 <= *pfVar5) {
+          else if (0.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar3 = (int)lVar7;
           }
           else {
-            iVar3 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
+            iVar3 = (&creature_type_table)[type_id].base_frame + 0xf;
           }
           pIVar4 = grim_interface_ptr->vtable;
         }
@@ -14999,25 +14999,25 @@ void __cdecl creature_render_type(int type_id)
             uVar9 = 0xf - uVar9;
           }
           pIVar4 = grim_interface_ptr->vtable;
-          iVar3 = *(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar9;
+          iVar3 = (&creature_type_table)[type_id].base_frame + 0x10 + uVar9;
         }
         (*pIVar4->grim_set_atlas_frame)((IGrim2D *)0x8,iVar3,(int)self);
         fStack_c = fStack_c * unaff_retaddr;
         (*grim_interface_ptr->vtable->grim_set_color_ptr)(&IStack_18,(float *)pIVar10);
         (*grim_interface_ptr->vtable->grim_set_rotation)
-                  ((IGrim2D *)(pfVar5[7] - 1.5707964),(float)self_00);
-        self = (IGrim2D *)((_camera_offset_x + pfVar5[1]) - pfVar5[9] * 0.5);
-        pIVar10 = (IGrim2D *)((_camera_offset_y + pfVar5[2]) - pfVar5[9] * 0.5);
+                  ((IGrim2D *)(pfVar6[7] - 1.5707964),(float)self_00);
+        self = (IGrim2D *)((_camera_offset_x + pfVar6[1]) - pfVar6[9] * 0.5);
+        pIVar10 = (IGrim2D *)((_camera_offset_y + pfVar6[2]) - pfVar6[9] * 0.5);
         uVar9 = 0x419619;
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  (self,(float)pIVar10,pfVar5[9],pfVar5[9],(float)rgba);
-        self_00 = (IGrim2D *)pfVar5[9];
+                  (self,(float)pIVar10,pfVar6[9],pfVar6[9],(float)rgba);
+        self_00 = (IGrim2D *)pfVar6[9];
         rgba = self_00;
         (*grim_interface_ptr->vtable->grim_draw_quad)
                   (self,(float)pIVar10,(float)self_00,(float)self_00,(float)unaff_ESI);
       }
-      pfVar5 = pfVar5 + 0x26;
-    } while ((int)pfVar5 < 0x4aa348);
+      pfVar6 = pfVar6 + 0x26;
+    } while ((int)pfVar6 < 0x4aa348);
     (*grim_interface_ptr->vtable->grim_end_batch)(self);
     (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x14,6,uVar9);
   }
@@ -20047,8 +20047,8 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
         }
-        sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
-                                  (uVar3 + (&creature_pool)[creature_id].type_id * 0x11) * 4));
+        sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[creature_id].type_id].
+                               sfx_bank_a[uVar3]);
       }
       else {
         _effect_template_color_r = 0x3f4ccccd;
@@ -21096,9 +21096,8 @@ LAB_00422821:
         if ((SUB41(pfVar10[8],0) == '\b') && (pfVar10[9] != -NAN)) {
           if ((&creature_pool)[(int)pfVar10[9]].active != '\0') {
             iVar4 = crt_rand();
-            sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
-                                      (iVar4 % 3 + (&creature_pool)[(int)pfVar10[9]].type_id * 0x11)
-                                      * 4));
+            sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[(int)pfVar10[9]].type_id]
+                                   .sfx_bank_a[iVar4 % 3]);
           }
           creature_handle_death((int)pfVar10[9],false);
         }
@@ -22807,8 +22806,8 @@ LAB_0042634c:
                 if ((int)uVar7 < 0) {
                   uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
                 }
-                sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
-                                          (uVar7 + (&creature_pool)[local_7c].type_id * 0x11) * 4));
+                sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                                       sfx_bank_b[uVar7]);
               }
               fx_queue_add_random(pfVar15);
             }
@@ -23057,8 +23056,7 @@ LAB_00426ac8:
             if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
                (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
               if ((&creature_pool)[local_7c].ai_mode != 7) {
-                fVar16 = *(float *)(&creature_type_anim_rate +
-                                   (&creature_pool)[local_7c].type_id * 0x44) *
+                fVar16 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
                          (&creature_pool)[local_7c].move_speed * frame_dt * fVar16 * local_70 * 25.0
                          + (&creature_pool)[local_7c].anim_phase;
                 (&creature_pool)[local_7c].anim_phase = fVar16;
@@ -23069,8 +23067,7 @@ LAB_00426ac8:
               }
             }
             else {
-              fVar16 = *(float *)(&creature_type_anim_rate +
-                                 (&creature_pool)[local_7c].type_id * 0x44) *
+              fVar16 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
                        (&creature_pool)[local_7c].move_speed * frame_dt * fVar16 * local_70 * 22.0 +
                        (&creature_pool)[local_7c].anim_phase;
               (&creature_pool)[local_7c].anim_phase = fVar16;
@@ -23157,9 +23154,8 @@ LAB_00426ac8:
                   if ((int)uVar7 < 0) {
                     uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
                   }
-                  sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
-                                            (uVar7 + (&creature_pool)[local_7c].type_id * 0x11) * 4)
-                                 );
+                  sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                                         sfx_bank_b[uVar7]);
                   iVar6 = perk_count_get(perk_id_mr_melee);
                   if (iVar6 != 0) {
                     local_50[8] = 0.0;
@@ -23461,7 +23457,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
+            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
             DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
             _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -23501,7 +23497,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
+            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
             DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
             _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -23544,7 +23540,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
+        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
         DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
         _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -23581,7 +23577,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
+        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
         DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
         _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;

@@ -126,6 +126,19 @@ typedef struct player_state_t {
     unsigned char _pad8[0x10];
 } player_state_t;
 
+typedef struct creature_type_t {
+    int texture_handle;
+    int sfx_bank_a[4];
+    int sfx_bank_b[2];
+    unsigned char _pad0[4];
+    float field_0x20;
+    unsigned char _pad1[0x10];
+    float anim_rate;
+    int base_frame;
+    int corpse_frame;
+    int anim_flags;
+} creature_type_t;
+
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
