@@ -267,6 +267,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047ea4c",
+      "comment": "Global time accumulator (seconds) used for UI/FX sine/rotation animations; incremented by frame_dt.",
+      "name": "game_time_s",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x0047ea54",
       "comment": "Console input cursor/index into console_input_buf (also acts as current length).",
       "name": "console_input_cursor",
@@ -834,6 +841,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004807c8",
+      "comment": "Perk selection screen init flags for static UI state (atexit guards).",
+      "name": "perk_selection_screen_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004807d0",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
       "name": "ui_button_table_c",
@@ -1165,6 +1179,34 @@
       "comment": "Credits secret score counter displayed as \"score: %d\".",
       "name": "credits_secret_score",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482568",
+      "comment": "Quest results screen init flags for static UI state (atexit guards).",
+      "name": "quest_results_screen_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004825fc",
+      "comment": "Game over / high score entry screen init flags for static UI state (atexit guards).",
+      "name": "game_over_screen_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482708",
+      "comment": "Quest results screen animation timer/counter used for fade effects.",
+      "name": "quest_results_anim_timer",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048271c",
+      "comment": "Quest results screen step/state index used for staged score reveal (0..3).",
+      "name": "quest_results_step",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482728",
@@ -1908,6 +1950,27 @@
       "name": "ui_element_table_end",
       "type": "ui_element_t *",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f198",
+      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "name": "ui_menu_layout_a",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x0048f1b0",
+      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "name": "ui_menu_layout_b",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x0048f1e8",
+      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "name": "ui_menu_layout_c",
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x0048f208",
@@ -3410,6 +3473,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004aaf88",
+      "comment": "Startup texture loading stage index advanced by load_textures_step.",
+      "name": "startup_texture_load_stage",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004aaf90",
       "comment": "Startup splash/intro sequence timer/state (drives splash texture selection and fade thresholds).",
       "name": "startup_splash_timer",
@@ -4019,6 +4089,20 @@
       "name": "quest_monster_vision_meta",
       "program": "crimsonland.exe",
       "type": "quest_meta_t *"
+    },
+    {
+      "address": "0x004c395c",
+      "comment": "High score table record count (number of loaded entries; loop bound for ranking).",
+      "name": "highscore_table_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004c3964",
+      "comment": "DirectSound interface pointer (released by dsound_shutdown; used to create the primary buffer).",
+      "name": "dsound_iface",
+      "program": "crimsonland.exe",
+      "type": "int *"
     },
     {
       "address": "0x004c3c80",
