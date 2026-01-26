@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import random
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache
+from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.fonts.small import measure_small_text_width
@@ -67,6 +69,8 @@ class SurvivalView:
         *,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
+        audio: AudioState | None = None,
+        audio_rng: random.Random | None = None,
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -82,6 +86,8 @@ class SurvivalView:
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
+            audio=audio,
+            audio_rng=audio_rng,
         )
         self._bind_world()
         self._survival = _SurvivalState()

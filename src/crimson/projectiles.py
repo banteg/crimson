@@ -24,6 +24,8 @@ PLASMA_CANNON_PROJECTILE_TYPE_ID = 0x1B
 SPLITTER_GUN_PROJECTILE_TYPE_ID = 0x1C
 PLAGUE_SPREADER_PROJECTILE_TYPE_ID = 0x28
 FIRE_BULLETS_PROJECTILE_TYPE_ID = 0x2C
+ROCKET_LAUNCHER_PROJECTILE_TYPE_ID = 0x0B
+ROCKET_SPLASH_RADIUS = 90.0
 
 
 def _rng_zero() -> int:
@@ -193,6 +195,23 @@ class ProjectilePool:
             if value is None:
                 return float(damage_scale_default)
             return float(value)
+
+        def _apply_rocket_splash(x: float, y: float, owner_id: int, damage_scale: float) -> None:
+            for idx, creature in enumerate(creatures):
+                if creature.hp <= 0.0:
+                    continue
+                if idx == owner_id:
+                    continue
+                creature_radius = _hit_radius_for(creature)
+                hit_r = ROCKET_SPLASH_RADIUS + creature_radius
+                if _distance_sq(x, y, creature.x, creature.y) > hit_r * hit_r:
+                    continue
+                dist = math.hypot(creature.x - x, creature.y - y)
+                if dist < 50.0:
+                    dist = 50.0
+                damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
+                if damage_amount > 0.0:
+                    creature.hp -= damage_amount
 
         def _reset_shock_chain_if_owner(index: int) -> None:
             if runtime_state is None:
@@ -410,6 +429,11 @@ class ProjectilePool:
                         creature.y += move_dy * 3.0
                     elif type_id == PLAGUE_SPREADER_PROJECTILE_TYPE_ID and hasattr(creature, "collision_flag"):
                         setattr(creature, "collision_flag", 1)
+                    elif type_id == ROCKET_LAUNCHER_PROJECTILE_TYPE_ID:
+                        damage_scale = _damage_scale(type_id)
+                        _apply_rocket_splash(proj.pos_x, proj.pos_y, proj.owner_id, damage_scale)
+                        proj.life_timer = 0.25
+                        break
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95

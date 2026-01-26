@@ -3245,6 +3245,8 @@ class SurvivalGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            audio=state.audio,
+            audio_rng=state.rng,
         )
         self._action: str | None = None
 

@@ -254,6 +254,8 @@ class DemoView:
             difficulty_level=0,
             texture_cache=state.texture_cache,
             config=state.config,
+            audio=state.audio,
+            audio_rng=state.rng,
         )
         self._ground: GroundRenderer | None = None
         self._crand = Crand(0)

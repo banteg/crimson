@@ -1039,35 +1039,42 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         muzzle_y = player.pos_y + player.aim_dir_y * 16.0
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=theta, type_id=4)
     else:
-        theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
-        if player.spread_heat > 0.0:
-            theta += (float(state.rng.rand()) / 32767.0 * 2.0 - 1.0) * player.spread_heat
-        angle = theta + math.pi / 2.0
+        base_theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
         muzzle_x = player.pos_x + player.aim_dir_x * 16.0
         muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        if player.fire_bullets_timer > 0.0:
-            count = max(1, pellet_count)
-            meta = _projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+
+        def _spawn_pellet_shot(type_id: int, *, meta: float, pellets: int) -> None:
+            count = max(1, int(pellets))
             for _ in range(count):
-                jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
+                theta = base_theta
+                if player.spread_heat > 0.0:
+                    theta += (float(state.rng.rand()) / 32767.0 * 2.0 - 1.0) * player.spread_heat
+                if count > 1:
+                    theta += (float(state.rng.rand() % 200) - 100.0) * 0.0015
+                angle = theta + math.pi / 2.0
                 state.projectiles.spawn(
                     pos_x=muzzle_x,
                     pos_y=muzzle_y,
-                    angle=angle + jitter,
-                    type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                    angle=angle,
+                    type_id=type_id,
                     owner_id=_owner_id_for_player(player.index),
                     base_damage=meta,
                 )
+
+        if player.fire_bullets_timer > 0.0:
+            meta = _projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+            _spawn_pellet_shot(
+                FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                meta=meta,
+                pellets=pellet_count,
+            )
         else:
             # Most main-projectile weapons map `weapon_id -> projectile_type_id` in the rewrite.
             type_id = int(player.weapon_id)
-            state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
-                angle=angle,
-                type_id=type_id,
-                owner_id=_owner_id_for_player(player.index),
-                base_damage=_projectile_meta_for_type_id(type_id),
+            _spawn_pellet_shot(
+                type_id,
+                meta=_projectile_meta_for_type_id(type_id),
+                pellets=pellet_count,
             )
 
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + 0.8)
