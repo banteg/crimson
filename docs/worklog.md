@@ -2,14 +2,35 @@
 
 Reverse-chronological log of notable repo changes, grouped by day.
 
+## 2026-01-26
+
+- Introduced `GameWorld` core and refactored survival around it; rendered terrain/sprites/decals and drove demo mode via `GameWorld` with new rendering/sim helpers.
+- Built out the Play Game flow: mode select panel, quest select menu, perk selection flow, and statistics screen; matched perk menu layout and classic menu shadow blend.
+- Added/expanded debug views for survival, projectiles (FX lab), camera, player sprites, decals, and small-font/vector-font comparisons (with screenshot hotkey).
+- Improved gameplay parity: projectile behavior, pellet spreads/rocket splash + gameplay SFX, camera bounds/scale/shake, terrain render texture sampling, and player overlay sprite passes.
+- Advanced creature parity (sprite rotation, movement/turning, anim scaling, staged deaths/corpse decals, and `fx_detail` shadow) with Frida traces for sprite/anim-phase timing.
+- Large Ghidra typing pass: quest/player/perk/bonus/creature/audio/effect tables, `ui_button_t`, and hotspot globals; added a DAT-hotspots report, fixed Grim2D vtable conventions, and regenerated exports/metrics/decompiles.
+- Updated docs for survival/combat status, weapon spread heat, fonts, and player sprite UV/recoil offsets; pruned addressed incoming notes.
+
+## 2026-01-25
+
+- Implemented the options screen and aligned options panel layout to the original; added Frida tracing for options panel behavior.
+- Implemented in-game console UI with startup commands/docs; matched console backdrop colors and mono font advance.
+- Added HUD overlay scaffolding and aligned layout with the decompile; added bonus pickups + sandbox rendering and matched bonus picker distribution/constants.
+- Added survival XP progression and perk auto-pick; wired `player_update` runtime glue and added a player sandbox view.
+- Implemented `game.cfg` status persistence; built FX pools + FX queue baking; extracted AI targeting logic and cleaned up AI internals.
+- Added SFX loading/playback, split music and SFX modules, and mapped full SFX key/id tables; updated docs (survival/player contracts, status refresh, plan checkboxes) and tooling (py-spy recipe, Python 3.13 requirement).
+
 ## 2026-01-24
 
-- Added a demo upsell purchase screen, aligned `demo_mode_start` sequencing, and improved purchase-screen copy/layout/backplasma to match the original.
-- Matched menu slide animations and sign shadow pass, and kept the logo sign static between menu screens.
-- Fixed small-font rendering to be pixel-perfect.
-- Documented `fx_detail` flags/preset mapping and enabled `fx_detail` shadows by default.
-- Added Frida tracing for menu logo pivot behavior.
-- Named additional menu/logo-related callbacks in Ghidra and regenerated exports.
+- Added a demo upsell purchase screen, aligned `demo_mode_start` sequencing, and improved purchase-screen copy/layout/backplasma to match the original; added an idle attract trigger.
+- Ported and tested a large batch of spawn templates and timelines across tutorial/survival/rush/quest modes (spawn slots, milestone/wave ticks, quest timeline/tick); added `SpawnId` and builder-based spawn-plan dispatch.
+- Added spawn-plan tooling: CLI commands, allocation reporting, and a debug view; simulated spawn slot ticking in views.
+- Implemented projectile pools and default projectile meta/damage scaling; fixed bonus args + anim-phase resets and preserved `phase_seed` randomness.
+- Matched menu slide animations and sign shadow pass, and kept the logo sign static between menu screens; added Frida tracing for logo pivot behavior.
+- Fixed small-font rendering to be pixel-perfect; documented `fx_detail` flags/preset mapping and enabled `fx_detail` shadows by default.
+- Added a Frida demo shareware patch script and improved full-version check handling.
+- Named `creature_spawn_slot_alloc` and additional menu/logo callbacks in Ghidra; regenerated exports; enabled pytest-cov coverage reporting by default.
 
 ## 2026-01-23
 
