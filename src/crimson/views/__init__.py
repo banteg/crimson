@@ -22,6 +22,7 @@ def _register_builtin_views() -> None:
     from . import survival as _survival  # noqa: F401
     from . import small_font_debug as _small_font_debug  # noqa: F401
     from . import camera_debug as _camera_debug  # noqa: F401
+    from . import camera_shake as _camera_shake  # noqa: F401
     from . import player_sprite_debug as _player_sprite_debug  # noqa: F401
 
 

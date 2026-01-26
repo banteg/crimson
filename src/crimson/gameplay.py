@@ -413,6 +413,10 @@ class GameplayState:
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
+    camera_shake_offset_x: float = 0.0
+    camera_shake_offset_y: float = 0.0
+    camera_shake_timer: float = 0.0
+    camera_shake_pulses: int = 0
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
@@ -1295,8 +1299,30 @@ def bonus_apply(
         )
         state.bonus_spawn_guard = False
         return
+    elif bonus_id == BonusId.NUKE:
+        # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
+        #   camera_shake_pulses = 0x14;
+        #   camera_shake_timer = 0.2f;
+        state.camera_shake_pulses = 0x14
+        state.camera_shake_timer = 0.2
+
+        if creatures:
+            origin_pos = origin or player
+            ox = float(origin_pos.pos_x)
+            oy = float(origin_pos.pos_y)
+            for creature in creatures:
+                if creature.hp <= 0.0:
+                    continue
+                dx = float(creature.x) - ox
+                dy = float(creature.y) - oy
+                if abs(dx) > 256.0 or abs(dy) > 256.0:
+                    continue
+                dist = math.hypot(dx, dy)
+                if dist < 256.0:
+                    creature.hp -= (256.0 - dist) * 5.0
+        return
     else:
-        # Bonus types not modeled yet: nuke, shock chain, etc.
+        # Bonus types not modeled yet.
         return
 
     # Register timed bonuses in the HUD.
