@@ -52,6 +52,9 @@ def run_view(
         dt = rl.get_frame_time()
         view.update(dt)
         take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
+        consume_screenshot = getattr(view, "consume_screenshot_request", None)
+        if callable(consume_screenshot) and consume_screenshot():
+            take_screenshot = True
         rl.begin_drawing()
         view.draw()
         rl.end_drawing()

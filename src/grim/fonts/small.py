@@ -55,8 +55,11 @@ def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: f
     y_pos = y
     scale_px = scale * SMALL_FONT_RENDER_SCALE
     line_height = font.cell_size * scale_px
+    snap = abs(scale_px - round(scale_px)) < 0.001
+    if snap:
+        scale_px = float(round(scale_px))
     origin = rl.Vector2(0.0, 0.0)
-    bias = SMALL_FONT_UV_BIAS_PX
+    bias = 0.0 if SMALL_FONT_FILTER == rl.TEXTURE_FILTER_POINT else SMALL_FONT_UV_BIAS_PX
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
             x_pos = x
@@ -77,11 +80,15 @@ def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: f
             src_w,
             src_h,
         )
+        dst_x = float(round(x_pos)) if snap else float(x_pos)
+        dst_y = float(round(y_pos)) if snap else float(y_pos)
+        dst_w = float(round(width * scale_px)) if snap else float(width * scale_px)
+        dst_h = float(round(font.cell_size * scale_px)) if snap else float(font.cell_size * scale_px)
         dst = rl.Rectangle(
-            float(x_pos),
-            float(y_pos),
-            float(width * scale_px),
-            float(font.cell_size * scale_px),
+            dst_x,
+            dst_y,
+            dst_w,
+            dst_h,
         )
         rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
         x_pos += width * scale_px
@@ -111,4 +118,3 @@ def measure_small_text_width(font: SmallFontData, text: str, scale: float) -> fl
         x += float(width) * scale_px
     best = max(best, x)
     return best
-
