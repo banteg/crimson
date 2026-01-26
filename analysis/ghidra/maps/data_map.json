@@ -255,6 +255,19 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047e448",
+      "comment": "Console input text buffer (0x400 bytes; null-terminated).",
+      "name": "console_input_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047ea54",
+      "comment": "Console input cursor/index into console_input_buf (also acts as current length).",
+      "name": "console_input_cursor",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0047ea58",
       "comment": "Console input ready flag (set when Enter pressed).",
       "name": "console_input_ready",
@@ -328,6 +341,12 @@
       "address": "0x0047f4d4",
       "comment": "Console input enable flag (gates grim_get_key_char).",
       "name": "console_input_enabled",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047f4d8",
+      "comment": "Empty string constant (\"\"), used as default/blank text.",
+      "name": "s_empty_string",
       "program": "crimsonland.exe"
     },
     {
@@ -1735,6 +1754,13 @@
       "comment": "High score record full-version marker (offset 0x45).",
       "name": "highscore_full_version_marker",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487088",
+      "comment": "Quest stage completion transition timer (ms); <0 means inactive.",
+      "name": "quest_transition_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487190",
@@ -4527,6 +4553,12 @@
       "address": "0x004d7aa0",
       "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)",
       "name": "weapon_projectile_pellet_count",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004da100",
+      "comment": "Scratch buffer used by input_key_name (GetKeyNameTextA, 0x40 bytes).",
+      "name": "input_key_name_buf",
       "program": "crimsonland.exe"
     },
     {
