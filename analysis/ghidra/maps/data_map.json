@@ -4593,9 +4593,10 @@
     },
     {
       "address": "0x004c8450",
-      "comment": "Per-SFX mute flag table (set by sfx_mute_all).",
+      "comment": "Per-SFX mute flag table (char; set by sfx_mute_all).",
       "name": "sfx_mute_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004c84d0",

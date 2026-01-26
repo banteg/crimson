@@ -36199,30 +36199,31 @@ void audio_init_music(void)
 
 {
   int iVar1;
-  undefined4 *puVar2;
-  float *pfVar3;
-  char *fmt;
+  float *pfVar2;
+  char *pcVar3;
   
   if ((config_blob.reserved0[0] == '\0') && (config_blob.reserved0[1] == '\0')) {
-    puVar2 = &sfx_mute_flags;
-    for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *puVar2 = 0x1010101;
-      puVar2 = puVar2 + 1;
+    iVar1 = 0x20;
+    pcVar3 = &sfx_mute_flags;
+    while (iVar1 != 0) {
+      iVar1 = iVar1 + -1;
+      builtin_strncpy(pcVar3,"\x01\x01\x01\x01",4);
+      pcVar3 = pcVar3 + 4;
     }
-    pfVar3 = &sfx_volume_table;
+    pfVar2 = &sfx_volume_table;
     for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *pfVar3 = 0.0;
-      pfVar3 = pfVar3 + 1;
+      *pfVar2 = 0.0;
+      pfVar2 = pfVar2 + 1;
     }
     iVar1 = resource_pack_set(s_music_paq_00477eec);
     DAT_004cc8d5 = (char)iVar1;
     if (DAT_004cc8d5 == '\0') {
-      fmt = s____resource_paq__music_paq__not_f_00477e84;
+      pcVar3 = s____resource_paq__music_paq__not_f_00477e84;
     }
     else {
-      fmt = s____set_sound_resource_paq__music_00477ec4;
+      pcVar3 = s____set_sound_resource_paq__music_00477ec4;
     }
-    console_printf(&console_log_queue,fmt);
+    console_printf(&console_log_queue,pcVar3);
     music_track_intro_id = music_load_track(s_music_intro_ogg_00477e74);
     music_track_shortie_monk_id = music_load_track(s_music_shortie_monk_ogg_00477e5c);
     console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40);
@@ -36646,7 +36647,7 @@ void __cdecl sfx_play_exclusive(int sfx_id)
       sfx_entry_start_playback((int)(&music_entry_table + sfx_id));
       sfx_entry_set_volume((int)(&music_entry_table + sfx_id),config_blob.music_volume);
       fVar1 = config_blob.music_volume;
-      *(undefined1 *)((int)&sfx_mute_flags + sfx_id) = 0;
+      (&sfx_mute_flags)[sfx_id] = '\0';
       (&sfx_volume_table)[sfx_id] = fVar1;
     }
   }
@@ -36678,7 +36679,7 @@ void __cdecl sfx_mute_all(int sfx_id)
       }
       sfx_id_00 = sfx_id_00 + 1;
     } while (sfx_id_00 < 0x80);
-    *(undefined1 *)((int)&sfx_mute_flags + sfx_id) = 1;
+    (&sfx_mute_flags)[sfx_id] = '\x01';
   }
   return;
 }
@@ -36706,7 +36707,7 @@ void sfx_update_mute_fades(void)
     do {
       if (entry->vorbis_stream != (void *)0x0) {
         if (0.0 < config_blob.music_volume) {
-          if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
+          if ((&sfx_mute_flags)[iVar2] == '\0') {
             (**(code **)(*(int *)entry->buffers[0] + 0x24))(entry->buffers[0],abStack_4);
             if ((abStack_4[0] & 1) == 0) {
               console_printf(&console_log_queue,s_SND__detected_unsilenced_hearabl_00478610);
@@ -36719,7 +36720,7 @@ void sfx_update_mute_fades(void)
           (**(code **)(*(int *)entry->buffers[0] + 0x48))(entry->buffers[0]);
 LAB_0043d63c:
           fVar1 = config_blob.music_volume;
-          if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
+          if ((&sfx_mute_flags)[iVar2] == '\0') {
             if (config_blob.music_volume <= *pfVar3) {
               if (*pfVar3 <= config_blob.music_volume) goto LAB_0043d709;
               *pfVar3 = config_blob.music_volume;
@@ -36798,7 +36799,7 @@ void audio_resume_channels(void)
     iVar1 = 0;
     entry = &music_entry_table;
     do {
-      if (*(char *)((int)&sfx_mute_flags + iVar1) == '\0') {
+      if ((&sfx_mute_flags)[iVar1] == '\0') {
         sfx_entry_resume((int)entry);
       }
       entry = entry + 1;
@@ -36822,7 +36823,7 @@ int __cdecl sfx_is_unmuted(int sfx_id)
   if (sfx_unmuted_flag == '\0') {
     return in_EAX & 0xffffff00;
   }
-  return (uint)(*(char *)((int)&sfx_mute_flags + sfx_id) == '\0');
+  return (uint)((&sfx_mute_flags)[sfx_id] == '\0');
 }
 
 
