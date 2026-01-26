@@ -383,6 +383,14 @@ typedef struct quest_meta_t {
     int start_weapon_id;
 } quest_meta_t;
 
+typedef struct perk_meta_t {
+    char *name;
+    char *description;
+    int flags;
+    int available;
+    int prerequisite;
+} perk_meta_t;
+
 typedef struct bonus_entry_t {
     int bonus_id;
     unsigned char state;

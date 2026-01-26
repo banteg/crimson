@@ -4015,31 +4015,32 @@
     },
     {
       "address": "0x004c2c40",
-      "comment": "Perk name pointer table (stride 0x14 bytes per perk).",
-      "name": "perk_name_table",
-      "program": "crimsonland.exe"
+      "comment": "Perk metadata table (stride 0x14 bytes per perk).",
+      "name": "perk_meta_table",
+      "program": "crimsonland.exe",
+      "type": "perk_meta_t"
     },
     {
       "address": "0x004c2c44",
-      "comment": "Perk description pointer table (perk_name_table + 0x04).",
+      "comment": "Perk description pointer table (perk_meta_table + 0x04).",
       "name": "perk_desc_table",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004c2c48",
-      "comment": "Perk flags table (perk_name_table + 0x08).",
+      "comment": "Perk flags table (perk_meta_table + 0x08).",
       "name": "perk_flags_table",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004c2c4c",
-      "comment": "Perk availability table (perk_name_table + 0x0c).",
+      "comment": "Perk availability table (perk_meta_table + 0x0c).",
       "name": "perk_available_table",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004c2c50",
-      "comment": "Perk prerequisite table (perk_name_table + 0x10).",
+      "comment": "Perk prerequisite table (perk_meta_table + 0x10).",
       "name": "perk_prereq_table",
       "program": "crimsonland.exe"
     },
