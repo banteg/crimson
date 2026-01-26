@@ -14,6 +14,7 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../atlas.md).
 - `creature_anim_phase` (float) is advanced in `creature_update_all` (`FUN_00426220`) using the per-type
   rate stored in the type table (`DAT_00482728`).
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
+- Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured via `scripts/frida/creature_anim_trace.js`).
 
 ## Strip selection and frame mapping
 
@@ -46,6 +47,7 @@ When `crimson.cfg` `fx_detail_0` is enabled (`config_fx_detail_flag0`) and the *
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 - for long-strip corpses (`hitbox_size < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + hitbox_size * 0.5` (clamped to `>= 0`).
+- Evidence: `analysis/frida/creature_render_trace_summary.json` (captured via `scripts/frida/creature_render_trace.js`).
 
 ## Creature flags related to animation / attacks (partial)
 

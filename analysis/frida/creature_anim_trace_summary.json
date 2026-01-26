@@ -1,0 +1,135 @@
+{
+  "by_ai_mode": {
+    "0": {
+      "error": {
+        "count": 328217,
+        "max": 30.710819678846747,
+        "mean": 0.0019983575976586453,
+        "mean_abs": 0.0019986844169441196,
+        "min": -9.487848728895187e-07
+      },
+      "error_no_local": {
+        "count": 328217,
+        "max": 30.710819677893934,
+        "mean": 0.001998357675028847,
+        "mean_abs": 0.0019986844346517748,
+        "min": -9.483939501925276e-07
+      }
+    },
+    "7": {
+      "error": {
+        "count": 20691,
+        "max": 23.006388664245605,
+        "mean": 0.001905112146472788,
+        "mean_abs": 0.001905112146472788,
+        "min": 0.0
+      },
+      "error_no_local": {
+        "count": 20691,
+        "max": 23.006388664245605,
+        "mean": 0.001905112146472788,
+        "mean_abs": 0.001905112146472788,
+        "min": 0.0
+      }
+    }
+  },
+  "by_strip_mode": {
+    "long": {
+      "error": {
+        "count": 348908,
+        "max": 30.710819678846747,
+        "mean": 0.0019928279404696826,
+        "mean_abs": 0.001993135378663764,
+        "min": -9.487848728895187e-07
+      },
+      "error_no_local": {
+        "count": 348908,
+        "max": 30.710819677893934,
+        "mean": 0.001992828013251693,
+        "mean_abs": 0.001993135395321046,
+        "min": -9.483939501925276e-07
+      }
+    }
+  },
+  "by_type_id": {
+    "2": {
+      "error": {
+        "count": 297063,
+        "max": 30.710819678846747,
+        "mean": 0.0022079415198984465,
+        "mean_abs": 0.0022082739271114217,
+        "min": -9.487848728895187e-07
+      },
+      "error_no_local": {
+        "count": 297063,
+        "max": 30.710819677893934,
+        "mean": 0.00220794180937469,
+        "mean_abs": 0.002208273941278618,
+        "min": -9.483939501925276e-07
+      }
+    },
+    "3": {
+      "error": {
+        "count": 51845,
+        "max": 23.006388664245605,
+        "mean": 0.0007602638504736011,
+        "mean_abs": 0.0007604282204516585,
+        "min": -9.352806955575943e-07
+      },
+      "error_no_local": {
+        "count": 51845,
+        "max": 23.006388664245605,
+        "mean": 0.0007602626816353474,
+        "mean_abs": 0.0007604282513765622,
+        "min": -9.362373770555044e-07
+      }
+    }
+  },
+  "events_creature_anim": 348928,
+  "events_total": 348930,
+  "events_with_delta": 348908,
+  "events_with_pred": 348928,
+  "logs": [
+    "artifacts/frida/share/creature_anim_trace.jsonl"
+  ],
+  "overall": {
+    "delta_over_pred_ratio": {
+      "count": 328217,
+      "max": 1028.906714795986,
+      "mean": 1.0541259008520256,
+      "mean_abs": 1.0541259008520256,
+      "min": 0.9999634829573081
+    },
+    "error_pred": {
+      "count": 348908,
+      "max": 30.710819678846747,
+      "mean": 0.0019928279404696826,
+      "mean_abs": 0.001993135378663764,
+      "min": -9.487848728895187e-07
+    },
+    "error_pred_no_local": {
+      "count": 348908,
+      "max": 30.710819677893934,
+      "mean": 0.001992828013251693,
+      "mean_abs": 0.001993135395321046,
+      "min": -9.483939501925276e-07
+    }
+  },
+  "session": {
+    "config": {
+      "everyNUpdates": 1,
+      "exeName": "crimsonland.exe",
+      "linkBase": "0x400000",
+      "logMode": "append",
+      "logPath": "C:\\share\\frida\\creature_anim_trace.jsonl",
+      "logToConsole": false,
+      "maxCreaturesPerTick": 8,
+      "maxUpdates": 0,
+      "onlyAlive": true,
+      "trackCreatureIndex": null,
+      "trackTypeId": null
+    },
+    "exe_base": "0x400000",
+    "logPath": "C:\\share\\frida\\creature_anim_trace.jsonl"
+  }
+}

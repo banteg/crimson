@@ -1,0 +1,103 @@
+{
+  "by_pass_id": {
+    "1": {
+      "events": 84
+    },
+    "5": {
+      "events": 84
+    }
+  },
+  "by_type_id": {
+    "2": {
+      "events": 120
+    },
+    "3": {
+      "events": 48
+    }
+  },
+  "by_type_id_pass_id": {
+    "type_2_pass_1": {
+      "hitbox_size": {
+        "count": 60,
+        "max": 15.799999237060547,
+        "mean": 1.3999986052513123,
+        "min": -11.000001907348633
+      }
+    },
+    "type_2_pass_5": {
+      "hitbox_size": {
+        "count": 60,
+        "max": 15.799999237060547,
+        "mean": 1.3999986052513123,
+        "min": -11.000001907348633
+      }
+    },
+    "type_3_pass_1": {
+      "hitbox_size": {
+        "count": 24,
+        "max": 15.799999237060547,
+        "mean": 1.3999986052513123,
+        "min": -11.000001907348633
+      }
+    },
+    "type_3_pass_5": {
+      "hitbox_size": {
+        "count": 24,
+        "max": 15.799999237060547,
+        "mean": 1.3999986052513123,
+        "min": -11.000001907348633
+      }
+    }
+  },
+  "counts": {
+    "by_pass": {
+      "main": 84,
+      "shadow": 84
+    },
+    "by_pass_id": {
+      "1": 84,
+      "5": 84
+    },
+    "by_type_id": {
+      "2": 120,
+      "3": 48
+    }
+  },
+  "events_creature_draw": 168,
+  "events_total": 169,
+  "mismatches": {
+    "alpha": {
+      "count": 0,
+      "eps": 0.0001
+    },
+    "examples": [],
+    "frame": {
+      "count": 0
+    }
+  },
+  "notes": {
+    "config_var_0x13": "GRIM_CFG_SRC_BLEND (D3DRS_SRCBLEND); creature_render_type uses 1=ZERO for shadow and 5=SRCALPHA for main.",
+    "config_var_0x14": "GRIM_CFG_DEST_BLEND (D3DRS_DESTBLEND); creature_render_type sets 6=INVSRCALPHA for both passes.",
+    "shadow_effect": "With src_blend=ZERO and dst_blend=INVSRCALPHA, pixels are darkened by dst *= (1 - src_alpha). Source RGB is ignored."
+  },
+  "script": "scripts/frida/creature_render_trace.js",
+  "session": {
+    "config": {
+      "exeLinkBase": "0x400000",
+      "exeName": "crimsonland.exe",
+      "filterTypeId": null,
+      "grimName": "grim.dll",
+      "logMode": "append",
+      "logPath": "C:\\share\\frida\\creature_render_trace.jsonl",
+      "logToConsole": false,
+      "matchEps": 0.75,
+      "maxEvents": 0,
+      "onlyDying": true
+    },
+    "exe_base": "0x400000",
+    "grim_base": "0x6d00000",
+    "logPath": "C:\\share\\frida\\creature_render_trace.jsonl",
+    "ts": "2026-01-26T20:33:24.367Z"
+  },
+  "source_log": "C:\\share\\frida\\creature_render_trace.jsonl"
+}
