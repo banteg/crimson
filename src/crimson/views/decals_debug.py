@@ -1,0 +1,661 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import math
+from pathlib import Path
+
+import pyray as rl
+
+from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
+from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
+from crimson.effects import FxQueue, FxQueueRotated
+from crimson.gameplay import GameplayState, PlayerState
+from grim.config import ensure_crimson_cfg
+from grim.fx_queue import FxQueueTextures, bake_fx_queues
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.terrain_render import GroundRenderer
+from grim.view import View, ViewContext
+
+from .registry import register_view
+
+
+UI_TEXT_SCALE = 1.0
+UI_TEXT_DARK = rl.Color(30, 30, 30, 255)
+UI_HINT_DARK = rl.Color(70, 70, 70, 255)
+UI_TEXT_LIGHT = rl.Color(220, 220, 220, 255)
+UI_HINT_LIGHT = rl.Color(140, 140, 140, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
+BG_DARK = rl.Color(12, 12, 14, 255)
+BG_LIGHT = rl.Color(235, 235, 235, 255)
+GRID_COLOR = rl.Color(0, 0, 0, 20)
+
+WORLD_SIZE = 1024.0
+
+
+@dataclass(frozen=True, slots=True)
+class _CreatureAnimInfo:
+    base: int
+    anim_rate: float
+    mirror: bool
+
+
+_CREATURE_ANIM: dict[CreatureTypeId, _CreatureAnimInfo] = {
+    CreatureTypeId.ZOMBIE: _CreatureAnimInfo(base=0x20, anim_rate=1.2, mirror=False),
+    CreatureTypeId.LIZARD: _CreatureAnimInfo(base=0x10, anim_rate=1.6, mirror=True),
+    CreatureTypeId.ALIEN: _CreatureAnimInfo(base=0x20, anim_rate=1.35, mirror=False),
+    CreatureTypeId.SPIDER_SP1: _CreatureAnimInfo(base=0x10, anim_rate=1.5, mirror=True),
+    CreatureTypeId.SPIDER_SP2: _CreatureAnimInfo(base=0x10, anim_rate=1.5, mirror=True),
+    CreatureTypeId.TROOPER: _CreatureAnimInfo(base=0x00, anim_rate=1.0, mirror=False),
+}
+
+_CREATURE_ASSET: dict[CreatureTypeId, str] = {
+    CreatureTypeId.ZOMBIE: "zombie",
+    CreatureTypeId.LIZARD: "lizard",
+    CreatureTypeId.ALIEN: "alien",
+    CreatureTypeId.SPIDER_SP1: "spider_sp1",
+    CreatureTypeId.SPIDER_SP2: "spider_sp2",
+    CreatureTypeId.TROOPER: "trooper",
+}
+
+
+TERRAIN_TEXTURES: list[tuple[int, str]] = [
+    (0, "ter/ter_q1_base.png"),
+    (1, "ter/ter_q1_tex1.png"),
+    (2, "ter/ter_q2_base.png"),
+    (3, "ter/ter_q2_tex1.png"),
+    (4, "ter/ter_q3_base.png"),
+    (5, "ter/ter_q3_tex1.png"),
+    (6, "ter/ter_q4_base.png"),
+    (7, "ter/ter_q4_tex1.png"),
+]
+
+
+class DecalsDebugView:
+    def __init__(self, ctx: ViewContext) -> None:
+        self._assets_root = ctx.assets_dir
+        self._missing_assets: list[str] = []
+        self._small: SmallFontData | None = None
+
+        self._terrain_textures: dict[int, rl.Texture] = {}
+        self._creature_textures: dict[str, rl.Texture] = {}
+        self._owned_textures: list[rl.Texture] = []
+
+        self._fx_textures: FxQueueTextures | None = None
+        self._ground: GroundRenderer | None = None
+        self._camera_x = 0.0
+        self._camera_y = 0.0
+        self._light_mode = False
+
+        self._terrain_seed = 0xBEEF
+        self._terrain_pair = 0  # 0..3, maps to (0,1),(2,3),(4,5),(6,7)
+
+        self._state = GameplayState()
+        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._creatures = CreaturePool()
+        self._env = SpawnEnv(
+            terrain_width=WORLD_SIZE,
+            terrain_height=WORLD_SIZE,
+            demo_mode_active=True,
+            hardcore=False,
+            difficulty_level=0,
+        )
+
+        self._fx_queue = FxQueue()
+        self._fx_queue_rotated = FxQueueRotated()
+
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+
+    def _resolve_asset(self, rel_path: str) -> Path | None:
+        direct = self._assets_root / rel_path
+        if direct.is_file():
+            return direct
+        legacy = self._assets_root / "crimson" / rel_path
+        if legacy.is_file():
+            return legacy
+        return None
+
+    def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
+        runtime_dir = Path("artifacts") / "runtime"
+        if runtime_dir.is_dir():
+            try:
+                cfg = ensure_crimson_cfg(runtime_dir)
+                return (
+                    float(cfg.texture_scale),
+                    float(cfg.screen_width),
+                    float(cfg.screen_height),
+                )
+            except Exception:
+                return 1.0, None, None
+        return 1.0, None, None
+
+    def _apply_terrain_pair(self) -> None:
+        if self._ground is None:
+            return
+        base_id = int(self._terrain_pair) * 2
+        overlay_id = base_id + 1
+        base = self._terrain_textures.get(base_id)
+        overlay = self._terrain_textures.get(overlay_id)
+        if base is None:
+            return
+        self._ground.texture = base
+        self._ground.overlay = overlay
+        self._ground.overlay_detail = overlay or base
+        self._ground.schedule_generate(seed=int(self._terrain_seed), layers=3)
+
+    def _clear_ground_light(self) -> None:
+        ground = self._ground
+        if ground is None:
+            return
+        ground.create_render_target()
+        if ground.render_target is None:
+            return
+        rl.begin_texture_mode(ground.render_target)
+        rl.clear_background(BG_LIGHT)
+        rl.end_texture_mode()
+        # GroundRenderer treats this as an internal invariant; set it for debug fills.
+        ground._render_target_ready = True  # type: ignore[attr-defined]
+
+    def _reset_ground(self) -> None:
+        if self._ground is None:
+            return
+        if self._light_mode:
+            self._clear_ground_light()
+        else:
+            self._apply_terrain_pair()
+
+    def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
+        ground = self._ground
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        if ground is None:
+            return x, y
+
+        # Mirror GameWorld camera behavior (ground.draw uses the same clamp rules).
+        cfg_w = float(ground.screen_width or screen_w)
+        cfg_h = float(ground.screen_height or screen_h)
+        if cfg_w > WORLD_SIZE:
+            cfg_w = WORLD_SIZE
+        if cfg_h > WORLD_SIZE:
+            cfg_h = WORLD_SIZE
+
+        min_x = cfg_w - WORLD_SIZE
+        min_y = cfg_h - WORLD_SIZE
+        cam_x = self._camera_x
+        cam_y = self._camera_y
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y > -1.0:
+            cam_y = -1.0
+        if cam_y < min_y:
+            cam_y = min_y
+
+        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
+        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
+        return (x + cam_x) * scale_x, (y + cam_y) * scale_y
+
+    def _screen_to_world(self, x: float, y: float) -> tuple[float, float]:
+        ground = self._ground
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        if ground is None:
+            return x, y
+
+        cfg_w = float(ground.screen_width or screen_w)
+        cfg_h = float(ground.screen_height or screen_h)
+        if cfg_w > WORLD_SIZE:
+            cfg_w = WORLD_SIZE
+        if cfg_h > WORLD_SIZE:
+            cfg_h = WORLD_SIZE
+
+        min_x = cfg_w - WORLD_SIZE
+        min_y = cfg_h - WORLD_SIZE
+        cam_x = self._camera_x
+        cam_y = self._camera_y
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y > -1.0:
+            cam_y = -1.0
+        if cam_y < min_y:
+            cam_y = min_y
+
+        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
+        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
+        world_x = (x / scale_x) - cam_x
+        world_y = (y / scale_y) - cam_y
+        return world_x, world_y
+
+    def _world_scale(self) -> float:
+        ground = self._ground
+        if ground is None:
+            return 1.0
+        out_w = float(rl.get_screen_width())
+        out_h = float(rl.get_screen_height())
+        cfg_w = float(ground.screen_width or out_w)
+        cfg_h = float(ground.screen_height or out_h)
+        if cfg_w > WORLD_SIZE:
+            cfg_w = WORLD_SIZE
+        if cfg_h > WORLD_SIZE:
+            cfg_h = WORLD_SIZE
+        if cfg_w <= 0.0 or cfg_h <= 0.0:
+            return 1.0
+        scale_x = out_w / cfg_w
+        scale_y = out_h / cfg_h
+        return (scale_x + scale_y) * 0.5
+
+    def _draw_grid(self) -> None:
+        ground = self._ground
+        if ground is None:
+            return
+        step = 64.0
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        cfg_w = float(ground.screen_width or screen_w)
+        cfg_h = float(ground.screen_height or screen_h)
+        if cfg_w > WORLD_SIZE:
+            cfg_w = WORLD_SIZE
+        if cfg_h > WORLD_SIZE:
+            cfg_h = WORLD_SIZE
+
+        min_x = cfg_w - WORLD_SIZE
+        min_y = cfg_h - WORLD_SIZE
+        cam_x = self._camera_x
+        cam_y = self._camera_y
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y > -1.0:
+            cam_y = -1.0
+        if cam_y < min_y:
+            cam_y = min_y
+
+        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
+        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
+
+        start_x = math.floor((-cam_x) / step) * step
+        end_x = (-cam_x) + cfg_w
+        x = start_x
+        while x <= end_x:
+            sx = int((x + cam_x) * scale_x)
+            rl.draw_line(sx, 0, sx, int(screen_h), GRID_COLOR)
+            x += step
+
+        start_y = math.floor((-cam_y) / step) * step
+        end_y = (-cam_y) + cfg_h
+        y = start_y
+        while y <= end_y:
+            sy = int((y + cam_y) * scale_y)
+            rl.draw_line(0, sy, int(screen_w), sy, GRID_COLOR)
+            y += step
+
+    def _draw_creature_sprite(
+        self,
+        texture: rl.Texture,
+        *,
+        info: _CreatureAnimInfo,
+        flags: CreatureFlags,
+        phase: float,
+        mirror_long: bool,
+        world_x: float,
+        world_y: float,
+        rotation_rad: float,
+        scale: float,
+        size_scale: float,
+        tint: rl.Color,
+    ) -> None:
+        frame, _, _ = creature_anim_select_frame(
+            phase,
+            base_frame=info.base,
+            mirror_long=mirror_long,
+            flags=flags,
+        )
+        grid = 8
+        cell = float(texture.width) / grid if grid > 0 else float(texture.width)
+        row = frame // grid
+        col = frame % grid
+        src = rl.Rectangle(float(col * cell), float(row * cell), float(cell), float(cell))
+        sx, sy = self._world_to_screen(world_x, world_y)
+        width = cell * float(scale) * float(size_scale)
+        height = cell * float(scale) * float(size_scale)
+        dst = rl.Rectangle(float(sx), float(sy), float(width), float(height))
+        origin = rl.Vector2(float(width) * 0.5, float(height) * 0.5)
+        rl.draw_texture_pro(texture, src, dst, origin, math.degrees(float(rotation_rad)), tint)
+
+    def _spawn_enemy(self, x: float, y: float) -> None:
+        type_id = CreatureTypeId(int(self._state.rng.rand()) % 5)
+        size = float(int(self._state.rng.rand()) % 30 + 40)
+        move_speed = float(int(self._state.rng.rand()) % 30) * 0.05 + 1.0
+        hp = float(int(self._state.rng.rand()) % 4 + 2)
+        heading = float(int(self._state.rng.rand()) % 628) * 0.01
+        init = CreatureInit(
+            origin_template_id=-1,
+            pos_x=float(x),
+            pos_y=float(y),
+            heading=heading,
+            phase_seed=float(int(self._state.rng.rand()) & 0xFF),
+            type_id=type_id,
+            flags=CreatureFlags(0),
+            ai_mode=0,
+            health=hp,
+            max_health=hp,
+            move_speed=move_speed,
+            reward_value=0.0,
+            size=size,
+            contact_damage=0.0,
+            tint=(1.0, 1.0, 1.0, 1.0),
+        )
+        self._creatures.spawn_init(init, rand=self._state.rng.rand)
+
+    def open(self) -> None:
+        self._missing_assets.clear()
+        self._owned_textures.clear()
+        self._terrain_textures.clear()
+        self._creature_textures.clear()
+        self._fx_textures = None
+        self._fx_queue.clear()
+        self._fx_queue_rotated.clear()
+        self._creatures.reset()
+
+        self._small = load_small_font(self._assets_root, self._missing_assets)
+
+        for terrain_id, rel_path in TERRAIN_TEXTURES:
+            path = self._resolve_asset(rel_path)
+            if path is None:
+                self._missing_assets.append(rel_path)
+                continue
+            texture = rl.load_texture(str(path))
+            self._owned_textures.append(texture)
+            self._terrain_textures[int(terrain_id)] = texture
+
+        for asset in sorted(set(_CREATURE_ASSET.values())):
+            rel_path = f"game/{asset}.png"
+            path = self._resolve_asset(rel_path)
+            if path is None:
+                self._missing_assets.append(rel_path)
+                continue
+            texture = rl.load_texture(str(path))
+            self._owned_textures.append(texture)
+            self._creature_textures[asset] = texture
+
+        particles_path = self._resolve_asset("game/particles.png")
+        if particles_path is None:
+            self._missing_assets.append("game/particles.png")
+        bodyset_path = self._resolve_asset("game/bodyset.png")
+        if bodyset_path is None:
+            self._missing_assets.append("game/bodyset.png")
+
+        if self._missing_assets:
+            raise FileNotFoundError(f"Missing assets: {', '.join(self._missing_assets)}")
+
+        particles_tex = rl.load_texture(str(particles_path))
+        bodyset_tex = rl.load_texture(str(bodyset_path))
+        self._owned_textures.append(particles_tex)
+        self._owned_textures.append(bodyset_tex)
+        self._fx_textures = FxQueueTextures(particles=particles_tex, bodyset=bodyset_tex)
+
+        texture_scale, screen_w, screen_h = self._load_runtime_config()
+        base_id = self._terrain_pair * 2
+        base = self._terrain_textures.get(base_id)
+        overlay = self._terrain_textures.get(base_id + 1)
+        if base is None:
+            raise FileNotFoundError("Missing base terrain texture")
+
+        self._ground = GroundRenderer(
+            texture=base,
+            overlay=overlay,
+            overlay_detail=overlay or base,
+            width=int(WORLD_SIZE),
+            height=int(WORLD_SIZE),
+            texture_scale=texture_scale,
+            screen_width=screen_w,
+            screen_height=screen_h,
+        )
+        self._reset_ground()
+        self._camera_x = 0.0
+        self._camera_y = 0.0
+
+        # Spawn a few enemies near the center for immediate testing.
+        for _ in range(6):
+            ox = float(int(self._state.rng.rand()) % 200 - 100)
+            oy = float(int(self._state.rng.rand()) % 200 - 100)
+            self._spawn_enemy(WORLD_SIZE * 0.5 + ox, WORLD_SIZE * 0.5 + oy)
+
+    def close(self) -> None:
+        if self._ground is not None and self._ground.render_target is not None:
+            rl.unload_render_texture(self._ground.render_target)
+            self._ground.render_target = None
+        self._ground = None
+
+        for texture in self._owned_textures:
+            rl.unload_texture(texture)
+        self._owned_textures.clear()
+        self._terrain_textures.clear()
+        self._creature_textures.clear()
+        self._fx_textures = None
+
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
+
+        self._fx_queue.clear()
+        self._fx_queue_rotated.clear()
+        self._creatures.reset()
+
+    def update(self, dt: float) -> None:
+        speed = 240.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_A):
+            self._camera_x += speed * dt
+        if rl.is_key_down(rl.KeyboardKey.KEY_D):
+            self._camera_x -= speed * dt
+        if rl.is_key_down(rl.KeyboardKey.KEY_W):
+            self._camera_y += speed * dt
+        if rl.is_key_down(rl.KeyboardKey.KEY_S):
+            self._camera_y -= speed * dt
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
+            self._light_mode = not self._light_mode
+            self._reset_ground()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
+            self._reset_ground()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
+            self._terrain_seed = int(rl.get_random_value(0, 0x7FFFFFFF))
+            if not self._light_mode:
+                self._apply_terrain_pair()
+            else:
+                self._clear_ground_light()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
+            self._terrain_pair = int(rl.get_random_value(0, 3))
+            if not self._light_mode:
+                self._apply_terrain_pair()
+
+        if self._ground is not None:
+            texture_scale, screen_w, screen_h = self._load_runtime_config()
+            self._ground.texture_scale = texture_scale
+            self._ground.screen_width = screen_w
+            self._ground.screen_height = screen_h
+            self._ground.process_pending()
+
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
+            mouse = rl.get_mouse_position()
+            x, y = self._screen_to_world(float(mouse.x), float(mouse.y))
+            self._spawn_enemy(x, y)
+
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            mouse = rl.get_mouse_position()
+            x, y = self._screen_to_world(float(mouse.x), float(mouse.y))
+            hit = None
+            for creature in self._creatures.entries:
+                if not (creature.active and creature.hp > 0.0):
+                    continue
+                dx = float(creature.x) - float(x)
+                dy = float(creature.y) - float(y)
+                r = float(creature.size) * 0.35 + 12.0
+                if dx * dx + dy * dy <= r * r:
+                    hit = creature
+                    break
+            if hit is not None:
+                hit.hp -= 1.0
+                self._fx_queue.add_random(pos_x=float(hit.x), pos_y=float(hit.y), rand=self._state.rng.rand)
+            else:
+                # Paint blood directly for ground decal checks.
+                self._fx_queue.add(
+                    effect_id=0x07,
+                    pos_x=float(x),
+                    pos_y=float(y),
+                    width=30.0,
+                    height=30.0,
+                    rotation=0.0,
+                    rgba=(1.0, 1.0, 1.0, 1.0),
+                )
+
+        # Keep the player fixed; creatures use it as a target for heading/movement.
+        self._player.pos_x = WORLD_SIZE * 0.5
+        self._player.pos_y = WORLD_SIZE * 0.5
+        self._player.health = 1e9
+
+        creature_result = self._creatures.update(
+            dt,
+            state=self._state,
+            players=[self._player],
+            env=self._env,
+            world_width=WORLD_SIZE,
+            world_height=WORLD_SIZE,
+            fx_queue=self._fx_queue,
+            fx_queue_rotated=self._fx_queue_rotated,
+        )
+        del creature_result
+
+        # Advance alive animation phase (CreaturePool intentionally does not).
+        for creature in self._creatures.entries:
+            if not (creature.active and creature.hp > 0.0):
+                continue
+            try:
+                type_id = CreatureTypeId(int(creature.type_id))
+            except ValueError:
+                continue
+            info = _CREATURE_ANIM.get(type_id)
+            if info is None:
+                continue
+            creature.anim_phase, _ = creature_anim_advance_phase(
+                float(creature.anim_phase),
+                anim_rate=info.anim_rate,
+                move_speed=float(creature.move_speed),
+                dt=dt,
+                size=float(creature.size),
+                local_scale=float(getattr(creature, "move_scale", 1.0)),
+                flags=creature.flags,
+                ai_mode=int(creature.ai_mode),
+            )
+
+        if self._ground is not None and self._fx_textures is not None:
+            if self._fx_queue.count or self._fx_queue_rotated.count:
+                bake_fx_queues(
+                    self._ground,
+                    fx_queue=self._fx_queue,
+                    fx_queue_rotated=self._fx_queue_rotated,
+                    textures=self._fx_textures,
+                    corpse_frame_for_type=creature_corpse_frame_for_type,
+                )
+
+    def draw(self) -> None:
+        rl.clear_background(BG_LIGHT if self._light_mode else BG_DARK)
+
+        if self._missing_assets:
+            self._draw_ui_text("Missing assets: " + ", ".join(self._missing_assets), 24, 24, UI_ERROR_COLOR)
+            return
+
+        if self._ground is None:
+            self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR_COLOR)
+            return
+
+        self._ground.draw(self._camera_x, self._camera_y)
+        if self._light_mode:
+            self._draw_grid()
+
+        # Creatures (including death slide/fade stage).
+        scale = self._world_scale()
+        for creature in self._creatures.entries:
+            if not creature.active:
+                continue
+            try:
+                type_id = CreatureTypeId(int(creature.type_id))
+            except ValueError:
+                continue
+            asset = _CREATURE_ASSET.get(type_id)
+            texture = self._creature_textures.get(asset) if asset is not None else None
+            info = _CREATURE_ANIM.get(type_id)
+            if texture is None or info is None:
+                continue
+
+            alpha = float(creature.tint_a)
+            if float(creature.hitbox_size) < 0.0:
+                alpha = max(0.0, alpha + float(creature.hitbox_size) * 0.1)
+            r = int(max(0.0, min(float(creature.tint_r), 1.0)) * 255.0 + 0.5)
+            g = int(max(0.0, min(float(creature.tint_g), 1.0)) * 255.0 + 0.5)
+            b = int(max(0.0, min(float(creature.tint_b), 1.0)) * 255.0 + 0.5)
+            a = int(max(0.0, min(alpha, 1.0)) * 255.0 + 0.5)
+            tint = rl.Color(r, g, b, a)
+
+            flags = creature.flags
+            long_strip = (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0
+            phase = float(creature.anim_phase)
+            if long_strip and float(creature.hitbox_size) < 0.0:
+                phase = -1.0
+            mirror_long = bool(info.mirror) and float(creature.hitbox_size) >= 16.0
+
+            size_scale = max(0.25, min(float(creature.size) / 64.0, 2.0))
+            self._draw_creature_sprite(
+                texture,
+                info=info,
+                flags=flags,
+                phase=phase,
+                mirror_long=mirror_long,
+                world_x=float(creature.x),
+                world_y=float(creature.y),
+                rotation_rad=float(creature.heading) - math.pi / 2.0,
+                scale=scale,
+                size_scale=size_scale,
+                tint=tint,
+            )
+
+        # UI overlay.
+        text_color = UI_TEXT_DARK if self._light_mode else UI_TEXT_LIGHT
+        hint_color = UI_HINT_DARK if self._light_mode else UI_HINT_LIGHT
+        x = 16
+        y = 12
+        line = self._ui_line_height()
+        self._draw_ui_text("Decals debug", x, y, text_color)
+        y += line
+        self._draw_ui_text("LMB: blood / damage enemy   RMB: spawn enemy", x, y, hint_color)
+        y += line
+        self._draw_ui_text(
+            "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear",
+            x,
+            y,
+            hint_color,
+        )
+        y += line
+        self._draw_ui_text(f"enemies={len([c for c in self._creatures.entries if c.active])}", x, y, hint_color)
+
+
+@register_view("decals", "Decals debug")
+def build_decals_debug_view(ctx: ViewContext) -> View:
+    return DecalsDebugView(ctx)
