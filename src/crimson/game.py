@@ -1638,6 +1638,7 @@ class PlayGameMenuView(PanelMenuView):
             update_audio(self._state.audio)
         if self._ground is not None:
             self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
 
         # Close transition (matches PanelMenuView).
@@ -1725,6 +1726,7 @@ class PlayGameMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_contents()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
@@ -2874,6 +2876,7 @@ class OptionsMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_options_contents()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
@@ -3171,6 +3174,7 @@ class StatisticsMenuView(PanelMenuView):
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_stats_contents()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
