@@ -88,6 +88,7 @@ Available via `uv run crimson view <name>`:
 - `terrain` (terrain texture preview)
 - `ground` (procedural ground render)
 - `projectiles` (projectile atlas preview)
+- `projectile-render-debug` (projectile render parity sandbox)
 - `bonuses` (bonus icon preview)
 - `wicons` (weapon icon preview)
 - `ui` (UI texture preview)

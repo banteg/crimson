@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import random
 from pathlib import Path
 
 import pyray as rl
 
+from grim.audio import AudioState, init_audio_state, shutdown_audio
 from grim.config import ensure_crimson_cfg
+from grim.console import ConsoleLog, ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
@@ -61,6 +64,9 @@ class ProjectileRenderDebugView:
         )
         self._player = self._world.players[0] if self._world.players else None
         self._aim_texture: rl.Texture | None = None
+        self._audio: AudioState | None = None
+        self._audio_rng: random.Random | None = None
+        self._console: ConsoleState | None = None
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
@@ -69,6 +75,7 @@ class ProjectileRenderDebugView:
 
         self.close_requested = False
         self._paused = False
+        self._screenshot_requested = False
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -157,6 +164,9 @@ class ProjectileRenderDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
             self._reset_scene()
 
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
+            self._screenshot_requested = True
+
     def _build_input(self) -> PlayerInput:
         move_x = 0.0
         move_y = 0.0
@@ -202,6 +212,20 @@ class ProjectileRenderDebugView:
         else:
             self._world.config = None
 
+        if self._world.config is not None:
+            try:
+                self._console = ConsoleState(base_dir=runtime_dir, log=ConsoleLog(base_dir=runtime_dir), assets_dir=self._assets_root)
+                self._audio = init_audio_state(self._world.config, self._assets_root, self._console)
+                self._audio_rng = random.Random(0xBEEF)
+                self._world.audio = self._audio
+                self._world.audio_rng = self._audio_rng
+            except Exception:
+                self._audio = None
+                self._audio_rng = None
+                self._console = None
+                self._world.audio = None
+                self._world.audio_rng = None
+
         self._world.open()
         self._aim_texture = self._world._load_texture(
             "ui_aim",
@@ -216,8 +240,20 @@ class ProjectileRenderDebugView:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
+        if self._audio is not None:
+            shutdown_audio(self._audio)
+            self._audio = None
+            self._audio_rng = None
+            self._console = None
+        self._world.audio = None
+        self._world.audio_rng = None
         self._world.close()
         self._aim_texture = None
+
+    def consume_screenshot_request(self) -> bool:
+        requested = self._screenshot_requested
+        self._screenshot_requested = False
+        return requested
 
     def update(self, dt: float) -> None:
         self._handle_debug_input()
@@ -226,13 +262,18 @@ class ProjectileRenderDebugView:
             dt = 0.0
 
         if self._world.ground is not None:
+            self._world._sync_ground_settings()
             self._world.ground.process_pending()
 
         if self._player is None:
             return
 
+        prev_audio = None
+        if self._world.audio is not None:
+            prev_audio = (int(self._player.ammo), bool(self._player.reload_active), float(self._player.reload_timer))
+
         # Keep the scene stable: targets are static, only projectiles + player advance.
-        self._world.state.projectiles.update(
+        hits = self._world.state.projectiles.update(
             float(dt),
             self._targets,
             world_size=WORLD_SIZE,
@@ -241,10 +282,24 @@ class ProjectileRenderDebugView:
             runtime_state=self._world.state,
         )
         self._world.state.secondary_projectiles.update_pulse_gun(float(dt), self._targets)
+        if hits:
+            self._world._queue_projectile_decals(hits)
+            self._world._play_hit_sfx(hits)
         self._targets = [target for target in self._targets if target.hp > 0.0]
 
         input_state = self._build_input()
         player_update(self._player, input_state, float(dt), self._world.state, world_size=WORLD_SIZE)
+
+        if prev_audio is not None:
+            prev_ammo, prev_reload_active, prev_reload_timer = prev_audio
+            self._world._handle_player_audio(
+                self._player,
+                prev_ammo=prev_ammo,
+                prev_reload_active=prev_reload_active,
+                prev_reload_timer=prev_reload_timer,
+            )
+
+        self._world._bake_fx_queues()
         self._world.update_camera(float(dt))
 
     def draw(self) -> None:
@@ -335,7 +390,7 @@ class ProjectileRenderDebugView:
             )
             y += line
         y += 6.0
-        self._draw_ui_text("WASD move  LMB fire  R reload  [/] cycle weapons  Space pause", x, y, UI_HINT)
+        self._draw_ui_text("WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  P screenshot", x, y, UI_HINT)
         y += line
         self._draw_ui_text("T reset targets  Backspace reset scene  Esc quit", x, y, UI_HINT)
 

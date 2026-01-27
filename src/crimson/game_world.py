@@ -189,6 +189,7 @@ class GameWorld:
     creature_textures: dict[str, rl.Texture] = field(init=False, default_factory=dict)
     projs_texture: rl.Texture | None = field(init=False, default=None)
     particles_texture: rl.Texture | None = field(init=False, default=None)
+    bullet_texture: rl.Texture | None = field(init=False, default=None)
     bullet_trail_texture: rl.Texture | None = field(init=False, default=None)
     bonuses_texture: rl.Texture | None = field(init=False, default=None)
     bodyset_texture: rl.Texture | None = field(init=False, default=None)
@@ -389,6 +390,11 @@ class GameWorld:
             cache_path="game/particles.jaz",
             file_path="game/particles.png",
         )
+        self.bullet_texture = self._load_texture(
+            "bullet_i",
+            cache_path="load/bullet16.tga",
+            file_path="load/bullet16.png",
+        )
         self.bullet_trail_texture = self._load_texture(
             "bulletTrail",
             cache_path="load/bulletTrail.tga",
@@ -426,6 +432,7 @@ class GameWorld:
         self.creature_textures.clear()
         self.projs_texture = None
         self.particles_texture = None
+        self.bullet_texture = None
         self.bullet_trail_texture = None
         self.bonuses_texture = None
         self.bodyset_texture = None
@@ -919,16 +926,46 @@ class GameWorld:
 
     def _draw_projectile(self, proj: object, *, scale: float) -> None:
         texture = self.projs_texture
-        sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
         type_id = int(getattr(proj, "type_id", 0))
+        pos_x = float(getattr(proj, "pos_x", 0.0))
+        pos_y = float(getattr(proj, "pos_y", 0.0))
+        sx, sy = self.world_to_screen(pos_x, pos_y)
+        life = float(getattr(proj, "life_timer", 0.0))
+        angle = float(getattr(proj, "angle", 0.0))
+
+        if type_id == 0:
+            alpha = int(_clamp(life, 0.0, 1.0) * 255)
+            drawn = False
+            if self.bullet_trail_texture is not None:
+                ox = float(getattr(proj, "origin_x", pos_x))
+                oy = float(getattr(proj, "origin_y", pos_y))
+                sx0, sy0 = self.world_to_screen(ox, oy)
+                sx1, sy1 = sx, sy
+                drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, alpha=alpha, scale=scale)
+
+            if self.bullet_texture is not None and life >= 0.39:
+                size = max(2.0, 4.0 * scale)
+                src = rl.Rectangle(
+                    0.0,
+                    0.0,
+                    float(self.bullet_texture.width),
+                    float(self.bullet_texture.height),
+                )
+                dst = rl.Rectangle(float(sx), float(sy), size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
+                tint = rl.Color(220, 220, 220, alpha)
+                rl.draw_texture_pro(self.bullet_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
+                drawn = True
+
+            if drawn:
+                return
+
         mapping = _KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
             rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, 255))
             return
 
         grid, frame = mapping
-        life = float(getattr(proj, "life_timer", 0.0))
-        angle = float(getattr(proj, "angle", 0.0))
 
         color = rl.Color(240, 220, 160, 255)
         if type_id in (ION_RIFLE_PROJECTILE_TYPE_ID, ION_MINIGUN_PROJECTILE_TYPE_ID, ION_CANNON_PROJECTILE_TYPE_ID):
@@ -982,6 +1019,52 @@ class GameWorld:
             rotation_rad=angle,
             tint=tint,
         )
+
+    def _draw_bullet_trail(self, sx0: float, sy0: float, sx1: float, sy1: float, *, alpha: int, scale: float) -> bool:
+        if self.bullet_trail_texture is None:
+            return False
+        dx = sx1 - sx0
+        dy = sy1 - sy0
+        dist = math.hypot(dx, dy)
+        if dist <= 1e-3:
+            return False
+        thickness = max(1.0, 2.1 * scale)
+        half = thickness * 0.5
+        inv = 1.0 / dist
+        nx = dx * inv
+        ny = dy * inv
+        px = -ny
+        py = nx
+        ox = px * half
+        oy = py * half
+        x0 = sx0 - ox
+        y0 = sy0 - oy
+        x1 = sx0 + ox
+        y1 = sy0 + oy
+        x2 = sx1 + ox
+        y2 = sy1 + oy
+        x3 = sx1 - ox
+        y3 = sy1 - oy
+
+        head = rl.Color(200, 200, 200, alpha)
+        tail = rl.Color(200, 200, 200, 0)
+        rl.rl_set_texture(self.bullet_trail_texture.id)
+        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(0.0, 0.0)
+        rl.rl_vertex2f(x0, y0)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(1.0, 0.0)
+        rl.rl_vertex2f(x1, y1)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(1.0, 0.5)
+        rl.rl_vertex2f(x2, y2)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(0.0, 0.5)
+        rl.rl_vertex2f(x3, y3)
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        return True
 
     def _draw_secondary_projectile(self, proj: object, *, scale: float) -> None:
         sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
