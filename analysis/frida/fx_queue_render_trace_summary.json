@@ -1,0 +1,104 @@
+{
+  "events": {
+    "fx_queue_render_calls": 14033,
+    "fx_queue_render_calls_with_rotated": 12
+  },
+  "notes": {
+    "corpse_color_geometry": "x,y=top_left*inv_scale - offset; size=scale*inv_scale.",
+    "corpse_rotation": "Both passes use rotation - (pi/2).",
+    "corpse_shadow_alpha": "Shadow pass uses entry alpha * 0.5 (entry alpha already adjusted by terrainBodiesTransparency or *0.8).",
+    "corpse_shadow_blend": "Shadow pass uses src=ZERO, dst=INVSRCALPHA -> dst_rgb *= (1 - src_alpha).",
+    "corpse_shadow_geometry": "x,y=(top_left-0.5)*inv_scale - offset; size=scale*inv_scale*1.064.",
+    "offset": "offset = 2*terrain_scale/1024 = terrain_scale/512."
+  },
+  "rotated_counts": {
+    "0": 14021,
+    "1": 12
+  },
+  "script": "scripts/frida/fx_queue_render_trace.js",
+  "session": {
+    "config": {
+      "dumpRotatedQueue": true,
+      "exeLinkBase": "0x400000",
+      "exeName": "crimsonland.exe",
+      "grimName": "grim.dll",
+      "includeBacktrace": false,
+      "includeNonRotated": false,
+      "logMode": "append",
+      "logPath": "C:\\share\\frida\\fx_queue_render_trace.jsonl",
+      "logToConsole": false,
+      "maxEvents": 0
+    },
+    "exe": {
+      "base": "0x400000",
+      "name": "crimsonland.exe"
+    },
+    "grim": {
+      "base": "0x6d70000",
+      "name": "grim.dll"
+    },
+    "process": {
+      "arch": "ia32",
+      "pid": 6516,
+      "pointer_size": 4
+    },
+    "ts": "2026-01-27T08:58:01.181Z"
+  },
+  "source_log": "artifacts/frida/share/fx_queue_render_trace.jsonl",
+  "terrainBodiesTransparency": {
+    "0.0": 14033
+  },
+  "validation": {
+    "batch_order": {
+      "bad": 0,
+      "ok": 12
+    },
+    "blend": {
+      "corpse_color": {
+        "5/6": 12
+      },
+      "corpse_shadow": {
+        "1/6": 12
+      }
+    },
+    "eps": {
+      "alpha": 0.0002,
+      "rotation": 0.0002,
+      "uv": 2e-06,
+      "xy": 0.002
+    },
+    "errors": {
+      "alpha_abs": {
+        "count": 24,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      },
+      "rotation_abs": {
+        "count": 24,
+        "max": 1.6292067961387602e-07,
+        "mean": 7.506591674181588e-08,
+        "min": 4.371139006309477e-08
+      },
+      "uv_abs": {
+        "count": 96,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      },
+      "wh_abs": {
+        "count": 48,
+        "max": 2.319335933975708e-06,
+        "mean": 5.582173662569782e-07,
+        "min": 0.0
+      },
+      "xy_abs": {
+        "count": 48,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0
+      }
+    },
+    "mismatches": []
+  }
+}
