@@ -8,7 +8,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
-from grim.audio import AudioState, play_sfx
+from grim.audio import AudioState, play_sfx, trigger_game_tune
 from grim.config import CrimsonConfig
 from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.terrain_render import GroundRenderer
@@ -465,7 +465,7 @@ class GameWorld:
         self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
         if hits:
             self._queue_projectile_decals(hits)
-            self._play_hit_sfx(hits)
+            self._play_hit_sfx(hits, game_mode=game_mode)
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
@@ -560,10 +560,19 @@ class GameWorld:
             return "sfx_shock_hit_01"
         return self._rand_choice(_BULLET_HIT_SFX)
 
-    def _play_hit_sfx(self, hits: list[ProjectileHit]) -> None:
+    def _play_hit_sfx(self, hits: list[ProjectileHit], *, game_mode: int) -> None:
         if self.audio is None or not hits:
             return
-        for idx in range(min(len(hits), _MAX_HIT_SFX_PER_FRAME)):
+
+        # Original game: the first projectile hit in Survival starts a random "game tune"
+        # and suppresses the impact SFX for that hit. We mirror the same gate.
+        start_idx = 0
+        if (not self.demo_mode_active) and (game_mode == GAME_MODE_SURVIVAL):
+            if trigger_game_tune(self.audio, rng=self.audio_rng) is not None:
+                start_idx = 1
+
+        end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)
+        for idx in range(start_idx, end):
             type_id = int(hits[idx][0])
             self._play_sfx(self._hit_sfx_for_type(type_id))
 

@@ -730,6 +730,11 @@ class MenuView:
             other_games=self._other_games_enabled(),
         )
         self._init_ground()
+        if self._state.audio is not None:
+            theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
+            if self._state.audio.music.active_track != theme:
+                stop_music(self._state.audio)
+            play_music(self._state.audio, theme)
 
     def close(self) -> None:
         self._ground = None
@@ -3340,11 +3345,17 @@ class SurvivalGameView:
     def open(self) -> None:
         self._action = None
         self._state.screen_fade_ramp = False
+        if self._state.audio is not None:
+            # Original game: entering gameplay cuts the menu theme; in-game tunes
+            # start later on the first creature hit.
+            stop_music(self._state.audio)
         self._view.bind_audio(self._state.audio, self._state.rng)
         self._view.bind_screen_fade(self._state)
         self._view.open()
 
     def close(self) -> None:
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
         self._view.close()
 
     def update(self, dt: float) -> None:

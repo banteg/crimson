@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import random
 
 import pyray as rl
 
@@ -28,6 +29,9 @@ class MusicState:
     tracks: dict[str, rl.Music]
     active_track: str | None
     queue: list[str] = field(default_factory=list)
+    # Mirrors the original game's "start a random game tune on first hit" gate.
+    game_tune_started: bool = False
+    game_tune_track: str | None = None
     track_ids: dict[str, int] = field(default_factory=dict)
     next_track_id: int = 0
     paq_entries: dict[str, bytes] | None = None
@@ -41,6 +45,8 @@ def init_music_state(*, ready: bool, enabled: bool, volume: float) -> MusicState
         tracks={},
         active_track=None,
         queue=[],
+        game_tune_started=False,
+        game_tune_track=None,
         track_ids={},
         next_track_id=0,
         paq_entries=None,
@@ -198,9 +204,40 @@ def stop_music(state: MusicState) -> None:
     music = state.tracks.get(state.active_track)
     if music is None:
         state.active_track = None
+        state.game_tune_started = False
+        state.game_tune_track = None
         return
     rl.stop_music_stream(music)
     state.active_track = None
+    state.game_tune_started = False
+    state.game_tune_track = None
+
+
+def trigger_game_tune(state: MusicState, *, rng: random.Random | None = None) -> str | None:
+    """Start a random queued game tune, if it hasn't been triggered yet.
+
+    Returns the track key if playback started, otherwise None.
+    """
+    if not state.ready or not state.enabled:
+        return None
+    if state.game_tune_started:
+        return None
+    if not state.queue:
+        return None
+
+    if rng is None:
+        track_key = random.choice(state.queue)
+    else:
+        track_key = rng.choice(state.queue)
+
+    if track_key not in state.tracks:
+        return None
+
+    stop_music(state)
+    play_music(state, track_key)
+    state.game_tune_started = True
+    state.game_tune_track = track_key
+    return track_key
 
 
 def update_music(state: MusicState) -> None:
