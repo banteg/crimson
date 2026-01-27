@@ -744,50 +744,11 @@ class GameWorld:
         seg_count = max(self._grim2d_circle_segments_filled(radius), 64, int(radius))
         rl.draw_circle_sector(rl.Vector2(x, y), float(radius), 0.0, 360.0, int(seg_count), fill)
 
-        if self.bullet_trail_texture is not None:
-            # ui_render_aim_indicators uses bulletTrail with UV (0.5,0.0)-(0.5,1.0).
-            tex = self.bullet_trail_texture
-            seg_count = max(self._grim2d_circle_segments_outline(radius), int(seg_count))
-            outer_r = radius + 2.0  # grim_draw_circle_outline: outer radius is +2.0
-            rl.rl_set_texture(tex.id)
-            rl.rl_begin(rl.RL_TRIANGLES)
-            for idx in range(seg_count):
-                a0 = float(idx) / float(seg_count) * math.tau
-                a1 = float(idx + 1) / float(seg_count) * math.tau
-
-                cos0 = math.cos(a0)
-                sin0 = math.sin(a0)
-                cos1 = math.cos(a1)
-                sin1 = math.sin(a1)
-
-                ix0 = x + cos0 * radius
-                iy0 = y + sin0 * radius
-                ox0 = x + cos0 * outer_r
-                oy0 = y + sin0 * outer_r
-                ix1 = x + cos1 * radius
-                iy1 = y + sin1 * radius
-                ox1 = x + cos1 * outer_r
-                oy1 = y + sin1 * outer_r
-
-                rl.rl_color4ub(outline.r, outline.g, outline.b, outline.a)
-                # inner0, outer0, outer1
-                rl.rl_tex_coord2f(0.5, 0.0)
-                rl.rl_vertex2f(ix0, iy0)
-                rl.rl_tex_coord2f(0.5, 1.0)
-                rl.rl_vertex2f(ox0, oy0)
-                rl.rl_tex_coord2f(0.5, 1.0)
-                rl.rl_vertex2f(ox1, oy1)
-                # inner0, outer1, inner1
-                rl.rl_tex_coord2f(0.5, 0.0)
-                rl.rl_vertex2f(ix0, iy0)
-                rl.rl_tex_coord2f(0.5, 1.0)
-                rl.rl_vertex2f(ox1, oy1)
-                rl.rl_tex_coord2f(0.5, 0.0)
-                rl.rl_vertex2f(ix1, iy1)
-            rl.rl_end()
-        else:
-            rl.rl_set_texture(0)
-            rl.draw_circle_lines(int(x), int(y), max(1.0, radius), outline)
+        seg_count = max(self._grim2d_circle_segments_outline(radius), int(seg_count))
+        # grim_draw_circle_outline draws a 2px-thick ring (outer radius = r + 2).
+        # The exe binds bulletTrail, but that texture is white; the visual intent is
+        # a subtle white outline around the filled spread circle.
+        rl.draw_ring(rl.Vector2(x, y), float(radius), float(radius + 2.0), 0.0, 360.0, int(seg_count), outline)
 
         rl.rl_set_texture(0)
         rl.end_blend_mode()
