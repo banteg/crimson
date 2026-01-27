@@ -25,6 +25,78 @@ CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
 
+_ALPHA_TEST_REF_U8 = 4
+_ALPHA_TEST_REF_F32 = float(_ALPHA_TEST_REF_U8) / 255.0
+
+# Grim2D enables alpha test globally with:
+#   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
+# See: analysis/ghidra/raw/grim.dll_decompiled.c (FUN_10004520).
+#
+# raylib does not expose fixed-function alpha test, so we emulate it with a tiny
+# discard shader for stamping into the terrain render target.
+_ALPHA_TEST_SHADER: rl.Shader | None = None
+_ALPHA_TEST_SHADER_TRIED = False
+
+_ALPHA_TEST_VS_330 = r"""
+#version 330
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec4 vertexColor;
+
+out vec2 fragTexCoord;
+out vec4 fragColor;
+
+uniform mat4 mvp;
+
+void main() {
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
+"""
+
+_ALPHA_TEST_FS_330 = rf"""
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+uniform sampler2D texture0;
+uniform vec4 colDiffuse;
+
+out vec4 finalColor;
+
+void main() {{
+    vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
+    if (texel.a <= {_ALPHA_TEST_REF_F32:.10f}) discard;
+    finalColor = texel;
+}}
+"""
+
+
+def _get_alpha_test_shader() -> rl.Shader | None:
+    global _ALPHA_TEST_SHADER, _ALPHA_TEST_SHADER_TRIED
+    if _ALPHA_TEST_SHADER_TRIED:
+        if _ALPHA_TEST_SHADER is not None and int(getattr(_ALPHA_TEST_SHADER, "id", 0)) > 0:
+            return _ALPHA_TEST_SHADER
+        return None
+
+    _ALPHA_TEST_SHADER_TRIED = True
+    try:
+        shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
+    except Exception:
+        _ALPHA_TEST_SHADER = None
+        return None
+
+    if int(getattr(shader, "id", 0)) <= 0:
+        _ALPHA_TEST_SHADER = None
+        return None
+
+    _ALPHA_TEST_SHADER = shader
+    return _ALPHA_TEST_SHADER
+
+
 @contextmanager
 def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
     rl.begin_blend_mode(rl.BLEND_CUSTOM)
@@ -50,6 +122,22 @@ def _blend_custom_separate(
         yield
     finally:
         rl.end_blend_mode()
+
+
+@contextmanager
+def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
+    if not enabled:
+        yield
+        return
+    shader = _get_alpha_test_shader()
+    if shader is None:
+        yield
+        return
+    rl.begin_shader_mode(shader)
+    try:
+        yield
+    finally:
+        rl.end_shader_mode()
 
 
 class CrtRand:
@@ -92,6 +180,7 @@ class GroundRenderer:
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
+    alpha_test: bool = True
     texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
@@ -273,9 +362,10 @@ class GroundRenderer:
         self._set_texture_filters((bodyset_texture,), point=True)
 
         rl.begin_texture_mode(self.render_target)
-        if shadow:
-            self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
-        self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
+        with _maybe_alpha_test(self.alpha_test):
+            if shadow:
+                self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+            self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 
         self._set_texture_filters((bodyset_texture,), point=False)
