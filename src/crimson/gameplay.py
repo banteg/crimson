@@ -1089,7 +1089,10 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
 
-    player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + 0.8)
+    muzzle_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha)
+    player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
+    player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
     player.ammo = max(0, player.ammo - 1)
     if player.ammo <= 0:

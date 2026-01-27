@@ -185,6 +185,7 @@ class GameWorld:
     bullet_trail_texture: rl.Texture | None = field(init=False, default=None)
     bonuses_texture: rl.Texture | None = field(init=False, default=None)
     bodyset_texture: rl.Texture | None = field(init=False, default=None)
+    muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     _owned_textures: list[rl.Texture] = field(init=False, default_factory=list)
     _cache_owned: bool = field(init=False, default=False)
 
@@ -402,6 +403,11 @@ class GameWorld:
             cache_path="game/bodyset.jaz",
             file_path="game/bodyset.png",
         )
+        self.muzzle_flash_texture = self._load_texture(
+            "muzzleFlash",
+            cache_path="game/muzzleFlash.jaz",
+            file_path="game/muzzleFlash.png",
+        )
 
         if self.particles_texture is not None and self.bodyset_texture is not None:
             self.fx_textures = FxQueueTextures(
@@ -428,6 +434,7 @@ class GameWorld:
         self.bullet_trail_texture = None
         self.bonuses_texture = None
         self.bodyset_texture = None
+        self.muzzle_flash_texture = None
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
@@ -896,6 +903,36 @@ class GameWorld:
                 rotation=float(player.aim_heading),
                 color=tint,
             )
+            if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3:
+                weapon = WEAPON_BY_ID.get(int(player.weapon_id))
+                flags = int(weapon.flags) if weapon is not None and weapon.flags is not None else 0
+                if (flags & 0x8) == 0:
+                    alpha = _clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0)
+                    if alpha > 1e-3:
+                        size = base_size * (0.5 if (flags & 0x4) else 1.0)
+                        heading = float(player.aim_heading) + math.pi / 2.0
+                        offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
+                        pos_x = sx + math.cos(heading) * offset
+                        pos_y = sy + math.sin(heading) * offset
+                        src = rl.Rectangle(
+                            0.0,
+                            0.0,
+                            float(self.muzzle_flash_texture.width),
+                            float(self.muzzle_flash_texture.height),
+                        )
+                        dst = rl.Rectangle(pos_x, pos_y, size, size)
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        tint_flash = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        rl.draw_texture_pro(
+                            self.muzzle_flash_texture,
+                            src,
+                            dst,
+                            origin,
+                            float(player.aim_heading * _RAD_TO_DEG),
+                            tint_flash,
+                        )
+                        rl.end_blend_mode()
             return
 
         if player.death_timer >= 0.0:
