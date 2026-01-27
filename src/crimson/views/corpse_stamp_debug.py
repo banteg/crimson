@@ -55,6 +55,7 @@ class CorpseStampDebugView:
         self._step_index = 0
         self._corpse_size = 256.0
         self._corpse_rotation = 0.0
+        self._screenshot_requested = False
 
     def _ui_line_height(self) -> int:
         if self._small is not None:
@@ -224,10 +225,18 @@ class CorpseStampDebugView:
             self._step_index = (self._step_index + 1) % len(_STEPS)
             self._apply_step()
 
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
+            self._screenshot_requested = True
+
         if rl.is_key_down(rl.KeyboardKey.KEY_Q):
             self._corpse_rotation -= 0.04
         if rl.is_key_down(rl.KeyboardKey.KEY_E):
             self._corpse_rotation += 0.04
+
+    def consume_screenshot_request(self) -> bool:
+        requested = self._screenshot_requested
+        self._screenshot_requested = False
+        return requested
 
     def draw(self) -> None:
         rl.clear_background(BG)
@@ -255,7 +264,7 @@ class CorpseStampDebugView:
         alpha_test = bool(getattr(ground, "alpha_test", True))
         self._draw_ui_text("Corpse stamp debug (SPIDER)", x, y, UI_TEXT)
         y += line
-        self._draw_ui_text("N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate", x, y, UI_HINT)
+        self._draw_ui_text("N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot", x, y, UI_HINT)
         y += line
         self._draw_ui_text(f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, UI_HINT)
         y += line
