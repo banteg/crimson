@@ -3422,6 +3422,7 @@ class GameLoopView:
         self._demo_active = False
         self._menu_active = False
         self._quit_after_demo = False
+        self._screenshot_requested = False
 
     def open(self) -> None:
         rl.hide_cursor()
@@ -3434,6 +3435,8 @@ class GameLoopView:
         console = self._state.console
         console.handle_hotkey()
         console.update(dt)
+        if (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
+            self._screenshot_requested = True
         if console.open_flag:
             if console.quit_requested:
                 self._state.quit_requested = True
@@ -3526,6 +3529,11 @@ class GameLoopView:
         if console.quit_requested:
             self._state.quit_requested = True
             console.quit_requested = False
+
+    def consume_screenshot_request(self) -> bool:
+        requested = self._screenshot_requested
+        self._screenshot_requested = False
+        return requested
 
     def draw(self) -> None:
         self._active.draw()
