@@ -10,6 +10,7 @@ from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
+from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, player_update, weapon_assign_player
 from ..weapons import WEAPON_TABLE
@@ -17,6 +18,7 @@ from .registry import register_view
 
 
 WORLD_SIZE = 1024.0
+CURSOR_EFFECT_ID = 0x0D
 
 BG = rl.Color(10, 10, 12, 255)
 GRID_COLOR = rl.Color(255, 255, 255, 14)
@@ -59,6 +61,7 @@ class ProjectileRenderDebugView:
             hardcore=False,
         )
         self._player = self._world.players[0] if self._world.players else None
+        self._aim_texture: rl.Texture | None = None
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
@@ -67,6 +70,39 @@ class ProjectileRenderDebugView:
 
         self.close_requested = False
         self._paused = False
+
+    def _draw_cursor_glow(self, *, x: float, y: float) -> None:
+        particles = self._world.particles_texture
+        if particles is None:
+            return
+        src = effect_src_rect(
+            CURSOR_EFFECT_ID,
+            texture_width=float(particles.width),
+            texture_height=float(particles.height),
+        )
+        if src is None:
+            return
+        src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
+        dst = rl.Rectangle(x - 32.0, y - 32.0, 64.0, 64.0)
+        origin = rl.Vector2(0.0, 0.0)
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, rl.WHITE)
+        rl.end_blend_mode()
+
+    def _draw_aim_cursor(self, *, x: float, y: float) -> None:
+        self._draw_cursor_glow(x=x, y=y)
+        aim = self._aim_texture
+        if aim is None:
+            color = rl.Color(235, 235, 235, 220)
+            rl.draw_circle_lines(int(x), int(y), 10, color)
+            rl.draw_line(int(x - 14.0), int(y), int(x - 6.0), int(y), color)
+            rl.draw_line(int(x + 6.0), int(y), int(x + 14.0), int(y), color)
+            rl.draw_line(int(x), int(y - 14.0), int(x), int(y - 6.0), color)
+            rl.draw_line(int(x), int(y + 6.0), int(x), int(y + 14.0), color)
+            return
+        src = rl.Rectangle(0.0, 0.0, float(aim.width), float(aim.height))
+        dst = rl.Rectangle(x - 10.0, y - 10.0, 20.0, 20.0)
+        rl.draw_texture_pro(aim, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -201,13 +237,21 @@ class ProjectileRenderDebugView:
             self._world.config = None
 
         self._world.open()
+        self._aim_texture = self._world._load_texture(
+            "ui_aim",
+            cache_path="ui/ui_aim.jaz",
+            file_path="ui/ui_aim.png",
+        )
         self._reset_scene()
+        rl.hide_cursor()
 
     def close(self) -> None:
+        rl.show_cursor()
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._world.close()
+        self._aim_texture = None
 
     def update(self, dt: float) -> None:
         self._handle_debug_input()
@@ -296,6 +340,15 @@ class ProjectileRenderDebugView:
                 px, py = self._world.world_to_screen(float(player.pos_x), float(player.pos_y))
                 rl.draw_circle(int(px), int(py), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
 
+        if player is not None and player.health > 0.0:
+            aim_x = float(getattr(player, "aim_x", player.pos_x))
+            aim_y = float(getattr(player, "aim_y", player.pos_y))
+            dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+            radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+            screen_radius = max(1.0, radius * scale)
+            aim_screen_x, aim_screen_y = self._world.world_to_screen(aim_x, aim_y)
+            self._world._draw_aim_circle(x=aim_screen_x, y=aim_screen_y, radius=screen_radius)
+
         # UI.
         x = 16.0
         y = 12.0
@@ -319,6 +372,9 @@ class ProjectileRenderDebugView:
         self._draw_ui_text("WASD move  LMB fire  R reload  [/] cycle weapons  Space pause", x, y, UI_HINT)
         y += line
         self._draw_ui_text("T reset targets  Backspace reset scene  Esc quit", x, y, UI_HINT)
+
+        mouse = rl.get_mouse_position()
+        self._draw_aim_cursor(x=float(mouse.x), y=float(mouse.y))
 
 
 @register_view("projectile-render-debug", "Projectile render debug")
