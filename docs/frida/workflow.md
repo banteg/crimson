@@ -16,6 +16,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/menu_logo_pivot_trace.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
+- `scripts/frida/fx_queue_render_trace.js`
 
 Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
@@ -45,6 +46,12 @@ Creature render trace (draw calls + alpha for dying creatures, JSONL to `creatur
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\creature_render_trace.js
+```
+
+FX queue bake trace (corpse shadow/color passes into terrain RT, JSONL to `fx_queue_render_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\fx_queue_render_trace.js
 ```
 
 Just shortcut (Windows VM):
