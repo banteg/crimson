@@ -738,25 +738,28 @@ class GameWorld:
 
         rl.begin_blend_mode(rl.BLEND_ALPHA)
 
-        seg_count = self._grim2d_circle_segments_filled(radius)
-        rl.rl_set_texture(0)
-        rl.rl_begin(rl.RL_TRIANGLES)
-        for idx in range(seg_count):
-            a0 = float(idx) / float(seg_count) * math.tau
-            a1 = float(idx + 1) / float(seg_count) * math.tau
-            x0 = x + math.cos(a0) * radius
-            y0 = y + math.sin(a0) * radius
-            x1 = x + math.cos(a1) * radius
-            y1 = y + math.sin(a1) * radius
+        if self.bullet_trail_texture is not None:
+            seg_count = self._grim2d_circle_segments_filled(radius)
+            rl.rl_set_texture(self.bullet_trail_texture.id)
+            rl.rl_begin(rl.RL_TRIANGLES)
+            for idx in range(seg_count):
+                a0 = float(idx) / float(seg_count) * math.tau
+                a1 = float(idx + 1) / float(seg_count) * math.tau
+                x0 = x + math.cos(a0) * radius
+                y0 = y + math.sin(a0) * radius
+                x1 = x + math.cos(a1) * radius
+                y1 = y + math.sin(a1) * radius
 
-            rl.rl_color4ub(fill.r, fill.g, fill.b, fill.a)
-            rl.rl_tex_coord2f(0.5, 0.5)
-            rl.rl_vertex2f(x, y)
-            rl.rl_tex_coord2f(0.5, 0.5)
-            rl.rl_vertex2f(x0, y0)
-            rl.rl_tex_coord2f(0.5, 0.5)
-            rl.rl_vertex2f(x1, y1)
-        rl.rl_end()
+                rl.rl_color4ub(fill.r, fill.g, fill.b, fill.a)
+                rl.rl_tex_coord2f(0.5, 0.5)
+                rl.rl_vertex2f(x, y)
+                rl.rl_tex_coord2f(0.5, 0.5)
+                rl.rl_vertex2f(x0, y0)
+                rl.rl_tex_coord2f(0.5, 0.5)
+                rl.rl_vertex2f(x1, y1)
+            rl.rl_end()
+        else:
+            rl.draw_circle(int(x), int(y), max(1.0, radius), fill)
 
         if self.bullet_trail_texture is not None:
             # ui_render_aim_indicators uses bulletTrail with UV (0.5,0.0)-(0.5,1.0).
@@ -800,7 +803,6 @@ class GameWorld:
                 rl.rl_vertex2f(ix1, iy1)
             rl.rl_end()
         else:
-            rl.rl_set_texture(0)
             rl.draw_circle_lines(int(x), int(y), max(1.0, radius), outline)
 
         rl.rl_set_texture(0)
