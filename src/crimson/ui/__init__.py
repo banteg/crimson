@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-__all__ = ["hud", "perk_menu"]
+__all__ = ["cursor", "hud", "perk_menu"]

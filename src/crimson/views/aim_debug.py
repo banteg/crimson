@@ -9,13 +9,12 @@ from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import ViewContext
 
-from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput
+from ..ui.cursor import draw_cursor_glow
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
-CURSOR_EFFECT_ID = 0x0D
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -88,22 +87,7 @@ class AimDebugView:
         self._ui_mouse_y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
     def _draw_cursor_glow(self, *, x: float, y: float) -> None:
-        particles = self._world.particles_texture
-        if particles is None:
-            return
-        src = effect_src_rect(
-            CURSOR_EFFECT_ID,
-            texture_width=float(particles.width),
-            texture_height=float(particles.height),
-        )
-        if src is None:
-            return
-        src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-        dst = rl.Rectangle(x - 32.0, y - 32.0, 64.0, 64.0)
-        origin = rl.Vector2(0.0, 0.0)
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-        rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, rl.WHITE)
-        rl.end_blend_mode()
+        draw_cursor_glow(self._world.particles_texture, x=x, y=y)
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):

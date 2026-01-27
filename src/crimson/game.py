@@ -46,7 +46,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim import music
 
 from .demo import DemoView
-from .effects_atlas import effect_src_rect
+from .ui.cursor import draw_menu_cursor
 from .save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
 from .weapons import WEAPON_BY_ID
 
@@ -267,16 +267,6 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_button_md", "ui/ui_button_145x32.jaz"),
 )
 
-CURSOR_EFFECT_ID = 0x0D
-
-
-def _clamp01(value: float) -> float:
-    if value < 0.0:
-        return 0.0
-    if value > 1.0:
-        return 1.0
-    return value
-
 
 def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     cache = _ensure_texture_cache(state)
@@ -286,35 +276,7 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     mouse = rl.get_mouse_position()
     mouse_x = float(mouse.x)
     mouse_y = float(mouse.y)
-
-    if particles is not None:
-        src = effect_src_rect(
-            CURSOR_EFFECT_ID,
-            texture_width=float(particles.width),
-            texture_height=float(particles.height),
-        )
-        if src is not None:
-            src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-            alpha = (math.pow(2.0, math.sin(pulse_time)) + 2.0) * 0.32
-            alpha = _clamp01(alpha)
-            tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
-            origin = rl.Vector2(0.0, 0.0)
-
-            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-            for dx, dy, size in (
-                (-28.0, -28.0, 64.0),
-                (-10.0, -18.0, 64.0),
-                (-18.0, -10.0, 64.0),
-                (-48.0, -48.0, 128.0),
-            ):
-                dst = rl.Rectangle(mouse_x + dx, mouse_y + dy, size, size)
-                rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
-            rl.end_blend_mode()
-
-    if cursor_tex is not None:
-        src = rl.Rectangle(0.0, 0.0, float(cursor_tex.width), float(cursor_tex.height))
-        dst = rl.Rectangle(mouse_x - 2.0, mouse_y - 2.0, 32.0, 32.0)
-        rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+    draw_menu_cursor(particles, cursor_tex, x=mouse_x, y=mouse_y, pulse_time=float(pulse_time))
 
 
 MENU_LABEL_WIDTH = 124.0

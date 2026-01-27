@@ -10,15 +10,14 @@ from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
-from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, player_update, weapon_assign_player
+from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_TABLE
 from .registry import register_view
 
 
 WORLD_SIZE = 1024.0
-CURSOR_EFFECT_ID = 0x0D
 
 BG = rl.Color(10, 10, 12, 255)
 GRID_COLOR = rl.Color(255, 255, 255, 14)
@@ -70,39 +69,6 @@ class ProjectileRenderDebugView:
 
         self.close_requested = False
         self._paused = False
-
-    def _draw_cursor_glow(self, *, x: float, y: float) -> None:
-        particles = self._world.particles_texture
-        if particles is None:
-            return
-        src = effect_src_rect(
-            CURSOR_EFFECT_ID,
-            texture_width=float(particles.width),
-            texture_height=float(particles.height),
-        )
-        if src is None:
-            return
-        src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-        dst = rl.Rectangle(x - 32.0, y - 32.0, 64.0, 64.0)
-        origin = rl.Vector2(0.0, 0.0)
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-        rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, rl.WHITE)
-        rl.end_blend_mode()
-
-    def _draw_aim_cursor(self, *, x: float, y: float) -> None:
-        self._draw_cursor_glow(x=x, y=y)
-        aim = self._aim_texture
-        if aim is None:
-            color = rl.Color(235, 235, 235, 220)
-            rl.draw_circle_lines(int(x), int(y), 10, color)
-            rl.draw_line(int(x - 14.0), int(y), int(x - 6.0), int(y), color)
-            rl.draw_line(int(x + 6.0), int(y), int(x + 14.0), int(y), color)
-            rl.draw_line(int(x), int(y - 14.0), int(x), int(y - 6.0), color)
-            rl.draw_line(int(x), int(y + 6.0), int(x), int(y + 14.0), color)
-            return
-        src = rl.Rectangle(0.0, 0.0, float(aim.width), float(aim.height))
-        dst = rl.Rectangle(x - 10.0, y - 10.0, 20.0, 20.0)
-        rl.draw_texture_pro(aim, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -374,7 +340,7 @@ class ProjectileRenderDebugView:
         self._draw_ui_text("T reset targets  Backspace reset scene  Esc quit", x, y, UI_HINT)
 
         mouse = rl.get_mouse_position()
-        self._draw_aim_cursor(x=float(mouse.x), y=float(mouse.y))
+        draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))
 
 
 @register_view("projectile-render-debug", "Projectile render debug")

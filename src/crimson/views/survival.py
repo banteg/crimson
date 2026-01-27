@@ -15,11 +15,11 @@ from grim.fonts.small import measure_small_text_width
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
-from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
 from ..highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
+from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, draw_hud_overlay, load_hud_assets
 from ..ui.perk_menu import (
@@ -48,8 +48,6 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-
-CURSOR_EFFECT_ID = 0x0D
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -649,64 +647,20 @@ class SurvivalView:
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
         mouse_y = float(self._ui_mouse_y)
-
-        particles = self._world.particles_texture
-        if particles is not None:
-            src = effect_src_rect(
-                CURSOR_EFFECT_ID,
-                texture_width=float(particles.width),
-                texture_height=float(particles.height),
-            )
-            if src is not None:
-                src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-                alpha = (math.pow(2.0, math.sin(self._cursor_pulse_time)) + 2.0) * 0.32
-                alpha = _clamp(alpha, 0.0, 1.0)
-                tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
-                origin = rl.Vector2(0.0, 0.0)
-
-                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-                for dx, dy, size in (
-                    (-28.0, -28.0, 64.0),
-                    (-10.0, -18.0, 64.0),
-                    (-18.0, -10.0, 64.0),
-                    (-48.0, -48.0, 128.0),
-                ):
-                    dst = rl.Rectangle(mouse_x + dx, mouse_y + dy, size, size)
-                    rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
-                rl.end_blend_mode()
-
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
-        if cursor_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(cursor_tex.width), float(cursor_tex.height))
-            dst = rl.Rectangle(mouse_x - 2.0, mouse_y - 2.0, 32.0, 32.0)
-            rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        draw_menu_cursor(
+            self._world.particles_texture,
+            cursor_tex,
+            x=mouse_x,
+            y=mouse_y,
+            pulse_time=float(self._cursor_pulse_time),
+        )
 
     def _draw_aim_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
         mouse_y = float(self._ui_mouse_y)
-
-        particles = self._world.particles_texture
-        if particles is not None:
-            src = effect_src_rect(
-                CURSOR_EFFECT_ID,
-                texture_width=float(particles.width),
-                texture_height=float(particles.height),
-            )
-            if src is not None:
-                src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-                tint = rl.WHITE
-                origin = rl.Vector2(0.0, 0.0)
-
-                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-                dst = rl.Rectangle(mouse_x - 32.0, mouse_y - 32.0, 64.0, 64.0)
-                rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
-                rl.end_blend_mode()
-
         aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
-        if aim_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(aim_tex.width), float(aim_tex.height))
-            dst = rl.Rectangle(mouse_x - 10.0, mouse_y - 10.0, 20.0, 20.0)
-            rl.draw_texture_pro(aim_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._perk_menu_open) and (not self._game_over_active))
