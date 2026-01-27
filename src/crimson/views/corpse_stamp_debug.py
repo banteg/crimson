@@ -56,6 +56,8 @@ class CorpseStampDebugView:
         self._corpse_size = 256.0
         self._corpse_rotation = 0.0
         self._screenshot_requested = False
+        self._dump_requested = False
+        self._dump_index = 0
 
     def _ui_line_height(self) -> int:
         if self._small is not None:
@@ -86,6 +88,32 @@ class CorpseStampDebugView:
             except Exception:
                 return 1.0, None, None
         return 1.0, None, None
+
+    def _dump_render_target(self) -> Path | None:
+        ground = self._ground
+        if ground is None or ground.render_target is None:
+            return None
+
+        log_dir = Path("artifacts") / "debug"
+        try:
+            log_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            log_dir = Path("artifacts")
+
+        step = _STEPS[self._step_index]
+        alpha_test = "a1" if bool(getattr(ground, "alpha_test", True)) else "a0"
+        filename = f"corpse_stamp_rt_{self._dump_index:03d}_step{self._step_index + 1:02d}_{step.name}_{alpha_test}.png"
+        out_path = log_dir / filename
+
+        image = rl.load_image_from_texture(ground.render_target.texture)
+        # Render textures are vertically flipped in raylib.
+        rl.image_flip_vertical(image)
+        try:
+            rl.export_image(image, str(out_path))
+        finally:
+            rl.unload_image(image)
+        self._dump_index += 1
+        return out_path
 
     def _corpse_decal(self) -> GroundCorpseDecal:
         size = float(self._corpse_size)
@@ -228,6 +256,9 @@ class CorpseStampDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
 
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
+            self._dump_requested = True
+
         if rl.is_key_down(rl.KeyboardKey.KEY_Q):
             self._corpse_rotation -= 0.04
         if rl.is_key_down(rl.KeyboardKey.KEY_E):
@@ -250,6 +281,10 @@ class CorpseStampDebugView:
             self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR)
             return
 
+        if self._dump_requested:
+            self._dump_requested = False
+            self._dump_render_target()
+
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         cam_x = screen_w * 0.5 - WORLD_SIZE * 0.5
@@ -264,11 +299,21 @@ class CorpseStampDebugView:
         alpha_test = bool(getattr(ground, "alpha_test", True))
         self._draw_ui_text("Corpse stamp debug (SPIDER)", x, y, UI_TEXT)
         y += line
-        self._draw_ui_text("N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot", x, y, UI_HINT)
+        self._draw_ui_text(
+            "N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot   D: dump RT",
+            x,
+            y,
+            UI_HINT,
+        )
         y += line
         self._draw_ui_text(f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, UI_HINT)
         y += line
-        self._draw_ui_text(f"alpha_test={'on' if alpha_test else 'off'}  size={self._corpse_size:.1f}", x, y, UI_HINT)
+        self._draw_ui_text(
+            f"alpha_test={'on' if alpha_test else 'off'}  size={self._corpse_size:.1f}  dump_index={self._dump_index}",
+            x,
+            y,
+            UI_HINT,
+        )
 
         # Source preview (bodyset frame) in the corner for inspection.
         if self._bodyset is not None:
