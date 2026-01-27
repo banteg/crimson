@@ -90,6 +90,7 @@ class DecalsDebugView:
 
         self._terrain_seed = 0xBEEF
         self._terrain_pair = 0  # 0..3, maps to (0,1),(2,3),(4,5),(6,7)
+        self._show_stamp_log = True
 
         self._state = GameplayState()
         self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
@@ -486,12 +487,18 @@ class DecalsDebugView:
             if not self._light_mode:
                 self._apply_terrain_pair()
 
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
+            self._show_stamp_log = not self._show_stamp_log
+
         if self._ground is not None:
             texture_scale, screen_w, screen_h = self._load_runtime_config()
             self._ground.texture_scale = texture_scale
             self._ground.screen_width = screen_w
             self._ground.screen_height = screen_h
             self._ground.process_pending()
+            self._ground.debug_log_stamps = self._show_stamp_log
+            if self._show_stamp_log:
+                self._ground.debug_clear_stamp_log()
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             mouse = rl.get_mouse_position()
@@ -575,6 +582,10 @@ class DecalsDebugView:
                     corpse_frame_for_type=creature_corpse_frame_for_type,
                     corpse_shadow=not self._light_mode,
                 )
+                if self._show_stamp_log:
+                    stamp_log = self._ground.debug_stamp_log()
+                    if stamp_log:
+                        print("[decals] " + " | ".join(stamp_log))
 
     def draw(self) -> None:
         rl.clear_background(BG_LIGHT if self._light_mode else BG_DARK)
@@ -652,13 +663,22 @@ class DecalsDebugView:
         self._draw_ui_text("LMB: blood / damage enemy   RMB: spawn enemy", x, y, hint_color)
         y += line
         self._draw_ui_text(
-            "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear",
+            "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear   L: stamp log",
             x,
             y,
             hint_color,
         )
         y += line
         self._draw_ui_text(f"enemies={len([c for c in self._creatures.entries if c.active])}", x, y, hint_color)
+        y += line
+        if self._ground is not None and self._show_stamp_log:
+            stamp_log = self._ground.debug_stamp_log()
+            if stamp_log:
+                self._draw_ui_text("stamp order:", x, y, hint_color)
+                y += line
+                for entry in stamp_log[-6:]:
+                    self._draw_ui_text(entry, x, y, hint_color)
+                    y += line
 
 
 @register_view("decals", "Decals debug")
