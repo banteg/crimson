@@ -54,7 +54,7 @@ class AimDebugView:
         self._simulate = False
         self._draw_world = True
         self._draw_world_aim = True
-        self._draw_cursor_glow = False
+        self._show_cursor_glow = False
         self._draw_expected_overlay = True
         self._draw_test_circle = True
 
@@ -119,7 +119,7 @@ class AimDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
             self._draw_expected_overlay = not self._draw_expected_overlay
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
-            self._draw_cursor_glow = not self._draw_cursor_glow
+            self._show_cursor_glow = not self._show_cursor_glow
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FIVE):
             self._draw_test_circle = not self._draw_test_circle
 
@@ -230,7 +230,7 @@ class AimDebugView:
             self._world._draw_aim_circle(x=cx, y=cy, radius=float(self._test_circle_radius))
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
-        if self._draw_cursor_glow:
+        if self._show_cursor_glow:
             self._draw_cursor_glow(x=mouse_x, y=mouse_y)
 
         aim_x, aim_y = self._world.screen_to_world(mouse_x, mouse_y)
@@ -271,4 +271,3 @@ class AimDebugView:
 @register_view("aim-debug", "Aim indicator debug")
 def _create_aim_debug_view(*, ctx: ViewContext) -> AimDebugView:
     return AimDebugView(ctx)
-
