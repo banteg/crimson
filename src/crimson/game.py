@@ -428,7 +428,7 @@ class BootView:
     def update(self, dt: float) -> None:
         frame_dt = min(dt, 0.1)
         if self._state.audio is not None:
-            update_audio(self._state.audio)
+            update_audio(self._state.audio, frame_dt)
         if self._theme_started:
             return
         if not self._textures_done:
@@ -741,7 +741,7 @@ class MenuView:
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
-            update_audio(self._state.audio)
+            update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -1305,7 +1305,7 @@ class PanelMenuView:
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
-            update_audio(self._state.audio)
+            update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -1639,7 +1639,7 @@ class PlayGameMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
-            update_audio(self._state.audio)
+            update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
@@ -2295,7 +2295,7 @@ class QuestsMenuView:
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
-            update_audio(self._state.audio)
+            update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1

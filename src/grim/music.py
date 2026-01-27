@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from collections.abc import Callable
 from pathlib import Path
 import random
 
@@ -28,6 +29,7 @@ class MusicState:
     volume: float
     tracks: dict[str, rl.Music]
     active_track: str | None
+    playbacks: dict[str, "TrackPlayback"] = field(default_factory=dict)
     queue: list[str] = field(default_factory=list)
     # Mirrors the original game's "start a random game tune on first hit" gate.
     game_tune_started: bool = False
@@ -44,6 +46,7 @@ def init_music_state(*, ready: bool, enabled: bool, volume: float) -> MusicState
         volume=float(volume),
         tracks={},
         active_track=None,
+        playbacks={},
         queue=[],
         game_tune_started=False,
         game_tune_track=None,
@@ -184,36 +187,75 @@ def queue_track(state: MusicState, track_key: str) -> None:
     state.queue.append(track_key)
 
 
+@dataclass(slots=True)
+class TrackPlayback:
+    """Runtime playback state for a loaded music stream."""
+
+    music: rl.Music
+    volume: float
+    muted: bool
+
+
+_MUSIC_MAX_DT = 0.1
+_MUSIC_FADE_IN_PER_SEC = 1.0
+_MUSIC_FADE_OUT_PER_SEC = 0.5
+
+
 def play_music(state: MusicState, track_name: str) -> None:
     if not state.ready or not state.enabled:
         return
     music = state.tracks.get(track_name)
     if music is None:
         return
-    if state.active_track == track_name and rl.is_music_stream_playing(music):
-        return
-    rl.play_music_stream(music)
+
+    # Original behavior uses an "exclusive" music channel: starting a new track
+    # mutes (fades out) any currently-unmuted music.
+    for key, pb in state.playbacks.items():
+        if key != track_name:
+            pb.muted = True
+
+    pb = state.playbacks.get(track_name)
+    if pb is None:
+        pb = TrackPlayback(music=music, volume=0.0, muted=False)
+        state.playbacks[track_name] = pb
+    else:
+        pb.muted = False
+
+    playing = False
+    try:
+        playing = bool(rl.is_music_stream_playing(music))
+    except Exception:
+        playing = False
+
+    # Mirror `sfx_play_exclusive`: if the track isn't already audible, start it
+    # immediately at the target volume. Otherwise, let the fade logic bring it
+    # back up (resume behavior).
+    if (not playing) or pb.volume <= 0.0:
+        pb.volume = state.volume
+        try:
+            rl.set_music_volume(music, pb.volume)
+        except Exception:
+            pass
+        try:
+            rl.play_music_stream(music)
+        except Exception:
+            pass
+
     state.active_track = track_name
 
 
 def stop_music(state: MusicState) -> None:
     if not state.ready or not state.enabled:
         return
-    if state.active_track is None:
-        return
-    music = state.tracks.get(state.active_track)
-    if music is None:
-        state.active_track = None
-        state.game_tune_started = False
-        state.game_tune_track = None
-        return
-    rl.stop_music_stream(music)
+    # Mirror `sfx_mute_all`: mark everything muted and let `update_music` ramp it down.
+    for pb in state.playbacks.values():
+        pb.muted = True
     state.active_track = None
     state.game_tune_started = False
     state.game_tune_track = None
 
 
-def trigger_game_tune(state: MusicState, *, rng: random.Random | None = None) -> str | None:
+def trigger_game_tune(state: MusicState, *, rand: Callable[[], int] | None = None) -> str | None:
     """Start a random queued game tune, if it hasn't been triggered yet.
 
     Returns the track key if playback started, otherwise None.
@@ -225,30 +267,97 @@ def trigger_game_tune(state: MusicState, *, rng: random.Random | None = None) ->
     if not state.queue:
         return None
 
-    if rng is None:
+    if rand is None:
         track_key = random.choice(state.queue)
     else:
-        track_key = rng.choice(state.queue)
+        idx = int(rand()) % len(state.queue)
+        track_key = state.queue[idx]
 
     if track_key not in state.tracks:
         return None
 
-    stop_music(state)
     play_music(state, track_key)
     state.game_tune_started = True
     state.game_tune_track = track_key
     return track_key
 
 
-def update_music(state: MusicState) -> None:
+def update_music(state: MusicState, dt: float) -> None:
     if not state.ready or not state.enabled:
         return
-    if state.active_track is None:
+    frame_dt = float(dt)
+    if frame_dt <= 0.0:
         return
-    music = state.tracks.get(state.active_track)
-    if music is None:
+    if frame_dt > _MUSIC_MAX_DT:
+        frame_dt = _MUSIC_MAX_DT
+
+    target_volume = float(state.volume)
+    if target_volume <= 0.0:
+        # Original behavior: global music volume at 0 stops playback immediately.
+        for track_key in list(state.playbacks.keys()):
+            pb = state.playbacks.pop(track_key, None)
+            if pb is None:
+                continue
+            try:
+                rl.set_music_volume(pb.music, 0.0)
+            except Exception:
+                pass
+            try:
+                rl.stop_music_stream(pb.music)
+            except Exception:
+                pass
         return
-    rl.update_music_stream(music)
+
+    for track_key in list(state.playbacks.keys()):
+        pb = state.playbacks.get(track_key)
+        if pb is None:
+            continue
+        music = pb.music
+
+        # Keep streams serviced while they play.
+        try:
+            if rl.is_music_stream_playing(music):
+                rl.update_music_stream(music)
+        except Exception:
+            pass
+
+        muted = pb.muted or target_volume <= 0.0
+        if muted:
+            pb.volume -= frame_dt * _MUSIC_FADE_OUT_PER_SEC
+            if pb.volume <= 0.0:
+                pb.volume = 0.0
+                try:
+                    rl.set_music_volume(music, 0.0)
+                except Exception:
+                    pass
+                try:
+                    rl.stop_music_stream(music)
+                except Exception:
+                    pass
+                state.playbacks.pop(track_key, None)
+                continue
+            try:
+                rl.set_music_volume(music, pb.volume)
+            except Exception:
+                pass
+            continue
+
+        # Unmuted track: ensure it stays playing and ramp toward target volume.
+        try:
+            if not rl.is_music_stream_playing(music):
+                rl.play_music_stream(music)
+        except Exception:
+            pass
+
+        if pb.volume > target_volume:
+            pb.volume = target_volume
+        elif pb.volume < target_volume:
+            pb.volume = min(target_volume, pb.volume + frame_dt * _MUSIC_FADE_IN_PER_SEC)
+
+        try:
+            rl.set_music_volume(music, pb.volume)
+        except Exception:
+            pass
 
 
 def set_music_volume(state: MusicState, volume: float) -> None:
@@ -260,9 +369,15 @@ def set_music_volume(state: MusicState, volume: float) -> None:
     state.volume = volume
     if not state.ready or not state.enabled:
         return
-    for music in state.tracks.values():
+    # Mirror original: volume decreases take effect immediately; increases are ramped
+    # by `update_music`.
+    for pb in state.playbacks.values():
+        if pb.muted:
+            continue
+        if pb.volume > state.volume:
+            pb.volume = state.volume
         try:
-            rl.set_music_volume(music, state.volume)
+            rl.set_music_volume(pb.music, pb.volume)
         except Exception:
             pass
 
@@ -270,6 +385,12 @@ def set_music_volume(state: MusicState, volume: float) -> None:
 def shutdown_music(state: MusicState) -> None:
     if not state.ready:
         return
+    for pb in list(state.playbacks.values()):
+        try:
+            rl.stop_music_stream(pb.music)
+        except Exception:
+            pass
+    state.playbacks.clear()
     for music in state.tracks.values():
         try:
             rl.stop_music_stream(music)
@@ -278,3 +399,5 @@ def shutdown_music(state: MusicState) -> None:
             pass
     state.tracks.clear()
     state.active_track = None
+    state.game_tune_started = False
+    state.game_tune_track = None

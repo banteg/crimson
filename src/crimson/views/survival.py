@@ -447,7 +447,7 @@ class SurvivalView:
 
     def update(self, dt: float) -> None:
         if self._world.audio is not None:
-            update_audio(self._world.audio)
+            update_audio(self._world.audio, dt)
 
         dt_frame = float(dt)
         dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)

@@ -6,7 +6,7 @@ tags:
 # Music (Game Tunes + First-Hit Trigger)
 
 This note documents the original game's "iconic" Survival music behavior:
-**menu music cuts on mode entry**, and a **random in-game tune starts on the first
+**menu music mutes/fades on mode entry**, and a **random in-game tune starts on the first
 projectile hit on a creature** (the impact SFX is suppressed for that hit).
 
 ## Game tune loading (playlist)
@@ -43,14 +43,14 @@ Mode entry paths mute menu music before entering gameplay. For example, the
 victory screen handler `game_update_victory_screen` (`0x00406350`) mutes:
 `music_track_crimson_theme_id`, `music_track_shortie_monk_id`, and
 `music_track_extra_0` when starting Survival/Rush/Typ-o, immediately cutting the
-menu theme and resetting the first-hit gate.
+menu theme (fade out) and resetting the first-hit gate.
 
 ## Port behavior (this repo)
 
 For Survival we mirror the original behavior:
 
-- Entering Survival stops the menu theme.
+- Entering Survival mutes (fades out) the menu theme.
 - The first projectile hit starts a random queued game tune and suppresses the
   impact SFX for that hit.
-- Leaving Survival stops the game tune; the menu theme resumes when the menu
+- Leaving Survival mutes (fades out) the game tune; the menu theme resumes when the menu
   opens.

@@ -568,7 +568,7 @@ class GameWorld:
         # and suppresses the impact SFX for that hit. We mirror the same gate.
         start_idx = 0
         if (not self.demo_mode_active) and (game_mode == GAME_MODE_SURVIVAL):
-            if trigger_game_tune(self.audio, rng=self.audio_rng) is not None:
+            if trigger_game_tune(self.audio, rand=self.state.rng.rand) is not None:
                 start_idx = 1
 
         end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)

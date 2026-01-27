@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Callable
 from pathlib import Path
 import random
 
@@ -65,8 +66,8 @@ def stop_music(state: AudioState) -> None:
     music.stop_music(state.music)
 
 
-def trigger_game_tune(state: AudioState, *, rng: random.Random | None = None) -> str | None:
-    return music.trigger_game_tune(state.music, rng=rng)
+def trigger_game_tune(state: AudioState, *, rand: Callable[[], int] | None = None) -> str | None:
+    return music.trigger_game_tune(state.music, rand=rand)
 
 
 def play_sfx(
@@ -93,8 +94,8 @@ def set_music_volume(state: AudioState | None, volume: float) -> None:
     music.set_music_volume(state.music, volume)
 
 
-def update_audio(state: AudioState) -> None:
-    music.update_music(state.music)
+def update_audio(state: AudioState, dt: float) -> None:
+    music.update_music(state.music, dt)
 
 
 def shutdown_audio(state: AudioState) -> None:
