@@ -83,6 +83,8 @@ class GameState:
     menu_sign_locked: bool = False
     pending_quest_level: str | None = None
     quit_requested: bool = False
+    screen_fade_alpha: float = 0.0
+    screen_fade_ramp: bool = False
 
 
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
@@ -124,6 +126,29 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     if regenerate:
         ground.schedule_generate(seed=state.rng.randrange(0, 10_000), layers=3)
     return ground
+
+
+SCREEN_FADE_OUT_RATE = 2.0
+SCREEN_FADE_IN_RATE = 10.0
+
+
+def _update_screen_fade(state: GameState, dt: float) -> None:
+    if state.screen_fade_ramp:
+        state.screen_fade_alpha += float(dt) * SCREEN_FADE_IN_RATE
+    else:
+        state.screen_fade_alpha -= float(dt) * SCREEN_FADE_OUT_RATE
+    if state.screen_fade_alpha < 0.0:
+        state.screen_fade_alpha = 0.0
+    elif state.screen_fade_alpha > 1.0:
+        state.screen_fade_alpha = 1.0
+
+
+def _draw_screen_fade(state: GameState) -> None:
+    alpha = float(state.screen_fade_alpha)
+    if alpha <= 0.0:
+        return
+    shade = int(max(0.0, min(1.0, alpha)) * 255.0)
+    rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, shade))
 
 
 def _load_resource_entries(state: GameState) -> dict[str, bytes]:
@@ -794,6 +819,7 @@ class MenuView:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
         assets = self._assets
         if assets is None:
             return
@@ -1320,6 +1346,7 @@ class PanelMenuView:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
         assets = self._assets
         entry = self._entry
         if assets is None or entry is None:
@@ -1879,6 +1906,8 @@ class PlayGameMenuView(PanelMenuView):
         if mode.game_mode is not None:
             self._state.config.data["game_mode"] = int(mode.game_mode)
             self._dirty = True
+        if mode.action == "start_survival":
+            self._state.screen_fade_ramp = True
         self._begin_close_transition(mode.action)
 
     def _update_tooltip_timer(self, key: str, hovered: bool, dt_ms: int) -> None:
@@ -3312,7 +3341,9 @@ class SurvivalGameView:
 
     def open(self) -> None:
         self._action = None
+        self._state.screen_fade_ramp = False
         self._view.bind_audio(self._state.audio, self._state.rng)
+        self._view.bind_screen_fade(self._state)
         self._view.open()
 
     def close(self) -> None:
@@ -3399,6 +3430,7 @@ class GameLoopView:
         console = self._state.console
         console.handle_hotkey()
         console.update(dt)
+        _update_screen_fade(self._state, dt)
         if (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:

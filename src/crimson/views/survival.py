@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import math
 import random
+from typing import Protocol
 
 import pyray as rl
 
@@ -48,8 +49,6 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-SCREEN_FADE_OUT_RATE = 2.0
-SCREEN_FADE_IN_RATE = 10.0
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -65,6 +64,10 @@ class _SurvivalState:
     elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown: float = 0.0
+
+
+class _ScreenFade(Protocol):
+    screen_fade_alpha: float
 
 
 class SurvivalView:
@@ -123,13 +126,15 @@ class SurvivalView:
         self._ui_mouse_y = 0.0
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
-        self._screen_fade_alpha = 0.0
-        self._screen_fade_ramp = False
+        self._screen_fade: _ScreenFade | None = None
 
     def _bind_world(self) -> None:
         self._state = self._world.state
         self._creatures = self._world.creatures
         self._player = self._world.players[0]
+
+    def bind_screen_fade(self, fade: _ScreenFade | None) -> None:
+        self._screen_fade = fade
 
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
         self._world.audio = audio
@@ -206,8 +211,6 @@ class SurvivalView:
             self._hud_missing = list(self._hud_assets.missing)
 
         self._game_over_active = False
-        self._screen_fade_alpha = 1.0
-        self._screen_fade_ramp = False
         self._game_over_record = None
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
@@ -447,14 +450,6 @@ class SurvivalView:
             update_audio(self._world.audio)
 
         dt_frame = float(dt)
-        if self._screen_fade_ramp:
-            self._screen_fade_alpha += dt_frame * SCREEN_FADE_IN_RATE
-        else:
-            self._screen_fade_alpha -= dt_frame * SCREEN_FADE_OUT_RATE
-        if self._screen_fade_alpha < 0.0:
-            self._screen_fade_alpha = 0.0
-        elif self._screen_fade_alpha > 1.0:
-            self._screen_fade_alpha = 1.0
         dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
         self._update_ui_mouse()
         self._cursor_time += dt_frame
@@ -686,8 +681,11 @@ class SurvivalView:
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._perk_menu_open) and (not self._game_over_active))
 
-        if self._screen_fade_alpha > 0.0:
-            alpha = int(255 * max(0.0, min(1.0, self._screen_fade_alpha)))
+        fade_alpha = 0.0
+        if self._screen_fade is not None:
+            fade_alpha = float(self._screen_fade.screen_fade_alpha)
+        if fade_alpha > 0.0:
+            alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
             rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
 
         hud_bottom = 0.0
