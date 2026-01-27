@@ -138,6 +138,7 @@ In OpenGL terms, to keep alpha unchanged:
 
 * `glColorMask(true,true,true,false)`
   or
+
 * `glBlendFuncSeparate(srcRGB, dstRGB, GL_ZERO, GL_ONE)` (alpha stays dst)
 
 In raylib/rlgl, look for the “separate” versions (names vary by binding):

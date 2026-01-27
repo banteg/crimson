@@ -72,6 +72,7 @@ Two globals define the cycle timing:
 
 - `quest_spawn_timeline` (`0x00486fd0`): a generic “mode timeline” counter (ms).
   Reset to `0` by `demo_mode_start()`.
+
 - `demo_time_limit_ms` (`0x004712f0`): demo timer limit used as:
   - ~4–5s per gameplay variant (`4000`/`5000`)
   - ~10s for the interstitial (`10000`)
@@ -189,6 +190,7 @@ This runs whenever `demo_mode_active != 0`:
   - Buttons:
     - `Purchase`: sets `shareware_offer_seen_latch` and opens the purchase URL (then requests quit).
     - `Maybe later`: starts a transition back to menu state `0` and resumes `crimson_theme`.
+
   - Increments `quest_spawn_timeline` itself and restarts the demo via `demo_mode_start()` once
     `quest_spawn_timeline > demo_time_limit_ms`.
 
@@ -201,6 +203,7 @@ things:
 - If `demo_mode_active` and `game_state_pending == 0`, it calls
   `terrain_generate_random()` right before `game_state_set(0)` (so the menu
   background changes).
+
 - Once the menu transition finishes, it clears `demo_mode_active` and reloads
   presets (`config_load_presets()`).
 
@@ -211,6 +214,7 @@ override and routes through the same logic as the “auto-aim” control mode:
 
 - Maintains `player_auto_target` (`player+0x2fc`) as the nearest living creature
   with a 64-unit hysteresis.
+
 - Aiming is biased by arena center:
   - if no valid target: aim away from `(512,512)`
   - if within 300 units of center: aim at the target; otherwise aim relative to center

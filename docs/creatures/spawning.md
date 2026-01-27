@@ -30,6 +30,7 @@ For the pure, unit-testable model we use while porting templates, see: [`spawn_p
 
 - Returns a pointer into `creature_pool` (`creature_t *`). Some templates return the last creature
   allocated (for formations), not necessarily the base creature.
+
 - May allocate additional `creature_pool` entries (formation spawns, escorts).
 - May allocate and configure spawn-slot entries (deferred child spawns driven by `creature_update_all`).
 - May spawn a burst effect at the spawn position (skipped in demo mode or when out of bounds).
@@ -53,8 +54,10 @@ Large switch/if-chain on `template_id` assigns template-specific constants and b
 
 - Stats: `type_id`, `flags`, `health`, `move_speed`, `reward_value`, `size`, `tint_rgba`,
   `ai_mode`, and various AI/link fields.
+
 - Formation spawners: allocate N linked children and arrange them using circular offsets
   (`cos/sin`) and AI link modes (e.g. `ai_mode = 3` with `link_index = parent`).
+
 - Spawn-slot spawners: allocate a slot (`FUN_00430ad0()`), store the slot index in `link_index`,
   and configure `creature_spawn_slot_*` arrays (timer/count/limit/interval/template/owner).
 
@@ -66,8 +69,10 @@ Applied after the template switch to the returned creature:
 - `max_health = health`.
 - Note: difficulty/hardcore scaling applies to `health` after this assignment, so `max_health` retains the
   pre-scaled value.
+
 - Spider SP1 special case: when `type_id == 3` and flags do not include `0x10` or `0x80`,
   sets `0x80`, clears `link_index`, and applies a `move_speed *= 1.2` buff.
+
 - Template `0x38` special case: in hardcore, applies `move_speed *= 0.7`.
 - Overwrites `heading` with the final (possibly randomized) heading argument.
 - Difficulty / hardcore scaling:
@@ -75,6 +80,7 @@ Applied after the template switch to the returned creature:
     - For flag `0x4` spawners: `spawn_slot_interval += 0.2`.
     - If `DAT_00487194 > 0`, scales reward/speed/contact/health, and for flag `0x4` spawners
       adds `min(3.0, difficulty * 0.35)` to `spawn_slot_interval`.
+
   - Hardcore:
     - Clears difficulty (`DAT_00487194 = 0`).
     - Buffs speed/contact/health.
@@ -327,6 +333,7 @@ Notes:
 - Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
   - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
     `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
+
   - Tests: `tests/test_tutorial_timeline_spawns.py`
 - Quest timeline (pure model): `src/crimson/quests/timeline.py`
   - `tick_quest_spawn_timeline`, `tick_quest_mode_spawns`, `quest_spawn_table_empty`

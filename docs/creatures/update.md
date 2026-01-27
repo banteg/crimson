@@ -31,6 +31,7 @@ For Survival parity, the runtime update loop must at least track:
 - Per-creature motion state: `pos_xy`, `vel_xy`, `heading`, `target_heading`
 - Per-creature targeting state: `target_x/target_y`, `target_player`, `force_target`, `ai_mode`,
   plus link/orbit fields (`link_index`, `target_offset_x/y`, `orbit_angle/radius`)
+
 - Per-creature timers: `attack_cooldown`, `collision_timer`, hit flash timer
 - Per-creature “alive” state: `active` + `health` (and a one-shot “death handled” latch)
 - Per-creature presentation state: `anim_phase` + `tint_rgba`
@@ -59,6 +60,7 @@ Observed high-level structure inside `creature_update_all` (mirrors `docs/crimso
      - `target_x/target_y`, `target_heading`, `force_target`
      - `move_scale` (local speed reduction in some modes)
      - optional self-damage when a required link is dead (modes `4/5` apply `creature_apply_damage(..., 1000.0, ...)`)
+
    - Reference port: `src/crimson/creatures/ai.py` (derived from decompilation).
 
 2) **Heading integration**
@@ -77,6 +79,7 @@ Observed high-level structure inside `creature_update_all` (mirrors `docs/crimso
 5) **Collision + contact damage**
    - Contact damage to players is driven by per-creature `collision_flag` +
      `collision_timer` (see `docs/creatures/struct.md`).
+
    - Contract:
      - When in contact range, set/keep `collision_flag` and decrement `collision_timer` by `dt`.
      - When the timer crosses below zero, apply `player_take_damage(contact_damage)` and reset the
@@ -86,9 +89,11 @@ Observed high-level structure inside `creature_update_all` (mirrors `docs/crimso
 6) **Ranged attacks**
    - If the creature is a ranged variant (`creature_flags` indicates ranged mode), decrement
      `attack_cooldown` and, when it elapses, spawn a projectile and reset the cooldown.
+
    - Observed ranged-variant gates:
      - `0x10`: spawns projectile type `9` and adds `1.0` to `attack_cooldown` (plays `sfx_shock_fire`).
      - `0x100`: spawns a projectile whose type id is stored in `orbit_radius` (also plays a fire SFX).
+
    - Note: animation strip selection also uses `0x10` as a render-strip offset; see
      `docs/creatures/animations.md`.
 
@@ -96,10 +101,12 @@ Observed high-level structure inside `creature_update_all` (mirrors `docs/crimso
    - Some spawner templates allocate a **spawn slot** and store the slot index in
      `creature_link_index` (these creatures also use flag `0x4`, which doubles as the short-strip
      animation flag; see the `HAS_SPAWN_SLOT` alias in `src/crimson/creatures/spawn.py`).
+
    - Contract:
      - For each active spawn slot, call `tick_spawn_slot(slot, dt_seconds)`.
      - If it returns a `child_template_id`, call `creature_spawn_template(child_template_id, ...)`
        (or the rewrite equivalent: `build_spawn_plan(...)` then materialize it).
+
    - The tested semantics (`tests/test_spawn_slots.py`):
      - Timer always decrements: `timer -= dt`
      - When `timer < 0`, it is incremented by `interval` **exactly once** (no loop).
@@ -123,13 +130,16 @@ Minimum side effects needed by Survival:
 2) **Award XP** to the primary player:
    - `creature_handle_death` adds `int(creature_reward_value)` to `player_experience`
      (`player_health + 0x88`).
+
    - If the “Bloody Mess / Quick Learner” perk is active (`perk_id_bloody_mess_quick_learner`),
      it adds `int(reward_value * 1.3)` instead.
+
    - If `bonus_double_xp_timer > 0`, it adds the same amount **again** (effectively doubling XP).
 
 3) **Attempt bonus drop**
    - Native uses a per-kill gate (`bonus_try_spawn_on_kill`, `0x41f8d0`), then selects a type using
      `bonus_pick_random_type` (`docs/bonus-drop-rates.md`).
+
    - Forced bonus-on-death uses flag `0x400` (`BONUS_ON_DEATH`) and calls `bonus_spawn_at(pos, id, duration)`
      using `link_index` low/high 16-bit fields.
 
@@ -140,6 +150,7 @@ Minimum side effects needed by Survival:
 5) **Survival bookkeeping**
    - Survival tracks recent death positions and a handout gate via globals listed in
      `docs/creatures/struct.md` (used by `survival_update`).
+
    - The rewrite should carry equivalent state (even if the reward logic is initially stubbed).
 
 Notes:
@@ -147,4 +158,5 @@ Notes:
 - Some flags add death behavior:
   - `SPLIT_ON_DEATH` spawns smaller child creatures (max_health scaling is documented in
     `docs/creatures/struct.md`).
+
   - `BONUS_ON_DEATH` (`0x400`) forces a specific bonus id/duration (encoded via `link_index` in native).

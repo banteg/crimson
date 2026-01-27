@@ -102,6 +102,7 @@ Recoil is driven by `player_state.muzzle_flash_alpha`:
 
 - Decay: `muzzle_flash_alpha = max(0, muzzle_flash_alpha - 2 * frame_dt)`
   (applied in both `player_update` and `player_fire_weapon`).
+
 - On fire: `muzzle_flash_alpha += weapon_table[weapon_id].spread_heat`, then clamped
   (`<= 1.0` immediately, and `<= 0.8` at the end of `player_fire_weapon`).
 

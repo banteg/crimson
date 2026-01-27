@@ -32,6 +32,7 @@ Renders the post-mission summary and buttons:
 - Full-screen upsell flow.
 - Renders the feature list, shows the logo/mockup, and opens the purchase URL
   when the user clicks "Purchase".
+
 - **Rewrite note:** implemented in the Python rewrite for parity (the purchase
   URL is legacy).
 

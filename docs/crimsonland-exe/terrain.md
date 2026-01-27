@@ -435,6 +435,7 @@ In `fx_queue_add_rotated` (enqueue), alpha is modified:
   ```c
   a = a / terrainBodiesTransparency;
   ```
+
 * Else:
 
   ```c
@@ -522,17 +523,20 @@ Per entry:
            = 2.0f * terrain_scale / 1024.0f;
            = terrain_scale / 512.0f;
     ```
+
   * and they also subtract `0.5` from x/y before scaling:
 
     ```c
     x = ((top_left_x - 0.5f) * inv_scale) - offset;
     y = ((top_left_y - 0.5f) * inv_scale) - offset;
     ```
+
 * size:
 
   ```c
   s = size * inv_scale * 1.064f;
   ```
+
 * draw:
 
   ```c
@@ -556,11 +560,13 @@ Per entry:
   x = (top_left_x * inv_scale) - offset;
   y = (top_left_y * inv_scale) - offset;
   ```
+
 * size:
 
   ```c
   s = size * inv_scale;
   ```
+
 * draw quad
 
 ---

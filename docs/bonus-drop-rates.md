@@ -51,5 +51,6 @@ renormalized when these gates are active:
 - MediKit (12) is rerolled if `perk_id_death_clock` is owned.
 - Weapon (3) is also rerolled when `bonus_state` contains a type `0x0e` entry
   with state 0 (see the scan at the top of `bonus_pick_random_type`).
+
 - In quest mode (`config_blob[0x18] == 3`), additional quest stage checks can
   suppress Nuke (5) and Freeze (11).

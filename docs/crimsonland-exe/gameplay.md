@@ -88,11 +88,14 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
 - **Decay (recovery):** `player_spread_heat = max(0.01, player_spread_heat - frame_dt * 0.4)`. [static]
   - When Reflex Boost time scaling is active, `frame_dt` is pre-scaled by
     `frame_dt *= time_scale_factor * 1.6666666` before applying the decay. [static]
+
   - Sharpshooter alters the decay path; the current decompile output has
     conflicting constants (`0.25` and `0.02`), so treat it as **unconfirmed**
     until we validate it at runtime. [static]
+
 - **Gain on fire:** if Sharpshooter is **not** active,
   `player_spread_heat += weapon_table[weapon_id].spread_heat * 1.3`. [static]
+
   - It is clamped to a maximum of `0.48`. [static]
 - **Gain on damage:** when taking damage (and Unstoppable is **not** active),
   `player_spread_heat += damage * 0.01` (also clamped to `0.48`). [static]
@@ -122,9 +125,11 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   `(aim_x, aim_y)` with radius `max(6.0, d * player_spread_heat * 0.5)`. [static]
   This makes the indicator scale with range: the same angular error produces a
   larger circle when aiming farther away.
+
   - Fill: solid color `rgba(0.0, 0.0, 0.1, 0.3)` via `grim_draw_circle_filled`. [static]
   - Outline: `bulletTrail` texture, UV `(0.5, 0.0)-(0.5, 1.0)`, color alpha `0.55`,
     via `grim_draw_circle_outline`. [static]
+
   - Grim2D tessellation (grim.dll): fill segments `trunc(r * 0.125 + 12)`, outline
     segments `trunc(r * 0.2 + 14)`, outline outer radius `r + 2.0`. [static]
 
@@ -133,6 +138,7 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   offsets around `ui_mouse_x/y`, then draws `ui_cursor` at `(ui_mouse_x - 2, ui_mouse_y - 2)`
   sized `32×32`. The pulse alpha is
   `alpha = (pow(2.0, sin(t)) + 2.0) * 0.32` with `t += frame_dt * 1.1`. [static]
+
   - Pulse blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=ONE` (`0x14=2`). [static]
   - Cursor blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=INVSRCALPHA` (`0x14=6`). [static]
 

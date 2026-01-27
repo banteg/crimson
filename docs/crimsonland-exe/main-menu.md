@@ -29,6 +29,7 @@ Terrain generation is triggered elsewhere:
 - Startup: `game_startup_init_prelude` calls `terrain_generate_random()`.
 - Demo → Menu: `ui_elements_update_and_render` calls `terrain_generate_random()` when
   `demo_mode_active != 0` and `game_state_pending == 0`, right before `game_state_set(0)`.
+
 - Debug: `console_hotkey_update` checks config var `0x57` and calls `terrain_generate_random()`
   (or `terrain_generate(desc)` in quest mode), then clears the config var.
 
@@ -72,13 +73,17 @@ Animation note:
 
 - The logo sign is UI element table index `0` (`sub_446150` returns 0), so `ui_element_update`
   forces its rotation angle negative (clockwise) during timeline transitions.
+
 - It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
   but it is **locked** to a steady 0° pose during normal menu navigation.
+
 - When `ui_elements_timeline` overshoots `ui_elements_max_timeline()` and is clamped, `ui_elements_update_and_render`
   writes `1` to `ui_sign_crimson_update_disabled` (absolute `0x00487292`). When this byte is `1`, `ui_element_update` early-returns
   and the sign does **not** pivot during transitions to Play Game / Options / etc.
+
 - The quit callback (`ui_menu_main_click_quit @ 0x00447450`) clears `0x00487292` back to `0`, allowing the sign to pivot out during the last
   `300ms` of the close.
+
 - When `fx_detail` is enabled (`config_blob.reserved0[0xe] != 0`), `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
@@ -222,6 +227,7 @@ The logo quad is scaled in-place:
 
 - when `screen_width < 641`: multiply vertex coords by `0.8` and add `+10` to
   several X coordinates.
+
 - when `801 <= screen_width <= 1024`: multiply by `1.2` and also add `+10` to X.
 
 ### Small-width menu pack (screen_width < 641)
@@ -263,6 +269,7 @@ Important behavior:
 
 - In full version, the top slot (idx `2`) forces row `4` (MODS), then the row
   sequence resets back to `0` for the next items.
+
 - The normal row sequence skips `4` (so `3 -> 5`).
 - If config var `100` is empty, table idx `6` is forced to row `6` (QUIT). The
   remaining row `7` is assigned to an element that is **inactive** in state `0`

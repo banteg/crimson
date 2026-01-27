@@ -87,6 +87,7 @@ The quest HUD renders the level number and title with separate mono draws:
   where `8.0` is half the font advance (16/2), `32.0` is the base gap, and `4.0` is a fixed offset.
   For "1.1" (3 chars) at scale 0.55: `3 * 0.55 * 8 + 0.55 * 32 + 4 = 34.8 px`.
   For "1.10" (4 chars) at scale 0.55: `4 * 0.55 * 8 + 0.55 * 32 + 4 = 39.2 px`. [static]
+
 - **Position Y**: computed from number_scale: [static]
   ```
   number_y = title_y + (number_scale * 7.36)

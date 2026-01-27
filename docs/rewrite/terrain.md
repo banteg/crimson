@@ -54,6 +54,7 @@ The rewrite exposes the same mechanism via two helpers:
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass
+
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
 
 ## Terrain filter ("terrainFilter")

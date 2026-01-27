@@ -13,6 +13,7 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../atlas.md).
 
 - `creature_anim_phase` (float) is advanced in `creature_update_all` (`FUN_00426220`) using the per-type
   rate stored in the type table (`DAT_00482728`).
+
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
 - Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured via `scripts/frida/creature_anim_trace.js`).
 
@@ -31,6 +32,7 @@ Known behaviors (medium confidence):
 - Flag `0x40` forces the long strip even when `0x4` is set.
 - For the short strip: `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`,
   where ping‑pong folds 0..15 into 0..7..0.
+
 - For the long strip (alive, `hitbox_size >= 16.0`): `frame = __ftol(anim_phase + 0.5)`.
   - If the type mirror flag is set and `frame > 0x0f`, the index is mirrored: `frame = 0x1f - frame`.
 - If per‑creature flags include `0x10`, the frame offset shifts by `+0x20` (alt strip for some spawns).
