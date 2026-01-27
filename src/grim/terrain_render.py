@@ -189,7 +189,7 @@ class GroundRenderer:
     overlay_detail: rl.Texture | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
-    _debug_stamp_log: list[str] = field(default_factory=list, init=False, repr=False)
+    _debug_stamp_log: list[dict[str, object]] = field(default_factory=list, init=False, repr=False)
     _render_target_ready: bool = field(default=False, init=False, repr=False)
     _pending_generate: bool = field(default=False, init=False, repr=False)
     _pending_generate_seed: int | None = field(default=None, init=False, repr=False)
@@ -199,13 +199,13 @@ class GroundRenderer:
     def debug_clear_stamp_log(self) -> None:
         self._debug_stamp_log.clear()
 
-    def debug_stamp_log(self) -> tuple[str, ...]:
+    def debug_stamp_log(self) -> tuple[dict[str, object], ...]:
         return tuple(self._debug_stamp_log)
 
-    def _debug_stamp(self, message: str) -> None:
+    def _debug_stamp(self, kind: str, **payload: object) -> None:
         if not self.debug_log_stamps:
             return
-        self._debug_stamp_log.append(message)
+        self._debug_stamp_log.append({"kind": kind, **payload})
         if len(self._debug_stamp_log) > 96:
             del self._debug_stamp_log[:32]
 
@@ -318,7 +318,10 @@ class GroundRenderer:
         if self.debug_log_stamps:
             head = decals[0]
             self._debug_stamp(
-                f"bake_decals count={len(decals)} pos0=({head.x:.1f},{head.y:.1f}) rot0={head.rotation_rad:.2f}"
+                "bake_decals",
+                count=len(decals),
+                pos0={"x": float(head.x), "y": float(head.y)},
+                rot0=float(head.rotation_rad),
             )
 
         inv_scale = 1.0 / self._normalized_texture_scale()
@@ -380,12 +383,13 @@ class GroundRenderer:
         if self.debug_log_stamps:
             head = decals[0]
             self._debug_stamp(
-                "bake_corpse_decals"
-                f" shadow={int(bool(shadow))}"
-                f" count={len(decals)}"
-                f" frame0={int(head.bodyset_frame)}"
-                f" pos0=({head.top_left_x:.1f},{head.top_left_y:.1f})"
-                f" rot0={head.rotation_rad:.2f}"
+                "bake_corpse_decals",
+                shadow=bool(shadow),
+                count=len(decals),
+                frame0=int(head.bodyset_frame),
+                top_left0={"x": float(head.top_left_x), "y": float(head.top_left_y)},
+                size0=float(head.size),
+                rot0=float(head.rotation_rad),
             )
 
         scale = self._normalized_texture_scale()
@@ -397,10 +401,10 @@ class GroundRenderer:
         with _maybe_alpha_test(self.alpha_test):
             if shadow:
                 if self.debug_log_stamps:
-                    self._debug_stamp(f"corpse_shadow draws={len(decals)}")
+                    self._debug_stamp("corpse_shadow_pass", draws=len(decals))
                 self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
             if self.debug_log_stamps:
-                self._debug_stamp(f"corpse_color draws={len(decals)}")
+                self._debug_stamp("corpse_color_pass", draws=len(decals))
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 

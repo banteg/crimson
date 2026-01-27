@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 from pathlib import Path
+import time
 
 import pyray as rl
 
@@ -91,6 +93,9 @@ class DecalsDebugView:
         self._terrain_seed = 0xBEEF
         self._terrain_pair = 0  # 0..3, maps to (0,1),(2,3),(4,5),(6,7)
         self._show_stamp_log = True
+        self._frame = 0
+        self._stamp_log_path: Path | None = None
+        self._stamp_log_file = None
 
         self._state = GameplayState()
         self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
@@ -116,6 +121,15 @@ class DecalsDebugView:
             draw_small_text(self._small, text, x, y, scale, color)
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+
+    def _write_stamp_log(self, payload: dict) -> None:
+        if self._stamp_log_file is None:
+            return
+        try:
+            self._stamp_log_file.write(json.dumps(payload, sort_keys=True) + "\n")
+            self._stamp_log_file.flush()
+        except Exception:
+            self._stamp_log_file = None
 
     def _resolve_asset(self, rel_path: str) -> Path | None:
         direct = self._assets_root / rel_path
@@ -429,6 +443,18 @@ class DecalsDebugView:
         self._reset_ground()
         self._camera_x = 0.0
         self._camera_y = 0.0
+        self._frame = 0
+
+        log_dir = Path("artifacts") / "debug"
+        try:
+            log_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            log_dir = Path("artifacts")
+        self._stamp_log_path = log_dir / "decals_stamp_trace.jsonl"
+        try:
+            self._stamp_log_file = self._stamp_log_path.open("w", encoding="utf-8")
+        except Exception:
+            self._stamp_log_file = None
 
         # Spawn a few enemies near the center for immediate testing.
         for _ in range(6):
@@ -456,8 +482,16 @@ class DecalsDebugView:
         self._fx_queue.clear()
         self._fx_queue_rotated.clear()
         self._creatures.reset()
+        if self._stamp_log_file is not None:
+            try:
+                self._stamp_log_file.close()
+            except Exception:
+                pass
+            self._stamp_log_file = None
 
     def update(self, dt: float) -> None:
+        self._frame += 1
+
         speed = 240.0
         if rl.is_key_down(rl.KeyboardKey.KEY_A):
             self._camera_x += speed * dt
@@ -574,6 +608,8 @@ class DecalsDebugView:
 
         if self._ground is not None and self._fx_textures is not None:
             if self._fx_queue.count or self._fx_queue_rotated.count:
+                fx_count = int(self._fx_queue.count)
+                corpse_count = int(self._fx_queue_rotated.count)
                 bake_fx_queues(
                     self._ground,
                     fx_queue=self._fx_queue,
@@ -585,7 +621,18 @@ class DecalsDebugView:
                 if self._show_stamp_log:
                     stamp_log = self._ground.debug_stamp_log()
                     if stamp_log:
-                        print("[decals] " + " | ".join(stamp_log))
+                        ts = time.time()
+                        for idx, event in enumerate(stamp_log):
+                            self._write_stamp_log(
+                                {
+                                    "ts": ts,
+                                    "dt": dt,
+                                    "frame": self._frame,
+                                    "event_idx": idx,
+                                    "queue": {"fx": fx_count, "corpse": corpse_count},
+                                    **event,
+                                }
+                            )
 
     def draw(self) -> None:
         rl.clear_background(BG_LIGHT if self._light_mode else BG_DARK)
@@ -671,13 +718,26 @@ class DecalsDebugView:
         y += line
         self._draw_ui_text(f"enemies={len([c for c in self._creatures.entries if c.active])}", x, y, hint_color)
         y += line
+        if self._stamp_log_path is not None:
+            status = "on" if self._show_stamp_log else "off"
+            self._draw_ui_text(f"stamp log ({status}): {self._stamp_log_path}", x, y, hint_color)
+            y += line
         if self._ground is not None and self._show_stamp_log:
             stamp_log = self._ground.debug_stamp_log()
             if stamp_log:
                 self._draw_ui_text("stamp order:", x, y, hint_color)
                 y += line
-                for entry in stamp_log[-6:]:
-                    self._draw_ui_text(entry, x, y, hint_color)
+                for event in stamp_log[-6:]:
+                    kind = str(event.get("kind", "?"))
+                    if kind == "bake_corpse_decals":
+                        msg = f"{kind} shadow={event.get('shadow')} count={event.get('count')}"
+                    elif kind == "bake_decals":
+                        msg = f"{kind} count={event.get('count')}"
+                    elif kind.endswith("_pass"):
+                        msg = f"{kind} draws={event.get('draws')}"
+                    else:
+                        msg = kind
+                    self._draw_ui_text(msg, x, y, hint_color)
                     y += line
 
 
