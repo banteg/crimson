@@ -185,6 +185,8 @@ class GameWorld:
     bullet_trail_texture: rl.Texture | None = field(init=False, default=None)
     bonuses_texture: rl.Texture | None = field(init=False, default=None)
     bodyset_texture: rl.Texture | None = field(init=False, default=None)
+    clock_table_texture: rl.Texture | None = field(init=False, default=None)
+    clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     _owned_textures: list[rl.Texture] = field(init=False, default_factory=list)
     _cache_owned: bool = field(init=False, default=False)
@@ -403,6 +405,16 @@ class GameWorld:
             cache_path="game/bodyset.jaz",
             file_path="game/bodyset.png",
         )
+        self.clock_table_texture = self._load_texture(
+            "ui_clockTable",
+            cache_path="ui/ui_clockTable.jaz",
+            file_path="ui/ui_clockTable.png",
+        )
+        self.clock_pointer_texture = self._load_texture(
+            "ui_clockPointer",
+            cache_path="ui/ui_clockPointer.jaz",
+            file_path="ui/ui_clockPointer.png",
+        )
         self.muzzle_flash_texture = self._load_texture(
             "muzzleFlash",
             cache_path="game/muzzleFlash.jaz",
@@ -434,6 +446,8 @@ class GameWorld:
         self.bullet_trail_texture = None
         self.bonuses_texture = None
         self.bodyset_texture = None
+        self.clock_table_texture = None
+        self.clock_pointer_texture = None
         self.muzzle_flash_texture = None
         self.fx_textures = None
         self.fx_queue.clear()
@@ -767,6 +781,30 @@ class GameWorld:
 
         rl.rl_set_texture(0)
         rl.end_blend_mode()
+
+    def _draw_clock_gauge(self, *, x: float, y: float, ms: int, scale: float, alpha: float = 1.0) -> None:
+        if self.clock_table_texture is None or self.clock_pointer_texture is None:
+            return
+        size = 32.0 * scale
+        if size <= 1e-3:
+            return
+        tint = rl.Color(255, 255, 255, int(_clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
+
+        table_src = rl.Rectangle(0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height))
+        table_dst = rl.Rectangle(float(x), float(y), size, size)
+        rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+
+        seconds = int(ms) // 1000
+        pointer_src = rl.Rectangle(
+            0.0,
+            0.0,
+            float(self.clock_pointer_texture.width),
+            float(self.clock_pointer_texture.height),
+        )
+        pointer_dst = rl.Rectangle(float(x) + size * 0.5, float(y) + size * 0.5, size, size)
+        origin = rl.Vector2(size * 0.5, size * 0.5)
+        rotation_deg = float(seconds) * 6.0
+        rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
     def _draw_creature_sprite(
         self,
@@ -1276,6 +1314,13 @@ class GameWorld:
                     sy = (aim_y + cam_y) * scale_y
                     screen_radius = max(1.0, radius * scale)
                     self._draw_aim_circle(x=sx, y=sy, radius=screen_radius)
+                    reload_timer = float(getattr(player, "reload_timer", 0.0))
+                    reload_max = float(getattr(player, "reload_timer_max", 0.0))
+                    if reload_max > 1e-6 and reload_timer > 1e-6:
+                        progress = reload_timer / reload_max
+                        if progress > 0.0:
+                            ms = int(progress * 60000.0)
+                            self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=1.0)
 
     def update_camera(self, dt: float) -> None:
         if not self.players:
