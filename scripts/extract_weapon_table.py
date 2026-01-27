@@ -8,7 +8,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 C_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_decompiled.c"
 STRINGS_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_strings.txt"
-OUT_PATH = ROOT / "src/crimson/weapons.py"
+# NOTE: Runtime weapon definitions are now maintained manually in `src/crimson/weapons.py`.
+# This script only emits a reference snapshot from the decompile for comparison/research.
+OUT_PATH = ROOT / "analysis/ghidra/derived/weapon_table_from_decompile.py"
 BIN_PATH = ROOT / "game_bins/crimsonland/1.9.93-gog/crimsonland.exe"
 
 BASE_ADDR = 0x4D7A2C
@@ -277,15 +279,15 @@ def main() -> None:
     lines.append("    name: str | None\n")
     lines.append("    ammo_class: int | None\n")
     lines.append("    clip_size: int | None\n")
-    lines.append("    fire_rate: float | None\n")
+    lines.append("    shot_cooldown: float | None\n")
     lines.append("    reload_time: float | None\n")
-    lines.append("    spread: float | None\n")
+    lines.append("    spread_heat_inc: float | None\n")
     lines.append("    fire_sound: str | None\n")
     lines.append("    reload_sound: str | None\n")
     lines.append("    icon_index: int | None\n")
     lines.append("    flags: int | None\n")
-    lines.append("    projectile_type: int | None\n")
-    lines.append("    damage_mult: float | None\n")
+    lines.append("    projectile_meta: int | None\n")
+    lines.append("    damage_scale: float | None\n")
     lines.append("    pellet_count: int | None\n")
     lines.append("\n")
     lines.append("\n")
@@ -296,9 +298,9 @@ def main() -> None:
         name = names.get(idx)
         ammo_class = ammo_classes[idx]
         clip_size = value_as_int(fields.get(CLIP_SIZE_OFFSET))
-        fire_rate = value_as_float(fields.get(FIRE_RATE_OFFSET))
+        shot_cooldown = value_as_float(fields.get(FIRE_RATE_OFFSET))
         reload_time = value_as_float(fields.get(RELOAD_TIME_OFFSET))
-        spread = value_as_float(fields.get(SPREAD_OFFSET))
+        spread_heat_inc = value_as_float(fields.get(SPREAD_OFFSET))
         fire_sound = fields.get(FIRE_SOUND_OFFSET).raw if fields.get(FIRE_SOUND_OFFSET) else None
         reload_sound = (
             fields.get(RELOAD_SOUND_OFFSET).raw if fields.get(RELOAD_SOUND_OFFSET) else None
@@ -310,12 +312,12 @@ def main() -> None:
             # Most weapons use the default projectile meta (0x6c) of 45.0.
             # Runtime probe (2026-01-18) confirms this for multiple entries.
             projectile_value = 45.0
-        projectile_type = None if projectile_value is None else int(round(projectile_value))
-        damage_mult = value_as_float(fields.get(DAMAGE_MULT_OFFSET))
-        if damage_mult is None and idx > 0:
+        projectile_meta = None if projectile_value is None else int(round(projectile_value))
+        damage_scale = value_as_float(fields.get(DAMAGE_MULT_OFFSET))
+        if damage_scale is None and idx > 0:
             # Most weapons use the default damage scale (0x70) of 1.0.
             # Runtime probe (2026-01-18) confirms this for multiple entries.
-            damage_mult = 1.0
+            damage_scale = 1.0
         pellet_count = value_as_int(fields.get(PELLET_COUNT_OFFSET))
         if pellet_count is None and idx > 0:
             pellet_count = 1
@@ -324,17 +326,17 @@ def main() -> None:
         lines.append(f"        name={name!r},\n")
         lines.append(f"        ammo_class={ammo_class!r},\n")
         lines.append(f"        clip_size={clip_size!r},\n")
-        lines.append(f"        fire_rate={fire_rate!r},\n")
+        lines.append(f"        shot_cooldown={shot_cooldown!r},\n")
         lines.append(f"        reload_time={reload_time!r},\n")
-        lines.append(f"        spread={spread!r},\n")
+        lines.append(f"        spread_heat_inc={spread_heat_inc!r},\n")
         lines.append(f"        fire_sound={fire_sound!r},\n")
         lines.append(f"        reload_sound={reload_sound!r},\n")
         if icon_index is None and idx - 1 >= -1:
             icon_index = idx - 1
         lines.append(f"        icon_index={icon_index!r},\n")
         lines.append(f"        flags={flags!r},\n")
-        lines.append(f"        projectile_type={projectile_type!r},\n")
-        lines.append(f"        damage_mult={damage_mult!r},\n")
+        lines.append(f"        projectile_meta={projectile_meta!r},\n")
+        lines.append(f"        damage_scale={damage_scale!r},\n")
         lines.append(f"        pellet_count={pellet_count!r},\n")
         lines.append("    ),\n")
     lines.append("]\n")

@@ -1116,7 +1116,7 @@ class DemoView:
                 player.reload_timer = max(0.0, player.reload_timer - dt)
                 if player.reload_timer <= 0.0:
                     weapon = self._weapon_entry(player.weapon_id)
-                    clip_size = int(getattr(weapon, "clip_size", 0) or 0)
+                    clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
                     player.ammo = max(0, clip_size)
                     player.reload_timer = 0.0
                     player.reload_timer_max = 0.0
@@ -1178,7 +1178,7 @@ class DemoView:
             return
 
         if player.ammo <= 0:
-            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
+            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
             if self._bonus_weapon_power_up_timer > 0.0:
                 reload_time *= 0.6
             player.reload_timer_max = max(0.0, reload_time)
@@ -1186,10 +1186,10 @@ class DemoView:
             play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.reload_sound), rng=self._state.rng)
             return
 
-        shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
+        shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
         player.shot_cooldown = max(0.02, shot_cooldown)
 
-        spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0)
+        spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
         player.spread_heat = min(0.48, max(0.01, player.spread_heat + spread_inc))
 
         theta = math.atan2(player.aim_y, player.aim_x)
@@ -1203,7 +1203,7 @@ class DemoView:
         play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
 
         if player.weapon_id in {5, 11, 21}:
-            meta = float(getattr(weapon, "projectile_type", 0.0) or 0.0)
+            meta = float(weapon.projectile_meta) if weapon.projectile_meta is not None else 0.0
             if meta <= 0.0:
                 meta = 45.0
             self._projectile_pool.spawn(
@@ -1224,7 +1224,7 @@ class DemoView:
 
         player.ammo = max(0, player.ammo - 1)
         if player.ammo <= 0:
-            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
+            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
             if self._bonus_weapon_power_up_timer > 0.0:
                 reload_time *= 0.6
             player.reload_timer_max = max(0.0, reload_time)
@@ -1235,7 +1235,7 @@ class DemoView:
         damage_scale_by_type: dict[int, float] = {}
         for type_id in (0x05, 0x0B, 0x15):
             weapon = self._weapon_entry(type_id)
-            scale = float(getattr(weapon, "damage_mult", 0.0) or 0.0) if weapon is not None else 0.0
+            scale = float(weapon.damage_scale) if weapon is not None and weapon.damage_scale is not None else 0.0
             damage_scale_by_type[type_id] = scale if scale > 0.0 else 1.0
 
         hits = self._projectile_pool.update(

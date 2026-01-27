@@ -75,7 +75,7 @@ class PlayerSandboxView:
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_mult or 1.0)
+            entry.weapon_id: float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
             if entry.weapon_id >= 0
         }
@@ -124,7 +124,7 @@ class PlayerSandboxView:
                 alt_idx = (self._weapon_index + 1) % max(1, len(self._weapon_ids))
                 alt_id = int(self._weapon_ids[alt_idx])
                 weapon = next((w for w in WEAPON_TABLE if w.weapon_id == alt_id), None)
-                clip = int(getattr(weapon, "clip_size", 0) or 0) if weapon is not None else 0
+                clip = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
                 self._player.alt_weapon_id = alt_id
                 self._player.alt_clip_size = max(0, clip)
                 self._player.alt_ammo = self._player.alt_clip_size

@@ -211,7 +211,7 @@ class GameWorld:
         self.camera_x = -1.0
         self.camera_y = -1.0
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_mult or 1.0)
+            entry.weapon_id: float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
             if entry.weapon_id >= 0
         }

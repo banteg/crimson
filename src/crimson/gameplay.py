@@ -759,7 +759,7 @@ def weapon_pick_random_available(rng: Crand) -> int:
 
 def _projectile_meta_for_type_id(type_id: int) -> float:
     entry = WEAPON_BY_ID.get(int(type_id))
-    meta = entry.projectile_type if entry is not None else None
+    meta = entry.projectile_meta if entry is not None else None
     return float(meta if meta is not None else 45.0)
 
 
@@ -819,8 +819,8 @@ def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
 
     weapon = _weapon_entry(weapon_id)
     player.weapon_id = int(weapon_id)
-    clip = int(getattr(weapon, "clip_size", 0) or 0) if weapon is not None else 0
-    player.clip_size = max(0, clip)
+    clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
+    player.clip_size = max(0, clip_size)
     player.ammo = player.clip_size
     player.reload_active = False
     player.reload_timer = 0.0
@@ -874,7 +874,7 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         return
 
     weapon = _weapon_entry(player.weapon_id)
-    reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0) if weapon is not None else 0.0
+    reload_time = float(weapon.reload_time) if weapon is not None and weapon.reload_time is not None else 0.0
 
     if not player.reload_active:
         player.reload_active = True
@@ -1003,14 +1003,24 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         player_start_reload(player, state)
         return
 
-    pellet_count = int(getattr(weapon, "pellet_count", 0) or 0)
+    pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
     fire_bullets_weapon = _weapon_entry(FIRE_BULLETS_PROJECTILE_TYPE_ID)
 
-    shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
-    spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0) * 1.3
+    shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
+    spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    spread_inc *= 1.3
     if player.fire_bullets_timer > 0.0 and pellet_count == 1 and fire_bullets_weapon is not None:
-        shot_cooldown = float(getattr(fire_bullets_weapon, "fire_rate", 0.0) or 0.0)
-        spread_inc = float(getattr(fire_bullets_weapon, "spread", 0.0) or 0.0) * 1.3
+        shot_cooldown = (
+            float(fire_bullets_weapon.shot_cooldown)
+            if fire_bullets_weapon.shot_cooldown is not None
+            else 0.0
+        )
+        spread_inc = (
+            float(fire_bullets_weapon.spread_heat_inc)
+            if fire_bullets_weapon.spread_heat_inc is not None
+            else 0.0
+        )
+        spread_inc *= 1.3
 
     if perk_active(player, PerkId.FASTSHOT):
         shot_cooldown *= 0.88

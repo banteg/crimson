@@ -126,7 +126,7 @@ class ProjectileFxView:
         self._type_index = 0
 
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_mult or 1.0)
+            entry.weapon_id: float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
             if entry.weapon_id >= 0
         }
@@ -247,7 +247,7 @@ class ProjectileFxView:
 
     def _projectile_meta_for(self, type_id: int) -> float:
         entry = WEAPON_BY_ID.get(int(type_id))
-        meta = entry.projectile_type if entry is not None else None
+        meta = entry.projectile_meta if entry is not None else None
         return float(meta if meta is not None else 45.0)
 
     def _spawn_effect(self, *, effect_id: int, x: float, y: float, scale: float, duration: float) -> None:
@@ -575,7 +575,7 @@ class ProjectileFxView:
         if self._show_debug:
             meta = self._projectile_meta_for(type_id)
             dmg = self._damage_scale_by_type.get(type_id, 1.0)
-            pellets = int(getattr(weapon, "pellet_count", 1) or 1) if weapon is not None else 1
+            pellets = int(weapon.pellet_count) if weapon is not None and weapon.pellet_count is not None else 1
             self._draw_ui_text(f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}", x, y, UI_HINT_COLOR)
             y += line + 4
             self._draw_ui_text(
