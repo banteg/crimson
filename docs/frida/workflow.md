@@ -14,6 +14,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/grim_hooks_targets.json`
 - `scripts/frida/crimsonland_probe.js`
 - `scripts/frida/menu_logo_pivot_trace.js`
+- `scripts/frida/screen_fade_trace.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -34,6 +35,12 @@ Menu logo rotation trace (focused, JSONL to `menu_logo_pivot_trace.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\menu_logo_pivot_trace.js
+```
+
+Screen fade trace (UI/fade globals + fullscreen overlay, JSONL to `screen_fade_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\screen_fade_trace.js
 ```
 
 Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
