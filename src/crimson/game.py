@@ -46,6 +46,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim import music
 
 from .demo import DemoView
+from .effects_atlas import effect_src_rect
 from .save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
 from .weapons import WEAPON_BY_ID
 
@@ -265,6 +266,56 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_rectOn", "ui/ui_rectOn.jaz"),
     ("ui_button_md", "ui/ui_button_145x32.jaz"),
 )
+
+CURSOR_EFFECT_ID = 0x0D
+
+
+def _clamp01(value: float) -> float:
+    if value < 0.0:
+        return 0.0
+    if value > 1.0:
+        return 1.0
+    return value
+
+
+def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
+    cache = _ensure_texture_cache(state)
+    particles = cache.get_or_load("particles", "game/particles.jaz").texture
+    cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+
+    mouse = rl.get_mouse_position()
+    mouse_x = float(mouse.x)
+    mouse_y = float(mouse.y)
+
+    if particles is not None:
+        src = effect_src_rect(
+            CURSOR_EFFECT_ID,
+            texture_width=float(particles.width),
+            texture_height=float(particles.height),
+        )
+        if src is not None:
+            src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
+            alpha = (math.pow(2.0, math.sin(pulse_time)) + 2.0) * 0.32
+            alpha = _clamp01(alpha)
+            tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+            origin = rl.Vector2(0.0, 0.0)
+
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            for dx, dy, size in (
+                (-28.0, -28.0, 64.0),
+                (-10.0, -18.0, 64.0),
+                (-18.0, -10.0, 64.0),
+                (-48.0, -48.0, 128.0),
+            ):
+                dst = rl.Rectangle(mouse_x + dx, mouse_y + dy, size, size)
+                rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
+            rl.end_blend_mode()
+
+    if cursor_tex is not None:
+        src = rl.Rectangle(0.0, 0.0, float(cursor_tex.width), float(cursor_tex.height))
+        dst = rl.Rectangle(mouse_x - 2.0, mouse_y - 2.0, 32.0, 32.0)
+        rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
 
 MENU_LABEL_WIDTH = 124.0
 MENU_LABEL_HEIGHT = 30.0
@@ -651,6 +702,7 @@ class MenuView:
         self._idle_ms = 0
         self._last_mouse_x = 0.0
         self._last_mouse_y = 0.0
+        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
@@ -678,6 +730,7 @@ class MenuView:
         self._hovered_index = None
         self._timeline_ms = 0
         self._idle_ms = 0
+        self._cursor_pulse_time = 0.0
         mouse = rl.get_mouse_position()
         self._last_mouse_x = float(mouse.x)
         self._last_mouse_y = float(mouse.y)
@@ -699,6 +752,7 @@ class MenuView:
             update_audio(self._state.audio)
         if self._ground is not None:
             self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if self._closing:
             if dt_ms > 0 and self._pending_action is None:
@@ -783,6 +837,7 @@ class MenuView:
             return
         self._draw_menu_items()
         self._draw_menu_sign()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -1217,6 +1272,7 @@ class PanelMenuView:
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = 0
+        self._cursor_pulse_time = 0.0
         self._closing = False
         self._close_action: str | None = None
         self._pending_action: str | None = None
@@ -1235,6 +1291,7 @@ class PanelMenuView:
         self._hovered = False
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._cursor_pulse_time = 0.0
         self._closing = False
         self._close_action = None
         self._pending_action = None
@@ -1248,6 +1305,7 @@ class PanelMenuView:
             update_audio(self._state.audio)
         if self._ground is not None:
             self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if self._closing:
             if dt_ms > 0 and self._pending_action is None:
@@ -1298,6 +1356,7 @@ class PanelMenuView:
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_title_text()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -2178,6 +2237,7 @@ class QuestsMenuView:
         self._stage = 1
         self._action: str | None = None
         self._dirty = False
+        self._cursor_pulse_time = 0.0
 
     def open(self) -> None:
         layout_w = float(self._state.config.screen_width)
@@ -2207,6 +2267,7 @@ class QuestsMenuView:
         self._action = None
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
+        self._cursor_pulse_time = 0.0
 
         # Ensure the quest registry is populated so titles render.
         # (The package import registers all tier builders.)
@@ -2231,6 +2292,7 @@ class QuestsMenuView:
             update_audio(self._state.audio)
         if self._ground is not None:
             self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         config = self._state.config
 
@@ -2287,6 +2349,7 @@ class QuestsMenuView:
         self._draw_panel()
         self._draw_sign()
         self._draw_contents()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -3347,6 +3410,7 @@ class GameLoopView:
         self._quit_after_demo = False
 
     def open(self) -> None:
+        rl.hide_cursor()
         self._boot.open()
 
     def should_close(self) -> bool:
@@ -3465,6 +3529,7 @@ class GameLoopView:
             self._state.menu_ground.render_target = None
         self._boot.close()
         self._state.console.close()
+        rl.show_cursor()
 
 
 def _score_assets_dir(path: Path) -> tuple[int, str]:

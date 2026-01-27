@@ -681,6 +681,33 @@ class SurvivalView:
             dst = rl.Rectangle(mouse_x - 2.0, mouse_y - 2.0, 32.0, 32.0)
             rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
+    def _draw_aim_cursor(self) -> None:
+        mouse_x = float(self._ui_mouse_x)
+        mouse_y = float(self._ui_mouse_y)
+
+        particles = self._world.particles_texture
+        if particles is not None:
+            src = effect_src_rect(
+                CURSOR_EFFECT_ID,
+                texture_width=float(particles.width),
+                texture_height=float(particles.height),
+            )
+            if src is not None:
+                src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
+                tint = rl.WHITE
+                origin = rl.Vector2(0.0, 0.0)
+
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                dst = rl.Rectangle(mouse_x - 32.0, mouse_y - 32.0, 64.0, 64.0)
+                rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
+                rl.end_blend_mode()
+
+        aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
+        if aim_tex is not None:
+            src = rl.Rectangle(0.0, 0.0, float(aim_tex.width), float(aim_tex.height))
+            dst = rl.Rectangle(mouse_x - 10.0, mouse_y - 10.0, 20.0, 20.0)
+            rl.draw_texture_pro(aim_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._perk_menu_open) and (not self._game_over_active))
 
@@ -717,8 +744,10 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        if not self._game_over_active:
+        if (not self._game_over_active) and self._perk_menu_open:
             self._draw_game_cursor()
+        if (not self._game_over_active) and (not self._perk_menu_open):
+            self._draw_aim_cursor()
 
         if self._game_over_active and self._game_over_record is not None:
             self._game_over_ui.draw(

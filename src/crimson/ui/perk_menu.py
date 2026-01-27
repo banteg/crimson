@@ -193,6 +193,7 @@ class PerkMenuAssets:
     button_sm: rl.Texture | None
     button_md: rl.Texture | None
     cursor: rl.Texture | None
+    aim: rl.Texture | None
     missing: list[str] = field(default_factory=list)
     _owned_textures: tuple[rl.Texture, ...] = ()
     _cache: PaqTextureCache | None = None
@@ -221,6 +222,7 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
                 button_sm=_load_from_cache(cache, "ui_buttonSm", "ui/ui_button_82x32.jaz", missing),
                 button_md=_load_from_cache(cache, "ui_buttonMd", "ui/ui_button_145x32.jaz", missing),
                 cursor=_load_from_cache(cache, "ui_cursor", "ui/ui_cursor.jaz", missing),
+                aim=_load_from_cache(cache, "ui_aim", "ui/ui_aim.jaz", missing),
                 missing=missing,
             )
             assets._cache = cache
@@ -235,6 +237,7 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
     button_sm = _load_from_path(assets_root, "ui/ui_button_82x32.png", missing)
     button_md = _load_from_path(assets_root, "ui/ui_button_145x32.png", missing)
     cursor = _load_from_path(assets_root, "ui/ui_cursor.png", missing)
+    aim = _load_from_path(assets_root, "ui/ui_aim.png", missing)
     owned = tuple(
         tex
         for tex in (
@@ -243,6 +246,7 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
             button_sm,
             button_md,
             cursor,
+            aim,
         )
         if tex is not None
     )
@@ -252,6 +256,7 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
         button_sm=button_sm,
         button_md=button_md,
         cursor=cursor,
+        aim=aim,
         missing=missing,
         _owned_textures=owned,
     )
