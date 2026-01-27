@@ -152,6 +152,7 @@ class CorpseStampDebugView:
             self._bake_color_only()
 
     def open(self) -> None:
+        rl.set_window_size(WINDOW_W, WINDOW_H)
         self._missing_assets.clear()
         self._owned_textures.clear()
         self._ground = None
@@ -273,5 +274,4 @@ class CorpseStampDebugView:
 
 @register_view("corpse-stamp-debug", "Corpse stamp debug")
 def build_corpse_stamp_debug_view(ctx: ViewContext) -> View:
-    rl.set_window_size(WINDOW_W, WINDOW_H)
     return CorpseStampDebugView(ctx)
