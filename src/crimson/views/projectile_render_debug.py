@@ -284,7 +284,7 @@ class ProjectileRenderDebugView:
         self._world.state.secondary_projectiles.update_pulse_gun(float(dt), self._targets)
         if hits:
             self._world._queue_projectile_decals(hits)
-            self._world._play_hit_sfx(hits)
+            self._world._play_hit_sfx(hits, game_mode=1)
         self._targets = [target for target in self._targets if target.hp > 0.0]
 
         input_state = self._build_input()
