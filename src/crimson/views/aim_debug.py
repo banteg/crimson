@@ -233,8 +233,8 @@ class AimDebugView:
         if self._show_cursor_glow:
             self._draw_cursor_glow(x=mouse_x, y=mouse_y)
 
-        aim_x, aim_y = self._world.screen_to_world(mouse_x, mouse_y)
-        sx, sy = self._world.world_to_screen(float(aim_x), float(aim_y))
+        mouse_world_x, mouse_world_y = self._world.screen_to_world(mouse_x, mouse_y)
+        mouse_back_x, mouse_back_y = self._world.world_to_screen(float(mouse_world_x), float(mouse_world_y))
 
         if self._draw_expected_overlay and self._player is not None:
             dist = math.hypot(float(self._player.aim_x) - float(self._player.pos_x), float(self._player.aim_y) - float(self._player.pos_y))
@@ -242,9 +242,21 @@ class AimDebugView:
             cam_x, cam_y, scale_x, scale_y = self._world._world_params()
             scale = (scale_x + scale_y) * 0.5
             screen_radius = max(1.0, radius * scale)
+            aim_screen_x, aim_screen_y = self._world.world_to_screen(float(self._player.aim_x), float(self._player.aim_y))
 
-            rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, screen_radius)), rl.Color(80, 220, 120, 240))
-            rl.draw_line(int(mouse_x), int(mouse_y), int(sx), int(sy), rl.Color(80, 220, 120, 200))
+            rl.draw_circle_lines(
+                int(aim_screen_x),
+                int(aim_screen_y),
+                int(max(1.0, screen_radius)),
+                rl.Color(80, 220, 120, 240),
+            )
+            rl.draw_line(
+                int(mouse_x),
+                int(mouse_y),
+                int(aim_screen_x),
+                int(aim_screen_y),
+                rl.Color(80, 220, 120, 200),
+            )
 
             lines = [
                 "Aim debug view",
@@ -252,7 +264,13 @@ class AimDebugView:
                 "1 world  2 aim-indicators  3 expected overlay  4 cursor glow  5 test circle",
                 f"H force_heat={self._force_heat}  forced_heat={self._forced_heat:.2f}  [ ] adjust",
                 f"test_circle_radius={self._test_circle_radius:.0f}  -/+ adjust",
-                f"mouse=({mouse_x:.1f},{mouse_y:.1f})  aim_world=({aim_x:.1f},{aim_y:.1f})  aim_screen=({sx:.1f},{sy:.1f})",
+                (
+                    f"mouse=({mouse_x:.1f},{mouse_y:.1f}) -> "
+                    f"world=({mouse_world_x:.1f},{mouse_world_y:.1f}) -> "
+                    f"screen=({mouse_back_x:.1f},{mouse_back_y:.1f})"
+                ),
+                f"player_aim_world=({float(self._player.aim_x):.1f},{float(self._player.aim_y):.1f})  "
+                f"player_aim_screen=({aim_screen_x:.1f},{aim_screen_y:.1f})",
                 f"player=({float(self._player.pos_x):.1f},{float(self._player.pos_y):.1f})  dist={dist:.1f}",
                 f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
                 f"cam=({cam_x:.2f},{cam_y:.2f})  scale=({scale_x:.3f},{scale_y:.3f})  demo_mode={self._world.demo_mode_active}",
