@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
@@ -13,18 +14,34 @@ class Damageable(Protocol):
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
-GAUSS_GUN_PROJECTILE_TYPE_ID = 0x05
-ION_RIFLE_PROJECTILE_TYPE_ID = 0x14
-ION_MINIGUN_PROJECTILE_TYPE_ID = 0x15
-ION_CANNON_PROJECTILE_TYPE_ID = 0x16
-SHRINKIFIER_PROJECTILE_TYPE_ID = 0x17
-BLADE_GUN_PROJECTILE_TYPE_ID = 0x18
-PULSE_GUN_PROJECTILE_TYPE_ID = 0x12
-PLASMA_CANNON_PROJECTILE_TYPE_ID = 0x1B
-SPLITTER_GUN_PROJECTILE_TYPE_ID = 0x1C
-PLAGUE_SPREADER_PROJECTILE_TYPE_ID = 0x28
-FIRE_BULLETS_PROJECTILE_TYPE_ID = 0x2C
-ROCKET_LAUNCHER_PROJECTILE_TYPE_ID = 0x0B
+
+
+class ProjectileTypeId(IntEnum):
+    PISTOL = 0x00
+    ASSAULT_RIFLE = 0x01
+    SHOTGUN = 0x02
+    SAWED_OFF_SHOTGUN = 0x03
+    SUBMACHINE_GUN = 0x04
+    GAUSS_GUN = 0x05
+    MEAN_MINIGUN = 0x06
+    FLAMETHROWER = 0x07
+    PLASMA_RIFLE = 0x09
+    ROCKET_LAUNCHER = 0x0B
+    PULSE_GUN = 0x12
+    JACKHAMMER = 0x13
+    ION_RIFLE = 0x14
+    ION_MINIGUN = 0x15
+    ION_CANNON = 0x16
+    SHRINKIFIER = 0x17
+    BLADE_GUN = 0x18
+    SPIDER_PLASMA = 0x19
+    PLASMA_CANNON = 0x1B
+    SPLITTER_GUN = 0x1C
+    GAUSS_SHOTGUN = 0x1D
+    PLAGUE_SPREADER = 0x28
+    FIRE_BULLETS = 0x2C
+
+
 ROCKET_SPLASH_RADIUS = 90.0
 
 
@@ -132,25 +149,25 @@ class ProjectilePool:
         entry.base_damage = float(base_damage)
         entry.owner_id = int(owner_id)
 
-        if type_id == ION_MINIGUN_PROJECTILE_TYPE_ID:
+        if type_id == ProjectileTypeId.ION_MINIGUN:
             entry.hit_radius = 3.0
             entry.damage_pool = 1.0
             return index
-        if type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+        if type_id == ProjectileTypeId.ION_RIFLE:
             entry.hit_radius = 5.0
             entry.damage_pool = 1.0
             return index
-        if type_id in (ION_CANNON_PROJECTILE_TYPE_ID, PLASMA_CANNON_PROJECTILE_TYPE_ID):
+        if type_id in (ProjectileTypeId.ION_CANNON, ProjectileTypeId.PLASMA_CANNON):
             entry.hit_radius = 10.0
         else:
             entry.hit_radius = 1.0
-            if type_id == GAUSS_GUN_PROJECTILE_TYPE_ID:
+            if type_id == ProjectileTypeId.GAUSS_GUN:
                 entry.damage_pool = 300.0
                 return index
-            if type_id == FIRE_BULLETS_PROJECTILE_TYPE_ID:
+            if type_id == ProjectileTypeId.FIRE_BULLETS:
                 entry.damage_pool = 240.0
                 return index
-            if type_id == BLADE_GUN_PROJECTILE_TYPE_ID:
+            if type_id == ProjectileTypeId.BLADE_GUN:
                 entry.damage_pool = 50.0
                 return index
         entry.damage_pool = 1.0
@@ -262,7 +279,7 @@ class ProjectilePool:
                 pos_x=proj.pos_x,
                 pos_y=proj.pos_y,
                 angle=angle,
-                type_id=ION_RIFLE_PROJECTILE_TYPE_ID,
+                type_id=ProjectileTypeId.ION_RIFLE,
                 owner_id=hit_creature,
                 base_damage=proj.base_damage,
             )
@@ -280,10 +297,10 @@ class ProjectilePool:
 
             if proj.life_timer < 0.4:
                 type_id = proj.type_id
-                if type_id in (ION_RIFLE_PROJECTILE_TYPE_ID, ION_MINIGUN_PROJECTILE_TYPE_ID):
+                if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
                     _reset_shock_chain_if_owner(proj_index)
                     proj.life_timer -= dt
-                    if type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+                    if type_id == ProjectileTypeId.ION_RIFLE:
                         damage = dt * 100.0
                         radius = ion_aoe_scale * 88.0
                     else:
@@ -296,7 +313,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             creature.hp -= damage
-                elif type_id == ION_CANNON_PROJECTILE_TYPE_ID:
+                elif type_id == ProjectileTypeId.ION_CANNON:
                     proj.life_timer -= dt * 0.7
                     damage = dt * 300.0
                     radius = ion_aoe_scale * 128.0
@@ -307,7 +324,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             creature.hp -= damage
-                elif type_id == GAUSS_GUN_PROJECTILE_TYPE_ID:
+                elif type_id == ProjectileTypeId.GAUSS_GUN:
                     proj.life_timer -= dt * 0.1
                 else:
                     proj.life_timer -= dt
@@ -368,12 +385,12 @@ class ProjectilePool:
                     type_id = proj.type_id
                     creature = creatures[hit_idx]
 
-                    if type_id == SPLITTER_GUN_PROJECTILE_TYPE_ID:
+                    if type_id == ProjectileTypeId.SPLITTER_GUN:
                         self.spawn(
                             pos_x=proj.pos_x,
                             pos_y=proj.pos_y,
                             angle=proj.angle - 1.0471976,
-                            type_id=SPLITTER_GUN_PROJECTILE_TYPE_ID,
+                            type_id=ProjectileTypeId.SPLITTER_GUN,
                             owner_id=hit_idx,
                             base_damage=proj.base_damage,
                         )
@@ -381,7 +398,7 @@ class ProjectilePool:
                             pos_x=proj.pos_x,
                             pos_y=proj.pos_y,
                             angle=proj.angle + 1.0471976,
-                            type_id=SPLITTER_GUN_PROJECTILE_TYPE_ID,
+                            type_id=ProjectileTypeId.SPLITTER_GUN,
                             owner_id=hit_idx,
                             base_damage=proj.base_damage,
                         )
@@ -389,9 +406,9 @@ class ProjectilePool:
                     hits.append((type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
 
                     if proj.life_timer != 0.25 and type_id not in (
-                        FIRE_BULLETS_PROJECTILE_TYPE_ID,
-                        GAUSS_GUN_PROJECTILE_TYPE_ID,
-                        BLADE_GUN_PROJECTILE_TYPE_ID,
+                        ProjectileTypeId.FIRE_BULLETS,
+                        ProjectileTypeId.GAUSS_GUN,
+                        ProjectileTypeId.BLADE_GUN,
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
@@ -402,9 +419,9 @@ class ProjectilePool:
                     if dist < 50.0:
                         dist = 50.0
 
-                    if type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+                    if type_id == ProjectileTypeId.ION_RIFLE:
                         _try_spawn_shock_chain_link(proj_index, hit_idx)
-                    elif type_id == PLASMA_CANNON_PROJECTILE_TYPE_ID:
+                    elif type_id == ProjectileTypeId.PLASMA_CANNON:
                         size = float(getattr(creature, "size", 50.0) or 50.0)
                         ring_radius = size * 0.5 + 1.0
                         for ring_idx in range(12):
@@ -417,19 +434,19 @@ class ProjectilePool:
                                 owner_id=-100,
                                 base_damage=45.0,
                             )
-                    elif type_id == SHRINKIFIER_PROJECTILE_TYPE_ID:
+                    elif type_id == ProjectileTypeId.SHRINKIFIER:
                         if hasattr(creature, "size"):
                             new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
                             setattr(creature, "size", new_size)
                             if new_size < 16.0:
                                 creature.hp = 0.0
                         proj.life_timer = 0.25
-                    elif type_id == PULSE_GUN_PROJECTILE_TYPE_ID:
+                    elif type_id == ProjectileTypeId.PULSE_GUN:
                         creature.x += move_dx * 3.0
                         creature.y += move_dy * 3.0
-                    elif type_id == PLAGUE_SPREADER_PROJECTILE_TYPE_ID and hasattr(creature, "collision_flag"):
+                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "collision_flag"):
                         setattr(creature, "collision_flag", 1)
-                    elif type_id == ROCKET_LAUNCHER_PROJECTILE_TYPE_ID:
+                    elif type_id == ProjectileTypeId.ROCKET_LAUNCHER:
                         damage_scale = _damage_scale(type_id)
                         _apply_rocket_splash(proj.pos_x, proj.pos_y, proj.owner_id, damage_scale)
                         proj.life_timer = 0.25
@@ -455,9 +472,9 @@ class ProjectilePool:
                         proj.life_timer = 0.25
 
                     if proj.life_timer == 0.25 and type_id not in (
-                        FIRE_BULLETS_PROJECTILE_TYPE_ID,
-                        GAUSS_GUN_PROJECTILE_TYPE_ID,
-                        BLADE_GUN_PROJECTILE_TYPE_ID,
+                        ProjectileTypeId.FIRE_BULLETS,
+                        ProjectileTypeId.GAUSS_GUN,
+                        ProjectileTypeId.BLADE_GUN,
                     ):
                         break
 
@@ -498,7 +515,7 @@ class ProjectilePool:
                 continue
 
             if proj.life_timer < 0.4:
-                if proj.type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+                if proj.type_id == ProjectileTypeId.ION_RIFLE:
                     damage = dt * 100.0
                     radius = 88.0
                     for creature in creatures:
@@ -508,7 +525,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             creature.hp -= damage
-                elif proj.type_id == ION_MINIGUN_PROJECTILE_TYPE_ID:
+                elif proj.type_id == ProjectileTypeId.ION_MINIGUN:
                     damage = dt * 40.0
                     radius = 60.0
                     for creature in creatures:

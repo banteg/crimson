@@ -12,14 +12,7 @@ from grim.view import View, ViewContext
 from ..bonuses import BonusId
 from ..effects_atlas import effect_src_rect
 from ..gameplay import GameplayState, PlayerState, bonus_apply
-from ..projectiles import (
-    FIRE_BULLETS_PROJECTILE_TYPE_ID,
-    GAUSS_GUN_PROJECTILE_TYPE_ID,
-    ION_CANNON_PROJECTILE_TYPE_ID,
-    ION_MINIGUN_PROJECTILE_TYPE_ID,
-    ION_RIFLE_PROJECTILE_TYPE_ID,
-    SHRINKIFIER_PROJECTILE_TYPE_ID,
-)
+from ..projectiles import ProjectileTypeId
 from ..weapons import WEAPON_BY_ID, WEAPON_TABLE
 
 WORLD_SIZE = 1024.0
@@ -61,25 +54,25 @@ class EffectFx:
 
 _KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     # Based on docs/atlas.md (ported to 0-based weapon ids).
-    0x13: (2, 0),  # Jackhammer
-    0x1D: (4, 3),  # Gauss Shotgun
-    0x19: (4, 6),  # Spider Plasma
-    ION_MINIGUN_PROJECTILE_TYPE_ID: (4, 2),
-    ION_CANNON_PROJECTILE_TYPE_ID: (4, 2),
-    SHRINKIFIER_PROJECTILE_TYPE_ID: (4, 2),
-    FIRE_BULLETS_PROJECTILE_TYPE_ID: (4, 2),
-    ION_RIFLE_PROJECTILE_TYPE_ID: (4, 2),  # Shock Chain projectile
+    ProjectileTypeId.JACKHAMMER: (2, 0),
+    ProjectileTypeId.GAUSS_SHOTGUN: (4, 3),
+    ProjectileTypeId.SPIDER_PLASMA: (4, 6),
+    ProjectileTypeId.ION_MINIGUN: (4, 2),
+    ProjectileTypeId.ION_CANNON: (4, 2),
+    ProjectileTypeId.SHRINKIFIER: (4, 2),
+    ProjectileTypeId.FIRE_BULLETS: (4, 2),
+    ProjectileTypeId.ION_RIFLE: (4, 2),  # Shock Chain projectile
 }
 
 _BEAM_TYPES = frozenset(
     {
-        ION_RIFLE_PROJECTILE_TYPE_ID,
-        ION_MINIGUN_PROJECTILE_TYPE_ID,
-        ION_CANNON_PROJECTILE_TYPE_ID,
-        SHRINKIFIER_PROJECTILE_TYPE_ID,
-        FIRE_BULLETS_PROJECTILE_TYPE_ID,
-        0x1D,  # Gauss Shotgun
-        0x19,  # Spider Plasma
+        ProjectileTypeId.ION_RIFLE,
+        ProjectileTypeId.ION_MINIGUN,
+        ProjectileTypeId.ION_CANNON,
+        ProjectileTypeId.SHRINKIFIER,
+        ProjectileTypeId.FIRE_BULLETS,
+        ProjectileTypeId.GAUSS_SHOTGUN,
+        ProjectileTypeId.SPIDER_PLASMA,
     }
 )
 
@@ -280,7 +273,7 @@ class ProjectileFxView:
         base = WEAPON_BY_ID.get(self._selected_type_id())
         pellet_count = int(getattr(base, "pellet_count", 1) or 1)
         pellet_count = max(1, pellet_count)
-        meta = self._projectile_meta_for(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+        meta = self._projectile_meta_for(ProjectileTypeId.FIRE_BULLETS)
         self._spawn_effect(effect_id=0x12, x=self._origin_x, y=self._origin_y, scale=0.6, duration=0.2)
         for _ in range(pellet_count):
             jitter = (float(self._state.rng.rand() % 200) - 100.0) * 0.0015
@@ -288,7 +281,7 @@ class ProjectileFxView:
                 pos_x=self._origin_x,
                 pos_y=self._origin_y,
                 angle=float(angle + jitter),
-                type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                type_id=ProjectileTypeId.FIRE_BULLETS,
                 owner_id=-1,
                 base_damage=meta,
             )
@@ -377,7 +370,7 @@ class ProjectileFxView:
                 self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
                 self._spawn_effect(effect_id=0x01, x=hit_x, y=hit_y, scale=0.9, duration=0.25)
             else:
-                effect_id = 0x11 if type_id in (GAUSS_GUN_PROJECTILE_TYPE_ID, 0x0B) else 0x00
+                effect_id = 0x11 if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER) else 0x00
                 self._spawn_effect(effect_id=effect_id, x=hit_x, y=hit_y, scale=1.2, duration=0.35)
 
         self._creatures = [c for c in self._creatures if c.hp > 0.0]
@@ -429,13 +422,13 @@ class ProjectileFxView:
         angle = float(getattr(proj, "angle", 0.0))
 
         color = rl.Color(240, 220, 160, 255)
-        if type_id in (ION_RIFLE_PROJECTILE_TYPE_ID, ION_MINIGUN_PROJECTILE_TYPE_ID, ION_CANNON_PROJECTILE_TYPE_ID):
+        if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
             color = rl.Color(120, 200, 255, 255)
-        elif type_id == FIRE_BULLETS_PROJECTILE_TYPE_ID:
+        elif type_id == ProjectileTypeId.FIRE_BULLETS:
             color = rl.Color(255, 170, 90, 255)
-        elif type_id == SHRINKIFIER_PROJECTILE_TYPE_ID:
+        elif type_id == ProjectileTypeId.SHRINKIFIER:
             color = rl.Color(160, 255, 170, 255)
-        elif type_id == 0x19:
+        elif type_id == ProjectileTypeId.SPIDER_PLASMA:
             color = rl.Color(240, 120, 255, 255)
 
         # Beam-style projectiles get a trail from origin to current position in the flight phase.
@@ -502,13 +495,13 @@ class ProjectileFxView:
             life = float(proj.life_timer)
             if life >= 0.4:
                 continue
-            if proj.type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+            if proj.type_id == ProjectileTypeId.ION_RIFLE:
                 radius = 88.0
                 color = rl.Color(120, 200, 255, 50)
-            elif proj.type_id == ION_MINIGUN_PROJECTILE_TYPE_ID:
+            elif proj.type_id == ProjectileTypeId.ION_MINIGUN:
                 radius = 60.0
                 color = rl.Color(120, 200, 255, 40)
-            elif proj.type_id == ION_CANNON_PROJECTILE_TYPE_ID:
+            elif proj.type_id == ProjectileTypeId.ION_CANNON:
                 radius = 128.0
                 color = rl.Color(120, 200, 255, 40)
             else:

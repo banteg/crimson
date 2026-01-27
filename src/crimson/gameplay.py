@@ -7,7 +7,7 @@ from typing import Protocol
 from .bonuses import BONUS_BY_ID, BonusId
 from .crand import Crand
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
-from .projectiles import Damageable, ProjectilePool, SecondaryProjectilePool
+from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 
 
@@ -743,9 +743,6 @@ def _owner_id_for_player(player_index: int) -> int:
     return -1 - int(player_index)
 
 
-FIRE_BULLETS_PROJECTILE_TYPE_ID = 0x2C
-
-
 def _weapon_entry(weapon_id: int) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
@@ -976,9 +973,9 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         pos_x=muzzle_x,
         pos_y=muzzle_y,
         angle=angle,
-        type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
+        type_id=ProjectileTypeId.FIRE_BULLETS,
         owner_id=owner_id,
-        base_damage=_projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID),
+        base_damage=_projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS),
     )
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
@@ -1004,7 +1001,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
-    fire_bullets_weapon = _weapon_entry(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+    fire_bullets_weapon = _weapon_entry(ProjectileTypeId.FIRE_BULLETS)
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
     spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
@@ -1074,9 +1071,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 )
 
         if player.fire_bullets_timer > 0.0:
-            meta = _projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+            meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
             _spawn_pellet_shot(
-                FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                ProjectileTypeId.FIRE_BULLETS,
                 meta=meta,
                 pellets=pellet_count,
             )

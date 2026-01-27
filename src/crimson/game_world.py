@@ -30,15 +30,7 @@ from .gameplay import (
     weapon_assign_player,
 )
 from .perks import PerkId
-from .projectiles import (
-    FIRE_BULLETS_PROJECTILE_TYPE_ID,
-    GAUSS_GUN_PROJECTILE_TYPE_ID,
-    ION_CANNON_PROJECTILE_TYPE_ID,
-    ION_MINIGUN_PROJECTILE_TYPE_ID,
-    ION_RIFLE_PROJECTILE_TYPE_ID,
-    ROCKET_LAUNCHER_PROJECTILE_TYPE_ID,
-    SHRINKIFIER_PROJECTILE_TYPE_ID,
-)
+from .projectiles import ProjectileTypeId
 from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE
 
@@ -86,25 +78,25 @@ _CREATURE_ASSET: dict[CreatureTypeId, str] = {
 }
 
 _KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
-    0x13: (2, 0),  # Jackhammer
-    0x1D: (4, 3),  # Gauss Shotgun
-    0x19: (4, 6),  # Spider Plasma
-    ION_MINIGUN_PROJECTILE_TYPE_ID: (4, 2),
-    ION_CANNON_PROJECTILE_TYPE_ID: (4, 2),
-    SHRINKIFIER_PROJECTILE_TYPE_ID: (4, 2),
-    FIRE_BULLETS_PROJECTILE_TYPE_ID: (4, 2),
-    ION_RIFLE_PROJECTILE_TYPE_ID: (4, 2),
+    ProjectileTypeId.JACKHAMMER: (2, 0),
+    ProjectileTypeId.GAUSS_SHOTGUN: (4, 3),
+    ProjectileTypeId.SPIDER_PLASMA: (4, 6),
+    ProjectileTypeId.ION_MINIGUN: (4, 2),
+    ProjectileTypeId.ION_CANNON: (4, 2),
+    ProjectileTypeId.SHRINKIFIER: (4, 2),
+    ProjectileTypeId.FIRE_BULLETS: (4, 2),
+    ProjectileTypeId.ION_RIFLE: (4, 2),
 }
 
 _BEAM_TYPES = frozenset(
     {
-        ION_RIFLE_PROJECTILE_TYPE_ID,
-        ION_MINIGUN_PROJECTILE_TYPE_ID,
-        ION_CANNON_PROJECTILE_TYPE_ID,
-        SHRINKIFIER_PROJECTILE_TYPE_ID,
-        FIRE_BULLETS_PROJECTILE_TYPE_ID,
-        0x1D,  # Gauss Shotgun
-        0x19,  # Spider Plasma
+        ProjectileTypeId.ION_RIFLE,
+        ProjectileTypeId.ION_MINIGUN,
+        ProjectileTypeId.ION_CANNON,
+        ProjectileTypeId.SHRINKIFIER,
+        ProjectileTypeId.FIRE_BULLETS,
+        ProjectileTypeId.GAUSS_SHOTGUN,
+        ProjectileTypeId.SPIDER_PLASMA,
     }
 )
 
@@ -521,7 +513,7 @@ class GameWorld:
             if int(type_id) in _BEAM_TYPES:
                 effect_id = 0x01
                 tint = (0.7, 0.9, 1.0, 1.0)
-            elif int(type_id) in (GAUSS_GUN_PROJECTILE_TYPE_ID, ROCKET_LAUNCHER_PROJECTILE_TYPE_ID):
+            elif int(type_id) in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER):
                 effect_id = 0x11
                 tint = (1.0, 0.6, 0.3, 1.0)
             size = float(int(rand()) % 18 + 18)
@@ -562,7 +554,7 @@ class GameWorld:
             self._play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))
 
     def _hit_sfx_for_type(self, type_id: int) -> str | None:
-        if type_id == ROCKET_LAUNCHER_PROJECTILE_TYPE_ID:
+        if type_id == ProjectileTypeId.ROCKET_LAUNCHER:
             return "sfx_explosion_large"
         if type_id in _BEAM_TYPES:
             return "sfx_shock_hit_01"
@@ -933,7 +925,7 @@ class GameWorld:
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
 
-        if type_id == 0:
+        if self._is_bullet_trail_type(type_id):
             alpha = int(_clamp(life, 0.0, 1.0) * 255)
             drawn = False
             if self.bullet_trail_texture is not None:
@@ -944,7 +936,7 @@ class GameWorld:
                 drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, alpha=alpha, scale=scale)
 
             if self.bullet_texture is not None and life >= 0.39:
-                size = max(2.0, 4.0 * scale)
+                size = self._bullet_sprite_size(type_id, scale=scale)
                 src = rl.Rectangle(
                     0.0,
                     0.0,
@@ -968,13 +960,13 @@ class GameWorld:
         grid, frame = mapping
 
         color = rl.Color(240, 220, 160, 255)
-        if type_id in (ION_RIFLE_PROJECTILE_TYPE_ID, ION_MINIGUN_PROJECTILE_TYPE_ID, ION_CANNON_PROJECTILE_TYPE_ID):
+        if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
             color = rl.Color(120, 200, 255, 255)
-        elif type_id == FIRE_BULLETS_PROJECTILE_TYPE_ID:
+        elif type_id == ProjectileTypeId.FIRE_BULLETS:
             color = rl.Color(255, 170, 90, 255)
-        elif type_id == SHRINKIFIER_PROJECTILE_TYPE_ID:
+        elif type_id == ProjectileTypeId.SHRINKIFIER:
             color = rl.Color(160, 255, 170, 255)
-        elif type_id == 0x19:
+        elif type_id == ProjectileTypeId.SPIDER_PLASMA:
             color = rl.Color(240, 120, 255, 255)
 
         if type_id in _BEAM_TYPES and life >= 0.4:
@@ -1019,6 +1011,19 @@ class GameWorld:
             rotation_rad=angle,
             tint=tint,
         )
+
+    @staticmethod
+    def _is_bullet_trail_type(type_id: int) -> bool:
+        return 0 <= type_id <= int(ProjectileTypeId.FLAMETHROWER) or type_id == int(ProjectileTypeId.GAUSS_SHOTGUN)
+
+    @staticmethod
+    def _bullet_sprite_size(type_id: int, *, scale: float) -> float:
+        base = 4.0
+        if type_id == int(ProjectileTypeId.ASSAULT_RIFLE):
+            base = 6.0
+        elif type_id == int(ProjectileTypeId.SUBMACHINE_GUN):
+            base = 8.0
+        return max(2.0, base * scale)
 
     def _draw_bullet_trail(self, sx0: float, sy0: float, sx1: float, sy1: float, *, alpha: int, scale: float) -> bool:
         if self.bullet_trail_texture is None:
