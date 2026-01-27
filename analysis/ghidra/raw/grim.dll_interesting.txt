@@ -32,6 +32,9 @@ Interesting Functions and Patterns
   png_create_read_struct @ 1001e191
   png_read_data @ 1002047c
   png_crc_read @ 10024807
+  grim_png_read_IHDR @ 10025163
+  grim_png_read_PLTE @ 10025359
+  grim_png_read_chunk_generic @ 1002587e
 
 [WRITE related]
   grim_pixel_format_write_dxt_cache @ 10016cdc

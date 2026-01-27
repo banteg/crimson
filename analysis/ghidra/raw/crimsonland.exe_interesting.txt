@@ -2,6 +2,7 @@ Interesting Functions and Patterns
 ===================================
 
 [DES related]
+  console_destroy @ 004016e0
   highscore_compare_survival_score_desc @ 0043aeb0
   highscore_compare_rush_field32_desc @ 0043aed0
   sfx_update_mute_fades @ 0043d5b0
@@ -31,6 +32,7 @@ Interesting Functions and Patterns
 
 [FILE related]
   config_ensure_file @ 0041f130
+  ui_profile_menu_update @ 004443c0
   crt_lock_file @ 00463da5
   crt_lock_file2 @ 00463dd4
   crt_unlock_file @ 00463df7

@@ -3006,16 +3006,17 @@ void grim_apply_settings(void)
 
 
 
-/* FUN_10006030 @ 10006030 */
+/* grim_set_texture_stage_ops @ 10006030 */
 
 /* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+/* sets D3D texture stage states for a small set of blend modes (mode 0..3) */
 
-uint __cdecl FUN_10006030(uint param_1)
+uint __cdecl grim_set_texture_stage_ops(uint mode)
 
 {
   HRESULT HVar1;
   
-  switch(param_1) {
+  switch(mode) {
   case 0:
     (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,3);
     (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
@@ -3095,7 +3096,7 @@ uint __cdecl FUN_10006030(uint param_1)
     HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_ALPHAOP,1);
     return CONCAT31((int3)((uint)HVar1 >> 8),1);
   default:
-    return param_1 & 0xffffff00;
+    return mode & 0xffffff00;
   }
 }
 
@@ -3117,10 +3118,10 @@ void grim_set_config_var(uint id,uint value)
   undefined1 uVar3;
   undefined1 uVar4;
   WORD WVar5;
-  undefined4 uVar6;
+  uint uVar6;
   int iVar7;
-  char *pcVar8;
-  uint uVar9;
+  undefined4 uVar8;
+  char *pcVar9;
   uint uVar10;
   uint *puVar11;
   WORD *pWVar12;
@@ -3144,33 +3145,33 @@ void grim_set_config_var(uint id,uint value)
     if (DAT_1005bac8 != (byte *)0x0) {
       operator_delete(DAT_1005bac8);
     }
-    uVar9 = 0xffffffff;
+    uVar6 = 0xffffffff;
     pbVar13 = in_stack_00000014;
     do {
-      if (uVar9 == 0) break;
-      uVar9 = uVar9 - 1;
+      if (uVar6 == 0) break;
+      uVar6 = uVar6 - 1;
       bVar1 = *pbVar13;
       pbVar13 = pbVar13 + 1;
     } while (bVar1 != 0);
-    DAT_1005bac8 = operator_new(~uVar9);
-    uVar9 = 0xffffffff;
+    DAT_1005bac8 = operator_new(~uVar6);
+    uVar6 = 0xffffffff;
     do {
       pbVar13 = in_stack_00000014;
-      if (uVar9 == 0) break;
-      uVar9 = uVar9 - 1;
+      if (uVar6 == 0) break;
+      uVar6 = uVar6 - 1;
       pbVar13 = in_stack_00000014 + 1;
       bVar1 = *in_stack_00000014;
       in_stack_00000014 = pbVar13;
     } while (bVar1 != 0);
-    uVar9 = ~uVar9;
-    pbVar13 = pbVar13 + -uVar9;
+    uVar6 = ~uVar6;
+    pbVar13 = pbVar13 + -uVar6;
     pbVar15 = DAT_1005bac8;
-    for (uVar10 = uVar9 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
+    for (uVar10 = uVar6 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
       *(undefined4 *)pbVar15 = *(undefined4 *)pbVar13;
       pbVar13 = pbVar13 + 4;
       pbVar15 = pbVar15 + 4;
     }
-    for (uVar9 = uVar9 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
+    for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
       *pbVar15 = *pbVar13;
       pbVar13 = pbVar13 + 1;
       pbVar15 = pbVar15 + 1;
@@ -3221,13 +3222,13 @@ LAB_10006887:
       _DAT_1005cc94 = _strdup(&DAT_1005d828);
       DAT_1005bc14 = 0;
     }
-    uVar6 = FUN_10005a40((char *)in_stack_00000014);
-    DAT_1005bc14 = (undefined1)uVar6;
+    uVar8 = FUN_10005a40((char *)in_stack_00000014);
+    DAT_1005bc14 = (undefined1)uVar8;
     if (*(void **)(&grim_config_var3_table + id * 0x10) != (void *)0x0) {
       operator_delete(*(void **)(&grim_config_var3_table + id * 0x10));
     }
-    pcVar8 = _strdup((char *)in_stack_00000014);
-    *(char **)(&grim_config_var3_table + id * 0x10) = pcVar8;
+    pcVar9 = _strdup((char *)in_stack_00000014);
+    *(char **)(&grim_config_var3_table + id * 0x10) = pcVar9;
     *(undefined1 *)(&grim_config_var0_table + id * 4) = DAT_1005bc14;
     return;
   case 0x12:
@@ -3273,7 +3274,7 @@ LAB_10006887:
     }
     break;
   case 0x1a:
-    uVar6 = FUN_10006030(value);
+    uVar6 = grim_set_texture_stage_ops(value);
     if ((char)uVar6 == '\0') {
       return;
     }
@@ -11575,11 +11576,11 @@ void FUN_10010dd0(int *param_1)
 
 
 
-/* FUN_10010e13 @ 10010e13 */
+/* grim_load_image_jpg @ 10010e13 */
 
 /* [binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3) */
 
-int FUN_10010e13(int *arg1,int arg2,int arg3)
+int grim_load_image_jpg(int *arg1,int arg2,int arg3)
 
 {
   uint *puVar1;
@@ -11980,11 +11981,11 @@ LAB_10011360:
 
 
 
-/* FUN_1001152a @ 1001152a */
+/* grim_load_image_pnm @ 1001152a */
 
 /* [binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3) */
 
-int __thiscall FUN_1001152a(void *this,int *arg1,char *arg2,int arg3)
+int __thiscall grim_load_image_pnm(void *this,int *arg1,char *arg2,int arg3)
 
 {
   char *pcVar1;
@@ -12125,11 +12126,11 @@ LAB_100115b4:
 
 
 
-/* FUN_100117ff @ 100117ff */
+/* grim_load_image_png @ 100117ff */
 
 /* [binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3) */
 
-int FUN_100117ff(int *arg1,void *arg2,void *arg3)
+int grim_load_image_png(int *arg1,void *arg2,void *arg3)
 
 {
   undefined1 *puVar1;
@@ -12402,11 +12403,11 @@ LAB_10011d66:
 
 
 
-/* FUN_10011d95 @ 10011d95 */
+/* grim_load_image_dds @ 10011d95 */
 
 /* [binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3) */
 
-int __thiscall FUN_10011d95(void *this,int *arg1,uint arg2,int *arg3)
+int __thiscall grim_load_image_dds(void *this,int *arg1,uint arg2,int *arg3)
 
 {
   int iVar1;
@@ -12941,11 +12942,11 @@ LAB_10012628:
 
 
 
-/* FUN_10012647 @ 10012647 */
+/* grim_load_image_bmp @ 10012647 */
 
 /* [binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2) */
 
-int __thiscall FUN_10012647(void *this,short *arg1,void *arg2)
+int __thiscall grim_load_image_bmp(void *this,short *arg1,void *arg2)
 
 {
   int iVar1;
@@ -12992,22 +12993,22 @@ int __thiscall FUN_10012677(void *this,int *arg1,void *arg2,int *arg3,int *arg4,
     *(int *)((int)this + 0x48) = iVar3;
     *(undefined4 *)((int)this + 0x44) = 3;
     if (iVar3 == 0) {
-      pvVar2 = (void *)FUN_10012647(this,(short *)arg1,arg2);
+      pvVar2 = (void *)grim_load_image_bmp(this,(short *)arg1,arg2);
     }
     else if (iVar3 == 1) {
-      pvVar2 = (void *)FUN_10010e13(arg1,(int)arg2,(int)unaff_EDI);
+      pvVar2 = (void *)grim_load_image_jpg(arg1,(int)arg2,(int)unaff_EDI);
     }
     else if (iVar3 == 2) {
       pvVar2 = (void *)FUN_10011083(this,arg1,arg2,(int)unaff_EDI);
     }
     else if (iVar3 == 3) {
-      pvVar2 = (void *)FUN_100117ff(arg1,arg2,unaff_EDI);
+      pvVar2 = (void *)grim_load_image_png(arg1,arg2,unaff_EDI);
     }
     else if (iVar3 == 4) {
-      pvVar2 = (void *)FUN_10011d95(this,arg1,(uint)arg2,unaff_EDI);
+      pvVar2 = (void *)grim_load_image_dds(this,arg1,(uint)arg2,unaff_EDI);
     }
     else if (iVar3 == 5) {
-      pvVar2 = (void *)FUN_1001152a(this,arg1,arg2,(int)unaff_EDI);
+      pvVar2 = (void *)grim_load_image_pnm(this,arg1,arg2,(int)unaff_EDI);
     }
     else if (iVar3 == 6) {
       pvVar2 = (void *)FUN_100103d6(this,arg1,arg2,unaff_EDI);
@@ -21611,7 +21612,7 @@ int grim_select_renderer_backend(int force)
         }
       }
       else {
-        FUN_100224c5(&PTR_LAB_10053c58);
+        grim_init_mmx_sse_functions(&PTR_LAB_10053c58);
         DAT_1005449c = 1;
       }
     }
@@ -23630,10 +23631,10 @@ void __cdecl FUN_1001e294(png_structp png_ptr,uint *param_2)
           png_reset_crc(png_ptr_00);
           png_crc_read(png_ptr_00,buf,4);
           if (*(int *)buf != 0x52444849) break;
-          FUN_10025163(png_ptr_00,param_2,pVar3);
+          grim_png_read_IHDR(png_ptr_00,param_2,pVar3);
         }
         if (*(int *)buf != 0x45544c50) break;
-        FUN_10025359((void *)0x45544c50,png_ptr_00,(int)param_2,pVar3);
+        grim_png_read_PLTE((void *)0x45544c50,png_ptr_00,(int)param_2,pVar3);
       }
       if (*(int *)buf != 0x444e4549) break;
       FUN_10025483(png_ptr_00,param_2,pVar3,unaff_EBX,unaff_EBP);
@@ -23649,7 +23650,7 @@ void __cdecl FUN_1001e294(png_structp png_ptr,uint *param_2)
       FUN_100256c7(png_ptr_00,(int)param_2,pVar3);
     }
     else {
-      FUN_1002587e(png_ptr_00,(int)param_2,pVar3);
+      grim_png_read_chunk_generic(png_ptr_00,(int)param_2,pVar3);
     }
   }
   if ((png_ptr_00->mode & 1) == 0) {
@@ -27599,78 +27600,80 @@ undefined8 FUN_100223f0(void)
 
 
 
-/* FUN_100224c5 @ 100224c5 */
+/* grim_init_mmx_sse_functions @ 100224c5 */
 
-void __cdecl FUN_100224c5(undefined4 *param_1)
+/* fills a function pointer table with MMX/SSE implementations based on CPUID */
+
+void __cdecl grim_init_mmx_sse_functions(undefined4 *table)
 
 {
   ulonglong uVar1;
   
   uVar1 = FUN_100223f0();
   if (((uVar1 & 0x20) != 0) && ((char)uVar1 < '\0')) {
-    *param_1 = &LAB_1002dca8;
-    param_1[1] = &LAB_1002d1ea;
-    param_1[2] = &LAB_1002df69;
-    param_1[3] = &LAB_1002943a;
-    param_1[5] = &LAB_1002dcfd;
-    param_1[6] = &LAB_1002d25b;
-    param_1[7] = FUN_1002d2c2;
-    param_1[8] = &LAB_1002dfeb;
-    param_1[9] = &LAB_1002dd36;
-    param_1[10] = &LAB_1002d7a2;
-    param_1[0xb] = &LAB_1002966c;
-    param_1[0xc] = &LAB_1002e393;
-    param_1[0xd] = &LAB_1002e3d6;
-    param_1[0xe] = FUN_1002d7a7;
-    param_1[0xf] = &LAB_1002d92f;
-    param_1[0x10] = &LAB_1002e04a;
-    param_1[0x11] = &LAB_1002dd9a;
-    param_1[0x12] = &LAB_1002d1ce;
-    param_1[0x13] = &LAB_10027ed0;
-    param_1[0x14] = &LAB_10027f69;
-    param_1[0x15] = FUN_1002e578;
-    param_1[0x16] = &LAB_1002e4ba;
-    param_1[0x17] = FUN_10027fc6;
-    param_1[0x18] = &LAB_10028079;
-    param_1[0x19] = &LAB_100284aa;
-    param_1[0x1a] = &LAB_1002973b;
-    param_1[0x1b] = &LAB_1002978b;
-    param_1[0x1c] = &LAB_10029876;
-    param_1[0x1d] = FUN_1002856f;
-    param_1[0x1e] = &LAB_10029952;
-    param_1[0x1f] = &LAB_100299b5;
-    param_1[0x20] = &LAB_10029a13;
-    param_1[0x21] = &LAB_10029a6c;
-    param_1[0x22] = &LAB_1002e5dc;
-    param_1[0x23] = FUN_100285db;
-    param_1[0x24] = FUN_10028712;
-    param_1[0x25] = &LAB_10029ab3;
-    param_1[0x26] = &LAB_10029b5b;
-    param_1[0x27] = FUN_10029ce2;
-    param_1[0x28] = FUN_1002ae7a;
-    param_1[0x29] = &LAB_1002b01f;
-    param_1[0x2a] = FUN_1002b553;
-    param_1[0x2b] = FUN_1002879f;
-    param_1[0x2c] = &LAB_10028831;
-    param_1[0x36] = &LAB_1002e17c;
-    param_1[0x33] = &LAB_1002d321;
-    param_1[0x30] = &LAB_1002de32;
-    param_1[0x2e] = &LAB_1002de7b;
-    param_1[0x34] = &LAB_1002e1ed;
-    param_1[0x31] = &LAB_1002d392;
-    param_1[0x37] = FUN_10028895;
-    param_1[0x38] = &LAB_1002893c;
-    param_1[0x35] = &LAB_1002e2b5;
-    param_1[0x2f] = &LAB_1002debe;
-    param_1[0x32] = &LAB_1002d466;
-    param_1[4] = &LAB_1002caa2;
-    param_1[0x2d] = FUN_100289e1;
+    *table = &LAB_1002dca8;
+    table[1] = &LAB_1002d1ea;
+    table[2] = &LAB_1002df69;
+    table[3] = &LAB_1002943a;
+    table[5] = &LAB_1002dcfd;
+    table[6] = &LAB_1002d25b;
+    table[7] = FUN_1002d2c2;
+    table[8] = &LAB_1002dfeb;
+    table[9] = &LAB_1002dd36;
+    table[10] = &LAB_1002d7a2;
+    table[0xb] = &LAB_1002966c;
+    table[0xc] = &LAB_1002e393;
+    table[0xd] = &LAB_1002e3d6;
+    table[0xe] = FUN_1002d7a7;
+    table[0xf] = &LAB_1002d92f;
+    table[0x10] = &LAB_1002e04a;
+    table[0x11] = &LAB_1002dd9a;
+    table[0x12] = &LAB_1002d1ce;
+    table[0x13] = &LAB_10027ed0;
+    table[0x14] = &LAB_10027f69;
+    table[0x15] = FUN_1002e578;
+    table[0x16] = &LAB_1002e4ba;
+    table[0x17] = FUN_10027fc6;
+    table[0x18] = &LAB_10028079;
+    table[0x19] = &LAB_100284aa;
+    table[0x1a] = &LAB_1002973b;
+    table[0x1b] = &LAB_1002978b;
+    table[0x1c] = &LAB_10029876;
+    table[0x1d] = FUN_1002856f;
+    table[0x1e] = &LAB_10029952;
+    table[0x1f] = &LAB_100299b5;
+    table[0x20] = &LAB_10029a13;
+    table[0x21] = &LAB_10029a6c;
+    table[0x22] = &LAB_1002e5dc;
+    table[0x23] = FUN_100285db;
+    table[0x24] = FUN_10028712;
+    table[0x25] = &LAB_10029ab3;
+    table[0x26] = &LAB_10029b5b;
+    table[0x27] = FUN_10029ce2;
+    table[0x28] = FUN_1002ae7a;
+    table[0x29] = &LAB_1002b01f;
+    table[0x2a] = FUN_1002b553;
+    table[0x2b] = FUN_1002879f;
+    table[0x2c] = &LAB_10028831;
+    table[0x36] = &LAB_1002e17c;
+    table[0x33] = &LAB_1002d321;
+    table[0x30] = &LAB_1002de32;
+    table[0x2e] = &LAB_1002de7b;
+    table[0x34] = &LAB_1002e1ed;
+    table[0x31] = &LAB_1002d392;
+    table[0x37] = FUN_10028895;
+    table[0x38] = &LAB_1002893c;
+    table[0x35] = &LAB_1002e2b5;
+    table[0x2f] = &LAB_1002debe;
+    table[0x32] = &LAB_1002d466;
+    table[4] = &LAB_1002caa2;
+    table[0x2d] = FUN_100289e1;
     if (((uVar1 & 0x100) != 0) && ((uVar1 & 0x200) != 0)) {
-      param_1[0xf] = FUN_1002db55;
-      param_1[0x12] = FUN_1002c7c0;
-      param_1[0x26] = &LAB_10029c2d;
-      param_1[0x27] = FUN_1002b66c;
-      param_1[0x18] = &LAB_10028295;
+      table[0xf] = FUN_1002db55;
+      table[0x12] = FUN_1002c7c0;
+      table[0x26] = &LAB_10029c2d;
+      table[0x27] = FUN_1002b66c;
+      table[0x18] = &LAB_10028295;
     }
   }
   return;
@@ -30550,9 +30553,9 @@ int __cdecl png_crc_finish(png_structp png_ptr,png_uint_32 skip)
 
 
 
-/* FUN_10025163 @ 10025163 */
+/* grim_png_read_IHDR @ 10025163 */
 
-void __cdecl FUN_10025163(png_structp png_ptr,uint *param_2,int param_3)
+void __cdecl grim_png_read_IHDR(png_structp png_ptr,uint *param_2,int param_3)
 
 {
   byte bVar1;
@@ -30638,9 +30641,9 @@ LAB_1002531b:
 
 
 
-/* FUN_10025359 @ 10025359 */
+/* grim_png_read_PLTE @ 10025359 */
 
-void __thiscall FUN_10025359(void *this,png_structp png_ptr,int param_2,uint param_3)
+void __thiscall grim_png_read_PLTE(void *this,png_structp png_ptr,int param_2,uint param_3)
 
 {
   byte *pbVar1;
@@ -30955,9 +30958,9 @@ LAB_10025833:
 
 
 
-/* FUN_1002587e @ 1002587e */
+/* grim_png_read_chunk_generic @ 1002587e */
 
-void __cdecl FUN_1002587e(png_structp png_ptr,int param_2,uint param_3)
+void __cdecl grim_png_read_chunk_generic(png_structp png_ptr,int param_2,uint param_3)
 
 {
   png_check_chunk_name(png_ptr,png_ptr->chunk_name);

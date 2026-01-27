@@ -392,9 +392,9 @@
     "calls": ["FUN_10003c00"]
   },
   {
-    "name": "FUN_10006030",
+    "name": "grim_set_texture_stage_ops",
     "address": "10006030",
-    "signature": "undefined4 FUN_10006030(undefined4 param_1)",
+    "signature": "uint grim_set_texture_stage_ops(uint mode)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -405,7 +405,7 @@
     "signature": "void grim_set_config_var(uint id, uint value)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_10005a40", "FUN_10006030", "_strdup", "ftol", "operator_delete", "operator_new"]
+    "calls": ["FUN_10005a40", "_strdup", "ftol", "grim_set_texture_stage_ops", "operator_delete", "operator_new"]
   },
   {
     "name": "grim_get_config_var",
@@ -2232,9 +2232,9 @@
     "calls": ["longjmp"]
   },
   {
-    "name": "FUN_10010e13",
+    "name": "grim_load_image_jpg",
     "address": "10010e13",
-    "signature": "int FUN_10010e13(int * arg1, int arg2, int arg3)",
+    "signature": "int grim_load_image_jpg(int * arg1, int arg2, int arg3)",
     "external": false,
     "calls_total": 10,
     "calls": ["FUN_1001bf5e", "FUN_1001c265", "FUN_1001c537", "FUN_1001c5de", "FUN_1001c6ea", "FUN_1001c76e", "FUN_1001e027", "operator_new", "setjmp3", "thunk_FUN_10023bc5"]
@@ -2248,25 +2248,25 @@
     "calls": ["operator_new"]
   },
   {
-    "name": "FUN_1001152a",
+    "name": "grim_load_image_pnm",
     "address": "1001152a",
-    "signature": "int FUN_1001152a(void * this, int * arg1, char * arg2, int arg3)",
+    "signature": "int grim_load_image_pnm(void * this, int * arg1, char * arg2, int arg3)",
     "external": false,
     "calls_total": 3,
     "calls": ["isdigit", "isspace", "operator_new"]
   },
   {
-    "name": "FUN_100117ff",
+    "name": "grim_load_image_png",
     "address": "100117ff",
-    "signature": "int FUN_100117ff(int * arg1, void * arg2, void * arg3)",
+    "signature": "int grim_load_image_png(int * arg1, void * arg2, void * arg3)",
     "external": false,
     "calls_total": 28,
     "calls": ["FUN_1001e294", "FUN_1001e407", "FUN_1001e7ce", "FUN_1001e93e", "FUN_1001e9bf", "FUN_1001e9d9", "FUN_1001e9ef", "FUN_1001ea05", "FUN_1001ea2e", "FUN_1001ea59", "FUN_1001eb2a", "FUN_1001eb5d", "FUN_1001ebc4", "FUN_1001ebcd", "FUN_1001ebdf", "FUN_1001ec11", "FUN_1001ed4a", "FUN_1001ed80", "FUN_100203e1", "FUN_100204a4", "FUN_100204e3", "FUN_100205e8", "_CIpow", "ftol", "operator_delete", "operator_new", "png_create_read_struct", "setjmp3"]
   },
   {
-    "name": "FUN_10011d95",
+    "name": "grim_load_image_dds",
     "address": "10011d95",
-    "signature": "int FUN_10011d95(void * this, int * arg1, uint arg2, int * arg3)",
+    "signature": "int grim_load_image_dds(void * this, int * arg1, uint arg2, int * arg3)",
     "external": false,
     "calls_total": 3,
     "calls": ["FUN_10010285", "grim_format_info_lookup", "operator_new"]
@@ -2288,9 +2288,9 @@
     "calls": ["FUN_1000ab3f", "FUN_10010aec", "FUN_100120d6", "FUN_1001284c", "FUN_10012856", "FUN_10016007", "FUN_1001bca5", "FUN_1001bdc7", "FUN_1001bed2", "grim_format_info_lookup", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
-    "name": "FUN_10012647",
+    "name": "grim_load_image_bmp",
     "address": "10012647",
-    "signature": "int FUN_10012647(void * this, short * arg1, void * arg2)",
+    "signature": "int grim_load_image_bmp(void * this, short * arg1, void * arg2)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_100103d6"]
@@ -2301,7 +2301,7 @@
     "signature": "int FUN_10012677(void * this, int * arg1, void * arg2, int * arg3, int * arg4, int arg5)",
     "external": false,
     "calls_total": 10,
-    "calls": ["FUN_1000ac8f", "FUN_100102f7", "FUN_100103d6", "FUN_10010e13", "FUN_10011083", "FUN_1001152a", "FUN_100117ff", "FUN_10011d95", "FUN_10012647", "operator_delete"]
+    "calls": ["FUN_1000ac8f", "FUN_100102f7", "FUN_100103d6", "FUN_10011083", "grim_load_image_bmp", "grim_load_image_dds", "grim_load_image_jpg", "grim_load_image_png", "grim_load_image_pnm", "operator_delete"]
   },
   {
     "name": "FUN_1001284c",
@@ -3725,7 +3725,7 @@
     "signature": "int grim_select_renderer_backend(int force)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_1001bedd", "FUN_1001c0d4", "FUN_100221d0", "FUN_100222e0", "FUN_100224c5", "FUN_10022b47"]
+    "calls": ["FUN_1001bedd", "FUN_1001c0d4", "FUN_100221d0", "FUN_100222e0", "FUN_10022b47", "grim_init_mmx_sse_functions"]
   },
   {
     "name": "FUN_1001c265",
@@ -3997,7 +3997,7 @@
     "signature": "void FUN_1001e294(png_structp png_ptr, uint * param_2)",
     "external": false,
     "calls_total": 13,
-    "calls": ["FUN_100204e3", "FUN_10025163", "FUN_10025359", "FUN_10025483", "FUN_100254cd", "FUN_100255d8", "FUN_100256c7", "FUN_1002587e", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
+    "calls": ["FUN_100204e3", "FUN_10025483", "FUN_100254cd", "FUN_100255d8", "FUN_100256c7", "grim_png_read_IHDR", "grim_png_read_PLTE", "grim_png_read_chunk_generic", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
   },
   {
     "name": "FUN_1001e407",
@@ -4536,9 +4536,9 @@
     "calls": []
   },
   {
-    "name": "FUN_100224c5",
+    "name": "grim_init_mmx_sse_functions",
     "address": "100224c5",
-    "signature": "undefined FUN_100224c5(undefined4 * param_1)",
+    "signature": "void grim_init_mmx_sse_functions(undefined4 * table)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_100223f0"]
@@ -5024,17 +5024,17 @@
     "calls": ["FUN_1001e147", "FUN_1001e16c", "png_crc_error", "png_crc_read"]
   },
   {
-    "name": "FUN_10025163",
+    "name": "grim_png_read_IHDR",
     "address": "10025163",
-    "signature": "void FUN_10025163(png_structp png_ptr, uint * param_2, int param_3)",
+    "signature": "void grim_png_read_IHDR(png_structp png_ptr, uint * param_2, int param_3)",
     "external": false,
     "calls_total": 5,
     "calls": ["FUN_1002031c", "png_crc_finish", "png_crc_read", "png_error", "png_get_uint_32"]
   },
   {
-    "name": "FUN_10025359",
+    "name": "grim_png_read_PLTE",
     "address": "10025359",
-    "signature": "void FUN_10025359(void * this, png_structp png_ptr, int param_2, uint param_3)",
+    "signature": "void grim_png_read_PLTE(void * this, png_structp png_ptr, int param_2, uint param_3)",
     "external": false,
     "calls_total": 6,
     "calls": ["FUN_100203bd", "FUN_1002052b", "png_crc_finish", "png_crc_read", "png_error", "png_warning"]
@@ -5072,9 +5072,9 @@
     "calls": ["FUN_10020435", "png_crc_finish", "png_crc_read", "png_error", "png_malloc", "png_warning"]
   },
   {
-    "name": "FUN_1002587e",
+    "name": "grim_png_read_chunk_generic",
     "address": "1002587e",
-    "signature": "void FUN_1002587e(png_structp png_ptr, int param_2, uint param_3)",
+    "signature": "void grim_png_read_chunk_generic(png_structp png_ptr, int param_2, uint param_3)",
     "external": false,
     "calls_total": 3,
     "calls": ["FUN_1001e147", "png_check_chunk_name", "png_crc_finish"]

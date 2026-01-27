@@ -115,11 +115,11 @@ int console_cmd_argc_get(void)
 
 
 
-/* FUN_00401170 @ 00401170 */
+/* console_global_init @ 00401170 */
 
 /* [binja] int32_t sub_401170() */
 
-int FUN_00401170(void)
+int console_global_init(void)
 
 {
   int *piVar1;
@@ -505,11 +505,11 @@ int * __fastcall console_init(int *console_state)
 
 
 
-/* FUN_004016e0 @ 004016e0 */
+/* console_destroy @ 004016e0 */
 
 /* [binja] void __fastcall sub_4016e0(int32_t* arg1) */
 
-void __fastcall FUN_004016e0(int *arg1)
+void __fastcall console_destroy(int *arg1)
 
 {
   undefined4 *puVar1;
@@ -1003,11 +1003,11 @@ LAB_00401cf6:
 
 
 
-/* FUN_00401dd0 @ 00401dd0 */
+/* console_render @ 00401dd0 */
 
 /* [binja] int32_t __fastcall sub_401dd0(void* arg1) */
 
-int __fastcall FUN_00401dd0(void *arg1)
+int __fastcall console_render(void *arg1)
 
 {
   IGrim2D_vtbl *pIVar1;
@@ -2006,11 +2006,11 @@ void register_core_cvars(void)
 
 
 
-/* FUN_00402d50 @ 00402d50 */
+/* ui_render_loading @ 00402d50 */
 
 /* [binja] int32_t sub_402d50() */
 
-int FUN_00402d50(void)
+int ui_render_loading(void)
 
 {
   IGrim2D_vtbl *pIVar1;
@@ -4471,12 +4471,12 @@ void ui_draw_clock_gauge(void)
 
 
 
-/* FUN_00406350 @ 00406350 */
+/* game_update_victory_screen @ 00406350 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* [binja] int32_t sub_406350() */
 
-int FUN_00406350(void)
+int game_update_victory_screen(void)
 
 {
   int extraout_EAX;
@@ -4655,11 +4655,11 @@ int FUN_00406350(void)
 
 
 
-/* FUN_00406af0 @ 00406af0 */
+/* game_update_generic_menu @ 00406af0 */
 
 /* [binja] int32_t sub_406af0() */
 
-int FUN_00406af0(void)
+int game_update_generic_menu(void)
 
 {
   int extraout_EAX;
@@ -7733,11 +7733,11 @@ LAB_0040c8a0:
       survival_gameplay_update_and_render();
     }
     else if (game_state_id == 0x15) {
-      FUN_00406350();
+      game_update_victory_screen();
     }
     else {
       demo_purchase_screen_active = '\0';
-      FUN_00406af0();
+      game_update_generic_menu();
     }
   }
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,2.0,1.0);
@@ -7775,7 +7775,7 @@ LAB_0040c8a0:
                uVar5);
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
-  FUN_00401dd0(&console_log_queue);
+  console_render(&console_log_queue);
   crt_rand();
   audio_update();
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(1);
@@ -7899,22 +7899,22 @@ LAB_0040cd14:
 LAB_0040cf06:
   if (DAT_004d7a24 != '\0') {
     DAT_004d7a24 = '\0';
-    FUN_00402d50();
-    FUN_00402d50();
+    ui_render_loading();
+    ui_render_loading();
     audio_suspend_all();
     game_is_full_version();
   }
   if (DAT_004d7a25 != '\0') {
     DAT_004d7a25 = '\0';
-    FUN_00402d50();
-    FUN_00402d50();
+    ui_render_loading();
+    ui_render_loading();
     audio_suspend_all();
     game_is_full_version();
   }
   if (DAT_004d7a26 != '\0') {
     DAT_004d7a26 = '\0';
-    FUN_00402d50();
-    FUN_00402d50();
+    ui_render_loading();
+    ui_render_loading();
     audio_suspend_all();
     game_is_full_version();
   }
@@ -10697,11 +10697,11 @@ int FUN_004120b0(void)
 
 
 
-/* FUN_00412190 @ 00412190 */
+/* quest_meta_init @ 00412190 */
 
 /* [binja] int32_t sub_412190() */
 
-int FUN_00412190(void)
+int quest_meta_init(void)
 
 {
   int extraout_EAX;
@@ -10727,11 +10727,11 @@ int FUN_004121f0(void)
 
 
 
-/* FUN_00412360 @ 00412360 */
+/* highscore_init_sentinels @ 00412360 */
 
 /* [binja] int32_t sub_412360() */
 
-int FUN_00412360(void)
+int highscore_init_sentinels(void)
 
 {
   char cVar1;
@@ -11032,11 +11032,11 @@ void bonus_metadata_init(void)
 
 
 
-/* FUN_00412940 @ 00412940 */
+/* bonus_reset_availability @ 00412940 */
 
 /* [binja] char* sub_412940() */
 
-char * FUN_00412940(void)
+char * bonus_reset_availability(void)
 
 {
   uchar *puVar1;
@@ -11369,7 +11369,7 @@ void gameplay_reset_state(void)
   _bonus_double_xp_timer = 0;
   survival_spawn_stage = 0;
   camera_shake_pulses = 0;
-  FUN_00412940();
+  bonus_reset_availability();
   _DAT_00482940 = 6;
   creature_type_table.texture_handle =
        (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_zombie_0047375c);
@@ -11482,7 +11482,7 @@ void gameplay_reset_state(void)
   _DAT_004aaf2c = 0xbf800000;
   perk_prompt_timer = 0;
   projectile_reset_pools();
-  FUN_0041fc80();
+  player_reset_all();
   DAT_004871d0 = 0;
   DAT_004871d4 = 0;
   pfVar3 = &player_state_table.low_health_timer;
@@ -11835,8 +11835,8 @@ void player_update(void)
       local_14 = (float)(fVar17 * (float10)16.0);
       local_c = local_1c - (&player_state_table)[render_overlay_player_index].pos_y;
       local_10 = local_20 - ppVar6->pos_x;
-      fVar17 = FUN_00417660(&local_10);
-      local_30[0] = (float)(fVar17 * (float10)0.5);
+      local_30[0] = vec2_length(&local_10);
+      local_30[0] = local_30[0] * 0.5;
       uVar9 = crt_rand();
       fVar14 = (float)(uVar9 & 0x1ff) * 0.012271847;
       uVar9 = crt_rand();
@@ -11847,7 +11847,7 @@ void player_update(void)
       local_20 = (float)(fVar18 * fVar17 + (float10)local_20);
       fVar18 = (float10)fsin((float10)fVar14);
       local_1c = (float)(fVar18 * fVar17 + (float10)local_1c);
-      pfVar12 = FUN_00417640(&ppVar6->pos_x,local_30,&local_20,unaff_EBP);
+      pfVar12 = vec2_sub(&ppVar6->pos_x,local_30,&local_20,unaff_EBP);
       fVar17 = (float10)fpatan((float10)pfVar12[1],(float10)*pfVar12);
       local_30[0] = (float)(fVar17 - (float10)1.5707964);
       local_c = local_14 + (&player_state_table)[iVar7].pos_y;
@@ -12872,8 +12872,8 @@ LAB_0041572e:
   local_18 = (&player_state_table)[render_overlay_player_index].aim_x;
   local_c = local_14 - (&player_state_table)[render_overlay_player_index].pos_y;
   local_10 = local_18 - (&player_state_table)[render_overlay_player_index].pos_x;
-  fVar17 = FUN_00417660(&local_10);
-  local_28 = (float)(fVar17 * (float10)0.5);
+  local_28 = vec2_length(&local_10);
+  local_28 = local_28 * 0.5;
   uVar9 = crt_rand();
   local_30[0] = (float)(uVar9 & 0x1ff);
   fVar2 = (float)(int)local_30[0];
@@ -13503,11 +13503,11 @@ LAB_0041753e:
 
 
 
-/* FUN_00417640 @ 00417640 */
+/* vec2_sub @ 00417640 */
 
 /* [binja] float* __thiscall sub_417640(float* arg1, float* arg2, float* arg3) */
 
-float * __thiscall FUN_00417640(void *this,float *arg1,float *arg2,float *arg3)
+float * __thiscall vec2_sub(void *this,float *arg1,float *arg2,float *arg3)
 
 {
   float fVar1;
@@ -13522,12 +13522,14 @@ float * __thiscall FUN_00417640(void *this,float *arg1,float *arg2,float *arg3)
 
 
 
-/* FUN_00417660 @ 00417660 */
+/* vec2_length @ 00417660 */
 
-float10 __cdecl FUN_00417660(float *param_1)
+/* returns sqrt(x*x + y*y) for a 2-float vector */
+
+float __cdecl vec2_length(float *v)
 
 {
-  return SQRT((float10)param_1[1] * (float10)param_1[1] + (float10)*param_1 * (float10)*param_1);
+  return SQRT(v[1] * v[1] + *v * *v);
 }
 
 
@@ -15781,127 +15783,114 @@ int __cdecl dx_get_version(int *version,char *out,int out_len)
 
 /* FUN_0041cdb0 @ 0041cdb0 */
 
-/* WARNING: Restarted to delay deadcode elimination for space: stack */
+/* WARNING: Removing unreachable block (ram,0x0041ce9f) */
+/* WARNING: Removing unreachable block (ram,0x0041cea7) */
+/* WARNING: Removing unreachable block (ram,0x0041cead) */
+/* WARNING: Removing unreachable block (ram,0x0041cf52) */
+/* WARNING: Removing unreachable block (ram,0x0041cf5a) */
+/* WARNING: Enum "tagCALLCONV": Some values do not have unique names */
 
 int FUN_0041cdb0(void)
 
 {
-  bool bVar1;
+  HRESULT HVar1;
   HRESULT HVar2;
-  HRESULT HVar3;
-  int iVar4;
+  int iVar3;
+  char cVar4;
   int *unaff_EDI;
-  char cStack_84;
-  char cStack_83;
-  char cStack_82;
-  undefined4 uStack_80;
-  int **ppiVar5;
-  undefined4 uStack_70;
+  undefined4 uStack_74;
+  int *piVar5;
   wchar_t *pwStack_64;
-  int **ppiStack_60;
-  int ***lpWideCharStr;
-  int *piVar6;
-  short sVar7;
-  int *piVar8;
-  int **ppiVar9;
-  int *local_3c;
-  int *piStack_38;
-  int **local_34 [2];
-  int *piStack_2c;
-  undefined4 *puStack_20;
+  wchar_t *pwStack_60;
+  undefined2 uVar6;
+  undefined4 uVar7;
+  undefined4 lpWideCharStr;
+  undefined2 uVar8;
+  undefined4 local_3c;
+  undefined4 uStack_38;
+  _union_2156 local_34;
+  undefined4 *puStack_24;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
   undefined4 local_4;
   
-  bVar1 = false;
-  HVar2 = CoInitialize((LPVOID)0x0);
-  local_34[0] = (int **)0x0;
-  local_3c = (int *)((uint)(-1 < HVar2) << 0x18);
-  HVar3 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,local_34);
-  if (HVar3 < 0) {
-    cStack_84 = '\0';
+  HVar1 = CoInitialize((LPVOID)0x0);
+  local_34._0_4_ = (wchar_t *)0x0;
+  local_3c = (uint)(-1 < HVar1) << 0x18;
+  HVar2 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,
+                           (LPVOID *)&local_34);
+  if (HVar2 < 0) {
+    cVar4 = '\0';
   }
   else {
     local_10 = 0x10;
     local_c = 0x6f;
     local_8 = 0;
     local_4 = 0;
-    ppiVar9 = local_34[0];
-    iVar4 = (*(code *)(*local_34[0])[3])();
-    if (-1 < iVar4) {
-      piStack_38 = (int *)0x0;
-      iVar4 = (**(code **)(*local_3c + 0x10))();
-      if (-1 < iVar4) {
-        piVar8 = (int *)&stack0xffffffc0;
-        sVar7 = 0x392c;
-        piVar6 = piStack_38;
-        iVar4 = (**(code **)(*piStack_38 + 0x14))();
-        if (iVar4 < 0) {
-          cStack_84 = (char)piVar8;
-          ppiStack_60 = (int **)0x41cf96;
+    uVar7 = local_34._0_4_;
+    iVar3 = (**(code **)(*(int *)local_34._0_4_ + 0xc))();
+    if (-1 < iVar3) {
+      uStack_38 = (int *)0x0;
+      iVar3 = (**(code **)(*(int *)local_3c + 0x10))();
+      if (-1 < iVar3) {
+        lpWideCharStr = &stack0xffffffc0;
+        iVar3 = (**(code **)(iRam00000000 + 0x14))();
+        if (iVar3 < 0) {
+          cVar4 = (char)lpWideCharStr;
+          pwStack_60 = (wchar_t *)0x41cf96;
           (**(code **)(*unaff_EDI + 8))();
-          ppiStack_60 = ppiVar9;
+          pwStack_60 = (wchar_t *)uVar7;
           pwStack_64 = (wchar_t *)0x41cfa0;
-          (*(code *)(*ppiStack_60)[2])();
+          (**(code **)(*(int *)pwStack_60 + 8))();
         }
         else {
-          lpWideCharStr = local_34;
-          ppiStack_60 = (int **)0x41ce7f;
-          Ordinal_8();
-          ppiStack_60 = &piStack_38;
-          pwStack_64 = u_dwDirectXVersionMajor_00473900;
-          iVar4 = (**(code **)(*piVar8 + 0x20))();
-          if ((-1 < iVar4) && ((short)unaff_EDI == 0x13)) {
-            if (puStack_20 != (undefined4 *)0x0) {
-              *puStack_20 = local_3c;
-            }
-            bVar1 = true;
+          pwStack_60 = (wchar_t *)0x41ce7f;
+          pwStack_64 = (wchar_t *)uVar7;
+          VariantInit((VARIANTARG *)&local_34.field0);
+          pwStack_60 = u_dwDirectXVersionMajor_00473900;
+          uVar7 = pwStack_64;
+          (**(code **)(*(int *)pwStack_64 + 0x20))();
+          uVar8 = (undefined2)uVar7;
+          VariantClear((VARIANTARG *)&stack0xffffffc0);
+          piVar5 = (int *)&stack0xffffffc0;
+          uVar7 = uStack_38;
+          iVar3 = (**(code **)(*(int *)uStack_38 + 0x20))();
+          uVar6 = (undefined2)uVar7;
+          if (((-1 < iVar3) && (uVar8 == 0x13)) && (puStack_24 != (undefined4 *)0x0)) {
+            *puStack_24 = unaff_EDI;
           }
-          uStack_70 = (int *)&stack0xffffffbc;
-          Ordinal_9();
-          ppiVar5 = ppiStack_60;
-          iVar4 = (*(code *)(*ppiStack_60)[8])
-                            (ppiStack_60,u_dwDirectXVersionMinor_004738d4,&stack0xffffffb8);
-          if ((-1 < iVar4) && (sVar7 == 0x13)) {
-            if (piStack_2c != (int *)0x0) {
-              *piStack_2c = (int)ppiVar9;
-            }
-            uStack_70._0_2_ = CONCAT11(1,(CHAR)uStack_70);
-          }
-          Ordinal_9();
-          iVar4 = (**(code **)(*uStack_70 + 0x20))(uStack_70,u_szDirectXVersionLetter_004738a4);
-          uStack_80 = (int *)&stack0xffffffac;
-          if (((-1 < iVar4) && ((short)pwStack_64 == 8)) && (lpWideCharStr != (int ***)0x0)) {
-            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&uStack_70,10,(LPCCH)0x0,
+          VariantClear((VARIANTARG *)&stack0xffffffb4);
+          iVar3 = (**(code **)(*(int *)pwStack_64 + 0x20))
+                            (pwStack_64,u_szDirectXVersionLetter_004738a4,&stack0xffffffb4);
+          uStack_74 = uStack_38;
+          if (((-1 < iVar3) && (uVar6 == 8)) && ((LPCWCH)lpWideCharStr != (LPCWCH)0x0)) {
+            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&pwStack_64,10,(LPCCH)0x0,
                                 (LPBOOL)0x0);
-            if (piStack_38 != (int *)0x0) {
-              *(CHAR *)piStack_38 = (CHAR)uStack_70;
+            if ((undefined1 *)local_34._8_4_ != (undefined1 *)0x0) {
+              *(undefined1 *)local_34._8_4_ = pwStack_64._0_1_;
             }
-            uStack_80._3_1_ = (undefined1)((uint)&stack0xffffffac >> 0x18);
-            uStack_80._0_3_ = CONCAT12(1,(short)&stack0xffffffac);
+            uStack_74._3_1_ = (undefined1)((uint)uStack_38 >> 0x18);
+            uStack_74._0_3_ = CONCAT12(1,(short)uStack_38);
           }
-          Ordinal_9(&pwStack_64);
-          if (((!bVar1) || (cStack_83 = (char)((uint)&stack0xffffffa8 >> 8), cStack_83 == '\0')) ||
-             (cStack_82 = (char)((uint)&stack0xffffffa8 >> 0x10), cStack_84 = '\x01',
-             cStack_82 == '\0')) {
-            cStack_84 = (char)&stack0xffffffa8;
-          }
-          (**(code **)(*uStack_80 + 8))(uStack_80);
-          (*(code *)(*ppiVar5)[2])(ppiVar5);
-          (*(code *)piVar6[2])(&stack0xffffffa8);
+          VariantClear((VARIANTARG *)&stack0xffffffa8);
+          cVar4 = (char)uStack_74;
+          (**(code **)(u_dwDirectXVersionMinor_004738d4._0_4_ + 8))
+                    (u_dwDirectXVersionMinor_004738d4);
+          (**(code **)(*piVar5 + 8))(piVar5);
+          (**(code **)(*(int *)uStack_74 + 8))(uStack_74);
         }
         goto LAB_0041cfb6;
       }
     }
-    cStack_84 = (char)unaff_EDI;
-    (**(code **)(*local_3c + 8))();
+    cVar4 = (char)unaff_EDI;
+    (**(code **)(*(int *)local_3c + 8))();
   }
 LAB_0041cfb6:
-  if (-1 < HVar2) {
+  if (-1 < HVar1) {
     CoUninitialize();
   }
-  return (-(uint)(cStack_84 != '\0') & 0x7fffbffb) + 0x80004005;
+  return (-(uint)(cVar4 != '\0') & 0x7fffbffb) + 0x80004005;
 }
 
 
@@ -18351,12 +18340,12 @@ char * __cdecl weapon_table_entry(int weapon_id)
 
 
 
-/* FUN_0041fc80 @ 0041fc80 */
+/* player_reset_all @ 0041fc80 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* [binja] void* sub_41fc80() */
 
-void * FUN_0041fc80(void)
+void * player_reset_all(void)
 
 {
   float fVar1;
@@ -23603,7 +23592,7 @@ LAB_0042b35f:
         (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
         audio_update();
         console_update(0x47eea0);
-        FUN_00401dd0(&console_log_queue);
+        console_render(&console_log_queue);
         if (*(float *)((int)cv_showFPS + 0xc) != 0.0) {
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
           (*grim_interface_ptr->vtable->grim_get_fps)();
@@ -23796,7 +23785,7 @@ LAB_0042bc9a:
         audio_update();
       }
       console_update(0x47eea0);
-      FUN_00401dd0(&console_log_queue);
+      console_render(&console_log_queue);
       iVar3 = (*grim_interface_ptr->vtable->grim_is_key_down)(0x10);
       if (((char)iVar3 != '\0') &&
          (iVar3 = (*grim_interface_ptr->vtable->grim_is_key_down)(0x38), (char)iVar3 != '\0')) {
@@ -23902,7 +23891,7 @@ LAB_0042bea6:
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)
             ((float *)&stack0xffffffe0,screen_width_f + 8.0,128.0);
   console_update(0x47eea0);
-  FUN_00401dd0(&console_log_queue);
+  console_render(&console_log_queue);
   if (*(float *)((int)cv_showFPS + 0xc) != 0.0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
     (*grim_interface_ptr->vtable->grim_get_fps)();
@@ -33267,7 +33256,7 @@ void resource_close(void)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* initializes DirectSound and the primary buffer */
 
-int dsound_init(void *hwnd,uint coop_level)
+int __cdecl dsound_init(void *hwnd,uint coop_level)
 
 {
   uint uVar1;
@@ -33275,59 +33264,41 @@ int dsound_init(void *hwnd,uint coop_level)
   int iVar3;
   undefined4 *puVar4;
   int *piVar5;
-  undefined4 uStack_60;
   undefined4 uStack_54;
-  uint uStack_50;
-  undefined4 uStack_4c;
-  int **ppiStack_48;
-  int *piStack_44;
-  undefined4 auStack_3c [4];
-  undefined4 uStack_2c;
-  short sStack_1c;
-  ushort uStack_14;
-  undefined4 uStack_8;
-  uint uStack_4;
+  undefined4 auStack_30 [4];
+  undefined4 uStack_20;
+  short sStack_10;
+  ushort uStack_8;
   
   if (dsound_iface != (int *)0x0) {
-    piStack_44 = dsound_iface;
-    ppiStack_48 = (int **)0x43bb05;
     (**(code **)(*dsound_iface + 8))();
   }
-  piStack_44 = (int *)0x0;
-  ppiStack_48 = &dsound_iface;
-  uStack_4c = 0;
   dsound_iface = (int *)0x0;
-  uStack_50 = 0x43bb17;
-  uVar1 = Ordinal_11();
+  uVar1 = DirectSoundCreate8((LPCGUID)0x0,(LPDIRECTSOUND8 *)&dsound_iface,(LPUNKNOWN)0x0);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_50 = uStack_4;
-  uStack_54 = uStack_8;
   uVar1 = (**(code **)(*dsound_iface + 0x18))();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  puVar4 = auStack_3c;
+  puVar4 = auStack_30;
   for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar4 = 0;
     puVar4 = puVar4 + 1;
   }
-  uStack_60 = 0;
   uStack_54 = 0;
-  auStack_3c[0] = 0x24;
-  auStack_3c[1] = 1;
-  auStack_3c[2] = 0;
-  uStack_2c = 0;
-  uVar1 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,auStack_3c);
+  auStack_30[0] = 0x24;
+  auStack_30[1] = 1;
+  auStack_30[2] = 0;
+  uStack_20 = 0;
+  uVar1 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,auStack_30);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_60 = CONCAT22(sStack_1c,1);
-  uStack_54 = CONCAT22(uStack_14,(uStack_14 >> 3) * sStack_1c);
-  uStack_50 = uStack_50 & 0xffff0000;
-  piVar5 = &uStack_60;
-  uVar1 = (**(code **)(uStack_54 + 0x38))(&uStack_54);
+  uStack_54 = CONCAT22(sStack_10,1);
+  piVar5 = &uStack_54;
+  uVar1 = (**(code **)(CONCAT22(uStack_8,(uStack_8 >> 3) * sStack_10) + 0x38))(&stack0xffffffb8);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
@@ -36366,12 +36337,12 @@ void __cdecl ui_update_notice_update(float *xy,float alpha)
 
 
 
-/* FUN_004443c0 @ 004443c0 */
+/* ui_profile_menu_update @ 004443c0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* [binja] int32_t sub_4443c0(float* arg1, char arg2) */
 
-int __cdecl FUN_004443c0(float *arg1,char arg2)
+int __cdecl ui_profile_menu_update(float *arg1,char arg2)
 
 {
   char cVar1;
@@ -37081,11 +37052,11 @@ LAB_004452a7:
 
 
 
-/* FUN_00445310 @ 00445310 */
+/* creature_is_name_unique @ 00445310 */
 
 /* [binja] int32_t sub_445310(char* arg1, int32_t arg2) */
 
-int __cdecl FUN_00445310(char *arg1,int arg2)
+int __cdecl creature_is_name_unique(char *arg1,int arg2)
 
 {
   byte bVar1;
@@ -37223,7 +37194,7 @@ LAB_0044544d:
         crt_sprintf(dst,s__s_s_s_s_00478e2c,pcVar7,pcVar6,pcVar5,pcVar4);
       }
     }
-    iVar3 = FUN_00445310(dst,creature_id);
+    iVar3 = creature_is_name_unique(dst,creature_id);
     if ((char)iVar3 != '\0') {
       uVar8 = 0xffffffff;
       do {
@@ -37735,9 +37706,11 @@ void FUN_00446140(void)
 
 
 
-/* FUN_00446150 @ 00446150 */
+/* ui_get_element_index @ 00446150 */
 
-int __cdecl FUN_00446150(int param_1)
+/* returns index of element in ui_element_table_end list, or -1 */
+
+int __cdecl ui_get_element_index(ui_element_t *element)
 
 {
   int iVar1;
@@ -37746,7 +37719,7 @@ int __cdecl FUN_00446150(int param_1)
   iVar1 = 0;
   ppuVar2 = &ui_element_table_end;
   do {
-    if ((ui_element_t *)param_1 == *ppuVar2) {
+    if (element == *ppuVar2) {
       return iVar1;
     }
     ppuVar2 = ppuVar2 + 1;
@@ -38242,7 +38215,7 @@ void __cdecl ui_element_update(ui_element_t *element)
       puVar6->_pad0[0xc] = '\0';
       puVar6->_pad0[0xd] = '\0';
     }
-    iVar7 = FUN_00446150((int)puVar6);
+    iVar7 = ui_get_element_index(puVar6);
     if (iVar7 == 0) {
       element = (ui_element_t *)-ABS((float)element);
     }
@@ -38739,11 +38712,11 @@ char * __cdecl FUN_0044faa0(char *arg1)
 
 
 
-/* FUN_0044fb50 @ 0044fb50 */
+/* ui_element_layout_calc @ 0044fb50 */
 
 /* [binja] float sub_44fb50(float arg1) */
 
-float __cdecl FUN_0044fb50(float arg1)
+float __cdecl ui_element_layout_calc(float arg1)
 
 {
   undefined4 uVar1;
@@ -39706,7 +39679,7 @@ void ui_menu_layout_init(void)
   DAT_0048f164 = 1;
   ppuVar10 = &ui_element_table_end;
   do {
-    FUN_0044fb50((float)*ppuVar10);
+    ui_element_layout_calc((float)*ppuVar10);
     ppuVar10 = ppuVar10 + 1;
   } while ((int)ppuVar10 < 0x48f20c);
   return;
