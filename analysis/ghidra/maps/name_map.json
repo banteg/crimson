@@ -44,8 +44,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00401170",
-    "name": "FUN_00401170",
-    "signature": "int FUN_00401170(void)",
+    "name": "console_global_init",
+    "signature": "int console_global_init(void)",
     "comment": "[binja] int32_t sub_401170()"
   },
   {
@@ -135,8 +135,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004016e0",
-    "name": "FUN_004016e0",
-    "signature": "void FUN_004016e0(int *arg1)",
+    "name": "console_destroy",
+    "signature": "void console_destroy(int *arg1)",
     "comment": "[binja] void __fastcall sub_4016e0(int32_t* arg1)"
   },
   {
@@ -184,8 +184,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00401dd0",
-    "name": "FUN_00401dd0",
-    "signature": "int FUN_00401dd0(void *arg1)",
+    "name": "console_render",
+    "signature": "int console_render(void *arg1)",
     "comment": "[binja] int32_t __fastcall sub_401dd0(void* arg1)"
   },
   {
@@ -283,8 +283,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00402d50",
-    "name": "FUN_00402d50",
-    "signature": "int FUN_00402d50(void)",
+    "name": "ui_render_loading",
+    "signature": "int ui_render_loading(void)",
     "comment": "[binja] int32_t sub_402d50()"
   },
   {
@@ -423,15 +423,15 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00406350",
-    "name": "FUN_00406350",
-    "signature": "int FUN_00406350(void)",
+    "name": "game_update_victory_screen",
+    "signature": "int game_update_victory_screen(void)",
     "comment": "[binja] int32_t sub_406350()"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00406af0",
-    "name": "FUN_00406af0",
-    "signature": "int FUN_00406af0(void)",
+    "name": "game_update_generic_menu",
+    "signature": "int game_update_generic_menu(void)",
     "comment": "[binja] int32_t sub_406af0()"
   },
   {
@@ -927,8 +927,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00412190",
-    "name": "FUN_00412190",
-    "signature": "int FUN_00412190(void)",
+    "name": "quest_meta_init",
+    "signature": "int quest_meta_init(void)",
     "comment": "[binja] int32_t sub_412190()"
   },
   {
@@ -941,8 +941,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00412360",
-    "name": "FUN_00412360",
-    "signature": "int FUN_00412360(void)",
+    "name": "highscore_init_sentinels",
+    "signature": "int highscore_init_sentinels(void)",
     "comment": "[binja] int32_t sub_412360()"
   },
   {
@@ -983,8 +983,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00412940",
-    "name": "FUN_00412940",
-    "signature": "char * FUN_00412940(void)",
+    "name": "bonus_reset_availability",
+    "signature": "char * bonus_reset_availability(void)",
     "comment": "[binja] char* sub_412940()"
   },
   {
@@ -1039,9 +1039,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00417640",
-    "name": "FUN_00417640",
-    "signature": "float * FUN_00417640(float *arg1, float *arg2, float *arg3)",
+    "name": "vec2_sub",
+    "signature": "float * vec2_sub(float *arg1, float *arg2, float *arg3)",
     "comment": "[binja] float* __thiscall sub_417640(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417660",
+    "name": "vec2_length",
+    "signature": "float vec2_length(float *v)",
+    "comment": "returns sqrt(x*x + y*y) for a 2-float vector"
   },
   {
     "program": "crimsonland.exe",
@@ -1368,8 +1375,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041fc80",
-    "name": "FUN_0041fc80",
-    "signature": "void * FUN_0041fc80(void)",
+    "name": "player_reset_all",
+    "signature": "void * player_reset_all(void)",
     "comment": "[binja] void* sub_41fc80()"
   },
   {
@@ -1531,7 +1538,7 @@
     "address": "0x00428390",
     "name": "player_render_overlays",
     "signature": "void player_render_overlays(void)",
-    "comment": "Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0–14) and effect_uv8[frame+0x10] (16–30) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[ftol(death_timer)] (32–51) with 0x34 fallback, also with shadow+main passes."
+    "comment": "Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
   },
   {
     "program": "crimsonland.exe",
@@ -2822,8 +2829,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004443c0",
-    "name": "FUN_004443c0",
-    "signature": "int FUN_004443c0(float *arg1, char arg2)",
+    "name": "ui_profile_menu_update",
+    "signature": "int ui_profile_menu_update(float *arg1, char arg2)",
     "comment": "[binja] int32_t sub_4443c0(float* arg1, char arg2)"
   },
   {
@@ -2850,8 +2857,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00445310",
-    "name": "FUN_00445310",
-    "signature": "int FUN_00445310(char *arg1, int arg2)",
+    "name": "creature_is_name_unique",
+    "signature": "int creature_is_name_unique(char *arg1, int arg2)",
     "comment": "[binja] int32_t sub_445310(char* arg1, int32_t arg2)"
   },
   {
@@ -2902,6 +2909,13 @@
     "name": "input_primary_is_down",
     "signature": "int input_primary_is_down(void)",
     "comment": "returns true while primary action is held (mouse button 0 or primary fire keys)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446150",
+    "name": "ui_get_element_index",
+    "signature": "int ui_get_element_index(ui_element_t *element)",
+    "comment": "returns index of element in ui_element_table_end list, or -1"
   },
   {
     "program": "crimsonland.exe",
@@ -3014,8 +3028,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0044fb50",
-    "name": "FUN_0044fb50",
-    "signature": "float FUN_0044fb50(float arg1)",
+    "name": "ui_element_layout_calc",
+    "signature": "float ui_element_layout_calc(float arg1)",
     "comment": "[binja] float sub_44fb50(float arg1)"
   },
   {
@@ -5119,6 +5133,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10006030",
+    "name": "grim_set_texture_stage_ops",
+    "signature": "uint grim_set_texture_stage_ops(uint mode)",
+    "comment": "sets D3D texture stage states for a small set of blend modes (mode 0..3)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10006580",
     "name": "grim_set_config_var",
     "signature": "void grim_set_config_var(unsigned int id, unsigned int value)",
@@ -6336,8 +6357,8 @@
   {
     "program": "grim.dll",
     "address": "0x10010e13",
-    "name": "FUN_10010e13",
-    "signature": "int FUN_10010e13(int* arg1, int arg2, int arg3)",
+    "name": "grim_load_image_jpg",
+    "signature": "int grim_load_image_jpg(int* arg1, int arg2, int arg3)",
     "comment": "[binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)",
     "create": false
   },
@@ -6352,24 +6373,24 @@
   {
     "program": "grim.dll",
     "address": "0x1001152a",
-    "name": "FUN_1001152a",
-    "signature": "int FUN_1001152a(int* arg1, char* arg2, int arg3)",
+    "name": "grim_load_image_pnm",
+    "signature": "int grim_load_image_pnm(int* arg1, char* arg2, int arg3)",
     "comment": "[binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100117ff",
-    "name": "FUN_100117ff",
-    "signature": "int FUN_100117ff(int* arg1, void* arg2, void* arg3)",
+    "name": "grim_load_image_png",
+    "signature": "int grim_load_image_png(int* arg1, void* arg2, void* arg3)",
     "comment": "[binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10011d95",
-    "name": "FUN_10011d95",
-    "signature": "int FUN_10011d95(int* arg1, uint arg2, int* arg3)",
+    "name": "grim_load_image_dds",
+    "signature": "int grim_load_image_dds(int* arg1, uint arg2, int* arg3)",
     "comment": "[binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)",
     "create": false
   },
@@ -6392,8 +6413,8 @@
   {
     "program": "grim.dll",
     "address": "0x10012647",
-    "name": "FUN_10012647",
-    "signature": "int FUN_10012647(short* arg1, void* arg2)",
+    "name": "grim_load_image_bmp",
+    "signature": "int grim_load_image_bmp(short* arg1, void* arg2)",
     "comment": "[binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2)",
     "create": false
   },
@@ -7890,6 +7911,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100224c5",
+    "name": "grim_init_mmx_sse_functions",
+    "signature": "void grim_init_mmx_sse_functions(undefined4 *table)",
+    "comment": "fills a function pointer table with MMX/SSE implementations based on CPUID"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002290c",
     "name": "FUN_1002290c",
     "signature": "float* FUN_1002290c(float* arg1, float* arg2)",
@@ -8089,14 +8117,14 @@
   {
     "program": "grim.dll",
     "address": "0x10025163",
-    "name": "FUN_10025163",
-    "signature": "void FUN_10025163(png_structp png_ptr, uint *param_2, int param_3)"
+    "name": "grim_png_read_IHDR",
+    "signature": "void grim_png_read_IHDR(png_structp png_ptr, uint *param_2, int param_3)"
   },
   {
     "program": "grim.dll",
     "address": "0x10025359",
-    "name": "FUN_10025359",
-    "signature": "void FUN_10025359(void *this, png_structp png_ptr, int param_2, uint param_3)"
+    "name": "grim_png_read_PLTE",
+    "signature": "void grim_png_read_PLTE(void *this, png_structp png_ptr, int param_2, uint param_3)"
   },
   {
     "program": "grim.dll",
@@ -8125,8 +8153,8 @@
   {
     "program": "grim.dll",
     "address": "0x1002587e",
-    "name": "FUN_1002587e",
-    "signature": "void FUN_1002587e(png_structp png_ptr, int param_2, uint param_3)"
+    "name": "grim_png_read_chunk_generic",
+    "signature": "void grim_png_read_chunk_generic(png_structp png_ptr, int param_2, uint param_3)"
   },
   {
     "program": "grim.dll",
