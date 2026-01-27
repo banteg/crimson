@@ -81,7 +81,13 @@ RGBA, so we ensure the ground RT alpha stays at 1.0 by **preserving destination
 alpha** while stamping:
 
 ```python
+rl.rl_set_blend_factors_separate(
+    rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA,  # RGB
+    rl.RL_ZERO, rl.RL_ONE,                       # A (keep dst alpha)
+    rl.RL_FUNC_ADD, rl.RL_FUNC_ADD,
+)
 rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+# On some backends, re-apply factors after switching the mode.
 rl.rl_set_blend_factors_separate(
     rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA,  # RGB
     rl.RL_ZERO, rl.RL_ONE,                       # A (keep dst alpha)
@@ -95,7 +101,9 @@ Additionally, when drawing the terrain RT to the screen, we use a custom blend
 mode that fully replaces pixels (ignoring source alpha):
 
 ```python
+rl.rl_set_blend_factors(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD)
 rl.begin_blend_mode(rl.BLEND_CUSTOM)
+# On some backends, re-apply factors after switching the mode.
 rl.rl_set_blend_factors(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD)
 # ... draw terrain quad ...
 rl.end_blend_mode()

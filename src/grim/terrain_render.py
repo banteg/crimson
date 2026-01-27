@@ -99,6 +99,10 @@ def _get_alpha_test_shader() -> rl.Shader | None:
 
 @contextmanager
 def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
+    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
+    # apply them when switching the blend mode. Set factors both before and
+    # after BeginBlendMode() to ensure the current draw uses the intended values.
+    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
     rl.begin_blend_mode(rl.BLEND_CUSTOM)
     rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
     try:
@@ -116,6 +120,10 @@ def _blend_custom_separate(
     eq_rgb: int,
     eq_alpha: int,
 ) -> Iterator[None]:
+    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
+    # apply them when switching the blend mode. Set factors both before and
+    # after BeginBlendMode() to ensure the current draw uses the intended values.
+    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
     rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
     rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
     try:

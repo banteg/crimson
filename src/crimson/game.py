@@ -1181,6 +1181,16 @@ class MenuView:
         origin: rl.Vector2,
         rotation_deg: float,
     ) -> None:
+        # NOTE: raylib/rlgl tracks custom blend factors as state; some backends
+        # only apply them when switching the blend mode.
+        rl.rl_set_blend_factors_separate(
+            rl.RL_ZERO,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
         rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
         rl.rl_set_blend_factors_separate(
             rl.RL_ZERO,
