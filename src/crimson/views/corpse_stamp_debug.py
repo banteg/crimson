@@ -97,7 +97,7 @@ class CorpseStampDebugView:
             top_left_y=cy - size * 0.5,
             size=size,
             rotation_rad=float(self._corpse_rotation),
-            tint=rl.WHITE,
+            tint=rl.Color(255, 255, 255, 255),
         )
 
     def _clear_ground(self) -> None:
