@@ -9,7 +9,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu; **Play Game** starts Survival; menu idle triggers demo/attract)
+- `uv run crimson game` (boot + splash/logo + menu + panels; Survival is playable; menu idle triggers demo/attract)
 - `uv run crimson view <name>` (debug views + mode views)
 - `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
@@ -24,7 +24,11 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Stage-based texture loading (boot stages 0..9).
 - Company logo sequence (10tons / Reflexive) with skip behavior.
 - Intro/theme music handoff.
-- Main menu buttons wired (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
+- Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
+- Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
+- Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay pending).
+- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen pending).
+- Statistics panel (quest unlock + mode play counts + checksum + top weapons).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
 - Demo/attract mode: idle trigger + variant sequencing; upsell overlay + purchase screen flow in demo builds (trial overlay pending).
@@ -96,13 +100,17 @@ See also:
 
 ## Known gaps (short list)
 
-- Rush/Quest mode loops are not wired yet (Survival is the current playable mode).
+- Quest/Rush/Typ-o/Tutorial gameplay loops are not wired yet (Survival is the current playable mode).
 - Creature runtime parity gaps: ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) and `SPLIT_ON_DEATH` are still pending.
 - Some gameplay SFX/events are still missing (bonus pickup, perk UI, ranged enemy fire).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
-- `game.cfg` is loaded/saved, but progression/unlock wiring is still incomplete.
+- Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).
+- `game.cfg` is loaded/saved, but progression/unlock wiring and high-score stat fields are still incomplete.
+- High score list screen is not implemented yet (game over routes back to menu).
 - Demo purchase URL is defunct (screen exists only for parity).
 
 ## Roadmap
 
 See the rewrite tech tree: [rewrite/tech-tree.md](tech-tree.md)
+
+See also: [Rewrite status / parity gaps](status.md)

@@ -23,6 +23,8 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Menu terrain persistence (no regen between screens) -> Unlocks: menu navigation fidelity.
 - [x] Panel menu slide animation (panel + BACK) -> Unlocks: Play/Options/etc screen frame parity.
 - [x] Menu sign shadow pass (fx_detail) -> Unlocks: exact menu draw-pass parity.
+- [x] Play Game panel (mode select + dropdown + tooltips + F1 overlay) -> Unlocks: mode selection UI parity.
+- [x] Quest select menu UI -> Unlocks: quest navigation + gating (quest gameplay pending).
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [x] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
@@ -54,7 +56,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.
 - [x] Implement Survival mode loop (rewrite runtime) -> Unlocks: first playable mode.
 - [x] Replace DemoView toy simulation with gameplay scene -> Unlocks: reuse gameplay loop for attract mode.
-- [ ] Options screen widgets (fx/audio/windowed toggles) -> Unlocks: config editing parity.
+- [x] Options screen (volume/detail/mouse + HUD toggle) -> Unlocks: basic config editing (video/controls parity pending).
 - [ ] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
 - [ ] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
 - [ ] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
@@ -73,9 +75,10 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Gaps (still missing)
 
-- Rush/Quest mode loops are not wired yet (Survival is the current playable mode).
+- Quest/Rush/Typ-o/Tutorial mode loops are not wired yet (Survival is the current playable mode).
 - Creature runtime parity gaps: ranged attacks, split-on-death, and AI edge cases.
 - Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
+- High score list screen (post-run) is not implemented yet.
 
 ## Later parity gates
 

@@ -25,6 +25,7 @@ Data map coverage: 15.42% (471 / 3055 symbols)
 ## Rewrite (Python + raylib)
 
 - [Rewrite overview](rewrite/index.md)
+- [Rewrite status / parity gaps](rewrite/status.md)
 - [Rewrite tech tree](rewrite/tech-tree.md)
 - [Terrain (rewrite)](rewrite/terrain.md)
 
