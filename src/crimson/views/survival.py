@@ -123,7 +123,6 @@ class SurvivalView:
         self._ui_mouse_y = 0.0
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
-        self._cursor_disabled = False
 
     def _bind_world(self) -> None:
         self._state = self._world.state
@@ -182,17 +181,11 @@ class SurvivalView:
         return rl.Vector2(float(self._ui_mouse_x), float(self._ui_mouse_y))
 
     def _update_ui_mouse(self) -> None:
-        delta = rl.get_mouse_delta()
-        sensitivity = 1.0
-        if self._world.config is not None:
-            sensitivity = float(self._world.config.data.get("mouse_sensitivity", 1.0))
-        self._ui_mouse_x += float(delta.x) * sensitivity * 2.0
-        self._ui_mouse_y += float(delta.y) * sensitivity * 2.0
-
+        mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = _clamp(self._ui_mouse_x, 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = _clamp(self._ui_mouse_y, 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse_x = _clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
+        self._ui_mouse_y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -220,9 +213,6 @@ class SurvivalView:
         self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
-        if not self._cursor_disabled:
-            rl.disable_cursor()
-            self._cursor_disabled = True
 
         self._paused = False
         self.close_requested = False
@@ -239,9 +229,6 @@ class SurvivalView:
 
     def close(self) -> None:
         self._game_over_ui.close()
-        if self._cursor_disabled:
-            rl.enable_cursor()
-            self._cursor_disabled = False
         if self._perk_menu_assets is not None:
             self._perk_menu_assets.unload()
             self._perk_menu_assets = None
@@ -730,7 +717,7 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        if (not self._game_over_active) and self._perk_menu_open:
+        if not self._game_over_active:
             self._draw_game_cursor()
 
         if self._game_over_active and self._game_over_record is not None:
