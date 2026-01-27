@@ -1906,8 +1906,6 @@ class PlayGameMenuView(PanelMenuView):
         if mode.game_mode is not None:
             self._state.config.data["game_mode"] = int(mode.game_mode)
             self._dirty = True
-        if mode.action == "start_survival":
-            self._state.screen_fade_ramp = True
         self._begin_close_transition(mode.action)
 
     def _update_tooltip_timer(self, key: str, hovered: bool, dt_ms: int) -> None:

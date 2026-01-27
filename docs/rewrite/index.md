@@ -98,6 +98,7 @@ See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Terrain (rewrite)](terrain.md)
+- [Survival entry fade (decompile notes)](survival-transition-fade.md)
 
 ## Known gaps (short list)
 
