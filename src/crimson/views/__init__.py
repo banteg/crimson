@@ -27,6 +27,7 @@ def _register_builtin_views() -> None:
     from . import decals_debug as _decals_debug  # noqa: F401
     from . import corpse_stamp_debug as _corpse_stamp_debug  # noqa: F401
     from . import player_sprite_debug as _player_sprite_debug  # noqa: F401
+    from . import aim_debug as _aim_debug  # noqa: F401
 
 
 _register_builtin_views()
