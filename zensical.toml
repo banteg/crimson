@@ -91,6 +91,7 @@ nav = [
     { "raylib (Python)" = "cheatsheets/raylib.md" },
     { "Zensical Markdown" = "cheatsheets/zensical.md" },
     { "Zig 0.15" = "cheatsheets/zig.md" },
+    { "DirectX 8" = "cheatsheets/directx8.md" },
   ]},
 ]
 
