@@ -18,11 +18,11 @@ from .registry import register_view
 
 WORLD_SIZE = 1024.0
 
-BG = rl.Color(235, 235, 235, 255)
-GRID_COLOR = rl.Color(0, 0, 0, 20)
+BG = rl.Color(10, 10, 12, 255)
+GRID_COLOR = rl.Color(255, 255, 255, 14)
 
-UI_TEXT = rl.Color(20, 20, 20, 255)
-UI_HINT = rl.Color(70, 70, 70, 255)
+UI_TEXT = rl.Color(235, 235, 235, 255)
+UI_HINT = rl.Color(180, 180, 180, 255)
 UI_ERROR = rl.Color(240, 80, 80, 255)
 
 TARGET_FILL = rl.Color(220, 80, 80, 220)
@@ -215,6 +215,9 @@ class ProjectileRenderDebugView:
         if self._paused:
             dt = 0.0
 
+        if self._world.ground is not None:
+            self._world.ground.process_pending()
+
         if self._player is None:
             return
 
@@ -237,6 +240,12 @@ class ProjectileRenderDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
+        cam_x, cam_y, scale_x, scale_y = self._world._world_params()
+        screen_w, screen_h = self._world._camera_screen_size()
+
+        if self._world.ground is not None:
+            self._world.ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
+
         warn_x = 24.0
         warn_y = 24.0
         warn_line = float(self._ui_line_height())
@@ -253,7 +262,6 @@ class ProjectileRenderDebugView:
             warn_y += warn_line
 
         scale = self._world_scale()
-        cam_x, cam_y, scale_x, scale_y = self._world._world_params()
 
         self._draw_grid()
 
