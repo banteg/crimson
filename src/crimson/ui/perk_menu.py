@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, load_paq_entries
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
 
@@ -210,10 +210,10 @@ class PerkMenuAssets:
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
-    paq_path = assets_root / "crimson.paq"
-    if paq_path.is_file():
+    paq_path = find_paq_path(assets_root)
+    if paq_path is not None:
         try:
-            entries = load_paq_entries(assets_root)
+            entries = load_paq_entries_from_path(paq_path)
             cache = PaqTextureCache(entries=entries, textures={})
             missing: list[str] = []
             assets = PerkMenuAssets(

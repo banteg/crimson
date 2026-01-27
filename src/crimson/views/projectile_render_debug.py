@@ -237,13 +237,20 @@ class ProjectileRenderDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
+        warn_x = 24.0
+        warn_y = 24.0
+        warn_line = float(self._ui_line_height())
         if self._missing_assets:
-            self._draw_ui_text("Missing assets: " + ", ".join(self._missing_assets), 24, 24, UI_ERROR)
-            return
-
+            self._draw_ui_text("Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, UI_ERROR)
+            warn_y += warn_line
         if self._world.missing_assets:
-            self._draw_ui_text("Missing assets: " + ", ".join(self._world.missing_assets), 24, 24, UI_ERROR)
-            return
+            self._draw_ui_text(
+                "Missing assets (world): " + ", ".join(self._world.missing_assets),
+                warn_x,
+                warn_y,
+                UI_ERROR,
+            )
+            warn_y += warn_line
 
         scale = self._world_scale()
         cam_x, cam_y, scale_x, scale_y = self._world._world_params()
@@ -309,4 +316,3 @@ class ProjectileRenderDebugView:
 @register_view("projectile-render-debug", "Projectile render debug")
 def build_projectile_render_debug_view(ctx: ViewContext) -> View:
     return ProjectileRenderDebugView(ctx)
-

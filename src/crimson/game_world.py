@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, load_paq_entries_from_path
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.audio import AudioState, play_sfx
 from grim.config import CrimsonConfig
 from grim.fx_queue import FxQueueTextures, bake_fx_queues
@@ -255,8 +255,8 @@ class GameWorld:
     def _ensure_texture_cache(self) -> PaqTextureCache | None:
         if self.texture_cache is not None:
             return self.texture_cache
-        paq_path = self.assets_dir / "crimson.paq"
-        if not paq_path.is_file():
+        paq_path = find_paq_path(self.assets_dir)
+        if paq_path is None:
             return None
         entries = load_paq_entries_from_path(paq_path)
         cache = PaqTextureCache(entries=entries, textures={})
@@ -392,7 +392,7 @@ class GameWorld:
         self.bullet_trail_texture = self._load_texture(
             "bulletTrail",
             cache_path="load/bulletTrail.tga",
-            file_path="load/bulletTrail.tga",
+            file_path="load/bulletTrail.png",
         )
         self.bonuses_texture = self._load_texture(
             "bonuses",

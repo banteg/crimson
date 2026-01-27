@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, load_paq_entries
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,10 +24,10 @@ SMALL_FONT_RENDER_SCALE = 1.0
 def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
     # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
     # assets when present for development convenience.
-    paq_path = assets_root / "crimson.paq"
-    if paq_path.is_file():
+    paq_path = find_paq_path(assets_root)
+    if paq_path is not None:
         try:
-            entries = load_paq_entries(assets_root)
+            entries = load_paq_entries_from_path(paq_path)
             widths_data = entries.get("load/smallFnt.dat")
             if widths_data is not None:
                 cache = PaqTextureCache(entries=entries, textures={})

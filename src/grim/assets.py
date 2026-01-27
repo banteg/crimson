@@ -13,6 +13,25 @@ from . import jaz, paq
 PAQ_NAME = "crimson.paq"
 
 
+def find_paq_path(assets_root: Path, *, paq_name: str = PAQ_NAME) -> Path | None:
+    """Return the first matching PAQ path for the given assets root.
+
+    The repo layout often keeps extracted assets under `artifacts/assets/` while
+    the runtime PAQ lives under `artifacts/runtime/`. Views typically point at
+    the extracted root, so we look for common sibling/parent layouts too.
+    """
+
+    roots = (assets_root, assets_root.parent, assets_root.parent.parent)
+    for root in roots:
+        direct = root / paq_name
+        if direct.is_file():
+            return direct
+        runtime = root / "runtime" / paq_name
+        if runtime.is_file():
+            return runtime
+    return None
+
+
 @dataclass(slots=True)
 class TextureAsset:
     name: str

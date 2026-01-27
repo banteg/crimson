@@ -6,7 +6,7 @@ import math
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, load_paq_entries
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.fonts.small import SmallFontData, draw_small_text
 from ..gameplay import BonusHudState, PlayerState
 from ..weapons import WEAPON_BY_ID
@@ -140,10 +140,10 @@ def load_hud_assets_from_cache(cache: PaqTextureCache) -> HudAssets:
 
 
 def load_hud_assets(assets_root: Path) -> HudAssets:
-    paq_path = assets_root / "crimson.paq"
-    if paq_path.is_file():
+    paq_path = find_paq_path(assets_root)
+    if paq_path is not None:
         try:
-            entries = load_paq_entries(assets_root)
+            entries = load_paq_entries_from_path(paq_path)
             cache = PaqTextureCache(entries=entries, textures={})
             assets = load_hud_assets_from_cache(cache)
             assets._cache = cache

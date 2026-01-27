@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, load_paq_entries
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
@@ -25,15 +25,15 @@ class GrimMonoFont:
 def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMonoFont:
     # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
     # assets when present for development convenience.
-    paq_path = assets_root / "crimson.paq"
+    paq_path = find_paq_path(assets_root)
 
     atlas_png = assets_root / "crimson" / "load" / "default_font_courier.png"
     atlas_tga = assets_root / "crimson" / "load" / "default_font_courier.tga"
 
     texture: rl.Texture | None = None
-    if paq_path.is_file():
+    if paq_path is not None:
         try:
-            entries = load_paq_entries(assets_root)
+            entries = load_paq_entries_from_path(paq_path)
             cache = PaqTextureCache(entries=entries, textures={})
             texture_asset = cache.get_or_load("default_font_courier", "load/default_font_courier.tga")
             texture = texture_asset.texture
@@ -109,4 +109,3 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, x: float, y: float, scale
 def measure_grim_mono_text_height(font: GrimMonoFont, text: str, scale: float) -> float:
     line_count = text.count("\n") + 1
     return GRIM_MONO_LINE_HEIGHT * scale * line_count
-
