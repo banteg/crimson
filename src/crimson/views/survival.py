@@ -8,7 +8,7 @@ import random
 import pyray as rl
 
 from grim.assets import PaqTextureCache
-from grim.audio import AudioState
+from grim.audio import AudioState, update_audio
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.fonts.small import measure_small_text_width
@@ -126,6 +126,10 @@ class SurvivalView:
         self._state = self._world.state
         self._creatures = self._world.creatures
         self._player = self._world.players[0]
+
+    def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
+        self._world.audio = audio
+        self._world.audio_rng = audio_rng
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -433,6 +437,9 @@ class SurvivalView:
             self._perk_menu_open = False
 
     def update(self, dt: float) -> None:
+        if self._world.audio is not None:
+            update_audio(self._world.audio)
+
         dt_frame = float(dt)
         dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
         self._update_ui_mouse()

@@ -3300,6 +3300,7 @@ class SurvivalGameView:
     def __init__(self, state: GameState) -> None:
         from .views.survival import SurvivalView
 
+        self._state = state
         self._view = SurvivalView(
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
@@ -3311,6 +3312,7 @@ class SurvivalGameView:
 
     def open(self) -> None:
         self._action = None
+        self._view.bind_audio(self._state.audio, self._state.rng)
         self._view.open()
 
     def close(self) -> None:
