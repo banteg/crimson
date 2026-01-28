@@ -46,33 +46,6 @@ This document tracks struct types and global data that can be mapped in Ghidra's
 
 ---
 
-## Unmapped Global Data (Pending)
-
-These globals have evidence but still need a quick consistency check before adding to `data_map.json`:
-
-### 1. `player_aux_timer` - Per-Player Auxiliary Timer
-
-**Address:** `0x004871d0`
-
-**Evidence:**
-- Indexed by player: `(&DAT_004871d0)[render_overlay_player_index]`
-- Timer decay: `(&DAT_004871d0)[...] -= frame_dt * fVar15`
-- Reset to 2.0: `(&DAT_004871d0)[player_index] = 0x40000000` (float 2.0)
-
-**Open question:** This array appears to be only two floats (0x004871d0/0x004871d4)
-before camera shake offsets at 0x004871d8/0x004871dc. Need to confirm whether
-the runtime player-count used by this UI path is capped at 2.
-
-**Proposed Entry (pending confirmation):**
-```json
-{
-  "address": "0x004871d0",
-  "name": "player_aux_timer",
-  "comment": "Per-player auxiliary timer (likely 2 floats for P1/P2). Used for UI feedback timing; decays over time.",
-  "program": "crimsonland.exe"
-}
-```
-
 ## Lower Priority / Partial Mappings
 
 These items have some fields mapped but could use expansion:

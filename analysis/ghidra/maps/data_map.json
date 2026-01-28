@@ -1875,6 +1875,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004871d0",
+      "comment": "Per-player (P1/P2) auxiliary timer (2 floats). Used for UI feedback timing; decays over time.",
+      "name": "player_aux_timer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004871d8",
       "comment": "Camera shake offset X (applied to camera center).",
       "name": "camera_shake_offset_x",

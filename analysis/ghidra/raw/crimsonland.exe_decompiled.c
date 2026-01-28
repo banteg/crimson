@@ -11482,7 +11482,7 @@ void gameplay_reset_state(void)
   perk_prompt_timer = 0;
   projectile_reset_pools();
   player_reset_all();
-  DAT_004871d0 = 0;
+  player_aux_timer = 0;
   DAT_004871d4 = 0;
   pfVar3 = &player_state_table.low_health_timer;
   do {
@@ -15589,16 +15589,16 @@ LAB_0041c783:
     iVar7 = iVar2;
     iVar14 = iVar6;
     do {
-      if (0.0 < (float)(&DAT_004871d0)[render_overlay_player_index]) {
-        fVar17 = (float)(&DAT_004871d0)[render_overlay_player_index];
+      if (0.0 < (float)(&player_aux_timer)[render_overlay_player_index]) {
+        fVar17 = (float)(&player_aux_timer)[render_overlay_player_index];
         if (1.0 <= fVar17) {
           fVar15 = 1.4;
         }
         else {
           fVar15 = 0.5;
         }
-        (&DAT_004871d0)[render_overlay_player_index] =
-             (float)(&DAT_004871d0)[render_overlay_player_index] - frame_dt * fVar15;
+        (&player_aux_timer)[render_overlay_player_index] =
+             (float)(&player_aux_timer)[render_overlay_player_index] - frame_dt * fVar15;
         if (1.0 < fVar17) {
           fVar17 = 2.0 - fVar17;
         }
@@ -41096,7 +41096,7 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
   (&player_state_table)[player_index].weapon_reset_latch = 0;
   (&player_state_table)[player_index].shot_cooldown = 0.0;
   (&player_state_table)[player_index].reload_timer = 0.0;
-  (&DAT_004871d0)[player_index] = 0x40000000;
+  (&player_aux_timer)[player_index] = 0x40000000;
   sfx_play_panned(sfx_id);
   return;
 }
