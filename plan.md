@@ -133,7 +133,7 @@ class TextureLoader:
     def unload(self) -> None: ...
 ```
 
-### 2.2 Refactor callsites in this order (low risk → high churn) [ ]
+### 2.2 Refactor callsites in this order (low risk → high churn) [x]
 
 1. `crimson/ui/perk_menu.py`
 2. `crimson/ui/hud.py`
@@ -358,7 +358,7 @@ For a fast-moving rewrite, this matters more than perfect architecture:
 If you want the fastest impact on “duplicates + wrong place code”, do these in order:
 
 1. [x] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
-2. [ ] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
+2. [x] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
 3. [ ] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
 4. [ ] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
 5. [ ] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
