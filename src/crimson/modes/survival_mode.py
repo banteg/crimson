@@ -285,7 +285,7 @@ class SurvivalMode:
                 self.close_requested = True
             return
         if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._perk_menu_open = False
+            self._close_perk_menu()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -407,9 +407,17 @@ class SurvivalMode:
         self._perk_menu_open = True
         self._perk_menu_selected = 0
 
+    def _close_perk_menu(self) -> None:
+        self._perk_menu_open = False
+        if int(self._state.perk_selection.pending_count) > 0:
+            # Reset the prompt swing so each pending perk replays the intro.
+            self._perk_prompt_timer_ms = 0.0
+            self._perk_prompt_hover = False
+            self._perk_prompt_pulse = 0.0
+
     def _perk_menu_handle_input(self, dt_ms: float) -> None:
         if self._perk_menu_assets is None:
-            self._perk_menu_open = False
+            self._close_perk_menu()
             return
         perk_state = self._state.perk_selection
         choices = perk_selection_current_choices(
@@ -420,7 +428,7 @@ class SurvivalMode:
             player_count=1,
         )
         if not choices:
-            self._perk_menu_open = False
+            self._close_perk_menu()
             return
         if self._perk_menu_selected >= len(choices):
             self._perk_menu_selected = 0
@@ -470,7 +478,7 @@ class SurvivalMode:
                         game_mode=GAME_MODE_SURVIVAL,
                         player_count=1,
                     )
-                    self._perk_menu_open = False
+                    self._close_perk_menu()
                     return
                 break
 
@@ -487,7 +495,7 @@ class SurvivalMode:
             mouse=mouse,
             click=click,
         ):
-            self._perk_menu_open = False
+            self._close_perk_menu()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
@@ -499,7 +507,7 @@ class SurvivalMode:
                 game_mode=GAME_MODE_SURVIVAL,
                 player_count=1,
             )
-            self._perk_menu_open = False
+            self._close_perk_menu()
 
     def update(self, dt: float) -> None:
         if self._world.audio is not None:
@@ -548,9 +556,12 @@ class SurvivalMode:
                 rect = self._perk_prompt_rect(label)
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
-            if self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
+            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
                 not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
             ):
+                self._perk_prompt_pulse = 1000.0
+                self._open_perk_menu()
+            elif self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 self._perk_prompt_pulse = 1000.0
                 self._open_perk_menu()
 
