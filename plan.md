@@ -267,7 +267,7 @@ Keep:
 * `GameState` dataclass and top-level `run_game(...)` style entrypoints in `game.py`
 * This preserves “searchability” for parity work, while still shrinking the file.
 
-### 5.2 Enforce “frontend doesn’t own gameplay rules” [ ]
+### 5.2 Enforce “frontend doesn’t own gameplay rules” [x]
 
 Rule of thumb:
 

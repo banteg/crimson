@@ -68,3 +68,9 @@ name = "crimson.sim must not import pyray"
 type = "forbidden"
 source_modules = ["crimson.sim"]
 forbidden_modules = ["pyray"]
+
+[[tool.importlinter.contracts]]
+name = "crimson.frontend must not import simulation"
+type = "forbidden"
+source_modules = ["crimson.frontend"]
+forbidden_modules = ["crimson.sim", "crimson.game_world"]
