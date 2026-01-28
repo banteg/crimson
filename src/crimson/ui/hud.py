@@ -6,7 +6,7 @@ import math
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text
 from ..gameplay import BonusHudState, PlayerState
 from ..weapons import WEAPON_BY_ID
@@ -69,18 +69,12 @@ class HudAssets:
     clock_pointer: rl.Texture | None
     bonuses: rl.Texture | None
     missing: list[str] = field(default_factory=list)
-    _owned_textures: tuple[rl.Texture, ...] = ()
-    _cache: PaqTextureCache | None = None
-    _cache_owned: bool = False
+    _loader: TextureLoader | None = None
 
     def unload(self) -> None:
-        if self._cache is not None and self._cache_owned:
-            self._cache.unload()
-        for texture in self._owned_textures:
-            rl.unload_texture(texture)
-        self._owned_textures = ()
-        self._cache = None
-        self._cache_owned = False
+        if self._loader is not None:
+            self._loader.unload()
+            self._loader = None
 
 
 def hud_ui_scale(screen_w: float, screen_h: float) -> float:
@@ -92,112 +86,31 @@ def hud_ui_scale(screen_w: float, screen_h: float) -> float:
     return float(scale)
 
 
-def _resolve_asset(assets_root: Path, rel_path: str) -> Path | None:
-    direct = assets_root / rel_path
-    if direct.is_file():
-        return direct
-    legacy = assets_root / "crimson" / rel_path
-    if legacy.is_file():
-        return legacy
-    return None
-
-
-def _load_from_cache(cache: PaqTextureCache, name: str, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    try:
-        asset = cache.get_or_load(name, rel_path)
-        return asset.texture
-    except Exception:
-        missing.append(rel_path)
-        return None
-
-
-def _load_from_path(assets_root: Path, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    path = _resolve_asset(assets_root, rel_path)
-    if path is None:
-        missing.append(rel_path)
-        return None
-    return rl.load_texture(str(path))
-
-
-def load_hud_assets_from_cache(cache: PaqTextureCache) -> HudAssets:
-    missing: list[str] = []
-    assets = HudAssets(
-        game_top=_load_from_cache(cache, "iGameUI", "ui/ui_gameTop.jaz", missing),
-        life_heart=_load_from_cache(cache, "iHeart", "ui/ui_lifeHeart.jaz", missing),
-        ind_life=_load_from_cache(cache, "ui_indLife", "ui/ui_indLife.jaz", missing),
-        ind_panel=_load_from_cache(cache, "ui_indPanel", "ui/ui_indPanel.jaz", missing),
-        ind_bullet=_load_from_cache(cache, "ui_indBullet", "ui/ui_indBullet.jaz", missing),
-        ind_fire=_load_from_cache(cache, "ui_indFire", "ui/ui_indFire.jaz", missing),
-        ind_rocket=_load_from_cache(cache, "ui_indRocket", "ui/ui_indRocket.jaz", missing),
-        ind_electric=_load_from_cache(cache, "ui_indElectric", "ui/ui_indElectric.jaz", missing),
-        wicons=_load_from_cache(cache, "ui_wicons", "ui/ui_wicons.jaz", missing),
-        clock_table=_load_from_cache(cache, "ui_clockTable", "ui/ui_clockTable.jaz", missing),
-        clock_pointer=_load_from_cache(cache, "ui_clockPointer", "ui/ui_clockPointer.jaz", missing),
-        bonuses=_load_from_cache(cache, "bonuses", "game/bonuses.jaz", missing),
-        missing=missing,
-    )
-    return assets
-
-
 def load_hud_assets(assets_root: Path) -> HudAssets:
-    paq_path = find_paq_path(assets_root)
-    if paq_path is not None:
-        try:
-            entries = load_paq_entries_from_path(paq_path)
-            cache = PaqTextureCache(entries=entries, textures={})
-            assets = load_hud_assets_from_cache(cache)
-            assets._cache = cache
-            assets._cache_owned = True
-            return assets
-        except Exception:
-            pass
-
-    missing: list[str] = []
-    game_top = _load_from_path(assets_root, "ui/ui_gameTop.png", missing)
-    life_heart = _load_from_path(assets_root, "ui/ui_lifeHeart.png", missing)
-    ind_life = _load_from_path(assets_root, "ui/ui_indLife.png", missing)
-    ind_panel = _load_from_path(assets_root, "ui/ui_indPanel.png", missing)
-    ind_bullet = _load_from_path(assets_root, "ui/ui_indBullet.png", missing)
-    ind_fire = _load_from_path(assets_root, "ui/ui_indFire.png", missing)
-    ind_rocket = _load_from_path(assets_root, "ui/ui_indRocket.png", missing)
-    ind_electric = _load_from_path(assets_root, "ui/ui_indElectric.png", missing)
-    wicons = _load_from_path(assets_root, "ui/ui_wicons.png", missing)
-    clock_table = _load_from_path(assets_root, "ui/ui_clockTable.png", missing)
-    clock_pointer = _load_from_path(assets_root, "ui/ui_clockPointer.png", missing)
-    bonuses = _load_from_path(assets_root, "game/bonuses.png", missing)
-    owned = tuple(
-        tex
-        for tex in (
-            game_top,
-            life_heart,
-            ind_life,
-            ind_panel,
-            ind_bullet,
-            ind_fire,
-            ind_rocket,
-            ind_electric,
-            wicons,
-            clock_table,
-            clock_pointer,
-            bonuses,
-        )
-        if tex is not None
-    )
+    loader = TextureLoader.from_assets_root(assets_root, strict=False)
     return HudAssets(
-        game_top=game_top,
-        life_heart=life_heart,
-        ind_life=ind_life,
-        ind_panel=ind_panel,
-        ind_bullet=ind_bullet,
-        ind_fire=ind_fire,
-        ind_rocket=ind_rocket,
-        ind_electric=ind_electric,
-        wicons=wicons,
-        clock_table=clock_table,
-        clock_pointer=clock_pointer,
-        bonuses=bonuses,
-        missing=missing,
-        _owned_textures=owned,
+        game_top=loader.get(name="iGameUI", paq_rel="ui/ui_gameTop.jaz", fs_rel="ui/ui_gameTop.png"),
+        life_heart=loader.get(name="iHeart", paq_rel="ui/ui_lifeHeart.jaz", fs_rel="ui/ui_lifeHeart.png"),
+        ind_life=loader.get(name="ui_indLife", paq_rel="ui/ui_indLife.jaz", fs_rel="ui/ui_indLife.png"),
+        ind_panel=loader.get(name="ui_indPanel", paq_rel="ui/ui_indPanel.jaz", fs_rel="ui/ui_indPanel.png"),
+        ind_bullet=loader.get(name="ui_indBullet", paq_rel="ui/ui_indBullet.jaz", fs_rel="ui/ui_indBullet.png"),
+        ind_fire=loader.get(name="ui_indFire", paq_rel="ui/ui_indFire.jaz", fs_rel="ui/ui_indFire.png"),
+        ind_rocket=loader.get(name="ui_indRocket", paq_rel="ui/ui_indRocket.jaz", fs_rel="ui/ui_indRocket.png"),
+        ind_electric=loader.get(
+            name="ui_indElectric",
+            paq_rel="ui/ui_indElectric.jaz",
+            fs_rel="ui/ui_indElectric.png",
+        ),
+        wicons=loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz", fs_rel="ui/ui_wicons.png"),
+        clock_table=loader.get(name="ui_clockTable", paq_rel="ui/ui_clockTable.jaz", fs_rel="ui/ui_clockTable.png"),
+        clock_pointer=loader.get(
+            name="ui_clockPointer",
+            paq_rel="ui/ui_clockPointer.jaz",
+            fs_rel="ui/ui_clockPointer.png",
+        ),
+        bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz", fs_rel="game/bonuses.png"),
+        missing=loader.missing,
+        _loader=loader,
     )
 
 
