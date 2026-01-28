@@ -114,7 +114,7 @@ class OptionsMenuView(PanelMenuView):
 
         if self._update_checkbox(label_x, base_y + 135.0 * scale, scale):
             value = 1 if self._ui_info_texts else 0
-            config.data["hud_indicators"] = bytes((value, value))
+            config.data["ui_info_texts"] = value
             self._dirty = True
 
         if self._update_controls_button(label_x - 8.0 * scale, base_y + 155.0 * scale, scale):
@@ -152,8 +152,7 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self._state.config
-        hud = config.data.get("hud_indicators", b"\x00\x00")
-        self._ui_info_texts = bool(hud[0]) if isinstance(hud, (bytes, bytearray)) and hud else False
+        self._ui_info_texts = bool(int(config.data.get("ui_info_texts", 1) or 0))
 
         sfx_volume = float(config.data.get("sfx_volume", 1.0))
         music_volume = float(config.data.get("music_volume", 1.0))

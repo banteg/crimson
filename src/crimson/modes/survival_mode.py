@@ -358,6 +358,8 @@ class SurvivalMode:
         self._perk_menu_open = False
 
     def _perk_prompt_label(self) -> str:
+        if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
+            return ""
         pending = int(self._state.perk_selection.pending_count)
         if pending <= 0:
             return ""

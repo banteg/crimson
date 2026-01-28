@@ -237,7 +237,7 @@ class QuestsMenuView:
         config = self._state.config
 
         # The original forcibly clears hardcore in the demo build.
-        if not bool(config.data.get("full_version_flag", 0)):
+        if self._state.demo_enabled:
             if int(config.data.get("hardcore_flag", 0) or 0) != 0:
                 config.data["hardcore_flag"] = 0
                 self._dirty = True
@@ -366,7 +366,7 @@ class QuestsMenuView:
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             config.data["hardcore_flag"] = 0 if hardcore else 1
             self._dirty = True
-            if not bool(config.data.get("full_version_flag", 0)):
+            if self._state.demo_enabled:
                 config.data["hardcore_flag"] = 0
             return True
         return False

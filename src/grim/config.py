@@ -52,7 +52,8 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_440" / Int32ul,
     "unknown_444" / Int32ul,
     "hardcore_flag" / Byte,
-    "full_version_flag" / Byte,
+    # `crimsonland.exe` uses this byte as the "UI Info texts" toggle (it gates the perk prompt text).
+    "ui_info_texts" / Byte,
     "unknown_44a" / Bytes(2),
     "perk_prompt_counter" / Int32ul,
     "unknown_450" / Int32ul,
@@ -135,7 +136,7 @@ def default_crimson_cfg_data() -> dict:
     config.windowed_flag = 1
     config.data["player_count"] = 1
     config.data["game_mode"] = 1
-    config.data["full_version_flag"] = 1
+    config.data["ui_info_texts"] = 1
     config.data["fx_toggle"] = 1
     config.data["sfx_volume"] = 1.0
     config.data["music_volume"] = 1.0

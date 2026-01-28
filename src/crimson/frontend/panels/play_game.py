@@ -234,7 +234,7 @@ class PlayGameMenuView(PanelMenuView):
 
         player_count = int(config.data.get("player_count", 1))
         quest_unlock = int(status.quest_unlock_index)
-        full_version = bool(config.data.get("full_version_flag", 0))
+        full_version = not self._state.demo_enabled
 
         quests_total = self._quests_total_played()
         rush_total = int(status.mode_play_count("rush"))
