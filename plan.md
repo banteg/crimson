@@ -31,7 +31,7 @@ These three rules will eliminate most “wrong place” drift.
 
 This is what lets you refactor *in tiny PRs* without breaking the rewrite.
 
-### 0.1 Add a cheap boundary checker (CI + local) [ ]
+### 0.1 Add a cheap boundary checker (CI + local) [x]
 
 You can use `import-linter`. The goal is binary:
 

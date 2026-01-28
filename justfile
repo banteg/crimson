@@ -19,6 +19,10 @@ test *args:
 test-cov *args:
     uv run pytest --cov-report=html --cov-report=xml {{args}}
 
+# Lint
+lint-imports:
+    uv run lint-imports
+
 # Profiling
 [unix]
 pyspy-game-record out="artifacts/profiling/pyspy.speedscope.json" duration="10" rate="100" format="speedscope" *args:

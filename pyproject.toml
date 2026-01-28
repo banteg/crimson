@@ -18,6 +18,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.9",
     "py-spy>=0.4.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
@@ -50,3 +51,19 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.:",
 ]
+
+[tool.importlinter]
+root_packages = ["crimson", "grim"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "grim must not import crimson"
+type = "forbidden"
+source_modules = ["grim"]
+forbidden_modules = ["crimson"]
+
+[[tool.importlinter.contracts]]
+name = "crimson.sim must not import pyray"
+type = "forbidden"
+source_modules = ["crimson.sim"]
+forbidden_modules = ["pyray"]
