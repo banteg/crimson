@@ -384,7 +384,7 @@ class WorldRenderer:
                 x=sx - recoil_x,
                 y=sy - recoil_y,
                 scale_mul=1.0,
-                rotation=float(player.move_heading),
+                rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
@@ -401,7 +401,7 @@ class WorldRenderer:
                 x=sx,
                 y=sy,
                 scale_mul=1.0,
-                rotation=float(player.move_heading),
+                rotation=float(player.heading),
                 color=tint,
             )
             draw(
