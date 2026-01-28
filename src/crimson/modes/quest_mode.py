@@ -20,7 +20,7 @@ from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay
+from ..ui.hud import draw_hud_overlay, hud_ui_scale
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from .base_gameplay_mode import BaseGameplayMode
@@ -36,6 +36,7 @@ class _QuestRunState:
     level: str = ""
     spawn_entries: tuple[SpawnEntry, ...] = ()
     total_spawn_count: int = 0
+    total_creature_estimate: int = 0
     max_trigger_time_ms: int = 0
     spawn_timeline_ms: float = 0.0
     quest_name_timer_ms: float = 0.0
@@ -179,12 +180,39 @@ class QuestMode(BaseGameplayMode):
         )
         total_spawn_count = sum(int(entry.count) for entry in entries)
         max_trigger_ms = max((int(entry.trigger_ms) for entry in entries), default=0)
+        total_creature_estimate = 0
+        try:
+            from ..creatures.spawn import build_spawn_plan
+            from grim.rand import Crand
+
+            env = self._world.spawn_env
+            cache: dict[int, int] = {}
+            for entry in entries:
+                spawn_id = int(entry.spawn_id)
+                count = int(entry.count)
+                if count <= 0:
+                    continue
+                size = cache.get(spawn_id)
+                if size is None:
+                    plan = build_spawn_plan(
+                        spawn_id,
+                        (float(entry.x), float(entry.y)),
+                        float(entry.heading),
+                        Crand(seed ^ spawn_id),
+                        env,
+                    )
+                    size = len(plan.creatures)
+                    cache[spawn_id] = size
+                total_creature_estimate += size * count
+        except Exception:
+            total_creature_estimate = 0
 
         self._quest = _QuestRunState(
             quest=quest,
             level=str(level),
             spawn_entries=entries,
             total_spawn_count=int(total_spawn_count),
+            total_creature_estimate=int(total_creature_estimate),
             max_trigger_time_ms=int(max_trigger_ms),
             spawn_timeline_ms=0.0,
             quest_name_timer_ms=0.0,
@@ -336,6 +364,28 @@ class QuestMode(BaseGameplayMode):
                 show_xp=False,
                 show_time=True,
             )
+            total = int(self._quest.total_creature_estimate)
+            if total > 0:
+                kills = int(self._creatures.kill_count)
+                ratio = max(0.0, min(1.0, float(kills) / float(total)))
+                scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
+                bar_x = 255.0 * scale
+                bar_y = 30.0 * scale
+                bar_w = 120.0 * scale
+                bar_h = 6.0 * scale
+                bg = rl.Color(40, 40, 48, 200)
+                fg = rl.Color(220, 220, 220, 240)
+                rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), bg)
+                inner_w = max(0.0, bar_w - 2.0 * scale)
+                inner_h = max(0.0, bar_h - 2.0 * scale)
+                rl.draw_rectangle(
+                    int(bar_x + scale),
+                    int(bar_y + scale),
+                    int(inner_w * ratio),
+                    int(inner_h),
+                    fg,
+                )
+                self._draw_ui_text(f"{kills}/{total}", bar_x + bar_w + 8.0 * scale, bar_y - 3.0 * scale, rl.Color(220, 220, 220, 255), scale=0.8 * scale)
 
         self._draw_quest_title()
 
