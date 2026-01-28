@@ -31,15 +31,9 @@ This is what lets you refactor *in tiny PRs* without breaking the rewrite.
 
 ### 0.1 Add a cheap boundary checker (CI + local)
 
-You can use `import-linter`, or a tiny AST-based script. The goal is binary:
+You can use `import-linter`. The goal is binary:
 
 * Fail CI if any file under `src/grim/` imports `crimson`.
-
-Even a simple script like:
-
-* Walk `src/grim/**/*.py`
-* Parse AST
-* Flag `import crimson` or `from crimson...`
 
 Add a second rule that will matter later:
 
@@ -50,24 +44,16 @@ Add a second rule that will matter later:
 Don’t try to “zero duplicates” overnight. Start by measuring.
 
 * Run a duplication tool (pylint `R0801`, `jscpd`, or similar)
-* Produce a report artifact in CI
+* Produce a report artifact
 * Establish a **baseline** (current duplication) and a simple policy:
 
   * “No new duplicated blocks above N lines” (start permissive, tighten later)
 
 ### 0.3 Create a “refactor compatibility” pattern
 
-When moving modules, preserve old imports temporarily:
+When moving modules, do not preserve old imports temporarily or re-export.
 
-* Old module becomes a thin re-export:
-
-  ```py
-  # crimson/crand.py
-  from grim.rand import Crand  # deprecated alias
-  __all__ = ["Crand"]
-  ```
-
-This keeps the fast-moving codebase from exploding when paths change.
+This keeps the codebase clean when paths change. We haven't released, so we don't need any backwards compatibility or api stability.
 
 ---
 
@@ -79,9 +65,9 @@ Right now:
 
 * `grim/fx_queue.py` imports `crimson.effects` and `crimson.effects_atlas`.
 
-You have two good options. Pick the one that matches your intent for “what is engine vs game”.
+You have a good option. Pick the one that matches your intent for “what is engine vs game”.
 
-#### Option A (cleanest separation): move game-specific baking to `crimson`
+#### cleanest separation: move game-specific baking to `crimson`
 
 * Keep in `grim`:
 
@@ -100,28 +86,6 @@ Result:
 A reasonable landing spot would be:
 
 * `crimson/render/terrain_fx.py` (or `crimson/render/fx_bake.py`)
-
-#### Option B (min-change): keep the function in `grim` but make it generic
-
-Change `bake_fx_queues` to accept:
-
-* `effect_src_rect_fn` (so grim doesn’t import `crimson.effects_atlas`)
-* Protocols for queue types, so grim doesn’t import `crimson.effects`
-
-Example shape:
-
-```py
-class FxQueueLike(Protocol):
-    def iter_active(self) -> Iterable[FxEntryLike]: ...
-    def clear(self) -> None: ...
-
-class FxEntryLike(Protocol):
-    effect_id: int
-    pos_x: float
-    ...
-```
-
-And pass `crimson.effects_atlas.effect_src_rect` from `crimson/game_world.py`.
 
 **Either option eliminates the architectural footgun** and will prevent future “engine depends on game” creep.
 
@@ -150,7 +114,7 @@ Add something like:
 
   * optionally wraps `PaqTextureCache`
   * optionally falls back to filesystem (including legacy `assets_root/crimson/...`)
-  * tracks missing assets
+  * crash on missing assets! we want to catch this early. the game shouldn't boot without assets.
   * owns unload responsibilities in one place
 
 A sketch:
@@ -208,22 +172,20 @@ Right now:
 
 Create `grim/rand.py`:
 
-* `class Crand` (or `CrtRand`, pick one name)
+* `class CrtRand`
 * pure Python, no `pyray`
 
 Then:
 
 * replace the copy in `grim/terrain_render.py` with an import
-* keep `crimson/crand.py` as a re-export for compatibility (at least temporarily)
+* delete `crimson/crand.py`, don't re-export for compatibility
 
 ### 3.2 Add a small, pure `grim.math` (or `grim.util.math`)
 
-Don’t move every `_clamp` instantly. Do it opportunistically:
+Move every `_clamp` there. Do it opportunistically:
 
 * Add `clamp`, `clamp01`, `lerp`
 * Each time you touch a module with local `_clamp`, replace it with the shared one
-
-This avoids “giant refactor PR” and slowly deletes duplication.
 
 ---
 
@@ -375,10 +337,8 @@ Once asset loading is centralized, make it policy:
 
 ### 8.2 Make “what is stable API” explicit
 
-* Choose a small set of “public” modules:
+* Everything can move freely for now.
 
-  * `grim.assets`, `grim.audio`, `grim.view`, `crimson.game_world`, `crimson.ui.*`
-* Everything else is internal and can move freely.
 
 ### 8.3 Set refactor-friendly PR conventions
 
