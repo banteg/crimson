@@ -42,14 +42,21 @@ A common menu loop that:
 
 ### TODO (runtime)
 
-When the perk selection panel opens, the original game fades out the gameplay layers (player, monsters, projectiles, HUD),
-leaving the terrain as the backdrop.
+Perk selection does **not** fade the world; it keeps the gameplay render pass and overlays active.
 
-Decompile supports this being driven by the `ui_transition_alpha` gates in the world passes (`player_render_overlays`,
-`creature_render_all`, `projectile_render`, `bonus_render`), while `terrain_render` still runs.
+- `perk_selection_screen_update` calls `gameplay_render_world` but does **not** call `hud_update_and_render`, so the HUD
+  disappears immediately when entering state `6`.
+- `gameplay_render_world` forces `ui_transition_alpha = 1.0` for `game_state_id == 6` (perk selection) and `== 9`
+  (gameplay), so the usual `ui_transition_alpha` gates in `player_render_overlays` / `creature_render_all` /
+  `projectile_render` / `bonus_render` do not hide those layers during perk selection.
+- The perk menu panel slides using the UI element timeline (`ui_elements_timeline`) and `ui_element_update`'s `render_mode`
+  offset path (slide_x).
 
-Capture `ui_elements_timeline` / `ui_transition_alpha` during perk selection (enter/exit) to confirm the exact direction
-and timing (expected ~500ms from `DAT_0048eb48`).
+Pause/transition fades appear to be handled elsewhere (not perk selection). Capture HUD alpha when returning from perk
+selection to confirm the exact fade-in timing/curve.
+
+Perk prompt origin/bounds can be captured with `scripts/frida/perk_prompt_trace.js` (see `analysis/ghidra/maps/data_map.json`
+for the underlying globals).
 
 ## UI element render (ui_element_render / FUN_00446c40)
 

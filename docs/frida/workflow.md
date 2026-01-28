@@ -15,6 +15,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/crimsonland_probe.js`
 - `scripts/frida/menu_logo_pivot_trace.js`
 - `scripts/frida/screen_fade_trace.js`
+- `scripts/frida/perk_prompt_trace.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`

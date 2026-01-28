@@ -51,9 +51,28 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 PERK_PROMPT_MAX_TIMER_MS = 200.0
 PERK_PROMPT_OUTSET_X = 50.0
-PERK_PROMPT_BAR_SCALE = 0.85
+# Perk prompt bar geometry comes from `ui_menu_assets_init` + `ui_menu_layout_init`:
+# - `ui_menu_item_element` is set_rect(512x64, offset -72,-60)
+# - the perk prompt mutates quad coords: x = (x - 300) * 0.75, y = y * 0.75
+PERK_PROMPT_BAR_SCALE = 0.75
+PERK_PROMPT_BAR_BASE_OFFSET_X = -72.0
+PERK_PROMPT_BAR_BASE_OFFSET_Y = -60.0
+PERK_PROMPT_BAR_SHIFT_X = -300.0
+
+# `ui_textLevelUp` is set_rect(75x25, offset -230,-27), then its quad coords are:
+# x = x * 0.85 - 46, y = y * 0.85 - 4
+PERK_PROMPT_LEVEL_UP_SCALE = 0.85
+PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X = -230.0
+PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y = -27.0
+PERK_PROMPT_LEVEL_UP_BASE_W = 75.0
+PERK_PROMPT_LEVEL_UP_BASE_H = 25.0
+PERK_PROMPT_LEVEL_UP_SHIFT_X = -46.0
+PERK_PROMPT_LEVEL_UP_SHIFT_Y = -4.0
+
 PERK_PROMPT_TEXT_MARGIN_X = 16.0
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
+
+PERK_MENU_TRANSITION_MS = 500.0
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -114,7 +133,8 @@ class SurvivalView:
         self._perk_prompt_hover = False
         self._perk_menu_open = False
         self._perk_menu_selected = 0
-        self._perk_menu_backdrop_ms = 0.0
+        self._perk_menu_timeline_ms = 0.0
+        self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._perk_menu_assets = None
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
@@ -243,7 +263,8 @@ class SurvivalView:
         self._perk_prompt_hover = False
         self._perk_menu_open = False
         self._perk_menu_selected = 0
-        self._perk_menu_backdrop_ms = 0.0
+        self._perk_menu_timeline_ms = 0.0
+        self._hud_fade_ms = PERK_MENU_TRANSITION_MS
 
     def close(self) -> None:
         self._game_over_ui.close()
@@ -351,7 +372,20 @@ class SurvivalView:
             tex = self._perk_menu_assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            return rl.Rectangle(float(hinge_x - bar_w), float(hinge_y), float(bar_w), float(bar_h))
+            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+
+            # Mirrors ui_element_layout_calc bounds for hover/click.
+            hit_x0 = local_x + bar_w * 0.54
+            hit_y0 = local_y + bar_h * 0.28
+            hit_x1 = local_x + bar_w - bar_w * 0.05
+            hit_y1 = local_y + bar_h - bar_h * 0.1
+            return rl.Rectangle(
+                float(hinge_x + hit_x0),
+                float(hinge_y + hit_y0),
+                float(max(0.0, hit_x1 - hit_x0)),
+                float(max(0.0, hit_y1 - hit_y0)),
+            )
 
         margin = 16.0 * scale
         text_w = float(self._ui_text_width(label, scale))
@@ -401,6 +435,8 @@ class SurvivalView:
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -409,7 +445,7 @@ class SurvivalView:
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
-            origin_x=origin_x,
+            origin_x=origin_x + slide_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
@@ -503,7 +539,9 @@ class SurvivalView:
             self._perk_menu_handle_input(dt_ui_ms)
             dt = 0.0
 
-        if (not self._perk_menu_open) and perk_pending:
+        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
+
+        if (not perk_menu_active) and perk_pending:
             label = self._perk_prompt_label()
             if label:
                 rect = self._perk_prompt_rect(label)
@@ -514,19 +552,23 @@ class SurvivalView:
             ):
                 self._open_perk_menu()
 
-        if self._paused or self._player.health <= 0.0 or self._perk_menu_open:
+        if self._paused or self._player.health <= 0.0 or perk_menu_active:
             dt = 0.0
 
-        prompt_active = perk_pending and (not self._perk_menu_open) and (not self._paused)
+        prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
             self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
         else:
             self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
         if self._perk_menu_open:
-            self._perk_menu_backdrop_ms = _clamp(self._perk_menu_backdrop_ms + dt_ui_ms, 0.0, 500.0)
+            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         else:
-            self._perk_menu_backdrop_ms = _clamp(self._perk_menu_backdrop_ms - dt_ui_ms, 0.0, 500.0)
+            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+        if self._perk_menu_timeline_ms > 1e-3 or self._perk_menu_open:
+            self._hud_fade_ms = 0.0
+        else:
+            self._hud_fade_ms = _clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         self._survival.elapsed_ms += dt * 1000.0
 
@@ -575,7 +617,7 @@ class SurvivalView:
     def _draw_perk_prompt(self) -> None:
         if self._game_over_active:
             return
-        if self._perk_menu_open:
+        if self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3:
             return
         if self._player.health <= 0.0:
             return
@@ -594,35 +636,39 @@ class SurvivalView:
         rot_deg = (1.0 - alpha) * -90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
-        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
-            tex = self._perk_menu_assets.menu_item
-            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
-            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(-bar_w), float(bar_h))
-            rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), rot_deg, tint)
-
-        if self._perk_menu_assets is not None and self._perk_menu_assets.title_level_up is not None:
-            tex = self._perk_menu_assets.title_level_up
-            local_x = -230.0 * PERK_PROMPT_BAR_SCALE
-            local_y = -27.0 * PERK_PROMPT_BAR_SCALE
-            w = 75.0 * PERK_PROMPT_BAR_SCALE
-            h = 25.0 * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(w), float(h))
-            origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
-
         text_w = float(self._ui_text_width(label, UI_TEXT_SCALE))
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
         draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=color)
 
+        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
+            tex = self._perk_menu_assets.menu_item
+            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(bar_w), float(bar_h))
+            origin = rl.Vector2(float(-local_x), float(-local_y))
+            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+
+        if self._perk_menu_assets is not None and self._perk_menu_assets.title_level_up is not None:
+            tex = self._perk_menu_assets.title_level_up
+            local_x = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_X * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_X
+            local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
+            w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
+            h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
+            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(w), float(h))
+            origin = rl.Vector2(float(-local_x), float(-local_y))
+            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+
     def _draw_perk_menu(self) -> None:
         if self._game_over_active:
             return
-        if not self._perk_menu_open:
+        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+        if menu_t <= 1e-3:
             return
         if self._perk_menu_assets is None:
             return
@@ -641,12 +687,13 @@ class SurvivalView:
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
-            origin_x=origin_x,
+            origin_x=origin_x + slide_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
@@ -729,9 +776,8 @@ class SurvivalView:
         draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
 
     def draw(self) -> None:
-        backdrop_t = _clamp(float(self._perk_menu_backdrop_ms) / 500.0, 0.0, 1.0)
-        world_alpha = 1.0 - backdrop_t
-        self._world.draw(draw_aim_indicators=(not self._game_over_active), entity_alpha=world_alpha)
+        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
+        self._world.draw(draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active))
 
         fade_alpha = 0.0
         if self._screen_fade is not None:
@@ -741,7 +787,8 @@ class SurvivalView:
             rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
 
         hud_bottom = 0.0
-        if (not self._game_over_active) and self._hud_assets is not None:
+        if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
+            hud_alpha = _clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -749,10 +796,10 @@ class SurvivalView:
                 elapsed_ms=self._survival.elapsed_ms,
                 score=self._player.experience,
                 font=self._small,
-                alpha=world_alpha,
+                alpha=hud_alpha,
             )
 
-        if (not self._game_over_active) and (not self._perk_menu_open):
+        if (not self._game_over_active) and (not perk_menu_active):
             # Minimal debug text.
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
@@ -774,9 +821,9 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        if (not self._game_over_active) and self._perk_menu_open:
+        if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
-        if (not self._game_over_active) and (not self._perk_menu_open):
+        if (not self._game_over_active) and (not perk_menu_active):
             self._draw_aim_cursor()
 
         if self._game_over_active and self._game_over_record is not None:
