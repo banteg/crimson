@@ -8,6 +8,7 @@ import time
 
 import pyray as rl
 
+from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
@@ -73,15 +74,6 @@ class CameraDebugView:
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
-    def _resolve_asset(self, rel_path: str) -> Path | None:
-        direct = self._assets_root / rel_path
-        if direct.is_file():
-            return direct
-        legacy = self._assets_root / "crimson" / rel_path
-        if legacy.is_file():
-            return legacy
-        return None
-
     def _load_runtime_config(self) -> None:
         runtime_dir = Path("artifacts") / "runtime"
         if not runtime_dir.is_dir():
@@ -142,8 +134,8 @@ class CameraDebugView:
         rl.set_window_size(WINDOW_W, WINDOW_H)
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
-        base_path = self._resolve_asset("ter/ter_q1_base.png")
-        overlay_path = self._resolve_asset("ter/ter_q1_tex1.png")
+        base_path = resolve_asset_path(self._assets_root, "ter/ter_q1_base.png")
+        overlay_path = resolve_asset_path(self._assets_root, "ter/ter_q1_tex1.png")
         if base_path is None:
             self._missing_assets.append("ter/ter_q1_base.png")
         if overlay_path is None:

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pyray as rl
 
+from grim.assets import resolve_asset_path
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 from .registry import register_view
@@ -71,15 +72,6 @@ class PlayerSpriteDebugView:
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
-    def _resolve_asset(self, rel_path: str) -> Path | None:
-        direct = self._assets_root / rel_path
-        if direct.is_file():
-            return direct
-        legacy = self._assets_root / "crimson" / rel_path
-        if legacy.is_file():
-            return legacy
-        return None
-
     def _frame_src(self, texture: rl.Texture, frame_index: int) -> rl.Rectangle:
         cell = float(texture.width) / float(SPRITE_GRID)
         pad = SPRITE_PAD_PX
@@ -121,7 +113,7 @@ class PlayerSpriteDebugView:
         rl.set_window_size(WINDOW_W, WINDOW_H)
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
-        trooper_path = self._resolve_asset("game/trooper.png")
+        trooper_path = resolve_asset_path(self._assets_root, "game/trooper.png")
         if trooper_path is None:
             self._missing_assets.append("game/trooper.png")
         if self._missing_assets:

@@ -8,6 +8,7 @@ import pyray as rl
 from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
+from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from ..quests import all_quests
@@ -83,7 +84,7 @@ class GroundView:
         self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
         textures: dict[int, rl.Texture] = {}
         for terrain_id, rel_path in TERRAIN_TEXTURES:
-            path = self._resolve_asset(rel_path)
+            path = resolve_asset_path(self._assets_root, rel_path)
             if path is None:
                 self._missing_assets.append(rel_path)
                 continue
@@ -94,10 +95,10 @@ class GroundView:
         self._quests = all_quests()
         self._fx_queue.clear()
         self._fx_queue_rotated.clear()
-        particles_path = self._resolve_asset("game/particles.png")
+        particles_path = resolve_asset_path(self._assets_root, "game/particles.png")
         if particles_path is None:
             self._missing_assets.append("game/particles.png")
-        bodyset_path = self._resolve_asset("game/bodyset.png")
+        bodyset_path = resolve_asset_path(self._assets_root, "game/bodyset.png")
         if bodyset_path is None:
             self._missing_assets.append("game/bodyset.png")
         if self._missing_assets:
@@ -185,15 +186,6 @@ class GroundView:
             return
         self._renderer.draw(self._camera_x, self._camera_y)
         self._draw_quest_title_overlay()
-
-    def _resolve_asset(self, rel_path: str) -> Path | None:
-        direct = self._assets_root / rel_path
-        if direct.is_file():
-            return direct
-        legacy = self._assets_root / "crimson" / rel_path
-        if legacy.is_file():
-            return legacy
-        return None
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
         runtime_dir = Path("artifacts") / "runtime"
