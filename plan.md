@@ -203,33 +203,33 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 5.1 Tutorial state
 
-- [ ] Create `TutorialState`
-  - [ ] `stage_index` (0–8)
-  - [ ] `stage_timer_ms`
-  - [ ] `stage_transition_timer_ms` (negative sentinel + fade controller)
-  - [ ] `hint_index`, `hint_alpha`
-  - [ ] `repeat_spawn_count`
-  - [ ] `hint_bonus_creature_ref` (store creature index, not a pointer)
+- [x] Create `TutorialState`
+  - [x] `stage_index` (0–8)
+  - [x] `stage_timer_ms`
+  - [x] `stage_transition_timer_ms` (negative sentinel + fade controller)
+  - [x] `hint_index`, `hint_alpha`
+  - [x] `repeat_spawn_count`
+  - [x] `hint_bonus_creature_ref` (store creature index, not a pointer)
 
 ### 5.2 Port `tutorial_timeline_update` as a pure director
 
-- [ ] Implement `tick_tutorial(dt_ms, tutorial_state, world) -> (ui_model, spawn_actions)`
-- [ ] Match stage triggers/behaviors from decompile
-  - [ ] Stage 0: after 6000ms → transition
-  - [ ] Stage 1: wait for any movement key → spawn XP bonuses
-  - [ ] Stage 2: wait until bonuses cleared → transition
-  - [ ] Stage 3: wait for fire → spawn small wave (left)
-  - [ ] Stage 4: wait until creatures cleared → spawn small wave (right)
-  - [ ] Stage 5: powerup lesson loop
-    - [ ] spawn “bonus carrier” alien template `0x27` that drops: speed(13), weapon(3 amount 5), double XP(6), nuke(5), reflex boost(9)
-    - [ ] spawn supporting enemies to demonstrate the bonus
-    - [ ] after enough repeats: force perk lesson (set XP high enough to trigger perk)
-  - [ ] Stage 6: wait until perk selection done → spawn larger mixed wave
-  - [ ] Stage 7: wait until everything cleared → transition
+- [x] Implement `tick_tutorial(dt_ms, tutorial_state, world) -> (ui_model, spawn_actions)`
+- [x] Match stage triggers/behaviors from decompile
+  - [x] Stage 0: after 6000ms → transition
+  - [x] Stage 1: wait for any movement key → spawn XP bonuses
+  - [x] Stage 2: wait until bonuses cleared → transition
+  - [x] Stage 3: wait for fire → spawn small wave (left)
+  - [x] Stage 4: wait until creatures cleared → spawn small wave (right)
+  - [x] Stage 5: powerup lesson loop
+    - [x] spawn “bonus carrier” alien template `0x27` that drops: speed(13), weapon(3 amount 5), double XP(6), nuke(5), reflex boost(9)
+    - [x] spawn supporting enemies to demonstrate the bonus
+    - [x] after enough repeats: force perk lesson (set XP high enough to trigger perk)
+  - [x] Stage 6: wait until perk selection done → spawn larger mixed wave
+  - [x] Stage 7: wait until everything cleared → transition
   - [ ] Stage 8: final message + end buttons
-- [ ] Replicate tutorial guardrails
-  - [ ] force health to 100 each update
-  - [ ] reset XP to 0 outside the perk stage
+- [x] Replicate tutorial guardrails
+  - [x] force health to 100 each update
+  - [x] reset XP to 0 outside the perk stage
 
 ### 5.3 Implement `tutorial_prompt_dialog`
 
