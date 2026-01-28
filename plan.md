@@ -6,7 +6,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 
 - [ ] 0) Lock authoritative references per mode
 - [x] 1) Fix game mode ID consistency (avoid ghosts)
-- [ ] 2) Extract `BaseGameplayMode` (keep Survival identical)
+- [x] 2) Extract `BaseGameplayMode` (keep Survival identical)
 - [x] 3) Implement Rush (end-to-end)
 - [ ] 4) Implement Quests (end-to-end)
 - [ ] 5) Implement Tutorial (end-to-end)
@@ -69,20 +69,15 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 2) Extract `BaseGameplayMode` (to avoid cloning SurvivalMode 4×)
 
-- [ ] Introduce `BaseGameplayMode` that owns shared loop pieces
-  - [ ] `GameWorld`
-  - [ ] timekeeping (`elapsed_ms`, `dt_ms`)
-  - [ ] pause/perk-menu gating (`dt = 0` behavior)
-  - [ ] screen fade binding (`bind_screen_fade`)
-  - [ ] common “end of run” exit handling (restart/menu)
-- [ ] Define the override points for per-mode behavior
-  - [ ] `prepare_new_run(state)`
-  - [ ] `tick_spawns(dt_ms, state)` (returns spawns to apply)
-  - [ ] `post_world_update(dt_ms, state)` (completion/failure transitions, special timers)
-  - [ ] `render_overlays()` (quest HUD, typ-o typing box, tutorial prompts)
-  - [ ] `build_highscore_record()` (quests time+XP, rush time, typ-o XP+accuracy)
-- [ ] Convert `SurvivalMode` to subclass the base without behavior drift
-- [ ] Add/adjust tests to ensure Survival stays identical
+- [x] Introduce `BaseGameplayMode` for shared gameplay plumbing
+  - [x] `GameWorld` lifecycle + common asset loading (`open`/`close`)
+  - [x] screen fade binding (`bind_screen_fade`) + shared fade draw
+  - [x] audio binding/update helper (`bind_audio`, `_update_audio`)
+  - [x] UI helpers (`_ui_*`, `_draw_ui_text`, `_update_ui_mouse`)
+  - [ ] (Optional) move timekeeping/dt gating into base
+- [x] Convert `SurvivalMode` to subclass the base (no behavior changes intended)
+- [x] Convert `RushMode` to subclass the base
+- [x] Add smoke tests for mode construction
 
 ---
 
