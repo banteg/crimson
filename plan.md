@@ -146,13 +146,13 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.3 Quest HUD
 
-- [ ] show time from `spawn_timeline_ms` (mm:ss)
+- [x] show time from `spawn_timeline_ms` (mm:ss)
 - [ ] progress bar: ratio of kills to total spawns
   - [ ] track `kills = world.stats.creature_kill_count` (or equivalent)
   - [ ] track `spawned_count` (increment when spawning from table)
   - [ ] track `remaining_count = sum(spawn.count)`
   - [ ] compute `progress = kills / max(spawned_count + remaining_count, 1)`
-- [ ] quest title fade: show “Quest X-Y” for first few seconds using `quest_name_timer_ms`
+- [x] quest title fade: show “Quest X-Y” for first few seconds using `quest_name_timer_ms`
 
 ### 4.4 Quest Results screen (`quest_results_screen_update`)
 

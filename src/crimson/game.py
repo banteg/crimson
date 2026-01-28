@@ -892,6 +892,27 @@ def _player_name_default(config: CrimsonConfig) -> str:
     return ""
 
 
+def _next_quest_level(level: str) -> str | None:
+    try:
+        major_text, minor_text = level.split(".", 1)
+        major = int(major_text)
+        minor = int(minor_text)
+    except Exception:
+        return None
+
+    from .quests import quest_by_level
+
+    for _ in range(100):
+        minor += 1
+        if minor > 10:
+            minor = 1
+            major += 1
+        candidate = f"{major}.{minor}"
+        if quest_by_level(candidate) is not None:
+            return candidate
+    return None
+
+
 class QuestResultsView:
     def __init__(self, state: GameState) -> None:
         self._state = state
@@ -986,6 +1007,12 @@ class QuestResultsView:
             self._state.pending_quest_level = outcome.level
             self._action = "start_quest"
             return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
+            next_level = _next_quest_level(outcome.level)
+            if next_level is not None:
+                self._state.pending_quest_level = next_level
+                self._action = "start_quest"
+                return
         if action in {"high_scores", "main_menu"}:
             # High scores screen isn't implemented yet; route back to menu.
             self._action = "back_to_menu"
@@ -1004,6 +1031,7 @@ class QuestResultsView:
             return
 
         ui.draw(record=record, banner_kind="well_done", hud_assets=None)
+        rl.draw_text("N: Play next quest", 32, 120, 18, rl.Color(190, 190, 200, 255))
 
     def take_action(self) -> str | None:
         action = self._action

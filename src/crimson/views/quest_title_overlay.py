@@ -84,7 +84,8 @@ def layout_quest_title_overlay(
     )
 
 
-def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str) -> None:
+def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alpha: float = 1.0) -> None:
+    alpha = max(0.0, min(1.0, float(alpha)))
     layout = layout_quest_title_overlay(
         screen_width=rl.get_screen_width(),
         screen_height=rl.get_screen_height(),
@@ -93,8 +94,8 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str) -> Non
         font_advance=font.advance,
     )
 
-    title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
-    number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO))
+    title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
+    number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO * alpha))
 
     draw_grim_mono_text(font, title, layout.title_x, layout.title_y, layout.title_scale, title_color)
     draw_grim_mono_text(

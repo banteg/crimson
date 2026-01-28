@@ -420,7 +420,10 @@ def draw_hud_overlay(
                 rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
             )
             max_y = max(max_y, dst.y + dst.height)
-        time_text = f"{int(time_ms) // 1000} seconds"
+        total_seconds = int(time_ms) // 1000
+        minutes = max(0, total_seconds // 60)
+        seconds = max(0, total_seconds % 60)
+        time_text = f"{minutes:02d}:{seconds:02d}"
         _draw_text(font, time_text, sx(255.0), sy(10.0), text_scale, text_color)
         max_y = max(max_y, sy(10.0 + line_h))
 
