@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
+from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
 
 
@@ -96,3 +96,37 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert p2.active
     assert math.isclose(p2.intensity, 0.89, abs_tol=1e-9)
 
+
+def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
+    q = FxQueue(capacity=8, max_count=8)
+    pool = EffectPool(size=8)
+
+    pool.spawn_blood_splatter(
+        pos_x=10.0,
+        pos_y=20.0,
+        angle=0.0,
+        age=0.0,
+        rand=lambda: 0,
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    assert len(pool.iter_active()) == 2
+    assert q.count == 0
+
+    pool.update(0.1, fx_queue=q)
+    assert q.count == 0
+
+    pool.update(0.2, fx_queue=q)
+    assert q.count == 2
+
+    first = q.iter_active()[0]
+    assert first.effect_id == 7
+    assert math.isclose(first.pos_x, 0.0, abs_tol=1e-9)
+    assert math.isclose(first.pos_y, 20.0, abs_tol=1e-9)
+    assert math.isclose(first.width, 2.0, abs_tol=1e-9)
+    assert math.isclose(first.height, 2.0, abs_tol=1e-9)
+    assert math.isclose(first.color_r, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color_g, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color_b, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color_a, 0.8, abs_tol=1e-9)

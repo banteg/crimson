@@ -9,18 +9,22 @@ __all__ = [
     "FX_QUEUE_MAX_COUNT",
     "FX_QUEUE_ROTATED_CAPACITY",
     "FX_QUEUE_ROTATED_MAX_COUNT",
+    "EFFECT_POOL_SIZE",
     "PARTICLE_POOL_SIZE",
     "SPRITE_EFFECT_POOL_SIZE",
     "FxQueue",
     "FxQueueEntry",
     "FxQueueRotated",
     "FxQueueRotatedEntry",
+    "EffectEntry",
+    "EffectPool",
     "Particle",
     "ParticlePool",
     "SpriteEffect",
     "SpriteEffectPool",
 ]
 
+EFFECT_POOL_SIZE = 0x200
 PARTICLE_POOL_SIZE = 0x80
 SPRITE_EFFECT_POOL_SIZE = 0x180
 
@@ -439,3 +443,224 @@ class FxQueueRotated:
 
         self._count += 1
         return True
+
+
+@dataclass(slots=True)
+class EffectEntry:
+    pos_x: float = 0.0
+    pos_y: float = 0.0
+    effect_id: int = 0
+    vel_x: float = 0.0
+    vel_y: float = 0.0
+    rotation: float = 0.0
+    scale: float = 1.0
+    half_width: float = 0.0
+    half_height: float = 0.0
+    age: float = 0.0
+    lifetime: float = 0.0
+    flags: int = 0
+    color_r: float = 1.0
+    color_g: float = 1.0
+    color_b: float = 1.0
+    color_a: float = 1.0
+    rotation_step: float = 0.0
+    scale_step: float = 0.0
+
+
+class EffectPool:
+    """Effect pool (`effect_spawn`, `effects_update`).
+
+    This pool renders transient particle quads and can optionally enqueue decals
+    into `FxQueue` on expiry (flags bit `0x80`).
+    """
+
+    def __init__(self, *, size: int = EFFECT_POOL_SIZE) -> None:
+        size = max(0, int(size))
+        self._entries = [EffectEntry() for _ in range(size)]
+        self._free = list(range(size - 1, -1, -1))
+        self._detail_toggle = 0
+        self._overwrite_cursor = 0
+
+    @property
+    def entries(self) -> list[EffectEntry]:
+        return self._entries
+
+    def reset(self) -> None:
+        for entry in self._entries:
+            entry.flags = 0
+        self._free = list(range(len(self._entries) - 1, -1, -1))
+        self._detail_toggle = 0
+        self._overwrite_cursor = 0
+
+    def iter_active(self) -> list[EffectEntry]:
+        return [entry for entry in self._entries if entry.flags]
+
+    def _alloc_slot(self, *, detail_preset: int) -> int | None:
+        # Native: if detail_preset < 3, skip every other spawn attempt.
+        if int(detail_preset) < 3:
+            skip = self._detail_toggle & 1
+            self._detail_toggle += 1
+            if skip:
+                return None
+
+        if self._free:
+            return self._free.pop()
+
+        if not self._entries:
+            return None
+
+        idx = self._overwrite_cursor % len(self._entries)
+        self._overwrite_cursor = idx + 1
+        return idx
+
+    def spawn(
+        self,
+        *,
+        effect_id: int,
+        pos_x: float,
+        pos_y: float,
+        vel_x: float,
+        vel_y: float,
+        rotation: float,
+        scale: float,
+        half_width: float,
+        half_height: float,
+        age: float,
+        lifetime: float,
+        flags: int,
+        color_r: float,
+        color_g: float,
+        color_b: float,
+        color_a: float,
+        rotation_step: float,
+        scale_step: float,
+        detail_preset: int,
+    ) -> int | None:
+        idx = self._alloc_slot(detail_preset=int(detail_preset))
+        if idx is None:
+            return None
+
+        entry = self._entries[idx]
+        entry.pos_x = float(pos_x)
+        entry.pos_y = float(pos_y)
+        entry.effect_id = int(effect_id)
+        entry.vel_x = float(vel_x)
+        entry.vel_y = float(vel_y)
+        entry.rotation = float(rotation)
+        entry.scale = float(scale)
+        entry.half_width = float(half_width)
+        entry.half_height = float(half_height)
+        entry.age = float(age)
+        entry.lifetime = float(lifetime)
+        entry.flags = int(flags)
+        entry.color_r = float(color_r)
+        entry.color_g = float(color_g)
+        entry.color_b = float(color_b)
+        entry.color_a = float(color_a)
+        entry.rotation_step = float(rotation_step)
+        entry.scale_step = float(scale_step)
+        return idx
+
+    def free(self, idx: int) -> None:
+        if not (0 <= idx < len(self._entries)):
+            return
+        entry = self._entries[idx]
+        entry.flags = 0
+        self._free.append(idx)
+
+    def update(self, dt: float, *, fx_queue: FxQueue | None = None) -> None:
+        """Advance active effects and enqueue terrain decals on expiry."""
+
+        if dt <= 0.0:
+            return
+
+        for idx, entry in enumerate(self._entries):
+            flags = int(entry.flags)
+            if not flags:
+                continue
+
+            age = float(entry.age) + float(dt)
+            entry.age = age
+            lifetime = float(entry.lifetime)
+
+            if age < lifetime:
+                if age >= 0.0:
+                    entry.pos_x += float(entry.vel_x) * float(dt)
+                    entry.pos_y += float(entry.vel_y) * float(dt)
+                    if flags & 0x4:
+                        entry.rotation += float(entry.rotation_step) * float(dt)
+                    if flags & 0x8:
+                        entry.scale += float(entry.scale_step) * float(dt)
+                    if flags & 0x10:
+                        entry.color_a = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
+                continue
+
+            if fx_queue is not None and (flags & 0x80):
+                # On expiry, the native code overrides alpha before queuing.
+                alpha = 0.35 if (flags & 0x100) else 0.8
+                fx_queue.add(
+                    effect_id=int(entry.effect_id),
+                    pos_x=float(entry.pos_x),
+                    pos_y=float(entry.pos_y),
+                    width=float(entry.half_width) * 2.0,
+                    height=float(entry.half_height) * 2.0,
+                    rotation=float(entry.rotation),
+                    rgba=(float(entry.color_r), float(entry.color_g), float(entry.color_b), float(alpha)),
+                )
+
+            self.free(idx)
+
+    def spawn_blood_splatter(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        angle: float,
+        age: float,
+        rand: Callable[[], int],
+        detail_preset: int,
+        fx_toggle: int,
+    ) -> None:
+        """Port of `effect_spawn_blood_splatter` (0x0042eb10)."""
+
+        if int(fx_toggle) != 0:
+            return
+
+        lifetime = 0.25 - float(age)
+        base = float(angle) + math.pi
+        dir_x = math.cos(base)
+        dir_y = math.sin(base)
+
+        for _ in range(2):
+            r0 = int(rand())
+            rotation = float((r0 & 0x3F) - 0x20) * 0.1 + base
+            r1 = int(rand())
+            half = float((r1 & 7) + 1)
+            r2 = int(rand())
+            vel_x = float((r2 & 0x3F) + 100) * dir_x
+            r3 = int(rand())
+            vel_y = float((r3 & 0x3F) + 100) * dir_y
+            r4 = int(rand())
+            scale_step = float(r4 & 0x7F) * 0.03 + 0.1
+
+            self.spawn(
+                effect_id=7,
+                pos_x=pos_x,
+                pos_y=pos_y,
+                vel_x=vel_x,
+                vel_y=vel_y,
+                rotation=rotation,
+                scale=1.0,
+                half_width=half,
+                half_height=half,
+                age=float(age),
+                lifetime=lifetime,
+                flags=0xC9,
+                color_r=1.0,
+                color_g=1.0,
+                color_b=1.0,
+                color_a=0.5,
+                rotation_step=0.0,
+                scale_step=scale_step,
+                detail_preset=int(detail_preset),
+            )

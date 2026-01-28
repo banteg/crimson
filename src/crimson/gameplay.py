@@ -6,6 +6,7 @@ from typing import Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
 from .crand import Crand
+from .effects import EffectPool
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
@@ -405,6 +406,7 @@ class BonusPool:
 @dataclass(slots=True)
 class GameplayState:
     rng: Crand = field(default_factory=lambda: Crand(0xBEEF))
+    effects: EffectPool = field(default_factory=EffectPool)
     projectiles: ProjectilePool = field(default_factory=ProjectilePool)
     secondary_projectiles: SecondaryProjectilePool = field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = field(default_factory=BonusTimers)

@@ -19,6 +19,7 @@ from .creatures.anim import creature_anim_advance_phase, creature_anim_select_fr
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from .effects import FxQueue, FxQueueRotated
+from .effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
 from .gameplay import (
     GameplayState,
     PlayerInput,
@@ -475,6 +476,9 @@ class GameWorld:
 
         prev_audio = [(player.ammo, player.reload_active, player.reload_timer) for player in self.players]
 
+        # `effects_update` runs early in the native frame loop, before creature/projectile updates.
+        self.state.effects.update(dt, fx_queue=self.fx_queue)
+
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -525,29 +529,100 @@ class GameWorld:
         return hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
-        if self.ground is None or self.fx_textures is None:
-            return
         rand = self.state.rng.rand
-        for type_id, _ox, _oy, hit_x, hit_y in hits:
-            effect_id = 0x07
-            tint = (1.0, 0.25, 0.25, 1.0)
-            if int(type_id) in _BEAM_TYPES:
-                effect_id = 0x01
-                tint = (0.7, 0.9, 1.0, 1.0)
-            elif int(type_id) in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER):
-                effect_id = 0x11
-                tint = (1.0, 0.6, 0.3, 1.0)
-            size = float(int(rand()) % 18 + 18)
-            rotation = float(int(rand()) % 628) * 0.01
-            self.fx_queue.add(
-                effect_id=effect_id,
-                pos_x=float(hit_x),
-                pos_y=float(hit_y),
-                width=size,
-                height=size,
-                rotation=rotation,
-                rgba=tint,
-            )
+        fx_toggle = 0
+        detail_preset = 5
+        if self.config is not None:
+            fx_toggle = int(self.config.data.get("fx_toggle", 0) or 0)
+            detail_preset = int(self.config.data.get("detail_preset", 5) or 5)
+
+        freeze_active = self.state.bonuses.freeze > 0.0
+        bloody = bool(self.players) and perk_active(self.players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
+
+        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+            type_id = int(type_id)
+
+            if type_id in _BEAM_TYPES:
+                if self.ground is None or self.fx_textures is None:
+                    continue
+                size = float(int(rand()) % 18 + 18)
+                rotation = float(int(rand()) % 628) * 0.01
+                self.fx_queue.add(
+                    effect_id=0x01,
+                    pos_x=float(hit_x),
+                    pos_y=float(hit_y),
+                    width=size,
+                    height=size,
+                    rotation=rotation,
+                    rgba=(0.7, 0.9, 1.0, 1.0),
+                )
+                continue
+
+            if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER):
+                if self.ground is None or self.fx_textures is None:
+                    continue
+                size = float(int(rand()) % 18 + 18)
+                rotation = float(int(rand()) % 628) * 0.01
+                self.fx_queue.add(
+                    effect_id=0x11,
+                    pos_x=float(hit_x),
+                    pos_y=float(hit_y),
+                    width=size,
+                    height=size,
+                    rotation=rotation,
+                    rgba=(1.0, 0.6, 0.3, 1.0),
+                )
+                continue
+
+            if freeze_active:
+                continue
+
+            # Native hit path: spawn transient blood splatter particles and only
+            # bake decals into the terrain once those particles expire.
+            base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
+            if bloody:
+                for _ in range(8):
+                    spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
+                    self.state.effects.spawn_blood_splatter(
+                        pos_x=float(hit_x),
+                        pos_y=float(hit_y),
+                        angle=base_angle + spread,
+                        age=0.0,
+                        rand=rand,
+                        detail_preset=detail_preset,
+                        fx_toggle=fx_toggle,
+                    )
+                self.state.effects.spawn_blood_splatter(
+                    pos_x=float(hit_x),
+                    pos_y=float(hit_y),
+                    angle=base_angle + math.pi,
+                    age=0.0,
+                    rand=rand,
+                    detail_preset=detail_preset,
+                    fx_toggle=fx_toggle,
+                )
+                continue
+
+            for _ in range(2):
+                self.state.effects.spawn_blood_splatter(
+                    pos_x=float(hit_x),
+                    pos_y=float(hit_y),
+                    angle=base_angle,
+                    age=0.0,
+                    rand=rand,
+                    detail_preset=detail_preset,
+                    fx_toggle=fx_toggle,
+                )
+                if (int(rand()) & 7) == 2:
+                    self.state.effects.spawn_blood_splatter(
+                        pos_x=float(hit_x),
+                        pos_y=float(hit_y),
+                        angle=base_angle + math.pi,
+                        age=0.0,
+                        rand=rand,
+                        detail_preset=detail_preset,
+                        fx_toggle=fx_toggle,
+                    )
 
     def _rand_choice(self, options: tuple[str, ...]) -> str | None:
         if not options:
@@ -1170,6 +1245,93 @@ class GameWorld:
             return
         rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, 200))
 
+    def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float) -> None:
+        texture = self.particles_texture
+        if texture is None:
+            return
+
+        effects = self.state.effects.entries
+        if not any(entry.flags and entry.age >= 0.0 for entry in effects):
+            return
+
+        scale = (scale_x + scale_y) * 0.5
+
+        src_cache: dict[int, rl.Rectangle] = {}
+
+        def src_rect(effect_id: int) -> rl.Rectangle | None:
+            cached = src_cache.get(effect_id)
+            if cached is not None:
+                return cached
+
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
+            if atlas is None:
+                return None
+            grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+            if not grid:
+                return None
+            frame = int(atlas.frame)
+            col = frame % grid
+            row = frame // grid
+            cell_w = float(texture.width) / float(grid)
+            cell_h = float(texture.height) / float(grid)
+            # Native effect pool clamps UVs to (cell_size - 2px) to avoid bleeding.
+            src = rl.Rectangle(
+                cell_w * float(col),
+                cell_h * float(row),
+                max(0.0, cell_w - 2.0),
+                max(0.0, cell_h - 2.0),
+            )
+            src_cache[effect_id] = src
+            return src
+
+        def draw_entry(entry: object) -> None:
+            src = src_rect(int(getattr(entry, "effect_id", 0)))
+            if src is None or src.width <= 0.0 or src.height <= 0.0:
+                return
+
+            pos_x = float(getattr(entry, "pos_x", 0.0))
+            pos_y = float(getattr(entry, "pos_y", 0.0))
+            sx = (pos_x + cam_x) * scale_x
+            sy = (pos_y + cam_y) * scale_y
+
+            half_w = float(getattr(entry, "half_width", 0.0))
+            half_h = float(getattr(entry, "half_height", 0.0))
+            local_scale = float(getattr(entry, "scale", 1.0))
+            w = max(0.0, half_w * 2.0 * local_scale * scale)
+            h = max(0.0, half_h * 2.0 * local_scale * scale)
+            if w <= 0.0 or h <= 0.0:
+                return
+
+            rotation_deg = float(getattr(entry, "rotation", 0.0)) * _RAD_TO_DEG
+            tint = self._color_from_rgba(
+                (
+                    float(getattr(entry, "color_r", 1.0)),
+                    float(getattr(entry, "color_g", 1.0)),
+                    float(getattr(entry, "color_b", 1.0)),
+                    float(getattr(entry, "color_a", 1.0)),
+                )
+            )
+
+            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+            origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
+            rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+
+        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        for entry in effects:
+            if not entry.flags or entry.age < 0.0:
+                continue
+            if int(entry.flags) & 0x40:
+                draw_entry(entry)
+        rl.end_blend_mode()
+
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        for entry in effects:
+            if not entry.flags or entry.age < 0.0:
+                continue
+            if not (int(entry.flags) & 0x40):
+                draw_entry(entry)
+        rl.end_blend_mode()
+
     def draw(self, *, draw_aim_indicators: bool = True) -> None:
         clear_color = rl.Color(10, 10, 12, 255)
         screen_w, screen_h = self._camera_screen_size()
@@ -1302,6 +1464,9 @@ class GameWorld:
                     sx = (player.pos_x + cam_x) * scale_x
                     sy = (player.pos_y + cam_y) * scale_y
                     rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+
+            self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y)
+
             if draw_aim_indicators and (not self.demo_mode_active):
                 for player in self.players:
                     if player.health <= 0.0:
