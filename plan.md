@@ -256,7 +256,9 @@ To avoid creating a junk-drawer module, extract cohesive chunks:
 * [x] `crimson/frontend/boot.py` (boot stages, resource pack init, logo flow)
 * [x] `crimson/frontend/menu.py` (main menu buttons + transitions)
 * [x] `crimson/frontend/panels/base.py` (shared panel shell + layout)
-* [ ] `crimson/frontend/panels/options.py`, `stats.py`, `play_game.py`
+* [x] `crimson/frontend/panels/play_game.py`
+* [ ] `crimson/frontend/panels/options.py`
+* [ ] `crimson/frontend/panels/stats.py`
 * [x] `crimson/frontend/transitions.py` (screen fade, timeline helpers)
 * [ ] `crimson/frontend/assets.py` (menu textures, panels; uses the shared TextureLoader)
 
