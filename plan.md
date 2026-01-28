@@ -334,7 +334,7 @@ Once asset loading is centralized, make it policy:
 
 ## Phase 8: Keep it tidy while the rewrite continues [ ]
 
-### 8.1 Encode the architecture in tooling [ ]
+### 8.1 Encode the architecture in tooling [x]
 
 * Boundary checker (grim ↛ crimson)
 * “sim ↛ pyray” checker
@@ -365,6 +365,6 @@ If you want the fastest impact on “duplicates + wrong place code”, do these 
 3. [x] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
 4. [x] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
 5. [x] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
-6. [ ] **Start shrinking `game.py`** by extracting screens/panels into modules.
+6. [x] **Start shrinking `game.py`** by extracting screens/panels into modules.
 
 If you want, I can also turn this into a concrete **refactor backlog** (ordered, PR-sized chunks with “touch files A/B/C, expected diffs, and rollback strategy”) using the exact module names you already have.
