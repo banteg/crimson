@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
 
@@ -170,33 +170,6 @@ def draw_menu_panel(texture: rl.Texture, *, dst: rl.Rectangle, tint: rl.Color = 
     rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
 
 
-def _resolve_asset(assets_root: Path, rel_path: str) -> Path | None:
-    direct = assets_root / rel_path
-    if direct.is_file():
-        return direct
-    legacy = assets_root / "crimson" / rel_path
-    if legacy.is_file():
-        return legacy
-    return None
-
-
-def _load_from_cache(cache: PaqTextureCache, name: str, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    try:
-        asset = cache.get_or_load(name, rel_path)
-        return asset.texture
-    except Exception:
-        missing.append(rel_path)
-        return None
-
-
-def _load_from_path(assets_root: Path, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    path = _resolve_asset(assets_root, rel_path)
-    if path is None:
-        missing.append(rel_path)
-        return None
-    return rl.load_texture(str(path))
-
-
 @dataclass(slots=True)
 class PerkMenuAssets:
     menu_panel: rl.Texture | None
@@ -208,78 +181,39 @@ class PerkMenuAssets:
     cursor: rl.Texture | None
     aim: rl.Texture | None
     missing: list[str] = field(default_factory=list)
-    _owned_textures: tuple[rl.Texture, ...] = ()
-    _cache: PaqTextureCache | None = None
-    _cache_owned: bool = False
+    _loader: TextureLoader | None = None
 
     def unload(self) -> None:
-        if self._cache is not None and self._cache_owned:
-            self._cache.unload()
-        for texture in self._owned_textures:
-            rl.unload_texture(texture)
-        self._owned_textures = ()
-        self._cache = None
-        self._cache_owned = False
+        if self._loader is not None:
+            self._loader.unload()
+            self._loader = None
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
-    paq_path = find_paq_path(assets_root)
-    if paq_path is not None:
-        try:
-            entries = load_paq_entries_from_path(paq_path)
-            cache = PaqTextureCache(entries=entries, textures={})
-            missing: list[str] = []
-            assets = PerkMenuAssets(
-                menu_panel=_load_from_cache(cache, "ui_menuPanel", "ui/ui_menuPanel.jaz", missing),
-                title_pick_perk=_load_from_cache(cache, "ui_textPickAPerk", "ui/ui_textPickAPerk.jaz", missing),
-                title_level_up=_load_from_cache(cache, "ui_textLevelUp", "ui/ui_textLevelUp.jaz", missing),
-                menu_item=_load_from_cache(cache, "ui_menuItem", "ui/ui_menuItem.jaz", missing),
-                button_sm=_load_from_cache(cache, "ui_buttonSm", "ui/ui_button_82x32.jaz", missing),
-                button_md=_load_from_cache(cache, "ui_buttonMd", "ui/ui_button_145x32.jaz", missing),
-                cursor=_load_from_cache(cache, "ui_cursor", "ui/ui_cursor.jaz", missing),
-                aim=_load_from_cache(cache, "ui_aim", "ui/ui_aim.jaz", missing),
-                missing=missing,
-            )
-            assets._cache = cache
-            assets._cache_owned = True
-            return assets
-        except Exception:
-            pass
-
-    missing: list[str] = []
-    menu_panel = _load_from_path(assets_root, "ui/ui_menuPanel.png", missing)
-    title_pick_perk = _load_from_path(assets_root, "ui/ui_textPickAPerk.png", missing)
-    title_level_up = _load_from_path(assets_root, "ui/ui_textLevelUp.png", missing)
-    menu_item = _load_from_path(assets_root, "ui/ui_menuItem.png", missing)
-    button_sm = _load_from_path(assets_root, "ui/ui_button_82x32.png", missing)
-    button_md = _load_from_path(assets_root, "ui/ui_button_145x32.png", missing)
-    cursor = _load_from_path(assets_root, "ui/ui_cursor.png", missing)
-    aim = _load_from_path(assets_root, "ui/ui_aim.png", missing)
-    owned = tuple(
-        tex
-        for tex in (
-            menu_panel,
-            title_pick_perk,
-            title_level_up,
-            menu_item,
-            button_sm,
-            button_md,
-            cursor,
-            aim,
-        )
-        if tex is not None
-    )
+    loader = TextureLoader.from_assets_root(assets_root, strict=False)
     return PerkMenuAssets(
-        menu_panel=menu_panel,
-        title_pick_perk=title_pick_perk,
-        title_level_up=title_level_up,
-        menu_item=menu_item,
-        button_sm=button_sm,
-        button_md=button_md,
-        cursor=cursor,
-        aim=aim,
-        missing=missing,
-        _owned_textures=owned,
+        menu_panel=loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz", fs_rel="ui/ui_menuPanel.png"),
+        title_pick_perk=loader.get(
+            name="ui_textPickAPerk",
+            paq_rel="ui/ui_textPickAPerk.jaz",
+            fs_rel="ui/ui_textPickAPerk.png",
+        ),
+        title_level_up=loader.get(
+            name="ui_textLevelUp",
+            paq_rel="ui/ui_textLevelUp.jaz",
+            fs_rel="ui/ui_textLevelUp.png",
+        ),
+        menu_item=loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz", fs_rel="ui/ui_menuItem.png"),
+        button_sm=loader.get(name="ui_buttonSm", paq_rel="ui/ui_button_82x32.jaz", fs_rel="ui/ui_button_82x32.png"),
+        button_md=loader.get(
+            name="ui_buttonMd",
+            paq_rel="ui/ui_button_145x32.jaz",
+            fs_rel="ui/ui_button_145x32.png",
+        ),
+        cursor=loader.get(name="ui_cursor", paq_rel="ui/ui_cursor.jaz", fs_rel="ui/ui_cursor.png"),
+        aim=loader.get(name="ui_aim", paq_rel="ui/ui_aim.jaz", fs_rel="ui/ui_aim.png"),
+        missing=loader.missing,
+        _loader=loader,
     )
 
 

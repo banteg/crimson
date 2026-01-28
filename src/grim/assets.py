@@ -71,16 +71,18 @@ class TextureLoader:
             raise FileNotFoundError(f"Missing asset: {rel_path}")
         self.missing.append(rel_path)
 
-    def load_from_cache(self, name: str, rel_path: str) -> rl.Texture | None:
+    def load_from_cache(self, name: str, rel_path: str, *, record_missing: bool = True) -> rl.Texture | None:
         if self.cache is None:
             return None
         try:
             asset = self.cache.get_or_load(name, rel_path)
         except Exception:
-            self._record_missing(rel_path)
+            if record_missing:
+                self._record_missing(rel_path)
             return None
         if asset.texture is None:
-            self._record_missing(rel_path)
+            if record_missing:
+                self._record_missing(rel_path)
             return None
         return asset.texture
 
@@ -95,7 +97,7 @@ class TextureLoader:
 
     def get(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
         if self.cache is not None:
-            texture = self.load_from_cache(name, paq_rel)
+            texture = self.load_from_cache(name, paq_rel, record_missing=False)
             if texture is not None:
                 return texture
         if fs_rel is None:
