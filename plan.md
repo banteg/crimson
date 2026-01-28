@@ -260,7 +260,7 @@ To avoid creating a junk-drawer module, extract cohesive chunks:
 * [x] `crimson/frontend/panels/options.py`
 * [x] `crimson/frontend/panels/stats.py`
 * [x] `crimson/frontend/transitions.py` (screen fade, timeline helpers)
-* [ ] `crimson/frontend/assets.py` (menu textures, panels; uses the shared TextureLoader)
+* [x] `crimson/frontend/assets.py` (menu textures, panels; uses the shared TextureLoader)
 
 Keep:
 

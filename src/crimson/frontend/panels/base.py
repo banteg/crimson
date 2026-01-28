@@ -8,7 +8,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import update_audio
 from grim.terrain_render import GroundRenderer
 
-from ..assets import _ensure_texture_cache
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
@@ -32,7 +32,6 @@ from ..menu import (
     MENU_SIGN_WIDTH,
     UI_SHADOW_OFFSET,
     UI_SHADOW_TINT,
-    MenuAssets,
     MenuEntry,
     MenuView,
     _draw_menu_cursor,
@@ -90,12 +89,7 @@ class PanelMenuView:
         layout_w = float(self._state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        cache = self._ensure_cache()
-        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
-        item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
-        panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
-        labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
-        self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
+        self._assets = load_menu_assets(self._state)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos_y)
         self._hovered = False
         self._timeline_ms = 0

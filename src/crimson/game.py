@@ -42,7 +42,7 @@ from grim import music
 
 from .demo import DemoView
 from .frontend.boot import BootView
-from .frontend.assets import _ensure_texture_cache
+from .frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .frontend.menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
@@ -58,7 +58,6 @@ from .frontend.menu import (
     MENU_SIGN_WIDTH,
     UI_SHADOW_OFFSET,
     UI_SHADOW_TINT,
-    MenuAssets,
     MenuView,
     _draw_menu_cursor,
     ensure_menu_ground,
@@ -186,9 +185,8 @@ class QuestsMenuView:
         cache = _ensure_texture_cache(self._state)
 
         # Sign and ground match the main menu/panels.
-        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
-        self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
-        self._assets = MenuAssets(sign=sign, item=None, panel=self._panel_tex, labels=None)
+        self._assets = load_menu_assets(self._state)
+        self._panel_tex = self._assets.panel if self._assets is not None else None
         self._init_ground()
 
         self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture

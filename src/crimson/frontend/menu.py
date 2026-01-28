@@ -8,11 +8,10 @@ import os
 import pyray as rl
 
 from grim.audio import play_music, stop_music, update_audio
-from grim.assets import PaqTextureCache
 from grim.terrain_render import GroundRenderer
 
 from ..ui.cursor import draw_menu_cursor
-from .assets import _ensure_texture_cache
+from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .transitions import _draw_screen_fade
 
 if TYPE_CHECKING:
@@ -119,14 +118,6 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
 
 
 @dataclass(slots=True)
-class MenuAssets:
-    sign: rl.Texture2D | None
-    item: rl.Texture2D | None
-    panel: rl.Texture2D | None
-    labels: rl.Texture2D | None
-
-
-@dataclass(slots=True)
 class MenuEntry:
     slot: int
     row: int
@@ -161,12 +152,7 @@ class MenuView:
         layout_w = float(self._state.config.screen_width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
-        cache = self._ensure_cache()
-        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
-        item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
-        panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
-        labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
-        self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
+        self._assets = load_menu_assets(self._state)
         self._full_version = bool(self._state.config.data.get("full_version_flag", 0))
         self._menu_entries = self._menu_entries_for_flags(
             full_version=self._full_version,
@@ -326,9 +312,6 @@ class MenuView:
     def _begin_quit_transition(self) -> None:
         self._state.menu_sign_locked = False
         self._begin_close_transition("quit_after_demo" if self._state.demo_enabled else "quit_app")
-
-    def _ensure_cache(self) -> PaqTextureCache:
-        return _ensure_texture_cache(self._state)
 
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self._state)
