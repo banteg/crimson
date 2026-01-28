@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-from crimson.crand import Crand
+from grim.rand import Crand
 from crimson.gameplay import (
     BonusId,
     GameplayState,

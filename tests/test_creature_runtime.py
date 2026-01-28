@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import SpawnEnv, SpawnSlotInit, build_spawn_plan
-from crimson.crand import Crand
+from grim.rand import Crand
 
 
 def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
@@ -111,4 +111,3 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert len(result.deaths) == 1
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
-

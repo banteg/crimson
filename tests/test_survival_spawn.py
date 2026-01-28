@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.crand import Crand
+from grim.rand import Crand
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
 
 

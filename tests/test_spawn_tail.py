@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.crand import Crand
+from grim.rand import Crand
 from crimson.creatures.spawn import BurstEffect, SpawnEnv, build_spawn_plan
 
 
@@ -119,4 +119,3 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
 
     assert len(plan.spawn_slots) == 1
     assert plan.spawn_slots[0].interval == pytest.approx(2.2 - 0.2, abs=1e-9)
-

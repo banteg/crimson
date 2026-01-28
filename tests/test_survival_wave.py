@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.crand import Crand
+from grim.rand import Crand
 from crimson.creatures.spawn import CreatureTypeId, tick_survival_wave_spawns
 
 
@@ -75,4 +75,3 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
         CreatureTypeId.SPIDER_SP1,
     ]
     assert rng.state == 0xBB25E9C6
-

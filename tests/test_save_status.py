@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson import save_status
+from crimson.persistence import save_status
 
 
 def test_game_cfg_roundtrip(tmp_path) -> None:

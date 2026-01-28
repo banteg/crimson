@@ -5,7 +5,7 @@ import math
 import pytest
 
 from crimson.bonuses import BonusId
-from crimson.crand import Crand
+from grim.rand import Crand
 from crimson.creatures.spawn import (
     CreatureFlags,
     CreatureTypeId,
