@@ -70,19 +70,19 @@ multiple thresholds.
 
 Milestones (as implemented by `survival_update` and mirrored in tests):
 
-- Stage `0` → `1` when `player_level >= 5`: spawn template `0x12` at `(-164, 512)` and `(1188, 512)` (heading π).
-- Stage `1` → `2` when `player_level >= 9`: spawn template `0x2c` at `(1088, 512)` (heading π).
-- Stage `2` → `3` when `player_level >= 11`: spawn 12× template `0x35` at `(1088, 256 + i*(128/3))` (heading π).
-- Stage `3` → `4` when `player_level >= 13`: spawn 4× template `0x2b` at `(1088, 384 + i*64)` (heading π).
-- Stage `4` → `5` when `player_level >= 15`: spawn 4× template `0x38` at right edge and 4× at left edge:
+- Stage `0` → `1` when `player_level >= 5`: spawn `FORMATION_RING_ALIEN_8_12` (`0x12`, ring of 8 aliens) at `(-164, 512)` and `(1188, 512)` (heading π).
+- Stage `1` → `2` when `player_level >= 9`: spawn `ALIEN_CONST_RED_BOSS_2C` (`0x2c`, red boss alien) at `(1088, 512)` (heading π).
+- Stage `2` → `3` when `player_level >= 11`: spawn 12× `SPIDER_SP2_RANDOM_35` (`0x35`, spider sp2) at `(1088, 256 + i*(128/3))` (heading π).
+- Stage `3` → `4` when `player_level >= 13`: spawn 4× `ALIEN_CONST_RED_FAST_2B` (`0x2b`, fast red alien) at `(1088, 384 + i*64)` (heading π).
+- Stage `4` → `5` when `player_level >= 15`: spawn 4× `SPIDER_SP1_AI7_TIMER_38` (`0x38`, timed spider sp1) at right edge and 4× at left edge:
   - `(1088, 384 + i*64)` and `(-64, 384 + i*64)` (heading π).
-- Stage `5` → `6` when `player_level >= 17`: spawn template `0x3a` at `(1088, 512)` (heading π).
-- Stage `6` → `7` when `player_level >= 19`: spawn template `0x01` at `(640, 512)` (heading π).
-- Stage `7` → `8` when `player_level >= 21`: spawn template `0x01` at `(384, 256)` and `(640, 768)` (heading π).
-- Stage `8` → `9` when `player_level >= 26`: spawn 4× template `0x3c` at `(1088, 384 + i*64)` and 4× at `(-64, 384 + i*64)` (heading π).
+- Stage `5` → `6` when `player_level >= 17`: spawn `SPIDER_SP1_CONST_SHOCK_BOSS_3A` (`0x3a`, shock boss spider) at `(1088, 512)` (heading π).
+- Stage `6` → `7` when `player_level >= 19`: spawn `SPIDER_SP2_SPLITTER_01` (`0x01`, splitter spider) at `(640, 512)` (heading π).
+- Stage `7` → `8` when `player_level >= 21`: spawn `SPIDER_SP2_SPLITTER_01` (`0x01`, splitter spider) at `(384, 256)` and `(640, 768)` (heading π).
+- Stage `8` → `9` when `player_level >= 26`: spawn 4× `SPIDER_SP1_CONST_RANGED_VARIANT_3C` (`0x3c`, ranged spider sp1) at `(1088, 384 + i*64)` and 4× at `(-64, 384 + i*64)` (heading π).
 - Stage `9` → `10` when `player_level >= 32`: spawn the final wave:
-  - template `0x3a` at `(1088, 512)` and `(-64, 512)` (heading π)
-  - template `0x3c` at top edge `((384 + i*64), -64)` and bottom edge `((384 + i*64), 1088)` (heading π)
+  - `SPIDER_SP1_CONST_SHOCK_BOSS_3A` (`0x3a`, shock boss spider) at `(1088, 512)` and `(-64, 512)` (heading π)
+  - `SPIDER_SP1_CONST_RANGED_VARIANT_3C` (`0x3c`, ranged spider sp1) at top edge `((384 + i*64), -64)` and bottom edge `((384 + i*64), 1088)` (heading π)
 
 Rewrite ports (derived from decompile + validated by tests):
 
