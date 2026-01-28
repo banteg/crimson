@@ -191,7 +191,7 @@ Move every `_clamp` there. Do it opportunistically:
 
 ---
 
-## Phase 4: Make “where code belongs” obvious inside `crimson` [ ]
+## Phase 4: Make “where code belongs” obvious inside `crimson` [x]
 
 This is where you stop the constant re-introduction of mixed concerns.
 
@@ -249,7 +249,7 @@ This immediately prevents future “random rendering code inserted into simulati
 
 `crimson/game.py` is large enough that duplicates and “wrong place” logic will accumulate there by default.
 
-### 5.1 Extract by *screen / subsystem*, not by “utility” [ ]
+### 5.1 Extract by *screen / subsystem*, not by “utility” [x]
 
 To avoid creating a junk-drawer module, extract cohesive chunks:
 
