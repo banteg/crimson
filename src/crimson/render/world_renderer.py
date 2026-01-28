@@ -291,7 +291,7 @@ class WorldRenderer:
         if info is None:
             return
         mirror_flag = info.mirror if mirror_long is None else mirror_long
-        index, mirrored = creature_anim_select_frame(
+        index, mirrored, _mode = creature_anim_select_frame(
             phase,
             base_frame=info.base,
             mirror_long=mirror_flag,
