@@ -161,7 +161,7 @@ You reduce:
 
 ---
 
-## Phase 3: Consolidate “tiny but everywhere” core utilities (without making a god-module) [ ]
+## Phase 3: Consolidate “tiny but everywhere” core utilities (without making a god-module) [x]
 
 You have repeated `_clamp` and a duplicated MSVCRT LCG.
 
