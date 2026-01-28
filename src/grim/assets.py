@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import io
 from pathlib import Path
 
@@ -30,6 +30,86 @@ def find_paq_path(assets_root: Path, *, paq_name: str = PAQ_NAME) -> Path | None
         if runtime.is_file():
             return runtime
     return None
+
+
+def resolve_asset_path(assets_root: Path, rel_path: str) -> Path | None:
+    direct = assets_root / rel_path
+    if direct.is_file():
+        return direct
+    legacy = assets_root / "crimson" / rel_path
+    if legacy.is_file():
+        return legacy
+    return None
+
+
+@dataclass(slots=True)
+class TextureLoader:
+    assets_root: Path
+    cache: PaqTextureCache | None = None
+    strict: bool = True
+    missing: list[str] = field(default_factory=list)
+    _owned_textures: list[rl.Texture] = field(default_factory=list)
+    _cache_owned: bool = False
+
+    @classmethod
+    def from_assets_root(cls, assets_root: Path, *, strict: bool = True) -> TextureLoader:
+        paq_path = find_paq_path(assets_root)
+        if paq_path is not None:
+            try:
+                entries = load_paq_entries_from_path(paq_path)
+                cache = PaqTextureCache(entries=entries, textures={})
+                return cls(assets_root=assets_root, cache=cache, strict=strict, _cache_owned=True)
+            except Exception:
+                pass
+        return cls(assets_root=assets_root, strict=strict)
+
+    def resolve_path(self, rel_path: str) -> Path | None:
+        return resolve_asset_path(self.assets_root, rel_path)
+
+    def _record_missing(self, rel_path: str) -> None:
+        if self.strict:
+            raise FileNotFoundError(f"Missing asset: {rel_path}")
+        self.missing.append(rel_path)
+
+    def load_from_cache(self, name: str, rel_path: str) -> rl.Texture | None:
+        if self.cache is None:
+            return None
+        try:
+            asset = self.cache.get_or_load(name, rel_path)
+        except Exception:
+            self._record_missing(rel_path)
+            return None
+        if asset.texture is None:
+            self._record_missing(rel_path)
+            return None
+        return asset.texture
+
+    def load_from_path(self, rel_path: str) -> rl.Texture | None:
+        path = resolve_asset_path(self.assets_root, rel_path)
+        if path is None:
+            self._record_missing(rel_path)
+            return None
+        texture = rl.load_texture(str(path))
+        self._owned_textures.append(texture)
+        return texture
+
+    def get(self, *, name: str, paq_rel: str, fs_rel: str | None = None) -> rl.Texture | None:
+        if self.cache is not None:
+            texture = self.load_from_cache(name, paq_rel)
+            if texture is not None:
+                return texture
+        if fs_rel is None:
+            fs_rel = paq_rel
+        return self.load_from_path(fs_rel)
+
+    def unload(self) -> None:
+        if self.cache is not None and self._cache_owned:
+            self.cache.unload()
+        for texture in self._owned_textures:
+            rl.unload_texture(texture)
+        self._owned_textures.clear()
+        self.cache = None
+        self._cache_owned = False
 
 
 @dataclass(slots=True)

@@ -107,7 +107,7 @@ You have the same trio of helpers repeated in multiple files:
 
 …and repeated “own/unload textures vs cache ownership” patterns.
 
-### 2.1 Create one canonical loader in `grim.assets` [ ]
+### 2.1 Create one canonical loader in `grim.assets` [x]
 
 Add something like:
 
