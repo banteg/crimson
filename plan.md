@@ -1,370 +1,551 @@
-Below is a refactor plan that’s meant to work **while the codebase is moving fast**: it prioritizes guardrails + high‑ROI consolidation first, then larger structural moves in small, reversible slices.
+Below is a concrete, codebase-aware plan that matches how your repo is structured (docs/ for intent, analysis/ for truth, src/ for the port) and keeps fidelity as the guiding constraint.
 
-I’m tailoring this to the snapshot you shared (Python + raylib, `src/grim` engine vs `src/crimson` game). A few concrete observations from the tree:
-
-* There is at least one clear **layering violation**: `src/grim/fx_queue.py` imports `crimson.effects` and `crimson.effects_atlas` (so `grim -> crimson` exists today).
-* There’s repeated **asset resolution + texture loading** logic across multiple places (`crimson/ui/{perk_menu,hud,game_over}.py`, `crimson/game_world.py`, several views) via repeated `_resolve_asset`, `_load_from_cache`, `_load_from_path`.
-* There’s duplicated **MSVCRT rand() LCG** logic (`crimson/crand.py` vs `CrtRand` inside `grim/terrain_render.py`).
-* Biggest churn/hotspot files by size are `crimson/game.py` (~3.8k LOC) and `crimson/game_world.py` (~1.7k LOC), which are likely where “code lives where it’s not supposed to” will keep reappearing unless boundaries are enforced.
-
-Tracking: use `[ ]` for pending and `[x]` for done (update the markers in the headers/items below).
+I’m going to assume the same “view + mode object” pattern you already use for Survival (`SurvivalGameView` → `SurvivalMode` → `GameWorld.update()`), and I’ll call out the key authoritative decompile entrypoints you should mirror for each mode so you always know “what to copy”.
 
 ---
 
-## North-star architecture rules (make these explicit) [ ]
+## 0) Lock down authoritative references per mode
 
-You already have the intent in `docs/rewrite/module-map.md`. Turn it into hard rules:
+Before writing new code, pick (and annotate) the exact decompile functions you’re matching so the port doesn’t drift:
 
-1. **`grim` must never import `crimson`.**
-   `grim` is engine/platform; `crimson` is game.
-2. **Simulation code should be importable without raylib.**
-   Concretely: anything that’s “update/step/resolve/apply” should not `import pyray as rl`.
-3. **Rendering and UI can depend on both** (`pyray` + `grim` + `crimson`), but:
+### Quests
 
-   * UI shouldn’t contain game rules; it should produce *intent* (“selected perk X”, “clicked play again”) and let a mode/controller apply it.
+* **Start/reset**: `quest_start_selected` (addr seen in decompile: `0x0043a790`)
+* **Per-frame gameplay + completion transition**: `quest_mode_update` (`0x00443d90`)
+* **Post-run screens**:
 
-These three rules will eliminate most “wrong place” drift.
+  * `quest_results_screen_update` (`0x00441e20`)
+  * `quest_failed_screen_update` (`0x00441820`)
+* **HUD bits**: quest progress bar + quest title fade are embedded in the main gameplay render path; you already found the logic (progress ratio, quest name timer, etc.) in the decompile.
 
----
+### Rush
 
-## Phase 0: Add safety rails before you move anything [x]
+* **Per-frame**: `rush_mode_update` (`0x00443fd0`)
 
-This is what lets you refactor *in tiny PRs* without breaking the rewrite.
+### Typ-o-Shooter
 
-### 0.1 Add a cheap boundary checker (CI + local) [x]
+Typ-o is *not* a “normal mode update”; it’s mostly in the “typ-o state” variant path:
 
-You can use `import-linter`. The goal is binary:
+* **Main per-frame**: `survival_gameplay_update_and_render` (the state `0x12` branch)
+* **Supporting functions**:
 
-* Fail CI if any file under `src/grim/` imports `crimson`.
+  * `creature_name_assign_random` (`0x004445a0`)
+  * `creature_find_by_name` (`0x00444800`)
+  * `creature_name_draw_labels` (`0x00444850`)
+  * `player_fire_weapon` (`0x00444980`) (used only by typ-o in the decompile)
 
-Add a second rule that will matter later:
+### Tutorial
 
-* Fail CI if any file under `src/crimson/sim/` (once you create it) imports `pyray`.
+* **Script**: `tutorial_timeline_update` (`0x00408990`)
+* **Prompt UI**: `tutorial_prompt_dialog` (`0x00408780`)
 
-### 0.2 Add a duplication report you can run on demand [x]
-
-Don’t try to “zero duplicates” overnight. Start by measuring.
-
-* Run a duplication tool (pylint `R0801`, `jscpd`, or similar)
-* Produce a report artifact
-* Establish a **baseline** (current duplication) and a simple policy:
-
-  * “No new duplicated blocks above N lines” (start permissive, tighten later)
-
-### 0.3 Create a “refactor compatibility” pattern [x]
-
-When moving modules, do not preserve old imports temporarily or re-export.
-
-This keeps the codebase clean when paths change. We haven't released, so we don't need any backwards compatibility or api stability.
+This gives you an unambiguous “source of truth” for each subsystem you’ll port.
 
 ---
 
-## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson) [x]
+## 1) First: fix game mode ID consistency (or you’ll fight ghosts)
 
-### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation) [x]
+Right now your `src/` has a known mismatch: `GAME_MODE_SURVIVAL = 3` in simulation-land, while the UI/config uses `1` for Survival (and docs map `3` to Quests). That’s going to explode the moment you add Quest/Rush/Typo/Tutorial because:
 
-Right now:
+* perk gating uses `game_mode` numeric checks (`MODE_3_ONLY`, tutorial special cases, rush exclusions)
+* highscore sort rules depend on `record.game_mode_id`
+* GameOver UI formats score differently based on mode ID
 
-* `grim/fx_queue.py` imports `crimson.effects` and `crimson.effects_atlas`.
+### Do this cleanup before implementing new modes
 
-You have a good option. Pick the one that matches your intent for “what is engine vs game”.
+1. Create a single enum-like source of truth (even if you keep raw ints):
 
-#### cleanest separation: move game-specific baking to `crimson`
+   * `1 = Survival`
+   * `2 = Rush`
+   * `3 = Quests`
+   * `4 = Typ-o`
+   * `8 = Tutorial`
 
-* Keep in `grim`:
+2. Update `GameWorld.update()` so it **doesn’t** infer “survival progression enabled” from `game_mode == 3`.
 
-  * `GroundRenderer`
-  * `GroundDecal`, `GroundCorpseDecal`
-  * any raylib-only rendering primitives
-* Move to `crimson`:
+   * Make it explicit: `perk_progression_enabled: bool`, `perk_prompt_enabled: bool`.
+   * This is crucial because:
 
-  * the function that converts *game effect IDs* to atlas rects and decals, i.e. `bake_fx_queues`
+     * Rush: should disable perks entirely (decompile suppresses perk prompt for rush)
+     * Quests: likely enables perks (perk prompt excludes only rush)
+     * Typ-o: uses different flow (no perk prompt)
+     * Tutorial: perks are forced/static only at the perk lesson stage
 
-Result:
+3. Add a quick regression test (even a tiny one) that asserts:
 
-* `grim` becomes truly reusable engine code.
-* `crimson` owns “effect_id means sprite frame X”.
+   * `scores_path_for_config(mode=3)` → `questX_Y.hi`
+   * `rank_index(mode=3)` uses ascending time (already implemented)
+   * perk generation respects `MODE_3_ONLY` as “mode 3 only” (don’t accidentally “fix” it wrong)
 
-A reasonable landing spot would be:
-
-* `crimson/render/terrain_fx.py` (or `crimson/render/fx_bake.py`)
-
-**Either option eliminates the architectural footgun** and will prevent future “engine depends on game” creep.
-
-### 1.2 Lock it in with the boundary test [x]
-
-Once fixed, the boundary checker from Phase 0 ensures it doesn’t regress during fast iteration.
-
----
-
-## Phase 2: Kill the highest-ROI duplication: asset locating + texture loading [ ]
-
-You have the same trio of helpers repeated in multiple files:
-
-* `_resolve_asset(assets_root, rel_path)`
-* `_load_from_cache(cache, name, rel_path, missing)`
-* `_load_from_path(assets_root, rel_path, missing)`
-
-…and repeated “own/unload textures vs cache ownership” patterns.
-
-### 2.1 Create one canonical loader in `grim.assets` [x]
-
-Add something like:
-
-* `resolve_asset_path(assets_root, rel_path) -> Path|None`
-* `TextureProvider` / `TextureLoader` that:
-
-  * optionally wraps `PaqTextureCache`
-  * optionally falls back to filesystem (including legacy `assets_root/crimson/...`)
-  * crash on missing assets! we want to catch this early. the game shouldn't boot without assets.
-  * owns unload responsibilities in one place
-
-A sketch:
-
-```py
-@dataclass
-class TextureLoader:
-    assets_root: Path
-    cache: PaqTextureCache|None
-    missing: list[str]
-    owned_textures: list[rl.Texture]
-
-    def get(self, name: str, paq_rel: str, fs_rel: str) -> rl.Texture|None: ...
-    def unload(self) -> None: ...
-```
-
-### 2.2 Refactor callsites in this order (low risk → high churn) [x]
-
-1. `crimson/ui/perk_menu.py`
-2. `crimson/ui/hud.py`
-3. `crimson/ui/game_over.py`
-4. debug views with private `_resolve_asset` methods
-5. `crimson/game_world.py`
-
-Why this order:
-
-* UI modules have localized impact and a clean “assets object” pattern already.
-* `game_world.py` is central and riskier; do it after the loader is proven.
-
-### 2.3 Optional but valuable: pass a shared loader/cache down [ ]
-
-Right now, multiple modules may create separate `PaqTextureCache` instances. If you centralize:
-
-* Game boot creates a single `entries` dict + `PaqTextureCache`
-* UI/world components receive a loader/provider
-
-You reduce:
-
-* duplicate decompression
-* texture duplication in GPU memory
-* “different module loads different version of the same asset” bugs
+This single step prevents a ton of “why are quests showing survival perks?” debugging later.
 
 ---
 
-## Phase 3: Consolidate “tiny but everywhere” core utilities (without making a god-module) [x]
+## 2) Factor a reusable in-game mode “shell” to avoid cloning SurvivalMode 4 times
 
-You have repeated `_clamp` and a duplicated MSVCRT LCG.
+You’ll implement 4 new modes. If each one duplicates the SurvivalMode loop, you’ll either:
 
-### 3.1 Unify the MSVCRT rand() implementation [x]
+* subtly diverge from original ordering, or
+* constantly re-fix bugs in four places.
 
-Right now:
+### Create a `BaseGameplayMode` that owns:
 
-* `crimson/crand.py` has `Crand`
-* `grim/terrain_render.py` defines `CrtRand` with the same algorithm
+* `GameWorld`
+* `elapsed_ms` (and `dt_ms` handling)
+* pause/perk-menu gating (`dt=0` behavior)
+* screen fade binding (`bind_screen_fade`)
+* common “end of run” exit handling (go to menu/restart)
 
-Create `grim/rand.py`:
+### Subclasses override:
 
-* `class CrtRand`
-* pure Python, no `pyray`
+* `prepare_new_run(state)`
+  reset world, set terrain, weapon, counters, mode state
+* `tick_spawns(dt_ms, state)`
+  returns spawns to apply (either `CreatureInit` or “spawn_template calls”)
+* `post_world_update(dt_ms, state)`
+  completion detection, transitions, special timers
+* `render_overlays()`
+  quest progress bar, typ-o typing box, tutorial prompts, etc.
+* `build_highscore_record()`
+  (quests are special: completion time + XP; rush uses time; typ-o uses XP + accuracy)
 
-Then:
-
-* replace the copy in `grim/terrain_render.py` with an import
-* delete `crimson/crand.py`, don't re-export for compatibility
-
-### 3.2 Add a small, pure `grim.math` (or `grim.util.math`) [x]
-
-Move every `_clamp` there. Do it opportunistically:
-
-* Add `clamp`, `clamp01`, `lerp`
-* Each time you touch a module with local `_clamp`, replace it with the shared one
-
----
-
-## Phase 4: Make “where code belongs” obvious inside `crimson` [x]
-
-This is where you stop the constant re-introduction of mixed concerns.
-
-### 4.1 Introduce internal subpackages by *responsibility* [x]
-
-You don’t have to move everything at once. Start by **creating the directories** and moving a couple of modules per PR.
-
-Suggested layout (matches your docs + what already exists):
-
-* `crimson/sim/`
-  Pure gameplay/simulation logic. No `pyray`.
-* `crimson/render/`
-  Rendering helpers that interpret sim state and draw via raylib/grim.
-* `crimson/modes/`
-  Survival, demo, quests/rush/etc controllers.
-* `crimson/persistence/`
-  `save_status`, `highscores`, config-ish stuff that is game-layer.
-* `crimson/ui/` stays as-is.
-* `crimson/views/` stays as tooling/debug, but should depend on `modes` and `ui`, not reinvent them.
-
-### 4.2 Split `GameWorld` into “state + renderer + services” (keep a façade) [x]
-
-`crimson/game_world.py` currently mixes:
-
-* state ownership (players/creatures/projectiles/bonuses)
-* sim updates
-* rendering (textures, sprite selection, drawing)
-* audio triggering
-* asset loading
-
-Refactor pattern that works well during rewrites:
-
-1. [x] **Extract `WorldState`** (pure, no `pyray`):
-
-   * holds pools, timers, RNG
-   * `step(dt, input) -> events` (events are plain dataclasses)
-2. [x] **Extract `WorldRenderer`** (raylib):
-
-   * owns textures
-   * `draw(state, camera, ...)`
-3. [x] **Extract `AudioRouter`**:
-
-   * maps events → `grim.audio.play_sfx/trigger_game_tune`
-
-Keep `GameWorld` as the public façade for now so callsites don’t churn:
-
-* `GameWorld.update()` delegates to `WorldState.step()` and routes events
-* `GameWorld.draw()` delegates to renderer
-
-This immediately prevents future “random rendering code inserted into simulation” and makes duplication easier to see.
+Do this refactor by first making SurvivalMode subclass the base, keeping it identical.
 
 ---
 
-## Phase 5: Break up `crimson/game.py` without losing parity mapping [x]
+## 3) Rush mode implementation plan
 
-`crimson/game.py` is large enough that duplicates and “wrong place” logic will accumulate there by default.
+Rush is the best “first new mode” because it’s small and exercises the whole pipeline (spawns → world → game over → highscores).
 
-### 5.1 Extract by *screen / subsystem*, not by “utility” [x]
+### 3.1 Mode state
 
-To avoid creating a junk-drawer module, extract cohesive chunks:
+Create a `RushState`:
 
-* [x] `crimson/frontend/boot.py` (boot stages, resource pack init, logo flow)
-* [x] `crimson/frontend/menu.py` (main menu buttons + transitions)
-* [x] `crimson/frontend/panels/base.py` (shared panel shell + layout)
-* [x] `crimson/frontend/panels/play_game.py`
-* [x] `crimson/frontend/panels/options.py`
-* [x] `crimson/frontend/panels/stats.py`
-* [x] `crimson/frontend/transitions.py` (screen fade, timeline helpers)
-* [x] `crimson/frontend/assets.py` (menu textures, panels; uses the shared TextureLoader)
+* `elapsed_ms`
+* `spawn_cooldown_ms`
 
-Keep:
+### 3.2 Run start (mirror `rush_mode_update` expectations)
 
-* `GameState` dataclass and top-level `run_game(...)` style entrypoints in `game.py`
-* This preserves “searchability” for parity work, while still shrinking the file.
+* reset world (like Survival does)
+* set/fix weapon and ammo rules:
 
-### 5.2 Enforce “frontend doesn’t own gameplay rules” [x]
+  * decompile forces weapon id and ammo every frame; you can:
 
-Rule of thumb:
+    * set them once at start, and
+    * enforce each update to match fidelity (cheap)
+* perks:
 
-* menu/panel code can set “desired mode”, “selected quest”, “hardcore toggle”
-* only mode/controller code mutates simulation state
+  * ensure perk prompt/selection is disabled in Rush (decompile does this)
 
----
+### 3.3 Per-frame loop
 
-## Phase 6: Consolidate mode logic so debug views don’t fork behavior [x]
+After `world.update(...)`:
 
-You currently have:
+* call existing `tick_rush_mode_spawns(...)` (already implemented in `creatures/spawn.py`)
+* spawn each returned `CreatureInit` with `world.state.creatures.spawn_init(...)`
+* increment `elapsed_ms`
 
-* “main game flow” in `crimson/game.py`
-* “playable survival” in `crimson/views/survival.py` using `GameWorld`
+### 3.4 HUD + scoring
 
-To prevent duplication drift:
+* HUD: show clock (mm:ss)
+* highscore record on death:
 
-### 6.1 Create `crimson/modes/survival_mode.py` [x]
+  * `record.game_mode_id = 2`
+  * `record.survival_elapsed_ms = elapsed_ms`
+  * `record.score_xp` optional, but ranking uses time anyway
+* ensure `scores_path_for_config()` maps mode 2 → `rush.hi` (it does)
 
-It should expose something like:
+### 3.5 Wiring
 
-* `SurvivalMode.update(dt) -> ModeAction/events`
-* `SurvivalMode.draw(...)`
-* or split update/draw like the WorldState/WorldRenderer pattern
+* Add `RushGameView` parallel to `SurvivalGameView`
+* In `GameLoopView.update()`: route `start_rush` → `RushGameView` (stop using SurvivalGameView as the placeholder)
 
-Then:
+### 3.6 Tests
 
-* `crimson/game.py` uses the same mode class
-* `crimson/views/survival.py` becomes a thin wrapper that hosts the mode in the view runner
+* deterministic spawn test:
 
-This keeps “debug tooling” from becoming a second implementation.
-
----
-
-## Phase 7: Systematic duplicate removal (after boundaries + structure) [x]
-
-Once the big rocks above land, duplication work becomes much cheaper.
-
-### 7.1 Triage duplicates into buckets [x]
-
-Run your duplicate report and classify each hit:
-
-1. **Infrastructure duplicates** (fix immediately):
-
-   * asset loading, file locating, texture ownership/unload
-2. **Math / small helpers** (fix opportunistically):
-
-   * clamp/lerp/angle conversions
-3. **UI widget patterns** (fix by making real widgets):
-
-   * button behavior, text input, hover timers, layout calculation
-4. **Content-ish repetition** (often keep as data, not code):
-
-   * spawn tables, quest tiers, weapon/perk/bonus tables
-
-### 7.2 Add a “no new duplicates” rule for the top bucket [x]
-
-Once asset loading is centralized, make it policy:
-
-* new code **must** use the loader/provider
-* no new `_resolve_asset` clones
+  * seed RNG
+  * call `tick_rush_mode_spawns` for N ticks
+  * assert first few spawn positions and template ids match known values
 
 ---
 
-## Phase 8: Keep it tidy while the rewrite continues [ ]
+## 4) Quests mode implementation plan
 
-### 8.1 Encode the architecture in tooling [x]
+Quests are a full “campaign-like” pipeline:
 
-* Boundary checker (grim ↛ crimson)
-* “sim ↛ pyray” checker
-* Optional: “views should not be imported by runtime” checker
+* quest metadata → terrain + start weapon
+* timeline spawns + hardcore adjustment
+* quest-specific HUD (title fade + progress)
+* completion transition
+* results screen (time breakdown + unlocks + highscores)
+* failed screen
 
-### 8.2 Make “what is stable API” explicit [ ]
+### 4.1 Start-of-run (`quest_start_selected`)
 
-* Everything can move freely for now.
+Implement a `QuestMode.prepare_new_run()` that does:
 
+1. **Reset world**:
 
-### 8.3 Set refactor-friendly PR conventions [ ]
+   * clear creatures/projectiles/bonuses/effects
+   * reset player stats (level/xp/perks pending) to match decompile initialization
 
-For a fast-moving rewrite, this matters more than perfect architecture:
+2. **Terrain**:
 
-* Small PRs (single theme)
-* Mechanical moves + behavior changes separated where possible
-* Always keep `uv run crimson ...` entrypoints green
-* When moving modules, leave re-export stubs for one cycle
+   * apply quest’s `terrain_id` and `terrain_over_id`
+
+3. **Player weapon**:
+
+   * set to `QuestDefinition.start_weapon_id`
+
+4. **Spawn table build**:
+
+   * use existing quest builder output (`build_quest_spawn_table(...)`)
+   * apply hardcore adjustments exactly like decompile:
+
+     * if hardcore and `count > 1` and spawn_id != `0x3c`:
+
+       * spawn_id == `0x2b` → `count += 2`
+       * else → `count += 8`
+   * compute and store for HUD:
+
+     * `total_spawn_count = sum(count)`
+     * `max_trigger_time_ms = max(trigger_time_ms)`
+
+5. **Timers**:
+
+   * `spawn_timeline_ms = 0`
+   * `quest_name_timer_ms = 0` (used for the fade-in quest title overlay)
+   * `no_creatures_timer_ms = 0` (for forced-spawn rule)
+   * `completion_transition_ms = -1` (negative sentinel like decompile)
+
+6. **Persistence “attempt count”**:
+
+   * increment the “games played” entry for this quest in `status.quest_play_counts`
+   * your existing QuestStartView already models indexing (games vs completed offset)
+
+### 4.2 Per-frame quest update (`quest_mode_update`)
+
+After `world.update(...)`:
+
+1. Advance timers:
+
+   * decompile only advances `spawn_timeline_ms` if:
+
+     * there are active creatures OR spawn table not empty
+   * always advance `quest_name_timer_ms` while gameplay runs
+
+2. Run spawn timeline:
+
+   * call `tick_quest_mode_spawns(...)` (already exists)
+   * apply returned spawn calls via `creature_pool.spawn_template(...)`
+   * update and store `no_creatures_timer_ms`
+
+3. Completion detection:
+
+   * if `creatures_none_active` and spawn table empty:
+
+     * start `completion_transition_ms` if not started
+     * after ~1000 ms → transition to Quest Results view
+
+4. Failure detection:
+
+   * when player(s) dead → Quest Failed view (separate from standard GameOver)
+
+### 4.3 Quest HUD (from decompile behavior)
+
+Implement a quest HUD overlay:
+
+* **time**: from `spawn_timeline_ms` (mm:ss)
+* **progress bar**: ratio of kills to total spawns
+
+  * track:
+
+    * `kills = world.stats.creature_kill_count` (or mirror highscore field)
+    * `spawned_count` (increment when you spawn from table)
+    * `remaining_count = sum(spawn.count)`
+  * `progress = kills / max(spawned+remaining, 1)`
+* **quest title fade**: show “Quest X-Y” for first few seconds based on `quest_name_timer_ms`
+
+### 4.4 Quest Results screen (`quest_results_screen_update`)
+
+This needs to be its own view/UI, not `GameOverUi`.
+
+Minimum faithful behaviors to implement:
+
+* compute final time:
+
+  * `base_time_ms = spawn_timeline_ms`
+  * `life_bonus_ms = round(p1_health) + round(p2_health if 2p)`
+  * `unpicked_perk_bonus_ms = perk_pending_count * 1000`
+  * `final_time_ms = base_time_ms - life_bonus_ms - unpicked_perk_bonus_ms`
+  * clamp to `>= 1`
+* write a highscore record:
+
+  * `game_mode_id = 3`
+  * `survival_elapsed_ms = final_time_ms` (quest ranking is ascending time)
+  * `score_xp = experience`
+* animate the breakdown (optional but doable):
+
+  * count base time up
+  * then count bonuses
+  * then reveal final time (decompile does this in phases)
+* unlock popups:
+
+  * if quest grants weapon/perk *and it’s newly unlocked*, update:
+
+    * `status.weapon_unlock_index`
+    * `status.perk_unlock_index`
+  * display “Weapon unlocked” / “Perk unlocked”
+* buttons:
+
+  * Play Next
+  * Play Again
+  * High scores
+  * Main menu
+
+You can reuse your existing:
+
+* highscore file I/O + rank insertion (`persistence/highscores.py`)
+* name entry logic from `ui/game_over.py` (it’s already solid)
+
+### 4.5 Quest Failed screen (`quest_failed_screen_update`)
+
+Implement:
+
+* “Quest failed” title + stats
+* buttons:
+
+  * Play again (increment `status.quest_fail_retry_count`)
+  * Play another (return to quest selection)
+  * main menu
+
+### 4.6 Wiring
+
+* implement `QuestGameView` that reads `state.pending_quest_level`
+* in `GameLoopView.update()` route `start_quest` → `QuestGameView`
+
+### 4.7 Tests
+
+* spawn table + hardcore adjustment test (pure)
+* completion transition test:
+
+  * force spawn table empty and creatures none → ensure results screen triggers after the right delay
+* highscore insertion test for quests (ascending time)
 
 ---
 
-## A pragmatic “do these next” shortlist [ ]
+## 5) Tutorial mode implementation plan
 
-If you want the fastest impact on “duplicates + wrong place code”, do these in order:
+Tutorial is normal gameplay + a scripted director that:
 
-1. [x] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
-2. [x] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
-3. [x] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
-4. [x] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
-5. [x] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
-6. [x] **Start shrinking `game.py`** by extracting screens/panels into modules.
+* advances stage timers
+* spawns enemies/bonuses
+* forces player health/XP constraints
+* draws prompt dialog with “skip” and final buttons
 
-If you want, I can also turn this into a concrete **refactor backlog** (ordered, PR-sized chunks with “touch files A/B/C, expected diffs, and rollback strategy”) using the exact module names you already have.
+### 5.1 Tutorial state
+
+Create `TutorialState` with:
+
+* `stage_index` (0–8)
+* `stage_timer_ms`
+* `stage_transition_timer_ms` (negative sentinel + fade controller)
+* `hint_index`, `hint_alpha`
+* `repeat_spawn_count`
+* `hint_bonus_creature_ref` (store creature index, not a pointer)
+
+### 5.2 Port `tutorial_timeline_update` as a pure “director”
+
+Implement a function like:
+`tick_tutorial(dt_ms, tutorial_state, world) -> TutorialUiModel + spawn actions`
+
+Match stage behaviors from the decompile:
+
+* Stage 0: after 6000ms → transition
+* Stage 1: wait for any movement key → spawn XP bonuses
+* Stage 2: wait until bonuses cleared → transition
+* Stage 3: wait for fire → spawn small wave left side
+* Stage 4: wait until creatures cleared → spawn small wave right side
+* Stage 5: powerup lesson loop:
+
+  * spawn “bonus carrier” alien template `0x27` that drops:
+
+    * speed (13)
+    * weapon (3, amount 5)
+    * double XP (6)
+    * nuke (5)
+    * reflex boost (9)
+  * spawn supporting enemies to demonstrate the bonus
+  * after enough repeats → force perk lesson (set XP high enough to trigger perk)
+* Stage 6: wait until perk selection done → spawn larger mixed wave
+* Stage 7: wait until everything cleared → transition
+* Stage 8: final message (“ready to play”) + end buttons
+
+Also replicate tutorial “guardrails”:
+
+* force health to 100 each update
+* reset XP to 0 outside the perk stage (like decompile does)
+
+### 5.3 Implement `tutorial_prompt_dialog` UI component
+
+Build a dedicated UI widget:
+
+* top-of-screen translucent dialog box
+* fade alpha exactly as the script provides
+* two button modes:
+
+  * regular tutorial: “Skip tutorial”
+  * final stage: “Play a game” + “Repeat tutorial”
+* actions:
+
+  * skip/play → return to menu
+  * repeat → reset tutorial state and clear perks/progression
+
+### 5.4 Tutorial perks special-case
+
+Your detangling notes mention Tutorial perks are a fixed list.
+
+Implement in perk generation:
+
+* if `game_mode_id == 8`:
+
+  * return the fixed perk ids (no RNG)
+
+This prevents “tutorial perk lesson” from being random.
+
+### 5.5 Wiring
+
+* Add `TutorialMode` + `TutorialGameView`
+* Route `start_tutorial` to it.
+
+### 5.6 Tests
+
+Tutorial is perfect for deterministic tests:
+
+* simulate input events (move/fire)
+* assert stage transitions and exact spawn templates/positions
+
+---
+
+## 6) Typ-o-Shooter implementation plan
+
+Typ-o is essentially:
+
+* a typing buffer
+* enemies with unique names
+* enter-to-attempt-shot
+* accuracy counters (shots fired vs hits)
+* spawn loop based on elapsed time
+
+### 6.1 Add a separate creature-name table (don’t bloat CreatureState)
+
+Implement a `CreatureNameTable`:
+
+* `names: list[str]` sized to creature pool
+* `assign_random(i, rng, difficulty)` (port decompile logic incrementally)
+* `clear(i)` when creature slot becomes inactive
+* `find_by_name(name) -> index|None` for active creatures
+
+Start with a simplified but deterministic approach, then iterate toward the decompile:
+
+* enforce uniqueness among active creatures
+* enforce max length (16)
+* scale difficulty with XP (decompile changes name generation as XP rises)
+
+### 6.2 Typing buffer + input handling
+
+Create `TypingBuffer`:
+
+* stores current string (max 16)
+* polls char presses (Raylib `GetCharPressed`)
+* supports backspace
+* on Enter:
+
+  * `shots_fired += 1`
+  * if matches a creature name:
+
+    * `shots_hit += 1`
+    * set `aim_target` to that creature position
+    * set `fire_requested = True` for this frame
+  * optionally handle `"reload"` (the decompile checks it)
+  * clear buffer
+
+### 6.3 Firing
+
+Do not reuse normal “hold mouse button” logic.
+
+For fidelity and simplicity:
+
+* force weapon each frame (decompile sets weapon_id, ammo constantly)
+* ensure “infinite ammo” (reset ammo to clip size or constant)
+* freeze movement input (always 0)
+* when `fire_requested`:
+
+  * set player aim to `aim_target`
+  * fire exactly one shot through your normal weapon firing codepath (one-tick pulse)
+
+### 6.4 Spawn loop
+
+Port the typ-o spawn loop from the state-0x12 decompile branch:
+
+* `spawn_cooldown_ms -= player_count * dt_ms`
+* while `< 0`:
+
+  * `spawn_cooldown_ms += 0xDAC - elapsed_ms/800` (clamp min 100)
+  * spawn 2 creatures (right type 4, left type 2) at sine/cos y offsets
+  * set ai_mode=8, flags|=0x80, move_speed*=1.4
+  * assign random names to each spawned creature
+
+### 6.5 UI overlays
+
+Render:
+
+* name labels above creatures (use `CreatureNameTable.names[i]`)
+* input box bottom-left showing current typing + blinking cursor
+* play “typeclick” and “typeenter” sounds
+
+### 6.6 Scoring + highscores
+
+Typ-o uses XP-based score:
+
+* `record.game_mode_id = 4`
+* `record.score_xp = player_experience`
+* `record.survival_elapsed_ms = elapsed_ms` (display only)
+* `record.shots_fired` / `record.shots_hit` filled from typing stats
+
+You also need to fix persistence:
+
+* extend `scores_path_for_config()` to map mode 4 → `typo.hi`
+
+  * right now typ-o would fall into `unknown.hi`
+
+### 6.7 Wiring
+
+* Add `TypoShooterMode` + `TypoShooterGameView`
+* Route `start_typo` to it.
+
+### 6.8 Tests
+
+* deterministic name assignment constraints (unique, max len)
+* find_by_name correctness
+* spawn loop determinism
+
+---
+
+## 7) Recommended implementation order
+
+This order minimizes risk and reduces rework:
+
+1. **Mode ID + progression gating cleanup** (so you don’t misapply perks/scoring)
+2. **Extract BaseGameplayMode** (keep Survival identical, reduce duplication)
+3. **Rush** (simple, validates new view wiring and spawn_init path)
+4. **Quests gameplay loop** (timeline spawns + completion/failure transitions)
+5. **Quest Results + Failed screens + persistence unlocks** (end-to-end quest pipeline)
+6. **Tutorial** (scripted director + prompt dialog + fixed perks)
+7. **Typ-o** (most bespoke: names + typing UI + unique fire/spawn loops)
+8. **Polish + regression tests** (especially around mode IDs and perk gating)
+
+---
+
+If you want a “next action list” to start immediately: do the mode-ID/progression cleanup, then implement Rush end-to-end (new view + mode + spawns + game over + rush.hi). Once that works, you’ll have the skeleton you can clone for Quests/Tutorial/Typ-o with confidence that the plumbing is correct.
