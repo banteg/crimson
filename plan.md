@@ -302,7 +302,7 @@ This keeps “debug tooling” from becoming a second implementation.
 
 ---
 
-## Phase 7: Systematic duplicate removal (after boundaries + structure) [ ]
+## Phase 7: Systematic duplicate removal (after boundaries + structure) [x]
 
 Once the big rocks above land, duplication work becomes much cheaper.
 
@@ -323,7 +323,7 @@ Run your duplicate report and classify each hit:
 
    * spawn tables, quest tiers, weapon/perk/bonus tables
 
-### 7.2 Add a “no new duplicates” rule for the top bucket [ ]
+### 7.2 Add a “no new duplicates” rule for the top bucket [x]
 
 Once asset loading is centralized, make it policy:
 

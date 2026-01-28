@@ -23,6 +23,9 @@ test-cov *args:
 lint-imports:
     uv run lint-imports
 
+lint-assets:
+    uv run python scripts/check_asset_loader_usage.py
+
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
     mkdir -p "$(dirname "{{out}}")"
