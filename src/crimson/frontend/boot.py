@@ -275,10 +275,6 @@ class BootView:
             self._draw_company_logo_sequence()
 
     def close(self) -> None:
-        if self._state.logos is not None:
-            self._state.logos.unload()
-        if self._state.texture_cache is not None:
-            self._state.texture_cache.unload()
         if self._state.audio is not None:
             shutdown_audio(self._state.audio)
 

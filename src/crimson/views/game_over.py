@@ -67,7 +67,6 @@ class GameOverDebugView:
         rl.show_cursor()
         self._ui.close()
         if self._hud is not None:
-            self._hud.unload()
             self._hud = None
 
     def _reset_record(self) -> None:

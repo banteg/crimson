@@ -91,7 +91,6 @@ class PerkSelectionView:
     def close(self) -> None:
         rl.show_cursor()
         if self._ui_assets is not None:
-            self._ui_assets.unload()
             self._ui_assets = None
         if self._small is not None:
             rl.unload_texture(self._small.texture)

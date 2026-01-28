@@ -108,13 +108,7 @@ class GameOverAssets:
     text_well_done: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
     missing: list[str]
-    _loader: TextureLoader | None = None
 
-    def unload(self) -> None:
-        if self._loader is not None:
-            self._loader.unload()
-            self._loader = None
-        self.perk_menu_assets.unload()
 
 def load_game_over_assets(assets_root: Path) -> GameOverAssets:
     perk_menu_assets = load_perk_menu_assets(assets_root)
@@ -134,7 +128,6 @@ def load_game_over_assets(assets_root: Path) -> GameOverAssets:
         text_well_done=text_well_done,
         perk_menu_assets=perk_menu_assets,
         missing=missing,
-        _loader=loader,
     )
 
 
@@ -216,7 +209,6 @@ class GameOverUi:
 
     def close(self) -> None:
         if self.assets is not None:
-            self.assets.unload()
             self.assets = None
         if self.font is not None:
             rl.unload_texture(self.font.texture)

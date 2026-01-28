@@ -159,7 +159,6 @@ class PlayerSandboxView:
             rl.unload_texture(self._small.texture)
             self._small = None
         if self._hud_assets is not None:
-            self._hud_assets.unload()
             self._hud_assets = None
 
     def _handle_input(self) -> None:

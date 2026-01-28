@@ -69,12 +69,6 @@ class HudAssets:
     clock_pointer: rl.Texture | None
     bonuses: rl.Texture | None
     missing: list[str] = field(default_factory=list)
-    _loader: TextureLoader | None = None
-
-    def unload(self) -> None:
-        if self._loader is not None:
-            self._loader.unload()
-            self._loader = None
 
 
 def hud_ui_scale(screen_w: float, screen_h: float) -> float:
@@ -110,7 +104,6 @@ def load_hud_assets(assets_root: Path) -> HudAssets:
         ),
         bonuses=loader.get(name="bonuses", paq_rel="game/bonuses.jaz", fs_rel="game/bonuses.png"),
         missing=loader.missing,
-        _loader=loader,
     )
 
 

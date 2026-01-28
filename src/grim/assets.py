@@ -98,18 +98,12 @@ class TextureLoader:
             fs_rel = paq_rel
         return self.load_from_path(name, fs_rel)
 
-    def unload(self) -> None:
-        return
-
 
 @dataclass(slots=True)
 class TextureAsset:
     name: str
     rel_path: str
     texture: rl.Texture2D | None
-
-    def unload(self) -> None:
-        return
 
 
 @dataclass(slots=True)
@@ -131,10 +125,6 @@ class LogoAssets:
 
     def loaded_count(self) -> int:
         return sum(1 for asset in self.all() if asset.texture is not None)
-
-    def unload(self) -> None:
-        for asset in self.all():
-            asset.unload()
 
 
 @dataclass(slots=True)
@@ -158,9 +148,6 @@ class PaqTextureCache:
 
     def loaded_count(self) -> int:
         return sum(1 for asset in self.textures.values() if asset.texture is not None)
-
-    def unload(self) -> None:
-        return
 
 
 def load_paq_entries_from_path(paq_path: Path) -> dict[str, bytes]:

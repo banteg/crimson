@@ -321,9 +321,7 @@ class GameWorld:
             self.ground.render_target = None
         self.ground = None
 
-        if self._texture_loader is not None:
-            self._texture_loader.unload()
-            self._texture_loader = None
+        self._texture_loader = None
 
         self.creature_textures.clear()
         self.projs_texture = None

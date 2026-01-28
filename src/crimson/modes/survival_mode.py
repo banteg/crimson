@@ -270,14 +270,12 @@ class SurvivalMode:
     def close(self) -> None:
         self._game_over_ui.close()
         if self._perk_menu_assets is not None:
-            self._perk_menu_assets.unload()
             self._perk_menu_assets = None
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
         if self._hud_assets is not None:
-            self._hud_assets.unload()
-        self._hud_assets = None
+            self._hud_assets = None
         self._world.close()
 
     def _handle_input(self) -> None:
