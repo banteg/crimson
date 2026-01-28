@@ -818,6 +818,56 @@ class RushGameView:
         return action
 
 
+class QuestGameView:
+    """Gameplay view wrapper that adapts QuestMode into `crimson game`."""
+
+    def __init__(self, state: GameState) -> None:
+        from .modes.quest_mode import QuestMode
+
+        self._state = state
+        self._mode = QuestMode(
+            ViewContext(assets_dir=state.assets_dir),
+            texture_cache=state.texture_cache,
+            config=state.config,
+            audio=state.audio,
+            audio_rng=state.rng,
+            demo_mode_active=state.demo_enabled,
+        )
+        self._action: str | None = None
+
+    def open(self) -> None:
+        self._action = None
+        self._state.screen_fade_ramp = False
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
+        self._mode.bind_audio(self._state.audio, self._state.rng)
+        self._mode.bind_screen_fade(self._state)
+        self._mode.open()
+
+        level = self._state.pending_quest_level
+        if level is not None:
+            self._mode.prepare_new_run(level, status=self._state.status)
+
+    def close(self) -> None:
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
+        self._mode.close()
+
+    def update(self, dt: float) -> None:
+        self._mode.update(dt)
+        if getattr(self._mode, "close_requested", False):
+            self._action = "back_to_menu"
+            self._mode.close_requested = False
+
+    def draw(self) -> None:
+        self._mode.draw()
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
@@ -827,7 +877,7 @@ class GameLoopView:
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
             "open_quests": QuestsMenuView(state),
-            "start_quest": QuestStartView(state),
+            "start_quest": QuestGameView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": RushGameView(state),
             "start_typo": PanelMenuView(

@@ -184,8 +184,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.6 Wiring
 
-- [ ] Implement `QuestGameView` reading `state.pending_quest_level`
-- [ ] Route `start_quest` → `QuestGameView` in `GameLoopView.update()`
+- [x] Implement `QuestGameView` reading `state.pending_quest_level`
+- [x] Route `start_quest` → `QuestGameView` in `GameLoopView.update()`
 
 ### 4.7 Tests
 
