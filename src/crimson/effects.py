@@ -664,3 +664,93 @@ class EffectPool:
                 scale_step=scale_step,
                 detail_preset=int(detail_preset),
             )
+
+    def spawn_burst(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        count: int,
+        rand: Callable[[], int],
+        detail_preset: int,
+        lifetime: float = 0.5,
+        scale_step: float | None = None,
+        color_r: float = 0.4,
+        color_g: float = 0.5,
+        color_b: float = 1.0,
+        color_a: float = 0.5,
+    ) -> None:
+        """Port of `effect_spawn_burst` (0x0042ef60)."""
+
+        count = max(0, int(count))
+        for _ in range(count):
+            r0 = int(rand())
+            rotation = float(r0 & 0x7F) * 0.049087387
+            r1 = int(rand())
+            vel_x = float((r1 & 0x7F) - 0x40)
+            r2 = int(rand())
+            vel_y = float((r2 & 0x7F) - 0x40)
+            if scale_step is None:
+                r3 = int(rand())
+                step = float(r3 % 100) * 0.01 + 0.1
+            else:
+                step = float(scale_step)
+
+            self.spawn(
+                effect_id=0,
+                pos_x=pos_x,
+                pos_y=pos_y,
+                vel_x=vel_x,
+                vel_y=vel_y,
+                rotation=rotation,
+                scale=1.0,
+                half_width=32.0,
+                half_height=32.0,
+                age=0.0,
+                lifetime=float(lifetime),
+                flags=0x1D,
+                color_r=float(color_r),
+                color_g=float(color_g),
+                color_b=float(color_b),
+                color_a=float(color_a),
+                rotation_step=0.0,
+                scale_step=step,
+                detail_preset=int(detail_preset),
+            )
+
+    def spawn_ring(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        detail_preset: int,
+        color_r: float,
+        color_g: float,
+        color_b: float,
+        color_a: float,
+        lifetime: float = 0.25,
+        scale_step: float = 50.0,
+    ) -> None:
+        """Ring/halo burst used by bonus pickup effects (`bonus_apply`)."""
+
+        self.spawn(
+            effect_id=1,
+            pos_x=pos_x,
+            pos_y=pos_y,
+            vel_x=0.0,
+            vel_y=0.0,
+            rotation=0.0,
+            scale=1.0,
+            half_width=32.0,
+            half_height=32.0,
+            age=0.0,
+            lifetime=float(lifetime),
+            flags=0x19,
+            color_r=float(color_r),
+            color_g=float(color_g),
+            color_b=float(color_b),
+            color_a=float(color_a),
+            rotation_step=0.0,
+            scale_step=float(scale_step),
+            detail_preset=int(detail_preset),
+        )

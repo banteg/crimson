@@ -98,13 +98,14 @@ See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Terrain (rewrite)](terrain.md)
+- [Bonus pickups (rewrite)](bonuses.md)
 - [Survival entry fade (decompile notes)](survival-transition-fade.md)
 
 ## Known gaps (short list)
 
 - Quest/Rush/Typ-o/Tutorial gameplay loops are not wired yet (Survival is the current playable mode).
 - Creature runtime parity gaps: ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) and `SPLIT_ON_DEATH` are still pending.
-- Some gameplay SFX/events are still missing (bonus pickup, perk UI, ranged enemy fire).
+- Some gameplay SFX/events are still missing (perk UI, ranged enemy fire).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
 - Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).
 - `game.cfg` is loaded/saved, but progression/unlock wiring and high-score stat fields are still incomplete.

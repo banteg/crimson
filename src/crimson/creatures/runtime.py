@@ -316,6 +316,7 @@ class CreaturePool:
         state: GameplayState,
         players: list[PlayerState],
         rand: Callable[[], int] | None = None,
+        detail_preset: int = 5,
         env: SpawnEnv | None = None,
         world_width: float = 1024.0,
         world_height: float = 1024.0,
@@ -352,6 +353,7 @@ class CreaturePool:
                             state=state,
                             players=players,
                             rand=rand,
+                            detail_preset=int(detail_preset),
                             world_width=world_width,
                             world_height=world_height,
                             fx_queue=fx_queue,
@@ -386,6 +388,7 @@ class CreaturePool:
                         state=state,
                         players=players,
                         rand=rand,
+                        detail_preset=int(detail_preset),
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
@@ -637,6 +640,7 @@ class CreaturePool:
         state: GameplayState,
         players: list[PlayerState],
         rand: Callable[[], int],
+        detail_preset: int = 5,
         world_width: float,
         world_height: float,
         fx_queue: FxQueue | None,
@@ -655,8 +659,9 @@ class CreaturePool:
             xp_awarded = award_experience(state, players[0], xp_base)
 
         if players:
+            spawned_bonus = None
             if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
-                state.bonus_pool.spawn_at(
+                spawned_bonus = state.bonus_pool.spawn_at(
                     creature.x,
                     creature.y,
                     int(creature.bonus_id),
@@ -665,13 +670,21 @@ class CreaturePool:
                     world_height=world_height,
                 )
             else:
-                state.bonus_pool.try_spawn_on_kill(
+                spawned_bonus = state.bonus_pool.try_spawn_on_kill(
                     creature.x,
                     creature.y,
                     state=state,
                     players=players,
                     world_width=world_width,
                     world_height=world_height,
+                )
+            if spawned_bonus is not None:
+                state.effects.spawn_burst(
+                    pos_x=float(spawned_bonus.pos_x),
+                    pos_y=float(spawned_bonus.pos_y),
+                    count=16,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
                 )
 
         if fx_queue is not None:

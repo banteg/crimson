@@ -130,3 +130,49 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     assert math.isclose(first.color_g, 1.0, abs_tol=1e-9)
     assert math.isclose(first.color_b, 1.0, abs_tol=1e-9)
     assert math.isclose(first.color_a, 0.8, abs_tol=1e-9)
+
+
+def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
+    pool = EffectPool(size=8)
+
+    pool.spawn_burst(
+        pos_x=10.0,
+        pos_y=20.0,
+        count=3,
+        rand=lambda: 0,
+        detail_preset=5,
+    )
+
+    active = pool.iter_active()
+    assert len(active) == 3
+    for entry in active:
+        assert entry.effect_id == 0
+        assert math.isclose(entry.half_width, 32.0, abs_tol=1e-9)
+        assert math.isclose(entry.half_height, 32.0, abs_tol=1e-9)
+        assert entry.flags == 0x1D
+        assert math.isclose(entry.lifetime, 0.5, abs_tol=1e-9)
+        assert math.isclose(entry.scale_step, 0.1, abs_tol=1e-9)
+
+
+def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
+    pool = EffectPool(size=4)
+
+    pool.spawn_ring(
+        pos_x=3.0,
+        pos_y=4.0,
+        detail_preset=5,
+        color_r=0.6,
+        color_g=0.6,
+        color_b=1.0,
+        color_a=1.0,
+    )
+
+    active = pool.iter_active()
+    assert len(active) == 1
+    entry = active[0]
+    assert entry.effect_id == 1
+    assert entry.flags == 0x19
+    assert math.isclose(entry.pos_x, 3.0, abs_tol=1e-9)
+    assert math.isclose(entry.pos_y, 4.0, abs_tol=1e-9)
+    assert math.isclose(entry.lifetime, 0.25, abs_tol=1e-9)
+    assert math.isclose(entry.scale_step, 50.0, abs_tol=1e-9)

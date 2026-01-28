@@ -13,7 +13,7 @@ from grim.config import CrimsonConfig
 from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.terrain_render import GroundRenderer
 
-from .bonuses import BONUS_BY_ID
+from .bonuses import BONUS_BY_ID, BonusId
 from .camera import camera_shake_update
 from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
@@ -189,6 +189,9 @@ class GameWorld:
     clock_table_texture: rl.Texture | None = field(init=False, default=None)
     clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
+    wicons_texture: rl.Texture | None = field(init=False, default=None)
+    _elapsed_ms: float = field(init=False, default=0.0)
+    _bonus_anim_phase: float = field(init=False, default=0.0)
     _owned_textures: list[rl.Texture] = field(init=False, default_factory=list)
     _cache_owned: bool = field(init=False, default=False)
 
@@ -227,6 +230,8 @@ class GameWorld:
         self.creatures = CreaturePool(env=self.spawn_env)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
+        self._elapsed_ms = 0.0
+        self._bonus_anim_phase = 0.0
         self.players = []
         base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
         base_y = float(self.world_size) * 0.5 if spawn_y is None else float(spawn_y)
@@ -401,6 +406,11 @@ class GameWorld:
             cache_path="game/bonuses.jaz",
             file_path="game/bonuses.png",
         )
+        self.wicons_texture = self._load_texture(
+            "ui_wicons",
+            cache_path="ui/ui_wicons.jaz",
+            file_path="ui/ui_wicons.png",
+        )
         self.bodyset_texture = self._load_texture(
             "bodyset",
             cache_path="game/bodyset.jaz",
@@ -446,6 +456,7 @@ class GameWorld:
         self.bullet_texture = None
         self.bullet_trail_texture = None
         self.bonuses_texture = None
+        self.wicons_texture = None
         self.bodyset_texture = None
         self.clock_table_texture = None
         self.clock_pointer_texture = None
@@ -469,6 +480,14 @@ class GameWorld:
     ) -> list[ProjectileHit]:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
+
+        if dt > 0.0:
+            self._elapsed_ms += float(dt) * 1000.0
+            self._bonus_anim_phase += float(dt) * 1.3
+
+        detail_preset = 5
+        if self.config is not None:
+            detail_preset = int(self.config.data.get("detail_preset", 5) or 5)
 
         if self.ground is not None:
             self._sync_ground_settings()
@@ -508,6 +527,7 @@ class GameWorld:
             dt,
             state=self.state,
             players=self.players,
+            detail_preset=detail_preset,
             world_width=float(self.world_size),
             world_height=float(self.world_size),
             fx_queue=self.fx_queue,
@@ -519,7 +539,43 @@ class GameWorld:
         if dt > 0.0:
             self._advance_creature_anim(dt)
 
-        bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
+        pickups = bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
+        if pickups:
+            for pickup in pickups:
+                self._play_sfx("sfx_ui_bonus")
+                self.state.effects.spawn_burst(
+                    pos_x=float(pickup.pos_x),
+                    pos_y=float(pickup.pos_y),
+                    count=12,
+                    rand=self.state.rng.rand,
+                    detail_preset=detail_preset,
+                    lifetime=0.4,
+                    scale_step=0.1,
+                    color_r=0.4,
+                    color_g=0.5,
+                    color_b=1.0,
+                    color_a=0.5,
+                )
+                if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
+                    self.state.effects.spawn_ring(
+                        pos_x=float(pickup.pos_x),
+                        pos_y=float(pickup.pos_y),
+                        detail_preset=detail_preset,
+                        color_r=0.6,
+                        color_g=0.6,
+                        color_b=1.0,
+                        color_a=1.0,
+                    )
+                elif pickup.bonus_id == int(BonusId.FREEZE):
+                    self.state.effects.spawn_ring(
+                        pos_x=float(pickup.pos_x),
+                        pos_y=float(pickup.pos_y),
+                        detail_preset=detail_preset,
+                        color_r=0.3,
+                        color_g=0.5,
+                        color_b=0.8,
+                        color_a=1.0,
+                    )
 
         if game_mode == GAME_MODE_SURVIVAL:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
@@ -797,6 +853,94 @@ class GameWorld:
         col = int(icon_id) % grid
         row = int(icon_id) // grid
         return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w), float(cell_h))
+
+    def _weapon_icon_src(self, texture: rl.Texture, icon_index: int) -> rl.Rectangle:
+        grid = 8
+        cell_w = float(texture.width) / float(grid)
+        cell_h = float(texture.height) / float(grid)
+        frame = int(icon_index) * 2
+        col = frame % grid
+        row = frame // grid
+        return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
+
+    @staticmethod
+    def _bonus_fade(time_left: float, time_max: float) -> float:
+        time_left = float(time_left)
+        time_max = float(time_max)
+        if time_left <= 0.0 or time_max <= 0.0:
+            return 0.0
+        if time_left < 0.5:
+            return _clamp(time_left * 2.0, 0.0, 1.0)
+        age = time_max - time_left
+        if age < 0.5:
+            return _clamp(age * 2.0, 0.0, 1.0)
+        return 1.0
+
+    def _draw_bonus_pickups(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, scale: float) -> None:
+        if self.bonuses_texture is None:
+            for bonus in self.state.bonus_pool.entries:
+                if bonus.bonus_id == 0:
+                    continue
+                sx = (bonus.pos_x + cam_x) * scale_x
+                sy = (bonus.pos_y + cam_y) * scale_y
+                rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), rl.Color(220, 220, 90, 255))
+            return
+
+        bubble_src = self._bonus_icon_src(self.bonuses_texture, 0)
+        bubble_size = 32.0 * scale
+
+        for idx, bonus in enumerate(self.state.bonus_pool.entries):
+            if bonus.bonus_id == 0:
+                continue
+
+            fade = self._bonus_fade(float(bonus.time_left), float(bonus.time_max))
+            alpha = _clamp(fade * 0.9, 0.0, 1.0)
+
+            sx = (bonus.pos_x + cam_x) * scale_x
+            sy = (bonus.pos_y + cam_y) * scale_y
+            bubble_dst = rl.Rectangle(float(sx), float(sy), float(bubble_size), float(bubble_size))
+            bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
+            tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+            rl.draw_texture_pro(self.bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
+
+            bonus_id = int(bonus.bonus_id)
+            if bonus_id == int(BonusId.WEAPON):
+                weapon = WEAPON_BY_ID.get(int(bonus.amount))
+                icon_index = int(weapon.icon_index) if weapon is not None and weapon.icon_index is not None else None
+                if icon_index is None or not (0 <= icon_index <= 31) or self.wicons_texture is None:
+                    continue
+
+                pulse = math.sin(float(self._bonus_anim_phase)) ** 4 * 0.25 + 0.75
+                icon_scale = fade * pulse
+                if icon_scale <= 1e-3:
+                    continue
+
+                src = self._weapon_icon_src(self.wicons_texture, icon_index)
+                w = 60.0 * icon_scale * scale
+                h = 30.0 * icon_scale * scale
+                dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+                origin = rl.Vector2(w * 0.5, h * 0.5)
+                rl.draw_texture_pro(self.wicons_texture, src, dst, origin, 0.0, tint)
+                continue
+
+            meta = BONUS_BY_ID.get(bonus_id)
+            icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else None
+            if icon_id is None or icon_id < 0:
+                continue
+            if bonus_id == int(BonusId.POINTS) and int(bonus.amount) == 1000:
+                icon_id += 1
+
+            pulse = math.sin(float(idx) + float(self._bonus_anim_phase)) ** 4 * 0.25 + 0.75
+            icon_scale = fade * pulse
+            if icon_scale <= 1e-3:
+                continue
+
+            src = self._bonus_icon_src(self.bonuses_texture, icon_id)
+            size = 32.0 * icon_scale * scale
+            rotation_rad = math.sin(float(idx) - float(self._elapsed_ms) * 0.003) * 0.2
+            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+            origin = rl.Vector2(size * 0.5, size * 0.5)
+            rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
     def _draw_atlas_sprite(
         self,
@@ -1355,25 +1499,6 @@ class GameWorld:
             y1 = (float(self.world_size) + cam_y) * scale_y
             rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
 
-        for bonus in self.state.bonus_pool.entries:
-            if bonus.bonus_id == 0:
-                continue
-            sx = (bonus.pos_x + cam_x) * scale_x
-            sy = (bonus.pos_y + cam_y) * scale_y
-            drawn = False
-            if self.bonuses_texture is not None:
-                meta = BONUS_BY_ID.get(int(bonus.bonus_id))
-                icon_id = meta.icon_id if meta is not None else None
-                if icon_id is not None and int(icon_id) >= 0:
-                    src = self._bonus_icon_src(self.bonuses_texture, int(icon_id))
-                    size = 24.0 * scale
-                    dst = rl.Rectangle(float(sx), float(sy), size, size)
-                    origin = rl.Vector2(size * 0.5, size * 0.5)
-                    rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, 0.0, rl.WHITE)
-                    drawn = True
-            if not drawn:
-                rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), rl.Color(220, 220, 90, 255))
-
         for creature in self.creatures.entries:
             if not creature.active:
                 continue
@@ -1441,12 +1566,6 @@ class GameWorld:
                 sy = (creature.y + cam_y) * scale_y
                 rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), rl.Color(220, 90, 90, 255))
 
-        for proj in self.state.projectiles.iter_active():
-            self._draw_projectile(proj, scale=scale)
-
-        for proj in self.state.secondary_projectiles.iter_active():
-            self._draw_secondary_projectile(proj, scale=scale)
-
         if self.players:
             texture = self.creature_textures.get(_CREATURE_ASSET.get(CreatureTypeId.TROOPER))
             for player in self.players:
@@ -1465,27 +1584,34 @@ class GameWorld:
                     sy = (player.pos_y + cam_y) * scale_y
                     rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
 
-            self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y)
+        for proj in self.state.projectiles.iter_active():
+            self._draw_projectile(proj, scale=scale)
 
-            if draw_aim_indicators and (not self.demo_mode_active):
-                for player in self.players:
-                    if player.health <= 0.0:
-                        continue
-                    aim_x = float(getattr(player, "aim_x", player.pos_x))
-                    aim_y = float(getattr(player, "aim_y", player.pos_y))
-                    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
-                    radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
-                    sx = (aim_x + cam_x) * scale_x
-                    sy = (aim_y + cam_y) * scale_y
-                    screen_radius = max(1.0, radius * scale)
-                    self._draw_aim_circle(x=sx, y=sy, radius=screen_radius)
-                    reload_timer = float(getattr(player, "reload_timer", 0.0))
-                    reload_max = float(getattr(player, "reload_timer_max", 0.0))
-                    if reload_max > 1e-6 and reload_timer > 1e-6:
-                        progress = reload_timer / reload_max
-                        if progress > 0.0:
-                            ms = int(progress * 60000.0)
-                            self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=1.0)
+        for proj in self.state.secondary_projectiles.iter_active():
+            self._draw_secondary_projectile(proj, scale=scale)
+
+        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale)
+        self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y)
+
+        if draw_aim_indicators and (not self.demo_mode_active):
+            for player in self.players:
+                if player.health <= 0.0:
+                    continue
+                aim_x = float(getattr(player, "aim_x", player.pos_x))
+                aim_y = float(getattr(player, "aim_y", player.pos_y))
+                dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+                radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+                sx = (aim_x + cam_x) * scale_x
+                sy = (aim_y + cam_y) * scale_y
+                screen_radius = max(1.0, radius * scale)
+                self._draw_aim_circle(x=sx, y=sy, radius=screen_radius)
+                reload_timer = float(getattr(player, "reload_timer", 0.0))
+                reload_max = float(getattr(player, "reload_timer_max", 0.0))
+                if reload_max > 1e-6 and reload_timer > 1e-6:
+                    progress = reload_timer / reload_max
+                    if progress > 0.0:
+                        ms = int(progress * 60000.0)
+                        self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=1.0)
 
     def update_camera(self, dt: float) -> None:
         if not self.players:
