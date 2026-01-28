@@ -111,23 +111,23 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.1 Start-of-run (`quest_start_selected`)
 
-- [ ] Implement `QuestMode.prepare_new_run()`
-  - [ ] reset world (clear creatures/projectiles/bonuses/effects)
-  - [ ] reset player stats to match decompile init (level/xp/perks pending)
-  - [ ] set terrain: `terrain_id` + `terrain_over_id` from quest metadata
-  - [ ] set player weapon: `QuestDefinition.start_weapon_id`
-  - [ ] build spawn table via existing `build_quest_spawn_table(...)`
-    - [ ] apply hardcore adjustment exactly like decompile
-      - [ ] only if `hardcore` and `count > 1` and `spawn_id != 0x3c`
-      - [ ] if `spawn_id == 0x2b` → `count += 2`
-      - [ ] else → `count += 8`
-    - [ ] precompute HUD helpers: `total_spawn_count = sum(count)`, `max_trigger_time_ms = max(trigger_time_ms)`
-  - [ ] init timers/state
-    - [ ] `spawn_timeline_ms = 0`
-    - [ ] `quest_name_timer_ms = 0`
-    - [ ] `no_creatures_timer_ms = 0`
-    - [ ] `completion_transition_ms = -1` (negative sentinel)
-  - [ ] increment persistence “attempt count” (`status.quest_play_counts[...]`)
+- [x] Implement `QuestMode.prepare_new_run()`
+  - [x] reset world (clear creatures/projectiles/bonuses/effects)
+  - [x] reset player stats to match decompile init (level/xp/perks pending)
+  - [x] set terrain: `terrain_id` + `terrain_over_id` from quest metadata
+  - [x] set player weapon: `QuestDefinition.start_weapon_id`
+  - [x] build spawn table via existing `build_quest_spawn_table(...)`
+    - [x] apply hardcore adjustment exactly like decompile
+      - [x] only if `hardcore` and `count > 1` and `spawn_id != 0x3c`
+      - [x] if `spawn_id == 0x2b` → `count += 2`
+      - [x] else → `count += 8`
+    - [x] precompute HUD helpers: `total_spawn_count = sum(count)`, `max_trigger_time_ms = max(trigger_time_ms)`
+  - [x] init timers/state
+    - [x] `spawn_timeline_ms = 0`
+    - [x] `quest_name_timer_ms = 0`
+    - [x] `no_creatures_timer_ms = 0`
+    - [x] `completion_transition_ms = -1` (negative sentinel)
+  - [x] increment persistence “attempt count” (`status.quest_play_counts[...]`)
 
 ### 4.2 Per-frame quest update (`quest_mode_update`)
 
