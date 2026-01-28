@@ -8,7 +8,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import PaqTextureCache, TextureLoader
-from grim.audio import AudioState, play_sfx, trigger_game_tune
+from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.math import clamp
 from grim.terrain_render import GroundRenderer
@@ -31,9 +31,9 @@ from .gameplay import (
     weapon_assign_player,
 )
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
+from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
-from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE
 
 GAME_MODE_SURVIVAL = 3
@@ -90,57 +90,6 @@ _BEAM_TYPES = frozenset(
     }
 )
 
-_BULLET_HIT_SFX = (
-    "sfx_bullet_hit_01",
-    "sfx_bullet_hit_02",
-    "sfx_bullet_hit_03",
-    "sfx_bullet_hit_04",
-    "sfx_bullet_hit_05",
-    "sfx_bullet_hit_06",
-)
-
-_CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
-    CreatureTypeId.ZOMBIE: (
-        "sfx_zombie_die_01",
-        "sfx_zombie_die_02",
-        "sfx_zombie_die_03",
-        "sfx_zombie_die_04",
-    ),
-    CreatureTypeId.LIZARD: (
-        "sfx_lizard_die_01",
-        "sfx_lizard_die_02",
-        "sfx_lizard_die_03",
-        "sfx_lizard_die_04",
-    ),
-    CreatureTypeId.ALIEN: (
-        "sfx_alien_die_01",
-        "sfx_alien_die_02",
-        "sfx_alien_die_03",
-        "sfx_alien_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP1: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.SPIDER_SP2: (
-        "sfx_spider_die_01",
-        "sfx_spider_die_02",
-        "sfx_spider_die_03",
-        "sfx_spider_die_04",
-    ),
-    CreatureTypeId.TROOPER: (
-        "sfx_trooper_die_01",
-        "sfx_trooper_die_02",
-        "sfx_trooper_die_03",
-        "sfx_trooper_die_04",
-    ),
-}
-
-_MAX_HIT_SFX_PER_FRAME = 4
-_MAX_DEATH_SFX_PER_FRAME = 3
-
 _RAD_TO_DEG = 57.29577951308232
 
 
@@ -155,6 +104,7 @@ class GameWorld:
     config: CrimsonConfig | None = None
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
+    audio_router: AudioRouter = field(init=False)
 
     spawn_env: SpawnEnv = field(init=False)
     state: GameplayState = field(init=False)
@@ -198,6 +148,11 @@ class GameWorld:
         self.fx_queue_rotated = FxQueueRotated()
         self.camera_x = -1.0
         self.camera_y = -1.0
+        self.audio_router = AudioRouter(
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+            demo_mode_active=self.demo_mode_active,
+        )
         self._damage_scale_by_type = {
             entry.weapon_id: float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
@@ -450,6 +405,11 @@ class GameWorld:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
+        if self.audio_router is not None:
+            self.audio_router.audio = self.audio
+            self.audio_router.audio_rng = self.audio_rng
+            self.audio_router.demo_mode_active = self.demo_mode_active
+
         if dt > 0.0:
             self._elapsed_ms += float(dt) * 1000.0
             self._bonus_anim_phase += float(dt) * 1.3
@@ -478,14 +438,19 @@ class GameWorld:
         self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
         if hits:
             self._queue_projectile_decals(hits)
-            self._play_hit_sfx(hits, game_mode=game_mode)
+            self.audio_router.play_hit_sfx(
+                hits,
+                game_mode=game_mode,
+                rand=self.state.rng.rand,
+                beam_types=_BEAM_TYPES,
+            )
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(player, input_state, dt, self.state, world_size=float(self.world_size))
             if idx < len(prev_audio):
                 prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
-                self._handle_player_audio(
+                self.audio_router.handle_player_audio(
                     player,
                     prev_shot_seq=prev_shot_seq,
                     prev_reload_active=prev_reload_active,
@@ -503,7 +468,7 @@ class GameWorld:
             fx_queue_rotated=self.fx_queue_rotated,
         )
         if creature_result.deaths:
-            self._play_death_sfx(creature_result.deaths)
+            self.audio_router.play_death_sfx(creature_result.deaths, rand=self.state.rng.rand)
 
         if dt > 0.0:
             self._advance_creature_anim(dt)
@@ -511,7 +476,7 @@ class GameWorld:
         pickups = bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
         if pickups:
             for pickup in pickups:
-                self._play_sfx("sfx_ui_bonus")
+                self.audio_router.play_sfx("sfx_ui_bonus")
                 self.state.effects.spawn_burst(
                     pos_x=float(pickup.pos_x),
                     pos_y=float(pickup.pos_y),
@@ -648,77 +613,6 @@ class GameWorld:
                         detail_preset=detail_preset,
                         fx_toggle=fx_toggle,
                     )
-
-    def _rand_choice(self, options: tuple[str, ...]) -> str | None:
-        if not options:
-            return None
-        idx = int(self.state.rng.rand()) % len(options)
-        return options[idx]
-
-    def _play_sfx(self, key: str | None) -> None:
-        if self.audio is None:
-            return
-        play_sfx(self.audio, key, rng=self.audio_rng)
-
-    def _handle_player_audio(
-        self,
-        player: PlayerState,
-        *,
-        prev_shot_seq: int,
-        prev_reload_active: bool,
-        prev_reload_timer: float,
-    ) -> None:
-        if self.audio is None:
-            return
-        weapon = WEAPON_BY_ID.get(int(player.weapon_id))
-        if weapon is None:
-            return
-
-        if int(player.shot_seq) > int(prev_shot_seq):
-            self._play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
-
-        reload_started = (not prev_reload_active and player.reload_active) or (player.reload_timer > prev_reload_timer + 1e-6)
-        if reload_started:
-            self._play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))
-
-    def _hit_sfx_for_type(self, type_id: int) -> str | None:
-        if type_id == ProjectileTypeId.ROCKET_LAUNCHER:
-            return "sfx_explosion_large"
-        if type_id in _BEAM_TYPES:
-            return "sfx_shock_hit_01"
-        return self._rand_choice(_BULLET_HIT_SFX)
-
-    def _play_hit_sfx(self, hits: list[ProjectileHit], *, game_mode: int) -> None:
-        if self.audio is None or not hits:
-            return
-
-        # Original game: the first projectile hit in Survival starts a random "game tune"
-        # and suppresses the impact SFX for that hit. We mirror the same gate.
-        start_idx = 0
-        if (not self.demo_mode_active) and (game_mode == GAME_MODE_SURVIVAL):
-            if trigger_game_tune(self.audio, rand=self.state.rng.rand) is not None:
-                start_idx = 1
-
-        end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)
-        for idx in range(start_idx, end):
-            type_id = int(hits[idx][0])
-            self._play_sfx(self._hit_sfx_for_type(type_id))
-
-    def _play_death_sfx(self, deaths: tuple[object, ...]) -> None:
-        if self.audio is None or not deaths:
-            return
-        for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
-            death = deaths[idx]
-            type_id = getattr(death, "type_id", None)
-            if type_id is None:
-                continue
-            try:
-                creature_type = CreatureTypeId(int(type_id))
-            except ValueError:
-                continue
-            options = _CREATURE_DEATH_SFX.get(creature_type)
-            if options:
-                self._play_sfx(self._rand_choice(options))
 
     def _advance_creature_anim(self, dt: float) -> None:
         for creature in self.creatures.entries:
