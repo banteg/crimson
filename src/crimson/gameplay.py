@@ -5,7 +5,7 @@ import math
 from typing import Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
-from .crand import Crand
+from grim.rand import Crand
 from .effects import EffectPool
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool

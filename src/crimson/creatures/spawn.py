@@ -20,7 +20,7 @@ import math
 from typing import Callable, SupportsInt
 
 from ..bonuses import BonusId
-from ..crand import Crand
+from grim.rand import Crand
 
 __all__ = [
     "BurstEffect",

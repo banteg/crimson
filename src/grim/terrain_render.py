@@ -3,11 +3,12 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 import math
-import os
 from typing import Iterator
 from typing import Iterable, Sequence
 
 import pyray as rl
+
+from .rand import CrtRand
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
@@ -21,8 +22,6 @@ TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
-CRT_RAND_MULT = 214013
-CRT_RAND_INC = 2531011
 
 
 _ALPHA_TEST_REF_U8 = 4
@@ -146,17 +145,6 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
         yield
     finally:
         rl.end_shader_mode()
-
-
-class CrtRand:
-    def __init__(self, seed: int | None) -> None:
-        if seed is None:
-            seed = int.from_bytes(os.urandom(4), "little")
-        self._state = seed & 0xFFFFFFFF
-
-    def rand(self) -> int:
-        self._state = (self._state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
-        return (self._state >> 16) & 0x7FFF
 
 
 @dataclass(slots=True)

@@ -14,7 +14,7 @@ from dataclasses import dataclass
 import math
 from typing import Callable, Sequence
 
-from ..crand import Crand
+from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
 from ..perks import PerkId

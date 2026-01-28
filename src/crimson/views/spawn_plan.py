@@ -5,7 +5,7 @@ import math
 
 import pyray as rl
 
-from ..crand import Crand
+from grim.rand import Crand
 from ..creatures.spawn import (
     CreatureTypeId,
     SPAWN_TEMPLATES,

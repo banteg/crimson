@@ -11,6 +11,7 @@ __all__ = [
     "jaz",
     "music",
     "paq",
+    "rand",
     "sfx",
     "sfx_map",
     "terrain_render",

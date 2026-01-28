@@ -165,7 +165,7 @@ You reduce:
 
 You have repeated `_clamp` and a duplicated MSVCRT LCG.
 
-### 3.1 Unify the MSVCRT rand() implementation [ ]
+### 3.1 Unify the MSVCRT rand() implementation [x]
 
 Right now:
 
@@ -359,7 +359,7 @@ If you want the fastest impact on “duplicates + wrong place code”, do these 
 
 1. [x] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
 2. [x] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
-3. [ ] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
+3. [x] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
 4. [ ] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
 5. [ ] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
 6. [ ] **Start shrinking `game.py`** by extracting screens/panels into modules.

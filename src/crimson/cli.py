@@ -12,7 +12,7 @@ import typer
 from PIL import Image
 
 from grim import jaz, paq
-from .crand import Crand
+from grim.rand import Crand
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry

@@ -13,7 +13,7 @@ from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from .crand import Crand
+from grim.rand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 from .weapons import WEAPON_TABLE
