@@ -168,10 +168,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [ ] Unlock popups + persistence
   - [ ] if quest grants weapon/perk and it’s newly unlocked: bump `status.weapon_unlock_index` / `status.perk_unlock_index`
   - [ ] show “Weapon unlocked” / “Perk unlocked”
-- [ ] Buttons
+- [x] Buttons
   - [x] Play Next
   - [x] Play Again
-  - [ ] High scores
+  - [x] High scores
   - [x] Main menu
 
 ### 4.5 Quest Failed screen (`quest_failed_screen_update`)

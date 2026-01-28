@@ -922,6 +922,8 @@ class QuestResultsView:
         self._breakdown = None
         self._record = None
         self._rank_index: int | None = None
+        self._high_scores: list = []
+        self._show_high_scores = False
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
@@ -929,7 +931,7 @@ class QuestResultsView:
 
     def open(self) -> None:
         from .quests.results import compute_quest_final_time
-        from .persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
+        from .persistence.highscores import HighScoreRecord, read_highscore_table, scores_path_for_config, upsert_highscore_record
 
         self._action = None
         self._ground = ensure_menu_ground(self._state)
@@ -941,6 +943,8 @@ class QuestResultsView:
         self._breakdown = None
         self._record = None
         self._rank_index = None
+        self._high_scores = []
+        self._show_high_scores = False
         self._button_tex = None
         self._small_font = None
         if outcome is None:
@@ -981,10 +985,15 @@ class QuestResultsView:
 
         path = scores_path_for_config(self._state.base_dir, self._state.config, quest_stage_major=major, quest_stage_minor=minor)
         try:
-            _table, rank_index = upsert_highscore_record(path, record)
+            table, rank_index = upsert_highscore_record(path, record)
             self._rank_index = int(rank_index)
+            self._high_scores = list(table)
         except Exception:
             self._rank_index = None
+            try:
+                self._high_scores = read_highscore_table(path, game_mode_id=3)
+            except Exception:
+                self._high_scores = []
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
@@ -998,6 +1007,8 @@ class QuestResultsView:
         self._outcome = None
         self._breakdown = None
         self._rank_index = None
+        self._high_scores = []
+        self._show_high_scores = False
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -1007,8 +1018,14 @@ class QuestResultsView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "back_to_menu"
+            if self._show_high_scores:
+                self._show_high_scores = False
+            else:
+                self._action = "back_to_menu"
             return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
+            self._show_high_scores = not self._show_high_scores
 
         outcome = self._outcome
         if self._record is None or outcome is None:
@@ -1028,7 +1045,6 @@ class QuestResultsView:
         tex = self._button_tex
         if tex is None:
             return
-        font = self._ensure_small_font()
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         button_w = float(tex.width) * scale
         button_h = float(tex.height) * scale
@@ -1065,8 +1081,7 @@ class QuestResultsView:
                 self._action = "back_to_menu"
                 return
             if action == "high_scores":
-                # TODO: implement a dedicated high scores view.
-                self._action = "back_to_menu"
+                self._show_high_scores = not self._show_high_scores
                 return
 
     def draw(self) -> None:
@@ -1117,6 +1132,7 @@ class QuestResultsView:
             draw_small_text(font, f"Rank: {int(self._rank_index) + 1}", 32.0, y, 1.0, text_color)
 
         tex = self._button_tex
+        y0 = 0.0
         if tex is not None:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             button_w = float(tex.width) * scale
@@ -1151,9 +1167,45 @@ class QuestResultsView:
                 text_y = rect.y + 10.0 * scale
                 draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
 
+        if self._show_high_scores and self._high_scores:
+            screen_w = float(rl.get_screen_width())
+            table_x = max(32.0, screen_w - 300.0)
+            table_y = 196.0
+            header_color = rl.Color(255, 255, 255, 255)
+            draw_small_text(font, "High scores", table_x, table_y - 18.0, 1.0, header_color)
+
+            row_step = 16.0
+            max_y = y0 - 8.0 if y0 > 1e-3 else float(rl.get_screen_height()) - 40.0
+            available = max(0.0, max_y - table_y)
+            max_rows = int(available // row_step)
+            rows = min(10, len(self._high_scores), max_rows)
+
+            for idx in range(rows):
+                entry = self._high_scores[idx]
+                name = ""
+                try:
+                    name = str(entry.name())
+                except Exception:
+                    name = ""
+                if not name:
+                    name = "???"
+                if len(name) > 16:
+                    name = name[:16]
+                time_ms = 0
+                try:
+                    time_ms = int(entry.survival_elapsed_ms)
+                except Exception:
+                    time_ms = 0
+                time_text = "--:--" if time_ms == 0 else _fmt_clock(time_ms)
+                line = f"{idx + 1:2d}. {name:<16} {time_text}"
+                color = text_color
+                if self._rank_index is not None and idx == int(self._rank_index):
+                    color = rl.Color(255, 255, 255, 255)
+                draw_small_text(font, line, table_x, table_y + float(idx) * row_step, 1.0, color)
+
         draw_small_text(
             font,
-            "ENTER: Replay    N: Next    ESC: Menu",
+            "ENTER: Replay    N: Next    H: High scores    ESC: Menu",
             32.0,
             float(rl.get_screen_height()) - 28.0,
             1.0,
