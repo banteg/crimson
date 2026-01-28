@@ -105,6 +105,13 @@ class TextureAsset:
     rel_path: str
     texture: rl.Texture2D | None
 
+    def unload(self) -> None:
+        texture = self.texture
+        if texture is None:
+            return
+        rl.unload_texture(texture)
+        self.texture = None
+
 
 @dataclass(slots=True)
 class LogoAssets:
