@@ -1178,9 +1178,12 @@ class QuestFailedView:
     def __init__(self, state: GameState) -> None:
         self._state = state
         self._ground: GroundRenderer | None = None
-        self._outcome = None
+        self._outcome: QuestRunOutcome | None = None
+        self._quest_title: str = ""
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
+        self._small_font: SmallFontData | None = None
+        self._button_tex: rl.Texture2D | None = None
 
     def open(self) -> None:
         self._action = None
@@ -1188,10 +1191,28 @@ class QuestFailedView:
         self._cursor_pulse_time = 0.0
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
+        self._quest_title = ""
+        self._small_font = None
+        self._button_tex = None
+        outcome = self._outcome
+        if outcome is not None:
+            try:
+                from .quests import quest_by_level
+
+                quest = quest_by_level(outcome.level)
+                self._quest_title = quest.title if quest is not None else ""
+            except Exception:
+                self._quest_title = ""
+
+        cache = _ensure_texture_cache(self._state)
+        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
 
     def close(self) -> None:
         self._ground = None
         self._outcome = None
+        self._quest_title = ""
+        self._small_font = None
+        self._button_tex = None
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -1212,6 +1233,38 @@ class QuestFailedView:
             self._action = "open_quests"
             return
 
+        tex = self._button_tex
+        if tex is None or outcome is None:
+            return
+        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        button_w = float(tex.width) * scale
+        button_h = float(tex.height) * scale
+        gap_x = 18.0 * scale
+        x0 = 32.0
+        y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
+
+        buttons = [
+            ("Retry", rl.Rectangle(x0, y0, button_w, button_h), "retry"),
+            ("Quest list", rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h), "quest_list"),
+            ("Main menu", rl.Rectangle(x0 + (button_w + gap_x) * 2.0, y0, button_w, button_h), "main_menu"),
+        ]
+        mouse = rl.get_mouse_position()
+        clicked = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        for _label, rect, action in buttons:
+            hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
+            if not hovered or not clicked:
+                continue
+            if action == "retry":
+                self._state.pending_quest_level = outcome.level
+                self._action = "start_quest"
+                return
+            if action == "quest_list":
+                self._action = "open_quests"
+                return
+            if action == "main_menu":
+                self._action = "back_to_menu"
+                return
+
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
@@ -1220,14 +1273,77 @@ class QuestFailedView:
 
         outcome = self._outcome
         level = outcome.level if outcome is not None else (self._state.pending_quest_level or "unknown")
-        rl.draw_text(f"Quest {level} failed", 32, 140, 28, rl.Color(235, 235, 235, 255))
-        rl.draw_text("ENTER: Retry    Q: Quest list    ESC: Main menu", 32, 180, 18, rl.Color(190, 190, 200, 255))
+        subtitle = self._quest_title
+        rl.draw_text(f"Quest {level} failed", 32, 120, 28, rl.Color(235, 235, 235, 255))
+        if subtitle:
+            rl.draw_text(subtitle, 32, 154, 18, rl.Color(190, 190, 200, 255))
+
+        font = self._ensure_small_font()
+        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        if outcome is not None:
+            total_seconds = max(0, int(outcome.base_time_ms) // 1000)
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            time_text = f"{minutes:02d}:{seconds:02d}"
+            y = 196.0
+            draw_small_text(font, f"Time: {time_text}", 32.0, y, 1.0, text_color)
+            y += 18.0
+            draw_small_text(font, f"Kills: {int(outcome.kill_count)}", 32.0, y, 1.0, text_color)
+            y += 18.0
+            draw_small_text(font, f"XP: {int(outcome.experience)}", 32.0, y, 1.0, text_color)
+
+        tex = self._button_tex
+        if tex is not None:
+            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            button_w = float(tex.width) * scale
+            button_h = float(tex.height) * scale
+            gap_x = 18.0 * scale
+            x0 = 32.0
+            y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
+
+            buttons = [
+                ("Retry", rl.Rectangle(x0, y0, button_w, button_h)),
+                ("Quest list", rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h)),
+                ("Main menu", rl.Rectangle(x0 + (button_w + gap_x) * 2.0, y0, button_w, button_h)),
+            ]
+            mouse = rl.get_mouse_position()
+            for label, rect in buttons:
+                hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
+                alpha = 255 if hovered else 220
+                rl.draw_texture_pro(
+                    tex,
+                    rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
+                    rect,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.Color(255, 255, 255, alpha),
+                )
+                label_w = measure_small_text_width(font, label, 1.0 * scale)
+                text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
+                text_y = rect.y + 10.0 * scale
+                draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
+
+        draw_small_text(
+            font,
+            "ENTER: Retry    Q: Quest list    ESC: Menu",
+            32.0,
+            float(rl.get_screen_height()) - 28.0,
+            1.0,
+            rl.Color(190, 190, 200, 255),
+        )
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
         return action
+
+    def _ensure_small_font(self) -> SmallFontData:
+        if self._small_font is not None:
+            return self._small_font
+        missing_assets: list[str] = []
+        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        return self._small_font
 
 
 class GameLoopView:

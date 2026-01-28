@@ -176,12 +176,13 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.5 Quest Failed screen (`quest_failed_screen_update`)
 
-- [ ] Create a dedicated failed view/UI
-- [ ] show “Quest failed” + stats
-- [ ] Buttons
-  - [ ] Play again (increment `status.quest_fail_retry_count`)
-  - [ ] Play another (return to quest selection)
-  - [ ] Main menu
+- [x] Create a dedicated failed view/UI
+- [x] show “Quest failed” + stats
+- [x] Buttons
+  - [x] Play again
+  - [ ] Increment `status.quest_fail_retry_count` (needs evidence; field not modeled yet)
+  - [x] Play another (return to quest selection)
+  - [x] Main menu
 
 ### 4.6 Wiring
 
