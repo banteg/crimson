@@ -157,12 +157,12 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 ### 4.4 Quest Results screen (`quest_results_screen_update`)
 
 - [ ] Create a dedicated results view/UI (not `GameOverUi`)
-- [ ] Compute final time (match decompile)
-  - [ ] `base_time_ms = spawn_timeline_ms`
-  - [ ] `life_bonus_ms = round(p1_health) + round(p2_health if 2p)`
-  - [ ] `unpicked_perk_bonus_ms = perk_pending_count * 1000`
-  - [ ] `final_time_ms = base_time_ms - life_bonus_ms - unpicked_perk_bonus_ms`
-  - [ ] clamp `final_time_ms >= 1`
+- [x] Compute final time (match decompile)
+  - [x] `base_time_ms = spawn_timeline_ms`
+  - [x] `life_bonus_ms = round(p1_health) + round(p2_health if 2p)`
+  - [x] `unpicked_perk_bonus_ms = perk_pending_count * 1000`
+  - [x] `final_time_ms = base_time_ms - life_bonus_ms - unpicked_perk_bonus_ms`
+  - [x] clamp `final_time_ms >= 1`
 - [ ] Write a highscore record (quests sort ascending time)
   - [ ] `game_mode_id = 3`
   - [ ] `survival_elapsed_ms = final_time_ms`

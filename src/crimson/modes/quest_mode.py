@@ -36,6 +36,18 @@ class _QuestRunState:
     completion_transition_ms: float = -1.0
 
 
+@dataclass(frozen=True, slots=True)
+class QuestRunOutcome:
+    kind: str  # "completed" | "failed"
+    level: str
+    base_time_ms: int
+    player_health: float
+    pending_perk_count: int
+    experience: int
+    kill_count: int
+    weapon_id: int
+
+
 def _quest_seed(level: str) -> int:
     tier_text, quest_text = level.split(".", 1)
     try:
@@ -82,19 +94,27 @@ class QuestMode(BaseGameplayMode):
         )
         self._quest = _QuestRunState()
         self._selected_level: str | None = None
+        self._outcome: QuestRunOutcome | None = None
 
     def open(self) -> None:
         super().open()
         self._quest = _QuestRunState()
+        self._outcome = None
 
     def select_level(self, level: str | None) -> None:
         self._selected_level = level
+
+    def consume_outcome(self) -> QuestRunOutcome | None:
+        outcome = self._outcome
+        self._outcome = None
+        return outcome
 
     def prepare_new_run(self, level: str, *, status: GameStatus | None) -> None:
         quest = quest_by_level(level)
         if quest is None:
             self._quest = _QuestRunState(level=level)
             return
+        self._outcome = None
 
         hardcore_flag = False
         if self._config is not None:
@@ -219,6 +239,17 @@ class QuestMode(BaseGameplayMode):
         )
 
         if self._player.health <= 0.0:
+            if self._outcome is None:
+                self._outcome = QuestRunOutcome(
+                    kind="failed",
+                    level=str(self._quest.level),
+                    base_time_ms=int(self._quest.spawn_timeline_ms),
+                    player_health=float(self._player.health),
+                    pending_perk_count=int(self._state.perk_selection.pending_count),
+                    experience=int(self._player.experience),
+                    kill_count=int(self._creatures.kill_count),
+                    weapon_id=int(self._player.weapon_id),
+                )
             self.close_requested = True
             return
 
@@ -253,6 +284,17 @@ class QuestMode(BaseGameplayMode):
         )
         self._quest.completion_transition_ms = float(completion_ms)
         if completed:
+            if self._outcome is None:
+                self._outcome = QuestRunOutcome(
+                    kind="completed",
+                    level=str(self._quest.level),
+                    base_time_ms=int(self._quest.spawn_timeline_ms),
+                    player_health=float(self._player.health),
+                    pending_perk_count=int(self._state.perk_selection.pending_count),
+                    experience=int(self._player.experience),
+                    kill_count=int(self._creatures.kill_count),
+                    weapon_id=int(self._player.weapon_id),
+                )
             self.close_requested = True
 
     def draw(self) -> None:
