@@ -192,6 +192,7 @@ class PerkSelectionView:
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._layout,
+            screen_w=screen_w,
             origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,
@@ -291,6 +292,7 @@ class PerkSelectionView:
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._layout,
+            screen_w=screen_w,
             origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,

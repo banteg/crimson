@@ -14,6 +14,7 @@ def _register_builtin_views() -> None:
     from . import projectile_fx as _projectile_fx  # noqa: F401
     from . import bonuses as _bonuses  # noqa: F401
     from . import perks as _perks  # noqa: F401
+    from . import perk_menu_debug as _perk_menu_debug  # noqa: F401
     from . import wicons as _wicons  # noqa: F401
     from . import ui as _ui  # noqa: F401
     from . import particles as _particles  # noqa: F401

@@ -72,19 +72,30 @@ def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, fl
     return 0.0, 0.0
 
 
+def _menu_widescreen_y_shift(layout_w: float) -> float:
+    # ui_menu_layout_init: pos_y += (screen_width / 640.0) * 150.0 - 150.0
+    return (layout_w / UI_BASE_WIDTH) * 150.0 - 150.0
+
+
 def perk_menu_compute_layout(
     layout: PerkMenuLayout,
     *,
+    screen_w: float,
     origin_x: float,
     origin_y: float,
     scale: float,
     choice_count: int,
     expert_owned: bool,
     master_owned: bool,
+    panel_slide_x: float = 0.0,
 ) -> PerkMenuComputedLayout:
+    layout_w = screen_w / scale if scale else screen_w
+    widescreen_shift_y = _menu_widescreen_y_shift(layout_w)
+    panel_x = layout.panel_x + panel_slide_x
+    panel_y = layout.panel_y + widescreen_shift_y
     panel = rl.Rectangle(
-        origin_x + layout.panel_x * scale,
-        origin_y + layout.panel_y * scale,
+        origin_x + panel_x * scale,
+        origin_y + panel_y * scale,
         layout.panel_w * scale,
         layout.panel_h * scale,
     )

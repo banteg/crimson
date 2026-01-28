@@ -436,7 +436,7 @@ class SurvivalView:
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
         menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
-        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
+        slide_x = (menu_t - 1.0) * self._perk_ui_layout.panel_w
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -445,12 +445,14 @@ class SurvivalView:
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
-            origin_x=origin_x + slide_x,
+            screen_w=screen_w,
+            origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         for idx, perk_id in enumerate(choices):
@@ -650,8 +652,8 @@ class SurvivalView:
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(bar_w), float(bar_h))
+            src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(bar_w), float(bar_h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -662,7 +664,7 @@ class SurvivalView:
             w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
             h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(w), float(h))
+            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -689,18 +691,20 @@ class SurvivalView:
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
+        slide_x = (menu_t - 1.0) * self._perk_ui_layout.panel_w
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
-            origin_x=origin_x + slide_x,
+            screen_w=screen_w,
+            origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         panel_tex = self._perk_menu_assets.menu_panel
