@@ -1,0 +1,707 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+import math
+import os
+
+import pyray as rl
+
+from grim.audio import play_music, stop_music, update_audio
+from grim.assets import PaqTextureCache
+from grim.terrain_render import GroundRenderer
+
+from ..ui.cursor import draw_menu_cursor
+from .assets import _ensure_texture_cache
+from .transitions import _draw_screen_fade
+
+if TYPE_CHECKING:
+    from ..game import GameState
+
+
+MENU_LABEL_WIDTH = 124.0
+MENU_LABEL_HEIGHT = 30.0
+MENU_LABEL_ROW_HEIGHT = 32.0
+MENU_LABEL_ROW_PLAY_GAME = 1
+MENU_LABEL_ROW_OPTIONS = 2
+MENU_LABEL_ROW_STATISTICS = 3
+MENU_LABEL_ROW_MODS = 4
+MENU_LABEL_ROW_OTHER_GAMES = 5
+MENU_LABEL_ROW_QUIT = 6
+MENU_LABEL_ROW_BACK = 7
+MENU_LABEL_BASE_X = -60.0
+MENU_LABEL_BASE_Y = 210.0
+MENU_LABEL_OFFSET_X = 270.0
+MENU_LABEL_OFFSET_Y = -38.0
+MENU_LABEL_STEP = 60.0
+MENU_ITEM_OFFSET_X = -72.0
+MENU_ITEM_OFFSET_Y = -60.0
+MENU_PANEL_WIDTH = 512.0
+MENU_PANEL_HEIGHT = 256.0
+MENU_PANEL_OFFSET_X = 20.0
+MENU_PANEL_OFFSET_Y = -82.0
+MENU_PANEL_BASE_X = -45.0
+MENU_PANEL_BASE_Y = 210.0
+MENU_SCALE_SMALL_THRESHOLD = 640
+MENU_SCALE_LARGE_MIN = 801
+MENU_SCALE_LARGE_MAX = 1024
+MENU_SCALE_SMALL = 0.8
+MENU_SCALE_LARGE = 1.2
+MENU_SCALE_SHIFT = 10.0
+
+# ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
+# blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).
+UI_SHADOW_OFFSET = 7.0
+UI_SHADOW_TINT = rl.Color(0x44, 0x44, 0x44, 0x44)
+
+MENU_SIGN_WIDTH = 573.44
+MENU_SIGN_HEIGHT = 143.36
+MENU_SIGN_OFFSET_X = -577.44
+MENU_SIGN_OFFSET_Y = -62.0
+MENU_SIGN_POS_Y = 70.0
+MENU_SIGN_POS_Y_SMALL = 60.0
+MENU_SIGN_POS_X_PAD = 4.0
+
+# TODO: confirm the exact idle threshold from the original demo build.
+MENU_DEMO_IDLE_START_MS = 30_000
+
+
+def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
+    cache = state.texture_cache
+    if cache is None:
+        return None
+    base = cache.texture("ter_q1_base")
+    if base is None:
+        return None
+    overlay = cache.texture("ter_q1_tex1")
+    detail = overlay or base
+    ground = state.menu_ground
+    screen_width = float(state.config.screen_width)
+    screen_height = float(state.config.screen_height)
+    texture_scale = float(state.config.texture_scale)
+    if ground is None:
+        ground = GroundRenderer(
+            texture=base,
+            overlay=overlay,
+            overlay_detail=detail,
+            width=1024,
+            height=1024,
+            texture_scale=texture_scale,
+            screen_width=screen_width,
+            screen_height=screen_height,
+        )
+        state.menu_ground = ground
+        regenerate = True
+    else:
+        scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
+        ground.texture = base
+        ground.overlay = overlay
+        ground.overlay_detail = detail
+        ground.texture_scale = texture_scale
+        ground.screen_width = screen_width
+        ground.screen_height = screen_height
+        if scale_changed:
+            regenerate = True
+    if regenerate:
+        ground.schedule_generate(seed=state.rng.randrange(0, 10_000), layers=3)
+    return ground
+
+
+def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
+    cache = _ensure_texture_cache(state)
+    particles = cache.get_or_load("particles", "game/particles.jaz").texture
+    cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+
+    mouse = rl.get_mouse_position()
+    mouse_x = float(mouse.x)
+    mouse_y = float(mouse.y)
+    draw_menu_cursor(particles, cursor_tex, x=mouse_x, y=mouse_y, pulse_time=float(pulse_time))
+
+
+@dataclass(slots=True)
+class MenuAssets:
+    sign: rl.Texture2D | None
+    item: rl.Texture2D | None
+    panel: rl.Texture2D | None
+    labels: rl.Texture2D | None
+
+
+@dataclass(slots=True)
+class MenuEntry:
+    slot: int
+    row: int
+    y: float
+    hover_amount: int = 0
+    ready_timer_ms: int = 0x100
+
+
+class MenuView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._assets: MenuAssets | None = None
+        self._ground: GroundRenderer | None = None
+        self._menu_entries: list[MenuEntry] = []
+        self._selected_index = 0
+        self._focus_timer_ms = 0
+        self._hovered_index: int | None = None
+        self._full_version = False
+        self._timeline_ms = 0
+        self._timeline_max_ms = 0
+        self._idle_ms = 0
+        self._last_mouse_x = 0.0
+        self._last_mouse_y = 0.0
+        self._cursor_pulse_time = 0.0
+        self._widescreen_y_shift = 0.0
+        self._menu_screen_width = 0
+        self._closing = False
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
+
+    def open(self) -> None:
+        layout_w = float(self._state.config.screen_width)
+        self._menu_screen_width = int(layout_w)
+        self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
+        cache = self._ensure_cache()
+        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
+        item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
+        panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
+        self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
+        self._full_version = bool(self._state.config.data.get("full_version_flag", 0))
+        self._menu_entries = self._menu_entries_for_flags(
+            full_version=self._full_version,
+            mods_available=self._mods_available(),
+            other_games=self._other_games_enabled(),
+        )
+        self._selected_index = 0 if self._menu_entries else -1
+        self._focus_timer_ms = 0
+        self._hovered_index = None
+        self._timeline_ms = 0
+        self._idle_ms = 0
+        self._cursor_pulse_time = 0.0
+        mouse = rl.get_mouse_position()
+        self._last_mouse_x = float(mouse.x)
+        self._last_mouse_y = float(mouse.y)
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._timeline_max_ms = self._menu_max_timeline_ms(
+            full_version=self._full_version,
+            mods_available=self._mods_available(),
+            other_games=self._other_games_enabled(),
+        )
+        self._init_ground()
+        if self._state.audio is not None:
+            theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
+            if self._state.audio.music.active_track != theme:
+                stop_music(self._state.audio)
+            play_music(self._state.audio, theme)
+
+    def close(self) -> None:
+        self._ground = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
+        dt_ms = int(min(dt, 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
+            return
+
+        if dt_ms > 0:
+            mouse = rl.get_mouse_position()
+            mouse_x = float(mouse.x)
+            mouse_y = float(mouse.y)
+            mouse_moved = (mouse_x != self._last_mouse_x) or (mouse_y != self._last_mouse_y)
+            if mouse_moved:
+                self._last_mouse_x = mouse_x
+                self._last_mouse_y = mouse_y
+
+            any_key = rl.get_key_pressed() != 0
+            any_click = (
+                rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+                or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_RIGHT)
+                or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_MIDDLE)
+            )
+
+            if any_key or any_click or mouse_moved:
+                self._idle_ms = 0
+            else:
+                self._idle_ms += dt_ms
+
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+            self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+            if self._timeline_ms >= self._timeline_max_ms:
+                self._state.menu_sign_locked = True
+        if not self._menu_entries:
+            return
+
+        self._hovered_index = self._hovered_entry_index()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
+            delta = -1 if reverse else 1
+            self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
+            self._focus_timer_ms = 1000
+
+        activated_index: int | None = None
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and 0 <= self._selected_index < len(self._menu_entries):
+            entry = self._menu_entries[self._selected_index]
+            if self._menu_entry_enabled(entry):
+                activated_index = self._selected_index
+
+        if activated_index is None and self._hovered_index is not None:
+            if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+                hovered = self._hovered_index
+                entry = self._menu_entries[hovered]
+                if self._menu_entry_enabled(entry):
+                    self._selected_index = hovered
+                    self._focus_timer_ms = 1000
+                    activated_index = hovered
+
+        if activated_index is not None:
+            self._activate_menu_entry(activated_index)
+        if (
+            (not self._closing)
+            and self._pending_action is None
+            and self._state.demo_enabled
+            and self._timeline_ms >= self._timeline_max_ms
+            and self._idle_ms >= MENU_DEMO_IDLE_START_MS
+        ):
+            self._begin_close_transition("start_demo")
+        self._update_ready_timers(dt_ms)
+        self._update_hover_amounts(dt_ms)
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
+        assets = self._assets
+        if assets is None:
+            return
+        self._draw_menu_items()
+        self._draw_menu_sign()
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def take_action(self) -> str | None:
+        action = self._pending_action
+        self._pending_action = None
+        return action
+
+    def _activate_menu_entry(self, index: int) -> None:
+        if not (0 <= index < len(self._menu_entries)):
+            return
+        entry = self._menu_entries[index]
+        self._state.console.log.log(f"menu select: {index} (row {entry.row})")
+        self._state.console.log.flush()
+        if entry.row == MENU_LABEL_ROW_QUIT:
+            self._begin_quit_transition()
+        elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
+            self._begin_close_transition("open_play_game")
+        elif entry.row == MENU_LABEL_ROW_OPTIONS:
+            self._begin_close_transition("open_options")
+        elif entry.row == MENU_LABEL_ROW_STATISTICS:
+            self._begin_close_transition("open_statistics")
+        elif entry.row == MENU_LABEL_ROW_MODS:
+            self._begin_close_transition("open_mods")
+        elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
+            self._begin_close_transition("open_other_games")
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
+
+    def _begin_quit_transition(self) -> None:
+        self._state.menu_sign_locked = False
+        self._begin_close_transition("quit_after_demo" if self._state.demo_enabled else "quit_app")
+
+    def _ensure_cache(self) -> PaqTextureCache:
+        return _ensure_texture_cache(self._state)
+
+    def _init_ground(self) -> None:
+        self._ground = ensure_menu_ground(self._state)
+
+    def _menu_entries_for_flags(
+        self,
+        full_version: bool,
+        mods_available: bool,
+        other_games: bool,
+    ) -> list[MenuEntry]:
+        rows = self._menu_label_rows(full_version, other_games)
+        slot_ys = self._menu_slot_ys(other_games, self._widescreen_y_shift)
+        active = self._menu_slot_active(full_version, mods_available, other_games)
+        entries: list[MenuEntry] = []
+        for slot, (row, y, enabled) in enumerate(zip(rows, slot_ys, active, strict=False)):
+            if not enabled:
+                continue
+            entries.append(MenuEntry(slot=slot, row=row, y=y))
+        return entries
+
+    @staticmethod
+    def _menu_label_rows(_full_version: bool, other_games: bool) -> list[int]:
+        # Label atlas rows in ui_itemTexts.jaz:
+        #   0 BUY NOW (unused in rewrite), 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
+        #   5 OTHER GAMES, 6 QUIT, 7 BACK
+        top = 4
+        if other_games:
+            return [top, 1, 2, 3, 5, 6]
+        # ui_menu_layout_init swaps table idx 6/7 depending on config var 100:
+        # when empty, QUIT becomes idx 6 and the idx 7 element is inactive.
+        return [top, 1, 2, 3, 6, 7]
+
+    @staticmethod
+    def _menu_slot_ys(_other_games: bool, y_shift: float) -> list[float]:
+        ys = [
+            MENU_LABEL_BASE_Y,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 2.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 3.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 5.0,
+        ]
+        return [y + y_shift for y in ys]
+
+    @staticmethod
+    def _menu_slot_active(
+        _full_version: bool,
+        mods_available: bool,
+        other_games: bool,
+    ) -> list[bool]:
+        show_top = mods_available
+        if other_games:
+            return [show_top, True, True, True, True, True]
+        return [show_top, True, True, True, True, False]
+
+    def _draw_menu_items(self) -> None:
+        assets = self._assets
+        if assets is None or assets.labels is None or not self._menu_entries:
+            return
+        item = assets.item
+        if item is None:
+            return
+        label_tex = assets.labels
+        item_w = float(item.width)
+        item_h = float(item.height)
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        # Matches ui_elements_update_and_render reverse table iteration:
+        # later entries draw first, earlier entries draw last (on top).
+        for idx in range(len(self._menu_entries) - 1, -1, -1):
+            entry = self._menu_entries[idx]
+            pos_x = self._menu_slot_pos_x(entry.slot)
+            pos_y = entry.y
+            angle_rad, slide_x = self._ui_element_anim(
+                index=entry.slot + 2,
+                start_ms=self._menu_slot_start_ms(entry.slot),
+                end_ms=self._menu_slot_end_ms(entry.slot),
+                width=item_w,
+            )
+            _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
+            item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+            offset_x = MENU_ITEM_OFFSET_X * item_scale
+            offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+            dst = rl.Rectangle(
+                pos_x,
+                pos_y,
+                item_w * item_scale,
+                item_h * item_scale,
+            )
+            origin = rl.Vector2(-offset_x, -offset_y)
+            rotation_deg = math.degrees(angle_rad)
+            if fx_detail:
+                self._draw_ui_quad_shadow(
+                    texture=item,
+                    src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+                    dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
+                    origin=origin,
+                    rotation_deg=rotation_deg,
+                )
+            self._draw_ui_quad(
+                texture=item,
+                src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+                dst=dst,
+                origin=origin,
+                rotation_deg=rotation_deg,
+                tint=rl.WHITE,
+            )
+            counter_value = entry.hover_amount
+            if idx == self._selected_index and self._focus_timer_ms > 0:
+                counter_value = self._focus_timer_ms
+            alpha = self._label_alpha(counter_value)
+            tint = rl.Color(255, 255, 255, alpha)
+            src = rl.Rectangle(
+                0.0,
+                float(entry.row) * MENU_LABEL_ROW_HEIGHT,
+                MENU_LABEL_WIDTH,
+                MENU_LABEL_ROW_HEIGHT,
+            )
+            label_offset_x = MENU_LABEL_OFFSET_X * item_scale
+            label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
+            label_dst = rl.Rectangle(
+                pos_x,
+                pos_y,
+                MENU_LABEL_WIDTH * item_scale,
+                MENU_LABEL_HEIGHT * item_scale,
+            )
+            label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
+            self._draw_ui_quad(
+                texture=label_tex,
+                src=src,
+                dst=label_dst,
+                origin=label_origin,
+                rotation_deg=rotation_deg,
+                tint=tint,
+            )
+            if self._menu_entry_enabled(entry):
+                glow_alpha = alpha
+                if 0 <= entry.ready_timer_ms < 0x100:
+                    glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                self._draw_ui_quad(
+                    texture=label_tex,
+                    src=src,
+                    dst=label_dst,
+                    origin=label_origin,
+                    rotation_deg=rotation_deg,
+                    tint=rl.Color(255, 255, 255, glow_alpha),
+                )
+                rl.end_blend_mode()
+
+    def _mods_available(self) -> bool:
+        mods_dir = self._state.base_dir / "mods"
+        if not mods_dir.exists():
+            return False
+        return any(mods_dir.glob("*.dll"))
+
+    def _other_games_enabled(self) -> bool:
+        # Original game checks a config string via grim_get_config_var(100).
+        # Our config-var system is not implemented yet; allow a simple env opt-in.
+        return os.getenv("CRIMSON_GRIM_CONFIG_VAR_100", "").strip() != ""
+
+    def _hovered_entry_index(self) -> int | None:
+        if not self._menu_entries:
+            return None
+        mouse = rl.get_mouse_position()
+        mouse_x = float(mouse.x)
+        mouse_y = float(mouse.y)
+        for idx, entry in enumerate(self._menu_entries):
+            if not self._menu_entry_enabled(entry):
+                continue
+            left, top, right, bottom = self._menu_item_bounds(entry)
+            if left <= mouse_x <= right and top <= mouse_y <= bottom:
+                return idx
+        return None
+
+    def _update_ready_timers(self, dt_ms: int) -> None:
+        for entry in self._menu_entries:
+            if entry.ready_timer_ms < 0x100:
+                entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
+
+    def _update_hover_amounts(self, dt_ms: int) -> None:
+        hovered_index = self._hovered_index
+        for idx, entry in enumerate(self._menu_entries):
+            hover = hovered_index is not None and idx == hovered_index
+            if hover:
+                entry.hover_amount += dt_ms * 6
+            else:
+                entry.hover_amount -= dt_ms * 2
+            entry.hover_amount = max(0, min(1000, entry.hover_amount))
+
+    @staticmethod
+    def _label_alpha(counter_value: int) -> int:
+        # ui_element_render: alpha = 100 + floor(counter_value * 155 / 1000)
+        return 100 + (counter_value * 155) // 1000
+
+    def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
+        return self._timeline_ms >= self._menu_slot_start_ms(entry.slot)
+
+    @staticmethod
+    def _menu_widescreen_y_shift(screen_w: float) -> float:
+        # ((screen_width / 640.0) * 150.0) - 150.0
+        return (screen_w * 0.0015625 * 150.0) - 150.0
+
+    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
+        if self._menu_screen_width < 641:
+            return 0.9, float(slot) * 11.0
+        return 1.0, 0.0
+
+    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[float, float, float, float]:
+        # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
+        assets = self._assets
+        if assets is None or assets.item is None:
+            return (0.0, 0.0, 0.0, 0.0)
+        item_w = float(assets.item.width)
+        item_h = float(assets.item.height)
+        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        x0 = MENU_ITEM_OFFSET_X * item_scale
+        y0 = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+        x2 = (MENU_ITEM_OFFSET_X + item_w) * item_scale
+        y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
+        w = x2 - x0
+        h = y2 - y0
+        pos_x = self._menu_slot_pos_x(entry.slot)
+        pos_y = entry.y
+        left = pos_x + x0 + w * 0.54
+        top = pos_y + y0 + h * 0.28
+        right = pos_x + x2 - w * 0.05
+        bottom = pos_y + y2 - h * 0.10
+        return left, top, right, bottom
+
+    @staticmethod
+    def _menu_slot_pos_x(slot: int) -> float:
+        # ui_menu_layout_init: subtract 20, 40, ... from later menu items
+        return MENU_LABEL_BASE_X - float(slot * 20)
+
+    @staticmethod
+    def _menu_slot_start_ms(slot: int) -> int:
+        # ui_menu_layout_init: start_time_ms is the fully-visible time.
+        return (slot + 2) * 100 + 300
+
+    @classmethod
+    def _menu_slot_end_ms(cls, slot: int) -> int:
+        # ui_menu_layout_init: end_time_ms is the fully-hidden time.
+        return (slot + 2) * 100
+
+    @staticmethod
+    def _menu_max_timeline_ms(full_version: bool, mods_available: bool, other_games: bool) -> int:
+        del full_version
+        max_ms = 300  # sign element at index 0
+        show_top = mods_available
+        slot_active = [show_top, True, True, True, True, other_games]
+        for slot, active in enumerate(slot_active):
+            if not active:
+                continue
+            max_ms = max(max_ms, (slot + 2) * 100 + 300)
+        return max_ms
+
+    def _ui_element_anim(
+        self,
+        *,
+        index: int,
+        start_ms: int,
+        end_ms: int,
+        width: float,
+    ) -> tuple[float, float]:
+        # Matches ui_element_update: angle lerps pi/2 -> 0 over [end_ms, start_ms].
+        # Direction flag (element+0x314) appears to be 0 for main menu elements.
+        if start_ms <= end_ms or width <= 0.0:
+            return 0.0, 0.0
+        t = self._timeline_ms
+        if t < end_ms:
+            angle = 1.5707964
+            offset_x = -abs(width)
+        elif t < start_ms:
+            elapsed = t - end_ms
+            span = float(start_ms - end_ms)
+            p = float(elapsed) / span
+            angle = 1.5707964 * (1.0 - p)
+            offset_x = -((1.0 - p) * abs(width))
+        else:
+            angle = 0.0
+            offset_x = 0.0
+        if index == 0:
+            angle = -abs(angle)
+        return angle, offset_x
+
+    @staticmethod
+    def _draw_ui_quad(
+        *,
+        texture: rl.Texture2D,
+        src: rl.Rectangle,
+        dst: rl.Rectangle,
+        origin: rl.Vector2,
+        rotation_deg: float,
+        tint: rl.Color,
+    ) -> None:
+        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+
+    @staticmethod
+    def _draw_ui_quad_shadow(
+        *,
+        texture: rl.Texture2D,
+        src: rl.Rectangle,
+        dst: rl.Rectangle,
+        origin: rl.Vector2,
+        rotation_deg: float,
+    ) -> None:
+        # NOTE: raylib/rlgl tracks custom blend factors as state; some backends
+        # only apply them when switching the blend mode.
+        rl.rl_set_blend_factors_separate(
+            rl.RL_ZERO,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_ZERO,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
+        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, UI_SHADOW_TINT)
+        rl.end_blend_mode()
+
+    def _draw_menu_sign(self) -> None:
+        assets = self._assets
+        if assets is None or assets.sign is None:
+            return
+        screen_w = float(self._state.config.screen_width)
+        scale, shift_x = self._sign_layout_scale(int(screen_w))
+        pos_x = screen_w + MENU_SIGN_POS_X_PAD
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_w = MENU_SIGN_WIDTH * scale
+        sign_h = MENU_SIGN_HEIGHT * scale
+        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
+        offset_y = MENU_SIGN_OFFSET_Y * scale
+        rotation_deg = 0.0
+        if not self._state.menu_sign_locked:
+            angle_rad, slide_x = self._ui_element_anim(
+                index=0,
+                start_ms=300,
+                end_ms=0,
+                width=sign_w,
+            )
+            _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
+            rotation_deg = math.degrees(angle_rad)
+        sign = assets.sign
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            self._draw_ui_quad_shadow(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=rotation_deg,
+            )
+        self._draw_ui_quad(
+            texture=sign,
+            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            origin=rl.Vector2(-offset_x, -offset_y),
+            rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
+
+    @staticmethod
+    def _sign_layout_scale(width: int) -> tuple[float, float]:
+        if width <= MENU_SCALE_SMALL_THRESHOLD:
+            return MENU_SCALE_SMALL, MENU_SCALE_SHIFT
+        if MENU_SCALE_LARGE_MIN <= width <= MENU_SCALE_LARGE_MAX:
+            return MENU_SCALE_LARGE, MENU_SCALE_SHIFT
+        return 1.0, 0.0

@@ -254,7 +254,7 @@ This immediately prevents future “random rendering code inserted into simulati
 To avoid creating a junk-drawer module, extract cohesive chunks:
 
 * [x] `crimson/frontend/boot.py` (boot stages, resource pack init, logo flow)
-* [ ] `crimson/frontend/menu.py` (main menu buttons + transitions)
+* [x] `crimson/frontend/menu.py` (main menu buttons + transitions)
 * [ ] `crimson/frontend/panels/options.py`, `stats.py`, `play_game.py`
 * [x] `crimson/frontend/transitions.py` (screen fade, timeline helpers)
 * [ ] `crimson/frontend/assets.py` (menu textures, panels; uses the shared TextureLoader)
