@@ -548,7 +548,7 @@ class SurvivalMode:
                 rect = self._perk_prompt_rect(label)
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
-            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
+            if self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
                 not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
             ):
                 self._perk_prompt_pulse = 1000.0
