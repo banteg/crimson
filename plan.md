@@ -262,15 +262,15 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.1 Creature name table (keep it out of `CreatureState`)
 
-- [ ] Add `CreatureNameTable`
-  - [ ] `names: list[str]` sized to creature pool
-  - [ ] `assign_random(i, rng, difficulty)` (port decompile incrementally)
-  - [ ] `clear(i)` when creature slot becomes inactive
-  - [ ] `find_by_name(name) -> index|None` (active creatures only)
-- [ ] Initial correctness constraints
-  - [ ] enforce uniqueness among active creatures
-  - [ ] enforce max length (16)
-  - [ ] scale difficulty with XP (decompile changes name generation as XP rises)
+- [x] Add `CreatureNameTable`
+  - [x] `names: list[str]` sized to creature pool
+  - [x] `assign_random(i, rng, difficulty)` (port decompile incrementally)
+  - [x] `clear(i)` when creature slot becomes inactive
+  - [x] `find_by_name(name) -> index|None` (active creatures only)
+- [x] Initial correctness constraints
+  - [x] enforce uniqueness among active creatures
+  - [x] enforce max length (16)
+  - [x] scale difficulty with XP (decompile changes name generation as XP rises)
 
 ### 6.2 Typing buffer + input handling
 
@@ -320,8 +320,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.8 Tests
 
-- [ ] deterministic name assignment constraints (unique, max len)
-- [ ] `find_by_name` correctness
+- [x] deterministic name assignment constraints (unique, max len)
+- [x] `find_by_name` correctness
 - [ ] spawn loop determinism
 
 ---
