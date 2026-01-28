@@ -493,7 +493,7 @@ class GameWorld:
             self._sync_ground_settings()
             self.ground.process_pending()
 
-        prev_audio = [(player.ammo, player.reload_active, player.reload_timer) for player in self.players]
+        prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in self.players]
 
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=self.fx_queue)
@@ -515,10 +515,10 @@ class GameWorld:
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(player, input_state, dt, self.state, world_size=float(self.world_size))
             if idx < len(prev_audio):
-                prev_ammo, prev_reload_active, prev_reload_timer = prev_audio[idx]
+                prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
                 self._handle_player_audio(
                     player,
-                    prev_ammo=prev_ammo,
+                    prev_shot_seq=prev_shot_seq,
                     prev_reload_active=prev_reload_active,
                     prev_reload_timer=prev_reload_timer,
                 )
@@ -691,14 +691,21 @@ class GameWorld:
             return
         play_sfx(self.audio, key, rng=self.audio_rng)
 
-    def _handle_player_audio(self, player: PlayerState, *, prev_ammo: int, prev_reload_active: bool, prev_reload_timer: float) -> None:
+    def _handle_player_audio(
+        self,
+        player: PlayerState,
+        *,
+        prev_shot_seq: int,
+        prev_reload_active: bool,
+        prev_reload_timer: float,
+    ) -> None:
         if self.audio is None:
             return
         weapon = WEAPON_BY_ID.get(int(player.weapon_id))
         if weapon is None:
             return
 
-        if player.ammo < prev_ammo:
+        if int(player.shot_seq) > int(prev_shot_seq):
             self._play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
         reload_started = (not prev_reload_active and player.reload_active) or (player.reload_timer > prev_reload_timer + 1e-6)

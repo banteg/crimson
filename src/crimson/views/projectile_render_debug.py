@@ -270,7 +270,7 @@ class ProjectileRenderDebugView:
 
         prev_audio = None
         if self._world.audio is not None:
-            prev_audio = (int(self._player.ammo), bool(self._player.reload_active), float(self._player.reload_timer))
+            prev_audio = (int(self._player.shot_seq), bool(self._player.reload_active), float(self._player.reload_timer))
 
         # Keep the scene stable: targets are static, only projectiles + player advance.
         hits = self._world.state.projectiles.update(
@@ -291,10 +291,10 @@ class ProjectileRenderDebugView:
         player_update(self._player, input_state, float(dt), self._world.state, world_size=WORLD_SIZE)
 
         if prev_audio is not None:
-            prev_ammo, prev_reload_active, prev_reload_timer = prev_audio
+            prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio
             self._world._handle_player_audio(
                 self._player,
-                prev_ammo=prev_ammo,
+                prev_shot_seq=prev_shot_seq,
                 prev_reload_active=prev_reload_active,
                 prev_reload_timer=prev_reload_timer,
             )

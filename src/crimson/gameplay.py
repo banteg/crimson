@@ -57,6 +57,7 @@ class PlayerState:
     reload_timer: float = 0.0
     reload_timer_max: float = 0.0
     shot_cooldown: float = 0.0
+    shot_seq: int = 0
     spread_heat: float = 0.01
     muzzle_flash_alpha: float = 0.0
 
@@ -1096,6 +1097,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
+    player.shot_seq += 1
     player.ammo = max(0, player.ammo - 1)
     if player.ammo <= 0:
         player_start_reload(player, state)
