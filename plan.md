@@ -61,7 +61,7 @@ This keeps the codebase clean when paths change. We haven't released, so we don'
 
 ## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson) [ ]
 
-### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation) [ ]
+### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation) [x]
 
 Right now:
 
@@ -357,7 +357,7 @@ For a fast-moving rewrite, this matters more than perfect architecture:
 
 If you want the fastest impact on “duplicates + wrong place code”, do these in order:
 
-1. [ ] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
+1. [x] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
 2. [ ] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
 3. [ ] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
 4. [ ] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).

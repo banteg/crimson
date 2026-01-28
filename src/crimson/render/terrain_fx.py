@@ -7,8 +7,7 @@ import pyray as rl
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import effect_src_rect
-
-from .terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
+from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
 
 __all__ = ["bake_fx_queues", "FxQueueTextures"]
 

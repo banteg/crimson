@@ -7,7 +7,7 @@ import pyray as rl
 
 from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.effects import FxQueue, FxQueueRotated
-from grim.fx_queue import FxQueueTextures, bake_fx_queues
+from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from ..quests import all_quests

@@ -10,7 +10,6 @@ import pyray as rl
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 from grim.config import CrimsonConfig
-from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.terrain_render import GroundRenderer
 
 from .bonuses import BONUS_BY_ID, BonusId
@@ -30,6 +29,7 @@ from .gameplay import (
     survival_progression_update,
     weapon_assign_player,
 )
+from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .weapon_sfx import resolve_weapon_sfx_ref

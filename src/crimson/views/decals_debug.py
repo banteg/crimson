@@ -13,8 +13,8 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import GameplayState, PlayerState
+from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.config import ensure_crimson_cfg
-from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
