@@ -138,7 +138,7 @@ class RushMode(BaseGameplayMode):
         record.score_xp = int(self._player.experience)
         record.survival_elapsed_ms = int(self._rush.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
-        record.most_used_weapon_id = int(self._player.weapon_id)
+        record.most_used_weapon_id = int(self._player.weapon_id) + 1
         record.shots_fired = 0
         record.shots_hit = 0
         record.game_mode_id = int(self._config.data.get("game_mode", int(GameMode.RUSH))) if self._config is not None else int(GameMode.RUSH)

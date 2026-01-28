@@ -231,7 +231,7 @@ class SurvivalMode(BaseGameplayMode):
         record.creature_kill_count = int(self._creatures.kill_count)
 
         # Missing fidelity: we don't track usage/hit stats yet.
-        record.most_used_weapon_id = int(self._player.weapon_id)
+        record.most_used_weapon_id = int(self._player.weapon_id) + 1
         record.shots_fired = 0
         record.shots_hit = 0
 

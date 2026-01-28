@@ -168,7 +168,9 @@ class QuestMode(BaseGameplayMode):
                 detail_path=detail_path,
             )
 
-        weapon_assign_player(self._player, int(quest.start_weapon_id))
+        # Quest metadata stores native (1-based) weapon ids; the rewrite uses 0-based ids.
+        start_weapon_id = max(0, int(quest.start_weapon_id) - 1)
+        weapon_assign_player(self._player, start_weapon_id)
 
         ctx = QuestContext(width=int(self._world.world_size), height=int(self._world.world_size), player_count=1)
         entries = build_quest_spawn_table(

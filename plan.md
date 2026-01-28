@@ -115,7 +115,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] reset world (clear creatures/projectiles/bonuses/effects)
   - [x] reset player stats to match decompile init (level/xp/perks pending)
   - [x] set terrain: `terrain_id` + `terrain_over_id` from quest metadata
-  - [x] set player weapon: `QuestDefinition.start_weapon_id`
+  - [x] set player weapon: `QuestDefinition.start_weapon_id` (native weapon id → runtime id)
   - [x] build spawn table via existing `build_quest_spawn_table(...)`
     - [x] apply hardcore adjustment exactly like decompile
       - [x] only if `hardcore` and `count > 1` and `spawn_id != 0x3c`

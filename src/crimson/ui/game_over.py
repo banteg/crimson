@@ -87,7 +87,10 @@ def _format_time_mm_ss(ms: int) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
-def _weapon_icon_src(texture: rl.Texture, weapon_id: int) -> rl.Rectangle | None:
+def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
+    # High score records store native (1-based) weapon ids; the rewrite uses 0-based ids.
+    weapon_id_native = int(weapon_id_native)
+    weapon_id = 0 if weapon_id_native <= 0 else weapon_id_native - 1
     entry = WEAPON_BY_ID.get(int(weapon_id))
     icon_index = entry.icon_index if entry is not None else None
     if icon_index is None or icon_index < 0 or icon_index > 31:
@@ -439,8 +442,10 @@ class GameOverUi:
                 dst = rl.Rectangle(base_x, row_y, 64.0 * scale, 32.0 * scale)
                 rl.draw_texture_pro(hud_assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)))
 
-            weapon_entry = WEAPON_BY_ID.get(int(record.most_used_weapon_id))
-            weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{int(record.most_used_weapon_id)}"
+            weapon_id_native = int(record.most_used_weapon_id)
+            weapon_id = 0 if weapon_id_native <= 0 else weapon_id_native - 1
+            weapon_entry = WEAPON_BY_ID.get(int(weapon_id))
+            weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id_native}"
             name_w = self._text_width(weapon_name, 1.0 * scale)
             name_x = base_x + max(0.0, (32.0 * scale - name_w * 0.5))
             self._draw_small(weapon_name, name_x, row_y + 32.0 * scale, 1.0 * scale, hint_color)

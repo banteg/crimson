@@ -973,7 +973,7 @@ class QuestResultsView:
         record.quest_stage_minor = minor
         record.score_xp = int(outcome.experience)
         record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = int(outcome.weapon_id)
+        record.most_used_weapon_id = int(outcome.weapon_id) + 1
 
         breakdown = compute_quest_final_time(
             base_time_ms=int(outcome.base_time_ms),
