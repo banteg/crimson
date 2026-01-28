@@ -164,6 +164,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] `game_mode_id = 3`
   - [x] `survival_elapsed_ms = final_time_ms`
   - [x] `score_xp = experience`
+- [x] Update quest progression persistence
+  - [x] increment completion count for stages 1..4 (`status.quest_play_counts[51..90]`)
+  - [x] advance quest unlock index (`status.quest_unlock_index` / `status.quest_unlock_index_full`)
 - [ ] (Optional) animate breakdown like decompile (phase-based count-up)
 - [ ] Unlock popups + persistence
   - [ ] if quest grants weapon/perk and it’s newly unlocked: bump `status.weapon_unlock_index` / `status.perk_unlock_index`

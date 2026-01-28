@@ -983,6 +983,28 @@ class QuestResultsView:
         record.survival_elapsed_ms = int(breakdown.final_time_ms)
         record.set_name(_player_name_default(self._state.config) or "Player")
 
+        global_index = (int(major) - 1) * 10 + (int(minor) - 1)
+        if 0 <= global_index < 40:
+            try:
+                # `sub_447d40` reads completed counts from indices 51..90.
+                self._state.status.increment_quest_play_count(global_index + 51)
+            except Exception:
+                pass
+
+        # Advance quest unlock progression when completing the currently-unlocked quest.
+        if global_index >= 0:
+            next_unlock = int(global_index + 1)
+            hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+            try:
+                if hardcore:
+                    if next_unlock > int(self._state.status.quest_unlock_index_full):
+                        self._state.status.quest_unlock_index_full = next_unlock
+                else:
+                    if next_unlock > int(self._state.status.quest_unlock_index):
+                        self._state.status.quest_unlock_index = next_unlock
+            except Exception:
+                pass
+
         path = scores_path_for_config(self._state.base_dir, self._state.config, quest_stage_major=major, quest_stage_minor=minor)
         try:
             table, rank_index = upsert_highscore_record(path, record)
