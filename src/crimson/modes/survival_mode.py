@@ -651,8 +651,8 @@ class SurvivalMode:
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(bar_w), float(bar_h))
+            src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(bar_w), float(bar_h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -667,7 +667,7 @@ class SurvivalMode:
             label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
             pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(w), float(h))
+            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
             if label_alpha > 0.0:
