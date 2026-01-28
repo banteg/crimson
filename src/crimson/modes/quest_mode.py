@@ -14,7 +14,8 @@ from ..game_modes import GameMode
 from ..gameplay import weapon_assign_player
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
-from ..quests.runtime import build_quest_spawn_table
+from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
+from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from .base_gameplay_mode import BaseGameplayMode
@@ -82,13 +83,12 @@ class QuestMode(BaseGameplayMode):
         self._quest = _QuestRunState()
         self._selected_level: str | None = None
 
-    def select_level(self, level: str | None) -> None:
-        self._selected_level = level
-
     def open(self) -> None:
         super().open()
-        if self._selected_level is not None:
-            self.prepare_new_run(self._selected_level, status=None)
+        self._quest = _QuestRunState()
+
+    def select_level(self, level: str | None) -> None:
+        self._selected_level = level
 
     def prepare_new_run(self, level: str, *, status: GameStatus | None) -> None:
         quest = quest_by_level(level)
@@ -154,13 +154,107 @@ class QuestMode(BaseGameplayMode):
             if idx is not None:
                 status.increment_quest_play_count(idx)
 
+    def _handle_input(self) -> None:
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+            self._paused = not self._paused
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self.close_requested = True
+
+    def _build_input(self):
+        move_x = 0.0
+        move_y = 0.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_A):
+            move_x -= 1.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_D):
+            move_x += 1.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_W):
+            move_y -= 1.0
+        if rl.is_key_down(rl.KeyboardKey.KEY_S):
+            move_y += 1.0
+
+        mouse = self._ui_mouse_pos()
+        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+
+        fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
+
+        from ..gameplay import PlayerInput
+
+        return PlayerInput(
+            move_x=move_x,
+            move_y=move_y,
+            aim_x=float(aim_x),
+            aim_y=float(aim_y),
+            fire_down=bool(fire_down),
+            fire_pressed=bool(fire_pressed),
+            reload_pressed=bool(reload_pressed),
+        )
+
     def update(self, dt: float) -> None:
         self._update_audio(dt)
         self._update_ui_mouse()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+
+        dt_frame = float(dt)
+        dt_ms = float(dt_frame * 1000.0)
+        self._handle_input()
+
+        if self.close_requested:
+            return
+
+        dt_world = 0.0 if self._paused or self._player.health <= 0.0 else dt_frame
+        if dt_world <= 0.0:
+            return
+
+        self._quest.quest_name_timer_ms += dt_ms
+
+        input_state = self._build_input()
+        self._world.update(
+            dt_world,
+            inputs=[input_state],
+            auto_pick_perks=False,
+            game_mode=int(GameMode.QUESTS),
+            perk_progression_enabled=True,
+        )
+
+        if self._player.health <= 0.0:
+            self.close_requested = True
+            return
+
+        creatures_none_active = not bool(self._creatures.iter_active())
+
+        entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
+            self._quest.spawn_entries,
+            quest_spawn_timeline_ms=float(self._quest.spawn_timeline_ms),
+            frame_dt_ms=dt_world * 1000.0,
+            terrain_width=float(self._world.world_size),
+            creatures_none_active=creatures_none_active,
+            no_creatures_timer_ms=float(self._quest.no_creatures_timer_ms),
+        )
+        self._quest.spawn_entries = entries
+        self._quest.spawn_timeline_ms = float(timeline_ms)
+        self._quest.no_creatures_timer_ms = float(no_creatures_timer_ms)
+
+        for call in spawns:
+            self._creatures.spawn_template(
+                int(call.template_id),
+                call.pos,
+                float(call.heading),
+                self._state.rng,
+                rand=self._state.rng.rand,
+            )
+
+        completion_ms, completed = tick_quest_completion_transition(
+            float(self._quest.completion_transition_ms),
+            frame_dt_ms=dt_world * 1000.0,
+            creatures_none_active=bool(creatures_none_active),
+            spawn_table_empty=quest_spawn_table_empty(self._quest.spawn_entries),
+        )
+        self._quest.completion_transition_ms = float(completion_ms)
+        if completed:
             self.close_requested = True
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=True)
         self._draw_screen_fade()
-

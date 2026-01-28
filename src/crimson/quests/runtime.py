@@ -6,6 +6,8 @@ import random
 
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
+QUEST_COMPLETION_TRANSITION_MS = 1000.0
+
 
 def _call_builder(
     builder,
@@ -59,3 +61,31 @@ def build_quest_spawn_table(
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)
 
+
+def tick_quest_completion_transition(
+    completion_transition_ms: float,
+    frame_dt_ms: float,
+    *,
+    creatures_none_active: bool,
+    spawn_table_empty: bool,
+) -> tuple[float, bool]:
+    """Advance quest completion transition timer.
+
+    The quest-mode update loop waits for a short delay after the quest is "idle complete"
+    (no active creatures + no remaining spawn table entries) before transitioning to the
+    results screen.
+
+    Returns:
+      (completion_transition_ms, completed)
+    """
+
+    dt_ms = float(frame_dt_ms)
+    timer_ms = float(completion_transition_ms)
+
+    if creatures_none_active and spawn_table_empty:
+        if timer_ms < 0.0:
+            timer_ms = 0.0
+        timer_ms += dt_ms
+        return timer_ms, bool(timer_ms >= QUEST_COMPLETION_TRANSITION_MS)
+
+    return -1.0, False

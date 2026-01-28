@@ -131,15 +131,15 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.2 Per-frame quest update (`quest_mode_update`)
 
-- [ ] After `world.update(...)`, advance timers
-  - [ ] advance `spawn_timeline_ms` only if (active creatures) OR (spawn table not empty)
-  - [ ] always advance `quest_name_timer_ms` while gameplay runs
-- [ ] Run spawn timeline
-  - [ ] call `tick_quest_mode_spawns(...)` (already exists)
-  - [ ] apply spawns via `creature_pool.spawn_template(...)`
-  - [ ] update `no_creatures_timer_ms` (for forced-spawn rule)
+- [x] After `world.update(...)`, advance timers
+  - [x] advance `spawn_timeline_ms` only if (active creatures) OR (spawn table not empty)
+  - [x] always advance `quest_name_timer_ms` while gameplay runs
+- [x] Run spawn timeline
+  - [x] call `tick_quest_mode_spawns(...)` (already exists)
+  - [x] apply spawns via `creature_pool.spawn_template(...)`
+  - [x] update `no_creatures_timer_ms` (for forced-spawn rule)
 - [ ] Completion detection
-  - [ ] if no active creatures and spawn table empty: start `completion_transition_ms` if not started
+  - [x] if no active creatures and spawn table empty: start `completion_transition_ms` if not started
   - [ ] after ~1000ms: transition to Quest Results view
 - [ ] Failure detection
   - [ ] if player(s) dead: transition to Quest Failed view (not standard GameOver)
