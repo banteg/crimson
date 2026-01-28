@@ -7,9 +7,11 @@ I’m tailoring this to the snapshot you shared (Python + raylib, `src/grim` eng
 * There’s duplicated **MSVCRT rand() LCG** logic (`crimson/crand.py` vs `CrtRand` inside `grim/terrain_render.py`).
 * Biggest churn/hotspot files by size are `crimson/game.py` (~3.8k LOC) and `crimson/game_world.py` (~1.7k LOC), which are likely where “code lives where it’s not supposed to” will keep reappearing unless boundaries are enforced.
 
+Tracking: use `[ ]` for pending and `[x]` for done (update the markers in the headers/items below).
+
 ---
 
-## North-star architecture rules (make these explicit)
+## North-star architecture rules (make these explicit) [ ]
 
 You already have the intent in `docs/rewrite/module-map.md`. Turn it into hard rules:
 
@@ -25,11 +27,11 @@ These three rules will eliminate most “wrong place” drift.
 
 ---
 
-## Phase 0: Add safety rails before you move anything
+## Phase 0: Add safety rails before you move anything [ ]
 
 This is what lets you refactor *in tiny PRs* without breaking the rewrite.
 
-### 0.1 Add a cheap boundary checker (CI + local)
+### 0.1 Add a cheap boundary checker (CI + local) [ ]
 
 You can use `import-linter`. The goal is binary:
 
@@ -39,7 +41,7 @@ Add a second rule that will matter later:
 
 * Fail CI if any file under `src/crimson/sim/` (once you create it) imports `pyray`.
 
-### 0.2 Add a duplication report you can run on demand
+### 0.2 Add a duplication report you can run on demand [ ]
 
 Don’t try to “zero duplicates” overnight. Start by measuring.
 
@@ -49,7 +51,7 @@ Don’t try to “zero duplicates” overnight. Start by measuring.
 
   * “No new duplicated blocks above N lines” (start permissive, tighten later)
 
-### 0.3 Create a “refactor compatibility” pattern
+### 0.3 Create a “refactor compatibility” pattern [ ]
 
 When moving modules, do not preserve old imports temporarily or re-export.
 
@@ -57,9 +59,9 @@ This keeps the codebase clean when paths change. We haven't released, so we don'
 
 ---
 
-## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson)
+## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson) [ ]
 
-### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation)
+### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation) [ ]
 
 Right now:
 
@@ -89,13 +91,13 @@ A reasonable landing spot would be:
 
 **Either option eliminates the architectural footgun** and will prevent future “engine depends on game” creep.
 
-### 1.2 Lock it in with the boundary test
+### 1.2 Lock it in with the boundary test [ ]
 
 Once fixed, the boundary checker from Phase 0 ensures it doesn’t regress during fast iteration.
 
 ---
 
-## Phase 2: Kill the highest-ROI duplication: asset locating + texture loading
+## Phase 2: Kill the highest-ROI duplication: asset locating + texture loading [ ]
 
 You have the same trio of helpers repeated in multiple files:
 
@@ -105,7 +107,7 @@ You have the same trio of helpers repeated in multiple files:
 
 …and repeated “own/unload textures vs cache ownership” patterns.
 
-### 2.1 Create one canonical loader in `grim.assets`
+### 2.1 Create one canonical loader in `grim.assets` [ ]
 
 Add something like:
 
@@ -131,7 +133,7 @@ class TextureLoader:
     def unload(self) -> None: ...
 ```
 
-### 2.2 Refactor callsites in this order (low risk → high churn)
+### 2.2 Refactor callsites in this order (low risk → high churn) [ ]
 
 1. `crimson/ui/perk_menu.py`
 2. `crimson/ui/hud.py`
@@ -144,7 +146,7 @@ Why this order:
 * UI modules have localized impact and a clean “assets object” pattern already.
 * `game_world.py` is central and riskier; do it after the loader is proven.
 
-### 2.3 Optional but valuable: pass a shared loader/cache down
+### 2.3 Optional but valuable: pass a shared loader/cache down [ ]
 
 Right now, multiple modules may create separate `PaqTextureCache` instances. If you centralize:
 
@@ -159,11 +161,11 @@ You reduce:
 
 ---
 
-## Phase 3: Consolidate “tiny but everywhere” core utilities (without making a god-module)
+## Phase 3: Consolidate “tiny but everywhere” core utilities (without making a god-module) [ ]
 
 You have repeated `_clamp` and a duplicated MSVCRT LCG.
 
-### 3.1 Unify the MSVCRT rand() implementation
+### 3.1 Unify the MSVCRT rand() implementation [ ]
 
 Right now:
 
@@ -180,7 +182,7 @@ Then:
 * replace the copy in `grim/terrain_render.py` with an import
 * delete `crimson/crand.py`, don't re-export for compatibility
 
-### 3.2 Add a small, pure `grim.math` (or `grim.util.math`)
+### 3.2 Add a small, pure `grim.math` (or `grim.util.math`) [ ]
 
 Move every `_clamp` there. Do it opportunistically:
 
@@ -189,11 +191,11 @@ Move every `_clamp` there. Do it opportunistically:
 
 ---
 
-## Phase 4: Make “where code belongs” obvious inside `crimson`
+## Phase 4: Make “where code belongs” obvious inside `crimson` [ ]
 
 This is where you stop the constant re-introduction of mixed concerns.
 
-### 4.1 Introduce internal subpackages by *responsibility*
+### 4.1 Introduce internal subpackages by *responsibility* [ ]
 
 You don’t have to move everything at once. Start by **creating the directories** and moving a couple of modules per PR.
 
@@ -210,7 +212,7 @@ Suggested layout (matches your docs + what already exists):
 * `crimson/ui/` stays as-is.
 * `crimson/views/` stays as tooling/debug, but should depend on `modes` and `ui`, not reinvent them.
 
-### 4.2 Split `GameWorld` into “state + renderer + services” (keep a façade)
+### 4.2 Split `GameWorld` into “state + renderer + services” (keep a façade) [ ]
 
 `crimson/game_world.py` currently mixes:
 
@@ -243,11 +245,11 @@ This immediately prevents future “random rendering code inserted into simulati
 
 ---
 
-## Phase 5: Break up `crimson/game.py` without losing parity mapping
+## Phase 5: Break up `crimson/game.py` without losing parity mapping [ ]
 
 `crimson/game.py` is large enough that duplicates and “wrong place” logic will accumulate there by default.
 
-### 5.1 Extract by *screen / subsystem*, not by “utility”
+### 5.1 Extract by *screen / subsystem*, not by “utility” [ ]
 
 To avoid creating a junk-drawer module, extract cohesive chunks:
 
@@ -262,7 +264,7 @@ Keep:
 * `GameState` dataclass and top-level `run_game(...)` style entrypoints in `game.py`
 * This preserves “searchability” for parity work, while still shrinking the file.
 
-### 5.2 Enforce “frontend doesn’t own gameplay rules”
+### 5.2 Enforce “frontend doesn’t own gameplay rules” [ ]
 
 Rule of thumb:
 
@@ -271,7 +273,7 @@ Rule of thumb:
 
 ---
 
-## Phase 6: Consolidate mode logic so debug views don’t fork behavior
+## Phase 6: Consolidate mode logic so debug views don’t fork behavior [ ]
 
 You currently have:
 
@@ -280,7 +282,7 @@ You currently have:
 
 To prevent duplication drift:
 
-### 6.1 Create `crimson/modes/survival_mode.py`
+### 6.1 Create `crimson/modes/survival_mode.py` [ ]
 
 It should expose something like:
 
@@ -297,11 +299,11 @@ This keeps “debug tooling” from becoming a second implementation.
 
 ---
 
-## Phase 7: Systematic duplicate removal (after boundaries + structure)
+## Phase 7: Systematic duplicate removal (after boundaries + structure) [ ]
 
 Once the big rocks above land, duplication work becomes much cheaper.
 
-### 7.1 Triage duplicates into buckets
+### 7.1 Triage duplicates into buckets [ ]
 
 Run your duplicate report and classify each hit:
 
@@ -318,7 +320,7 @@ Run your duplicate report and classify each hit:
 
    * spawn tables, quest tiers, weapon/perk/bonus tables
 
-### 7.2 Add a “no new duplicates” rule for the top bucket
+### 7.2 Add a “no new duplicates” rule for the top bucket [ ]
 
 Once asset loading is centralized, make it policy:
 
@@ -327,20 +329,20 @@ Once asset loading is centralized, make it policy:
 
 ---
 
-## Phase 8: Keep it tidy while the rewrite continues
+## Phase 8: Keep it tidy while the rewrite continues [ ]
 
-### 8.1 Encode the architecture in tooling
+### 8.1 Encode the architecture in tooling [ ]
 
 * Boundary checker (grim ↛ crimson)
 * “sim ↛ pyray” checker
 * Optional: “views should not be imported by runtime” checker
 
-### 8.2 Make “what is stable API” explicit
+### 8.2 Make “what is stable API” explicit [ ]
 
 * Everything can move freely for now.
 
 
-### 8.3 Set refactor-friendly PR conventions
+### 8.3 Set refactor-friendly PR conventions [ ]
 
 For a fast-moving rewrite, this matters more than perfect architecture:
 
@@ -351,15 +353,15 @@ For a fast-moving rewrite, this matters more than perfect architecture:
 
 ---
 
-## A pragmatic “do these next” shortlist
+## A pragmatic “do these next” shortlist [ ]
 
 If you want the fastest impact on “duplicates + wrong place code”, do these in order:
 
-1. **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
-2. **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
-3. **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
-4. **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
-5. **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
-6. **Start shrinking `game.py`** by extracting screens/panels into modules.
+1. [ ] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
+2. [ ] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
+3. [ ] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
+4. [ ] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
+5. [ ] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
+6. [ ] **Start shrinking `game.py`** by extracting screens/panels into modules.
 
 If you want, I can also turn this into a concrete **refactor backlog** (ordered, PR-sized chunks with “touch files A/B/C, expected diffs, and rollback strategy”) using the exact module names you already have.
