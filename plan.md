@@ -59,7 +59,7 @@ This keeps the codebase clean when paths change. We haven't released, so we don'
 
 ---
 
-## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson) [ ]
+## Phase 1: Fix the biggest “wrong place” problem first (grim → crimson) [x]
 
 ### 1.1 Fix `grim.fx_queue` importing `crimson.*` (currently a hard boundary violation) [x]
 
@@ -91,7 +91,7 @@ A reasonable landing spot would be:
 
 **Either option eliminates the architectural footgun** and will prevent future “engine depends on game” creep.
 
-### 1.2 Lock it in with the boundary test [ ]
+### 1.2 Lock it in with the boundary test [x]
 
 Once fixed, the boundary checker from Phase 0 ensures it doesn’t regress during fast iteration.
 
