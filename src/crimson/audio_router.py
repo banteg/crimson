@@ -7,6 +7,7 @@ from typing import Callable
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 
 from .creatures.spawn import CreatureTypeId
+from .game_modes import GameMode
 from .projectiles import ProjectileTypeId
 from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID
@@ -129,7 +130,7 @@ class AudioRouter:
             return
 
         start_idx = 0
-        if (not self.demo_mode_active) and (game_mode == 3):
+        if (not self.demo_mode_active) and int(game_mode) == int(GameMode.SURVIVAL):
             if trigger_game_tune(self.audio, rand=rand) is not None:
                 start_idx = 1
 

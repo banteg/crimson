@@ -27,8 +27,7 @@ from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
 from .sim.world_state import WorldState
 from .weapons import WEAPON_TABLE
-
-GAME_MODE_SURVIVAL = 3
+from .game_modes import GameMode
 
 
 ProjectileHit = tuple[int, float, float, float, float]
@@ -344,7 +343,8 @@ class GameWorld:
         *,
         inputs: list[PlayerInput] | None = None,
         auto_pick_perks: bool = False,
-        game_mode: int = GAME_MODE_SURVIVAL,
+        game_mode: int = int(GameMode.SURVIVAL),
+        perk_progression_enabled: bool = False,
     ) -> list[ProjectileHit]:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
@@ -378,7 +378,7 @@ class GameWorld:
             fx_queue_rotated=self.fx_queue_rotated,
             auto_pick_perks=auto_pick_perks,
             game_mode=game_mode,
-            survival_mode=game_mode == GAME_MODE_SURVIVAL,
+            perk_progression_enabled=bool(perk_progression_enabled),
         )
 
         if events.hits:

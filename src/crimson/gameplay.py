@@ -7,6 +7,7 @@ from typing import Protocol
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool
+from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
@@ -500,7 +501,7 @@ def perk_can_offer(player: PlayerState, meta: PerkMeta, *, game_mode: int, playe
     if perk_id == PerkId.ANTIPERK:
         return False
     flags = meta.flags or PerkFlags(0)
-    if (flags & PerkFlags.MODE_3_ONLY) and game_mode != 3:
+    if (flags & PerkFlags.MODE_3_ONLY) and int(game_mode) != int(GameMode.QUESTS):
         return False
     if (flags & PerkFlags.TWO_PLAYER_ONLY) and player_count != 2:
         return False

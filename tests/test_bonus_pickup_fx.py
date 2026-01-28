@@ -15,7 +15,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
     assert entry is not None
 
     assert not world.state.effects.iter_active()
-    world.update(0.016)
+    world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     active = world.state.effects.iter_active()

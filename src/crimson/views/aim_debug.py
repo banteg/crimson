@@ -194,6 +194,7 @@ class AimDebugView:
                 )
             ],
             auto_pick_perks=False,
+            perk_progression_enabled=False,
         )
 
         if self._player is not None and self._force_heat:

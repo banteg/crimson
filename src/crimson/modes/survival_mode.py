@@ -16,6 +16,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..debug import debug_enabled
+from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..persistence.highscores import HighScoreRecord
@@ -41,7 +42,6 @@ from ..ui.perk_menu import (
 )
 
 WORLD_SIZE = 1024.0
-GAME_MODE_SURVIVAL = 3
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -400,7 +400,7 @@ class SurvivalMode:
             self._state,
             [self._player],
             self._state.perk_selection,
-            game_mode=GAME_MODE_SURVIVAL,
+            game_mode=int(GameMode.SURVIVAL),
             player_count=1,
         )
         if not choices:
@@ -426,7 +426,7 @@ class SurvivalMode:
             self._state,
             [self._player],
             perk_state,
-            game_mode=GAME_MODE_SURVIVAL,
+            game_mode=int(GameMode.SURVIVAL),
             player_count=1,
         )
         if not choices:
@@ -477,7 +477,7 @@ class SurvivalMode:
                         [self._player],
                         perk_state,
                         idx,
-                        game_mode=GAME_MODE_SURVIVAL,
+                        game_mode=int(GameMode.SURVIVAL),
                         player_count=1,
                     )
                     self._close_perk_menu()
@@ -506,7 +506,7 @@ class SurvivalMode:
                 [self._player],
                 perk_state,
                 self._perk_menu_selected,
-                game_mode=GAME_MODE_SURVIVAL,
+                game_mode=int(GameMode.SURVIVAL),
                 player_count=1,
             )
             self._close_perk_menu()
@@ -601,7 +601,8 @@ class SurvivalMode:
             dt,
             inputs=[input_state],
             auto_pick_perks=False,
-            game_mode=GAME_MODE_SURVIVAL,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=True,
         )
 
         # Scripted milestone spawns based on level.
@@ -706,7 +707,7 @@ class SurvivalMode:
             self._state,
             [self._player],
             perk_state,
-            game_mode=GAME_MODE_SURVIVAL,
+            game_mode=int(GameMode.SURVIVAL),
             player_count=1,
         )
         if not choices:

@@ -73,7 +73,7 @@ class WorldState:
         fx_queue_rotated: FxQueueRotated,
         auto_pick_perks: bool,
         game_mode: int,
-        survival_mode: bool,
+        perk_progression_enabled: bool,
     ) -> WorldEvents:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
@@ -149,7 +149,7 @@ class WorldState:
                         color_a=1.0,
                     )
 
-        if survival_mode:
+        if perk_progression_enabled:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
 
         return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups)

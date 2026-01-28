@@ -198,7 +198,7 @@ class CameraShakeView:
         self._handle_input()
         if self._reflex_boost_locked:
             self._world.state.bonuses.reflex_boost = 9999.0
-        self._world.update(dt, inputs=[self._build_input()], auto_pick_perks=True)
+        self._world.update(dt, inputs=[self._build_input()], auto_pick_perks=True, perk_progression_enabled=False)
 
     def draw(self) -> None:
         self._world.draw()
@@ -227,4 +227,3 @@ class CameraShakeView:
 @register_view("camera-shake", "Camera shake")
 def build_camera_shake_view(*, ctx: ViewContext) -> View:
     return CameraShakeView(ctx)
-

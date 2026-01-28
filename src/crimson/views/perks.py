@@ -5,6 +5,7 @@ import pyray as rl
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.view import ViewContext
 
+from ..game_modes import GameMode
 from ..gameplay import GameplayState, PlayerState, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.perk_menu import (
@@ -26,8 +27,6 @@ from ..ui.perk_menu import (
 )
 from .registry import register_view
 
-GAME_MODE_SURVIVAL = 3
-
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
@@ -48,7 +47,7 @@ class PerkSelectionView:
 
         self._state = GameplayState()
         self._player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-        self._game_mode = GAME_MODE_SURVIVAL
+        self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 
         self._perk_menu_open = False
@@ -65,7 +64,7 @@ class PerkSelectionView:
         self._state = GameplayState()
         self._state.rng.srand(0xBEEF)
         self._player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-        self._game_mode = GAME_MODE_SURVIVAL
+        self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 
         self._state.perk_selection.pending_count = 1
@@ -127,7 +126,7 @@ class PerkSelectionView:
             self._state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
-            self._game_mode = GAME_MODE_SURVIVAL if self._game_mode != GAME_MODE_SURVIVAL else 1
+            self._game_mode = GameMode.QUESTS if int(self._game_mode) == int(GameMode.SURVIVAL) else GameMode.SURVIVAL
             self._state.perk_selection.choices_dirty = True
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):

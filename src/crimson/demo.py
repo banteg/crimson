@@ -875,7 +875,7 @@ class DemoView:
         if not self._world.players:
             return
         inputs = self._build_demo_inputs()
-        self._world.update(dt, inputs=inputs, auto_pick_perks=False, game_mode=0)
+        self._world.update(dt, inputs=inputs, auto_pick_perks=False, game_mode=0, perk_progression_enabled=False)
 
     def _build_demo_inputs(self) -> list[PlayerInput]:
         players = self._world.players
