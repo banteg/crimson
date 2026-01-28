@@ -195,7 +195,7 @@ Move every `_clamp` there. Do it opportunistically:
 
 This is where you stop the constant re-introduction of mixed concerns.
 
-### 4.1 Introduce internal subpackages by *responsibility* [ ]
+### 4.1 Introduce internal subpackages by *responsibility* [x]
 
 You don’t have to move everything at once. Start by **creating the directories** and moving a couple of modules per PR.
 

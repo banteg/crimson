@@ -9,7 +9,7 @@ import pyray as rl
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from ..highscores import (
+from ..persistence.highscores import (
     NAME_MAX_EDIT,
     TABLE_MAX,
     HighScoreRecord,

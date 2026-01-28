@@ -47,7 +47,7 @@ from grim import music
 
 from .demo import DemoView
 from .ui.cursor import draw_menu_cursor
-from .save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
+from .persistence.save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
 from .weapons import WEAPON_BY_ID
 
 DEFAULT_BASE_DIR = Path("artifacts") / "runtime"
@@ -3226,7 +3226,7 @@ class StatisticsMenuView(PanelMenuView):
 
         checksum_text = "unknown"
         try:
-            from .save_status import load_status
+            from .persistence.save_status import load_status
 
             blob = load_status(status.path)
             ok = "ok" if blob.checksum_valid else "BAD"

@@ -17,7 +17,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
-from ..highscores import HighScoreRecord
+from ..persistence.highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.game_over import GameOverUi

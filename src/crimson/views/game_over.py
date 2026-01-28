@@ -7,7 +7,7 @@ import pyray as rl
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.view import ViewContext
 
-from ..highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
+from ..persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
 from .registry import register_view
@@ -116,4 +116,3 @@ class GameOverDebugView:
 @register_view("game_over", "Game Over")
 def _create_game_over_view(*, ctx: ViewContext) -> GameOverDebugView:
     return GameOverDebugView(ctx)
-
