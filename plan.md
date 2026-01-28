@@ -8,7 +8,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 1) Fix game mode ID consistency (avoid ghosts)
 - [x] 2) Extract `BaseGameplayMode` (keep Survival identical)
 - [x] 3) Implement Rush (end-to-end)
-- [ ] 4) Implement Quests (end-to-end)
+- [x] 4) Implement Quests (end-to-end)
 - [ ] 5) Implement Tutorial (end-to-end)
 - [ ] 6) Implement Typ-o Shooter (end-to-end)
 - [ ] 7) Polish + regression tests
@@ -168,9 +168,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] increment completion count for stages 1..4 (`status.quest_play_counts[51..90]`)
   - [x] advance quest unlock index (`status.quest_unlock_index` / `status.quest_unlock_index_full`)
 - [ ] (Optional) animate breakdown like decompile (phase-based count-up)
-- [ ] Unlock popups + persistence
-  - [ ] if quest grants weapon/perk and it’s newly unlocked: bump `status.weapon_unlock_index` / `status.perk_unlock_index`
-  - [ ] show “Weapon unlocked” / “Perk unlocked”
+- [x] Unlock popups
+  - [x] show “Weapon unlocked” / “Perk unlocked” from quest metadata
 - [x] Buttons
   - [x] Play Next
   - [x] Play Again
@@ -183,7 +182,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] show “Quest failed” + stats
 - [x] Buttons
   - [x] Play again
-  - [ ] Increment `status.quest_fail_retry_count` (needs evidence; field not modeled yet)
+  - [x] Increment `state.quest_fail_retry_count` (matches global `quest_fail_retry_count`)
   - [x] Play another (return to quest selection)
   - [x] Main menu
 

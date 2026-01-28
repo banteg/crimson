@@ -107,6 +107,7 @@ class GameState:
     menu_sign_locked: bool = False
     pending_quest_level: str | None = None
     quest_outcome: QuestRunOutcome | None = None
+    quest_fail_retry_count: int = 0
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
@@ -919,6 +920,8 @@ class QuestResultsView:
         self._ground: GroundRenderer | None = None
         self._outcome: QuestRunOutcome | None = None
         self._quest_title: str = ""
+        self._unlock_weapon_name: str = ""
+        self._unlock_perk_name: str = ""
         self._breakdown = None
         self._record = None
         self._rank_index: int | None = None
@@ -939,7 +942,10 @@ class QuestResultsView:
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
         outcome = self._outcome
+        self._state.quest_fail_retry_count = 0
         self._quest_title = ""
+        self._unlock_weapon_name = ""
+        self._unlock_perk_name = ""
         self._breakdown = None
         self._record = None
         self._rank_index = None
@@ -964,6 +970,20 @@ class QuestResultsView:
 
             quest = quest_by_level(outcome.level)
             self._quest_title = quest.title if quest is not None else ""
+            if quest is not None:
+                weapon_id_native = int(quest.unlock_weapon_id or 0)
+                if weapon_id_native > 0:
+                    from .weapons import WEAPON_BY_ID
+
+                    weapon_entry = WEAPON_BY_ID.get(weapon_id_native - 1)
+                    self._unlock_weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id_native}"
+
+                from .perks import PERK_BY_ID, PerkId
+
+                perk_id = int(quest.unlock_perk_id or 0)
+                if perk_id != int(PerkId.ANTIPERK):
+                    perk_entry = PERK_BY_ID.get(perk_id)
+                    self._unlock_perk_name = perk_entry.name if perk_entry is not None and perk_entry.name else f"perk_{perk_id}"
         except Exception:
             self._quest_title = ""
 
@@ -1005,6 +1025,11 @@ class QuestResultsView:
             except Exception:
                 pass
 
+        try:
+            self._state.status.save_if_dirty()
+        except Exception:
+            pass
+
         path = scores_path_for_config(self._state.base_dir, self._state.config, quest_stage_major=major, quest_stage_minor=minor)
         try:
             table, rank_index = upsert_highscore_record(path, record)
@@ -1031,6 +1056,8 @@ class QuestResultsView:
         self._rank_index = None
         self._high_scores = []
         self._show_high_scores = False
+        self._unlock_weapon_name = ""
+        self._unlock_perk_name = ""
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -1152,6 +1179,18 @@ class QuestResultsView:
         if self._rank_index is not None and self._rank_index < 100:
             y += 18.0
             draw_small_text(font, f"Rank: {int(self._rank_index) + 1}", 32.0, y, 1.0, text_color)
+
+        if self._unlock_weapon_name:
+            y += 26.0
+            draw_small_text(font, "Weapon unlocked", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.7)))
+            y += 16.0
+            draw_small_text(font, self._unlock_weapon_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
+
+        if self._unlock_perk_name:
+            y += 20.0
+            draw_small_text(font, "Perk unlocked", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.7)))
+            y += 16.0
+            draw_small_text(font, self._unlock_perk_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
         tex = self._button_tex
         y0 = 0.0
@@ -1297,13 +1336,16 @@ class QuestFailedView:
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._state.quest_fail_retry_count = 0
             self._action = "back_to_menu"
             return
         if outcome is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
             self._state.pending_quest_level = outcome.level
             self._action = "start_quest"
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
+            self._state.quest_fail_retry_count = 0
             self._action = "open_quests"
             return
 
@@ -1329,13 +1371,16 @@ class QuestFailedView:
             if not hovered or not clicked:
                 continue
             if action == "retry":
+                self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
                 self._state.pending_quest_level = outcome.level
                 self._action = "start_quest"
                 return
             if action == "quest_list":
+                self._state.quest_fail_retry_count = 0
                 self._action = "open_quests"
                 return
             if action == "main_menu":
+                self._state.quest_fail_retry_count = 0
                 self._action = "back_to_menu"
                 return
 
@@ -1354,12 +1399,27 @@ class QuestFailedView:
 
         font = self._ensure_small_font()
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        retry_count = int(self._state.quest_fail_retry_count)
+        message = "Quest failed, try again."
+        if retry_count == 1:
+            message = "You didn't make it, do try again."
+        elif retry_count == 2:
+            message = "Third time no good."
+        elif retry_count == 3:
+            message = "No luck this time, have another go."
+        elif retry_count == 4:
+            message = "Persistence will be rewarded."
+        elif retry_count == 5:
+            message = "Try one more time."
+
+        y = 196.0
+        draw_small_text(font, message, 32.0, y, 1.0, text_color)
+        y += 22.0
         if outcome is not None:
             total_seconds = max(0, int(outcome.base_time_ms) // 1000)
             minutes = total_seconds // 60
             seconds = total_seconds % 60
             time_text = f"{minutes:02d}:{seconds:02d}"
-            y = 196.0
             draw_small_text(font, f"Time: {time_text}", 32.0, y, 1.0, text_color)
             y += 18.0
             draw_small_text(font, f"Kills: {int(outcome.kill_count)}", 32.0, y, 1.0, text_color)
