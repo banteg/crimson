@@ -575,7 +575,7 @@ class WorldRenderer:
         if alpha <= 0:
             return False
         texture = self.bullet_trail_texture
-        grid = 8
+        grid = 1
 
         angle = math.atan2(sy1 - sy0, sx1 - sx0)
         dist = math.hypot(sx1 - sx0, sy1 - sy0)
@@ -587,20 +587,18 @@ class WorldRenderer:
         dir_y = math.sin(angle)
 
         if dist < 30.0 * scale:
-            # Short trails use a single "square" bulletTrail sprite with slight rotation.
-            frame = 20
-            src = rl.Rectangle(
-                float((frame % grid) * (texture.width // grid)),
-                float((frame // grid) * (texture.height // grid)),
-                float(texture.width) / grid,
-                float(texture.height) / grid,
-            )
-            w = float(texture.width) / grid * scale
-            h = float(texture.height) / grid * scale
-            dst = rl.Rectangle(sx1, sy1, w, h)
-            origin = rl.Vector2(w * 0.5, h * 0.5)
+            # Short trails use a single bulletTrail sprite with slight rotation.
             tint = rl.Color(255, 255, 255, int(alpha))
-            rl.draw_texture_pro(texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=0,
+                x=sx1,
+                y=sy1,
+                scale=1.0 * scale,
+                rotation_rad=angle,
+                tint=tint,
+            )
             return True
 
         # Longer trails: draw repeated beam sprites with gradient alpha.
@@ -617,7 +615,7 @@ class WorldRenderer:
             self._draw_atlas_sprite(
                 texture,
                 grid=grid,
-                frame=20,
+                frame=0,
                 x=px,
                 y=py,
                 scale=0.55 * scale,
