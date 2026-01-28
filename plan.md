@@ -306,7 +306,7 @@ This keeps “debug tooling” from becoming a second implementation.
 
 Once the big rocks above land, duplication work becomes much cheaper.
 
-### 7.1 Triage duplicates into buckets [ ]
+### 7.1 Triage duplicates into buckets [x]
 
 Run your duplicate report and classify each hit:
 
