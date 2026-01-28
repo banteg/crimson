@@ -140,9 +140,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] update `no_creatures_timer_ms` (for forced-spawn rule)
 - [ ] Completion detection
   - [x] if no active creatures and spawn table empty: start `completion_transition_ms` if not started
-  - [ ] after ~1000ms: transition to Quest Results view
-- [ ] Failure detection
-  - [ ] if player(s) dead: transition to Quest Failed view (not standard GameOver)
+  - [x] after ~1000ms: transition to Quest Results view
+- [x] Failure detection
+  - [x] if player(s) dead: transition to Quest Failed view (not standard GameOver)
 
 ### 4.3 Quest HUD
 
@@ -163,10 +163,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] `unpicked_perk_bonus_ms = perk_pending_count * 1000`
   - [x] `final_time_ms = base_time_ms - life_bonus_ms - unpicked_perk_bonus_ms`
   - [x] clamp `final_time_ms >= 1`
-- [ ] Write a highscore record (quests sort ascending time)
-  - [ ] `game_mode_id = 3`
-  - [ ] `survival_elapsed_ms = final_time_ms`
-  - [ ] `score_xp = experience`
+- [x] Write a highscore record (quests sort ascending time)
+  - [x] `game_mode_id = 3`
+  - [x] `survival_elapsed_ms = final_time_ms`
+  - [x] `score_xp = experience`
 - [ ] (Optional) animate breakdown like decompile (phase-based count-up)
 - [ ] Unlock popups + persistence
   - [ ] if quest grants weapon/perk and it’s newly unlocked: bump `status.weapon_unlock_index` / `status.perk_unlock_index`
@@ -189,9 +189,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.7 Tests
 
-- [ ] spawn table build + hardcore adjustment (pure)
-- [ ] completion transition delay (~1000ms) when (no creatures) and (table empty)
-- [ ] quest highscore insertion sorts ascending time
+- [x] spawn table build + hardcore adjustment (pure)
+- [x] completion transition delay (~1000ms) when (no creatures) and (table empty)
+- [x] quest highscore insertion sorts ascending time
 
 ---
 

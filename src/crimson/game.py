@@ -11,7 +11,7 @@ import shutil
 import time
 import traceback
 import webbrowser
-from typing import Protocol
+from typing import Protocol, TYPE_CHECKING
 
 import pyray as rl
 
@@ -71,6 +71,9 @@ from .frontend.panels.stats import StatisticsMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 
+if TYPE_CHECKING:
+    from .modes.quest_mode import QuestRunOutcome
+
 DEFAULT_BASE_DIR = Path("artifacts") / "runtime"
 
 
@@ -103,6 +106,7 @@ class GameState:
     menu_ground: GroundRenderer | None = None
     menu_sign_locked: bool = False
     pending_quest_level: str | None = None
+    quest_outcome: QuestRunOutcome | None = None
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
@@ -838,6 +842,7 @@ class QuestGameView:
     def open(self) -> None:
         self._action = None
         self._state.screen_fade_ramp = False
+        self._state.quest_outcome = None
         if self._state.audio is not None:
             stop_music(self._state.audio)
         self._mode.bind_audio(self._state.audio, self._state.rng)
@@ -856,11 +861,205 @@ class QuestGameView:
     def update(self, dt: float) -> None:
         self._mode.update(dt)
         if getattr(self._mode, "close_requested", False):
-            self._action = "back_to_menu"
+            outcome = self._mode.consume_outcome()
+            if outcome is not None:
+                self._state.quest_outcome = outcome
+                if outcome.kind == "completed":
+                    self._action = "quest_results"
+                elif outcome.kind == "failed":
+                    self._action = "quest_failed"
+                else:
+                    self._action = "back_to_menu"
+            else:
+                self._action = "back_to_menu"
             self._mode.close_requested = False
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+
+def _player_name_default(config: CrimsonConfig) -> str:
+    raw = config.data.get("player_name")
+    if isinstance(raw, (bytes, bytearray)):
+        return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
+    if isinstance(raw, str):
+        return raw
+    return ""
+
+
+class QuestResultsView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._ground: GroundRenderer | None = None
+        self._ui = None
+        self._record = None
+        self._outcome = None
+        self._action: str | None = None
+
+    def open(self) -> None:
+        from .persistence.highscores import HighScoreRecord
+        from .quests.results import compute_quest_final_time
+        from .ui.game_over import GameOverUi
+
+        self._action = None
+        self._ground = ensure_menu_ground(self._state)
+        self._outcome = self._state.quest_outcome
+        self._state.quest_outcome = None
+        outcome = self._outcome
+        if outcome is None:
+            self._ui = None
+            self._record = None
+            return
+
+        major, minor = 0, 0
+        try:
+            major_text, minor_text = outcome.level.split(".", 1)
+            major = int(major_text)
+            minor = int(minor_text)
+        except Exception:
+            major = 0
+            minor = 0
+
+        config_data = dict(self._state.config.data)
+        config_data["game_mode"] = 3
+        config_data["quest_stage_major"] = major
+        config_data["quest_stage_minor"] = minor
+        config_data["quest_level"] = outcome.level
+        ui_config = CrimsonConfig(path=self._state.config.path, data=config_data)
+
+        record = HighScoreRecord.blank()
+        record.game_mode_id = 3
+        record.quest_stage_major = major
+        record.quest_stage_minor = minor
+        record.score_xp = int(outcome.experience)
+        record.creature_kill_count = int(outcome.kill_count)
+        record.most_used_weapon_id = int(outcome.weapon_id)
+
+        breakdown = compute_quest_final_time(
+            base_time_ms=int(outcome.base_time_ms),
+            player_health=float(outcome.player_health),
+            pending_perk_count=int(outcome.pending_perk_count),
+        )
+        record.survival_elapsed_ms = int(breakdown.final_time_ms)
+
+        ui = GameOverUi(
+            assets_root=self._state.assets_dir,
+            base_dir=self._state.base_dir,
+            config=ui_config,
+        )
+        ui.open()
+
+        self._ui = ui
+        self._record = record
+
+    def close(self) -> None:
+        ui = self._ui
+        if ui is not None:
+            ui.close()
+        self._ui = None
+        self._record = None
+        self._outcome = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._action = "back_to_menu"
+            return
+
+        ui = self._ui
+        record = self._record
+        outcome = self._outcome
+        if ui is None or record is None or outcome is None:
+            return
+
+        action = ui.update(dt, record=record, player_name_default=_player_name_default(self._state.config))
+        if action == "play_again":
+            self._state.pending_quest_level = outcome.level
+            self._action = "start_quest"
+            return
+        if action in {"high_scores", "main_menu"}:
+            # High scores screen isn't implemented yet; route back to menu.
+            self._action = "back_to_menu"
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
+
+        ui = self._ui
+        record = self._record
+        if ui is None or record is None:
+            rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
+            rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
+            return
+
+        ui.draw(record=record, banner_kind="well_done", hud_assets=None)
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+
+class QuestFailedView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._ground: GroundRenderer | None = None
+        self._outcome = None
+        self._action: str | None = None
+        self._cursor_pulse_time = 0.0
+
+    def open(self) -> None:
+        self._action = None
+        self._ground = ensure_menu_ground(self._state)
+        self._cursor_pulse_time = 0.0
+        self._outcome = self._state.quest_outcome
+        self._state.quest_outcome = None
+
+    def close(self) -> None:
+        self._ground = None
+        self._outcome = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
+
+        outcome = self._outcome
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._action = "back_to_menu"
+            return
+        if outcome is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            self._state.pending_quest_level = outcome.level
+            self._action = "start_quest"
+            return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
+            self._action = "open_quests"
+            return
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
+
+        outcome = self._outcome
+        level = outcome.level if outcome is not None else (self._state.pending_quest_level or "unknown")
+        rl.draw_text(f"Quest {level} failed", 32, 140, 28, rl.Color(235, 235, 235, 255))
+        rl.draw_text("ENTER: Retry    Q: Quest list    ESC: Main menu", 32, 180, 18, rl.Color(190, 190, 200, 255))
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
@@ -878,6 +1077,8 @@ class GameLoopView:
             "open_play_game": PlayGameMenuView(state),
             "open_quests": QuestsMenuView(state),
             "start_quest": QuestGameView(state),
+            "quest_results": QuestResultsView(state),
+            "quest_failed": QuestFailedView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": RushGameView(state),
             "start_typo": PanelMenuView(
