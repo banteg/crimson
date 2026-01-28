@@ -7,7 +7,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [ ] 0) Lock authoritative references per mode
 - [x] 1) Fix game mode ID consistency (avoid ghosts)
 - [ ] 2) Extract `BaseGameplayMode` (keep Survival identical)
-- [ ] 3) Implement Rush (end-to-end)
+- [x] 3) Implement Rush (end-to-end)
 - [ ] 4) Implement Quests (end-to-end)
 - [ ] 5) Implement Tutorial (end-to-end)
 - [ ] 6) Implement Typ-o Shooter (end-to-end)
@@ -88,27 +88,27 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 3) Rush (best first “new mode”)
 
-- [ ] Add `RushState`
-  - [ ] `elapsed_ms`
-  - [ ] `spawn_cooldown_ms`
-- [ ] Run start (mirror `rush_mode_update`)
-  - [ ] reset world
-  - [ ] enforce weapon + ammo rules (decompile forces each frame; enforce per-update for fidelity)
-  - [ ] disable perk prompt/selection
-- [ ] Per-frame loop
-  - [ ] call `world.update(...)`
-  - [ ] call `tick_rush_mode_spawns(...)` (already exists in `creatures/spawn.py`)
-  - [ ] spawn each returned `CreatureInit` via `world.state.creatures.spawn_init(...)`
-  - [ ] increment `elapsed_ms`
-- [ ] HUD + scoring
-  - [ ] show clock (mm:ss)
-  - [ ] record highscores on death: `record.game_mode_id = 2`, `record.survival_elapsed_ms = elapsed_ms`
-  - [ ] confirm `scores_path_for_config()` maps mode 2 → `rush.hi`
-- [ ] Wiring
-  - [ ] add `RushGameView` (parallel to `SurvivalGameView`)
-  - [ ] route `start_rush` → `RushGameView` in `GameLoopView.update()`
-- [ ] Tests
-  - [ ] deterministic spawn test for `tick_rush_mode_spawns` (seed RNG; assert first few templates/positions)
+- [x] Add `RushState`
+  - [x] `elapsed_ms`
+  - [x] `spawn_cooldown_ms`
+- [x] Run start (mirror `rush_mode_update`)
+  - [x] reset world
+  - [x] enforce weapon + ammo rules (decompile forces each frame; enforce per-update for fidelity)
+  - [x] disable perk prompt/selection
+- [x] Per-frame loop
+  - [x] call `world.update(...)`
+  - [x] call `tick_rush_mode_spawns(...)` (already exists in `creatures/spawn.py`)
+  - [x] spawn each returned `CreatureInit` via `world.state.creatures.spawn_init(...)`
+  - [x] increment `elapsed_ms`
+- [x] HUD + scoring
+  - [x] show clock (HUD time)
+  - [x] record highscores on death: `record.game_mode_id = 2`, `record.survival_elapsed_ms = elapsed_ms`
+  - [x] confirm `scores_path_for_config()` maps mode 2 → `rush.hi`
+- [x] Wiring
+  - [x] add `RushGameView` (parallel to `SurvivalGameView`)
+  - [x] route `start_rush` → `RushGameView` in `GameLoopView.update()`
+- [x] Tests
+  - [x] deterministic spawn test for `tick_rush_mode_spawns` (seed RNG; assert first few templates/positions)
 
 ---
 
@@ -329,9 +329,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 7) Recommended order (minimize rework)
 
-- [ ] Mode ID + progression gating cleanup
+- [x] Mode ID + progression gating cleanup
 - [ ] Extract `BaseGameplayMode` (convert Survival, keep identical)
-- [ ] Rush (end-to-end)
+- [x] Rush (end-to-end)
 - [ ] Quests gameplay loop (timeline + completion/failure)
 - [ ] Quest Results + Failed screens + unlock persistence
 - [ ] Tutorial (director + prompt + fixed perks)

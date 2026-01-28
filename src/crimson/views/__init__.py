@@ -21,6 +21,7 @@ def _register_builtin_views() -> None:
     from . import spawn_plan as _spawn_plan  # noqa: F401
     from . import player as _player  # noqa: F401
     from . import survival as _survival  # noqa: F401
+    from . import rush as _rush  # noqa: F401
     from . import game_over as _game_over  # noqa: F401
     from . import small_font_debug as _small_font_debug  # noqa: F401
     from . import camera_debug as _camera_debug  # noqa: F401
