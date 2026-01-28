@@ -639,9 +639,8 @@ class SurvivalMode:
             return
 
         hinge_x, hinge_y = self._perk_prompt_hinge()
-        # Grim2D uses a Y-up coordinate system; raylib uses Y-down, which flips
-        # rotation direction. The exe rotates by -90deg..0deg in Grim2D space.
-        rot_deg = (1.0 - alpha) * 90.0
+        # Prompt swings counter-clockwise; raylib's Y-down makes positive rotation clockwise.
+        rot_deg = -(1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
         text_w = float(self._ui_text_width(label, UI_TEXT_SCALE))
