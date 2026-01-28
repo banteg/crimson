@@ -177,7 +177,16 @@ class GameWorld:
         self.ground.screen_width = float(self.config.screen_width)
         self.ground.screen_height = float(self.config.screen_height)
 
-    def set_terrain(self, *, base_key: str, overlay_key: str, base_path: str, overlay_path: str) -> None:
+    def set_terrain(
+        self,
+        *,
+        base_key: str,
+        overlay_key: str,
+        base_path: str,
+        overlay_path: str,
+        detail_key: str | None = None,
+        detail_path: str | None = None,
+    ) -> None:
         base = self._load_texture(
             base_key,
             cache_path=base_path,
@@ -188,7 +197,15 @@ class GameWorld:
             cache_path=overlay_path,
             file_path=self._png_path_for(overlay_path),
         )
-        detail = overlay or base
+        detail = None
+        if detail_key is not None and detail_path is not None:
+            detail = self._load_texture(
+                detail_key,
+                cache_path=detail_path,
+                file_path=self._png_path_for(detail_path),
+            )
+        if detail is None:
+            detail = overlay or base
         if base is None:
             return
         if self.ground is None:
