@@ -190,6 +190,8 @@ def _load_from_path(assets_root: Path, rel_path: str, missing: list[str]) -> rl.
 class PerkMenuAssets:
     menu_panel: rl.Texture | None
     title_pick_perk: rl.Texture | None
+    title_level_up: rl.Texture | None
+    menu_item: rl.Texture | None
     button_sm: rl.Texture | None
     button_md: rl.Texture | None
     cursor: rl.Texture | None
@@ -219,6 +221,8 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
             assets = PerkMenuAssets(
                 menu_panel=_load_from_cache(cache, "ui_menuPanel", "ui/ui_menuPanel.jaz", missing),
                 title_pick_perk=_load_from_cache(cache, "ui_textPickAPerk", "ui/ui_textPickAPerk.jaz", missing),
+                title_level_up=_load_from_cache(cache, "ui_textLevelUp", "ui/ui_textLevelUp.jaz", missing),
+                menu_item=_load_from_cache(cache, "ui_menuItem", "ui/ui_menuItem.jaz", missing),
                 button_sm=_load_from_cache(cache, "ui_buttonSm", "ui/ui_button_82x32.jaz", missing),
                 button_md=_load_from_cache(cache, "ui_buttonMd", "ui/ui_button_145x32.jaz", missing),
                 cursor=_load_from_cache(cache, "ui_cursor", "ui/ui_cursor.jaz", missing),
@@ -234,6 +238,8 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
     missing: list[str] = []
     menu_panel = _load_from_path(assets_root, "ui/ui_menuPanel.png", missing)
     title_pick_perk = _load_from_path(assets_root, "ui/ui_textPickAPerk.png", missing)
+    title_level_up = _load_from_path(assets_root, "ui/ui_textLevelUp.png", missing)
+    menu_item = _load_from_path(assets_root, "ui/ui_menuItem.png", missing)
     button_sm = _load_from_path(assets_root, "ui/ui_button_82x32.png", missing)
     button_md = _load_from_path(assets_root, "ui/ui_button_145x32.png", missing)
     cursor = _load_from_path(assets_root, "ui/ui_cursor.png", missing)
@@ -243,6 +249,8 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
         for tex in (
             menu_panel,
             title_pick_perk,
+            title_level_up,
+            menu_item,
             button_sm,
             button_md,
             cursor,
@@ -253,6 +261,8 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
     return PerkMenuAssets(
         menu_panel=menu_panel,
         title_pick_perk=title_pick_perk,
+        title_level_up=title_level_up,
+        menu_item=menu_item,
         button_sm=button_sm,
         button_md=button_md,
         cursor=cursor,

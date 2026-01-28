@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import math
 import random
 from typing import Protocol
 
@@ -49,6 +48,12 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
+PERK_PROMPT_MAX_TIMER_MS = 200.0
+PERK_PROMPT_OUTSET_X = 50.0
+PERK_PROMPT_BAR_SCALE = 0.85
+PERK_PROMPT_TEXT_MARGIN_X = 16.0
+PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -330,9 +335,22 @@ class SurvivalView:
         if pending <= 0:
             return ""
         suffix = f" ({pending})" if pending > 1 else ""
-        return f"Press P to pick a perk{suffix}"
+        return f"Press Mouse2 to pick a perk{suffix}"
+
+    def _perk_prompt_hinge(self) -> tuple[float, float]:
+        screen_w = float(rl.get_screen_width())
+        hinge_x = screen_w + PERK_PROMPT_OUTSET_X
+        hinge_y = 80.0 if int(screen_w) == 640 else 40.0
+        return hinge_x, hinge_y
 
     def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> rl.Rectangle:
+        hinge_x, hinge_y = self._perk_prompt_hinge()
+        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
+            tex = self._perk_menu_assets.menu_item
+            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+            return rl.Rectangle(float(hinge_x - bar_w), float(hinge_y), float(bar_w), float(bar_h))
+
         margin = 16.0 * scale
         text_w = float(self._ui_text_width(label, scale))
         text_h = float(self._ui_line_height(scale))
@@ -489,8 +507,8 @@ class SurvivalView:
                 rect = self._perk_prompt_rect(label)
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_P) or (
-                self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
+                not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
             ):
                 self._open_perk_menu()
 
@@ -499,9 +517,9 @@ class SurvivalView:
 
         prompt_active = perk_pending and (not self._perk_menu_open) and (not self._paused)
         if prompt_active:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, 200.0)
+            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
         else:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, 200.0)
+            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
         self._survival.elapsed_ms += dt * 1000.0
 
@@ -561,13 +579,38 @@ class SurvivalView:
         if not label:
             return
 
-        alpha = float(self._perk_prompt_timer_ms) / 200.0
+        alpha = float(self._perk_prompt_timer_ms) / PERK_PROMPT_MAX_TIMER_MS
         if alpha <= 1e-3:
             return
 
-        rect = self._perk_prompt_rect(label)
+        hinge_x, hinge_y = self._perk_prompt_hinge()
+        rot_deg = (1.0 - alpha) * -90.0
+        tint = rl.Color(255, 255, 255, int(255 * alpha))
+
+        if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
+            tex = self._perk_menu_assets.menu_item
+            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(-bar_w), float(bar_h))
+            rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), rot_deg, tint)
+
+        if self._perk_menu_assets is not None and self._perk_menu_assets.title_level_up is not None:
+            tex = self._perk_menu_assets.title_level_up
+            local_x = -230.0 * PERK_PROMPT_BAR_SCALE
+            local_y = -27.0 * PERK_PROMPT_BAR_SCALE
+            w = 75.0 * PERK_PROMPT_BAR_SCALE
+            h = 25.0 * PERK_PROMPT_BAR_SCALE
+            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+            dst = rl.Rectangle(float(hinge_x + local_x), float(hinge_y + local_y), float(w), float(h))
+            origin = rl.Vector2(float(-local_x), float(-local_y))
+            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+
+        text_w = float(self._ui_text_width(label, UI_TEXT_SCALE))
+        x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
+        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, rect.x, rect.y, scale=UI_TEXT_SCALE, color=color)
+        draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=color)
 
     def _draw_perk_menu(self) -> None:
         if self._game_over_active:
