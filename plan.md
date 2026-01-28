@@ -273,7 +273,7 @@ Rule of thumb:
 
 ---
 
-## Phase 6: Consolidate mode logic so debug views don’t fork behavior [ ]
+## Phase 6: Consolidate mode logic so debug views don’t fork behavior [x]
 
 You currently have:
 
@@ -282,7 +282,7 @@ You currently have:
 
 To prevent duplication drift:
 
-### 6.1 Create `crimson/modes/survival_mode.py` [ ]
+### 6.1 Create `crimson/modes/survival_mode.py` [x]
 
 It should expose something like:
 
@@ -361,7 +361,7 @@ If you want the fastest impact on “duplicates + wrong place code”, do these 
 2. [x] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
 3. [x] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
 4. [x] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
-5. [ ] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
+5. [x] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
 6. [ ] **Start shrinking `game.py`** by extracting screens/panels into modules.
 
 If you want, I can also turn this into a concrete **refactor backlog** (ordered, PR-sized chunks with “touch files A/B/C, expected diffs, and rollback strategy”) using the exact module names you already have.

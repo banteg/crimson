@@ -3323,17 +3323,13 @@ class FrontView(Protocol):
 
 
 class SurvivalGameView:
-    """Gameplay view wrapper that adapts the debug SurvivalView into `crimson game`.
-
-    This lets us iterate on Survival runtime wiring without first porting all of
-    the original mode-selection UI.
-    """
+    """Gameplay view wrapper that adapts SurvivalMode into `crimson game`."""
 
     def __init__(self, state: GameState) -> None:
-        from .views.survival import SurvivalView
+        from .modes.survival_mode import SurvivalMode
 
         self._state = state
-        self._view = SurvivalView(
+        self._mode = SurvivalMode(
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
@@ -3349,23 +3345,23 @@ class SurvivalGameView:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
             # start later on the first creature hit.
             stop_music(self._state.audio)
-        self._view.bind_audio(self._state.audio, self._state.rng)
-        self._view.bind_screen_fade(self._state)
-        self._view.open()
+        self._mode.bind_audio(self._state.audio, self._state.rng)
+        self._mode.bind_screen_fade(self._state)
+        self._mode.open()
 
     def close(self) -> None:
         if self._state.audio is not None:
             stop_music(self._state.audio)
-        self._view.close()
+        self._mode.close()
 
     def update(self, dt: float) -> None:
-        self._view.update(dt)
-        if getattr(self._view, "close_requested", False):
+        self._mode.update(dt)
+        if getattr(self._mode, "close_requested", False):
             self._action = "back_to_menu"
-            self._view.close_requested = False
+            self._mode.close_requested = False
 
     def draw(self) -> None:
-        self._view.draw()
+        self._mode.draw()
 
     def take_action(self) -> str | None:
         action = self._action
