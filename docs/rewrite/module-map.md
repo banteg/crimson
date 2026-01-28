@@ -14,6 +14,7 @@ while staying idiomatic for the Python rewrite.
 - `crimson` can import `grim` helpers.
 - Keep raylib calls confined to `grim` as much as practical.
 - Prefer small moves that preserve working entrypoints (`uv run crimson ...`).
+- When moving modules, do not leave compatibility re-exports or stubs.
 
 ## Current code → target package
 

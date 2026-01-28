@@ -27,7 +27,7 @@ These three rules will eliminate most “wrong place” drift.
 
 ---
 
-## Phase 0: Add safety rails before you move anything [ ]
+## Phase 0: Add safety rails before you move anything [x]
 
 This is what lets you refactor *in tiny PRs* without breaking the rewrite.
 
@@ -51,7 +51,7 @@ Don’t try to “zero duplicates” overnight. Start by measuring.
 
   * “No new duplicated blocks above N lines” (start permissive, tighten later)
 
-### 0.3 Create a “refactor compatibility” pattern [ ]
+### 0.3 Create a “refactor compatibility” pattern [x]
 
 When moving modules, do not preserve old imports temporarily or re-export.
 
