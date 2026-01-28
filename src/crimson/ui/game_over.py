@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ..highscores import (
@@ -108,81 +108,33 @@ class GameOverAssets:
     text_well_done: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
     missing: list[str]
-    _owned_textures: tuple[rl.Texture, ...] = ()
-    _cache: PaqTextureCache | None = None
-    _cache_owned: bool = False
+    _loader: TextureLoader | None = None
 
     def unload(self) -> None:
-        if self._cache is not None and self._cache_owned:
-            self._cache.unload()
-        for tex in self._owned_textures:
-            rl.unload_texture(tex)
-        self._owned_textures = ()
-        self._cache = None
-        self._cache_owned = False
+        if self._loader is not None:
+            self._loader.unload()
+            self._loader = None
         self.perk_menu_assets.unload()
-
-
-def _resolve_asset(assets_root: Path, rel_path: str) -> Path | None:
-    direct = assets_root / rel_path
-    if direct.is_file():
-        return direct
-    legacy = assets_root / "crimson" / rel_path
-    if legacy.is_file():
-        return legacy
-    return None
-
-
-def _load_from_cache(cache: PaqTextureCache, name: str, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    try:
-        asset = cache.get_or_load(name, rel_path)
-        return asset.texture
-    except Exception:
-        missing.append(rel_path)
-        return None
-
-
-def _load_from_path(assets_root: Path, rel_path: str, missing: list[str]) -> rl.Texture | None:
-    path = _resolve_asset(assets_root, rel_path)
-    if path is None:
-        missing.append(rel_path)
-        return None
-    return rl.load_texture(str(path))
-
 
 def load_game_over_assets(assets_root: Path) -> GameOverAssets:
     perk_menu_assets = load_perk_menu_assets(assets_root)
+    loader = TextureLoader.from_assets_root(assets_root, strict=False)
+    menu_panel = loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz", fs_rel="ui/ui_menuPanel.png")
+    text_reaper = loader.get(name="ui_textReaper", paq_rel="ui/ui_textReaper.jaz", fs_rel="ui/ui_textReaper.png")
+    text_well_done = loader.get(
+        name="ui_textWellDone",
+        paq_rel="ui/ui_textWellDone.jaz",
+        fs_rel="ui/ui_textWellDone.png",
+    )
     missing: list[str] = list(perk_menu_assets.missing)
-
-    paq_path = find_paq_path(assets_root)
-    if paq_path is not None:
-        try:
-            entries = load_paq_entries_from_path(paq_path)
-            cache = PaqTextureCache(entries=entries, textures={})
-            assets = GameOverAssets(
-                menu_panel=_load_from_cache(cache, "ui_menuPanel", "ui/ui_menuPanel.jaz", missing),
-                text_reaper=_load_from_cache(cache, "ui_textReaper", "ui/ui_textReaper.jaz", missing),
-                text_well_done=_load_from_cache(cache, "ui_textWellDone", "ui/ui_textWellDone.jaz", missing),
-                perk_menu_assets=perk_menu_assets,
-                missing=missing,
-            )
-            assets._cache = cache
-            assets._cache_owned = True
-            return assets
-        except Exception:
-            pass
-
-    menu_panel = _load_from_path(assets_root, "ui/ui_menuPanel.png", missing)
-    text_reaper = _load_from_path(assets_root, "ui/ui_textReaper.png", missing)
-    text_well_done = _load_from_path(assets_root, "ui/ui_textWellDone.png", missing)
-    owned = tuple(tex for tex in (menu_panel, text_reaper, text_well_done) if tex is not None)
+    missing.extend(loader.missing)
     return GameOverAssets(
         menu_panel=menu_panel,
         text_reaper=text_reaper,
         text_well_done=text_well_done,
         perk_menu_assets=perk_menu_assets,
         missing=missing,
-        _owned_textures=owned,
+        _loader=loader,
     )
 
 
