@@ -9,6 +9,7 @@ __all__ = [
     "fonts",
     "input",
     "jaz",
+    "math",
     "music",
     "paq",
     "rand",

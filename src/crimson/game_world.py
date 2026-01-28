@@ -10,6 +10,7 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 from grim.config import CrimsonConfig
+from grim.math import clamp
 from grim.terrain_render import GroundRenderer
 
 from .bonuses import BONUS_BY_ID, BonusId
@@ -36,18 +37,6 @@ from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE
 
 GAME_MODE_SURVIVAL = 3
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
 
 
 ProjectileHit = tuple[int, float, float, float, float]
@@ -827,10 +816,10 @@ class GameWorld:
         return cam_x, cam_y, scale_x, scale_y
 
     def _color_from_rgba(self, rgba: tuple[float, float, float, float]) -> rl.Color:
-        r = int(_clamp(rgba[0], 0.0, 1.0) * 255.0 + 0.5)
-        g = int(_clamp(rgba[1], 0.0, 1.0) * 255.0 + 0.5)
-        b = int(_clamp(rgba[2], 0.0, 1.0) * 255.0 + 0.5)
-        a = int(_clamp(rgba[3], 0.0, 1.0) * 255.0 + 0.5)
+        r = int(clamp(rgba[0], 0.0, 1.0) * 255.0 + 0.5)
+        g = int(clamp(rgba[1], 0.0, 1.0) * 255.0 + 0.5)
+        b = int(clamp(rgba[2], 0.0, 1.0) * 255.0 + 0.5)
+        a = int(clamp(rgba[3], 0.0, 1.0) * 255.0 + 0.5)
         return rl.Color(r, g, b, a)
 
     def _bonus_icon_src(self, texture: rl.Texture, icon_id: int) -> rl.Rectangle:
@@ -857,10 +846,10 @@ class GameWorld:
         if time_left <= 0.0 or time_max <= 0.0:
             return 0.0
         if time_left < 0.5:
-            return _clamp(time_left * 2.0, 0.0, 1.0)
+            return clamp(time_left * 2.0, 0.0, 1.0)
         age = time_max - time_left
         if age < 0.5:
-            return _clamp(age * 2.0, 0.0, 1.0)
+            return clamp(age * 2.0, 0.0, 1.0)
         return 1.0
 
     def _draw_bonus_pickups(
@@ -873,7 +862,7 @@ class GameWorld:
         scale: float,
         alpha: float = 1.0,
     ) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         if self.bonuses_texture is None:
@@ -894,7 +883,7 @@ class GameWorld:
                 continue
 
             fade = self._bonus_fade(float(bonus.time_left), float(bonus.time_max))
-            bubble_alpha = _clamp(fade * 0.9, 0.0, 1.0) * alpha
+            bubble_alpha = clamp(fade * 0.9, 0.0, 1.0) * alpha
 
             sx = (bonus.pos_x + cam_x) * scale_x
             sy = (bonus.pos_y + cam_y) * scale_y
@@ -980,7 +969,7 @@ class GameWorld:
     def _draw_aim_circle(self, *, x: float, y: float, radius: float, alpha: float = 1.0) -> None:
         if radius <= 1e-3:
             return
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
 
@@ -1012,7 +1001,7 @@ class GameWorld:
         size = 32.0 * scale
         if size <= 1e-3:
             return
-        tint = rl.Color(255, 255, 255, int(_clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
+        tint = rl.Color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
 
         table_src = rl.Rectangle(0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height))
         table_dst = rl.Rectangle(float(x), float(y), size, size)
@@ -1074,7 +1063,7 @@ class GameWorld:
             # (creature_render_type). We approximate it with a black silhouette draw.
             # The observed pass is slightly bigger than the main sprite and offset
             # down-right by ~1px at default sizes.
-            alpha = int(shadow_alpha) if shadow_alpha is not None else int(_clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
+            alpha = int(shadow_alpha) if shadow_alpha is not None else int(clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
             shadow_tint = rl.Color(0, 0, 0, alpha)
             shadow_scale = 1.07
             shadow_w = width * shadow_scale
@@ -1100,7 +1089,7 @@ class GameWorld:
         scale: float,
         alpha: float = 1.0,
     ) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         grid = 8
@@ -1173,7 +1162,7 @@ class GameWorld:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
                 flags = int(weapon.flags) if weapon is not None and weapon.flags is not None else 0
                 if (flags & 0x8) == 0:
-                    flash_alpha = _clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0) * alpha
+                    flash_alpha = clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0) * alpha
                     if flash_alpha > 1e-3:
                         size = base_size * (0.5 if (flags & 0x4) else 1.0)
                         heading = float(player.aim_heading) + math.pi / 2.0
@@ -1229,7 +1218,7 @@ class GameWorld:
         )
 
     def _draw_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         texture = self.projs_texture
@@ -1241,8 +1230,8 @@ class GameWorld:
         angle = float(getattr(proj, "angle", 0.0))
 
         if self._is_bullet_trail_type(type_id):
-            life_alpha = int(_clamp(life, 0.0, 1.0) * 255)
-            alpha_byte = int(_clamp(float(life_alpha) * alpha, 0.0, 255.0) + 0.5)
+            life_alpha = int(clamp(life, 0.0, 1.0) * 255)
+            alpha_byte = int(clamp(float(life_alpha) * alpha, 0.0, 255.0) + 0.5)
             drawn = False
             if self.bullet_trail_texture is not None:
                 ox = float(getattr(proj, "origin_x", pos_x))
@@ -1300,7 +1289,7 @@ class GameWorld:
                     t = float(idx) / float(max(1, seg_count - 1))
                     px = ox + dir_x * dist * t
                     py = oy + dir_y * dist * t
-                    seg_alpha = int(_clamp(220.0 * (1.0 - t * 0.75) * alpha, 0.0, 255.0) + 0.5)
+                    seg_alpha = int(clamp(220.0 * (1.0 - t * 0.75) * alpha, 0.0, 255.0) + 0.5)
                     tint = rl.Color(color.r, color.g, color.b, seg_alpha)
                     psx, psy = self.world_to_screen(px, py)
                     self._draw_atlas_sprite(
@@ -1315,7 +1304,7 @@ class GameWorld:
                     )
                 return
 
-        alpha_byte = int(_clamp(_clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
+        alpha_byte = int(clamp(clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
         tint = rl.Color(color.r, color.g, color.b, alpha_byte)
         self._draw_atlas_sprite(
             texture,
@@ -1388,7 +1377,7 @@ class GameWorld:
         return True
 
     def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
@@ -1397,16 +1386,16 @@ class GameWorld:
             rl.draw_circle(int(sx), int(sy), max(1.0, 12.0 * scale), rl.Color(200, 120, 255, int(255 * alpha + 0.5)))
             return
         if proj_type == 3:
-            t = _clamp(float(getattr(proj, "lifetime", 0.0)), 0.0, 1.0)
+            t = clamp(float(getattr(proj, "lifetime", 0.0)), 0.0, 1.0)
             radius = float(getattr(proj, "speed", 1.0)) * t * 80.0
-            alpha_byte = int(_clamp((1.0 - t) * 180.0 * alpha, 0.0, 255.0) + 0.5)
+            alpha_byte = int(clamp((1.0 - t) * 180.0 * alpha, 0.0, 255.0) + 0.5)
             color = rl.Color(200, 120, 255, alpha_byte)
             rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
             return
         rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
 
     def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         texture = self.particles_texture
@@ -1497,7 +1486,7 @@ class GameWorld:
         rl.end_blend_mode()
 
     def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        entity_alpha = _clamp(float(entity_alpha), 0.0, 1.0)
+        entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_w, screen_h = self._camera_screen_size()
         cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
@@ -1542,10 +1531,10 @@ class GameWorld:
                 if hitbox_size < 0.0:
                     # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
                     tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
-                tint_alpha = _clamp(tint_alpha * entity_alpha, 0.0, 1.0)
+                tint_alpha = clamp(tint_alpha * entity_alpha, 0.0, 1.0)
                 tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
 
-                size_scale = _clamp(float(creature.size) / 64.0, 0.25, 2.0)
+                size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
                 fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
                 # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
                 # and is disabled when the Monster Vision perk is active.
@@ -1570,7 +1559,7 @@ class GameWorld:
                     if hitbox_size < 0.0:
                         shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
                         shadow_a = max(0.0, shadow_a)
-                    shadow_alpha = int(_clamp(shadow_a * entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+                    shadow_alpha = int(clamp(shadow_a * entity_alpha * 255.0, 0.0, 255.0) + 0.5)
                 self._draw_creature_sprite(
                     texture,
                     type_id=type_id or CreatureTypeId.ZOMBIE,

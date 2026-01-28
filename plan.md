@@ -182,7 +182,7 @@ Then:
 * replace the copy in `grim/terrain_render.py` with an import
 * delete `crimson/crand.py`, don't re-export for compatibility
 
-### 3.2 Add a small, pure `grim.math` (or `grim.util.math`) [ ]
+### 3.2 Add a small, pure `grim.math` (or `grim.util.math`) [x]
 
 Move every `_clamp` there. Do it opportunistically:
 
