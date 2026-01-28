@@ -2674,7 +2674,7 @@
   {
     "name": "highscore_read_record",
     "address": "0043ab10",
-    "signature": "char * highscore_read_record(char * buffer, FILE * fp)",
+    "signature": "char * highscore_read_record(char * param_1, int * param_2)",
     "external": false,
     "calls_total": 2,
     "calls": ["console_printf", "crt_fread"]
@@ -2698,7 +2698,7 @@
   {
     "name": "highscore_write_record",
     "address": "0043ad70",
-    "signature": "void highscore_write_record(byte * record, FILE * fp)",
+    "signature": "undefined highscore_write_record(undefined4 * param_1, int * param_2)",
     "external": false,
     "calls_total": 4,
     "calls": ["GetLocalTime", "crt_fwrite", "crt_rand", "highscore_date_checksum"]
@@ -2850,7 +2850,7 @@
   {
     "name": "resource_pack_read_cstring",
     "address": "0043b940",
-    "signature": "int resource_pack_read_cstring(FILE * fp)",
+    "signature": "uint resource_pack_read_cstring(undefined4 * param_1)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_getc"]
@@ -4658,7 +4658,7 @@
   {
     "name": "crt_fgets",
     "address": "00460fac",
-    "signature": "char * crt_fgets(char * dst, int dst_len, FILE * fp)",
+    "signature": "char * crt_fgets(char * param_1, int param_2, undefined4 * param_3)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_filbuf", "crt_lock_file", "crt_unlock_file"]
@@ -4666,7 +4666,7 @@
   {
     "name": "crt_fsopen",
     "address": "0046100e",
-    "signature": "FILE * crt_fsopen(char * path, char * mode, uint share)",
+    "signature": "undefined4 * crt_fsopen(LPCSTR param_1, char * param_2, uint param_3)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_getstream", "crt_openfile", "crt_unlock_file"]
@@ -4674,7 +4674,7 @@
   {
     "name": "crt_fopen",
     "address": "0046103f",
-    "signature": "FILE * crt_fopen(char * path, char * mode)",
+    "signature": "undefined crt_fopen(LPCSTR param_1, char * param_2)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_fsopen"]
@@ -4754,7 +4754,7 @@
   {
     "name": "crt_fflush",
     "address": "00461448",
-    "signature": "int crt_fflush(FILE * fp)",
+    "signature": "int crt_fflush(int * param_1)",
     "external": false,
     "calls_total": 4,
     "calls": ["crt_fflush_nolock", "crt_flushall", "crt_lock_file", "crt_unlock_file"]
@@ -4762,7 +4762,7 @@
   {
     "name": "crt_fflush_nolock",
     "address": "00461477",
-    "signature": "int crt_fflush_nolock(FILE * fp)",
+    "signature": "int crt_fflush_nolock(int * param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_commit", "crt_flushbuf"]
@@ -4770,7 +4770,7 @@
   {
     "name": "crt_flushbuf",
     "address": "004614a5",
-    "signature": "int crt_flushbuf(FILE * fp)",
+    "signature": "undefined4 crt_flushbuf(int * param_1)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_write"]
@@ -4786,7 +4786,7 @@
   {
     "name": "crt_fwrite",
     "address": "004615ae",
-    "signature": "uint crt_fwrite(void * ptr, uint size, uint count, FILE * fp)",
+    "signature": "uint crt_fwrite(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_fwrite_nolock", "crt_lock_file", "crt_unlock_file"]
@@ -4794,7 +4794,7 @@
   {
     "name": "crt_fwrite_nolock",
     "address": "004615dd",
-    "signature": "uint crt_fwrite_nolock(void * ptr, uint size, uint count, FILE * fp)",
+    "signature": "uint crt_fwrite_nolock(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
     "calls_total": 4,
     "calls": ["crt_bufcpy", "crt_flsbuf", "crt_flushbuf", "crt_write"]
@@ -4898,7 +4898,7 @@
   {
     "name": "crt_fread",
     "address": "00461af7",
-    "signature": "uint crt_fread(void * ptr, uint size, uint count, FILE * fp)",
+    "signature": "uint crt_fread(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_fread_nolock", "crt_lock_file", "crt_unlock_file"]
@@ -4906,7 +4906,7 @@
   {
     "name": "crt_fread_nolock",
     "address": "00461b26",
-    "signature": "uint crt_fread_nolock(void * ptr, uint size, uint count, FILE * fp)",
+    "signature": "uint crt_fread_nolock(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_bufcpy", "crt_filbuf", "crt_read"]
@@ -4914,7 +4914,7 @@
   {
     "name": "crt_ftell",
     "address": "00461c0e",
-    "signature": "long crt_ftell(FILE * fp)",
+    "signature": "int crt_ftell(char * param_1)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_ftell_nolock", "crt_lock_file", "crt_unlock_file"]
@@ -4922,7 +4922,7 @@
   {
     "name": "crt_ftell_nolock",
     "address": "00461c30",
-    "signature": "long crt_ftell_nolock(FILE * fp)",
+    "signature": "int crt_ftell_nolock(char * param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_errno_ptr", "crt_lseek"]
@@ -4930,7 +4930,7 @@
   {
     "name": "crt_fseek",
     "address": "00461d91",
-    "signature": "int crt_fseek(FILE * fp, long offset, int origin)",
+    "signature": "int crt_fseek(int * param_1, int param_2, DWORD param_3)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_fseek_nolock", "crt_lock_file", "crt_unlock_file"]
@@ -4938,7 +4938,7 @@
   {
     "name": "crt_fseek_nolock",
     "address": "00461dbd",
-    "signature": "int crt_fseek_nolock(FILE * fp, long offset, int origin)",
+    "signature": "int crt_fseek_nolock(int * param_1, int param_2, DWORD param_3)",
     "external": false,
     "calls_total": 4,
     "calls": ["crt_errno_ptr", "crt_flushbuf", "crt_ftell_nolock", "crt_lseek"]
@@ -5194,7 +5194,7 @@
   {
     "name": "crt_getc",
     "address": "00462da2",
-    "signature": "int crt_getc(FILE * fp)",
+    "signature": "uint crt_getc(undefined4 * param_1)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_filbuf", "crt_lock_file", "crt_unlock_file"]
@@ -5594,7 +5594,7 @@
   {
     "name": "crt_lock_file",
     "address": "00463da5",
-    "signature": "void crt_lock_file(FILE * fp)",
+    "signature": "undefined crt_lock_file(uint param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["EnterCriticalSection", "crt_lock"]
@@ -5602,7 +5602,7 @@
   {
     "name": "crt_lock_file2",
     "address": "00463dd4",
-    "signature": "void crt_lock_file2(int stream_index, FILE * fp)",
+    "signature": "undefined crt_lock_file2(int param_1, int param_2)",
     "external": false,
     "calls_total": 2,
     "calls": ["EnterCriticalSection", "crt_lock"]
@@ -5610,7 +5610,7 @@
   {
     "name": "crt_unlock_file",
     "address": "00463df7",
-    "signature": "void crt_unlock_file(FILE * fp)",
+    "signature": "undefined crt_unlock_file(uint param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["LeaveCriticalSection", "crt_unlock"]
@@ -5618,7 +5618,7 @@
   {
     "name": "crt_unlock_file2",
     "address": "00463e26",
-    "signature": "void crt_unlock_file2(int stream_index, FILE * fp)",
+    "signature": "undefined crt_unlock_file2(int param_1, int param_2)",
     "external": false,
     "calls_total": 2,
     "calls": ["LeaveCriticalSection", "crt_unlock"]
@@ -5650,7 +5650,7 @@
   {
     "name": "crt_filbuf",
     "address": "00463f54",
-    "signature": "int crt_filbuf(FILE * fp)",
+    "signature": "uint crt_filbuf(undefined4 * param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_file_buffer_init", "crt_read"]
@@ -5658,7 +5658,7 @@
   {
     "name": "crt_openfile",
     "address": "00464030",
-    "signature": "FILE * crt_openfile(char * filename, char * mode, int shflag, FILE * stream)",
+    "signature": "undefined4 * crt_openfile(LPCSTR param_1, char * param_2, uint param_3, undefined4 * param_4)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_sopen"]
@@ -5666,7 +5666,7 @@
   {
     "name": "crt_getstream",
     "address": "004641a0",
-    "signature": "FILE * crt_getstream(void)",
+    "signature": "undefined4 * crt_getstream(void)",
     "external": false,
     "calls_total": 7,
     "calls": ["EnterCriticalSection", "InitializeCriticalSection", "_malloc", "crt_lock", "crt_lock_file2", "crt_unlock", "crt_unlock_file2"]
@@ -5674,7 +5674,7 @@
   {
     "name": "crt_flsbuf",
     "address": "00464268",
-    "signature": "int crt_flsbuf(int ch, FILE * fp)",
+    "signature": "uint crt_flsbuf(uint param_1, int * param_2)",
     "external": false,
     "calls_total": 4,
     "calls": ["FUN_0046b08c", "crt_file_buffer_init", "crt_lseek", "crt_write"]
@@ -5682,7 +5682,7 @@
   {
     "name": "crt_output",
     "address": "00464380",
-    "signature": "int crt_output(FILE * stream, char * format, void * args)",
+    "signature": "int crt_output(int * param_1, byte * param_2, undefined4 * param_3)",
     "external": false,
     "calls_total": 13,
     "calls": ["FUN_00464bbc", "FUN_00464bc9", "FUN_00464bd9", "FUN_0046a8c5", "FUN_0046b0b5", "__aulldiv", "__aullrem", "_malloc", "_strlen", "crt_free_base", "crt_putc_buffer_nolock", "crt_putc_nolock", "crt_putc_repeat_nolock"]
@@ -5690,7 +5690,7 @@
   {
     "name": "crt_putc_nolock",
     "address": "00464b1e",
-    "signature": "void crt_putc_nolock(int ch, FILE * fp, int * count)",
+    "signature": "undefined crt_putc_nolock(uint param_1, int * param_2, int * param_3)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_flsbuf"]
@@ -5698,7 +5698,7 @@
   {
     "name": "crt_putc_repeat_nolock",
     "address": "00464b53",
-    "signature": "void crt_putc_repeat_nolock(int ch, int count, FILE * fp, int * out_count)",
+    "signature": "undefined crt_putc_repeat_nolock(uint param_1, int param_2, int * param_3, int * param_4)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_putc_nolock"]
@@ -5706,7 +5706,7 @@
   {
     "name": "crt_putc_buffer_nolock",
     "address": "00464b84",
-    "signature": "void crt_putc_buffer_nolock(char * buf, int count, FILE * fp, int * out_count)",
+    "signature": "undefined crt_putc_buffer_nolock(char * param_1, int param_2, int * param_3, int * param_4)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_putc_nolock"]
@@ -6770,7 +6770,7 @@
   {
     "name": "crt_file_buffer_init",
     "address": "0046ad79",
-    "signature": "void crt_file_buffer_init(FILE * fp)",
+    "signature": "undefined crt_file_buffer_init(undefined4 * param_1)",
     "external": false,
     "calls_total": 1,
     "calls": ["_malloc"]

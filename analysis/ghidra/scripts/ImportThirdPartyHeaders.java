@@ -37,6 +37,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         List<String> headerFiles = new ArrayList<>();
         List<String> missing = new ArrayList<>();
 
+        addHeader(headerFiles, missing, new File(root, "ghidra_stubs.h"));
         addHeader(headerFiles, missing, new File(root, "jpeg_all.h"));
         addHeader(headerFiles, missing, new File(root, "zlib.h"));
         addHeader(headerFiles, missing, new File(root, "png_struct_stub.h"));
@@ -103,6 +104,19 @@ public class ImportThirdPartyHeaders extends GhidraScript {
                     dtMgr,
                     monitor
                 );
+                String formatted = results.getFormattedParseMessage(null);
+                if (formatted != null && !formatted.isBlank() &&
+                    !"No errors.".equalsIgnoreCase(formatted.trim())) {
+                    printerr("Header parse messages for " + header + ":\n" + formatted);
+                }
+                String cppMsg = results.cppParseMessages();
+                if (cppMsg != null && !cppMsg.isBlank()) {
+                    printerr("CPP parse messages for " + header + ":\n" + cppMsg);
+                }
+                String cMsg = results.cParseMessages();
+                if (cMsg != null && !cMsg.isBlank()) {
+                    printerr("C parse messages for " + header + ":\n" + cMsg);
+                }
                 if (!results.successful()) {
                     printerr("Header parse reported errors: " + header);
                     hadErrors = true;
