@@ -1038,16 +1038,16 @@ class GameWorld:
         table_dst = rl.Rectangle(float(x), float(y), size, size)
         rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
-        seconds = int(ms) // 1000
         pointer_src = rl.Rectangle(
             0.0,
             0.0,
             float(self.clock_pointer_texture.width),
             float(self.clock_pointer_texture.height),
         )
-        pointer_dst = rl.Rectangle(float(x) + size * 0.5, float(y) + size * 0.5, size, size)
+        pointer_dst = rl.Rectangle(float(x), float(y), size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        rotation_deg = float(seconds) * 6.0
+        # Mirrors `ui_draw_clock_gauge`: rotation = (ms/1000) * 0.10471976 rad.
+        rotation_deg = float(ms) * 0.006
         rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
     def _draw_creature_sprite(

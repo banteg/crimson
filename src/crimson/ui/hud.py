@@ -477,7 +477,7 @@ def draw_hud_overlay(
 
     # Mode time clock/text (rush/typo-style HUD).
     if show_time:
-        time_seconds = max(0, int(elapsed_ms) // 1000)
+        time_ms = max(0.0, float(elapsed_ms))
         if assets.clock_table is not None:
             dst = rl.Rectangle(
                 sx(HUD_CLOCK_POS[0]),
@@ -503,7 +503,7 @@ def draw_hud_overlay(
                 sy(HUD_CLOCK_SIZE[1]),
             )
             src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
-            rotation = float(time_seconds) * 6.0
+            rotation = time_ms / 1000.0 * 6.0
             origin = rl.Vector2(sx(HUD_CLOCK_SIZE[0] * 0.5), sy(HUD_CLOCK_SIZE[1] * 0.5))
             rl.draw_texture_pro(
                 assets.clock_pointer,
@@ -514,7 +514,7 @@ def draw_hud_overlay(
                 rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
             )
             max_y = max(max_y, dst.y + dst.height)
-        time_text = f"{time_seconds} seconds"
+        time_text = f"{int(time_ms) // 1000} seconds"
         _draw_text(font, time_text, sx(255.0), sy(10.0), text_scale, text_color)
         max_y = max(max_y, sy(10.0 + line_h))
 
