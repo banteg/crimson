@@ -274,15 +274,15 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.2 Typing buffer + input handling
 
-- [ ] Add `TypingBuffer`
-  - [ ] max length 16
+- [x] Add `TypingBuffer`
+  - [x] max length 17
   - [ ] gather characters via Raylib `GetCharPressed`
-  - [ ] support backspace
-  - [ ] on Enter
-    - [ ] `shots_fired += 1`
-    - [ ] if buffer matches a creature name: `shots_hit += 1`, set `aim_target`, set `fire_requested = True` for this frame
-    - [ ] (Optional) handle `"reload"` (decompile checks it)
-    - [ ] clear buffer
+  - [x] support backspace
+  - [x] on Enter
+    - [x] `shots_fired += 1`
+    - [x] if buffer matches a creature name: `shots_hit += 1`, set `aim_target`, set `fire_requested = True` for this frame
+    - [x] handle `"reload"` (decompile checks it)
+    - [x] clear buffer
 
 ### 6.3 Firing rules (no “hold mouse button”)
 
