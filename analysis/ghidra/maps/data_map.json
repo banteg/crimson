@@ -1016,6 +1016,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048089c",
+      "comment": "Currently highlighted perk in the perk selection menu. Index into perk_choice_ids; -1 when no selection.",
+      "name": "perk_selection_index",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004808a8",
       "comment": "Tutorial repeat spawn counter (stage 5 creature/bonus loop).",
       "name": "tutorial_repeat_spawn_count",
@@ -1838,6 +1844,12 @@
       "type": "int"
     },
     {
+      "address": "0x0048708c",
+      "comment": "Per-weapon usage tracking in milliseconds. Indexed by weapon_id (0-63) to derive most-used weapon for highscores.",
+      "name": "weapon_usage_time",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00487190",
       "comment": "Survival scripted spawn stage index.",
       "name": "survival_spawn_stage",
@@ -1902,6 +1914,18 @@
       "address": "0x004871f0",
       "comment": "UI mouse Y position.",
       "name": "ui_mouse_y",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004871f4",
+      "comment": "Per-player aim screen X coordinates. Stride 8 bytes (index * 2). Set from ui_mouse_x or joystick input.",
+      "name": "player_aim_screen_x",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004871f8",
+      "comment": "Per-player aim screen Y coordinates (player_aim_screen_x + 0x04). Stride 8 bytes.",
+      "name": "player_aim_screen_y",
       "program": "crimsonland.exe"
     },
     {
@@ -2106,6 +2130,12 @@
       "address": "0x0048f538",
       "comment": "Terrain texture height (default 1024).",
       "name": "terrain_texture_height",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f548",
+      "comment": "Array of terrain texture handles. Indexed by quest_meta terrain_id fields (offsets 0x10/0x14/0x18) in terrain_generate.",
+      "name": "terrain_texture_handles",
       "program": "crimsonland.exe"
     },
     {

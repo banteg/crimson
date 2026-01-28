@@ -46,86 +46,11 @@ This document tracks struct types and global data that can be mapped in Ghidra's
 
 ---
 
-## Unmapped Global Data (Ready to Add)
+## Unmapped Global Data (Pending)
 
-These globals have clear usage patterns and should be added to `data_map.json`:
+These globals have evidence but still need a quick consistency check before adding to `data_map.json`:
 
-### 1. `weapon_usage_time` - Per-Weapon Usage Tracking
-
-**Address:** `0x0048708c`
-
-**Evidence:**
-- Zeroed in game init: `for (iVar10 = 0x40; iVar10 != 0; ...)`
-- Indexed by weapon_id: `(&DAT_0048708c)[player_state_table.weapon_id] += frame_dt_ms`
-- Used to determine most-used weapon for highscore
-
-**Type:** `int[64]` (0x100 bytes)
-
-**Proposed Entry:**
-```json
-{
-  "address": "0x0048708c",
-  "name": "weapon_usage_time",
-  "comment": "Per-weapon usage tracking in milliseconds. Indexed by weapon_id (0-63). Used to determine most_used_weapon_id for highscore records.",
-  "program": "crimsonland.exe"
-}
-```
-
----
-
-### 2. `perk_selection_index` - Current Perk Choice
-
-**Address:** `0x0048089c`
-
-**Evidence:**
-- Set during perk menu: `DAT_0048089c = iVar2`
-- Used to index perk_choice_ids: `(&perk_choice_ids)[DAT_0048089c]`
-- Range check: `-1 < DAT_0048089c`
-
-**Type:** `int`
-
-**Proposed Entry:**
-```json
-{
-  "address": "0x0048089c",
-  "name": "perk_selection_index",
-  "comment": "Currently highlighted perk in the perk selection menu. Index into perk_choice_ids array. -1 when no selection.",
-  "program": "crimsonland.exe"
-}
-```
-
----
-
-### 3. `player_aim_screen` - Per-Player Aim Coordinates
-
-**Address:** `0x004871f4` (X), `0x004871f8` (Y)
-
-**Evidence:**
-- Set from mouse: `(&DAT_004871f4)[render_overlay_player_index * 2] = ui_mouse_x`
-- Read for aiming: `(float)(&DAT_004871f4)[render_overlay_player_index * 2] - _camera_offset_x`
-- Stride 8 bytes (2 floats per player)
-
-**Type:** `float[8]` (4 players x 2 coords)
-
-**Proposed Entries:**
-```json
-{
-  "address": "0x004871f4",
-  "name": "player_aim_screen_x",
-  "comment": "Per-player aim screen X coordinates. Stride 8 bytes (index * 2). Set from ui_mouse_x or joystick input.",
-  "program": "crimsonland.exe"
-},
-{
-  "address": "0x004871f8",
-  "name": "player_aim_screen_y",
-  "comment": "Per-player aim screen Y coordinates (player_aim_screen_x + 0x04). Stride 8 bytes.",
-  "program": "crimsonland.exe"
-}
-```
-
----
-
-### 4. `player_aux_timer` - Per-Player Auxiliary Timer
+### 1. `player_aux_timer` - Per-Player Auxiliary Timer
 
 **Address:** `0x004871d0`
 
@@ -134,42 +59,19 @@ These globals have clear usage patterns and should be added to `data_map.json`:
 - Timer decay: `(&DAT_004871d0)[...] -= frame_dt * fVar15`
 - Reset to 2.0: `(&DAT_004871d0)[player_index] = 0x40000000` (float 2.0)
 
-**Type:** `float[4]`
+**Open question:** This array appears to be only two floats (0x004871d0/0x004871d4)
+before camera shake offsets at 0x004871d8/0x004871dc. Need to confirm whether
+the runtime player-count used by this UI path is capped at 2.
 
-**Proposed Entry:**
+**Proposed Entry (pending confirmation):**
 ```json
 {
   "address": "0x004871d0",
   "name": "player_aux_timer",
-  "comment": "Per-player auxiliary timer (4 floats). Used for UI feedback timing. Decays over time.",
+  "comment": "Per-player auxiliary timer (likely 2 floats for P1/P2). Used for UI feedback timing; decays over time.",
   "program": "crimsonland.exe"
 }
 ```
-
----
-
-### 5. `terrain_texture_handles` - Terrain Layer Textures
-
-**Address:** `0x0048f548`
-
-**Evidence:**
-- Indexed by quest terrain_id: `(&DAT_0048f548)[*(int *)(desc + 0x10)]`
-- Used for all 3 terrain layers (terrain_id, terrain_id_b, terrain_id_c)
-- Passed to `grim_bind_texture`
-
-**Type:** `int[]` (texture handle array)
-
-**Proposed Entry:**
-```json
-{
-  "address": "0x0048f548",
-  "name": "terrain_texture_handles",
-  "comment": "Array of terrain texture handles. Indexed by quest_meta terrain_id fields (0x10/0x14/0x18 offsets).",
-  "program": "crimsonland.exe"
-}
-```
-
----
 
 ## Lower Priority / Partial Mappings
 

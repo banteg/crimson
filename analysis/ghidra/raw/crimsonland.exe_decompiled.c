@@ -4338,7 +4338,7 @@ void perk_selection_screen_update(void)
       *item = (int)(&perk_meta_table)[*piVar3].name;
       ui_menu_item_update(&local_18,item);
       if ((char)item[1] != '\0') {
-        DAT_0048089c = iVar2;
+        perk_selection_index = iVar2;
       }
       local_14 = local_14 + local_20;
       iVar2 = iVar2 + 1;
@@ -4355,7 +4355,7 @@ void perk_selection_screen_update(void)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   (*grim_interface_ptr->vtable->grim_draw_text_small)
             (local_24 + 16.0,local_20,
-             (&perk_meta_table)[(&perk_choice_ids)[DAT_0048089c]].description);
+             (&perk_meta_table)[(&perk_choice_ids)[perk_selection_index]].description);
   if (((byte)perk_selection_screen_flags & 8) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 8;
     DAT_00480096 = 1;
@@ -4391,10 +4391,10 @@ void perk_selection_screen_update(void)
   }
   perk_prompt_update_and_render();
   ui_cursor_render();
-  if ((((char)((uint)unaff_ESI >> 0x18) != '\0') && (-1 < DAT_0048089c)) &&
-     ((&DAT_004800ad)[DAT_0048089c * 0x10] != '\0')) {
+  if ((((char)((uint)unaff_ESI >> 0x18) != '\0') && (-1 < perk_selection_index)) &&
+     ((&DAT_004800ad)[perk_selection_index * 0x10] != '\0')) {
     sfx_play(sfx_ui_buttonclick);
-    perk_apply((&perk_choice_ids)[DAT_0048089c]);
+    perk_apply((&perk_choice_ids)[perk_selection_index]);
     perk_pending_count = perk_pending_count + -1;
     ui_transition_direction = 0;
     game_state_pending = 9;
@@ -6871,8 +6871,8 @@ LAB_0040ad8e:
     }
     highscore_active_record.survival_elapsed_ms =
          highscore_active_record.survival_elapsed_ms + frame_dt_ms;
-    (&DAT_0048708c)[player_state_table.weapon_id] =
-         (&DAT_0048708c)[player_state_table.weapon_id] + frame_dt_ms;
+    (&weapon_usage_time)[player_state_table.weapon_id] =
+         (&weapon_usage_time)[player_state_table.weapon_id] + frame_dt_ms;
   }
   camera_update();
   gameplay_render_world();
@@ -7667,7 +7667,7 @@ LAB_0040c71b:
                          extraout_ST0_06 * (float10)(float)config_blob.reserved8 +
                         (float10)ui_mouse_x);
     (*grim_interface_ptr->vtable->grim_get_mouse_dy)();
-    pfVar4 = (float *)&DAT_004871f4;
+    pfVar4 = (float *)&player_aim_screen_x;
     ui_mouse_y = (float)(extraout_ST0_07 * (float10)(float)config_blob.reserved8 +
                          extraout_ST0_07 * (float10)(float)config_blob.reserved8 +
                         (float10)ui_mouse_y);
@@ -11438,7 +11438,7 @@ void gameplay_reset_state(void)
   _camera_offset_x = (float)terrain_texture_width * 0.5;
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
-  puVar13 = &DAT_0048708c;
+  puVar13 = &weapon_usage_time;
   for (iVar10 = 0x40; iVar10 != 0; iVar10 = iVar10 + -1) {
     *puVar13 = 0;
     puVar13 = puVar13 + 1;
@@ -11712,8 +11712,8 @@ void player_update(void)
   if (console_open_flag != '\0') {
     return;
   }
-  (&DAT_004871f4)[render_overlay_player_index * 2] = ui_mouse_x;
-  (&DAT_004871f8)[iVar7 * 2] = ui_mouse_y;
+  (&player_aim_screen_x)[render_overlay_player_index * 2] = ui_mouse_x;
+  (&player_aim_screen_y)[iVar7 * 2] = ui_mouse_y;
   local_28 = (&player_state_table)[iVar7].pos_x;
   pfVar16 = &(&player_state_table)[iVar7].pos_x;
   local_24 = (&player_state_table)[iVar7].pos_y;
@@ -11939,8 +11939,10 @@ LAB_00413f2d:
     if (iVar10 == 4) {
       iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_reload);
       if ((char)iVar10 != '\0') {
-        local_14 = (float)(&DAT_004871f8)[render_overlay_player_index * 2] - _camera_offset_y;
-        local_18 = (float)(&DAT_004871f4)[render_overlay_player_index * 2] - _camera_offset_x;
+        local_14 = (float)(&player_aim_screen_y)[render_overlay_player_index * 2] - _camera_offset_y
+        ;
+        local_18 = (float)(&player_aim_screen_x)[render_overlay_player_index * 2] - _camera_offset_x
+        ;
         (&player_state_table)[iVar7].move_target_x = local_18;
         (&player_state_table)[iVar7].move_target_y = local_14;
       }
@@ -12599,17 +12601,17 @@ LAB_00414f2d:
      (iVar10 = *(int *)(config_blob.reserved0 + render_overlay_player_index * 4 + 0x44), iVar10 != 5
      )) {
     if (iVar10 == 0) {
-      local_14 = (float)(&DAT_004871f8)[render_overlay_player_index * 2] - _camera_offset_y;
-      local_18 = (float)(&DAT_004871f4)[render_overlay_player_index * 2] - _camera_offset_x;
+      local_14 = (float)(&player_aim_screen_y)[render_overlay_player_index * 2] - _camera_offset_y;
+      local_18 = (float)(&player_aim_screen_x)[render_overlay_player_index * 2] - _camera_offset_x;
       (&player_state_table)[iVar7].aim_x = local_18;
       (&player_state_table)[iVar7].aim_y = local_14;
     }
     else {
       if (iVar10 != 4) {
         if (iVar10 == 3) {
-          fVar17 = (float10)(float)(&DAT_004871f8)[render_overlay_player_index * 2] - (float10)200.0
-          ;
-          local_20 = (float)(&DAT_004871f4)[render_overlay_player_index * 2] - 200.0;
+          fVar17 = (float10)(float)(&player_aim_screen_y)[render_overlay_player_index * 2] -
+                   (float10)200.0;
+          local_20 = (float)(&player_aim_screen_x)[render_overlay_player_index * 2] - 200.0;
           local_1c = (float)fVar17;
           if ((local_20 != 0.0) || (fVar17 != (float10)0.0)) {
             fVar17 = (float10)fpatan(fVar17,(float10)local_20);
@@ -12630,8 +12632,8 @@ LAB_00414f2d:
             local_14 = local_24 * 30.0;
             local_20 = local_28 * 30.0 + 200.0;
             local_1c = local_14 + 200.0;
-            (&DAT_004871f4)[render_overlay_player_index * 2] = local_20;
-            (&DAT_004871f8)[iVar10 * 2] = local_1c;
+            (&player_aim_screen_x)[render_overlay_player_index * 2] = local_20;
+            (&player_aim_screen_y)[iVar10 * 2] = local_1c;
           }
         }
         else if (iVar10 == 1) {
@@ -13726,7 +13728,7 @@ void __cdecl terrain_generate(void *desc)
   _camera_offset_x = 0;
   _camera_offset_y = 0;
   if (terrain_texture_failed != '\0') {
-    terrain_render_target = (float)(&DAT_0048f548)[*(int *)((int)desc + 0x10)];
+    terrain_render_target = (float)(&terrain_texture_handles)[*(int *)((int)desc + 0x10)];
     return;
   }
   (*grim_interface_ptr->vtable->grim_set_config_var)
@@ -13738,7 +13740,8 @@ void __cdecl terrain_generate(void *desc)
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_render_target)((int)terrain_render_target);
   (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
-  (*grim_interface_ptr->vtable->grim_bind_texture)((&DAT_0048f548)[*(int *)(iStack_2c + 0x10)],0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)
+            ((&terrain_texture_handles)[*(int *)(iStack_2c + 0x10)],0);
   (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   iVar4 = 0;
@@ -13757,7 +13760,8 @@ void __cdecl terrain_generate(void *desc)
     } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
   }
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_bind_texture)((&DAT_0048f548)[*(int *)(iStack_2c + 0x14)],0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)
+            ((&terrain_texture_handles)[*(int *)(iStack_2c + 0x14)],0);
   (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   iVar4 = 0;
@@ -13776,7 +13780,8 @@ void __cdecl terrain_generate(void *desc)
     } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
   }
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_bind_texture)((&DAT_0048f548)[*(int *)(iStack_2c + 0x18)],0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)
+            ((&terrain_texture_handles)[*(int *)(iStack_2c + 0x18)],0);
   (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   iVar4 = 0;
@@ -13833,7 +13838,7 @@ void terrain_generate_random(void)
   _DAT_0048f540 = _DAT_0048f540 % 7;
   crt_rand();
   handle = DAT_0048f54c;
-  fVar2 = DAT_0048f548;
+  fVar2 = terrain_texture_handles;
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
@@ -23388,7 +23393,8 @@ int load_textures_step(void)
   if (startup_texture_load_stage == 5) {
     if (terrain_texture_failed == '\0') {
       pcVar2 = s_ter_ter_q1_base_jaz_00474354;
-      DAT_0048f548 = texture_get_or_load_alt(s_ter_ter_q1_base_jaz_00474354,unaff_retaddr);
+      terrain_texture_handles =
+           texture_get_or_load_alt(s_ter_ter_q1_base_jaz_00474354,unaff_retaddr);
       pcVar1 = s_ter_ter_q1_tex1_jaz_00474340;
       DAT_0048f54c = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
       pcVar2 = s_ter_ter_q2_base_jaz_0047432c;
@@ -23406,13 +23412,13 @@ int load_textures_step(void)
     }
     else {
       pcVar2 = s_ter_fb_q1_jaz_004742b8;
-      DAT_0048f548 = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
+      terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
       pcVar1 = s_ter_fb_q2_jaz_004742a8;
       DAT_0048f54c = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
       pcVar2 = s_ter_fb_q3_jaz_00474298;
       _DAT_0048f550 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
       _DAT_0048f554 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
-      terrain_render_target = DAT_0048f548;
+      terrain_render_target = terrain_texture_handles;
       in_EDX = extraout_EDX_05;
     }
   }
@@ -32946,7 +32952,7 @@ void highscore_record_init(void)
   iVar1 = 1;
   iVar3 = 4;
   do {
-    if (*(int *)((int)&DAT_0048708c + iVar3) < (int)(&DAT_0048708c)[iVar1]) {
+    if (*(int *)((int)&weapon_usage_time + iVar3) < (int)(&weapon_usage_time)[iVar1]) {
       iVar3 = iVar1 * 4;
       iVar4 = iVar1;
     }
@@ -37523,8 +37529,8 @@ LAB_00445905:
          highscore_active_record.survival_elapsed_ms + frame_dt_ms;
     _bonus_reflex_boost_timer = 0;
     time_scale_active = '\0';
-    (&DAT_0048708c)[player_state_table.weapon_id] =
-         (&DAT_0048708c)[player_state_table.weapon_id] + frame_dt_ms;
+    (&weapon_usage_time)[player_state_table.weapon_id] =
+         (&weapon_usage_time)[player_state_table.weapon_id] + frame_dt_ms;
   }
   camera_update();
   gameplay_render_world();
