@@ -137,9 +137,10 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   `ui_draw_clock_gauge_at(&aim_screen_x, 48.0, reload_timer/reload_timer_max)`
   when `progress > 0`. It draws a **32×32** clock gauge at **top-left**
   `(aim_screen_x, aim_screen_y)` using `ui_clockTable` + `ui_clockPointer`.
-  Rotation steps in whole seconds: `ms = trunc(progress * 60000)`, then
-  `rotation_deg = (ms/1000) * 6.0` with integer division. `ui_draw_clock_gauge_at`
-  hardcodes gauge alpha to `1.0`, and `ui_draw_clock_gauge` resets color to
+  Rotation is effectively continuous (ms precision): `ms = trunc(progress * 60000)`, then
+  `rotation_rad = (ms/1000) * 0.10471976` (`6°/sec`). `ui_draw_clock_gauge_at`
+  ignores the `radius` parameter and hardcodes gauge alpha to `1.0`, and
+  `ui_draw_clock_gauge` resets color to
   `(1,1,1,alpha)` (so the preceding orange `grim_set_color(1,0.7,0.1,0.8)` is
   effectively ignored). [static]
 
