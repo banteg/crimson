@@ -8,6 +8,8 @@ import pyray as rl
 from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
+from ...debug import debug_enabled
+
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -475,7 +477,7 @@ class PlayGameMenuView(PanelMenuView):
 
         entries, y_step, y_start, y_end = self._mode_entries()
         y = base_y + y_start * scale
-        show_counts = rl.is_key_down(rl.KeyboardKey.KEY_F1)
+        show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         if show_counts:
             draw_small_text(font, "times played:", base_x + 132.0 * scale, base_y + 16.0 * scale, text_scale, text_color)

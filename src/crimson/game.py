@@ -38,6 +38,8 @@ from grim.app import run_view
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+
+from .debug import debug_enabled
 from grim import music
 
 from .demo import DemoView
@@ -502,7 +504,7 @@ class QuestsMenuView:
 
         hovered_stage = self._hovered_stage(layout)
         hovered_row = self._hovered_row(layout)
-        show_counts = rl.is_key_down(rl.KeyboardKey.KEY_F1)
+        show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         # Title texture is tinted by (0.7, 0.7, 0.7, 0.7).
         title_tex = self._text_quest

@@ -15,8 +15,9 @@ from grim.fonts.small import measure_small_text_width
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
+from ..debug import debug_enabled
 from ..game_world import GameWorld
-from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
+from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
@@ -289,6 +290,10 @@ class SurvivalMode:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
+
+        if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_X):
+            self._player.experience += 5000
+            survival_check_level_up(self._player, self._state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
