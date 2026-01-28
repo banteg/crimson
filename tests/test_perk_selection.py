@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState, PerkSelectionState, PlayerState, perk_selection_pick
+from crimson.game_modes import GameMode
+from crimson.gameplay import GameplayState, PerkSelectionState, PlayerState, perk_generate_choices, perk_selection_pick
 from crimson.perks import PerkId
 
 
@@ -38,3 +39,18 @@ def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
     assert player.health == 0.1
     assert perk_state.pending_count == 3
     assert perk_state.choices_dirty is True
+
+
+def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+
+    choices = perk_generate_choices(state, player, game_mode=int(GameMode.TUTORIAL), player_count=1)
+
+    assert choices == [
+        PerkId.SHARPSHOOTER,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.EVIL_EYES,
+        PerkId.RADIOACTIVE,
+        PerkId.FASTSHOT,
+    ]

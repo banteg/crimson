@@ -9,7 +9,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 2) Extract `BaseGameplayMode` (keep Survival identical)
 - [x] 3) Implement Rush (end-to-end)
 - [x] 4) Implement Quests (end-to-end)
-- [ ] 5) Implement Tutorial (end-to-end)
+- [x] 5) Implement Tutorial (end-to-end)
 - [ ] 6) Implement Typ-o Shooter (end-to-end)
 - [ ] 7) Polish + regression tests
 
@@ -226,35 +226,35 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
     - [x] after enough repeats: force perk lesson (set XP high enough to trigger perk)
   - [x] Stage 6: wait until perk selection done → spawn larger mixed wave
   - [x] Stage 7: wait until everything cleared → transition
-  - [ ] Stage 8: final message + end buttons
+  - [x] Stage 8: final message + end buttons
 - [x] Replicate tutorial guardrails
   - [x] force health to 100 each update
   - [x] reset XP to 0 outside the perk stage
 
 ### 5.3 Implement `tutorial_prompt_dialog`
 
-- [ ] Build a dedicated UI widget (top-of-screen translucent dialog)
-- [ ] Fade alpha matches the script’s value
-- [ ] Button modes
-  - [ ] regular tutorial: “Skip tutorial”
-  - [ ] final stage: “Play a game” + “Repeat tutorial”
-- [ ] Actions
-  - [ ] skip/play → return to menu
-  - [ ] repeat → reset tutorial state and clear perks/progression
+- [x] Build a dedicated UI widget (top-of-screen translucent dialog)
+- [x] Fade alpha matches the script’s value
+- [x] Button modes
+  - [x] regular tutorial: “Skip tutorial”
+  - [x] final stage: “Play a game” + “Repeat tutorial”
+- [x] Actions
+  - [x] skip/play → return to menu
+  - [x] repeat → reset tutorial state and clear perks/progression
 
 ### 5.4 Tutorial perks special-case
 
-- [ ] In perk generation: if `game_mode_id == 8`, return fixed perk ids (no RNG)
+- [x] In perk generation: if `game_mode_id == 8`, return fixed perk ids (no RNG)
 
 ### 5.5 Wiring
 
-- [ ] Add `TutorialMode` + `TutorialGameView`
-- [ ] Route `start_tutorial` → `TutorialGameView`
+- [x] Add `TutorialMode` + `TutorialGameView`
+- [x] Route `start_tutorial` → `TutorialGameView`
 
 ### 5.6 Tests
 
-- [ ] deterministic stage transitions (simulate movement/fire input)
-- [ ] deterministic spawns (assert templates/positions for a seeded run)
+- [x] deterministic stage transitions (simulate movement/fire input)
+- [x] deterministic spawns (assert templates/positions for a seeded run)
 
 ---
 
@@ -329,10 +329,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 ## 7) Recommended order (minimize rework)
 
 - [x] Mode ID + progression gating cleanup
-- [ ] Extract `BaseGameplayMode` (convert Survival, keep identical)
+- [x] Extract `BaseGameplayMode` (convert Survival, keep identical)
 - [x] Rush (end-to-end)
-- [ ] Quests gameplay loop (timeline + completion/failure)
-- [ ] Quest Results + Failed screens + unlock persistence
-- [ ] Tutorial (director + prompt + fixed perks)
+- [x] Quests gameplay loop (timeline + completion/failure)
+- [x] Quest Results + Failed screens + unlock persistence
+- [x] Tutorial (director + prompt + fixed perks)
 - [ ] Typ-o (names + typing + bespoke spawn/fire)
 - [ ] Polish + regression tests (mode IDs, perk gating, highscores)

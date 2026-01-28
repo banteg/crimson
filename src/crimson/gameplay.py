@@ -524,6 +524,17 @@ def perk_generate_choices(
 
     if count is None:
         count = perk_choice_count(player)
+    if int(game_mode) == int(GameMode.TUTORIAL):
+        fixed = [
+            PerkId.SHARPSHOOTER,
+            PerkId.LONG_DISTANCE_RUNNER,
+            PerkId.EVIL_EYES,
+            PerkId.RADIOACTIVE,
+            PerkId.FASTSHOT,
+        ]
+        while len(fixed) < int(count):
+            fixed.append(PerkId.FASTSHOT)
+        return fixed[: int(count)]
     pool = [meta.perk_id for meta in PERK_TABLE if perk_can_offer(player, meta, game_mode=game_mode, player_count=player_count)]
     choices: list[PerkId] = []
     while pool and len(choices) < count:
