@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
@@ -192,8 +192,7 @@ class GameWorld:
     wicons_texture: rl.Texture | None = field(init=False, default=None)
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
-    _owned_textures: list[rl.Texture] = field(init=False, default_factory=list)
-    _cache_owned: bool = field(init=False, default=False)
+    _texture_loader: TextureLoader | None = field(init=False, default=None)
 
     def __post_init__(self) -> None:
         self.spawn_env = SpawnEnv(
@@ -245,44 +244,27 @@ class GameWorld:
             terrain_seed = int(self.state.rng.rand() % 10_000)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
-    def _resolve_asset(self, rel_path: str) -> Path | None:
-        direct = self.assets_dir / rel_path
-        if direct.is_file():
-            return direct
-        legacy = self.assets_dir / "crimson" / rel_path
-        if legacy.is_file():
-            return legacy
-        return None
-
-    def _ensure_texture_cache(self) -> PaqTextureCache | None:
+    def _ensure_texture_loader(self) -> TextureLoader:
+        if self._texture_loader is not None:
+            return self._texture_loader
         if self.texture_cache is not None:
-            return self.texture_cache
-        paq_path = find_paq_path(self.assets_dir)
-        if paq_path is None:
-            return None
-        entries = load_paq_entries_from_path(paq_path)
-        cache = PaqTextureCache(entries=entries, textures={})
-        self.texture_cache = cache
-        self._cache_owned = True
-        return cache
+            loader = TextureLoader(
+                assets_root=self.assets_dir,
+                cache=self.texture_cache,
+                strict=False,
+                missing=self.missing_assets,
+            )
+        else:
+            loader = TextureLoader.from_assets_root(self.assets_dir, strict=False)
+            loader.missing = self.missing_assets
+            if loader.cache is not None:
+                self.texture_cache = loader.cache
+        self._texture_loader = loader
+        return loader
 
     def _load_texture(self, name: str, *, cache_path: str, file_path: str) -> rl.Texture | None:
-        cache = self._ensure_texture_cache()
-        if cache is not None:
-            try:
-                asset = cache.get_or_load(name, cache_path)
-                return asset.texture
-            except Exception:
-                self.missing_assets.append(cache_path)
-                return None
-
-        path = self._resolve_asset(file_path)
-        if path is None:
-            self.missing_assets.append(file_path)
-            return None
-        texture = rl.load_texture(str(path))
-        self._owned_textures.append(texture)
-        return texture
+        loader = self._ensure_texture_loader()
+        return loader.get(name=name, paq_rel=cache_path, fs_rel=file_path)
 
     @staticmethod
     def _png_path_for(rel_path: str) -> str:
@@ -446,9 +428,12 @@ class GameWorld:
             self.ground.render_target = None
         self.ground = None
 
-        for texture in self._owned_textures:
-            rl.unload_texture(texture)
-        self._owned_textures.clear()
+        if self._texture_loader is not None:
+            cache_owned = self._texture_loader._cache_owned
+            self._texture_loader.unload()
+            self._texture_loader = None
+            if cache_owned:
+                self.texture_cache = None
 
         self.creature_textures.clear()
         self.projs_texture = None
@@ -464,11 +449,6 @@ class GameWorld:
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
-
-        if self._cache_owned and self.texture_cache is not None:
-            self.texture_cache.unload()
-            self.texture_cache = None
-            self._cache_owned = False
 
     def update(
         self,
