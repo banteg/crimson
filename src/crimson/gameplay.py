@@ -50,6 +50,9 @@ class PlayerState:
     aim_dir_x: float = 1.0
     aim_dir_y: float = 0.0
 
+    bonus_aim_hover_index: int = -1
+    bonus_aim_hover_timer_ms: float = 0.0
+
     weapon_id: int = 0
     clip_size: int = 0
     ammo: int = 0
@@ -140,6 +143,8 @@ BONUS_PICKUP_DECAY_RATE = 3.0
 BONUS_PICKUP_LINGER = 0.5
 BONUS_TIME_MAX = 10.0
 BONUS_WEAPON_NEAR_RADIUS = 56.0
+BONUS_AIM_HOVER_RADIUS = 24.0
+BONUS_TELEKINETIC_PICKUP_MS = 650.0
 
 _WEAPON_RANDOM_IDS = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
 
@@ -402,6 +407,20 @@ class BonusPool:
                     break
 
         return pickups
+
+
+def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
+    """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
+
+    aim_x = float(getattr(player, "aim_x", player.pos_x))
+    aim_y = float(getattr(player, "aim_y", player.pos_y))
+    radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
+    for idx, entry in enumerate(bonus_pool.entries):
+        if entry.bonus_id == 0 or entry.picked:
+            continue
+        if _distance_sq(aim_x, aim_y, entry.pos_x, entry.pos_y) < radius_sq:
+            return idx, entry
+    return None
 
 
 @dataclass(slots=True)
@@ -1401,6 +1420,74 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState]) -> None:
             slot.timer_ref_alt = None
 
 
+def bonus_telekinetic_update(
+    state: GameplayState,
+    players: list[PlayerState],
+    dt: float,
+    *,
+    creatures: list[Damageable] | None = None,
+) -> list[BonusPickupEvent]:
+    """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
+
+    if dt <= 0.0:
+        return []
+
+    pickups: list[BonusPickupEvent] = []
+    dt_ms = float(dt) * 1000.0
+
+    for player in players:
+        if player.health <= 0.0:
+            player.bonus_aim_hover_index = -1
+            player.bonus_aim_hover_timer_ms = 0.0
+            continue
+
+        hovered = bonus_find_aim_hover_entry(player, state.bonus_pool)
+        if hovered is None:
+            player.bonus_aim_hover_index = -1
+            player.bonus_aim_hover_timer_ms = 0.0
+            continue
+
+        idx, entry = hovered
+        if idx != int(player.bonus_aim_hover_index):
+            player.bonus_aim_hover_index = int(idx)
+            player.bonus_aim_hover_timer_ms = dt_ms
+        else:
+            player.bonus_aim_hover_timer_ms += dt_ms
+
+        if player.bonus_aim_hover_timer_ms <= BONUS_TELEKINETIC_PICKUP_MS:
+            continue
+        if not perk_active(player, PerkId.TELEKINETIC):
+            continue
+        if entry.picked or entry.bonus_id == 0:
+            continue
+
+        bonus_apply(
+            state,
+            player,
+            BonusId(int(entry.bonus_id)),
+            amount=int(entry.amount),
+            origin=player,
+            creatures=creatures,
+        )
+        entry.picked = True
+        entry.time_left = BONUS_PICKUP_LINGER
+        pickups.append(
+            BonusPickupEvent(
+                player_index=int(player.index),
+                bonus_id=int(entry.bonus_id),
+                amount=int(entry.amount),
+                pos_x=float(entry.pos_x),
+                pos_y=float(entry.pos_y),
+            )
+        )
+
+        # Match the exe: after a telekinetic pickup, reset the hover accumulator.
+        player.bonus_aim_hover_index = -1
+        player.bonus_aim_hover_timer_ms = 0.0
+
+    return pickups
+
+
 def bonus_update(
     state: GameplayState,
     players: list[PlayerState],
@@ -1411,7 +1498,8 @@ def bonus_update(
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
-    pickups = state.bonus_pool.update(dt, state=state, players=players, creatures=creatures)
+    pickups = bonus_telekinetic_update(state, players, dt, creatures=creatures)
+    pickups.extend(state.bonus_pool.update(dt, state=state, players=players, creatures=creatures))
 
     if dt > 0.0:
         state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)

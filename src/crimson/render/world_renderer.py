@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 import pyray as rl
 
 from grim.math import clamp
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ..bonuses import BONUS_BY_ID, BonusId
 from ..creatures.anim import creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
-from ..gameplay import perk_active
+from ..gameplay import bonus_find_aim_hover_entry, perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
 from ..sim.world_defs import BEAM_TYPES, CREATURE_ANIM, CREATURE_ASSET, KNOWN_PROJ_FRAMES
@@ -27,9 +28,20 @@ _RAD_TO_DEG = 57.29577951308232
 @dataclass(slots=True)
 class WorldRenderer:
     _world: GameWorld
+    _small_font: SmallFontData | None = None
 
     def __getattr__(self, name: str) -> object:
         return getattr(self._world, name)
+
+    def _ensure_small_font(self) -> SmallFontData | None:
+        if self._small_font is not None:
+            return self._small_font
+        try:
+            # Keep UI text consistent with the HUD/menu font when available.
+            self._small_font = load_small_font(self.assets_dir, self.missing_assets)
+        except Exception:
+            self._small_font = None
+        return self._small_font
 
     def _camera_screen_size(self) -> tuple[float, float]:
         if self.config is not None:
@@ -181,6 +193,70 @@ class WorldRenderer:
             dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
+
+    def _bonus_hover_label(self, bonus_id: int, amount: int) -> str:
+        bonus_id = int(bonus_id)
+        if bonus_id == int(BonusId.WEAPON):
+            weapon = WEAPON_BY_ID.get(int(amount))
+            if weapon is not None and weapon.name is not None:
+                return str(weapon.name)
+            return "Weapon"
+        if bonus_id == int(BonusId.POINTS):
+            return f"Score: {int(amount)}"
+        meta = BONUS_BY_ID.get(int(bonus_id))
+        if meta is not None:
+            return str(meta.name)
+        return "Bonus"
+
+    def _draw_bonus_hover_labels(
+        self,
+        *,
+        cam_x: float,
+        cam_y: float,
+        scale_x: float,
+        scale_y: float,
+        alpha: float = 1.0,
+    ) -> None:
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
+
+        font = self._ensure_small_font()
+        text_scale = 1.0
+        screen_w = float(rl.get_screen_width())
+
+        shadow = rl.Color(0, 0, 0, int(180 * alpha + 0.5))
+        color = rl.Color(230, 230, 230, int(255 * alpha + 0.5))
+
+        for player in self.players:
+            if player.health <= 0.0:
+                continue
+            hovered = bonus_find_aim_hover_entry(player, self.state.bonus_pool)
+            if hovered is None:
+                continue
+            _idx, entry = hovered
+            label = self._bonus_hover_label(int(entry.bonus_id), int(entry.amount))
+            if not label:
+                continue
+
+            aim_x = float(getattr(player, "aim_x", player.pos_x))
+            aim_y = float(getattr(player, "aim_y", player.pos_y))
+            x = (aim_x + cam_x) * scale_x + 16.0
+            y = (aim_y + cam_y) * scale_y - 7.0
+
+            if font is not None:
+                text_w = measure_small_text_width(font, label, text_scale)
+            else:
+                text_w = float(rl.measure_text(label, int(18 * text_scale)))
+            if x + text_w > screen_w:
+                x = max(0.0, screen_w - text_w)
+
+            if font is not None:
+                draw_small_text(font, label, x + 1.0, y + 1.0, text_scale, shadow)
+                draw_small_text(font, label, x, y, text_scale, color)
+            else:
+                rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
+                rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)
 
     def _draw_atlas_sprite(
         self,
@@ -854,6 +930,7 @@ class WorldRenderer:
 
         self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
         self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+        self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
 
         if draw_aim_indicators and (not self.demo_mode_active):
             for player in self.players:
