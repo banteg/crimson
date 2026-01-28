@@ -574,54 +574,47 @@ class WorldRenderer:
             return False
         if alpha <= 0:
             return False
-        texture = self.bullet_trail_texture
-        grid = 1
-
-        angle = math.atan2(sy1 - sy0, sx1 - sx0)
-        dist = math.hypot(sx1 - sx0, sy1 - sy0)
-
-        if dist <= 1e-6:
+        dx = sx1 - sx0
+        dy = sy1 - sy0
+        dist = math.hypot(dx, dy)
+        if dist <= 1e-3:
             return False
+        thickness = max(1.0, 2.1 * scale)
+        half = thickness * 0.5
+        inv = 1.0 / dist
+        nx = dx * inv
+        ny = dy * inv
+        px = -ny
+        py = nx
+        ox = px * half
+        oy = py * half
+        x0 = sx0 - ox
+        y0 = sy0 - oy
+        x1 = sx0 + ox
+        y1 = sy0 + oy
+        x2 = sx1 + ox
+        y2 = sy1 + oy
+        x3 = sx1 - ox
+        y3 = sy1 - oy
 
-        dir_x = math.cos(angle)
-        dir_y = math.sin(angle)
-
-        if dist < 30.0 * scale:
-            # Short trails use a single bulletTrail sprite with slight rotation.
-            tint = rl.Color(255, 255, 255, int(alpha))
-            self._draw_atlas_sprite(
-                texture,
-                grid=grid,
-                frame=0,
-                x=sx1,
-                y=sy1,
-                scale=1.0 * scale,
-                rotation_rad=angle,
-                tint=tint,
-            )
-            return True
-
-        # Longer trails: draw repeated beam sprites with gradient alpha.
-        step = 16.0 * scale
-        seg_count = max(1, int(dist // step))
-        color = rl.Color(255, 255, 255, 255)
-
-        for idx in range(seg_count):
-            t = float(idx) / float(max(1, seg_count - 1))
-            px = sx0 + dir_x * dist * t
-            py = sy0 + dir_y * dist * t
-            seg_alpha = int(clamp(220.0 * (1.0 - t * 0.75) * float(alpha) / 255.0, 0.0, 255.0) + 0.5)
-            tint = rl.Color(color.r, color.g, color.b, seg_alpha)
-            self._draw_atlas_sprite(
-                texture,
-                grid=grid,
-                frame=0,
-                x=px,
-                y=py,
-                scale=0.55 * scale,
-                rotation_rad=angle,
-                tint=tint,
-            )
+        head = rl.Color(200, 200, 200, alpha)
+        tail = rl.Color(200, 200, 200, 0)
+        rl.rl_set_texture(self.bullet_trail_texture.id)
+        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(0.0, 0.0)
+        rl.rl_vertex2f(x0, y0)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(1.0, 0.0)
+        rl.rl_vertex2f(x1, y1)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(1.0, 0.5)
+        rl.rl_vertex2f(x2, y2)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(0.0, 0.5)
+        rl.rl_vertex2f(x3, y3)
+        rl.rl_end()
+        rl.rl_set_texture(0)
         return True
 
     def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
