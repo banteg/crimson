@@ -16,9 +16,11 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
     def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
         played.append(key)
 
-    monkeypatch.setattr("crimson.game_world.play_sfx", _play_sfx)
+    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
     world.audio = object()
     world.audio_rng = random.Random(0)
+    world.audio_router.audio = world.audio
+    world.audio_router.audio_rng = world.audio_rng
 
     player = world.players[0]
 
@@ -42,7 +44,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
     )
     player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
 
-    world._handle_player_audio(
+    world.audio_router.handle_player_audio(
         player,
         prev_shot_seq=prev_shot_seq,
         prev_reload_active=prev_reload_active,

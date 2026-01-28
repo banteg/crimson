@@ -224,15 +224,15 @@ Suggested layout (matches your docs + what already exists):
 
 Refactor pattern that works well during rewrites:
 
-1. **Extract `WorldState`** (pure, no `pyray`):
+1. [ ] **Extract `WorldState`** (pure, no `pyray`):
 
    * holds pools, timers, RNG
    * `step(dt, input) -> events` (events are plain dataclasses)
-2. **Extract `WorldRenderer`** (raylib):
+2. [x] **Extract `WorldRenderer`** (raylib):
 
    * owns textures
    * `draw(state, camera, ...)`
-3. **Extract `AudioRouter`**:
+3. [x] **Extract `AudioRouter`**:
 
    * maps events → `grim.audio.play_sfx/trigger_game_tune`
 
