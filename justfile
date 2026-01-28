@@ -23,6 +23,11 @@ test-cov *args:
 lint-imports:
     uv run lint-imports
 
+# Duplication
+dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
+    mkdir -p "$(dirname "{{out}}")"
+    uv run pylint --disable=all --enable=R0801 --min-similarity-lines={{min}} src | tee "{{out}}" || true
+
 # Profiling
 [unix]
 pyspy-game-record out="artifacts/profiling/pyspy.speedscope.json" duration="10" rate="100" format="speedscope" *args:

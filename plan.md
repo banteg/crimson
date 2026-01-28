@@ -41,7 +41,7 @@ Add a second rule that will matter later:
 
 * Fail CI if any file under `src/crimson/sim/` (once you create it) imports `pyray`.
 
-### 0.2 Add a duplication report you can run on demand [ ]
+### 0.2 Add a duplication report you can run on demand [x]
 
 Don’t try to “zero duplicates” overnight. Start by measuring.
 
