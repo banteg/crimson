@@ -291,7 +291,8 @@ class WorldRenderer:
         if info is None:
             return
         mirror_flag = info.mirror if mirror_long is None else mirror_long
-        index, mirrored, _mode = creature_anim_select_frame(
+        # Long-strip mirroring is handled by frame index selection, not texture flips.
+        index, _, _ = creature_anim_select_frame(
             phase,
             base_frame=info.base,
             mirror_long=mirror_flag,
@@ -306,8 +307,6 @@ class WorldRenderer:
         src_x = float((index % 8) * (texture.width // 8))
         src_y = float((index // 8) * (texture.height // 8))
         src = rl.Rectangle(src_x, src_y, float(texture.width) / 8.0, float(texture.height) / 8.0)
-        if mirrored:
-            src.width = -src.width
 
         rotation_deg = float(rotation_rad * _RAD_TO_DEG)
 
