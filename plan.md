@@ -245,7 +245,7 @@ This immediately prevents future “random rendering code inserted into simulati
 
 ---
 
-## Phase 5: Break up `crimson/game.py` without losing parity mapping [ ]
+## Phase 5: Break up `crimson/game.py` without losing parity mapping [x]
 
 `crimson/game.py` is large enough that duplicates and “wrong place” logic will accumulate there by default.
 
