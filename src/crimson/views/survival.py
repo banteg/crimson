@@ -114,6 +114,7 @@ class SurvivalView:
         self._perk_prompt_hover = False
         self._perk_menu_open = False
         self._perk_menu_selected = 0
+        self._perk_menu_backdrop_ms = 0.0
         self._perk_menu_assets = None
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
@@ -242,6 +243,7 @@ class SurvivalView:
         self._perk_prompt_hover = False
         self._perk_menu_open = False
         self._perk_menu_selected = 0
+        self._perk_menu_backdrop_ms = 0.0
 
     def close(self) -> None:
         self._game_over_ui.close()
@@ -521,6 +523,11 @@ class SurvivalView:
         else:
             self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
+        if self._perk_menu_open:
+            self._perk_menu_backdrop_ms = _clamp(self._perk_menu_backdrop_ms + dt_ui_ms, 0.0, 500.0)
+        else:
+            self._perk_menu_backdrop_ms = _clamp(self._perk_menu_backdrop_ms - dt_ui_ms, 0.0, 500.0)
+
         self._survival.elapsed_ms += dt * 1000.0
 
         if dt <= 0.0:
@@ -722,7 +729,9 @@ class SurvivalView:
         draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
 
     def draw(self) -> None:
-        self._world.draw(draw_aim_indicators=(not self._perk_menu_open) and (not self._game_over_active))
+        backdrop_t = _clamp(float(self._perk_menu_backdrop_ms) / 500.0, 0.0, 1.0)
+        world_alpha = 1.0 - backdrop_t
+        self._world.draw(draw_aim_indicators=(not self._game_over_active), entity_alpha=world_alpha)
 
         fade_alpha = 0.0
         if self._screen_fade is not None:
@@ -740,9 +749,10 @@ class SurvivalView:
                 elapsed_ms=self._survival.elapsed_ms,
                 score=self._player.experience,
                 font=self._small,
+                alpha=world_alpha,
             )
 
-        if not self._game_over_active:
+        if (not self._game_over_active) and (not self._perk_menu_open):
             # Minimal debug text.
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)

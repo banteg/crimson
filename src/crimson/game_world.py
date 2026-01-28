@@ -883,14 +883,27 @@ class GameWorld:
             return _clamp(age * 2.0, 0.0, 1.0)
         return 1.0
 
-    def _draw_bonus_pickups(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, scale: float) -> None:
+    def _draw_bonus_pickups(
+        self,
+        *,
+        cam_x: float,
+        cam_y: float,
+        scale_x: float,
+        scale_y: float,
+        scale: float,
+        alpha: float = 1.0,
+    ) -> None:
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
         if self.bonuses_texture is None:
             for bonus in self.state.bonus_pool.entries:
                 if bonus.bonus_id == 0:
                     continue
                 sx = (bonus.pos_x + cam_x) * scale_x
                 sy = (bonus.pos_y + cam_y) * scale_y
-                rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), rl.Color(220, 220, 90, 255))
+                tint = rl.Color(220, 220, 90, int(255 * alpha + 0.5))
+                rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), tint)
             return
 
         bubble_src = self._bonus_icon_src(self.bonuses_texture, 0)
@@ -901,13 +914,13 @@ class GameWorld:
                 continue
 
             fade = self._bonus_fade(float(bonus.time_left), float(bonus.time_max))
-            alpha = _clamp(fade * 0.9, 0.0, 1.0)
+            bubble_alpha = _clamp(fade * 0.9, 0.0, 1.0) * alpha
 
             sx = (bonus.pos_x + cam_x) * scale_x
             sy = (bonus.pos_y + cam_y) * scale_y
             bubble_dst = rl.Rectangle(float(sx), float(sy), float(bubble_size), float(bubble_size))
             bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
-            tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+            tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
             rl.draw_texture_pro(self.bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
 
             bonus_id = int(bonus.bonus_id)
@@ -984,12 +997,17 @@ class GameWorld:
         # grim_draw_circle_outline (grim.dll): segments = trunc(radius * 0.2 + 14.0)
         return max(3, int(radius * 0.2 + 14.0))
 
-    def _draw_aim_circle(self, *, x: float, y: float, radius: float) -> None:
+    def _draw_aim_circle(self, *, x: float, y: float, radius: float, alpha: float = 1.0) -> None:
         if radius <= 1e-3:
             return
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
 
-        fill = rl.Color(0, 0, 26, 77)  # ui_render_aim_indicators: rgba(0,0,0.1,0.3)
-        outline = rl.Color(255, 255, 255, int(255 * 0.55 + 0.5))
+        fill_a = int(77 * alpha + 0.5)  # ui_render_aim_indicators: rgba(0,0,0.1,0.3)
+        outline_a = int(255 * 0.55 * alpha + 0.5)
+        fill = rl.Color(0, 0, 26, fill_a)
+        outline = rl.Color(255, 255, 255, outline_a)
 
         rl.begin_blend_mode(rl.BLEND_ALPHA)
 
@@ -1100,7 +1118,11 @@ class GameWorld:
         scale_x: float,
         scale_y: float,
         scale: float,
+        alpha: float = 1.0,
     ) -> None:
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
         grid = 8
         cell = float(texture.width) / float(grid) if grid > 0 else float(texture.width)
         if cell <= 0.0:
@@ -1111,8 +1133,8 @@ class GameWorld:
         base_size = float(player.size) * scale
         base_scale = base_size / cell
 
-        tint = rl.Color(240, 240, 255, 255)
-        shadow_tint = rl.Color(0, 0, 0, 90)
+        tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
+        shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
 
         def draw(frame: int, *, x: float, y: float, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
@@ -1167,12 +1189,12 @@ class GameWorld:
                 rotation=float(player.aim_heading),
                 color=tint,
             )
-            if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3:
+            if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
                 flags = int(weapon.flags) if weapon is not None and weapon.flags is not None else 0
                 if (flags & 0x8) == 0:
-                    alpha = _clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0)
-                    if alpha > 1e-3:
+                    flash_alpha = _clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0) * alpha
+                    if flash_alpha > 1e-3:
                         size = base_size * (0.5 if (flags & 0x4) else 1.0)
                         heading = float(player.aim_heading) + math.pi / 2.0
                         offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
@@ -1186,7 +1208,7 @@ class GameWorld:
                         )
                         dst = rl.Rectangle(pos_x, pos_y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
-                        tint_flash = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+                        tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                         rl.draw_texture_pro(
                             self.muzzle_flash_texture,
@@ -1226,7 +1248,10 @@ class GameWorld:
             color=tint,
         )
 
-    def _draw_projectile(self, proj: object, *, scale: float) -> None:
+    def _draw_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
         texture = self.projs_texture
         type_id = int(getattr(proj, "type_id", 0))
         pos_x = float(getattr(proj, "pos_x", 0.0))
@@ -1236,14 +1261,15 @@ class GameWorld:
         angle = float(getattr(proj, "angle", 0.0))
 
         if self._is_bullet_trail_type(type_id):
-            alpha = int(_clamp(life, 0.0, 1.0) * 255)
+            life_alpha = int(_clamp(life, 0.0, 1.0) * 255)
+            alpha_byte = int(_clamp(float(life_alpha) * alpha, 0.0, 255.0) + 0.5)
             drawn = False
             if self.bullet_trail_texture is not None:
                 ox = float(getattr(proj, "origin_x", pos_x))
                 oy = float(getattr(proj, "origin_y", pos_y))
                 sx0, sy0 = self.world_to_screen(ox, oy)
                 sx1, sy1 = sx, sy
-                drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, alpha=alpha, scale=scale)
+                drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, alpha=alpha_byte, scale=scale)
 
             if self.bullet_texture is not None and life >= 0.39:
                 size = self._bullet_sprite_size(type_id, scale=scale)
@@ -1255,7 +1281,7 @@ class GameWorld:
                 )
                 dst = rl.Rectangle(float(sx), float(sy), size, size)
                 origin = rl.Vector2(size * 0.5, size * 0.5)
-                tint = rl.Color(220, 220, 220, alpha)
+                tint = rl.Color(220, 220, 220, alpha_byte)
                 rl.draw_texture_pro(self.bullet_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
                 drawn = True
 
@@ -1264,7 +1290,7 @@ class GameWorld:
 
         mapping = _KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
-            rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, 255))
+            rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))
             return
 
         grid, frame = mapping
@@ -1294,8 +1320,8 @@ class GameWorld:
                     t = float(idx) / float(max(1, seg_count - 1))
                     px = ox + dir_x * dist * t
                     py = oy + dir_y * dist * t
-                    alpha = int(220 * (1.0 - t * 0.75))
-                    tint = rl.Color(color.r, color.g, color.b, alpha)
+                    seg_alpha = int(_clamp(220.0 * (1.0 - t * 0.75) * alpha, 0.0, 255.0) + 0.5)
+                    tint = rl.Color(color.r, color.g, color.b, seg_alpha)
                     psx, psy = self.world_to_screen(px, py)
                     self._draw_atlas_sprite(
                         texture,
@@ -1309,8 +1335,8 @@ class GameWorld:
                     )
                 return
 
-        alpha = int(_clamp(life / 0.4, 0.0, 1.0) * 255)
-        tint = rl.Color(color.r, color.g, color.b, alpha)
+        alpha_byte = int(_clamp(_clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
+        tint = rl.Color(color.r, color.g, color.b, alpha_byte)
         self._draw_atlas_sprite(
             texture,
             grid=grid,
@@ -1381,22 +1407,28 @@ class GameWorld:
         rl.rl_set_texture(0)
         return True
 
-    def _draw_secondary_projectile(self, proj: object, *, scale: float) -> None:
+    def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
         sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
         proj_type = int(getattr(proj, "type_id", 0))
         if proj_type == 4:
-            rl.draw_circle(int(sx), int(sy), max(1.0, 12.0 * scale), rl.Color(200, 120, 255, 255))
+            rl.draw_circle(int(sx), int(sy), max(1.0, 12.0 * scale), rl.Color(200, 120, 255, int(255 * alpha + 0.5)))
             return
         if proj_type == 3:
             t = _clamp(float(getattr(proj, "lifetime", 0.0)), 0.0, 1.0)
             radius = float(getattr(proj, "speed", 1.0)) * t * 80.0
-            alpha = int((1.0 - t) * 180.0)
-            color = rl.Color(200, 120, 255, alpha)
+            alpha_byte = int(_clamp((1.0 - t) * 180.0 * alpha, 0.0, 255.0) + 0.5)
+            color = rl.Color(200, 120, 255, alpha_byte)
             rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
             return
-        rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, 200))
+        rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
 
-    def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float) -> None:
+    def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
+        alpha = _clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
         texture = self.particles_texture
         if texture is None:
             return
@@ -1462,6 +1494,7 @@ class GameWorld:
                     float(getattr(entry, "color_a", 1.0)),
                 )
             )
+            tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
 
             dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
@@ -1483,7 +1516,8 @@ class GameWorld:
                 draw_entry(entry)
         rl.end_blend_mode()
 
-    def draw(self, *, draw_aim_indicators: bool = True) -> None:
+    def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        entity_alpha = _clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_w, screen_h = self._camera_screen_size()
         cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
@@ -1506,6 +1540,9 @@ class GameWorld:
             y1 = (float(self.world_size) + cam_y) * scale_y
             rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
 
+        if entity_alpha <= 1e-3:
+            return
+
         for creature in self.creatures.entries:
             if not creature.active:
                 continue
@@ -1525,6 +1562,7 @@ class GameWorld:
                 if hitbox_size < 0.0:
                     # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
                     tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
+                tint_alpha = _clamp(tint_alpha * entity_alpha, 0.0, 1.0)
                 tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
 
                 size_scale = _clamp(float(creature.size) / 64.0, 0.25, 2.0)
@@ -1552,7 +1590,7 @@ class GameWorld:
                     if hitbox_size < 0.0:
                         shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
                         shadow_a = max(0.0, shadow_a)
-                    shadow_alpha = int(_clamp(shadow_a * 255.0, 0.0, 255.0) + 0.5)
+                    shadow_alpha = int(_clamp(shadow_a * entity_alpha * 255.0, 0.0, 255.0) + 0.5)
                 self._draw_creature_sprite(
                     texture,
                     type_id=type_id or CreatureTypeId.ZOMBIE,
@@ -1571,7 +1609,8 @@ class GameWorld:
             else:
                 sx = (creature.x + cam_x) * scale_x
                 sy = (creature.y + cam_y) * scale_y
-                rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), rl.Color(220, 90, 90, 255))
+                tint = rl.Color(220, 90, 90, int(255 * entity_alpha + 0.5))
+                rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), tint)
 
         if self.players:
             texture = self.creature_textures.get(_CREATURE_ASSET.get(CreatureTypeId.TROOPER))
@@ -1585,20 +1624,22 @@ class GameWorld:
                         scale_x=scale_x,
                         scale_y=scale_y,
                         scale=scale,
+                        alpha=entity_alpha,
                     )
                 else:
                     sx = (player.pos_x + cam_x) * scale_x
                     sy = (player.pos_y + cam_y) * scale_y
-                    rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+                    tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
+                    rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
 
         for proj in self.state.projectiles.iter_active():
-            self._draw_projectile(proj, scale=scale)
+            self._draw_projectile(proj, scale=scale, alpha=entity_alpha)
 
         for proj in self.state.secondary_projectiles.iter_active():
-            self._draw_secondary_projectile(proj, scale=scale)
+            self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
 
-        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale)
-        self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y)
+        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
+        self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
 
         if draw_aim_indicators and (not self.demo_mode_active):
             for player in self.players:
@@ -1611,14 +1652,14 @@ class GameWorld:
                 sx = (aim_x + cam_x) * scale_x
                 sy = (aim_y + cam_y) * scale_y
                 screen_radius = max(1.0, radius * scale)
-                self._draw_aim_circle(x=sx, y=sy, radius=screen_radius)
+                self._draw_aim_circle(x=sx, y=sy, radius=screen_radius, alpha=entity_alpha)
                 reload_timer = float(getattr(player, "reload_timer", 0.0))
                 reload_max = float(getattr(player, "reload_timer_max", 0.0))
                 if reload_max > 1e-6 and reload_timer > 1e-6:
                     progress = reload_timer / reload_max
                     if progress > 0.0:
                         ms = int(progress * 60000.0)
-                        self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=1.0)
+                        self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=entity_alpha)
 
     def update_camera(self, dt: float) -> None:
         if not self.players:

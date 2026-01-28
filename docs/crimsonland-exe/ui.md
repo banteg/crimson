@@ -40,6 +40,17 @@ A common menu loop that:
 2) Runs `ui_elements_update_and_render`.
 3) Draws menu content and buttons (`ui_button_update`).
 
+### TODO (runtime)
+
+When the perk selection panel opens, the original game fades out the gameplay layers (player, monsters, projectiles, HUD),
+leaving the terrain as the backdrop.
+
+Decompile supports this being driven by the `ui_transition_alpha` gates in the world passes (`player_render_overlays`,
+`creature_render_all`, `projectile_render`, `bonus_render`), while `terrain_render` still runs.
+
+Capture `ui_elements_timeline` / `ui_transition_alpha` during perk selection (enter/exit) to confirm the exact direction
+and timing (expected ~500ms from `DAT_0048eb48`).
+
 ## UI element render (ui_element_render / FUN_00446c40)
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
