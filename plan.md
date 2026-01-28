@@ -5,7 +5,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 ## Milestones
 
 - [ ] 0) Lock authoritative references per mode
-- [ ] 1) Fix game mode ID consistency (avoid ghosts)
+- [x] 1) Fix game mode ID consistency (avoid ghosts)
 - [ ] 2) Extract `BaseGameplayMode` (keep Survival identical)
 - [ ] 3) Implement Rush (end-to-end)
 - [ ] 4) Implement Quests (end-to-end)
@@ -52,22 +52,18 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 
 Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don’t silently break as modes are added.
 
-- [ ] Create a single enum-like source of truth (even if still stored as ints)
-  - [ ] `1 = Survival`
-  - [ ] `2 = Rush`
-  - [ ] `3 = Quests`
-  - [ ] `4 = Typ-o`
-  - [ ] `8 = Tutorial`
-- [ ] Stop inferring “survival progression enabled” from `game_mode == 3`
-  - [ ] Add explicit `perk_progression_enabled: bool` and `perk_prompt_enabled: bool`
-  - [ ] Rush: perks disabled (prompt suppressed)
-  - [ ] Quests: perks enabled (unless evidence says otherwise)
-  - [ ] Typ-o: no perk prompt
-  - [ ] Tutorial: fixed/special-case perks
-- [ ] Add regression tests (tiny is fine)
-  - [ ] `scores_path_for_config(mode=3)` resolves to `questX_Y.hi`
-  - [ ] `rank_index(mode=3)` sorts ascending time (quests)
-  - [ ] `MODE_3_ONLY` behaves as “mode 3 only” (don’t accidentally “fix” it wrong)
+- [x] Create a single enum-like source of truth (even if still stored as ints)
+  - [x] `1 = Survival`
+  - [x] `2 = Rush`
+  - [x] `3 = Quests`
+  - [x] `4 = Typ-o`
+  - [x] `8 = Tutorial`
+- [x] Stop inferring perk progression from `game_mode`
+  - [x] Add explicit `perk_progression_enabled: bool` (passed into `GameWorld.update`)
+- [x] Add regression tests (tiny is fine)
+  - [x] `scores_path_for_config(mode=3)` resolves to `questX_Y.hi`
+  - [x] `rank_index(mode=3)` sorts ascending time (quests)
+  - [x] `MODE_3_ONLY` behaves as “mode 3 only” (don’t accidentally “fix” it wrong)
 
 ---
 
