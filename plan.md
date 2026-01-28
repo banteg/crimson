@@ -138,7 +138,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] call `tick_quest_mode_spawns(...)` (already exists)
   - [x] apply spawns via `creature_pool.spawn_template(...)`
   - [x] update `no_creatures_timer_ms` (for forced-spawn rule)
-- [ ] Completion detection
+- [x] Completion detection
   - [x] if no active creatures and spawn table empty: start `completion_transition_ms` if not started
   - [x] after ~1000ms: transition to Quest Results view
 - [x] Failure detection
