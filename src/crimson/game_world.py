@@ -145,11 +145,10 @@ class GameWorld:
             loader = TextureLoader(
                 assets_root=self.assets_dir,
                 cache=self.texture_cache,
-                strict=False,
                 missing=self.missing_assets,
             )
         else:
-            loader = TextureLoader.from_assets_root(self.assets_dir, strict=False)
+            loader = TextureLoader.from_assets_root(self.assets_dir)
             loader.missing = self.missing_assets
             if loader.cache is not None:
                 self.texture_cache = loader.cache
@@ -323,11 +322,8 @@ class GameWorld:
         self.ground = None
 
         if self._texture_loader is not None:
-            cache_owned = self._texture_loader._cache_owned
             self._texture_loader.unload()
             self._texture_loader = None
-            if cache_owned:
-                self.texture_cache = None
 
         self.creature_textures.clear()
         self.projs_texture = None

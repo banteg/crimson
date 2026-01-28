@@ -34,7 +34,7 @@ def _ensure_texture_cache(state: GameState) -> PaqTextureCache:
 
 def load_menu_assets(state: GameState) -> MenuAssets:
     cache = _ensure_texture_cache(state)
-    loader = TextureLoader(assets_root=state.assets_dir, cache=cache, strict=True)
+    loader = TextureLoader(assets_root=state.assets_dir, cache=cache)
     return MenuAssets(
         sign=loader.get(name="ui_signCrimson", paq_rel="ui/ui_signCrimson.jaz"),
         item=loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz"),

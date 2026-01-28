@@ -87,7 +87,7 @@ def hud_ui_scale(screen_w: float, screen_h: float) -> float:
 
 
 def load_hud_assets(assets_root: Path) -> HudAssets:
-    loader = TextureLoader.from_assets_root(assets_root, strict=False)
+    loader = TextureLoader.from_assets_root(assets_root)
     return HudAssets(
         game_top=loader.get(name="iGameUI", paq_rel="ui/ui_gameTop.jaz", fs_rel="ui/ui_gameTop.png"),
         life_heart=loader.get(name="iHeart", paq_rel="ui/ui_lifeHeart.jaz", fs_rel="ui/ui_lifeHeart.png"),

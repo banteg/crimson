@@ -190,7 +190,7 @@ class PerkMenuAssets:
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
-    loader = TextureLoader.from_assets_root(assets_root, strict=False)
+    loader = TextureLoader.from_assets_root(assets_root)
     return PerkMenuAssets(
         menu_panel=loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz", fs_rel="ui/ui_menuPanel.png"),
         title_pick_perk=loader.get(
