@@ -16,24 +16,16 @@ from .bonuses import BonusId
 from .camera import camera_shake_update
 from .creatures.anim import creature_anim_advance_phase, creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
-from .creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
+from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
-from .gameplay import (
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    bonus_update,
-    perk_active,
-    player_update,
-    survival_progression_update,
-    weapon_assign_player,
-)
+from .gameplay import GameplayState, PlayerInput, PlayerState, perk_active, weapon_assign_player
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
-from .sim.world_defs import BEAM_TYPES, CREATURE_ANIM, CREATURE_ASSET
+from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
+from .sim.world_state import WorldState
 from .weapons import WEAPON_TABLE
 
 GAME_MODE_SURVIVAL = 3
@@ -54,6 +46,7 @@ class GameWorld:
     audio_rng: random.Random | None = None
     audio_router: AudioRouter = field(init=False)
     renderer: WorldRenderer = field(init=False)
+    world_state: WorldState = field(init=False)
 
     spawn_env: SpawnEnv = field(init=False)
     state: GameplayState = field(init=False)
@@ -83,16 +76,16 @@ class GameWorld:
     _texture_loader: TextureLoader | None = field(init=False, default=None)
 
     def __post_init__(self) -> None:
-        self.spawn_env = SpawnEnv(
-            terrain_width=float(self.world_size),
-            terrain_height=float(self.world_size),
+        self.world_state = WorldState.build(
+            world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
             difficulty_level=int(self.difficulty_level),
         )
-        self.state = GameplayState()
-        self.players: list[PlayerState] = []
-        self.creatures = CreaturePool(env=self.spawn_env)
+        self.spawn_env = self.world_state.spawn_env
+        self.state = self.world_state.state
+        self.players = self.world_state.players
+        self.creatures = self.world_state.creatures
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
         self.camera_x = -1.0
@@ -118,14 +111,21 @@ class GameWorld:
         spawn_x: float | None = None,
         spawn_y: float | None = None,
     ) -> None:
-        self.state = GameplayState()
+        self.world_state = WorldState.build(
+            world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            hardcore=bool(self.hardcore),
+            difficulty_level=int(self.difficulty_level),
+        )
+        self.spawn_env = self.world_state.spawn_env
+        self.state = self.world_state.state
+        self.players = self.world_state.players
+        self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
-        self.creatures = CreaturePool(env=self.spawn_env)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
-        self.players = []
         base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
         base_y = float(self.world_size) * 0.5 if spawn_y is None else float(spawn_y)
         for idx in range(max(1, int(player_count))):
@@ -374,30 +374,29 @@ class GameWorld:
 
         prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in self.players]
 
-        # `effects_update` runs early in the native frame loop, before creature/projectile updates.
-        self.state.effects.update(dt, fx_queue=self.fx_queue)
-
-        hits = self.state.projectiles.update(
+        events = self.world_state.step(
             dt,
-            self.creatures.entries,
+            inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self._damage_scale_by_type,
-            rng=self.state.rng.rand,
-            runtime_state=self.state,
+            detail_preset=detail_preset,
+            fx_queue=self.fx_queue,
+            fx_queue_rotated=self.fx_queue_rotated,
+            auto_pick_perks=auto_pick_perks,
+            game_mode=game_mode,
+            survival_mode=game_mode == GAME_MODE_SURVIVAL,
         )
-        self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
-        if hits:
-            self._queue_projectile_decals(hits)
+
+        if events.hits:
+            self._queue_projectile_decals(events.hits)
             self.audio_router.play_hit_sfx(
-                hits,
+                events.hits,
                 game_mode=game_mode,
                 rand=self.state.rng.rand,
                 beam_types=BEAM_TYPES,
             )
 
         for idx, player in enumerate(self.players):
-            input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player_update(player, input_state, dt, self.state, world_size=float(self.world_size))
             if idx < len(prev_audio):
                 prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
                 self.audio_router.handle_player_audio(
@@ -407,66 +406,16 @@ class GameWorld:
                     prev_reload_timer=prev_reload_timer,
                 )
 
-        creature_result = self.creatures.update(
-            dt,
-            state=self.state,
-            players=self.players,
-            detail_preset=detail_preset,
-            world_width=float(self.world_size),
-            world_height=float(self.world_size),
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
-        )
-        if creature_result.deaths:
-            self.audio_router.play_death_sfx(creature_result.deaths, rand=self.state.rng.rand)
+        if events.deaths:
+            self.audio_router.play_death_sfx(events.deaths, rand=self.state.rng.rand)
 
-        if dt > 0.0:
-            self._advance_creature_anim(dt)
-
-        pickups = bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
-        if pickups:
-            for pickup in pickups:
+        if events.pickups:
+            for _ in events.pickups:
                 self.audio_router.play_sfx("sfx_ui_bonus")
-                self.state.effects.spawn_burst(
-                    pos_x=float(pickup.pos_x),
-                    pos_y=float(pickup.pos_y),
-                    count=12,
-                    rand=self.state.rng.rand,
-                    detail_preset=detail_preset,
-                    lifetime=0.4,
-                    scale_step=0.1,
-                    color_r=0.4,
-                    color_g=0.5,
-                    color_b=1.0,
-                    color_a=0.5,
-                )
-                if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
-                    self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
-                        detail_preset=detail_preset,
-                        color_r=0.6,
-                        color_g=0.6,
-                        color_b=1.0,
-                        color_a=1.0,
-                    )
-                elif pickup.bonus_id == int(BonusId.FREEZE):
-                    self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
-                        detail_preset=detail_preset,
-                        color_r=0.3,
-                        color_g=0.5,
-                        color_b=0.8,
-                        color_a=1.0,
-                    )
-
-        if game_mode == GAME_MODE_SURVIVAL:
-            survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
 
         self._bake_fx_queues()
         self.update_camera(dt)
-        return hits
+        return events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
         rand = self.state.rng.rand
@@ -563,49 +512,6 @@ class GameWorld:
                         detail_preset=detail_preset,
                         fx_toggle=fx_toggle,
                     )
-
-    def _advance_creature_anim(self, dt: float) -> None:
-        for creature in self.creatures.entries:
-            if not (creature.active and creature.hp > 0.0):
-                continue
-            try:
-                type_id = CreatureTypeId(int(creature.type_id))
-            except ValueError:
-                continue
-            info = CREATURE_ANIM.get(type_id)
-            if info is None:
-                continue
-            creature.anim_phase, _ = creature_anim_advance_phase(
-                creature.anim_phase,
-                anim_rate=info.anim_rate,
-                move_speed=float(creature.move_speed),
-                dt=dt,
-                size=float(creature.size),
-                local_scale=float(getattr(creature, "move_scale", 1.0)),
-                flags=creature.flags,
-                ai_mode=int(creature.ai_mode),
-            )
-
-    def _advance_player_anim(self, dt: float, prev_positions: list[tuple[float, float]]) -> None:
-        info = CREATURE_ANIM.get(CreatureTypeId.TROOPER)
-        if info is None:
-            return
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_positions):
-                continue
-            prev_x, prev_y = prev_positions[idx]
-            speed = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
-            move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
-            player.move_phase, _ = creature_anim_advance_phase(
-                player.move_phase,
-                anim_rate=info.anim_rate,
-                move_speed=move_speed,
-                dt=dt,
-                size=float(player.size),
-                local_scale=1.0,
-                flags=CreatureFlags(0),
-                ai_mode=0,
-            )
 
     def _bake_fx_queues(self) -> None:
         if self.ground is None or self.fx_textures is None:

@@ -212,7 +212,7 @@ Suggested layout (matches your docs + what already exists):
 * `crimson/ui/` stays as-is.
 * `crimson/views/` stays as tooling/debug, but should depend on `modes` and `ui`, not reinvent them.
 
-### 4.2 Split `GameWorld` into “state + renderer + services” (keep a façade) [ ]
+### 4.2 Split `GameWorld` into “state + renderer + services” (keep a façade) [x]
 
 `crimson/game_world.py` currently mixes:
 
@@ -224,7 +224,7 @@ Suggested layout (matches your docs + what already exists):
 
 Refactor pattern that works well during rewrites:
 
-1. [ ] **Extract `WorldState`** (pure, no `pyray`):
+1. [x] **Extract `WorldState`** (pure, no `pyray`):
 
    * holds pools, timers, RNG
    * `step(dt, input) -> events` (events are plain dataclasses)
@@ -360,7 +360,7 @@ If you want the fastest impact on “duplicates + wrong place code”, do these 
 1. [x] **Fix `grim.fx_queue` importing `crimson.*`** (hard boundary violation).
 2. [x] **Centralize asset resolve/load** (kills repeated `_resolve_asset` patterns everywhere).
 3. [x] **Unify MSVCRT rand() implementation** (easy win, removes cross-package duplication pressure).
-4. [ ] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
+4. [x] **Split `GameWorld` into state/renderer/audio-router** (stops future tangling).
 5. [ ] **Extract survival mode controller** so `game.py` and `views/survival.py` don’t diverge.
 6. [ ] **Start shrinking `game.py`** by extracting screens/panels into modules.
 
