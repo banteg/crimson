@@ -153,7 +153,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 4.4 Quest Results screen (`quest_results_screen_update`)
 
-- [ ] Create a dedicated results view/UI (not `GameOverUi`)
+- [x] Create a dedicated results view/UI (not `GameOverUi`)
 - [x] Compute final time (match decompile)
   - [x] `base_time_ms = spawn_timeline_ms`
   - [x] `life_bonus_ms = round(p1_health) + round(p2_health if 2p)`
@@ -168,7 +168,11 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [ ] Unlock popups + persistence
   - [ ] if quest grants weapon/perk and it’s newly unlocked: bump `status.weapon_unlock_index` / `status.perk_unlock_index`
   - [ ] show “Weapon unlocked” / “Perk unlocked”
-- [ ] Buttons: Play Next / Play Again / High scores / Main menu
+- [ ] Buttons
+  - [x] Play Next
+  - [x] Play Again
+  - [ ] High scores
+  - [x] Main menu
 
 ### 4.5 Quest Failed screen (`quest_failed_screen_update`)
 
