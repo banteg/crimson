@@ -69,8 +69,12 @@ class PerkMenuDebugView:
         self._show_prompt = True
         self._panel_slide_x = 0.0
         self._prompt_alpha = 1.0
+        self._prompt_pulse = 0.0
+        self._prompt_hover = False
+        self._prompt_rect: rl.Rectangle | None = None
         self._cancel_button = UiButtonState("Cancel")
         self._debug_overlay = True
+        self._show_prompt_rect = False
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -109,6 +113,27 @@ class PerkMenuDebugView:
         hinge_x = screen_w + PERK_PROMPT_OUTSET_X
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
         return hinge_x, hinge_y
+
+    def _perk_prompt_rect(self, label: str) -> rl.Rectangle:
+        hinge_x, hinge_y = self._perk_prompt_hinge()
+        if self._assets is not None and self._assets.menu_item is not None:
+            tex = self._assets.menu_item
+            bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
+            bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
+            local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
+            local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
+            return rl.Rectangle(
+                float(hinge_x + local_x),
+                float(hinge_y + local_y),
+                float(bar_w),
+                float(bar_h),
+            )
+
+        text_w = float(_ui_text_width(self._small, label, 1.0))
+        text_h = 20.0
+        x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
+        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
+        return rl.Rectangle(x, y, text_w, text_h)
 
     def _draw_perk_prompt(self) -> None:
         if not self._show_prompt:
@@ -149,10 +174,18 @@ class PerkMenuDebugView:
             local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
             w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
             h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
+            pulse_alpha = (100.0 + float(int(self._prompt_pulse * 155.0 / 1000.0))) / 255.0
+            pulse_alpha = max(0.0, min(1.0, pulse_alpha))
+            label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
+            pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
             dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
+            if label_alpha > 0.0:
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
+                rl.end_blend_mode()
 
     def update(self, dt: float) -> None:
         dt_ms = float(min(dt, 0.1) * 1000.0)
@@ -171,6 +204,8 @@ class PerkMenuDebugView:
             self._show_menu = not self._show_menu
         if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._show_prompt = not self._show_prompt
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
+            self._show_prompt_rect = not self._show_prompt_rect
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
             self._panel_slide_x = 0.0
             self._choice_count = 6
@@ -179,6 +214,8 @@ class PerkMenuDebugView:
             self._master_owned = False
             self._show_menu = True
             self._show_prompt = True
+            self._prompt_pulse = 0.0
+            self._prompt_hover = False
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
             self._choice_count = max(1, self._choice_count - 1)
@@ -201,6 +238,19 @@ class PerkMenuDebugView:
             self._panel_slide_x += step
 
         self._panel_slide_x = _clamp(self._panel_slide_x, -self._layout.panel_w, 0.0)
+
+        self._prompt_hover = False
+        self._prompt_rect = None
+        if self._show_prompt:
+            label = self._prompt_label()
+            if label:
+                rect = self._perk_prompt_rect(label)
+                self._prompt_rect = rect
+                mouse = rl.get_mouse_position()
+                self._prompt_hover = rl.check_collision_point_rec(mouse, rect)
+
+        pulse_delta = dt_ms * (6.0 if self._prompt_hover else -2.0)
+        self._prompt_pulse = _clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         if not self._show_menu or self._assets is None:
             return
@@ -264,6 +314,8 @@ class PerkMenuDebugView:
             return
 
         self._draw_perk_prompt()
+        if self._show_prompt_rect and self._prompt_rect is not None:
+            rl.draw_rectangle_lines_ex(self._prompt_rect, 1.0, rl.Color(255, 0, 255, 255))
 
         if self._show_menu and self._assets is not None:
             choices = self._choices()
@@ -353,7 +405,7 @@ class PerkMenuDebugView:
         line_h = float(self._small.cell_size * scale) if self._small is not None else float(20 * scale)
         lines = [
             "Perk menu render debug (F1 hide)",
-            "O toggle menu  P toggle prompt  E/M toggle Expert/Master",
+            "O toggle menu  P toggle prompt  H hover rect  E/M toggle Expert/Master",
             "Left/Right slide_x (hold Shift for bigger)  [/] choices  Up/Down selection  R reset",
             f"slide_x={self._panel_slide_x:.1f} choices={self._choice_count} selected={self._selected}",
         ]

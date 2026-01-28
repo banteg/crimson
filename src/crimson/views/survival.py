@@ -131,6 +131,7 @@ class SurvivalView:
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
+        self._perk_prompt_pulse = 0.0
         self._perk_menu_open = False
         self._perk_menu_selected = 0
         self._perk_menu_timeline_ms = 0.0
@@ -261,6 +262,7 @@ class SurvivalView:
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
+        self._perk_prompt_pulse = 0.0
         self._perk_menu_open = False
         self._perk_menu_selected = 0
         self._perk_menu_timeline_ms = 0.0
@@ -375,16 +377,11 @@ class SurvivalView:
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
 
-            # Mirrors ui_element_layout_calc bounds for hover/click.
-            hit_x0 = local_x + bar_w * 0.54
-            hit_y0 = local_y + bar_h * 0.28
-            hit_x1 = local_x + bar_w - bar_w * 0.05
-            hit_y1 = local_y + bar_h - bar_h * 0.1
             return rl.Rectangle(
-                float(hinge_x + hit_x0),
-                float(hinge_y + hit_y0),
-                float(max(0.0, hit_x1 - hit_x0)),
-                float(max(0.0, hit_y1 - hit_y0)),
+                float(hinge_x + local_x),
+                float(hinge_y + local_y),
+                float(bar_w),
+                float(bar_h),
             )
 
         margin = 16.0 * scale
@@ -537,6 +534,7 @@ class SurvivalView:
 
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
 
+        self._perk_prompt_hover = False
         if self._perk_menu_open:
             self._perk_menu_handle_input(dt_ui_ms)
             dt = 0.0
@@ -552,7 +550,12 @@ class SurvivalView:
             if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
                 not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
             ):
+                self._perk_prompt_pulse = 1000.0
                 self._open_perk_menu()
+
+        if not self._paused and not self._game_over_active:
+            pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
+            self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         if self._paused or self._player.health <= 0.0 or perk_menu_active:
             dt = 0.0
@@ -663,10 +666,18 @@ class SurvivalView:
             local_y = PERK_PROMPT_LEVEL_UP_BASE_OFFSET_Y * PERK_PROMPT_LEVEL_UP_SCALE + PERK_PROMPT_LEVEL_UP_SHIFT_Y
             w = PERK_PROMPT_LEVEL_UP_BASE_W * PERK_PROMPT_LEVEL_UP_SCALE
             h = PERK_PROMPT_LEVEL_UP_BASE_H * PERK_PROMPT_LEVEL_UP_SCALE
+            pulse_alpha = (100.0 + float(int(self._perk_prompt_pulse * 155.0 / 1000.0))) / 255.0
+            pulse_alpha = max(0.0, min(1.0, pulse_alpha))
+            label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
+            pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
             dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
             origin = rl.Vector2(float(-local_x), float(-local_y))
-            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
+            rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
+            if label_alpha > 0.0:
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
+                rl.end_blend_mode()
 
     def _draw_perk_menu(self) -> None:
         if self._game_over_active:
