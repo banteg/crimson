@@ -57,7 +57,6 @@ out vec4 finalColor;
 #define MAX_CIRCLES {_SDF_SHADOW_MAX_CIRCLES}
 
 uniform vec2 u_resolution;
-uniform vec4 u_ambient;
 uniform vec4 u_light_color;
 uniform vec2 u_light_pos;
 uniform float u_light_range;
@@ -110,7 +109,7 @@ void main()
     float dist = length(to_light);
     if (dist <= 1e-4 || dist > u_light_range)
     {{
-        finalColor = vec4(u_ambient.rgb, 1.0);
+        finalColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }}
 
@@ -133,9 +132,8 @@ void main()
         shadow = softshadow(p, rd, 2.0, maxt, k);
     }}
 
-    vec3 lm = u_ambient.rgb + u_light_color.rgb * (atten * shadow);
-    lm = clamp(lm, 0.0, 1.0);
-    finalColor = vec4(lm, 1.0);
+    vec3 add = u_light_color.rgb * (atten * shadow);
+    finalColor = vec4(clamp(add, 0.0, 1.0), 1.0);
 }}
 """
 
@@ -269,7 +267,6 @@ class LightingDebugView:
 
         self._sdf_shader_locs = {
             "u_resolution": rl.get_shader_location(shader, "u_resolution"),
-            "u_ambient": rl.get_shader_location(shader, "u_ambient"),
             "u_light_color": rl.get_shader_location(shader, "u_light_color"),
             "u_light_pos": rl.get_shader_location(shader, "u_light_pos"),
             "u_light_range": rl.get_shader_location(shader, "u_light_range"),
@@ -468,11 +465,9 @@ class LightingDebugView:
             rl.set_shader_value(shader, loc, rl.ffi.new("int *", int(value)), rl.SHADER_UNIFORM_INT)
 
         rl.begin_texture_mode(self._light_rt)
+        rl.clear_background(self._ambient)
         rl.begin_shader_mode(shader)
         set_vec2("u_resolution", w, h)
-
-        amb = self._ambient
-        set_vec4("u_ambient", float(amb.r) / 255.0, float(amb.g) / 255.0, float(amb.b) / 255.0, 1.0)
 
         lt = self._light_tint
         set_vec4("u_light_color", float(lt.r) / 255.0, float(lt.g) / 255.0, float(lt.b) / 255.0, 1.0)
@@ -497,7 +492,9 @@ class LightingDebugView:
                 rl.SHADER_UNIFORM_VEC4,
                 len(circles),
             )
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
         rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+        rl.end_blend_mode()
         rl.end_shader_mode()
         rl.end_texture_mode()
         return True
