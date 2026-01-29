@@ -4,7 +4,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 
 ## Milestones
 
-- [ ] 0) Lock authoritative references per mode
+- [x] 0) Lock authoritative references per mode
 - [x] 1) Fix game mode ID consistency (avoid ghosts)
 - [x] 2) Extract `BaseGameplayMode` (keep Survival identical)
 - [x] 3) Implement Rush (end-to-end)
@@ -18,8 +18,8 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 ## 0) Lock down authoritative references per mode
 
 - [x] Verify/record the exact decompile entrypoints you’re matching (names + addrs)
-- [ ] Promote stable names into `analysis/ghidra/maps/name_map.json` (when missing)
-- [ ] Re-run headless exports after map changes (prefer `just ghidra-exe`, and `just ghidra-grim` when syncing)
+- [x] Promote stable names into `analysis/ghidra/maps/name_map.json` (already present for referenced entrypoints)
+- [x] Re-run headless exports after map changes (N/A: no map changes in this milestone)
 
 ### Quests
 
