@@ -108,6 +108,12 @@ Outputs:
 - `analysis/frida/player_unknown_offsets.json` — hot unknown player offsets, if tracker ran.
 - `analysis/frida/unmapped_calls.json` — callsites we couldn’t map to functions.
 
+Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl`) against the Python demo trial model:
+
+```bash
+uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
+```
+
 ## 4) Promote evidence into Ghidra maps
 
 Review the summary + candidates, then manually promote good entries into:
