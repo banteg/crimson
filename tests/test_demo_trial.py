@@ -83,6 +83,20 @@ def test_demo_trial_overlay_grace_allows_quest_mode() -> None:
     assert info.kind == "none"
 
 
+def test_demo_trial_overlay_shows_tier_limit_during_grace() -> None:
+    info = demo_trial_overlay_info(
+        demo_build=True,
+        game_mode_id=3,
+        global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
+        quest_grace_elapsed_ms=1_000,
+        quest_stage_major=2,
+        quest_stage_minor=1,
+    )
+    assert info.visible is True
+    assert info.kind == "quest_tier_limit"
+    assert info.remaining_ms == DEMO_QUEST_GRACE_TIME_MS - 1_000
+
+
 def test_tick_demo_trial_timers_accumulates_and_starts_grace() -> None:
     used_ms, grace_ms = tick_demo_trial_timers(
         demo_build=True,

@@ -98,26 +98,21 @@ def demo_trial_overlay_info(
     used_ms = max(0, int(global_playtime_ms))
     grace_ms = max(0, int(quest_grace_elapsed_ms))
 
-    global_remaining_ms = DEMO_TOTAL_PLAY_TIME_MS - used_ms
-    grace_remaining_ms = DEMO_QUEST_GRACE_TIME_MS - grace_ms
+    global_remaining_ms = max(0, DEMO_TOTAL_PLAY_TIME_MS - used_ms)
+    grace_remaining_ms = max(0, DEMO_QUEST_GRACE_TIME_MS - grace_ms)
 
-    # Demo tier gating: classic demo lets you play stage 1 quests only; once the
-    # player reaches stage > 1, it shows the upsell overlay even if time remains.
-    if (
-        mode_id == 3
-        and used_ms < DEMO_TOTAL_PLAY_TIME_MS
-        and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
-    ):
-        return DemoTrialOverlayInfo(
-            True,
-            "quest_tier_limit",
-            int(global_remaining_ms),
-            format_demo_trial_time(global_remaining_ms),
-        )
+    tier_locked = mode_id == 3 and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
 
     if grace_ms > 0:
         if grace_remaining_ms <= 0:
             return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+        if tier_locked:
+            return DemoTrialOverlayInfo(
+                True,
+                "quest_tier_limit",
+                int(grace_remaining_ms),
+                format_demo_trial_time(grace_remaining_ms),
+            )
         # During the quest-only grace period, the classic demo blocks other modes
         # and points the player back to Quests.
         if mode_id != 3:
@@ -131,4 +126,15 @@ def demo_trial_overlay_info(
 
     if global_remaining_ms <= 0:
         return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+
+    # Demo tier gating: the classic demo lets you play stage 1 quests only; once
+    # the player reaches stage > 1, it shows the upsell overlay even if time remains.
+    if tier_locked:
+        return DemoTrialOverlayInfo(
+            True,
+            "quest_tier_limit",
+            int(global_remaining_ms),
+            format_demo_trial_time(global_remaining_ms),
+        )
+
     return DemoTrialOverlayInfo(False, "none", int(global_remaining_ms), format_demo_trial_time(global_remaining_ms))
