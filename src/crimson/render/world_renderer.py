@@ -432,6 +432,13 @@ class WorldRenderer:
 
         tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
         shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
+        overlay_tint = tint
+        if len(self.players) > 1:
+            index = int(getattr(player, "index", 0))
+            if index == 0:
+                overlay_tint = rl.Color(77, 77, 255, tint.a)
+            else:
+                overlay_tint = rl.Color(255, 140, 89, tint.a)
 
         def draw(frame: int, *, x: float, y: float, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
@@ -490,7 +497,7 @@ class WorldRenderer:
                 y=sy + recoil_y,
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
-                color=tint,
+                color=overlay_tint,
             )
 
             if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
@@ -545,7 +552,7 @@ class WorldRenderer:
             rotation=float(player.aim_heading),
             color=shadow_tint,
         )
-        draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=tint)
+        draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
     def _draw_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)

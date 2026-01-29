@@ -17,7 +17,7 @@ This document catalogs discrepancies between the current Python/Raylib rendering
 - [x] 10. Death Frame Calculation (match UV run 32..52 and hold at 52)
 - [ ] 12. Missing Radioactive Perk Aura (pulsing green aura)
 - [ ] 13. Missing Shield Effect Rendering (two rotating bubbles)
-- [ ] 14. Player Color Tinting in Multiplayer (blue/orange tint)
+- [x] 14. Player Color Tinting in Multiplayer (blue/orange tint)
 
 ### Defer (needs more evidence / larger refactor)
 - 4. Missing Batch Rendering (performance)
