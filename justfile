@@ -234,6 +234,11 @@ frida-copy-share:
         cp -av "$f" {{frida_share_dir}}/; \
     done
 
+[unix]
+frida-sync-share:
+    mkdir -p {{share_dir}}
+    cp -av scripts/frida/*.js scripts/frida/*.json {{share_dir}}/
+
 # Screenshots
 [windows]
 game-screenshot:

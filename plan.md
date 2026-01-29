@@ -478,6 +478,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Add retail-only playtime override for the overlay tracer (`forcePlaytimeMs`)
   - [x] Add a concrete capture wishlist doc (`docs/frida/demo-trial-overlay.md`)
   - [x] Add log sampling for the overlay tracer (`minOverlayLogIntervalMs`)
+  - [x] Add `just frida-sync-share` helper for VM script sync
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
     - [ ] Capture a demo build log (see `docs/frida/demo-trial-overlay.md`)
     - [ ] Run `uv run scripts/demo_trial_overlay_validate.py ...` and paste output here

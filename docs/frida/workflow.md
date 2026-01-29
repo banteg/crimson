@@ -10,6 +10,12 @@ Copy the scripts into the VM share `C:\share\frida` (WSL path `/mnt/c/share/frid
 You can override the output directory with `CRIMSON_FRIDA_DIR`. For `grim_hooks.js`,
 set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 
+From WSL, you can sync the current repo scripts into the share:
+
+```bash
+just frida-sync-share
+```
+
 - `scripts/frida/grim_hooks.js`
 - `scripts/frida/grim_hooks_targets.json`
 - `scripts/frida/crimsonland_probe.js`
