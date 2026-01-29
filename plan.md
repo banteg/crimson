@@ -446,23 +446,23 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 16) Demo trial overlay (demo builds)
 
-- [ ] Implement the demo trial overlay UI + timing rules
-  - [ ] Model demo playtime timers (global + quest-only grace)
-    - [ ] Track global demo playtime in `GameStatus.game_sequence_id` (ms)
-    - [ ] Track quest-only grace time in `GameState` (non-persisted)
-  - [ ] Implement trigger predicate (mirrors `demo_trial_overlay_render` call sites)
+- [x] Implement the demo trial overlay UI + timing rules
+  - [x] Model demo playtime timers (global + quest-only grace)
+    - [x] Track global demo playtime in `GameStatus.game_sequence_id` (ms)
+    - [x] Track quest-only grace time in `GameState` (non-persisted)
+  - [x] Implement trigger predicate (mirrors `demo_trial_overlay_render` call sites)
     - [x] Show overlay once global demo playtime is exhausted
     - [x] Show overlay when quest progress exceeds the demo tier limit (tier > 1)
-    - [ ] Use the quest-only grace timer once global time is up (5 minutes)
-  - [ ] Draw overlay panel
-    - [ ] Centered 512×256 panel with outline + dimmed backdrop
-    - [ ] Render `cl_logo` and time-left string
-    - [ ] Purchase + Maybe later buttons (clickable)
-  - [ ] Integrate into Quest mode loop
-    - [ ] Pause gameplay + timer accumulation while the overlay is visible
-    - [ ] Purchase opens `http://buy.crimsonland.com` (stubbed in tests)
-    - [ ] Maybe later exits back to the main menu
-  - [ ] Add regression tests for trigger + timer behavior
+    - [x] Use the quest-only grace timer once global time is up (5 minutes)
+  - [x] Draw overlay panel
+    - [x] Centered 512×256 panel with outline + dimmed backdrop
+    - [x] Render `cl_logo` and time-left string
+    - [x] Purchase + Maybe later buttons (clickable)
+  - [x] Integrate into gameplay loop
+    - [x] Pause gameplay + timer accumulation while the overlay is visible
+    - [x] Purchase opens `http://buy.crimsonland.com` (stubbed in tests)
+    - [x] Maybe later exits back to the main menu
+  - [x] Add regression tests for trigger + timer behavior
 - [ ] Confirm trigger conditions vs demo build evidence
 
 ---

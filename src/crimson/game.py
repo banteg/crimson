@@ -44,6 +44,7 @@ from .debug import debug_enabled
 from grim import music
 
 from .demo import DemoView
+from .demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
 from .frontend.boot import BootView
 from .frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .frontend.menu import (
@@ -71,6 +72,7 @@ from .frontend.panels.play_game import PlayGameMenuView
 from .frontend.panels.stats import StatisticsMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
+from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 
 if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
@@ -118,6 +120,7 @@ class GameState:
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
     quest_fail_retry_count: int = 0
+    demo_trial_elapsed_ms: int = 0
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
@@ -1946,10 +1949,21 @@ class GameLoopView:
         self._front_active: FrontView | None = None
         self._front_stack: list[FrontView] = []
         self._active: View = self._boot
+        self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
+        self._demo_trial_info = None
         self._demo_active = False
         self._menu_active = False
         self._quit_after_demo = False
         self._screenshot_requested = False
+        self._gameplay_views = frozenset(
+            {
+                self._front_views["start_survival"],
+                self._front_views["start_rush"],
+                self._front_views["start_typo"],
+                self._front_views["start_tutorial"],
+                self._front_views["start_quest"],
+            }
+        )
 
     def open(self) -> None:
         rl.hide_cursor()
@@ -1970,6 +1984,12 @@ class GameLoopView:
                 self._state.quit_requested = True
                 console.quit_requested = False
             return
+
+        self._demo_trial_info = None
+        if self._front_active is not None and self._front_active in self._gameplay_views:
+            if self._update_demo_trial_overlay(dt):
+                return
+
         self._active.update(dt)
         if self._front_active is not None:
             action = self._front_active.take_action()
@@ -2075,6 +2095,78 @@ class GameLoopView:
             self._state.quit_requested = True
             console.quit_requested = False
 
+    def _update_demo_trial_overlay(self, dt: float) -> bool:
+        if not self._state.demo_enabled:
+            return False
+
+        mode_id = int(self._state.config.data.get("game_mode", 0) or 0)
+        quest_major, quest_minor = 0, 0
+        if mode_id == 3:
+            level = self._state.pending_quest_level or ""
+            try:
+                major_text, minor_text = level.split(".", 1)
+                quest_major = int(major_text)
+                quest_minor = int(minor_text)
+            except Exception:
+                quest_major, quest_minor = 0, 0
+
+        current = demo_trial_overlay_info(
+            demo_build=True,
+            game_mode_id=mode_id,
+            global_playtime_ms=int(self._state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            quest_stage_major=int(quest_major),
+            quest_stage_minor=int(quest_minor),
+        )
+
+        frame_dt = min(float(dt), 0.1)
+        dt_ms = int(frame_dt * 1000.0)
+        used_ms, grace_ms = tick_demo_trial_timers(
+            demo_build=True,
+            game_mode_id=int(mode_id),
+            overlay_visible=bool(current.visible),
+            global_playtime_ms=int(self._state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            dt_ms=int(dt_ms),
+        )
+        if used_ms != int(self._state.status.game_sequence_id):
+            self._state.status.game_sequence_id = int(used_ms)
+        self._state.demo_trial_elapsed_ms = int(grace_ms)
+
+        info = demo_trial_overlay_info(
+            demo_build=True,
+            game_mode_id=mode_id,
+            global_playtime_ms=int(self._state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(self._state.demo_trial_elapsed_ms),
+            quest_stage_major=int(quest_major),
+            quest_stage_minor=int(quest_minor),
+        )
+        self._demo_trial_info = info
+        if not info.visible:
+            return False
+
+        self._demo_trial_overlay.bind_cache(self._state.texture_cache)
+        action = self._demo_trial_overlay.update(dt_ms)
+        if action == "purchase":
+            try:
+                webbrowser.open(DEMO_PURCHASE_URL)
+            except Exception:
+                pass
+            return True
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or action == "maybe_later":
+            if self._front_active is not None:
+                self._front_active.close()
+                self._front_active = None
+            while self._front_stack:
+                self._front_stack.pop().close()
+            self._menu.open()
+            self._active = self._menu
+            self._menu_active = True
+            return True
+
+        return True
+
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested
         self._screenshot_requested = False
@@ -2082,6 +2174,10 @@ class GameLoopView:
 
     def draw(self) -> None:
         self._active.draw()
+        info = self._demo_trial_info
+        if info is not None and getattr(info, "visible", False):
+            self._demo_trial_overlay.bind_cache(self._state.texture_cache)
+            self._demo_trial_overlay.draw(info)
         self._state.console.draw()
 
     def close(self) -> None:
@@ -2093,6 +2189,7 @@ class GameLoopView:
             self._front_stack.pop().close()
         if self._demo_active:
             self._demo.close()
+        self._demo_trial_overlay.close()
         if self._state.menu_ground is not None and self._state.menu_ground.render_target is not None:
             rl.unload_render_texture(self._state.menu_ground.render_target)
             self._state.menu_ground.render_target = None
