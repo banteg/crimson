@@ -450,6 +450,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Model demo playtime timers (global + quest-only grace)
     - [x] Track global demo playtime in `GameStatus.game_sequence_id` (ms)
     - [x] Track quest-only grace time in `GameState` (non-persisted)
+    - [x] Start grace when playtime already exhausted
   - [x] Implement trigger predicate (mirrors `demo_trial_overlay_render` call sites)
     - [x] Show overlay once global demo playtime is exhausted
     - [x] Show overlay when quest progress exceeds the demo tier limit (tier > 1)

@@ -118,3 +118,16 @@ def test_tick_demo_trial_timers_grace_counts_only_in_quests() -> None:
     )
     assert used_ms == DEMO_TOTAL_PLAY_TIME_MS
     assert grace_ms == 1
+
+
+def test_tick_demo_trial_timers_starts_grace_even_when_overlay_visible() -> None:
+    used_ms, grace_ms = tick_demo_trial_timers(
+        demo_build=True,
+        game_mode_id=1,
+        overlay_visible=True,
+        global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
+        quest_grace_elapsed_ms=0,
+        dt_ms=0,
+    )
+    assert used_ms == DEMO_TOTAL_PLAY_TIME_MS
+    assert grace_ms == 1

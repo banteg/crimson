@@ -47,15 +47,18 @@ def tick_demo_trial_timers(
     if int(game_mode_id) == 8:
         return int(global_playtime_ms), int(quest_grace_elapsed_ms)
 
+    used_ms = max(0, int(global_playtime_ms))
+    grace_ms = max(0, int(quest_grace_elapsed_ms))
+    if used_ms >= DEMO_TOTAL_PLAY_TIME_MS and grace_ms < 1:
+        grace_ms = 1
+    used_ms = min(DEMO_TOTAL_PLAY_TIME_MS, used_ms)
+
     if overlay_visible:
-        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+        return int(used_ms), int(grace_ms)
 
     delta_ms = int(dt_ms)
     if delta_ms <= 0:
-        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
-
-    used_ms = max(0, int(global_playtime_ms))
-    grace_ms = max(0, int(quest_grace_elapsed_ms))
+        return int(used_ms), int(grace_ms)
 
     used_ms = min(DEMO_TOTAL_PLAY_TIME_MS, used_ms + delta_ms)
     if used_ms >= DEMO_TOTAL_PLAY_TIME_MS and grace_ms < 1:
