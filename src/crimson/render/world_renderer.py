@@ -533,7 +533,7 @@ class WorldRenderer:
             if frame < 32:
                 frame = 32
         else:
-            frame = 53
+            frame = 52
 
         dead_shadow_scale = 1.03
         dead_shadow_off = 1.0 * scale + base_size * (dead_shadow_scale - 1.0) * 0.5

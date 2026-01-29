@@ -14,7 +14,7 @@ This document catalogs discrepancies between the current Python/Raylib rendering
 - [x] 3. Creature Render Type Ordering (match `creature_render_all` type order)
 - [x] 6. Missing Monster Vision Overlays (yellow overlay quads when perk active)
 - [x] 9. Player Sprite Shadow/Outline Scale (1.02/1.03 passes with offsets; include dead shadow pass)
-- [ ] 10. Death Frame Calculation (match UV run 32..52 and hold at 52)
+- [x] 10. Death Frame Calculation (match UV run 32..52 and hold at 52)
 - [ ] 12. Missing Radioactive Perk Aura (pulsing green aura)
 - [ ] 13. Missing Shield Effect Rendering (two rotating bubbles)
 - [ ] 14. Player Color Tinting in Multiplayer (blue/orange tint)
