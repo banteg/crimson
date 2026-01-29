@@ -24,7 +24,7 @@ lint-imports:
     uv run lint-imports
 
 lint-assets:
-    uv run python scripts/check_asset_loader_usage.py
+    uv run scripts/check_asset_loader_usage.py
 
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
@@ -72,13 +72,13 @@ extract:
 
 # Atlas
 atlas-scan:
-    uv run python scripts/atlas_scan.py --output-json {{atlas_usage}}
+    uv run scripts/atlas_scan.py --output-json {{atlas_usage}}
 
 atlas-export-all:
-    uv run python scripts/atlas_export.py --all --usage-json {{atlas_usage}} --out-root {{atlas_frames}}
+    uv run scripts/atlas_export.py --all --usage-json {{atlas_usage}} --out-root {{atlas_frames}}
 
 atlas-export image grid:
-    uv run python scripts/atlas_export.py --image {{image}} --grid {{grid}}
+    uv run scripts/atlas_export.py --image {{image}} --grid {{grid}}
 
 # Fonts
 font-sample:
@@ -86,23 +86,23 @@ font-sample:
 
 # Docs
 docs-map-progress:
-    uv run python scripts/update_map_progress_docs.py
+    uv run scripts/update_map_progress_docs.py
 
 docs-build:
     uv run zensical build
 
 docs-zensical-fix:
-    uv run python scripts/zensical_fix_md.py docs
+    uv run scripts/zensical_fix_md.py docs
 
 # Analysis
 entrypoint-trace:
-    uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
+    uv run scripts/entrypoint_trace.py --depth 2 --skip-external
 
 function-hotspots:
-    uv run python scripts/function_hotspots.py --top 12 --only-fun
+    uv run scripts/function_hotspots.py --top 12 --only-fun
 
 dat-hotspots *args:
-    uv run python scripts/dat_hotspots.py {{args}}
+    uv run scripts/dat_hotspots.py {{args}}
 
 angr-trial-exe:
     uv run --no-project --isolated --python 3.12 --with angr \
@@ -117,13 +117,13 @@ angr-trial-grim:
       --ghidra-functions analysis/ghidra/raw/grim.dll_functions.json
 
 save-status *args:
-    uv run python scripts/save_status.py {{args}}
+    uv run scripts/save_status.py {{args}}
 
 weapon-table:
-    uv run python scripts/extract_weapon_table.py
+    uv run scripts/extract_weapon_table.py
 
 spawn-templates:
-    uv run python scripts/gen_spawn_templates.py
+    uv run scripts/gen_spawn_templates.py
 
 # Ghidra
 [unix]
@@ -185,7 +185,7 @@ windbg-client:
 
 [windows]
 windbg-tail:
-    uv run python scripts/windbg_tail.py
+    uv run scripts/windbg_tail.py
 
 # Frida
 [windows]
