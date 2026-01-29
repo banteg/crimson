@@ -510,6 +510,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [x] Add an idle-threshold trace script + docs (`scripts/frida/demo_idle_threshold_trace.js`, `docs/frida/demo-idle-threshold.md`)
 - [x] Add an offline summarizer for idle traces (`scripts/demo_idle_threshold_summarize.py`)
+- [x] Add reducer support for idle traces (`scripts/frida_reduce.py`)
 - [ ] Capture idle threshold from a demo build and update `MENU_DEMO_IDLE_START_MS`
   - [ ] Capture `demo_idle_threshold_trace.jsonl` (see `docs/frida/demo-idle-threshold.md`)
   - [ ] Run `uv run scripts/demo_idle_threshold_summarize.py ...` and paste output here

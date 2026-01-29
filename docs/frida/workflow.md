@@ -87,6 +87,7 @@ mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```
 
 ## 3) Reduce logs into evidence
@@ -97,7 +98,8 @@ Run the reducer to normalize facts + produce summaries:
 uv run scripts/frida_reduce.py \
   --log analysis/frida/raw/grim_hits.jsonl \
   --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
-  --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
+  --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \  # optional
+  --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \  # optional
   --out-dir analysis/frida
 ```
 
@@ -113,6 +115,12 @@ Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl
 
 ```bash
 uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
+```
+
+Optional: summarize `demo_idle_threshold_trace.jsonl` (or the reduced `facts.jsonl`) to get the idle threshold:
+
+```bash
+uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
 ```
 
 For a concrete “what to run / what to capture” checklist (Milestone 16), see `docs/frida/demo-trial-overlay.md`.

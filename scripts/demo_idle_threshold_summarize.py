@@ -50,7 +50,16 @@ def summarize_idle_threshold(rows: list[dict]) -> list[_Session]:
     current: _Session | None = None
 
     for row in rows:
-        event = row.get("event") or row.get("kind")
+        raw_event = row.get("event") or row.get("kind")
+        if raw_event is None:
+            continue
+        event = str(raw_event)
+        if event.startswith("demo_idle_threshold_"):
+            event = event.removeprefix("demo_idle_threshold_")
+
+        if event not in ("start", "ui_ready", "demo_mode_start"):
+            continue
+
         if event == "start" or current is None:
             current = _Session()
             sessions.append(current)
@@ -94,4 +103,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

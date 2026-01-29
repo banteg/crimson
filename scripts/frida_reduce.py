@@ -424,6 +424,62 @@ def main() -> int:
                     facts_handle.write(json.dumps(fact) + "\n")
                     continue
 
+                if (
+                    event == "start"
+                    and obj.get("t0_ms") is not None
+                    and isinstance(obj.get("addrs"), dict)
+                    and obj["addrs"].get("demo_mode_start") is not None
+                ):
+                    fact = {
+                        "kind": "demo_idle_threshold_start",
+                        "session_id": session_id,
+                        "source": "demo_idle_threshold_trace",
+                        "t0_ms": obj.get("t0_ms"),
+                        "module": obj.get("module"),
+                        "config": obj.get("config"),
+                        "addrs": obj.get("addrs"),
+                    }
+                    facts_handle.write(json.dumps(fact) + "\n")
+                    continue
+
+                if (
+                    event == "ui_ready"
+                    and obj.get("dt_since_start_ms") is not None
+                    and obj.get("ui_elements_timeline") is not None
+                    and obj.get("ui_elements_max_timeline") is not None
+                ):
+                    fact = {
+                        "kind": "demo_idle_threshold_ui_ready",
+                        "session_id": session_id,
+                        "source": "demo_idle_threshold_trace",
+                        "t_ms": obj.get("t_ms"),
+                        "dt_since_start_ms": obj.get("dt_since_start_ms"),
+                        "ui_elements_timeline": obj.get("ui_elements_timeline"),
+                        "ui_elements_max_timeline": obj.get("ui_elements_max_timeline"),
+                    }
+                    facts_handle.write(json.dumps(fact) + "\n")
+                    continue
+
+                if (
+                    event == "demo_mode_start"
+                    and obj.get("dt_since_start_ms") is not None
+                    and ("dt_since_ui_ready_ms" in obj)
+                ):
+                    fact = {
+                        "kind": "demo_idle_threshold_demo_mode_start",
+                        "session_id": session_id,
+                        "source": "demo_idle_threshold_trace",
+                        "t_ms": obj.get("t_ms"),
+                        "dt_since_start_ms": obj.get("dt_since_start_ms"),
+                        "dt_since_ui_ready_ms": obj.get("dt_since_ui_ready_ms"),
+                        "game_state_id": obj.get("game_state_id"),
+                        "demo_mode_active": obj.get("demo_mode_active"),
+                        "ui_elements_timeline": obj.get("ui_elements_timeline"),
+                        "ui_elements_max_timeline": obj.get("ui_elements_max_timeline"),
+                    }
+                    facts_handle.write(json.dumps(fact) + "\n")
+                    continue
+
                 if event == "demo_trial_overlay_render":
                     overlay_entry = index.lookup(0x004047c0)
                     if overlay_entry:
