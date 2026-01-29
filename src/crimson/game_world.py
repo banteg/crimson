@@ -392,6 +392,17 @@ class GameWorld:
             self.audio_router.audio_rng = self.audio_rng
             self.audio_router.demo_mode_active = self.demo_mode_active
 
+        # Time scale (Reflex Boost): gameplay_update_and_render @ 0x0040AAB0.
+        # When active, `frame_dt` is scaled by `time_scale_factor`, with a linear
+        # ramp from 0.3 -> 1.0 over the final second of the timer.
+        time_scale_active = self.state.bonuses.reflex_boost > 0.0
+        if time_scale_active:
+            time_scale_factor = 0.3
+            timer = float(self.state.bonuses.reflex_boost)
+            if timer < 1.0:
+                time_scale_factor = (1.0 - timer) * 0.7 + 0.3
+            dt = float(dt) * float(time_scale_factor)
+
         if dt > 0.0:
             self._elapsed_ms += float(dt) * 1000.0
             self._bonus_anim_phase += float(dt) * 1.3

@@ -11,6 +11,18 @@ I concentrated on “already-ported” gameplay logic + the rendering pipeline, 
 
 ---
 
+## Checklist
+
+- [x] 1) Reflex Boost slow‑motion (time scale) dt/dt_ms scaling
+- [ ] 2) Simulation update order (perks → effects → creatures → projectiles → players)
+- [ ] 3) `bonus_apply` stacking + Bonus Economist multiplier + Shock Chain semantics
+- [ ] 4) `bonus_pick_random_type` distribution / reroll behavior
+- [ ] 5) `weapon_assign_player` applies clip-size perks on weapon changes
+- [ ] 6) World draw order layering (dead players / effects / bonuses)
+- [ ] 7) Alpha test behavior (global 4/255 cutoff) vs port shaders
+- [ ] 8) Terrain render-target failure fallback path
+- [ ] 9) ParticlePool + SpriteEffectPool integration/rendering
+
 ## Highest-impact fidelity mismatches
 
 ### 1) Reflex Boost slow‑motion (time scale) not implemented
@@ -251,4 +263,3 @@ Impact:
 6. Adjust world rendering order (dead players under creatures, effects under bonuses).
 7. Decide whether to apply alpha-test globally for faithful sprite edges.
 8. Integrate missing particle/sprite effect pools once gameplay is ready.
-
