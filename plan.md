@@ -27,7 +27,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] Per-frame gameplay + completion transition: `quest_mode_update` (`0x004070e0`)
 - [x] Results screen: `quest_results_screen_update` (`0x00410d20`)
 - [x] Failed screen: `quest_failed_screen_update` (`0x004107e0`)
-- [ ] HUD bits: confirm where progress ratio + quest title timer are computed in the render path
+- [x] HUD bits: confirm where progress ratio + quest title timer are computed in the render path
 
 ### Rush
 
@@ -147,9 +147,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 ### 4.3 Quest HUD
 
 - [x] show time from `spawn_timeline_ms` (mm:ss)
-- [x] progress bar: ratio of kills to estimated total creatures (best-effort; hidden if unknown)
-  - [x] estimate total creatures by building spawn plans per `spawn_id`
-- [x] quest title fade: show “Quest X-Y” for first few seconds using `quest_name_timer_ms`
+- [x] progress bar: ratio of kills to total quest spawn count (sum of `SpawnEntry.count`)
+- [x] quest title fade: show quest title + stage for first ~2s using `quest_name_timer_ms`
 
 ### 4.4 Quest Results screen (`quest_results_screen_update`)
 

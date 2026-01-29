@@ -26,8 +26,10 @@ from ..views.quest_title_overlay import draw_quest_title_overlay
 from .base_gameplay_mode import BaseGameplayMode
 
 WORLD_SIZE = 1024.0
-QUEST_TITLE_SHOW_MS = 3000.0
-QUEST_TITLE_FADE_MS = 1000.0
+QUEST_TITLE_FADE_IN_MS = 500.0
+QUEST_TITLE_HOLD_MS = 1000.0
+QUEST_TITLE_FADE_OUT_MS = 500.0
+QUEST_TITLE_TOTAL_MS = QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS + QUEST_TITLE_FADE_OUT_MS
 
 
 @dataclass(slots=True)
@@ -36,7 +38,6 @@ class _QuestRunState:
     level: str = ""
     spawn_entries: tuple[SpawnEntry, ...] = ()
     total_spawn_count: int = 0
-    total_creature_estimate: int = 0
     max_trigger_time_ms: int = 0
     spawn_timeline_ms: float = 0.0
     quest_name_timer_ms: float = 0.0
@@ -75,6 +76,14 @@ def _quest_attempt_counter_index(level: str) -> int | None:
     if not (0 <= global_index < 40):
         return None
     return global_index + 11
+
+
+def _quest_level_label(level: str) -> str:
+    try:
+        tier_text, quest_text = level.split(".", 1)
+        return f"{int(tier_text)}-{int(quest_text)}"
+    except Exception:
+        return level.replace(".", "-", 1)
 
 
 class QuestMode(BaseGameplayMode):
@@ -182,39 +191,12 @@ class QuestMode(BaseGameplayMode):
         )
         total_spawn_count = sum(int(entry.count) for entry in entries)
         max_trigger_ms = max((int(entry.trigger_ms) for entry in entries), default=0)
-        total_creature_estimate = 0
-        try:
-            from ..creatures.spawn import build_spawn_plan
-            from grim.rand import Crand
-
-            env = self._world.spawn_env
-            cache: dict[int, int] = {}
-            for entry in entries:
-                spawn_id = int(entry.spawn_id)
-                count = int(entry.count)
-                if count <= 0:
-                    continue
-                size = cache.get(spawn_id)
-                if size is None:
-                    plan = build_spawn_plan(
-                        spawn_id,
-                        (float(entry.x), float(entry.y)),
-                        float(entry.heading),
-                        Crand(seed ^ spawn_id),
-                        env,
-                    )
-                    size = len(plan.creatures)
-                    cache[spawn_id] = size
-                total_creature_estimate += size * count
-        except Exception:
-            total_creature_estimate = 0
 
         self._quest = _QuestRunState(
             quest=quest,
             level=str(level),
             spawn_entries=entries,
             total_spawn_count=int(total_spawn_count),
-            total_creature_estimate=int(total_creature_estimate),
             max_trigger_time_ms=int(max_trigger_ms),
             spawn_timeline_ms=0.0,
             quest_name_timer_ms=0.0,
@@ -366,7 +348,7 @@ class QuestMode(BaseGameplayMode):
                 show_xp=False,
                 show_time=True,
             )
-            total = int(self._quest.total_creature_estimate)
+            total = int(self._quest.total_spawn_count)
             if total > 0:
                 kills = int(self._creatures.kill_count)
                 ratio = max(0.0, min(1.0, float(kills) / float(total)))
@@ -434,10 +416,14 @@ class QuestMode(BaseGameplayMode):
         if font is None or quest is None:
             return
         timer_ms = float(self._quest.quest_name_timer_ms)
-        if timer_ms <= 0.0 or timer_ms > QUEST_TITLE_SHOW_MS:
+        if timer_ms <= 0.0 or timer_ms > QUEST_TITLE_TOTAL_MS:
             return
-        alpha = 1.0
-        fade_start = max(0.0, QUEST_TITLE_SHOW_MS - QUEST_TITLE_FADE_MS)
-        if timer_ms > fade_start and QUEST_TITLE_FADE_MS > 1e-3:
-            alpha = max(0.0, 1.0 - (timer_ms - fade_start) / QUEST_TITLE_FADE_MS)
-        draw_quest_title_overlay(font, quest.title, self._quest.level, alpha=alpha)
+        if timer_ms < QUEST_TITLE_FADE_IN_MS and QUEST_TITLE_FADE_IN_MS > 1e-3:
+            alpha = timer_ms / QUEST_TITLE_FADE_IN_MS
+        elif timer_ms < (QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS):
+            alpha = 1.0
+        else:
+            t = timer_ms - (QUEST_TITLE_FADE_IN_MS + QUEST_TITLE_HOLD_MS)
+            alpha = max(0.0, 1.0 - (t / max(1e-3, QUEST_TITLE_FADE_OUT_MS)))
+
+        draw_quest_title_overlay(font, quest.title, _quest_level_label(self._quest.level), alpha=alpha)
