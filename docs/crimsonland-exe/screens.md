@@ -40,6 +40,20 @@ Renders the post-mission summary and buttons:
 
 - Draws the demo warning panel with remaining trial time and upgrade copy.
 - Updated from the main frame loop when the demo timer is active.
+- Key globals (v1.9.93):
+  - Global trial timer (ms): `game_status_blob.game_sequence_id` (`0x00485794`)
+  - Quest-only grace timer (ms): `demo_trial_elapsed_ms` (`0x0048084c`)
+  - Mode id: `config_game_mode` (`0x00480360`) (`1=survival`, `2=rush`, `3=quest`, `8=tutorial`)
+  - Quest stage gating: `quest_stage_major`/`quest_stage_minor` (`0x00487004`/`0x00487008`)
+
+### Evidence capture (Windows VM)
+
+Use Frida to log whenever the overlay is actually rendered:
+
+- Script: `scripts\\frida\\demo_trial_overlay_trace.js`
+  - Set `CONFIG.forceShareware=true` to patch `game_is_full_version()` → `0` when testing the full-version binary.
+  - Log output (default): `C:\\share\\frida\\demo_trial_overlay_trace.jsonl`
+- Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in `plan.md`.
 
 ## Modal/plugin flow (FUN_0040b630)
 
