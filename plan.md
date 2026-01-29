@@ -479,6 +479,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Add a concrete capture wishlist doc (`docs/frida/demo-trial-overlay.md`)
   - [x] Add log sampling for the overlay tracer (`minOverlayLogIntervalMs`)
   - [x] Add `just frida-sync-share` helper for VM script sync
+  - [x] Add `just` helpers for demo-trial capture + validation
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
     - [ ] Capture a demo build log (see `docs/frida/demo-trial-overlay.md`)
     - [ ] Run `uv run scripts/demo_trial_overlay_validate.py ...` and paste output here
@@ -512,6 +513,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Add an idle-threshold trace script + docs (`scripts/frida/demo_idle_threshold_trace.js`, `docs/frida/demo-idle-threshold.md`)
 - [x] Add an offline summarizer for idle traces (`scripts/demo_idle_threshold_summarize.py`)
 - [x] Add reducer support for idle traces (`scripts/frida_reduce.py`)
+- [x] Add `just` helpers for idle capture + summarizing
 - [ ] Capture idle threshold from a demo build and update `MENU_DEMO_IDLE_START_MS`
   - [ ] Capture `demo_idle_threshold_trace.jsonl` (see `docs/frida/demo-idle-threshold.md`)
   - [ ] Run `uv run scripts/demo_idle_threshold_summarize.py ...` and paste output here

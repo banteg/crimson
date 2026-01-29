@@ -109,6 +109,12 @@ uv run scripts/frida_reduce.py \
   --out-dir analysis/frida
 ```
 
+Shortcut:
+
+```bash
+just frida-reduce
+```
+
 Outputs:
 
 - `analysis/frida/facts.jsonl` — normalized facts (one JSON object per line).
@@ -123,10 +129,22 @@ Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl
 uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
 ```
 
+Shortcut:
+
+```bash
+just demo-trial-validate
+```
+
 Optional: summarize `demo_idle_threshold_trace.jsonl` (or the reduced `facts.jsonl`) to get the idle threshold:
 
 ```bash
 uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
+```
+
+Shortcut:
+
+```bash
+just demo-idle-summarize
 ```
 
 For a concrete “what to run / what to capture” checklist (Milestone 16), see `docs/frida/demo-trial-overlay.md`.

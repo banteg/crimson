@@ -207,6 +207,18 @@ frida-quest-build-dump:
     frida -n crimsonland.exe -l scripts\\frida\\quest_build_dump.js
 
 [windows]
+frida-demo-trial-overlay process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\demo_trial_overlay_trace.js
+
+[windows]
+frida-demo-idle-threshold process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\demo_idle_threshold_trace.js
+
+[windows]
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
 
@@ -238,6 +250,23 @@ frida-copy-share:
 frida-sync-share:
     mkdir -p {{share_dir}}
     cp -av scripts/frida/*.js scripts/frida/*.json {{share_dir}}/
+
+[unix]
+frida-reduce:
+    uv run scripts/frida_reduce.py \
+      --log analysis/frida/raw/grim_hits.jsonl \
+      --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
+      --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
+      --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \
+      --out-dir analysis/frida
+
+[unix]
+demo-trial-validate log="analysis/frida/raw/demo_trial_overlay_trace.jsonl":
+    uv run scripts/demo_trial_overlay_validate.py {{log}}
+
+[unix]
+demo-idle-summarize log="analysis/frida/raw/demo_idle_threshold_trace.jsonl":
+    uv run scripts/demo_idle_threshold_summarize.py {{log}}
 
 # Screenshots
 [windows]

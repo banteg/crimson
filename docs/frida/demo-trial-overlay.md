@@ -30,10 +30,12 @@ Confirm (with logs) that the overlay triggers and reports remaining time exactly
    frida -n crimsonland.exe -l C:\share\frida\demo_trial_overlay_trace.js
    ```
 
+   (Or: `just frida-demo-trial-overlay`)
+
 3. Ensure the tracer config is **not forcing anything**:
    - `CONFIG.forceDemoInGameplayLoop = false`
    - `CONFIG.forcePlaytimeMs = null`
-   - Optional: `CONFIG.minOverlayLogIntervalMs = 250` to keep logs smaller
+    - Optional: `CONFIG.minOverlayLogIntervalMs = 250` to keep logs smaller
 
 4. Trigger the overlay in at least these two ways:
    - **Quest tier lock (fast):** enter Quest mode and attempt a quest beyond Tier 1 (stage > `1_10`).

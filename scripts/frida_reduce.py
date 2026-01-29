@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from bisect import bisect_right
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -311,7 +312,20 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    logs = list(args.log)
+    missing_logs: list[Path] = []
+    logs: list[Path] = []
+    for path in args.log:
+        if path.exists():
+            logs.append(path)
+        else:
+            missing_logs.append(path)
+
+    for path in missing_logs:
+        print(f"warning: log not found: {path}", file=sys.stderr)
+
+    if args.log and not logs:
+        raise SystemExit("No logs found for provided --log PATH entries.")
+
     if not logs:
         default_logs = [
             Path("analysis/frida/raw/crimsonland_frida_hits.jsonl"),

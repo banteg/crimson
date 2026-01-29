@@ -11,6 +11,8 @@ Goal: confirm the **main menu idle timeout** (how long you must be inactive befo
    frida -n crimsonland.exe -l C:\share\frida\demo_idle_threshold_trace.js
    ```
 
+   (Or: `just frida-demo-idle-threshold`)
+
 3. Don’t touch input (mouse/keyboard/gamepad). Wait for the attract loop to start.
 4. In the log, find the first `demo_mode_start` event and record:
    - `dt_since_ui_ready_ms` (preferred)
