@@ -436,6 +436,8 @@ class SurvivalMode(BaseGameplayMode):
                     dt,
                     record=record,
                     player_name_default=self._player_name_default(),
+                    play_sfx=self._world.audio_router.play_sfx,
+                    rand=self._state.rng.rand,
                     mouse=self._ui_mouse_pos(),
                 )
                 if action == "play_again":

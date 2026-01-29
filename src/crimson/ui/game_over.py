@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import math
 from pathlib import Path
@@ -264,12 +265,17 @@ class GameOverUi:
         *,
         record: HighScoreRecord,
         player_name_default: str,
+        play_sfx: Callable[[str], None] | None = None,
+        rand: Callable[[], int] | None = None,
         mouse: rl.Vector2 | None = None,
     ) -> str | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
         if mouse is None:
             mouse = rl.get_mouse_position()
+        if rand is None:
+            def rand() -> int:
+                return 0
 
         if self.assets is None:
             return None
@@ -303,10 +309,14 @@ class GameOverUi:
             if typed:
                 self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[:NAME_MAX_EDIT]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
+                if play_sfx is not None:
+                    play_sfx("sfx_ui_typeclick_01" if (int(rand()) & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
                 if self.input_caret > 0:
                     self.input_text = self.input_text[: self.input_caret - 1] + self.input_text[self.input_caret :]
                     self.input_caret -= 1
+                    if play_sfx is not None:
+                        play_sfx("sfx_ui_typeclick_01" if (int(rand()) & 1) == 0 else "sfx_ui_typeclick_02")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
                 self.input_caret = max(0, self.input_caret - 1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
@@ -332,6 +342,8 @@ class GameOverUi:
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if self.input_text.strip():
+                    if play_sfx is not None:
+                        play_sfx("sfx_ui_typeenter")
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
                     path = scores_path_for_config(self.base_dir, self.config)
@@ -340,7 +352,8 @@ class GameOverUi:
                         self._saved = True
                     self.phase = 1
                     return None
-                # else: ignore (native plays a buzzer SFX)
+                if play_sfx is not None:
+                    play_sfx("sfx_shock_hit_01")
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -358,16 +371,22 @@ class GameOverUi:
 
             play_again_w = button_width(self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
             if button_update(self._play_again_button, x=x, y=y, width=play_again_w, dt_ms=dt_ms, mouse=mouse, click=click):
+                if play_sfx is not None:
+                    play_sfx("sfx_ui_buttonclick")
                 return "play_again"
             y += 32.0 * scale
 
             high_scores_w = button_width(self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide)
             if button_update(self._high_scores_button, x=x, y=y, width=high_scores_w, dt_ms=dt_ms, mouse=mouse, click=click):
+                if play_sfx is not None:
+                    play_sfx("sfx_ui_buttonclick")
                 return "high_scores"
             y += 32.0 * scale
 
             main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
             if button_update(self._main_menu_button, x=x, y=y, width=main_menu_w, dt_ms=dt_ms, mouse=mouse, click=click):
+                if play_sfx is not None:
+                    play_sfx("sfx_ui_buttonclick")
                 return "main_menu"
         return None
 

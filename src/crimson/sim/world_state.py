@@ -81,6 +81,7 @@ class WorldState:
             inputs = [PlayerInput() for _ in self.players]
 
         prev_positions = [(player.pos_x, player.pos_y) for player in self.players]
+        prev_health = [float(player.health) for player in self.players]
 
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
@@ -164,7 +165,26 @@ class WorldState:
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
 
-        return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups, sfx=list(creature_result.sfx))
+        sfx = list(creature_result.sfx)
+        pain_sfx = ("sfx_trooper_inpain_01", "sfx_trooper_inpain_02", "sfx_trooper_inpain_03")
+        death_sfx = ("sfx_trooper_die_01", "sfx_trooper_die_02")
+        rand = self.state.rng.rand
+        for idx, player in enumerate(self.players):
+            if idx >= len(prev_health):
+                continue
+            before = float(prev_health[idx])
+            after = float(player.health)
+            if after >= before - 1e-6:
+                continue
+            if before <= 0.0:
+                continue
+            if after <= 0.0:
+                # Prioritize death VO even if there are many other SFX this frame.
+                sfx.insert(0, death_sfx[int(rand()) & 1])
+            else:
+                sfx.append(pain_sfx[int(rand()) % len(pain_sfx)])
+
+        return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups, sfx=sfx)
 
     def _advance_creature_anim(self, dt: float) -> None:
         for creature in self.creatures.entries:
