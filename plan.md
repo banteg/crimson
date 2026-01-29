@@ -485,6 +485,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Make `demo_trial_overlay_validate.py` fail on empty logs + print start/hook diagnostics
   - [x] Update Frida wishlist/docs for validator fail-fast behavior
   - [x] Add trace metadata to `demo_trial_overlay_trace.js` start event (module base/path + resolved addrs)
+  - [x] Support env overrides for demo build address mismatches (`CRIMSON_FRIDA_ADDRS`, `CRIMSON_FRIDA_LINK_BASE`)
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
     - [ ] Capture a demo build log (see `docs/frida/demo-trial-overlay.md`)
     - [ ] Run `uv run scripts/demo_trial_overlay_validate.py ...` and paste output here
@@ -524,6 +525,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Make `demo_idle_threshold_summarize.py` fail on empty logs + print trace errors
 - [x] Update Frida wishlist/docs for summarizer fail-fast behavior
 - [x] Add trace metadata to `demo_idle_threshold_trace.js` start event (module base/path + Frida/process info)
+- [x] Support env overrides for demo build address mismatches (`CRIMSON_FRIDA_ADDRS`, `CRIMSON_FRIDA_LINK_BASE`)
 - [ ] Capture idle threshold from a demo build and update `MENU_DEMO_IDLE_START_MS`
   - [ ] Capture `demo_idle_threshold_trace.jsonl` (see `docs/frida/demo-idle-threshold.md`)
   - [ ] Run `uv run scripts/demo_idle_threshold_summarize.py ...` and paste output here

@@ -8,15 +8,23 @@
 // Notes:
 // - Addresses are for the repo's PE (1.9.93-gog) with link base 0x00400000.
 // - This hook is intended for demo builds; the retail build may never render the overlay.
+// - For other builds, override addresses via:
+//     CRIMSON_FRIDA_ADDRS="demo_trial_overlay_render=0x401000,game_sequence_get=0x402000"
+//     CRIMSON_FRIDA_LINK_BASE="0x00400000"
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+const DEFAULT_GAME_MODULE = 'crimsonland.exe';
+
+function getEnv(key) {
+  try {
+    return Process.env[key] || null;
+  } catch (_) {
+    return null;
+  }
+}
 
 function getLogDir() {
-  try {
-    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
-  } catch (_) {
-    return DEFAULT_LOG_DIR;
-  }
+  return getEnv('CRIMSON_FRIDA_DIR') || DEFAULT_LOG_DIR;
 }
 
 function joinPath(base, leaf) {
@@ -44,11 +52,11 @@ const CONFIG = {
   logPath: joinPath(LOG_DIR, 'demo_trial_overlay_trace.jsonl'),
 };
 
-const GAME_MODULE = 'crimsonland.exe';
+const GAME_MODULE =
+  getEnv('CRIMSON_FRIDA_MODULE') ||
+  (Process.mainModule && Process.mainModule.name ? Process.mainModule.name : DEFAULT_GAME_MODULE);
 
-const LINK_BASE = {
-  'crimsonland.exe': ptr('0x00400000'),
-};
+let LINK_BASE = ptr('0x00400000');
 
 const DEMO_TOTAL_PLAY_TIME_MS = 2400000;
 const DEMO_QUEST_GRACE_TIME_MS = 300000;
@@ -70,6 +78,7 @@ const ADDR = {
 };
 
 let LOG = { file: null, ok: false };
+let ADDR_OVERRIDES = { raw: null, applied: {}, errors: [] };
 
 function initLog() {
   try {
@@ -86,6 +95,13 @@ function writeLog(obj) {
   console.log(line);
 }
 
+function formatHex32(n) {
+  if (n === null || n === undefined) return null;
+  const v = Number(n);
+  if (!Number.isFinite(v)) return null;
+  return '0x' + (v >>> 0).toString(16).padStart(8, '0');
+}
+
 function exePtr(staticVa) {
   let mod = null;
   try {
@@ -94,13 +110,79 @@ function exePtr(staticVa) {
     return null;
   }
   if (!mod) return null;
-  const linkBase = LINK_BASE[GAME_MODULE];
-  if (!linkBase) return null;
   try {
-    return mod.base.add(ptr(staticVa).sub(linkBase));
+    return mod.base.add(ptr(staticVa).sub(LINK_BASE));
   } catch (_) {
     return null;
   }
+}
+
+function parseAddrOverrides(raw) {
+  const out = { raw: raw, overrides: {}, errors: [] };
+  if (!raw) return out;
+
+  const text = String(raw).trim();
+  if (!text) return out;
+
+  if (text.startsWith('{')) {
+    try {
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === 'object') {
+        for (const key in obj) {
+          const v = obj[key];
+          const parsed = typeof v === 'number' ? v : parseInt(String(v).trim(), 0);
+          if (!Number.isFinite(parsed)) {
+            out.errors.push({ key: key, error: 'not_a_number', value: v });
+            continue;
+          }
+          out.overrides[key] = parsed;
+        }
+      }
+    } catch (e) {
+      out.errors.push({ error: 'json_parse', message: String(e) });
+    }
+    return out;
+  }
+
+  const parts = text
+    .split(/[;,]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  for (const part of parts) {
+    const eq = part.indexOf('=');
+    if (eq < 1) {
+      out.errors.push({ error: 'bad_pair', value: part });
+      continue;
+    }
+    const key = part.slice(0, eq).trim();
+    const valueText = part.slice(eq + 1).trim();
+    const parsed = parseInt(valueText, 0);
+    if (!Number.isFinite(parsed)) {
+      out.errors.push({ key: key, error: 'not_a_number', value: valueText });
+      continue;
+    }
+    out.overrides[key] = parsed;
+  }
+  return out;
+}
+
+function applyAddrOverrides(addrMap, parsed) {
+  const applied = {};
+  if (!parsed || !parsed.overrides) return applied;
+  for (const key in parsed.overrides) {
+    if (!(key in addrMap)) continue;
+    addrMap[key] = parsed.overrides[key];
+    applied[key] = addrMap[key];
+  }
+  return applied;
+}
+
+function maybeOverrideLinkBase() {
+  const raw = getEnv('CRIMSON_FRIDA_LINK_BASE') || getEnv('CRIMSON_FRIDA_IMAGE_BASE');
+  if (!raw) return;
+  const parsed = parseInt(String(raw).trim(), 0);
+  if (!Number.isFinite(parsed)) return;
+  LINK_BASE = ptr(parsed);
 }
 
 function buildStartEvent() {
@@ -117,7 +199,10 @@ function buildStartEvent() {
     addrs[key] = addr ? addr.toString() : null;
   }
 
-  const linkBase = LINK_BASE[GAME_MODULE];
+  const staticAddrs = {};
+  for (const key in ADDR) {
+    staticAddrs[key] = formatHex32(ADDR[key]);
+  }
 
   return {
     event: 'start',
@@ -126,7 +211,11 @@ function buildStartEvent() {
     frida: { version: Frida.version, runtime: Script.runtime },
     process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
     module: GAME_MODULE,
-    link_base: linkBase ? linkBase.toString() : null,
+    link_base: LINK_BASE.toString(),
+    addr_overrides: {
+      applied: ADDR_OVERRIDES.applied,
+      errors: ADDR_OVERRIDES.errors,
+    },
     exe: mod
       ? {
           base: mod.base.toString(),
@@ -134,6 +223,7 @@ function buildStartEvent() {
           path: mod.path,
         }
       : null,
+    static_addrs: staticAddrs,
     addrs: addrs,
   };
 }
@@ -345,6 +435,13 @@ function hookOverlayRender() {
 
 function main() {
   initLog();
+  maybeOverrideLinkBase();
+  const parsedOverrides = parseAddrOverrides(getEnv('CRIMSON_FRIDA_ADDRS'));
+  ADDR_OVERRIDES = {
+    raw: parsedOverrides.raw,
+    applied: applyAddrOverrides(ADDR, parsedOverrides),
+    errors: parsedOverrides.errors,
+  };
   writeLog(buildStartEvent());
 
   if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {

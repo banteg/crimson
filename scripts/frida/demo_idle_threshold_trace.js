@@ -8,15 +8,23 @@
 // Notes:
 // - Addresses are for the repo's PE (1.9.93-gog) with link base 0x00400000.
 // - This is expected to work on demo builds where the attract loop is enabled.
+// - For other builds, override addresses via:
+//     CRIMSON_FRIDA_ADDRS="demo_mode_start=0x401000,ui_elements_max_timeline=0x402000"
+//     CRIMSON_FRIDA_LINK_BASE="0x00400000"
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+const DEFAULT_GAME_MODULE = 'crimsonland.exe';
+
+function getEnv(key) {
+  try {
+    return Process.env[key] || null;
+  } catch (_) {
+    return null;
+  }
+}
 
 function getLogDir() {
-  try {
-    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
-  } catch (_) {
-    return DEFAULT_LOG_DIR;
-  }
+  return getEnv('CRIMSON_FRIDA_DIR') || DEFAULT_LOG_DIR;
 }
 
 function joinPath(base, leaf) {
@@ -32,11 +40,11 @@ const CONFIG = {
   logPath: joinPath(LOG_DIR, 'demo_idle_threshold_trace.jsonl'),
 };
 
-const GAME_MODULE = 'crimsonland.exe';
+const GAME_MODULE =
+  getEnv('CRIMSON_FRIDA_MODULE') ||
+  (Process.mainModule && Process.mainModule.name ? Process.mainModule.name : DEFAULT_GAME_MODULE);
 
-const LINK_BASE = {
-  'crimsonland.exe': ptr('0x00400000'),
-};
+let LINK_BASE = ptr('0x00400000');
 
 const ADDR = {
   demo_mode_start: 0x00403390,
@@ -48,6 +56,7 @@ const ADDR = {
 };
 
 let LOG = { file: null, ok: false };
+let ADDR_OVERRIDES = { raw: null, applied: {}, errors: [] };
 
 function initLog() {
   try {
@@ -64,6 +73,13 @@ function writeLog(obj) {
   console.log(line);
 }
 
+function formatHex32(n) {
+  if (n === null || n === undefined) return null;
+  const v = Number(n);
+  if (!Number.isFinite(v)) return null;
+  return '0x' + (v >>> 0).toString(16).padStart(8, '0');
+}
+
 function exePtr(staticVa) {
   let mod = null;
   try {
@@ -72,13 +88,79 @@ function exePtr(staticVa) {
     return null;
   }
   if (!mod) return null;
-  const linkBase = LINK_BASE[GAME_MODULE];
-  if (!linkBase) return null;
   try {
-    return mod.base.add(ptr(staticVa).sub(linkBase));
+    return mod.base.add(ptr(staticVa).sub(LINK_BASE));
   } catch (_) {
     return null;
   }
+}
+
+function parseAddrOverrides(raw) {
+  const out = { raw: raw, overrides: {}, errors: [] };
+  if (!raw) return out;
+
+  const text = String(raw).trim();
+  if (!text) return out;
+
+  if (text.startsWith('{')) {
+    try {
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === 'object') {
+        for (const key in obj) {
+          const v = obj[key];
+          const parsed = typeof v === 'number' ? v : parseInt(String(v).trim(), 0);
+          if (!Number.isFinite(parsed)) {
+            out.errors.push({ key: key, error: 'not_a_number', value: v });
+            continue;
+          }
+          out.overrides[key] = parsed;
+        }
+      }
+    } catch (e) {
+      out.errors.push({ error: 'json_parse', message: String(e) });
+    }
+    return out;
+  }
+
+  const parts = text
+    .split(/[;,]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  for (const part of parts) {
+    const eq = part.indexOf('=');
+    if (eq < 1) {
+      out.errors.push({ error: 'bad_pair', value: part });
+      continue;
+    }
+    const key = part.slice(0, eq).trim();
+    const valueText = part.slice(eq + 1).trim();
+    const parsed = parseInt(valueText, 0);
+    if (!Number.isFinite(parsed)) {
+      out.errors.push({ key: key, error: 'not_a_number', value: valueText });
+      continue;
+    }
+    out.overrides[key] = parsed;
+  }
+  return out;
+}
+
+function applyAddrOverrides(addrMap, parsed) {
+  const applied = {};
+  if (!parsed || !parsed.overrides) return applied;
+  for (const key in parsed.overrides) {
+    if (!(key in addrMap)) continue;
+    addrMap[key] = parsed.overrides[key];
+    applied[key] = addrMap[key];
+  }
+  return applied;
+}
+
+function maybeOverrideLinkBase() {
+  const raw = getEnv('CRIMSON_FRIDA_LINK_BASE') || getEnv('CRIMSON_FRIDA_IMAGE_BASE');
+  if (!raw) return;
+  const parsed = parseInt(String(raw).trim(), 0);
+  if (!Number.isFinite(parsed)) return;
+  LINK_BASE = ptr(parsed);
 }
 
 function resolveAbi() {
@@ -110,6 +192,13 @@ function readU8(staticVa) {
 
 function main() {
   initLog();
+  maybeOverrideLinkBase();
+  const parsedOverrides = parseAddrOverrides(getEnv('CRIMSON_FRIDA_ADDRS'));
+  ADDR_OVERRIDES = {
+    raw: parsedOverrides.raw,
+    applied: applyAddrOverrides(ADDR, parsedOverrides),
+    errors: parsedOverrides.errors,
+  };
 
   const t0 = Date.now();
   let uiReadyMs = null;
@@ -121,8 +210,40 @@ function main() {
     // ignore
   }
 
-  const addrDemoStart = exePtr(ADDR.demo_mode_start);
-  const addrMaxTimeline = exePtr(ADDR.ui_elements_max_timeline);
+  const ptrs = {};
+  const addrs = {};
+  const staticAddrs = {};
+  for (const key in ADDR) {
+    ptrs[key] = exePtr(ADDR[key]);
+    addrs[key] = ptrs[key] ? ptrs[key].toString() : null;
+    staticAddrs[key] = formatHex32(ADDR[key]);
+  }
+
+  writeLog({
+    event: 'start',
+    config: CONFIG,
+    frida: { version: Frida.version, runtime: Script.runtime },
+    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
+    module: GAME_MODULE,
+    link_base: LINK_BASE.toString(),
+    addr_overrides: {
+      applied: ADDR_OVERRIDES.applied,
+      errors: ADDR_OVERRIDES.errors,
+    },
+    t0_ms: t0,
+    exe: exeMod
+      ? {
+          base: exeMod.base.toString(),
+          size: exeMod.size,
+          path: exeMod.path,
+        }
+      : null,
+    static_addrs: staticAddrs,
+    addrs: addrs,
+  });
+
+  const addrDemoStart = ptrs.demo_mode_start;
+  const addrMaxTimeline = ptrs.ui_elements_max_timeline;
 
   if (!addrDemoStart) {
     writeLog({ event: 'error', target: 'demo_mode_start', error: 'addr_unavailable' });
@@ -137,26 +258,6 @@ function main() {
   const uiMaxTimeline = abi
     ? new NativeFunction(addrMaxTimeline, 'int', [], abi)
     : new NativeFunction(addrMaxTimeline, 'int', []);
-
-  writeLog({
-    event: 'start',
-    config: CONFIG,
-    frida: { version: Frida.version, runtime: Script.runtime },
-    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
-    module: GAME_MODULE,
-    t0_ms: t0,
-    exe: exeMod
-      ? {
-          base: exeMod.base.toString(),
-          size: exeMod.size,
-          path: exeMod.path,
-        }
-      : null,
-    addrs: {
-      demo_mode_start: addrDemoStart.toString(),
-      ui_elements_max_timeline: addrMaxTimeline.toString(),
-    },
-  });
 
   const pollIntervalMs = parseInt(CONFIG.pollIntervalMs, 10) || 100;
   setInterval(() => {
