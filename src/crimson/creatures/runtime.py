@@ -161,6 +161,7 @@ class CreatureDeath:
 class CreatureUpdateResult:
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
+    sfx: tuple[str, ...] = ()
 
 
 class CreaturePool:
@@ -336,6 +337,7 @@ class CreaturePool:
 
         deaths: list[CreatureDeath] = []
         spawned: list[int] = []
+        sfx: list[str] = []
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
@@ -512,6 +514,7 @@ class CreaturePool:
                             base_damage=45.0,
                             hits_players=True,
                         )
+                        sfx.append("sfx_shock_fire")
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
@@ -525,6 +528,7 @@ class CreaturePool:
                             base_damage=45.0,
                             hits_players=True,
                         )
+                        sfx.append("sfx_plasmaminigun_fire")
                         creature.attack_cooldown = (
                             float(rand() & 3) * 0.1 + float(creature.orbit_angle) + float(creature.attack_cooldown)
                         )
@@ -552,7 +556,7 @@ class CreaturePool:
                 mapping, _ = self.spawn_plan(plan, rand=rand)
                 spawned.extend(mapping)
 
-        return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned))
+        return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
 
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True

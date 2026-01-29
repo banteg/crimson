@@ -17,7 +17,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 10) High score shot stats (fired/hit)
 - [x] 11) High score weapon usage (most used)
 - [x] 12) Quest high score stats (shots/weapon usage)
-- [ ] 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
+- [x] 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
 - [x] 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
 - [ ] 15) Multiplayer wiring (2–4 players)
 - [ ] 16) Demo trial overlay (demo builds)
@@ -418,7 +418,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Implement ranged attack fire path (distance gate + heading-based fire)
 - [x] Pack variant projectile type into `orbit_radius`
 - [x] Variant cooldown uses `orbit_angle + (rand&3)*0.1`
-- [ ] Wire the missing SFX/event hooks for ranged fire
+- [x] Wire the missing SFX/event hooks for ranged fire
 - [x] Add regression tests for ranged attack behavior
 
 ---
@@ -451,4 +451,4 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [ ] Bonus pickup SFX parity (including variants)
 - [ ] Perk UI SFX parity (open/pick/error)
-- [ ] Ranged enemy fire SFX parity
+- [x] Ranged enemy fire SFX parity (key only; no panning yet)

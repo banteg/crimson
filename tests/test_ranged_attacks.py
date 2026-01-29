@@ -26,7 +26,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature.ai_mode = 2
     creature.contact_damage = 0.0
 
-    pool.update(0.001, state=state, players=[player])
+    result = pool.update(0.001, state=state, players=[player])
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -37,6 +37,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
 
     direct_aim = math.atan2(player.pos_y - creature.y, player.pos_x - creature.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
+    assert result.sfx == ("sfx_shock_fire",)
 
 
 def test_ranged_creature_does_not_fire_when_too_close() -> None:
@@ -53,10 +54,11 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.ai_mode = 2
     creature.contact_damage = 0.0
 
-    pool.update(0.001, state=state, players=[player])
+    result = pool.update(0.001, state=state, players=[player])
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert not spawned
+    assert result.sfx == ()
 
 
 def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
@@ -76,7 +78,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0
 
-    pool.update(0.001, state=state, players=[player], rand=lambda: 0)
+    result = pool.update(0.001, state=state, players=[player], rand=lambda: 0)
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -84,6 +86,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
     assert math.isclose(creature.attack_cooldown, 0.4, abs_tol=1e-9)
+    assert result.sfx == ("sfx_plasmaminigun_fire",)
 
 
 def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:

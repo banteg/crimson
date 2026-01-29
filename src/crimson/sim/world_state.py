@@ -27,6 +27,7 @@ class WorldEvents:
     hits: list[ProjectileHit]
     deaths: tuple[object, ...]
     pickups: list[object]
+    sfx: list[str]
 
 
 @dataclass(slots=True)
@@ -161,7 +162,7 @@ class WorldState:
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
 
-        return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups)
+        return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups, sfx=list(creature_result.sfx))
 
     def _advance_creature_anim(self, dt: float) -> None:
         for creature in self.creatures.entries:

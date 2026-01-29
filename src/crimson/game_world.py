@@ -424,6 +424,10 @@ class GameWorld:
             for _ in events.pickups:
                 self.audio_router.play_sfx("sfx_ui_bonus")
 
+        if events.sfx:
+            for key in events.sfx[:4]:
+                self.audio_router.play_sfx(key)
+
         self._bake_fx_queues()
         self.update_camera(dt)
         return events.hits
