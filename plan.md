@@ -317,8 +317,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.7 Wiring
 
-- [ ] Add `TypoShooterMode` + `TypoShooterGameView`
-- [ ] Route `start_typo` → `TypoShooterGameView`
+- [x] Add `TypoShooterMode` + `TypoShooterGameView`
+- [x] Route `start_typo` → `TypoShooterGameView`
 
 ### 6.8 Tests
 

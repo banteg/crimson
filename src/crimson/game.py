@@ -823,6 +823,51 @@ class RushGameView:
         return action
 
 
+class TypoShooterGameView:
+    """Gameplay view wrapper that adapts TypoShooterMode into `crimson game`."""
+
+    def __init__(self, state: GameState) -> None:
+        from .modes.typo_mode import TypoShooterMode
+
+        self._state = state
+        self._mode = TypoShooterMode(
+            ViewContext(assets_dir=state.assets_dir),
+            texture_cache=state.texture_cache,
+            config=state.config,
+            audio=state.audio,
+            audio_rng=state.rng,
+        )
+        self._action: str | None = None
+
+    def open(self) -> None:
+        self._action = None
+        self._state.screen_fade_ramp = False
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
+        self._mode.bind_audio(self._state.audio, self._state.rng)
+        self._mode.bind_screen_fade(self._state)
+        self._mode.open()
+
+    def close(self) -> None:
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
+        self._mode.close()
+
+    def update(self, dt: float) -> None:
+        self._mode.update(dt)
+        if getattr(self._mode, "close_requested", False):
+            self._action = "back_to_menu"
+            self._mode.close_requested = False
+
+    def draw(self) -> None:
+        self._mode.draw()
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+
 class TutorialGameView:
     """Gameplay view wrapper that adapts TutorialMode into `crimson game`."""
 
@@ -1540,12 +1585,7 @@ class GameLoopView:
             "quest_failed": QuestFailedView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": RushGameView(state),
-            "start_typo": PanelMenuView(
-                state,
-                title="Typ-o-Shooter",
-                body="Typ-o-Shooter mode is not implemented yet.",
-                back_action="open_play_game",
-            ),
+            "start_typo": TypoShooterGameView(state),
             "start_tutorial": TutorialGameView(state),
             "open_options": OptionsMenuView(state),
             "open_controls": PanelMenuView(
