@@ -13,7 +13,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, weapon_assign_player
+from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..persistence.highscores import HighScoreRecord
 from ..typo.names import CreatureNameTable
 from ..typo.spawns import tick_typo_spawns
@@ -24,7 +24,6 @@ from ..ui.perk_menu import load_perk_menu_assets
 from .base_gameplay_mode import BaseGameplayMode
 
 WORLD_SIZE = 1024.0
-TYPO_WEAPON_ID = 3
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
@@ -85,17 +84,12 @@ class TypoShooterMode(BaseGameplayMode):
         self._aim_target_x = float(self._player.pos_x) + 128.0
         self._aim_target_y = float(self._player.pos_y)
 
-        self._enforce_typo_loadout()
+        enforce_typo_player_frame(self._player)
 
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
         super().close()
-
-    def _enforce_typo_loadout(self) -> None:
-        if int(self._player.weapon_id) != TYPO_WEAPON_ID:
-            weapon_assign_player(self._player, TYPO_WEAPON_ID)
-        self._player.ammo = max(0, int(self._player.clip_size))
 
     def _handle_input(self) -> None:
         if self._game_over_active:
@@ -248,15 +242,12 @@ class TypoShooterMode(BaseGameplayMode):
                 self._enter_game_over()
             return
 
-        self._enforce_typo_loadout()
-        input_state = PlayerInput(
-            move_x=0.0,
-            move_y=0.0,
+        enforce_typo_player_frame(self._player)
+        input_state = build_typo_player_input(
             aim_x=float(self._aim_target_x),
             aim_y=float(self._aim_target_y),
-            fire_down=False,
-            fire_pressed=bool(fire_pressed),
-            reload_pressed=bool(reload_pressed),
+            fire_requested=bool(fire_pressed),
+            reload_requested=bool(reload_pressed),
         )
         self._world.update(
             dt_world,
@@ -265,6 +256,7 @@ class TypoShooterMode(BaseGameplayMode):
             game_mode=int(GameMode.TYPO),
             perk_progression_enabled=False,
         )
+        enforce_typo_player_frame(self._player)
 
         self._state.bonuses.weapon_power_up = 0.0
         self._state.bonuses.reflex_boost = 0.0

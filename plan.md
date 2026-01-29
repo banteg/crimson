@@ -17,34 +17,34 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 
 ## 0) Lock down authoritative references per mode
 
-- [ ] Verify/record the exact decompile entrypoints you’re matching (names + addrs)
+- [x] Verify/record the exact decompile entrypoints you’re matching (names + addrs)
 - [ ] Promote stable names into `analysis/ghidra/maps/name_map.json` (when missing)
 - [ ] Re-run headless exports after map changes (prefer `just ghidra-exe`, and `just ghidra-grim` when syncing)
 
 ### Quests
 
-- [ ] Start/reset: `quest_start_selected` (`0x0043a790`)
-- [ ] Per-frame gameplay + completion transition: `quest_mode_update` (`0x00443d90`)
-- [ ] Results screen: `quest_results_screen_update` (`0x00441e20`)
-- [ ] Failed screen: `quest_failed_screen_update` (`0x00441820`)
+- [x] Start/reset: `quest_start_selected` (`0x0043a790`)
+- [x] Per-frame gameplay + completion transition: `quest_mode_update` (`0x004070e0`)
+- [x] Results screen: `quest_results_screen_update` (`0x00410d20`)
+- [x] Failed screen: `quest_failed_screen_update` (`0x004107e0`)
 - [ ] HUD bits: confirm where progress ratio + quest title timer are computed in the render path
 
 ### Rush
 
-- [ ] Per-frame: `rush_mode_update` (`0x00443fd0`)
+- [x] Per-frame: `rush_mode_update` (`0x004072b0`)
 
 ### Typ-o Shooter
 
-- [ ] Main per-frame: `survival_gameplay_update_and_render` (state `0x12` branch)
-- [ ] Names: `creature_name_assign_random` (`0x004445a0`)
-- [ ] Find: `creature_find_by_name` (`0x00444800`)
-- [ ] Draw labels: `creature_name_draw_labels` (`0x00444850`)
-- [ ] Fire: `player_fire_weapon` (`0x00444980`) (used only by typ-o in the decompile)
+- [x] Main per-frame: `survival_gameplay_update_and_render` (`0x004457c0`) (state `0x12` branch)
+- [x] Names: `creature_name_assign_random` (`0x00445380`)
+- [x] Find: `creature_find_by_name` (`0x00445590`)
+- [x] Draw labels: `creature_name_draw_labels` (`0x00445600`)
+- [x] Fire: `player_fire_weapon` (`0x00444980`) (used only by typ-o in the decompile)
 
 ### Tutorial
 
-- [ ] Script: `tutorial_timeline_update` (`0x00408990`)
-- [ ] Prompt UI: `tutorial_prompt_dialog` (`0x00408780`)
+- [x] Script: `tutorial_timeline_update` (`0x00408990`)
+- [x] Prompt UI: `tutorial_prompt_dialog` (`0x00408530`)
 
 ---
 
@@ -328,7 +328,24 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ---
 
-## 7) Recommended order (minimize rework)
+## 7) Polish + regression tests
+
+### Typ-o Shooter fidelity
+
+- [x] Match native `player_fire_weapon @ 0x00444980` semantics
+  - [x] fire is a one-frame pulse (not mouse hold)
+  - [x] `shot_cooldown`, `reload_timer`, `spread_heat` reset each frame
+  - [x] ammo topped up each frame
+- [x] Add regression tests for the above helpers (no Raylib window required)
+
+### Highscores + wiring
+
+- [ ] Add a mode-by-mode rank ordering test (Survival/Rush/Typ-o by XP desc; Quests by time asc)
+- [ ] Add a smoke test that each `start_*` routes to the intended view (mode id + persistence filename)
+
+---
+
+## Appendix) Recommended order (minimize rework)
 
 - [x] Mode ID + progression gating cleanup
 - [x] Extract `BaseGameplayMode` (convert Survival, keep identical)
