@@ -405,6 +405,7 @@ class GameWorld:
             self.ground.process_pending()
 
         prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in self.players]
+        prev_perk_pending = int(self.state.perk_selection.pending_count)
 
         events = self.world_state.step(
             dt,
@@ -418,6 +419,9 @@ class GameWorld:
             game_mode=game_mode,
             perk_progression_enabled=bool(perk_progression_enabled),
         )
+
+        if perk_progression_enabled and int(self.state.perk_selection.pending_count) > prev_perk_pending:
+            self.audio_router.play_sfx("sfx_ui_levelup")
 
         if events.hits:
             self._queue_projectile_decals(events.hits)

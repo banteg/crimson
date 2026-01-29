@@ -52,3 +52,29 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
     )
 
     assert played == ["sfx_pistol_fire"]
+
+
+def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+
+    played: list[str | None] = []
+
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+        played.append(key)
+
+    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    world.audio = object()
+    world.audio_rng = random.Random(0)
+
+    player = world.players[0]
+    player.experience = 10_000
+
+    world.update(
+        0.05,
+        inputs=[PlayerInput()],
+        auto_pick_perks=False,
+        perk_progression_enabled=True,
+    )
+
+    assert played == ["sfx_ui_levelup"]
