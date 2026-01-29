@@ -1983,7 +1983,7 @@ class GameLoopView:
         console.handle_hotkey()
         console.update(dt)
         _update_screen_fade(self._state, dt)
-        if (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
+        if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
         if console.open_flag:
             if console.quit_requested:
