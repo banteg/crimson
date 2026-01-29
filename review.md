@@ -6,6 +6,30 @@ Generated: January 29, 2026
 
 This document catalogs discrepancies between the current Python/Raylib rendering implementation and the original decompiled Crimsonland executable. The render pipeline order and specific behaviors show several significant mismatches that may cause visual differences.
 
+## Triage (2026-01-29)
+
+### Fix (separate commits; check off when done)
+- [ ] 1. FX Queue Baking Timing (move bake to start of world draw)
+- [ ] 2. Player Overlay Render Order (split DEAD-before-creatures, ALIVE-after-creatures)
+- [ ] 3. Creature Render Type Ordering (match `creature_render_all` type order)
+- [ ] 6. Missing Monster Vision Overlays (yellow overlay quads when perk active)
+- [ ] 9. Player Sprite Shadow/Outline Scale (1.02/1.03 passes with offsets; include dead shadow pass)
+- [ ] 10. Death Frame Calculation (match UV run 32..52 and hold at 52)
+- [ ] 12. Missing Radioactive Perk Aura (pulsing green aura)
+- [ ] 13. Missing Shield Effect Rendering (two rotating bubbles)
+- [ ] 14. Player Color Tinting in Multiplayer (blue/orange tint)
+
+### Defer (needs more evidence / larger refactor)
+- 4. Missing Batch Rendering (performance)
+- 5. Effect Pool Rendering Order (layering; needs broader render pipeline audit)
+- 7. Screen Fade Implementation (minor; currently handled as global transition)
+- 8. Terrain UV Scrolling (minor; likely close enough with src-rect scrolling)
+- 11. Creature Shadow Alpha Fade (blend/state details unclear)
+- 15. Projectile Trail Per-Vertex Alpha (needs side-by-side capture)
+
+### No issue
+- 16. Muzzle Flash Position Calculation (matches)
+
 ---
 
 ## 1. FX Queue Baking Timing (Major)
@@ -584,4 +608,3 @@ Actually matches - no issue here.
 - Missing radioactive/shield overlays
 - Missing Monster Vision yellow overlays
 - Effect pool renders after bonuses instead of interleaved
-
