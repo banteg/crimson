@@ -569,3 +569,278 @@ Everything else (Freeze, Energizer, Nuke correctness, perk damage scaling, prope
 ---
 
 If you want, I can also produce a concrete “implementation checklist” file you can drop into `docs/rewrite/` (or issues) that enumerates each perk/bonus/weapon and links it to the decompiled function(s) and the target `src/` module to update — but the analysis above should already give you a clear, dependency-safe path forward.
+
+---
+
+# Lighting plan (raylib HQ lighting)
+
+we are decompiling and porting an old game. some things are documented in docs/, the authoritative decompiles are available under analysis/, our version is being developed in src/. we aim for high fidelity to the original.
+
+i want to add an optional high quality dynamic lighting to our remake. maybe the trooper could hold a flashlight, as well as we could have other simultaneous light sources like muzzle, plasma, ion, rocket fire, explosions etc.
+
+suggest what approach would fit the game well. it's basically a top down 2d game. i want the light sources to possibly cast shadows of all creatures. there could possibly be a dozen or two lightsources and hundreds of creatures active. what would work here? explain the options we have with raylib.
+
+---
+
+For a **top‑down 2D remake** where you want **high fidelity by default** and an **optional “HQ lighting” mode**, the best fit in raylib is usually a **lightmap pipeline** (render lights into a texture, then combine with the scene) and then *optionally* add **shadowing for a small subset of “important” lights** (flashlight, big explosions), using **2D shadow volumes / occluder polygons**.
+
+raylib doesn’t ship a full 2D lighting/shadow system out of the box; you build it yourself from **RenderTexture2D + blend modes + shaders**. raylib’s own examples are basically the same building blocks: there’s an official **lightmap rendering** shader example and a **normal map rendering** example for per‑pixel lighting, plus a **top‑down lights** example that demonstrates shadow volumes for occluders. ([raylib][1])
+
+Below are the main approaches that “work well” with your constraints (dozens of lights + hundreds of creatures), and how they map to raylib.
+
+---
+
+## The approach that usually fits best for your game
+
+### 1) Lightmap compositing as the baseline (fast, faithful, scalable)
+
+**Core idea:** treat your original art as “fully lit” (brightness = 1), then in HQ mode you **darken the world globally** and “re‑reveal” it where lights hit.
+
+**Pipeline:**
+
+1. Draw your world normally (tiles + sprites).
+2. Build a **lightmap RenderTexture2D** each frame:
+
+   * Clear it to **ambient light color** (e.g., dark gray).
+   * Draw each light as a **radial gradient** (or spotlight texture) into the lightmap using **additive blending**.
+3. Composite:
+
+   * Multiply the world by the lightmap (or do a shader combine).
+
+raylib supports the blending you need via `BeginBlendMode()`, including additive and multiplied modes. ([raylib][2])
+
+**Why this fits your “high fidelity” goal:**
+
+* Your base textures remain the original “truth.”
+* Lighting mainly **reduces** brightness (and optionally tints), so you’re not re‑shading everything into a different art style.
+* You can keep it **optional**, deterministic, and isolated (easy to disable for purists / speedruns / comparisons).
+
+**Why this fits your performance needs:**
+
+* “20 lights” is basically “20 sprite draws into the light RT,” which is cheap.
+* You can render the lightmap at **½ or ¼ resolution** and upscale with bilinear filtering for “soft-ish” falloff at a fraction of the fill‑rate cost.
+
+---
+
+### 2) Shadows: use 2D shadow volumes, but be selective
+
+You *can* make lights cast shadows of creatures/props in 2D by treating each occluder as a polygon and rendering a **shadow wedge** (extruded away from the light). raylib even has a **top‑down lights** example that talks in terms of “shadow volumes” from box edges. ([raylib][3])
+
+But the critical scaling issue is:
+
+* **Naive cost** is roughly **O(lights × occluders)**.
+* With “20 lights” and “hundreds of creatures,” doing full per‑light shadows for all creatures can get expensive unless you cull hard.
+
+So the best “fits the game well” strategy tends to be:
+
+* **Shadows for the flashlight** (and(relatively) a few “hero” lights like large explosions).
+* **No shadows** (or simplified shadows) for small, short‑lived lights like muzzle flashes, sparks, plasma bolts.
+
+This gives you the *perceived* “HQ” look without blowing up frame time.
+
+---
+
+## The practical options you have in raylib (and what I’d pick)
+
+### Option A — Simple lightmap (no shadows)
+
+**What it is:** draw gradient sprites into a light RT with additive blending; multiply with the scene.
+
+**Pros**
+
+* Easiest to implement.
+* Fast enough for **dozens** of lights.
+* Great for muzzle flashes, explosions, plasma, etc.
+
+**Cons**
+
+* No occlusion/shadows; lights “shine through” creatures/walls.
+
+**raylib pieces**
+
+* `RenderTexture2D` (`LoadRenderTexture`, `BeginTextureMode`, `EndTextureMode`)
+* `BeginBlendMode(BLEND_ADDITIVE)` for accumulating lights ([hackage.haskell.org][4])
+* Composite using `BLEND_MULTIPLIED` or a lightmap shader example approach ([raylib][1])
+
+This is the baseline I’d ship as “Dynamic lighting: ON”.
+
+---
+
+### Option B — Lightmap + per‑pixel normals (2D “deferred-ish” look)
+
+**What it is:** give tiles/sprites **normal maps**, then do per‑pixel diffuse/specular lighting in a shader. raylib has a **normalmap rendering** shader example. ([raylib][5])
+
+**Pros**
+
+* Looks very “HQ” (lights wrap around sprites/props).
+* Still can handle many lights if you limit the light count passed to the shader or do multi-pass accumulation.
+
+**Cons**
+
+* Asset pipeline cost: you need normal maps for sprites/tiles (or generate them).
+* It will change the game’s look more than simple light darkening (less “faithful” unless you keep it subtle).
+* Shadowing is still a separate problem.
+
+**raylib pieces**
+
+* Shaders (`LoadShader`, `BeginShaderMode`, uniforms)
+* Additional textures for normals
+
+I’d treat this as an “Ultra” option (and expect to tune it hard to avoid breaking the original vibe).
+
+---
+
+### Option C — Shadow volumes / occluder extrusion (recommended for your “flashlight casts shadows” ask)
+
+**What it is:** for each light, and each occluder near it, generate a polygon that represents the region “behind” the occluder relative to the light, then mask the light there.
+
+This is the same family of technique implied by raylib’s **shapes_top_down_lights** example (“boxes cast … shadow volumes”). ([raylib][3])
+
+**Pros**
+
+* Works great for top‑down 2D.
+* Shadows are stable and deterministic (important for decompile/high-fidelity projects).
+* CPU geometry generation can be cheap if occluders are simple (circles/AABBs) and you cull.
+
+**Cons**
+
+* If you do it for **every light × every creature**, it can get heavy.
+* Soft shadows require extra work (blur / penumbra tricks).
+
+**How to make it scale**
+
+1. **Spatial cull** occluders per light (grid / hash / quadtree).
+2. Limit shadow‑casting to:
+
+   * flashlight
+   * maybe “big explosion” lights (few per frame)
+3. Use **simple occluder shapes** for creatures (circle/capsule/AABB), not per‑pixel sprite silhouettes.
+
+**Important compositing detail (big gotcha):**
+If you draw all lights into one global lightmap and then “draw shadows into it,” you’ll accidentally shadow *other* lights too.
+
+The correct way is:
+
+* For each shadow‑casting light:
+
+  1. render that light into a **scratch RT** (just that one light),
+  2. apply shadows into that scratch RT,
+  3. then **add** the scratch RT into the global light accumulation RT.
+
+That keeps shadows “per-light correct” while still letting you have many lights overall.
+
+**Soft shadows cheap trick:** render the scratch RT at low res and upscale; the edges will look softer “for free.”
+
+---
+
+### Option D — Screen-space shadowing via ray marching (high quality, expensive)
+
+**What it is:** render occluders into a mask texture, then in the fragment shader ray-march from pixel toward each light to test if blocked.
+
+**Pros**
+
+* Can produce very nice soft-ish shadows and contact occlusion.
+
+**Cons**
+
+* Cost is high: roughly **(pixels × lights × steps)**.
+* You’ll almost certainly need:
+
+  * very low-res light buffer
+  * small step count
+  * limit to 1–3 lights (flashlight only)
+
+**raylib feasibility**
+
+* Totally doable with shaders, but shader loops/arrays need to be careful for platform targets. raylib’s shader support depends on GL version; the examples mention shader support requires OpenGL 3.3 or ES2 builds (not GL 1.1). ([raylib][6])
+
+I’d only consider this if you want a “showpiece” flashlight and are okay with heavy tuning.
+
+---
+
+### Option E — Stencil-buffer shadow volumes (advanced, less “raylib-native”)
+
+Stencil-based shadowing is a classic method, but raylib doesn’t make stencil workflows a first-class, friendly API in the way a full engine does; you may end up using lower-level OpenGL calls / rlgl glue and dealing with platform quirks. There’s active discussion around stencil support patterns in raylib/rlgl. ([GitHub][7])
+
+I wouldn’t start here unless you already have strong GL tooling and really want stencil semantics.
+
+---
+
+## What I’d implement for your remake (concrete recommendation)
+
+### Quality levels (so you don’t paint yourself into a corner)
+
+**Off / Original**
+
+* No lighting (or just the original baked look).
+
+**On (recommended default “enhanced”)**
+
+* Global lightmap at ½ or ¼ res
+* Dozens of additive point lights + spotlights
+* No shadows (or shadows only from static walls)
+
+**Ultra (your “flashlight + shadows” fantasy mode)**
+
+* Same lightmap
+* Flashlight casts shadows from:
+
+  * walls/doors/props (static occluders)
+  * creatures (simple capsule/circle occluders)
+* Optional: big explosions cast shadows for a frame or two (budgeted)
+
+This matches “high fidelity” + “optional HQ.”
+
+### Creature shadows that won’t melt performance
+
+* Give each creature a **shadow-occluder shape** that’s already useful for gameplay (collision capsule/box).
+* Only include a creature as an occluder for a light if:
+
+  * within light radius
+  * and within camera view (plus margin)
+  * and the light is one of the handful that “castsShadows == true”
+
+That’s how you make “hundreds of creatures active” viable.
+
+### Light types you mentioned (mapping)
+
+* **Flashlight**: spotlight cone + shadow volumes (hero light)
+* **Muzzle / plasma / ion / rocket**: point light (no shadows) with short lifetime and maybe flicker
+* **Explosions**: large radius point light, short lifetime; optionally “castsShadows” only for the biggest blast and only if budget allows this frame
+
+---
+
+## raylib implementation notes that matter in practice
+
+* **Downsample your light RT**: huge win. Upscale with bilinear filter.
+* **Draw UI after lighting** so HUD isn’t darkened.
+* **Be careful with RenderTexture Y flip** when drawing/compositing (raylib render textures are typically flipped vertically when sampled; most people solve it with `DrawTextureRec()` and a negative height or consistent helper).
+* **Keep your combine step simple**:
+
+  * Either multiply blend the lightmap on top of the already drawn world (`BLEND_MULTIPLIED`) ([hackage.haskell.org][4])
+  * Or do a single full-screen shader combine (like raylib’s lightmap example approach) ([raylib][1])
+* If you go heavy on shaders, remember raylib’s shader support is tied to GL versions (desktop GL 3.3 / ES2, etc.). ([raylib][6])
+
+---
+
+## Bottom line
+
+If you want something that:
+
+* feels right for a **top‑down 2D “faithful remake”**,
+* supports **dozens of lights**,
+* can optionally do **creature shadows**,
+
+…go with:
+
+**Lightmap accumulation (fast) + shadow volumes for only a few hero lights (correct + scalable)**, using a **per‑shadow-casting-light scratch RT** so shadows don’t incorrectly darken other lights.
+
+If you tell me whether your world geometry is mostly **tile grid** (lots of axis-aligned walls) or lots of arbitrary polygons, I can outline the occluder representation and a very efficient “extract wall edges from collision map” approach that plugs straight into the shadow-volume pipeline.
+
+[1]: https://www.raylib.com/examples/shaders/loader.html?name=shaders_lightmap_rendering&utm_source=chatgpt.com "raylib [shaders] example - lightmap"
+[2]: https://www.raylib.com/examples/textures/loader.html?name=textures_blend_modes&utm_source=chatgpt.com "raylib [textures] example - blend modes"
+[3]: https://www.raylib.com/examples/shapes/loader.html?name=shapes_top_down_lights&utm_source=chatgpt.com "raylib [shapes] example - top down lights"
+[4]: https://hackage.haskell.org/package/h-raylib-5.1.0.1/src/raylib/src/raylib.h?utm_source=chatgpt.com "https://hackage.haskell.org/package/h-raylib-5.1.0..."
+[5]: https://www.raylib.com/examples/shaders/loader.html?name=shaders_normalmap_rendering&utm_source=chatgpt.com "raylib [shaders] example - normalmap rendering"
+[6]: https://www.raylib.com/examples/shaders/loader.html?name=shaders_basic_lighting&utm_source=chatgpt.com "raylib [shaders] example - basic lighting"
+[7]: https://github.com/raysan5/raylib/discussions/2964?utm_source=chatgpt.com "Stencil functionality for rlgl. #2964 - raysan5 raylib"
