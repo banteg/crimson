@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Iterable
 
-from crimson.save_status import (
+from crimson.persistence.save_status import (
     BLOB_SIZE,
     MODE_COUNT_ORDER,
     QUEST_PLAY_COUNT,
