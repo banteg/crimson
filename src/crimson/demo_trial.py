@@ -27,6 +27,7 @@ class DemoTrialOverlayInfo:
 def demo_trial_overlay_info(
     *,
     demo_build: bool,
+    game_mode_id: int,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
     quest_stage_major: int,
@@ -44,34 +45,44 @@ def demo_trial_overlay_info(
     if not demo_build:
         return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
 
+    mode_id = int(game_mode_id)
+    if mode_id == 8:  # tutorial
+        return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+
     used_ms = max(0, int(global_playtime_ms))
     grace_ms = max(0, int(quest_grace_elapsed_ms))
 
     global_remaining_ms = DEMO_TOTAL_PLAY_TIME_MS - used_ms
-
-    use_grace = grace_ms > 0
-    remaining_ms = (DEMO_QUEST_GRACE_TIME_MS - grace_ms) if use_grace else global_remaining_ms
+    grace_remaining_ms = DEMO_QUEST_GRACE_TIME_MS - grace_ms
 
     # Demo tier gating: classic demo lets you play stage 1 quests only; once the
     # player reaches stage > 1, it shows the upsell overlay even if time remains.
-    if used_ms < DEMO_TOTAL_PLAY_TIME_MS and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10):
+    if (
+        mode_id == 3
+        and used_ms < DEMO_TOTAL_PLAY_TIME_MS
+        and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
+    ):
         return DemoTrialOverlayInfo(
             True,
             "quest_tier_limit",
-            int(remaining_ms),
-            format_demo_trial_time(remaining_ms),
+            int(global_remaining_ms),
+            format_demo_trial_time(global_remaining_ms),
         )
 
-    if remaining_ms <= 0:
+    if grace_ms > 0:
+        if grace_remaining_ms <= 0:
+            return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+        # During the quest-only grace period, the classic demo blocks other modes
+        # and points the player back to Quests.
+        if mode_id != 3:
+            return DemoTrialOverlayInfo(
+                True,
+                "quest_grace_left",
+                int(grace_remaining_ms),
+                format_demo_trial_time(grace_remaining_ms),
+            )
+        return DemoTrialOverlayInfo(False, "none", int(grace_remaining_ms), format_demo_trial_time(grace_remaining_ms))
+
+    if global_remaining_ms <= 0:
         return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
-
-    if use_grace:
-        return DemoTrialOverlayInfo(
-            True,
-            "quest_grace_left",
-            int(remaining_ms),
-            format_demo_trial_time(remaining_ms),
-        )
-
-    return DemoTrialOverlayInfo(False, "none", int(remaining_ms), format_demo_trial_time(remaining_ms))
-
+    return DemoTrialOverlayInfo(False, "none", int(global_remaining_ms), format_demo_trial_time(global_remaining_ms))
