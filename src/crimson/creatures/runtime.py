@@ -91,6 +91,15 @@ def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
     return dx * dx + dy * dy
 
 
+def _owner_id_to_player_index(owner_id: int) -> int | None:
+    # Native uses `-1/-2/-3/-4` for player indices and `-100` as a player-owned sentinel.
+    if owner_id == -100:
+        return 0
+    if owner_id < 0:
+        return -1 - owner_id
+    return None
+
+
 @dataclass(slots=True)
 class CreatureState:
     # Core identity/alive flags.
@@ -350,9 +359,8 @@ class CreaturePool:
             if creature.hp <= 0.0:
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                     deaths.append(
-                        self._start_death(
+                        self.handle_death(
                             idx,
-                            creature,
                             state=state,
                             players=players,
                             rand=rand,
@@ -362,9 +370,6 @@ class CreaturePool:
                             fx_queue=fx_queue,
                         )
                     )
-                    # Make sure the one-shot handler cannot fire again, even if dt == 0.
-                    nudge = float(dt) if dt > 0.0 else 0.001
-                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - nudge
 
                 if dt > 0.0:
                     self._tick_dead(
@@ -385,9 +390,8 @@ class CreaturePool:
                 creature.hp -= dt * 180.0
             if creature.hp <= 0.0:
                 deaths.append(
-                    self._start_death(
+                    self.handle_death(
                         idx,
-                        creature,
                         state=state,
                         players=players,
                         rand=rand,
@@ -397,7 +401,6 @@ class CreaturePool:
                         fx_queue=fx_queue,
                     )
                 )
-                creature.hitbox_size = CREATURE_HITBOX_ALIVE - float(dt)
                 self._tick_dead(
                     creature,
                     dt=dt,
@@ -426,9 +429,8 @@ class CreaturePool:
                 creature.hp -= float(ai.self_damage)
                 if creature.hp <= 0.0:
                     deaths.append(
-                        self._start_death(
+                        self.handle_death(
                             idx,
-                            creature,
                             state=state,
                             players=players,
                             rand=rand,
@@ -437,7 +439,6 @@ class CreaturePool:
                             fx_queue=fx_queue,
                         )
                     )
-                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - float(dt)
                     self._tick_dead(
                         creature,
                         dt=dt,
@@ -558,6 +559,42 @@ class CreaturePool:
                 spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
+
+    def handle_death(
+        self,
+        idx: int,
+        *,
+        state: GameplayState,
+        players: list[PlayerState],
+        rand: Callable[[], int],
+        detail_preset: int = 5,
+        world_width: float,
+        world_height: float,
+        fx_queue: FxQueue | None,
+        keep_corpse: bool = True,  # noqa: FBT001, FBT002
+    ) -> CreatureDeath:
+        """Run one-shot death side effects and return the `CreatureDeath` event."""
+
+        creature = self._entries[int(idx)]
+        death = self._start_death(
+            int(idx),
+            creature,
+            state=state,
+            players=players,
+            rand=rand,
+            detail_preset=int(detail_preset),
+            world_width=world_width,
+            world_height=world_height,
+            fx_queue=fx_queue,
+        )
+
+        if keep_corpse:
+            nudge = 0.001
+            creature.hitbox_size = CREATURE_HITBOX_ALIVE - nudge
+        else:
+            creature.active = False
+
+        return death
 
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
@@ -723,12 +760,19 @@ class CreaturePool:
             )
 
         xp_base = int(creature.reward_value)
-        if players and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER):
+        killer: PlayerState | None = None
+        if players:
+            player_index = _owner_id_to_player_index(int(creature.last_hit_owner_id))
+            if player_index is None or not (0 <= player_index < len(players)):
+                player_index = 0
+            killer = players[player_index]
+
+        if killer is not None and perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
             xp_base = int(float(creature.reward_value) * 1.3)
 
         xp_awarded = 0
-        if players:
-            xp_awarded = award_experience(state, players[0], xp_base)
+        if killer is not None:
+            xp_awarded = award_experience(state, killer, xp_base)
 
         if players:
             spawned_bonus = None

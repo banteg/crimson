@@ -242,7 +242,7 @@ Make **every damage source** go through a single “canonical” implementation 
   * Ion Gun Master (damage_type 7)
   * Pyromaniac (damage_type 4)
 
-2. [ ] Implement / refactor `creature_handle_death(creature_id, keep_corpse)` to match original ordering
+2. [x] Implement / refactor `creature_handle_death(creature_id, keep_corpse)` to match original ordering
 
 * You already have most “death plumbing” in `CreaturePool._start_death()`, but it’s currently triggered later and attributes xp to player 0.
 * Bring it closer to the original behavior:
