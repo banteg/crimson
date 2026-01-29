@@ -430,6 +430,37 @@ class WorldRenderer:
         base_size = float(player.size) * scale
         base_scale = base_size / cell
 
+        if (
+            self.particles_texture is not None
+            and perk_active(player, PerkId.RADIOACTIVE)
+            and alpha > 1e-3
+        ):
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
+            if atlas is not None:
+                grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                if grid:
+                    frame = int(atlas.frame)
+                    col = frame % grid
+                    row = frame // grid
+                    cell_w = float(self.particles_texture.width) / float(grid)
+                    cell_h = float(self.particles_texture.height) / float(grid)
+                    src = rl.Rectangle(
+                        cell_w * float(col),
+                        cell_h * float(row),
+                        max(0.0, cell_w - 2.0),
+                        max(0.0, cell_h - 2.0),
+                    )
+                    t = float(self._elapsed_ms) * 0.001
+                    aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
+                    if aura_alpha > 1e-3:
+                        size = 100.0 * scale
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        rl.draw_texture_pro(self.particles_texture, src, dst, origin, 0.0, tint)
+                        rl.end_blend_mode()
+
         tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
         shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
         overlay_tint = tint
