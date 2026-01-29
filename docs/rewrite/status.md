@@ -9,7 +9,8 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - `uv run crimson game`
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
-  - Survival is playable (single-player) with game over → high score entry.
+  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are wired (single-player).
+  - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
   - Menu idle triggers demo/attract mode.
 - `uv run crimson view <name>`: debug views (terrain, atlases, survival, player sandbox, etc).
 - `uv run crimson quests <level>`: quest builder output / spawn scripts.
@@ -27,7 +28,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - **Quest select menu (state `0x0b`)**: UI implemented (stage icons, hardcore toggle gating, quest list + counts overlay).
   - Code: `src/crimson/game.py` (`QuestsMenuView`)
   - Ref: `docs/crimsonland-exe/quest-select-menu.md`
-  - Gap: selecting a quest goes to a placeholder screen; quest gameplay is not wired.
+  - Selecting a quest starts Quest gameplay (with results/failed screens).
 - **Options panel (state `2`)**: partially implemented.
   - Code: `src/crimson/game.py` (`OptionsMenuView`)
   - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
@@ -38,11 +39,12 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Code: `src/crimson/demo.py`
   - Ref: `docs/crimsonland-exe/demo-mode.md`, `docs/crimsonland-exe/screens.md`
   - Gap: demo trial overlay is not implemented.
-- **Game over / high score entry (state `7`)**: implemented for Survival.
-  - Code: `src/crimson/ui/game_over.py`, `src/crimson/highscores.py`, `src/crimson/views/survival.py`
+- **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
+  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py` (`*GameView`)
   - Ref: `docs/crimsonland-exe/screens.md`
-  - Gaps: high score list screen is missing; some stat fields (shots fired/hit, “most used weapon”) are not tracked yet.
-- **Quest results (state `8`) / quest failed (state `0xc`)**: missing.
+  - Gaps: high score list screen (state `0xe`) is missing; some stat fields (weapon usage, shots fired/hit) are not tracked for all modes yet.
+- **Quest results (state `8`) / quest failed (state `0xc`)**: implemented.
+  - Code: `src/crimson/game.py` (`QuestResultsView`, `QuestFailedView`)
   - Ref: `docs/crimsonland-exe/screens.md`
 - **Mods / Online scores / plugin modal flow**: missing (mods button is a stub; online score submission is not implemented).
   - Ref: `docs/crimsonland-exe/mods.md`, `docs/crimsonland-exe/online-scores.md`, `docs/crimsonland-exe/screens.md`
@@ -52,14 +54,14 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - **Core world sim**: `GameWorld` is the active runtime container (players, creatures, projectiles, bonuses/perks, FX queues, terrain renderer).
   - Code: `src/crimson/game_world.py`
 - **Survival loop**: wired and playable.
-  - Code: `src/crimson/views/survival.py`, `src/crimson/creatures/spawn.py` (wave + milestone spawns)
+  - Code: `src/crimson/modes/survival_mode.py`, `src/crimson/creatures/spawn.py` (wave + milestone spawns)
   - Gaps: still missing full enemy/weapon parity (notably ranged attacks + split-on-death), and many SFX/event hooks.
-- **Rush / Typ-o-Shooter / Tutorial**: not wired (UI stubs exist; underlying spawn/timeline logic exists in tests).
-  - Code: `src/crimson/game.py` (stubs), `src/crimson/creatures/spawn.py` (rush spawns), `src/crimson/quests/timeline.py` (tutorial/rush timelines)
+- **Rush / Typ-o-Shooter / Tutorial**: wired and playable.
+  - Code: `src/crimson/modes/rush_mode.py`, `src/crimson/modes/typo_mode.py`, `src/crimson/modes/tutorial_mode.py`
 - **Multiplayer (2–4 players)**: not wired (Play Game panel exposes player count; Survival currently hardcodes `player_count=1`).
-  - Code: `src/crimson/views/survival.py`
-- **Progression/unlocks**: partially modeled via `game.cfg` and counters, but not fully driven by gameplay outcomes.
-  - Code: `src/crimson/save_status.py`, `src/crimson/game.py` (temporary counters on mode start)
+  - Code: `src/crimson/modes/*` (modes currently use `player_count=1`)
+- **Progression/unlocks**: quest unlock indices + completion counters are updated on quest completion; mode play counters increment on mode start.
+  - Code: `src/crimson/persistence/save_status.py`, `src/crimson/game.py`
 
 ### Evidence (what is verified)
 
@@ -71,14 +73,13 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 
 ## Biggest remaining gaps (vs v1.9.93)
 
-1) **Mode completion parity**
-   - Implement Quest/Rush/Typ-o/Tutorial runtime loops (and their results/fail flows).
-2) **Progression + persistence parity**
-   - Wire quest unlock progression, completion counters, and high-score stat fields (usage + accuracy).
-3) **Creature + weapon coverage**
+1) **Creature + weapon coverage**
    - Ranged enemies (`CreatureFlags.RANGED_ATTACK_*`), split-on-death, and remaining per-weapon behaviors.
-4) **UI completeness**
-   - High score list screen, full Options/Controls parity, and demo trial overlay.
+2) **Multiplayer (2–4 players)**
+   - Wire player count into the gameplay modes and sim.
+3) **UI completeness**
+   - High score list screen (state `0xe`), full Options/Controls parity, and demo trial overlay.
+4) **Progression + stats fidelity**
+   - Track weapon usage, shots fired/hit, and other high-score fields across modes.
 5) **Out-of-scope / later**
    - Online scores + mods/plugin interface (tracked in the decompiled docs but not implemented in the rewrite yet).
-

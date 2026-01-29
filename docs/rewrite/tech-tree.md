@@ -24,7 +24,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Panel menu slide animation (panel + BACK) -> Unlocks: Play/Options/etc screen frame parity.
 - [x] Menu sign shadow pass (fx_detail) -> Unlocks: exact menu draw-pass parity.
 - [x] Play Game panel (mode select + dropdown + tooltips + F1 overlay) -> Unlocks: mode selection UI parity.
-- [x] Quest select menu UI -> Unlocks: quest navigation + gating (quest gameplay pending).
+- [x] Quest select menu UI -> Unlocks: quest navigation + gating.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [x] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
@@ -60,7 +60,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [ ] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
 - [ ] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
 - [ ] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
-- [ ] Wire Rush/Quest mode loops into `crimson game` -> Unlocks: additional playable modes.
+- [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into `crimson game` -> Unlocks: additional playable modes.
 - [ ] Confirm demo idle threshold from the original demo build -> Unlocks: attract timing parity.
 
 ## Gameplay building blocks (implemented, not fully integrated)
@@ -75,7 +75,6 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Gaps (still missing)
 
-- Quest/Rush/Typ-o/Tutorial mode loops are not wired yet (Survival is the current playable mode).
 - Creature runtime parity gaps: ranged attacks, split-on-death, and AI edge cases.
 - Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
 - High score list screen (post-run) is not implemented yet.

@@ -12,6 +12,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 5) Implement Tutorial (end-to-end)
 - [x] 6) Implement Typ-o Shooter (end-to-end)
 - [x] 7) Polish + regression tests
+- [x] 8) Refresh rewrite docs
 
 ---
 
@@ -354,3 +355,12 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Tutorial (director + prompt + fixed perks)
 - [x] Typ-o (names + typing + bespoke spawn/fire)
 - [x] Polish + regression tests (mode IDs, perk gating, highscores)
+
+---
+
+## 8) Refresh rewrite docs
+
+- [x] Update `docs/rewrite/status.md` to reflect current wiring
+- [x] Update `docs/rewrite/index.md` “What exists now” + gaps
+- [x] Update `docs/rewrite/tech-tree.md` checkboxes/gaps
+- [x] Update `docs/rewrite/game-over.md` parity notes

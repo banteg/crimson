@@ -9,7 +9,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu + panels; Survival is playable; menu idle triggers demo/attract)
+- `uv run crimson game` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are wired; menu idle triggers demo/attract)
 - `uv run crimson view <name>` (debug views + mode views)
 - `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
@@ -26,7 +26,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Intro/theme music handoff.
 - Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
-- Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay pending).
+- Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen pending).
 - Statistics panel (quest unlock + mode play counts + checksum + top weapons).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
@@ -57,9 +57,10 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 ### Gameplay (modes)
 
 - `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
-- Survival mode loop is wired into `crimson game` and the view runner (`uv run crimson view survival`).
+- Survival/Rush/Quest/Typ-o/Tutorial loops are wired into `crimson game` via `src/crimson/modes/*`.
   - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
-- Game over / high score entry screen is implemented for Survival: [rewrite/game-over.md](game-over.md)
+- Game over / high score entry screen is implemented for Survival/Rush/Typ-o: [rewrite/game-over.md](game-over.md)
+- Quest completion/failure screens are implemented (results + failed).
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
 ### Gameplay (sandbox)
@@ -103,13 +104,12 @@ See also:
 
 ## Known gaps (short list)
 
-- Quest/Rush/Typ-o/Tutorial gameplay loops are not wired yet (Survival is the current playable mode).
 - Creature runtime parity gaps: ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) and `SPLIT_ON_DEATH` are still pending.
 - Some gameplay SFX/events are still missing (perk UI, ranged enemy fire).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
 - Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).
 - `game.cfg` is loaded/saved, but progression/unlock wiring and high-score stat fields are still incomplete.
-- High score list screen is not implemented yet (game over routes back to menu).
+- High score list screen (state `0xe`) is not implemented yet (game over “High scores” currently routes back to the menu).
 - Demo purchase URL is defunct (screen exists only for parity).
 
 ## Roadmap

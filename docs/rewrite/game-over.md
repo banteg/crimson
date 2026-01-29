@@ -4,7 +4,7 @@ This documents the current status of the **Game Over / high score entry** screen
 
 ## What’s implemented
 
-- Survival death opens the game over UI (banner + name entry + score card + buttons) on top of the frozen gameplay scene.
+- Survival/Rush/Typ-o death opens the game over UI (banner + name entry + score card + buttons).
 - High score records are persisted to the `scores5/` directory using the same byte-wise encoding + checksum scheme as the original.
 - The score card renderer ports the decompiled `ui_text_input_render` behavior:
   - Score + Rank column.
@@ -15,8 +15,8 @@ This documents the current status of the **Game Over / high score entry** screen
 Code pointers:
 
 - `src/crimson/ui/game_over.py` (UI + score card renderer)
-- `src/crimson/highscores.py` (record encode/decode + table insert logic)
-- `src/crimson/views/survival.py` (death -> game-over wiring)
+- `src/crimson/persistence/highscores.py` (record encode/decode + table insert logic)
+- `src/crimson/modes/*` + `src/crimson/game.py` (`*GameView`) (death -> game-over wiring)
 
 ## High score files (rewrite behavior)
 
@@ -27,7 +27,7 @@ Code pointers:
 
 1) **High scores list screen is not implemented**
 
-- The “High scores” button currently routes back to the main menu.
+- The “High scores” button currently routes back to the main menu (the classic build transitions to the list screen, state `0xe`).
 - Original behavior transitions to the high score list screen (state `0xe`).
 
 2) **Missing gameplay stats used by the score card**
@@ -40,7 +40,7 @@ The original `highscore_record_init` populates:
 The rewrite currently:
 
 - Uses the current `player.weapon_id` as “most used weapon”.
-- Does not track shots fired/hit yet (hit % will stay at 0).
+- Tracks shots fired/hit for Typ-o Shooter; other modes still report 0.
 
 3) **SFX and transitions are incomplete**
 
@@ -51,10 +51,9 @@ The rewrite currently:
 - Renders without the original transition animation.
 - Does not reproduce the full set of game-over UI SFX.
 
-4) **Quest/Rush variants are not wired**
+4) **Quest mode uses a dedicated flow**
 
-- Quest failed / quest results / “Well done trooper!” flows are not implemented yet.
-- Rush and Quest mode loops are not wired in the rewrite, so their score semantics aren’t exercised.
+- Quest completion/failure routes to `QuestResultsView` / `QuestFailedView` (not `GameOverUi`).
 
 ## Static references (source of truth)
 
@@ -64,4 +63,3 @@ The rewrite currently:
   - `ui_text_input_update @ 0043ecf0` (input widget behavior)
   - `highscore_rank_index @ 0043b520`
   - `highscore_build_path @ 0043b5b0`
-
