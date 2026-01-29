@@ -42,7 +42,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py` (`*GameView`)
   - Ref: `docs/crimsonland-exe/screens.md`
-  - Gaps: high score list screen (state `0xe`) is missing; some stat fields (weapon usage, shots fired/hit) are not tracked for all modes yet.
+  - Gap: some stat fields (weapon usage, shots fired/hit) are not tracked for all modes yet.
 - **Quest results (state `8`) / quest failed (state `0xc`)**: implemented.
   - Code: `src/crimson/game.py` (`QuestResultsView`, `QuestFailedView`)
   - Ref: `docs/crimsonland-exe/screens.md`
@@ -78,7 +78,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 2) **Multiplayer (2–4 players)**
    - Wire player count into the gameplay modes and sim.
 3) **UI completeness**
-   - High score list screen (state `0xe`), full Options/Controls parity, and demo trial overlay.
+   - Full Options/Controls parity and demo trial overlay.
 4) **Progression + stats fidelity**
    - Track weapon usage, shots fired/hit, and other high-score fields across modes.
 5) **Out-of-scope / later**

@@ -25,10 +25,9 @@ Code pointers:
 
 ## Known gaps / fidelity issues
 
-1) **High scores list screen is not implemented**
+1) **High scores list screen**
 
-- The “High scores” button currently routes back to the main menu (the classic build transitions to the list screen, state `0xe`).
-- Original behavior transitions to the high score list screen (state `0xe`).
+- Implemented: the “High scores” button opens a dedicated list screen (rewrite equivalent of state `0xe`) and returns back to Game Over / Quest Results.
 
 2) **Missing gameplay stats used by the score card**
 

@@ -77,7 +77,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 - Creature runtime parity gaps: ranged attacks, split-on-death, and AI edge cases.
 - Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
-- High score list screen (post-run) is not implemented yet.
+- High score list screen (post-run): implemented (local-only; online scores still missing).
 
 ## Later parity gates
 
