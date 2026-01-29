@@ -21,7 +21,7 @@ I concentrated on “already-ported” gameplay logic + the rendering pipeline, 
 - [x] 6) World draw order layering (dead players / effects / bonuses)
 - [x] 7) Alpha test behavior (global 4/255 cutoff) vs port shaders
 - [x] 8) Terrain render-target failure fallback path
-- [ ] 9) ParticlePool + SpriteEffectPool integration/rendering
+- [x] 9) ParticlePool + SpriteEffectPool integration/rendering
 
 ## Highest-impact fidelity mismatches
 

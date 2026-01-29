@@ -814,6 +814,156 @@ class WorldRenderer:
             return
         rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
 
+    def _draw_particle_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
+        texture = self.particles_texture
+        if texture is None:
+            return
+
+        particles = self.state.particles.entries
+        if not any(entry.active for entry in particles):
+            return
+
+        scale = (scale_x + scale_y) * 0.5
+
+        def src_rect(effect_id: int) -> rl.Rectangle | None:
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
+            if atlas is None:
+                return None
+            grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+            if not grid:
+                return None
+            frame = int(atlas.frame)
+            col = frame % grid
+            row = frame // grid
+            cell_w = float(texture.width) / float(grid)
+            cell_h = float(texture.height) / float(grid)
+            return rl.Rectangle(
+                cell_w * float(col),
+                cell_h * float(row),
+                max(0.0, cell_w - 2.0),
+                max(0.0, cell_h - 2.0),
+            )
+
+        src_large = src_rect(13)
+        src_normal = src_rect(12)
+        src_style_8 = src_rect(2)
+        if src_normal is None or src_style_8 is None:
+            return
+
+        fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
+
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+
+        if fx_detail_1 and src_large is not None:
+            alpha_byte = int(clamp(alpha * 0.04, 0.0, 1.0) * 255.0 + 0.5)
+            tint = rl.Color(255, 255, 255, alpha_byte)
+            for idx, entry in enumerate(particles):
+                if not entry.active or (idx % 2) or int(entry.style_id) == 8:
+                    continue
+                radius = (math.sin((1.0 - float(entry.intensity)) * 1.5707964) + 0.1) * 55.0 + 4.0
+                radius = max(radius, 16.0)
+                size = max(0.0, radius * 2.0 * scale)
+                if size <= 0.0:
+                    continue
+                sx = (float(entry.pos_x) + cam_x) * scale_x
+                sy = (float(entry.pos_y) + cam_y) * scale_y
+                dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+                rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
+
+        for entry in particles:
+            if not entry.active or int(entry.style_id) == 8:
+                continue
+            radius = math.sin((1.0 - float(entry.intensity)) * 1.5707964) * 24.0
+            if int(entry.style_id) == 1:
+                radius *= 0.8
+            radius = max(radius, 2.0)
+            size = max(0.0, radius * 2.0 * scale)
+            if size <= 0.0:
+                continue
+            sx = (float(entry.pos_x) + cam_x) * scale_x
+            sy = (float(entry.pos_y) + cam_y) * scale_y
+            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            rotation_deg = float(entry.spin) * _RAD_TO_DEG
+            tint = self._color_from_rgba((entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
+            rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
+
+        alpha_byte = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
+        for entry in particles:
+            if not entry.active or int(entry.style_id) != 8:
+                continue
+            wobble = math.sin(float(entry.spin)) * 3.0
+            half_h = (wobble + 15.0) * float(entry.scale_x) * 7.0
+            half_w = (15.0 - wobble) * float(entry.scale_x) * 7.0
+            w = max(0.0, half_w * 2.0 * scale)
+            h = max(0.0, half_h * 2.0 * scale)
+            if w <= 0.0 or h <= 0.0:
+                continue
+            sx = (float(entry.pos_x) + cam_x) * scale_x
+            sy = (float(entry.pos_y) + cam_y) * scale_y
+            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+            origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
+            tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
+            rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
+
+        rl.end_blend_mode()
+
+    def _draw_sprite_effect_pool(
+        self,
+        *,
+        cam_x: float,
+        cam_y: float,
+        scale_x: float,
+        scale_y: float,
+        alpha: float = 1.0,
+    ) -> None:
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
+        if self.config is not None and not bool(self.config.data.get("fx_detail_2", 0)):
+            return
+        texture = self.particles_texture
+        if texture is None:
+            return
+
+        effects = self.state.sprite_effects.entries
+        if not any(entry.active for entry in effects):
+            return
+
+        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x11)
+        if atlas is None:
+            return
+        grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+        if not grid:
+            return
+        frame = int(atlas.frame)
+        col = frame % grid
+        row = frame // grid
+        cell_w = float(texture.width) / float(grid)
+        cell_h = float(texture.height) / float(grid)
+        src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
+        scale = (scale_x + scale_y) * 0.5
+
+        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        for entry in effects:
+            if not entry.active:
+                continue
+            size = float(entry.scale) * scale
+            if size <= 0.0:
+                continue
+            sx = (float(entry.pos_x) + cam_x) * scale_x
+            sy = (float(entry.pos_y) + cam_y) * scale_y
+            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            rotation_deg = float(entry.rotation) * _RAD_TO_DEG
+            tint = self._color_from_rgba((entry.color_r, entry.color_g, entry.color_b, float(entry.color_a) * alpha))
+            rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+        rl.end_blend_mode()
+
     def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
@@ -1081,11 +1231,14 @@ class WorldRenderer:
                     continue
                 self._draw_projectile(proj, scale=scale, alpha=entity_alpha)
 
+            self._draw_particle_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+
             for proj in self.state.secondary_projectiles.entries:
                 if not proj.active:
                     continue
                 self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
 
+            self._draw_sprite_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
             self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
             self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
             self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)

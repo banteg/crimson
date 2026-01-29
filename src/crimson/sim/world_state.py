@@ -113,6 +113,8 @@ class WorldState:
             apply_player_damage=_apply_projectile_damage_to_player,
         )
         self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
+        self.state.particles.update(dt)
+        self.state.sprite_effects.update(dt)
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()

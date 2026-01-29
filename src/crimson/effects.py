@@ -193,6 +193,7 @@ class ParticlePool:
             entry.age = alpha
             entry.scale_x = shade
             entry.scale_y = shade
+            entry.scale_z = shade
 
             alive = entry.intensity > (0.0 if style == 0 else 0.8)
             if not alive:

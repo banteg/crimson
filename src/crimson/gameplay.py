@@ -6,7 +6,7 @@ from typing import Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
-from .effects import EffectPool
+from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
@@ -431,6 +431,8 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
 class GameplayState:
     rng: Crand = field(default_factory=lambda: Crand(0xBEEF))
     effects: EffectPool = field(default_factory=EffectPool)
+    particles: ParticlePool = field(init=False)
+    sprite_effects: SpriteEffectPool = field(init=False)
     projectiles: ProjectilePool = field(default_factory=ProjectilePool)
     secondary_projectiles: SecondaryProjectilePool = field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = field(default_factory=BonusTimers)
@@ -449,6 +451,11 @@ class GameplayState:
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
     shots_hit: list[int] = field(default_factory=lambda: [0] * 4)
     weapon_shots_fired: list[list[int]] = field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
+
+    def __post_init__(self) -> None:
+        rand = self.rng.rand
+        self.particles = ParticlePool(rand=rand)
+        self.sprite_effects = SpriteEffectPool(rand=rand)
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
