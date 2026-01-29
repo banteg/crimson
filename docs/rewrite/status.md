@@ -42,7 +42,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py` (`*GameView`)
   - Ref: `docs/crimsonland-exe/screens.md`
-  - Gap: some stat fields (weapon usage, shots fired/hit) are not tracked for all modes yet.
+  - Gap: weapon usage stats are not tracked yet; quest results still don’t record shots fired/hit.
 - **Quest results (state `8`) / quest failed (state `0xc`)**: implemented.
   - Code: `src/crimson/game.py` (`QuestResultsView`, `QuestFailedView`)
   - Ref: `docs/crimsonland-exe/screens.md`

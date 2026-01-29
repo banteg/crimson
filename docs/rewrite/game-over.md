@@ -39,7 +39,7 @@ The original `highscore_record_init` populates:
 The rewrite currently:
 
 - Uses the current `player.weapon_id` as “most used weapon”.
-- Tracks shots fired/hit for Typ-o Shooter; other modes still report 0.
+- Tracks shots fired/hit for Survival/Rush (projectile-based) and Typ-o Shooter (typing-based); quest results still report 0.
 
 3) **SFX and transitions are incomplete**
 
