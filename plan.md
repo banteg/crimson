@@ -520,6 +520,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Add `just` helpers for idle capture + summarizing
 - [x] Add regression tests for menu idle demo start (`tests/test_menu_idle_demo.py`)
 - [x] Add `--print-events` support to `demo_idle_threshold_summarize.py`
+- [x] Make `demo_idle_threshold_summarize.py` fail on empty logs + print trace errors
 - [x] Add trace metadata to `demo_idle_threshold_trace.js` start event (module base/path + Frida/process info)
 - [ ] Capture idle threshold from a demo build and update `MENU_DEMO_IDLE_START_MS`
   - [ ] Capture `demo_idle_threshold_trace.jsonl` (see `docs/frida/demo-idle-threshold.md`)

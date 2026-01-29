@@ -85,9 +85,22 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     rows = _iter_jsonl(args.log)
+    errors = [row for row in rows if (row.get("event") or row.get("kind")) in ("error", "hook_error")]
     sessions = summarize_idle_threshold(rows)
+    demo_starts_total = sum(len(sess.demo_starts) for sess in sessions)
 
-    print(f"{args.log}: sessions={len(sessions)}")
+    print(f"{args.log}: sessions={len(sessions)} demo_mode_start_events={demo_starts_total}")
+    if errors:
+        print(f"Trace errors: {len(errors)}")
+        for evt in errors[:10]:
+            print(json.dumps(evt))
+        if len(errors) > 10:
+            print(f"... ({len(errors) - 10} more)")
+
+    if demo_starts_total == 0:
+        print("ERROR: no demo_mode_start events captured (nothing to summarize).")
+        return 1
+
     for idx, sess in enumerate(sessions):
         if not sess.demo_starts:
             print(f"session[{idx}]: demo_mode_start: 0")
