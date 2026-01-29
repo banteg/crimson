@@ -33,8 +33,17 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 NAME_LABEL_SCALE = 1.0
 NAME_LABEL_BG_ALPHA = 0.6
 
-TYPING_BOX_BG_ALPHA = 0.7
-TYPING_BOX_BORDER_ALPHA = 0.9
+TYPING_BOX_WIDTH = 220.0
+TYPING_BOX_HEIGHT = 18.0
+TYPING_BOX_FILL_HEIGHT = 16.0
+TYPING_BOX_TEXT_ALPHA = 0.8
+TYPING_BOX_TEXT_OFFSET_X = 4.0
+TYPING_BOX_TEXT_OFFSET_Y = 2.0
+TYPING_BOX_CURSOR_W = 1.0
+TYPING_BOX_CURSOR_H = 14.0
+TYPING_BOX_FOCUS_SIZE = 6.0
+TYPING_BOX_FOCUS_OFFSET_X = -16.0
+TYPING_BOX_FOCUS_OFFSET_Y = 4.0
 
 
 @dataclass(slots=True)
@@ -128,7 +137,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         codepoint = int(rl.get_char_pressed())
         while codepoint > 0:
-            if codepoint not in (13, 8):
+            if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
                 try:
                     ch = chr(codepoint)
                 except ValueError:
@@ -357,34 +366,65 @@ class TypoShooterMode(BaseGameplayMode):
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
 
-        scale = 1.0
-        pad_x = 10.0
-        pad_y = 8.0
-
         text = self._typing.text
-        text_w = float(self._ui_text_width(text, scale=scale))
-        line_h = float(self._ui_line_height(scale=scale))
-
-        box_w = max(220.0, min(screen_w - 40.0, text_w + pad_x * 2.0 + 12.0))
-        box_h = line_h + pad_y * 2.0
+        box_w = max(0.0, min(TYPING_BOX_WIDTH, screen_w - 40.0))
+        box_h = TYPING_BOX_HEIGHT
         x = 18.0
         y = screen_h - box_h - 18.0
 
-        bg = rl.Color(0, 0, 0, int(255 * TYPING_BOX_BG_ALPHA))
-        border = rl.Color(255, 255, 255, int(255 * TYPING_BOX_BORDER_ALPHA))
-        rl.draw_rectangle(int(x), int(y), int(box_w), int(box_h), bg)
-        rl.draw_rectangle_lines(int(x), int(y), int(box_w), int(box_h), border)
+        if box_w <= 0.0:
+            return
 
-        tx = x + pad_x
-        ty = y + pad_y
-        self._draw_ui_text(text, tx, ty, UI_TEXT_COLOR, scale=scale)
+        mouse_inside = (
+            x <= float(self._ui_mouse_x) <= x + box_w and y <= float(self._ui_mouse_y) <= y + box_h
+        )
+        if mouse_inside:
+            focus_color = rl.Color(204, 204, 153, int(255 * 0.8))
+            rl.draw_rectangle(
+                int(x + TYPING_BOX_FOCUS_OFFSET_X),
+                int(y + TYPING_BOX_FOCUS_OFFSET_Y),
+                int(TYPING_BOX_FOCUS_SIZE),
+                int(TYPING_BOX_FOCUS_SIZE),
+                focus_color,
+            )
+
+        border = rl.Color(255, 255, 255, 255)
+        bg = rl.Color(0, 0, 0, 255)
+        rl.draw_rectangle_lines(int(x), int(y), int(box_w), int(box_h), border)
+        rl.draw_rectangle(
+            int(x + 1.0),
+            int(y + 1.0),
+            int(box_w - 2.0),
+            int(TYPING_BOX_FILL_HEIGHT),
+            bg,
+        )
+
+        visible_width = max(0.0, box_w - 10.0)
+        start_index = 0
+        while start_index < len(text):
+            if float(self._ui_text_width(text[start_index:])) <= visible_width:
+                break
+            start_index += 1
+
+        visible_text = text[start_index:]
+        text_color = rl.Color(255, 255, 255, int(255 * TYPING_BOX_TEXT_ALPHA))
+        tx = x + TYPING_BOX_TEXT_OFFSET_X
+        ty = y + TYPING_BOX_TEXT_OFFSET_Y
+        self._draw_ui_text(visible_text, tx, ty, text_color, scale=1.0)
 
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
         cursor_alpha = 0.4 if cursor_dim else 1.0
         cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
-        cursor_x = tx + text_w + 2.0
-        cursor_y = ty + 2.0
-        rl.draw_rectangle(int(cursor_x), int(cursor_y), 2, int(line_h - 4.0), cursor_color)
+        cursor_text = text[start_index:]
+        cursor_x = tx + float(self._ui_text_width(cursor_text))
+        cursor_y = ty
+        rl.draw_rectangle_lines(
+            int(cursor_x),
+            int(cursor_y),
+            int(TYPING_BOX_CURSOR_W),
+            int(TYPING_BOX_CURSOR_H),
+            cursor_color,
+        )
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._game_over_active))
@@ -403,7 +443,7 @@ class TypoShooterMode(BaseGameplayMode):
                 elapsed_ms=float(self._typo.elapsed_ms),
                 font=self._small,
                 show_weapon=False,
-                show_xp=False,
+                show_xp=True,
                 show_time=True,
             )
 
@@ -412,13 +452,12 @@ class TypoShooterMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
             self._draw_ui_text(f"typo: t={self._typo.elapsed_ms/1000.0:6.1f}s", x, y, UI_TEXT_COLOR)
-            self._draw_ui_text(f"score={self._player.experience}  hits={self._typing.shots_hit}/{self._typing.shots_fired}", x, y + line, UI_HINT_COLOR)
             dict_label = "default" if not self._unique_words else f"custom ({len(self._unique_words)})"
-            self._draw_ui_text(f"dict={dict_label}", x, y + line * 2.0, UI_HINT_COLOR)
+            self._draw_ui_text(f"dict={dict_label}", x, y + line, UI_HINT_COLOR)
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 3.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 3.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
 
             self._draw_typing_box()
 
