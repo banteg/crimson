@@ -454,19 +454,24 @@ class WorldRenderer:
             recoil_x = math.cos(recoil_dir) * recoil
             recoil_y = math.sin(recoil_dir) * recoil
 
+            leg_shadow_scale = 1.02
+            torso_shadow_scale = 1.03
+            leg_shadow_off = 3.0 * scale + base_size * (leg_shadow_scale - 1.0) * 0.5
+            torso_shadow_off = 1.0 * scale + base_size * (torso_shadow_scale - 1.0) * 0.5
+
             draw(
                 leg_frame,
-                x=sx - recoil_x,
-                y=sy - recoil_y,
-                scale_mul=1.0,
+                x=sx + leg_shadow_off,
+                y=sy + leg_shadow_off,
+                scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                x=sx + recoil_x * 0.1,
-                y=sy + recoil_y * 0.1,
-                scale_mul=1.0,
+                x=sx + recoil_x + torso_shadow_off,
+                y=sy + recoil_y + torso_shadow_off,
+                scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
             )
@@ -481,8 +486,8 @@ class WorldRenderer:
             )
             draw(
                 torso_frame,
-                x=sx,
-                y=sy,
+                x=sx + recoil_x,
+                y=sy + recoil_y,
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
                 color=tint,
@@ -530,6 +535,16 @@ class WorldRenderer:
         else:
             frame = 53
 
+        dead_shadow_scale = 1.03
+        dead_shadow_off = 1.0 * scale + base_size * (dead_shadow_scale - 1.0) * 0.5
+        draw(
+            frame,
+            x=sx + dead_shadow_off,
+            y=sy + dead_shadow_off,
+            scale_mul=dead_shadow_scale,
+            rotation=float(player.aim_heading),
+            color=shadow_tint,
+        )
         draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=tint)
 
     def _draw_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
