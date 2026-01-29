@@ -16,7 +16,7 @@ This document catalogs discrepancies between the current Python/Raylib rendering
 - [x] 9. Player Sprite Shadow/Outline Scale (1.02/1.03 passes with offsets; include dead shadow pass)
 - [x] 10. Death Frame Calculation (match UV run 32..52 and hold at 52)
 - [x] 12. Missing Radioactive Perk Aura (pulsing green aura)
-- [ ] 13. Missing Shield Effect Rendering (two rotating bubbles)
+- [x] 13. Missing Shield Effect Rendering (two rotating bubbles)
 - [x] 14. Player Color Tinting in Multiplayer (blue/orange tint)
 
 ### Defer (needs more evidence / larger refactor)

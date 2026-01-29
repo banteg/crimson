@@ -531,6 +531,56 @@ class WorldRenderer:
                 color=overlay_tint,
             )
 
+            if self.particles_texture is not None and float(player.shield_timer) > 1e-3 and alpha > 1e-3:
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x02)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        cell_w = float(self.particles_texture.width) / float(grid)
+                        cell_h = float(self.particles_texture.height) / float(grid)
+                        src = rl.Rectangle(
+                            cell_w * float(col),
+                            cell_h * float(row),
+                            max(0.0, cell_w - 2.0),
+                            max(0.0, cell_h - 2.0),
+                        )
+                        t = float(self._elapsed_ms) * 0.001
+                        timer = float(player.shield_timer)
+                        strength = (math.sin(t) + 1.0) * 0.25 + timer
+                        if timer < 1.0:
+                            strength *= timer
+                        strength = min(1.0, strength) * alpha
+                        if strength > 1e-3:
+                            offset_dir = float(player.aim_heading) - math.pi / 2.0
+                            ox = math.cos(offset_dir) * 3.0 * scale
+                            oy = math.sin(offset_dir) * 3.0 * scale
+                            cx = sx + ox
+                            cy = sy + oy
+
+                            half = math.sin(t * 3.0) + 17.5
+                            size = half * 2.0 * scale
+                            a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
+                            tint = rl.Color(91, 180, 255, a)
+                            dst = rl.Rectangle(float(cx), float(cy), float(size), float(size))
+                            origin = rl.Vector2(size * 0.5, size * 0.5)
+                            rotation_deg = float((t + t) * _RAD_TO_DEG)
+
+                            half = math.sin(t * 3.0) * 4.0 + 24.0
+                            size2 = half * 2.0 * scale
+                            a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
+                            tint2 = rl.Color(91, 180, 255, a2)
+                            dst2 = rl.Rectangle(float(cx), float(cy), float(size2), float(size2))
+                            origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
+                            rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
+
+                            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                            rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
+                            rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
+                            rl.end_blend_mode()
+
             if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
                 flags = int(weapon.flags) if weapon is not None and weapon.flags is not None else 0
