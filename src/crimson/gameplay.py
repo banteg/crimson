@@ -875,8 +875,17 @@ def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
 
     weapon = _weapon_entry(weapon_id)
     player.weapon_id = int(weapon_id)
+
     clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
-    player.clip_size = max(0, clip_size)
+    clip_size = max(0, clip_size)
+
+    # weapon_assign_player @ 0x004220B0: clip-size perks are applied on every weapon assignment.
+    if perk_active(player, PerkId.AMMO_MANIAC):
+        clip_size += max(1, int(float(clip_size) * 0.25))
+    if perk_active(player, PerkId.MY_FAVOURITE_WEAPON):
+        clip_size += 2
+
+    player.clip_size = max(0, int(clip_size))
     player.ammo = player.clip_size
     player.reload_active = False
     player.reload_timer = 0.0
