@@ -389,13 +389,14 @@ class CreaturePool:
                         fx_queue=fx_queue,
                     )
                 )
-                self._tick_dead(
-                    creature,
-                    dt=dt,
-                    world_width=world_width,
-                    world_height=world_height,
-                    fx_queue_rotated=fx_queue_rotated,
-                )
+                if creature.active:
+                    self._tick_dead(
+                        creature,
+                        dt=dt,
+                        world_width=world_width,
+                        world_height=world_height,
+                        fx_queue_rotated=fx_queue_rotated,
+                    )
                 continue
 
             target_player = int(creature.target_player)
@@ -427,13 +428,14 @@ class CreaturePool:
                             fx_queue=fx_queue,
                         )
                     )
-                    self._tick_dead(
-                        creature,
-                        dt=dt,
-                        world_width=world_width,
-                        world_height=world_height,
-                        fx_queue_rotated=fx_queue_rotated,
-                    )
+                    if creature.active:
+                        self._tick_dead(
+                            creature,
+                            dt=dt,
+                            world_width=world_width,
+                            world_height=world_height,
+                            fx_queue_rotated=fx_queue_rotated,
+                        )
                     continue
 
             turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
@@ -580,6 +582,29 @@ class CreaturePool:
             if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                 creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
         else:
+            creature.active = False
+
+        if float(state.bonuses.freeze) > 0.0:
+            pos_x = float(creature.x)
+            pos_y = float(creature.y)
+            for _ in range(8):
+                angle = float(int(rand()) % 0x264) * 0.01
+                state.effects.spawn_freeze_shard(
+                    pos_x=pos_x,
+                    pos_y=pos_y,
+                    angle=angle,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
+                )
+            angle = float(int(rand()) % 0x264) * 0.01
+            state.effects.spawn_freeze_shatter(
+                pos_x=pos_x,
+                pos_y=pos_y,
+                angle=angle,
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
+            self.kill_count += 1
             creature.active = False
 
         return death

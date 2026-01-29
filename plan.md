@@ -291,43 +291,29 @@ This will catch the most important class of fidelity bugs.
 
 Once Phase 2 is in, these become straightforward and correct.
 
-1. **Freeze**
+1. [ ] Freeze
 
-* On pickup:
+- [x] On pickup: shatter/remove existing corpses.
+- [x] On death while active: ice-shatter + remove creature (no corpse).
+- [ ] On render: freeze overlay quad pass (optional parity).
 
-  * iterate active creatures with `health <= 0` and shatter/remove them (as original does in bonus_apply)
-* On death while active:
+2. [ ] Energizer
 
-  * in `creature_handle_death`, if Freeze timer > 0, do the ice-shatter path (spawn shards, remove creature, suppress corpse)
-* On render:
+- [ ] AI: invert heading away from player while active.
+- [ ] “Eat”: close-range kills via death handling (respect `bonus_spawn_guard`).
 
-  * implement the freeze overlay quad pass (if you want strict parity) or at least approximate it
+3. [ ] Nuke
 
-2. **Energizer**
+- [ ] Spawn shockwave visuals + burst.
+- [x] Apply radius damage around pickup origin.
+- [x] Route damage via `creature_apply_damage` (`damage_type=3`).
+- [ ] Add correct SFX sequencing.
 
-* In creature AI update:
+4. [ ] Phase 3 tests
 
-  * for eligible creatures, invert target heading away from player when timer > 0
-  * disable/alter attack/contact behavior appropriately
-* Add the “eat” mechanic:
-
-  * when player is near eligible creatures under Energizer, award xp and kill creature via death handling
-  * respect `bonus_spawn_guard` behavior
-
-3. **Nuke**
-
-* Re-implement as:
-
-  * spawn shockwave visuals + burst
-  * apply **radius damage** around the pickup origin using a helper (`creatures_apply_radius_damage`)
-  * call `creature_apply_damage` with `damage_type=3`
-  * add camera shake and correct SFX sequencing
-
-Add tests:
-
-* Nuke does *not* kill creatures outside radius in a contrived map layout.
-* Freeze shatters corpses immediately upon pickup.
-* Energizer causes flee + eat kills.
+- [ ] Nuke does *not* kill creatures outside radius in a contrived map layout.
+- [ ] Freeze shatters corpses immediately upon pickup.
+- [ ] Energizer causes flee + eat kills.
 
 ---
 

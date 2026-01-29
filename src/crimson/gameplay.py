@@ -378,6 +378,7 @@ class BonusPool:
         players: list["PlayerState"],
         creatures: list[Damageable] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
+        detail_preset: int = 5,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -407,6 +408,7 @@ class BonusPool:
                         creatures=creatures,
                         players=players,
                         apply_creature_damage=apply_creature_damage,
+                        detail_preset=int(detail_preset),
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -1378,6 +1380,7 @@ def bonus_apply(
     creatures: list[Damageable] | None = None,
     players: list[PlayerState] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
+    detail_preset: int = 5,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -1466,6 +1469,36 @@ def bonus_apply(
         if old <= 0.0:
             _register_global("freeze")
         state.bonuses.freeze = float(old + float(amount) * economist_multiplier)
+        if creatures:
+            rand = state.rng.rand
+            for creature in creatures:
+                active = getattr(creature, "active", True)
+                if not bool(active):
+                    continue
+                if float(getattr(creature, "hp", 0.0)) > 0.0:
+                    continue
+                pos_x = float(getattr(creature, "x", 0.0))
+                pos_y = float(getattr(creature, "y", 0.0))
+                for _ in range(8):
+                    angle = float(int(rand()) % 0x264) * 0.01
+                    state.effects.spawn_freeze_shard(
+                        pos_x=pos_x,
+                        pos_y=pos_y,
+                        angle=angle,
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                    )
+                angle = float(int(rand()) % 0x264) * 0.01
+                state.effects.spawn_freeze_shatter(
+                    pos_x=pos_x,
+                    pos_y=pos_y,
+                    angle=angle,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
+                )
+                if hasattr(creature, "active"):
+                    setattr(creature, "active", False)
+        state.sfx_queue.append("sfx_shockwave")
         return
 
     if bonus_id == BonusId.SHIELD:
@@ -1624,6 +1657,7 @@ def bonus_telekinetic_update(
     *,
     creatures: list[Damageable] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
+    detail_preset: int = 5,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
 
@@ -1668,6 +1702,7 @@ def bonus_telekinetic_update(
             creatures=creatures,
             players=players,
             apply_creature_damage=apply_creature_damage,
+            detail_preset=int(detail_preset),
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
@@ -1696,6 +1731,7 @@ def bonus_update(
     creatures: list[Damageable] | None = None,
     update_hud: bool = True,
     apply_creature_damage: CreatureDamageApplier | None = None,
+    detail_preset: int = 5,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
@@ -1705,6 +1741,7 @@ def bonus_update(
         dt,
         creatures=creatures,
         apply_creature_damage=apply_creature_damage,
+        detail_preset=int(detail_preset),
     )
     pickups.extend(
         state.bonus_pool.update(
@@ -1713,6 +1750,7 @@ def bonus_update(
             players=players,
             creatures=creatures,
             apply_creature_damage=apply_creature_damage,
+            detail_preset=int(detail_preset),
         )
     )
 

@@ -182,6 +182,7 @@ class WorldState:
             creatures=self.creatures.entries,
             update_hud=True,
             apply_creature_damage=_apply_projectile_damage_to_creature,
+            detail_preset=int(detail_preset),
         )
         if pickups:
             for pickup in pickups:

@@ -755,3 +755,100 @@ class EffectPool:
             scale_step=float(scale_step),
             detail_preset=int(detail_preset),
         )
+
+    def spawn_freeze_shard(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        angle: float,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None:
+        """Port of `effect_spawn_freeze_shard` (0x0042ec80)."""
+
+        lifetime = float(int(rand()) & 0xF) * 0.01 + 0.2
+        base = float(angle) + math.pi
+
+        rotation = float(int(rand()) % 100) * 0.01 + base
+        half = float(int(rand()) % 5 + 7)
+
+        vel_x = math.cos(base) * 114.0
+        vel_y = math.sin(base) * 114.0
+
+        rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 4.0
+        scale_step = -float(int(rand()) & 0xF) * 0.1
+
+        effect_id = int(rand()) % 3 + 8
+        self.spawn(
+            effect_id=int(effect_id),
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=float(vel_x),
+            vel_y=float(vel_y),
+            rotation=float(rotation),
+            scale=1.0,
+            half_width=float(half),
+            half_height=float(half),
+            age=0.0,
+            lifetime=float(lifetime),
+            flags=0x1CD,
+            color_r=1.0,
+            color_g=1.0,
+            color_b=1.0,
+            color_a=0.5,
+            rotation_step=float(rotation_step),
+            scale_step=float(scale_step),
+            detail_preset=int(detail_preset),
+        )
+
+    def spawn_freeze_shatter(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        angle: float,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None:
+        """Port of `effect_spawn_freeze_shatter` (0x0042ee00)."""
+
+        lifetime = 1.1
+        for idx in range(4):
+            rotation = float(idx) * (math.pi / 2.0) + float(angle)
+            vel_x = math.cos(rotation) * 42.0
+            vel_y = math.sin(rotation) * 42.0
+            half = float(int(rand()) % 10 + 0x12)
+            rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 1.9
+
+            self.spawn(
+                effect_id=0x0E,
+                pos_x=float(pos_x),
+                pos_y=float(pos_y),
+                vel_x=float(vel_x),
+                vel_y=float(vel_y),
+                rotation=float(rotation),
+                scale=1.0,
+                half_width=float(half),
+                half_height=float(half),
+                age=0.0,
+                lifetime=float(lifetime),
+                flags=0x5D,
+                color_r=1.0,
+                color_g=1.0,
+                color_b=1.0,
+                color_a=0.5,
+                rotation_step=float(rotation_step),
+                scale_step=0.0,
+                detail_preset=int(detail_preset),
+            )
+
+        for _ in range(4):
+            shard_angle = float(int(rand()) % 0x264) * 0.01
+            self.spawn_freeze_shard(
+                pos_x=float(pos_x),
+                pos_y=float(pos_y),
+                angle=float(shard_angle),
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
