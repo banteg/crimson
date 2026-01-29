@@ -449,6 +449,7 @@ class TutorialMode(BaseGameplayMode):
                 score=int(self._player.experience),
                 font=self._small,
                 alpha=1.0,
+                frame_dt_ms=self._last_dt_ms,
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)

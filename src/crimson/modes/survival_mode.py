@@ -731,6 +731,7 @@ class SurvivalMode(BaseGameplayMode):
                 score=self._player.experience,
                 font=self._small,
                 alpha=hud_alpha,
+                frame_dt_ms=self._last_dt_ms,
             )
 
         if (not self._game_over_active) and (not perk_menu_active):

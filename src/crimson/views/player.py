@@ -67,6 +67,7 @@ class PlayerSandboxView:
         self._hud_assets: HudAssets | None = None
         self._hud_missing: list[str] = []
         self._elapsed_ms = 0.0
+        self._last_dt_ms = 0.0
 
         self._camera_x = -1.0
         self._camera_y = -1.0
@@ -284,6 +285,8 @@ class PlayerSandboxView:
         if self._paused:
             dt = 0.0
 
+        self._last_dt_ms = float(min(dt, 0.1) * 1000.0)
+
         self._elapsed_ms += dt * 1000.0
 
         # Frame loop: projectiles update first; player spawns are visible next tick.
@@ -354,6 +357,7 @@ class PlayerSandboxView:
                 elapsed_ms=self._elapsed_ms,
                 score=self._player.experience,
                 font=self._small,
+                frame_dt_ms=self._last_dt_ms,
             )
 
         if self._hud_missing:

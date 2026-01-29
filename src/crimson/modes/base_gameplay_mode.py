@@ -83,6 +83,7 @@ class BaseGameplayMode:
         self._ui_mouse_x = 0.0
         self._ui_mouse_y = 0.0
         self._cursor_pulse_time = 0.0
+        self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
 
     def _bind_world(self) -> None:
@@ -130,6 +131,7 @@ class BaseGameplayMode:
     def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
         dt_frame = float(dt)
         dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
+        self._last_dt_ms = dt_ui_ms
 
         self._update_ui_mouse()
 

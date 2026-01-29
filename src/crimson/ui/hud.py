@@ -8,7 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text
-from ..gameplay import BonusHudState, PlayerState
+from ..gameplay import BonusHudState, PlayerState, survival_level_threshold
 from ..weapons import WEAPON_BY_ID
 
 HUD_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -52,6 +52,9 @@ HUD_BONUS_ICON_SIZE = 32.0
 HUD_BONUS_TEXT_OFFSET = (36.0, 6.0)
 HUD_BONUS_SPACING = 52.0
 HUD_BONUS_PANEL_OFFSET_Y = -11.0
+HUD_XP_BAR_RGBA = (0.1, 0.3, 0.6, 1.0)
+
+_SURVIVAL_XP_SMOOTHED = 0
 
 
 @dataclass(slots=True)
@@ -119,6 +122,55 @@ def _with_alpha(color: rl.Color, alpha: float) -> rl.Color:
     return rl.Color(color.r, color.g, color.b, int(color.a * alpha))
 
 
+def _smooth_xp(target: int, frame_dt_ms: float) -> int:
+    global _SURVIVAL_XP_SMOOTHED
+    target = int(target)
+    if target <= 0:
+        _SURVIVAL_XP_SMOOTHED = 0
+        return 0
+    smoothed = int(_SURVIVAL_XP_SMOOTHED)
+    if smoothed == target:
+        return smoothed
+    step = max(1, int(frame_dt_ms) // 2)
+    diff = abs(smoothed - target)
+    if diff > 1000:
+        step *= diff // 100
+    if smoothed < target:
+        smoothed += step
+        if smoothed > target:
+            smoothed = target
+    else:
+        smoothed -= step
+        if smoothed < target:
+            smoothed = target
+    _SURVIVAL_XP_SMOOTHED = smoothed
+    return smoothed
+
+
+def _draw_progress_bar(x: float, y: float, width: float, ratio: float, rgba: tuple[float, float, float, float], scale: float) -> None:
+    ratio = max(0.0, min(1.0, float(ratio)))
+    width = max(0.0, float(width))
+    if width <= 0.0:
+        return
+    bar_h = 4.0 * scale
+    inner_h = 2.0 * scale
+    bg_color = rl.Color(
+        int(255 * rgba[0] * 0.6),
+        int(255 * rgba[1] * 0.6),
+        int(255 * rgba[2] * 0.6),
+        int(255 * rgba[3] * 0.4),
+    )
+    fg_color = rl.Color(
+        int(255 * rgba[0]),
+        int(255 * rgba[1]),
+        int(255 * rgba[2]),
+        int(255 * rgba[3]),
+    )
+    rl.draw_rectangle(int(x), int(y), int(width), int(bar_h), bg_color)
+    inner_w = max(0.0, (width - 2.0 * scale) * ratio)
+    rl.draw_rectangle(int(x + scale), int(y + scale), int(inner_w), int(inner_h), fg_color)
+
+
 def _weapon_icon_index(weapon_id: int) -> int | None:
     entry = WEAPON_BY_ID.get(int(weapon_id))
     icon_index = entry.icon_index if entry is not None else None
@@ -162,10 +214,13 @@ def draw_hud_overlay(
     score: int | None = None,
     font: SmallFontData | None = None,
     alpha: float = 1.0,
+    frame_dt_ms: float | None = None,
     show_weapon: bool = True,
     show_xp: bool = True,
     show_time: bool = False,
 ) -> float:
+    if frame_dt_ms is None:
+        frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
     hud_players = list(players) if players is not None else [player]
     if not hud_players:
         hud_players = [player]
@@ -373,7 +428,8 @@ def draw_hud_overlay(
                 _draw_text(font, f"+ {extra}", sx(text_x), sy(text_y), text_scale, text_color)
 
     # Survival XP panel.
-    xp_value = int(player.experience if score is None else score)
+    xp_target = int(player.experience if score is None else score)
+    xp_display = _smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
     if show_xp and assets.ind_panel is not None:
         panel_x, panel_y = HUD_SURV_PANEL_POS
         panel_w, panel_h = HUD_SURV_PANEL_SIZE
@@ -400,7 +456,7 @@ def draw_hud_overlay(
         )
         _draw_text(
             font,
-            f"{xp_value}",
+            f"{xp_display}",
             sx(HUD_SURV_XP_VALUE_POS[0]),
             sy(HUD_SURV_XP_VALUE_POS[1]),
             text_scale,
@@ -415,22 +471,17 @@ def draw_hud_overlay(
             panel_text_color,
         )
 
-        # Progress bar (approximation of XP -> next level).
-        progress_ratio = (xp_value % 1000) / 1000.0 if xp_value > 0 else 0.0
+        level = max(1, int(player.level))
+        prev_threshold = 0 if level <= 1 else survival_level_threshold(level - 1)
+        next_threshold = survival_level_threshold(level)
+        progress_ratio = 0.0
+        if next_threshold > prev_threshold:
+            progress_ratio = (xp_target - prev_threshold) / float(next_threshold - prev_threshold)
         bar_x, bar_y = HUD_SURV_PROGRESS_POS
         bar_w = HUD_SURV_PROGRESS_WIDTH
-        bar_h = 4.0
-        bg_color = rl.Color(40, 40, 48, int(255 * alpha * 0.6))
-        fg_color = rl.Color(220, 220, 220, int(255 * alpha))
-        rl.draw_rectangle(int(sx(bar_x)), int(sy(bar_y)), int(sx(bar_w)), int(sy(bar_h)), bg_color)
-        rl.draw_rectangle(
-            int(sx(bar_x) + sx(1.0)),
-            int(sy(bar_y) + sy(1.0)),
-            int(sx((bar_w - 2.0) * progress_ratio)),
-            int(sy(bar_h - 2.0)),
-            fg_color,
-        )
-        max_y = max(max_y, sy(bar_y + bar_h))
+        bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], HUD_XP_BAR_RGBA[3] * alpha)
+        _draw_progress_bar(sx(bar_x), sy(bar_y), sx(bar_w), progress_ratio, bar_rgba, scale)
+        max_y = max(max_y, sy(bar_y + 4.0))
 
     # Mode time clock/text (rush/typo-style HUD).
     if show_time:
@@ -472,10 +523,8 @@ def draw_hud_overlay(
                 rotation,
                 rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
             )
-        total_seconds = int(time_ms) // 1000
-        minutes = max(0, total_seconds // 60)
-        seconds = max(0, total_seconds % 60)
-        time_text = f"{minutes:02d}:{seconds:02d}"
+        total_seconds = max(0, int(time_ms) // 1000)
+        time_text = f"{total_seconds} seconds"
         _draw_text(font, time_text, sx(255.0), sy(10.0), text_scale, text_color)
         max_y = max(max_y, sy(10.0 + line_h))
 

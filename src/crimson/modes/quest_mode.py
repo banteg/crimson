@@ -406,6 +406,7 @@ class QuestMode(BaseGameplayMode):
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 font=self._small,
+                frame_dt_ms=self._last_dt_ms,
                 show_xp=False,
                 show_time=True,
             )

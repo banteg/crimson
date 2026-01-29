@@ -433,32 +433,21 @@ class TypoShooterMode(BaseGameplayMode):
         if not self._game_over_active:
             self._draw_name_labels()
 
-        hud_bottom = 0.0
         if (not self._game_over_active) and self._hud_assets is not None:
-            hud_bottom = draw_hud_overlay(
+            draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
                 players=self._world.players,
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
                 font=self._small,
+                frame_dt_ms=self._last_dt_ms,
                 show_weapon=False,
                 show_xp=True,
                 show_time=True,
             )
 
         if not self._game_over_active:
-            x = 18.0
-            y = max(18.0, hud_bottom + 10.0)
-            line = float(self._ui_line_height())
-            self._draw_ui_text(f"typo: t={self._typo.elapsed_ms/1000.0:6.1f}s", x, y, UI_TEXT_COLOR)
-            dict_label = "default" if not self._unique_words else f"custom ({len(self._unique_words)})"
-            self._draw_ui_text(f"dict={dict_label}", x, y + line, UI_HINT_COLOR)
-            if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
-            if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
-
             self._draw_typing_box()
 
         warn_y = float(rl.get_screen_height()) - 28.0
