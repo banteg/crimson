@@ -74,7 +74,7 @@ Just shortcut (Windows VM):
 just frida-attach script=scripts\\frida\\crimsonland_probe.js
 ```
 
-Optional overrides: `process=crimsonland.exe` and `CRIMSON_FRIDA_DIR`.
+Optional overrides: `process=crimsonland.exe`, `CRIMSON_FRIDA_DIR`, and (for scripts with hardcoded addresses) `CRIMSON_FRIDA_ADDRS` / `CRIMSON_FRIDA_LINK_BASE` / `CRIMSON_FRIDA_MODULE`.
 
 Default logs written by the scripts:
 

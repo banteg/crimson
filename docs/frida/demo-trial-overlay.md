@@ -32,6 +32,15 @@ Confirm (with logs) that the overlay triggers and reports remaining time exactly
 
    (Or: `just frida-demo-trial-overlay`)
 
+   If the script logs `hook_error ... addr_unavailable` (or `start.addrs.* = null`), you're likely on a different build.
+   Re-run with overrides (once you know the correct VAs for your demo build):
+
+   ```text
+   just frida-demo-trial-overlay addrs="demo_trial_overlay_render=0x401234,game_sequence_get=0x402345" link_base="0x00400000"
+   ```
+
+   (Or set `CRIMSON_FRIDA_ADDRS` / `CRIMSON_FRIDA_LINK_BASE` in the VM shell.)
+
 3. Ensure the tracer config is **not forcing anything**:
    - `CONFIG.forceDemoInGameplayLoop = false`
    - `CONFIG.forcePlaytimeMs = null`
