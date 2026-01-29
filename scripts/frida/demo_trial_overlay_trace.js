@@ -10,6 +10,7 @@
 // - This hook is intended for demo builds; the retail build may never render the overlay.
 // - For other builds, override addresses via:
 //     CRIMSON_FRIDA_ADDRS="demo_trial_overlay_render=0x401000,game_sequence_get=0x402000"
+//     CRIMSON_FRIDA_ADDRS_PATH="C:\\share\\frida\\crimson_addrs.json" (JSON object)
 //     CRIMSON_FRIDA_LINK_BASE="0x00400000"
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
