@@ -181,7 +181,6 @@ class LightingDebugView:
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
         self._sdf_shader_locs: dict[str, int] = {}
-        self._scene_rt: rl.RenderTexture | None = None
         self._light_rt: rl.RenderTexture | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
@@ -288,7 +287,6 @@ class LightingDebugView:
     def _ensure_render_targets(self) -> None:
         w = int(max(1, rl.get_screen_width()))
         h = int(max(1, rl.get_screen_height()))
-        self._scene_rt = self._ensure_render_target(self._scene_rt, w, h)
         self._light_rt = self._ensure_render_target(self._light_rt, w, h)
 
     def _reset_scene(self, *, seed: int) -> None:
@@ -364,9 +362,6 @@ class LightingDebugView:
             rl.unload_shader(self._sdf_shader)
             self._sdf_shader = None
             self._sdf_shader_locs.clear()
-        if self._scene_rt is not None and int(getattr(self._scene_rt, "id", 0)) > 0:
-            rl.unload_render_texture(self._scene_rt)
-            self._scene_rt = None
         if self._light_rt is not None and int(getattr(self._light_rt, "id", 0)) > 0:
             rl.unload_render_texture(self._light_rt)
             self._light_rt = None
@@ -508,16 +503,10 @@ class LightingDebugView:
             return
 
         self._ensure_render_targets()
-        if self._scene_rt is None or self._light_rt is None:
+        if self._light_rt is None:
             rl.clear_background(rl.Color(10, 10, 12, 255))
             self._draw_ui_text("Lighting debug view: missing render targets", 16.0, 16.0, UI_ERROR_COLOR)
             return
-
-        # Render the world into an offscreen texture first.
-        rl.begin_texture_mode(self._scene_rt)
-        rl.clear_background(rl.BLACK)
-        self._world.draw(draw_aim_indicators=False, entity_alpha=1.0)
-        rl.end_texture_mode()
 
         light_x = float(self._ui_mouse_x)
         light_y = float(self._ui_mouse_y)
@@ -527,13 +516,9 @@ class LightingDebugView:
             rl.clear_background(self._ambient)
             rl.end_texture_mode()
 
-        # Composite to screen: scene first, then lightmap multiplied.
+        # Draw the world, then multiply by the lightmap.
         rl.clear_background(rl.BLACK)
-        src_scene = rl.Rectangle(0.0, 0.0, float(self._scene_rt.texture.width), -float(self._scene_rt.texture.height))
-        dst_scene = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
-        rl.draw_texture_pro(self._scene_rt.texture, src_scene, dst_scene, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        rl.end_blend_mode()
+        self._world.draw(draw_aim_indicators=False, entity_alpha=1.0)
 
         src_light = rl.Rectangle(0.0, 0.0, float(self._light_rt.texture.width), -float(self._light_rt.texture.height))
         dst_light = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
