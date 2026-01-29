@@ -7,8 +7,7 @@
 //
 // Notes:
 // - Addresses are for the repo's PE (1.9.93-gog) with link base 0x00400000.
-// - If you are testing the full version binary, set CONFIG.forceShareware=true
-//   to patch game_is_full_version() -> 0 and enable demo gates.
+// - This hook is intended for demo builds; the retail build may never render the overlay.
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
 
@@ -29,7 +28,6 @@ function joinPath(base, leaf) {
 const LOG_DIR = getLogDir();
 
 const CONFIG = {
-  forceShareware: false,
   logBacktrace: false,
   backtraceLimit: 12,
   logPath: joinPath(LOG_DIR, 'demo_trial_overlay_trace.jsonl'),
@@ -45,7 +43,6 @@ const DEMO_TOTAL_PLAY_TIME_MS = 2400000;
 const DEMO_QUEST_GRACE_TIME_MS = 300000;
 
 const ADDR = {
-  game_is_full_version: 0x0041df40,
   demo_trial_overlay_render: 0x004047c0,
 
   config_game_mode: 0x00480360,
@@ -107,37 +104,6 @@ function readVec2f(ptrArg) {
     return { x: x, y: y };
   } catch (_) {
     return null;
-  }
-}
-
-function patchGameIsFullVersion(forceValue) {
-  const addr = exePtr(ADDR.game_is_full_version);
-  if (!addr) {
-    writeLog({ event: 'patch_error', target: 'game_is_full_version', error: 'addr_unavailable' });
-    return false;
-  }
-  try {
-    Interceptor.replace(
-      addr,
-      new NativeCallback(function () {
-        return forceValue ? 1 : 0;
-      }, 'int', [])
-    );
-    writeLog({
-      event: 'patched',
-      target: 'game_is_full_version',
-      addr: addr.toString(),
-      force_value: forceValue ? 1 : 0,
-    });
-    return true;
-  } catch (e) {
-    writeLog({
-      event: 'patch_error',
-      target: 'game_is_full_version',
-      addr: addr.toString(),
-      error: String(e),
-    });
-    return false;
   }
 }
 
@@ -211,12 +177,7 @@ function main() {
   initLog();
   writeLog({ event: 'start', config: CONFIG, module: GAME_MODULE });
 
-  if (CONFIG.forceShareware) {
-    patchGameIsFullVersion(0);
-  }
-
   hookOverlayRender();
 }
 
 main();
-

@@ -51,9 +51,11 @@ Renders the post-mission summary and buttons:
 Use Frida to log whenever the overlay is actually rendered:
 
 - Script: `scripts\\frida\\demo_trial_overlay_trace.js`
-  - Set `CONFIG.forceShareware=true` to patch `game_is_full_version()` → `0` when testing the full-version binary.
   - Log output (default): `C:\\share\\frida\\demo_trial_overlay_trace.jsonl`
+  - Note: this is expected to trigger on **demo builds** (retail may never render the overlay).
 - Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in `plan.md`.
+- Optional: validate the log against the Python model:
+  - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 
 ## Modal/plugin flow (FUN_0040b630)
 

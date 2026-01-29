@@ -471,6 +471,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Add Frida overlay trace + docs (`demo_trial_overlay_trace.js`)
   - [x] Add reducer support for overlay trace logs (`frida_reduce.py`)
   - [x] Add offline validator for overlay trace logs (`demo_trial_overlay_validate.py`)
+  - [x] Remove unsafe retail patching guidance (`forceShareware`)
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
 
 ---
