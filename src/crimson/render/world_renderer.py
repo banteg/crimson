@@ -873,9 +873,20 @@ class WorldRenderer:
             if player.health <= 0.0:
                 draw_player(player)
 
-        for creature in self.creatures.entries:
-            if not creature.active:
-                continue
+        creature_type_order = {
+            int(CreatureTypeId.ZOMBIE): 0,
+            int(CreatureTypeId.SPIDER_SP1): 1,
+            int(CreatureTypeId.SPIDER_SP2): 2,
+            int(CreatureTypeId.ALIEN): 3,
+            int(CreatureTypeId.LIZARD): 4,
+        }
+        creatures = [
+            (idx, creature)
+            for idx, creature in enumerate(self.creatures.entries)
+            if creature.active
+        ]
+        creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
+        for _idx, creature in creatures:
             sx = (creature.x + cam_x) * scale_x
             sy = (creature.y + cam_y) * scale_y
             hitbox_size = float(creature.hitbox_size)
