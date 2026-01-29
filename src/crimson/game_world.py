@@ -453,7 +453,6 @@ class GameWorld:
             for key in events.sfx[:4]:
                 self.audio_router.play_sfx(key)
 
-        self._bake_fx_queues()
         self.update_camera(dt)
         return events.hits
 
@@ -571,6 +570,9 @@ class GameWorld:
         return creature_corpse_frame_for_type(type_id)
 
     def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        # Bake decals into the ground render target as part of the render pass,
+        # matching `fx_queue_render()` placement in `gameplay_render_world`.
+        self._bake_fx_queues()
         self.renderer.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
 
     def update_camera(self, dt: float) -> None:

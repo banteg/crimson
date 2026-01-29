@@ -9,7 +9,7 @@ This document catalogs discrepancies between the current Python/Raylib rendering
 ## Triage (2026-01-29)
 
 ### Fix (separate commits; check off when done)
-- [ ] 1. FX Queue Baking Timing (move bake to start of world draw)
+- [x] 1. FX Queue Baking Timing (move bake to start of world draw)
 - [ ] 2. Player Overlay Render Order (split DEAD-before-creatures, ALIVE-after-creatures)
 - [ ] 3. Creature Render Type Ordering (match `creature_render_all` type order)
 - [ ] 6. Missing Monster Vision Overlays (yellow overlay quads when perk active)
