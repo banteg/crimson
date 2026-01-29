@@ -127,6 +127,17 @@ class BaseGameplayMode:
         self._ui_mouse_x = _clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
         self._ui_mouse_y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
+    def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
+        dt_frame = float(dt)
+        dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
+
+        self._update_ui_mouse()
+
+        pulse_dt = float(min(dt_frame, 0.1)) if clamp_cursor_pulse else dt_frame
+        self._cursor_pulse_time += pulse_dt * 1.1
+
+        return dt_frame, dt_ui_ms
+
     def _player_name_default(self) -> str:
         config = self._config
         if config is None:

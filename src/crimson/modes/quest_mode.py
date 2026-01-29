@@ -265,11 +265,9 @@ class QuestMode(BaseGameplayMode):
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
-        self._update_ui_mouse()
 
-        dt_frame = float(dt)
+        dt_frame = self._tick_frame(dt)[0]
         dt_ms = float(dt_frame * 1000.0)
-        self._cursor_pulse_time += dt_frame * 1.1
         self._handle_input()
 
         if self.close_requested:

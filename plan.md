@@ -85,7 +85,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] screen fade binding (`bind_screen_fade`) + shared fade draw
   - [x] audio binding/update helper (`bind_audio`, `_update_audio`)
   - [x] UI helpers (`_ui_*`, `_draw_ui_text`, `_update_ui_mouse`)
-  - [ ] (Optional) move timekeeping/dt gating into base
+  - [x] (Optional) move timekeeping/dt gating into base
 - [x] Convert `SurvivalMode` to subclass the base (no behavior changes intended)
 - [x] Convert `RushMode` to subclass the base
 - [x] Add smoke tests for mode construction

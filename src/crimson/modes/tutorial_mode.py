@@ -327,15 +327,11 @@ class TutorialMode(BaseGameplayMode):
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
-        self._update_ui_mouse()
-        self._cursor_pulse_time += float(min(dt, 0.1)) * 1.1
+        dt_frame, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
 
         self._handle_input()
         if self.close_requested:
             return
-
-        dt_frame = float(dt)
-        dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
 
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
         if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu_open:

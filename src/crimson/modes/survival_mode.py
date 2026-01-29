@@ -422,11 +422,8 @@ class SurvivalMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
-        dt_frame = float(dt)
-        dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
-        self._update_ui_mouse()
+        dt_frame, dt_ui_ms = self._tick_frame(dt)
         self._cursor_time += dt_frame
-        self._cursor_pulse_time += dt_frame * 1.1
         self._handle_input()
 
         if self._game_over_active:
