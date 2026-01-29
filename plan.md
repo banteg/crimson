@@ -314,7 +314,7 @@ Once Phase 2 is in, these become straightforward and correct.
 
 - [ ] Nuke does *not* kill creatures outside radius in a contrived map layout.
 - [x] Freeze shatters corpses immediately upon pickup.
-- [ ] Energizer causes flee + eat kills.
+- [x] Energizer causes flee + eat kills.
 
 ---
 
