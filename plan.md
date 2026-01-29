@@ -313,7 +313,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] `record.score_xp = player_experience`
 - [x] `record.survival_elapsed_ms = elapsed_ms` (display only)
 - [x] `record.shots_fired` / `record.shots_hit` from typing stats
-- [ ] Fix persistence mapping: `scores_path_for_config(mode=4)` → `typo.hi` (avoid `unknown.hi`)
+- [x] Fix persistence mapping: `scores_path_for_config(mode=4)` → `typo.hi` (avoid `unknown.hi`)
 
 ### 6.7 Wiring
 

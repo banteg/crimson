@@ -226,6 +226,8 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
         return root / "survival.hi"
     if mode == 2:
         return root / "rush.hi"
+    if mode == 4:
+        return root / "typo.hi"
     if mode == 3:
         if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
             major = int(config.data.get("quest_stage_major", 0) or 0)

@@ -35,6 +35,12 @@ def test_scores_path_for_config_quest_mode_uses_config_stage_fields_when_missing
     assert path == tmp_path / "scores5" / "quest4_7.hi"
 
 
+def test_scores_path_for_config_typo_mode_uses_typo_filename(tmp_path: Path) -> None:
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.TYPO)})
+    path = scores_path_for_config(tmp_path, config)
+    assert path == tmp_path / "scores5" / "typo.hi"
+
+
 def test_quest_highscores_sort_by_time_ascending_with_zero_last() -> None:
     records = [
         _record(mode=GameMode.QUESTS, time_ms=5000),
