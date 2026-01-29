@@ -292,11 +292,13 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.4 Spawn loop (from state `0x12` branch)
 
-- [ ] `spawn_cooldown_ms -= player_count * dt_ms`
-- [ ] While `spawn_cooldown_ms < 0`
-  - [ ] `spawn_cooldown_ms += 0xDAC - elapsed_ms/800` (clamp min 100)
-  - [ ] spawn 2 creatures (right type 4, left type 2) at sine/cos y offsets
-  - [ ] set `ai_mode = 8`, set `flags |= 0x80`, set `move_speed *= 1.4`
+- [x] `spawn_cooldown_ms -= player_count * dt_ms`
+- [x] While `spawn_cooldown_ms < 0`
+  - [x] `spawn_cooldown_ms += 0xDAC - elapsed_ms/800` (clamp min 100)
+  - [x] spawn 2 creatures (right type 4, left type 2) at `y = cos(elapsed_ms*0.001)*256 + world_h*0.5`
+  - [x] compute `tint_rgba` from `(elapsed_ms+1)` and pass to spawn
+  - [ ] apply `creature_spawn_tinted` defaults (ai_mode=2, hp=1, move_speed=1.7, contact_damage=100, heading rand)
+  - [ ] apply type-specific tweaks (type 4: `flags |= 0x80`, `move_speed *= 1.2`, `size *= 0.8`)
   - [ ] assign random names to each spawned creature
 
 ### 6.5 UI overlays
@@ -322,7 +324,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [x] deterministic name assignment constraints (unique, max len)
 - [x] `find_by_name` correctness
-- [ ] spawn loop determinism
+- [x] spawn loop determinism
 
 ---
 
