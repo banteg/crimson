@@ -453,9 +453,11 @@ def draw_hud_overlay(
             )
             max_y = max(max_y, dst.y + dst.height)
         if assets.clock_pointer is not None:
+            # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+            # offset by half-size so the 32x32 quad stays aligned with the table.
             dst = rl.Rectangle(
-                sx(HUD_CLOCK_POS[0]),
-                sy(HUD_CLOCK_POS[1]),
+                sx(HUD_CLOCK_POS[0] + HUD_CLOCK_SIZE[0] * 0.5),
+                sy(HUD_CLOCK_POS[1] + HUD_CLOCK_SIZE[1] * 0.5),
                 sx(HUD_CLOCK_SIZE[0]),
                 sy(HUD_CLOCK_SIZE[1]),
             )
@@ -470,7 +472,6 @@ def draw_hud_overlay(
                 rotation,
                 rl.Color(255, 255, 255, int(255 * alpha * HUD_CLOCK_ALPHA)),
             )
-            max_y = max(max_y, dst.y + dst.height)
         total_seconds = int(time_ms) // 1000
         minutes = max(0, total_seconds // 60)
         seconds = max(0, total_seconds % 60)

@@ -419,7 +419,9 @@ class GameOverUi:
                 rl.draw_texture_pro(hud_assets.clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)))
             if hud_assets is not None and hud_assets.clock_pointer is not None:
                 src = rl.Rectangle(0.0, 0.0, float(hud_assets.clock_pointer.width), float(hud_assets.clock_pointer.height))
-                dst = rl.Rectangle(col2_x + 8.0 * scale, base_y + 14.0 * scale, 32.0 * scale, 32.0 * scale)
+                # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+                # offset by half-size so the 32x32 quad stays aligned with the table.
+                dst = rl.Rectangle(col2_x + 24.0 * scale, base_y + 30.0 * scale, 32.0 * scale, 32.0 * scale)
                 seconds = max(0, elapsed_ms // 1000)
                 rotation = float(seconds) * 6.0
                 origin = rl.Vector2(16.0 * scale, 16.0 * scale)

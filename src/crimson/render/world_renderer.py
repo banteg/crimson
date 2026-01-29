@@ -330,6 +330,7 @@ class WorldRenderer:
         if size <= 1e-3:
             return
         tint = rl.Color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
+        half = size * 0.5
 
         table_src = rl.Rectangle(0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height))
         table_dst = rl.Rectangle(float(x), float(y), size, size)
@@ -342,8 +343,8 @@ class WorldRenderer:
             float(self.clock_pointer_texture.width),
             float(self.clock_pointer_texture.height),
         )
-        pointer_dst = rl.Rectangle(float(x) + size * 0.5, float(y) + size * 0.5, size, size)
-        origin = rl.Vector2(size * 0.5, size * 0.5)
+        pointer_dst = rl.Rectangle(float(x) + half, float(y) + half, size, size)
+        origin = rl.Vector2(half, half)
         rotation_deg = float(seconds) * 6.0
         rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
