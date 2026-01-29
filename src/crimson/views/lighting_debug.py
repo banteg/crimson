@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import math
 import random
 from pathlib import Path
-from typing import Iterator
 
 import pyray as rl
 
@@ -145,20 +143,6 @@ def _clamp(value: float, lo: float, hi: float) -> float:
     if value > hi:
         return hi
     return value
-
-
-@contextmanager
-def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
-    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
-    # apply them when switching the blend mode. Set factors both before and
-    # after BeginBlendMode() to ensure the current draw uses the intended values.
-    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
-    rl.begin_blend_mode(rl.BLEND_CUSTOM)
-    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
-    try:
-        yield
-    finally:
-        rl.end_blend_mode()
 
 
 class LightingDebugView:
@@ -483,38 +467,37 @@ class LightingDebugView:
             rl.set_shader_value(shader, loc, rl.ffi.new("int *", int(value)), rl.SHADER_UNIFORM_INT)
 
         rl.begin_texture_mode(self._light_rt)
-        with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
-            rl.begin_shader_mode(shader)
-            set_vec2("u_resolution", w, h)
+        rl.begin_shader_mode(shader)
+        set_vec2("u_resolution", w, h)
 
-            amb = self._ambient
-            set_vec4("u_ambient", float(amb.r) / 255.0, float(amb.g) / 255.0, float(amb.b) / 255.0, 1.0)
+        amb = self._ambient
+        set_vec4("u_ambient", float(amb.r) / 255.0, float(amb.g) / 255.0, float(amb.b) / 255.0, 1.0)
 
-            lt = self._light_tint
-            set_vec4("u_light_color", float(lt.r) / 255.0, float(lt.g) / 255.0, float(lt.b) / 255.0, 1.0)
+        lt = self._light_tint
+        set_vec4("u_light_color", float(lt.r) / 255.0, float(lt.g) / 255.0, float(lt.b) / 255.0, 1.0)
 
-            set_vec2("u_light_pos", float(light_x), float(light_y))
-            set_float("u_light_range", float(self._light_radius))
-            set_float("u_shadow_k", float(self._sdf_shadow_k))
+        set_vec2("u_light_pos", float(light_x), float(light_y))
+        set_float("u_light_range", float(self._light_radius))
+        set_float("u_shadow_k", float(self._sdf_shadow_k))
 
-            source_radius = float(self._light_source_radius) if self._light_is_disc else 0.0
-            set_float("u_light_source_radius", source_radius)
+        source_radius = float(self._light_source_radius) if self._light_is_disc else 0.0
+        set_float("u_light_source_radius", source_radius)
 
-            set_int("u_circle_count", len(circles))
-            circles_loc = locs.get("u_circles", -1)
-            if circles and circles_loc >= 0:
-                flat: list[float] = []
-                for cx, cy, cr in circles:
-                    flat.extend((float(cx), float(cy), float(cr), 1.0))
-                rl.set_shader_value_v(
-                    shader,
-                    circles_loc,
-                    rl.ffi.new("float[]", flat),
-                    rl.SHADER_UNIFORM_VEC4,
-                    len(circles),
-                )
-            rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
-            rl.end_shader_mode()
+        set_int("u_circle_count", len(circles))
+        circles_loc = locs.get("u_circles", -1)
+        if circles and circles_loc >= 0:
+            flat: list[float] = []
+            for cx, cy, cr in circles:
+                flat.extend((float(cx), float(cy), float(cr), 1.0))
+            rl.set_shader_value_v(
+                shader,
+                circles_loc,
+                rl.ffi.new("float[]", flat),
+                rl.SHADER_UNIFORM_VEC4,
+                len(circles),
+            )
+        rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+        rl.end_shader_mode()
         rl.end_texture_mode()
         return True
 
@@ -532,6 +515,7 @@ class LightingDebugView:
 
         # Render the world into an offscreen texture first.
         rl.begin_texture_mode(self._scene_rt)
+        rl.clear_background(rl.BLACK)
         self._world.draw(draw_aim_indicators=False, entity_alpha=1.0)
         rl.end_texture_mode()
 
@@ -544,15 +528,18 @@ class LightingDebugView:
             rl.end_texture_mode()
 
         # Composite to screen: scene first, then lightmap multiplied.
+        rl.clear_background(rl.BLACK)
         src_scene = rl.Rectangle(0.0, 0.0, float(self._scene_rt.texture.width), -float(self._scene_rt.texture.height))
         dst_scene = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
-        with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
-            rl.draw_texture_pro(self._scene_rt.texture, src_scene, dst_scene, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.draw_texture_pro(self._scene_rt.texture, src_scene, dst_scene, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.end_blend_mode()
 
         src_light = rl.Rectangle(0.0, 0.0, float(self._light_rt.texture.width), -float(self._light_rt.texture.height))
         dst_light = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
-        with _blend_custom(rl.RL_DST_COLOR, rl.RL_ZERO, rl.RL_FUNC_ADD):
-            rl.draw_texture_pro(self._light_rt.texture, src_light, dst_light, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.begin_blend_mode(rl.BLEND_MULTIPLIED)
+        rl.draw_texture_pro(self._light_rt.texture, src_light, dst_light, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.end_blend_mode()
 
         if self._debug_lightmap_preview:
             screen_w = float(rl.get_screen_width())
@@ -561,15 +548,16 @@ class LightingDebugView:
             preview_w = float(self._light_rt.texture.width) * scale
             preview_h = float(self._light_rt.texture.height) * scale
             dst_preview = rl.Rectangle(screen_w - preview_w - pad, pad, preview_w, preview_h)
-            with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
-                rl.draw_texture_pro(
-                    self._light_rt.texture,
-                    src_light,
-                    dst_preview,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.WHITE,
-                )
+            rl.begin_blend_mode(rl.BLEND_ALPHA)
+            rl.draw_texture_pro(
+                self._light_rt.texture,
+                src_light,
+                dst_preview,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+            rl.end_blend_mode()
             rl.draw_rectangle_lines(int(dst_preview.x), int(dst_preview.y), int(dst_preview.width), int(dst_preview.height), rl.Color(255, 255, 255, 120))
 
         _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
