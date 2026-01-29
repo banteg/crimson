@@ -25,7 +25,7 @@ def player_take_damage(
 
     Notes:
     - This models only the must-have gates used by creature contact damage.
-    - Dodge chances and low-health warning timers are not yet ported.
+    - Low-health warning timers are not yet ported.
     """
 
     dmg = float(damage)
@@ -48,9 +48,13 @@ def player_take_damage(
     if perk_active(player, PerkId.THICK_SKINNED):
         dmg *= 2.0 / 3.0
 
-    # Dodge perks: TODO (needs exact RNG/thresholds).
-    _ = rand  # keep signature for future parity work
+    rng = rand or state.rng.rand
+    if perk_active(player, PerkId.NINJA):
+        if (rng() % 3) == 0:
+            return 0.0
+    elif perk_active(player, PerkId.DODGER):
+        if (rng() % 5) == 0:
+            return 0.0
 
     player.health -= dmg
     return dmg
-

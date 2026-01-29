@@ -22,6 +22,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 15) Multiplayer wiring (2–4 players)
 - [ ] 16) Demo trial overlay (demo builds)
 - [x] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
+- [ ] 18) Player damage parity (dodge + warnings)
 
 ---
 
@@ -483,3 +484,11 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Play `sfx_ui_panelclick` on perk menu open
   - [x] Play `sfx_ui_buttonclick` on perk pick/cancel
 - [x] Ranged enemy fire SFX parity (key only; no panning yet)
+
+---
+
+## 18) Player damage parity (dodge + warnings)
+
+- [x] Implement Ninja/Dodger dodge chances (`player_take_damage`)
+- [ ] Port low-health warning timer reset
+- [ ] Align death timer decay with the decompile
