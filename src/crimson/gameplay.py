@@ -1518,10 +1518,11 @@ def bonus_apply(
             origin_pos,
             count=16,
             angle_offset=0.0,
-            type_id=8,
+            type_id=ProjectileTypeId.PLASMA_RIFLE,
             owner_id=int(owner_id),
         )
         state.bonus_spawn_guard = False
+        state.sfx_queue.append("sfx_explosion_medium")
         return
 
     if bonus_id == BonusId.NUKE:

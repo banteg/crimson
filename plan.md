@@ -184,7 +184,7 @@ I’m going to lay this out in a dependency-aware order. The biggest theme: **fi
 
 These are contained changes that won’t force architecture churn.
 
-1. [ ] **Fireblast type_id fix**
+1. [x] **Fireblast type_id fix**
 
 * File: `src/crimson/gameplay.py` (`bonus_apply`, `BonusId.FIREBLAST`)
 * Change ring `type_id` from `8` → `9`
