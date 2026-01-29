@@ -490,5 +490,5 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 ## 18) Player damage parity (dodge + warnings)
 
 - [x] Implement Ninja/Dodger dodge chances (`player_take_damage`)
-- [ ] Port low-health warning timer reset
+- [x] Port low-health warning timer reset
 - [ ] Align death timer decay with the decompile

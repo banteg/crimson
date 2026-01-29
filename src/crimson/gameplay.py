@@ -45,6 +45,7 @@ class PlayerState:
     move_phase: float = 0.0
     heading: float = 0.0
     death_timer: float = 16.0
+    low_health_timer: float = 100.0
 
     aim_x: float = 0.0
     aim_y: float = 0.0

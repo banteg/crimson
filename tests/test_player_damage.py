@@ -49,3 +49,24 @@ def test_player_take_damage_ninja_has_priority_over_dodger() -> None:
     assert applied == 10.0
     assert player.health == 90.0
 
+
+def test_player_take_damage_resets_low_health_timer_on_hit() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=25.0)
+
+    applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
+
+    assert applied == 10.0
+    assert player.health == 15.0
+    assert player.low_health_timer == 0.0
+
+
+def test_player_take_damage_does_not_reset_low_health_timer_above_threshold() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=50.0)
+
+    applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
+
+    assert applied == 10.0
+    assert player.health == 40.0
+    assert player.low_health_timer == 100.0

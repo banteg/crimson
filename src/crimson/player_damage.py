@@ -57,4 +57,6 @@ def player_take_damage(
             return 0.0
 
     player.health -= dmg
+    if player.health <= 20.0 and (rng() & 7) == 3:
+        player.low_health_timer = 0.0
     return dmg
