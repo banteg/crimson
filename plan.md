@@ -22,7 +22,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 15) Multiplayer wiring (2–4 players)
 - [ ] 16) Demo trial overlay (demo builds)
 - [x] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
-- [ ] 18) Player damage parity (dodge + warnings)
+- [x] 18) Player damage parity (dodge + warnings)
 
 ---
 
@@ -491,4 +491,4 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [x] Implement Ninja/Dodger dodge chances (`player_take_damage`)
 - [x] Port low-health warning timer reset
-- [ ] Align death timer decay with the decompile
+- [x] Align death timer decay with the decompile

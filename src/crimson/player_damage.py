@@ -19,6 +19,7 @@ def player_take_damage(
     player: PlayerState,
     damage: float,
     *,
+    dt: float | None = None,
     rand: Callable[[], int] | None = None,
 ) -> float:
     """Apply damage to a player, returning the actual damage applied.
@@ -57,6 +58,8 @@ def player_take_damage(
             return 0.0
 
     player.health -= dmg
+    if player.health < 0.0 and dt is not None and float(dt) > 0.0:
+        player.death_timer -= float(dt) * 28.0
     if player.health <= 20.0 and (rng() & 7) == 3:
         player.low_health_timer = 0.0
     return dmg

@@ -70,3 +70,14 @@ def test_player_take_damage_does_not_reset_low_health_timer_above_threshold() ->
     assert applied == 10.0
     assert player.health == 40.0
     assert player.low_health_timer == 100.0
+
+
+def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=5.0, death_timer=16.0)
+
+    applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
+
+    assert applied == 10.0
+    assert player.health == -5.0
+    assert player.death_timer == 16.0 - 0.1 * 28.0

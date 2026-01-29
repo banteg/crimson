@@ -489,7 +489,7 @@ class CreaturePool:
                 creature.collision_timer -= dt
                 if creature.collision_timer < 0.0:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
-                    player_take_damage(state, player, float(creature.contact_damage), rand=rand)
+                    player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
             else:
                 creature.collision_flag = 0
                 creature.collision_timer = CONTACT_DAMAGE_PERIOD

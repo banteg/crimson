@@ -89,7 +89,7 @@ class WorldState:
             idx = int(player_index)
             if not (0 <= idx < len(self.players)):
                 return
-            player_take_damage(self.state, self.players[idx], float(damage), rand=self.state.rng.rand)
+            player_take_damage(self.state, self.players[idx], float(damage), dt=dt, rand=self.state.rng.rand)
 
         hits = self.state.projectiles.update(
             dt,
