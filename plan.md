@@ -19,9 +19,9 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 12) Quest high score stats (shots/weapon usage)
 - [x] 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
 - [x] 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
-- [ ] 15) Multiplayer wiring (2–4 players)
+- [x] 15) Multiplayer wiring (2–4 players)
 - [ ] 16) Demo trial overlay (demo builds)
-- [ ] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
+- [x] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
 
 ---
 
@@ -435,11 +435,11 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [x] Thread selected player count from the menu into each gameplay mode
 - [x] Support `player_count > 1` in world reset + input plumbing (players currently mirror P1 input)
-- [ ] Ensure perks/HUD/high score rules match original for 2p+
+- [x] Ensure perks/HUD/high score rules match original for 2p+
   - [x] Perk prompt usable while any player is alive
   - [x] Perk selection applies/syncs perk counts across players
   - [x] HUD overlay parity for 2p
-  - [ ] High score parity for 2p (XP/shots/weapon usage)
+  - [x] High score parity for 2p (XP/shots/weapon usage)
 - [x] Add smoke tests for 2p mode startup
 
 ---
