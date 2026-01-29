@@ -110,8 +110,8 @@ Run the reducer to normalize facts + produce summaries:
 uv run scripts/frida_reduce.py \
   --log analysis/frida/raw/grim_hits.jsonl \
   --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
-  --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \  # optional
-  --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \  # optional
+  --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
+  --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \
   --out-dir analysis/frida
 ```
 
@@ -135,6 +135,8 @@ Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl
 uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
 ```
 
+Note: the validator exits non-zero if the trace captured **zero** `demo_trial_overlay_render` events.
+
 Print representative events:
 
 ```bash
@@ -152,6 +154,8 @@ Optional: summarize `demo_idle_threshold_trace.jsonl` (or the reduced `facts.jso
 ```bash
 uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
 ```
+
+Note: the summarizer exits non-zero if the trace captured **zero** `demo_mode_start` events (idle threshold unknown).
 
 Include representative JSON lines:
 

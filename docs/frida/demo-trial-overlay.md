@@ -35,7 +35,7 @@ Confirm (with logs) that the overlay triggers and reports remaining time exactly
 3. Ensure the tracer config is **not forcing anything**:
    - `CONFIG.forceDemoInGameplayLoop = false`
    - `CONFIG.forcePlaytimeMs = null`
-    - Optional: `CONFIG.minOverlayLogIntervalMs = 250` to keep logs smaller
+   - Optional: `CONFIG.minOverlayLogIntervalMs = 250` to keep logs smaller
 
 4. Trigger the overlay in at least these two ways:
    - **Quest tier lock (fast):** enter Quest mode and attempt a quest beyond Tier 1 (stage > `1_10`).
@@ -57,6 +57,9 @@ Confirm (with logs) that the overlay triggers and reports remaining time exactly
 
    uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
    ```
+
+   Note: the validator exits non-zero if the trace captured **zero** `demo_trial_overlay_render` events.
+   If that happens, check the validator's `Start:` and `Hook errors:` lines for address mismatches.
 
    Print a few representative events (useful for pasting into `plan.md`):
 

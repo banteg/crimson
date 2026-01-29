@@ -43,6 +43,9 @@ Optional: summarize the log:
 uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
 ```
 
+Note: the summarizer exits non-zero if the trace captured **zero** `demo_mode_start` events (idle threshold unknown).
+If that happens, check the log for `error` events (likely an address mismatch) or wait longer for the attract loop.
+
 Include representative JSON lines for `ui_ready` / `demo_mode_start` (easy to paste into `plan.md`):
 
 ```bash
