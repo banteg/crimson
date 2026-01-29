@@ -61,7 +61,7 @@ def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
 
     mode._perk_menu_handle_input(0.0)
 
-    assert played == ["sfx_ui_buttonclick"]
+    assert played == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
     assert mode._perk_menu_open is False
 
 

@@ -453,7 +453,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
 
-- [ ] Bonus pickup SFX parity (including variants)
+- [x] Bonus pickup SFX parity (`sfx_ui_bonus`)
+  - [x] Bonus pickup plays `sfx_ui_bonus`
+  - [x] Perk pick plays `sfx_ui_bonus`
 - [x] Perk UI SFX parity (open/pick/cancel)
   - [x] Play `sfx_ui_levelup` when perk pending count increases
   - [x] Play `sfx_ui_panelclick` on perk menu open

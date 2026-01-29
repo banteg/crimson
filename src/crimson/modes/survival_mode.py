@@ -374,7 +374,7 @@ class SurvivalMode(BaseGameplayMode):
                 self._perk_menu_selected = idx
                 if click:
                     self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-                    perk_selection_pick(
+                    picked = perk_selection_pick(
                         self._state,
                         players,
                         perk_state,
@@ -382,6 +382,8 @@ class SurvivalMode(BaseGameplayMode):
                         game_mode=int(GameMode.SURVIVAL),
                         player_count=len(players),
                     )
+                    if picked is not None:
+                        self._world.audio_router.play_sfx("sfx_ui_bonus")
                     self._close_perk_menu()
                     return
                 break
@@ -405,7 +407,7 @@ class SurvivalMode(BaseGameplayMode):
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-            perk_selection_pick(
+            picked = perk_selection_pick(
                 self._state,
                 players,
                 perk_state,
@@ -413,6 +415,8 @@ class SurvivalMode(BaseGameplayMode):
                 game_mode=int(GameMode.SURVIVAL),
                 player_count=len(players),
             )
+            if picked is not None:
+                self._world.audio_router.play_sfx("sfx_ui_bonus")
             self._close_perk_menu()
 
     def update(self, dt: float) -> None:

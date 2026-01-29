@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import random
 
+from crimson.bonuses import BonusId
 from crimson.gameplay import PlayerInput, player_update
 from crimson.game_world import GameWorld
 
@@ -78,3 +79,26 @@ def test_pending_perk_increase_plays_levelup_sfx(monkeypatch) -> None:
     )
 
     assert played == ["sfx_ui_levelup"]
+
+
+def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+
+    played: list[str | None] = []
+
+    def _play_sfx(_state, key, *, rng=None, allow_variants=True) -> None:  # noqa: ARG001
+        played.append(key)
+
+    monkeypatch.setattr("crimson.audio_router.play_sfx", _play_sfx)
+    world.audio = object()
+    world.audio_rng = random.Random(0)
+
+    player = world.players[0]
+    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.POINTS))
+    assert entry is not None
+
+    world.update(0.016, perk_progression_enabled=False)
+
+    assert entry.picked
+    assert played == ["sfx_ui_bonus"]
