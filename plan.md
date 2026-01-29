@@ -310,9 +310,9 @@ Once Phase 2 is in, these become straightforward and correct.
 - [x] Route damage via `creature_apply_damage` (`damage_type=3`).
 - [x] Add correct SFX sequencing.
 
-4. [ ] Phase 3 tests
+4. [x] Phase 3 tests
 
-- [ ] Nuke does *not* kill creatures outside radius in a contrived map layout.
+- [x] Nuke does *not* kill creatures outside radius in a contrived map layout.
 - [x] Freeze shatters corpses immediately upon pickup.
 - [x] Energizer causes flee + eat kills.
 
