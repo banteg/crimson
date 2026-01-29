@@ -304,13 +304,19 @@ class ProjectilePool:
                 continue
 
             if proj.life_timer <= 0.0:
+                _reset_shock_chain_if_owner(proj_index)
                 proj.active = False
                 continue
+
+            if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
+                pending_hit = int(getattr(proj, "reserved", 0.0) or 0.0)
+                if pending_hit > 0:
+                    proj.reserved = 0.0
+                    _try_spawn_shock_chain_link(proj_index, pending_hit - 1)
 
             if proj.life_timer < 0.4:
                 type_id = proj.type_id
                 if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
-                    _reset_shock_chain_if_owner(proj_index)
                     proj.life_timer -= dt
                     if type_id == ProjectileTypeId.ION_RIFLE:
                         damage = dt * 100.0
@@ -485,7 +491,8 @@ class ProjectilePool:
                         dist = 50.0
 
                     if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
-                        _try_spawn_shock_chain_link(proj_index, hit_idx)
+                        if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
+                            proj.reserved = float(int(hit_idx) + 1)
                     elif type_id == ProjectileTypeId.PLASMA_CANNON:
                         size = float(getattr(creature, "size", 50.0) or 50.0)
                         ring_radius = size * 0.5 + 1.0
