@@ -830,6 +830,25 @@ class WorldRenderer:
             return
 
         trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
+        particles_texture = self.particles_texture
+        monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
+        monster_vision_src: rl.Rectangle | None = None
+        if monster_vision and particles_texture is not None:
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
+            if atlas is not None:
+                grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                if grid:
+                    frame = int(atlas.frame)
+                    col = frame % grid
+                    row = frame // grid
+                    cell_w = float(particles_texture.width) / float(grid)
+                    cell_h = float(particles_texture.height) / float(grid)
+                    monster_vision_src = rl.Rectangle(
+                        cell_w * float(col),
+                        cell_h * float(row),
+                        max(0.0, cell_w - 2.0),
+                        max(0.0, cell_h - 2.0),
+                    )
 
         def draw_player(player: object) -> None:
             if trooper_texture is not None:
@@ -857,15 +876,25 @@ class WorldRenderer:
         for creature in self.creatures.entries:
             if not creature.active:
                 continue
+            sx = (creature.x + cam_x) * scale_x
+            sy = (creature.y + cam_y) * scale_y
+            hitbox_size = float(creature.hitbox_size)
             try:
                 type_id = CreatureTypeId(int(creature.type_id))
             except ValueError:
                 type_id = None
             asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
             texture = self.creature_textures.get(asset) if asset is not None else None
+            if monster_vision and particles_texture is not None and monster_vision_src is not None:
+                fade = 1.0 if hitbox_size >= 0.0 else clamp((hitbox_size + 10.0) * 0.1, 0.0, 1.0)
+                mv_alpha = fade * entity_alpha
+                if mv_alpha > 1e-3:
+                    size = 90.0 * scale
+                    dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                    origin = rl.Vector2(size * 0.5, size * 0.5)
+                    tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                    rl.draw_texture_pro(particles_texture, monster_vision_src, dst, origin, 0.0, tint)
             if texture is None:
-                sx = (creature.x + cam_x) * scale_x
-                sy = (creature.y + cam_y) * scale_y
                 tint = rl.Color(220, 90, 90, int(255 * entity_alpha + 0.5))
                 rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), tint)
                 continue
@@ -874,7 +903,6 @@ class WorldRenderer:
             if info is None:
                 continue
 
-            hitbox_size = float(creature.hitbox_size)
             tint_alpha = float(creature.tint_a)
             if hitbox_size < 0.0:
                 # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
