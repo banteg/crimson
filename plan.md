@@ -10,7 +10,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 3) Implement Rush (end-to-end)
 - [x] 4) Implement Quests (end-to-end)
 - [x] 5) Implement Tutorial (end-to-end)
-- [ ] 6) Implement Typ-o Shooter (end-to-end)
+- [x] 6) Implement Typ-o Shooter (end-to-end)
 - [ ] 7) Polish + regression tests
 
 ---
@@ -303,9 +303,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.5 UI overlays
 
-- [ ] name labels above creatures (`CreatureNameTable.names[i]`)
-- [ ] typing input box (bottom-left) with blinking cursor
-- [ ] play `typeclick` and `typeenter` sounds
+- [x] name labels above creatures (`CreatureNameTable.names[i]`)
+- [x] typing input box (bottom-left) with blinking cursor
+- [x] play `typeclick` and `typeenter` sounds
 
 ### 6.6 Scoring + highscores
 
@@ -336,5 +336,5 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Quests gameplay loop (timeline + completion/failure)
 - [x] Quest Results + Failed screens + unlock persistence
 - [x] Tutorial (director + prompt + fixed perks)
-- [ ] Typ-o (names + typing + bespoke spawn/fire)
+- [x] Typ-o (names + typing + bespoke spawn/fire)
 - [ ] Polish + regression tests (mode IDs, perk gating, highscores)

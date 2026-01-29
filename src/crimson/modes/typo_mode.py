@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 import random
 
 import pyray as rl
@@ -28,6 +29,12 @@ TYPO_WEAPON_ID = 3
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
+NAME_LABEL_SCALE = 0.8
+NAME_LABEL_BG_ALPHA = 0.6
+
+TYPING_BOX_BG_ALPHA = 0.7
+TYPING_BOX_BORDER_ALPHA = 0.9
 
 
 @dataclass(slots=True)
@@ -308,9 +315,78 @@ class TypoShooterMode(BaseGameplayMode):
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
         draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
 
+    def _draw_name_labels(self) -> None:
+        names = self._names.names
+        if not names:
+            return
+
+        for idx, creature in enumerate(self._creatures.entries):
+            if not creature.active:
+                continue
+            if not (0 <= idx < len(names)):
+                continue
+            text = names[idx]
+            if not text:
+                continue
+
+            alpha = 1.0
+            hitbox = float(creature.hitbox_size)
+            if hitbox < 0.0:
+                alpha = max(0.0, min(1.0, (hitbox + 10.0) * 0.1))
+            alpha *= 0.67
+            if alpha <= 1e-3:
+                continue
+
+            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+            y = float(sy) - 50.0
+            text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
+            text_h = float(self._ui_line_height(scale=NAME_LABEL_SCALE))
+            x = float(sx) - text_w * 0.5
+
+            bg = rl.Color(0, 0, 0, int(255 * alpha * NAME_LABEL_BG_ALPHA))
+            fg = rl.Color(255, 255, 255, int(255 * alpha))
+            rl.draw_rectangle(int(x - 4.0), int(y), int(text_w + 8.0), int(text_h), bg)
+            self._draw_ui_text(text, x, y, fg, scale=NAME_LABEL_SCALE)
+
+    def _draw_typing_box(self) -> None:
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+
+        scale = 1.0
+        pad_x = 10.0
+        pad_y = 8.0
+
+        text = self._typing.text
+        text_w = float(self._ui_text_width(text, scale=scale))
+        line_h = float(self._ui_line_height(scale=scale))
+
+        box_w = max(220.0, min(screen_w - 40.0, text_w + pad_x * 2.0 + 12.0))
+        box_h = line_h + pad_y * 2.0
+        x = 18.0
+        y = screen_h - box_h - 18.0
+
+        bg = rl.Color(0, 0, 0, int(255 * TYPING_BOX_BG_ALPHA))
+        border = rl.Color(255, 255, 255, int(255 * TYPING_BOX_BORDER_ALPHA))
+        rl.draw_rectangle(int(x), int(y), int(box_w), int(box_h), bg)
+        rl.draw_rectangle_lines(int(x), int(y), int(box_w), int(box_h), border)
+
+        tx = x + pad_x
+        ty = y + pad_y
+        self._draw_ui_text(text, tx, ty, UI_TEXT_COLOR, scale=scale)
+
+        cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
+        cursor_alpha = 0.4 if cursor_dim else 1.0
+        cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
+        cursor_x = tx + text_w + 2.0
+        cursor_y = ty + 2.0
+        rl.draw_rectangle(int(cursor_x), int(cursor_y), 2, int(line_h - 4.0), cursor_color)
+
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._game_over_active))
         self._draw_screen_fade()
+
+        if not self._game_over_active:
+            self._draw_name_labels()
 
         hud_bottom = 0.0
         if (not self._game_over_active) and self._hud_assets is not None:
@@ -335,6 +411,8 @@ class TypoShooterMode(BaseGameplayMode):
                 self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
             if self._player.health <= 0.0:
                 self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
+
+            self._draw_typing_box()
 
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
