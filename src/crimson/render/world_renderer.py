@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.math import clamp
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.terrain_render import _maybe_alpha_test
 
 from ..bonuses import BONUS_BY_ID, BonusId
 from ..creatures.anim import creature_anim_select_frame
@@ -932,177 +933,182 @@ class WorldRenderer:
         if entity_alpha <= 1e-3:
             return
 
-        trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
-        particles_texture = self.particles_texture
-        monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
-        monster_vision_src: rl.Rectangle | None = None
-        if monster_vision and particles_texture is not None:
-            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
-            if atlas is not None:
-                grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-                if grid:
-                    frame = int(atlas.frame)
-                    col = frame % grid
-                    row = frame // grid
-                    cell_w = float(particles_texture.width) / float(grid)
-                    cell_h = float(particles_texture.height) / float(grid)
-                    monster_vision_src = rl.Rectangle(
-                        cell_w * float(col),
-                        cell_h * float(row),
-                        max(0.0, cell_w - 2.0),
-                        max(0.0, cell_h - 2.0),
+        alpha_test = True
+        if self.ground is not None:
+            alpha_test = bool(getattr(self.ground, "alpha_test", True))
+
+        with _maybe_alpha_test(bool(alpha_test)):
+            trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
+            particles_texture = self.particles_texture
+            monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
+            monster_vision_src: rl.Rectangle | None = None
+            if monster_vision and particles_texture is not None:
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        cell_w = float(particles_texture.width) / float(grid)
+                        cell_h = float(particles_texture.height) / float(grid)
+                        monster_vision_src = rl.Rectangle(
+                            cell_w * float(col),
+                            cell_h * float(row),
+                            max(0.0, cell_w - 2.0),
+                            max(0.0, cell_h - 2.0),
+                        )
+
+            def draw_player(player: object) -> None:
+                if trooper_texture is not None:
+                    self._draw_player_trooper_sprite(
+                        trooper_texture,
+                        player,
+                        cam_x=cam_x,
+                        cam_y=cam_y,
+                        scale_x=scale_x,
+                        scale_y=scale_y,
+                        scale=scale,
+                        alpha=entity_alpha,
                     )
+                    return
 
-        def draw_player(player: object) -> None:
-            if trooper_texture is not None:
-                self._draw_player_trooper_sprite(
-                    trooper_texture,
-                    player,
-                    cam_x=cam_x,
-                    cam_y=cam_y,
-                    scale_x=scale_x,
-                    scale_y=scale_y,
-                    scale=scale,
-                    alpha=entity_alpha,
-                )
-                return
+                sx = (player.pos_x + cam_x) * scale_x
+                sy = (player.pos_y + cam_y) * scale_y
+                tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
+                rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
 
-            sx = (player.pos_x + cam_x) * scale_x
-            sy = (player.pos_y + cam_y) * scale_y
-            tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
-            rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
-
-        for player in self.players:
-            if player.health <= 0.0:
-                draw_player(player)
-
-        creature_type_order = {
-            int(CreatureTypeId.ZOMBIE): 0,
-            int(CreatureTypeId.SPIDER_SP1): 1,
-            int(CreatureTypeId.SPIDER_SP2): 2,
-            int(CreatureTypeId.ALIEN): 3,
-            int(CreatureTypeId.LIZARD): 4,
-        }
-        creatures = [
-            (idx, creature)
-            for idx, creature in enumerate(self.creatures.entries)
-            if creature.active
-        ]
-        creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
-        for _idx, creature in creatures:
-            sx = (creature.x + cam_x) * scale_x
-            sy = (creature.y + cam_y) * scale_y
-            hitbox_size = float(creature.hitbox_size)
-            try:
-                type_id = CreatureTypeId(int(creature.type_id))
-            except ValueError:
-                type_id = None
-            asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
-            texture = self.creature_textures.get(asset) if asset is not None else None
-            if monster_vision and particles_texture is not None and monster_vision_src is not None:
-                fade = 1.0 if hitbox_size >= 0.0 else clamp((hitbox_size + 10.0) * 0.1, 0.0, 1.0)
-                mv_alpha = fade * entity_alpha
-                if mv_alpha > 1e-3:
-                    size = 90.0 * scale
-                    dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-                    origin = rl.Vector2(size * 0.5, size * 0.5)
-                    tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                    rl.draw_texture_pro(particles_texture, monster_vision_src, dst, origin, 0.0, tint)
-            if texture is None:
-                tint = rl.Color(220, 90, 90, int(255 * entity_alpha + 0.5))
-                rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), tint)
-                continue
-
-            info = CREATURE_ANIM.get(type_id) if type_id is not None else None
-            if info is None:
-                continue
-
-            tint_alpha = float(creature.tint_a)
-            if hitbox_size < 0.0:
-                # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
-                tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
-            tint_alpha = clamp(tint_alpha * entity_alpha, 0.0, 1.0)
-            tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
-
-            size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-            fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
-            # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
-            # and is disabled when the Monster Vision perk is active.
-            shadow = fx_detail and (not self.players or not perk_active(self.players[0], PerkId.MONSTER_VISION))
-            long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
-                creature.flags & CreatureFlags.ANIM_LONG_STRIP
-            ) != 0
-            phase = float(creature.anim_phase)
-            if long_strip:
-                if hitbox_size < 0.0:
-                    # Negative phase selects the fallback "corpse" frame in creature_render_type.
-                    phase = -1.0
-                elif hitbox_size < 16.0:
-                    # Death staging: while hitbox_size ramps down (16..0), creature_render_type
-                    # selects frames via `__ftol((base_frame + 15) - hitbox_size)`.
-                    phase = float(info.base + 0x0F) - hitbox_size - 0.5
-
-            shadow_alpha = None
-            if shadow:
-                # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (hitbox_size < 0).
-                shadow_a = float(creature.tint_a) * 0.4
-                if hitbox_size < 0.0:
-                    shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
-                    shadow_a = max(0.0, shadow_a)
-                shadow_alpha = int(clamp(shadow_a * entity_alpha * 255.0, 0.0, 255.0) + 0.5)
-            self._draw_creature_sprite(
-                texture,
-                type_id=type_id or CreatureTypeId.ZOMBIE,
-                flags=creature.flags,
-                phase=phase,
-                mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
-                shadow_alpha=shadow_alpha,
-                world_x=float(creature.x),
-                world_y=float(creature.y),
-                rotation_rad=float(creature.heading) - math.pi / 2.0,
-                scale=scale,
-                size_scale=size_scale,
-                tint=tint,
-                shadow=shadow,
-            )
-
-        for player in self.players:
-            if player.health > 0.0:
-                draw_player(player)
-
-        for proj in self.state.projectiles.entries:
-            if not proj.active:
-                continue
-            self._draw_projectile(proj, scale=scale, alpha=entity_alpha)
-
-        for proj in self.state.secondary_projectiles.entries:
-            if not proj.active:
-                continue
-            self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
-
-        self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
-        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
-        self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
-
-        if draw_aim_indicators and (not self.demo_mode_active):
             for player in self.players:
                 if player.health <= 0.0:
+                    draw_player(player)
+
+            creature_type_order = {
+                int(CreatureTypeId.ZOMBIE): 0,
+                int(CreatureTypeId.SPIDER_SP1): 1,
+                int(CreatureTypeId.SPIDER_SP2): 2,
+                int(CreatureTypeId.ALIEN): 3,
+                int(CreatureTypeId.LIZARD): 4,
+            }
+            creatures = [
+                (idx, creature)
+                for idx, creature in enumerate(self.creatures.entries)
+                if creature.active
+            ]
+            creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
+            for _idx, creature in creatures:
+                sx = (creature.x + cam_x) * scale_x
+                sy = (creature.y + cam_y) * scale_y
+                hitbox_size = float(creature.hitbox_size)
+                try:
+                    type_id = CreatureTypeId(int(creature.type_id))
+                except ValueError:
+                    type_id = None
+                asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
+                texture = self.creature_textures.get(asset) if asset is not None else None
+                if monster_vision and particles_texture is not None and monster_vision_src is not None:
+                    fade = 1.0 if hitbox_size >= 0.0 else clamp((hitbox_size + 10.0) * 0.1, 0.0, 1.0)
+                    mv_alpha = fade * entity_alpha
+                    if mv_alpha > 1e-3:
+                        size = 90.0 * scale
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                        rl.draw_texture_pro(particles_texture, monster_vision_src, dst, origin, 0.0, tint)
+                if texture is None:
+                    tint = rl.Color(220, 90, 90, int(255 * entity_alpha + 0.5))
+                    rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), tint)
                     continue
-                aim_x = float(getattr(player, "aim_x", player.pos_x))
-                aim_y = float(getattr(player, "aim_y", player.pos_y))
-                dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
-                radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
-                sx = (aim_x + cam_x) * scale_x
-                sy = (aim_y + cam_y) * scale_y
-                screen_radius = max(1.0, radius * scale)
-                self._draw_aim_circle(x=sx, y=sy, radius=screen_radius, alpha=entity_alpha)
-                reload_timer = float(getattr(player, "reload_timer", 0.0))
-                reload_max = float(getattr(player, "reload_timer_max", 0.0))
-                if reload_max > 1e-6 and reload_timer > 1e-6:
-                    progress = reload_timer / reload_max
-                    if progress > 0.0:
-                        ms = int(progress * 60000.0)
-                        self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=entity_alpha)
+
+                info = CREATURE_ANIM.get(type_id) if type_id is not None else None
+                if info is None:
+                    continue
+
+                tint_alpha = float(creature.tint_a)
+                if hitbox_size < 0.0:
+                    # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
+                    tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
+                tint_alpha = clamp(tint_alpha * entity_alpha, 0.0, 1.0)
+                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
+
+                size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
+                fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
+                # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
+                # and is disabled when the Monster Vision perk is active.
+                shadow = fx_detail and (not self.players or not perk_active(self.players[0], PerkId.MONSTER_VISION))
+                long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
+                    creature.flags & CreatureFlags.ANIM_LONG_STRIP
+                ) != 0
+                phase = float(creature.anim_phase)
+                if long_strip:
+                    if hitbox_size < 0.0:
+                        # Negative phase selects the fallback "corpse" frame in creature_render_type.
+                        phase = -1.0
+                    elif hitbox_size < 16.0:
+                        # Death staging: while hitbox_size ramps down (16..0), creature_render_type
+                        # selects frames via `__ftol((base_frame + 15) - hitbox_size)`.
+                        phase = float(info.base + 0x0F) - hitbox_size - 0.5
+
+                shadow_alpha = None
+                if shadow:
+                    # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (hitbox_size < 0).
+                    shadow_a = float(creature.tint_a) * 0.4
+                    if hitbox_size < 0.0:
+                        shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
+                        shadow_a = max(0.0, shadow_a)
+                    shadow_alpha = int(clamp(shadow_a * entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+                self._draw_creature_sprite(
+                    texture,
+                    type_id=type_id or CreatureTypeId.ZOMBIE,
+                    flags=creature.flags,
+                    phase=phase,
+                    mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
+                    shadow_alpha=shadow_alpha,
+                    world_x=float(creature.x),
+                    world_y=float(creature.y),
+                    rotation_rad=float(creature.heading) - math.pi / 2.0,
+                    scale=scale,
+                    size_scale=size_scale,
+                    tint=tint,
+                    shadow=shadow,
+                )
+
+            for player in self.players:
+                if player.health > 0.0:
+                    draw_player(player)
+
+            for proj in self.state.projectiles.entries:
+                if not proj.active:
+                    continue
+                self._draw_projectile(proj, scale=scale, alpha=entity_alpha)
+
+            for proj in self.state.secondary_projectiles.entries:
+                if not proj.active:
+                    continue
+                self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
+
+            self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+            self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
+            self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+
+            if draw_aim_indicators and (not self.demo_mode_active):
+                for player in self.players:
+                    if player.health <= 0.0:
+                        continue
+                    aim_x = float(getattr(player, "aim_x", player.pos_x))
+                    aim_y = float(getattr(player, "aim_y", player.pos_y))
+                    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+                    radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+                    sx = (aim_x + cam_x) * scale_x
+                    sy = (aim_y + cam_y) * scale_y
+                    screen_radius = max(1.0, radius * scale)
+                    self._draw_aim_circle(x=sx, y=sy, radius=screen_radius, alpha=entity_alpha)
+                    reload_timer = float(getattr(player, "reload_timer", 0.0))
+                    reload_max = float(getattr(player, "reload_timer_max", 0.0))
+                    if reload_max > 1e-6 and reload_timer > 1e-6:
+                        progress = reload_timer / reload_max
+                        if progress > 0.0:
+                            ms = int(progress * 60000.0)
+                            self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=entity_alpha)
 
     def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         cam_x, cam_y, scale_x, scale_y = self._world_params()
