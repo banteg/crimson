@@ -28,7 +28,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [x] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
-- [ ] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity.
+- [x] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity (demo-build validation pending).
 - [x] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.
 
 ## Data tables + content
@@ -59,7 +59,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Options screen (volume/detail/mouse + HUD toggle) -> Unlocks: basic config editing (video/controls parity pending).
 - [x] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
 - [x] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
-- [ ] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
+- [x] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
 - [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into `crimson game` -> Unlocks: additional playable modes.
 - [ ] Confirm demo idle threshold from the original demo build -> Unlocks: attract timing parity.
 

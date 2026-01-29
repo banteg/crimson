@@ -373,6 +373,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Update `docs/rewrite/status.md` to reflect current wiring
 - [x] Update `docs/rewrite/index.md` “What exists now” + gaps
 - [x] Update `docs/rewrite/tech-tree.md` checkboxes/gaps
+- [x] Re-sync `docs/rewrite/tech-tree.md` after Milestones 16–18
 - [x] Update `docs/rewrite/game-over.md` parity notes
 
 ---
