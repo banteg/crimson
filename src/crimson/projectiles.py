@@ -56,6 +56,9 @@ def _rng_zero() -> int:
     return 0
 
 
+CreatureDamageApplier = Callable[[int, float, int, float, float, int], None]
+
+
 @dataclass(slots=True)
 class Projectile:
     active: bool = False
@@ -87,6 +90,7 @@ class SecondaryProjectile:
     vel_x: float = 0.0
     vel_y: float = 0.0
     type_id: int = 0
+    owner_id: int = -100
     lifetime: float = 0.0
     target_id: int = -1
 
@@ -199,6 +203,7 @@ class ProjectilePool:
         runtime_state: object | None = None,
         players: list[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
+        apply_creature_damage: CreatureDamageApplier | None = None,
     ) -> list[tuple[int, float, float, float, float, float, float]]:
         """Update the main projectile pool.
 
@@ -225,6 +230,41 @@ class ProjectilePool:
                 return float(damage_scale_default)
             return float(value)
 
+        def _damage_type_for(type_id: int, *, radius: bool = False) -> int:
+            if radius:
+                return 3
+            if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
+                return 7
+            if type_id in (ProjectileTypeId.FLAMETHROWER, ProjectileTypeId.FIRE_BULLETS):
+                return 4
+            return 1
+
+        def _apply_damage_to_creature(
+            creature_index: int,
+            damage: float,
+            *,
+            damage_type: int,
+            impulse_x: float,
+            impulse_y: float,
+            owner_id: int,
+        ) -> None:
+            if damage <= 0.0:
+                return
+            idx = int(creature_index)
+            if not (0 <= idx < len(creatures)):
+                return
+            if apply_creature_damage is not None:
+                apply_creature_damage(
+                    idx,
+                    float(damage),
+                    int(damage_type),
+                    float(impulse_x),
+                    float(impulse_y),
+                    int(owner_id),
+                )
+            else:
+                creatures[idx].hp -= float(damage)
+
         def _apply_rocket_splash(x: float, y: float, owner_id: int, damage_scale: float) -> None:
             for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
@@ -239,8 +279,14 @@ class ProjectilePool:
                 if dist < 50.0:
                     dist = 50.0
                 damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
-                if damage_amount > 0.0:
-                    creature.hp -= damage_amount
+                _apply_damage_to_creature(
+                    idx,
+                    damage_amount,
+                    damage_type=_damage_type_for(int(ProjectileTypeId.ROCKET_LAUNCHER), radius=True),
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=owner_id,
+                )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
             if runtime_state is None:
@@ -324,24 +370,38 @@ class ProjectilePool:
                     else:
                         damage = dt * 40.0
                         radius = ion_aoe_scale * 60.0
-                    for creature in creatures:
+                    for creature_idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            _apply_damage_to_creature(
+                                creature_idx,
+                                damage,
+                                damage_type=_damage_type_for(int(type_id)),
+                                impulse_x=0.0,
+                                impulse_y=0.0,
+                                owner_id=int(proj.owner_id),
+                            )
                 elif type_id == ProjectileTypeId.ION_CANNON:
                     proj.life_timer -= dt * 0.7
                     damage = dt * 300.0
                     radius = ion_aoe_scale * 128.0
-                    for creature in creatures:
+                    for creature_idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            _apply_damage_to_creature(
+                                creature_idx,
+                                damage,
+                                damage_type=_damage_type_for(int(type_id)),
+                                impulse_x=0.0,
+                                impulse_y=0.0,
+                                owner_id=int(proj.owner_id),
+                            )
                 elif type_id == ProjectileTypeId.GAUSS_GUN:
                     proj.life_timer -= dt * 0.1
                 else:
@@ -520,7 +580,14 @@ class ProjectilePool:
                             new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
                             setattr(creature, "size", new_size)
                             if new_size < 16.0:
-                                creature.hp = 0.0
+                                _apply_damage_to_creature(
+                                    hit_idx,
+                                    float(creature.hp) + 1.0,
+                                    damage_type=_damage_type_for(int(type_id)),
+                                    impulse_x=0.0,
+                                    impulse_y=0.0,
+                                    owner_id=int(proj.owner_id),
+                                )
                         proj.life_timer = 0.25
                     elif type_id == ProjectileTypeId.PULSE_GUN:
                         creature.x += move_dx * 3.0
@@ -539,13 +606,30 @@ class ProjectilePool:
                     if damage_amount > 0.0 and creature.hp > 0.0:
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
+                        impulse_x = dir_x * float(proj.speed_scale)
+                        impulse_y = dir_y * float(proj.speed_scale)
+                        damage_type = _damage_type_for(int(type_id))
                         if remaining <= 0.0:
-                            creature.hp -= damage_amount
+                            _apply_damage_to_creature(
+                                hit_idx,
+                                damage_amount,
+                                damage_type=damage_type,
+                                impulse_x=impulse_x,
+                                impulse_y=impulse_y,
+                                owner_id=int(proj.owner_id),
+                            )
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
                             hp_before = float(creature.hp)
-                            creature.hp -= remaining
+                            _apply_damage_to_creature(
+                                hit_idx,
+                                remaining,
+                                damage_type=damage_type,
+                                impulse_x=impulse_x,
+                                impulse_y=impulse_y,
+                                owner_id=int(proj.owner_id),
+                            )
                             proj.damage_pool -= hp_before
 
                     if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
@@ -694,6 +778,7 @@ class SecondaryProjectilePool:
         pos_y: float,
         angle: float,
         type_id: int,
+        owner_id: int = -100,
         time_to_live: float = 2.0,
     ) -> int:
         index = None
@@ -710,6 +795,7 @@ class SecondaryProjectilePool:
         entry.type_id = int(type_id)
         entry.pos_x = float(pos_x)
         entry.pos_y = float(pos_y)
+        entry.owner_id = int(owner_id)
         entry.target_id = -1
 
         if entry.type_id == 3:
@@ -734,11 +820,28 @@ class SecondaryProjectilePool:
     def iter_active(self) -> list[SecondaryProjectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def update_pulse_gun(self, dt: float, creatures: list[Damageable]) -> None:
+    def update_pulse_gun(
+        self,
+        dt: float,
+        creatures: list[Damageable],
+        *,
+        apply_creature_damage: CreatureDamageApplier | None = None,
+    ) -> None:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
 
         if dt <= 0.0:
             return
+
+        def _apply_damage_to_creature(creature_index: int, damage: float, *, owner_id: int) -> None:
+            if damage <= 0.0:
+                return
+            idx = int(creature_index)
+            if not (0 <= idx < len(creatures)):
+                return
+            if apply_creature_damage is not None:
+                apply_creature_damage(idx, float(damage), 3, 0.0, 0.0, int(owner_id))
+            else:
+                creatures[idx].hp -= float(damage)
 
         for entry in self._entries:
             if not entry.active:
@@ -753,13 +856,13 @@ class SecondaryProjectilePool:
                 scale = entry.speed
                 radius = scale * t * 80.0
                 damage = dt * scale * 700.0
-                for creature in creatures:
+                for creature_idx, creature in enumerate(creatures):
                     if creature.hp <= 0.0:
                         continue
                     creature_radius = _hit_radius_for(creature)
                     hit_r = radius + creature_radius
                     if _distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                        creature.hp -= damage
+                        _apply_damage_to_creature(creature_idx, damage, owner_id=int(entry.owner_id))
                 continue
 
             if entry.type_id not in (1, 2, 4):
@@ -818,18 +921,16 @@ class SecondaryProjectilePool:
                 entry.speed -= dt * 0.5
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
-            hit = False
-            hit_creature: Damageable | None = None
-            for creature in creatures:
+            hit_idx: int | None = None
+            for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
                     continue
                 creature_radius = _hit_radius_for(creature)
                 hit_r = 8.0 + creature_radius
                 if _distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                    hit = True
-                    hit_creature = creature
+                    hit_idx = idx
                     break
-            if hit:
+            if hit_idx is not None:
                 damage = 150.0
                 if entry.type_id == 1:
                     damage = entry.speed * 50.0 + 500.0
@@ -837,8 +938,7 @@ class SecondaryProjectilePool:
                     damage = entry.speed * 20.0 + 80.0
                 elif entry.type_id == 4:
                     damage = entry.speed * 20.0 + 40.0
-                if hit_creature is not None:
-                    hit_creature.hp -= damage
+                _apply_damage_to_creature(hit_idx, damage, owner_id=int(entry.owner_id))
 
                 det_scale = 0.5
                 if entry.type_id == 1:

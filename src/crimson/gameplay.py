@@ -9,7 +9,7 @@ from grim.rand import Crand
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
-from .projectiles import Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 
 
@@ -377,6 +377,7 @@ class BonusPool:
         state: "GameplayState",
         players: list["PlayerState"],
         creatures: list[Damageable] | None = None,
+        apply_creature_damage: CreatureDamageApplier | None = None,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -405,6 +406,7 @@ class BonusPool:
                         origin=player,
                         creatures=creatures,
                         players=players,
+                        apply_creature_damage=apply_creature_damage,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -1150,16 +1152,40 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     # Secondary-projectile weapons (effects.md).
     if player.weapon_id == 12:
         # Seeker Rockets -> secondary type 1.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=1,
+            owner_id=_owner_id_for_player(player.index),
+        )
     elif player.weapon_id == 13:
         # Plasma Shotgun -> secondary type 2.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=2,
+            owner_id=_owner_id_for_player(player.index),
+        )
     elif player.weapon_id == 17:
         # Rocket Minigun -> secondary type 2 (multiple per shot in native; keep 1 for now).
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=2,
+            owner_id=_owner_id_for_player(player.index),
+        )
     elif player.weapon_id == 18:
         # Pulse Gun -> secondary type 4.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=4,
+            owner_id=_owner_id_for_player(player.index),
+        )
     else:
         def _spawn_pellet_shot(type_id: int, *, meta: float, pellets: int) -> None:
             count = max(1, int(pellets))
@@ -1351,6 +1377,7 @@ def bonus_apply(
     origin: _HasPos | None = None,
     creatures: list[Damageable] | None = None,
     players: list[PlayerState] | None = None,
+    apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -1536,7 +1563,7 @@ def bonus_apply(
             origin_pos = origin or player
             ox = float(origin_pos.pos_x)
             oy = float(origin_pos.pos_y)
-            for creature in creatures:
+            for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
                     continue
                 dx = float(creature.x) - ox
@@ -1545,7 +1572,18 @@ def bonus_apply(
                     continue
                 dist = math.hypot(dx, dy)
                 if dist < 256.0:
-                    creature.hp -= (256.0 - dist) * 5.0
+                    damage = (256.0 - dist) * 5.0
+                    if apply_creature_damage is not None:
+                        apply_creature_damage(
+                            int(idx),
+                            float(damage),
+                            3,
+                            0.0,
+                            0.0,
+                            _owner_id_for_player(player.index),
+                        )
+                    else:
+                        creature.hp -= float(damage)
         return
 
     # Bonus types not modeled yet.
@@ -1585,6 +1623,7 @@ def bonus_telekinetic_update(
     dt: float,
     *,
     creatures: list[Damageable] | None = None,
+    apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
 
@@ -1628,6 +1667,7 @@ def bonus_telekinetic_update(
             origin=player,
             creatures=creatures,
             players=players,
+            apply_creature_damage=apply_creature_damage,
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
@@ -1655,11 +1695,26 @@ def bonus_update(
     *,
     creatures: list[Damageable] | None = None,
     update_hud: bool = True,
+    apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
-    pickups = bonus_telekinetic_update(state, players, dt, creatures=creatures)
-    pickups.extend(state.bonus_pool.update(dt, state=state, players=players, creatures=creatures))
+    pickups = bonus_telekinetic_update(
+        state,
+        players,
+        dt,
+        creatures=creatures,
+        apply_creature_damage=apply_creature_damage,
+    )
+    pickups.extend(
+        state.bonus_pool.update(
+            dt,
+            state=state,
+            players=players,
+            creatures=creatures,
+            apply_creature_damage=apply_creature_damage,
+        )
+    )
 
     if dt > 0.0:
         state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)

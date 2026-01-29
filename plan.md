@@ -253,7 +253,7 @@ Make **every damage source** go through a single “canonical” implementation 
   * apply “corpse keep” flags and split-on-death logic
   * set active state and corpse timers correctly
 
-3. [ ] Update all damage call sites to use `creature_apply_damage`
+3. [x] Update all damage call sites to use `creature_apply_damage`
 
 * `ProjectilePool.update()`:
 

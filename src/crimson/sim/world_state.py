@@ -4,7 +4,9 @@ from dataclasses import dataclass
 import math
 
 from ..bonuses import BonusId
+from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CreaturePool
+from ..creatures.runtime import CREATURE_HITBOX_ALIVE
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
@@ -103,6 +105,49 @@ class WorldState:
             fx_queue_rotated=fx_queue_rotated,
         )
 
+        deaths = list(creature_result.deaths)
+
+        def _apply_projectile_damage_to_creature(
+            creature_index: int,
+            damage: float,
+            damage_type: int,
+            impulse_x: float,
+            impulse_y: float,
+            owner_id: int,
+        ) -> None:
+            idx = int(creature_index)
+            if not (0 <= idx < len(self.creatures.entries)):
+                return
+            creature = self.creatures.entries[idx]
+            if not creature.active:
+                return
+
+            death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
+            killed = creature_apply_damage(
+                creature,
+                damage_amount=float(damage),
+                damage_type=int(damage_type),
+                impulse_x=float(impulse_x),
+                impulse_y=float(impulse_y),
+                owner_id=int(owner_id),
+                dt=float(dt),
+                players=self.players,
+                rand=self.state.rng.rand,
+            )
+            if killed and death_start_needed:
+                deaths.append(
+                    self.creatures.handle_death(
+                        idx,
+                        state=self.state,
+                        players=self.players,
+                        rand=self.state.rng.rand,
+                        detail_preset=int(detail_preset),
+                        world_width=float(world_size),
+                        world_height=float(world_size),
+                        fx_queue=fx_queue,
+                    )
+                )
+
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -112,8 +157,13 @@ class WorldState:
             runtime_state=self.state,
             players=self.players,
             apply_player_damage=_apply_projectile_damage_to_player,
+            apply_creature_damage=_apply_projectile_damage_to_creature,
         )
-        self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
+        self.state.secondary_projectiles.update_pulse_gun(
+            dt,
+            self.creatures.entries,
+            apply_creature_damage=_apply_projectile_damage_to_creature,
+        )
         self.state.particles.update(dt)
         self.state.sprite_effects.update(dt)
 
@@ -125,7 +175,14 @@ class WorldState:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
 
-        pickups = bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
+        pickups = bonus_update(
+            self.state,
+            self.players,
+            dt,
+            creatures=self.creatures.entries,
+            update_hud=True,
+            apply_creature_damage=_apply_projectile_damage_to_creature,
+        )
         if pickups:
             for pickup in pickups:
                 self.state.effects.spawn_burst(
@@ -187,7 +244,7 @@ class WorldState:
             else:
                 sfx.append(pain_sfx[int(rand()) % len(pain_sfx)])
 
-        return WorldEvents(hits=hits, deaths=creature_result.deaths, pickups=pickups, sfx=sfx)
+        return WorldEvents(hits=hits, deaths=tuple(deaths), pickups=pickups, sfx=sfx)
 
     def _advance_creature_anim(self, dt: float) -> None:
         for creature in self.creatures.entries:

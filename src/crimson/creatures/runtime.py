@@ -589,8 +589,8 @@ class CreaturePool:
         )
 
         if keep_corpse:
-            nudge = 0.001
-            creature.hitbox_size = CREATURE_HITBOX_ALIVE - nudge
+            if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
+                creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
         else:
             creature.active = False
 
