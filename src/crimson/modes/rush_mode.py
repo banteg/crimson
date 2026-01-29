@@ -61,10 +61,11 @@ class RushMode(BaseGameplayMode):
         self._ui_assets = None
 
     def _enforce_rush_loadout(self) -> None:
-        if int(self._player.weapon_id) != RUSH_WEAPON_ID:
-            weapon_assign_player(self._player, RUSH_WEAPON_ID)
-        # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-        self._player.ammo = max(0, int(self._player.clip_size))
+        for player in self._world.players:
+            if int(player.weapon_id) != RUSH_WEAPON_ID:
+                weapon_assign_player(player, RUSH_WEAPON_ID)
+            # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
+            player.ammo = max(0, int(player.clip_size))
 
     def open(self) -> None:
         super().open()
@@ -191,11 +192,12 @@ class RushMode(BaseGameplayMode):
                     self.close_requested = True
             return
 
-        dt_world = 0.0 if self._paused or self._player.health <= 0.0 else dt_frame
+        any_alive = any(player.health > 0.0 for player in self._world.players)
+        dt_world = 0.0 if self._paused or (not any_alive) else dt_frame
 
         self._rush.elapsed_ms += dt_world * 1000.0
         if dt_world <= 0.0:
-            if self._player.health <= 0.0:
+            if not any_alive:
                 self._enter_game_over()
             return
 
@@ -203,7 +205,7 @@ class RushMode(BaseGameplayMode):
         input_state = self._build_input()
         self._world.update(
             dt_world,
-            inputs=[input_state],
+            inputs=[input_state for _ in self._world.players],
             auto_pick_perks=False,
             game_mode=int(GameMode.RUSH),
             perk_progression_enabled=False,
@@ -213,7 +215,7 @@ class RushMode(BaseGameplayMode):
             self._rush.spawn_cooldown_ms,
             dt_world * 1000.0,
             self._state.rng,
-            player_count=1,
+            player_count=len(self._world.players),
             survival_elapsed_ms=int(self._rush.elapsed_ms),
             terrain_width=float(self._world.world_size),
             terrain_height=float(self._world.world_size),
@@ -221,7 +223,7 @@ class RushMode(BaseGameplayMode):
         self._rush.spawn_cooldown_ms = cooldown
         self._creatures.spawn_inits(spawns)
 
-        if self._player.health <= 0.0:
+        if not any(player.health > 0.0 for player in self._world.players):
             self._enter_game_over()
 
     def _draw_game_cursor(self) -> None:

@@ -158,7 +158,14 @@ class BaseGameplayMode:
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
 
-        self._world.reset(seed=0xBEEF, player_count=1)
+        player_count = 1
+        config = self._config
+        if config is not None:
+            try:
+                player_count = int(config.data.get("player_count", 1) or 1)
+            except Exception:
+                player_count = 1
+        self._world.reset(seed=0xBEEF, player_count=max(1, min(4, player_count)))
         self._world.open()
         self._bind_world()
 

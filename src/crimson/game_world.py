@@ -100,7 +100,13 @@ class GameWorld:
             for entry in WEAPON_TABLE
             if entry.weapon_id >= 0
         }
-        self.reset()
+        player_count = 1
+        if self.config is not None:
+            try:
+                player_count = int(self.config.data.get("player_count", 1) or 1)
+            except Exception:
+                player_count = 1
+        self.reset(player_count=max(1, min(4, player_count)))
 
     def reset(
         self,
@@ -127,8 +133,23 @@ class GameWorld:
         self._bonus_anim_phase = 0.0
         base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
         base_y = float(self.world_size) * 0.5 if spawn_y is None else float(spawn_y)
-        for idx in range(max(1, int(player_count))):
-            player = PlayerState(index=idx, pos_x=base_x, pos_y=base_y)
+        count = max(1, int(player_count))
+        if count <= 1:
+            offsets = [(0.0, 0.0)]
+        else:
+            radius = 32.0
+            step = math.tau / float(count)
+            offsets = [
+                (math.cos(float(idx) * step) * radius, math.sin(float(idx) * step) * radius) for idx in range(count)
+            ]
+
+        for idx in range(count):
+            offset_x, offset_y = offsets[idx]
+            x = base_x + float(offset_x)
+            y = base_y + float(offset_y)
+            x = max(0.0, min(float(self.world_size), x))
+            y = max(0.0, min(float(self.world_size), y))
+            player = PlayerState(index=idx, pos_x=x, pos_y=y)
             weapon_assign_player(player, 0)
             self.players.append(player)
         self.camera_x = -1.0

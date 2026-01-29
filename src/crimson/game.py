@@ -1134,6 +1134,7 @@ class QuestResultsView:
         breakdown = compute_quest_final_time(
             base_time_ms=int(outcome.base_time_ms),
             player_health=float(outcome.player_health),
+            player2_health=(float(outcome.player2_health) if outcome.player2_health is not None else None),
             pending_perk_count=int(outcome.pending_perk_count),
         )
         record.survival_elapsed_ms = int(breakdown.final_time_ms)

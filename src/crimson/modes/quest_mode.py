@@ -51,6 +51,7 @@ class QuestRunOutcome:
     level: str
     base_time_ms: int
     player_health: float
+    player2_health: float | None
     pending_perk_count: int
     experience: int
     kill_count: int
@@ -159,7 +160,14 @@ class QuestMode(BaseGameplayMode):
         self._world.hardcore = hardcore_flag
         seed = _quest_seed(level)
 
-        self._world.reset(seed=seed, player_count=1)
+        player_count = 1
+        config = self._config
+        if config is not None:
+            try:
+                player_count = int(config.data.get("player_count", 1) or 1)
+            except Exception:
+                player_count = 1
+        self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
 
         base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
@@ -182,9 +190,14 @@ class QuestMode(BaseGameplayMode):
 
         # Quest metadata stores native (1-based) weapon ids; the rewrite uses 0-based ids.
         start_weapon_id = max(0, int(quest.start_weapon_id) - 1)
-        weapon_assign_player(self._player, start_weapon_id)
+        for player in self._world.players:
+            weapon_assign_player(player, start_weapon_id)
 
-        ctx = QuestContext(width=int(self._world.world_size), height=int(self._world.world_size), player_count=1)
+        ctx = QuestContext(
+            width=int(self._world.world_size),
+            height=int(self._world.world_size),
+            player_count=len(self._world.players),
+        )
         entries = build_quest_spawn_table(
             quest,
             ctx,
@@ -262,7 +275,8 @@ class QuestMode(BaseGameplayMode):
         if self.close_requested:
             return
 
-        dt_world = 0.0 if self._paused or self._player.health <= 0.0 else dt_frame
+        any_alive = any(player.health > 0.0 for player in self._world.players)
+        dt_world = 0.0 if self._paused or (not any_alive) else dt_frame
         if dt_world <= 0.0:
             return
 
@@ -271,13 +285,14 @@ class QuestMode(BaseGameplayMode):
         input_state = self._build_input()
         self._world.update(
             dt_world,
-            inputs=[input_state],
+            inputs=[input_state for _ in self._world.players],
             auto_pick_perks=False,
             game_mode=int(GameMode.QUESTS),
             perk_progression_enabled=True,
         )
 
-        if self._player.health <= 0.0:
+        any_alive_after = any(player.health > 0.0 for player in self._world.players)
+        if not any_alive_after:
             if self._outcome is None:
                 fired = 0
                 hit = 0
@@ -294,11 +309,15 @@ class QuestMode(BaseGameplayMode):
                     player_index=int(self._player.index),
                     fallback_weapon_id=int(self._player.weapon_id),
                 )
+                player2_health = None
+                if len(self._world.players) >= 2:
+                    player2_health = float(self._world.players[1].health)
                 self._outcome = QuestRunOutcome(
                     kind="failed",
                     level=str(self._quest.level),
                     base_time_ms=int(self._quest.spawn_timeline_ms),
                     player_health=float(self._player.health),
+                    player2_health=player2_health,
                     pending_perk_count=int(self._state.perk_selection.pending_count),
                     experience=int(self._player.experience),
                     kill_count=int(self._creatures.kill_count),
@@ -357,11 +376,15 @@ class QuestMode(BaseGameplayMode):
                     player_index=int(self._player.index),
                     fallback_weapon_id=int(self._player.weapon_id),
                 )
+                player2_health = None
+                if len(self._world.players) >= 2:
+                    player2_health = float(self._world.players[1].health)
                 self._outcome = QuestRunOutcome(
                     kind="completed",
                     level=str(self._quest.level),
                     base_time_ms=int(self._quest.spawn_timeline_ms),
                     player_health=float(self._player.health),
+                    player2_health=player2_health,
                     pending_perk_count=int(self._state.perk_selection.pending_count),
                     experience=int(self._player.experience),
                     kill_count=int(self._creatures.kill_count),

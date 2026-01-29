@@ -433,10 +433,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 15) Multiplayer wiring (2–4 players)
 
-- [ ] Thread selected player count from the menu into each gameplay mode
-- [ ] Support `player_count > 1` in world reset + input plumbing
+- [x] Thread selected player count from the menu into each gameplay mode
+- [x] Support `player_count > 1` in world reset + input plumbing (players currently mirror P1 input)
 - [ ] Ensure perks/HUD/high score rules match original for 2p+
-- [ ] Add smoke tests for 2p mode startup
+- [x] Add smoke tests for 2p mode startup
 
 ---
 

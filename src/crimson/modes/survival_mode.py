@@ -468,7 +468,8 @@ class SurvivalMode(BaseGameplayMode):
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
             self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-        if self._paused or self._player.health <= 0.0 or perk_menu_active:
+        any_alive = any(player.health > 0.0 for player in self._world.players)
+        if self._paused or (not any_alive) or perk_menu_active:
             dt = 0.0
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
@@ -489,14 +490,14 @@ class SurvivalMode(BaseGameplayMode):
         self._survival.elapsed_ms += dt * 1000.0
 
         if dt <= 0.0:
-            if self._player.health <= 0.0:
+            if not any_alive:
                 self._enter_game_over()
             return
 
         input_state = self._build_input()
         self._world.update(
             dt,
-            inputs=[input_state],
+            inputs=[input_state for _ in self._world.players],
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
@@ -519,7 +520,7 @@ class SurvivalMode(BaseGameplayMode):
             self._survival.spawn_cooldown,
             dt * 1000.0,
             self._state.rng,
-            player_count=1,
+            player_count=len(self._world.players),
             survival_elapsed_ms=self._survival.elapsed_ms,
             player_experience=self._player.experience,
             terrain_width=int(self._world.world_size),
@@ -528,7 +529,7 @@ class SurvivalMode(BaseGameplayMode):
         self._survival.spawn_cooldown = cooldown
         self._creatures.spawn_inits(wave_spawns)
 
-        if self._player.health <= 0.0:
+        if not any(player.health > 0.0 for player in self._world.players):
             self._enter_game_over()
 
     def _draw_perk_prompt(self) -> None:
