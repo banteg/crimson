@@ -38,7 +38,7 @@ TYPING_PANEL_WIDTH = 182.0
 TYPING_PANEL_HEIGHT = 53.0
 TYPING_PANEL_ALPHA = 0.7
 TYPING_TEXT_X = 6.0
-TYPING_PROMPT = "> "
+TYPING_PROMPT = ">"
 TYPING_CURSOR = "_"
 TYPING_CURSOR_X_OFFSET = 14.0
 
@@ -394,15 +394,14 @@ class TypoShooterMode(BaseGameplayMode):
         text_color = rl.Color(255, 255, 255, 255)
         self._draw_ui_text(full_text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
 
-        # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 1.0 : 0.4)
+        # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 0.4 : 1.0)
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
         cursor_alpha = 0.4 if cursor_dim else 1.0
         cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
 
-        # Cursor position: prompt_width + text_width + 14.0 (original)
-        prompt_w = float(self._ui_text_width(TYPING_PROMPT))
+        # Cursor position: text_width + 14.0 (original)
         text_w = float(self._ui_text_width(text))
-        cursor_x = TYPING_TEXT_X + prompt_w + text_w + TYPING_CURSOR_X_OFFSET
+        cursor_x = text_w + TYPING_CURSOR_X_OFFSET
         cursor_y = text_y
 
         # Draw cursor as "_" character (original: DAT_004712b8 = "_")
