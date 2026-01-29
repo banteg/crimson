@@ -35,3 +35,8 @@ Then paste into `plan.md`:
 - Observed `dt_since_ui_ready_ms`
 - The JSON line(s) containing `demo_mode_start`
 
+Optional: summarize the log:
+
+```bash
+uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
+```
