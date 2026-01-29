@@ -468,6 +468,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [ ] Confirm trigger conditions vs demo build evidence
   - [x] Add console helpers for fast validation (`demoTrialInfo`, `demoTrialSetPlaytime`, `demoTrialSetGrace`)
   - [x] Add Frida overlay trace + docs (`demo_trial_overlay_trace.js`)
+  - [x] Add reducer support for overlay trace logs (`frida_reduce.py`)
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
 
 ---

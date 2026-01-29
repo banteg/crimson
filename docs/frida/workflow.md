@@ -75,6 +75,7 @@ Default logs written by the scripts:
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
 - `C:\share\frida\creature_anim_trace.jsonl`
+- `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
 
 ## 2) Copy logs into the repo
 
@@ -84,6 +85,7 @@ Store raw logs under `analysis/frida/raw/`:
 mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
+cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 ```
 
 ## 3) Reduce logs into evidence
@@ -94,6 +96,7 @@ Run the reducer to normalize facts + produce summaries:
 uv run python scripts/frida_reduce.py \
   --log analysis/frida/raw/grim_hits.jsonl \
   --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
+  --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
   --out-dir analysis/frida
 ```
 

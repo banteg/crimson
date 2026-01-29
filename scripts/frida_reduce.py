@@ -424,6 +424,29 @@ def main() -> int:
                     facts_handle.write(json.dumps(fact) + "\n")
                     continue
 
+                if event == "demo_trial_overlay_render":
+                    overlay_entry = index.lookup(0x004047c0)
+                    if overlay_entry:
+                        record_evidence(evidence, overlay_entry, "event", "demo_trial_overlay_render")
+                    fact = {
+                        "kind": "demo_trial_overlay_render",
+                        "session_id": session_id,
+                        "source": "demo_trial_overlay_trace",
+                        "t_ms": obj.get("t_ms"),
+                        "mode_id": obj.get("mode_id"),
+                        "game_state_id": obj.get("game_state_id"),
+                        "quest_stage_major": obj.get("quest_stage_major"),
+                        "quest_stage_minor": obj.get("quest_stage_minor"),
+                        "game_sequence_id_ms": obj.get("game_sequence_id_ms"),
+                        "demo_trial_elapsed_ms": obj.get("demo_trial_elapsed_ms"),
+                        "remaining_ms": obj.get("remaining_ms"),
+                        "tier_locked": obj.get("tier_locked"),
+                        "xy": obj.get("xy"),
+                        "backtrace": obj.get("backtrace"),
+                    }
+                    facts_handle.write(json.dumps(fact) + "\n")
+                    continue
+
                 if event == "grim_vtbl_call":
                     callsite = parse_callsite(obj.get("caller"), session)
                     entry = None
