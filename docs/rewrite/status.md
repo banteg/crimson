@@ -55,7 +55,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Code: `src/crimson/game_world.py`
 - **Survival loop**: wired and playable.
   - Code: `src/crimson/modes/survival_mode.py`, `src/crimson/creatures/spawn.py` (wave + milestone spawns)
-  - Gaps: still missing full enemy/weapon parity (notably split-on-death), and many SFX/event hooks.
+  - Gaps: still missing full enemy/weapon parity (remaining per-weapon behaviors), and many SFX/event hooks.
 - **Rush / Typ-o-Shooter / Tutorial**: wired and playable.
   - Code: `src/crimson/modes/rush_mode.py`, `src/crimson/modes/typo_mode.py`, `src/crimson/modes/tutorial_mode.py`
 - **Multiplayer (2–4 players)**: not wired (Play Game panel exposes player count; Survival currently hardcodes `player_count=1`).
@@ -74,7 +74,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 ## Biggest remaining gaps (vs v1.9.93)
 
 1) **Creature + weapon coverage**
-   - Split-on-death and remaining per-weapon behaviors.
+   - Remaining per-weapon behaviors and AI edge cases.
 2) **Multiplayer (2–4 players)**
    - Wire player count into the gameplay modes and sim.
 3) **UI completeness**

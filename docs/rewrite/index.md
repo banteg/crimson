@@ -104,7 +104,7 @@ See also:
 
 ## Known gaps (short list)
 
-- Creature runtime parity gaps: split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) and remaining AI edge cases are still pending.
+- Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Some gameplay SFX/events are still missing (perk UI, ranged enemy fire).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
 - Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).

@@ -18,7 +18,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 11) High score weapon usage (most used)
 - [x] 12) Quest high score stats (shots/weapon usage)
 - [ ] 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
-- [ ] 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
+- [x] 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
 - [ ] 15) Multiplayer wiring (2–4 players)
 - [ ] 16) Demo trial overlay (demo builds)
 - [ ] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
@@ -423,9 +423,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
 
-- [ ] Identify which templates use split-on-death and what they spawn
-- [ ] Implement split spawns in the creature death contract
-- [ ] Add regression tests for split behavior
+- [x] Identify which templates use split-on-death and what they spawn
+- [x] Implement split spawns in the creature death contract
+- [x] Add regression tests for split behavior
 
 ---
 

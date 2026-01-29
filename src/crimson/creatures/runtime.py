@@ -10,7 +10,7 @@ not to perfectly match every edge case in `creature_update_all`.
 See: `docs/creatures/update.md`.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from typing import Callable, Sequence
 
@@ -670,6 +670,30 @@ class CreaturePool:
 
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
+
+        if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
+            for heading_offset in (-math.pi / 2.0, math.pi / 2.0):
+                child_idx = self._alloc_slot(rand=rand)
+                child = replace(creature)
+                child.phase_seed = float(int(rand()) & 0xFF)
+                child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
+                child.target_heading = float(child.heading)
+                child.hp = float(creature.max_hp) * 0.25
+                child.reward_value = float(child.reward_value) * (2.0 / 3.0)
+                child.size = float(child.size) - 8.0
+                child.move_speed = float(child.move_speed) + 0.1
+                child.contact_damage = float(child.contact_damage) * 0.7
+                child.hitbox_size = CREATURE_HITBOX_ALIVE
+                self._entries[child_idx] = child
+                self.spawned_count += 1
+
+            state.effects.spawn_burst(
+                pos_x=float(creature.x),
+                pos_y=float(creature.y),
+                count=8,
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
 
         xp_base = int(creature.reward_value)
         if players and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER):

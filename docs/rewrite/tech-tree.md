@@ -58,7 +58,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Replace DemoView toy simulation with gameplay scene -> Unlocks: reuse gameplay loop for attract mode.
 - [x] Options screen (volume/detail/mouse + HUD toggle) -> Unlocks: basic config editing (video/controls parity pending).
 - [x] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
-- [ ] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
+- [x] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
 - [ ] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
 - [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into `crimson game` -> Unlocks: additional playable modes.
 - [ ] Confirm demo idle threshold from the original demo build -> Unlocks: attract timing parity.
@@ -75,7 +75,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Gaps (still missing)
 
-- Creature runtime parity gaps: ranged attacks, split-on-death, and AI edge cases.
+- Creature runtime parity gaps: AI edge cases and remaining per-weapon behaviors.
 - Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
 - High score list screen (post-run): implemented (local-only; online scores still missing).
 
