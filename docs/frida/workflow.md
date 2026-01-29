@@ -114,6 +114,8 @@ Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl
 uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
 ```
 
+For a concrete “what to run / what to capture” checklist (Milestone 16), see `docs/frida/demo-trial-overlay.md`.
+
 ## 4) Promote evidence into Ghidra maps
 
 Review the summary + candidates, then manually promote good entries into:

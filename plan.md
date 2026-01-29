@@ -474,6 +474,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Remove unsafe retail patching guidance (`forceShareware`)
   - [x] Add safe retail-only demo gate override for the overlay tracer (`forceDemoInGameplayLoop`)
   - [x] Add retail-only playtime override for the overlay tracer (`forcePlaytimeMs`)
+  - [x] Add a concrete capture wishlist doc (`docs/frida/demo-trial-overlay.md`)
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
 
 ---
