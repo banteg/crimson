@@ -18,7 +18,7 @@ I concentrated on “already-ported” gameplay logic + the rendering pipeline, 
 - [x] 3) `bonus_apply` stacking + Bonus Economist multiplier + Shock Chain semantics
 - [x] 4) `bonus_pick_random_type` distribution / reroll behavior
 - [x] 5) `weapon_assign_player` applies clip-size perks on weapon changes
-- [ ] 6) World draw order layering (dead players / effects / bonuses)
+- [x] 6) World draw order layering (dead players / effects / bonuses)
 - [ ] 7) Alpha test behavior (global 4/255 cutoff) vs port shaders
 - [ ] 8) Terrain render-target failure fallback path
 - [ ] 9) ParticlePool + SpriteEffectPool integration/rendering

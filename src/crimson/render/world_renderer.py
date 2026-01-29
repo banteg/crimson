@@ -1080,8 +1080,8 @@ class WorldRenderer:
                 continue
             self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
 
-        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
         self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+        self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
         self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
 
         if draw_aim_indicators and (not self.demo_mode_active):
