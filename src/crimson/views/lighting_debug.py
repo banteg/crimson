@@ -68,7 +68,9 @@ uniform vec4 u_circles[MAX_CIRCLES];
 
 float map(vec2 p)
 {{
-    float d = 1e20;
+    // Keep finite to avoid overflow in shadow math when there are no occluders
+    // or when uniform data is missing.
+    float d = 1e6;
     for (int i = 0; i < MAX_CIRCLES; i++)
     {{
         if (i >= u_circle_count) break;
@@ -82,9 +84,10 @@ float map(vec2 p)
 // `u_shadow_k` behaves like the original `k` hardness parameter.
 float softshadow(vec2 ro, vec2 rd, float mint, float maxt, float k)
 {{
+    if (u_circle_count <= 0) return 1.0;
     float res = 1.0;
     float t = mint;
-    float ph = 1e20;
+    float ph = 1e6;
     for (int i = 0; i < {_SDF_SHADOW_MAX_STEPS} && t < maxt; i++)
     {{
         float h = map(ro + rd * t);
@@ -181,6 +184,7 @@ class LightingDebugView:
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
         self._sdf_shader_locs: dict[str, int] = {}
+        self._sdf_shader_missing: list[str] = []
         self._light_rt: rl.RenderTexture | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
@@ -274,6 +278,7 @@ class LightingDebugView:
             "u_circle_count": rl.get_shader_location(shader, "u_circle_count"),
             "u_circles": circles_loc,
         }
+        self._sdf_shader_missing = [name for name, loc in self._sdf_shader_locs.items() if loc < 0]
 
         return self._sdf_shader
 
@@ -362,6 +367,7 @@ class LightingDebugView:
             rl.unload_shader(self._sdf_shader)
             self._sdf_shader = None
             self._sdf_shader_locs.clear()
+            self._sdf_shader_missing.clear()
         if self._light_rt is not None and int(getattr(self._light_rt, "id", 0)) > 0:
             rl.unload_render_texture(self._light_rt)
             self._light_rt = None
@@ -586,6 +592,8 @@ class LightingDebugView:
             ]
             if not sdf_ok:
                 lines.append("SDF shader unavailable (ambient-only fallback)")
+            elif self._sdf_shader_missing:
+                lines.append("SDF uniforms missing: " + ", ".join(self._sdf_shader_missing))
             x0 = 16.0
             y0 = 16.0
             lh = float(self._ui_line_height())
