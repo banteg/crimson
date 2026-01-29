@@ -20,7 +20,7 @@ I concentrated on “already-ported” gameplay logic + the rendering pipeline, 
 - [x] 5) `weapon_assign_player` applies clip-size perks on weapon changes
 - [x] 6) World draw order layering (dead players / effects / bonuses)
 - [x] 7) Alpha test behavior (global 4/255 cutoff) vs port shaders
-- [ ] 8) Terrain render-target failure fallback path
+- [x] 8) Terrain render-target failure fallback path
 - [ ] 9) ParticlePool + SpriteEffectPool integration/rendering
 
 ## Highest-impact fidelity mismatches
