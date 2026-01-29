@@ -77,7 +77,7 @@ def typo_name_part(rng: Crand, *, allow_the: bool) -> str:
 def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | None = None) -> str:
     score_xp = int(score_xp)
     if unique_words:
-        return str(unique_words[int(rng.rand() % len(unique_words))])
+        return _typo_build_custom_name(rng, score_xp=score_xp, unique_words=unique_words)
     if score_xp > 120:
         if int(rng.rand() % 100) < 10 and unique_words:
             return str(unique_words[int(rng.rand() % len(unique_words))])
@@ -109,6 +109,44 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
         )
 
     return typo_name_part(rng, allow_the=False)
+
+
+def _pick_word(rng: Crand, words: Sequence[str]) -> str:
+    return str(words[int(rng.rand() % len(words))])
+
+
+def _pick_unique_words(rng: Crand, words: Sequence[str], count: int) -> list[str]:
+    if count <= 1:
+        return [_pick_word(rng, words)]
+    if len(words) <= count:
+        return [_pick_word(rng, words) for _ in range(count)]
+
+    picked: list[str] = []
+    used: set[int] = set()
+    while len(picked) < count:
+        idx = int(rng.rand() % len(words))
+        if idx in used:
+            continue
+        used.add(idx)
+        picked.append(str(words[idx]))
+    return picked
+
+
+def _typo_build_custom_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str]) -> str:
+    score_xp = int(score_xp)
+    if score_xp > 120:
+        if int(rng.rand() % 100) < 10:
+            return _pick_word(rng, unique_words)
+        if int(rng.rand() % 100) < 80:
+            return "".join(_pick_unique_words(rng, unique_words, 4))
+
+    if (score_xp > 80 and int(rng.rand() % 100) < 80) or (score_xp > 60 and int(rng.rand() % 100) < 40):
+        return "".join(_pick_unique_words(rng, unique_words, 3))
+
+    if (score_xp > 40 and int(rng.rand() % 100) < 80) or (score_xp > 20 and int(rng.rand() % 100) < 40):
+        return "".join(_pick_unique_words(rng, unique_words, 2))
+
+    return _pick_word(rng, unique_words)
 
 
 def load_typo_dictionary(path: Path) -> list[str]:
