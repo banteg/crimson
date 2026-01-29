@@ -161,82 +161,6 @@ def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iter
         rl.end_blend_mode()
 
 
-@contextmanager
-def _blend_custom_separate(
-    src_rgb: int,
-    dst_rgb: int,
-    src_alpha: int,
-    dst_alpha: int,
-    eq_rgb: int,
-    eq_alpha: int,
-) -> Iterator[None]:
-    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
-    # apply them when switching the blend mode. Set factors both before and
-    # after BeginBlendMode() to ensure the current draw uses the intended values.
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    try:
-        yield
-    finally:
-        rl.end_blend_mode()
-
-
-def _circle_tangent_points(
-    light_x: float,
-    light_y: float,
-    cx: float,
-    cy: float,
-    radius: float,
-) -> tuple[tuple[float, float], tuple[float, float]] | None:
-    ux = float(light_x) - float(cx)
-    uy = float(light_y) - float(cy)
-    dist_sq = ux * ux + uy * uy
-    radius = float(radius)
-    if dist_sq <= radius * radius:
-        return None
-    h = math.sqrt(max(0.0, dist_sq - radius * radius))
-    inv = 1.0 / dist_sq
-    k = radius * radius * inv
-    m = radius * h * inv
-    px, py = -uy, ux
-    t1 = (float(cx) + k * ux + m * px, float(cy) + k * uy + m * py)
-    t2 = (float(cx) + k * ux - m * px, float(cy) + k * uy - m * py)
-    return t1, t2
-
-
-def _circle_circle_tangents(
-    c1x: float,
-    c1y: float,
-    r1: float,
-    c2x: float,
-    c2y: float,
-    r2: float,
-) -> list[tuple[tuple[float, float], tuple[float, float]]]:
-    dx = float(c2x) - float(c1x)
-    dy = float(c2y) - float(c1y)
-    dist_sq = dx * dx + dy * dy
-    if dist_sq <= 1e-9:
-        return []
-
-    r1 = float(r1)
-    r2 = float(r2)
-    dr = r1 - r2
-    h_sq = dist_sq - dr * dr
-    if h_sq < 0.0:
-        return []
-
-    h = math.sqrt(max(0.0, h_sq))
-    out: list[tuple[tuple[float, float], tuple[float, float]]] = []
-    for sign in (-1.0, 1.0):
-        vx = (dx * dr + (-dy) * h * sign) / dist_sq
-        vy = (dy * dr + dx * h * sign) / dist_sq
-        p1 = (float(c1x) + vx * r1, float(c1y) + vy * r1)
-        p2 = (float(c2x) + vx * r2, float(c2y) + vy * r2)
-        out.append((p1, p2))
-    return out
-
-
 class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -260,10 +184,8 @@ class LightingDebugView:
         self._simulate = True
         self._draw_debug = True
         self._draw_occluders = False
-        self._debug_shadow_wedges = False
         self._debug_lightmap_preview = False
 
-        self._shadow_mode = "sdf"
         self._sdf_shadow_k = 64.0
 
         self._light_radius = 360.0
@@ -272,13 +194,11 @@ class LightingDebugView:
         self._ambient = rl.Color(26, 26, 34, 255)
         self._light_tint = rl.Color(255, 245, 220, 255)
 
-        self._light_texture: rl.Texture | None = None
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
         self._sdf_shader_locs: dict[str, int] = {}
         self._scene_rt: rl.RenderTexture | None = None
         self._light_rt: rl.RenderTexture | None = None
-        self._scratch_rt: rl.RenderTexture | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -309,13 +229,8 @@ class LightingDebugView:
             self._draw_debug = not self._draw_debug
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TWO):
             self._draw_occluders = not self._draw_occluders
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
-            self._debug_shadow_wedges = not self._debug_shadow_wedges
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
             self._debug_lightmap_preview = not self._debug_lightmap_preview
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
-            self._shadow_mode = "wedge" if self._shadow_mode == "sdf" else "sdf"
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._light_is_disc = not self._light_is_disc
@@ -337,21 +252,6 @@ class LightingDebugView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
             self._reset_scene(seed=0xBEEF)
-
-    def _ensure_light_texture(self) -> rl.Texture:
-        if self._light_texture is not None and int(getattr(self._light_texture, "id", 0)) > 0:
-            return self._light_texture
-        image = rl.gen_image_gradient_radial(
-            256,
-            256,
-            0.0,
-            rl.Color(255, 255, 255, 255),
-            rl.Color(255, 255, 255, 0),
-        )
-        texture = rl.load_texture_from_image(image)
-        rl.unload_image(image)
-        self._light_texture = texture
-        return texture
 
     def _ensure_sdf_shader(self) -> rl.Shader | None:
         if (
@@ -406,7 +306,6 @@ class LightingDebugView:
         h = int(max(1, rl.get_screen_height()))
         self._scene_rt = self._ensure_render_target(self._scene_rt, w, h)
         self._light_rt = self._ensure_render_target(self._light_rt, w, h)
-        self._scratch_rt = self._ensure_render_target(self._scratch_rt, w, h)
 
     def _reset_scene(self, *, seed: int) -> None:
         self._world.reset(seed=int(seed), player_count=1)
@@ -468,7 +367,6 @@ class LightingDebugView:
 
         self._world.open()
         self._reset_scene(seed=0xBEEF)
-        self._ensure_light_texture()
         self._ensure_render_targets()
 
         self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
@@ -478,9 +376,6 @@ class LightingDebugView:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
-        if self._light_texture is not None and int(getattr(self._light_texture, "id", 0)) > 0:
-            rl.unload_texture(self._light_texture)
-            self._light_texture = None
         if self._sdf_shader is not None and int(getattr(self._sdf_shader, "id", 0)) > 0:
             rl.unload_shader(self._sdf_shader)
             self._sdf_shader = None
@@ -491,9 +386,6 @@ class LightingDebugView:
         if self._light_rt is not None and int(getattr(self._light_rt, "id", 0)) > 0:
             rl.unload_render_texture(self._light_rt)
             self._light_rt = None
-        if self._scratch_rt is not None and int(getattr(self._scratch_rt, "id", 0)) > 0:
-            rl.unload_render_texture(self._scratch_rt)
-            self._scratch_rt = None
         self._world.close()
 
     def update(self, dt: float) -> None:
@@ -534,420 +426,6 @@ class LightingDebugView:
             auto_pick_perks=False,
             perk_progression_enabled=False,
         )
-
-    def _draw_shadow_wedge(
-        self,
-        *,
-        light_x: float,
-        light_y: float,
-        occluder_x: float,
-        occluder_y: float,
-        occluder_radius: float,
-        far_len: float,
-        color: rl.Color,
-    ) -> None:
-        tangents = _circle_tangent_points(light_x, light_y, occluder_x, occluder_y, occluder_radius)
-        if tangents is None:
-            return
-        (t1x, t1y), (t2x, t2y) = tangents
-
-        d1x = t1x - light_x
-        d1y = t1y - light_y
-        d2x = t2x - light_x
-        d2y = t2y - light_y
-        len1 = math.hypot(d1x, d1y)
-        len2 = math.hypot(d2x, d2y)
-        if len1 <= 1e-6 or len2 <= 1e-6:
-            return
-
-        s1 = float(far_len) / len1
-        s2 = float(far_len) / len2
-        f1x = light_x + d1x * s1
-        f1y = light_y + d1y * s1
-        f2x = light_x + d2x * s2
-        f2y = light_y + d2y * s2
-
-        t1 = rl.Vector2(float(t1x), float(t1y))
-        f1 = rl.Vector2(float(f1x), float(f1y))
-        f2 = rl.Vector2(float(f2x), float(f2y))
-        t2 = rl.Vector2(float(t2x), float(t2y))
-        rl.draw_triangle(t1, f1, f2, color)
-        rl.draw_triangle(t1, f2, t2, color)
-
-    def _draw_quad_color(
-        self,
-        p0: tuple[float, float],
-        p1: tuple[float, float],
-        p2: tuple[float, float],
-        p3: tuple[float, float],
-        color: rl.Color,
-    ) -> None:
-        x0, y0 = p0
-        x1, y1 = p1
-        x2, y2 = p2
-        x3, y3 = p3
-        rl.rl_set_texture(0)
-        rl.rl_begin(rl.RL_TRIANGLES)
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x0), float(y0))
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x1), float(y1))
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x2), float(y2))
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x0), float(y0))
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x2), float(y2))
-        rl.rl_color4ub(color.r, color.g, color.b, color.a)
-        rl.rl_vertex2f(float(x3), float(y3))
-        rl.rl_end()
-        rl.rl_set_texture(0)
-
-    def _draw_quad_gradient(
-        self,
-        p0: tuple[float, float],
-        c0: rl.Color,
-        p1: tuple[float, float],
-        c1: rl.Color,
-        p2: tuple[float, float],
-        c2: rl.Color,
-        p3: tuple[float, float],
-        c3: rl.Color,
-    ) -> None:
-        x0, y0 = p0
-        x1, y1 = p1
-        x2, y2 = p2
-        x3, y3 = p3
-        rl.rl_set_texture(0)
-        rl.rl_begin(rl.RL_TRIANGLES)
-        rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
-        rl.rl_vertex2f(float(x0), float(y0))
-        rl.rl_color4ub(c1.r, c1.g, c1.b, c1.a)
-        rl.rl_vertex2f(float(x1), float(y1))
-        rl.rl_color4ub(c2.r, c2.g, c2.b, c2.a)
-        rl.rl_vertex2f(float(x2), float(y2))
-        rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
-        rl.rl_vertex2f(float(x0), float(y0))
-        rl.rl_color4ub(c2.r, c2.g, c2.b, c2.a)
-        rl.rl_vertex2f(float(x2), float(y2))
-        rl.rl_color4ub(c3.r, c3.g, c3.b, c3.a)
-        rl.rl_vertex2f(float(x3), float(y3))
-        rl.rl_end()
-        rl.rl_set_texture(0)
-
-    @staticmethod
-    def _ray_far_point(p0: tuple[float, float], p1: tuple[float, float], far_len: float) -> tuple[float, float] | None:
-        x0, y0 = p0
-        x1, y1 = p1
-        dx = float(x1) - float(x0)
-        dy = float(y1) - float(y0)
-        length = math.hypot(dx, dy)
-        if length <= 1e-6:
-            return None
-        scale = float(far_len) / length
-        return float(x1) + dx * scale, float(y1) + dy * scale
-
-    @staticmethod
-    def _tangent_side(light_x: float, light_y: float, cx: float, cy: float, point_x: float, point_y: float) -> int:
-        vx = float(point_x) - float(light_x)
-        vy = float(point_y) - float(light_y)
-        cx = float(cx) - float(light_x)
-        cy = float(cy) - float(light_y)
-        cross = cx * vy - cy * vx
-        if cross >= 0.0:
-            return 1
-        return -1
-
-    def _draw_shadow_disc_with_penumbra(
-        self,
-        *,
-        light_x: float,
-        light_y: float,
-        light_source_radius: float,
-        occluder_x: float,
-        occluder_y: float,
-        occluder_radius: float,
-        far_len: float,
-    ) -> None:
-        light_source_radius = float(light_source_radius)
-        occluder_radius = float(occluder_radius)
-        if light_source_radius <= 0.0 or occluder_radius <= 0.0:
-            self._draw_shadow_wedge(
-                light_x=float(light_x),
-                light_y=float(light_y),
-                occluder_x=float(occluder_x),
-                occluder_y=float(occluder_y),
-                occluder_radius=float(occluder_radius),
-                far_len=float(far_len),
-                color=rl.Color(0, 0, 0, 255),
-            )
-            return
-
-        outer = _circle_circle_tangents(
-            light_x,
-            light_y,
-            light_source_radius,
-            occluder_x,
-            occluder_y,
-            occluder_radius,
-        )
-        inner = _circle_circle_tangents(
-            light_x,
-            light_y,
-            light_source_radius,
-            occluder_x,
-            occluder_y,
-            -occluder_radius,
-        )
-
-        if not outer:
-            return
-
-        outer_by_side: dict[int, tuple[tuple[float, float], tuple[float, float]]] = {}
-        for p_light, p_occ in outer:
-            side = self._tangent_side(light_x, light_y, occluder_x, occluder_y, p_occ[0], p_occ[1])
-            outer_by_side[side] = (p_light, p_occ)
-
-        inner_by_side: dict[int, tuple[tuple[float, float], tuple[float, float]]] = {}
-        for p_light, p_occ in inner:
-            side = self._tangent_side(light_x, light_y, occluder_x, occluder_y, p_occ[0], p_occ[1])
-            inner_by_side[side] = (p_light, p_occ)
-
-        # Penumbra: between outer and inner tangents on each side.
-        black = rl.Color(0, 0, 0, 255)
-        white = rl.Color(255, 255, 255, 255)
-        for side in (-1, 1):
-            outer_pair = outer_by_side.get(side)
-            inner_pair = inner_by_side.get(side)
-            if outer_pair is None or inner_pair is None:
-                continue
-            out_l, out_o = outer_pair
-            in_l, in_o = inner_pair
-            far_out = self._ray_far_point(out_l, out_o, far_len)
-            far_in = self._ray_far_point(in_l, in_o, far_len)
-            if far_out is None or far_in is None:
-                continue
-            # Gradient multiplies light from 0 (umbra edge) -> 1 (fully lit).
-            self._draw_quad_gradient(
-                in_o,
-                black,
-                far_in,
-                black,
-                far_out,
-                white,
-                out_o,
-                white,
-            )
-
-        # Umbra: fully shadowed region between inner tangents.
-        if len(inner) >= 2:
-            (l1, o1), (l2, o2) = inner[0], inner[1]
-            far1 = self._ray_far_point(l1, o1, far_len)
-            far2 = self._ray_far_point(l2, o2, far_len)
-            if far1 is not None and far2 is not None:
-                self._draw_quad_color(o1, far1, far2, o2, rl.Color(0, 0, 0, 255))
-
-    def _draw_shadow_wedge_debug(
-        self,
-        *,
-        light_x: float,
-        light_y: float,
-        occluder_x: float,
-        occluder_y: float,
-        occluder_radius: float,
-        far_len: float,
-        color: rl.Color,
-    ) -> None:
-        tangents = _circle_tangent_points(light_x, light_y, occluder_x, occluder_y, occluder_radius)
-        if tangents is None:
-            return
-        (t1x, t1y), (t2x, t2y) = tangents
-
-        d1x = t1x - light_x
-        d1y = t1y - light_y
-        d2x = t2x - light_x
-        d2y = t2y - light_y
-        len1 = math.hypot(d1x, d1y)
-        len2 = math.hypot(d2x, d2y)
-        if len1 <= 1e-6 or len2 <= 1e-6:
-            return
-
-        s1 = float(far_len) / len1
-        s2 = float(far_len) / len2
-        f1x = light_x + d1x * s1
-        f1y = light_y + d1y * s1
-        f2x = light_x + d2x * s2
-        f2y = light_y + d2y * s2
-
-        t1 = rl.Vector2(float(t1x), float(t1y))
-        t2 = rl.Vector2(float(t2x), float(t2y))
-        f1 = rl.Vector2(float(f1x), float(f1y))
-        f2 = rl.Vector2(float(f2x), float(f2y))
-        rl.draw_line_v(t1, f1, color)
-        rl.draw_line_v(t2, f2, color)
-        rl.draw_circle(int(t1.x), int(t1.y), 3.0, color)
-        rl.draw_circle(int(t2.x), int(t2.y), 3.0, color)
-
-    def _draw_tangents_debug(
-        self,
-        *,
-        light_x: float,
-        light_y: float,
-        light_source_radius: float,
-        occluder_x: float,
-        occluder_y: float,
-        occluder_radius: float,
-        far_len: float,
-        outer_color: rl.Color,
-        inner_color: rl.Color,
-    ) -> None:
-        outer = _circle_circle_tangents(
-            light_x,
-            light_y,
-            float(light_source_radius),
-            occluder_x,
-            occluder_y,
-            float(occluder_radius),
-        )
-        inner = _circle_circle_tangents(
-            light_x,
-            light_y,
-            float(light_source_radius),
-            occluder_x,
-            occluder_y,
-            -float(occluder_radius),
-        )
-
-        def draw_pair(p1: tuple[float, float], p2: tuple[float, float], color: rl.Color) -> None:
-            x1, y1 = p1
-            x2, y2 = p2
-            rl.draw_line(int(x1), int(y1), int(x2), int(y2), color)
-            rl.draw_circle(int(x1), int(y1), 3.0, color)
-            rl.draw_circle(int(x2), int(y2), 3.0, color)
-            dx = x2 - x1
-            dy = y2 - y1
-            length = math.hypot(dx, dy)
-            if length <= 1e-6:
-                return
-            sx = float(far_len) / length
-            fx = x2 + dx * sx
-            fy = y2 + dy * sx
-            rl.draw_line(int(x2), int(y2), int(fx), int(fy), rl.Color(color.r, color.g, color.b, min(255, int(color.a * 0.6))))
-
-        for p1, p2 in outer:
-            draw_pair(p1, p2, outer_color)
-        for p1, p2 in inner:
-            draw_pair(p1, p2, inner_color)
-
-    def _render_lightmap(self, *, light_x: float, light_y: float) -> None:
-        if self._light_rt is None or self._scratch_rt is None:
-            return
-        light_texture = self._ensure_light_texture()
-
-        w = float(self._light_rt.texture.width)
-        h = float(self._light_rt.texture.height)
-        far_len = math.hypot(w, h) * 1.25
-        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
-        scale = (scale_x + scale_y) * 0.5
-
-        # 1) Start with ambient in the global lightmap.
-        rl.begin_texture_mode(self._light_rt)
-        rl.clear_background(self._ambient)
-        rl.end_texture_mode()
-
-        # 2) Per-light scratch: draw light, then carve shadows, then add to global.
-        rl.begin_texture_mode(self._scratch_rt)
-        rl.clear_background(rl.Color(0, 0, 0, 0))
-        rl.end_texture_mode()
-
-        # Light sprite pass.
-        rl.begin_texture_mode(self._scratch_rt)
-        radius = float(self._light_radius)
-        dst = rl.Rectangle(float(light_x), float(light_y), radius * 2.0, radius * 2.0)
-        origin = rl.Vector2(radius, radius)
-        src = rl.Rectangle(0.0, 0.0, float(light_texture.width), float(light_texture.height))
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
-        rl.draw_texture_pro(light_texture, src, dst, origin, 0.0, self._light_tint)
-        rl.end_blend_mode()
-
-        # Shadow pass: multiply scratch RGB by a visibility mask (src RGB).
-        with _blend_custom_separate(
-            rl.RL_ZERO,
-            rl.RL_SRC_COLOR,
-            rl.RL_ZERO,
-            rl.RL_ONE,
-            rl.RL_FUNC_ADD,
-            rl.RL_FUNC_ADD,
-        ):
-            if self._player is not None:
-                px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
-                pr = float(self._player.size) * 0.5 * scale
-                if math.hypot(px - light_x, py - light_y) <= float(self._light_radius) + pr:
-                    if self._light_is_disc and self._light_source_radius > 0.0:
-                        self._draw_shadow_disc_with_penumbra(
-                            light_x=float(light_x),
-                            light_y=float(light_y),
-                            light_source_radius=float(self._light_source_radius),
-                            occluder_x=float(px),
-                            occluder_y=float(py),
-                            occluder_radius=pr,
-                            far_len=far_len,
-                        )
-                    else:
-                        self._draw_shadow_wedge(
-                            light_x=float(light_x),
-                            light_y=float(light_y),
-                            occluder_x=float(px),
-                            occluder_y=float(py),
-                            occluder_radius=pr,
-                            far_len=far_len,
-                            color=rl.Color(0, 0, 0, 255),
-                        )
-
-            for creature in self._world.creatures.entries:
-                if not creature.active:
-                    continue
-                sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-                cr = float(creature.size) * 0.5 * scale
-                if math.hypot(sx - light_x, sy - light_y) > float(self._light_radius) + cr:
-                    continue
-                if self._light_is_disc and self._light_source_radius > 0.0:
-                    self._draw_shadow_disc_with_penumbra(
-                        light_x=float(light_x),
-                        light_y=float(light_y),
-                        light_source_radius=float(self._light_source_radius),
-                        occluder_x=float(sx),
-                        occluder_y=float(sy),
-                        occluder_radius=cr,
-                        far_len=far_len,
-                    )
-                else:
-                    self._draw_shadow_wedge(
-                        light_x=float(light_x),
-                        light_y=float(light_y),
-                        occluder_x=float(sx),
-                        occluder_y=float(sy),
-                        occluder_radius=cr,
-                        far_len=far_len,
-                        color=rl.Color(0, 0, 0, 255),
-                    )
-
-        rl.end_texture_mode()
-
-        # Accumulate scratch into global lightmap (add rgb; preserve alpha).
-        rl.begin_texture_mode(self._light_rt)
-        with _blend_custom_separate(
-            rl.RL_ONE,
-            rl.RL_ONE,
-            rl.RL_ZERO,
-            rl.RL_ONE,
-            rl.RL_FUNC_ADD,
-            rl.RL_FUNC_ADD,
-        ):
-            src_full = rl.Rectangle(0.0, 0.0, float(self._scratch_rt.texture.width), -float(self._scratch_rt.texture.height))
-            dst_full = rl.Rectangle(0.0, 0.0, float(self._light_rt.texture.width), float(self._light_rt.texture.height))
-            rl.draw_texture_pro(self._scratch_rt.texture, src_full, dst_full, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        rl.end_texture_mode()
 
     def _render_lightmap_sdf(self, *, light_x: float, light_y: float) -> bool:
         if self._light_rt is None:
@@ -1059,11 +537,11 @@ class LightingDebugView:
 
         light_x = float(self._ui_mouse_x)
         light_y = float(self._ui_mouse_y)
-        if self._shadow_mode == "sdf":
-            if not self._render_lightmap_sdf(light_x=light_x, light_y=light_y):
-                self._render_lightmap(light_x=light_x, light_y=light_y)
-        else:
-            self._render_lightmap(light_x=light_x, light_y=light_y)
+        sdf_ok = self._render_lightmap_sdf(light_x=light_x, light_y=light_y)
+        if not sdf_ok:
+            rl.begin_texture_mode(self._light_rt)
+            rl.clear_background(self._ambient)
+            rl.end_texture_mode()
 
         # Composite to screen: scene first, then lightmap multiplied.
         src_scene = rl.Rectangle(0.0, 0.0, float(self._scene_rt.texture.width), -float(self._scene_rt.texture.height))
@@ -1112,63 +590,6 @@ class LightingDebugView:
                 r = float(creature.size) * 0.5 * scale
                 rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 
-        if self._debug_shadow_wedges:
-            far_len = math.hypot(float(rl.get_screen_width()), float(rl.get_screen_height())) * 1.25
-            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
-            pr = float(self._player.size) * 0.5 * scale
-            if math.hypot(px - light_x, py - light_y) <= float(self._light_radius) + pr:
-                if self._light_is_disc and self._light_source_radius > 0.0:
-                    self._draw_tangents_debug(
-                        light_x=float(light_x),
-                        light_y=float(light_y),
-                        light_source_radius=float(self._light_source_radius),
-                        occluder_x=float(px),
-                        occluder_y=float(py),
-                        occluder_radius=pr,
-                        far_len=far_len,
-                        outer_color=rl.Color(80, 220, 120, 180),
-                        inner_color=rl.Color(40, 180, 255, 220),
-                    )
-                else:
-                    self._draw_shadow_wedge_debug(
-                        light_x=light_x,
-                        light_y=light_y,
-                        occluder_x=float(px),
-                        occluder_y=float(py),
-                        occluder_radius=pr,
-                        far_len=far_len,
-                        color=rl.Color(80, 220, 120, 200),
-                    )
-            for creature in self._world.creatures.entries:
-                if not creature.active:
-                    continue
-                sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-                cr = float(creature.size) * 0.5 * scale
-                if math.hypot(sx - light_x, sy - light_y) > float(self._light_radius) + cr:
-                    continue
-                if self._light_is_disc and self._light_source_radius > 0.0:
-                    self._draw_tangents_debug(
-                        light_x=float(light_x),
-                        light_y=float(light_y),
-                        light_source_radius=float(self._light_source_radius),
-                        occluder_x=float(sx),
-                        occluder_y=float(sy),
-                        occluder_radius=cr,
-                        far_len=far_len,
-                        outer_color=rl.Color(255, 160, 80, 180),
-                        inner_color=rl.Color(255, 80, 80, 220),
-                    )
-                else:
-                    self._draw_shadow_wedge_debug(
-                        light_x=light_x,
-                        light_y=light_y,
-                        occluder_x=float(sx),
-                        occluder_y=float(sy),
-                        occluder_radius=cr,
-                        far_len=far_len,
-                        color=rl.Color(255, 80, 80, 200),
-                    )
-
         rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
         rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
         if self._light_is_disc and self._light_source_radius > 0.0:
@@ -1180,20 +601,18 @@ class LightingDebugView:
             )
 
         if self._draw_debug:
-            title = f"Lighting debug view (night + {self._shadow_mode} shadows)"
+            title = "Lighting debug view (night + SDF shadows)"
             lines = [
                 title,
                 "WASD move  MOUSE light pos",
                 "SPACE simulate  R reset",
-                (
-                    f"M mode={self._shadow_mode}  ,/. sdf_k={self._sdf_shadow_k:.1f}"
-                    if self._shadow_mode == "sdf"
-                    else f"M mode={self._shadow_mode}"
-                ),
+                f",/. sdf_k={self._sdf_shadow_k:.1f}",
                 f"+/- light_radius={self._light_radius:.0f}  L disc={self._light_is_disc}",
                 f"[ ] light_source_radius={self._light_source_radius:.0f}" if self._light_is_disc else "[ ] light_source_radius (disc mode)",
-                "1 ui  2 occluders  3 tangent debug  4 lightmap preview",
+                "1 ui  2 occluders  4 lightmap preview",
             ]
+            if not sdf_ok:
+                lines.append("SDF shader unavailable (ambient-only fallback)")
             x0 = 16.0
             y0 = 16.0
             lh = float(self._ui_line_height())
@@ -1201,6 +620,6 @@ class LightingDebugView:
                 self._draw_ui_text(line, x0, y0 + lh * float(idx), UI_TEXT_COLOR if idx < 5 else UI_HINT_COLOR)
 
 
-@register_view("lighting-debug", "Lighting (wedge + SDF)")
+@register_view("lighting-debug", "Lighting (SDF)")
 def _create_lighting_debug_view(*, ctx: ViewContext) -> LightingDebugView:
     return LightingDebugView(ctx)
