@@ -38,7 +38,6 @@ TYPING_PANEL_WIDTH = 182.0
 TYPING_PANEL_HEIGHT = 53.0
 TYPING_PANEL_ALPHA = 0.7
 TYPING_TEXT_X = 6.0
-TYPING_TEXT_Y_OFFSET = 1.0
 TYPING_CURSOR_X_OFFSET = 14.0
 
 
@@ -361,11 +360,13 @@ class TypoShooterMode(BaseGameplayMode):
     def _draw_typing_box(self) -> None:
         screen_h = float(rl.get_screen_height())
 
-        # Original position: screen_height - 128 - 16 = screen_height - 144
-        # But from decompiled: fStack_20 - 16.0 where fStack_20 = screen_height - 128
+        # Original positioning from 0x004457C0:
+        # v38 = screen_height - 128.0
+        # Panel Y = v38 - 16.0 = screen_height - 144.0
+        # Text Y = v38 + 1.0 = screen_height - 127.0
         panel_x = -1.0
-        panel_y = screen_h - 128.0 - 16.0
-        text_y = panel_y + TYPING_TEXT_Y_OFFSET
+        panel_y = screen_h - 144.0  # v38 - 16.0
+        text_y = screen_h - 127.0   # v38 + 1.0
 
         # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
         if self._hud_assets is not None and self._hud_assets.ind_panel is not None:
@@ -395,8 +396,7 @@ class TypoShooterMode(BaseGameplayMode):
         cursor_x = TYPING_TEXT_X + text_w + TYPING_CURSOR_X_OFFSET
         cursor_y = text_y
 
-        # Draw cursor as "|" character or rectangle
-        # Original draws text cursor at specific position
+        # Draw cursor as "|" character
         self._draw_ui_text("|", cursor_x, cursor_y, cursor_color, scale=1.0)
 
     def draw(self) -> None:
