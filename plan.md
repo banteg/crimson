@@ -464,6 +464,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
     - [x] Maybe later exits back to the main menu
   - [x] Add regression tests for trigger + timer behavior
 - [ ] Confirm trigger conditions vs demo build evidence
+  - [x] Add console helpers for fast validation (`demoTrialInfo`, `demoTrialSetPlaytime`, `demoTrialSetGrace`)
+  - [ ] Validate behavior against a demo build (threshold + quest tier limit)
 
 ---
 

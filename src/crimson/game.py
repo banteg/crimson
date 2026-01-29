@@ -44,7 +44,13 @@ from .debug import debug_enabled
 from grim import music
 
 from .demo import DemoView
-from .demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
+from .demo_trial import (
+    DEMO_QUEST_GRACE_TIME_MS,
+    DEMO_TOTAL_PLAY_TIME_MS,
+    demo_trial_overlay_info,
+    format_demo_trial_time,
+    tick_demo_trial_timers,
+)
 from .frontend.boot import BootView
 from .frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .frontend.menu import (
@@ -2413,6 +2419,70 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         else:
             console.log.log("Sound frequency adjustment is now disabled.")
 
+    def cmd_demo_trial_set_playtime(args: list[str]) -> None:
+        if len(args) != 1:
+            console.log.log("demoTrialSetPlaytime <ms>")
+            return
+        try:
+            value = int(float(args[0]))
+        except ValueError:
+            value = 0
+        state.status.game_sequence_id = max(0, value)
+        state.status.save_if_dirty()
+        console.log.log(f"demo trial: playtime={state.status.game_sequence_id}ms (total {DEMO_TOTAL_PLAY_TIME_MS}ms)")
+
+    def cmd_demo_trial_set_grace(args: list[str]) -> None:
+        if len(args) != 1:
+            console.log.log("demoTrialSetGrace <ms>")
+            return
+        try:
+            value = int(float(args[0]))
+        except ValueError:
+            value = 0
+        state.demo_trial_elapsed_ms = max(0, value)
+        console.log.log(
+            f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)"
+        )
+
+    def cmd_demo_trial_reset(_args: list[str]) -> None:
+        state.status.game_sequence_id = 0
+        state.status.save_if_dirty()
+        state.demo_trial_elapsed_ms = 0
+        console.log.log("demo trial: timers reset")
+
+    def cmd_demo_trial_info(_args: list[str]) -> None:
+        mode_id = int(state.config.data.get("game_mode", 0) or 0)
+        quest_major = 0
+        quest_minor = 0
+        if mode_id == 3:
+            level = state.pending_quest_level or ""
+            try:
+                major_text, minor_text = level.split(".", 1)
+                quest_major = int(major_text)
+                quest_minor = int(minor_text)
+            except Exception:
+                quest_major, quest_minor = 0, 0
+        info = demo_trial_overlay_info(
+            demo_build=bool(state.demo_enabled),
+            game_mode_id=mode_id,
+            global_playtime_ms=int(state.status.game_sequence_id),
+            quest_grace_elapsed_ms=int(state.demo_trial_elapsed_ms),
+            quest_stage_major=int(quest_major),
+            quest_stage_minor=int(quest_minor),
+        )
+        remaining = format_demo_trial_time(info.remaining_ms)
+        console.log.log(
+            "demo trial: "
+            f"demo={int(state.demo_enabled)} "
+            f"mode={mode_id} "
+            f"quest={quest_major}.{quest_minor} "
+            f"playtime={int(state.status.game_sequence_id)}ms "
+            f"grace={int(state.demo_trial_elapsed_ms)}ms "
+            f"visible={int(info.visible)} "
+            f"kind={info.kind} "
+            f"remaining={remaining}"
+        )
+
     return {
         "setGammaRamp": cmd_set_gamma_ramp,
         "snd_addGameTune": cmd_snd_add_game_tune,
@@ -2422,6 +2492,10 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "loadtexture": cmd_load_texture,
         "openurl": cmd_open_url,
         "sndfreqadjustment": cmd_snd_freq_adjustment,
+        "demoTrialSetPlaytime": cmd_demo_trial_set_playtime,
+        "demoTrialSetGrace": cmd_demo_trial_set_grace,
+        "demoTrialReset": cmd_demo_trial_reset,
+        "demoTrialInfo": cmd_demo_trial_info,
     }
 
 
