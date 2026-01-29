@@ -24,6 +24,120 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
+_SDF_SHADOW_MAX_CIRCLES = 64
+_SDF_SHADOW_MAX_STEPS = 64
+_SDF_SHADOW_EPSILON = 0.75
+_SDF_SHADOW_MIN_STEP = 1.0
+
+_SDF_SHADOW_VS_330 = r"""
+#version 330
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec4 vertexColor;
+
+out vec2 fragTexCoord;
+out vec4 fragColor;
+
+uniform mat4 mvp;
+
+void main() {
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
+"""
+
+_SDF_SHADOW_FS_330 = rf"""
+#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+out vec4 finalColor;
+
+#define MAX_CIRCLES {_SDF_SHADOW_MAX_CIRCLES}
+
+uniform vec2 u_resolution;
+uniform vec4 u_ambient;
+uniform vec4 u_light_color;
+uniform vec2 u_light_pos;
+uniform float u_light_range;
+uniform float u_light_source_radius;
+uniform float u_shadow_k;
+uniform int u_circle_count;
+uniform vec4 u_circles[MAX_CIRCLES];
+
+float map(vec2 p)
+{{
+    float d = 1e20;
+    for (int i = 0; i < MAX_CIRCLES; i++)
+    {{
+        if (i >= u_circle_count) break;
+        vec4 c = u_circles[i];
+        d = min(d, length(p - c.xy) - c.z);
+    }}
+    return d;
+}}
+
+// Raymarched SDF soft shadows (Inigo Quilez + Sebastian Aaltonen improvement).
+// `u_shadow_k` behaves like the original `k` hardness parameter.
+float softshadow(vec2 ro, vec2 rd, float mint, float maxt, float k)
+{{
+    float res = 1.0;
+    float t = mint;
+    float ph = 1e20;
+    for (int i = 0; i < {_SDF_SHADOW_MAX_STEPS} && t < maxt; i++)
+    {{
+        float h = map(ro + rd * t);
+        if (h < {_SDF_SHADOW_EPSILON:.4f}) return 0.0;
+        float y = h*h/(2.0*ph);
+        float d = sqrt(max(0.0, h*h - y*y));
+        res = min(res, k * d / max(0.001, t - y));
+        ph = h;
+        t += max(h, {_SDF_SHADOW_MIN_STEP:.4f});
+    }}
+    return clamp(res, 0.0, 1.0);
+}}
+
+void main()
+{{
+    // Match raylib 2D screen coords: origin top-left.
+    vec2 p = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y);
+
+    vec2 to_light = u_light_pos - p;
+    float dist = length(to_light);
+    if (dist <= 1e-4 || dist > u_light_range)
+    {{
+        finalColor = vec4(u_ambient.rgb, 1.0);
+        return;
+    }}
+
+    float atten = 1.0 - clamp(dist / u_light_range, 0.0, 1.0);
+    atten = atten * atten;
+
+    // Avoid self-shadowing artifacts for receiver pixels inside occluders (sprites).
+    float d0 = map(p);
+    float shadow = 1.0;
+    if (d0 >= 0.0)
+    {{
+        float k = u_shadow_k;
+        // Heuristic: larger disc lights soften shadows.
+        if (u_light_source_radius > 0.0)
+        {{
+            k = u_shadow_k / max(1.0, u_light_source_radius * 0.10);
+        }}
+        vec2 rd = to_light / max(dist, 1e-4);
+        float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
+        shadow = softshadow(p, rd, 2.0, maxt, k);
+    }}
+
+    vec3 lm = u_ambient.rgb + u_light_color.rgb * (atten * shadow);
+    lm = clamp(lm, 0.0, 1.0);
+    finalColor = vec4(lm, 1.0);
+}}
+"""
+
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -147,6 +261,10 @@ class LightingDebugView:
         self._draw_debug = True
         self._draw_occluders = False
         self._debug_shadow_wedges = False
+        self._debug_lightmap_preview = False
+
+        self._shadow_mode = "sdf"
+        self._sdf_shadow_k = 64.0
 
         self._light_radius = 360.0
         self._light_is_disc = False
@@ -155,6 +273,9 @@ class LightingDebugView:
         self._light_tint = rl.Color(255, 245, 220, 255)
 
         self._light_texture: rl.Texture | None = None
+        self._sdf_shader: rl.Shader | None = None
+        self._sdf_shader_tried: bool = False
+        self._sdf_shader_locs: dict[str, int] = {}
         self._scene_rt: rl.RenderTexture | None = None
         self._light_rt: rl.RenderTexture | None = None
         self._scratch_rt: rl.RenderTexture | None = None
@@ -190,6 +311,11 @@ class LightingDebugView:
             self._draw_occluders = not self._draw_occluders
         if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
             self._debug_shadow_wedges = not self._debug_shadow_wedges
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
+            self._debug_lightmap_preview = not self._debug_lightmap_preview
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
+            self._shadow_mode = "wedge" if self._shadow_mode == "sdf" else "sdf"
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._light_is_disc = not self._light_is_disc
@@ -203,6 +329,11 @@ class LightingDebugView:
             self._light_source_radius = max(0.0, self._light_source_radius - 2.0)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
             self._light_source_radius = min(80.0, self._light_source_radius + 2.0)
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_COMMA):
+            self._sdf_shadow_k = max(1.0, self._sdf_shadow_k / 1.25)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
+            self._sdf_shadow_k = min(512.0, self._sdf_shadow_k * 1.25)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
             self._reset_scene(seed=0xBEEF)
@@ -221,6 +352,47 @@ class LightingDebugView:
         rl.unload_image(image)
         self._light_texture = texture
         return texture
+
+    def _ensure_sdf_shader(self) -> rl.Shader | None:
+        if (
+            self._sdf_shader is not None
+            and int(getattr(self._sdf_shader, "id", 0)) > 0
+            and rl.is_shader_valid(self._sdf_shader)
+        ):
+            return self._sdf_shader
+        if self._sdf_shader_tried:
+            return None
+        self._sdf_shader_tried = True
+
+        try:
+            shader = rl.load_shader_from_memory(_SDF_SHADOW_VS_330, _SDF_SHADOW_FS_330)
+        except Exception:
+            self._sdf_shader = None
+            return None
+
+        if int(getattr(shader, "id", 0)) <= 0 or not rl.is_shader_valid(shader):
+            self._sdf_shader = None
+            return None
+
+        self._sdf_shader = shader
+
+        circles_loc = rl.get_shader_location(shader, "u_circles")
+        if circles_loc < 0:
+            circles_loc = rl.get_shader_location(shader, "u_circles[0]")
+
+        self._sdf_shader_locs = {
+            "u_resolution": rl.get_shader_location(shader, "u_resolution"),
+            "u_ambient": rl.get_shader_location(shader, "u_ambient"),
+            "u_light_color": rl.get_shader_location(shader, "u_light_color"),
+            "u_light_pos": rl.get_shader_location(shader, "u_light_pos"),
+            "u_light_range": rl.get_shader_location(shader, "u_light_range"),
+            "u_light_source_radius": rl.get_shader_location(shader, "u_light_source_radius"),
+            "u_shadow_k": rl.get_shader_location(shader, "u_shadow_k"),
+            "u_circle_count": rl.get_shader_location(shader, "u_circle_count"),
+            "u_circles": circles_loc,
+        }
+
+        return self._sdf_shader
 
     def _ensure_render_target(self, rt: rl.RenderTexture | None, w: int, h: int) -> rl.RenderTexture:
         if rt is not None and int(getattr(rt, "id", 0)) > 0:
@@ -309,6 +481,10 @@ class LightingDebugView:
         if self._light_texture is not None and int(getattr(self._light_texture, "id", 0)) > 0:
             rl.unload_texture(self._light_texture)
             self._light_texture = None
+        if self._sdf_shader is not None and int(getattr(self._sdf_shader, "id", 0)) > 0:
+            rl.unload_shader(self._sdf_shader)
+            self._sdf_shader = None
+            self._sdf_shader_locs.clear()
         if self._scene_rt is not None and int(getattr(self._scene_rt, "id", 0)) > 0:
             rl.unload_render_texture(self._scene_rt)
             self._scene_rt = None
@@ -773,6 +949,97 @@ class LightingDebugView:
             rl.draw_texture_pro(self._scratch_rt.texture, src_full, dst_full, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_texture_mode()
 
+    def _render_lightmap_sdf(self, *, light_x: float, light_y: float) -> bool:
+        if self._light_rt is None:
+            return False
+        shader = self._ensure_sdf_shader()
+        if shader is None:
+            return False
+
+        locs = self._sdf_shader_locs
+
+        w = float(self._light_rt.texture.width)
+        h = float(self._light_rt.texture.height)
+        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
+        scale = (scale_x + scale_y) * 0.5
+
+        circles: list[tuple[float, float, float]] = []
+
+        if self._player is not None:
+            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
+            pr = float(self._player.size) * 0.5 * scale
+            circles.append((float(px), float(py), float(pr)))
+
+        for creature in self._world.creatures.entries:
+            if not creature.active:
+                continue
+            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+            cr = float(creature.size) * 0.5 * scale
+            circles.append((float(sx), float(sy), float(cr)))
+
+        if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
+            circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
+
+        def set_vec2(name: str, x: float, y: float) -> None:
+            loc = locs.get(name, -1)
+            if loc < 0:
+                return
+            rl.set_shader_value(shader, loc, rl.Vector2(float(x), float(y)), rl.SHADER_UNIFORM_VEC2)
+
+        def set_vec4(name: str, x: float, y: float, z: float, q: float) -> None:
+            loc = locs.get(name, -1)
+            if loc < 0:
+                return
+            rl.set_shader_value(shader, loc, rl.Vector4(float(x), float(y), float(z), float(q)), rl.SHADER_UNIFORM_VEC4)
+
+        def set_float(name: str, value: float) -> None:
+            loc = locs.get(name, -1)
+            if loc < 0:
+                return
+            rl.set_shader_value(shader, loc, rl.ffi.new("float *", float(value)), rl.SHADER_UNIFORM_FLOAT)
+
+        def set_int(name: str, value: int) -> None:
+            loc = locs.get(name, -1)
+            if loc < 0:
+                return
+            rl.set_shader_value(shader, loc, rl.ffi.new("int *", int(value)), rl.SHADER_UNIFORM_INT)
+
+        rl.begin_texture_mode(self._light_rt)
+        with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
+            rl.begin_shader_mode(shader)
+            set_vec2("u_resolution", w, h)
+
+            amb = self._ambient
+            set_vec4("u_ambient", float(amb.r) / 255.0, float(amb.g) / 255.0, float(amb.b) / 255.0, 1.0)
+
+            lt = self._light_tint
+            set_vec4("u_light_color", float(lt.r) / 255.0, float(lt.g) / 255.0, float(lt.b) / 255.0, 1.0)
+
+            set_vec2("u_light_pos", float(light_x), float(light_y))
+            set_float("u_light_range", float(self._light_radius))
+            set_float("u_shadow_k", float(self._sdf_shadow_k))
+
+            source_radius = float(self._light_source_radius) if self._light_is_disc else 0.0
+            set_float("u_light_source_radius", source_radius)
+
+            set_int("u_circle_count", len(circles))
+            circles_loc = locs.get("u_circles", -1)
+            if circles and circles_loc >= 0:
+                flat: list[float] = []
+                for cx, cy, cr in circles:
+                    flat.extend((float(cx), float(cy), float(cr), 1.0))
+                rl.set_shader_value_v(
+                    shader,
+                    circles_loc,
+                    rl.ffi.new("float[]", flat),
+                    rl.SHADER_UNIFORM_VEC4,
+                    len(circles),
+                )
+            rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+            rl.end_shader_mode()
+        rl.end_texture_mode()
+        return True
+
     def draw(self) -> None:
         if self._player is None:
             rl.clear_background(rl.Color(10, 10, 12, 255))
@@ -792,7 +1059,11 @@ class LightingDebugView:
 
         light_x = float(self._ui_mouse_x)
         light_y = float(self._ui_mouse_y)
-        self._render_lightmap(light_x=light_x, light_y=light_y)
+        if self._shadow_mode == "sdf":
+            if not self._render_lightmap_sdf(light_x=light_x, light_y=light_y):
+                self._render_lightmap(light_x=light_x, light_y=light_y)
+        else:
+            self._render_lightmap(light_x=light_x, light_y=light_y)
 
         # Composite to screen: scene first, then lightmap multiplied.
         src_scene = rl.Rectangle(0.0, 0.0, float(self._scene_rt.texture.width), -float(self._scene_rt.texture.height))
@@ -804,6 +1075,24 @@ class LightingDebugView:
         dst_light = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
         with _blend_custom(rl.RL_DST_COLOR, rl.RL_ZERO, rl.RL_FUNC_ADD):
             rl.draw_texture_pro(self._light_rt.texture, src_light, dst_light, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+        if self._debug_lightmap_preview:
+            screen_w = float(rl.get_screen_width())
+            scale = 0.25
+            pad = 16.0
+            preview_w = float(self._light_rt.texture.width) * scale
+            preview_h = float(self._light_rt.texture.height) * scale
+            dst_preview = rl.Rectangle(screen_w - preview_w - pad, pad, preview_w, preview_h)
+            with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
+                rl.draw_texture_pro(
+                    self._light_rt.texture,
+                    src_light,
+                    dst_preview,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.WHITE,
+                )
+            rl.draw_rectangle_lines(int(dst_preview.x), int(dst_preview.y), int(dst_preview.width), int(dst_preview.height), rl.Color(255, 255, 255, 120))
 
         _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
         scale = (scale_x + scale_y) * 0.5
@@ -891,21 +1180,27 @@ class LightingDebugView:
             )
 
         if self._draw_debug:
+            title = f"Lighting debug view (night + {self._shadow_mode} shadows)"
             lines = [
-                "Lighting debug view (night + shadow wedges)",
+                title,
                 "WASD move  MOUSE light pos",
                 "SPACE simulate  R reset",
+                (
+                    f"M mode={self._shadow_mode}  ,/. sdf_k={self._sdf_shadow_k:.1f}"
+                    if self._shadow_mode == "sdf"
+                    else f"M mode={self._shadow_mode}"
+                ),
                 f"+/- light_radius={self._light_radius:.0f}  L disc={self._light_is_disc}",
                 f"[ ] light_source_radius={self._light_source_radius:.0f}" if self._light_is_disc else "[ ] light_source_radius (disc mode)",
-                "1 ui  2 occluders  3 tangent debug",
+                "1 ui  2 occluders  3 tangent debug  4 lightmap preview",
             ]
             x0 = 16.0
             y0 = 16.0
             lh = float(self._ui_line_height())
             for idx, line in enumerate(lines):
-                self._draw_ui_text(line, x0, y0 + lh * float(idx), UI_TEXT_COLOR if idx < 4 else UI_HINT_COLOR)
+                self._draw_ui_text(line, x0, y0 + lh * float(idx), UI_TEXT_COLOR if idx < 5 else UI_HINT_COLOR)
 
 
-@register_view("lighting-debug", "Lighting (shadow wedges)")
+@register_view("lighting-debug", "Lighting (wedge + SDF)")
 def _create_lighting_debug_view(*, ctx: ViewContext) -> LightingDebugView:
     return LightingDebugView(ctx)
