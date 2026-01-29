@@ -16,7 +16,7 @@ from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..persistence.highscores import HighScoreRecord
-from ..typo.names import CreatureNameTable
+from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.spawns import tick_typo_spawns
 from ..typo.typing import TypingBuffer
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
@@ -30,7 +30,7 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
-NAME_LABEL_SCALE = 0.8
+NAME_LABEL_SCALE = 1.0
 NAME_LABEL_BG_ALPHA = 0.6
 
 TYPING_BOX_BG_ALPHA = 0.7
@@ -70,6 +70,7 @@ class TypoShooterMode(BaseGameplayMode):
         self._names = CreatureNameTable.sized(0)
         self._aim_target_x = 0.0
         self._aim_target_y = 0.0
+        self._unique_words: list[str] | None = None
 
         self._ui_assets = None
 
@@ -81,6 +82,18 @@ class TypoShooterMode(BaseGameplayMode):
         self._typo = _TypoState()
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(len(self._creatures.entries))
+        self._unique_words = None
+
+        dictionary_path = self._base_dir / "typo_dictionary.txt"
+        if dictionary_path.is_file():
+            words = load_typo_dictionary(dictionary_path)
+            if words:
+                self._unique_words = words
+                self._state.console.log.log(f"typo: loaded {len(words)} dictionary words from {dictionary_path.name}")
+                self._state.console.log.flush()
+            else:
+                self._state.console.log.log(f"typo: dictionary {dictionary_path.name} has no usable words")
+                self._state.console.log.flush()
 
         self._aim_target_x = float(self._player.pos_x) + 128.0
         self._aim_target_y = float(self._player.pos_y)
@@ -287,6 +300,7 @@ class TypoShooterMode(BaseGameplayMode):
                 self._state.rng,
                 score_xp=int(self._player.experience),
                 active_mask=self._active_mask(),
+                unique_words=self._unique_words,
             )
 
         self._typo.elapsed_ms += int(dt_world * 1000.0)
@@ -336,7 +350,7 @@ class TypoShooterMode(BaseGameplayMode):
             sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
             y = float(sy) - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
-            text_h = float(self._ui_line_height(scale=NAME_LABEL_SCALE))
+            text_h = 15.0
             x = float(sx) - text_w * 0.5
 
             bg = rl.Color(0, 0, 0, int(255 * alpha * NAME_LABEL_BG_ALPHA))

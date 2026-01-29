@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Sequence
 
 from grim.rand import Crand
@@ -108,6 +109,27 @@ def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | 
     return typo_name_part(rng, allow_the=False)
 
 
+def load_typo_dictionary(path: Path) -> list[str]:
+    try:
+        raw = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return []
+
+    words: list[str] = []
+    seen: set[str] = set()
+    for line in raw.splitlines():
+        text = line.split("#", 1)[0].strip()
+        if not text:
+            continue
+        if len(text) >= NAME_MAX_CHARS:
+            continue
+        if text in seen:
+            continue
+        words.append(text)
+        seen.add(text)
+    return words
+
+
 @dataclass(slots=True)
 class CreatureNameTable:
     names: list[str]
@@ -166,4 +188,3 @@ class CreatureNameTable:
             if too_long_attempts > 99:
                 self.names[idx] = name
                 return name
-
