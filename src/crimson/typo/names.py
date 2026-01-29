@@ -76,6 +76,8 @@ def typo_name_part(rng: Crand, *, allow_the: bool) -> str:
 
 def typo_build_name(rng: Crand, *, score_xp: int, unique_words: Sequence[str] | None = None) -> str:
     score_xp = int(score_xp)
+    if unique_words:
+        return str(unique_words[int(rng.rand() % len(unique_words))])
     if score_xp > 120:
         if int(rng.rand() % 100) < 10 and unique_words:
             return str(unique_words[int(rng.rand() % len(unique_words))])
@@ -175,10 +177,13 @@ class CreatureNameTable:
             raise IndexError(f"creature_idx out of range: {idx}")
 
         too_long_attempts = 0
+        attempts = 0
         while True:
             name = typo_build_name(rng, score_xp=score_xp, unique_words=unique_words)
             if not self.is_unique(name, exclude_idx=idx, active_mask=active_mask):
-                continue
+                attempts += 1
+                if attempts < 200:
+                    continue
 
             if len(name) < NAME_MAX_CHARS:
                 self.names[idx] = name

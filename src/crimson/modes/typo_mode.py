@@ -413,10 +413,12 @@ class TypoShooterMode(BaseGameplayMode):
             line = float(self._ui_line_height())
             self._draw_ui_text(f"typo: t={self._typo.elapsed_ms/1000.0:6.1f}s", x, y, UI_TEXT_COLOR)
             self._draw_ui_text(f"score={self._player.experience}  hits={self._typing.shots_hit}/{self._typing.shots_fired}", x, y + line, UI_HINT_COLOR)
+            dict_label = "default" if not self._unique_words else f"custom ({len(self._unique_words)})"
+            self._draw_ui_text(f"dict={dict_label}", x, y + line * 2.0, UI_HINT_COLOR)
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", x, y + line * 3.0, UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", x, y + line * 3.0, UI_ERROR_COLOR)
 
             self._draw_typing_box()
 
