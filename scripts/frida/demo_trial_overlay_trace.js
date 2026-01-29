@@ -41,6 +41,8 @@ const CONFIG = {
   // set this to true to force "demo" behavior only for the main gameplay loop's
   // shareware gate checks (avoids a global game_is_full_version() -> 0 patch).
   forceDemoInGameplayLoop: false,
+  // Optional: patch game_is_full_version() + config_full_version to force demo/shareware behavior.
+  forceDemoPatch: true,
   // Optional: force the demo playtime (ms) only for gameplay_update_and_render's calls
   // to game_sequence_get(). Useful to trigger the overlay without waiting ~40 minutes.
   // Note: this does not force demo gates by itself; pair with forceDemoInGameplayLoop.
@@ -76,6 +78,7 @@ const ADDR = {
   quest_stage_major: 0x00487004,
   quest_stage_minor: 0x00487008,
   game_state_id: 0x00487270,
+  config_full_version: 0x00480791,
 };
 
 let LOG = { file: null, ok: false };
@@ -239,6 +242,22 @@ function readS32(staticVa) {
   }
 }
 
+function writeConfigFullVersion(value) {
+  const addr = exePtr(ADDR.config_full_version);
+  if (!addr) {
+    writeLog({ event: 'config_full_version_error', error: 'addr_unavailable' });
+    return false;
+  }
+  try {
+    addr.writeU8(value & 0xff);
+    writeLog({ event: 'config_full_version_set', value: value, addr: addr.toString() });
+    return true;
+  } catch (e) {
+    writeLog({ event: 'config_full_version_error', error: String(e) });
+    return false;
+  }
+}
+
 function readVec2f(ptrArg) {
   try {
     const x = ptrArg.readFloat();
@@ -256,6 +275,64 @@ function ptrInRange(p, start, end) {
   } catch (_) {
     return false;
   }
+}
+
+function patchReturnValue(addr, value) {
+  const v = value ? 1 : 0;
+  let bytes = null;
+
+  if (Process.arch === 'ia32') {
+    bytes = v === 0
+      ? [0x33, 0xc0, 0xc3] // xor eax, eax; ret
+      : [0xb8, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov eax, 1; ret
+  } else if (Process.arch === 'x64') {
+    bytes = v === 0
+      ? [0x48, 0x31, 0xc0, 0xc3] // xor rax, rax; ret
+      : [0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov rax, 1; ret
+  } else {
+    writeLog({ event: 'patch_asm_error', error: 'unsupported_arch', arch: Process.arch });
+    return false;
+  }
+
+  try {
+    Memory.patchCode(addr, bytes.length, (code) => {
+      code.writeByteArray(bytes);
+    });
+    writeLog({ event: 'patched_asm', addr: addr.toString(), value: v, arch: Process.arch });
+    return true;
+  } catch (e) {
+    writeLog({ event: 'patch_asm_error', addr: addr.toString(), error: String(e) });
+    return false;
+  }
+}
+
+function patchSharewareGate() {
+  const addr = exePtr(ADDR.game_is_full_version);
+  if (!addr) {
+    writeLog({ event: 'patch_error', target: 'game_is_full_version', error: 'addr_unavailable' });
+    writeConfigFullVersion(0);
+    return;
+  }
+
+  let hooked = false;
+  try {
+    Interceptor.replace(
+      addr,
+      new NativeCallback(function () {
+        return 0;
+      }, 'int', [])
+    );
+    hooked = true;
+    writeLog({ event: 'patched', target: 'game_is_full_version', addr: addr.toString(), force_value: 0 });
+  } catch (e) {
+    writeLog({ event: 'patch_error', target: 'game_is_full_version', addr: addr.toString(), error: String(e) });
+  }
+
+  if (!hooked) {
+    patchReturnValue(addr, 0);
+  }
+
+  writeConfigFullVersion(0);
 }
 
 function hookGameIsFullVersion() {
@@ -445,7 +522,9 @@ function main() {
   };
   writeLog(buildStartEvent());
 
-  if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {
+  if (CONFIG.forceDemoPatch) {
+    patchSharewareGate();
+  } else if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {
     hookGameIsFullVersion();
   }
   if (CONFIG.forcePlaytimeMs !== null && CONFIG.forcePlaytimeMs !== undefined) {
