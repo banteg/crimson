@@ -12,6 +12,13 @@ class Damageable(Protocol):
     hp: float
 
 
+class PlayerDamageable(Protocol):
+    pos_x: float
+    pos_y: float
+    health: float
+    size: float
+
+
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
@@ -67,6 +74,7 @@ class Projectile:
     hit_radius: float = 1.0
     base_damage: float = 0.0
     owner_id: int = 0
+    hits_players: bool = False
 
 
 @dataclass(slots=True)
@@ -124,6 +132,7 @@ class ProjectilePool:
         type_id: int,
         owner_id: int,
         base_damage: float = 0.0,
+        hits_players: bool = False,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -148,6 +157,7 @@ class ProjectilePool:
         entry.speed_scale = 1.0
         entry.base_damage = float(base_damage)
         entry.owner_id = int(owner_id)
+        entry.hits_players = bool(hits_players)
 
         if type_id == ProjectileTypeId.ION_MINIGUN:
             entry.hit_radius = 3.0
@@ -187,6 +197,8 @@ class ProjectilePool:
         ion_aoe_scale: float = 1.0,
         rng: Callable[[], int] | None = None,
         runtime_state: object | None = None,
+        players: list[PlayerDamageable] | None = None,
+        apply_player_damage: Callable[[int, float], None] | None = None,
     ) -> list[tuple[int, float, float, float, float]]:
         """Update the main projectile pool.
 
@@ -366,6 +378,49 @@ class ProjectilePool:
                     acc_x = 0.0
                     acc_y = 0.0
 
+                    if proj.hits_players:
+                        hit_player_idx = None
+                        if players is not None:
+                            for idx, player in enumerate(players):
+                                if float(player.health) <= 0.0:
+                                    continue
+                                player_radius = _hit_radius_for(player)
+                                hit_r = proj.hit_radius + player_radius
+                                if _distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y) <= hit_r * hit_r:
+                                    hit_player_idx = idx
+                                    break
+
+                        if hit_player_idx is None:
+                            step += 3
+                            continue
+
+                        type_id = proj.type_id
+                        hits.append((type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
+
+                        if proj.life_timer != 0.25 and type_id not in (
+                            ProjectileTypeId.FIRE_BULLETS,
+                            ProjectileTypeId.GAUSS_GUN,
+                            ProjectileTypeId.BLADE_GUN,
+                        ):
+                            proj.life_timer = 0.25
+                            jitter = rng() & 3
+                            proj.pos_x += dir_x * float(jitter)
+                            proj.pos_y += dir_y * float(jitter)
+
+                        dist = math.hypot(proj.origin_x - proj.pos_x, proj.origin_y - proj.pos_y)
+                        if dist < 50.0:
+                            dist = 50.0
+
+                        damage_scale = _damage_scale(type_id)
+                        damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
+                        if damage_amount > 0.0:
+                            if apply_player_damage is not None:
+                                apply_player_damage(int(hit_player_idx), float(damage_amount))
+                            elif players is not None:
+                                players[int(hit_player_idx)].health -= float(damage_amount)
+
+                        break
+
                     hit_idx = None
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
@@ -393,6 +448,7 @@ class ProjectilePool:
                             type_id=ProjectileTypeId.SPLITTER_GUN,
                             owner_id=hit_idx,
                             base_damage=proj.base_damage,
+                            hits_players=proj.hits_players,
                         )
                         self.spawn(
                             pos_x=proj.pos_x,
@@ -401,6 +457,7 @@ class ProjectilePool:
                             type_id=ProjectileTypeId.SPLITTER_GUN,
                             owner_id=hit_idx,
                             base_damage=proj.base_damage,
+                            hits_players=proj.hits_players,
                         )
 
                     shots_hit = getattr(runtime_state, "shots_hit", None) if runtime_state is not None else None

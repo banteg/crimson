@@ -16,6 +16,7 @@ from ..gameplay import (
     player_update,
     survival_progression_update,
 )
+from ..player_damage import player_take_damage
 from .world_defs import CREATURE_ANIM
 
 ProjectileHit = tuple[int, float, float, float, float]
@@ -83,6 +84,12 @@ class WorldState:
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
 
+        def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
+            idx = int(player_index)
+            if not (0 <= idx < len(self.players)):
+                return
+            player_take_damage(self.state, self.players[idx], float(damage), rand=self.state.rng.rand)
+
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -90,6 +97,8 @@ class WorldState:
             damage_scale_by_type=damage_scale_by_type,
             rng=self.state.rng.rand,
             runtime_state=self.state,
+            players=self.players,
+            apply_player_damage=_apply_projectile_damage_to_player,
         )
         self.state.secondary_projectiles.update_pulse_gun(dt, self.creatures.entries)
 

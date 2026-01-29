@@ -414,10 +414,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
 
-- [ ] Identify ranged attack flags + behavior from the decompile
-- [ ] Implement ranged attack fire path (projectiles + cooldowns)
+- [x] Identify ranged attack flags + behavior from the decompile
+- [x] Implement ranged attack fire path (projectiles + cooldowns)
 - [ ] Wire the missing SFX/event hooks for ranged fire
-- [ ] Add regression tests for ranged attack behavior
+- [x] Add regression tests for ranged attack behavior
 
 ---
 
