@@ -451,8 +451,8 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
     - [ ] Track global demo playtime in `GameStatus.game_sequence_id` (ms)
     - [ ] Track quest-only grace time in `GameState` (non-persisted)
   - [ ] Implement trigger predicate (mirrors `demo_trial_overlay_render` call sites)
-    - [ ] Show overlay once global demo playtime is exhausted
-    - [ ] Show overlay when quest progress exceeds the demo tier limit (tier > 1)
+    - [x] Show overlay once global demo playtime is exhausted
+    - [x] Show overlay when quest progress exceeds the demo tier limit (tier > 1)
     - [ ] Use the quest-only grace timer once global time is up (5 minutes)
   - [ ] Draw overlay panel
     - [ ] Centered 512×256 panel with outline + dimmed backdrop
