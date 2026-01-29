@@ -33,17 +33,13 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 NAME_LABEL_SCALE = 1.0
 NAME_LABEL_BG_ALPHA = 0.6
 
-TYPING_BOX_WIDTH = 220.0
-TYPING_BOX_HEIGHT = 18.0
-TYPING_BOX_FILL_HEIGHT = 16.0
-TYPING_BOX_TEXT_ALPHA = 0.8
-TYPING_BOX_TEXT_OFFSET_X = 4.0
-TYPING_BOX_TEXT_OFFSET_Y = 2.0
-TYPING_BOX_CURSOR_W = 1.0
-TYPING_BOX_CURSOR_H = 14.0
-TYPING_BOX_FOCUS_SIZE = 6.0
-TYPING_BOX_FOCUS_OFFSET_X = -16.0
-TYPING_BOX_FOCUS_OFFSET_Y = 4.0
+# Original typoshooter input box constants (from 0x004457C0)
+TYPING_PANEL_WIDTH = 182.0
+TYPING_PANEL_HEIGHT = 53.0
+TYPING_PANEL_ALPHA = 0.7
+TYPING_TEXT_X = 6.0
+TYPING_TEXT_Y_OFFSET = 1.0
+TYPING_CURSOR_X_OFFSET = 14.0
 
 
 @dataclass(slots=True)
@@ -363,68 +359,45 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_ui_text(text, x, y, fg, scale=NAME_LABEL_SCALE)
 
     def _draw_typing_box(self) -> None:
-        screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
 
-        text = self._typing.text
-        box_w = max(0.0, min(TYPING_BOX_WIDTH, screen_w - 40.0))
-        box_h = TYPING_BOX_HEIGHT
-        x = 18.0
-        y = screen_h - box_h - 18.0
+        # Original position: screen_height - 128 - 16 = screen_height - 144
+        # But from decompiled: fStack_20 - 16.0 where fStack_20 = screen_height - 128
+        panel_x = -1.0
+        panel_y = screen_h - 128.0 - 16.0
+        text_y = panel_y + TYPING_TEXT_Y_OFFSET
 
-        if box_w <= 0.0:
-            return
-
-        mouse_inside = (
-            x <= float(self._ui_mouse_x) <= x + box_w and y <= float(self._ui_mouse_y) <= y + box_h
-        )
-        if mouse_inside:
-            focus_color = rl.Color(204, 204, 153, int(255 * 0.8))
-            rl.draw_rectangle(
-                int(x + TYPING_BOX_FOCUS_OFFSET_X),
-                int(y + TYPING_BOX_FOCUS_OFFSET_Y),
-                int(TYPING_BOX_FOCUS_SIZE),
-                int(TYPING_BOX_FOCUS_SIZE),
-                focus_color,
+        # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
+        if self._hud_assets is not None and self._hud_assets.ind_panel is not None:
+            tex = self._hud_assets.ind_panel
+            src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+            dst = rl.Rectangle(
+                panel_x,
+                panel_y,
+                TYPING_PANEL_WIDTH,
+                TYPING_PANEL_HEIGHT,
             )
+            tint = rl.Color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
+            rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
-        border = rl.Color(255, 255, 255, 255)
-        bg = rl.Color(0, 0, 0, 255)
-        rl.draw_rectangle_lines(int(x), int(y), int(box_w), int(box_h), border)
-        rl.draw_rectangle(
-            int(x + 1.0),
-            int(y + 1.0),
-            int(box_w - 2.0),
-            int(TYPING_BOX_FILL_HEIGHT),
-            bg,
-        )
+        # Draw typing text (original: grim_draw_text_small_fmt at x=6.0, y=text_y)
+        text = self._typing.text
+        text_color = rl.Color(255, 255, 255, 255)
+        self._draw_ui_text(text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
 
-        visible_width = max(0.0, box_w - 10.0)
-        start_index = 0
-        while start_index < len(text):
-            if float(self._ui_text_width(text[start_index:])) <= visible_width:
-                break
-            start_index += 1
-
-        visible_text = text[start_index:]
-        text_color = rl.Color(255, 255, 255, int(255 * TYPING_BOX_TEXT_ALPHA))
-        tx = x + TYPING_BOX_TEXT_OFFSET_X
-        ty = y + TYPING_BOX_TEXT_OFFSET_Y
-        self._draw_ui_text(visible_text, tx, ty, text_color, scale=1.0)
-
+        # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 1.0 : 0.4)
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
         cursor_alpha = 0.4 if cursor_dim else 1.0
         cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
-        cursor_text = text[start_index:]
-        cursor_x = tx + float(self._ui_text_width(cursor_text))
-        cursor_y = ty
-        rl.draw_rectangle_lines(
-            int(cursor_x),
-            int(cursor_y),
-            int(TYPING_BOX_CURSOR_W),
-            int(TYPING_BOX_CURSOR_H),
-            cursor_color,
-        )
+
+        # Cursor position: text_width + 14.0 (original)
+        text_w = float(self._ui_text_width(text))
+        cursor_x = TYPING_TEXT_X + text_w + TYPING_CURSOR_X_OFFSET
+        cursor_y = text_y
+
+        # Draw cursor as "|" character or rectangle
+        # Original draws text cursor at specific position
+        self._draw_ui_text("|", cursor_x, cursor_y, cursor_color, scale=1.0)
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._game_over_active))
