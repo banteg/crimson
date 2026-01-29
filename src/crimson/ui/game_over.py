@@ -59,6 +59,8 @@ TEXTURE_TOP_BANNER_H = 64.0
 INPUT_BOX_W = 166.0  # `_DAT_0048259c = 0xa6` before `ui_text_input_update`
 INPUT_BOX_H = 18.0
 
+PANEL_SLIDE_DURATION_MS = 250.0
+
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_SCORE_LABEL = rl.Color(230, 230, 230, 255)
@@ -157,6 +159,11 @@ def _poll_text_input(max_len: int, *, allow_space: bool = True) -> str:
     return out
 
 
+def _ease_out_cubic(t: float) -> float:
+    t = max(0.0, min(1.0, float(t)))
+    return 1.0 - (1.0 - t) ** 3
+
+
 @dataclass(slots=True)
 class GameOverUi:
     assets_root: Path
@@ -179,6 +186,7 @@ class GameOverUi:
     _hover_weapon: float = 0.0
     _hover_time: float = 0.0
     _hover_hit_ratio: float = 0.0
+    _intro_ms: float = 0.0
 
     # Buttons (rendered via existing ui_button implementation)
     _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
@@ -206,6 +214,7 @@ class GameOverUi:
         self._hover_weapon = 0.0
         self._hover_time = 0.0
         self._hover_hit_ratio = 0.0
+        self._intro_ms = 0.0
         self.input_text = ""
         self.input_caret = 0
         self._consume_enter = True
@@ -236,7 +245,11 @@ class GameOverUi:
 
     def _panel_layout(self, *, scale: float) -> tuple[rl.Rectangle, float, float]:
         # Keep consistent with the main menu panel offsets.
-        panel_x = GAME_OVER_PANEL_X * scale
+        t = self._intro_ms / PANEL_SLIDE_DURATION_MS if PANEL_SLIDE_DURATION_MS > 1e-6 else 1.0
+        eased = _ease_out_cubic(t)
+        panel_slide_x = -GAME_OVER_PANEL_W * (1.0 - eased)
+
+        panel_x = (GAME_OVER_PANEL_X + panel_slide_x) * scale
         panel_y = GAME_OVER_PANEL_Y * scale
         origin_x = -(GAME_OVER_PANEL_OFFSET_X * scale)
         origin_y = -(GAME_OVER_PANEL_OFFSET_Y * scale)
@@ -260,6 +273,8 @@ class GameOverUi:
 
         if self.assets is None:
             return None
+
+        self._intro_ms = min(PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
         if self._consume_enter:
             self._consume_enter = False
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
