@@ -166,7 +166,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Update quest progression persistence
   - [x] increment completion count for stages 1..4 (`status.quest_play_counts[51..90]`)
   - [x] advance quest unlock index (`status.quest_unlock_index` / `status.quest_unlock_index_full`)
-- [ ] (Optional) animate breakdown like decompile (phase-based count-up)
+- [x] (Optional) animate breakdown like decompile (phase-based count-up)
 - [x] Unlock popups
   - [x] show “Weapon unlocked” / “Perk unlocked” from quest metadata
 - [x] Buttons
@@ -353,4 +353,4 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Quest Results + Failed screens + unlock persistence
 - [x] Tutorial (director + prompt + fixed perks)
 - [x] Typ-o (names + typing + bespoke spawn/fire)
-- [ ] Polish + regression tests (mode IDs, perk gating, highscores)
+- [x] Polish + regression tests (mode IDs, perk gating, highscores)

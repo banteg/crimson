@@ -18,6 +18,7 @@ import pyray as rl
 from grim.audio import (
     AudioState,
     play_music,
+    play_sfx,
     stop_music,
     update_audio,
 )
@@ -1014,6 +1015,7 @@ class QuestResultsView:
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._breakdown = None
+        self._breakdown_anim = None
         self._record = None
         self._rank_index: int | None = None
         self._high_scores: list = []
@@ -1024,7 +1026,7 @@ class QuestResultsView:
         self._button_tex: rl.Texture2D | None = None
 
     def open(self) -> None:
-        from .quests.results import compute_quest_final_time
+        from .quests.results import QuestResultsBreakdownAnim, compute_quest_final_time
         from .persistence.highscores import HighScoreRecord, read_highscore_table, scores_path_for_config, upsert_highscore_record
 
         self._action = None
@@ -1038,6 +1040,7 @@ class QuestResultsView:
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
         self._breakdown = None
+        self._breakdown_anim = None
         self._record = None
         self._rank_index = None
         self._high_scores = []
@@ -1137,6 +1140,7 @@ class QuestResultsView:
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
         self._record = record
         self._breakdown = breakdown
+        self._breakdown_anim = QuestResultsBreakdownAnim.start()
 
     def close(self) -> None:
         self._small_font = None
@@ -1144,6 +1148,7 @@ class QuestResultsView:
         self._record = None
         self._outcome = None
         self._breakdown = None
+        self._breakdown_anim = None
         self._rank_index = None
         self._high_scores = []
         self._show_high_scores = False
@@ -1151,6 +1156,8 @@ class QuestResultsView:
         self._unlock_perk_name = ""
 
     def update(self, dt: float) -> None:
+        from .quests.results import tick_quest_results_breakdown_anim
+
         if self._state.audio is not None:
             update_audio(self._state.audio, dt)
         if self._ground is not None:
@@ -1168,8 +1175,26 @@ class QuestResultsView:
             self._show_high_scores = not self._show_high_scores
 
         outcome = self._outcome
-        if self._record is None or outcome is None:
+        record = self._record
+        breakdown = self._breakdown
+        if record is None or outcome is None or breakdown is None:
             return
+
+        anim = self._breakdown_anim
+        if anim is not None and not anim.done:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+                anim.set_final(breakdown)
+                return
+
+            clinks = tick_quest_results_breakdown_anim(
+                anim,
+                frame_dt_ms=int(min(dt, 0.1) * 1000.0),
+                target=breakdown,
+            )
+            if clinks > 0 and self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_clink_01", rng=self._state.rng)
+            if not anim.done:
+                return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
             self._state.pending_quest_level = outcome.level
@@ -1238,6 +1263,21 @@ class QuestResultsView:
             rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
             return
 
+        anim = self._breakdown_anim
+        base_time_ms = int(breakdown.base_time_ms)
+        life_bonus_ms = int(breakdown.life_bonus_ms)
+        perk_bonus_ms = int(breakdown.unpicked_perk_bonus_ms)
+        final_time_ms = int(breakdown.final_time_ms)
+        step = 4
+        highlight_alpha = 1.0
+        if anim is not None and not anim.done:
+            base_time_ms = int(anim.base_time_ms)
+            life_bonus_ms = int(anim.life_bonus_ms)
+            perk_bonus_ms = int(anim.unpicked_perk_bonus_s) * 1000
+            final_time_ms = int(anim.final_time_ms)
+            step = int(anim.step)
+            highlight_alpha = float(anim.highlight_alpha())
+
         def _fmt_clock(ms: int) -> str:
             total_seconds = max(0, int(ms) // 1000)
             minutes = total_seconds // 60
@@ -1246,6 +1286,24 @@ class QuestResultsView:
 
         def _fmt_bonus(ms: int) -> str:
             return f"-{float(max(0, int(ms))) / 1000.0:.2f}s"
+
+        def _breakdown_color(idx: int, *, final: bool = False) -> rl.Color:
+            if anim is None or anim.done:
+                if final:
+                    return rl.Color(255, 255, 255, 255)
+                return rl.Color(255, 255, 255, int(255 * 0.8))
+
+            alpha = 0.2
+            if idx < step:
+                alpha = 0.4
+            elif idx == step:
+                alpha = 1.0
+                if final:
+                    alpha *= highlight_alpha
+            rgb = (255, 255, 255)
+            if idx == step:
+                rgb = (25, 200, 25)
+            return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
 
         title = f"Quest {outcome.level} completed"
         subtitle = self._quest_title
@@ -1256,20 +1314,20 @@ class QuestResultsView:
         font = self._ensure_small_font()
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
         y = 196.0
-        draw_small_text(font, f"Base time: {_fmt_clock(int(breakdown.base_time_ms))}", 32.0, y, 1.0, text_color)
+        draw_small_text(font, f"Base time: {_fmt_clock(base_time_ms)}", 32.0, y, 1.0, _breakdown_color(0))
         y += 18.0
-        draw_small_text(font, f"Life bonus: {_fmt_bonus(int(breakdown.life_bonus_ms))}", 32.0, y, 1.0, text_color)
+        draw_small_text(font, f"Life bonus: {_fmt_bonus(life_bonus_ms)}", 32.0, y, 1.0, _breakdown_color(1))
         y += 18.0
-        draw_small_text(font, f"Perk bonus: {_fmt_bonus(int(breakdown.unpicked_perk_bonus_ms))}", 32.0, y, 1.0, text_color)
+        draw_small_text(font, f"Perk bonus: {_fmt_bonus(perk_bonus_ms)}", 32.0, y, 1.0, _breakdown_color(2))
         y += 18.0
-        draw_small_text(font, f"Final time: {_fmt_clock(int(breakdown.final_time_ms))}", 32.0, y, 1.0, rl.Color(255, 255, 255, 255))
+        draw_small_text(font, f"Final time: {_fmt_clock(final_time_ms)}", 32.0, y, 1.0, _breakdown_color(3, final=True))
         y += 26.0
-        draw_small_text(font, f"Kills: {int(record.creature_kill_count)}", 32.0, y, 1.0, text_color)
+        draw_small_text(font, f"Kills: {int(record.creature_kill_count)}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
         y += 18.0
-        draw_small_text(font, f"XP: {int(record.score_xp)}", 32.0, y, 1.0, text_color)
+        draw_small_text(font, f"XP: {int(record.score_xp)}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
         if self._rank_index is not None and self._rank_index < 100:
             y += 18.0
-            draw_small_text(font, f"Rank: {int(self._rank_index) + 1}", 32.0, y, 1.0, text_color)
+            draw_small_text(font, f"Rank: {int(self._rank_index) + 1}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
 
         if self._unlock_weapon_name:
             y += 26.0
@@ -1354,6 +1412,16 @@ class QuestResultsView:
                 if self._rank_index is not None and idx == int(self._rank_index):
                     color = rl.Color(255, 255, 255, 255)
                 draw_small_text(font, line, table_x, table_y + float(idx) * row_step, 1.0, color)
+
+        if anim is not None and not anim.done:
+            draw_small_text(
+                font,
+                "SPACE / click: skip breakdown",
+                32.0,
+                float(rl.get_screen_height()) - 46.0,
+                0.9,
+                rl.Color(190, 190, 200, 255),
+            )
 
         draw_small_text(
             font,
