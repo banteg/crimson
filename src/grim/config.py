@@ -209,6 +209,12 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
             raise ValueError(f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})")
         parsed = CRIMSON_CFG_STRUCT.parse(data)
         config = CrimsonConfig(path=path, data=parsed)
+        # Patch up configs produced by older revisions of this project.
+        # `crimsonland.exe` expects player_count in [1..4], but our repo historically had 0 here.
+        player_count = int(config.data.get("player_count", 1))
+        if player_count < 1 or player_count > 4:
+            config.data["player_count"] = 1
+            config.save()
         if (
             int(config.data.get("detail_preset", 0)) == 0
             and int(config.data.get("fx_detail_0", 0)) == 0

@@ -232,7 +232,13 @@ class PlayGameMenuView(PanelMenuView):
         config = self._state.config
         status = self._state.status
 
+        # Clamp to a valid range; older configs in the repo can contain 0 here,
+        # which would incorrectly hide the Tutorial entry (it is gated on == 1).
         player_count = int(config.data.get("player_count", 1))
+        if player_count < 1:
+            player_count = 1
+        if player_count > len(self._PLAYER_COUNT_LABELS):
+            player_count = len(self._PLAYER_COUNT_LABELS)
         quest_unlock = int(status.quest_unlock_index)
         full_version = not self._state.demo_enabled
 
