@@ -38,6 +38,8 @@ TYPING_PANEL_WIDTH = 182.0
 TYPING_PANEL_HEIGHT = 53.0
 TYPING_PANEL_ALPHA = 0.7
 TYPING_TEXT_X = 6.0
+TYPING_PROMPT = "> "
+TYPING_CURSOR = "_"
 TYPING_CURSOR_X_OFFSET = 14.0
 
 
@@ -168,7 +170,9 @@ class TypoShooterMode(BaseGameplayMode):
 
         return fire_pressed, reload_pressed
 
-    def _spawn_tinted_creature(self, *, type_id: CreatureTypeId, pos_x: float, pos_y: float, tint_rgba: tuple[float, float, float, float]) -> int:
+    def _spawn_tinted_creature(
+        self, *, type_id: CreatureTypeId, pos_x: float, pos_y: float, tint_rgba: tuple[float, float, float, float]
+    ) -> int:
         rand = self._state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
@@ -207,7 +211,9 @@ class TypoShooterMode(BaseGameplayMode):
         record.score_xp = int(self._player.experience)
         record.survival_elapsed_ms = int(self._typo.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
-        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
+        weapon_id = most_used_weapon_id_for_player(
+            self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id)
+        )
         record.most_used_weapon_id = int(weapon_id) + 1
         record.shots_fired = int(self._typing.shots_fired)
         record.shots_hit = int(self._typing.shots_hit)
@@ -366,7 +372,7 @@ class TypoShooterMode(BaseGameplayMode):
         # Text Y = v38 + 1.0 = screen_height - 127.0
         panel_x = -1.0
         panel_y = screen_h - 144.0  # v38 - 16.0
-        text_y = screen_h - 127.0   # v38 + 1.0
+        text_y = screen_h - 127.0  # v38 + 1.0
 
         # Draw panel backdrop using ind_panel texture (original: DAT_0048f7c4)
         if self._hud_assets is not None and self._hud_assets.ind_panel is not None:
@@ -381,23 +387,26 @@ class TypoShooterMode(BaseGameplayMode):
             tint = rl.Color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
             rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
-        # Draw typing text (original: grim_draw_text_small_fmt at x=6.0, y=text_y)
+        # Draw prompt + typing text
+        # Original draws with format string that includes prompt "> "
         text = self._typing.text
+        full_text = TYPING_PROMPT + text
         text_color = rl.Color(255, 255, 255, 255)
-        self._draw_ui_text(text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
+        self._draw_ui_text(full_text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
 
         # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 1.0 : 0.4)
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
         cursor_alpha = 0.4 if cursor_dim else 1.0
         cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
 
-        # Cursor position: text_width + 14.0 (original)
+        # Cursor position: prompt_width + text_width + 14.0 (original)
+        prompt_w = float(self._ui_text_width(TYPING_PROMPT))
         text_w = float(self._ui_text_width(text))
-        cursor_x = TYPING_TEXT_X + text_w + TYPING_CURSOR_X_OFFSET
+        cursor_x = TYPING_TEXT_X + prompt_w + text_w + TYPING_CURSOR_X_OFFSET
         cursor_y = text_y
 
-        # Draw cursor as "|" character
-        self._draw_ui_text("|", cursor_x, cursor_y, cursor_color, scale=1.0)
+        # Draw cursor as "_" character (original: DAT_004712b8 = "_")
+        self._draw_ui_text(TYPING_CURSOR, cursor_x, cursor_y, cursor_color, scale=1.0)
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._game_over_active))
