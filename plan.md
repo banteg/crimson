@@ -340,7 +340,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### Highscores + wiring
 
-- [ ] Add a mode-by-mode rank ordering test (Survival/Rush/Typ-o by XP desc; Quests by time asc)
+- [x] Add a mode-by-mode rank ordering test (Survival/Typ-o by XP desc; Rush by time desc; Quests by time asc)
 - [ ] Add a smoke test that each `start_*` routes to the intended view (mode id + persistence filename)
 
 ---
