@@ -38,8 +38,8 @@ The original `highscore_record_init` populates:
 
 The rewrite currently:
 
-- Uses the current `player.weapon_id` as “most used weapon”.
-- Tracks shots fired/hit for Survival/Rush (projectile-based) and Typ-o Shooter (typing-based); quest results still report 0.
+- Tracks per-weapon usage counts and populates `most_used_weapon_id` from the most-used weapon.
+- Tracks shots fired/hit for Survival/Rush/Quests (projectile-based) and Typ-o Shooter (typing-based).
 
 3) **SFX and transitions are incomplete**
 

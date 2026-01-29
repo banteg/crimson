@@ -16,6 +16,12 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 9) High score list screen (state `0xe`)
 - [x] 10) High score shot stats (fired/hit)
 - [x] 11) High score weapon usage (most used)
+- [x] 12) Quest high score stats (shots/weapon usage)
+- [ ] 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
+- [ ] 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
+- [ ] 15) Multiplayer wiring (2–4 players)
+- [ ] 16) Demo trial overlay (demo builds)
+- [ ] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
 
 ---
 
@@ -395,3 +401,52 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Track per-weapon usage counts on fire (per-player, per-run)
 - [x] Populate Survival/Rush/Typ-o high score records with most-used weapon id (fallback to current weapon)
 - [x] Tests for selecting the most-used weapon
+
+---
+
+## 12) Quest high score stats (shots/weapon usage)
+
+- [x] Capture shots fired/hit and most-used weapon at quest end
+- [x] Persist shots + most-used weapon into quest high score records (clamp `hit <= fired`)
+- [x] Refresh rewrite docs to remove stale high score gaps
+
+---
+
+## 13) Creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`)
+
+- [ ] Identify ranged attack flags + behavior from the decompile
+- [ ] Implement ranged attack fire path (projectiles + cooldowns)
+- [ ] Wire the missing SFX/event hooks for ranged fire
+- [ ] Add regression tests for ranged attack behavior
+
+---
+
+## 14) Split-on-death (`CreatureFlags.SPLIT_ON_DEATH`)
+
+- [ ] Identify which templates use split-on-death and what they spawn
+- [ ] Implement split spawns in the creature death contract
+- [ ] Add regression tests for split behavior
+
+---
+
+## 15) Multiplayer wiring (2–4 players)
+
+- [ ] Thread selected player count from the menu into each gameplay mode
+- [ ] Support `player_count > 1` in world reset + input plumbing
+- [ ] Ensure perks/HUD/high score rules match original for 2p+
+- [ ] Add smoke tests for 2p mode startup
+
+---
+
+## 16) Demo trial overlay (demo builds)
+
+- [ ] Implement the demo trial overlay UI + timing rules
+- [ ] Confirm trigger conditions vs demo build evidence
+
+---
+
+## 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
+
+- [ ] Bonus pickup SFX parity (including variants)
+- [ ] Perk UI SFX parity (open/pick/error)
+- [ ] Ranged enemy fire SFX parity

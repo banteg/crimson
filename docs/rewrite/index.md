@@ -108,7 +108,7 @@ See also:
 - Some gameplay SFX/events are still missing (perk UI, ranged enemy fire).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
 - Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).
-- `game.cfg` is loaded/saved, but progression/unlock wiring and high-score stat fields are still incomplete.
+- `game.cfg` is loaded/saved, but progression/unlock wiring and some statistics counters are still incomplete.
 - Demo purchase URL is defunct (screen exists only for parity).
 
 ## Roadmap

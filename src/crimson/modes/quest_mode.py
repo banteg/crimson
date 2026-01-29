@@ -12,7 +12,7 @@ from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..gameplay import weapon_assign_player
+from ..gameplay import most_used_weapon_id_for_player, weapon_assign_player
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table, tick_quest_completion_transition
@@ -55,6 +55,9 @@ class QuestRunOutcome:
     experience: int
     kill_count: int
     weapon_id: int
+    shots_fired: int
+    shots_hit: int
+    most_used_weapon_id: int
 
 
 def _quest_seed(level: str) -> int:
@@ -276,6 +279,21 @@ class QuestMode(BaseGameplayMode):
 
         if self._player.health <= 0.0:
             if self._outcome is None:
+                fired = 0
+                hit = 0
+                try:
+                    fired = int(self._state.shots_fired[int(self._player.index)])
+                    hit = int(self._state.shots_hit[int(self._player.index)])
+                except Exception:
+                    fired = 0
+                    hit = 0
+                fired = max(0, int(fired))
+                hit = max(0, min(int(hit), fired))
+                most_used_weapon_id = most_used_weapon_id_for_player(
+                    self._state,
+                    player_index=int(self._player.index),
+                    fallback_weapon_id=int(self._player.weapon_id),
+                )
                 self._outcome = QuestRunOutcome(
                     kind="failed",
                     level=str(self._quest.level),
@@ -285,6 +303,9 @@ class QuestMode(BaseGameplayMode):
                     experience=int(self._player.experience),
                     kill_count=int(self._creatures.kill_count),
                     weapon_id=int(self._player.weapon_id),
+                    shots_fired=fired,
+                    shots_hit=hit,
+                    most_used_weapon_id=int(most_used_weapon_id),
                 )
             self.close_requested = True
             return
@@ -321,6 +342,21 @@ class QuestMode(BaseGameplayMode):
         self._quest.completion_transition_ms = float(completion_ms)
         if completed:
             if self._outcome is None:
+                fired = 0
+                hit = 0
+                try:
+                    fired = int(self._state.shots_fired[int(self._player.index)])
+                    hit = int(self._state.shots_hit[int(self._player.index)])
+                except Exception:
+                    fired = 0
+                    hit = 0
+                fired = max(0, int(fired))
+                hit = max(0, min(int(hit), fired))
+                most_used_weapon_id = most_used_weapon_id_for_player(
+                    self._state,
+                    player_index=int(self._player.index),
+                    fallback_weapon_id=int(self._player.weapon_id),
+                )
                 self._outcome = QuestRunOutcome(
                     kind="completed",
                     level=str(self._quest.level),
@@ -330,6 +366,9 @@ class QuestMode(BaseGameplayMode):
                     experience=int(self._player.experience),
                     kill_count=int(self._creatures.kill_count),
                     weapon_id=int(self._player.weapon_id),
+                    shots_fired=fired,
+                    shots_hit=hit,
+                    most_used_weapon_id=int(most_used_weapon_id),
                 )
             self.close_requested = True
 
