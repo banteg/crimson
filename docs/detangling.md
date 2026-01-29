@@ -10,7 +10,7 @@ Use the hotspot script to refresh the lists when the decompile is regenerated.
 ## Hotspot script
 
 ```
-uv run python scripts/function_hotspots.py --top 12 --only-fun
+uv run scripts/function_hotspots.py --top 12 --only-fun
 ```
 
 ## Name/data map workflow

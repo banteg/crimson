@@ -93,7 +93,7 @@ cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # opti
 Run the reducer to normalize facts + produce summaries:
 
 ```bash
-uv run python scripts/frida_reduce.py \
+uv run scripts/frida_reduce.py \
   --log analysis/frida/raw/grim_hits.jsonl \
   --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
   --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \

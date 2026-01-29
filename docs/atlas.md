@@ -183,7 +183,7 @@ uniform grids (2/4/8/16).
 out a JSON manifest with rect/UV data.
 
 ```bash
-uv run python scripts/atlas_export.py --image artifacts/assets/crimson/game/projs.png --grid 4
+uv run scripts/atlas_export.py --image artifacts/assets/crimson/game/projs.png --grid 4
 ```
 
 Outputs:
@@ -200,8 +200,8 @@ To export all textures referenced by the static scan into `artifacts/atlas/frame
 run:
 
 ```bash
-uv run python scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
-uv run python scripts/atlas_export.py --all
+uv run scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
+uv run scripts/atlas_export.py --all
 ```
 
 The output layout is:
@@ -219,7 +219,7 @@ for texture binds (`+0xc4`) followed by atlas selection (`+0x104` or
 `effect_select_texture` (`FUN_0042e0a0`). Use:
 
 ```bash
-uv run python scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
+uv run scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
 ```
 
 The JSON output includes `texture`, `direct` (grid/index), and `table_indices`

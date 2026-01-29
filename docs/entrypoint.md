@@ -14,7 +14,7 @@ can hang names and subsystems off a stable boot sequence.
 ## Regenerate trace
 
 ```
-uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
+uv run scripts/entrypoint_trace.py --depth 2 --skip-external
 ```
 
 ## Trace (depth 2, internal calls only)

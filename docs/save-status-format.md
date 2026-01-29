@@ -86,8 +86,8 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 Use the helper script to inspect and edit `game.cfg`:
 
 ```
-uv run python scripts/save_status.py info game_bins/crimsonland/1.9.93-gog/game.cfg
-uv run python scripts/save_status.py set game.cfg --set quest_unlock_index=30 --set weapon_usage.5=12
+uv run scripts/save_status.py info game_bins/crimsonland/1.9.93-gog/game.cfg
+uv run scripts/save_status.py set game.cfg --set quest_unlock_index=30 --set weapon_usage.5=12
 ```
 
 Supported edits:
