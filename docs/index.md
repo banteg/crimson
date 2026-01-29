@@ -4,11 +4,13 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 !!! abstract "Current state"
     The rewrite boots to a working front-end (menu + terrain, music + SFX,
-    console overlay, demo/attract flow) and loads/saves `game.cfg`. Survival is
-    now wired into `uv run crimson game` with terrain + sprites + decal baking,
-    using the real gameplay loop (player/projectiles/creatures/spawns/bonuses).
-    Parity work remains on broader weapon/creature coverage and SFX tuning
-    (basic fire/reload/hit/death hooks are now wired in gameplay).
+    console overlay, demo/attract flow) and loads/saves `game.cfg`. Survival,
+    Rush, Quests, Typ-o-Shooter, and Tutorial are all wired into
+    `uv run crimson game` with terrain + sprites + decal baking, using the real
+    gameplay loop (player/projectiles/creatures/spawns/bonuses/perks). Audio
+    routing includes weapon fire/reload, projectile hit, and creature-specific
+    death SFX. Parity work remains on broader weapon/creature coverage,
+    multiplayer (2-4 players), and remaining SFX/event hooks.
 
 <!-- data-map-coverage:start -->
 Data map coverage: 15.42% (471 / 3055 symbols)

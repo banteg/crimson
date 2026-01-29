@@ -32,9 +32,15 @@ Console/log | `src/grim/console.py` | `src/grim/console.py` | Console as engine/
 Fonts (small, mono) | `src/grim/fonts/small.py`, `src/grim/fonts/grim_mono.py` | `src/grim/fonts/*` | Font loaders + draw/measure helpers.
 CLI entrypoint | `src/crimson/cli.py` | `src/crimson/cli.py` | Stays in game package.
 Main game flow | `src/crimson/game.py`, `src/crimson/demo.py` | `src/crimson/*` | State machine + demo flow.
-Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content.
+Game modes | `src/crimson/modes/*.py` | `src/crimson/modes/*` | Survival, Rush, Quest, Typ-o, Tutorial mode implementations.
+Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content (tiers 1-5) + runtime.
+Tutorial | `src/crimson/tutorial/*` | `src/crimson/tutorial/*` | Tutorial stage progression + hint system.
+Typ-o-Shooter | `src/crimson/typo/*` | `src/crimson/typo/*` | Typing mechanics + target matching.
+Simulation | `src/crimson/sim/*` | `src/crimson/sim/*` | World state, definitions, gameplay systems.
+Creatures | `src/crimson/creatures/*.py` | `src/crimson/creatures/*` | AI, animations, runtime pool, spawning.
 Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks.py`, `src/crimson/bonuses.py`, `src/crimson/creatures/spawn.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
-Debug views | `src/crimson/views/*` | `src/crimson/views/*` | Tooling/debug; may call `grim` drawing helpers.
+Audio routing | `src/crimson/audio_router.py`, `src/crimson/weapon_sfx.py` | `src/crimson/*` | Gameplay audio event routing.
+Debug views | `src/crimson/views/*` | `src/crimson/views/*` | Tooling/debug; view registry pattern.
 
 ## Prefix map (decomp → rewrite)
 

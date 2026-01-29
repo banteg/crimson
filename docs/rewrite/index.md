@@ -9,7 +9,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are wired; menu idle triggers demo/attract)
+- `uv run crimson game` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
 - `uv run crimson view <name>` (debug views + mode views)
 - `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
@@ -52,13 +52,18 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Music pack loader (`music.paq`) with raylib music streams.
 - Intro + theme playback with volume from `crimson.cfg`.
 - SFX system (`sfx.paq` or unpacked `assets_dir/sfx/*`) with key mapping + variant selection.
-- Basic gameplay SFX hooks via `GameWorld` (weapon fire/reload, projectile hit, creature death).
+- Audio routing system (`AudioRouter`) with per-creature-type death SFX (zombie, lizard, alien, spider, trooper).
+- Gameplay SFX hooks: weapon fire/reload, projectile hit (bullet/beam/explosion variants), creature death.
+- Survival music trigger integration (game tune activation on first hits).
 
 ### Gameplay (modes)
 
 - `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
 - Survival/Rush/Quest/Typ-o/Tutorial loops are wired into `crimson game` via `src/crimson/modes/*`.
   - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
+  - Quest mode has all tiers 1-5 implemented with full spawn scripting.
+  - Tutorial mode has full stage-based progression with hint system.
+  - Typ-o-Shooter has typing mechanics with target matching and reload command.
 - Game over / high score entry screen is implemented for Survival/Rush/Typ-o: [rewrite/game-over.md](game-over.md)
 - Quest completion/failure screens are implemented (results + failed).
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
@@ -90,10 +95,22 @@ Available via `uv run crimson view <name>`:
 - `ground` (procedural ground render)
 - `projectiles` (projectile atlas preview)
 - `projectile-render-debug` (projectile render parity sandbox)
+- `projectile_fx` (projectile effects preview)
 - `bonuses` (bonus icon preview)
 - `wicons` (weapon icon preview)
 - `ui` (UI texture preview)
 - `particles` (particle atlas preview)
+- `player` (player sandbox with weapons/projectiles/HUD)
+- `survival` (survival mode view)
+- `rush` (rush mode view)
+- `game_over` (game over screen preview)
+- `spawn_plan` (spawn plan visualization)
+- `perks` / `perk_menu_debug` (perk selection UI)
+- `camera_debug` / `camera_shake` (camera system)
+- `decals_debug` / `corpse_stamp_debug` (decal system)
+- `aim_debug` (aiming visualization)
+- `player_sprite_debug` (player sprite variants)
+- `small_font_debug` (font glyph testing)
 
 See also:
 
@@ -105,11 +122,13 @@ See also:
 ## Known gaps (short list)
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
-- Some gameplay SFX/events are still missing (perk UI, ranged enemy fire).
+- Some gameplay SFX/events are still missing (perk UI selection sound, ranged enemy fire SFX).
 - Survival currently uses a fixed seed by default (good for repro, bad for variety).
-- Survival is currently single-player only (Play Game panel exposes player count, but gameplay isn’t wired).
-- `game.cfg` is loaded/saved, but progression/unlock wiring and some statistics counters are still incomplete.
-- Demo purchase URL is defunct (screen exists only for parity).
+- Multiplayer (2-4 players): Play Game panel exposes player count, but gameplay modes currently hardcode `player_count=1`.
+- `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
+- Demo trial overlay (time limit UI) is not implemented.
+- Full Options/Controls parity (video/window mode editing, full widget set).
+- Online scores + mods/plugin interface (tracked but not yet implemented).
 
 ## Roadmap
 

@@ -9,8 +9,9 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - `uv run crimson game`
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
-  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are wired (single-player).
+  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable (single-player).
   - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
+- Quest results/failed screens (states 8 and 0xc) are fully implemented.
   - Menu idle triggers demo/attract mode.
 - `uv run crimson view <name>`: debug views (terrain, atlases, survival, player sandbox, etc).
 - `uv run crimson quests <level>`: quest builder output / spawn scripts.
@@ -55,13 +56,26 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Code: `src/crimson/game_world.py`
 - **Survival loop**: wired and playable.
   - Code: `src/crimson/modes/survival_mode.py`, `src/crimson/creatures/spawn.py` (wave + milestone spawns)
-  - Gaps: still missing full enemy/weapon parity (remaining per-weapon behaviors), and many SFX/event hooks.
+  - Gaps: still missing full enemy/weapon parity (remaining per-weapon behaviors), and some SFX/event hooks.
 - **Rush / Typ-o-Shooter / Tutorial**: wired and playable.
   - Code: `src/crimson/modes/rush_mode.py`, `src/crimson/modes/typo_mode.py`, `src/crimson/modes/tutorial_mode.py`
-- **Multiplayer (2–4 players)**: not wired (Play Game panel exposes player count; Survival currently hardcodes `player_count=1`).
+  - Tutorial has full stage progression with hint system (`src/crimson/tutorial/timeline.py`).
+  - Typ-o-Shooter has typing buffer with target matching and reload command (`src/crimson/typo/typing.py`).
+- **Quest mode**: all tiers 1-5 implemented with full spawn scripting.
+  - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
+- **Multiplayer (2–4 players)**: not wired (Play Game panel exposes player count; modes currently hardcode `player_count=1`).
   - Code: `src/crimson/modes/*` (modes currently use `player_count=1`)
 - **Progression/unlocks**: quest unlock indices + completion counters are updated on quest completion; mode play counters increment on mode start.
   - Code: `src/crimson/persistence/save_status.py`, `src/crimson/game.py`
+
+### Audio
+
+- **Audio routing system** (`AudioRouter`): routes gameplay events to SFX with per-creature-type death sounds.
+  - Code: `src/crimson/audio_router.py`
+  - Creature death SFX: zombie, lizard, alien, spider, trooper variants.
+  - Hit SFX: bullet hits (multiple variants), beam hits, explosion for rockets.
+  - Weapon SFX: fire and reload sounds mapped per-weapon.
+  - Survival music trigger: game tune activates on first hits in Survival mode.
 
 ### Evidence (what is verified)
 

@@ -28,7 +28,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [x] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
-- [x] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity (demo-build validation pending).
+- [ ] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity (UI pending; timer logic exists in `demo_trial.py`).
 - [x] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.
 
 ## Data tables + content
@@ -46,11 +46,12 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Sprite/particle/bonus/weapon atlas previews -> Unlocks: asset alignment.
 - [x] UI + font previews -> Unlocks: HUD/menu layout checks.
 
-## Next (short term / integration)
+## Completed (gameplay integration)
 
 - [x] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
 - [x] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
-- [x] Game over / high score entry UI (Survival) -> Unlocks: post-run loop parity + score persistence.
+- [x] Game over / high score entry UI (Survival/Rush/Typ-o) -> Unlocks: post-run loop parity + score persistence.
+- [x] Quest results / quest failed screens -> Unlocks: quest completion flow parity.
 - [x] Integrate creature updates + spawners into runtime loop -> Unlocks: enemy waves in modes.
 - [x] Integrate combat loop (projectiles -> creatures, death contract -> XP/bonuses/FX/SFX) -> Unlocks: combat parity.
 - [x] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.
@@ -59,9 +60,11 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Options screen (volume/detail/mouse + HUD toggle) -> Unlocks: basic config editing (video/controls parity pending).
 - [x] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
 - [x] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
-- [x] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
+- [x] Wire gameplay SFX/events (weapon fire/reload, hit, creature death) -> Unlocks: audio feedback parity.
+- [x] Audio routing system with per-creature-type death SFX -> Unlocks: immersive audio parity.
 - [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into `crimson game` -> Unlocks: additional playable modes.
-- [ ] Confirm demo idle threshold from the original demo build -> Unlocks: attract timing parity.
+- [x] Tutorial stage-based progression with hint system -> Unlocks: tutorial flow parity.
+- [x] Typ-o-Shooter typing mechanics with target matching -> Unlocks: Typ-o mode parity.
 
 ## Gameplay building blocks (implemented, not fully integrated)
 
@@ -76,12 +79,17 @@ it unlocks for parity. Goal: 100% replication of game logic.
 ## Gaps (still missing)
 
 - Creature runtime parity gaps: AI edge cases and remaining per-weapon behaviors.
-- Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
-- High score list screen (post-run): implemented (local-only; online scores still missing).
+- Some gameplay SFX/events: perk UI selection sound, ranged enemy fire SFX.
+- Multiplayer (2-4 players): Play Game panel exposes player count, but modes hardcode `player_count=1`.
+- Demo trial overlay UI (timer logic exists, visual overlay pending).
+- Full Options/Controls parity: video/window mode editing, full widget set.
+- Some progression/unlock wiring and statistics counters are still incomplete.
+- High score list screen (post-run): implemented locally; online scores still missing.
 
 ## Later parity gates
 
-- [ ] Mode loops (Survival/Rush/Quest) -> Unlocks: full gameplay.
+- [ ] Multiplayer wiring (2-4 players) -> Unlocks: local multiplayer parity.
 - [ ] Credits/secret minigames -> Unlocks: secret path parity.
 - [ ] Online high scores -> Unlocks: score submission parity.
 - [ ] Mods (CMOD) loader -> Unlocks: mod parity.
+- [ ] Confirm demo idle threshold from original demo build -> Unlocks: attract timing parity.
