@@ -186,19 +186,20 @@ class WorldState:
         )
         if pickups:
             for pickup in pickups:
-                self.state.effects.spawn_burst(
-                    pos_x=float(pickup.pos_x),
-                    pos_y=float(pickup.pos_y),
-                    count=12,
-                    rand=self.state.rng.rand,
-                    detail_preset=detail_preset,
-                    lifetime=0.4,
-                    scale_step=0.1,
-                    color_r=0.4,
-                    color_g=0.5,
-                    color_b=1.0,
-                    color_a=0.5,
-                )
+                if pickup.bonus_id != int(BonusId.NUKE):
+                    self.state.effects.spawn_burst(
+                        pos_x=float(pickup.pos_x),
+                        pos_y=float(pickup.pos_y),
+                        count=12,
+                        rand=self.state.rng.rand,
+                        detail_preset=detail_preset,
+                        lifetime=0.4,
+                        scale_step=0.1,
+                        color_r=0.4,
+                        color_g=0.5,
+                        color_b=1.0,
+                        color_a=0.5,
+                    )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
                         pos_x=float(pickup.pos_x),

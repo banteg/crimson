@@ -303,12 +303,12 @@ Once Phase 2 is in, these become straightforward and correct.
 - [x] Suppress contact damage while active.
 - [x] “Eat”: close-range kills via death handling (respect `bonus_spawn_guard`).
 
-3. [ ] Nuke
+3. [x] Nuke
 
-- [ ] Spawn shockwave visuals + burst.
+- [x] Spawn shockwave visuals + burst.
 - [x] Apply radius damage around pickup origin.
 - [x] Route damage via `creature_apply_damage` (`damage_type=3`).
-- [ ] Add correct SFX sequencing.
+- [x] Add correct SFX sequencing.
 
 4. [ ] Phase 3 tests
 

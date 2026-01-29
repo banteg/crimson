@@ -1592,10 +1592,47 @@ def bonus_apply(
         state.camera_shake_pulses = 0x14
         state.camera_shake_timer = 0.2
 
+        origin_pos = origin or player
+        ox = float(origin_pos.pos_x)
+        oy = float(origin_pos.pos_y)
+        rand = state.rng.rand
+
+        bullet_count = int(rand()) & 3
+        bullet_count += 4
+        for _ in range(bullet_count):
+            angle = float(int(rand()) % 0x274) * 0.01
+            proj_id = state.projectiles.spawn(
+                pos_x=ox,
+                pos_y=oy,
+                angle=float(angle),
+                type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
+                owner_id=-100,
+            )
+            if proj_id != -1:
+                speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
+                state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
+
+        for _ in range(2):
+            angle = float(int(rand()) % 0x274) * 0.01
+            state.projectiles.spawn(
+                pos_x=ox,
+                pos_y=oy,
+                angle=float(angle),
+                type_id=int(ProjectileTypeId.MEAN_MINIGUN),
+                owner_id=-100,
+            )
+
+        state.effects.spawn_explosion_burst(
+            pos_x=ox,
+            pos_y=oy,
+            scale=1.0,
+            rand=rand,
+            detail_preset=int(detail_preset),
+        )
+
         if creatures:
-            origin_pos = origin or player
-            ox = float(origin_pos.pos_x)
-            oy = float(origin_pos.pos_y)
+            prev_guard = bool(state.bonus_spawn_guard)
+            state.bonus_spawn_guard = True
             for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
                     continue
@@ -1617,6 +1654,9 @@ def bonus_apply(
                         )
                     else:
                         creature.hp -= float(damage)
+            state.bonus_spawn_guard = prev_guard
+        state.sfx_queue.append("sfx_explosion_large")
+        state.sfx_queue.append("sfx_shockwave")
         return
 
     # Bonus types not modeled yet.

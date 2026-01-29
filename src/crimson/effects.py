@@ -852,3 +852,125 @@ class EffectPool:
                 rand=rand,
                 detail_preset=int(detail_preset),
             )
+
+    def spawn_explosion_burst(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        scale: float,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None:
+        """Port of `effect_spawn_explosion_burst` (0x0042f6c0)."""
+
+        detail_preset = int(detail_preset)
+        scale = float(scale)
+
+        # Shockwave ring.
+        self.spawn(
+            effect_id=1,
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=0.0,
+            vel_y=0.0,
+            rotation=0.0,
+            scale=1.0,
+            half_width=32.0,
+            half_height=32.0,
+            age=-0.1,
+            lifetime=0.35,
+            flags=0x19,
+            color_r=0.6,
+            color_g=0.6,
+            color_b=0.6,
+            color_a=1.0,
+            rotation_step=0.0,
+            scale_step=scale * 25.0,
+            detail_preset=detail_preset,
+        )
+
+        # Dark explosion puffs (high detail only).
+        if detail_preset > 3:
+            for idx in range(2):
+                age = float(idx) * 0.2 - 0.5
+                lifetime = float(idx) * 0.2 + 0.6
+                rotation = float(int(rand()) % 0x266) * 0.02
+                self.spawn(
+                    effect_id=0x11,
+                    pos_x=float(pos_x),
+                    pos_y=float(pos_y),
+                    vel_x=0.0,
+                    vel_y=0.0,
+                    rotation=float(rotation),
+                    scale=1.0,
+                    half_width=32.0,
+                    half_height=32.0,
+                    age=float(age),
+                    lifetime=float(lifetime),
+                    flags=0x5D,
+                    color_r=0.1,
+                    color_g=0.1,
+                    color_b=0.1,
+                    color_a=1.0,
+                    rotation_step=1.4,
+                    scale_step=scale * 5.0,
+                    detail_preset=detail_preset,
+                )
+
+        # Bright flash.
+        self.spawn(
+            effect_id=0,
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=0.0,
+            vel_y=0.0,
+            rotation=0.0,
+            scale=1.0,
+            half_width=32.0,
+            half_height=32.0,
+            age=0.0,
+            lifetime=0.3,
+            flags=0x19,
+            color_r=1.0,
+            color_g=1.0,
+            color_b=1.0,
+            color_a=1.0,
+            rotation_step=0.0,
+            scale_step=scale * 45.0,
+            detail_preset=detail_preset,
+        )
+
+        if detail_preset < 2:
+            count = 1
+        else:
+            count = 3 + (1 if detail_preset > 3 else 0)
+
+        # Extra shockwave particles.
+        for _ in range(count):
+            rotation = float(int(rand()) % 0x13A) * 0.02
+            vel_x = float((int(rand()) & 0x3F) * 2 - 0x40)
+            vel_y = float((int(rand()) & 0x3F) * 2 - 0x40)
+            scale_step = float((int(rand()) - 3) & 7) * scale
+            rotation_step = float((int(rand()) + 3) & 7)
+            self.spawn(
+                effect_id=0x0C,
+                pos_x=float(pos_x),
+                pos_y=float(pos_y),
+                vel_x=float(vel_x),
+                vel_y=float(vel_y),
+                rotation=float(rotation),
+                scale=1.0,
+                half_width=32.0,
+                half_height=32.0,
+                age=0.0,
+                lifetime=0.7,
+                flags=0x1D,
+                color_r=1.0,
+                color_g=1.0,
+                color_b=1.0,
+                color_a=1.0,
+                rotation_step=float(rotation_step),
+                scale_step=float(scale_step),
+                detail_preset=detail_preset,
+            )
