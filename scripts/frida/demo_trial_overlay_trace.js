@@ -28,6 +28,11 @@ function joinPath(base, leaf) {
 const LOG_DIR = getLogDir();
 
 const CONFIG = {
+  // Optional: if you're running the retail binary (which may never render the overlay),
+  // set this to true to force "demo" behavior only for the main gameplay loop's
+  // shareware gate checks (avoids a global game_is_full_version() -> 0 patch).
+  forceDemoInGameplayLoop: false,
+  logFullVersionCalls: false,
   logBacktrace: false,
   backtraceLimit: 12,
   logPath: joinPath(LOG_DIR, 'demo_trial_overlay_trace.jsonl'),
@@ -43,6 +48,10 @@ const DEMO_TOTAL_PLAY_TIME_MS = 2400000;
 const DEMO_QUEST_GRACE_TIME_MS = 300000;
 
 const ADDR = {
+  game_is_full_version: 0x0041df40,
+  gameplay_update_and_render: 0x0040aab0,
+  gameplay_update_and_render_end: 0x0040b5d0, // start of next function
+
   demo_trial_overlay_render: 0x004047c0,
 
   config_game_mode: 0x00480360,
@@ -105,6 +114,67 @@ function readVec2f(ptrArg) {
   } catch (_) {
     return null;
   }
+}
+
+function ptrInRange(p, start, end) {
+  if (!p || !start || !end) return false;
+  try {
+    return p.compare(start) >= 0 && p.compare(end) < 0;
+  } catch (_) {
+    return false;
+  }
+}
+
+function hookGameIsFullVersion() {
+  const addr = exePtr(ADDR.game_is_full_version);
+  if (!addr) {
+    writeLog({ event: 'hook_error', target: 'game_is_full_version', error: 'addr_unavailable' });
+    return;
+  }
+
+  const gameplayStart = exePtr(ADDR.gameplay_update_and_render);
+  const gameplayEnd = exePtr(ADDR.gameplay_update_and_render_end);
+  if (!gameplayStart || !gameplayEnd) {
+    writeLog({
+      event: 'hook_error',
+      target: 'gameplay_update_and_render_range',
+      error: 'addr_unavailable',
+    });
+  }
+
+  writeLog({ event: 'hook', target: 'game_is_full_version', addr: addr.toString() });
+
+  let forcedCount = 0;
+
+  Interceptor.attach(addr, {
+    onLeave(retval) {
+      const callsite = this.returnAddress;
+
+      if (CONFIG.logFullVersionCalls) {
+        writeLog({
+          event: 'game_is_full_version_call',
+          callsite: callsite ? callsite.toString() : null,
+          retval: retval.toInt32(),
+          in_gameplay_loop: callsite ? ptrInRange(callsite, gameplayStart, gameplayEnd) : null,
+        });
+      }
+
+      if (!CONFIG.forceDemoInGameplayLoop) return;
+      if (!callsite) return;
+
+      if (ptrInRange(callsite, gameplayStart, gameplayEnd)) {
+        retval.replace(0);
+        if (forcedCount === 0) {
+          writeLog({
+            event: 'forced_demo_gate',
+            target: 'game_is_full_version',
+            callsite: callsite.toString(),
+          });
+        }
+        forcedCount += 1;
+      }
+    },
+  });
 }
 
 function hookOverlayRender() {
@@ -176,6 +246,10 @@ function hookOverlayRender() {
 function main() {
   initLog();
   writeLog({ event: 'start', config: CONFIG, module: GAME_MODULE });
+
+  if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {
+    hookGameIsFullVersion();
+  }
 
   hookOverlayRender();
 }
