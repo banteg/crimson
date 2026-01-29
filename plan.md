@@ -438,7 +438,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [ ] Ensure perks/HUD/high score rules match original for 2p+
   - [x] Perk prompt usable while any player is alive
   - [x] Perk selection applies/syncs perk counts across players
-  - [ ] HUD overlay parity for 2p
+  - [x] HUD overlay parity for 2p
   - [ ] High score parity for 2p (XP/shots/weapon usage)
 - [x] Add smoke tests for 2p mode startup
 

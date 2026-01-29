@@ -253,6 +253,7 @@ class RushMode(BaseGameplayMode):
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
+                players=self._world.players,
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=self._rush.elapsed_ms,
                 font=self._small,

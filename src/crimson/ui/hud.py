@@ -156,6 +156,7 @@ def draw_hud_overlay(
     assets: HudAssets,
     *,
     player: PlayerState,
+    players: list[PlayerState] | None = None,
     bonus_hud: BonusHudState | None = None,
     elapsed_ms: float = 0.0,
     score: int | None = None,
@@ -165,6 +166,11 @@ def draw_hud_overlay(
     show_xp: bool = True,
     show_time: bool = False,
 ) -> float:
+    hud_players = list(players) if players is not None else [player]
+    if not hud_players:
+        hud_players = [player]
+    player_count = len(hud_players)
+
     screen_w = float(rl.get_screen_width())
     screen_h = float(rl.get_screen_height())
     scale = hud_ui_scale(screen_w, screen_h)
@@ -206,66 +212,101 @@ def draw_hud_overlay(
     # Pulsing heart.
     if assets.life_heart is not None:
         t = max(0.0, elapsed_ms) / 1000.0
-        pulse_speed = 5.0 if player.health < 30.0 else 2.0
-        pulse = (math.sin(t * pulse_speed) ** 4) * 4.0 + 14.0
-        size = pulse * 2.0
-        center_x, center_y = HUD_HEART_CENTER
-        dst = rl.Rectangle(
-            sx(center_x - pulse),
-            sy(center_y - pulse),
-            sx(size),
-            sy(size),
-        )
         src = rl.Rectangle(0.0, 0.0, float(assets.life_heart.width), float(assets.life_heart.height))
-        rl.draw_texture_pro(
-            assets.life_heart,
-            src,
-            dst,
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.Color(255, 255, 255, int(255 * alpha * HUD_ICON_ALPHA)),
-        )
-        max_y = max(max_y, dst.y + dst.height)
+        if player_count == 1:
+            base_center_x, base_center_y = HUD_HEART_CENTER
+            heart_step_y = 0.0
+            heart_scale = 1.0
+        else:
+            base_center_x = 27.0
+            base_center_y = 12.0
+            heart_step_y = 15.0
+            heart_scale = 0.5
+
+        for idx, hud_player in enumerate(hud_players):
+            pulse_speed = 5.0 if hud_player.health < 30.0 else 2.0
+            phase = float(idx) * (math.pi * 0.5)
+            pulse = ((math.sin(t * pulse_speed + phase) ** 4) * 4.0 + 14.0) * heart_scale
+            size = pulse * 2.0
+            center_y = base_center_y + float(idx) * heart_step_y
+            dst = rl.Rectangle(
+                sx(base_center_x - pulse),
+                sy(center_y - pulse),
+                sx(size),
+                sy(size),
+            )
+            rl.draw_texture_pro(
+                assets.life_heart,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * alpha * HUD_ICON_ALPHA)),
+            )
+            max_y = max(max_y, dst.y + dst.height)
 
     # Health bar.
     if assets.ind_life is not None:
         bar_x, bar_y = HUD_HEALTH_BAR_POS
         bar_w, bar_h = HUD_HEALTH_BAR_SIZE
-        bg_dst = rl.Rectangle(sx(bar_x), sy(bar_y), sx(bar_w), sy(bar_h))
         bg_src = rl.Rectangle(0.0, 0.0, float(assets.ind_life.width), float(assets.ind_life.height))
-        rl.draw_texture_pro(
-            assets.ind_life,
-            bg_src,
-            bg_dst,
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.Color(255, 255, 255, int(255 * alpha * HUD_HEALTH_BG_ALPHA)),
-        )
-        health_ratio = max(0.0, min(1.0, player.health / 100.0))
-        if health_ratio > 0.0:
-            fill_w = bar_w * health_ratio
-            fill_dst = rl.Rectangle(sx(bar_x), sy(bar_y), sx(fill_w), sy(bar_h))
-            fill_src = rl.Rectangle(0.0, 0.0, float(assets.ind_life.width) * health_ratio, float(assets.ind_life.height))
+        if player_count > 1:
+            bar_y = 6.0
+
+        for idx, hud_player in enumerate(hud_players):
+            bar_y_offset = float(idx) * 16.0 if player_count > 1 else 0.0
+            bg_dst = rl.Rectangle(sx(bar_x), sy(bar_y + bar_y_offset), sx(bar_w), sy(bar_h))
             rl.draw_texture_pro(
                 assets.ind_life,
-                fill_src,
-                fill_dst,
+                bg_src,
+                bg_dst,
                 rl.Vector2(0.0, 0.0),
                 0.0,
-                rl.Color(255, 255, 255, int(255 * alpha * HUD_ICON_ALPHA)),
+                rl.Color(255, 255, 255, int(255 * alpha * HUD_HEALTH_BG_ALPHA)),
             )
-        max_y = max(max_y, bg_dst.y + bg_dst.height)
+            health_ratio = max(0.0, min(1.0, hud_player.health / 100.0))
+            if health_ratio > 0.0:
+                fill_w = bar_w * health_ratio
+                fill_dst = rl.Rectangle(sx(bar_x), sy(bar_y + bar_y_offset), sx(fill_w), sy(bar_h))
+                fill_src = rl.Rectangle(
+                    0.0,
+                    0.0,
+                    float(assets.ind_life.width) * health_ratio,
+                    float(assets.ind_life.height),
+                )
+                rl.draw_texture_pro(
+                    assets.ind_life,
+                    fill_src,
+                    fill_dst,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.Color(255, 255, 255, int(255 * alpha * HUD_ICON_ALPHA)),
+                )
+            max_y = max(max_y, bg_dst.y + bg_dst.height)
 
     # Weapon icon.
     if show_weapon and assets.wicons is not None:
-        icon_index = _weapon_icon_index(player.weapon_id)
-        if icon_index is not None:
+        if player_count == 1:
+            base_x, base_y = HUD_WEAPON_ICON_POS
+            icon_w, icon_h = HUD_WEAPON_ICON_SIZE
+            icon_step_y = 0.0
+        else:
+            base_x = 220.0
+            base_y = 4.0
+            icon_w = 32.0
+            icon_h = 16.0
+            icon_step_y = 16.0
+
+        for idx, hud_player in enumerate(hud_players):
+            icon_index = _weapon_icon_index(hud_player.weapon_id)
+            if icon_index is None:
+                continue
             src = _weapon_icon_src(assets.wicons, icon_index)
             dst = rl.Rectangle(
-                sx(HUD_WEAPON_ICON_POS[0]),
-                sy(HUD_WEAPON_ICON_POS[1]),
-                sx(HUD_WEAPON_ICON_SIZE[0]),
-                sy(HUD_WEAPON_ICON_SIZE[1]),
+                sx(base_x),
+                sy(base_y + float(idx) * icon_step_y),
+                sx(icon_w),
+                sy(icon_h),
             )
             rl.draw_texture_pro(
                 assets.wicons,
@@ -279,28 +320,38 @@ def draw_hud_overlay(
 
     # Ammo bars.
     if show_weapon:
-        ammo_tex = None
-        ammo_class = _weapon_ammo_class(player.weapon_id)
-        if ammo_class == 1:
-            ammo_tex = assets.ind_fire
-        elif ammo_class == 2:
-            ammo_tex = assets.ind_rocket
-        elif ammo_class == 0:
-            ammo_tex = assets.ind_bullet
+        if player_count == 1:
+            ammo_base_x, ammo_base_y = HUD_AMMO_BASE_POS
+            ammo_step_y = 0.0
         else:
-            ammo_tex = assets.ind_electric
+            ammo_base_x = 290.0
+            ammo_base_y = 4.0
+            ammo_step_y = 14.0
 
-        if ammo_tex is not None:
-            base_x, base_y = HUD_AMMO_BASE_POS
-            bars = max(0, int(player.clip_size))
+        base_alpha = alpha * HUD_ICON_ALPHA
+        for player_idx, hud_player in enumerate(hud_players):
+            ammo_tex = None
+            ammo_class = _weapon_ammo_class(hud_player.weapon_id)
+            if ammo_class == 1:
+                ammo_tex = assets.ind_fire
+            elif ammo_class == 2:
+                ammo_tex = assets.ind_rocket
+            elif ammo_class == 0:
+                ammo_tex = assets.ind_bullet
+            else:
+                ammo_tex = assets.ind_electric
+            if ammo_tex is None:
+                continue
+
+            base_y = ammo_base_y + float(player_idx) * ammo_step_y
+            bars = max(0, int(hud_player.clip_size))
             if bars > HUD_AMMO_BAR_LIMIT:
                 bars = HUD_AMMO_BAR_CLAMP
-            ammo_count = max(0, int(player.ammo))
-            base_alpha = alpha * HUD_ICON_ALPHA
+            ammo_count = max(0, int(hud_player.ammo))
             for idx in range(bars):
                 bar_alpha = base_alpha if idx < ammo_count else base_alpha * HUD_AMMO_DIM_ALPHA
                 dst = rl.Rectangle(
-                    sx(base_x + idx * HUD_AMMO_BAR_STEP),
+                    sx(ammo_base_x + idx * HUD_AMMO_BAR_STEP),
                     sy(base_y),
                     sx(HUD_AMMO_BAR_SIZE[0]),
                     sy(HUD_AMMO_BAR_SIZE[1]),
@@ -317,7 +368,7 @@ def draw_hud_overlay(
                 max_y = max(max_y, dst.y + dst.height)
             if ammo_count > bars:
                 extra = ammo_count - bars
-                text_x = base_x + bars * HUD_AMMO_BAR_STEP + HUD_AMMO_TEXT_OFFSET[0]
+                text_x = ammo_base_x + bars * HUD_AMMO_BAR_STEP + HUD_AMMO_TEXT_OFFSET[0]
                 text_y = base_y + HUD_AMMO_TEXT_OFFSET[1]
                 _draw_text(font, f"+ {extra}", sx(text_x), sy(text_y), text_scale, text_color)
 

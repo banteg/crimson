@@ -447,6 +447,7 @@ class TutorialMode(BaseGameplayMode):
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
+                players=self._world.players,
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self._player.experience),
@@ -636,4 +637,3 @@ class TutorialMode(BaseGameplayMode):
         cancel_x = computed.cancel_x
         cancel_y = computed.cancel_y
         button_draw(assets, self._small, self._perk_cancel_button, x=cancel_x, y=cancel_y, width=cancel_w, scale=scale)
-
