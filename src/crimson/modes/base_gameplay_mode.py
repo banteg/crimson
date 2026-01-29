@@ -176,7 +176,8 @@ class BaseGameplayMode:
                 player_count = int(config.data.get("player_count", 1) or 1)
             except Exception:
                 player_count = 1
-        self._world.reset(seed=0xBEEF, player_count=max(1, min(4, player_count)))
+        seed = random.getrandbits(32)
+        self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._world.open()
         self._bind_world()
 
