@@ -89,11 +89,6 @@ class TypoShooterMode(BaseGameplayMode):
             words = load_typo_dictionary(dictionary_path)
             if words:
                 self._unique_words = words
-                self._state.console.log.log(f"typo: loaded {len(words)} dictionary words from {dictionary_path.name}")
-                self._state.console.log.flush()
-            else:
-                self._state.console.log.log(f"typo: dictionary {dictionary_path.name} has no usable words")
-                self._state.console.log.flush()
 
         self._aim_target_x = float(self._player.pos_x) + 128.0
         self._aim_target_y = float(self._player.pos_y)
