@@ -13,6 +13,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
+from ..gameplay import most_used_weapon_id_for_player
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..persistence.highscores import HighScoreRecord
 from ..typo.names import CreatureNameTable
@@ -194,7 +195,8 @@ class TypoShooterMode(BaseGameplayMode):
         record.score_xp = int(self._player.experience)
         record.survival_elapsed_ms = int(self._typo.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
-        record.most_used_weapon_id = int(self._player.weapon_id) + 1
+        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
+        record.most_used_weapon_id = int(weapon_id) + 1
         record.shots_fired = int(self._typing.shots_fired)
         record.shots_hit = int(self._typing.shots_hit)
         record.game_mode_id = int(GameMode.TYPO)

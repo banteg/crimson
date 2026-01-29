@@ -12,7 +12,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import tick_rush_mode_spawns
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, weapon_assign_player
+from ..gameplay import PlayerInput, most_used_weapon_id_for_player, weapon_assign_player
 from ..persistence.highscores import HighScoreRecord
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay
@@ -139,7 +139,8 @@ class RushMode(BaseGameplayMode):
         record.score_xp = int(self._player.experience)
         record.survival_elapsed_ms = int(self._rush.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
-        record.most_used_weapon_id = int(self._player.weapon_id) + 1
+        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
+        record.most_used_weapon_id = int(weapon_id) + 1
         fired = 0
         hit = 0
         try:

@@ -30,6 +30,7 @@ class PlayerInput:
 
 
 PERK_COUNT_SIZE = 0x80
+WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 
 @dataclass(slots=True)
@@ -444,6 +445,7 @@ class GameplayState:
     camera_shake_pulses: int = 0
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
     shots_hit: list[int] = field(default_factory=lambda: [0] * 4)
+    weapon_shots_fired: list[list[int]] = field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
@@ -861,6 +863,19 @@ def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
     player.shot_cooldown = 0.0
 
 
+def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, fallback_weapon_id: int) -> int:
+    """Return a 0-based weapon id for the player's most-used weapon."""
+
+    idx = int(player_index)
+    if 0 <= idx < len(state.weapon_shots_fired):
+        counts = state.weapon_shots_fired[idx]
+        if counts:
+            best = max(range(len(counts)), key=counts.__getitem__)
+            if int(counts[best]) > 0:
+                return int(best)
+    return int(fallback_weapon_id)
+
+
 def player_swap_alt_weapon(player: PlayerState) -> bool:
     """Swap primary and alternate weapon runtime blocks (Alternate Weapon perk)."""
 
@@ -1128,6 +1143,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
 
     if 0 <= int(player.index) < len(state.shots_fired):
         state.shots_fired[int(player.index)] += int(shot_count)
+        weapon_id = int(player.weapon_id)
+        if 0 <= weapon_id < WEAPON_COUNT_SIZE:
+            state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))

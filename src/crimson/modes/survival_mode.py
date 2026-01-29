@@ -13,7 +13,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
+from ..gameplay import PlayerInput, most_used_weapon_id_for_player, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
@@ -231,8 +231,8 @@ class SurvivalMode(BaseGameplayMode):
         record.survival_elapsed_ms = int(self._survival.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
 
-        # Missing fidelity: we don't track per-weapon usage yet.
-        record.most_used_weapon_id = int(self._player.weapon_id) + 1
+        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
+        record.most_used_weapon_id = int(weapon_id) + 1
         fired = 0
         hit = 0
         try:

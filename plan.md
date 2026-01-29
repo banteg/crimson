@@ -15,7 +15,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 8) Refresh rewrite docs
 - [x] 9) High score list screen (state `0xe`)
 - [x] 10) High score shot stats (fired/hit)
-- [ ] 11) High score weapon usage (most used)
+- [x] 11) High score weapon usage (most used)
 
 ---
 
@@ -392,6 +392,6 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 11) High score weapon usage (most used)
 
-- [ ] Track per-weapon usage counts on fire (per-player, per-run)
-- [ ] Populate Survival/Rush/Typ-o high score records with most-used weapon id (fallback to current weapon)
-- [ ] Tests for selecting the most-used weapon
+- [x] Track per-weapon usage counts on fire (per-player, per-run)
+- [x] Populate Survival/Rush/Typ-o high score records with most-used weapon id (fallback to current weapon)
+- [x] Tests for selecting the most-used weapon
