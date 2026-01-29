@@ -220,7 +220,7 @@ Make **every damage source** go through a single “canonical” implementation 
 
 #### Work items
 
-1. Implement `creature_apply_damage(...)` in `src/crimson/creatures/`
+1. [x] Implement `creature_apply_damage(...)` in `src/crimson/creatures/`
 
 * New module suggestion: `src/crimson/creatures/damage.py`
 * Signature should include:
@@ -242,7 +242,7 @@ Make **every damage source** go through a single “canonical” implementation 
   * Ion Gun Master (damage_type 7)
   * Pyromaniac (damage_type 4)
 
-2. Implement / refactor `creature_handle_death(creature_id, keep_corpse)` to match original ordering
+2. [ ] Implement / refactor `creature_handle_death(creature_id, keep_corpse)` to match original ordering
 
 * You already have most “death plumbing” in `CreaturePool._start_death()`, but it’s currently triggered later and attributes xp to player 0.
 * Bring it closer to the original behavior:
@@ -253,7 +253,7 @@ Make **every damage source** go through a single “canonical” implementation 
   * apply “corpse keep” flags and split-on-death logic
   * set active state and corpse timers correctly
 
-3. Update all damage call sites to use `creature_apply_damage`
+3. [ ] Update all damage call sites to use `creature_apply_damage`
 
 * `ProjectilePool.update()`:
 
@@ -265,7 +265,7 @@ Make **every damage source** go through a single “canonical” implementation 
 
   * Nuke, Energizer “eat”, etc should call death/damage in the same way the original does
 
-4. Adjust the creature update loop to stop “starting death late”
+4. [ ] Adjust the creature update loop to stop “starting death late”
 
 * After this, `CreaturePool.update()` should **not** be responsible for initiating death side-effects.
 * It *should* still be responsible for:
@@ -275,7 +275,7 @@ Make **every damage source** go through a single “canonical” implementation 
 
 A simple guard (similar to the original’s “hitbox_size != alive sentinel”) works well.
 
-5. Add a timing regression test
+5. [ ] Add a timing regression test
 
 * Construct a test where:
 

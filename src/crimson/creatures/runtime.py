@@ -136,6 +136,7 @@ class CreatureState:
     size: float = 50.0
     anim_phase: float = 0.0
     hit_flash_timer: float = 0.0
+    last_hit_owner_id: int = -100
     tint_r: float = 1.0
     tint_g: float = 1.0
     tint_b: float = 1.0
