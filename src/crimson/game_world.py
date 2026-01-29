@@ -12,9 +12,8 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
-from .bonuses import BonusId
 from .camera import camera_shake_update
-from .creatures.anim import creature_anim_advance_phase, creature_corpse_frame_for_type
+from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
@@ -386,6 +385,9 @@ class GameWorld:
     ) -> list[ProjectileHit]:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
+
+        self.state.game_mode = int(game_mode)
+        self.state.demo_mode_active = bool(self.demo_mode_active)
 
         if self.audio_router is not None:
             self.audio_router.audio = self.audio

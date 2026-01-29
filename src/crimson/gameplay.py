@@ -318,6 +318,15 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
+        game_mode = int(state.game_mode)
+        if game_mode == int(GameMode.TYPO):
+            return None
+        if state.demo_mode_active:
+            return None
+        if game_mode == int(GameMode.RUSH):
+            return None
+        if game_mode == int(GameMode.TUTORIAL):
+            return None
         if state.bonus_spawn_guard:
             return None
 
@@ -438,6 +447,8 @@ class GameplayState:
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
+    game_mode: int = int(GameMode.SURVIVAL)
+    demo_mode_active: bool = False
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
