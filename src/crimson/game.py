@@ -1583,11 +1583,11 @@ class QuestFailedView:
         elif retry_count == 2:
             message = "Third time no good."
         elif retry_count == 3:
-            message = "No luck this time, have another go."
+            message = "No luck this time, have another go?"
         elif retry_count == 4:
             message = "Persistence will be rewarded."
         elif retry_count == 5:
-            message = "Try one more time."
+            message = "Try one more time?"
 
         y = 196.0
         draw_small_text(font, message, 32.0, y, 1.0, text_color)

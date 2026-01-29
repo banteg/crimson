@@ -26,6 +26,7 @@ Renders the post-mission summary and buttons:
 
 - Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
 - Renders failure text and retry options.
+- Note: the original string list includes a typo ("Persistence will be rewared."); we correct it to "rewarded" in the rewrite.
 
 ## Demo purchase screen (demo_purchase_screen_update / FUN_0040b740)
 
