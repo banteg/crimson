@@ -107,7 +107,15 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     creature.reward_value = 10.0
     creature.hp = 0.0
 
-    result = pool.update(0.0, state=state, players=[player])
-    assert len(result.deaths) == 1
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+    assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)

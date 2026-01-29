@@ -337,7 +337,7 @@ class CreaturePool:
         """Advance the creature runtime pool by `dt` seconds.
 
         Notes:
-        - Death handling runs even when dt <= 0 to make integrations simpler.
+        - Death side effects should be initiated by damage call sites.
         - This is not a full port of `creature_update_all`; it targets the Survival subset.
         """
 
@@ -356,21 +356,9 @@ class CreaturePool:
             if not creature.active:
                 continue
 
-            if creature.hp <= 0.0:
+            if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                    deaths.append(
-                        self.handle_death(
-                            idx,
-                            state=state,
-                            players=players,
-                            rand=rand,
-                            detail_preset=int(detail_preset),
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue=fx_queue,
-                        )
-                    )
-
+                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
                 if dt > 0.0:
                     self._tick_dead(
                         creature,

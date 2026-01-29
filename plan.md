@@ -265,7 +265,7 @@ Make **every damage source** go through a single “canonical” implementation 
 
   * Nuke, Energizer “eat”, etc should call death/damage in the same way the original does
 
-4. [ ] Adjust the creature update loop to stop “starting death late”
+4. [x] Adjust the creature update loop to stop “starting death late”
 
 * After this, `CreaturePool.update()` should **not** be responsible for initiating death side-effects.
 * It *should* still be responsible for:

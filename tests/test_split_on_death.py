@@ -40,7 +40,15 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     parent.move_speed = 2.0
     parent.contact_damage = 10.0
 
-    pool.update(0.0, state=state, players=[], rand=rng.rand)
+    pool.handle_death(
+        0,
+        state=state,
+        players=[],
+        rand=rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
 
     child1 = pool.entries[1]
     child2 = pool.entries[2]
