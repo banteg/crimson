@@ -829,6 +829,31 @@ class WorldRenderer:
         if entity_alpha <= 1e-3:
             return
 
+        trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
+
+        def draw_player(player: object) -> None:
+            if trooper_texture is not None:
+                self._draw_player_trooper_sprite(
+                    trooper_texture,
+                    player,
+                    cam_x=cam_x,
+                    cam_y=cam_y,
+                    scale_x=scale_x,
+                    scale_y=scale_y,
+                    scale=scale,
+                    alpha=entity_alpha,
+                )
+                return
+
+            sx = (player.pos_x + cam_x) * scale_x
+            sy = (player.pos_y + cam_y) * scale_y
+            tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
+            rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
+
+        for player in self.players:
+            if player.health <= 0.0:
+                draw_player(player)
+
         for creature in self.creatures.entries:
             if not creature.active:
                 continue
@@ -899,24 +924,9 @@ class WorldRenderer:
                 shadow=shadow,
             )
 
-        texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
         for player in self.players:
-            if texture is not None:
-                self._draw_player_trooper_sprite(
-                    texture,
-                    player,
-                    cam_x=cam_x,
-                    cam_y=cam_y,
-                    scale_x=scale_x,
-                    scale_y=scale_y,
-                    scale=scale,
-                    alpha=entity_alpha,
-                )
-            else:
-                sx = (player.pos_x + cam_x) * scale_x
-                sy = (player.pos_y + cam_y) * scale_y
-                tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
-                rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
+            if player.health > 0.0:
+                draw_player(player)
 
         for proj in self.state.projectiles.entries:
             if not proj.active:
