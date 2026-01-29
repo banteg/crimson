@@ -14,7 +14,7 @@ I concentrated on “already-ported” gameplay logic + the rendering pipeline, 
 ## Checklist
 
 - [x] 1) Reflex Boost slow‑motion (time scale) dt/dt_ms scaling
-- [ ] 2) Simulation update order (perks → effects → creatures → projectiles → players)
+- [x] 2) Simulation update order (perks → effects → creatures → projectiles → players)
 - [ ] 3) `bonus_apply` stacking + Bonus Economist multiplier + Shock Chain semantics
 - [ ] 4) `bonus_pick_random_type` distribution / reroll behavior
 - [ ] 5) `weapon_assign_player` applies clip-size perks on weapon changes

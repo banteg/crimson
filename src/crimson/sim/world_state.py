@@ -91,6 +91,17 @@ class WorldState:
                 return
             player_take_damage(self.state, self.players[idx], float(damage), dt=dt, rand=self.state.rng.rand)
 
+        creature_result = self.creatures.update(
+            dt,
+            state=self.state,
+            players=self.players,
+            detail_preset=detail_preset,
+            world_width=float(world_size),
+            world_height=float(world_size),
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
+        )
+
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -106,17 +117,6 @@ class WorldState:
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(player, input_state, dt, self.state, world_size=float(world_size))
-
-        creature_result = self.creatures.update(
-            dt,
-            state=self.state,
-            players=self.players,
-            detail_preset=detail_preset,
-            world_width=float(world_size),
-            world_height=float(world_size),
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-        )
 
         if dt > 0.0:
             self._advance_creature_anim(dt)
