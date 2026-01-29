@@ -14,7 +14,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 7) Polish + regression tests
 - [x] 8) Refresh rewrite docs
 - [x] 9) High score list screen (state `0xe`)
-- [ ] 10) High score shot stats (fired/hit)
+- [x] 10) High score shot stats (fired/hit)
 
 ---
 
@@ -382,7 +382,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 10) High score shot stats (fired/hit)
 
-- [ ] Track `shots_fired` on weapon fire (per-player, per-run)
-- [ ] Track `shots_hit` on projectile hit (per-player, per-run)
-- [ ] Populate Survival/Rush high score records with fired/hit counts (clamp `hit <= fired`)
-- [ ] Tests for fired/hit counters (pure; no Raylib window)
+- [x] Track `shots_fired` on weapon fire (per-player, per-run)
+- [x] Track `shots_hit` on projectile hit (per-player, per-run)
+- [x] Populate Survival/Rush high score records with fired/hit counts (clamp `hit <= fired`)
+- [x] Tests for fired/hit counters (pure; no Raylib window)

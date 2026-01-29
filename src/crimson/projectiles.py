@@ -403,6 +403,14 @@ class ProjectilePool:
                             base_damage=proj.base_damage,
                         )
 
+                    shots_hit = getattr(runtime_state, "shots_hit", None) if runtime_state is not None else None
+                    if isinstance(shots_hit, list):
+                        owner_id = int(proj.owner_id)
+                        if owner_id < 0 and owner_id != -100:
+                            player_index = -1 - owner_id
+                            if 0 <= player_index < len(shots_hit):
+                                shots_hit[player_index] += 1
+
                     hits.append((type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
 
                     if proj.life_timer != 0.25 and type_id not in (

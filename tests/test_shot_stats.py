@@ -1,0 +1,44 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, weapon_assign_player
+
+
+@dataclass(slots=True)
+class _DummyCreature:
+    x: float
+    y: float
+    hp: float = 100.0
+    size: float = 200.0
+
+
+def test_shots_fired_and_hit_increment() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    weapon_assign_player(player, 0)
+    player.spread_heat = 0.0
+    player.aim_dir_x = 1.0
+    player.aim_dir_y = 0.0
+
+    player_fire_weapon(
+        player,
+        PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0),
+        dt=0.016,
+        state=state,
+    )
+
+    assert state.shots_fired[0] == 1
+    assert state.shots_hit[0] == 0
+
+    creature = _DummyCreature(x=22.0, y=0.0)
+    hits = state.projectiles.update(
+        0.1,
+        [creature],
+        world_size=1024.0,
+        damage_scale_by_type={},
+        rng=state.rng.rand,
+        runtime_state=state,
+    )
+    assert hits
+    assert state.shots_hit[0] == 1

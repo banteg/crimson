@@ -442,6 +442,8 @@ class GameplayState:
     camera_shake_offset_y: float = 0.0
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
+    shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
+    shots_hit: list[int] = field(default_factory=lambda: [0] * 4)
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
@@ -1075,6 +1077,10 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     muzzle_x = player.pos_x + player.aim_dir_x * 16.0
     muzzle_y = player.pos_y + player.aim_dir_y * 16.0
 
+    shot_count = 1
+    if player.weapon_id not in (12, 13, 17, 18):
+        shot_count = max(1, int(pellet_count))
+
     # Secondary-projectile weapons (effects.md).
     if player.weapon_id == 12:
         # Seeker Rockets -> secondary type 1.
@@ -1119,6 +1125,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 meta=_projectile_meta_for_type_id(type_id),
                 pellets=pellet_count,
             )
+
+    if 0 <= int(player.index) < len(state.shots_fired):
+        state.shots_fired[int(player.index)] += int(shot_count)
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))

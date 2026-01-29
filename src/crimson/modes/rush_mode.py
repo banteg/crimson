@@ -140,8 +140,18 @@ class RushMode(BaseGameplayMode):
         record.survival_elapsed_ms = int(self._rush.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
         record.most_used_weapon_id = int(self._player.weapon_id) + 1
-        record.shots_fired = 0
-        record.shots_hit = 0
+        fired = 0
+        hit = 0
+        try:
+            fired = int(self._state.shots_fired[int(self._player.index)])
+            hit = int(self._state.shots_hit[int(self._player.index)])
+        except Exception:
+            fired = 0
+            hit = 0
+        fired = max(0, int(fired))
+        hit = max(0, min(int(hit), fired))
+        record.shots_fired = fired
+        record.shots_hit = hit
         record.game_mode_id = int(self._config.data.get("game_mode", int(GameMode.RUSH))) if self._config is not None else int(GameMode.RUSH)
 
         self._game_over_record = record
