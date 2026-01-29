@@ -480,6 +480,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Add log sampling for the overlay tracer (`minOverlayLogIntervalMs`)
   - [x] Add `just frida-sync-share` helper for VM script sync
   - [x] Add `just` helpers for demo-trial capture + validation
+  - [x] Add `just frida-import-raw` helper for copying VM logs into `analysis/frida/raw`
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
     - [ ] Capture a demo build log (see `docs/frida/demo-trial-overlay.md`)
     - [ ] Run `uv run scripts/demo_trial_overlay_validate.py ...` and paste output here

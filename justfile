@@ -252,6 +252,14 @@ frida-sync-share:
     cp -av scripts/frida/*.js scripts/frida/*.json {{share_dir}}/
 
 [unix]
+frida-import-raw:
+    mkdir -p analysis/frida/raw
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl; do \
+        [ -e "{{share_dir}}/$f" ] || continue; \
+        cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
+    done
+
+[unix]
 frida-reduce:
     uv run scripts/frida_reduce.py \
       --log analysis/frida/raw/grim_hits.jsonl \

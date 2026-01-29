@@ -96,6 +96,12 @@ cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # opti
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```
 
+Shortcut:
+
+```bash
+just frida-import-raw
+```
+
 ## 3) Reduce logs into evidence
 
 Run the reducer to normalize facts + produce summaries:
