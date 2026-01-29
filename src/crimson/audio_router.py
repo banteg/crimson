@@ -130,7 +130,7 @@ class AudioRouter:
             return
 
         start_idx = 0
-        if (not self.demo_mode_active) and int(game_mode) == int(GameMode.SURVIVAL):
+        if (not self.demo_mode_active) and int(game_mode) != int(GameMode.RUSH):
             if trigger_game_tune(self.audio, rand=rand) is not None:
                 start_idx = 1
 
