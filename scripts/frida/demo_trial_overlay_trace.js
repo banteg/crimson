@@ -86,30 +86,6 @@ function writeLog(obj) {
   console.log(line);
 }
 
-function buildStartEvent() {
-  let mod = null;
-  try {
-    mod = Process.getModuleByName(GAME_MODULE);
-  } catch (_) {
-    // ignore
-  }
-  return {
-    event: 'start',
-    t0_ms: Date.now(),
-    config: CONFIG,
-    frida: { version: Frida.version, runtime: Script.runtime },
-    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
-    module: GAME_MODULE,
-    exe: mod
-      ? {
-          base: mod.base.toString(),
-          size: mod.size,
-          path: mod.path,
-        }
-      : null,
-  };
-}
-
 function exePtr(staticVa) {
   let mod = null;
   try {
@@ -125,6 +101,41 @@ function exePtr(staticVa) {
   } catch (_) {
     return null;
   }
+}
+
+function buildStartEvent() {
+  let mod = null;
+  try {
+    mod = Process.getModuleByName(GAME_MODULE);
+  } catch (_) {
+    // ignore
+  }
+
+  const addrs = {};
+  for (const key in ADDR) {
+    const addr = exePtr(ADDR[key]);
+    addrs[key] = addr ? addr.toString() : null;
+  }
+
+  const linkBase = LINK_BASE[GAME_MODULE];
+
+  return {
+    event: 'start',
+    t0_ms: Date.now(),
+    config: CONFIG,
+    frida: { version: Frida.version, runtime: Script.runtime },
+    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
+    module: GAME_MODULE,
+    link_base: linkBase ? linkBase.toString() : null,
+    exe: mod
+      ? {
+          base: mod.base.toString(),
+          size: mod.size,
+          path: mod.path,
+        }
+      : null,
+    addrs: addrs,
+  };
 }
 
 function readS32(staticVa) {
