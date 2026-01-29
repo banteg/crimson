@@ -116,7 +116,6 @@ class CreatureState:
     target_offset_y: float | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
-    ranged_projectile_type: int | None = None
     phase_seed: float = 0.0
     move_scale: float = 1.0
 
@@ -494,23 +493,41 @@ class CreaturePool:
                 creature.collision_timer = CONTACT_DAMAGE_PERIOD
 
             if creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT):
-                creature.attack_cooldown -= dt
-                if creature.attack_cooldown < 0.0:
-                    projectile_type = creature.ranged_projectile_type
-                    if projectile_type is None and (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK):
-                        projectile_type = 9
-                    if projectile_type is not None:
-                        angle = math.atan2(player.pos_y - creature.y, player.pos_x - creature.x) + math.pi / 2.0
+                # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
+                # around the 0x004276xx ranged-fire branch).
+                if creature.attack_cooldown <= 0.0:
+                    creature.attack_cooldown = 0.0
+                else:
+                    creature.attack_cooldown -= dt
+
+                dist = math.hypot(creature.x - player.pos_x, creature.y - player.pos_y)
+                if dist > 64.0 and creature.attack_cooldown <= 0.0:
+                    if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         state.projectiles.spawn(
                             pos_x=creature.x,
                             pos_y=creature.y,
-                            angle=angle,
-                            type_id=int(projectile_type),
+                            angle=float(creature.heading),
+                            type_id=9,
                             owner_id=idx,
                             base_damage=45.0,
                             hits_players=True,
                         )
-                    creature.attack_cooldown += 1.0
+                        creature.attack_cooldown += 1.0
+
+                    if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
+                        projectile_type = int(creature.orbit_radius)
+                        state.projectiles.spawn(
+                            pos_x=creature.x,
+                            pos_y=creature.y,
+                            angle=float(creature.heading),
+                            type_id=projectile_type,
+                            owner_id=idx,
+                            base_damage=45.0,
+                            hits_players=True,
+                        )
+                        creature.attack_cooldown = (
+                            float(rand() & 3) * 0.1 + float(creature.orbit_angle) + float(creature.attack_cooldown)
+                        )
 
         # Spawn-slot ticking (spawns child templates while owner stays alive).
         if dt > 0.0 and spawn_env is not None and self.spawn_slots:
@@ -565,8 +582,13 @@ class CreaturePool:
         entry.target_offset_x = init.target_offset_x
         entry.target_offset_y = init.target_offset_y
         entry.orbit_angle = float(init.orbit_angle or 0.0)
-        entry.orbit_radius = float(init.orbit_radius or 0.0)
-        entry.ranged_projectile_type = int(init.ranged_projectile_type) if init.ranged_projectile_type is not None else None
+        if init.orbit_radius is not None:
+            orbit_radius = float(init.orbit_radius)
+        elif init.ranged_projectile_type is not None:
+            orbit_radius = float(init.ranged_projectile_type)
+        else:
+            orbit_radius = 0.0
+        entry.orbit_radius = orbit_radius
 
         entry.spawn_slot_index = None
         entry.link_index = 0
