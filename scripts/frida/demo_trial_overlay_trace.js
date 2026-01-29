@@ -32,6 +32,10 @@ const CONFIG = {
   // set this to true to force "demo" behavior only for the main gameplay loop's
   // shareware gate checks (avoids a global game_is_full_version() -> 0 patch).
   forceDemoInGameplayLoop: false,
+  // Optional: force the demo playtime (ms) only for gameplay_update_and_render's calls
+  // to game_sequence_get(). Useful to trigger the overlay without waiting ~40 minutes.
+  // Note: this does not force demo gates by itself; pair with forceDemoInGameplayLoop.
+  forcePlaytimeMs: null,
   logFullVersionCalls: false,
   logBacktrace: false,
   backtraceLimit: 12,
@@ -49,6 +53,7 @@ const DEMO_QUEST_GRACE_TIME_MS = 300000;
 
 const ADDR = {
   game_is_full_version: 0x0041df40,
+  game_sequence_get: 0x0041df60,
   gameplay_update_and_render: 0x0040aab0,
   gameplay_update_and_render_end: 0x0040b5d0, // start of next function
 
@@ -177,6 +182,55 @@ function hookGameIsFullVersion() {
   });
 }
 
+function hookGameSequenceGet() {
+  if (CONFIG.forcePlaytimeMs === null || CONFIG.forcePlaytimeMs === undefined) return;
+
+  const addr = exePtr(ADDR.game_sequence_get);
+  if (!addr) {
+    writeLog({ event: 'hook_error', target: 'game_sequence_get', error: 'addr_unavailable' });
+    return;
+  }
+
+  const gameplayStart = exePtr(ADDR.gameplay_update_and_render);
+  const gameplayEnd = exePtr(ADDR.gameplay_update_and_render_end);
+  if (!gameplayStart || !gameplayEnd) {
+    writeLog({
+      event: 'hook_error',
+      target: 'gameplay_update_and_render_range',
+      error: 'addr_unavailable',
+    });
+  }
+
+  const forcedValue = parseInt(CONFIG.forcePlaytimeMs, 10);
+  if (!Number.isFinite(forcedValue)) {
+    writeLog({ event: 'hook_error', target: 'forcePlaytimeMs', error: 'not_a_number', value: CONFIG.forcePlaytimeMs });
+    return;
+  }
+
+  writeLog({
+    event: 'hook',
+    target: 'game_sequence_get',
+    addr: addr.toString(),
+    force_playtime_ms: forcedValue,
+  });
+
+  let forcedCount = 0;
+
+  Interceptor.attach(addr, {
+    onLeave(retval) {
+      const callsite = this.returnAddress;
+      if (!callsite) return;
+      if (!ptrInRange(callsite, gameplayStart, gameplayEnd)) return;
+
+      retval.replace(forcedValue);
+      if (forcedCount === 0) {
+        writeLog({ event: 'forced_playtime', callsite: callsite.toString(), playtime_ms: forcedValue });
+      }
+      forcedCount += 1;
+    },
+  });
+}
+
 function hookOverlayRender() {
   const addr = exePtr(ADDR.demo_trial_overlay_render);
   if (!addr) {
@@ -249,6 +303,9 @@ function main() {
 
   if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {
     hookGameIsFullVersion();
+  }
+  if (CONFIG.forcePlaytimeMs !== null && CONFIG.forcePlaytimeMs !== undefined) {
+    hookGameSequenceGet();
   }
 
   hookOverlayRender();
