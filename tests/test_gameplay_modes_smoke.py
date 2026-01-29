@@ -7,6 +7,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.modes.tutorial_mode import TutorialMode
+from crimson.modes.typo_mode import TypoShooterMode
 from grim.view import ViewContext
 
 
@@ -18,3 +19,4 @@ def test_modes_construct_without_window() -> None:
     assert isinstance(RushMode(ctx), BaseGameplayMode)
     assert isinstance(QuestMode(ctx), BaseGameplayMode)
     assert isinstance(TutorialMode(ctx), BaseGameplayMode)
+    assert isinstance(TypoShooterMode(ctx), BaseGameplayMode)

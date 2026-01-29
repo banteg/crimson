@@ -276,7 +276,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 - [x] Add `TypingBuffer`
   - [x] max length 17
-  - [ ] gather characters via Raylib `GetCharPressed`
+  - [x] gather characters via Raylib `GetCharPressed`
   - [x] support backspace
   - [x] on Enter
     - [x] `shots_fired += 1`
@@ -286,9 +286,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.3 Firing rules (no “hold mouse button”)
 
-- [ ] Enforce weapon and ammo each frame (infinite ammo)
-- [ ] Freeze movement input (always 0)
-- [ ] On `fire_requested`: set aim to `aim_target` and fire exactly one shot through normal weapon codepath
+- [x] Enforce weapon and ammo each frame (infinite ammo)
+- [x] Freeze movement input (always 0)
+- [x] On `fire_requested`: set aim to `aim_target` and fire exactly one shot through normal weapon codepath
 
 ### 6.4 Spawn loop (from state `0x12` branch)
 
@@ -297,9 +297,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] `spawn_cooldown_ms += 0xDAC - elapsed_ms/800` (clamp min 100)
   - [x] spawn 2 creatures (right type 4, left type 2) at `y = cos(elapsed_ms*0.001)*256 + world_h*0.5`
   - [x] compute `tint_rgba` from `(elapsed_ms+1)` and pass to spawn
-  - [ ] apply `creature_spawn_tinted` defaults (ai_mode=2, hp=1, move_speed=1.7, contact_damage=100, heading rand)
-  - [ ] apply type-specific tweaks (type 4: `flags |= 0x80`, `move_speed *= 1.2`, `size *= 0.8`)
-  - [ ] assign random names to each spawned creature
+  - [x] apply `creature_spawn_tinted` defaults (ai_mode=2, hp=1, move_speed=1.7, contact_damage=100, heading rand)
+  - [x] apply type-specific tweaks (type 4: `flags |= 0x80`, `move_speed *= 1.2`, `size *= 0.8`)
+  - [x] assign random names to each spawned creature
 
 ### 6.5 UI overlays
 
@@ -309,10 +309,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ### 6.6 Scoring + highscores
 
-- [ ] `record.game_mode_id = 4`
-- [ ] `record.score_xp = player_experience`
-- [ ] `record.survival_elapsed_ms = elapsed_ms` (display only)
-- [ ] `record.shots_fired` / `record.shots_hit` from typing stats
+- [x] `record.game_mode_id = 4`
+- [x] `record.score_xp = player_experience`
+- [x] `record.survival_elapsed_ms = elapsed_ms` (display only)
+- [x] `record.shots_fired` / `record.shots_hit` from typing stats
 - [ ] Fix persistence mapping: `scores_path_for_config(mode=4)` → `typo.hi` (avoid `unknown.hi`)
 
 ### 6.7 Wiring
