@@ -2,6 +2,27 @@
 
 Reverse-chronological log of notable repo changes, grouped by day.
 
+## 2026-01-29
+
+- Implemented Rush mode and wired Quest gameplay end-to-end (HUD/progress, completion detection, results/failed screens, unlock popups, and retry flows) with quest completion persistence.
+- Added playable Tutorial mode (timeline director) and TypoShooter mode (typing buffer, spawn loop, UI overlays) with extensive parity fixes (cursor/input box/text layout, firing loop) and custom dictionary support.
+- Built out highscores: list screen, per-run stat tracking (shots, most-used weapon, quest run stats), and per-mode file mapping, with new tests for ranking and multiplayer behaviors.
+- Advanced multiplayer support: honor configured player count, stack the HUD for 2–4 players, sync perk counts, and tint player sprites appropriately.
+- Improved gameplay/perk parity: dodge perks, low-health timers, death timer hit decay, Reflex Boost scaling, clip-size perk application, bonus roll mapping/stacking, and mode-gated bonus drops.
+- Expanded creature parity: ranged attacks and split-on-death; adjusted render ordering (original type order, split player passes) plus overlays/animation holds/shadow scaling fixes.
+- Major rendering/FX passes: world layering + global alpha test emulation, integrated particle/sprite effect pools, shield/radioactive aura effects, terrain fallbacks, and terrain FX queue baking during draw.
+- Strengthened demo/trial evidence tooling: trial overlay implementation + debug commands, Frida traces/validators/summarizers, new `just` helpers, and docs/progress audits.
+
+## 2026-01-28
+
+- Large rewrite refactor: introduced persistence + mode system, extracted boot/menu views and screen fade, and split survival mode and world renderer/audio router.
+- Centralized asset loading via a Grim `TextureLoader` pass, removed noop unloads, hard-failed missing assets, and added guards for asset loading/import boundaries.
+- Aligned perk selection/prompt UI with the decompile: added the perk prompt panel, faded gameplay behind the menu, and fixed hover/input gating and rotation/layout details.
+- Added/adjusted combat rendering details: reload clock gauge, muzzle flash overlay, bonus pickup rendering/FX, and delayed blood splatter baking.
+- Fixed creature animation and rendering issues: unpacked anim frames, aligned anim args, corrected spider flip, applied player heading in the renderer, and restored quad bullet trails.
+- Improved audio parity: emulate mute-fade playback, start the survival tune on first hit, and fixed first-shot SFX suppression and hit-SFX routing by mode.
+- Expanded analysis/tooling/docs: import-linter boundary checks + duplication report tooling, new screen-fade Frida trace, additional Ghidra labels (player aux timer/data maps) with regenerated exports, and plan/triage doc updates.
+
 ## 2026-01-26
 
 - Introduced `GameWorld` core and refactored survival around it; rendered terrain/sprites/decals and drove demo mode via `GameWorld` with new rendering/sim helpers.
