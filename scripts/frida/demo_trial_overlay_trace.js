@@ -36,6 +36,8 @@ const CONFIG = {
   // to game_sequence_get(). Useful to trigger the overlay without waiting ~40 minutes.
   // Note: this does not force demo gates by itself; pair with forceDemoInGameplayLoop.
   forcePlaytimeMs: null,
+  // Optional: log at most once per N milliseconds (0 = log every call).
+  minOverlayLogIntervalMs: 0,
   logFullVersionCalls: false,
   logBacktrace: false,
   backtraceLimit: 12,
@@ -240,8 +242,16 @@ function hookOverlayRender() {
 
   writeLog({ event: 'hook', target: 'demo_trial_overlay_render', addr: addr.toString() });
 
+  let lastLogMs = 0;
+
   Interceptor.attach(addr, {
     onEnter(args) {
+      const nowMs = Date.now();
+      const minIntervalMs = parseInt(CONFIG.minOverlayLogIntervalMs, 10) || 0;
+      if (minIntervalMs > 0 && lastLogMs > 0 && nowMs - lastLogMs < minIntervalMs) {
+        return;
+      }
+
       const modeId = readS32(ADDR.config_game_mode);
       const usedMs = readS32(ADDR.game_sequence_id);
       const graceMs = readS32(ADDR.demo_trial_elapsed_ms);
@@ -268,7 +278,7 @@ function hookOverlayRender() {
 
       const evt = {
         event: 'demo_trial_overlay_render',
-        t_ms: Date.now(),
+        t_ms: nowMs,
         mode_id: modeId,
         game_state_id: gameStateId,
         quest_stage_major: questMajor,
@@ -293,6 +303,7 @@ function hookOverlayRender() {
       }
 
       writeLog(evt);
+      lastLogMs = nowMs;
     },
   });
 }
