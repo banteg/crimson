@@ -482,6 +482,7 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
   - [x] Add `just` helpers for demo-trial capture + validation
   - [x] Add `just frida-import-raw` helper for copying VM logs into `analysis/frida/raw`
   - [x] Add `--samples` support to `demo_trial_overlay_validate.py`
+  - [x] Make `demo_trial_overlay_validate.py` fail on empty logs + print start/hook diagnostics
   - [x] Add trace metadata to `demo_trial_overlay_trace.js` start event (module base/path + resolved addrs)
   - [ ] Validate behavior against a demo build (threshold + quest tier limit)
     - [ ] Capture a demo build log (see `docs/frida/demo-trial-overlay.md`)

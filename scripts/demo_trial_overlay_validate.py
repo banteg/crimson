@@ -107,6 +107,35 @@ def main(argv: list[str] | None = None) -> int:
     kinds = Counter((row.get("event") or row.get("kind") or "unknown") for row in rows if isinstance(row, dict))
     errors = validate_demo_trial_overlay_events(rows, source=str(args.log))
 
+    start_event = next((row for row in rows if (row.get("event") or row.get("kind")) == "start"), None)
+    hook_errors = [row for row in rows if (row.get("event") or row.get("kind")) == "hook_error"]
+
+    if start_event:
+        exe = start_event.get("exe") if isinstance(start_event.get("exe"), dict) else {}
+        addrs = start_event.get("addrs") if isinstance(start_event.get("addrs"), dict) else {}
+        start_summary = {
+            "module": start_event.get("module"),
+            "exe": {
+                "base": exe.get("base"),
+                "size": exe.get("size"),
+                "path": exe.get("path"),
+            },
+            "link_base": start_event.get("link_base"),
+            "addrs": {
+                "demo_trial_overlay_render": addrs.get("demo_trial_overlay_render"),
+                "game_sequence_get": addrs.get("game_sequence_get"),
+                "game_is_full_version": addrs.get("game_is_full_version"),
+            },
+        }
+        print("Start:")
+        print(json.dumps(start_summary))
+        if addrs.get("demo_trial_overlay_render") is None:
+            print("WARN: demo_trial_overlay_render addr is null (likely wrong build / ADDR map mismatch).")
+
+    if hook_errors:
+        by_target = Counter(str(row.get("target") or "unknown") for row in hook_errors)
+        print(f"Hook errors: {sum(by_target.values())} {dict(by_target)}")
+
     if args.samples > 0:
         samples: list[tuple[int, dict]] = []
         for idx, row in enumerate(rows):
@@ -159,6 +188,10 @@ def main(argv: list[str] | None = None) -> int:
     overlay_events = int(kinds.get("demo_trial_overlay_render", 0))
     print(f"{args.log}: demo_trial_overlay_render events: {overlay_events}")
     print(f"Expected constants: total_ms={DEMO_TOTAL_PLAY_TIME_MS} grace_ms={DEMO_QUEST_GRACE_TIME_MS}")
+
+    if overlay_events == 0:
+        print("ERROR: no demo_trial_overlay_render events captured (nothing to validate).")
+        return 1
 
     if not errors:
         print("OK")
