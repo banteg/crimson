@@ -275,7 +275,7 @@ Make **every damage source** go through a single “canonical” implementation 
 
 A simple guard (similar to the original’s “hitbox_size != alive sentinel”) works well.
 
-5. [ ] Add a timing regression test
+5. [x] Add a timing regression test
 
 * Construct a test where:
 
