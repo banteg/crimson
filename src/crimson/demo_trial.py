@@ -24,6 +24,49 @@ class DemoTrialOverlayInfo:
     remaining_label: str
 
 
+def tick_demo_trial_timers(
+    *,
+    demo_build: bool,
+    game_mode_id: int,
+    overlay_visible: bool,
+    global_playtime_ms: int,
+    quest_grace_elapsed_ms: int,
+    dt_ms: int,
+) -> tuple[int, int]:
+    """Advance demo timers by `dt_ms` (ms), returning updated values.
+
+    This mirrors the classic behavior where:
+      - global playtime accumulates until it hits `DEMO_TOTAL_PLAY_TIME_MS`, then clamps
+      - once global time is exhausted, a quest-only grace timer becomes active
+      - timers do not advance while the demo trial overlay is shown
+    """
+
+    if not demo_build:
+        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+
+    if int(game_mode_id) == 8:
+        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+
+    if overlay_visible:
+        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+
+    delta_ms = int(dt_ms)
+    if delta_ms <= 0:
+        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+
+    used_ms = max(0, int(global_playtime_ms))
+    grace_ms = max(0, int(quest_grace_elapsed_ms))
+
+    used_ms = min(DEMO_TOTAL_PLAY_TIME_MS, used_ms + delta_ms)
+    if used_ms >= DEMO_TOTAL_PLAY_TIME_MS and grace_ms < 1:
+        grace_ms = 1
+
+    if grace_ms > 0 and int(game_mode_id) == 3:
+        grace_ms += delta_ms
+
+    return int(used_ms), int(grace_ms)
+
+
 def demo_trial_overlay_info(
     *,
     demo_build: bool,

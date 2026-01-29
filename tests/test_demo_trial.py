@@ -5,6 +5,7 @@ from crimson.demo_trial import (
     DEMO_TOTAL_PLAY_TIME_MS,
     demo_trial_overlay_info,
     format_demo_trial_time,
+    tick_demo_trial_timers,
 )
 
 
@@ -80,3 +81,40 @@ def test_demo_trial_overlay_grace_allows_quest_mode() -> None:
     )
     assert info.visible is False
     assert info.kind == "none"
+
+
+def test_tick_demo_trial_timers_accumulates_and_starts_grace() -> None:
+    used_ms, grace_ms = tick_demo_trial_timers(
+        demo_build=True,
+        game_mode_id=1,
+        overlay_visible=False,
+        global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS - 5,
+        quest_grace_elapsed_ms=0,
+        dt_ms=10,
+    )
+    assert used_ms == DEMO_TOTAL_PLAY_TIME_MS
+    assert grace_ms == 1
+
+
+def test_tick_demo_trial_timers_grace_counts_only_in_quests() -> None:
+    used_ms, grace_ms = tick_demo_trial_timers(
+        demo_build=True,
+        game_mode_id=3,
+        overlay_visible=False,
+        global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
+        quest_grace_elapsed_ms=1,
+        dt_ms=100,
+    )
+    assert used_ms == DEMO_TOTAL_PLAY_TIME_MS
+    assert grace_ms == 101
+
+    used_ms, grace_ms = tick_demo_trial_timers(
+        demo_build=True,
+        game_mode_id=1,
+        overlay_visible=False,
+        global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
+        quest_grace_elapsed_ms=1,
+        dt_ms=100,
+    )
+    assert used_ms == DEMO_TOTAL_PLAY_TIME_MS
+    assert grace_ms == 1
