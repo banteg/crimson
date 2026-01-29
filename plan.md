@@ -184,13 +184,13 @@ I’m going to lay this out in a dependency-aware order. The biggest theme: **fi
 
 These are contained changes that won’t force architecture churn.
 
-1. **Fireblast type_id fix**
+1. [ ] **Fireblast type_id fix**
 
 * File: `src/crimson/gameplay.py` (`bonus_apply`, `BonusId.FIREBLAST`)
 * Change ring `type_id` from `8` → `9`
 * Add the missing explosion sound hook (even if initially stubbed through your audio router)
 
-2. **Fix perk projectile burst type IDs**
+2. [x] **Fix perk projectile burst type IDs**
 
 * File: `src/crimson/gameplay.py`
 
@@ -199,7 +199,7 @@ These are contained changes that won’t force architecture churn.
   * Angry Reloader burst → use `0x0B`
 * Add missing SFX triggers for each burst (original uses small explosion SFX)
 
-3. Add regression tests for these
+3. [ ] Add regression tests for these
 
 * Create a “spawn signature” test that runs a controlled RNG seed and asserts:
 

@@ -447,6 +447,7 @@ class GameplayState:
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
+    sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)
     demo_mode_active: bool = False
     friendly_fire_enabled: bool = False
@@ -1016,7 +1017,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = 0x14 if (idx % 2) else 0x15
+        type_id = ProjectileTypeId.ION_CANNON if ((idx & 1) == 0) else ProjectileTypeId.ION_MINIGUN
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -1027,6 +1028,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
             base_damage=_projectile_meta_for_type_id(type_id),
         )
     state.bonus_spawn_guard = False
+    state.sfx_queue.append("sfx_explosion_small")
 
     player.man_bomb_timer -= state.perk_intervals.man_bomb
     state.perk_intervals.man_bomb = 4.0
@@ -1040,7 +1042,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = 8 if (idx % 2) else 0x0A
+        type_id = ProjectileTypeId.ROCKET_LAUNCHER if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
         angle = float(idx) * (math.pi / 4.0)
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -1051,6 +1053,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
             base_damage=_projectile_meta_for_type_id(type_id),
         )
     state.bonus_spawn_guard = False
+    state.sfx_queue.append("sfx_explosion_small")
 
     player.hot_tempered_timer -= state.perk_intervals.hot_tempered
     state.perk_intervals.hot_tempered = float(state.rng.rand() % 8) + 2.0
@@ -1309,10 +1312,11 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
                     player,
                     count=count,
                     angle_offset=0.1,
-                    type_id=0x0A,
+                    type_id=ProjectileTypeId.ROCKET_LAUNCHER,
                     owner_id=_owner_id_for_player(player.index),
                 )
                 state.bonus_spawn_guard = False
+                state.sfx_queue.append("sfx_explosion_small")
         else:
             player.reload_timer -= reload_scale * dt
 

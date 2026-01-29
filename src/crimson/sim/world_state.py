@@ -166,6 +166,9 @@ class WorldState:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
 
         sfx = list(creature_result.sfx)
+        if self.state.sfx_queue:
+            sfx.extend(self.state.sfx_queue)
+            self.state.sfx_queue.clear()
         pain_sfx = ("sfx_trooper_inpain_01", "sfx_trooper_inpain_02", "sfx_trooper_inpain_03")
         death_sfx = ("sfx_trooper_die_01", "sfx_trooper_die_02")
         rand = self.state.rng.rand

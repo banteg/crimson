@@ -77,7 +77,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
 
     type_ids = _active_type_ids(pool)
-    assert type_ids.count(0x0A) == 15
+    assert type_ids.count(0x0B) == 15
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
@@ -90,7 +90,7 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(0x14) == 4
+    assert type_ids.count(0x16) == 4
     assert type_ids.count(0x15) == 4
 
 
@@ -189,8 +189,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(8) == 4
-    assert type_ids.count(0x0A) == 4
+    assert type_ids.count(0x0B) == 4
+    assert type_ids.count(0x09) == 4
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:
