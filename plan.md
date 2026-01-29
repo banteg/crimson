@@ -312,7 +312,7 @@ Once Phase 2 is in, these become straightforward and correct.
 4. [ ] Phase 3 tests
 
 - [ ] Nuke does *not* kill creatures outside radius in a contrived map layout.
-- [ ] Freeze shatters corpses immediately upon pickup.
+- [x] Freeze shatters corpses immediately upon pickup.
 - [ ] Energizer causes flee + eat kills.
 
 ---
