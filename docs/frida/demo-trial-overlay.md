@@ -58,6 +58,12 @@ Confirm (with logs) that the overlay triggers and reports remaining time exactly
    uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
    ```
 
+   Print a few representative events (useful for pasting into `plan.md`):
+
+   ```bash
+   uv run scripts/demo_trial_overlay_validate.py --samples 3 analysis/frida/raw/demo_trial_overlay_trace.jsonl
+   ```
+
 ### 2) Retail build (overlay-only validation)
 
 The retail binary may never naturally render the demo overlay. If you only need to validate the overlay logic end-to-end (not “prove the build is demo”), you can use **callsite-limited overrides** in the tracer:

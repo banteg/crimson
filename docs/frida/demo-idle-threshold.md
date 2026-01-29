@@ -42,3 +42,9 @@ Optional: summarize the log:
 ```bash
 uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
 ```
+
+Include representative JSON lines for `ui_ready` / `demo_mode_start` (easy to paste into `plan.md`):
+
+```bash
+uv run scripts/demo_idle_threshold_summarize.py --print-events analysis/frida/raw/demo_idle_threshold_trace.jsonl
+```

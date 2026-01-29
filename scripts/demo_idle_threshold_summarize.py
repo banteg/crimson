@@ -77,6 +77,11 @@ def summarize_idle_threshold(rows: list[dict]) -> list[_Session]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize demo idle threshold trace JSONL.")
     parser.add_argument("log", type=Path, help="Raw demo_idle_threshold_trace.jsonl to summarize")
+    parser.add_argument(
+        "--print-events",
+        action="store_true",
+        help="Print representative JSON for ui_ready and demo_mode_start events",
+    )
     args = parser.parse_args(argv)
 
     rows = _iter_jsonl(args.log)
@@ -97,6 +102,10 @@ def main(argv: list[str] | None = None) -> int:
 
         print(f"session[{idx}]: demo_mode_start: {len(sess.demo_starts)}")
         print(f"session[{idx}]: idle_threshold_ms: {dt_best} ({kind})")
+        if args.print_events:
+            if sess.ui_ready_event is not None:
+                print(f"session[{idx}]: ui_ready: {json.dumps(sess.ui_ready_event)}")
+            print(f"session[{idx}]: demo_mode_start: {json.dumps(evt)}")
 
     return 0
 

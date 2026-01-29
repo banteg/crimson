@@ -100,11 +100,61 @@ def validate_demo_trial_overlay_events(events: list[dict], *, source: str) -> li
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate demo trial overlay trace JSONL against the Python model.")
     parser.add_argument("log", type=Path, help="Raw trace JSONL or reduced facts.jsonl to validate")
+    parser.add_argument("--samples", type=int, default=0, help="Print N representative overlay events")
     args = parser.parse_args(argv)
 
     rows = _iter_jsonl(args.log)
     kinds = Counter((row.get("event") or row.get("kind") or "unknown") for row in rows if isinstance(row, dict))
     errors = validate_demo_trial_overlay_events(rows, source=str(args.log))
+
+    if args.samples > 0:
+        samples: list[tuple[int, dict]] = []
+        for idx, row in enumerate(rows):
+            kind = row.get("event") or row.get("kind")
+            if kind == "demo_trial_overlay_render":
+                samples.append((idx, row))
+        if samples:
+            print(f"Samples: {min(args.samples, len(samples))} / {len(samples)}")
+            for idx, evt in samples[: args.samples]:
+                mode_id = _as_int(evt.get("mode_id"))
+                used_ms = _as_int(evt.get("game_sequence_id_ms"))
+                grace_ms = _as_int(evt.get("demo_trial_elapsed_ms"))
+                quest_major = _as_int(evt.get("quest_stage_major"))
+                quest_minor = _as_int(evt.get("quest_stage_minor"))
+                if (
+                    mode_id is None
+                    or used_ms is None
+                    or grace_ms is None
+                    or quest_major is None
+                    or quest_minor is None
+                ):
+                    continue
+
+                info = demo_trial_overlay_info(
+                    demo_build=True,
+                    game_mode_id=mode_id,
+                    global_playtime_ms=used_ms,
+                    quest_grace_elapsed_ms=grace_ms,
+                    quest_stage_major=quest_major,
+                    quest_stage_minor=quest_minor,
+                )
+                sample = {
+                    "idx": idx,
+                    "mode_id": mode_id,
+                    "quest_stage_major": quest_major,
+                    "quest_stage_minor": quest_minor,
+                    "game_sequence_id_ms": used_ms,
+                    "demo_trial_elapsed_ms": grace_ms,
+                    "remaining_ms": _as_int(evt.get("remaining_ms")),
+                    "tier_locked": evt.get("tier_locked"),
+                    "expected": {
+                        "visible": info.visible,
+                        "kind": info.kind,
+                        "remaining_ms": info.remaining_ms,
+                        "remaining_label": info.remaining_label,
+                    },
+                }
+                print(json.dumps(sample))
 
     overlay_events = int(kinds.get("demo_trial_overlay_render", 0))
     print(f"{args.log}: demo_trial_overlay_render events: {overlay_events}")
@@ -124,4 +174,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

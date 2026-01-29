@@ -135,6 +135,12 @@ Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl
 uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
 ```
 
+Print representative events:
+
+```bash
+uv run scripts/demo_trial_overlay_validate.py --samples 3 analysis/frida/raw/demo_trial_overlay_trace.jsonl
+```
+
 Shortcut:
 
 ```bash
@@ -145,6 +151,12 @@ Optional: summarize `demo_idle_threshold_trace.jsonl` (or the reduced `facts.jso
 
 ```bash
 uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl
+```
+
+Include representative JSON lines:
+
+```bash
+uv run scripts/demo_idle_threshold_summarize.py --print-events analysis/frida/raw/demo_idle_threshold_trace.jsonl
 ```
 
 Shortcut:
