@@ -291,7 +291,7 @@ class ProjectilePool:
                 pos_x=proj.pos_x,
                 pos_y=proj.pos_y,
                 angle=angle,
-                type_id=ProjectileTypeId.ION_RIFLE,
+                type_id=int(proj.type_id),
                 owner_id=hit_creature,
                 base_damage=proj.base_damage,
             )
@@ -484,7 +484,7 @@ class ProjectilePool:
                     if dist < 50.0:
                         dist = 50.0
 
-                    if type_id == ProjectileTypeId.ION_RIFLE:
+                    if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
                         _try_spawn_shock_chain_link(proj_index, hit_idx)
                     elif type_id == ProjectileTypeId.PLASMA_CANNON:
                         size = float(getattr(creature, "size", 50.0) or 50.0)

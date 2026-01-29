@@ -395,6 +395,7 @@ class BonusPool:
                         amount=entry.amount,
                         origin=player,
                         creatures=creatures,
+                        players=players,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -435,6 +436,7 @@ class GameplayState:
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
+    friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
     bonus_pool: BonusPool = field(default_factory=BonusPool)
@@ -1304,6 +1306,7 @@ def bonus_apply(
     amount: int | None = None,
     origin: _HasPos | None = None,
     creatures: list[Damageable] | None = None,
+    players: list[PlayerState] | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -1317,23 +1320,116 @@ def bonus_apply(
         award_experience(state, player, int(amount))
         return
 
+    economist_multiplier = 1.0 + 0.5 * float(perk_count_get(player, PerkId.BONUS_ECONOMIST))
+
+    icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
+    label = meta.name
+
+    def _register_global(timer_key: str) -> None:
+        state.bonus_hud.register(
+            bonus_id,
+            label=label,
+            icon_id=icon_id,
+            timer_ref=_TimerRef("global", timer_key),
+        )
+
+    def _register_player(timer_key: str) -> None:
+        if players is not None and len(players) > 1:
+            state.bonus_hud.register(
+                bonus_id,
+                label=label,
+                icon_id=icon_id,
+                timer_ref=_TimerRef("player", timer_key, player_index=0),
+                timer_ref_alt=_TimerRef("player", timer_key, player_index=1),
+            )
+        else:
+            state.bonus_hud.register(
+                bonus_id,
+                label=label,
+                icon_id=icon_id,
+                timer_ref=_TimerRef("player", timer_key, player_index=int(player.index)),
+            )
+
     if bonus_id == BonusId.ENERGIZER:
-        state.bonuses.energizer = max(state.bonuses.energizer, float(amount))
-    elif bonus_id == BonusId.WEAPON_POWER_UP:
-        state.bonuses.weapon_power_up = max(state.bonuses.weapon_power_up, float(amount))
-    elif bonus_id == BonusId.DOUBLE_EXPERIENCE:
-        state.bonuses.double_experience = max(state.bonuses.double_experience, float(amount))
-    elif bonus_id == BonusId.REFLEX_BOOST:
-        state.bonuses.reflex_boost = max(state.bonuses.reflex_boost, float(amount))
-    elif bonus_id == BonusId.FREEZE:
-        state.bonuses.freeze = max(state.bonuses.freeze, float(amount))
-    elif bonus_id == BonusId.SHIELD:
-        player.shield_timer = max(player.shield_timer, float(amount))
-    elif bonus_id == BonusId.SPEED:
-        player.speed_bonus_timer = max(player.speed_bonus_timer, float(amount))
-    elif bonus_id == BonusId.FIRE_BULLETS:
-        player.fire_bullets_timer = max(player.fire_bullets_timer, float(amount))
-    elif bonus_id == BonusId.SHOCK_CHAIN:
+        old = float(state.bonuses.energizer)
+        if old <= 0.0:
+            _register_global("energizer")
+        state.bonuses.energizer = float(old + float(amount) * economist_multiplier)
+        return
+
+    if bonus_id == BonusId.WEAPON_POWER_UP:
+        old = float(state.bonuses.weapon_power_up)
+        if old <= 0.0:
+            _register_global("weapon_power_up")
+        state.bonuses.weapon_power_up = float(old + float(amount) * economist_multiplier)
+        player.shot_cooldown = 0.0
+        player.reload_active = False
+        player.reload_timer = 0.0
+        player.reload_timer_max = 0.0
+        player.ammo = player.clip_size
+        return
+
+    if bonus_id == BonusId.DOUBLE_EXPERIENCE:
+        old = float(state.bonuses.double_experience)
+        if old <= 0.0:
+            _register_global("double_experience")
+        state.bonuses.double_experience = float(old + float(amount) * economist_multiplier)
+        return
+
+    if bonus_id == BonusId.REFLEX_BOOST:
+        old = float(state.bonuses.reflex_boost)
+        if old <= 0.0:
+            _register_global("reflex_boost")
+        state.bonuses.reflex_boost = float(old + float(amount) * economist_multiplier)
+
+        targets = players if players is not None else [player]
+        for target in targets:
+            target.ammo = target.clip_size
+            target.reload_active = False
+            target.reload_timer = 0.0
+            target.reload_timer_max = 0.0
+        return
+
+    if bonus_id == BonusId.FREEZE:
+        old = float(state.bonuses.freeze)
+        if old <= 0.0:
+            _register_global("freeze")
+        state.bonuses.freeze = float(old + float(amount) * economist_multiplier)
+        return
+
+    if bonus_id == BonusId.SHIELD:
+        should_register = float(player.shield_timer) <= 0.0
+        if players is not None and len(players) > 1:
+            should_register = float(players[0].shield_timer) <= 0.0 and float(players[1].shield_timer) <= 0.0
+        if should_register:
+            _register_player("shield_timer")
+        player.shield_timer = float(player.shield_timer + float(amount) * economist_multiplier)
+        return
+
+    if bonus_id == BonusId.SPEED:
+        should_register = float(player.speed_bonus_timer) <= 0.0
+        if players is not None and len(players) > 1:
+            should_register = float(players[0].speed_bonus_timer) <= 0.0 and float(players[1].speed_bonus_timer) <= 0.0
+        if should_register:
+            _register_player("speed_bonus_timer")
+        player.speed_bonus_timer = float(player.speed_bonus_timer + float(amount) * economist_multiplier)
+        return
+
+    if bonus_id == BonusId.FIRE_BULLETS:
+        should_register = float(player.fire_bullets_timer) <= 0.0
+        if players is not None and len(players) > 1:
+            should_register = float(players[0].fire_bullets_timer) <= 0.0 and float(players[1].fire_bullets_timer) <= 0.0
+        if should_register:
+            _register_player("fire_bullets_timer")
+        player.fire_bullets_timer = float(player.fire_bullets_timer + float(amount) * economist_multiplier)
+        player.shot_cooldown = 0.0
+        player.reload_active = False
+        player.reload_timer = 0.0
+        player.reload_timer_max = 0.0
+        player.ammo = player.clip_size
+        return
+
+    if bonus_id == BonusId.SHOCK_CHAIN:
         if creatures:
             origin_pos = origin or player
             best_idx: int | None = None
@@ -1350,23 +1446,28 @@ def bonus_apply(
                 dx = target.x - float(origin_pos.pos_x)
                 dy = target.y - float(origin_pos.pos_y)
                 angle = math.atan2(dy, dx) + math.pi / 2.0
+                owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
+
                 state.bonus_spawn_guard = True
                 state.shock_chain_links_left = 0x20
                 state.shock_chain_projectile_id = state.projectiles.spawn(
                     pos_x=float(origin_pos.pos_x),
                     pos_y=float(origin_pos.pos_y),
                     angle=angle,
-                    type_id=0x14,
-                    owner_id=_owner_id_for_player(player.index),
-                    base_damage=_projectile_meta_for_type_id(0x14),
+                    type_id=int(ProjectileTypeId.ION_MINIGUN),
+                    owner_id=int(owner_id),
+                    base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_MINIGUN)),
                 )
                 state.bonus_spawn_guard = False
         return
-    elif bonus_id == BonusId.WEAPON:
+
+    if bonus_id == BonusId.WEAPON:
         weapon_assign_player(player, int(amount))
         return
-    elif bonus_id == BonusId.FIREBLAST:
+
+    if bonus_id == BonusId.FIREBLAST:
         origin_pos = origin or player
+        owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
         state.bonus_spawn_guard = True
         _spawn_projectile_ring(
             state,
@@ -1374,11 +1475,12 @@ def bonus_apply(
             count=16,
             angle_offset=0.0,
             type_id=8,
-            owner_id=_owner_id_for_player(player.index),
+            owner_id=int(owner_id),
         )
         state.bonus_spawn_guard = False
         return
-    elif bonus_id == BonusId.NUKE:
+
+    if bonus_id == BonusId.NUKE:
         # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
         #   camera_shake_pulses = 0x14;
         #   camera_shake_timer = 0.2f;
@@ -1400,42 +1502,9 @@ def bonus_apply(
                 if dist < 256.0:
                     creature.hp -= (256.0 - dist) * 5.0
         return
-    else:
-        # Bonus types not modeled yet.
-        return
 
-    # Register timed bonuses in the HUD.
-    icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
-    label = meta.name
-    if bonus_id in (BonusId.SHIELD, BonusId.SPEED, BonusId.FIRE_BULLETS):
-        timer_key = {
-            BonusId.SHIELD: "shield_timer",
-            BonusId.SPEED: "speed_bonus_timer",
-            BonusId.FIRE_BULLETS: "fire_bullets_timer",
-        }[bonus_id]
-        state.bonus_hud.register(
-            bonus_id,
-            label=label,
-            icon_id=icon_id,
-            timer_ref=_TimerRef("player", timer_key, player_index=player.index),
-        )
-        return
-
-    timer_key = {
-        BonusId.ENERGIZER: "energizer",
-        BonusId.WEAPON_POWER_UP: "weapon_power_up",
-        BonusId.DOUBLE_EXPERIENCE: "double_experience",
-        BonusId.REFLEX_BOOST: "reflex_boost",
-        BonusId.FREEZE: "freeze",
-    }.get(bonus_id)
-    if timer_key is None:
-        return
-    state.bonus_hud.register(
-        bonus_id,
-        label=label,
-        icon_id=icon_id,
-        timer_ref=_TimerRef("global", timer_key),
-    )
+    # Bonus types not modeled yet.
+    return
 
 
 def bonus_hud_update(state: GameplayState, players: list[PlayerState]) -> None:
@@ -1513,6 +1582,7 @@ def bonus_telekinetic_update(
             amount=int(entry.amount),
             origin=player,
             creatures=creatures,
+            players=players,
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER

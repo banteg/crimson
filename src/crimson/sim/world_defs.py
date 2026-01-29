@@ -40,7 +40,7 @@ KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     ProjectileTypeId.ION_CANNON: (4, 2),
     ProjectileTypeId.SHRINKIFIER: (4, 2),
     ProjectileTypeId.FIRE_BULLETS: (4, 2),
-    ProjectileTypeId.ION_RIFLE: (4, 2),  # Shock Chain projectile
+    ProjectileTypeId.ION_RIFLE: (4, 2),
 }
 
 BEAM_TYPES = frozenset(
