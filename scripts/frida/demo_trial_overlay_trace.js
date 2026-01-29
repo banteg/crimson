@@ -86,6 +86,30 @@ function writeLog(obj) {
   console.log(line);
 }
 
+function buildStartEvent() {
+  let mod = null;
+  try {
+    mod = Process.getModuleByName(GAME_MODULE);
+  } catch (_) {
+    // ignore
+  }
+  return {
+    event: 'start',
+    t0_ms: Date.now(),
+    config: CONFIG,
+    frida: { version: Frida.version, runtime: Script.runtime },
+    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
+    module: GAME_MODULE,
+    exe: mod
+      ? {
+          base: mod.base.toString(),
+          size: mod.size,
+          path: mod.path,
+        }
+      : null,
+  };
+}
+
 function exePtr(staticVa) {
   let mod = null;
   try {
@@ -310,7 +334,7 @@ function hookOverlayRender() {
 
 function main() {
   initLog();
-  writeLog({ event: 'start', config: CONFIG, module: GAME_MODULE });
+  writeLog(buildStartEvent());
 
   if (CONFIG.forceDemoInGameplayLoop || CONFIG.logFullVersionCalls) {
     hookGameIsFullVersion();

@@ -114,6 +114,13 @@ function main() {
   const t0 = Date.now();
   let uiReadyMs = null;
 
+  let exeMod = null;
+  try {
+    exeMod = Process.getModuleByName(GAME_MODULE);
+  } catch (_) {
+    // ignore
+  }
+
   const addrDemoStart = exePtr(ADDR.demo_mode_start);
   const addrMaxTimeline = exePtr(ADDR.ui_elements_max_timeline);
 
@@ -134,8 +141,17 @@ function main() {
   writeLog({
     event: 'start',
     config: CONFIG,
+    frida: { version: Frida.version, runtime: Script.runtime },
+    process: { pid: Process.id, platform: Process.platform, arch: Process.arch },
     module: GAME_MODULE,
     t0_ms: t0,
+    exe: exeMod
+      ? {
+          base: exeMod.base.toString(),
+          size: exeMod.size,
+          path: exeMod.path,
+        }
+      : null,
     addrs: {
       demo_mode_start: addrDemoStart.toString(),
       ui_elements_max_timeline: addrMaxTimeline.toString(),
@@ -192,4 +208,3 @@ function main() {
 }
 
 main();
-
