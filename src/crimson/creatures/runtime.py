@@ -438,6 +438,9 @@ class CreaturePool:
                         )
                     continue
 
+            if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0:
+                creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
+
             turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
             speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * creature.move_scale
 
@@ -473,18 +476,57 @@ class CreaturePool:
                     creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
                     creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
-            # Contact damage throttle.
-            contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
-            in_contact = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y) <= contact_r * contact_r
-            if in_contact:
-                creature.collision_flag = 1
-                creature.collision_timer -= dt
-                if creature.collision_timer < 0.0:
-                    creature.collision_timer += CONTACT_DAMAGE_PERIOD
-                    player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
-            else:
+            if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 380.0 and float(player.health) > 0.0:
+                eat_dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
+                if eat_dist_sq < 20.0 * 20.0:
+                    creature.x = _clamp(creature.x - creature.vel_x * dt, 0.0, float(world_width))
+                    creature.y = _clamp(creature.y - creature.vel_y * dt, 0.0, float(world_height))
+
+                    state.effects.spawn_burst(
+                        pos_x=float(creature.x),
+                        pos_y=float(creature.y),
+                        count=6,
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                    )
+                    sfx.append("sfx_ui_bonus")
+
+                    prev_guard = bool(state.bonus_spawn_guard)
+                    state.bonus_spawn_guard = True
+                    creature.last_hit_owner_id = -1 - int(player.index)
+                    deaths.append(
+                        self.handle_death(
+                            idx,
+                            state=state,
+                            players=players,
+                            rand=rand,
+                            detail_preset=int(detail_preset),
+                            world_width=world_width,
+                            world_height=world_height,
+                            fx_queue=fx_queue,
+                            keep_corpse=False,
+                        )
+                    )
+                    state.bonus_spawn_guard = prev_guard
+                    continue
+
+            # Contact damage throttle. While Energizer is active, the native suppresses
+            # contact/melee interactions for most creatures (and instead allows "eat" kills).
+            if float(state.bonuses.energizer) > 0.0:
                 creature.collision_flag = 0
                 creature.collision_timer = CONTACT_DAMAGE_PERIOD
+            else:
+                contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
+                in_contact = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y) <= contact_r * contact_r
+                if in_contact:
+                    creature.collision_flag = 1
+                    creature.collision_timer -= dt
+                    if creature.collision_timer < 0.0:
+                        creature.collision_timer += CONTACT_DAMAGE_PERIOD
+                        player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
+                else:
+                    creature.collision_flag = 0
+                    creature.collision_timer = CONTACT_DAMAGE_PERIOD
 
             if creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`

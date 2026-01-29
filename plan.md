@@ -297,10 +297,11 @@ Once Phase 2 is in, these become straightforward and correct.
 - [x] On death while active: ice-shatter + remove creature (no corpse).
 - [ ] On render: freeze overlay quad pass (optional parity).
 
-2. [ ] Energizer
+2. [x] Energizer
 
-- [ ] AI: invert heading away from player while active.
-- [ ] “Eat”: close-range kills via death handling (respect `bonus_spawn_guard`).
+- [x] AI: invert heading away from player while active.
+- [x] Suppress contact damage while active.
+- [x] “Eat”: close-range kills via death handling (respect `bonus_spawn_guard`).
 
 3. [ ] Nuke
 
