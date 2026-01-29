@@ -31,7 +31,7 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 NAME_LABEL_SCALE = 1.0
-NAME_LABEL_BG_ALPHA = 0.6
+NAME_LABEL_BG_ALPHA = 0.67
 
 # Original typoshooter input box constants (from 0x004457C0)
 TYPING_PANEL_WIDTH = 182.0
@@ -344,12 +344,11 @@ class TypoShooterMode(BaseGameplayMode):
             if not text:
                 continue
 
-            alpha = 1.0
+            label_alpha = 1.0
             hitbox = float(creature.hitbox_size)
             if hitbox < 0.0:
-                alpha = max(0.0, min(1.0, (hitbox + 10.0) * 0.1))
-            alpha *= 0.67
-            if alpha <= 1e-3:
+                label_alpha = max(0.0, min(1.0, (hitbox + 10.0) * 0.1))
+            if label_alpha <= 1e-3:
                 continue
 
             sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
@@ -358,9 +357,10 @@ class TypoShooterMode(BaseGameplayMode):
             text_h = 15.0
             x = float(sx) - text_w * 0.5
 
-            bg = rl.Color(0, 0, 0, int(255 * alpha * NAME_LABEL_BG_ALPHA))
-            fg = rl.Color(255, 255, 255, int(255 * alpha))
-            rl.draw_rectangle(int(x - 4.0), int(y), int(text_w + 8.0), int(text_h), bg)
+            bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
+            bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
+            fg = rl.Color(255, 255, 255, int(255 * label_alpha))
+            rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
             self._draw_ui_text(text, x, y, fg, scale=NAME_LABEL_SCALE)
 
     def _draw_typing_box(self) -> None:
