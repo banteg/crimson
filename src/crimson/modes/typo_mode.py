@@ -223,6 +223,30 @@ class TypoShooterMode(BaseGameplayMode):
         self._game_over_ui.open()
         self._game_over_active = True
 
+    def _update_game_over_ui(self, dt: float) -> None:
+        record = self._game_over_record
+        if record is None:
+            self._enter_game_over()
+            record = self._game_over_record
+        if record is None:
+            return
+
+        action = self._game_over_ui.update(
+            dt,
+            record=record,
+            player_name_default=self._player_name_default(),
+            mouse=self._ui_mouse_pos(),
+        )
+        if action == "play_again":
+            self.open()
+            return
+        if action == "high_scores":
+            self._action = "open_high_scores"
+            return
+        if action == "main_menu":
+            self._action = "back_to_menu"
+            self.close_requested = True
+
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
@@ -230,29 +254,21 @@ class TypoShooterMode(BaseGameplayMode):
         self._handle_input()
 
         if self._game_over_active:
-            record = self._game_over_record
-            if record is None:
-                self._enter_game_over()
-                record = self._game_over_record
-            if record is not None:
-                action = self._game_over_ui.update(
-                    dt,
-                    record=record,
-                    player_name_default=self._player_name_default(),
-                    mouse=self._ui_mouse_pos(),
-                )
-                if action == "play_again":
-                    self.open()
-                    return
-                if action == "high_scores":
-                    self._action = "open_high_scores"
-                    return
-                if action == "main_menu":
-                    self._action = "back_to_menu"
-                    self.close_requested = True
+            self._update_game_over_ui(dt)
             return
 
-        dt_world = 0.0 if self._paused or self._player.health <= 0.0 else dt_frame
+        dt_world = 0.0 if self._paused else dt_frame
+
+        # Native: delay game-over transition until the trooper death animation finishes
+        # (checks `death_timer < 0.0` in the main gameplay loop).
+        if self._player.health <= 0.0:
+            if dt_world > 0.0:
+                self._player.death_timer -= float(dt_world) * 20.0
+            if self._player.death_timer < 0.0:
+                self._enter_game_over()
+                self._update_game_over_ui(dt)
+                return
+            return
 
         fire_pressed = False
         reload_pressed = False
@@ -260,8 +276,6 @@ class TypoShooterMode(BaseGameplayMode):
             fire_pressed, reload_pressed = self._handle_typing_input()
 
         if dt_world <= 0.0:
-            if self._player.health <= 0.0:
-                self._enter_game_over()
             return
 
         enforce_typo_player_frame(self._player)
@@ -309,8 +323,8 @@ class TypoShooterMode(BaseGameplayMode):
             )
 
         self._typo.elapsed_ms += int(dt_world * 1000.0)
-        if self._player.health <= 0.0:
-            self._enter_game_over()
+        # Death/game-over flow is handled at the start of the next frame so the
+        # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
@@ -408,13 +422,16 @@ class TypoShooterMode(BaseGameplayMode):
         self._draw_ui_text(TYPING_CURSOR, cursor_x, cursor_y, cursor_color, scale=1.0)
 
     def draw(self) -> None:
-        self._world.draw(draw_aim_indicators=(not self._game_over_active))
+        alive = self._player.health > 0.0
+        show_gameplay_ui = alive and (not self._game_over_active)
+
+        self._world.draw(draw_aim_indicators=show_gameplay_ui)
         self._draw_screen_fade()
 
-        if not self._game_over_active:
+        if show_gameplay_ui:
             self._draw_name_labels()
 
-        if (not self._game_over_active) and self._hud_assets is not None:
+        if show_gameplay_ui and self._hud_assets is not None:
             draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -428,7 +445,7 @@ class TypoShooterMode(BaseGameplayMode):
                 show_time=True,
             )
 
-        if not self._game_over_active:
+        if show_gameplay_ui:
             self._draw_typing_box()
 
         warn_y = float(rl.get_screen_height()) - 28.0
@@ -440,9 +457,9 @@ class TypoShooterMode(BaseGameplayMode):
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
             self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
 
-        if not self._game_over_active:
+        if show_gameplay_ui:
             self._draw_aim_cursor()
-        else:
+        elif self._game_over_active:
             self._draw_game_cursor()
             if self._game_over_record is not None:
                 self._game_over_ui.draw(
