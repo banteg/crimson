@@ -23,6 +23,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [ ] 16) Demo trial overlay (demo builds)
 - [x] 17) Missing gameplay SFX/events (perk UI, ranged fire, bonus pickup)
 - [x] 18) Player damage parity (dodge + warnings)
+- [ ] 19) Demo idle threshold (demo builds)
 
 ---
 
@@ -499,3 +500,10 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 - [x] Implement Ninja/Dodger dodge chances (`player_take_damage`)
 - [x] Port low-health warning timer reset
 - [x] Align death timer decay with the decompile
+
+---
+
+## 19) Demo idle threshold (demo builds)
+
+- [x] Add an idle-threshold trace script + docs (`scripts/frida/demo_idle_threshold_trace.js`, `docs/frida/demo-idle-threshold.md`)
+- [ ] Capture idle threshold from a demo build and update `MENU_DEMO_IDLE_START_MS`

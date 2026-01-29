@@ -76,6 +76,7 @@ Default logs written by the scripts:
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
+- `C:\share\frida\demo_idle_threshold_trace.jsonl` (if you ran `demo_idle_threshold_trace.js`)
 
 ## 2) Copy logs into the repo
 
