@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import math
 import random
+import os
 from pathlib import Path
 
 import pyray as rl
@@ -62,6 +64,7 @@ uniform vec2 u_light_pos;
 uniform float u_light_range;
 uniform float u_light_source_radius;
 uniform float u_shadow_k;
+uniform int u_debug_mode;
 uniform int u_circle_count;
 uniform vec4 u_circles[MAX_CIRCLES];
 
@@ -105,6 +108,19 @@ void main()
     // Match raylib 2D screen coords: origin top-left.
     vec2 p = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y);
 
+    if (u_debug_mode == 1)
+    {{
+        finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+        return;
+    }}
+
+    if (u_debug_mode == 2)
+    {{
+        vec2 uv = p / max(u_resolution, vec2(1.0));
+        finalColor = vec4(uv.x, uv.y, 0.0, 1.0);
+        return;
+    }}
+
     vec2 to_light = u_light_pos - p;
     float dist = length(to_light);
     if (dist <= 1e-4 || dist > u_light_range)
@@ -113,8 +129,20 @@ void main()
         return;
     }}
 
+    if (u_debug_mode == 3)
+    {{
+        finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+        return;
+    }}
+
     float atten = 1.0 - clamp(dist / u_light_range, 0.0, 1.0);
     atten = atten * atten;
+
+    if (u_debug_mode == 4)
+    {{
+        finalColor = vec4(vec3(atten), 1.0);
+        return;
+    }}
 
     // Avoid self-shadowing artifacts for receiver pixels inside occluders (sprites).
     float d0 = map(p);
@@ -130,6 +158,12 @@ void main()
         vec2 rd = to_light / max(dist, 1e-4);
         float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
         shadow = softshadow(p, rd, 2.0, maxt, k);
+    }}
+
+    if (u_debug_mode == 5)
+    {{
+        finalColor = vec4(vec3(shadow), 1.0);
+        return;
     }}
 
     vec3 add = u_light_color.rgb * (atten * shadow);
@@ -170,8 +204,15 @@ class LightingDebugView:
         self._draw_debug = True
         self._draw_occluders = False
         self._debug_lightmap_preview = False
+        self._debug_dump_next_frame = False
+        self._debug_dump_count = 0
+        self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in ("", "0", "false", "False")
 
         self._sdf_shadow_k = 64.0
+        try:
+            self._sdf_debug_mode = int(os.environ.get("CRIMSON_LIGHTING_SDF_DEBUG_MODE", "0"))
+        except Exception:
+            self._sdf_debug_mode = 0
 
         self._light_radius = 360.0
         self._light_is_disc = False
@@ -179,11 +220,14 @@ class LightingDebugView:
         self._ambient = rl.Color(26, 26, 34, 255)
         self._light_tint = rl.Color(255, 245, 220, 255)
 
+        self._last_sdf_circles: list[tuple[float, float, float]] = []
+
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
         self._sdf_shader_locs: dict[str, int] = {}
         self._sdf_shader_missing: list[str] = []
         self._light_rt: rl.RenderTexture | None = None
+        self._solid_white: rl.Texture | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -197,6 +241,8 @@ class LightingDebugView:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _update_ui_mouse(self) -> None:
+        if self._debug_auto_dump:
+            return
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -216,6 +262,10 @@ class LightingDebugView:
             self._draw_occluders = not self._draw_occluders
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
             self._debug_lightmap_preview = not self._debug_lightmap_preview
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
+            self._debug_dump_next_frame = True
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F6):
+            self._sdf_debug_mode = (self._sdf_debug_mode + 1) % 6
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
             self._light_is_disc = not self._light_is_disc
@@ -272,6 +322,7 @@ class LightingDebugView:
             "u_light_range": rl.get_shader_location(shader, "u_light_range"),
             "u_light_source_radius": rl.get_shader_location(shader, "u_light_source_radius"),
             "u_shadow_k": rl.get_shader_location(shader, "u_shadow_k"),
+            "u_debug_mode": rl.get_shader_location(shader, "u_debug_mode"),
             "u_circle_count": rl.get_shader_location(shader, "u_circle_count"),
             "u_circles": circles_loc,
         }
@@ -353,8 +404,17 @@ class LightingDebugView:
         self._reset_scene(seed=0xBEEF)
         self._ensure_render_targets()
 
+        try:
+            img = rl.gen_image_color(1, 1, rl.WHITE)
+            self._solid_white = rl.load_texture_from_image(img)
+            rl.unload_image(img)
+        except Exception:
+            self._solid_white = None
+
         self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
         self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        if self._debug_auto_dump:
+            self._debug_dump_next_frame = True
 
     def close(self) -> None:
         if self._small is not None:
@@ -368,6 +428,9 @@ class LightingDebugView:
         if self._light_rt is not None and int(getattr(self._light_rt, "id", 0)) > 0:
             rl.unload_render_texture(self._light_rt)
             self._light_rt = None
+        if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
+            rl.unload_texture(self._solid_white)
+            self._solid_white = None
         self._world.close()
 
     def update(self, dt: float) -> None:
@@ -409,6 +472,118 @@ class LightingDebugView:
             perk_progression_enabled=False,
         )
 
+    def _dump_debug(self, *, light_x: float, light_y: float, sdf_ok: bool) -> None:
+        if self._light_rt is None:
+            return
+        out_dir = Path("artifacts") / "lighting-debug"
+        try:
+            out_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            return
+
+        self._debug_dump_count += 1
+        prefix = f"{self._debug_dump_count:04d}"
+
+        w = int(self._light_rt.texture.width)
+        h = int(self._light_rt.texture.height)
+
+        # Lightmap readback + samples.
+        lightmap_path = out_dir / f"{prefix}_lightmap.png"
+        samples: dict[str, list[int]] = {}
+        approx_min_rgb = [255, 255, 255]
+        approx_max_rgb = [0, 0, 0]
+        try:
+            img = rl.load_image_from_texture(self._light_rt.texture)
+            rl.export_image(img, str(lightmap_path))
+
+            iw = int(img.width)
+            ih = int(img.height)
+
+            def sample(x: float, y: float) -> list[int]:
+                xi = max(0, min(iw - 1, int(x)))
+                yi = max(0, min(ih - 1, int(y)))
+                c = rl.get_image_color(img, xi, yi)
+                return [int(c.r), int(c.g), int(c.b), int(c.a)]
+
+            samples["light_xy"] = sample(light_x, light_y)
+            samples["light_xy_flip_y"] = sample(light_x, float(ih - 1) - light_y)
+            samples["center"] = sample(float(iw) * 0.5, float(ih) * 0.5)
+            samples["center_flip_y"] = sample(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5)
+            samples["tl"] = sample(0.0, 0.0)
+            samples["bl"] = sample(0.0, float(ih - 1))
+
+            step_x = max(1, iw // 32)
+            step_y = max(1, ih // 32)
+            for y in range(0, ih, step_y):
+                for x in range(0, iw, step_x):
+                    c = rl.get_image_color(img, x, y)
+                    approx_min_rgb[0] = min(approx_min_rgb[0], int(c.r))
+                    approx_min_rgb[1] = min(approx_min_rgb[1], int(c.g))
+                    approx_min_rgb[2] = min(approx_min_rgb[2], int(c.b))
+                    approx_max_rgb[0] = max(approx_max_rgb[0], int(c.r))
+                    approx_max_rgb[1] = max(approx_max_rgb[1], int(c.g))
+                    approx_max_rgb[2] = max(approx_max_rgb[2], int(c.b))
+
+            rl.unload_image(img)
+        except Exception:
+            pass
+
+        # Full-screen screenshot (after the frame is drawn).
+        screenshot_path = out_dir / f"{prefix}_screen.png"
+        try:
+            rl.take_screenshot(str(screenshot_path))
+        except Exception:
+            pass
+        if not screenshot_path.exists():
+            fallback = Path.cwd() / screenshot_path.name
+            if fallback.exists():
+                try:
+                    fallback.replace(screenshot_path)
+                except Exception:
+                    pass
+
+        lt = self._light_tint
+        builtin_locs: dict[str, int | None] = {}
+        if self._sdf_shader is not None:
+            try:
+                locs = self._sdf_shader.locs
+                builtin_locs = {
+                    "matrix_mvp": int(locs[rl.SHADER_LOC_MATRIX_MVP]),
+                    "matrix_model": int(locs[rl.SHADER_LOC_MATRIX_MODEL]),
+                    "matrix_view": int(locs[rl.SHADER_LOC_MATRIX_VIEW]),
+                    "matrix_projection": int(locs[rl.SHADER_LOC_MATRIX_PROJECTION]),
+                    "color_diffuse": int(locs[rl.SHADER_LOC_COLOR_DIFFUSE]),
+                }
+            except Exception:
+                builtin_locs = {}
+        stats = {
+            "sdf_ok": bool(sdf_ok),
+            "screen_size": [int(rl.get_screen_width()), int(rl.get_screen_height())],
+            "light_rt_size": [w, h],
+            "light_pos": [float(light_x), float(light_y)],
+            "light_radius": float(self._light_radius),
+            "light_is_disc": bool(self._light_is_disc),
+            "light_source_radius": float(self._light_source_radius),
+            "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
+            "ambient_rgba": [int(self._ambient.r), int(self._ambient.g), int(self._ambient.b), int(self._ambient.a)],
+            "shadow_k": float(self._sdf_shadow_k),
+            "debug_mode": int(self._sdf_debug_mode),
+            "circle_count": int(len(self._last_sdf_circles)),
+            "circles": [[float(x), float(y), float(r)] for (x, y, r) in self._last_sdf_circles[:16]],
+            "shader_uniform_locs": dict(self._sdf_shader_locs),
+            "shader_uniform_missing": list(self._sdf_shader_missing),
+            "shader_builtin_locs": builtin_locs,
+            "lightmap_samples_rgba": samples,
+            "lightmap_approx_min_rgb": approx_min_rgb,
+            "lightmap_approx_max_rgb": approx_max_rgb,
+            "paths": {"lightmap": str(lightmap_path), "screenshot": str(screenshot_path)},
+        }
+        stats_path = out_dir / f"{prefix}_stats.json"
+        try:
+            stats_path.write_text(json.dumps(stats, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+
     def _render_lightmap_sdf(self, *, light_x: float, light_y: float) -> bool:
         if self._light_rt is None:
             return False
@@ -439,6 +614,7 @@ class LightingDebugView:
 
         if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
             circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
+        self._last_sdf_circles = circles
 
         def set_vec2(name: str, x: float, y: float) -> None:
             loc = locs.get(name, -1)
@@ -475,6 +651,7 @@ class LightingDebugView:
         set_vec2("u_light_pos", float(light_x), float(light_y))
         set_float("u_light_range", float(self._light_radius))
         set_float("u_shadow_k", float(self._sdf_shadow_k))
+        set_int("u_debug_mode", int(self._sdf_debug_mode))
 
         source_radius = float(self._light_source_radius) if self._light_is_disc else 0.0
         set_float("u_light_source_radius", source_radius)
@@ -493,7 +670,12 @@ class LightingDebugView:
                 len(circles),
             )
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-        rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+        if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
+            src = rl.Rectangle(0.0, 0.0, float(self._solid_white.width), float(self._solid_white.height))
+            dst = rl.Rectangle(0.0, 0.0, float(w), float(h))
+            rl.draw_texture_pro(self._solid_white, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        else:
+            rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
         rl.end_blend_mode()
         rl.end_shader_mode()
         rl.end_texture_mode()
@@ -576,6 +758,12 @@ class LightingDebugView:
                 rl.Color(255, 255, 255, 100),
             )
 
+        if self._debug_dump_next_frame:
+            self._debug_dump_next_frame = False
+            self._dump_debug(light_x=light_x, light_y=light_y, sdf_ok=sdf_ok)
+            if self._debug_auto_dump:
+                self.close_requested = True
+
         if self._draw_debug:
             title = "Lighting debug view (night + SDF shadows)"
             lines = [
@@ -583,9 +771,11 @@ class LightingDebugView:
                 "WASD move  MOUSE light pos",
                 "SPACE simulate  R reset",
                 f",/. sdf_k={self._sdf_shadow_k:.1f}",
+                f"F6 sdf_debug={self._sdf_debug_mode}  (1 solid, 2 uv, 3 range, 4 atten, 5 shadow)",
                 f"+/- light_radius={self._light_radius:.0f}  L disc={self._light_is_disc}",
                 f"[ ] light_source_radius={self._light_source_radius:.0f}" if self._light_is_disc else "[ ] light_source_radius (disc mode)",
                 "1 ui  2 occluders  4 lightmap preview",
+                "F5 dump debug (artifacts/lighting-debug/)",
             ]
             if not sdf_ok:
                 lines.append("SDF shader unavailable (ambient-only fallback)")
