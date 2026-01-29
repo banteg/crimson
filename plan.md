@@ -11,7 +11,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 4) Implement Quests (end-to-end)
 - [x] 5) Implement Tutorial (end-to-end)
 - [x] 6) Implement Typ-o Shooter (end-to-end)
-- [ ] 7) Polish + regression tests
+- [x] 7) Polish + regression tests
 
 ---
 
