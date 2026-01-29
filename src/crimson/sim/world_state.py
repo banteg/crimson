@@ -19,7 +19,7 @@ from ..gameplay import (
 from ..player_damage import player_take_damage
 from .world_defs import CREATURE_ANIM
 
-ProjectileHit = tuple[int, float, float, float, float]
+ProjectileHit = tuple[int, float, float, float, float, float, float]
 
 
 @dataclass(slots=True)

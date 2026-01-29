@@ -199,12 +199,12 @@ class ProjectilePool:
         runtime_state: object | None = None,
         players: list[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
-    ) -> list[tuple[int, float, float, float, float]]:
+    ) -> list[tuple[int, float, float, float, float, float, float]]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
 
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y).
+        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
@@ -216,7 +216,7 @@ class ProjectilePool:
         if rng is None:
             rng = _rng_zero
 
-        hits: list[tuple[int, float, float, float, float]] = []
+        hits: list[tuple[int, float, float, float, float, float, float]] = []
         margin = 64.0
 
         def _damage_scale(type_id: int) -> float:
@@ -401,7 +401,12 @@ class ProjectilePool:
                             continue
 
                         type_id = proj.type_id
-                        hits.append((type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
+                        hit_x = float(proj.pos_x)
+                        hit_y = float(proj.pos_y)
+                        player = players[int(hit_player_idx)] if players is not None else None
+                        target_x = float(getattr(player, "pos_x", hit_x) if player is not None else hit_x)
+                        target_y = float(getattr(player, "pos_y", hit_y) if player is not None else hit_y)
+                        hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
 
                         if proj.life_timer != 0.25 and type_id not in (
                             ProjectileTypeId.FIRE_BULLETS,
@@ -474,7 +479,11 @@ class ProjectilePool:
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
-                    hits.append((type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
+                    hit_x = float(proj.pos_x)
+                    hit_y = float(proj.pos_y)
+                    target_x = float(creature.x)
+                    target_y = float(creature.y)
+                    hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -566,16 +575,16 @@ class ProjectilePool:
         speed_by_type: dict[int, float],
         damage_by_type: dict[int, float],
         rocket_splash_radius: float = 90.0,
-    ) -> list[tuple[int, float, float, float, float]]:
+    ) -> list[tuple[int, float, float, float, float, float, float]]:
         """Update a small projectile subset for the demo view.
 
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y).
+        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
             return []
 
-        hits: list[tuple[int, float, float, float, float]] = []
+        hits: list[tuple[int, float, float, float, float, float, float]] = []
         margin = 64.0
 
         for proj in self._entries:
@@ -641,7 +650,10 @@ class ProjectilePool:
             if hit_idx is None:
                 continue
 
-            hits.append((proj.type_id, proj.origin_x, proj.origin_y, proj.pos_x, proj.pos_y))
+            hit_x = float(proj.pos_x)
+            hit_y = float(proj.pos_y)
+            creature = creatures[hit_idx]
+            hits.append((proj.type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, float(creature.x), float(creature.y)))
 
             if proj.type_id == 0x0B:
                 dmg = damage_by_type.get(proj.type_id, 32.0)

@@ -365,7 +365,7 @@ class ProjectileFxView:
             rng=self._state.rng.rand,
             runtime_state=self._state,
         )
-        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+        for type_id, origin_x, origin_y, hit_x, hit_y, *_ in hits:
             if type_id in _BEAM_TYPES:
                 self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
                 self._spawn_effect(effect_id=0x01, x=hit_x, y=hit_y, scale=0.9, duration=0.25)

@@ -1245,7 +1245,7 @@ class DemoView:
             damage_scale_by_type=damage_scale_by_type,
             rng=self._crand.rand,
         )
-        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+        for type_id, origin_x, origin_y, hit_x, hit_y, *_ in hits:
             if type_id == 0x15:
                 self._beams.append(
                     DemoBeam(

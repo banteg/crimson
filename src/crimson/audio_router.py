@@ -120,7 +120,7 @@ class AudioRouter:
 
     def play_hit_sfx(
         self,
-        hits: list[tuple[int, float, float, float, float]],
+        hits: list[tuple[int, float, float, float, float, float, float]],
         *,
         game_mode: int,
         rand: Callable[[], int],

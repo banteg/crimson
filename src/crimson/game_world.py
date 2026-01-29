@@ -24,12 +24,10 @@ from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
-from .sim.world_state import WorldState
+from .sim.world_state import ProjectileHit, WorldState
 from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
 
-
-ProjectileHit = tuple[int, float, float, float, float]
 
 @dataclass(slots=True)
 class GameWorld:
@@ -480,7 +478,7 @@ class GameWorld:
         freeze_active = self.state.bonuses.freeze > 0.0
         bloody = bool(self.players) and perk_active(self.players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
 
-        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+        for type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y in hits:
             type_id = int(type_id)
 
             if type_id in BEAM_TYPES:
@@ -515,12 +513,64 @@ class GameWorld:
                 )
                 continue
 
-            if freeze_active:
-                continue
+            base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
+
+            # Native: spawn large terrain decals (fx_queue_add_random) around the hit target.
+            if type_id in (int(ProjectileTypeId.MEAN_MINIGUN), 0x2D):
+                dir_x = math.cos(base_angle)
+                dir_y = math.sin(base_angle)
+                for _ in range(6):
+                    dist = float(int(rand()) % 100) * 0.1
+                    if dist > 4.0:
+                        dist = float(int(rand()) % 0x5A + 10) * 0.1
+                    if dist > 7.0:
+                        dist = float(int(rand()) % 0x50 + 0x14) * 0.1
+                    self.fx_queue.add_random(
+                        pos_x=float(target_x) + dir_x * dist * 20.0,
+                        pos_y=float(target_y) + dir_y * dist * 20.0,
+                        rand=rand,
+                    )
+            elif not freeze_active:
+                for _ in range(3):
+                    spread = float(int(rand()) % 0x14 - 10) * 0.1
+                    angle = base_angle + spread
+                    dir_x = math.cos(angle) * 20.0
+                    dir_y = math.sin(angle) * 20.0
+                    self.fx_queue.add_random(pos_x=float(target_x), pos_y=float(target_y), rand=rand)
+                    self.fx_queue.add_random(
+                        pos_x=float(target_x) + dir_x * 1.5,
+                        pos_y=float(target_y) + dir_y * 1.5,
+                        rand=rand,
+                    )
+                    self.fx_queue.add_random(
+                        pos_x=float(target_x) + dir_x * 2.0,
+                        pos_y=float(target_y) + dir_y * 2.0,
+                        rand=rand,
+                    )
+                    self.fx_queue.add_random(
+                        pos_x=float(target_x) + dir_x * 2.5,
+                        pos_y=float(target_y) + dir_y * 2.5,
+                        rand=rand,
+                    )
+
+            if bloody:
+                lo = -30
+                hi = 30
+                while lo > -60:
+                    span = hi - lo
+                    for _ in range(2):
+                        dx = float(int(rand()) % span + lo)
+                        dy = float(int(rand()) % span + lo)
+                        self.fx_queue.add_random(
+                            pos_x=float(target_x) + dx,
+                            pos_y=float(target_y) + dy,
+                            rand=rand,
+                        )
+                    lo -= 10
+                    hi += 10
 
             # Native hit path: spawn transient blood splatter particles and only
             # bake decals into the terrain once those particles expire.
-            base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
             if bloody:
                 for _ in range(8):
                     spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
@@ -542,6 +592,9 @@ class GameWorld:
                     detail_preset=detail_preset,
                     fx_toggle=fx_toggle,
                 )
+                continue
+
+            if freeze_active:
                 continue
 
             for _ in range(2):
