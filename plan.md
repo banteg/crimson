@@ -199,7 +199,7 @@ These are contained changes that won’t force architecture churn.
   * Angry Reloader burst → use `0x0B`
 * Add missing SFX triggers for each burst (original uses small explosion SFX)
 
-3. [ ] Add regression tests for these
+3. [x] Add regression tests for these
 
 * Create a “spawn signature” test that runs a controlled RNG seed and asserts:
 
