@@ -170,6 +170,7 @@ class SurvivalMode(BaseGameplayMode):
                 self.close_requested = True
             return
         if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
             self._close_perk_menu()
             return
 
@@ -291,6 +292,8 @@ class SurvivalMode(BaseGameplayMode):
         return rl.Rectangle(x, y, text_w, text_h)
 
     def _open_perk_menu(self) -> None:
+        if self._perk_menu_open:
+            return
         players = self._world.players
         choices = perk_selection_current_choices(
             self._state,
@@ -302,6 +305,7 @@ class SurvivalMode(BaseGameplayMode):
         if not choices:
             self._perk_menu_open = False
             return
+        self._world.audio_router.play_sfx("sfx_ui_panelclick")
         self._perk_menu_open = True
         self._perk_menu_selected = 0
 
@@ -369,6 +373,7 @@ class SurvivalMode(BaseGameplayMode):
             if rl.check_collision_point_rec(mouse, rect):
                 self._perk_menu_selected = idx
                 if click:
+                    self._world.audio_router.play_sfx("sfx_ui_buttonclick")
                     perk_selection_pick(
                         self._state,
                         players,
@@ -394,10 +399,12 @@ class SurvivalMode(BaseGameplayMode):
             mouse=mouse,
             click=click,
         ):
+            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
             self._close_perk_menu()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
             perk_selection_pick(
                 self._state,
                 players,
