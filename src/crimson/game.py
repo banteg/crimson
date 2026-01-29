@@ -89,6 +89,14 @@ class GameConfig:
 
 
 @dataclass(slots=True)
+class HighScoresRequest:
+    game_mode_id: int
+    quest_stage_major: int = 0
+    quest_stage_minor: int = 0
+    highlight_rank: int | None = None
+
+
+@dataclass(slots=True)
 class GameState:
     base_dir: Path
     assets_dir: Path
@@ -107,6 +115,7 @@ class GameState:
     menu_ground: GroundRenderer | None = None
     menu_sign_locked: bool = False
     pending_quest_level: str | None = None
+    pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
     quest_fail_retry_count: int = 0
     quit_requested: bool = False
@@ -766,6 +775,15 @@ class SurvivalGameView:
 
     def update(self, dt: float) -> None:
         self._mode.update(dt)
+        mode_action = self._mode.take_action()
+        if mode_action == "open_high_scores":
+            self._state.pending_high_scores = HighScoresRequest(game_mode_id=1)
+            self._action = "open_high_scores"
+            return
+        if mode_action == "back_to_menu":
+            self._action = "back_to_menu"
+            self._mode.close_requested = False
+            return
         if getattr(self._mode, "close_requested", False):
             self._action = "back_to_menu"
             self._mode.close_requested = False
@@ -811,6 +829,15 @@ class RushGameView:
 
     def update(self, dt: float) -> None:
         self._mode.update(dt)
+        mode_action = self._mode.take_action()
+        if mode_action == "open_high_scores":
+            self._state.pending_high_scores = HighScoresRequest(game_mode_id=2)
+            self._action = "open_high_scores"
+            return
+        if mode_action == "back_to_menu":
+            self._action = "back_to_menu"
+            self._mode.close_requested = False
+            return
         if getattr(self._mode, "close_requested", False):
             self._action = "back_to_menu"
             self._mode.close_requested = False
@@ -856,6 +883,15 @@ class TypoShooterGameView:
 
     def update(self, dt: float) -> None:
         self._mode.update(dt)
+        mode_action = self._mode.take_action()
+        if mode_action == "open_high_scores":
+            self._state.pending_high_scores = HighScoresRequest(game_mode_id=4)
+            self._action = "open_high_scores"
+            return
+        if mode_action == "back_to_menu":
+            self._action = "back_to_menu"
+            self._mode.close_requested = False
+            return
         if getattr(self._mode, "close_requested", False):
             self._action = "back_to_menu"
             self._mode.close_requested = False
@@ -1012,14 +1048,14 @@ class QuestResultsView:
         self._ground: GroundRenderer | None = None
         self._outcome: QuestRunOutcome | None = None
         self._quest_title: str = ""
+        self._quest_stage_major = 0
+        self._quest_stage_minor = 0
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._breakdown = None
         self._breakdown_anim = None
         self._record = None
         self._rank_index: int | None = None
-        self._high_scores: list = []
-        self._show_high_scores = False
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
@@ -1027,7 +1063,7 @@ class QuestResultsView:
 
     def open(self) -> None:
         from .quests.results import QuestResultsBreakdownAnim, compute_quest_final_time
-        from .persistence.highscores import HighScoreRecord, read_highscore_table, scores_path_for_config, upsert_highscore_record
+        from .persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
 
         self._action = None
         self._ground = ensure_menu_ground(self._state)
@@ -1037,14 +1073,14 @@ class QuestResultsView:
         outcome = self._outcome
         self._state.quest_fail_retry_count = 0
         self._quest_title = ""
+        self._quest_stage_major = 0
+        self._quest_stage_minor = 0
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
         self._breakdown = None
         self._breakdown_anim = None
         self._record = None
         self._rank_index = None
-        self._high_scores = []
-        self._show_high_scores = False
         self._button_tex = None
         self._small_font = None
         if outcome is None:
@@ -1058,6 +1094,8 @@ class QuestResultsView:
         except Exception:
             major = 0
             minor = 0
+        self._quest_stage_major = int(major)
+        self._quest_stage_minor = int(minor)
 
         try:
             from .quests import quest_by_level
@@ -1126,15 +1164,10 @@ class QuestResultsView:
 
         path = scores_path_for_config(self._state.base_dir, self._state.config, quest_stage_major=major, quest_stage_minor=minor)
         try:
-            table, rank_index = upsert_highscore_record(path, record)
+            _table, rank_index = upsert_highscore_record(path, record)
             self._rank_index = int(rank_index)
-            self._high_scores = list(table)
         except Exception:
             self._rank_index = None
-            try:
-                self._high_scores = read_highscore_table(path, game_mode_id=3)
-            except Exception:
-                self._high_scores = []
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
@@ -1150,8 +1183,8 @@ class QuestResultsView:
         self._breakdown = None
         self._breakdown_anim = None
         self._rank_index = None
-        self._high_scores = []
-        self._show_high_scores = False
+        self._quest_stage_major = 0
+        self._quest_stage_minor = 0
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
 
@@ -1165,14 +1198,12 @@ class QuestResultsView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            if self._show_high_scores:
-                self._show_high_scores = False
-            else:
-                self._action = "back_to_menu"
+            self._action = "back_to_menu"
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
-            self._show_high_scores = not self._show_high_scores
+            self._open_high_scores_list()
+            return
 
         outcome = self._outcome
         record = self._record
@@ -1246,7 +1277,7 @@ class QuestResultsView:
                 self._action = "back_to_menu"
                 return
             if action == "high_scores":
-                self._show_high_scores = not self._show_high_scores
+                self._open_high_scores_list()
                 return
 
     def draw(self) -> None:
@@ -1377,42 +1408,6 @@ class QuestResultsView:
                 text_y = rect.y + 10.0 * scale
                 draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
 
-        if self._show_high_scores and self._high_scores:
-            screen_w = float(rl.get_screen_width())
-            table_x = max(32.0, screen_w - 300.0)
-            table_y = 196.0
-            header_color = rl.Color(255, 255, 255, 255)
-            draw_small_text(font, "High scores", table_x, table_y - 18.0, 1.0, header_color)
-
-            row_step = 16.0
-            max_y = y0 - 8.0 if y0 > 1e-3 else float(rl.get_screen_height()) - 40.0
-            available = max(0.0, max_y - table_y)
-            max_rows = int(available // row_step)
-            rows = min(10, len(self._high_scores), max_rows)
-
-            for idx in range(rows):
-                entry = self._high_scores[idx]
-                name = ""
-                try:
-                    name = str(entry.name())
-                except Exception:
-                    name = ""
-                if not name:
-                    name = "???"
-                if len(name) > 16:
-                    name = name[:16]
-                time_ms = 0
-                try:
-                    time_ms = int(entry.survival_elapsed_ms)
-                except Exception:
-                    time_ms = 0
-                time_text = "--:--" if time_ms == 0 else _fmt_clock(time_ms)
-                line = f"{idx + 1:2d}. {name:<16} {time_text}"
-                color = text_color
-                if self._rank_index is not None and idx == int(self._rank_index):
-                    color = rl.Color(255, 255, 255, 255)
-                draw_small_text(font, line, table_x, table_y + float(idx) * row_step, 1.0, color)
-
         if anim is not None and not anim.done:
             draw_small_text(
                 font,
@@ -1437,6 +1432,15 @@ class QuestResultsView:
         action = self._action
         self._action = None
         return action
+
+    def _open_high_scores_list(self) -> None:
+        self._state.pending_high_scores = HighScoresRequest(
+            game_mode_id=3,
+            quest_stage_major=int(self._quest_stage_major),
+            quest_stage_minor=int(self._quest_stage_minor),
+            highlight_rank=self._rank_index,
+        )
+        self._action = "open_high_scores"
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -1639,6 +1643,265 @@ class QuestFailedView:
         return self._small_font
 
 
+class HighScoresView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._ground: GroundRenderer | None = None
+        self._action: str | None = None
+        self._cursor_pulse_time = 0.0
+        self._small_font: SmallFontData | None = None
+        self._button_tex: rl.Texture2D | None = None
+
+        self._request: HighScoresRequest | None = None
+        self._records: list = []
+        self._scroll_index = 0
+
+    def open(self) -> None:
+        from .persistence.highscores import read_highscore_table, scores_path_for_mode
+
+        self._action = None
+        self._ground = ensure_menu_ground(self._state)
+        self._cursor_pulse_time = 0.0
+        self._small_font = None
+        self._scroll_index = 0
+
+        cache = _ensure_texture_cache(self._state)
+        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+
+        request = self._state.pending_high_scores
+        self._state.pending_high_scores = None
+        if request is None:
+            request = HighScoresRequest(game_mode_id=int(self._state.config.data.get("game_mode", 1) or 1))
+
+        if int(request.game_mode_id) == 3 and (int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0):
+            major, minor = self._parse_quest_level(self._state.pending_quest_level)
+            if major <= 0 or minor <= 0:
+                major, minor = self._parse_quest_level(self._state.config.data.get("quest_level"))
+            if major <= 0 or minor <= 0:
+                major = int(self._state.config.data.get("quest_stage_major", 0) or 0)
+                minor = int(self._state.config.data.get("quest_stage_minor", 0) or 0)
+            request.quest_stage_major = int(major)
+            request.quest_stage_minor = int(minor)
+
+        self._request = request
+        path = scores_path_for_mode(
+            self._state.base_dir,
+            int(request.game_mode_id),
+            quest_stage_major=int(request.quest_stage_major),
+            quest_stage_minor=int(request.quest_stage_minor),
+        )
+        try:
+            self._records = read_highscore_table(path, game_mode_id=int(request.game_mode_id))
+        except Exception:
+            self._records = []
+
+    def close(self) -> None:
+        if self._small_font is not None:
+            rl.unload_texture(self._small_font.texture)
+            self._small_font = None
+        self._button_tex = None
+        self._request = None
+        self._records = []
+        self._scroll_index = 0
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+        self._cursor_pulse_time += min(dt, 0.1) * 1.1
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._action = "back_to_previous"
+            return
+
+        mouse = rl.get_mouse_position()
+        clicked = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        tex = self._button_tex
+        if tex is not None and clicked:
+            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            button_w = float(tex.width) * scale
+            button_h = float(tex.height) * scale
+            gap_x = 18.0 * scale
+            x0 = 32.0
+            y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
+            back_rect = rl.Rectangle(x0, y0, button_w, button_h)
+            menu_rect = rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h)
+            if back_rect.x <= mouse.x <= back_rect.x + back_rect.width and back_rect.y <= mouse.y <= back_rect.y + back_rect.height:
+                self._action = "back_to_previous"
+                return
+            if menu_rect.x <= mouse.x <= menu_rect.x + menu_rect.width and menu_rect.y <= mouse.y <= menu_rect.y + menu_rect.height:
+                self._action = "back_to_menu"
+                return
+
+        font = self._ensure_small_font()
+        rows = self._visible_rows(font)
+        max_scroll = max(0, len(self._records) - rows)
+
+        wheel = int(rl.get_mouse_wheel_move())
+        if wheel:
+            self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+            self._scroll_index = max(0, int(self._scroll_index) - 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+            self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
+            self._scroll_index = max(0, int(self._scroll_index) - rows)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+            self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
+            self._scroll_index = 0
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
+            self._scroll_index = max_scroll
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
+
+        font = self._ensure_small_font()
+        request = self._request
+        mode_id = int(request.game_mode_id) if request is not None else int(self._state.config.data.get("game_mode", 1) or 1)
+        quest_major = int(request.quest_stage_major) if request is not None else 0
+        quest_minor = int(request.quest_stage_minor) if request is not None else 0
+        highlight_rank = request.highlight_rank if request is not None else None
+
+        title = "High scores"
+        subtitle = self._mode_label(mode_id, quest_major, quest_minor)
+        draw_small_text(font, title, 32.0, 120.0, 1.2, rl.Color(235, 235, 235, 255))
+        draw_small_text(font, subtitle, 32.0, 152.0, 1.0, rl.Color(190, 190, 200, 255))
+
+        header_color = rl.Color(255, 255, 255, int(255 * 0.85))
+        row_y0 = 188.0
+        draw_small_text(font, "Rank", 32.0, row_y0, 1.0, header_color)
+        draw_small_text(font, "Name", 96.0, row_y0, 1.0, header_color)
+        score_label = "Score" if mode_id not in (2, 3) else "Time"
+        draw_small_text(font, score_label, 320.0, row_y0, 1.0, header_color)
+
+        row_step = float(font.cell_size)
+        rows = self._visible_rows(font)
+        start = max(0, int(self._scroll_index))
+        end = min(len(self._records), start + rows)
+        y = row_y0 + row_step
+
+        if start >= end:
+            draw_small_text(font, "No scores yet.", 32.0, y + 8.0, 1.0, rl.Color(190, 190, 200, 255))
+        else:
+            for idx in range(start, end):
+                entry = self._records[idx]
+                name = ""
+                try:
+                    name = str(entry.name())
+                except Exception:
+                    name = ""
+                if not name:
+                    name = "???"
+                if len(name) > 16:
+                    name = name[:16]
+
+                value = ""
+                if mode_id in (2, 3):
+                    seconds = float(int(getattr(entry, "survival_elapsed_ms", 0))) * 0.001
+                    value = f"{seconds:7.2f}s"
+                else:
+                    value = f"{int(getattr(entry, 'score_xp', 0)):7d}"
+
+                color = rl.Color(255, 255, 255, int(255 * 0.7))
+                if highlight_rank is not None and int(highlight_rank) == idx:
+                    color = rl.Color(255, 255, 255, 255)
+
+                draw_small_text(font, f"{idx + 1:>3}", 32.0, y, 1.0, color)
+                draw_small_text(font, name, 96.0, y, 1.0, color)
+                draw_small_text(font, value, 320.0, y, 1.0, color)
+                y += row_step
+
+        tex = self._button_tex
+        if tex is not None:
+            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            button_w = float(tex.width) * scale
+            button_h = float(tex.height) * scale
+            gap_x = 18.0 * scale
+            x0 = 32.0
+            y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
+            x1 = x0 + button_w + gap_x
+
+            buttons = [
+                ("Back", rl.Rectangle(x0, y0, button_w, button_h)),
+                ("Main menu", rl.Rectangle(x1, y0, button_w, button_h)),
+            ]
+            mouse = rl.get_mouse_position()
+            for label, rect in buttons:
+                hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
+                alpha = 255 if hovered else 220
+                rl.draw_texture_pro(
+                    tex,
+                    rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
+                    rect,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.Color(255, 255, 255, alpha),
+                )
+                label_w = measure_small_text_width(font, label, 1.0 * scale)
+                text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
+                text_y = rect.y + 10.0 * scale
+                draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
+
+        draw_small_text(
+            font,
+            "UP/DOWN: Scroll    PGUP/PGDN: Page    ESC: Back",
+            32.0,
+            float(rl.get_screen_height()) - 28.0,
+            1.0,
+            rl.Color(190, 190, 200, 255),
+        )
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+    def _ensure_small_font(self) -> SmallFontData:
+        if self._small_font is not None:
+            return self._small_font
+        missing_assets: list[str] = []
+        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        return self._small_font
+
+    def _visible_rows(self, font: SmallFontData) -> int:
+        row_step = float(font.cell_size)
+        table_top = 188.0 + row_step
+        reserved_bottom = 96.0
+        available = max(0.0, float(rl.get_screen_height()) - table_top - reserved_bottom)
+        return max(1, int(available // row_step))
+
+    @staticmethod
+    def _parse_quest_level(level: str | None) -> tuple[int, int]:
+        if not level:
+            return (0, 0)
+        try:
+            major_text, minor_text = str(level).split(".", 1)
+            return (int(major_text), int(minor_text))
+        except Exception:
+            return (0, 0)
+
+    @staticmethod
+    def _mode_label(mode_id: int, quest_major: int, quest_minor: int) -> str:
+        if int(mode_id) == 1:
+            return "Survival"
+        if int(mode_id) == 2:
+            return "Rush"
+        if int(mode_id) == 4:
+            return "Typ-o Shooter"
+        if int(mode_id) == 3:
+            if int(quest_major) > 0 and int(quest_minor) > 0:
+                return f"Quest {int(quest_major)}.{int(quest_minor)}"
+            return "Quests"
+        return f"Mode {int(mode_id)}"
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
@@ -1651,6 +1914,7 @@ class GameLoopView:
             "start_quest": QuestGameView(state),
             "quest_results": QuestResultsView(state),
             "quest_failed": QuestFailedView(state),
+            "open_high_scores": HighScoresView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": RushGameView(state),
             "start_typo": TypoShooterGameView(state),
@@ -1675,6 +1939,7 @@ class GameLoopView:
             ),
         }
         self._front_active: FrontView | None = None
+        self._front_stack: list[FrontView] = []
         self._active: View = self._boot
         self._demo_active = False
         self._menu_active = False
@@ -1706,6 +1971,20 @@ class GameLoopView:
             if action == "back_to_menu":
                 self._front_active.close()
                 self._front_active = None
+                while self._front_stack:
+                    self._front_stack.pop().close()
+                self._menu.open()
+                self._active = self._menu
+                self._menu_active = True
+                return
+            if action == "back_to_previous":
+                if self._front_stack:
+                    self._front_active.close()
+                    self._front_active = self._front_stack.pop()
+                    self._active = self._front_active
+                    return
+                self._front_active.close()
+                self._front_active = None
                 self._menu.open()
                 self._active = self._menu
                 self._menu_active = True
@@ -1723,7 +2002,10 @@ class GameLoopView:
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
-                    self._front_active.close()
+                    if action == "open_high_scores":
+                        self._front_stack.append(self._front_active)
+                    else:
+                        self._front_active.close()
                     view.open()
                     self._front_active = view
                     self._active = view
@@ -1802,6 +2084,8 @@ class GameLoopView:
             self._menu.close()
         if self._front_active is not None:
             self._front_active.close()
+        while self._front_stack:
+            self._front_stack.pop().close()
         if self._demo_active:
             self._demo.close()
         if self._state.menu_ground is not None and self._state.menu_ground.render_target is not None:

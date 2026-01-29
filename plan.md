@@ -13,7 +13,7 @@ Use this file as the “source of truth” for what to implement next in `src/` 
 - [x] 6) Implement Typ-o Shooter (end-to-end)
 - [x] 7) Polish + regression tests
 - [x] 8) Refresh rewrite docs
-- [ ] 9) High score list screen (state `0xe`)
+- [x] 9) High score list screen (state `0xe`)
 
 ---
 
@@ -370,9 +370,9 @@ Goal: eliminate the current “Survival=3” mismatch so perks/highscores/UI don
 
 ## 9) High score list screen (state `0xe`)
 
-- [ ] Add a dedicated high-score list view (local `scores5/*.hi`)
-- [ ] Allow returning back to Game Over / Quest Results (view stack)
-- [ ] Wire “High scores” buttons to open the list screen
-  - [ ] Survival/Rush/Typ-o Game Over
-  - [ ] Quest Results
-- [ ] Tests (routing + file selection)
+- [x] Add a dedicated high-score list view (local `scores5/*.hi`)
+- [x] Allow returning back to Game Over / Quest Results (view stack)
+- [x] Wire “High scores” buttons to open the list screen
+  - [x] Survival/Rush/Typ-o Game Over
+  - [x] Quest Results
+- [x] Tests (routing + file selection)

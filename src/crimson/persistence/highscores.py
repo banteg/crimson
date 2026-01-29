@@ -219,6 +219,26 @@ def scores_dir_for_base_dir(base_dir: Path) -> Path:
     return base_dir / "scores5"
 
 
+def scores_path_for_mode(
+    base_dir: Path,
+    game_mode_id: int,
+    *,
+    quest_stage_major: int = 0,
+    quest_stage_minor: int = 0,
+) -> Path:
+    root = scores_dir_for_base_dir(base_dir)
+    mode = int(game_mode_id)
+    if mode == 1:
+        return root / "survival.hi"
+    if mode == 2:
+        return root / "rush.hi"
+    if mode == 4:
+        return root / "typo.hi"
+    if mode == 3:
+        return root / f"quest{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
+    return root / "unknown.hi"
+
+
 def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
     mode = int(config.data.get("game_mode", 1))
     root = scores_dir_for_base_dir(base_dir)

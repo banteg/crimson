@@ -7,6 +7,7 @@ import time
 from crimson.game import (
     GameLoopView,
     GameState,
+    HighScoresView,
     QuestGameView,
     RushGameView,
     SurvivalGameView,
@@ -46,3 +47,4 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     assert isinstance(views["start_typo"], TypoShooterGameView)
     assert isinstance(views["start_tutorial"], TutorialGameView)
     assert isinstance(views["start_quest"], QuestGameView)
+    assert isinstance(views["open_high_scores"], HighScoresView)

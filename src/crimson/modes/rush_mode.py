@@ -82,6 +82,7 @@ class RushMode(BaseGameplayMode):
     def _handle_input(self) -> None:
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+                self._action = "back_to_menu"
                 self.close_requested = True
             return
 
@@ -171,7 +172,11 @@ class RushMode(BaseGameplayMode):
                 if action == "play_again":
                     self.open()
                     return
-                if action in {"main_menu", "high_scores"}:
+                if action == "high_scores":
+                    self._action = "open_high_scores"
+                    return
+                if action == "main_menu":
+                    self._action = "back_to_menu"
                     self.close_requested = True
             return
 

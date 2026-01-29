@@ -55,6 +55,7 @@ class BaseGameplayMode:
         self._base_dir = config.path.parent if config is not None else Path.cwd()
 
         self.close_requested = False
+        self._action: str | None = None
         self._paused = False
 
         self._world = GameWorld(
@@ -139,6 +140,7 @@ class BaseGameplayMode:
 
     def open(self) -> None:
         self.close_requested = False
+        self._action = None
         self._paused = False
         self._missing_assets.clear()
         self._hud_missing.clear()
@@ -172,6 +174,11 @@ class BaseGameplayMode:
         self._hud_assets = None
         self._world.close()
 
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
         if self._screen_fade is not None:
@@ -180,4 +187,3 @@ class BaseGameplayMode:
             return
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
         rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
-
