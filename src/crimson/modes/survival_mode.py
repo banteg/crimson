@@ -291,12 +291,13 @@ class SurvivalMode(BaseGameplayMode):
         return rl.Rectangle(x, y, text_w, text_h)
 
     def _open_perk_menu(self) -> None:
+        players = self._world.players
         choices = perk_selection_current_choices(
             self._state,
-            [self._player],
+            players,
             self._state.perk_selection,
             game_mode=int(GameMode.SURVIVAL),
-            player_count=1,
+            player_count=len(players),
         )
         if not choices:
             self._perk_menu_open = False
@@ -317,12 +318,13 @@ class SurvivalMode(BaseGameplayMode):
             self._close_perk_menu()
             return
         perk_state = self._state.perk_selection
+        players = self._world.players
         choices = perk_selection_current_choices(
             self._state,
-            [self._player],
+            players,
             perk_state,
             game_mode=int(GameMode.SURVIVAL),
-            player_count=1,
+            player_count=len(players),
         )
         if not choices:
             self._close_perk_menu()
@@ -369,11 +371,11 @@ class SurvivalMode(BaseGameplayMode):
                 if click:
                     perk_selection_pick(
                         self._state,
-                        [self._player],
+                        players,
                         perk_state,
                         idx,
                         game_mode=int(GameMode.SURVIVAL),
-                        player_count=1,
+                        player_count=len(players),
                     )
                     self._close_perk_menu()
                     return
@@ -398,11 +400,11 @@ class SurvivalMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             perk_selection_pick(
                 self._state,
-                [self._player],
+                players,
                 perk_state,
                 self._perk_menu_selected,
                 game_mode=int(GameMode.SURVIVAL),
-                player_count=1,
+                player_count=len(players),
             )
             self._close_perk_menu()
 
@@ -440,7 +442,8 @@ class SurvivalMode(BaseGameplayMode):
                     return
             return
 
-        perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
+        any_alive = any(player.health > 0.0 for player in self._world.players)
+        perk_pending = int(self._state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
         if self._perk_menu_open:
@@ -449,7 +452,7 @@ class SurvivalMode(BaseGameplayMode):
 
         perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
 
-        if (not perk_menu_active) and perk_pending:
+        if (not perk_menu_active) and perk_pending and (not self._paused):
             label = self._perk_prompt_label()
             if label:
                 rect = self._perk_prompt_rect(label)
@@ -468,7 +471,6 @@ class SurvivalMode(BaseGameplayMode):
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
             self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-        any_alive = any(player.health > 0.0 for player in self._world.players)
         if self._paused or (not any_alive) or perk_menu_active:
             dt = 0.0
 
@@ -537,7 +539,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         if self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3:
             return
-        if self._player.health <= 0.0:
+        if not any(player.health > 0.0 for player in self._world.players):
             return
         pending = int(self._state.perk_selection.pending_count)
         if pending <= 0:
@@ -601,12 +603,13 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         perk_state = self._state.perk_selection
+        players = self._world.players
         choices = perk_selection_current_choices(
             self._state,
-            [self._player],
+            players,
             perk_state,
             game_mode=int(GameMode.SURVIVAL),
-            player_count=1,
+            player_count=len(players),
         )
         if not choices:
             return

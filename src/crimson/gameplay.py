@@ -565,83 +565,88 @@ def perk_apply(
     if not players:
         return
     owner = players[0]
-    _increment_perk_count(owner, perk_id)
+    try:
+        _increment_perk_count(owner, perk_id)
 
-    if perk_id == PerkId.INSTANT_WINNER:
-        owner.experience += 2500
-        return
+        if perk_id == PerkId.INSTANT_WINNER:
+            owner.experience += 2500
+            return
 
-    if perk_id == PerkId.FATAL_LOTTERY:
-        if state.rng.rand() & 1:
+        if perk_id == PerkId.FATAL_LOTTERY:
+            if state.rng.rand() & 1:
+                for player in players:
+                    if player.health > 0.0:
+                        player.health = -1.0
+            else:
+                owner.experience += 10000
+            return
+
+        if perk_id == PerkId.LIFELINE_50_50:
+            # Requires creature pool access; keep as a no-op for now.
+            return
+
+        if perk_id == PerkId.THICK_SKINNED:
             for player in players:
                 if player.health > 0.0:
-                    player.health = -1.0
-        else:
-            owner.experience += 10000
-        return
+                    player.health = max(1.0, player.health * (2.0 / 3.0))
+            return
 
-    if perk_id == PerkId.LIFELINE_50_50:
-        # Requires creature pool access; keep as a no-op for now.
-        return
+        if perk_id == PerkId.BREATHING_ROOM:
+            for player in players:
+                if player.health > 0.0:
+                    player.health -= player.health * (2.0 / 3.0)
+            # Creature clear not modeled yet.
+            return
 
-    if perk_id == PerkId.THICK_SKINNED:
-        for player in players:
-            if player.health > 0.0:
-                player.health = max(1.0, player.health * (2.0 / 3.0))
-        return
+        if perk_id == PerkId.INFERNAL_CONTRACT:
+            owner.level += 3
+            if perk_state is not None:
+                perk_state.pending_count += 3
+                perk_state.choices_dirty = True
+            for player in players:
+                if player.health > 0.0:
+                    player.health = 0.1
+            return
 
-    if perk_id == PerkId.BREATHING_ROOM:
-        for player in players:
-            if player.health > 0.0:
-                player.health -= player.health * (2.0 / 3.0)
-        # Creature clear not modeled yet.
-        return
+        if perk_id == PerkId.GRIM_DEAL:
+            owner.health = -1.0
+            owner.experience += int(owner.experience * 0.18)
+            return
 
-    if perk_id == PerkId.INFERNAL_CONTRACT:
-        owner.level += 3
-        if perk_state is not None:
-            perk_state.pending_count += 3
-            perk_state.choices_dirty = True
-        for player in players:
-            if player.health > 0.0:
-                player.health = 0.1
-        return
+        if perk_id == PerkId.AMMO_MANIAC:
+            for player in players:
+                player.ammo = player.clip_size
+                player.reload_active = False
+                player.reload_timer = 0.0
+                player.reload_timer_max = 0.0
+            return
 
-    if perk_id == PerkId.GRIM_DEAL:
-        owner.health = -1.0
-        owner.experience += int(owner.experience * 0.18)
-        return
+        if perk_id == PerkId.DEATH_CLOCK:
+            _increment_perk_count(owner, PerkId.REGENERATION, amount=-perk_count_get(owner, PerkId.REGENERATION))
+            _increment_perk_count(owner, PerkId.GREATER_REGENERATION, amount=-perk_count_get(owner, PerkId.GREATER_REGENERATION))
+            for player in players:
+                if player.health > 0.0:
+                    player.health = 100.0
+            return
 
-    if perk_id == PerkId.AMMO_MANIAC:
-        for player in players:
-            player.ammo = player.clip_size
-            player.reload_active = False
-            player.reload_timer = 0.0
-            player.reload_timer_max = 0.0
-        return
+        if perk_id == PerkId.BANDAGE:
+            for player in players:
+                if player.health > 0.0:
+                    scale = float(state.rng.rand() % 50 + 1)
+                    player.health = min(100.0, player.health * scale)
+            return
 
-    if perk_id == PerkId.DEATH_CLOCK:
-        _increment_perk_count(owner, PerkId.REGENERATION, amount=-perk_count_get(owner, PerkId.REGENERATION))
-        _increment_perk_count(owner, PerkId.GREATER_REGENERATION, amount=-perk_count_get(owner, PerkId.GREATER_REGENERATION))
-        for player in players:
-            if player.health > 0.0:
-                player.health = 100.0
-        return
+        if perk_id == PerkId.MY_FAVOURITE_WEAPON:
+            for player in players:
+                player.clip_size += 2
+            return
 
-    if perk_id == PerkId.BANDAGE:
-        for player in players:
-            if player.health > 0.0:
-                scale = float(state.rng.rand() % 50 + 1)
-                player.health = min(100.0, player.health * scale)
-        return
-
-    if perk_id == PerkId.MY_FAVOURITE_WEAPON:
-        for player in players:
-            player.clip_size += 2
-        return
-
-    if perk_id == PerkId.PLAGUEBEARER:
-        owner.plaguebearer_active = True
+        if perk_id == PerkId.PLAGUEBEARER:
+            owner.plaguebearer_active = True
+    finally:
+        if len(players) > 1:
+            for player in players[1:]:
+                player.perk_counts[:] = owner.perk_counts
 
 
 def perk_auto_pick(

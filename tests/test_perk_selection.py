@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PerkSelectionState, PlayerState, perk_generate_choices, perk_selection_pick
 from crimson.perks import PerkId
@@ -54,3 +56,22 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
         PerkId.RADIOACTIVE,
         PerkId.FASTSHOT,
     ]
+
+
+def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
+    state = GameplayState()
+    p1 = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=90.0)
+    p2 = PlayerState(index=1, pos_x=0.0, pos_y=0.0, health=60.0)
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[int(PerkId.THICK_SKINNED)],
+        choices_dirty=False,
+    )
+
+    picked = perk_selection_pick(state, [p1, p2], perk_state, 0, game_mode=3, player_count=2)
+
+    assert picked == PerkId.THICK_SKINNED
+    assert p1.perk_counts[int(PerkId.THICK_SKINNED)] == 1
+    assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
+    assert p1.health == pytest.approx(60.0)
+    assert p2.health == pytest.approx(40.0)
