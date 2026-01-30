@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.bonuses import BonusId
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -110,3 +111,41 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     assert events.hits
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
 
+
+def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.state.rng = _FixedRng(1)  # rand & 7 == 1
+
+    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
+    world.players.append(player)
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.x = player.pos_x + 100.0
+    creature.y = player.pos_y
+    creature.hp = 2000.0
+    creature.max_hp = 2000.0
+
+    assert world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE)) is not None
+
+    world.step(
+        0.016,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        auto_pick_perks=False,
+        game_mode=int(GameMode.SURVIVAL),
+        perk_progression_enabled=False,
+    )
+    assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)

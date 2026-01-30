@@ -5,6 +5,7 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
+from .creatures.spawn import CreatureFlags
 from .perks import PerkId
 
 
@@ -220,6 +221,7 @@ class ProjectilePool:
         barrel_greaser_active = False
         ion_gun_master_active = False
         ion_scale = float(ion_aoe_scale)
+        poison_idx = int(PerkId.POISON_BULLETS)
         if players is not None:
             barrel_idx = int(PerkId.BARREL_GREASER)
             ion_idx = int(PerkId.ION_GUN_MASTER)
@@ -237,6 +239,22 @@ class ProjectilePool:
 
         if ion_scale == 1.0 and ion_gun_master_active:
             ion_scale = 1.2
+
+        def _owner_perk_active(owner_id: int, perk_idx: int) -> bool:
+            if players is None:
+                return False
+            if owner_id == -100:
+                player_index = 0
+            elif owner_id < 0:
+                player_index = -1 - int(owner_id)
+            else:
+                return False
+            if not (0 <= player_index < len(players)):
+                return False
+            perk_counts = getattr(players[player_index], "perk_counts", None)
+            if not isinstance(perk_counts, list):
+                return False
+            return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
 
         if damage_scale_by_type is None:
             damage_scale_by_type = {}
@@ -535,6 +553,10 @@ class ProjectilePool:
 
                     type_id = proj.type_id
                     creature = creatures[hit_idx]
+
+                    if _owner_perk_active(int(proj.owner_id), poison_idx) and (int(rng()) & 7) == 1:
+                        if hasattr(creature, "flags"):
+                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
                     if type_id == ProjectileTypeId.SPLITTER_GUN:
                         self.spawn(
