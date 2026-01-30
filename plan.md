@@ -402,7 +402,7 @@ These usually live in `player_update`:
 * [ ] Grim Deal
 * [ ] Death Clock
 * [ ] Bandage
-* [ ] My Favourite Weapon
+* [x] My Favourite Weapon
 
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:

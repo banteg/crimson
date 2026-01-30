@@ -657,7 +657,11 @@ PERK_TABLE = [
         description="You've grown very fond of your piece. You polish it all the time and talk nice to it, your precious. (+2 clip size, no more random weapon bonuses)",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): on pick, increases `clip_size` by `2` for each player. "
+            "`weapon_assign_player` (0x00452d40): also applies `+2` to `clip_size` on every weapon assignment while "
+            "the perk is active."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.BANDAGE,
