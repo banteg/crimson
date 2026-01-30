@@ -604,7 +604,7 @@ PERK_TABLE = [
         description="Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect.",
         flags=None,
         prereq=(PerkId.PERK_EXPERT,),
-        notes=None,
+        notes="`perk_choice_count`: while active, offers `7` perk choices per selection (vs `5` baseline).",
     ),
     PerkMeta(
         perk_id=PerkId.REFLEX_BOOSTED,

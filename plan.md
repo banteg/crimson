@@ -430,7 +430,7 @@ These usually live in `player_update`:
 * [ ] Regeneration
 * [ ] Ninja
 * [ ] Highlander
-* [ ] Perk Master
+* [x] Perk Master
 * [ ] Breathing Room
 * [ ] Stationary Reloader
 * [ ] Lifeline 50-50
