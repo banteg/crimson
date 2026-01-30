@@ -86,6 +86,15 @@ class WorldState:
         prev_positions = [(player.pos_x, player.pos_y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
 
+        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position
+        # (`player_state_table.aim_x/aim_y`). Our aim is otherwise updated inside `player_update`, so stage it here.
+        for idx, player in enumerate(self.players):
+            input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
+            player.aim_x = float(input_state.aim_x)
+            player.aim_y = float(input_state.aim_y)
+
+        perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
+
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
 
@@ -221,8 +230,6 @@ class WorldState:
                         color_b=0.8,
                         color_a=1.0,
                     )
-
-        perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
 
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
