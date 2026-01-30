@@ -247,7 +247,7 @@ class LightingDebugView:
         self._light_tint = rl.Color(255, 245, 220, 255)
 
         self._last_sdf_circles: list[tuple[float, float, float]] = []
-        self._occluder_radius_mul = 1.0
+        self._occluder_radius_mul = 0.25
         self._occluder_radius_pad_px = 0.0
 
         self._sdf_shader: rl.Shader | None = None
