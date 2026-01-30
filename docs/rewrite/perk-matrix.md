@@ -32,7 +32,7 @@ Notes:
 | 18 | ANXIOUS_LOADER | Anxious Loader | TBD | `src/crimson/gameplay.py:player_update` | — |
 | 19 | FINAL_REVENGE | Final Revenge | `player_take_damage` (0x00425e50): on death (`health < 0`), if Final Revenge is active, spawns an explosion burst (scale 1.8), sets `bonus_spawn_guard`, and applies radius damage within 512 units: `damage = (512 - dist) * 5.0` via `creature_apply_damage(damage_type=3, impulse=(0,0))`; plays `sfx_explosion_large` and `sfx_shockwave`. | `src/crimson/sim/world_state.py:WorldState.step` | `tests/test_final_revenge_perk.py` |
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |
-| 21 | PERK_EXPERT | Perk Expert | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
+| 21 | PERK_EXPERT | Perk Expert | `perk_choice_count`: while active, offers `6` perk choices per selection (vs `5` baseline). | `src/crimson/gameplay.py:perk_choice_count` | `tests/test_perk_expert_perk.py` |
 | 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py`<br>`tests/test_unstoppable_perk.py` |
 | 23 | REGRESSION_BULLETS | Regression Bullets | `player_update`: while reloading with an empty clip, firing a shot costs experience `int(experience - weapon.reload_time * factor)` where `factor=200` for most weapons and `factor=4` when `weapon_ammo_class == 1` (fire). | `src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_start_reload` | `tests/test_regression_bullets_perk.py` |
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |

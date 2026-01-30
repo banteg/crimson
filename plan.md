@@ -418,7 +418,7 @@ These usually live in `player_update`:
 * [ ] Fastshot
 * [ ] Anxious Loader
 * [ ] Telekinetic
-* [ ] Perk Expert
+* [x] Perk Expert
 * [ ] Unstoppable
 * [ ] Infernal Contract
 * [ ] Dodger

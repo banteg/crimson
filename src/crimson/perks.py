@@ -350,7 +350,7 @@ PERK_TABLE = [
         description="You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`perk_choice_count`: while active, offers `6` perk choices per selection (vs `5` baseline).",
     ),
     PerkMeta(
         perk_id=PerkId.UNSTOPPABLE,
