@@ -80,41 +80,41 @@ Spawn notes:
   or `player2_fire_bullets_timer` / `DAT_00490f2c > 0`) and the owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
   forces `type_id` to `0x2d` regardless of the requested type.
 
-Known type_id sources (partial):
+Known type_id sources (partial, based on decompile in `player_fire_weapon` and `bonus_apply`):
 
 | type_id | Sources | Notes |
 | --- | --- | --- |
-| `0x1` | Assault Rifle (id `0x2`); Flamethrower (id `0x8`) | Direct weapon spawn. |
-| `0x2` | Shotgun (id `0x3`) | Direct weapon spawn. |
-| `0x3` | Sawed-off Shotgun (id `0x4`); Submachine Gun (id `0x5`); Ion Rifle (id `0x15`) | Pellet-style multi-spawn. |
-| `0x5` | Gauss Gun (id `0x6`) | Direct weapon spawn. |
-| `0x6` | Mean Minigun (id `0x7`); Ion Shotgun (id `0x1f`) | Direct spawn + spread variant. |
-| `0x9` | Multi-Plasma (id `0x0a`); Plasma Minigun (id `0x0b`); Fireblast bonus (id `8`) | Radial burst in `bonus_apply`. |
-| `0x0b` | Rocket Launcher (id `0x0c`); Blow Torch (id `0x0f`); Plasma Minigun spread (id `0x0b`); Angry Reloader perk (id `50`) | Fired as single shots or radial bursts. |
-| `0x13` | Jackhammer (id `0x14`) | Direct weapon spawn. |
-| `0x15` | Ion Minigun weapon (id `0x16`); Man Bomb perk (id `53`); Shock Chain bonus (id `7`) | Beam/chain segment types. |
-| `0x16` | Ion Cannon weapon (id `0x17`); Flameburst weapon (id `0x20`); Man Bomb perk (id `53`) | Beam/chain segment type. |
-| `0x17` | Shrinkifier 5k (id `0x18`) | Beam segment type. |
-| `0x18` | Blade Gun (id `0x19`) | Direct weapon spawn. |
-| `0x19` | Spider Plasma (id `0x1a`) | Direct weapon spawn. |
-| `0x1c` | Splitter Gun weapon (id `0x1d`) | Direct weapon spawn. |
-| `0x1d` | Gauss Shotgun (id `0x1e`) | Direct weapon spawn. |
+| `0x01` | Pistol (id `0x01`); Mean Minigun (id `0x07`) | Direct weapon spawn. |
+| `0x02` | Assault Rifle (id `0x02`) | Direct weapon spawn. |
+| `0x03` | Shotgun (id `0x03`); Sawed-off Shotgun (id `0x04`); Jackhammer (id `0x14`) | Pellet-style multi-spawn. |
+| `0x05` | Submachine Gun (id `0x05`) | Direct weapon spawn. |
+| `0x06` | Gauss Gun (id `0x06`); Gauss Shotgun (id `0x1e`) | Direct spawn + spread variant. |
+| `0x09` | Plasma Rifle (id `0x09`); Multi-Plasma (id `0x0a`); Fireblast bonus (id `8`); Plasma Cannon hit ring (id `0x1c`) | Radial burst in `bonus_apply` and on-hit ring spawn. |
+| `0x0b` | Plasma Minigun (id `0x0b`); Plasma Shotgun (id `0x0e`); Multi-Plasma spread (id `0x0a`); Angry Reloader perk (id `50`) | Fired as single shots or radial bursts. |
+| `0x13` | Pulse Gun (id `0x13`) | Direct weapon spawn. |
+| `0x15` | Ion Rifle (id `0x15`); Man Bomb perk (id `53`); Shock Chain bonus (id `7`) | Beam/chain segment types. |
+| `0x16` | Ion Minigun (id `0x16`); Ion Shotgun (id `0x1f`); Man Bomb perk (id `53`) | Beam/chain segment type. |
+| `0x17` | Ion Cannon (id `0x17`) | Beam/chain segment type. |
+| `0x18` | Shrinkifier 5k (id `0x18`) | Direct weapon spawn. |
+| `0x19` | Blade Gun (id `0x19`) | Direct weapon spawn. |
+| `0x1c` | Plasma Cannon (id `0x1c`) | Direct weapon spawn. |
+| `0x1d` | Splitter Gun (id `0x1d`) | Direct weapon spawn. |
+| `0x29` | Plague Spreader Gun (id `0x29`) | Direct weapon spawn. |
+| `0x2b` | Rainbow Gun (id `0x2b`) | Direct weapon spawn. |
 | `0x2d` | Fire Bullets bonus (id `14`); Fire Cough perk (id `54`) | Forced on player shots when Fire Bullets is active. |
-| `0x29` | Bubblegun weapon (id `0x2a`) | Direct weapon spawn. |
-| `0x2b` | Grim Weapon (id `0x2c`) | Direct weapon spawn. |
 
 Non-projectile weapon paths (player_update):
 
 | Weapon id | Name | Path | Notes |
 | --- | --- | --- | --- |
-| `0x9` | Plasma Rifle | `fx_spawn_particle` | Emits particle shots; no `projectile_spawn`. |
-| `0x10` | HR Flamer | `fx_spawn_particle` | Sets particle flag `1` in `DAT_00493ee8`. |
-| `0x11` | Mini-Rocket Swarmers | `fx_spawn_particle` | Sets particle flag `2` in `DAT_00493ee8`. |
-| `0x0d` | Seeker Rockets | `fx_spawn_secondary_projectile` type `1` | Uses `secondary_projectile_pool` (`DAT_00495ad8`). |
-| `0x0e` | Plasma Shotgun | `fx_spawn_secondary_projectile` type `2` | Uses the secondary projectile pool. |
-| `0x12` | Rocket Minigun | `fx_spawn_secondary_projectile` type `2` | Spawns multiple secondaries per shot. |
-| `0x13` | Pulse Gun | `fx_spawn_secondary_projectile` type `4` | Uses the secondary projectile pool. |
-| `0x2b` | Rainbow Gun | `fx_spawn_particle_slow` | Particle-only path. |
+| `0x08` | Flamethrower | `fx_spawn_particle` | Particle-only path. |
+| `0x0f` | Blow Torch | `fx_spawn_particle` | Sets particle flag `1` in `DAT_00493ee8`. |
+| `0x10` | HR Flamer | `fx_spawn_particle` | Sets particle flag `2` in `DAT_00493ee8`. |
+| `0x0c` | Rocket Launcher | `fx_spawn_secondary_projectile` type `1` | Uses `secondary_projectile_pool` (`DAT_00495ad8`). |
+| `0x0d` | Seeker Rockets | `fx_spawn_secondary_projectile` type `2` | Uses the secondary projectile pool. |
+| `0x11` | Mini-Rocket Swarmers | `fx_spawn_secondary_projectile` type `2` | Spawns multiple secondaries per shot. |
+| `0x12` | Rocket Minigun | `fx_spawn_secondary_projectile` type `4` | Spawns multiple secondaries per shot. |
+| `0x2a` | Bubblegun | `fx_spawn_particle_slow` | Particle-only path. |
 
 See [Effects pools](effects.md) for secondary projectile type behaviors and particle style ids.
 

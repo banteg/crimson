@@ -90,7 +90,7 @@ Known uses:
 
 Some effects bypass atlas slicing and write UVs directly.
 
-- In `projectile_render`, beam/chain effects (type_id `0x15/0x16/0x17/0x2d`)
+- In `projectile_render`, beam/chain effects (type_id `0x15/0x16/0x17/0x18/0x2d`)
   call `grim_set_uv_point` to force all U values to `0.625` and V to `0..0.25`,
   then draw a quad strip. This targets a thin vertical slice inside
   `projs.png`, so `projs/grid2/frame001` is further sub‑cut at runtime.
@@ -146,12 +146,13 @@ Known `projs.png` frame selections:
 
 | type_id | grid | frame | Source | Notes |
 | --- | --- | --- | --- | --- |
-| `0x13` | 2 | 0 | Jackhammer | Draws a small glow/splash; size scales with life. |
-| `0x1d` | 4 | 3 | Gauss Shotgun | Beam/segment style when life is `0.4`. |
-| `0x19` | 4 | 6 | Spider Plasma | Beam/segment style when life is `0.4`. |
-| `0x15` | 4 | 2 | Ion Minigun | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
-| `0x16` | 4 | 2 | Ion Cannon | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
-| `0x17` | 4 | 2 | Shrinkifier 5k | Repeated along a vector to build beam/trail segments. |
+| `0x13` | 2 | 0 | Pulse Gun | Draws a small glow/splash; size scales with life. |
+| `0x1d` | 4 | 3 | Splitter Gun | Beam/segment style when life is `0.4`. |
+| `0x19` | 4 | 6 | Blade Gun | Beam/segment style when life is `0.4`. |
+| `0x15` | 4 | 2 | Ion Rifle | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
+| `0x16` | 4 | 2 | Ion Minigun | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
+| `0x17` | 4 | 2 | Ion Cannon | Repeated along a vector to build beam/trail segments. |
+| `0x18` | 4 | 2 | Shrinkifier 5k | Repeated along a vector to build beam/trail segments. |
 | `0x2d` | 4 | 2 | Fire Bullets bonus + Fire Cough perk | Used by the Fire Bullets bonus (bonus id 14) and the Fire Cough perk (perk id 54). The bonus path spawns `weapon_projectile_pellet_count[weapon_id]` pellets per shot. |
 
 The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
