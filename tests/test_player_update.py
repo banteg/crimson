@@ -103,7 +103,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
 
     type_ids = _active_type_ids(pool)
-    assert type_ids == [0x2C]
+    assert type_ids == [0x2D]
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
@@ -117,7 +117,7 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {0x2C}
+    assert set(type_ids) == {0x2D}
 
 
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:

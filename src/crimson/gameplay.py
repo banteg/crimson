@@ -1216,7 +1216,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = ProjectileTypeId.ION_CANNON if ((idx & 1) == 0) else ProjectileTypeId.ION_MINIGUN
+        type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -1813,9 +1813,9 @@ def bonus_apply(
                     pos_x=float(origin_pos.pos_x),
                     pos_y=float(origin_pos.pos_y),
                     angle=angle,
-                    type_id=int(ProjectileTypeId.ION_MINIGUN),
+                    type_id=int(ProjectileTypeId.ION_RIFLE),
                     owner_id=int(owner_id),
-                    base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_MINIGUN)),
+                    base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_RIFLE)),
                 )
                 state.bonus_spawn_guard = False
         return
