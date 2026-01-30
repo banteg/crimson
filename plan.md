@@ -435,7 +435,7 @@ These usually live in `player_update`:
 * [x] Stationary Reloader
 * [x] Lifeline 50-50
 
-3. [ ] Add minimal scenario tests per perk
+3. [x] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
 * set perk active

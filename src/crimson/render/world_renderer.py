@@ -26,6 +26,12 @@ if TYPE_CHECKING:
 _RAD_TO_DEG = 57.29577951308232
 
 
+def monster_vision_fade_alpha(hitbox_size: float) -> float:
+    if float(hitbox_size) >= 0.0:
+        return 1.0
+    return clamp((float(hitbox_size) + 10.0) * 0.1, 0.0, 1.0)
+
+
 @dataclass(slots=True)
 class WorldRenderer:
     _world: GameWorld
@@ -1157,7 +1163,7 @@ class WorldRenderer:
                 asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
                 texture = self.creature_textures.get(asset) if asset is not None else None
                 if monster_vision and particles_texture is not None and monster_vision_src is not None:
-                    fade = 1.0 if hitbox_size >= 0.0 else clamp((hitbox_size + 10.0) * 0.1, 0.0, 1.0)
+                    fade = monster_vision_fade_alpha(hitbox_size)
                     mv_alpha = fade * entity_alpha
                     if mv_alpha > 1e-3:
                         size = 90.0 * scale
