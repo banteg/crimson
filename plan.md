@@ -452,24 +452,24 @@ This is how you keep “high fidelity” from regressing later.
 
 Once damage/death/perks are correct, weapon work becomes much less painful because all the downstream semantics are unified.
 
-1. Implement the documented non-projectile weapon paths
+1. [ ] Implement the documented non-projectile weapon paths
    From `docs/structs/projectile.md`:
 
-* Plasma Rifle
-* HR Flamer
-* Mini-Rocket Swarmers
-* Rainbow Gun
+- [ ] Plasma Rifle
+- [ ] HR Flamer
+- [ ] Mini-Rocket Swarmers
+- [ ] Rainbow Gun
 
 These likely require:
 
-* a “particle weapon fire” path (spawn into particle pool)
-* correct hit checks/damage application for particles (which should call `creature_apply_damage`)
+- [ ] a “particle weapon fire” path (spawn into particle pool)
+- [ ] correct hit checks/damage application for particles (which should call `creature_apply_damage`)
 
-2. Close the secondary projectile fidelity gaps
+2. [ ] Close the secondary projectile fidelity gaps
 
-* Rocket Minigun “multiple secondaries per shot”
-* Validate Seeker Rockets homing parameters vs decompile
-* Ensure Pulse Gun / Plasma Shotgun behaviors match (hit radius, damage pool behavior, on-hit effects)
+- [ ] Rocket Minigun “multiple secondaries per shot”
+- [ ] Validate Seeker Rockets homing parameters vs decompile
+- [ ] Ensure Pulse Gun / Plasma Shotgun behaviors match (hit radius, damage pool behavior, on-hit effects)
 
 3. Expand projectile type handling
    Right now, unhandled type IDs silently fall into generic behavior. That’s fine for subset play, but not for fidelity.
