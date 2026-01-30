@@ -461,7 +461,7 @@ PERK_TABLE = [
         description="It literally boils inside you. That's exactly why you need to let it out once in a while, unfortunately for those near you.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_update`: periodically spawns an 8-shot ring alternating projectile types `0x0b/0x09`; the interval is randomized to `(crt_rand() % 8) + 2` seconds.",
     ),
     PerkMeta(
         perk_id=PerkId.BONUS_ECONOMIST,

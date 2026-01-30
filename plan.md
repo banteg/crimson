@@ -424,7 +424,7 @@ These usually live in `player_update`:
 * [x] Dodger
 * [x] Bonus Magnet
 * [ ] Monster Vision
-* [ ] Hot Tempered
+* [x] Hot Tempered
 * [x] Bonus Economist
 * [ ] Thick Skinned
 * [ ] Regeneration
