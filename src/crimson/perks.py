@@ -128,7 +128,7 @@ PERK_TABLE = [
         description="Man, you sure know how to load a gun.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_start_reload` (0x00413430): if Fastloader is active, multiplies weapon `reload_time` by `0.7`.",
     ),
     PerkMeta(
         perk_id=PerkId.LEAN_MEAN_EXP_MACHINE,

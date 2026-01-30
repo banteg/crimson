@@ -391,6 +391,10 @@ These usually live in `player_update`:
 
 * [x] Sharpshooter
 
+**I. Reload speed perks**
+
+* [x] Fastloader
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
