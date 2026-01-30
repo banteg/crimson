@@ -137,7 +137,8 @@ def default_crimson_cfg_data() -> dict:
     config.data["player_count"] = 1
     config.data["game_mode"] = 1
     config.data["ui_info_texts"] = 1
-    config.data["fx_toggle"] = 1
+    # `config_init_defaults` (0x004028f0): defaults to 0 (enables blood splatter and "Bloody Mess" perk naming).
+    config.data["fx_toggle"] = 0
     config.data["sfx_volume"] = 1.0
     config.data["music_volume"] = 1.0
     config.data["detail_preset"] = 5

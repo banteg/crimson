@@ -5,7 +5,7 @@ import pyray as rl
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.view import View, ViewContext
 
-from ..perks import PERK_BY_ID, PerkId
+from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
 from ..ui.perk_menu import (
     PerkMenuAssets,
     PerkMenuLayout,
@@ -277,8 +277,7 @@ class PerkMenuDebugView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         for idx, perk_id in enumerate(choices):
-            meta = PERK_BY_ID.get(int(perk_id))
-            label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+            label = perk_display_name(int(perk_id))
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -361,8 +360,7 @@ class PerkMenuDebugView:
 
                 mouse = rl.get_mouse_position()
                 for idx, perk_id in enumerate(choices):
-                    meta = PERK_BY_ID.get(int(perk_id))
-                    label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+                    label = perk_display_name(int(perk_id))
                     item_x = computed.list_x
                     item_y = computed.list_y + float(idx) * computed.list_step_y
                     rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -370,8 +368,7 @@ class PerkMenuDebugView:
                     draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]
-                meta = PERK_BY_ID.get(int(selected_id))
-                desc = meta.description if meta is not None else "Unknown perk."
+                desc = perk_display_description(int(selected_id))
                 desc_x = float(computed.desc.x)
                 desc_y = float(computed.desc.y)
                 desc_w = float(computed.desc.width)

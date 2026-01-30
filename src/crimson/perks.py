@@ -800,9 +800,29 @@ PERK_TABLE = [
 
 PERK_BY_ID = {int(entry.perk_id): entry for entry in PERK_TABLE}
 
+QUICK_LEARNER_NAME = "Quick Learner"
+QUICK_LEARNER_DESCRIPTION = (
+    "You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do."
+)
 
-def perk_label(perk_id: int) -> str:
-    entry = PERK_BY_ID.get(perk_id)
+
+def perk_display_name(perk_id: int, *, fx_toggle: int = 0) -> str:
+    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
+        return QUICK_LEARNER_NAME
+    entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
-        return "unknown"
+        return f"Perk {int(perk_id)}"
     return entry.name
+
+
+def perk_display_description(perk_id: int, *, fx_toggle: int = 0) -> str:
+    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
+        return QUICK_LEARNER_DESCRIPTION
+    entry = PERK_BY_ID.get(int(perk_id))
+    if entry is None:
+        return "Unknown perk."
+    return entry.description
+
+
+def perk_label(perk_id: int, *, fx_toggle: int = 0) -> str:
+    return perk_display_name(perk_id, fx_toggle=fx_toggle)

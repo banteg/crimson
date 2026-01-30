@@ -7,7 +7,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..gameplay import GameplayState, PlayerState, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
-from ..perks import PERK_BY_ID, PerkId
+from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
 from ..ui.perk_menu import (
     PerkMenuLayout,
     UiButtonState,
@@ -200,8 +200,7 @@ class PerkSelectionView:
         )
 
         for idx, perk_id in enumerate(choices):
-            meta = PERK_BY_ID.get(int(perk_id))
-            label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+            label = perk_display_name(int(perk_id))
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -325,8 +324,7 @@ class PerkSelectionView:
 
         mouse = rl.get_mouse_position()
         for idx, perk_id in enumerate(choices):
-            meta = PERK_BY_ID.get(int(perk_id))
-            label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+            label = perk_display_name(int(perk_id))
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -334,8 +332,7 @@ class PerkSelectionView:
             draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]
-        meta = PERK_BY_ID.get(int(selected))
-        desc = meta.description if meta is not None else "Unknown perk."
+        desc = perk_display_description(int(selected))
         desc_x = float(computed.desc.x)
         desc_y = float(computed.desc.y)
         desc_w = float(computed.desc.width)
@@ -384,7 +381,7 @@ class PerkSelectionView:
         )
         y += line_h
         owned = [
-            (meta.name, int(self._player.perk_counts[int(meta.perk_id)]))
+            (perk_display_name(int(meta.perk_id)), int(self._player.perk_counts[int(meta.perk_id)]))
             for meta in PERK_BY_ID.values()
             if int(self._player.perk_counts[int(meta.perk_id)]) > 0 and meta.perk_id != PerkId.ANTIPERK
         ]

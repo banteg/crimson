@@ -1121,12 +1121,16 @@ class QuestResultsView:
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native - 1)
                     self._unlock_weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id_native}"
 
-                from .perks import PERK_BY_ID, PerkId
+                from .perks import PERK_BY_ID, PerkId, perk_display_name
 
                 perk_id = int(quest.unlock_perk_id or 0)
                 if perk_id != int(PerkId.ANTIPERK):
                     perk_entry = PERK_BY_ID.get(perk_id)
-                    self._unlock_perk_name = perk_entry.name if perk_entry is not None and perk_entry.name else f"perk_{perk_id}"
+                    if perk_entry is not None and perk_entry.name:
+                        fx_toggle = int(self._state.config.data.get("fx_toggle", 0) or 0)
+                        self._unlock_perk_name = perk_display_name(perk_id, fx_toggle=fx_toggle)
+                    else:
+                        self._unlock_perk_name = f"perk_{perk_id}"
         except Exception:
             self._quest_title = ""
 

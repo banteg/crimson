@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState, PlayerState
-from crimson.perks import PerkId
+from crimson.perks import PerkId, perk_display_description, perk_display_name
 
 
 def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
@@ -33,3 +33,9 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
     assert death.xp_awarded == 16  # int(12.7 * 1.3)
     assert player.experience == 116
 
+
+def test_bloody_mess_quick_learner_name_depends_on_fx_toggle() -> None:
+    perk_id = int(PerkId.BLOODY_MESS_QUICK_LEARNER)
+    assert perk_display_name(perk_id, fx_toggle=0) == "Bloody Mess"
+    assert perk_display_name(perk_id, fx_toggle=1) == "Quick Learner"
+    assert perk_display_description(perk_id, fx_toggle=1).startswith("You learn things faster")

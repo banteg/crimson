@@ -15,7 +15,7 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import PlayerInput, most_used_weapon_id_for_player, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..persistence.highscores import HighScoreRecord
-from ..perks import PERK_BY_ID, PerkId
+from ..perks import PerkId, perk_display_description, perk_display_name
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
@@ -373,9 +373,9 @@ class SurvivalMode(BaseGameplayMode):
             master_owned=master_owned,
         )
 
+        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
         for idx, perk_id in enumerate(choices):
-            meta = PERK_BY_ID.get(int(perk_id))
-            label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -688,9 +688,9 @@ class SurvivalMode(BaseGameplayMode):
             )
 
         mouse = self._ui_mouse_pos()
+        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
         for idx, perk_id in enumerate(choices):
-            meta = PERK_BY_ID.get(int(perk_id))
-            label = meta.name if meta is not None else f"Perk {int(perk_id)}"
+            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
@@ -698,8 +698,7 @@ class SurvivalMode(BaseGameplayMode):
             draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]
-        meta = PERK_BY_ID.get(int(selected))
-        desc = meta.description if meta is not None else "Unknown perk."
+        desc = perk_display_description(int(selected), fx_toggle=fx_toggle)
         desc_x = float(computed.desc.x)
         desc_y = float(computed.desc.y)
         desc_w = float(computed.desc.width)
