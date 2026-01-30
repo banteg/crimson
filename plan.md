@@ -504,7 +504,7 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 
 - [x] Controls view (and keybind system)
 - [ ] Options parity (audio/video/gameplay toggles that exist in the original)
-- [ ] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
+- [x] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
 
 2. [ ] Statistics + progression
 
