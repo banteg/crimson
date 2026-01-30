@@ -166,7 +166,6 @@ void main()
 
     int self_idx = -1;
     float d0 = map_with_index(p, self_idx);
-    int skip_idx = (d0 < 0.0) ? self_idx : -1;
 
     float k = u_shadow_k;
     // Heuristic: larger disc lights soften shadows.
@@ -176,7 +175,11 @@ void main()
     }}
     vec2 rd = to_light / max(dist, 1e-4);
     float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
-    float shadow = softshadow(p, rd, 0.5, maxt, k, skip_idx);
+    float shadow = 0.0;
+    if (d0 >= 0.0)
+    {{
+        shadow = softshadow(p, rd, 0.5, maxt, k, -1);
+    }}
 
     float a = 1.0 - clamp(dist / u_light_range, 0.0, 1.0);
     float floor = clamp(u_shadow_floor, 0.0, 1.0);
