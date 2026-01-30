@@ -15,10 +15,12 @@ from ..gameplay import (
     PlayerInput,
     PlayerState,
     bonus_update,
+    perk_active,
     perks_update_effects,
     player_update,
     survival_progression_update,
 )
+from ..perks import PerkId
 from ..player_damage import player_take_damage
 from .world_defs import CREATURE_ANIM
 
@@ -131,6 +133,19 @@ class WorldState:
             creature = self.creatures.entries[idx]
             if not creature.active:
                 return
+
+            attacker: PlayerState | None = None
+            if owner_id == -100:
+                if self.players:
+                    attacker = self.players[0]
+            elif owner_id < 0:
+                player_index = -1 - int(owner_id)
+                if 0 <= player_index < len(self.players):
+                    attacker = self.players[player_index]
+
+            if attacker is not None and perk_active(attacker, PerkId.POISON_BULLETS):
+                if (self.state.rng.rand() & 7) == 1:
+                    creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
             death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
             killed = creature_apply_damage(

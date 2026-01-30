@@ -36,7 +36,7 @@ Notes:
 | 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py`<br>`tests/test_unstoppable_perk.py` |
 | 23 | REGRESSION_BULLETS | Regression Bullets | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
-| 25 | POISON_BULLETS | Poison Bullets | TBD | — | — |
+| 25 | POISON_BULLETS | Poison Bullets | `projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, sets `creature.flags \|= 0x01` (self-damage tick). `creature_update_all` applies this via `creature_apply_damage(creature, frame_dt * 60.0, damage_type=0, impulse=(0,0))`. | `src/crimson/sim/world_state.py:WorldState.step._apply_projectile_damage_to_creature` | `tests/test_poison_bullets_perk.py` |
 | 26 | DODGER | Dodger | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
 | 27 | BONUS_MAGNET | Bonus Magnet | TBD | `src/crimson/gameplay.py:BonusPool.try_spawn_on_kill` | — |
 | 28 | URANIUM_FILLED_BULLETS | Uranium Filled Bullets | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |

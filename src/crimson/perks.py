@@ -357,7 +357,11 @@ PERK_TABLE = [
         description="You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, "
+            "sets `creature.flags |= 0x01` (self-damage tick). `creature_update_all` applies this via "
+            "`creature_apply_damage(creature, frame_dt * 60.0, damage_type=0, impulse=(0,0))`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.DODGER,

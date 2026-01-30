@@ -353,11 +353,11 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 **C. Status / infection perks**
 These typically require creature flags/timers:
 
-* Poison Bullets
-* Plaguebearer
-* Veins of Poison
-* Toxic Avenger
-* Regression Bullets
+* [x] Poison Bullets
+* [ ] Plaguebearer
+* [ ] Veins of Poison
+* [ ] Toxic Avenger
+* [ ] Regression Bullets
 
 **D. Player passive/tick perks**
 These usually live in `player_update`:
