@@ -217,6 +217,18 @@ class _EmissiveProjectile:
     ttl: float
 
 
+@dataclass
+class _FlyingLight:
+    x: float
+    y: float
+    angle: float
+    radius: float
+    omega: float
+    range: float
+    source_radius: float
+    color: rl.Color
+
+
 class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -276,6 +288,12 @@ class LightingDebugView:
         self._max_projectiles = 128
         self._max_projectile_lights = 16
 
+        self._fly_lights_enabled = False
+        self._fly_lights: list[_FlyingLight] = []
+        self._fly_light_count = 6
+        self._fly_light_range = 320.0
+        self._fly_light_source_radius = 18.0
+
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
         self._sdf_shader_locs: dict[str, int] = {}
@@ -294,6 +312,45 @@ class LightingDebugView:
             int(_clamp(float(base.b) * m, 0.0, 255.0)),
             255,
         )
+
+    def _spawn_fly_lights(self, *, seed: int) -> None:
+        if self._player is None:
+            return
+        rng = random.Random(int(seed))
+        palette = [
+            rl.Color(120, 220, 255, 255),
+            rl.Color(255, 110, 200, 255),
+            rl.Color(140, 255, 160, 255),
+            rl.Color(255, 220, 120, 255),
+            rl.Color(180, 140, 255, 255),
+            rl.Color(255, 160, 90, 255),
+        ]
+        px = float(self._player.pos_x)
+        py = float(self._player.pos_y)
+        self._fly_lights.clear()
+        for i in range(int(self._fly_light_count)):
+            angle = rng.random() * math.tau
+            radius = 160.0 + rng.random() * 260.0
+            omega = (0.8 + rng.random() * 1.6) * (-1.0 if (i % 2) else 1.0)
+            c = palette[i % len(palette)]
+            if rng.random() < 0.5:
+                c = palette[int(rng.random() * len(palette)) % len(palette)]
+            x = _clamp(px + math.cos(angle) * radius, 0.0, WORLD_SIZE)
+            y = _clamp(py + math.sin(angle) * radius, 0.0, WORLD_SIZE)
+            r = float(self._fly_light_range) * (0.8 + rng.random() * 0.5)
+            sr = float(self._fly_light_source_radius) * (0.7 + rng.random() * 0.7)
+            self._fly_lights.append(
+                _FlyingLight(
+                    x=float(x),
+                    y=float(y),
+                    angle=float(angle),
+                    radius=float(radius),
+                    omega=float(omega),
+                    range=float(r),
+                    source_radius=float(sr),
+                    color=c,
+                )
+            )
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -328,6 +385,10 @@ class LightingDebugView:
             self._draw_occluders = not self._draw_occluders
         if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
             self._cursor_light_enabled = not self._cursor_light_enabled
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_FIVE):
+            self._fly_lights_enabled = not self._fly_lights_enabled
+            if self._fly_lights_enabled and not self._fly_lights:
+                self._spawn_fly_lights(seed=0xF17_0BEE)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
             self._debug_lightmap_preview = not self._debug_lightmap_preview
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
@@ -448,6 +509,10 @@ class LightingDebugView:
         self._cursor_light_enabled = True
         self._ambient_mul = 1.0
         self._update_ambient()
+        if self._fly_lights_enabled:
+            self._spawn_fly_lights(seed=int(seed) ^ 0xF17_0BEE)
+        else:
+            self._fly_lights.clear()
 
         rng = random.Random(int(seed))
         if self._player is None:
@@ -583,6 +648,16 @@ class LightingDebugView:
             self._proj_fire_cd = max(0.0, self._proj_fire_cd - dt_frame)
 
         if dt_world > 0.0:
+            if self._fly_lights_enabled and self._fly_lights and self._player is not None:
+                px = float(self._player.pos_x)
+                py = float(self._player.pos_y)
+                for fl in self._fly_lights:
+                    fl.angle += fl.omega * dt_world
+                    wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
+                    r = fl.radius * wobble
+                    fl.x = _clamp(px + math.cos(fl.angle) * r, 0.0, WORLD_SIZE)
+                    fl.y = _clamp(py + math.sin(fl.angle) * r, 0.0, WORLD_SIZE)
+
             keep: list[_EmissiveProjectile] = []
             margin = 80.0
             for proj in self._projectiles:
@@ -734,6 +809,8 @@ class LightingDebugView:
             "ambient_rgba": [int(self._ambient.r), int(self._ambient.g), int(self._ambient.b), int(self._ambient.a)],
             "ambient_mul": float(self._ambient_mul),
             "cursor_light_enabled": bool(self._cursor_light_enabled),
+            "fly_lights_enabled": bool(self._fly_lights_enabled),
+            "fly_light_count": int(len(self._fly_lights)),
             "shadow_k": float(self._sdf_shadow_k),
             "shadow_floor": float(self._sdf_shadow_floor),
             "occluder_radius_mul": float(self._occluder_radius_mul),
@@ -880,6 +957,21 @@ class LightingDebugView:
                 lights.append(cursor_light())
             elif self._projectiles:
                 lights.append(proj_light(self._projectiles[-1]))
+            elif self._fly_lights_enabled and self._fly_lights:
+                fl = self._fly_lights[0]
+                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                c = fl.color
+                lights.append(
+                    (
+                        float(sx),
+                        float(sy),
+                        float(fl.range),
+                        float(fl.source_radius),
+                        float(c.r) / 255.0,
+                        float(c.g) / 255.0,
+                        float(c.b) / 255.0,
+                    )
+                )
             else:
                 # Debug mode still needs a pass to visualize shader output.
                 lights.append(cursor_light())
@@ -889,6 +981,21 @@ class LightingDebugView:
             if self._projectiles:
                 for proj in self._projectiles[-self._max_projectile_lights :]:
                     lights.append(proj_light(proj))
+            if self._fly_lights_enabled and self._fly_lights:
+                for fl in self._fly_lights[:12]:
+                    sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                    c = fl.color
+                    lights.append(
+                        (
+                            float(sx),
+                            float(sy),
+                            float(fl.range),
+                            float(fl.source_radius),
+                            float(c.r) / 255.0,
+                            float(c.g) / 255.0,
+                            float(c.b) / 255.0,
+                        )
+                    )
 
         def draw_fullscreen() -> None:
             if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
@@ -959,6 +1066,19 @@ class LightingDebugView:
                 )
             rl.end_blend_mode()
 
+        if self._fly_lights_enabled and self._fly_lights:
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            for fl in self._fly_lights:
+                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                c = fl.color
+                rl.draw_circle(
+                    int(sx),
+                    int(sy),
+                    4.0,
+                    rl.Color(int(c.r), int(c.g), int(c.b), 220),
+                )
+            rl.end_blend_mode()
+
         if self._debug_lightmap_preview:
             screen_w = float(rl.get_screen_width())
             scale = 0.25
@@ -1025,6 +1145,7 @@ class LightingDebugView:
                 f"O/P occ_mul={self._occluder_radius_mul:.2f}   K/L occ_pad_px={self._occluder_radius_pad_px:.1f}  (hold shift for bigger steps)",
                 f"LMB shoot  proj={len(self._projectiles)}  proj_lights<= {self._max_projectile_lights}",
                 f"3 cursor_light={'on' if self._cursor_light_enabled else 'off'}   N/M ambient_mul={self._ambient_mul:.2f}  (hold shift for bigger steps)",
+                f"5 fly_lights={'on' if self._fly_lights_enabled else 'off'}  count={len(self._fly_lights)}",
                 "1 ui  2 occluders  4 lightmap preview",
                 "F5 dump debug (artifacts/lighting-debug/)",
             ]
