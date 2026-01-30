@@ -46,6 +46,21 @@ def _stringify_keys(mapping: dict[int, Any]) -> dict[str, Any]:
     return {str(key): value for key, value in sorted(mapping.items(), key=lambda item: item[0])}
 
 
+def _update_range(ranges: dict[str, dict[str, float]], key: str, value: Any) -> None:
+    if value is None:
+        return
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return
+    entry = ranges.get(key)
+    if entry is None:
+        ranges[key] = {"min": numeric, "max": numeric}
+    else:
+        entry["min"] = min(entry["min"], numeric)
+        entry["max"] = max(entry["max"], numeric)
+
+
 def summarize(log_path: Path) -> dict[str, Any]:
     event_counts: Counter[str] = Counter()
     event_with_weapon: Counter[str] = Counter()
@@ -76,6 +91,15 @@ def summarize(log_path: Path) -> dict[str, Any]:
     radius_damage_type_counts: Counter[int] = Counter()
 
     weapon_fire_counts: Counter[int] = Counter()
+    bonus_apply_counts: Counter[int] = Counter()
+    bonus_apply_samples: list[dict[str, Any]] = []
+    energizer_samples: list[dict[str, Any]] = []
+
+    oracle_frame_count = 0
+    oracle_player_ranges: dict[int, dict[str, dict[str, float]]] = defaultdict(dict)
+    oracle_bonus_timer_max: dict[str, float] = defaultdict(float)
+    oracle_creature_samples = 0
+    oracle_creature_max = 0
 
     start_event: dict[str, Any] | None = None
     first_ts: int | None = None
@@ -133,6 +157,16 @@ def summarize(log_path: Path) -> dict[str, Any]:
             )
         elif event == "weapon_fire" and weapon_id is not None:
             weapon_fire_counts[weapon_id] += 1
+        elif event == "bonus_apply":
+            entry = obj.get("entry")
+            if isinstance(entry, dict):
+                bonus_id = _as_int(entry.get("bonus_id"))
+                if bonus_id is not None:
+                    bonus_apply_counts[bonus_id] += 1
+                if len(bonus_apply_samples) < 12:
+                    bonus_apply_samples.append(entry)
+                if bonus_id == 2 and len(energizer_samples) < 6:
+                    energizer_samples.append(entry)
         elif event == "projectile_spawn":
             type_id = _as_int(obj.get("type_id"))
             if type_id is not None:
@@ -173,6 +207,51 @@ def summarize(log_path: Path) -> dict[str, Any]:
             damage_type = _as_int(obj.get("damage_type"))
             if damage_type is not None:
                 radius_damage_type_counts[damage_type] += 1
+        elif event == "oracle_frame":
+            oracle_frame_count += 1
+            players = obj.get("players")
+            if isinstance(players, list):
+                for player in players:
+                    if not isinstance(player, dict):
+                        continue
+                    idx = _as_int(player.get("index"))
+                    if idx is None:
+                        continue
+                    ranges = oracle_player_ranges[idx]
+                    for key in (
+                        "health",
+                        "weapon_id",
+                        "clip_size",
+                        "ammo",
+                        "reload_active",
+                        "reload_timer",
+                        "reload_timer_max",
+                        "shot_cooldown",
+                        "spread_heat",
+                        "xp",
+                        "xp_delta",
+                        "level",
+                    ):
+                        _update_range(ranges, key, player.get(key))
+                    perk = player.get("perk_timers")
+                    if isinstance(perk, dict):
+                        for key in ("hot_tempered", "man_bomb", "living_fortress", "fire_cough"):
+                            _update_range(ranges, f"perk_{key}", perk.get(key))
+                    bonus = player.get("bonus_timers")
+                    if isinstance(bonus, dict):
+                        for key in ("speed_bonus", "shield", "fire_bullets"):
+                            _update_range(ranges, f"bonus_{key}", bonus.get(key))
+            creatures = obj.get("creatures")
+            if isinstance(creatures, list):
+                oracle_creature_samples += len(creatures)
+                oracle_creature_max = max(oracle_creature_max, len(creatures))
+            bonus_timers = obj.get("bonus_timers")
+            if isinstance(bonus_timers, dict):
+                for key, value in bonus_timers.items():
+                    val = _as_float(value)
+                    if val is None:
+                        continue
+                    oracle_bonus_timer_max[key] = max(oracle_bonus_timer_max.get(key, 0.0), val)
 
     weapon_summary = []
     for weapon_id in sorted(weapon_ids):
@@ -239,6 +318,20 @@ def summarize(log_path: Path) -> dict[str, Any]:
         "damage": {
             "direct_counts_by_type": _stringify_keys(damage_type_counts),
             "radius_counts_by_type": _stringify_keys(radius_damage_type_counts),
+        },
+        "bonus_apply": {
+            "counts_by_id": _stringify_keys(bonus_apply_counts),
+            "samples": bonus_apply_samples,
+            "energizer_samples": energizer_samples,
+        },
+        "oracle": {
+            "frame_count": oracle_frame_count,
+            "player_ranges": {
+                str(idx): ranges for idx, ranges in sorted(oracle_player_ranges.items(), key=lambda item: item[0])
+            },
+            "bonus_timer_max": oracle_bonus_timer_max,
+            "creature_samples": oracle_creature_samples,
+            "creature_max_per_frame": oracle_creature_max,
         },
         "weapon_summary": weapon_summary,
     }

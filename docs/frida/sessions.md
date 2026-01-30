@@ -341,3 +341,18 @@ Summary:
 - 1,200 player-owned `projectile_spawn` events; 43 secondary spawns; 901 particle spawns.
 - 7,968 `effect_spawn` events (mostly from `projectile_update`).
 - No `weapon_fire`/`weapon_assign` or SFX-tagged events in this run (see summary for gaps).
+
+## Session 8
+
+- **Date:** 2026-01-31
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Script:** `weapon_switch_trace.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\weapon_switch_trace.js`
+- **Artifacts:** `artifacts/frida/share/weapon_switch_trace.jsonl`, `analysis/frida/weapon_switch_trace_summary.json`
+
+Summary:
+
+- Survival run with weapon cycling (49 weapon switches; ids 1–31 observed).
+- **Energizer** bonus captured (`bonus_id=2`), plus multiple nuke/weapon power-up/shield/fireblast events.
+- SFX evidence now present (`sfx_play_panned`, `sfx_play_exclusive`, `sfx_play`).
+- Oracle frames were not captured in this run (set `CRIMSON_FRIDA_ORACLE=1` to enable).
