@@ -1470,6 +1470,8 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         player.long_distance_runner_timer = 0.0
 
     speed = 120.0 * (player.move_speed_multiplier + runner_bonus)
+    if perk_active(player, PerkId.ALTERNATE_WEAPON):
+        speed *= 0.8
     if player.speed_bonus_timer > 0.0:
         speed *= 1.35
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
@@ -1548,7 +1550,10 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
 
     if input_state.reload_pressed:
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and player_swap_alt_weapon(player):
-            pass
+            weapon = _weapon_entry(player.weapon_id)
+            if weapon is not None and weapon.reload_sound is not None:
+                state.sfx_queue.append(str(weapon.reload_sound))
+            player.shot_cooldown = float(player.shot_cooldown) + 0.1
         elif player.reload_timer == 0.0:
             player_start_reload(player, state)
 
@@ -1756,7 +1761,16 @@ def bonus_apply(
         return
 
     if bonus_id == BonusId.WEAPON:
-        weapon_assign_player(player, int(amount))
+        weapon_id = int(amount)
+        if perk_active(player, PerkId.ALTERNATE_WEAPON) and player.alt_weapon_id is None:
+            player.alt_weapon_id = int(player.weapon_id)
+            player.alt_clip_size = int(player.clip_size)
+            player.alt_ammo = int(player.ammo)
+            player.alt_reload_active = bool(player.reload_active)
+            player.alt_reload_timer = float(player.reload_timer)
+            player.alt_shot_cooldown = float(player.shot_cooldown)
+            player.alt_reload_timer_max = float(player.reload_timer_max)
+        weapon_assign_player(player, weapon_id)
         return
 
     if bonus_id == BonusId.FIREBLAST:

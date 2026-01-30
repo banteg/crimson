@@ -414,7 +414,7 @@ These usually live in `player_update`:
 * [x] Bloody Mess
 * [x] Lean Mean Exp Machine
 * [x] Instant Winner
-* [ ] Alternate Weapon
+* [x] Alternate Weapon
 * [x] Fastshot
 * [x] Anxious Loader
 * [x] Telekinetic

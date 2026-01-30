@@ -203,7 +203,11 @@ PERK_TABLE = [
         description="Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key)",
         flags=PerkFlags.MODE_3_ONLY,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_apply_move_with_spawn_avoidance` (0x0041e290): scales movement delta by `0.8`. "
+            "`player_update`: pressing reload swaps the primary and alternate weapon runtime blocks, plays the "
+            "new weapon's reload SFX, and adds `+0.1` to `shot_cooldown`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.PLAGUEBEARER,
