@@ -47,7 +47,7 @@ Notes:
 | 33 | THICK_SKINNED | Thick Skinned | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/player_damage.py:player_take_damage` | `tests/test_perk_selection.py` |
 | 34 | BARREL_GREASER | Barrel Greaser | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 35 | AMMUNITION_WITHIN | Ammunition Within | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
-| 36 | VEINS_OF_POISON | Veins of Poison | TBD | — | — |
+| 36 | VEINS_OF_POISON | Veins of Poison | `creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Veins of Poison is active and Toxic Avenger is not, sets `creature.flags \|= 0x01` (self-damage tick, `frame_dt * 60`). | `src/crimson/creatures/runtime.py:CreaturePool.update` | `tests/test_veins_of_poison_perk.py` |
 | 37 | TOXIC_AVENGER | Toxic Avenger | TBD | — | — |
 | 38 | REGENERATION | Regeneration | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:perks_update_effects` | `tests/test_regeneration_perk.py` |
 | 39 | PYROMANIAC | Pyromaniac | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |

@@ -355,7 +355,7 @@ These typically require creature flags/timers:
 
 * [x] Poison Bullets
 * [ ] Plaguebearer
-* [ ] Veins of Poison
+* [x] Veins of Poison
 * [ ] Toxic Avenger
 * [ ] Regression Bullets
 

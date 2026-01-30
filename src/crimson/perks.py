@@ -471,7 +471,10 @@ PERK_TABLE = [
         description="A strong poison runs through your veins. Monsters taking a bite of you are eventually to experience an agonizing death.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Veins of Poison is active "
+            "and Toxic Avenger is not, sets `creature.flags |= 0x01` (self-damage tick, `frame_dt * 60`)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.TOXIC_AVENGER,
