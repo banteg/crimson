@@ -687,10 +687,11 @@ class LightingDebugView:
             flat: list[float] = []
             for cx, cy, cr in circles:
                 flat.extend((float(cx), float(cy), float(cr), 1.0))
+            buf = rl.ffi.new("float[]", flat)
             rl.set_shader_value_v(
                 shader,
                 circles_loc,
-                rl.ffi.new("float[]", flat),
+                rl.ffi.cast("float *", buf),
                 rl.SHADER_UNIFORM_VEC4,
                 len(circles),
             )
