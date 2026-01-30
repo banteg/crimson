@@ -332,7 +332,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 * test coverage status
 * output: `docs/rewrite/perk-matrix.md` (generated via `uv run python scripts/gen_perk_matrix.py`)
 
-2. [ ] Port perks in dependency order
+2. [x] Port perks in dependency order
    Start with perks that are implemented inside the functions you’re already refactoring:
 
 **A. Damage pipeline perks** (in `creature_apply_damage`)
