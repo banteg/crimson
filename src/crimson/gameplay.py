@@ -495,6 +495,14 @@ def perks_update_effects(state: GameplayState, players: list[PlayerState], dt: f
     if dt <= 0.0:
         return
 
+    if players and perk_active(players[0], PerkId.REGENERATION) and (state.rng.rand() & 1):
+        for player in players:
+            if not (0.0 < float(player.health) < 100.0):
+                continue
+            player.health = float(player.health) + dt
+            if player.health > 100.0:
+                player.health = 100.0
+
     state.lean_mean_exp_timer -= dt
     if state.lean_mean_exp_timer < 0.0:
         state.lean_mean_exp_timer = 0.25

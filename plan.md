@@ -362,7 +362,8 @@ These typically require creature flags/timers:
 **D. Player passive/tick perks**
 These usually live in `player_update`:
 
-* Regeneration / Greater Regeneration
+* [x] Regeneration
+* [ ] Greater Regeneration
 * Pyrokinetic
 * Unstoppable
 * Highlander / Jinxed (depending on original semantics)
