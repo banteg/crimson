@@ -462,7 +462,12 @@ PERK_TABLE = [
         description="With your newly enhanced senses you can see all bad energy VERY clearly. That's got to be enough.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_render_all` (0x00419680): when active, draws a yellow 90x90 quad "
+            "behind each active creature using `effect_select_texture(0x10)`, with alpha "
+            "fading by `clamp((hitbox_size + 10) * 0.1)` during corpse despawn. "
+            "`creature_render_type` (0x00418b60): disables the creature shadow pass while Monster Vision is active."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.HOT_TEMPERED,
