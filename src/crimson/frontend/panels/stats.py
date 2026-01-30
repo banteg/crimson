@@ -4,12 +4,14 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.audio import play_music, stop_music
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
     MENU_LABEL_WIDTH,
+    MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -26,14 +28,24 @@ if TYPE_CHECKING:
 
 
 class StatisticsMenuView(PanelMenuView):
+    _PAGES = ("Summary", "Weapons", "Quests")
+
     def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Statistics")
         self._small_font: SmallFontData | None = None
-        self._stats_lines: list[str] = []
+        self._page_index = 0
+        self._scroll_index = 0
+        self._page_lines: list[list[str]] = []
 
     def open(self) -> None:
         super().open()
-        self._stats_lines = self._build_stats_lines()
+        self._page_index = 0
+        self._scroll_index = 0
+        self._page_lines = self._build_pages()
+        if self._state.audio is not None:
+            if self._state.audio.music.active_track != "shortie_monk":
+                stop_music(self._state.audio)
+            play_music(self._state.audio, "shortie_monk")
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -48,6 +60,41 @@ class StatisticsMenuView(PanelMenuView):
         self._draw_sign()
         self._draw_stats_contents()
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if self._closing:
+            return
+        entry = self._entry
+        if entry is None or not self._entry_enabled(entry):
+            return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+            self._switch_page(-1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+            self._switch_page(1)
+
+        font = self._ensure_small_font()
+        layout = self._content_layout()
+        rows = self._visible_rows(font, layout)
+        max_scroll = max(0, len(self._active_page_lines()) - rows)
+
+        wheel = int(rl.get_mouse_wheel_move())
+        if wheel:
+            self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+            self._scroll_index = max(0, int(self._scroll_index) - 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+            self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
+            self._scroll_index = max(0, int(self._scroll_index) - rows)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+            self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
+            self._scroll_index = 0
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
+            self._scroll_index = max_scroll
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -84,7 +131,31 @@ class StatisticsMenuView(PanelMenuView):
             "scale": panel_scale,
         }
 
-    def _build_stats_lines(self) -> list[str]:
+    def _switch_page(self, delta: int) -> None:
+        if not self._page_lines:
+            return
+        count = len(self._page_lines)
+        self._page_index = (int(self._page_index) + int(delta)) % count
+        self._scroll_index = 0
+
+    def _active_page_lines(self) -> list[str]:
+        if not self._page_lines:
+            return []
+        idx = int(self._page_index)
+        if idx < 0:
+            idx = 0
+        if idx >= len(self._page_lines):
+            idx = len(self._page_lines) - 1
+        return self._page_lines[idx]
+
+    def _build_pages(self) -> list[list[str]]:
+        return [
+            self._build_summary_lines(),
+            self._build_weapon_usage_lines(),
+            self._build_quest_progress_lines(),
+        ]
+
+    def _build_summary_lines(self) -> list[str]:
         status = self._state.status
         mode_counts = {name: status.mode_play_count(name) for name, _offset in MODE_COUNT_ORDER}
         quest_counts = status.data.get("quest_play_counts", [])
@@ -103,12 +174,20 @@ class StatisticsMenuView(PanelMenuView):
         except Exception as exc:
             checksum_text = f"error: {type(exc).__name__}"
 
+        playtime_ms = int(status.game_sequence_id)
+        seconds = max(0, playtime_ms // 1000)
+        minutes = seconds // 60
+        hours = minutes // 60
+        minutes %= 60
+        seconds %= 60
+
         lines = [
+            f"Played for: {hours}h {minutes:02d}m {seconds:02d}s",
             f"Quest unlock: {status.quest_unlock_index} (full {status.quest_unlock_index_full})",
             f"Quest plays (1-40): {quest_total}",
             f"Mode plays: surv {mode_counts['survival']}  rush {mode_counts['rush']}",
             f"            typo {mode_counts['typo']}  other {mode_counts['other']}",
-            f"Sequence id: {status.game_sequence_id}",
+            f"Playtime ms: {int(status.game_sequence_id)}",
             f"Checksum: {checksum_text}",
         ]
 
@@ -132,6 +211,84 @@ class StatisticsMenuView(PanelMenuView):
             lines.append("Top weapons: none")
 
         return lines
+
+    def _build_weapon_usage_lines(self) -> list[str]:
+        status = self._state.status
+        usage = status.data.get("weapon_usage_counts", [])
+        if not isinstance(usage, list):
+            return ["Weapon usage: error (missing weapon_usage_counts)"]
+
+        items: list[tuple[int, int, str]] = []
+        for idx, count in enumerate(usage):
+            weapon_id = int(idx)
+            if weapon_id == 0:
+                continue
+            count = int(count)
+            weapon = WEAPON_BY_ID.get(weapon_id)
+            name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
+            items.append((weapon_id, count, name))
+
+        items.sort(key=lambda item: (-item[1], item[0]))
+        total = sum(count for _weapon_id, count, _name in items)
+        max_id_width = max(2, len(str(max((weapon_id for weapon_id, _count, _name in items), default=0))))
+
+        lines = [
+            f"Weapon uses (total {total}):",
+            "",
+        ]
+        for weapon_id, count, name in items:
+            lines.append(f"{weapon_id:>{max_id_width}}  {count:>8}  {name}")
+        return lines
+
+    def _build_quest_progress_lines(self) -> list[str]:
+        status = self._state.status
+        completed_total = 0
+        played_total = 0
+
+        lines = [
+            "Quest progress (stages 1-4):",
+            "",
+        ]
+        for global_index in range(40):
+            stage = (global_index // 10) + 1
+            row = global_index % 10
+            level = f"{stage}.{row + 1}"
+            title = "???"
+            try:
+                from ...quests import quest_by_level
+
+                quest = quest_by_level(level)
+                if quest is not None:
+                    title = quest.title
+            except Exception:
+                title = "???"
+
+            count_index = global_index + 10
+            games_idx = 1 + count_index
+            completed_idx = 41 + count_index
+            games = int(status.quest_play_count(games_idx))
+            completed = int(status.quest_play_count(completed_idx))
+
+            completed_total += completed
+            played_total += games
+            lines.append(f"{level:>4}  {completed:>3}/{games:<3}  {title}")
+
+        lines.extend(
+            [
+                "",
+                f"Completed: {completed_total}",
+                f"Played:    {played_total}",
+            ]
+        )
+        return lines
+
+    def _visible_rows(self, font: SmallFontData, layout: dict[str, float]) -> int:
+        scale = float(layout["scale"])
+        line_step = (float(font.cell_size) + 4.0) * scale
+        line_y0 = float(layout["base_y"]) + 66.0 * scale
+        panel_bottom = float(layout["panel_top"]) + (MENU_PANEL_HEIGHT * scale)
+        available = max(0.0, panel_bottom - line_y0 - 8.0 * scale)
+        return max(1, int(available // line_step))
 
     def _draw_stats_contents(self) -> None:
         assets = self._assets
@@ -172,8 +329,21 @@ class StatisticsMenuView(PanelMenuView):
         else:
             rl.draw_text(self._title, int(base_x), int(base_y), int(24 * scale), rl.WHITE)
 
-        line_y = base_y + 44.0 * scale
+        tabs_y = base_y + 44.0 * scale
+        x = label_x
+        for idx, label in enumerate(self._PAGES):
+            active = idx == int(self._page_index)
+            color = rl.Color(255, 255, 255, 255 if active else int(255 * 0.55))
+            draw_small_text(font, label, x, tabs_y, text_scale, color)
+            x += (len(label) * font.cell_size + 18.0) * scale
+
+        lines = self._active_page_lines()
+        rows = self._visible_rows(font, layout)
+        start = max(0, int(self._scroll_index))
+        end = min(len(lines), start + rows)
+
+        line_y = base_y + 66.0 * scale
         line_step = (font.cell_size + 4.0) * scale
-        for line in self._stats_lines:
+        for line in lines[start:end]:
             draw_small_text(font, line, label_x, line_y, text_scale, text_color)
             line_y += line_step

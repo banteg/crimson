@@ -28,7 +28,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
 - Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
 - Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen pending).
-- Statistics panel (quest unlock + mode play counts + checksum + top weapons).
+- Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
 - Demo/attract mode: idle trigger + variant sequencing; upsell overlay + purchase screen flow in demo builds (trial overlay pending).

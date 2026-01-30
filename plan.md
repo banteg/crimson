@@ -508,7 +508,7 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 
 2. [ ] Statistics + progression
 
-- [ ] Implement the “detailed stats” screen
+- [x] Implement the “detailed stats” screen
 - [ ] Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
 
 3. [ ] Sound + transitions

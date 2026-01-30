@@ -34,8 +34,8 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Code: `src/crimson/game.py` (`OptionsMenuView`)
   - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
   - Missing: full controls screen, video/window mode editing, broader parity of widgets/labels.
-- **Statistics panel (state `3`)**: partially implemented (reads `game.cfg` / checksum / some counters).
-  - Code: `src/crimson/game.py` (`StatisticsMenuView`)
+- **Statistics panel (state `4`)**: partially implemented (Summary/Weapons/Quests pages; reads `game.cfg` counters + checksum).
+  - Code: `src/crimson/frontend/panels/stats.py` (`StatisticsMenuView`)
 - **Demo / attract mode**: implemented (variant sequencing + upsell + purchase screen flow).
   - Code: `src/crimson/demo.py`
   - Ref: `docs/crimsonland-exe/demo-mode.md`, `docs/crimsonland-exe/screens.md`
