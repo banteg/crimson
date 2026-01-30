@@ -420,7 +420,7 @@ These usually live in `player_update`:
 * [ ] Telekinetic
 * [x] Perk Expert
 * [x] Unstoppable
-* [ ] Infernal Contract
+* [x] Infernal Contract
 * [x] Dodger
 * [x] Bonus Magnet
 * [ ] Monster Vision

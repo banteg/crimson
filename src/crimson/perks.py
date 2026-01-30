@@ -387,7 +387,7 @@ PERK_TABLE = [
         description="In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram..",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`perk_apply`: grants the perk owner `+3` levels (and `+3` pending perk picks), and sets all alive players to `health = 0.1`.",
     ),
     PerkMeta(
         perk_id=PerkId.POISON_BULLETS,
