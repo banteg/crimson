@@ -1,0 +1,282 @@
+{
+  "script": "scripts/frida/screen_fade_trace.js",
+  "source_log": "analysis\\frida\\raw\\screen_fade_trace.jsonl",
+  "tag_counts": {
+    "start": 2,
+    "attach": 6,
+    "tick": 140,
+    "game_state_set": 25,
+    "summary": 18,
+    "ui_elements_update_and_render": 11803,
+    "fade_draw": 1633
+  },
+  "snapshot_events": 13601,
+  "fade_ramp_transitions": [
+    {
+      "direction": "up",
+      "start": {
+        "line": 1012,
+        "ts": 1769544752317,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 0.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "end": {
+        "line": 1073,
+        "ts": 1769544752421,
+        "tag": "fade_draw",
+        "mode_name": "survival",
+        "fade_alpha": 1.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "duration_ms": 104
+    },
+    {
+      "direction": "down",
+      "start": {
+        "line": 1167,
+        "ts": 1769544752619,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 1.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "end": {
+        "line": 1516,
+        "ts": 1769544753120,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 0.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "duration_ms": 501
+    },
+    {
+      "direction": "up",
+      "start": {
+        "line": 3290,
+        "ts": 1769544759298,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "tutorial",
+        "fade_alpha": 0.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "end": {
+        "line": 3351,
+        "ts": 1769544759399,
+        "tag": "fade_draw",
+        "mode_name": "tutorial",
+        "fade_alpha": 1.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "duration_ms": 101
+    },
+    {
+      "direction": "down",
+      "start": {
+        "line": 3441,
+        "ts": 1769544759599,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "tutorial",
+        "fade_alpha": 1.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "end": {
+        "line": 3839,
+        "ts": 1769544760101,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "tutorial",
+        "fade_alpha": 0.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "duration_ms": 502
+    },
+    {
+      "direction": "up",
+      "start": {
+        "line": 5673,
+        "ts": 1769544765508,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "rush",
+        "fade_alpha": 0.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "end": {
+        "line": 5722,
+        "ts": 1769544765607,
+        "tag": "fade_draw",
+        "mode_name": "rush",
+        "fade_alpha": 1.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "duration_ms": 99
+    },
+    {
+      "direction": "down",
+      "start": {
+        "line": 5813,
+        "ts": 1769544765807,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "rush",
+        "fade_alpha": 1.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "end": {
+        "line": 6171,
+        "ts": 1769544766307,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "rush",
+        "fade_alpha": 1.2526288628578186e-07,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "duration_ms": 500
+    },
+    {
+      "direction": "up",
+      "start": {
+        "line": 8207,
+        "ts": 1769544772699,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "quests",
+        "fade_alpha": 0.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 11
+      },
+      "end": {
+        "line": 8246,
+        "ts": 1769544772798,
+        "tag": "fade_draw",
+        "mode_name": "quests",
+        "fade_alpha": 1.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 11
+      },
+      "duration_ms": 99
+    },
+    {
+      "direction": "down",
+      "start": {
+        "line": 8327,
+        "ts": 1769544773007,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "quests",
+        "fade_alpha": 1.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "end": {
+        "line": 8592,
+        "ts": 1769544773503,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "quests",
+        "fade_alpha": 0.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "duration_ms": 496
+    },
+    {
+      "direction": "up",
+      "start": {
+        "line": 11405,
+        "ts": 1769797723425,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 0.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "end": {
+        "line": 11468,
+        "ts": 1769797723526,
+        "tag": "fade_draw",
+        "mode_name": "survival",
+        "fade_alpha": 1.0,
+        "fade_ramp": 1,
+        "game_state_pending": 9,
+        "game_state_id": 1
+      },
+      "duration_ms": 101
+    },
+    {
+      "direction": "down",
+      "start": {
+        "line": 11553,
+        "ts": 1769797723727,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 1.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "end": {
+        "line": 11881,
+        "ts": 1769797724229,
+        "tag": "ui_elements_update_and_render",
+        "mode_name": "survival",
+        "fade_alpha": 0.0,
+        "fade_ramp": 0,
+        "game_state_pending": 25,
+        "game_state_id": 9
+      },
+      "duration_ms": 502
+    }
+  ],
+  "stats": {
+    "fade_to_black": {
+      "count": 5,
+      "min_ms": 99,
+      "max_ms": 104,
+      "mean_ms": 100.8
+    },
+    "fade_from_black": {
+      "count": 5,
+      "min_ms": 496,
+      "max_ms": 502,
+      "mean_ms": 500.2
+    }
+  },
+  "trace_summary": {
+    "counts": {
+      "tick": 317,
+      "ui_elements_update_and_render": 6994,
+      "game_state_set": 5,
+      "grim_draw_fullscreen_color": 2976,
+      "snapshots": 1990,
+      "fade_draw_logged": 194
+    },
+    "base_exe": "0x400000",
+    "base_grim": "0x6d00000"
+  }
+}

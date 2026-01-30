@@ -50,6 +50,16 @@ PANEL_BACK_POS_Y = 430.0
 PANEL_TIMELINE_START_MS = 300
 PANEL_TIMELINE_END_MS = 0
 
+FADE_TO_GAME_ACTIONS = frozenset(
+    {
+        "start_survival",
+        "start_rush",
+        "start_typo",
+        "start_tutorial",
+        "start_quest",
+    }
+)
+
 
 class PanelMenuView:
     def __init__(
@@ -184,6 +194,9 @@ class PanelMenuView:
     def _begin_close_transition(self, action: str) -> None:
         if self._closing:
             return
+        if action in FADE_TO_GAME_ACTIONS:
+            self._state.screen_fade_alpha = 0.0
+            self._state.screen_fade_ramp = True
         if self._state.audio is not None:
             play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
         self._closing = True

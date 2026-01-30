@@ -801,6 +801,8 @@ class SurvivalGameView:
 
     def open(self) -> None:
         self._action = None
+        if self._state.screen_fade_ramp:
+            self._state.screen_fade_alpha = 1.0
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
@@ -857,6 +859,8 @@ class RushGameView:
 
     def open(self) -> None:
         self._action = None
+        if self._state.screen_fade_ramp:
+            self._state.screen_fade_alpha = 1.0
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
@@ -911,6 +915,8 @@ class TypoShooterGameView:
 
     def open(self) -> None:
         self._action = None
+        if self._state.screen_fade_ramp:
+            self._state.screen_fade_alpha = 1.0
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
@@ -966,6 +972,8 @@ class TutorialGameView:
 
     def open(self) -> None:
         self._action = None
+        if self._state.screen_fade_ramp:
+            self._state.screen_fade_alpha = 1.0
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
@@ -1012,6 +1020,8 @@ class QuestGameView:
 
     def open(self) -> None:
         self._action = None
+        if self._state.screen_fade_ramp:
+            self._state.screen_fade_alpha = 1.0
         self._state.screen_fade_ramp = False
         self._state.quest_outcome = None
         if self._state.audio is not None:

@@ -511,10 +511,10 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 - [x] Implement the “detailed stats” screen
 - [x] Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
 
-3. [ ] Sound + transitions
+3. [x] Sound + transitions
 
 - [x] Add missing SFX hooks described in `docs/rewrite/game-over.md` and wherever else UI transitions diverge
-- [ ] Resolve `docs/rewrite/survival-transition-fade.md` by adding runtime evidence and then matching the exact flags/alphas
+- [x] Resolve `docs/rewrite/survival-transition-fade.md` by adding runtime evidence and then matching the exact flags/alphas
 
 ---
 
