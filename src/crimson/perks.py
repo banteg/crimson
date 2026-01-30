@@ -94,7 +94,7 @@ PERK_TABLE = [
         description="You shouldn't be seeing this..",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="Never offered: `perk_can_offer` explicitly rejects `ANTIPERK`.",
     ),
     PerkMeta(
         perk_id=PerkId.BLOODY_MESS_QUICK_LEARNER,

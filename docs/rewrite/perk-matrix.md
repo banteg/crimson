@@ -11,7 +11,7 @@ Notes:
 
 | ID | PerkId | Name | Original hook | Port refs | Tests |
 | -- | ------ | ---- | ------------ | -------- | ----- |
-| 0 | ANTIPERK | AntiPerk | TBD | `src/crimson/gameplay.py:perk_can_offer` | — |
+| 0 | ANTIPERK | AntiPerk | Never offered: `perk_can_offer` explicitly rejects `ANTIPERK`. | `src/crimson/gameplay.py:perk_can_offer` | `tests/test_antiperk_perk.py` |
 | 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | `tests/test_bloody_mess_quick_learner_perk.py`<br>`tests/test_radioactive_perk.py` |
 | 2 | SHARPSHOOTER | Sharpshooter | `player_fire_weapon`: if Sharpshooter is active, multiplies `shot_cooldown` by `1.05` and does not increase `player.spread_heat` by `weapon.spread_heat * 1.3` after firing. `player_update`: while active, forces `player.spread_heat = 0.02`. | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_update` | `tests/test_perk_selection.py`<br>`tests/test_sharpshooter_perk.py` |
 | 3 | FASTLOADER | Fastloader | `player_start_reload` (0x00413430): if Fastloader is active, multiplies weapon `reload_time` by `0.7`. | `src/crimson/gameplay.py:player_start_reload` | `tests/test_fastloader_perk.py` |

@@ -408,6 +408,33 @@ These usually live in `player_update`:
 
 * [x] Tough Reloader
 
+**L. Perk matrix “TBD” notes**
+
+* [x] AntiPerk
+* [ ] Bloody Mess
+* [ ] Lean Mean Exp Machine
+* [ ] Instant Winner
+* [ ] Alternate Weapon
+* [ ] Fastshot
+* [ ] Anxious Loader
+* [ ] Telekinetic
+* [ ] Perk Expert
+* [ ] Unstoppable
+* [ ] Infernal Contract
+* [ ] Dodger
+* [ ] Bonus Magnet
+* [ ] Monster Vision
+* [ ] Hot Tempered
+* [ ] Bonus Economist
+* [ ] Thick Skinned
+* [ ] Regeneration
+* [ ] Ninja
+* [ ] Highlander
+* [ ] Perk Master
+* [ ] Breathing Room
+* [ ] Stationary Reloader
+* [ ] Lifeline 50-50
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
