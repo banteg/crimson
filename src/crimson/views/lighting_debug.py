@@ -642,6 +642,10 @@ class LightingDebugView:
 
         rl.begin_texture_mode(self._light_rt)
         rl.clear_background(self._ambient)
+        # Ensure 2D lightmap passes are not affected by whatever depth state the
+        # world renderer left behind.
+        rl.rl_disable_depth_test()
+        rl.rl_disable_depth_mask()
         rl.begin_shader_mode(shader)
         set_vec2("u_resolution", w, h)
 
@@ -676,6 +680,9 @@ class LightingDebugView:
             rl.draw_texture_pro(self._solid_white, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         else:
             rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+        # Make sure the fullscreen pass is flushed into the render target before
+        # leaving texture mode (and before any debug readback).
+        rl.rl_draw_render_batch_active()
         rl.end_blend_mode()
         rl.end_shader_mode()
         rl.end_texture_mode()
