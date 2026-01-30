@@ -342,7 +342,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 * [x] Barrel Greaser
 * [x] Living Fortress scaling
 * [x] Ion Gun Master
-* [ ] Pyromaniac
+* [x] Pyromaniac
 
 **B. Survival/XP perks**
 

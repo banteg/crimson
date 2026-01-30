@@ -524,7 +524,10 @@ PERK_TABLE = [
         description="You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_apply_damage` (0x004207c0): when `damage_type == 4` and Pyromaniac is active, multiplies "
+            "damage by 1.5 and consumes one `crt_rand()`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.NINJA,
