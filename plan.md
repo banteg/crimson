@@ -348,7 +348,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 
 * [x] Lean Mean Exp Machine (passive XP tick)
 * [x] Bloody Mess Quick Learner (death XP uses 1.3x multiplier)
-* [ ] Double XP bonus interactions
+* [x] Double XP bonus interactions (death XP doubled; perk ticks unaffected)
 
 **C. Status / infection perks**
 These typically require creature flags/timers:
