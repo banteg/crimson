@@ -39,7 +39,7 @@ Notes:
 | 25 | POISON_BULLETS | Poison Bullets | `projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, sets `creature.flags \|= 0x01` (self-damage tick). `creature_update_all` applies this via `creature_apply_damage(creature, frame_dt * 60.0, damage_type=0, impulse=(0,0))`. | `src/crimson/sim/world_state.py:WorldState.step._apply_projectile_damage_to_creature` | `tests/test_poison_bullets_perk.py` |
 | 26 | DODGER | Dodger | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
 | 27 | BONUS_MAGNET | Bonus Magnet | TBD | `src/crimson/gameplay.py:BonusPool.try_spawn_on_kill` | — |
-| 28 | URANIUM_FILLED_BULLETS | Uranium Filled Bullets | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
+| 28 | URANIUM_FILLED_BULLETS | Uranium Filled Bullets | `creature_apply_damage` (0x004207c0): when `damage_type == 1` and Uranium Filled Bullets is active, doubles the applied damage (`damage = damage + damage`). | `src/crimson/creatures/damage.py:creature_apply_damage` | `tests/test_uranium_filled_bullets_perk.py` |
 | 29 | DOCTOR | Doctor | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 30 | MONSTER_VISION | Monster Vision | TBD | `src/crimson/render/world_renderer.py:WorldRenderer.draw` | — |
 | 31 | HOT_TEMPERED | Hot Tempered | TBD | `src/crimson/gameplay.py:player_update` | `tests/test_game_world_audio.py`<br>`tests/test_player_update.py`<br>`+1 more` |

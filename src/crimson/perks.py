@@ -401,7 +401,10 @@ PERK_TABLE = [
         description="Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right?",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Uranium Filled Bullets is active, "
+            "doubles the applied damage (`damage = damage + damage`)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.DOCTOR,
