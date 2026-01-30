@@ -33,7 +33,7 @@ Notes:
 | 19 | FINAL_REVENGE | Final Revenge | TBD | — | — |
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |
 | 21 | PERK_EXPERT | Perk Expert | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
-| 22 | UNSTOPPABLE | Unstoppable | TBD | — | — |
+| 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_unstoppable_perk.py` |
 | 23 | REGRESSION_BULLETS | Regression Bullets | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
 | 25 | POISON_BULLETS | Poison Bullets | TBD | — | — |

@@ -60,6 +60,12 @@ def player_take_damage(
     player.health -= dmg
     if player.health < 0.0 and dt is not None and float(dt) > 0.0:
         player.death_timer -= float(dt) * 28.0
+
+    if not perk_active(player, PerkId.UNSTOPPABLE):
+        # player_take_damage @ 0x00425e50: on-hit camera/spread disruption.
+        player.heading += float((rng() % 100) - 50) * 0.04
+        player.spread_heat = min(0.48, float(player.spread_heat) + dmg * 0.01)
+
     if player.health <= 20.0 and (rng() & 7) == 3:
         player.low_health_timer = 0.0
     return dmg

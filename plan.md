@@ -365,7 +365,7 @@ These usually live in `player_update`:
 * [x] Regeneration
 * [ ] Greater Regeneration
 * Pyrokinetic
-* Unstoppable
+* [x] Unstoppable
 * Highlander / Jinxed (depending on original semantics)
 
 3. [ ] Add minimal scenario tests per perk
