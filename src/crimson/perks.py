@@ -568,7 +568,7 @@ PERK_TABLE = [
         description="You've taken your dodging abilities to the next level; monsters have really hard time hitting you.",
         flags=None,
         prereq=(PerkId.DODGER,),
-        notes=None,
+        notes="`player_take_damage` (0x00425e50): 1/3 chance to ignore the hit (`crt_rand() % 3 == 0`) (takes precedence over Dodger).",
     ),
     PerkMeta(
         perk_id=PerkId.HIGHLANDER,

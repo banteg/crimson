@@ -428,7 +428,7 @@ These usually live in `player_update`:
 * [x] Bonus Economist
 * [ ] Thick Skinned
 * [ ] Regeneration
-* [ ] Ninja
+* [x] Ninja
 * [ ] Highlander
 * [x] Perk Master
 * [ ] Breathing Room
