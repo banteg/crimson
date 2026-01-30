@@ -421,7 +421,7 @@ These usually live in `player_update`:
 * [x] Perk Expert
 * [x] Unstoppable
 * [ ] Infernal Contract
-* [ ] Dodger
+* [x] Dodger
 * [x] Bonus Magnet
 * [ ] Monster Vision
 * [ ] Hot Tempered

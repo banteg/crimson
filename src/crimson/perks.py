@@ -408,7 +408,7 @@ PERK_TABLE = [
         description="It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_take_damage` (0x00425e50): if Dodger is active and Ninja is not, 1/5 chance to ignore the hit (`crt_rand() % 5 == 0`).",
     ),
     PerkMeta(
         perk_id=PerkId.BONUS_MAGNET,
