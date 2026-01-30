@@ -653,7 +653,11 @@ PERK_TABLE = [
         description="You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`projectile_update` (0x00420b90): sets `ion_aoe_scale` to `1.2` when active, scaling ion AoE radii "
+            "(Ion Rifle: 88, Ion Minigun: 60, Ion Cannon: 128). `creature_apply_damage` (0x004207c0): when "
+            "`damage_type == 7`, multiplies damage by 1.2."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.STATIONARY_RELOADER,

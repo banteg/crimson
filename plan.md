@@ -341,7 +341,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 * [x] Doctor
 * [x] Barrel Greaser
 * [x] Living Fortress scaling
-* [ ] Ion Gun Master
+* [x] Ion Gun Master
 * [ ] Pyromaniac
 
 **B. Survival/XP perks**

@@ -218,17 +218,25 @@ class ProjectilePool:
             return []
 
         barrel_greaser_active = False
+        ion_gun_master_active = False
+        ion_scale = float(ion_aoe_scale)
         if players is not None:
-            perk_idx = int(PerkId.BARREL_GREASER)
+            barrel_idx = int(PerkId.BARREL_GREASER)
+            ion_idx = int(PerkId.ION_GUN_MASTER)
             for player in players:
                 perk_counts = getattr(player, "perk_counts", None)
-                if (
-                    isinstance(perk_counts, list)
-                    and 0 <= perk_idx < len(perk_counts)
-                    and int(perk_counts[perk_idx]) > 0
-                ):
+                if not isinstance(perk_counts, list):
+                    continue
+
+                if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:
                     barrel_greaser_active = True
+                if 0 <= ion_idx < len(perk_counts) and int(perk_counts[ion_idx]) > 0:
+                    ion_gun_master_active = True
+                if barrel_greaser_active and ion_gun_master_active:
                     break
+
+        if ion_scale == 1.0 and ion_gun_master_active:
+            ion_scale = 1.2
 
         if damage_scale_by_type is None:
             damage_scale_by_type = {}
@@ -381,10 +389,10 @@ class ProjectilePool:
                     proj.life_timer -= dt
                     if type_id == ProjectileTypeId.ION_RIFLE:
                         damage = dt * 100.0
-                        radius = ion_aoe_scale * 88.0
+                        radius = ion_scale * 88.0
                     else:
                         damage = dt * 40.0
-                        radius = ion_aoe_scale * 60.0
+                        radius = ion_scale * 60.0
                     for creature_idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
@@ -402,7 +410,7 @@ class ProjectilePool:
                 elif type_id == ProjectileTypeId.ION_CANNON:
                     proj.life_timer -= dt * 0.7
                     damage = dt * 300.0
-                    radius = ion_aoe_scale * 128.0
+                    radius = ion_scale * 128.0
                     for creature_idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue

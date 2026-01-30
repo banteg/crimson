@@ -62,7 +62,7 @@ Notes:
 | 48 | MY_FAVOURITE_WEAPON | My Favourite Weapon | TBD | `src/crimson/gameplay.py:bonus_pick_random_type`<br>`src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:weapon_assign_player` | — |
 | 49 | BANDAGE | Bandage | TBD | `src/crimson/gameplay.py:perk_apply` | — |
 | 50 | ANGRY_RELOADER | Angry Reloader | Spawns a ring of projectile type `0x0b` when the reload timer crosses the half threshold. | `src/crimson/gameplay.py:player_update` | `tests/test_game_world_audio.py`<br>`tests/test_player_update.py`<br>`+1 more` |
-| 51 | ION_GUN_MASTER | Ion Gun Master | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
+| 51 | ION_GUN_MASTER | Ion Gun Master | `projectile_update` (0x00420b90): sets `ion_aoe_scale` to `1.2` when active, scaling ion AoE radii (Ion Rifle: 88, Ion Minigun: 60, Ion Cannon: 128). `creature_apply_damage` (0x004207c0): when `damage_type == 7`, multiplies damage by 1.2. | `src/crimson/creatures/damage.py:creature_apply_damage`<br>`src/crimson/projectiles.py:ProjectilePool.update` | `tests/test_ion_gun_master_perk.py` |
 | 52 | STATIONARY_RELOADER | Stationary Reloader | TBD | `src/crimson/gameplay.py:player_update` | `tests/test_player_update.py` |
 | 53 | MAN_BOMB | Man Bomb | Burst spawns projectile types `0x15/0x16`. | `src/crimson/gameplay.py:player_update` | `tests/test_game_world_audio.py`<br>`tests/test_player_update.py`<br>`+1 more` |
 | 54 | FIRE_CAUGH | Fire Caugh | Uses projectile type `0x2d` (see Fire Bullets in the atlas notes). | `src/crimson/gameplay.py:player_update` | `tests/test_player_update.py` |
