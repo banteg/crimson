@@ -6,7 +6,7 @@ from typing import Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
-from .effects import EffectPool, ParticlePool, SpriteEffectPool
+from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
@@ -16,6 +16,13 @@ from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 class _HasPos(Protocol):
     pos_x: float
     pos_y: float
+
+
+class _CreatureForPerks(Protocol):
+    active: bool
+    hp: float
+    hitbox_size: float
+    reward_value: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -451,6 +458,7 @@ class GameplayState:
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     lean_mean_exp_timer: float = 0.25
+    jinxed_timer: float = 0.0
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
     sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)
@@ -488,7 +496,14 @@ def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
 
 
-def perks_update_effects(state: GameplayState, players: list[PlayerState], dt: float) -> None:
+def perks_update_effects(
+    state: GameplayState,
+    players: list[PlayerState],
+    dt: float,
+    *,
+    creatures: list[_CreatureForPerks] | None = None,
+    fx_queue: FxQueue | None = None,
+) -> None:
     """Port subset of `perks_update_effects` (0x00406b40)."""
 
     dt = float(dt)
@@ -510,6 +525,38 @@ def perks_update_effects(state: GameplayState, players: list[PlayerState], dt: f
             perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
             if perk_count > 0:
                 player.experience += perk_count * 10
+
+    if state.jinxed_timer >= 0.0:
+        state.jinxed_timer -= dt
+
+    if state.jinxed_timer < 0.0 and players and perk_active(players[0], PerkId.JINXED):
+        player = players[0]
+        if int(state.rng.rand()) % 10 == 3:
+            player.health = float(player.health) - 5.0
+            if fx_queue is not None:
+                fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=state.rng.rand)
+                fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=state.rng.rand)
+
+        state.jinxed_timer = float(int(state.rng.rand()) % 0x14) * 0.1 + float(state.jinxed_timer) + 2.0
+
+        if float(state.bonuses.freeze) <= 0.0 and creatures is not None:
+            pool_mod = min(0x17F, len(creatures))
+            if pool_mod <= 0:
+                return
+
+            idx = int(state.rng.rand()) % pool_mod
+            attempts = 0
+            while attempts < 10 and not creatures[idx].active:
+                idx = int(state.rng.rand()) % pool_mod
+                attempts += 1
+            if not creatures[idx].active:
+                return
+
+            creature = creatures[idx]
+            creature.hp = -1.0
+            creature.hitbox_size = float(creature.hitbox_size) - dt * 20.0
+            player.experience = int(float(player.experience) + float(creature.reward_value))
+            state.sfx_queue.append("sfx_trooper_inpain_01")
 
 
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:

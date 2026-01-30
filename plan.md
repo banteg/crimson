@@ -367,7 +367,7 @@ These usually live in `player_update`:
 * Pyrokinetic
 * [x] Unstoppable
 * [x] Highlander
-* [ ] Jinxed (depending on original semantics)
+* [x] Jinxed (timer + random kill + accidents)
 
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:

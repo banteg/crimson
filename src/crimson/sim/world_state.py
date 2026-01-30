@@ -222,7 +222,7 @@ class WorldState:
                         color_a=1.0,
                     )
 
-        perks_update_effects(self.state, self.players, dt)
+        perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
 
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)

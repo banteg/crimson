@@ -514,7 +514,13 @@ PERK_TABLE = [
         description="Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "Global timer `data_4aaf1c` in `perks_update_effects`: every ~2.0–3.9s, 1/10 chance to deal 5 self-damage "
+            "and call `fx_queue_add_random` twice at the player position. If Freeze bonus is inactive, kills a random "
+            "active creature (index = `rand() % 0x17f`, 10 retries) by setting `health=-1` and decrementing "
+            "`hitbox_size -= dt*20`, then awards `experience = int(float(experience) + creature.reward_value)` and plays "
+            "`sfx_trooper_inpain_01`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.PERK_MASTER,

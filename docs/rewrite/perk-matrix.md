@@ -53,7 +53,7 @@ Notes:
 | 39 | PYROMANIAC | Pyromaniac | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 40 | NINJA | Ninja | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
 | 41 | HIGHLANDER | Highlander | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py` |
-| 42 | JINXED | Jinxed | TBD | — | — |
+| 42 | JINXED | Jinxed | Global timer `data_4aaf1c` in `perks_update_effects`: every ~2.0–3.9s, 1/10 chance to deal 5 self-damage and call `fx_queue_add_random` twice at the player position. If Freeze bonus is inactive, kills a random active creature (index = `rand() % 0x17f`, 10 retries) by setting `health=-1` and decrementing `hitbox_size -= dt*20`, then awards `experience = int(float(experience) + creature.reward_value)` and plays `sfx_trooper_inpain_01`. | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_jinxed_perk.py` |
 | 43 | PERK_MASTER | Perk Master | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
 | 44 | REFLEX_BOOSTED | Reflex Boosted | TBD | — | — |
 | 45 | GREATER_REGENERATION | Greater Regeneration | TBD | `src/crimson/gameplay.py:perk_apply` | — |
