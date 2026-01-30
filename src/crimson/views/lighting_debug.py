@@ -247,6 +247,8 @@ class LightingDebugView:
         self._light_tint = rl.Color(255, 245, 220, 255)
 
         self._last_sdf_circles: list[tuple[float, float, float]] = []
+        self._occluder_radius_mul = 1.0
+        self._occluder_radius_pad_px = 0.0
 
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
@@ -293,12 +295,23 @@ class LightingDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F6):
             self._sdf_debug_mode = (self._sdf_debug_mode + 1) % 6
 
+        shift = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
+        occ_mul_step = 0.05 if not shift else 0.10
+        occ_pad_step = 1.0 if not shift else 4.0
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
+            self._occluder_radius_mul = _clamp(self._occluder_radius_mul - occ_mul_step, 0.25, 2.50)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
+            self._occluder_radius_mul = _clamp(self._occluder_radius_mul + occ_mul_step, 0.25, 2.50)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_K):
+            self._occluder_radius_pad_px = _clamp(self._occluder_radius_pad_px - occ_pad_step, -20.0, 60.0)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
+            self._occluder_radius_pad_px = _clamp(self._occluder_radius_pad_px + occ_pad_step, -20.0, 60.0)
+
         if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_SUBTRACT):
             self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor - 0.05, 0.0, 0.9)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_EQUAL) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ADD):
             self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor + 0.05, 0.0, 0.9)
 
-        shift = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
             if shift:
                 self._light_radius = max(80.0, self._light_radius - 20.0)
@@ -617,6 +630,8 @@ class LightingDebugView:
             "ambient_rgba": [int(self._ambient.r), int(self._ambient.g), int(self._ambient.b), int(self._ambient.a)],
             "shadow_k": float(self._sdf_shadow_k),
             "shadow_floor": float(self._sdf_shadow_floor),
+            "occluder_radius_mul": float(self._occluder_radius_mul),
+            "occluder_radius_pad_px": float(self._occluder_radius_pad_px),
             "debug_mode": int(self._sdf_debug_mode),
             "circle_count": int(len(self._last_sdf_circles)),
             "circles": [[float(x), float(y), float(r)] for (x, y, r) in self._last_sdf_circles[:16]],
@@ -648,18 +663,23 @@ class LightingDebugView:
         _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
         scale = (scale_x + scale_y) * 0.5
 
+        def occ_radius(size: float) -> float:
+            r = float(size) * 0.5 * scale
+            r = r * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
+            return max(1.0, r)
+
         circles: list[tuple[float, float, float]] = []
 
         if self._player is not None:
             px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
-            pr = float(self._player.size) * 0.5 * scale
+            pr = occ_radius(float(self._player.size))
             circles.append((float(px), float(py), float(pr)))
 
         for creature in self._world.creatures.entries:
             if not creature.active:
                 continue
             sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-            cr = float(creature.size) * 0.5 * scale
+            cr = occ_radius(float(creature.size))
             circles.append((float(sx), float(sy), float(cr)))
 
         if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
@@ -797,14 +817,14 @@ class LightingDebugView:
             rl.draw_circle_lines(
                 int(px),
                 int(py),
-                int(max(1.0, self._player.size * 0.5 * scale)),
+                int(max(1.0, float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px))),
                 rl.Color(80, 220, 120, 180),
             )
             for creature in self._world.creatures.entries:
                 if not creature.active:
                     continue
                 sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-                r = float(creature.size) * 0.5 * scale
+                r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
                 rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 
         rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
@@ -832,6 +852,7 @@ class LightingDebugView:
                 f"F6 sdf_debug={self._sdf_debug_mode}  (1 solid, 2 uv, 3 range, 4 atten, 5 shade)",
                 f"+/- shadow_floor={self._sdf_shadow_floor:.2f}",
                 f"[ ] disc_radius={self._light_source_radius:.0f}   shift+[ ] light_radius={self._light_radius:.0f}",
+                f"O/P occ_mul={self._occluder_radius_mul:.2f}   K/L occ_pad_px={self._occluder_radius_pad_px:.1f}  (hold shift for bigger steps)",
                 "1 ui  2 occluders  4 lightmap preview",
                 "F5 dump debug (artifacts/lighting-debug/)",
             ]
