@@ -13,6 +13,7 @@ from ..menu import (
     MenuView,
     _draw_menu_cursor,
 )
+from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from ...input_codes import config_keybinds, input_code_name, player_move_fire_binds
 
@@ -34,6 +35,7 @@ class ControlsMenuView(PanelMenuView):
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
         assets = self._assets
         entry = self._entry
         if assets is None or entry is None:
@@ -128,4 +130,3 @@ class ControlsMenuView(PanelMenuView):
         for line in self._lines:
             draw_small_text(font, line, label_x, line_y, text_scale, text_color)
             line_y += line_step
-
