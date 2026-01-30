@@ -307,6 +307,7 @@ Once Phase 2 is in, these become straightforward and correct.
 3. [x] Nuke
 
 - [x] Spawn shockwave visuals + burst.
+- [x] Ensure shockwave projectile speed uses weapon `projectile_meta`.
 - [x] Apply radius damage around pickup origin.
 - [x] Route damage via `creature_apply_damage` (`damage_type=3`).
 - [x] Add correct SFX sequencing.
