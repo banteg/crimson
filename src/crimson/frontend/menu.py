@@ -154,7 +154,7 @@ class MenuView:
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
         self._assets = load_menu_assets(self._state)
-        # Shareware gating is controlled by `CRIMSON_IS_DEMO` (see GameState.demo_enabled),
+        # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
         # not by a persisted config byte.
         self._full_version = not self._state.demo_enabled
         self._menu_entries = self._menu_entries_for_flags(

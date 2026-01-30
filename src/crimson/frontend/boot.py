@@ -242,6 +242,10 @@ class BootView:
             self._boot_time += frame_dt
             return
 
+        if self._state.skip_intro:
+            self._start_theme()
+            return
+
         if self._logo_delay_ticks < 5:
             self._logo_delay_ticks += 1
             return
@@ -250,7 +254,7 @@ class BootView:
         if self._boot_time > LOGO_THEME_TRIGGER:
             self._start_theme()
             return
-        if not self._intro_started and self._state.audio is not None:
+        if (not self._state.skip_intro) and (not self._intro_started) and self._state.audio is not None:
             play_music(self._state.audio, "intro")
             self._intro_started = True
         if not self._logo_skip and self._skip_triggered():

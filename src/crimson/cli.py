@@ -207,6 +207,8 @@ def cmd_game(
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
     seed: int | None = typer.Option(None, help="rng seed"),
+    demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
+    no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     base_dir: Path = typer.Option(
         Path("artifacts") / "runtime",
         help="base path for runtime files (default: artifacts/runtime)",
@@ -226,6 +228,8 @@ def cmd_game(
         height=height,
         fps=fps,
         seed=seed,
+        demo_enabled=demo,
+        no_intro=no_intro,
     )
     run_game(config)
 

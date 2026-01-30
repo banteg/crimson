@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import os
 import datetime as dt
 import faulthandler
 import math
@@ -96,6 +95,8 @@ class GameConfig:
     height: int | None = None
     fps: int = 60
     seed: int | None = None
+    demo_enabled: bool = False
+    no_intro: bool = False
 
 
 @dataclass(slots=True)
@@ -115,6 +116,7 @@ class GameState:
     status: GameStatus
     console: ConsoleState
     demo_enabled: bool
+    skip_intro: bool
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
@@ -134,15 +136,10 @@ class GameState:
     screen_fade_ramp: bool = False
 
 
-DEMO_MODE_ENV = "CRIMSON_IS_DEMO"
 CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
 SFX_PAQ_NAME = "sfx.paq"
 AUTOEXEC_NAME = "autoexec.txt"
-
-def _demo_mode_enabled() -> bool:
-    raw = os.getenv(DEMO_MODE_ENV, "").strip().lower()
-    return raw in {"1", "true", "yes", "on"}
 
 QUEST_MENU_BASE_X = -5.0
 QUEST_MENU_BASE_Y = 185.0
@@ -2577,7 +2574,8 @@ def run_game(config: GameConfig) -> None:
             config=cfg,
             status=status,
             console=console,
-            demo_enabled=_demo_mode_enabled(),
+            demo_enabled=bool(config.demo_enabled),
+            skip_intro=bool(config.no_intro),
             logos=None,
             texture_cache=None,
             audio=None,
