@@ -324,14 +324,15 @@ This is where fidelity jumps from “mostly works” to “feels like the origin
 
 Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching.
 
-1. Build a perk implementation matrix
+1. [x] Build a perk implementation matrix
    Create a doc (or a generated report) that maps each `PerkId` to:
 
 * where it is applied in the original (player_update, creature_update_all, creature_apply_damage, projectile_update, bonus_update…)
 * where it is implemented in your port (file/function)
 * test coverage status
+* output: `docs/rewrite/perk-matrix.md` (generated via `uv run python scripts/gen_perk_matrix.py`)
 
-2. Port perks in dependency order
+2. [ ] Port perks in dependency order
    Start with perks that are implemented inside the functions you’re already refactoring:
 
 **A. Damage pipeline perks** (in `creature_apply_damage`)
@@ -366,7 +367,7 @@ These usually live in `player_update`:
 * Unstoppable
 * Highlander / Jinxed (depending on original semantics)
 
-3. Add minimal scenario tests per perk
+3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
 * set perk active
