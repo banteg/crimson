@@ -366,7 +366,8 @@ These usually live in `player_update`:
 * [ ] Greater Regeneration
 * Pyrokinetic
 * [x] Unstoppable
-* Highlander / Jinxed (depending on original semantics)
+* [x] Highlander
+* [ ] Jinxed (depending on original semantics)
 
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:

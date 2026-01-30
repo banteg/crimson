@@ -33,7 +33,7 @@ Notes:
 | 19 | FINAL_REVENGE | Final Revenge | TBD | — | — |
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |
 | 21 | PERK_EXPERT | Perk Expert | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
-| 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_unstoppable_perk.py` |
+| 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py`<br>`tests/test_unstoppable_perk.py` |
 | 23 | REGRESSION_BULLETS | Regression Bullets | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
 | 25 | POISON_BULLETS | Poison Bullets | TBD | — | — |
@@ -52,7 +52,7 @@ Notes:
 | 38 | REGENERATION | Regeneration | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:perks_update_effects` | `tests/test_regeneration_perk.py` |
 | 39 | PYROMANIAC | Pyromaniac | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 40 | NINJA | Ninja | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
-| 41 | HIGHLANDER | Highlander | TBD | — | — |
+| 41 | HIGHLANDER | Highlander | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py` |
 | 42 | JINXED | Jinxed | TBD | — | — |
 | 43 | PERK_MASTER | Perk Master | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
 | 44 | REFLEX_BOOSTED | Reflex Boosted | TBD | — | — |
