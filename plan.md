@@ -422,7 +422,7 @@ These usually live in `player_update`:
 * [ ] Unstoppable
 * [ ] Infernal Contract
 * [ ] Dodger
-* [ ] Bonus Magnet
+* [x] Bonus Magnet
 * [ ] Monster Vision
 * [ ] Hot Tempered
 * [x] Bonus Economist

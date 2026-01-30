@@ -38,7 +38,7 @@ Notes:
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
 | 25 | POISON_BULLETS | Poison Bullets | `projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, sets `creature.flags \|= 0x01` (self-damage tick). `creature_update_all` applies this via `creature_apply_damage(creature, frame_dt * 60.0, damage_type=0, impulse=(0,0))`. | `src/crimson/projectiles.py:ProjectilePool.update` | `tests/test_poison_bullets_perk.py` |
 | 26 | DODGER | Dodger | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
-| 27 | BONUS_MAGNET | Bonus Magnet | TBD | `src/crimson/gameplay.py:BonusPool.try_spawn_on_kill` | — |
+| 27 | BONUS_MAGNET | Bonus Magnet | `BonusPool.try_spawn_on_kill`: if the base roll fails (`crt_rand() % 9 != 1`) but any player has Bonus Magnet, a second roll (`crt_rand() % 10 == 2`) can still spawn a bonus. | `src/crimson/gameplay.py:BonusPool.try_spawn_on_kill` | `tests/test_bonus_magnet_perk.py` |
 | 28 | URANIUM_FILLED_BULLETS | Uranium Filled Bullets | `creature_apply_damage` (0x004207c0): when `damage_type == 1` and Uranium Filled Bullets is active, doubles the applied damage (`damage = damage + damage`). | `src/crimson/creatures/damage.py:creature_apply_damage` | `tests/test_uranium_filled_bullets_perk.py` |
 | 29 | DOCTOR | Doctor | `creature_apply_damage` (0x004207c0): when `damage_type == 1` and Doctor is active, multiplies damage by 1.2. | `src/crimson/creatures/damage.py:creature_apply_damage` | `tests/test_doctor_perk.py` |
 | 30 | MONSTER_VISION | Monster Vision | TBD | `src/crimson/render/world_renderer.py:WorldRenderer.draw` | — |

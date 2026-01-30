@@ -418,7 +418,7 @@ PERK_TABLE = [
         description="You somehow seem to lure all kinds of bonuses to appear around you more often.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`BonusPool.try_spawn_on_kill`: if the base roll fails (`crt_rand() % 9 != 1`) but any player has Bonus Magnet, a second roll (`crt_rand() % 10 == 2`) can still spawn a bonus.",
     ),
     PerkMeta(
         perk_id=PerkId.URANIUM_FILLED_BULLETS,
