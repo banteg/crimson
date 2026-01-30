@@ -59,7 +59,7 @@ def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
 
     monkeypatch.setattr("crimson.modes.survival_mode.rl.is_key_pressed", _is_key_pressed)
 
-    mode._perk_menu_handle_input(0.0)
+    mode._perk_menu_handle_input(0.0, 0.0)
 
     assert played == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
     assert mode._perk_menu_open is False
@@ -85,7 +85,7 @@ def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
     monkeypatch.setattr("crimson.modes.survival_mode.rl.measure_text", lambda _text, _size: 10)
     monkeypatch.setattr("crimson.modes.survival_mode.rl.is_key_pressed", lambda _key: False)
 
-    mode._perk_menu_handle_input(0.0)
+    mode._perk_menu_handle_input(0.0, 0.0)
 
     assert played == ["sfx_ui_buttonclick"]
     assert mode._perk_menu_open is False
