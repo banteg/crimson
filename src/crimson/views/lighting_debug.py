@@ -254,8 +254,11 @@ class LightingDebugView:
 
         self._light_radius = 360.0
         self._light_source_radius = 14.0
+        self._ambient_base = rl.Color(26, 26, 34, 255)
+        self._ambient_mul = 1.0
         self._ambient = rl.Color(26, 26, 34, 255)
         self._light_tint = rl.Color(255, 245, 220, 255)
+        self._cursor_light_enabled = True
 
         self._last_sdf_circles: list[tuple[float, float, float]] = []
         self._occluder_radius_mul = 0.25
@@ -279,6 +282,18 @@ class LightingDebugView:
         self._sdf_shader_missing: list[str] = []
         self._light_rt: rl.RenderTexture | None = None
         self._solid_white: rl.Texture | None = None
+
+        self._update_ambient()
+
+    def _update_ambient(self) -> None:
+        base = self._ambient_base
+        m = max(0.0, float(self._ambient_mul))
+        self._ambient = rl.Color(
+            int(_clamp(float(base.r) * m, 0.0, 255.0)),
+            int(_clamp(float(base.g) * m, 0.0, 255.0)),
+            int(_clamp(float(base.b) * m, 0.0, 255.0)),
+            255,
+        )
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -311,6 +326,8 @@ class LightingDebugView:
             self._draw_debug = not self._draw_debug
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TWO):
             self._draw_occluders = not self._draw_occluders
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
+            self._cursor_light_enabled = not self._cursor_light_enabled
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
             self._debug_lightmap_preview = not self._debug_lightmap_preview
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
@@ -353,6 +370,14 @@ class LightingDebugView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
             self._reset_scene(seed=0xBEEF)
+
+        amb_step = 0.10 if not shift else 0.25
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
+            self._ambient_mul = _clamp(self._ambient_mul - amb_step, 0.0, 8.0)
+            self._update_ambient()
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
+            self._ambient_mul = _clamp(self._ambient_mul + amb_step, 0.0, 8.0)
+            self._update_ambient()
 
     def _ensure_sdf_shader(self) -> rl.Shader | None:
         if (
@@ -420,6 +445,9 @@ class LightingDebugView:
         self._world.update_camera(0.0)
         self._projectiles.clear()
         self._proj_fire_cd = 0.0
+        self._cursor_light_enabled = True
+        self._ambient_mul = 1.0
+        self._update_ambient()
 
         rng = random.Random(int(seed))
         if self._player is None:
@@ -704,6 +732,8 @@ class LightingDebugView:
             "light_source_radius": float(self._light_source_radius),
             "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
             "ambient_rgba": [int(self._ambient.r), int(self._ambient.g), int(self._ambient.b), int(self._ambient.a)],
+            "ambient_mul": float(self._ambient_mul),
+            "cursor_light_enabled": bool(self._cursor_light_enabled),
             "shadow_k": float(self._sdf_shadow_k),
             "shadow_floor": float(self._sdf_shadow_floor),
             "occluder_radius_mul": float(self._occluder_radius_mul),
@@ -818,9 +848,10 @@ class LightingDebugView:
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
 
         lights: list[tuple[float, float, float, float, float, float, float]] = []
-        lt = self._light_tint
-        lights.append(
-            (
+
+        def cursor_light() -> tuple[float, float, float, float, float, float, float]:
+            lt = self._light_tint
+            return (
                 float(light_x),
                 float(light_y),
                 float(self._light_radius),
@@ -829,24 +860,35 @@ class LightingDebugView:
                 float(lt.g) / 255.0,
                 float(lt.b) / 255.0,
             )
-        )
 
-        if self._sdf_debug_mode == 0 and self._projectiles:
-            for proj in self._projectiles[-self._max_projectile_lights :]:
-                sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
-                fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
-                pr = self._proj_light_tint
-                lights.append(
-                    (
-                        float(sx),
-                        float(sy),
-                        float(self._proj_light_range),
-                        float(self._proj_light_source_radius),
-                        float(pr.r) / 255.0 * fade,
-                        float(pr.g) / 255.0 * fade,
-                        float(pr.b) / 255.0 * fade,
-                    )
-                )
+        def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
+            sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+            fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
+            pr = self._proj_light_tint
+            return (
+                float(sx),
+                float(sy),
+                float(self._proj_light_range),
+                float(self._proj_light_source_radius),
+                float(pr.r) / 255.0 * fade,
+                float(pr.g) / 255.0 * fade,
+                float(pr.b) / 255.0 * fade,
+            )
+
+        if self._sdf_debug_mode != 0:
+            if self._cursor_light_enabled:
+                lights.append(cursor_light())
+            elif self._projectiles:
+                lights.append(proj_light(self._projectiles[-1]))
+            else:
+                # Debug mode still needs a pass to visualize shader output.
+                lights.append(cursor_light())
+        else:
+            if self._cursor_light_enabled:
+                lights.append(cursor_light())
+            if self._projectiles:
+                for proj in self._projectiles[-self._max_projectile_lights :]:
+                    lights.append(proj_light(proj))
 
         def draw_fullscreen() -> None:
             if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
@@ -955,13 +997,14 @@ class LightingDebugView:
                 rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 
         rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
-        rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
-        rl.draw_circle_lines(
-            int(light_x),
-            int(light_y),
-            int(max(1.0, self._light_source_radius)),
-            rl.Color(255, 255, 255, 100),
-        )
+        if self._cursor_light_enabled:
+            rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
+            rl.draw_circle_lines(
+                int(light_x),
+                int(light_y),
+                int(max(1.0, self._light_source_radius)),
+                rl.Color(255, 255, 255, 100),
+            )
 
         if self._debug_dump_next_frame:
             self._debug_dump_next_frame = False
@@ -981,6 +1024,7 @@ class LightingDebugView:
                 f"[ ] disc_radius={self._light_source_radius:.0f}   shift+[ ] light_radius={self._light_radius:.0f}",
                 f"O/P occ_mul={self._occluder_radius_mul:.2f}   K/L occ_pad_px={self._occluder_radius_pad_px:.1f}  (hold shift for bigger steps)",
                 f"LMB shoot  proj={len(self._projectiles)}  proj_lights<= {self._max_projectile_lights}",
+                f"3 cursor_light={'on' if self._cursor_light_enabled else 'off'}   N/M ambient_mul={self._ambient_mul:.2f}  (hold shift for bigger steps)",
                 "1 ui  2 occluders  4 lightmap preview",
                 "F5 dump debug (artifacts/lighting-debug/)",
             ]
