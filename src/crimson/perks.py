@@ -286,7 +286,10 @@ PERK_TABLE = [
         description="You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_update_all` (0x00426220): on a melee hit, if Mr. Melee is active, deals "
+            "`creature_apply_damage(creature, 25.0, damage_type=2, impulse=(0,0))` to the attacker."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.ANXIOUS_LOADER,

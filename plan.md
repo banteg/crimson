@@ -378,7 +378,7 @@ These usually live in `player_update`:
 **F. Perks without port refs**
 
 * [x] Random Weapon
-* [ ] Mr. Melee
+* [x] Mr. Melee
 * [ ] Final Revenge
 * [ ] Reflex Boosted
 

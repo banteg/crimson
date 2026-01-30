@@ -28,7 +28,7 @@ Notes:
 | 14 | FASTSHOT | Fastshot | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon` | `tests/test_perk_selection.py` |
 | 15 | FATAL_LOTTERY | Fatal Lottery | TBD | `src/crimson/gameplay.py:perk_apply` | — |
 | 16 | RANDOM_WEAPON | Random Weapon | `perk_apply` (0x004055e0): picks a random available weapon (retries up to 100), skipping the pistol and the currently equipped weapon, then calls `weapon_assign_player`. | `src/crimson/gameplay.py:perk_apply` | `tests/test_random_weapon_perk.py` |
-| 17 | MR_MELEE | Mr. Melee | TBD | — | — |
+| 17 | MR_MELEE | Mr. Melee | `creature_update_all` (0x00426220): on a melee hit, if Mr. Melee is active, deals `creature_apply_damage(creature, 25.0, damage_type=2, impulse=(0,0))` to the attacker. | `src/crimson/creatures/runtime.py:CreaturePool.update` | `tests/test_mr_melee_perk.py` |
 | 18 | ANXIOUS_LOADER | Anxious Loader | TBD | `src/crimson/gameplay.py:player_update` | — |
 | 19 | FINAL_REVENGE | Final Revenge | TBD | — | — |
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |

@@ -614,6 +614,45 @@ class CreaturePool:
                     creature.collision_timer -= dt
                     if creature.collision_timer < 0.0:
                         creature.collision_timer += CONTACT_DAMAGE_PERIOD
+                        if perk_active(player, PerkId.MR_MELEE):
+                            death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
+
+                            from .damage import creature_apply_damage
+
+                            killed = creature_apply_damage(
+                                creature,
+                                damage_amount=25.0,
+                                damage_type=2,
+                                impulse_x=0.0,
+                                impulse_y=0.0,
+                                owner_id=-1 - int(player.index),
+                                dt=dt,
+                                players=players,
+                                rand=rand,
+                            )
+                            if killed and death_start_needed:
+                                deaths.append(
+                                    self.handle_death(
+                                        idx,
+                                        state=state,
+                                        players=players,
+                                        rand=rand,
+                                        detail_preset=int(detail_preset),
+                                        world_width=world_width,
+                                        world_height=world_height,
+                                        fx_queue=fx_queue,
+                                    )
+                                )
+                                if creature.active:
+                                    self._tick_dead(
+                                        creature,
+                                        dt=dt,
+                                        world_width=world_width,
+                                        world_height=world_height,
+                                        fx_queue_rotated=fx_queue_rotated,
+                                    )
+                                continue
+
                         if float(player.shield_timer) <= 0.0:
                             if perk_active(player, PerkId.TOXIC_AVENGER):
                                 creature.flags |= (
