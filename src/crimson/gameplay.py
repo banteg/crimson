@@ -1288,6 +1288,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         return
 
     firing_during_reload = False
+    ammo_cost = 1
     if player.reload_timer > 0.0:
         if player.ammo <= 0 and player.experience > 0:
             if perk_active(player, PerkId.REGRESSION_BULLETS):
@@ -1385,14 +1386,21 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             owner_id=_owner_id_for_player(player.index),
         )
     elif player.weapon_id == 17:
-        # Rocket Minigun -> secondary type 2 (multiple per shot in native; keep 1 for now).
-        state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
-            angle=shot_angle,
-            type_id=2,
-            owner_id=_owner_id_for_player(player.index),
-        )
+        # Rocket Minigun -> secondary type 2 (fires the full clip in a spread).
+        rocket_count = max(1, int(player.ammo))
+        step = float(rocket_count) * (math.pi / 3.0)
+        angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
+        for _ in range(rocket_count):
+            state.secondary_projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=2,
+                owner_id=_owner_id_for_player(player.index),
+            )
+            angle += step
+        ammo_cost = rocket_count
+        shot_count = rocket_count
     elif player.weapon_id == 18:
         # Pulse Gun -> secondary type 4.
         state.secondary_projectiles.spawn(
@@ -1450,7 +1458,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
 
     player.shot_seq += 1
     if not firing_during_reload:
-        player.ammo = max(0, player.ammo - 1)
+        player.ammo = max(0, int(player.ammo) - int(ammo_cost))
         if player.ammo <= 0:
             player_start_reload(player, state)
 
