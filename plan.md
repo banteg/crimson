@@ -506,10 +506,10 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 - [x] Options parity (audio/video/gameplay toggles that exist in the original)
 - [x] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
 
-2. [ ] Statistics + progression
+2. [x] Statistics + progression
 
 - [x] Implement the “detailed stats” screen
-- [ ] Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
+- [x] Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
 
 3. [ ] Sound + transitions
 

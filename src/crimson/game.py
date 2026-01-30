@@ -497,10 +497,15 @@ class QuestsMenuView:
         # In `sub_447d40`, counts are indexed by (row + stage*10) and split across two
         # arrays at offsets 0xDC (games) and 0x17C (completed) within game.cfg.
         #
-        # We only model the stable subset (stages 1..4 -> 40 quests). The stage 5
-        # indices overlap unrelated fields in the saved blob in the original build.
+        # Stage 5 does not fit cleanly in the saved blob:
+        # - The "games" index range would overlap stage-1 completion counters.
+        # - The "completed" index range reads into trailing fields (mode counters,
+        #   game_sequence_id, and unknown tail bytes), and the last row would run past
+        #   the decoded payload.
+        #
+        # We emulate this layout so the debug `F1` overlay matches the classic build.
         global_index = (int(stage) - 1) * 10 + int(row)
-        if not (0 <= global_index < 40):
+        if not (0 <= global_index < 50):
             return None
         count_index = global_index + 10
 
@@ -509,9 +514,35 @@ class QuestsMenuView:
         completed_idx = 41 + count_index
         try:
             games = int(status.quest_play_count(games_idx))
-            completed = int(status.quest_play_count(completed_idx))
         except Exception:
             return None
+
+        try:
+            completed = int(status.quest_play_count(completed_idx))
+        except Exception:
+            # Stage-5 completed reads into trailing fields (and beyond).
+            if int(stage) != 5:
+                return None
+            tail_slot = int(count_index) - 50
+            if tail_slot == 0:
+                completed = int(status.mode_play_count("survival"))
+            elif tail_slot == 1:
+                completed = int(status.mode_play_count("rush"))
+            elif tail_slot == 2:
+                completed = int(status.mode_play_count("typo"))
+            elif tail_slot == 3:
+                completed = int(status.mode_play_count("other"))
+            elif tail_slot == 4:
+                completed = int(status.game_sequence_id)
+            elif 5 <= tail_slot <= 8:
+                tail = status.unknown_tail()
+                off = (tail_slot - 5) * 4
+                if len(tail) < off + 4:
+                    completed = 0
+                else:
+                    completed = int.from_bytes(tail[off : off + 4], "little") & 0xFFFFFFFF
+            else:
+                completed = 0
         return completed, games
 
     def _draw_contents(self) -> None:
