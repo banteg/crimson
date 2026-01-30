@@ -404,6 +404,10 @@ These usually live in `player_update`:
 * [x] Bandage
 * [x] My Favourite Weapon
 
+**K. Damage intake perks**
+
+* [x] Tough Reloader
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 

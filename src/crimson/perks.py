@@ -757,7 +757,7 @@ PERK_TABLE = [
         description="Damage received during reloading a weapon is halved.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_take_damage` (0x00425e50): if `reload_active` is set, multiplies incoming damage by `0.5`.",
     ),
     PerkMeta(
         perk_id=PerkId.LIFELINE_50_50,

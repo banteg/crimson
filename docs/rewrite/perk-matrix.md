@@ -67,5 +67,5 @@ Notes:
 | 53 | MAN_BOMB | Man Bomb | Burst spawns projectile types `0x15/0x16`. | `src/crimson/gameplay.py:player_update` | `tests/test_game_world_audio.py`<br>`tests/test_player_update.py`<br>`+1 more` |
 | 54 | FIRE_CAUGH | Fire Caugh | Uses projectile type `0x2d` (see Fire Bullets in the atlas notes). | `src/crimson/gameplay.py:player_update` | `tests/test_player_update.py` |
 | 55 | LIVING_FORTRESS | Living Fortress | `player_update` (0x00412d70): while stationary and Living Fortress is active, increments `player.living_fortress_timer += frame_dt` (caps at 30.0; resets to 0.0 when moving). `creature_apply_damage` (0x004207c0): for `damage_type == 1`, multiplies damage by `(living_fortress_timer * 0.05 + 1.0)` for each alive player. | `src/crimson/creatures/damage.py:creature_apply_damage`<br>`src/crimson/gameplay.py:player_update` | `tests/test_living_fortress_perk.py` |
-| 56 | TOUGH_RELOADER | Tough Reloader | TBD | `src/crimson/player_damage.py:player_take_damage` | — |
+| 56 | TOUGH_RELOADER | Tough Reloader | `player_take_damage` (0x00425e50): if `reload_active` is set, multiplies incoming damage by `0.5`. | `src/crimson/player_damage.py:player_take_damage` | `tests/test_tough_reloader_perk.py` |
 | 57 | LIFELINE_50_50 | Lifeline 50-50 | TBD | `src/crimson/gameplay.py:perk_apply` | — |
