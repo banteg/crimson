@@ -60,9 +60,9 @@ class EffectFx:
 
 _KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     # Based on docs/atlas.md (projectile type ids are 0-based).
-    ProjectileTypeId.JACKHAMMER: (2, 0),
-    ProjectileTypeId.GAUSS_SHOTGUN: (4, 3),
-    ProjectileTypeId.SPIDER_PLASMA: (4, 6),
+    ProjectileTypeId.PULSE_GUN: (2, 0),
+    ProjectileTypeId.SPLITTER_GUN: (4, 3),
+    ProjectileTypeId.BLADE_GUN: (4, 6),
     ProjectileTypeId.ION_MINIGUN: (4, 2),
     ProjectileTypeId.ION_CANNON: (4, 2),
     ProjectileTypeId.SHRINKIFIER: (4, 2),
@@ -77,8 +77,8 @@ _BEAM_TYPES = frozenset(
         ProjectileTypeId.ION_CANNON,
         ProjectileTypeId.SHRINKIFIER,
         ProjectileTypeId.FIRE_BULLETS,
-        ProjectileTypeId.GAUSS_SHOTGUN,
-        ProjectileTypeId.SPIDER_PLASMA,
+        ProjectileTypeId.BLADE_GUN,
+        ProjectileTypeId.SPLITTER_GUN,
     }
 )
 
@@ -443,7 +443,7 @@ class ProjectileFxView:
             color = rl.Color(255, 170, 90, 255)
         elif type_id == ProjectileTypeId.SHRINKIFIER:
             color = rl.Color(160, 255, 170, 255)
-        elif type_id == ProjectileTypeId.SPIDER_PLASMA:
+        elif type_id == ProjectileTypeId.BLADE_GUN:
             color = rl.Color(240, 120, 255, 255)
 
         # Beam-style projectiles get a trail from origin to current position in the flight phase.

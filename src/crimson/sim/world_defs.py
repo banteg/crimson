@@ -33,9 +33,9 @@ CREATURE_ASSET: dict[CreatureTypeId, str] = {
 
 KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     # Based on docs/atlas.md (projectile type ids are 0-based).
-    ProjectileTypeId.JACKHAMMER: (2, 0),
-    ProjectileTypeId.GAUSS_SHOTGUN: (4, 3),
-    ProjectileTypeId.SPIDER_PLASMA: (4, 6),
+    ProjectileTypeId.PULSE_GUN: (2, 0),
+    ProjectileTypeId.SPLITTER_GUN: (4, 3),
+    ProjectileTypeId.BLADE_GUN: (4, 6),
     ProjectileTypeId.ION_MINIGUN: (4, 2),
     ProjectileTypeId.ION_CANNON: (4, 2),
     ProjectileTypeId.SHRINKIFIER: (4, 2),
@@ -50,7 +50,7 @@ BEAM_TYPES = frozenset(
         ProjectileTypeId.ION_CANNON,
         ProjectileTypeId.SHRINKIFIER,
         ProjectileTypeId.FIRE_BULLETS,
-        ProjectileTypeId.GAUSS_SHOTGUN,
-        ProjectileTypeId.SPIDER_PLASMA,
+        ProjectileTypeId.BLADE_GUN,
+        ProjectileTypeId.SPLITTER_GUN,
     }
 )

@@ -7,6 +7,7 @@ from typing import Callable, Protocol
 
 from .creatures.spawn import CreatureFlags
 from .perks import PerkId
+from .weapons import weapon_entry_for_projectile_type_id
 
 
 class Damageable(Protocol):
@@ -43,29 +44,33 @@ SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
 
 class ProjectileTypeId(IntEnum):
-    PISTOL = 0x00
-    ASSAULT_RIFLE = 0x01
-    SHOTGUN = 0x02
+    # Values are projectile type ids (not weapon ids). Based on the decompile
+    # for `player_fire_weapon` and `projectile_update`.
+    PISTOL = 0x01
+    MEAN_MINIGUN = 0x01
+    ASSAULT_RIFLE = 0x02
+    SHOTGUN = 0x03
     SAWED_OFF_SHOTGUN = 0x03
-    SUBMACHINE_GUN = 0x04
-    GAUSS_GUN = 0x05
-    MEAN_MINIGUN = 0x06
-    FLAMETHROWER = 0x07
+    JACKHAMMER = 0x03
+    SUBMACHINE_GUN = 0x05
+    GAUSS_GUN = 0x06
+    GAUSS_SHOTGUN = 0x06
     PLASMA_RIFLE = 0x09
+    MULTI_PLASMA = 0x09
     ROCKET_LAUNCHER = 0x0B
-    PULSE_GUN = 0x12
-    JACKHAMMER = 0x13
-    ION_RIFLE = 0x14
-    ION_MINIGUN = 0x15
-    ION_CANNON = 0x16
-    SHRINKIFIER = 0x17
-    BLADE_GUN = 0x18
-    SPIDER_PLASMA = 0x19
-    PLASMA_CANNON = 0x1B
-    SPLITTER_GUN = 0x1C
-    GAUSS_SHOTGUN = 0x1D
-    PLAGUE_SPREADER = 0x28
-    FIRE_BULLETS = 0x2C
+    PLASMA_MINIGUN = 0x0B
+    PLASMA_SHOTGUN = 0x0B
+    PULSE_GUN = 0x13
+    ION_RIFLE = 0x15
+    ION_MINIGUN = 0x16
+    ION_CANNON = 0x17
+    SHRINKIFIER = 0x18
+    BLADE_GUN = 0x19
+    PLASMA_CANNON = 0x1C
+    SPLITTER_GUN = 0x1D
+    PLAGUE_SPREADER = 0x29
+    RAINBOW_GUN = 0x2B
+    FIRE_BULLETS = 0x2D
 
 
 ROCKET_SPLASH_RADIUS = 90.0
@@ -287,14 +292,8 @@ class ProjectilePool:
                 return float(damage_scale_default)
             return float(value)
 
-        def _damage_type_for(type_id: int, *, radius: bool = False) -> int:
-            if radius:
-                return 3
-            if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
-                return 7
-            if type_id in (ProjectileTypeId.FLAMETHROWER, ProjectileTypeId.FIRE_BULLETS):
-                return 4
-            return 1
+        def _damage_type_for(*, radius: bool = False) -> int:
+            return 3 if radius else 1
 
         def _apply_damage_to_creature(
             creature_index: int,
@@ -339,7 +338,7 @@ class ProjectilePool:
                 _apply_damage_to_creature(
                     idx,
                     damage_amount,
-                    damage_type=_damage_type_for(int(ProjectileTypeId.ROCKET_LAUNCHER), radius=True),
+                    damage_type=_damage_type_for(radius=True),
                     impulse_x=0.0,
                     impulse_y=0.0,
                     owner_id=owner_id,
@@ -436,7 +435,7 @@ class ProjectilePool:
                             _apply_damage_to_creature(
                                 creature_idx,
                                 damage,
-                                damage_type=_damage_type_for(int(type_id)),
+                                damage_type=7,
                                 impulse_x=0.0,
                                 impulse_y=0.0,
                                 owner_id=int(proj.owner_id),
@@ -454,7 +453,7 @@ class ProjectilePool:
                             _apply_damage_to_creature(
                                 creature_idx,
                                 damage,
-                                damage_type=_damage_type_for(int(type_id)),
+                                damage_type=7,
                                 impulse_x=0.0,
                                 impulse_y=0.0,
                                 owner_id=int(proj.owner_id),
@@ -622,21 +621,27 @@ class ProjectilePool:
                     if dist < 50.0:
                         dist = 50.0
 
-                    if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
+                    if type_id == ProjectileTypeId.ION_RIFLE:
                         if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
                             proj.reserved = float(int(hit_idx) + 1)
                     elif type_id == ProjectileTypeId.PLASMA_CANNON:
                         size = float(getattr(creature, "size", 50.0) or 50.0)
                         ring_radius = size * 0.5 + 1.0
+                        plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
+                        plasma_meta = (
+                            float(plasma_entry.projectile_meta)
+                            if plasma_entry and plasma_entry.projectile_meta is not None
+                            else proj.base_damage
+                        )
                         for ring_idx in range(12):
                             ring_angle = float(ring_idx) * (math.pi / 6.0)
                             self.spawn(
                                 pos_x=proj.pos_x + math.cos(ring_angle) * ring_radius,
                                 pos_y=proj.pos_y + math.sin(ring_angle) * ring_radius,
                                 angle=ring_angle,
-                                type_id=8,
+                                type_id=ProjectileTypeId.PLASMA_RIFLE,
                                 owner_id=-100,
-                                base_damage=45.0,
+                                base_damage=plasma_meta,
                             )
                     elif type_id == ProjectileTypeId.SHRINKIFIER:
                         if hasattr(creature, "size"):
@@ -646,7 +651,7 @@ class ProjectilePool:
                                 _apply_damage_to_creature(
                                     hit_idx,
                                     float(creature.hp) + 1.0,
-                                    damage_type=_damage_type_for(int(type_id)),
+                                    damage_type=_damage_type_for(),
                                     impulse_x=0.0,
                                     impulse_y=0.0,
                                     owner_id=int(proj.owner_id),
@@ -671,7 +676,7 @@ class ProjectilePool:
                         proj.damage_pool = remaining
                         impulse_x = dir_x * float(proj.speed_scale)
                         impulse_y = dir_y * float(proj.speed_scale)
-                        damage_type = _damage_type_for(int(type_id))
+                        damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
                                 hit_idx,

@@ -722,43 +722,41 @@ WEAPON_BY_ID = {
 }
 
 WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
-    # Source: docs/structs/projectile.md (Known type_id sources).
-    # Weapon ids not listed here either use particle/secondary paths or are still unknown.
-    1: (0x00,),  # Pistol (inferred; not called out explicitly in docs)
-    2: (0x01,),  # Assault Rifle
-    3: (0x02,),  # Shotgun
+    # Source: analysis/ghidra/raw/crimsonland.exe_decompiled.c (`player_fire_weapon`).
+    # Weapon ids not listed here fall back to (weapon_id - 1) as a hypothesis.
+    1: (0x01,),  # Pistol
+    2: (0x02,),  # Assault Rifle
+    3: (0x03,),  # Shotgun
     4: (0x03,),  # Sawed-off Shotgun
-    5: (0x03,),  # Submachine Gun
-    6: (0x05,),  # Gauss Gun
-    7: (0x06,),  # Mean Minigun
-    8: (0x01,),  # Flamethrower
-    9: (),  # Plasma Rifle (particle path)
-    10: (0x09,),  # Multi-Plasma
-    11: (0x09, 0x0B),  # Plasma Minigun (spread variant uses 0x0B)
-    12: (0x0B,),  # Rocket Launcher
-    13: (),  # Seeker Rockets (secondary projectile path)
-    14: (),  # Plasma Shotgun (secondary projectile path)
-    15: (0x0B,),  # Blow Torch
+    5: (0x05,),  # Submachine Gun
+    6: (0x06,),  # Gauss Gun
+    7: (0x01,),  # Mean Minigun
+    8: (),  # Flamethrower (particle path)
+    9: (0x09,),  # Plasma Rifle
+    10: (0x09, 0x0B),  # Multi-Plasma (spread includes 0x0B)
+    11: (0x0B,),  # Plasma Minigun
+    12: (),  # Rocket Launcher (secondary projectile pool)
+    13: (),  # Seeker Rockets (secondary projectile pool)
+    14: (0x0B,),  # Plasma Shotgun
+    15: (),  # Blow Torch (particle path)
     16: (),  # HR Flamer (particle path)
-    17: (),  # Mini-Rocket Swarmers (particle path)
-    18: (),  # Rocket Minigun (secondary projectile path)
-    19: (),  # Pulse Gun (secondary projectile path)
-    20: (0x13,),  # Jackhammer
-    21: (0x03,),  # Ion Rifle
-    22: (0x15,),  # Ion Minigun
-    23: (0x16,),  # Ion Cannon
-    24: (0x17,),  # Shrinkifier 5k
-    25: (0x18,),  # Blade Gun
-    26: (0x19,),  # Spider Plasma
-    28: (0x1B,),  # Plasma Cannon (inferred)
-    29: (0x1C,),  # Splitter Gun
-    30: (0x1D,),  # Gauss Shotgun
-    31: (0x06,),  # Ion Shotgun
-    32: (0x16,),  # Flameburst
-    42: (0x29,),  # Bubblegun
-    43: (),  # Rainbow Gun (slow particle path)
-    44: (0x2B,),  # Grim Weapon
-    45: (0x2D,),  # Fire bullets
+    17: (),  # Mini-Rocket Swarmers (secondary projectile pool)
+    18: (),  # Rocket Minigun (secondary projectile pool)
+    19: (0x13,),  # Pulse Gun
+    20: (0x03,),  # Jackhammer
+    21: (0x15,),  # Ion Rifle
+    22: (0x16,),  # Ion Minigun
+    23: (0x17,),  # Ion Cannon
+    24: (0x18,),  # Shrinkifier 5k
+    25: (0x19,),  # Blade Gun
+    28: (0x1C,),  # Plasma Cannon
+    29: (0x1D,),  # Splitter Gun
+    30: (0x06,),  # Gauss Shotgun
+    31: (0x16,),  # Ion Shotgun
+    41: (0x29,),  # Plague Spreader Gun
+    42: (),  # Bubblegun (particle slow)
+    43: (0x2B,),  # Rainbow Gun
+    45: (0x2D,),  # Fire Bullets
 }
 
 PROJECTILE_TYPE_TO_WEAPON_IDS: dict[int, tuple[int, ...]] = {}

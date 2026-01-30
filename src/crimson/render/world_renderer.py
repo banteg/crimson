@@ -696,7 +696,7 @@ class WorldRenderer:
             color = rl.Color(255, 170, 90, 255)
         elif type_id == ProjectileTypeId.SHRINKIFIER:
             color = rl.Color(160, 255, 170, 255)
-        elif type_id == ProjectileTypeId.SPIDER_PLASMA:
+        elif type_id == ProjectileTypeId.BLADE_GUN:
             color = rl.Color(240, 120, 255, 255)
 
         if type_id in BEAM_TYPES and life >= 0.4:
@@ -744,7 +744,7 @@ class WorldRenderer:
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:
-        return 0 <= type_id <= int(ProjectileTypeId.FLAMETHROWER) or type_id == int(ProjectileTypeId.GAUSS_SHOTGUN)
+        return 0 <= type_id < 8 or type_id == int(ProjectileTypeId.SPLITTER_GUN)
 
     @staticmethod
     def _bullet_sprite_size(type_id: int, *, scale: float) -> float:
