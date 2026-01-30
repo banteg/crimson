@@ -554,7 +554,10 @@ PERK_TABLE = [
         description="Your health replenishes faster than ever.",
         flags=None,
         prereq=(PerkId.REGENERATION,),
-        notes=None,
+        notes=(
+            "No runtime hook found in this build: `perk_id_greater_regeneration` is only referenced in perk selection "
+            "and `perk_apply` (Death Clock clears it). No reads appear in `perks_update_effects` / `player_update`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.BREATHING_ROOM,

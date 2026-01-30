@@ -56,7 +56,7 @@ Notes:
 | 42 | JINXED | Jinxed | Global timer `data_4aaf1c` in `perks_update_effects`: every ~2.0–3.9s, 1/10 chance to deal 5 self-damage and call `fx_queue_add_random` twice at the player position. If Freeze bonus is inactive, kills a random active creature (index = `rand() % 0x17f`, 10 retries) by setting `health=-1` and decrementing `hitbox_size -= dt*20`, then awards `experience = int(float(experience) + creature.reward_value)` and plays `sfx_trooper_inpain_01`. | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_jinxed_perk.py` |
 | 43 | PERK_MASTER | Perk Master | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
 | 44 | REFLEX_BOOSTED | Reflex Boosted | TBD | — | — |
-| 45 | GREATER_REGENERATION | Greater Regeneration | TBD | `src/crimson/gameplay.py:perk_apply` | — |
+| 45 | GREATER_REGENERATION | Greater Regeneration | No runtime hook found in this build: `perk_id_greater_regeneration` is only referenced in perk selection and `perk_apply` (Death Clock clears it). No reads appear in `perks_update_effects` / `player_update`. | `src/crimson/gameplay.py:perk_apply` | — |
 | 46 | BREATHING_ROOM | Breathing Room | TBD | `src/crimson/gameplay.py:perk_apply` | — |
 | 47 | DEATH_CLOCK | Death Clock | TBD | `src/crimson/gameplay.py:bonus_pick_random_type`<br>`src/crimson/gameplay.py:perk_apply`<br>`src/crimson/player_damage.py:player_take_damage` | — |
 | 48 | MY_FAVOURITE_WEAPON | My Favourite Weapon | TBD | `src/crimson/gameplay.py:bonus_pick_random_type`<br>`src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:weapon_assign_player` | — |

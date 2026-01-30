@@ -363,7 +363,7 @@ These typically require creature flags/timers:
 These usually live in `player_update`:
 
 * [x] Regeneration
-* [ ] Greater Regeneration
+* [x] Greater Regeneration (no runtime hook found; appears inert)
 * [x] Pyrokinetic (aim-targeted particle burst)
 * [x] Unstoppable
 * [x] Highlander
