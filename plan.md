@@ -340,7 +340,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 * [x] Uranium Filled Bullets
 * [x] Doctor
 * [x] Barrel Greaser
-* [ ] Living Fortress scaling
+* [x] Living Fortress scaling
 * [ ] Ion Gun Master
 * [ ] Pyromaniac
 

@@ -693,7 +693,12 @@ PERK_TABLE = [
         description="It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_update` (0x00412d70): while stationary and Living Fortress is active, increments "
+            "`player.living_fortress_timer += frame_dt` (caps at 30.0; resets to 0.0 when moving). "
+            "`creature_apply_damage` (0x004207c0): for `damage_type == 1`, multiplies damage by "
+            "`(living_fortress_timer * 0.05 + 1.0)` for each alive player."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.TOUGH_RELOADER,
