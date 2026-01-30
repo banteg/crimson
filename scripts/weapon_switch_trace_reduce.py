@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
+import struct
 
 
 def iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
@@ -59,6 +60,22 @@ def _update_range(ranges: dict[str, dict[str, float]], key: str, value: Any) -> 
     else:
         entry["min"] = min(entry["min"], numeric)
         entry["max"] = max(entry["max"], numeric)
+
+
+def _maybe_decode_float_bits(key: str, value: Any) -> Any:
+    if key not in ("ammo", "clip_size"):
+        return value
+    if not isinstance(value, (int, float)):
+        return value
+    raw = int(value)
+    if raw < 0 or raw > 0xFFFFFFFF:
+        return value
+    if raw < (1 << 20):
+        return value
+    try:
+        return struct.unpack("<f", struct.pack("<I", raw & 0xFFFFFFFF))[0]
+    except struct.error:
+        return value
 
 
 def summarize(log_path: Path) -> dict[str, Any]:
@@ -232,7 +249,8 @@ def summarize(log_path: Path) -> dict[str, Any]:
                         "xp_delta",
                         "level",
                     ):
-                        _update_range(ranges, key, player.get(key))
+                        value = _maybe_decode_float_bits(key, player.get(key))
+                        _update_range(ranges, key, value)
                     perk = player.get("perk_timers")
                     if isinstance(perk, dict):
                         for key in ("hot_tempered", "man_bomb", "living_fortress", "fire_cough"):

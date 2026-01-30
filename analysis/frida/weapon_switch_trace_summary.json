@@ -1,229 +1,86 @@
 {
   "bonus_apply": {
     "counts_by_id": {
-      "1": 2,
-      "10": 3,
-      "11": 1,
-      "14": 2,
-      "2": 1,
-      "3": 1,
-      "4": 4,
-      "5": 4,
-      "6": 2,
-      "8": 2
+      "13": 1,
+      "5": 1
     },
-    "energizer_samples": [
-      {
-        "amount": 1.1210387714598537e-44,
-        "bonus_id": 2,
-        "pos": {
-          "x": 491.1858215332031,
-          "y": 890.1453857421875
-        },
-        "state": 0,
-        "time_left": 4.393381118774414,
-        "time_max": 10
-      }
-    ],
+    "energizer_samples": [],
     "samples": [
       {
         "amount": 1.401298464324817e-45,
         "bonus_id": 5,
         "pos": {
-          "x": 350.5357666015625,
-          "y": 253.6405487060547
+          "x": 357.73223876953125,
+          "y": 412.3874816894531
         },
         "state": 0,
-        "time_left": 3.3103878498077393,
+        "time_left": 6.6360368728637695,
         "time_max": 10
       },
       {
-        "amount": 7.006492321624085e-45,
-        "bonus_id": 11,
+        "amount": 1.1210387714598537e-44,
+        "bonus_id": 13,
         "pos": {
-          "x": 228.78103637695312,
-          "y": 525.8998413085938
+          "x": 349.5888366699219,
+          "y": 479.7414245605469
         },
         "state": 0,
-        "time_left": 5.379319667816162,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-45,
-        "bonus_id": 8,
-        "pos": {
-          "x": 175.5330810546875,
-          "y": 438.9329833984375
-        },
-        "state": 0,
-        "time_left": 7.078190326690674,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-44,
-        "bonus_id": 4,
-        "pos": {
-          "x": 630.0822143554688,
-          "y": 400.136962890625
-        },
-        "state": 0,
-        "time_left": 6.957175254821777,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-45,
-        "bonus_id": 5,
-        "pos": {
-          "x": 395.7723083496094,
-          "y": 178.3025360107422
-        },
-        "state": 0,
-        "time_left": 6.531210422515869,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-45,
-        "bonus_id": 6,
-        "pos": {
-          "x": 463.7342224121094,
-          "y": 231.74703979492188
-        },
-        "state": 0,
-        "time_left": 5.2083001136779785,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-44,
-        "bonus_id": 4,
-        "pos": {
-          "x": 524.8668823242188,
-          "y": 258.93463134765625
-        },
-        "state": 0,
-        "time_left": 0.2773084044456482,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-45,
-        "bonus_id": 8,
-        "pos": {
-          "x": 573.12451171875,
-          "y": 344.1897277832031
-        },
-        "state": 0,
-        "time_left": 2.1052889823913574,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-45,
-        "bonus_id": 5,
-        "pos": {
-          "x": 412.25469970703125,
-          "y": 312.1402893066406
-        },
-        "state": 0,
-        "time_left": 8.208117485046387,
-        "time_max": 10
-      },
-      {
-        "amount": 9.80908925027372e-45,
-        "bonus_id": 10,
-        "pos": {
-          "x": 292.5970153808594,
-          "y": 506.87261962890625
-        },
-        "state": 0,
-        "time_left": 7.573156356811523,
-        "time_max": 10
-      },
-      {
-        "amount": 1.401298464324817e-44,
-        "bonus_id": 4,
-        "pos": {
-          "x": 242.5712890625,
-          "y": 427.836669921875
-        },
-        "state": 0,
-        "time_left": 8.173104286193848,
-        "time_max": 10
-      },
-      {
-        "amount": 7.006492321624085e-43,
-        "bonus_id": 1,
-        "pos": {
-          "x": 171.33436584472656,
-          "y": 199.6092529296875
-        },
-        "state": 0,
-        "time_left": 9.2560453414917,
+        "time_left": 7.041993141174316,
         "time_max": 10
       }
     ]
   },
   "damage": {
     "direct_counts_by_type": {
-      "1": 1359,
-      "3": 1650,
-      "4": 278,
-      "7": 38586
+      "1": 196,
+      "3": 78,
+      "4": 70,
+      "7": 3499
     },
     "radius_counts_by_type": {
-      "7": 17248
+      "7": 2197
     }
   },
   "effects": {
     "counts_by_weapon": {
-      "1": 80,
-      "10": 192,
-      "11": 256,
-      "12": 52,
-      "13": 14,
-      "14": 484,
-      "15": 52,
-      "17": 44,
-      "19": 304,
-      "2": 96,
-      "20": 390,
-      "21": 81,
-      "22": 1256,
-      "23": 143,
-      "28": 329,
-      "29": 1748,
-      "3": 464,
-      "30": 627,
-      "31": 424,
-      "4": 137,
-      "5": 195,
-      "6": 309,
-      "7": 162,
-      "8": 12,
-      "9": 64
+      "1": 44,
+      "10": 24,
+      "11": 56,
+      "12": 32,
+      "14": 250,
+      "18": 16,
+      "19": 164,
+      "2": 33,
+      "20": 161,
+      "21": 43,
+      "22": 144,
+      "23": 41,
+      "28": 86,
+      "29": 318,
+      "3": 50,
+      "30": 377,
+      "31": 106,
+      "4": 60,
+      "5": 68,
+      "6": 210,
+      "7": 71,
+      "8": 70,
+      "9": 16
     },
     "ids_by_weapon": {
       "1": [
         0,
+        1,
         7,
         18
       ],
       "10": [
-        0,
-        1,
-        7,
-        12,
-        17
+        7
       ],
       "11": [
-        0,
         7
       ],
       "12": [
-        0,
-        1,
-        7,
-        12,
-        17
-      ],
-      "13": [
         0,
         1,
         7,
@@ -234,19 +91,12 @@
         0,
         7
       ],
-      "15": [
-        0,
-        7
-      ],
-      "17": [
+      "18": [
         0
       ],
       "19": [
         0,
-        1,
-        7,
-        12,
-        17
+        7
       ],
       "2": [
         7,
@@ -282,11 +132,7 @@
         7
       ],
       "3": [
-        0,
-        1,
         7,
-        12,
-        17,
         18
       ],
       "30": [
@@ -301,21 +147,11 @@
         18
       ],
       "4": [
-        0,
-        1,
         7,
-        8,
-        9,
-        10,
-        14,
         18
       ],
       "5": [
         7,
-        8,
-        9,
-        10,
-        14,
         18
       ],
       "6": [
@@ -329,122 +165,202 @@
         18
       ],
       "8": [
-        0
+        0,
+        1,
+        7,
+        12,
+        17
       ],
       "9": [
-        0,
         7
       ]
     }
   },
   "event_counts": {
-    "attach": 47,
-    "bonus_apply": 22,
-    "creature_damage": 41873,
-    "creature_damage_radius": 17248,
-    "effect_spawn": 15883,
-    "particle_spawn": 2148,
-    "projectile_spawn": 2792,
-    "secondary_projectile_spawn": 104,
-    "sfx_play": 47,
-    "sfx_play_exclusive": 866,
-    "sfx_play_panned": 3757,
-    "start": 3,
-    "weapon_assign": 27,
-    "weapon_initial": 2,
-    "weapon_switch": 49
+    "attach": 16,
+    "bonus_apply": 2,
+    "creature_damage": 3843,
+    "creature_damage_radius": 2197,
+    "effect_spawn": 2440,
+    "level_up": 2,
+    "oracle_frame": 28011,
+    "particle_spawn": 465,
+    "projectile_spawn": 533,
+    "secondary_projectile_spawn": 36,
+    "sfx_play": 23,
+    "sfx_play_exclusive": 4,
+    "sfx_play_panned": 1265,
+    "start": 1,
+    "weapon_assign": 26,
+    "weapon_initial": 1,
+    "weapon_switch": 26
   },
   "event_with_weapon": {
-    "effect_spawn": 7915,
-    "particle_spawn": 1247,
-    "projectile_spawn": 2480,
-    "secondary_projectile_spawn": 61,
-    "sfx_play": 47,
-    "sfx_play_exclusive": 866,
-    "sfx_play_panned": 3757,
-    "weapon_assign": 27,
-    "weapon_initial": 2,
-    "weapon_switch": 49
+    "effect_spawn": 2440,
+    "particle_spawn": 465,
+    "projectile_spawn": 533,
+    "secondary_projectile_spawn": 36,
+    "sfx_play": 23,
+    "sfx_play_exclusive": 4,
+    "sfx_play_panned": 1265,
+    "weapon_assign": 26,
+    "weapon_initial": 1,
+    "weapon_switch": 26
   },
-  "generated_at": "2026-01-30T20:55:16.651905Z",
+  "generated_at": "2026-01-30T21:07:17.834863Z",
   "oracle": {
-    "bonus_timer_max": {},
-    "creature_max_per_frame": 0,
-    "creature_samples": 0,
-    "frame_count": 0,
-    "player_ranges": {}
+    "bonus_timer_max": {
+      "double_xp": 0.0,
+      "energizer": 0.0,
+      "freeze": 0.0,
+      "reflex_boost": 0.0,
+      "weapon_power_up": 0.0
+    },
+    "creature_max_per_frame": 64,
+    "creature_samples": 1792704,
+    "frame_count": 28011,
+    "player_ranges": {
+      "0": {
+        "ammo": {
+          "max": 120.0,
+          "min": 0.0
+        },
+        "bonus_fire_bullets": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "bonus_shield": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "bonus_speed_bonus": {
+          "max": 8.0,
+          "min": -0.0031075594015419483
+        },
+        "clip_size": {
+          "max": 120.0,
+          "min": 3.0
+        },
+        "health": {
+          "max": 100.0,
+          "min": 100.0
+        },
+        "level": {
+          "max": 3.0,
+          "min": 1.0
+        },
+        "perk_fire_cough": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "perk_hot_tempered": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "perk_living_fortress": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "perk_man_bomb": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "reload_active": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "reload_timer": {
+          "max": 3.0,
+          "min": 0.0
+        },
+        "reload_timer_max": {
+          "max": 3.0,
+          "min": 0.10000000149011612
+        },
+        "shot_cooldown": {
+          "max": 1.7999999523162842,
+          "min": 0.0
+        },
+        "spread_heat": {
+          "max": 0.47999998927116394,
+          "min": 0.0
+        },
+        "weapon_id": {
+          "max": 31.0,
+          "min": 1.0
+        },
+        "xp": {
+          "max": 6699.0,
+          "min": 0.0
+        },
+        "xp_delta": {
+          "max": 671.0,
+          "min": 0.0
+        }
+      }
+    }
   },
   "particles": {
     "counts_by_weapon": {
-      "15": 601,
-      "8": 646
+      "15": 233,
+      "8": 232
     },
     "slow_counts_by_weapon": {}
   },
   "projectiles": {
     "counts_by_type": {
-      "1": 199,
-      "11": 503,
-      "19": 148,
-      "2": 61,
-      "21": 58,
-      "22": 125,
-      "23": 14,
-      "28": 11,
-      "29": 448,
-      "3": 760,
-      "45": 86,
-      "5": 67,
-      "6": 59,
-      "9": 253
+      "1": 30,
+      "11": 91,
+      "19": 44,
+      "2": 9,
+      "21": 4,
+      "22": 33,
+      "23": 3,
+      "28": 2,
+      "29": 67,
+      "3": 156,
+      "5": 24,
+      "6": 32,
+      "9": 38
     },
     "counts_by_weapon": {
-      "1": 25,
-      "10": 96,
-      "11": 119,
-      "13": 14,
-      "14": 364,
-      "19": 155,
-      "2": 61,
-      "20": 256,
-      "21": 26,
-      "22": 112,
-      "23": 39,
-      "28": 131,
-      "29": 194,
-      "3": 308,
-      "30": 30,
-      "31": 48,
-      "4": 220,
-      "5": 67,
-      "6": 17,
-      "7": 144,
-      "9": 54
+      "1": 4,
+      "10": 15,
+      "11": 15,
+      "14": 70,
+      "19": 44,
+      "2": 9,
+      "20": 60,
+      "21": 4,
+      "22": 17,
+      "23": 3,
+      "28": 26,
+      "29": 65,
+      "3": 48,
+      "30": 26,
+      "31": 16,
+      "4": 48,
+      "5": 24,
+      "6": 6,
+      "7": 21,
+      "8": 7,
+      "9": 5
     },
     "types_by_weapon": {
       "1": [
         1
       ],
       "10": [
-        1,
-        6,
         9,
         11
       ],
       "11": [
-        9,
         11
-      ],
-      "13": [
-        1,
-        6
       ],
       "14": [
         11
       ],
       "19": [
-        1,
-        6,
         19
       ],
       "2": [
@@ -457,35 +373,30 @@
         21
       ],
       "22": [
-        22,
-        45
+        22
       ],
       "23": [
-        23,
-        45
+        23
       ],
       "28": [
         9,
         28
       ],
       "29": [
-        29,
-        45
+        29
       ],
       "3": [
-        1,
-        3,
-        6
+        3
       ],
       "30": [
-        6
+        6,
+        29
       ],
       "31": [
         22
       ],
       "4": [
-        3,
-        9
+        3
       ],
       "5": [
         5
@@ -496,9 +407,11 @@
       "7": [
         1
       ],
-      "9": [
+      "8": [
         1,
-        6,
+        6
+      ],
+      "9": [
         9
       ]
     }
@@ -506,15 +419,15 @@
   "script": "scripts/frida/weapon_switch_trace.js",
   "secondary_projectiles": {
     "counts_by_type": {
-      "1": 12,
-      "2": 49,
-      "4": 43
+      "1": 4,
+      "2": 16,
+      "4": 16
     },
     "counts_by_weapon": {
-      "12": 6,
-      "13": 14,
-      "17": 15,
-      "18": 26
+      "12": 4,
+      "13": 6,
+      "17": 10,
+      "18": 16
     },
     "types_by_weapon": {
       "12": [
@@ -532,9 +445,9 @@
     }
   },
   "session": {
-    "duration_ms": 2144475,
-    "first_ts": 1769804181194,
-    "last_ts": 1769806325669,
+    "duration_ms": 113317,
+    "first_ts": 1769806920447,
+    "last_ts": 1769807033764,
     "start": {
       "config": {
         "creatureLastHitOffset": null,
@@ -542,13 +455,13 @@
         "keyNext": 27,
         "keyPrev": 26,
         "logAllSfx": true,
-        "oracle": false,
+        "oracle": true,
         "oracleCreatureLimit": 64,
         "oracleEvery": 1,
         "oraclePlayerCount": 1,
         "playerIndex": 0,
         "skipLocked": true,
-        "snapshotEvents": false,
+        "snapshotEvents": true,
         "weaponMax": 53
       },
       "exe": {
@@ -561,7 +474,7 @@
         "version": "17.6.1"
       },
       "grim": {
-        "base": "0x6d00000",
+        "base": "0x2ad0000",
         "size": 598016
       },
       "link_base": "0x400000",
@@ -569,194 +482,143 @@
       "out_path": "C:\\share\\frida\\weapon_switch_trace.jsonl",
       "process": {
         "arch": "ia32",
-        "pid": 5272,
+        "pid": 5868,
         "platform": "windows"
       },
-      "ts": 1769806088667
+      "ts": 1769806920447
     }
   },
   "sfx": {
     "counts_by_id": {
-      "0": 9,
-      "1": 870,
-      "10": 6,
-      "11": 6,
-      "12": 75,
-      "13": 71,
-      "14": 58,
-      "15": 62,
-      "16": 1,
-      "17": 4,
-      "2": 4,
-      "24": 26,
-      "25": 25,
-      "26": 30,
-      "27": 22,
-      "28": 5,
-      "29": 4,
-      "3": 1,
-      "30": 14,
-      "31": 1,
-      "32": 48,
-      "33": 5,
-      "34": 131,
-      "35": 8,
+      "0": 1,
+      "12": 29,
+      "13": 35,
+      "14": 40,
+      "15": 34,
+      "24": 5,
+      "25": 6,
+      "26": 3,
+      "27": 4,
+      "30": 4,
+      "32": 23,
+      "33": 2,
+      "34": 30,
+      "35": 2,
       "36": 10,
-      "37": 30,
-      "38": 23,
-      "39": 108,
+      "37": 24,
+      "38": 10,
+      "39": 15,
       "4": 2,
-      "40": 14,
-      "41": 61,
-      "42": 616,
-      "43": 631,
-      "44": 9,
-      "45": 37,
-      "46": 37,
-      "47": 23,
-      "48": 26,
-      "49": 6,
-      "50": 218,
-      "51": 219,
-      "52": 223,
-      "53": 210,
-      "54": 204,
-      "55": 192,
-      "56": 88,
-      "58": 57,
-      "59": 4,
-      "6": 18,
-      "60": 20,
-      "62": 28,
-      "63": 5,
-      "64": 13,
-      "65": 6,
-      "68": 1,
-      "7": 20,
-      "8": 14,
-      "9": 11
+      "40": 5,
+      "41": 44,
+      "42": 217,
+      "43": 248,
+      "44": 1,
+      "45": 14,
+      "46": 17,
+      "47": 12,
+      "48": 16,
+      "49": 3,
+      "50": 54,
+      "51": 52,
+      "52": 59,
+      "53": 69,
+      "54": 56,
+      "55": 53,
+      "56": 32,
+      "58": 30,
+      "59": 1,
+      "6": 1,
+      "60": 6,
+      "62": 2,
+      "63": 4,
+      "64": 15,
+      "65": 2
     },
     "counts_by_weapon": {
-      "1": 50,
-      "10": 61,
-      "11": 115,
-      "12": 21,
-      "13": 47,
-      "14": 135,
-      "15": 612,
-      "17": 34,
-      "18": 54,
-      "19": 159,
-      "2": 50,
-      "20": 121,
-      "21": 27,
-      "22": 394,
-      "23": 49,
-      "28": 113,
-      "29": 1337,
-      "3": 129,
-      "30": 162,
-      "31": 64,
-      "4": 34,
-      "5": 68,
-      "6": 77,
-      "7": 75,
-      "8": 657,
-      "9": 25
+      "1": 33,
+      "10": 12,
+      "11": 33,
+      "12": 11,
+      "13": 15,
+      "14": 67,
+      "15": 234,
+      "17": 16,
+      "18": 41,
+      "19": 78,
+      "2": 16,
+      "20": 46,
+      "21": 11,
+      "22": 41,
+      "23": 23,
+      "28": 26,
+      "29": 59,
+      "3": 17,
+      "30": 88,
+      "31": 15,
+      "4": 17,
+      "5": 36,
+      "6": 52,
+      "7": 32,
+      "8": 262,
+      "9": 11
     },
     "ids_by_weapon": {
       "1": [
         0,
-        1,
-        2,
         4,
         6,
-        10,
-        11,
-        14,
         15,
         25,
-        29,
         30,
-        31,
         50,
-        51,
-        52,
-        53,
         54,
-        55,
-        62,
+        56,
         63,
         64
       ],
       "10": [
         12,
-        13,
         14,
-        15,
         25,
-        26,
         38,
         50,
         51,
-        52,
         53,
-        54,
         55,
-        59,
-        60,
-        62
+        65
       ],
       "11": [
-        12,
         13,
         14,
-        15,
-        25,
-        26,
         39,
         50,
         51,
         52,
-        53,
         54,
-        55,
-        58,
-        62,
-        65
+        55
       ],
       "12": [
-        1,
-        12,
         13,
-        14,
-        16,
+        15,
         47,
-        49,
         51,
-        53,
+        52,
+        55,
         58
       ],
       "13": [
         12,
         13,
-        14,
         15,
         47,
-        49,
-        50,
-        58,
-        59,
-        60,
-        62
+        58
       ],
       "14": [
         12,
+        13,
         14,
-        15,
-        25,
-        26,
-        33,
+        24,
         40,
         50,
         51,
@@ -764,33 +626,20 @@
         53,
         54,
         55,
-        58,
-        62,
-        65
+        58
       ],
       "15": [
-        12,
-        13,
-        15,
-        24,
-        35,
+        14,
         42,
-        43,
-        52,
-        53,
-        55,
-        62
+        43
       ],
       "17": [
         12,
         13,
-        14,
         15,
-        24,
         47,
         49,
-        58,
-        62
+        58
       ],
       "18": [
         12,
@@ -802,16 +651,10 @@
         58
       ],
       "19": [
-        0,
-        1,
         12,
         13,
         14,
         15,
-        17,
-        24,
-        25,
-        26,
         35,
         41,
         50,
@@ -819,86 +662,51 @@
         52,
         53,
         54,
-        55,
-        59,
-        60,
-        62
+        55
       ],
       "2": [
         12,
         14,
         34,
-        35,
         50,
-        51,
-        52,
         53,
         54,
         55
       ],
       "20": [
         12,
-        13,
+        14,
         15,
-        27,
         32,
-        33,
         50,
         51,
         52,
         53,
         54,
         55,
-        65
+        62
       ],
       "21": [
-        9,
-        12,
         13,
         14,
         15,
-        44,
         45,
         56
       ],
       "22": [
-        1,
-        2,
-        6,
-        8,
-        9,
-        12,
         13,
         14,
-        15,
-        17,
         24,
         26,
-        27,
-        34,
-        39,
-        44,
         46,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
         56,
-        62
+        65
       ],
       "23": [
-        6,
-        7,
-        8,
         12,
         13,
         14,
         15,
-        24,
-        25,
-        26,
         27,
         44,
         45,
@@ -906,96 +714,46 @@
         60
       ],
       "28": [
-        6,
-        7,
-        8,
-        9,
-        12,
-        24,
-        25,
-        26,
-        27,
+        13,
+        14,
         38,
-        44,
         50,
         51,
         52,
         53,
-        54,
         55,
-        56,
         58,
-        60,
-        65
+        60
       ],
       "29": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
         12,
         13,
         14,
         15,
         24,
         25,
-        26,
-        27,
-        28,
-        29,
-        34,
-        39,
-        44,
         45,
         50,
         51,
         52,
         53,
         54,
-        55,
-        62,
-        63,
-        64,
-        65,
-        68
+        55
       ],
       "3": [
-        12,
-        13,
         14,
         15,
-        24,
-        25,
-        27,
         32,
-        33,
         50,
-        51,
-        52,
         53,
         54,
-        55,
-        59,
-        60,
-        62
+        55
       ],
       "30": [
-        7,
-        8,
-        9,
         12,
         13,
         15,
         24,
-        25,
-        26,
         27,
         33,
         36,
@@ -1004,42 +762,29 @@
         52,
         53,
         54,
-        55,
-        62
+        55
       ],
       "31": [
-        0,
-        1,
-        7,
-        8,
-        9,
-        24,
-        27,
-        28,
+        12,
+        13,
+        15,
         45,
         56
       ],
       "4": [
+        12,
         13,
-        14,
         32,
         50,
         51,
         52,
         53,
         54,
-        55,
-        58,
-        60,
-        62
+        55
       ],
       "5": [
         12,
-        14,
-        15,
-        35,
         37,
-        50,
         51,
         52,
         53,
@@ -1048,11 +793,9 @@
       ],
       "6": [
         12,
-        13,
         14,
         15,
-        25,
-        27,
+        33,
         36,
         50,
         51,
@@ -1062,40 +805,39 @@
         55
       ],
       "7": [
-        12,
+        15,
+        25,
+        27,
+        34,
+        50,
+        51,
+        52,
+        55
+      ],
+      "8": [
         13,
         14,
         15,
+        25,
         26,
-        34,
-        50,
+        27,
+        42,
+        43,
         51,
         52,
         53,
         54,
         55,
-        65
-      ],
-      "8": [
-        12,
-        13,
-        14,
-        27,
-        35,
-        42,
-        43,
+        59,
+        60,
         62
       ],
       "9": [
-        12,
         13,
         14,
-        15,
-        25,
         38,
         50,
         51,
-        52,
         53,
         54
       ]
@@ -1103,7 +845,6 @@
   },
   "source_log": "artifacts/frida/share/weapon_switch_trace.jsonl",
   "weapon_ids": [
-    0,
     1,
     2,
     3,
@@ -1133,86 +874,33 @@
   ],
   "weapon_summary": [
     {
-      "effect_count": 0,
-      "effect_ids": [],
-      "name": "Unknown",
-      "particle_count": 0,
-      "particle_slow_count": 0,
-      "projectile_count": 0,
-      "projectile_types": [],
-      "secondary_count": 0,
-      "secondary_types": [],
-      "sfx_count": 0,
-      "sfx_ids": [],
-      "weapon": {
-        "ammo_class": 0,
-        "clip_size": 0,
-        "damage_scale": 1,
-        "flag_hide_crosshair": false,
-        "flag_muzzle_flash": false,
-        "flag_small_crosshair": false,
-        "flags": 0,
-        "hud_icon_frame": 0,
-        "hud_icon_id": 0,
-        "hud_icon_index": 0,
-        "name": "Unknown",
-        "pellet_count": 0,
-        "projectile_meta": 45,
-        "reload_sfx_id": 0,
-        "reload_time": 1,
-        "shot_cooldown": 1,
-        "shot_sfx_base_id": 0,
-        "shot_sfx_range": [
-          0,
-          0
-        ],
-        "shot_sfx_variant_count": 1,
-        "spread_heat": 0,
-        "unlocked": 0,
-        "weapon_id": 0,
-        "weapon_id_hex": "0x0"
-      },
-      "weapon_fire_count": 0,
-      "weapon_id": 0
-    },
-    {
-      "effect_count": 80,
+      "effect_count": 44,
       "effect_ids": [
         0,
+        1,
         7,
         18
       ],
       "name": "Pistol",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 25,
+      "projectile_count": 4,
       "projectile_types": [
         1
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 50,
+      "sfx_count": 33,
       "sfx_ids": [
         0,
-        1,
-        2,
         4,
         6,
-        10,
-        11,
-        14,
         15,
         25,
-        29,
         30,
-        31,
         50,
-        51,
-        52,
-        53,
         54,
-        55,
-        62,
+        56,
         63,
         64
       ],
@@ -1248,7 +936,7 @@
       "weapon_id": 1
     },
     {
-      "effect_count": 96,
+      "effect_count": 33,
       "effect_ids": [
         7,
         18
@@ -1256,21 +944,18 @@
       "name": "Assault Rifle",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 61,
+      "projectile_count": 9,
       "projectile_types": [
         2
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 50,
+      "sfx_count": 16,
       "sfx_ids": [
         12,
         14,
         34,
-        35,
         50,
-        51,
-        52,
         53,
         54,
         55
@@ -1307,46 +992,29 @@
       "weapon_id": 2
     },
     {
-      "effect_count": 464,
+      "effect_count": 50,
       "effect_ids": [
-        0,
-        1,
         7,
-        12,
-        17,
         18
       ],
       "name": "Shotgun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 308,
+      "projectile_count": 48,
       "projectile_types": [
-        1,
-        3,
-        6
+        3
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 129,
+      "sfx_count": 17,
       "sfx_ids": [
-        12,
-        13,
         14,
         15,
-        24,
-        25,
-        27,
         32,
-        33,
         50,
-        51,
-        52,
         53,
         54,
-        55,
-        59,
-        60,
-        62
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -1380,41 +1048,31 @@
       "weapon_id": 3
     },
     {
-      "effect_count": 137,
+      "effect_count": 60,
       "effect_ids": [
-        0,
-        1,
         7,
-        8,
-        9,
-        10,
-        14,
         18
       ],
       "name": "Sawed-off Shotgun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 220,
+      "projectile_count": 48,
       "projectile_types": [
-        3,
-        9
+        3
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 34,
+      "sfx_count": 17,
       "sfx_ids": [
+        12,
         13,
-        14,
         32,
         50,
         51,
         52,
         53,
         54,
-        55,
-        58,
-        60,
-        62
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -1448,32 +1106,24 @@
       "weapon_id": 4
     },
     {
-      "effect_count": 195,
+      "effect_count": 68,
       "effect_ids": [
         7,
-        8,
-        9,
-        10,
-        14,
         18
       ],
       "name": "Submachine Gun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 67,
+      "projectile_count": 24,
       "projectile_types": [
         5
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 68,
+      "sfx_count": 36,
       "sfx_ids": [
         12,
-        14,
-        15,
-        35,
         37,
-        50,
         51,
         52,
         53,
@@ -1512,7 +1162,7 @@
       "weapon_id": 5
     },
     {
-      "effect_count": 309,
+      "effect_count": 210,
       "effect_ids": [
         0,
         7,
@@ -1521,20 +1171,18 @@
       "name": "Gauss Gun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 17,
+      "projectile_count": 6,
       "projectile_types": [
         6
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 77,
+      "sfx_count": 52,
       "sfx_ids": [
         12,
-        13,
         14,
         15,
-        25,
-        27,
+        33,
         36,
         50,
         51,
@@ -1575,7 +1223,7 @@
       "weapon_id": 6
     },
     {
-      "effect_count": 162,
+      "effect_count": 71,
       "effect_ids": [
         0,
         7,
@@ -1584,27 +1232,22 @@
       "name": "Mean Minigun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 144,
+      "projectile_count": 21,
       "projectile_types": [
         1
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 75,
+      "sfx_count": 32,
       "sfx_ids": [
-        12,
-        13,
-        14,
         15,
-        26,
+        25,
+        27,
         34,
         50,
         51,
         52,
-        53,
-        54,
-        55,
-        65
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -1638,26 +1281,41 @@
       "weapon_id": 7
     },
     {
-      "effect_count": 12,
+      "effect_count": 70,
       "effect_ids": [
-        0
+        0,
+        1,
+        7,
+        12,
+        17
       ],
       "name": "Flamethrower",
-      "particle_count": 646,
+      "particle_count": 232,
       "particle_slow_count": 0,
-      "projectile_count": 0,
-      "projectile_types": [],
+      "projectile_count": 7,
+      "projectile_types": [
+        1,
+        6
+      ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 657,
+      "sfx_count": 262,
       "sfx_ids": [
-        12,
         13,
         14,
+        15,
+        25,
+        26,
         27,
-        35,
         42,
         43,
+        51,
+        52,
+        53,
+        54,
+        55,
+        59,
+        60,
         62
       ],
       "weapon": {
@@ -1692,33 +1350,26 @@
       "weapon_id": 8
     },
     {
-      "effect_count": 64,
+      "effect_count": 16,
       "effect_ids": [
-        0,
         7
       ],
       "name": "Plasma Rifle",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 54,
+      "projectile_count": 5,
       "projectile_types": [
-        1,
-        6,
         9
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 25,
+      "sfx_count": 11,
       "sfx_ids": [
-        12,
         13,
         14,
-        15,
-        25,
         38,
         50,
         51,
-        52,
         53,
         54
       ],
@@ -1754,44 +1405,31 @@
       "weapon_id": 9
     },
     {
-      "effect_count": 192,
+      "effect_count": 24,
       "effect_ids": [
-        0,
-        1,
-        7,
-        12,
-        17
+        7
       ],
       "name": "Multi-Plasma",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 96,
+      "projectile_count": 15,
       "projectile_types": [
-        1,
-        6,
         9,
         11
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 61,
+      "sfx_count": 12,
       "sfx_ids": [
         12,
-        13,
         14,
-        15,
         25,
-        26,
         38,
         50,
         51,
-        52,
         53,
-        54,
         55,
-        59,
-        60,
-        62
+        65
       ],
       "weapon": {
         "ammo_class": 0,
@@ -1825,39 +1463,29 @@
       "weapon_id": 10
     },
     {
-      "effect_count": 256,
+      "effect_count": 56,
       "effect_ids": [
-        0,
         7
       ],
       "name": "Plasma Minigun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 119,
+      "projectile_count": 15,
       "projectile_types": [
-        9,
         11
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 115,
+      "sfx_count": 33,
       "sfx_ids": [
-        12,
         13,
         14,
-        15,
-        25,
-        26,
         39,
         50,
         51,
         52,
-        53,
         54,
-        55,
-        58,
-        62,
-        65
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -1891,7 +1519,7 @@
       "weapon_id": 11
     },
     {
-      "effect_count": 52,
+      "effect_count": 32,
       "effect_ids": [
         0,
         1,
@@ -1904,21 +1532,18 @@
       "particle_slow_count": 0,
       "projectile_count": 0,
       "projectile_types": [],
-      "secondary_count": 6,
+      "secondary_count": 4,
       "secondary_types": [
         1
       ],
-      "sfx_count": 21,
+      "sfx_count": 11,
       "sfx_ids": [
-        1,
-        12,
         13,
-        14,
-        16,
+        15,
         47,
-        49,
         51,
-        53,
+        52,
+        55,
         58
       ],
       "weapon": {
@@ -1953,39 +1578,24 @@
       "weapon_id": 12
     },
     {
-      "effect_count": 14,
-      "effect_ids": [
-        0,
-        1,
-        7,
-        12,
-        17
-      ],
+      "effect_count": 0,
+      "effect_ids": [],
       "name": "Seeker Rockets",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 14,
-      "projectile_types": [
-        1,
-        6
-      ],
-      "secondary_count": 14,
+      "projectile_count": 0,
+      "projectile_types": [],
+      "secondary_count": 6,
       "secondary_types": [
         2
       ],
-      "sfx_count": 47,
+      "sfx_count": 15,
       "sfx_ids": [
         12,
         13,
-        14,
         15,
         47,
-        49,
-        50,
-        58,
-        59,
-        60,
-        62
+        58
       ],
       "weapon": {
         "ammo_class": 2,
@@ -2019,7 +1629,7 @@
       "weapon_id": 13
     },
     {
-      "effect_count": 484,
+      "effect_count": 250,
       "effect_ids": [
         0,
         7
@@ -2027,20 +1637,18 @@
       "name": "Plasma Shotgun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 364,
+      "projectile_count": 70,
       "projectile_types": [
         11
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 135,
+      "sfx_count": 67,
       "sfx_ids": [
         12,
+        13,
         14,
-        15,
-        25,
-        26,
-        33,
+        24,
         40,
         50,
         51,
@@ -2048,9 +1656,7 @@
         53,
         54,
         55,
-        58,
-        62,
-        65
+        58
       ],
       "weapon": {
         "ammo_class": 0,
@@ -2084,31 +1690,20 @@
       "weapon_id": 14
     },
     {
-      "effect_count": 52,
-      "effect_ids": [
-        0,
-        7
-      ],
+      "effect_count": 0,
+      "effect_ids": [],
       "name": "Blow Torch",
-      "particle_count": 601,
+      "particle_count": 233,
       "particle_slow_count": 0,
       "projectile_count": 0,
       "projectile_types": [],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 612,
+      "sfx_count": 234,
       "sfx_ids": [
-        12,
-        13,
-        15,
-        24,
-        35,
+        14,
         42,
-        43,
-        52,
-        53,
-        55,
-        62
+        43
       ],
       "weapon": {
         "ammo_class": 1,
@@ -2142,30 +1737,25 @@
       "weapon_id": 15
     },
     {
-      "effect_count": 44,
-      "effect_ids": [
-        0
-      ],
+      "effect_count": 0,
+      "effect_ids": [],
       "name": "Mini-Rocket Swarmers",
       "particle_count": 0,
       "particle_slow_count": 0,
       "projectile_count": 0,
       "projectile_types": [],
-      "secondary_count": 15,
+      "secondary_count": 10,
       "secondary_types": [
         2
       ],
-      "sfx_count": 34,
+      "sfx_count": 16,
       "sfx_ids": [
         12,
         13,
-        14,
         15,
-        24,
         47,
         49,
-        58,
-        62
+        58
       ],
       "weapon": {
         "ammo_class": 2,
@@ -2199,18 +1789,20 @@
       "weapon_id": 17
     },
     {
-      "effect_count": 0,
-      "effect_ids": [],
+      "effect_count": 16,
+      "effect_ids": [
+        0
+      ],
       "name": "Rocket Minigun",
       "particle_count": 0,
       "particle_slow_count": 0,
       "projectile_count": 0,
       "projectile_types": [],
-      "secondary_count": 26,
+      "secondary_count": 16,
       "secondary_types": [
         4
       ],
-      "sfx_count": 54,
+      "sfx_count": 41,
       "sfx_ids": [
         12,
         13,
@@ -2252,37 +1844,26 @@
       "weapon_id": 18
     },
     {
-      "effect_count": 304,
+      "effect_count": 164,
       "effect_ids": [
         0,
-        1,
-        7,
-        12,
-        17
+        7
       ],
       "name": "Pulse Gun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 155,
+      "projectile_count": 44,
       "projectile_types": [
-        1,
-        6,
         19
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 159,
+      "sfx_count": 78,
       "sfx_ids": [
-        0,
-        1,
         12,
         13,
         14,
         15,
-        17,
-        24,
-        25,
-        26,
         35,
         41,
         50,
@@ -2290,10 +1871,7 @@
         52,
         53,
         54,
-        55,
-        59,
-        60,
-        62
+        55
       ],
       "weapon": {
         "ammo_class": 3,
@@ -2327,7 +1905,7 @@
       "weapon_id": 19
     },
     {
-      "effect_count": 390,
+      "effect_count": 161,
       "effect_ids": [
         0,
         7,
@@ -2336,27 +1914,25 @@
       "name": "Jackhammer",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 256,
+      "projectile_count": 60,
       "projectile_types": [
         3
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 121,
+      "sfx_count": 46,
       "sfx_ids": [
         12,
-        13,
+        14,
         15,
-        27,
         32,
-        33,
         50,
         51,
         52,
         53,
         54,
         55,
-        65
+        62
       ],
       "weapon": {
         "ammo_class": 0,
@@ -2390,7 +1966,7 @@
       "weapon_id": 20
     },
     {
-      "effect_count": 81,
+      "effect_count": 43,
       "effect_ids": [
         0,
         1,
@@ -2399,20 +1975,17 @@
       "name": "Ion Rifle",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 26,
+      "projectile_count": 4,
       "projectile_types": [
         21
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 27,
+      "sfx_count": 11,
       "sfx_ids": [
-        9,
-        12,
         13,
         14,
         15,
-        44,
         45,
         56
       ],
@@ -2448,7 +2021,7 @@
       "weapon_id": 21
     },
     {
-      "effect_count": 1256,
+      "effect_count": 144,
       "effect_ids": [
         0,
         1,
@@ -2457,40 +2030,21 @@
       "name": "Ion Minigun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 112,
+      "projectile_count": 17,
       "projectile_types": [
-        22,
-        45
+        22
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 394,
+      "sfx_count": 41,
       "sfx_ids": [
-        1,
-        2,
-        6,
-        8,
-        9,
-        12,
         13,
         14,
-        15,
-        17,
         24,
         26,
-        27,
-        34,
-        39,
-        44,
         46,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
         56,
-        62
+        65
       ],
       "weapon": {
         "ammo_class": 4,
@@ -2524,7 +2078,7 @@
       "weapon_id": 22
     },
     {
-      "effect_count": 143,
+      "effect_count": 41,
       "effect_ids": [
         0,
         1,
@@ -2533,25 +2087,18 @@
       "name": "Ion Cannon",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 39,
+      "projectile_count": 3,
       "projectile_types": [
-        23,
-        45
+        23
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 49,
+      "sfx_count": 23,
       "sfx_ids": [
-        6,
-        7,
-        8,
         12,
         13,
         14,
         15,
-        24,
-        25,
-        26,
         27,
         44,
         45,
@@ -2590,7 +2137,7 @@
       "weapon_id": 23
     },
     {
-      "effect_count": 329,
+      "effect_count": 86,
       "effect_ids": [
         0,
         1,
@@ -2599,36 +2146,25 @@
       "name": "Plasma Cannon",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 131,
+      "projectile_count": 26,
       "projectile_types": [
         9,
         28
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 113,
+      "sfx_count": 26,
       "sfx_ids": [
-        6,
-        7,
-        8,
-        9,
-        12,
-        24,
-        25,
-        26,
-        27,
+        13,
+        14,
         38,
-        44,
         50,
         51,
         52,
         53,
-        54,
         55,
-        56,
         58,
-        60,
-        65
+        60
       ],
       "weapon": {
         "ammo_class": 0,
@@ -2662,7 +2198,7 @@
       "weapon_id": 28
     },
     {
-      "effect_count": 1748,
+      "effect_count": 318,
       "effect_ids": [
         0,
         7
@@ -2670,51 +2206,27 @@
       "name": "Splitter Gun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 194,
+      "projectile_count": 65,
       "projectile_types": [
-        29,
-        45
+        29
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 1337,
+      "sfx_count": 59,
       "sfx_ids": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
         12,
         13,
         14,
         15,
         24,
         25,
-        26,
-        27,
-        28,
-        29,
-        34,
-        39,
-        44,
         45,
         50,
         51,
         52,
         53,
         54,
-        55,
-        62,
-        63,
-        64,
-        65,
-        68
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -2748,7 +2260,7 @@
       "weapon_id": 29
     },
     {
-      "effect_count": 627,
+      "effect_count": 377,
       "effect_ids": [
         0,
         7,
@@ -2757,23 +2269,19 @@
       "name": "Gauss Shotgun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 30,
+      "projectile_count": 26,
       "projectile_types": [
-        6
+        6,
+        29
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 162,
+      "sfx_count": 88,
       "sfx_ids": [
-        7,
-        8,
-        9,
         12,
         13,
         15,
         24,
-        25,
-        26,
         27,
         33,
         36,
@@ -2782,8 +2290,7 @@
         52,
         53,
         54,
-        55,
-        62
+        55
       ],
       "weapon": {
         "ammo_class": 0,
@@ -2817,7 +2324,7 @@
       "weapon_id": 30
     },
     {
-      "effect_count": 424,
+      "effect_count": 106,
       "effect_ids": [
         0,
         1,
@@ -2827,22 +2334,17 @@
       "name": "Ion Shotgun",
       "particle_count": 0,
       "particle_slow_count": 0,
-      "projectile_count": 48,
+      "projectile_count": 16,
       "projectile_types": [
         22
       ],
       "secondary_count": 0,
       "secondary_types": [],
-      "sfx_count": 64,
+      "sfx_count": 15,
       "sfx_ids": [
-        0,
-        1,
-        7,
-        8,
-        9,
-        24,
-        27,
-        28,
+        12,
+        13,
+        15,
         45,
         56
       ],
@@ -2879,121 +2381,6 @@
     }
   ],
   "weapon_switches": [
-    {
-      "direction": 1,
-      "from": 1,
-      "to": 2
-    },
-    {
-      "direction": 1,
-      "from": 2,
-      "to": 3
-    },
-    {
-      "direction": 1,
-      "from": 3,
-      "to": 4
-    },
-    {
-      "direction": 1,
-      "from": 4,
-      "to": 5
-    },
-    {
-      "direction": 1,
-      "from": 5,
-      "to": 6
-    },
-    {
-      "direction": 1,
-      "from": 6,
-      "to": 7
-    },
-    {
-      "direction": 1,
-      "from": 7,
-      "to": 8
-    },
-    {
-      "direction": 1,
-      "from": 8,
-      "to": 9
-    },
-    {
-      "direction": 1,
-      "from": 9,
-      "to": 10
-    },
-    {
-      "direction": 1,
-      "from": 10,
-      "to": 11
-    },
-    {
-      "direction": 1,
-      "from": 11,
-      "to": 12
-    },
-    {
-      "direction": 1,
-      "from": 12,
-      "to": 13
-    },
-    {
-      "direction": 1,
-      "from": 13,
-      "to": 14
-    },
-    {
-      "direction": 1,
-      "from": 14,
-      "to": 15
-    },
-    {
-      "direction": 1,
-      "from": 15,
-      "to": 17
-    },
-    {
-      "direction": 1,
-      "from": 17,
-      "to": 18
-    },
-    {
-      "direction": 1,
-      "from": 18,
-      "to": 19
-    },
-    {
-      "direction": 1,
-      "from": 19,
-      "to": 20
-    },
-    {
-      "direction": 1,
-      "from": 20,
-      "to": 21
-    },
-    {
-      "direction": 1,
-      "from": 21,
-      "to": 22
-    },
-    {
-      "direction": 1,
-      "from": 22,
-      "to": 23
-    },
-    {
-      "direction": 1,
-      "from": 23,
-      "to": 28
-    },
-    {
-      "direction": 1,
-      "from": 28,
-      "to": 29
-    },
     {
       "direction": 1,
       "from": 1,

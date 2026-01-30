@@ -345,7 +345,7 @@ Summary:
 ## Session 8
 
 - **Date:** 2026-01-31
-- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Build / platform:** Win10 (Boot Camp), Crimsonland v1.9.93
 - **Script:** `weapon_switch_trace.js`
 - **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\weapon_switch_trace.js`
 - **Artifacts:** `artifacts/frida/share/weapon_switch_trace.jsonl`, `analysis/frida/weapon_switch_trace_summary.json`
@@ -356,3 +356,17 @@ Summary:
 - **Energizer** bonus captured (`bonus_id=2`), plus multiple nuke/weapon power-up/shield/fireblast events.
 - SFX evidence now present (`sfx_play_panned`, `sfx_play_exclusive`, `sfx_play`).
 - Oracle frames were not captured in this run (set `CRIMSON_FRIDA_ORACLE=1` to enable).
+
+## Session 9
+
+- **Date:** 2026-01-31
+- **Build / platform:** Win10 (Boot Camp), Crimsonland v1.9.93
+- **Script:** `weapon_switch_trace.js` (oracle default)
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\weapon_switch_trace.js`
+- **Artifacts:** `artifacts/frida/share/weapon_switch_trace.jsonl`, `analysis/frida/weapon_switch_trace_summary.json`
+
+Summary:
+
+- Oracle frames captured (28,011 frames; ~1.79M creature snapshots, capped at 64 per frame).
+- 26 weapon switches, 533 projectile spawns, 36 secondary spawns, 2 bonus pickups (Nuke + Speed).
+- SFX evidence present (`sfx_play_panned` 1,265; `sfx_play_exclusive` 4; `sfx_play` 23).
