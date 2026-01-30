@@ -338,7 +338,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 **A. Damage pipeline perks** (in `creature_apply_damage`)
 
 * [x] Uranium Filled Bullets
-* [ ] Doctor
+* [x] Doctor
 * [ ] Barrel Greaser
 * [ ] Living Fortress scaling
 * [ ] Ion Gun Master

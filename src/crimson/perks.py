@@ -414,7 +414,7 @@ PERK_TABLE = [
         description="With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Doctor is active, multiplies damage by 1.2.",
     ),
     PerkMeta(
         perk_id=PerkId.MONSTER_VISION,
