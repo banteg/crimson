@@ -16,10 +16,10 @@ class _FixedRng:
 
 def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     cases = (
-        (8, 0, 0.1),  # Plasma Rifle
-        (15, 1, 0.05),  # HR Flamer
-        (16, 2, 0.1),  # Mini-Rocket Swarmers
-        (42, 8, 0.15),  # Rainbow Gun (slow particle)
+        (8, 0, 0.1),  # Flamethrower
+        (15, 1, 0.05),  # Blow Torch
+        (16, 2, 0.1),  # HR Flamer
+        (42, 8, 0.15),  # Bubblegun (slow particle)
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
@@ -72,7 +72,7 @@ def test_particle_hits_damage_creatures() -> None:
     assert particles[0].render_flag is False
 
 
-def test_rainbow_gun_particle_kills_attached_target_on_expire() -> None:
+def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     state = GameplayState(rng=_FixedRng(0))
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
     player.aim_dir_x = 1.0
@@ -99,4 +99,3 @@ def test_rainbow_gun_particle_kills_attached_target_on_expire() -> None:
     state.particles.update(2.0, creatures=[creature], kill_creature=_kill)
 
     assert killed == [(0, -1)]
-

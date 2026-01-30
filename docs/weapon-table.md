@@ -103,9 +103,9 @@ All offsets below are in **bytes**, relative to the pointer returned by
   to spawn multiple `0x2d` pellets per shot.
 
 - Several weapons bypass the main projectile pool and use particle or secondary
-  projectile pools instead (Plasma Rifle `0x9`, HR Flamer `0x10`, Mini-Rocket
-  Swarmers `0x11`, Seeker Rockets `0x0d`, Plasma Shotgun `0x0e`, Rocket Minigun
-  `0x12`, Pulse Gun `0x13`, Rainbow Gun `0x2b`).
+  projectile pools instead (Flamethrower `0x08`, Blow Torch `0x0f`, HR Flamer
+  `0x10`, Rocket Launcher `0x0c`, Seeker Rockets `0x0d`, Mini-Rocket Swarmers
+  `0x11`, Rocket Minigun `0x12`, Bubblegun `0x2a`).
 
 - Secondary projectile type behavior and particle style ids are tracked in
   [Effects pools](structs/effects.md).

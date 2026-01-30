@@ -27,7 +27,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
     player = world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
-    player.weapon_id = 0
+    player.weapon_id = 1
     player.clip_size = 12
     player.ammo = 0
     player.reload_active = True

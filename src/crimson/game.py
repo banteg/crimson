@@ -116,12 +116,12 @@ class GameState:
     status: GameStatus
     console: ConsoleState
     demo_enabled: bool
-    skip_intro: bool
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
     resource_paq: Path
     session_start: float
+    skip_intro: bool = False
     gamma_ramp: float = 1.0
     snd_freq_adjustment_enabled: bool = False
     menu_ground: GroundRenderer | None = None

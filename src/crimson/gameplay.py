@@ -1399,14 +1399,14 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 owner_id=owner_id,
                 base_damage=meta,
             )
-    elif player.weapon_id == 13:
-        # Seeker Rockets -> secondary type 1.
+    elif player.weapon_id == 12:
+        # Rocket Launcher -> secondary type 1.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
-    elif player.weapon_id == 14:
-        # Plasma Shotgun -> secondary type 2.
+    elif player.weapon_id == 13:
+        # Seeker Rockets -> secondary type 2.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
-    elif player.weapon_id == 18:
-        # Rocket Minigun -> secondary type 2 (fires the full clip in a spread).
+    elif player.weapon_id == 17:
+        # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
@@ -1415,25 +1415,25 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             angle += step
         ammo_cost = float(rocket_count)
         shot_count = rocket_count
-    elif player.weapon_id == 19:
-        # Pulse Gun -> secondary type 4.
+    elif player.weapon_id == 18:
+        # Rocket Minigun -> secondary type 4.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
-    elif player.weapon_id == 9:
-        # Plasma Rifle -> fast particle weapon (style 0), fractional ammo drain.
+    elif player.weapon_id == 8:
+        # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
         state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
-    elif player.weapon_id == 16:
-        # HR Flamer -> fast particle weapon (style 1), fractional ammo drain.
+    elif player.weapon_id == 15:
+        # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
-    elif player.weapon_id == 17:
-        # Mini-Rocket Swarmers -> fast particle weapon (style 2), fractional ammo drain.
+    elif player.weapon_id == 16:
+        # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
-    elif player.weapon_id == 43:
-        # Rainbow Gun -> slow particle weapon (style 8), fractional ammo drain.
+    elif player.weapon_id == 42:
+        # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
         ammo_cost = 0.15
     else:

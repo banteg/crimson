@@ -66,10 +66,10 @@ Layout (partial):
 
 | style id | Source | Notes |
 | --- | --- | --- |
-| `0` | Plasma Rifle (weapon id `0x9`) | Default fast particle from `fx_spawn_particle`. |
-| `1` | HR Flamer (weapon id `0x10`) | `fx_spawn_particle` plus `DAT_00493ee8 = 1`. |
-| `2` | Mini-Rocket Swarmers (weapon id `0x11`) | `fx_spawn_particle` plus `DAT_00493ee8 = 2`. |
-| `8` | Rainbow Gun (weapon id `0x2b`) | Slow particle (`fx_spawn_particle_slow`). |
+| `0` | Flamethrower (weapon id `0x08`) | Default fast particle from `fx_spawn_particle`. |
+| `1` | Blow Torch (weapon id `0x0f`) | `fx_spawn_particle` plus `DAT_00493ee8 = 1`. |
+| `2` | HR Flamer (weapon id `0x10`) | `fx_spawn_particle` plus `DAT_00493ee8 = 2`. |
+| `8` | Bubblegun (weapon id `0x2a`) | Slow particle (`fx_spawn_particle_slow`). |
 
 ## Secondary projectile pool (`secondary_projectile_pool` / `DAT_00495ad8`)
 

@@ -43,7 +43,7 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
-    assert _signature(pool) == Counter({int(ProjectileTypeId.ION_CANNON): 4, int(ProjectileTypeId.ION_MINIGUN): 4})
+    assert _signature(pool) == Counter({int(ProjectileTypeId.ION_RIFLE): 4, int(ProjectileTypeId.ION_MINIGUN): 4})
 
     pool.reset()
 

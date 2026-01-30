@@ -16,7 +16,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon_id = 0  # pistol
+    player.weapon_id = 1  # pistol
     player.ammo = 0
     player.reload_active = True
     player.reload_timer = 0.5
@@ -32,7 +32,7 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=0)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon_id = 0
+    player.weapon_id = 1
     player.ammo = 0
     player.reload_active = True
     player.reload_timer = 0.5

@@ -17,16 +17,18 @@ def test_weapon_usage_tracks_most_used_weapon() -> None:
     player.aim_dir_y = 0.0
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, 0)
+    weapon_assign_player(player, 1)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
-    assert state.weapon_shots_fired[0][0] == 1
+    assert state.weapon_shots_fired[0][1] == 1
 
     weapon_assign_player(player, 2)
-    player.spread_heat = 0.0
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
-    assert state.weapon_shots_fired[0][2] == 12
+    for _ in range(3):
+        player.shot_cooldown = 0.0
+        player.spread_heat = 0.0
+        player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    assert state.weapon_shots_fired[0][2] == 3
 
-    assert most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=0) == 2
+    assert most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=1) == 2
 
 
 def test_most_used_weapon_falls_back_to_current_weapon() -> None:

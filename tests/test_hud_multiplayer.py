@@ -39,12 +39,12 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
     )
 
     player0 = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=80.0)
-    player0.weapon_id = 0
+    player0.weapon_id = 1
     player0.clip_size = 1
     player0.ammo = 1
 
     player1 = PlayerState(index=1, pos_x=0.0, pos_y=0.0, health=50.0)
-    player1.weapon_id = 0
+    player1.weapon_id = 1
     player1.clip_size = 1
     player1.ammo = 1
 

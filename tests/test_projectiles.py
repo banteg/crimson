@@ -174,16 +174,16 @@ def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
         pos_x=0.0,
         pos_y=0.0,
         angle=math.pi / 2.0,
-        type_id=0x15,
+        type_id=0x16,
         owner_id=-100,
         base_damage=20.0,
     )
     creatures = [_Creature(x=40.0, y=0.0, hp=200.0)]
 
-    pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x15: 1.4})
+    pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x16: 1.4})
     hp_after_hit = creatures[0].hp
 
-    pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x15: 1.4})
+    pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x16: 1.4})
     assert creatures[0].hp < hp_after_hit
 
 
@@ -238,15 +238,15 @@ def test_projectile_pool_rocket_splash_hits_nearby_creatures() -> None:
 
 def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
     pool = ProjectilePool(size=1)
-    pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=0x15, owner_id=-100)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=0x16, owner_id=-100)
     creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
 
     pool.update_demo(
         0.1,
         creatures,
         world_size=1024.0,
-        speed_by_type={0x15: 100.0},
-        damage_by_type={0x15: 5.0},
+        speed_by_type={0x16: 100.0},
+        damage_by_type={0x16: 5.0},
     )
     assert math.isclose(creatures[0].hp, 95.0, abs_tol=1e-9)
 
@@ -254,8 +254,8 @@ def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
         0.1,
         creatures,
         world_size=1024.0,
-        speed_by_type={0x15: 100.0},
-        damage_by_type={0x15: 5.0},
+        speed_by_type={0x16: 100.0},
+        damage_by_type={0x16: 5.0},
     )
     assert math.isclose(creatures[0].hp, 91.0, abs_tol=1e-9)
 

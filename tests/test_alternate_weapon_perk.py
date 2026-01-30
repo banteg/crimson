@@ -23,30 +23,30 @@ def test_alternate_weapon_slows_movement() -> None:
 def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    weapon_assign_player(player, 0)
+    weapon_assign_player(player, 1)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
-    bonus_apply(state, player, BonusId.WEAPON, amount=1)
+    bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
-    assert player.weapon_id == 1
-    assert player.alt_weapon_id == 0
+    assert player.weapon_id == 2
+    assert player.alt_weapon_id == 1
     assert player.alt_clip_size == 12
 
 
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    weapon_assign_player(player, 0)
+    weapon_assign_player(player, 1)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=1)
+    bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
-    assert player.weapon_id == 1
-    assert player.alt_weapon_id == 0
+    assert player.weapon_id == 2
+    assert player.alt_weapon_id == 1
 
     player.shot_cooldown = 0.0
     state.sfx_queue.clear()
     player_update(player, PlayerInput(reload_pressed=True), dt=0.1, state=state)
 
-    assert player.weapon_id == 0
-    assert player.alt_weapon_id == 1
+    assert player.weapon_id == 1
+    assert player.alt_weapon_id == 2
     assert player.shot_cooldown == pytest.approx(0.1)

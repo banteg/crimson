@@ -18,7 +18,7 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon_id = 0  # pistol
+    player.weapon_id = 1  # pistol
     player.ammo = 0
     player.reload_active = True
     player.reload_timer = 0.5
@@ -35,7 +35,7 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=10.0, experience=0)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon_id = 0
+    player.weapon_id = 1
     player.ammo = 0
     player.reload_active = True
     player.reload_timer = 0.5
@@ -50,7 +50,7 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon_id = 7  # flamethrower
+    player.weapon_id = 8  # flamethrower
     player.ammo = 0
     player.reload_active = True
     player.reload_timer = 0.5
@@ -58,4 +58,4 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
     player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(9.85)
-    assert any(entry.active for entry in state.projectiles.entries)
+    assert any(entry.active for entry in state.particles.entries)

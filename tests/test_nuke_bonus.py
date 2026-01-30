@@ -64,5 +64,5 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
 
     minigun = [entry for entry in active if entry.type_id == int(ProjectileTypeId.MEAN_MINIGUN)]
     assert len(minigun) == 2
-    assert all(math.isclose(entry.base_damage, 45.0, abs_tol=1e-9) for entry in minigun)
+    assert all(math.isclose(entry.base_damage, 55.0, abs_tol=1e-9) for entry in minigun)
     assert all(math.isclose(entry.speed_scale, 1.0, abs_tol=1e-9) for entry in minigun)

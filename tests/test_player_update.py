@@ -109,7 +109,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=2, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
@@ -123,7 +123,7 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=2, clip_size=10, ammo=10)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=3, clip_size=10, ammo=10)
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
@@ -131,7 +131,7 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {2}
+    assert set(type_ids) == {3}
 
 
 def test_player_update_tracks_aim_point() -> None:
@@ -226,6 +226,11 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_links_left == 0x20
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
+
+    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
+
+    assert state.shock_chain_links_left == 0x20
+    assert state.shock_chain_projectile_id == first_proj
 
     pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
 

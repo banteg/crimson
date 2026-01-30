@@ -34,4 +34,4 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(monkeypatc
     assert record.score_xp == 1234
     assert record.shots_fired == 10
     assert record.shots_hit == 7
-    assert record.most_used_weapon_id == 2
+    assert record.most_used_weapon_id == 1
