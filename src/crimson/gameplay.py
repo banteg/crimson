@@ -20,9 +20,13 @@ class _HasPos(Protocol):
 
 class _CreatureForPerks(Protocol):
     active: bool
+    x: float
+    y: float
     hp: float
     hitbox_size: float
+    collision_timer: float
     reward_value: float
+    size: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -496,6 +500,33 @@ def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
 
 
+def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float, pos_y: float, radius: float, start_index: int) -> int:
+    """Port of `creature_find_in_radius` (0x004206a0)."""
+
+    start_index = max(0, int(start_index))
+    max_index = min(len(creatures), 0x180)
+    if start_index >= max_index:
+        return -1
+
+    pos_x = float(pos_x)
+    pos_y = float(pos_y)
+    radius = float(radius)
+
+    for idx in range(start_index, max_index):
+        creature = creatures[idx]
+        if not creature.active:
+            continue
+
+        dist = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y) - radius
+        threshold = float(creature.size) * 0.142857149 + 3.0
+        if threshold < dist:
+            continue
+        if float(creature.hitbox_size) < 5.0:
+            continue
+        return idx
+    return -1
+
+
 def perks_update_effects(
     state: GameplayState,
     players: list[PlayerState],
@@ -525,6 +556,27 @@ def perks_update_effects(
             perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
             if perk_count > 0:
                 player.experience += perk_count * 10
+
+    if players and creatures is not None and perk_active(players[0], PerkId.PYROKINETIC):
+        target = _creature_find_in_radius(
+            creatures,
+            pos_x=players[0].aim_x,
+            pos_y=players[0].aim_y,
+            radius=12.0,
+            start_index=0,
+        )
+        if target != -1:
+            creature = creatures[target]
+            creature.collision_timer = float(creature.collision_timer) - dt
+            if creature.collision_timer < 0.0:
+                creature.collision_timer = 0.5
+                pos_x = float(creature.x)
+                pos_y = float(creature.y)
+                for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
+                    angle = float(int(state.rng.rand()) % 0x274) * 0.01
+                    state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
+                if fx_queue is not None:
+                    fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=state.rng.rand)
 
     if state.jinxed_timer >= 0.0:
         state.jinxed_timer -= dt

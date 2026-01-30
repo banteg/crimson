@@ -514,7 +514,6 @@ class CreaturePool:
             # contact/melee interactions for most creatures (and instead allows "eat" kills).
             if float(state.bonuses.energizer) > 0.0:
                 creature.collision_flag = 0
-                creature.collision_timer = CONTACT_DAMAGE_PERIOD
             else:
                 contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
                 in_contact = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y) <= contact_r * contact_r
@@ -526,7 +525,6 @@ class CreaturePool:
                         player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
                 else:
                     creature.collision_flag = 0
-                    creature.collision_timer = CONTACT_DAMAGE_PERIOD
 
             if creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`

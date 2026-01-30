@@ -364,7 +364,7 @@ These usually live in `player_update`:
 
 * [x] Regeneration
 * [ ] Greater Regeneration
-* Pyrokinetic
+* [x] Pyrokinetic (aim-targeted particle burst)
 * [x] Unstoppable
 * [x] Highlander
 * [x] Jinxed (timer + random kill + accidents)

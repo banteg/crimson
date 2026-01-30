@@ -154,7 +154,11 @@ PERK_TABLE = [
         description="You see flames everywhere. Bare aiming at creatures causes them to heat up.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perks_update_effects`: picks `creature_find_in_radius(&aim, 12.0, 0)`; while aiming at a creature, "
+            "decrements `collision_timer` by `dt` and, when it wraps, sets it to `0.5` and spawns 5 particles "
+            "(intensity 0.8, 0.6, 0.4, 0.3, 0.2), plus `fx_queue_add_random` at the creature position."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.INSTANT_WINNER,
