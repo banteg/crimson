@@ -535,17 +535,26 @@ class LightingDebugView:
 
         # Full-screen screenshot (after the frame is drawn).
         screenshot_path = out_dir / f"{prefix}_screen.png"
+        fallback = Path.cwd() / screenshot_path.name
+        try:
+            if screenshot_path.exists():
+                screenshot_path.unlink()
+        except Exception:
+            pass
+        try:
+            if fallback.exists():
+                fallback.unlink()
+        except Exception:
+            pass
         try:
             rl.take_screenshot(str(screenshot_path))
         except Exception:
             pass
-        if not screenshot_path.exists():
-            fallback = Path.cwd() / screenshot_path.name
-            if fallback.exists():
-                try:
-                    fallback.replace(screenshot_path)
-                except Exception:
-                    pass
+        if fallback.exists():
+            try:
+                fallback.replace(screenshot_path)
+            except Exception:
+                pass
 
         lt = self._light_tint
         builtin_locs: dict[str, int | None] = {}
@@ -553,11 +562,16 @@ class LightingDebugView:
             try:
                 locs = self._sdf_shader.locs
                 builtin_locs = {
+                    "map_diffuse": int(locs[rl.SHADER_LOC_MAP_DIFFUSE]),
+                    "map_normal": int(locs[rl.SHADER_LOC_MAP_NORMAL]),
+                    "vector_view": int(locs[rl.SHADER_LOC_VECTOR_VIEW]),
                     "matrix_mvp": int(locs[rl.SHADER_LOC_MATRIX_MVP]),
                     "matrix_model": int(locs[rl.SHADER_LOC_MATRIX_MODEL]),
                     "matrix_view": int(locs[rl.SHADER_LOC_MATRIX_VIEW]),
                     "matrix_projection": int(locs[rl.SHADER_LOC_MATRIX_PROJECTION]),
                     "color_diffuse": int(locs[rl.SHADER_LOC_COLOR_DIFFUSE]),
+                    "color_ambient": int(locs[rl.SHADER_LOC_COLOR_AMBIENT]),
+                    "color_specular": int(locs[rl.SHADER_LOC_COLOR_SPECULAR]),
                 }
             except Exception:
                 builtin_locs = {}
@@ -625,13 +639,15 @@ class LightingDebugView:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            rl.set_shader_value(shader, loc, rl.Vector2(float(x), float(y)), rl.SHADER_UNIFORM_VEC2)
+            buf = rl.ffi.new("float[2]", [float(x), float(y)])
+            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
 
         def set_vec4(name: str, x: float, y: float, z: float, q: float) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            rl.set_shader_value(shader, loc, rl.Vector4(float(x), float(y), float(z), float(q)), rl.SHADER_UNIFORM_VEC4)
+            buf = rl.ffi.new("float[4]", [float(x), float(y), float(z), float(q)])
+            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC4)
 
         def set_float(name: str, value: float) -> None:
             loc = locs.get(name, -1)
