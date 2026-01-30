@@ -471,7 +471,7 @@ PERK_TABLE = [
         description="Your bonus power-ups last 50% longer than they normally would.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`bonus_apply`: while active, scales bonus timer increments by `1.0 + 0.5 * perk_count`.",
     ),
     PerkMeta(
         perk_id=PerkId.THICK_SKINNED,
