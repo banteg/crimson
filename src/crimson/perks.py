@@ -273,7 +273,10 @@ PERK_TABLE = [
         description="Here, have this weapon. No questions asked.",
         flags=PerkFlags.MODE_3_ONLY | PerkFlags.STACKABLE,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): picks a random available weapon (retries up to 100), skipping the pistol "
+            "and the currently equipped weapon, then calls `weapon_assign_player`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.MR_MELEE,

@@ -741,6 +741,17 @@ def perk_apply(
                 owner.experience += 10000
             return
 
+        if perk_id == PerkId.RANDOM_WEAPON:
+            current = int(owner.weapon_id)
+            weapon_id = int(current)
+            for _ in range(100):
+                candidate = int(weapon_pick_random_available(state.rng))
+                if candidate != 0 and candidate != current:
+                    weapon_id = candidate
+                    break
+            weapon_assign_player(owner, weapon_id)
+            return
+
         if perk_id == PerkId.LIFELINE_50_50:
             # Requires creature pool access; keep as a no-op for now.
             return

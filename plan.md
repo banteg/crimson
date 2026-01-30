@@ -375,6 +375,13 @@ These usually live in `player_update`:
 
 * [x] Ammunition Within
 
+**F. Perks without port refs**
+
+* [x] Random Weapon
+* [ ] Mr. Melee
+* [ ] Final Revenge
+* [ ] Reflex Boosted
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 

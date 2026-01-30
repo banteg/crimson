@@ -27,7 +27,7 @@ Notes:
 | 13 | RADIOACTIVE | Radioactive | `creature_update_all`: if a creature is within 100 units and Radioactive is active, decrement `collision_timer` by `dt * 1.5`; when it wraps, set it to `0.5` and deal `(100 - dist) * 0.3` damage. Kills bypass `creature_handle_death`: `experience = int(float(experience) + creature.reward_value)`; start death via `hitbox_size -= dt`. | `src/crimson/creatures/runtime.py:CreaturePool.update`<br>`src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/render/world_renderer.py:WorldRenderer._draw_player_trooper_sprite` | `tests/test_perk_selection.py`<br>`tests/test_radioactive_perk.py` |
 | 14 | FASTSHOT | Fastshot | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon` | `tests/test_perk_selection.py` |
 | 15 | FATAL_LOTTERY | Fatal Lottery | TBD | `src/crimson/gameplay.py:perk_apply` | — |
-| 16 | RANDOM_WEAPON | Random Weapon | TBD | — | — |
+| 16 | RANDOM_WEAPON | Random Weapon | `perk_apply` (0x004055e0): picks a random available weapon (retries up to 100), skipping the pistol and the currently equipped weapon, then calls `weapon_assign_player`. | `src/crimson/gameplay.py:perk_apply` | `tests/test_random_weapon_perk.py` |
 | 17 | MR_MELEE | Mr. Melee | TBD | — | — |
 | 18 | ANXIOUS_LOADER | Anxious Loader | TBD | `src/crimson/gameplay.py:player_update` | — |
 | 19 | FINAL_REVENGE | Final Revenge | TBD | — | — |
