@@ -5,6 +5,7 @@ import math
 import random
 import os
 from pathlib import Path
+from dataclasses import dataclass
 
 import pyray as rl
 
@@ -206,6 +207,16 @@ def _clamp(value: float, lo: float, hi: float) -> float:
     return value
 
 
+@dataclass
+class _EmissiveProjectile:
+    x: float
+    y: float
+    vx: float
+    vy: float
+    age: float
+    ttl: float
+
+
 class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -249,6 +260,18 @@ class LightingDebugView:
         self._last_sdf_circles: list[tuple[float, float, float]] = []
         self._occluder_radius_mul = 0.25
         self._occluder_radius_pad_px = 0.0
+
+        self._projectiles: list[_EmissiveProjectile] = []
+        self._proj_fire_cd = 0.0
+        self._proj_fire_interval = 0.08
+        self._proj_speed = 800.0
+        self._proj_ttl = 1.25
+        self._proj_radius_px = 3.0
+        self._proj_light_range = 220.0
+        self._proj_light_source_radius = 10.0
+        self._proj_light_tint = rl.Color(255, 190, 140, 255)
+        self._max_projectiles = 128
+        self._max_projectile_lights = 16
 
         self._sdf_shader: rl.Shader | None = None
         self._sdf_shader_tried: bool = False
@@ -395,6 +418,8 @@ class LightingDebugView:
         self._world.reset(seed=int(seed), player_count=1)
         self._player = self._world.players[0] if self._world.players else None
         self._world.update_camera(0.0)
+        self._projectiles.clear()
+        self._proj_fire_cd = 0.0
 
         rng = random.Random(int(seed))
         if self._player is None:
@@ -521,6 +546,57 @@ class LightingDebugView:
             perk_progression_enabled=False,
         )
 
+        if not self._debug_auto_dump and rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            self._proj_fire_cd -= dt_frame
+            while self._proj_fire_cd <= 0.0:
+                self._spawn_projectile(aim_x=float(aim_x), aim_y=float(aim_y))
+                self._proj_fire_cd += float(self._proj_fire_interval)
+        else:
+            self._proj_fire_cd = max(0.0, self._proj_fire_cd - dt_frame)
+
+        if dt_world > 0.0:
+            keep: list[_EmissiveProjectile] = []
+            margin = 80.0
+            for proj in self._projectiles:
+                proj.age += dt_world
+                proj.x += proj.vx * dt_world
+                proj.y += proj.vy * dt_world
+                if proj.age >= proj.ttl:
+                    continue
+                if proj.x < -margin or proj.x > WORLD_SIZE + margin or proj.y < -margin or proj.y > WORLD_SIZE + margin:
+                    continue
+                keep.append(proj)
+            self._projectiles = keep[-self._max_projectiles :]
+
+    def _spawn_projectile(self, *, aim_x: float, aim_y: float) -> None:
+        if self._player is None:
+            return
+        px = float(self._player.pos_x)
+        py = float(self._player.pos_y)
+        dx = float(aim_x) - px
+        dy = float(aim_y) - py
+        d = math.hypot(dx, dy)
+        if d <= 1e-3:
+            dx = 1.0
+            dy = 0.0
+            d = 1.0
+        dx /= d
+        dy /= d
+        muzzle = 18.0
+        x = px + dx * muzzle
+        y = py + dy * muzzle
+        speed = float(self._proj_speed)
+        self._projectiles.append(
+            _EmissiveProjectile(
+                x=float(x),
+                y=float(y),
+                vx=float(dx) * speed,
+                vy=float(dy) * speed,
+                age=0.0,
+                ttl=float(self._proj_ttl),
+            )
+        )
+
     def _dump_debug(self, *, light_x: float, light_y: float, sdf_ok: bool) -> None:
         if self._light_rt is None:
             return
@@ -635,6 +711,7 @@ class LightingDebugView:
             "debug_mode": int(self._sdf_debug_mode),
             "circle_count": int(len(self._last_sdf_circles)),
             "circles": [[float(x), float(y), float(r)] for (x, y, r) in self._last_sdf_circles[:16]],
+            "projectile_count": int(len(self._projectiles)),
             "shader_uniform_locs": dict(self._sdf_shader_locs),
             "shader_uniform_missing": list(self._sdf_shader_missing),
             "shader_builtin_locs": builtin_locs,
@@ -720,16 +797,9 @@ class LightingDebugView:
         rl.rl_disable_depth_mask()
         rl.begin_shader_mode(shader)
         set_vec2("u_resolution", w, h)
-
-        lt = self._light_tint
-        set_vec4("u_light_color", float(lt.r) / 255.0, float(lt.g) / 255.0, float(lt.b) / 255.0, 1.0)
-
-        set_vec2("u_light_pos", float(light_x), float(light_y))
-        set_float("u_light_range", float(self._light_radius))
         set_float("u_shadow_k", float(self._sdf_shadow_k))
         set_float("u_shadow_floor", float(self._sdf_shadow_floor))
         set_int("u_debug_mode", int(self._sdf_debug_mode))
-        set_float("u_light_source_radius", float(self._light_source_radius))
 
         set_int("u_circle_count", len(circles))
         circles_loc = locs.get("u_circles", -1)
@@ -746,15 +816,58 @@ class LightingDebugView:
                 len(circles),
             )
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-        if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
-            src = rl.Rectangle(0.0, 0.0, float(self._solid_white.width), float(self._solid_white.height))
-            dst = rl.Rectangle(0.0, 0.0, float(w), float(h))
-            rl.draw_texture_pro(self._solid_white, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        else:
-            rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
-        # Make sure the fullscreen pass is flushed into the render target before
-        # leaving texture mode (and before any debug readback).
-        rl.rl_draw_render_batch_active()
+
+        lights: list[tuple[float, float, float, float, float, float, float]] = []
+        lt = self._light_tint
+        lights.append(
+            (
+                float(light_x),
+                float(light_y),
+                float(self._light_radius),
+                float(self._light_source_radius),
+                float(lt.r) / 255.0,
+                float(lt.g) / 255.0,
+                float(lt.b) / 255.0,
+            )
+        )
+
+        if self._sdf_debug_mode == 0 and self._projectiles:
+            for proj in self._projectiles[-self._max_projectile_lights :]:
+                sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+                fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
+                pr = self._proj_light_tint
+                lights.append(
+                    (
+                        float(sx),
+                        float(sy),
+                        float(self._proj_light_range),
+                        float(self._proj_light_source_radius),
+                        float(pr.r) / 255.0 * fade,
+                        float(pr.g) / 255.0 * fade,
+                        float(pr.b) / 255.0 * fade,
+                    )
+                )
+
+        def draw_fullscreen() -> None:
+            if self._solid_white is not None and int(getattr(self._solid_white, "id", 0)) > 0:
+                src = rl.Rectangle(0.0, 0.0, float(self._solid_white.width), float(self._solid_white.height))
+                dst = rl.Rectangle(0.0, 0.0, float(w), float(h))
+                rl.draw_texture_pro(self._solid_white, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            else:
+                rl.draw_rectangle(0, 0, int(w), int(h), rl.WHITE)
+
+        for lx, ly, lrange, lsrc, lr, lg, lb in lights:
+            if lx < -lrange or lx > w + lrange or ly < -lrange or ly > h + lrange:
+                continue
+            set_vec4("u_light_color", lr, lg, lb, 1.0)
+            set_vec2("u_light_pos", lx, ly)
+            set_float("u_light_range", lrange)
+            set_float("u_light_source_radius", lsrc)
+            draw_fullscreen()
+            # Make sure each fullscreen pass is flushed before changing light
+            # uniforms (raylib batches draws).
+            rl.rl_draw_render_batch_active()
+
         rl.end_blend_mode()
         rl.end_shader_mode()
         rl.end_texture_mode()
@@ -789,6 +902,20 @@ class LightingDebugView:
         rl.begin_blend_mode(rl.BLEND_MULTIPLIED)
         rl.draw_texture_pro(self._light_rt.texture, src_light, dst_light, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
+
+        if self._projectiles:
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            for proj in self._projectiles:
+                sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+                fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
+                c = self._proj_light_tint
+                rl.draw_circle(
+                    int(sx),
+                    int(sy),
+                    float(self._proj_radius_px),
+                    rl.Color(int(c.r), int(c.g), int(c.b), int(220.0 * fade)),
+                )
+            rl.end_blend_mode()
 
         if self._debug_lightmap_preview:
             screen_w = float(rl.get_screen_width())
@@ -853,6 +980,7 @@ class LightingDebugView:
                 f"+/- shadow_floor={self._sdf_shadow_floor:.2f}",
                 f"[ ] disc_radius={self._light_source_radius:.0f}   shift+[ ] light_radius={self._light_radius:.0f}",
                 f"O/P occ_mul={self._occluder_radius_mul:.2f}   K/L occ_pad_px={self._occluder_radius_pad_px:.1f}  (hold shift for bigger steps)",
+                f"LMB shoot  proj={len(self._projectiles)}  proj_lights<= {self._max_projectile_lights}",
                 "1 ui  2 occluders  4 lightmap preview",
                 "F5 dump debug (artifacts/lighting-debug/)",
             ]
