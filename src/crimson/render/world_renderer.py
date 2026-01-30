@@ -664,7 +664,7 @@ class WorldRenderer:
                 oy = float(getattr(proj, "origin_y", pos_y))
                 sx0, sy0 = self.world_to_screen(ox, oy)
                 sx1, sy1 = sx, sy
-                drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, alpha=alpha_byte, scale=scale)
+                drawn = self._draw_bullet_trail(sx0, sy0, sx1, sy1, type_id=type_id, alpha=alpha_byte, scale=scale)
 
             if self.bullet_texture is not None and life >= 0.39:
                 size = self._bullet_sprite_size(type_id, scale=scale)
@@ -755,7 +755,17 @@ class WorldRenderer:
             base = 8.0
         return max(2.0, base * scale)
 
-    def _draw_bullet_trail(self, sx0: float, sy0: float, sx1: float, sy1: float, *, alpha: int, scale: float) -> bool:
+    def _draw_bullet_trail(
+        self,
+        sx0: float,
+        sy0: float,
+        sx1: float,
+        sy1: float,
+        *,
+        type_id: int,
+        alpha: int,
+        scale: float,
+    ) -> bool:
         if self.bullet_trail_texture is None:
             return False
         if alpha <= 0:
@@ -783,8 +793,17 @@ class WorldRenderer:
         x3 = sx1 - ox
         y3 = sy1 - oy
 
-        head = rl.Color(200, 200, 200, alpha)
-        tail = rl.Color(200, 200, 200, 0)
+        # Native uses additive blending for bullet trails and sets color slots per projectile type.
+        # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
+        if type_id == int(ProjectileTypeId.GAUSS_GUN):
+            head_rgb = (51, 128, 255)  # (0.2, 0.5, 1.0)
+        else:
+            head_rgb = (128, 128, 128)  # (0.5, 0.5, 0.5)
+
+        tail_rgb = (128, 128, 128)
+        head = rl.Color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
+        tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
         rl.rl_set_texture(self.bullet_trail_texture.id)
         rl.rl_begin(rl.RL_QUADS)
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
@@ -801,6 +820,7 @@ class WorldRenderer:
         rl.rl_vertex2f(x3, y3)
         rl.rl_end()
         rl.rl_set_texture(0)
+        rl.end_blend_mode()
         return True
 
     def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:

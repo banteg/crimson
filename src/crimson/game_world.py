@@ -481,42 +481,10 @@ class GameWorld:
         for type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y in hits:
             type_id = int(type_id)
 
-            if type_id in BEAM_TYPES:
-                if self.ground is None or self.fx_textures is None:
-                    continue
-                size = float(int(rand()) % 18 + 18)
-                rotation = float(int(rand()) % 628) * 0.01
-                self.fx_queue.add(
-                    effect_id=0x01,
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
-                    width=size,
-                    height=size,
-                    rotation=rotation,
-                    rgba=(0.7, 0.9, 1.0, 1.0),
-                )
-                continue
-
-            if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER):
-                if self.ground is None or self.fx_textures is None:
-                    continue
-                size = float(int(rand()) % 18 + 18)
-                rotation = float(int(rand()) % 628) * 0.01
-                self.fx_queue.add(
-                    effect_id=0x11,
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
-                    width=size,
-                    height=size,
-                    rotation=rotation,
-                    rgba=(1.0, 0.6, 0.3, 1.0),
-                )
-                continue
-
             base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
 
-            # Native: spawn large terrain decals (fx_queue_add_random) around the hit target.
-            if type_id in (int(ProjectileTypeId.MEAN_MINIGUN), 0x2D):
+            # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
+            if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
                 dir_x = math.cos(base_angle)
                 dir_y = math.sin(base_angle)
                 for _ in range(6):
@@ -529,6 +497,32 @@ class GameWorld:
                         pos_x=float(target_x) + dir_x * dist * 20.0,
                         pos_y=float(target_y) + dir_y * dist * 20.0,
                         rand=rand,
+                    )
+            elif type_id in BEAM_TYPES:
+                if self.ground is not None and self.fx_textures is not None:
+                    size = float(int(rand()) % 18 + 18)
+                    rotation = float(int(rand()) % 628) * 0.01
+                    self.fx_queue.add(
+                        effect_id=0x01,
+                        pos_x=float(hit_x),
+                        pos_y=float(hit_y),
+                        width=size,
+                        height=size,
+                        rotation=rotation,
+                        rgba=(0.7, 0.9, 1.0, 1.0),
+                    )
+            elif type_id == int(ProjectileTypeId.ROCKET_LAUNCHER):
+                if self.ground is not None and self.fx_textures is not None:
+                    size = float(int(rand()) % 18 + 18)
+                    rotation = float(int(rand()) % 628) * 0.01
+                    self.fx_queue.add(
+                        effect_id=0x11,
+                        pos_x=float(hit_x),
+                        pos_y=float(hit_y),
+                        width=size,
+                        height=size,
+                        rotation=rotation,
+                        rgba=(1.0, 0.6, 0.3, 1.0),
                     )
             elif not freeze_active:
                 for _ in range(3):
