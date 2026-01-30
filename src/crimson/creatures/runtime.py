@@ -397,6 +397,12 @@ class CreaturePool:
             if dt <= 0.0 or not players:
                 continue
 
+            if float(state.bonuses.freeze) > 0.0:
+                creature.move_scale = 0.0
+                creature.vel_x = 0.0
+                creature.vel_y = 0.0
+                continue
+
             if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
                 creature.hp -= dt * 180.0
             elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
@@ -710,7 +716,7 @@ class CreaturePool:
                         )
 
         # Spawn-slot ticking (spawns child templates while owner stays alive).
-        if dt > 0.0 and spawn_env is not None and self.spawn_slots:
+        if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and spawn_env is not None and self.spawn_slots:
             for slot in self.spawn_slots:
                 owner_idx = int(slot.owner_creature)
                 if not (0 <= owner_idx < len(self._entries)):

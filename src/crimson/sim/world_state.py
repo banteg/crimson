@@ -341,6 +341,8 @@ class WorldState:
         return WorldEvents(hits=hits, deaths=tuple(deaths), pickups=pickups, sfx=sfx)
 
     def _advance_creature_anim(self, dt: float) -> None:
+        if float(self.state.bonuses.freeze) > 0.0:
+            return
         for creature in self.creatures.entries:
             if not (creature.active and creature.hp > 0.0):
                 continue
