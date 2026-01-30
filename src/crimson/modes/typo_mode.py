@@ -214,7 +214,7 @@ class TypoShooterMode(BaseGameplayMode):
         weapon_id = most_used_weapon_id_for_player(
             self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id)
         )
-        record.most_used_weapon_id = int(weapon_id) + 1
+        record.most_used_weapon_id = int(weapon_id)
         record.shots_fired = int(self._typing.shots_fired)
         record.shots_hit = int(self._typing.shots_hit)
         record.game_mode_id = int(GameMode.TYPO)

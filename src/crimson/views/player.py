@@ -20,7 +20,7 @@ from ..gameplay import (
 )
 from ..perks import PerkId
 from ..ui.hud import HudAssets, draw_hud_overlay, hud_ui_scale, load_hud_assets
-from ..weapons import WEAPON_TABLE
+from ..weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id
 
 WORLD_SIZE = 1024.0
 
@@ -76,9 +76,9 @@ class PlayerSandboxView:
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_scale or 1.0)
+            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
-            if entry.weapon_id >= 0
+            if entry.weapon_id > 0
         }
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:

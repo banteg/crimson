@@ -10,7 +10,14 @@ from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
-from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
+from .weapons import (
+    WEAPON_BY_ID,
+    WEAPON_TABLE,
+    Weapon,
+    projectile_type_id_from_weapon_id,
+    weapon_entry_for_projectile_type_id,
+    weapon_id_from_projectile_type_id,
+)
 
 
 class _HasPos(Protocol):
@@ -70,7 +77,7 @@ class PlayerState:
     bonus_aim_hover_index: int = -1
     bonus_aim_hover_timer_ms: float = 0.0
 
-    weapon_id: int = 0
+    weapon_id: int = 1
     clip_size: int = 0
     ammo: float = 0.0
     reload_active: bool = False
@@ -1011,7 +1018,7 @@ def weapon_pick_random_available(rng: Crand) -> int:
 
 
 def _projectile_meta_for_type_id(type_id: int) -> float:
-    entry = WEAPON_BY_ID.get(int(type_id))
+    entry = weapon_entry_for_projectile_type_id(int(type_id))
     meta = entry.projectile_meta if entry is not None else None
     return float(meta if meta is not None else 45.0)
 
@@ -1104,13 +1111,14 @@ def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
 
 
 def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, fallback_weapon_id: int) -> int:
-    """Return a 0-based weapon id for the player's most-used weapon."""
+    """Return a 1-based weapon id for the player's most-used weapon."""
 
     idx = int(player_index)
     if 0 <= idx < len(state.weapon_shots_fired):
         counts = state.weapon_shots_fired[idx]
         if counts:
-            best = max(range(len(counts)), key=counts.__getitem__)
+            start = 1 if len(counts) > 1 else 0
+            best = max(range(start, len(counts)), key=counts.__getitem__)
             if int(counts[best]) > 0:
                 return int(best)
     return int(fallback_weapon_id)
@@ -1294,7 +1302,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             if perk_active(player, PerkId.REGRESSION_BULLETS):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
+                if ammo_class == 0 and player.weapon_id == weapon_id_from_projectile_type_id(ProjectileTypeId.FLAMETHROWER):
                     ammo_class = 1
 
                 reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
@@ -1305,7 +1313,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             elif perk_active(player, PerkId.AMMUNITION_WITHIN):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
+                if ammo_class == 0 and player.weapon_id == weapon_id_from_projectile_type_id(ProjectileTypeId.FLAMETHROWER):
                     ammo_class = 1
 
                 from .player_damage import player_take_damage
@@ -1322,7 +1330,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
-    fire_bullets_weapon = _weapon_entry(ProjectileTypeId.FIRE_BULLETS)
+    fire_bullets_weapon = _weapon_entry(weapon_id_from_projectile_type_id(ProjectileTypeId.FIRE_BULLETS))
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
     spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
@@ -1381,13 +1389,13 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 owner_id=owner_id,
                 base_damage=meta,
             )
-    elif player.weapon_id == 12:
+    elif player.weapon_id == 13:
         # Seeker Rockets -> secondary type 1.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
-    elif player.weapon_id == 13:
+    elif player.weapon_id == 14:
         # Plasma Shotgun -> secondary type 2.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
-    elif player.weapon_id == 17:
+    elif player.weapon_id == 18:
         # Rocket Minigun -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
@@ -1397,31 +1405,31 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             angle += step
         ammo_cost = float(rocket_count)
         shot_count = rocket_count
-    elif player.weapon_id == 18:
+    elif player.weapon_id == 19:
         # Pulse Gun -> secondary type 4.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
-    elif player.weapon_id == 8:
+    elif player.weapon_id == 9:
         # Plasma Rifle -> fast particle weapon (style 0), fractional ammo drain.
         state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
-    elif player.weapon_id == 15:
+    elif player.weapon_id == 16:
         # HR Flamer -> fast particle weapon (style 1), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
-    elif player.weapon_id == 16:
+    elif player.weapon_id == 17:
         # Mini-Rocket Swarmers -> fast particle weapon (style 2), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
-    elif player.weapon_id == 42:
+    elif player.weapon_id == 43:
         # Rainbow Gun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
         ammo_cost = 0.15
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
-        type_id = int(player.weapon_id)
+        type_id = projectile_type_id_from_weapon_id(int(player.weapon_id))
         meta = _projectile_meta_for_type_id(type_id)
         for _ in range(pellets):
             angle = shot_angle

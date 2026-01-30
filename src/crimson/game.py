@@ -1159,7 +1159,7 @@ class QuestResultsView:
                 if weapon_id_native > 0:
                     from .weapons import WEAPON_BY_ID
 
-                    weapon_entry = WEAPON_BY_ID.get(weapon_id_native - 1)
+                    weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                     self._unlock_weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id_native}"
 
                 from .perks import PERK_BY_ID, PerkId, perk_display_name
@@ -1181,7 +1181,7 @@ class QuestResultsView:
         record.quest_stage_minor = minor
         record.score_xp = int(outcome.experience)
         record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = int(outcome.most_used_weapon_id) + 1
+        record.most_used_weapon_id = int(outcome.most_used_weapon_id)
         fired = max(0, int(outcome.shots_fired))
         hit = max(0, min(int(outcome.shots_hit), fired))
         record.shots_fired = fired

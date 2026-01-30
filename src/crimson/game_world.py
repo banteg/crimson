@@ -25,7 +25,7 @@ from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldState
-from .weapons import WEAPON_TABLE
+from .weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id
 from .game_modes import GameMode
 
 
@@ -93,9 +93,9 @@ class GameWorld:
         )
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_scale or 1.0)
+            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
-            if entry.weapon_id >= 0
+            if entry.weapon_id > 0
         }
         player_count = 1
         if self.config is not None:
@@ -147,7 +147,7 @@ class GameWorld:
             x = max(0.0, min(float(self.world_size), x))
             y = max(0.0, min(float(self.world_size), y))
             player = PlayerState(index=idx, pos_x=x, pos_y=y)
-            weapon_assign_player(player, 0)
+            weapon_assign_player(player, 1)
             self.players.append(player)
         self.camera_x = -1.0
         self.camera_y = -1.0

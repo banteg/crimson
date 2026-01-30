@@ -19,7 +19,12 @@ from ..gameplay import PlayerInput, weapon_assign_player
 from ..projectiles import ProjectileTypeId
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_sfx import resolve_weapon_sfx_ref
-from ..weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
+from ..weapons import (
+    WEAPON_BY_ID,
+    WEAPON_TABLE,
+    Weapon,
+    projectile_type_id_from_weapon_id,
+)
 from .registry import register_view
 
 
@@ -45,14 +50,14 @@ DEFAULT_SPAWN_IDS = (
 )
 
 SPECIAL_PROJECTILES: dict[int, str] = {
-    8: "particle style 0 (plasma rifle)",
-    12: "secondary type 1 (seeker rockets)",
-    13: "secondary type 2 (plasma shotgun)",
-    15: "particle style 1 (hr flamer)",
-    16: "particle style 2 (mini-rocket swarmers)",
-    17: "secondary type 2 (rocket minigun)",
-    18: "secondary type 4 (pulse gun)",
-    42: "particle style 8 (rainbow gun)",
+    9: "particle style 0 (plasma rifle)",
+    13: "secondary type 1 (seeker rockets)",
+    14: "secondary type 2 (plasma shotgun)",
+    16: "particle style 1 (hr flamer)",
+    17: "particle style 2 (mini-rocket swarmers)",
+    18: "secondary type 2 (rocket minigun)",
+    19: "secondary type 4 (pulse gun)",
+    43: "particle style 8 (rainbow gun)",
 }
 
 
@@ -235,7 +240,8 @@ class ArsenalDebugView:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
         if special is not None:
             return special
-        return _projectile_type_label(int(weapon_id))
+        type_id = projectile_type_id_from_weapon_id(int(weapon_id))
+        return _projectile_type_label(type_id)
 
     def _weapon_debug_lines(self, weapon: Weapon | None) -> list[str]:
         player = self._player

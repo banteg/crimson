@@ -46,7 +46,7 @@ def resolve_weapon_sfx_ref(value: str | None, *, max_depth: int = 16) -> str | N
         if offset < 0:
             return current
         entry_index, field_offset = divmod(offset, WEAPON_TABLE_STRIDE_BYTES)
-        weapon_id = entry_index - 1
+        weapon_id = entry_index
         weapon = WEAPON_BY_ID.get(weapon_id)
         if weapon is None:
             return current
@@ -61,4 +61,3 @@ def resolve_weapon_sfx_ref(value: str | None, *, max_depth: int = 16) -> str | N
         return current
 
     return current
-

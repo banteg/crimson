@@ -147,7 +147,7 @@ class RushMode(BaseGameplayMode):
         record.survival_elapsed_ms = int(self._rush.elapsed_ms)
         record.creature_kill_count = int(self._creatures.kill_count)
         weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
-        record.most_used_weapon_id = int(weapon_id) + 1
+        record.most_used_weapon_id = int(weapon_id)
         fired = 0
         hit = 0
         try:

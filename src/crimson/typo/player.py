@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..gameplay import PlayerInput, PlayerState, weapon_assign_player
 
-TYPO_WEAPON_ID = 3
+TYPO_WEAPON_ID = 4
 
 
 def enforce_typo_player_frame(player: PlayerState) -> None:

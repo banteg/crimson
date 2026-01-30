@@ -13,7 +13,13 @@ from ..bonuses import BonusId
 from ..effects_atlas import effect_src_rect
 from ..gameplay import GameplayState, PlayerState, bonus_apply
 from ..projectiles import ProjectileTypeId
-from ..weapons import WEAPON_BY_ID, WEAPON_TABLE
+from ..weapons import (
+    WEAPON_BY_ID,
+    WEAPON_TABLE,
+    projectile_type_id_from_weapon_id,
+    weapon_entry_for_projectile_type_id,
+    weapon_id_from_projectile_type_id,
+)
 
 WORLD_SIZE = 1024.0
 
@@ -53,7 +59,7 @@ class EffectFx:
 
 
 _KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
-    # Based on docs/atlas.md (ported to 0-based weapon ids).
+    # Based on docs/atlas.md (projectile type ids are 0-based).
     ProjectileTypeId.JACKHAMMER: (2, 0),
     ProjectileTypeId.GAUSS_SHOTGUN: (4, 3),
     ProjectileTypeId.SPIDER_PLASMA: (4, 6),
@@ -114,14 +120,17 @@ class ProjectileFxView:
         self._camera_x = -1.0
         self._camera_y = -1.0
 
-        max_type_id = max((entry.weapon_id for entry in WEAPON_TABLE if entry.weapon_id >= 0), default=0)
+        max_type_id = max(
+            (projectile_type_id_from_weapon_id(entry.weapon_id) for entry in WEAPON_TABLE if entry.weapon_id > 0),
+            default=0,
+        )
         self._type_ids = list(range(int(max_type_id) + 1))
         self._type_index = 0
 
         self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_scale or 1.0)
+            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
             for entry in WEAPON_TABLE
-            if entry.weapon_id >= 0
+            if entry.weapon_id > 0
         }
 
         self._origin_x = WORLD_SIZE * 0.5
@@ -239,7 +248,7 @@ class ProjectileFxView:
         return int(self._type_ids[self._type_index % len(self._type_ids)])
 
     def _projectile_meta_for(self, type_id: int) -> float:
-        entry = WEAPON_BY_ID.get(int(type_id))
+        entry = weapon_entry_for_projectile_type_id(int(type_id))
         meta = entry.projectile_meta if entry is not None else None
         return float(meta if meta is not None else 45.0)
 
@@ -270,7 +279,7 @@ class ProjectileFxView:
         )
 
     def _spawn_fire_bullets_volley(self, *, angle: float) -> None:
-        base = WEAPON_BY_ID.get(self._selected_type_id())
+        base = weapon_entry_for_projectile_type_id(self._selected_type_id())
         pellet_count = int(getattr(base, "pellet_count", 1) or 1)
         pellet_count = max(1, pellet_count)
         meta = self._projectile_meta_for(ProjectileTypeId.FIRE_BULLETS)
@@ -560,7 +569,7 @@ class ProjectileFxView:
         line = self._ui_line_height()
 
         type_id = self._selected_type_id()
-        weapon = WEAPON_BY_ID.get(type_id)
+        weapon = WEAPON_BY_ID.get(weapon_id_from_projectile_type_id(type_id))
         label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
         self._draw_ui_text(f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, UI_TEXT_COLOR)
         y += line + 4

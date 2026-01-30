@@ -125,7 +125,7 @@ class TutorialMode(BaseGameplayMode):
 
         self._player.pos_x = float(self._world.world_size) * 0.5
         self._player.pos_y = float(self._world.world_size) * 0.5
-        weapon_assign_player(self._player, 0)
+        weapon_assign_player(self._player, 1)
 
     def close(self) -> None:
         self._ui_assets = None

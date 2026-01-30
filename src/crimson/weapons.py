@@ -5,9 +5,10 @@ Weapon definitions for the rewrite runtime.
 
 This file is **manually maintained** (do not auto-generate).
 
-It was originally seeded from `weapon_table_init` (`FUN_004519b0`) but the
-rewrite uses **0-based weapon ids** (e.g. pistol is `weapon_id=0`), while the
-native exe uses **1-based ids**.
+It was originally seeded from `weapon_table_init` (`FUN_004519b0`) and the
+rewrite now uses the **native 1-based weapon ids** (e.g. pistol is
+`weapon_id=1`). Projectile type ids remain **0-based**, so weapon ids should be
+translated via `projectile_type_id_from_weapon_id` when spawning projectiles.
 
 Reference material:
 - `docs/weapon-table.md` (native struct + fields)
@@ -17,6 +18,8 @@ Reference material:
 from dataclasses import dataclass
 
 MANUALLY_MAINTAINED = True
+
+WEAPON_ID_BASE = 1
 
 @dataclass(frozen=True)
 class Weapon:
@@ -38,7 +41,7 @@ class Weapon:
 
 WEAPON_TABLE = [
     Weapon(
-        weapon_id=0,
+        weapon_id=1,
         name='Pistol',
         ammo_class=None,
         clip_size=12,
@@ -54,7 +57,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=1,
+        weapon_id=2,
         name='Assault Rifle',
         ammo_class=None,
         clip_size=25,
@@ -70,8 +73,8 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=2,
-        name=None,
+        weapon_id=3,
+        name='Shotgun',
         ammo_class=None,
         clip_size=12,
         shot_cooldown=0.8500000238418579,
@@ -86,7 +89,7 @@ WEAPON_TABLE = [
         pellet_count=12,
     ),
     Weapon(
-        weapon_id=3,
+        weapon_id=4,
         name='Sawed-off Shotgun',
         ammo_class=None,
         clip_size=12,
@@ -102,7 +105,7 @@ WEAPON_TABLE = [
         pellet_count=12,
     ),
     Weapon(
-        weapon_id=4,
+        weapon_id=5,
         name='Submachine Gun',
         ammo_class=None,
         clip_size=30,
@@ -118,7 +121,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=5,
+        weapon_id=6,
         name='Gauss Gun',
         ammo_class=None,
         clip_size=6,
@@ -134,7 +137,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=6,
+        weapon_id=7,
         name='Mean Minigun',
         ammo_class=None,
         clip_size=120,
@@ -150,7 +153,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=7,
+        weapon_id=8,
         name='Flamethrower',
         ammo_class=None,
         clip_size=30,
@@ -166,7 +169,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=8,
+        weapon_id=9,
         name='Plasma Rifle',
         ammo_class=None,
         clip_size=20,
@@ -182,7 +185,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=9,
+        weapon_id=10,
         name='Multi-Plasma',
         ammo_class=None,
         clip_size=8,
@@ -198,7 +201,7 @@ WEAPON_TABLE = [
         pellet_count=3,
     ),
     Weapon(
-        weapon_id=10,
+        weapon_id=11,
         name='Plasma Minigun',
         ammo_class=None,
         clip_size=30,
@@ -214,7 +217,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=11,
+        weapon_id=12,
         name='Rocket Launcher',
         ammo_class=None,
         clip_size=5,
@@ -230,7 +233,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=12,
+        weapon_id=13,
         name='Seeker Rockets',
         ammo_class=None,
         clip_size=8,
@@ -246,7 +249,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=13,
+        weapon_id=14,
         name='Plasma Shotgun',
         ammo_class=None,
         clip_size=8,
@@ -262,7 +265,7 @@ WEAPON_TABLE = [
         pellet_count=14,
     ),
     Weapon(
-        weapon_id=14,
+        weapon_id=15,
         name='Blow Torch',
         ammo_class=None,
         clip_size=30,
@@ -278,7 +281,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=15,
+        weapon_id=16,
         name='HR Flamer',
         ammo_class=None,
         clip_size=30,
@@ -294,7 +297,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=16,
+        weapon_id=17,
         name='Mini-Rocket Swarmers',
         ammo_class=None,
         clip_size=5,
@@ -310,7 +313,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=17,
+        weapon_id=18,
         name='Rocket Minigun',
         ammo_class=None,
         clip_size=16,
@@ -326,7 +329,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=18,
+        weapon_id=19,
         name='Pulse Gun',
         ammo_class=None,
         clip_size=16,
@@ -342,7 +345,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=19,
+        weapon_id=20,
         name='Jackhammer',
         ammo_class=None,
         clip_size=16,
@@ -358,7 +361,7 @@ WEAPON_TABLE = [
         pellet_count=4,
     ),
     Weapon(
-        weapon_id=20,
+        weapon_id=21,
         name='Ion Rifle',
         ammo_class=None,
         clip_size=8,
@@ -374,7 +377,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=21,
+        weapon_id=22,
         name='Ion Minigun',
         ammo_class=None,
         clip_size=20,
@@ -390,7 +393,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=22,
+        weapon_id=23,
         name='Ion Cannon',
         ammo_class=None,
         clip_size=3,
@@ -406,7 +409,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=23,
+        weapon_id=24,
         name='Shrinkifier 5k',
         ammo_class=None,
         clip_size=8,
@@ -422,7 +425,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=24,
+        weapon_id=25,
         name='Blade Gun',
         ammo_class=None,
         clip_size=6,
@@ -438,7 +441,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=25,
+        weapon_id=26,
         name='Spider Plasma',
         ammo_class=None,
         clip_size=5,
@@ -454,7 +457,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=26,
+        weapon_id=27,
         name='Evil Scythe',
         ammo_class=None,
         clip_size=3,
@@ -470,7 +473,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=27,
+        weapon_id=28,
         name='Plasma Cannon',
         ammo_class=None,
         clip_size=3,
@@ -486,7 +489,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=28,
+        weapon_id=29,
         name='Splitter Gun',
         ammo_class=None,
         clip_size=6,
@@ -502,7 +505,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=29,
+        weapon_id=30,
         name='Gauss Shotgun',
         ammo_class=None,
         clip_size=4,
@@ -518,7 +521,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=30,
+        weapon_id=31,
         name='Ion Shotgun',
         ammo_class=None,
         clip_size=10,
@@ -534,7 +537,7 @@ WEAPON_TABLE = [
         pellet_count=8,
     ),
     Weapon(
-        weapon_id=31,
+        weapon_id=32,
         name='Flameburst',
         ammo_class=None,
         clip_size=60,
@@ -550,7 +553,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=32,
+        weapon_id=33,
         name=None,
         ammo_class=None,
         clip_size=12,
@@ -566,7 +569,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=40,
+        weapon_id=41,
         name='Plague Sphreader Gun',
         ammo_class=None,
         clip_size=5,
@@ -582,7 +585,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=41,
+        weapon_id=42,
         name='Bubblegun',
         ammo_class=None,
         clip_size=15,
@@ -598,7 +601,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=42,
+        weapon_id=43,
         name='Rainbow Gun',
         ammo_class=None,
         clip_size=10,
@@ -614,7 +617,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=43,
+        weapon_id=44,
         name='Grim Weapon',
         ammo_class=None,
         clip_size=3,
@@ -630,7 +633,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=44,
+        weapon_id=45,
         name='Fire bullets',
         ammo_class=None,
         clip_size=112,
@@ -646,7 +649,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=49,
+        weapon_id=50,
         name='Transmutator',
         ammo_class=None,
         clip_size=50,
@@ -662,7 +665,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=50,
+        weapon_id=51,
         name='Blaster R-300',
         ammo_class=None,
         clip_size=20,
@@ -678,7 +681,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=51,
+        weapon_id=52,
         name=None,
         ammo_class=None,
         clip_size=500,
@@ -694,7 +697,7 @@ WEAPON_TABLE = [
         pellet_count=1,
     ),
     Weapon(
-        weapon_id=52,
+        weapon_id=53,
         name='Nuke Launcher',
         ammo_class=None,
         clip_size=1,
@@ -714,6 +717,19 @@ WEAPON_TABLE = [
 WEAPON_BY_ID = {
     entry.weapon_id: entry for entry in WEAPON_TABLE
 }
+
+
+def weapon_id_from_projectile_type_id(type_id: int) -> int:
+    return int(type_id) + WEAPON_ID_BASE
+
+
+def projectile_type_id_from_weapon_id(weapon_id: int) -> int:
+    return int(weapon_id) - WEAPON_ID_BASE
+
+
+def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
+    return WEAPON_BY_ID.get(weapon_id_from_projectile_type_id(type_id))
+
 
 WEAPON_BY_NAME = {
     entry.name: entry for entry in WEAPON_TABLE if entry.name is not None

@@ -189,8 +189,8 @@ class QuestMode(BaseGameplayMode):
                 detail_path=detail_path,
             )
 
-        # Quest metadata stores native (1-based) weapon ids; the rewrite uses 0-based ids.
-        start_weapon_id = max(0, int(quest.start_weapon_id) - 1)
+        # Quest metadata already stores native (1-based) weapon ids.
+        start_weapon_id = max(1, int(quest.start_weapon_id))
         for player in self._world.players:
             weapon_assign_player(player, start_weapon_id)
 

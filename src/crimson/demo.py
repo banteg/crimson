@@ -16,7 +16,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.rand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
-from .weapons import WEAPON_TABLE
+from .weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -542,7 +542,7 @@ class DemoView:
 
     def _setup_variant_0(self) -> None:
         self._demo_time_limit_ms = 4000
-        weapon_id = 11
+        weapon_id = 12
         self._setup_world_players(
             [
                 (448.0, 384.0, weapon_id),
@@ -560,7 +560,7 @@ class DemoView:
 
     def _setup_variant_1(self) -> None:
         self._demo_time_limit_ms = 5000
-        weapon_id = 5
+        weapon_id = 6
         self._setup_world_players(
             [
                 (490.0, 448.0, weapon_id),
@@ -579,7 +579,7 @@ class DemoView:
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
-        weapon_id = 21
+        weapon_id = 22
         self._setup_world_players([(512.0, 512.0, weapon_id)])
         y = 128
         i = 0
@@ -594,7 +594,7 @@ class DemoView:
 
     def _setup_variant_3(self) -> None:
         self._demo_time_limit_ms = 4000
-        weapon_id = 18
+        weapon_id = 19
         self._setup_world_players([(512.0, 512.0, weapon_id)])
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
@@ -1202,7 +1202,7 @@ class DemoView:
 
         play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
 
-        if player.weapon_id in {5, 11, 21}:
+        if player.weapon_id in {6, 12, 22}:
             meta = float(weapon.projectile_meta) if weapon.projectile_meta is not None else 0.0
             if meta <= 0.0:
                 meta = 45.0
@@ -1210,11 +1210,11 @@ class DemoView:
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
                 angle=angle,
-                type_id=player.weapon_id,
+                type_id=projectile_type_id_from_weapon_id(player.weapon_id),
                 owner_id=-100,
                 base_damage=meta,
             )
-        elif player.weapon_id == 18:
+        elif player.weapon_id == 19:
             self._secondary_projectile_pool.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
@@ -1234,7 +1234,7 @@ class DemoView:
     def _update_projectiles(self, dt: float) -> None:
         damage_scale_by_type: dict[int, float] = {}
         for type_id in (0x05, 0x0B, 0x15):
-            weapon = self._weapon_entry(type_id)
+            weapon = weapon_entry_for_projectile_type_id(type_id)
             scale = float(weapon.damage_scale) if weapon is not None and weapon.damage_scale is not None else 0.0
             damage_scale_by_type[type_id] = scale if scale > 0.0 else 1.0
 
