@@ -300,10 +300,15 @@ class LightingDebugView:
         self._sdf_shader_tried = True
 
         try:
-            shader = rl.load_shader_from_memory(_SDF_SHADOW_VS_330, _SDF_SHADOW_FS_330)
+            # Prefer raylib's default vertex shader to avoid attribute binding
+            # mismatches across platforms/backends.
+            shader = rl.load_shader_from_memory(None, _SDF_SHADOW_FS_330)
         except Exception:
-            self._sdf_shader = None
-            return None
+            try:
+                shader = rl.load_shader_from_memory(_SDF_SHADOW_VS_330, _SDF_SHADOW_FS_330)
+            except Exception:
+                self._sdf_shader = None
+                return None
 
         if int(getattr(shader, "id", 0)) <= 0 or not rl.is_shader_valid(shader):
             self._sdf_shader = None
