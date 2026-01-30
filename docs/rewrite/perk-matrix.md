@@ -48,7 +48,7 @@ Notes:
 | 34 | BARREL_GREASER | Barrel Greaser | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 35 | AMMUNITION_WITHIN | Ammunition Within | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 36 | VEINS_OF_POISON | Veins of Poison | `creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Veins of Poison is active and Toxic Avenger is not, sets `creature.flags \|= 0x01` (self-damage tick, `frame_dt * 60`). | `src/crimson/creatures/runtime.py:CreaturePool.update` | `tests/test_veins_of_poison_perk.py` |
-| 37 | TOXIC_AVENGER | Toxic Avenger | TBD | — | — |
+| 37 | TOXIC_AVENGER | Toxic Avenger | `creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Toxic Avenger is active sets `creature.flags \|= 0x03`, enabling the strong self-damage tick (`frame_dt * 180`). | `src/crimson/creatures/runtime.py:CreaturePool.update` | `tests/test_toxic_avenger_perk.py` |
 | 38 | REGENERATION | Regeneration | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:perks_update_effects` | `tests/test_regeneration_perk.py` |
 | 39 | PYROMANIAC | Pyromaniac | TBD | `src/crimson/creatures/damage.py:creature_apply_damage` | — |
 | 40 | NINJA | Ninja | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |

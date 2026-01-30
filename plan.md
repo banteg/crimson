@@ -356,7 +356,7 @@ These typically require creature flags/timers:
 * [x] Poison Bullets
 * [ ] Plaguebearer
 * [x] Veins of Poison
-* [ ] Toxic Avenger
+* [x] Toxic Avenger
 * [ ] Regression Bullets
 
 **D. Player passive/tick perks**

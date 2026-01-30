@@ -484,7 +484,10 @@ PERK_TABLE = [
         description="You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds!",
         flags=None,
         prereq=(PerkId.VEINS_OF_POISON,),
-        notes=None,
+        notes=(
+            "`creature_update_all`: on a melee hit (when `player.shield_timer <= 0`), if Toxic Avenger is active "
+            "sets `creature.flags |= 0x03`, enabling the strong self-damage tick (`frame_dt * 180`)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.REGENERATION,

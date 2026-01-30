@@ -376,10 +376,10 @@ class CreaturePool:
             if dt <= 0.0 or not players:
                 continue
 
-            if creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
-                creature.hp -= dt * 60.0
             if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
                 creature.hp -= dt * 180.0
+            elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
+                creature.hp -= dt * 60.0
             if creature.hp <= 0.0:
                 deaths.append(
                     self.handle_death(
@@ -556,8 +556,13 @@ class CreaturePool:
                     creature.collision_timer -= dt
                     if creature.collision_timer < 0.0:
                         creature.collision_timer += CONTACT_DAMAGE_PERIOD
-                        if float(player.shield_timer) <= 0.0 and perk_active(player, PerkId.VEINS_OF_POISON):
-                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+                        if float(player.shield_timer) <= 0.0:
+                            if perk_active(player, PerkId.TOXIC_AVENGER):
+                                creature.flags |= (
+                                    CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
+                                )
+                            elif perk_active(player, PerkId.VEINS_OF_POISON):
+                                creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
                         player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
                 else:
                     creature.collision_flag = 0
