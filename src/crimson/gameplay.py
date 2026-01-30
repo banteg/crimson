@@ -63,6 +63,7 @@ class PlayerState:
     aim_heading: float = 0.0
     aim_dir_x: float = 1.0
     aim_dir_y: float = 0.0
+    evil_eyes_target_creature: int = -1
 
     bonus_aim_hover_index: int = -1
     bonus_aim_hover_timer_ms: float = 0.0
@@ -557,7 +558,10 @@ def perks_update_effects(
             if perk_count > 0:
                 player.experience += perk_count * 10
 
-    if players and creatures is not None and perk_active(players[0], PerkId.PYROKINETIC):
+    target = -1
+    if players and creatures is not None and (
+        perk_active(players[0], PerkId.PYROKINETIC) or perk_active(players[0], PerkId.EVIL_EYES)
+    ):
         target = _creature_find_in_radius(
             creatures,
             pos_x=players[0].aim_x,
@@ -565,18 +569,23 @@ def perks_update_effects(
             radius=12.0,
             start_index=0,
         )
-        if target != -1:
-            creature = creatures[target]
-            creature.collision_timer = float(creature.collision_timer) - dt
-            if creature.collision_timer < 0.0:
-                creature.collision_timer = 0.5
-                pos_x = float(creature.x)
-                pos_y = float(creature.y)
-                for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
-                    angle = float(int(state.rng.rand()) % 0x274) * 0.01
-                    state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
-                if fx_queue is not None:
-                    fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=state.rng.rand)
+
+    if players:
+        player0 = players[0]
+        player0.evil_eyes_target_creature = target if perk_active(player0, PerkId.EVIL_EYES) else -1
+
+    if players and creatures is not None and perk_active(players[0], PerkId.PYROKINETIC) and target != -1:
+        creature = creatures[target]
+        creature.collision_timer = float(creature.collision_timer) - dt
+        if creature.collision_timer < 0.0:
+            creature.collision_timer = 0.5
+            pos_x = float(creature.x)
+            pos_y = float(creature.y)
+            for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
+                angle = float(int(state.rng.rand()) % 0x274) * 0.01
+                state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
+            if fx_queue is not None:
+                fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=state.rng.rand)
 
     if state.jinxed_timer >= 0.0:
         state.jinxed_timer -= dt

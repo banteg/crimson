@@ -208,7 +208,11 @@ PERK_TABLE = [
         description="No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them!",
         flags=None,
         prereq=(),
-        notes="Target creature index stored in `evil_eyes_target_creature` (`DAT_00490bbc`), set in `perks_update_effects`, read in `creature_update_all`.",
+        notes=(
+            "`perks_update_effects` sets `evil_eyes_target_creature` (`DAT_00490bbc`) to "
+            "`creature_find_in_radius(&aim, 12.0, 0)` when the perk is active (else `-1`). "
+            "`creature_update_all` checks this index and skips the target's AI update."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.AMMO_MANIAC,

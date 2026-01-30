@@ -349,6 +349,10 @@ class CreaturePool:
         spawned: list[int] = []
         sfx: list[str] = []
 
+        evil_target = -1
+        if players and perk_active(players[0], PerkId.EVIL_EYES):
+            evil_target = int(players[0].evil_eyes_target_creature)
+
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
         dt_ms = int(dt * 1000.0) if dt > 0.0 else 0
@@ -405,76 +409,82 @@ class CreaturePool:
                 creature.target_player = 0
             player = players[target_player]
 
-            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
-            ai = creature_ai_update_target(
-                creature,
-                player_x=player.pos_x,
-                player_y=player.pos_y,
-                creatures=self._entries,
-                dt=dt,
-            )
-            creature.move_scale = float(ai.move_scale)
-            if ai.self_damage is not None and ai.self_damage > 0.0:
-                creature.hp -= float(ai.self_damage)
-                if creature.hp <= 0.0:
-                    deaths.append(
-                        self.handle_death(
-                            idx,
-                            state=state,
-                            players=players,
-                            rand=rand,
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue=fx_queue,
-                        )
-                    )
-                    if creature.active:
-                        self._tick_dead(
-                            creature,
-                            dt=dt,
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue_rotated=fx_queue_rotated,
-                        )
-                    continue
-
-            if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0:
-                creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
-
-            turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
-            speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * creature.move_scale
-
-            if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
-                if creature.ai_mode == 7:
-                    creature.vel_x = 0.0
-                    creature.vel_y = 0.0
-                else:
-                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                    dir_x = math.cos(creature.heading - math.pi / 2.0)
-                    dir_y = math.sin(creature.heading - math.pi / 2.0)
-                    creature.vel_x = dir_x * speed
-                    creature.vel_y = dir_y * speed
-                    creature.x = _clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
-                    creature.y = _clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
+            frozen_by_evil_eyes = idx == evil_target
+            if frozen_by_evil_eyes:
+                creature.move_scale = 0.0
+                creature.vel_x = 0.0
+                creature.vel_y = 0.0
             else:
-                # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
-                # unless ANIM_LONG_STRIP is set (see creature_update_all).
-                radius = max(0.0, float(creature.size))
-                max_x = max(radius, float(world_width) - radius)
-                max_y = max(radius, float(world_height) - radius)
-                creature.x = _clamp(creature.x, radius, max_x)
-                creature.y = _clamp(creature.y, radius, max_y)
-                if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
-                    creature.vel_x = 0.0
-                    creature.vel_y = 0.0
+                creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
+                ai = creature_ai_update_target(
+                    creature,
+                    player_x=player.pos_x,
+                    player_y=player.pos_y,
+                    creatures=self._entries,
+                    dt=dt,
+                )
+                creature.move_scale = float(ai.move_scale)
+                if ai.self_damage is not None and ai.self_damage > 0.0:
+                    creature.hp -= float(ai.self_damage)
+                    if creature.hp <= 0.0:
+                        deaths.append(
+                            self.handle_death(
+                                idx,
+                                state=state,
+                                players=players,
+                                rand=rand,
+                                world_width=world_width,
+                                world_height=world_height,
+                                fx_queue=fx_queue,
+                            )
+                        )
+                        if creature.active:
+                            self._tick_dead(
+                                creature,
+                                dt=dt,
+                                world_width=world_width,
+                                world_height=world_height,
+                                fx_queue_rotated=fx_queue_rotated,
+                            )
+                        continue
+
+                if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0:
+                    creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
+
+                turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
+                speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * creature.move_scale
+
+                if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+                    if creature.ai_mode == 7:
+                        creature.vel_x = 0.0
+                        creature.vel_y = 0.0
+                    else:
+                        creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                        dir_x = math.cos(creature.heading - math.pi / 2.0)
+                        dir_y = math.sin(creature.heading - math.pi / 2.0)
+                        creature.vel_x = dir_x * speed
+                        creature.vel_y = dir_y * speed
+                        creature.x = _clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
+                        creature.y = _clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
                 else:
-                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                    dir_x = math.cos(creature.heading - math.pi / 2.0)
-                    dir_y = math.sin(creature.heading - math.pi / 2.0)
-                    creature.vel_x = dir_x * speed
-                    creature.vel_y = dir_y * speed
-                    creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
-                    creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
+                    # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
+                    # unless ANIM_LONG_STRIP is set (see creature_update_all).
+                    radius = max(0.0, float(creature.size))
+                    max_x = max(radius, float(world_width) - radius)
+                    max_y = max(radius, float(world_height) - radius)
+                    creature.x = _clamp(creature.x, radius, max_x)
+                    creature.y = _clamp(creature.y, radius, max_y)
+                    if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
+                        creature.vel_x = 0.0
+                        creature.vel_y = 0.0
+                    else:
+                        creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                        dir_x = math.cos(creature.heading - math.pi / 2.0)
+                        dir_y = math.sin(creature.heading - math.pi / 2.0)
+                        creature.vel_x = dir_x * speed
+                        creature.vel_y = dir_y * speed
+                        creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
+                        creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
             if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 380.0 and float(player.health) > 0.0:
                 eat_dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
@@ -526,7 +536,7 @@ class CreaturePool:
                 else:
                     creature.collision_flag = 0
 
-            if creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT):
+            if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
                 # around the 0x004276xx ranged-fire branch).
                 if creature.attack_cooldown <= 0.0:

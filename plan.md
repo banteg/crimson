@@ -365,6 +365,7 @@ These usually live in `player_update`:
 * [x] Regeneration
 * [x] Greater Regeneration (no runtime hook found; appears inert)
 * [x] Pyrokinetic (aim-targeted particle burst)
+* [x] Evil Eyes (freeze aimed creature)
 * [x] Unstoppable
 * [x] Highlander
 * [x] Jinxed (timer + random kill + accidents)

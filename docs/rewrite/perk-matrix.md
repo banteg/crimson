@@ -22,7 +22,7 @@ Notes:
 | 8 | GRIM_DEAL | Grim Deal | TBD | `src/crimson/gameplay.py:perk_apply` | — |
 | 9 | ALTERNATE_WEAPON | Alternate Weapon | TBD | `src/crimson/gameplay.py:player_update` | `tests/test_game_mode_ids.py` |
 | 10 | PLAGUEBEARER | Plaguebearer | Sets `player_plaguebearer_active` (`DAT_004908b9`); creature update checks it to infect nearby monsters. | `src/crimson/gameplay.py:perk_apply` | — |
-| 11 | EVIL_EYES | Evil Eyes | Target creature index stored in `evil_eyes_target_creature` (`DAT_00490bbc`), set in `perks_update_effects`, read in `creature_update_all`. | `src/crimson/gameplay.py:perk_generate_choices` | `tests/test_perk_selection.py` |
+| 11 | EVIL_EYES | Evil Eyes | `perks_update_effects` sets `evil_eyes_target_creature` (`DAT_00490bbc`) to `creature_find_in_radius(&aim, 12.0, 0)` when the perk is active (else `-1`). `creature_update_all` checks this index and skips the target's AI update. | `src/crimson/creatures/runtime.py:CreaturePool.update`<br>`src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:perks_update_effects` | `tests/test_evil_eyes_perk.py`<br>`tests/test_perk_selection.py` |
 | 12 | AMMO_MANIAC | Ammo Maniac | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:weapon_assign_player` | — |
 | 13 | RADIOACTIVE | Radioactive | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/render/world_renderer.py:WorldRenderer._draw_player_trooper_sprite` | `tests/test_perk_selection.py` |
 | 14 | FASTSHOT | Fastshot | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon` | `tests/test_perk_selection.py` |
