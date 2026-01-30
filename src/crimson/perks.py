@@ -545,7 +545,10 @@ PERK_TABLE = [
         description="Your health replenishes but very slowly. What more there is to say?",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perks_update_effects` (0x00406b40): if Regeneration is active and `(crt_rand() & 1) != 0`, heals each "
+            "alive player with `0 < health < 100` by `+dt` (clamped to `100`)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.PYROMANIAC,
