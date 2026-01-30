@@ -295,6 +295,7 @@ Once Phase 2 is in, these become straightforward and correct.
 
 - [x] On pickup: shatter/remove existing corpses.
 - [x] On death while active: ice-shatter + remove creature (no corpse).
+- [x] While active: freeze creature movement/AI/anim.
 - [x] On render: freeze overlay quad pass (optional parity).
 
 2. [x] Energizer
