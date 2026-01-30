@@ -400,7 +400,7 @@ These usually live in `player_update`:
 * [x] Fatal Lottery
 * [x] Ammo Maniac
 * [x] Grim Deal
-* [ ] Death Clock
+* [x] Death Clock
 * [ ] Bandage
 * [x] My Favourite Weapon
 

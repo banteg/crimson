@@ -647,7 +647,11 @@ PERK_TABLE = [
         description="You die exactly in 30 seconds. You can't escape your destiny, but feel free to go on a spree. Tick, tock.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_take_damage` (0x00425e50): if Death Clock is active, returns immediately (immune to damage). "
+            "`perk_apply` (0x004055e0): clears Regeneration and Greater Regeneration perk counts and sets "
+            "`player.health = 100.0` when `health > 0.0`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.MY_FAVOURITE_WEAPON,
