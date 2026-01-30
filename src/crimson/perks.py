@@ -593,7 +593,7 @@ PERK_TABLE = [
         description="To you the world seems to go on about 10% slower than to an average person. It can be rather irritating sometimes, but it does give you a chance to react better.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="Main loop (`grim_update`): when in gameplay (`game_state_id == 9`) and Reflex Boosted is active, scales `frame_dt *= 0.9`.",
     ),
     PerkMeta(
         perk_id=PerkId.GREATER_REGENERATION,

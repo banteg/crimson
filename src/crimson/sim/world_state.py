@@ -82,6 +82,10 @@ class WorldState:
         game_mode: int,
         perk_progression_enabled: bool,
     ) -> WorldEvents:
+        dt = float(dt)
+        if dt > 0.0 and self.players and perk_active(self.players[0], PerkId.REFLEX_BOOSTED):
+            dt *= 0.9
+
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
