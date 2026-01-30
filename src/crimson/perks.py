@@ -144,7 +144,11 @@ PERK_TABLE = [
         description="You move like a train that has feet and runs. You just need a little time to warm up. In other words you'll move faster the longer you run without stopping.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_update`: while moving, `move_speed` normally increases by `frame_dt * 5.0` (clamped to `2.0`). "
+            "With Long Distance Runner active, `move_speed` continues to ramp up above `2.0` by `frame_dt` per frame, "
+            "clamped to `2.8`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.PYROKINETIC,

@@ -16,7 +16,7 @@ Notes:
 | 2 | SHARPSHOOTER | Sharpshooter | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_update` | `tests/test_perk_selection.py` |
 | 3 | FASTLOADER | Fastloader | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 4 | LEAN_MEAN_EXP_MACHINE | Lean Mean Exp Machine | TBD | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_lean_mean_exp_machine.py` |
-| 5 | LONG_DISTANCE_RUNNER | Long Distance Runner | TBD | `src/crimson/gameplay.py:perk_generate_choices` | `tests/test_perk_selection.py` |
+| 5 | LONG_DISTANCE_RUNNER | Long Distance Runner | `player_update`: while moving, `move_speed` normally increases by `frame_dt * 5.0` (clamped to `2.0`). With Long Distance Runner active, `move_speed` continues to ramp up above `2.0` by `frame_dt` per frame, clamped to `2.8`. | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_update` | `tests/test_long_distance_runner_perk.py`<br>`tests/test_perk_selection.py` |
 | 6 | PYROKINETIC | Pyrokinetic | `perks_update_effects`: picks `creature_find_in_radius(&aim, 12.0, 0)`; while aiming at a creature, decrements `collision_timer` by `dt` and, when it wraps, sets it to `0.5` and spawns 5 particles (intensity 0.8, 0.6, 0.4, 0.3, 0.2), plus `fx_queue_add_random` at the creature position. | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_pyrokinetic_perk.py` |
 | 7 | INSTANT_WINNER | Instant Winner | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
 | 8 | GRIM_DEAL | Grim Deal | TBD | `src/crimson/gameplay.py:perk_apply` | — |

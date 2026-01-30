@@ -53,6 +53,7 @@ class PlayerState:
     size: float = 50.0
 
     move_speed_multiplier: float = 2.0
+    long_distance_runner_timer: float = 0.0
     move_phase: float = 0.0
     heading: float = 0.0
     death_timer: float = 16.0
@@ -1452,13 +1453,24 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
 
     # Movement.
     move_x, move_y = _normalize(float(input_state.move_x), float(input_state.move_y))
-    speed = 120.0 * player.move_speed_multiplier
+    moving = move_x != 0.0 or move_y != 0.0
+    runner_bonus = 0.0
+    if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+        if moving:
+            player.long_distance_runner_timer = min(1.2, float(player.long_distance_runner_timer) + dt)
+        else:
+            player.long_distance_runner_timer = max(0.0, float(player.long_distance_runner_timer) - dt * 15.0)
+        runner_bonus = max(0.0, min(0.8, float(player.long_distance_runner_timer) - 0.4))
+    else:
+        player.long_distance_runner_timer = 0.0
+
+    speed = 120.0 * (player.move_speed_multiplier + runner_bonus)
     if player.speed_bonus_timer > 0.0:
         speed *= 1.35
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
     player.pos_y = _clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
 
-    if move_x != 0.0 or move_y != 0.0:
+    if moving:
         player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
 
     move_dist = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)

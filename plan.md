@@ -383,6 +383,10 @@ These usually live in `player_update`:
 * [x] Final Revenge
 * [x] Reflex Boosted
 
+**G. Movement perks**
+
+* [x] Long Distance Runner
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
