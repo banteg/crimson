@@ -315,7 +315,7 @@ PERK_TABLE = [
         description="When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_update` (0x004136b0): while reloading (`reload_timer > 0`), `fire_pressed` subtracts `0.05` from `reload_timer`.",
     ),
     PerkMeta(
         perk_id=PerkId.FINAL_REVENGE,

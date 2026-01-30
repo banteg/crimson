@@ -416,7 +416,7 @@ These usually live in `player_update`:
 * [ ] Instant Winner
 * [ ] Alternate Weapon
 * [x] Fastshot
-* [ ] Anxious Loader
+* [x] Anxious Loader
 * [ ] Telekinetic
 * [x] Perk Expert
 * [ ] Unstoppable
