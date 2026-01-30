@@ -179,7 +179,7 @@ PERK_TABLE = [
         description="2500 experience points. Right away. Take it or leave it.",
         flags=PerkFlags.STACKABLE,
         prereq=(),
-        notes=None,
+        notes="`perk_apply` (0x004055e0): grants `+2500` experience to the perk owner.",
     ),
     PerkMeta(
         perk_id=PerkId.GRIM_DEAL,
