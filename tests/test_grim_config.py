@@ -20,3 +20,13 @@ def test_crimson_cfg_save_load(tmp_path) -> None:
     loaded = grim_config.load_crimson_cfg(cfg.path)
     rebuilt = grim_config.CRIMSON_CFG_STRUCT.build(loaded.data)
     assert rebuilt == raw
+
+
+def test_crimson_cfg_backfills_zero_keybinds(tmp_path) -> None:
+    data = grim_config.default_crimson_cfg_data()
+    data["keybinds"] = b"\x00" * 0x80
+    path = tmp_path / grim_config.CRIMSON_CFG_NAME
+    path.write_bytes(grim_config.CRIMSON_CFG_STRUCT.build(data))
+
+    cfg = grim_config.ensure_crimson_cfg(tmp_path)
+    assert cfg.data["keybinds"] == grim_config.default_crimson_cfg_data()["keybinds"]
