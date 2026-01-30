@@ -379,7 +379,7 @@ These usually live in `player_update`:
 
 * [x] Random Weapon
 * [x] Mr. Melee
-* [ ] Final Revenge
+* [x] Final Revenge
 * [x] Reflex Boosted
 
 3. [ ] Add minimal scenario tests per perk

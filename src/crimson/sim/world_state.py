@@ -193,6 +193,75 @@ class WorldState:
             self.creatures.entries,
             apply_creature_damage=_apply_projectile_damage_to_creature,
         )
+
+        for idx, player in enumerate(self.players):
+            if idx >= len(prev_health):
+                continue
+            if float(prev_health[idx]) < 0.0:
+                continue
+            if float(player.health) >= 0.0:
+                continue
+            if not perk_active(player, PerkId.FINAL_REVENGE):
+                continue
+
+            px = float(player.pos_x)
+            py = float(player.pos_y)
+            rand = self.state.rng.rand
+            self.state.effects.spawn_explosion_burst(
+                pos_x=px,
+                pos_y=py,
+                scale=1.8,
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
+
+            prev_guard = bool(self.state.bonus_spawn_guard)
+            self.state.bonus_spawn_guard = True
+            for creature_idx, creature in enumerate(self.creatures.entries):
+                if not creature.active:
+                    continue
+                if float(creature.hp) <= 0.0:
+                    continue
+
+                dx = float(creature.x) - px
+                dy = float(creature.y) - py
+                if abs(dx) > 512.0 or abs(dy) > 512.0:
+                    continue
+
+                remaining = 512.0 - math.hypot(dx, dy)
+                if remaining <= 0.0:
+                    continue
+
+                damage = remaining * 5.0
+                death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
+                killed = creature_apply_damage(
+                    creature,
+                    damage_amount=damage,
+                    damage_type=3,
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=-1 - int(player.index),
+                    dt=float(dt),
+                    players=self.players,
+                    rand=rand,
+                )
+                if killed and death_start_needed:
+                    deaths.append(
+                        self.creatures.handle_death(
+                            int(creature_idx),
+                            state=self.state,
+                            players=self.players,
+                            rand=rand,
+                            detail_preset=int(detail_preset),
+                            world_width=float(world_size),
+                            world_height=float(world_size),
+                            fx_queue=fx_queue,
+                        )
+                    )
+            self.state.bonus_spawn_guard = prev_guard
+            self.state.sfx_queue.append("sfx_explosion_large")
+            self.state.sfx_queue.append("sfx_shockwave")
+
         self.state.particles.update(dt)
         self.state.sprite_effects.update(dt)
 

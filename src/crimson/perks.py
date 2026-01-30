@@ -309,7 +309,12 @@ PERK_TABLE = [
         description="Pick this and you'll get your revenge. It's a promise.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_take_damage` (0x00425e50): on death (`health < 0`), if Final Revenge is active, spawns an "
+            "explosion burst (scale 1.8), sets `bonus_spawn_guard`, and applies radius damage within 512 units: "
+            "`damage = (512 - dist) * 5.0` via `creature_apply_damage(damage_type=3, impulse=(0,0))`; plays "
+            "`sfx_explosion_large` and `sfx_shockwave`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.TELEKINETIC,

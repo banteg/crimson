@@ -30,7 +30,7 @@ Notes:
 | 16 | RANDOM_WEAPON | Random Weapon | `perk_apply` (0x004055e0): picks a random available weapon (retries up to 100), skipping the pistol and the currently equipped weapon, then calls `weapon_assign_player`. | `src/crimson/gameplay.py:perk_apply` | `tests/test_random_weapon_perk.py` |
 | 17 | MR_MELEE | Mr. Melee | `creature_update_all` (0x00426220): on a melee hit, if Mr. Melee is active, deals `creature_apply_damage(creature, 25.0, damage_type=2, impulse=(0,0))` to the attacker. | `src/crimson/creatures/runtime.py:CreaturePool.update` | `tests/test_mr_melee_perk.py` |
 | 18 | ANXIOUS_LOADER | Anxious Loader | TBD | `src/crimson/gameplay.py:player_update` | — |
-| 19 | FINAL_REVENGE | Final Revenge | TBD | — | — |
+| 19 | FINAL_REVENGE | Final Revenge | `player_take_damage` (0x00425e50): on death (`health < 0`), if Final Revenge is active, spawns an explosion burst (scale 1.8), sets `bonus_spawn_guard`, and applies radius damage within 512 units: `damage = (512 - dist) * 5.0` via `creature_apply_damage(damage_type=3, impulse=(0,0))`; plays `sfx_explosion_large` and `sfx_shockwave`. | `src/crimson/sim/world_state.py:WorldState.step` | `tests/test_final_revenge_perk.py` |
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |
 | 21 | PERK_EXPERT | Perk Expert | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
 | 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py`<br>`tests/test_unstoppable_perk.py` |
