@@ -104,7 +104,11 @@ PERK_TABLE = [
         description="More the merrier. More blood guarantees a 30% better experience. You spill more blood and gain more experience points.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`CreaturePool._start_death`: if the killer has Bloody Mess, uses `xp_base = int(reward_value * 1.3)`. "
+            "`GameWorld._queue_projectile_decals`: when active, spawns extra random decals and blood splatter "
+            "particles on projectile hits."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.SHARPSHOOTER,

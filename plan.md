@@ -411,7 +411,7 @@ These usually live in `player_update`:
 **L. Perk matrix “TBD” notes**
 
 * [x] AntiPerk
-* [ ] Bloody Mess
+* [x] Bloody Mess
 * [x] Lean Mean Exp Machine
 * [x] Instant Winner
 * [ ] Alternate Weapon
