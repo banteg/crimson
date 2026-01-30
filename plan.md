@@ -371,6 +371,10 @@ These usually live in `player_update`:
 * [x] Highlander
 * [x] Jinxed (timer + random kill + accidents)
 
+**E. Reload override perks**
+
+* [x] Ammunition Within
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 

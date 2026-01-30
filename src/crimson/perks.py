@@ -478,7 +478,11 @@ PERK_TABLE = [
         description="Empty clip doesn't prevent you from shooting with a weapon; instead the ammunition is drawn from your health while you are reloading.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_update` (0x004136b0): while reloading with an empty clip, if Ammunition Within is active and "
+            "`experience > 0`, firing a shot costs health via `player_take_damage` (cost = 1.0 normally, 0.15 when "
+            "`weapon_ammo_class == 1`). Regression Bullets takes precedence when both are active."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.VEINS_OF_POISON,

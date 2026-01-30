@@ -1223,7 +1223,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
 
 
 def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState) -> None:
-    del dt
+    dt = float(dt)
 
     weapon = _weapon_entry(player.weapon_id)
     if weapon is None:
@@ -1236,17 +1236,30 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
 
     firing_during_reload = False
     if player.reload_timer > 0.0:
-        if perk_active(player, PerkId.REGRESSION_BULLETS) and player.ammo <= 0 and player.experience > 0:
-            firing_during_reload = True
-            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-            if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
-                ammo_class = 1
+        if player.ammo <= 0 and player.experience > 0:
+            if perk_active(player, PerkId.REGRESSION_BULLETS):
+                firing_during_reload = True
+                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+                if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
+                    ammo_class = 1
 
-            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
-            factor = 4.0 if ammo_class == 1 else 200.0
-            player.experience = int(float(player.experience) - reload_time * factor)
-            if player.experience < 0:
-                player.experience = 0
+                reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+                factor = 4.0 if ammo_class == 1 else 200.0
+                player.experience = int(float(player.experience) - reload_time * factor)
+                if player.experience < 0:
+                    player.experience = 0
+            elif perk_active(player, PerkId.AMMUNITION_WITHIN):
+                firing_during_reload = True
+                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+                if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
+                    ammo_class = 1
+
+                from .player_damage import player_take_damage
+
+                cost = 0.15 if ammo_class == 1 else 1.0
+                player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
+            else:
+                return
         else:
             return
 
