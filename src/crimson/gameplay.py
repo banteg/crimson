@@ -1373,6 +1373,16 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
 
+    # `player_fire_weapon` (crimsonland.exe) uses weapon-specific extra angular jitter for pellet
+    # weapons. This is separate from aim-point jitter driven by `player.spread_heat`.
+    def _pellet_jitter_step(weapon_id: int) -> float:
+        weapon_id = int(weapon_id)
+        if weapon_id == 3:  # Shotgun
+            return 0.0013
+        if weapon_id == 4:  # Sawed-off Shotgun
+            return 0.004
+        return 0.0015
+
     if player.fire_bullets_timer > 0.0:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
@@ -1431,11 +1441,12 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         shot_count = pellets
         type_id = projectile_type_id_from_weapon_id(int(player.weapon_id))
         meta = _projectile_meta_for_type_id(type_id)
+        jitter_step = _pellet_jitter_step(int(player.weapon_id))
         for _ in range(pellets):
             angle = shot_angle
             if pellets > 1:
-                angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
-            state.projectiles.spawn(
+                angle += float(int(state.rng.rand()) % 200 - 100) * jitter_step
+            proj_id = state.projectiles.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
                 angle=angle,
@@ -1443,6 +1454,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 owner_id=owner_id,
                 base_damage=meta,
             )
+            # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).
+            if pellets > 1 and int(player.weapon_id) in (3, 4):
+                state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
 
     if 0 <= int(player.index) < len(state.shots_fired):
         state.shots_fired[int(player.index)] += int(shot_count)
