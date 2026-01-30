@@ -360,7 +360,7 @@ PERK_TABLE = [
         description="Monsters can't slow you down with their nasty scratches and bites. It still hurts but you simply ignore the pain.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_take_damage` (0x00425e50): while active, suppresses the on-hit heading jitter + spread heat increase.",
     ),
     PerkMeta(
         perk_id=PerkId.REGRESSION_BULLETS,

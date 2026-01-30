@@ -419,7 +419,7 @@ These usually live in `player_update`:
 * [x] Anxious Loader
 * [ ] Telekinetic
 * [x] Perk Expert
-* [ ] Unstoppable
+* [x] Unstoppable
 * [ ] Infernal Contract
 * [ ] Dodger
 * [x] Bonus Magnet
