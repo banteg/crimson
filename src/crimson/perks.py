@@ -464,7 +464,11 @@ PERK_TABLE = [
         description="After studying a lot of physics and friction you've come up with a way to make your bullets fly faster. More speed, more damage.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_apply_damage` (0x004207c0): when `damage_type == 1` and Barrel Greaser is active, "
+            "multiplies damage by 1.4. `projectile_update` (0x00420b90): when Barrel Greaser is active and "
+            "`projectile.owner_id < 0`, doubles the per-frame movement step count (`steps *= 2`)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.AMMUNITION_WITHIN,

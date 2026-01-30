@@ -5,6 +5,8 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
+from .perks import PerkId
+
 
 class Damageable(Protocol):
     x: float
@@ -214,6 +216,19 @@ class ProjectilePool:
 
         if dt <= 0.0:
             return []
+
+        barrel_greaser_active = False
+        if players is not None:
+            perk_idx = int(PerkId.BARREL_GREASER)
+            for player in players:
+                perk_counts = getattr(player, "perk_counts", None)
+                if (
+                    isinstance(perk_counts, list)
+                    and 0 <= perk_idx < len(perk_counts)
+                    and int(perk_counts[perk_idx]) > 0
+                ):
+                    barrel_greaser_active = True
+                    break
 
         if damage_scale_by_type is None:
             damage_scale_by_type = {}
@@ -425,6 +440,8 @@ class ProjectilePool:
             steps = int(proj.base_damage)
             if steps <= 0:
                 steps = 1
+            if barrel_greaser_active and int(proj.owner_id) < 0:
+                steps *= 2
 
             dir_x = math.cos(proj.angle - math.pi / 2.0)
             dir_y = math.sin(proj.angle - math.pi / 2.0)
