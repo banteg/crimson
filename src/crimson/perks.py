@@ -481,7 +481,7 @@ PERK_TABLE = [
         description="Trade 1/3 of your health for only receiving 2/3rds damage on attacks.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`perk_apply`: on pick, scales `player.health *= 2/3` (clamped to `>=1`). `player_take_damage` (0x00425e50): scales incoming damage by `2/3`.",
     ),
     PerkMeta(
         perk_id=PerkId.BARREL_GREASER,

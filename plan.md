@@ -426,7 +426,7 @@ These usually live in `player_update`:
 * [ ] Monster Vision
 * [x] Hot Tempered
 * [x] Bonus Economist
-* [ ] Thick Skinned
+* [x] Thick Skinned
 * [ ] Regeneration
 * [x] Ninja
 * [x] Highlander
