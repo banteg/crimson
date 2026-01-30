@@ -236,7 +236,12 @@ PERK_TABLE = [
         description="You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): on pick, calls `weapon_assign_player(player_index, weapon_id)` for each "
+            "player using their current weapon id. "
+            "`weapon_assign_player` (0x00452d40): when Ammo Maniac is active, increases `clip_size` by "
+            "`max(1, int(clip_size * 0.25))` before refilling ammo."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.RADIOACTIVE,

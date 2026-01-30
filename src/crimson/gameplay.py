@@ -786,11 +786,11 @@ def perk_apply(
             return
 
         if perk_id == PerkId.AMMO_MANIAC:
+            if len(players) > 1:
+                for player in players[1:]:
+                    player.perk_counts[:] = owner.perk_counts
             for player in players:
-                player.ammo = player.clip_size
-                player.reload_active = False
-                player.reload_timer = 0.0
-                player.reload_timer_max = 0.0
+                weapon_assign_player(player, int(player.weapon_id))
             return
 
         if perk_id == PerkId.DEATH_CLOCK:

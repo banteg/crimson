@@ -395,6 +395,15 @@ These usually live in `player_update`:
 
 * [x] Fastloader
 
+**J. Perk apply (one-shot) perks**
+
+* [ ] Fatal Lottery
+* [x] Ammo Maniac
+* [ ] Grim Deal
+* [ ] Death Clock
+* [ ] Bandage
+* [ ] My Favourite Weapon
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 
