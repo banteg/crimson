@@ -12,7 +12,7 @@ Notes:
 | ID | PerkId | Name | Original hook | Port refs | Tests |
 | -- | ------ | ---- | ------------ | -------- | ----- |
 | 0 | ANTIPERK | AntiPerk | TBD | `src/crimson/gameplay.py:perk_can_offer` | — |
-| 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | — |
+| 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | `tests/test_bloody_mess_quick_learner_perk.py` |
 | 2 | SHARPSHOOTER | Sharpshooter | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_update` | `tests/test_perk_selection.py` |
 | 3 | FASTLOADER | Fastloader | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 4 | LEAN_MEAN_EXP_MACHINE | Lean Mean Exp Machine | TBD | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_lean_mean_exp_machine.py` |

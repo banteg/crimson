@@ -347,7 +347,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 **B. Survival/XP perks**
 
 * [x] Lean Mean Exp Machine (passive XP tick)
-* [ ] Bloody Mess Quick Learner (you partially do XP scaling already; verify parity and whether it should be here or in handle_death)
+* [x] Bloody Mess Quick Learner (death XP uses 1.3x multiplier)
 * [ ] Double XP bonus interactions
 
 **C. Status / infection perks**
