@@ -69,5 +69,19 @@ To resolve this, capture a runtime trace when selecting **Survival** from the Pl
 - Track writes to `DAT_0048702c` and `DAT_00487264` during the transition.
 - Record `ui_elements_timeline` and `ui_transition_direction` across the menu close.
 
+Recommended capture (VM):
+
+```text
+just frida-attach script="scripts\\frida\\screen_fade_trace.js"
+```
+
+This writes `screen_fade_trace.jsonl` into the Frida share directory (default `C:\share\frida`).
+Import it into the repo with:
+
+```bash
+just frida-copy-share
+just frida-import-raw
+```
+
 If no ramp is observed, keep Survival without the fade overlay; if a ramp is observed, align
 the rewrite to the confirmed trigger.
