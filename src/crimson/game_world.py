@@ -25,7 +25,7 @@ from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldState
-from .weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id
+from .weapons import WEAPON_TABLE, projectile_type_ids_from_weapon_id
 from .game_modes import GameMode
 
 
@@ -92,11 +92,17 @@ class GameWorld:
             demo_mode_active=self.demo_mode_active,
         )
         self.renderer = WorldRenderer(self)
-        self._damage_scale_by_type = {
-            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
-            for entry in WEAPON_TABLE
-            if entry.weapon_id > 0
-        }
+        self._damage_scale_by_type = {}
+        for entry in WEAPON_TABLE:
+            if entry.weapon_id <= 0:
+                continue
+            type_ids = projectile_type_ids_from_weapon_id(entry.weapon_id)
+            if not type_ids:
+                continue
+            for type_id in type_ids:
+                if type_id is None:
+                    continue
+                self._damage_scale_by_type[int(type_id)] = float(entry.damage_scale or 1.0)
         player_count = 1
         if self.config is not None:
             try:

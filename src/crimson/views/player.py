@@ -75,11 +75,14 @@ class PlayerSandboxView:
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
-        self._damage_scale_by_type = {
-            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
-            for entry in WEAPON_TABLE
-            if entry.weapon_id > 0
-        }
+        self._damage_scale_by_type = {}
+        for entry in WEAPON_TABLE:
+            if entry.weapon_id <= 0:
+                continue
+            type_id = projectile_type_id_from_weapon_id(entry.weapon_id)
+            if type_id is None:
+                continue
+            self._damage_scale_by_type[int(type_id)] = float(entry.damage_scale or 1.0)
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:

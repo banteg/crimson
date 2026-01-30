@@ -120,18 +120,24 @@ class ProjectileFxView:
         self._camera_x = -1.0
         self._camera_y = -1.0
 
-        max_type_id = max(
-            (projectile_type_id_from_weapon_id(entry.weapon_id) for entry in WEAPON_TABLE if entry.weapon_id > 0),
-            default=0,
-        )
+        type_ids = [
+            projectile_type_id_from_weapon_id(entry.weapon_id)
+            for entry in WEAPON_TABLE
+            if entry.weapon_id > 0
+        ]
+        type_ids = [type_id for type_id in type_ids if type_id is not None]
+        max_type_id = max(type_ids, default=0)
         self._type_ids = list(range(int(max_type_id) + 1))
         self._type_index = 0
 
-        self._damage_scale_by_type = {
-            projectile_type_id_from_weapon_id(entry.weapon_id): float(entry.damage_scale or 1.0)
-            for entry in WEAPON_TABLE
-            if entry.weapon_id > 0
-        }
+        self._damage_scale_by_type = {}
+        for entry in WEAPON_TABLE:
+            if entry.weapon_id <= 0:
+                continue
+            type_id = projectile_type_id_from_weapon_id(entry.weapon_id)
+            if type_id is None:
+                continue
+            self._damage_scale_by_type[int(type_id)] = float(entry.damage_scale or 1.0)
 
         self._origin_x = WORLD_SIZE * 0.5
         self._origin_y = WORLD_SIZE * 0.5

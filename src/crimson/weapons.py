@@ -7,8 +7,11 @@ This file is **manually maintained** (do not auto-generate).
 
 It was originally seeded from `weapon_table_init` (`FUN_004519b0`) and the
 rewrite now uses the **native 1-based weapon ids** (e.g. pistol is
-`weapon_id=1`). Projectile type ids remain **0-based**, so weapon ids should be
-translated via `projectile_type_id_from_weapon_id` when spawning projectiles.
+`weapon_id=1`). Projectile type ids remain **0-based** and are **not a 1:1**
+mapping: multiple weapons share type ids and some weapons bypass
+`projectile_spawn` entirely (particles/secondary pools). Use
+`projectile_type_id_from_weapon_id` for the primary projectile id and
+`projectile_type_ids_from_weapon_id` when you need the full set.
 
 Reference material:
 - `docs/weapon-table.md` (native struct + fields)
@@ -718,13 +721,78 @@ WEAPON_BY_ID = {
     entry.weapon_id: entry for entry in WEAPON_TABLE
 }
 
+WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
+    # Source: docs/structs/projectile.md (Known type_id sources).
+    # Weapon ids not listed here either use particle/secondary paths or are still unknown.
+    1: (0x00,),  # Pistol (inferred; not called out explicitly in docs)
+    2: (0x01,),  # Assault Rifle
+    3: (0x02,),  # Shotgun
+    4: (0x03,),  # Sawed-off Shotgun
+    5: (0x03,),  # Submachine Gun
+    6: (0x05,),  # Gauss Gun
+    7: (0x06,),  # Mean Minigun
+    8: (0x01,),  # Flamethrower
+    9: (),  # Plasma Rifle (particle path)
+    10: (0x09,),  # Multi-Plasma
+    11: (0x09, 0x0B),  # Plasma Minigun (spread variant uses 0x0B)
+    12: (0x0B,),  # Rocket Launcher
+    13: (),  # Seeker Rockets (secondary projectile path)
+    14: (),  # Plasma Shotgun (secondary projectile path)
+    15: (0x0B,),  # Blow Torch
+    16: (),  # HR Flamer (particle path)
+    17: (),  # Mini-Rocket Swarmers (particle path)
+    18: (),  # Rocket Minigun (secondary projectile path)
+    19: (),  # Pulse Gun (secondary projectile path)
+    20: (0x13,),  # Jackhammer
+    21: (0x03,),  # Ion Rifle
+    22: (0x15,),  # Ion Minigun
+    23: (0x16,),  # Ion Cannon
+    24: (0x17,),  # Shrinkifier 5k
+    25: (0x18,),  # Blade Gun
+    26: (0x19,),  # Spider Plasma
+    28: (0x1B,),  # Plasma Cannon (inferred)
+    29: (0x1C,),  # Splitter Gun
+    30: (0x1D,),  # Gauss Shotgun
+    31: (0x06,),  # Ion Shotgun
+    32: (0x16,),  # Flameburst
+    42: (0x29,),  # Bubblegun
+    43: (),  # Rainbow Gun (slow particle path)
+    44: (0x2B,),  # Grim Weapon
+    45: (0x2D,),  # Fire bullets
+}
+
+PROJECTILE_TYPE_TO_WEAPON_IDS: dict[int, tuple[int, ...]] = {}
+for weapon_id, type_ids in WEAPON_PROJECTILE_TYPE_IDS.items():
+    for type_id in type_ids:
+        PROJECTILE_TYPE_TO_WEAPON_IDS.setdefault(int(type_id), []).append(int(weapon_id))
+PROJECTILE_TYPE_TO_WEAPON_IDS = {
+    type_id: tuple(sorted(weapon_ids))
+    for type_id, weapon_ids in PROJECTILE_TYPE_TO_WEAPON_IDS.items()
+}
+
 
 def weapon_id_from_projectile_type_id(type_id: int) -> int:
-    return int(type_id) + WEAPON_ID_BASE
+    type_id = int(type_id)
+    mapped = PROJECTILE_TYPE_TO_WEAPON_IDS.get(type_id)
+    if mapped:
+        return mapped[0]
+    return type_id + WEAPON_ID_BASE
 
 
 def projectile_type_id_from_weapon_id(weapon_id: int) -> int:
-    return int(weapon_id) - WEAPON_ID_BASE
+    weapon_id = int(weapon_id)
+    type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
+    if type_ids is not None:
+        return type_ids[0] if type_ids else None
+    return weapon_id - WEAPON_ID_BASE
+
+
+def projectile_type_ids_from_weapon_id(weapon_id: int) -> tuple[int, ...]:
+    weapon_id = int(weapon_id)
+    type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
+    if type_ids is not None:
+        return tuple(type_ids)
+    return (weapon_id - WEAPON_ID_BASE,)
 
 
 def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:

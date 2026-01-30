@@ -558,6 +558,15 @@ This avoids spending weeks “eyeballing feel”, and it’s the only realistic 
 
 ---
 
+## Oracle-driven fixes (Sessions 8–9)
+
+- [ ] **Replace weapon↔projectile mapping** with a real table from `docs/structs/projectile.md` + oracle traces (many-to-one, particle-only, secondary-only).
+- [ ] **Fix damage-type routing + beam type classification** to use actual projectile type ids (align `ProjectileTypeId`, damage type logic, and beam sets).
+- [ ] **Implement Energizer + Nuke behaviors** in sim (energizer flee/eat; nuke radius damage + SFX + FX + camera shake).
+- [ ] **Add oracle-based tests**: weapon→projectile mapping, bonus_apply effects (Nuke/Speed/Energizer), and player ammo/clip ranges from oracle frames.
+
+---
+
 ## The most important ordering constraint
 
 If you do only one thing from this plan first:

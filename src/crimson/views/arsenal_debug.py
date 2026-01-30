@@ -241,6 +241,8 @@ class ArsenalDebugView:
         if special is not None:
             return special
         type_id = projectile_type_id_from_weapon_id(int(weapon_id))
+        if type_id is None:
+            return "particle/secondary"
         return _projectile_type_label(type_id)
 
     def _weapon_debug_lines(self, weapon: Weapon | None) -> list[str]:
