@@ -337,7 +337,11 @@ PERK_TABLE = [
         description="Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right?",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_update`: while reloading with an empty clip, firing a shot costs experience "
+            "`int(experience - weapon.reload_time * factor)` where `factor=200` for most weapons and `factor=4` "
+            "when `weapon_ammo_class == 1` (fire)."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.INFERNAL_CONTRACT,

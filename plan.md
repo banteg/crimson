@@ -357,7 +357,7 @@ These typically require creature flags/timers:
 * [ ] Plaguebearer
 * [x] Veins of Poison
 * [x] Toxic Avenger
-* [ ] Regression Bullets
+* [x] Regression Bullets
 
 **D. Player passive/tick perks**
 These usually live in `player_update`:

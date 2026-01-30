@@ -1228,14 +1228,28 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     if weapon is None:
         return
 
-    if player.reload_timer > 0.0:
-        return
     if player.shot_cooldown > 0.0:
         return
     if not input_state.fire_down:
         return
 
-    if player.ammo <= 0:
+    firing_during_reload = False
+    if player.reload_timer > 0.0:
+        if perk_active(player, PerkId.REGRESSION_BULLETS) and player.ammo <= 0 and player.experience > 0:
+            firing_during_reload = True
+            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+            if ammo_class == 0 and player.weapon_id == int(ProjectileTypeId.FLAMETHROWER):
+                ammo_class = 1
+
+            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+            factor = 4.0 if ammo_class == 1 else 200.0
+            player.experience = int(float(player.experience) - reload_time * factor)
+            if player.experience < 0:
+                player.experience = 0
+        else:
+            return
+
+    if player.ammo <= 0 and not firing_during_reload:
         player_start_reload(player, state)
         return
 
@@ -1368,9 +1382,10 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
     player.shot_seq += 1
-    player.ammo = max(0, player.ammo - 1)
-    if player.ammo <= 0:
-        player_start_reload(player, state)
+    if not firing_during_reload:
+        player.ammo = max(0, player.ammo - 1)
+        if player.ammo <= 0:
+            player_start_reload(player, state)
 
 
 def player_update(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState, *, world_size: float = 1024.0) -> None:

@@ -34,7 +34,7 @@ Notes:
 | 20 | TELEKINETIC | Telekinetic | TBD | `src/crimson/gameplay.py:bonus_telekinetic_update` | — |
 | 21 | PERK_EXPERT | Perk Expert | TBD | `src/crimson/gameplay.py:perk_choice_count` | — |
 | 22 | UNSTOPPABLE | Unstoppable | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_highlander_perk.py`<br>`tests/test_unstoppable_perk.py` |
-| 23 | REGRESSION_BULLETS | Regression Bullets | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
+| 23 | REGRESSION_BULLETS | Regression Bullets | `player_update`: while reloading with an empty clip, firing a shot costs experience `int(experience - weapon.reload_time * factor)` where `factor=200` for most weapons and `factor=4` when `weapon_ammo_class == 1` (fire). | `src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_start_reload` | `tests/test_regression_bullets_perk.py` |
 | 24 | INFERNAL_CONTRACT | Infernal Contract | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
 | 25 | POISON_BULLETS | Poison Bullets | `projectile_update`: on creature hit, if Poison Bullets is active and `(crt_rand() & 7) == 1`, sets `creature.flags \|= 0x01` (self-damage tick). `creature_update_all` applies this via `creature_apply_damage(creature, frame_dt * 60.0, damage_type=0, impulse=(0,0))`. | `src/crimson/sim/world_state.py:WorldState.step._apply_projectile_damage_to_creature` | `tests/test_poison_bullets_perk.py` |
 | 26 | DODGER | Dodger | TBD | `src/crimson/player_damage.py:player_take_damage` | `tests/test_player_damage.py` |
