@@ -500,10 +500,10 @@ Action:
 
 This is a lot of work, but it’s mostly isolated from core sim once the core is correct.
 
-1. [ ] Finish the missing screens
+1. [x] Finish the missing screens
 
 - [x] Controls view (and keybind system)
-- [ ] Options parity (audio/video/gameplay toggles that exist in the original)
+- [x] Options parity (audio/video/gameplay toggles that exist in the original)
 - [x] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
 
 2. [ ] Statistics + progression
