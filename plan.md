@@ -500,21 +500,21 @@ Action:
 
 This is a lot of work, but it’s mostly isolated from core sim once the core is correct.
 
-1. Finish the missing screens
+1. [ ] Finish the missing screens
 
-* Controls view (and keybind system)
-* Options parity (audio/video/gameplay toggles that exist in the original)
-* Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
+- [ ] Controls view (and keybind system)
+- [ ] Options parity (audio/video/gameplay toggles that exist in the original)
+- [ ] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
 
-2. Statistics + progression
+2. [ ] Statistics + progression
 
-* Implement the “detailed stats” screen
-* Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
+- [ ] Implement the “detailed stats” screen
+- [ ] Resolve the “stage 5 quest progress counters not modeled” gap in `src/crimson/game.py` so saves match original expectations
 
-3. Sound + transitions
+3. [ ] Sound + transitions
 
-* Add missing SFX hooks described in `docs/rewrite/game-over.md` and wherever else UI transitions diverge
-* Resolve `docs/rewrite/survival-transition-fade.md` by adding runtime evidence and then matching the exact flags/alphas
+- [ ] Add missing SFX hooks described in `docs/rewrite/game-over.md` and wherever else UI transitions diverge
+- [ ] Resolve `docs/rewrite/survival-transition-fade.md` by adding runtime evidence and then matching the exact flags/alphas
 
 ---
 
