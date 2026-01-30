@@ -465,11 +465,11 @@ These likely require:
 - [x] a “particle weapon fire” path (spawn into particle pool)
 - [x] correct hit checks/damage application for particles (which should call `creature_apply_damage`)
 
-2. [ ] Close the secondary projectile fidelity gaps
+2. [x] Close the secondary projectile fidelity gaps
 
 - [x] Rocket Minigun “multiple secondaries per shot”
 - [x] Validate Seeker Rockets homing parameters vs decompile
-- [ ] Ensure Pulse Gun / Plasma Shotgun behaviors match (hit radius, damage pool behavior, on-hit effects)
+- [x] Ensure Pulse Gun / Plasma Shotgun behaviors match (hit radius, damage pool behavior, on-hit effects)
 
 3. Expand projectile type handling
    Right now, unhandled type IDs silently fall into generic behavior. That’s fine for subset play, but not for fidelity.

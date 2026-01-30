@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from crimson.effects import FxQueue
+from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, SecondaryProjectilePool
 
 
@@ -342,3 +344,26 @@ def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> No
     assert entry.target_id == 0
     assert entry.angle != 0.0
     assert abs(entry.vel_x) > 0.0
+
+
+def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
+    state = GameplayState()
+    fx_queue = FxQueue()
+
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=2)
+
+    creatures = [_Creature(x=0.0, y=0.0, hp=1000.0)]
+
+    pool.update_pulse_gun(0.01, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
+    entry = pool.entries[0]
+    assert entry.active
+    assert entry.type_id == 3
+    assert math.isclose(entry.speed, 0.35, abs_tol=1e-9)
+
+    assert state.sfx_queue == ["sfx_explosion_medium"]
+    assert fx_queue.count == 3
+
+    pool.update_pulse_gun(0.5, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
+    assert not entry.active
+    assert any(int(fx_entry.effect_id) == 0x10 for fx_entry in fx_queue.iter_active())

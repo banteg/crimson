@@ -22,6 +22,22 @@ class PlayerDamageable(Protocol):
     size: float
 
 
+class FxQueueLike(Protocol):
+    def add(
+        self,
+        *,
+        effect_id: int,
+        pos_x: float,
+        pos_y: float,
+        width: float,
+        height: float,
+        rotation: float,
+        rgba: tuple[float, float, float, float],
+    ) -> bool: ...
+
+    def add_random(self, *, pos_x: float, pos_y: float, rand: Callable[[], int]) -> bool: ...
+
+
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
@@ -873,6 +889,9 @@ class SecondaryProjectilePool:
         creatures: list[Damageable],
         *,
         apply_creature_damage: CreatureDamageApplier | None = None,
+        runtime_state: object | None = None,
+        fx_queue: FxQueueLike | None = None,
+        detail_preset: int = 5,
     ) -> None:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
 
@@ -890,6 +909,22 @@ class SecondaryProjectilePool:
             else:
                 creatures[idx].hp -= float(damage)
 
+        rand = _rng_zero
+        freeze_active = False
+        effects = None
+        sfx_queue = None
+        if runtime_state is not None:
+            rng = getattr(runtime_state, "rng", None)
+            if rng is not None:
+                rand = getattr(rng, "rand", _rng_zero)
+
+            bonuses = getattr(runtime_state, "bonuses", None)
+            if bonuses is not None and float(getattr(bonuses, "freeze", 0.0)) > 0.0:
+                freeze_active = True
+
+            effects = getattr(runtime_state, "effects", None)
+            sfx_queue = getattr(runtime_state, "sfx_queue", None)
+
         for entry in self._entries:
             if not entry.active:
                 continue
@@ -897,10 +932,20 @@ class SecondaryProjectilePool:
             if entry.type_id == 3:
                 entry.lifetime += dt * 3.0
                 t = entry.lifetime
+                scale = entry.speed
                 if t > 1.0:
+                    if fx_queue is not None:
+                        fx_queue.add(
+                            effect_id=0x10,
+                            pos_x=float(entry.pos_x),
+                            pos_y=float(entry.pos_y),
+                            width=float(scale) * 256.0,
+                            height=float(scale) * 256.0,
+                            rotation=0.0,
+                            rgba=(0.0, 0.0, 0.0, 0.25),
+                        )
                     entry.active = False
 
-                scale = entry.speed
                 radius = scale * t * 80.0
                 damage = dt * scale * 700.0
                 for creature_idx, creature in enumerate(creatures):
@@ -978,6 +1023,9 @@ class SecondaryProjectilePool:
                     hit_idx = idx
                     break
             if hit_idx is not None:
+                if isinstance(sfx_queue, list):
+                    sfx_queue.append("sfx_explosion_medium")
+
                 damage = 150.0
                 if entry.type_id == 1:
                     damage = entry.speed * 50.0 + 500.0
@@ -994,6 +1042,27 @@ class SecondaryProjectilePool:
                     det_scale = 0.35
                 elif entry.type_id == 4:
                     det_scale = 0.25
+
+                if freeze_active:
+                    if effects is not None and hasattr(effects, "spawn_freeze_shard"):
+                        for _ in range(4):
+                            shard_angle = float(int(rand()) % 0x264) * 0.01
+                            effects.spawn_freeze_shard(
+                                pos_x=float(entry.pos_x),
+                                pos_y=float(entry.pos_y),
+                                angle=shard_angle,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                            )
+                elif fx_queue is not None:
+                    for _ in range(3):
+                        off_x = float(int(rand()) % 0x14 - 10)
+                        off_y = float(int(rand()) % 0x14 - 10)
+                        fx_queue.add_random(
+                            pos_x=float(creatures[hit_idx].x) + off_x,
+                            pos_y=float(creatures[hit_idx].y) + off_y,
+                            rand=rand,
+                        )
 
                 entry.type_id = 3
                 entry.vel_x = 0.0

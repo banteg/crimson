@@ -179,6 +179,9 @@ class WorldState:
             dt,
             self.creatures.entries,
             apply_creature_damage=_apply_projectile_damage_to_creature,
+            runtime_state=self.state,
+            fx_queue=fx_queue,
+            detail_preset=int(detail_preset),
         )
 
         for idx, player in enumerate(self.players):
