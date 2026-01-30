@@ -16,6 +16,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.rand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
+from .ui.cursor import draw_menu_cursor
 from .weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 
 WORLD_SIZE = 1024.0
@@ -415,6 +416,12 @@ class DemoView:
 
         draw_button(button_tex, "Purchase", button_x, purchase_y)
         draw_button(button_tex, "Maybe later", button_x, maybe_y)
+
+        # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
+        particles = cache.get_or_load("particles", "game/particles.jaz").texture
+        cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+        pulse_time = float(self._upsell_pulse_ms) * 0.001
+        draw_menu_cursor(particles, cursor_tex, x=float(mouse.x), y=float(mouse.y), pulse_time=pulse_time)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
