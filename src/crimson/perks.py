@@ -186,7 +186,7 @@ PERK_TABLE = [
         description="I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`perk_apply` (0x004055e0): sets `player.health = -1.0` and grants `+int(experience * 0.18)`.",
     ),
     PerkMeta(
         perk_id=PerkId.ALTERNATE_WEAPON,

@@ -399,7 +399,7 @@ These usually live in `player_update`:
 
 * [x] Fatal Lottery
 * [x] Ammo Maniac
-* [ ] Grim Deal
+* [x] Grim Deal
 * [ ] Death Clock
 * [ ] Bandage
 * [x] My Favourite Weapon
