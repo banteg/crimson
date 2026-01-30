@@ -432,7 +432,7 @@ These usually live in `player_update`:
 * [ ] Highlander
 * [x] Perk Master
 * [ ] Breathing Room
-* [ ] Stationary Reloader
+* [x] Stationary Reloader
 * [ ] Lifeline 50-50
 
 3. [ ] Add minimal scenario tests per perk

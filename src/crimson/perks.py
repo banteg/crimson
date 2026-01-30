@@ -712,7 +712,7 @@ PERK_TABLE = [
         description="It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_update` (0x004136b0): while stationary, applies `reload_scale = 3.0` when decrementing `reload_timer`.",
     ),
     PerkMeta(
         perk_id=PerkId.MAN_BOMB,
