@@ -468,7 +468,7 @@ These likely require:
 2. [ ] Close the secondary projectile fidelity gaps
 
 - [x] Rocket Minigun “multiple secondaries per shot”
-- [ ] Validate Seeker Rockets homing parameters vs decompile
+- [x] Validate Seeker Rockets homing parameters vs decompile
 - [ ] Ensure Pulse Gun / Plasma Shotgun behaviors match (hit radius, damage pool behavior, on-hit effects)
 
 3. Expand projectile type handling

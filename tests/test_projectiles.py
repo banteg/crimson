@@ -290,6 +290,43 @@ def test_secondary_projectile_pool_timeout_switches_to_generic_detonation() -> N
     assert entry.speed == 0.5
 
 
+def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=1, time_to_live=2.0)
+
+    pool.update_pulse_gun(0.1, [])
+    entry = pool.entries[0]
+
+    assert entry.active
+    assert entry.type_id == 1
+
+    # Movement happens before acceleration in `projectile_update`.
+    assert math.isclose(entry.pos_y, -9.0, abs_tol=1e-9)
+
+    # Seeker Rockets (type 1): accelerate by factor (1.0 + dt * 3.0) while speed < 500.
+    assert math.isclose(entry.vel_y, -117.0, abs_tol=1e-9)
+    assert math.isclose(entry.speed, 1.9, abs_tol=1e-9)
+
+    # No further acceleration once past the 500 speed threshold.
+    entry.vel_x = 0.0
+    entry.vel_y = -600.0
+    pool.update_pulse_gun(0.1, [])
+    assert math.isclose(entry.vel_y, -600.0, abs_tol=1e-9)
+
+
+def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=1)
+
+    creatures = [_Creature(x=0.0, y=0.0, hp=1000.0)]
+
+    pool.update_pulse_gun(0.01, creatures)
+    entry = pool.entries[0]
+    assert entry.active
+    assert entry.type_id == 3
+    assert entry.speed == 1.0
+
+
 def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=2)

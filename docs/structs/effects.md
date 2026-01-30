@@ -122,9 +122,9 @@ in the same function draws the sprite variants based on `type id`.
 
 | type id | Behavior | Sources |
 | --- | --- | --- |
-| `1` | Straight projectile; accelerates while speed < ~500; lifetime decays at 1.0x. On hit or timeout, switches to type `3` detonation with base scale `1.0`. | Seeker Rockets (weapon id `0x0d`). |
-| `2` | Homing projectile; targets nearest creature and steers toward it (velocity += 800 * dt, capped ~350). Lifetime decays at 0.5x. On hit or timeout, switches to type `3` detonation with base scale `0.35`. | Plasma Shotgun (weapon id `0x0e`), Rocket Minigun (weapon id `0x12`). |
-| `4` | Straight projectile; accelerates while speed < ~600; lifetime decays at 1.0x. On hit or timeout, switches to type `3` detonation with base scale `0.25`. | Pulse Gun (weapon id `0x13`). |
+| `1` | Straight projectile; accelerates while speed < ~500; lifetime decays at 1.0x. On hit, switches to type `3` detonation with base scale `1.0`; on timeout, switches with scale `0.5`. | Seeker Rockets (weapon id `0x0d`). |
+| `2` | Homing projectile; targets nearest creature and steers toward it (velocity += 800 * dt, capped ~350). Lifetime decays at 0.5x. On hit, switches to type `3` detonation with base scale `0.35`; on timeout, switches with scale `0.5`. | Plasma Shotgun (weapon id `0x0e`), Rocket Minigun (weapon id `0x12`). |
+| `4` | Straight projectile; accelerates while speed < ~600; lifetime decays at 1.0x. On hit, switches to type `3` detonation with base scale `0.25`; on timeout, switches with scale `0.5`. | Pulse Gun (weapon id `0x13`). |
 | `3` | Detonation state; expands over ~1s, applies radial damage each tick, spawns `fx_queue_add(0x10)` and clears when the timer > 1.0. | Triggered by types `1/2/4` or when their lifetime expires. |
 
 Render notes:
