@@ -513,7 +513,7 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 
 3. [ ] Sound + transitions
 
-- [ ] Add missing SFX hooks described in `docs/rewrite/game-over.md` and wherever else UI transitions diverge
+- [x] Add missing SFX hooks described in `docs/rewrite/game-over.md` and wherever else UI transitions diverge
 - [ ] Resolve `docs/rewrite/survival-transition-fade.md` by adding runtime evidence and then matching the exact flags/alphas
 
 ---

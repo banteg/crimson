@@ -47,8 +47,8 @@ The original flow plays UI SFX (type clicks, confirm, error buzzer) and uses the
 
 The rewrite currently:
 
-- Renders without the original transition animation.
-- Does not reproduce the full set of game-over UI SFX.
+- Plays the core UI SFX set used by the flow (type clicks, confirm, error, button clicks, and panel open click).
+- Still renders without the original transition animation / exit timeline.
 
 4) **Quest mode uses a dedicated flow**
 

@@ -188,6 +188,7 @@ class GameOverUi:
     _hover_time: float = 0.0
     _hover_hit_ratio: float = 0.0
     _intro_ms: float = 0.0
+    _panel_open_sfx_played: bool = False
 
     # Buttons (rendered via existing ui_button implementation)
     _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
@@ -216,6 +217,7 @@ class GameOverUi:
         self._hover_time = 0.0
         self._hover_hit_ratio = 0.0
         self._intro_ms = 0.0
+        self._panel_open_sfx_played = False
         self.input_text = ""
         self.input_caret = 0
         self._consume_enter = True
@@ -281,6 +283,9 @@ class GameOverUi:
             return None
 
         self._intro_ms = min(PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= PANEL_SLIDE_DURATION_MS - 1e-3:
+            play_sfx("sfx_ui_panelclick")
+            self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)

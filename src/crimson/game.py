@@ -1708,6 +1708,8 @@ class HighScoresView:
             self._records = read_highscore_table(path, game_mode_id=int(request.game_mode_id))
         except Exception:
             self._records = []
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
 
     def close(self) -> None:
         if self._small_font is not None:
@@ -1726,6 +1728,8 @@ class HighScoresView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_previous"
             return
 
@@ -1742,9 +1746,13 @@ class HighScoresView:
             back_rect = rl.Rectangle(x0, y0, button_w, button_h)
             menu_rect = rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h)
             if back_rect.x <= mouse.x <= back_rect.x + back_rect.width and back_rect.y <= mouse.y <= back_rect.y + back_rect.height:
+                if self._state.audio is not None:
+                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "back_to_previous"
                 return
             if menu_rect.x <= mouse.x <= menu_rect.x + menu_rect.width and menu_rect.y <= mouse.y <= menu_rect.y + menu_rect.height:
+                if self._state.audio is not None:
+                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "back_to_menu"
                 return
 

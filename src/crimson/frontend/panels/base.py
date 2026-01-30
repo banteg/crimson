@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pyray as rl
 
 from grim.assets import PaqTextureCache
-from grim.audio import update_audio
+from grim.audio import play_sfx, update_audio
 from grim.terrain_render import GroundRenderer
 
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
@@ -84,6 +84,7 @@ class PanelMenuView:
         self._closing = False
         self._close_action: str | None = None
         self._pending_action: str | None = None
+        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self._state.config.screen_width)
@@ -98,6 +99,7 @@ class PanelMenuView:
         self._closing = False
         self._close_action = None
         self._pending_action = None
+        self._panel_open_sfx_played = False
         self._init_ground()
 
     def close(self) -> None:
@@ -122,6 +124,9 @@ class PanelMenuView:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
                 self._state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
+                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                    self._panel_open_sfx_played = True
 
         entry = self._entry
         if entry is None:
@@ -179,6 +184,8 @@ class PanelMenuView:
     def _begin_close_transition(self, action: str) -> None:
         if self._closing:
             return
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
         self._closing = True
         self._close_action = action
 

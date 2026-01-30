@@ -7,7 +7,7 @@ import os
 
 import pyray as rl
 
-from grim.audio import play_music, stop_music, update_audio
+from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.terrain_render import GroundRenderer
 
 from ..ui.cursor import draw_menu_cursor
@@ -147,6 +147,7 @@ class MenuView:
         self._closing = False
         self._close_action: str | None = None
         self._pending_action: str | None = None
+        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self._state.config.screen_width)
@@ -173,6 +174,7 @@ class MenuView:
         self._closing = False
         self._close_action = None
         self._pending_action = None
+        self._panel_open_sfx_played = False
         self._timeline_max_ms = self._menu_max_timeline_ms(
             full_version=self._full_version,
             mods_available=self._mods_available(),
@@ -230,6 +232,9 @@ class MenuView:
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             if self._timeline_ms >= self._timeline_max_ms:
                 self._state.menu_sign_locked = True
+                if (not self._panel_open_sfx_played) and (self._state.audio is not None):
+                    play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+                    self._panel_open_sfx_played = True
         if not self._menu_entries:
             return
 
@@ -290,6 +295,8 @@ class MenuView:
         if not (0 <= index < len(self._menu_entries)):
             return
         entry = self._menu_entries[index]
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
         self._state.console.log.log(f"menu select: {index} (row {entry.row})")
         self._state.console.log.flush()
         if entry.row == MENU_LABEL_ROW_QUIT:
