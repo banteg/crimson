@@ -450,6 +450,7 @@ class GameplayState:
     secondary_projectiles: SecondaryProjectilePool = field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
+    lean_mean_exp_timer: float = 0.25
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
     sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)
@@ -485,6 +486,22 @@ def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
 
 def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
+
+
+def perks_update_effects(state: GameplayState, players: list[PlayerState], dt: float) -> None:
+    """Port subset of `perks_update_effects` (0x00406b40)."""
+
+    dt = float(dt)
+    if dt <= 0.0:
+        return
+
+    state.lean_mean_exp_timer -= dt
+    if state.lean_mean_exp_timer < 0.0:
+        state.lean_mean_exp_timer = 0.25
+        for player in players:
+            perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
+            if perk_count > 0:
+                player.experience += perk_count * 10
 
 
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:

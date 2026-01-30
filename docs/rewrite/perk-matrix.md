@@ -15,7 +15,7 @@ Notes:
 | 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | — |
 | 2 | SHARPSHOOTER | Sharpshooter | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_update` | `tests/test_perk_selection.py` |
 | 3 | FASTLOADER | Fastloader | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
-| 4 | LEAN_MEAN_EXP_MACHINE | Lean Mean Exp Machine | TBD | — | — |
+| 4 | LEAN_MEAN_EXP_MACHINE | Lean Mean Exp Machine | TBD | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_lean_mean_exp_machine.py` |
 | 5 | LONG_DISTANCE_RUNNER | Long Distance Runner | TBD | `src/crimson/gameplay.py:perk_generate_choices` | `tests/test_perk_selection.py` |
 | 6 | PYROKINETIC | Pyrokinetic | TBD | — | — |
 | 7 | INSTANT_WINNER | Instant Winner | TBD | `src/crimson/gameplay.py:perk_apply` | `tests/test_perk_selection.py` |
