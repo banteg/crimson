@@ -412,7 +412,7 @@ These usually live in `player_update`:
 
 * [x] AntiPerk
 * [ ] Bloody Mess
-* [ ] Lean Mean Exp Machine
+* [x] Lean Mean Exp Machine
 * [ ] Instant Winner
 * [ ] Alternate Weapon
 * [x] Fastshot

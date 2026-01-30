@@ -138,7 +138,10 @@ PERK_TABLE = [
         description="Why kill for experience when you can make some of your own for free! With this perk the experience just keeps flowing in at a constant rate.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perks_update_effects`: every `0.25` seconds, each player with this perk gains `+perk_count * 10` "
+            "experience."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.LONG_DISTANCE_RUNNER,
