@@ -26,8 +26,8 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 _SDF_SHADOW_MAX_CIRCLES = 64
 _SDF_SHADOW_MAX_STEPS = 64
-_SDF_SHADOW_EPSILON = 0.75
-_SDF_SHADOW_MIN_STEP = 1.0
+_SDF_SHADOW_EPSILON = 0.25
+_SDF_SHADOW_MIN_STEP = 0.25
 
 _SDF_SHADOW_VS_330 = r"""
 #version 330
@@ -64,11 +64,12 @@ uniform vec2 u_light_pos;
 uniform float u_light_range;
 uniform float u_light_source_radius;
 uniform float u_shadow_k;
+uniform float u_shadow_floor;
 uniform int u_debug_mode;
 uniform int u_circle_count;
 uniform vec4 u_circles[MAX_CIRCLES];
 
-float map(vec2 p)
+float map_skip(vec2 p, int skip_idx)
 {{
     // Keep finite to avoid overflow in shadow math when there are no occluders
     // or when uniform data is missing.
@@ -76,15 +77,34 @@ float map(vec2 p)
     for (int i = 0; i < MAX_CIRCLES; i++)
     {{
         if (i >= u_circle_count) break;
+        if (i == skip_idx) continue;
         vec4 c = u_circles[i];
         d = min(d, length(p - c.xy) - c.z);
     }}
     return d;
 }}
 
+float map_with_index(vec2 p, out int hit_idx)
+{{
+    float d = 1e6;
+    hit_idx = -1;
+    for (int i = 0; i < MAX_CIRCLES; i++)
+    {{
+        if (i >= u_circle_count) break;
+        vec4 c = u_circles[i];
+        float di = length(p - c.xy) - c.z;
+        if (di < d)
+        {{
+            d = di;
+            hit_idx = i;
+        }}
+    }}
+    return d;
+}}
+
 // Raymarched SDF soft shadows (Inigo Quilez + Sebastian Aaltonen improvement).
 // `u_shadow_k` behaves like the original `k` hardness parameter.
-float softshadow(vec2 ro, vec2 rd, float mint, float maxt, float k)
+float softshadow(vec2 ro, vec2 rd, float mint, float maxt, float k, int skip_idx)
 {{
     if (u_circle_count <= 0) return 1.0;
     float res = 1.0;
@@ -92,7 +112,7 @@ float softshadow(vec2 ro, vec2 rd, float mint, float maxt, float k)
     float ph = 1e6;
     for (int i = 0; i < {_SDF_SHADOW_MAX_STEPS} && t < maxt; i++)
     {{
-        float h = map(ro + rd * t);
+        float h = map_skip(ro + rd * t, skip_idx);
         if (h < {_SDF_SHADOW_EPSILON:.4f}) return 0.0;
         float y = h*h/(2.0*ph);
         float d = sqrt(max(0.0, h*h - y*y));
@@ -144,21 +164,20 @@ void main()
         return;
     }}
 
-    // Avoid self-shadowing artifacts for receiver pixels inside occluders (sprites).
-    float d0 = map(p);
-    float shadow = 1.0;
-    if (d0 >= 0.0)
+    int self_idx = -1;
+    float d0 = map_with_index(p, self_idx);
+    int skip_idx = (d0 < 0.0) ? self_idx : -1;
+
+    float k = u_shadow_k;
+    // Heuristic: larger disc lights soften shadows.
+    if (u_light_source_radius > 0.0)
     {{
-        float k = u_shadow_k;
-        // Heuristic: larger disc lights soften shadows.
-        if (u_light_source_radius > 0.0)
-        {{
-            k = u_shadow_k / max(1.0, u_light_source_radius * 0.10);
-        }}
-        vec2 rd = to_light / max(dist, 1e-4);
-        float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
-        shadow = softshadow(p, rd, 2.0, maxt, k);
+        k = u_shadow_k / max(1.0, u_light_source_radius * 0.25);
     }}
+    vec2 rd = to_light / max(dist, 1e-4);
+    float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
+    float shadow = softshadow(p, rd, 0.5, maxt, k, skip_idx);
+    shadow = mix(clamp(u_shadow_floor, 0.0, 1.0), 1.0, shadow);
 
     if (u_debug_mode == 5)
     {{
@@ -208,14 +227,14 @@ class LightingDebugView:
         self._debug_dump_count = 0
         self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in ("", "0", "false", "False")
 
-        self._sdf_shadow_k = 64.0
+        self._sdf_shadow_k = 12.0
+        self._sdf_shadow_floor = 0.25
         try:
             self._sdf_debug_mode = int(os.environ.get("CRIMSON_LIGHTING_SDF_DEBUG_MODE", "0"))
         except Exception:
             self._sdf_debug_mode = 0
 
         self._light_radius = 360.0
-        self._light_is_disc = False
         self._light_source_radius = 14.0
         self._ambient = rl.Color(26, 26, 34, 255)
         self._light_tint = rl.Color(255, 245, 220, 255)
@@ -267,18 +286,22 @@ class LightingDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F6):
             self._sdf_debug_mode = (self._sdf_debug_mode + 1) % 6
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
-            self._light_is_disc = not self._light_is_disc
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS):
-            self._light_radius = max(80.0, self._light_radius - 20.0)
+            self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor - 0.05, 0.0, 0.9)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_EQUAL):
-            self._light_radius = min(1200.0, self._light_radius + 20.0)
+            self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor + 0.05, 0.0, 0.9)
 
+        shift = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
-            self._light_source_radius = max(0.0, self._light_source_radius - 2.0)
+            if shift:
+                self._light_radius = max(80.0, self._light_radius - 20.0)
+            else:
+                self._light_source_radius = max(1.0, self._light_source_radius - 2.0)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
-            self._light_source_radius = min(80.0, self._light_source_radius + 2.0)
+            if shift:
+                self._light_radius = min(1200.0, self._light_radius + 20.0)
+            else:
+                self._light_source_radius = min(80.0, self._light_source_radius + 2.0)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_COMMA):
             self._sdf_shadow_k = max(1.0, self._sdf_shadow_k / 1.25)
@@ -327,6 +350,7 @@ class LightingDebugView:
             "u_light_range": rl.get_shader_location(shader, "u_light_range"),
             "u_light_source_radius": rl.get_shader_location(shader, "u_light_source_radius"),
             "u_shadow_k": rl.get_shader_location(shader, "u_shadow_k"),
+            "u_shadow_floor": rl.get_shader_location(shader, "u_shadow_floor"),
             "u_debug_mode": rl.get_shader_location(shader, "u_debug_mode"),
             "u_circle_count": rl.get_shader_location(shader, "u_circle_count"),
             "u_circles": circles_loc,
@@ -581,11 +605,11 @@ class LightingDebugView:
             "light_rt_size": [w, h],
             "light_pos": [float(light_x), float(light_y)],
             "light_radius": float(self._light_radius),
-            "light_is_disc": bool(self._light_is_disc),
             "light_source_radius": float(self._light_source_radius),
             "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
             "ambient_rgba": [int(self._ambient.r), int(self._ambient.g), int(self._ambient.b), int(self._ambient.a)],
             "shadow_k": float(self._sdf_shadow_k),
+            "shadow_floor": float(self._sdf_shadow_floor),
             "debug_mode": int(self._sdf_debug_mode),
             "circle_count": int(len(self._last_sdf_circles)),
             "circles": [[float(x), float(y), float(r)] for (x, y, r) in self._last_sdf_circles[:16]],
@@ -676,10 +700,9 @@ class LightingDebugView:
         set_vec2("u_light_pos", float(light_x), float(light_y))
         set_float("u_light_range", float(self._light_radius))
         set_float("u_shadow_k", float(self._sdf_shadow_k))
+        set_float("u_shadow_floor", float(self._sdf_shadow_floor))
         set_int("u_debug_mode", int(self._sdf_debug_mode))
-
-        source_radius = float(self._light_source_radius) if self._light_is_disc else 0.0
-        set_float("u_light_source_radius", source_radius)
+        set_float("u_light_source_radius", float(self._light_source_radius))
 
         set_int("u_circle_count", len(circles))
         circles_loc = locs.get("u_circles", -1)
@@ -779,13 +802,12 @@ class LightingDebugView:
 
         rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
         rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
-        if self._light_is_disc and self._light_source_radius > 0.0:
-            rl.draw_circle_lines(
-                int(light_x),
-                int(light_y),
-                int(max(1.0, self._light_source_radius)),
-                rl.Color(255, 255, 255, 100),
-            )
+        rl.draw_circle_lines(
+            int(light_x),
+            int(light_y),
+            int(max(1.0, self._light_source_radius)),
+            rl.Color(255, 255, 255, 100),
+        )
 
         if self._debug_dump_next_frame:
             self._debug_dump_next_frame = False
@@ -799,10 +821,10 @@ class LightingDebugView:
                 title,
                 "WASD move  MOUSE light pos",
                 "SPACE simulate  R reset",
-                f",/. sdf_k={self._sdf_shadow_k:.1f}",
+                f",/. shadow_k={self._sdf_shadow_k:.1f}",
                 f"F6 sdf_debug={self._sdf_debug_mode}  (1 solid, 2 uv, 3 range, 4 atten, 5 shadow)",
-                f"+/- light_radius={self._light_radius:.0f}  L disc={self._light_is_disc}",
-                f"[ ] light_source_radius={self._light_source_radius:.0f}" if self._light_is_disc else "[ ] light_source_radius (disc mode)",
+                f"+/- shadow_floor={self._sdf_shadow_floor:.2f}",
+                f"[ ] disc_radius={self._light_source_radius:.0f}   shift+[ ] light_radius={self._light_radius:.0f}",
                 "1 ui  2 occluders  4 lightmap preview",
                 "F5 dump debug (artifacts/lighting-debug/)",
             ]
