@@ -286,9 +286,9 @@ class LightingDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_F6):
             self._sdf_debug_mode = (self._sdf_debug_mode + 1) % 6
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_SUBTRACT):
             self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor - 0.05, 0.0, 0.9)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_EQUAL):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_EQUAL) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ADD):
             self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor + 0.05, 0.0, 0.9)
 
         shift = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
