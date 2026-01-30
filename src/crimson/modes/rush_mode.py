@@ -13,6 +13,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import tick_rush_mode_spawns
 from ..game_modes import GameMode
 from ..gameplay import PlayerInput, most_used_weapon_id_for_player, weapon_assign_player
+from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..persistence.highscores import HighScoreRecord
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay
@@ -94,22 +95,27 @@ class RushMode(BaseGameplayMode):
             self.close_requested = True
 
     def _build_input(self) -> PlayerInput:
+        keybinds = config_keybinds(self._config)
+        if not keybinds:
+            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
+        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
+
         move_x = 0.0
         move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
+        if input_code_is_down(left_key):
             move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
+        if input_code_is_down(right_key):
             move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
+        if input_code_is_down(up_key):
             move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
+        if input_code_is_down(down_key):
             move_y += 1.0
 
         mouse = self._ui_mouse_pos()
         aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
 
-        fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        fire_down = input_code_is_down(fire_key)
+        fire_pressed = input_code_is_pressed(fire_key)
 
         return PlayerInput(
             move_x=move_x,

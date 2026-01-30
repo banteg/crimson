@@ -18,6 +18,7 @@ from ..persistence.highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay
+from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..ui.perk_menu import (
     PerkMenuLayout,
     UiButtonState,
@@ -185,23 +186,31 @@ class SurvivalMode(BaseGameplayMode):
             self.close_requested = True
 
     def _build_input(self) -> PlayerInput:
+        keybinds = config_keybinds(self._config)
+        if not keybinds:
+            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
+        up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
+
         move_x = 0.0
         move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
+        if input_code_is_down(left_key):
             move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
+        if input_code_is_down(right_key):
             move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
+        if input_code_is_down(up_key):
             move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
+        if input_code_is_down(down_key):
             move_y += 1.0
 
         mouse = self._ui_mouse_pos()
         aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
 
-        fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
+        fire_down = input_code_is_down(fire_key)
+        fire_pressed = input_code_is_pressed(fire_key)
+        reload_key = 0x102
+        if self._config is not None:
+            reload_key = int(self._config.data.get("keybind_reload", reload_key) or reload_key)
+        reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(
             move_x=move_x,
@@ -472,12 +481,20 @@ class SurvivalMode(BaseGameplayMode):
                 rect = self._perk_prompt_rect(label)
                 mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
-            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT) and (
-                not rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            ):
+
+            keybinds = config_keybinds(self._config)
+            if not keybinds:
+                keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
+            _up_key, _down_key, _left_key, _right_key, fire_key = player_move_fire_binds(keybinds, 0)
+
+            pick_key = 0x101
+            if self._config is not None:
+                pick_key = int(self._config.data.get("keybind_pick_perk", pick_key) or pick_key)
+
+            if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
                 self._perk_prompt_pulse = 1000.0
                 self._open_perk_menu()
-            elif self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
                 self._perk_prompt_pulse = 1000.0
                 self._open_perk_menu()
 

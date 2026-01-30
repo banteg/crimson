@@ -142,6 +142,9 @@ def default_crimson_cfg_data() -> dict:
     config.data["music_volume"] = 1.0
     config.data["detail_preset"] = 5
     config.data["mouse_sensitivity"] = 1.0
+    # Matches `config_init_defaults` (0x004028f0): Mouse2 for perk pick, Mouse3 for reload.
+    config.data["keybind_pick_perk"] = 0x101
+    config.data["keybind_reload"] = 0x102
     config.data["selected_name_slot"] = 0
     config.data["saved_name_index"] = 1
     config.data["unknown_1a4"] = 100
@@ -225,6 +228,16 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
             config.data["fx_detail_1"] = 1
             config.data["fx_detail_2"] = 1
             config.data["detail_preset"] = 5
+            config.save()
+        # Patch up missing keybind defaults (older revisions left these as 0).
+        keybind_patched = False
+        if int(config.data.get("keybind_pick_perk", 0) or 0) == 0:
+            config.data["keybind_pick_perk"] = 0x101
+            keybind_patched = True
+        if int(config.data.get("keybind_reload", 0) or 0) == 0:
+            config.data["keybind_reload"] = 0x102
+            keybind_patched = True
+        if keybind_patched:
             config.save()
         return config
     parsed = default_crimson_cfg_data()

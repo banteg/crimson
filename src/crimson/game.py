@@ -73,6 +73,7 @@ from .frontend.menu import (
     ensure_menu_ground,
 )
 from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .frontend.panels.controls import ControlsMenuView
 from .frontend.panels.options import OptionsMenuView
 from .frontend.panels.play_game import PlayGameMenuView
 from .frontend.panels.stats import StatisticsMenuView
@@ -1942,12 +1943,7 @@ class GameLoopView:
             "start_typo": TypoShooterGameView(state),
             "start_tutorial": TutorialGameView(state),
             "open_options": OptionsMenuView(state),
-            "open_controls": PanelMenuView(
-                state,
-                title="Controls",
-                body="Controls UI is not implemented yet.",
-                back_action="open_options",
-            ),
+            "open_controls": ControlsMenuView(state),
             "open_statistics": StatisticsMenuView(state),
             "open_mods": PanelMenuView(
                 state,

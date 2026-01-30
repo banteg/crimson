@@ -502,7 +502,7 @@ This is a lot of work, but it’s mostly isolated from core sim once the core is
 
 1. [ ] Finish the missing screens
 
-- [ ] Controls view (and keybind system)
+- [x] Controls view (and keybind system)
 - [ ] Options parity (audio/video/gameplay toggles that exist in the original)
 - [ ] Mods view (even if it’s read-only / placeholder, wire the state machine correctly)
 
