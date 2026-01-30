@@ -409,6 +409,30 @@ class CreaturePool:
                 creature.target_player = 0
             player = players[target_player]
 
+            if players and perk_active(players[0], PerkId.RADIOACTIVE):
+                radioactive_player = players[0]
+                dist = math.hypot(
+                    float(creature.x) - float(radioactive_player.pos_x),
+                    float(creature.y) - float(radioactive_player.pos_y),
+                )
+                if dist < 100.0:
+                    creature.collision_timer -= float(dt) * 1.5
+                    if creature.collision_timer < 0.0:
+                        creature.collision_timer = CONTACT_DAMAGE_PERIOD
+                        creature.hp -= (100.0 - dist) * 0.3
+                        if fx_queue is not None:
+                            fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+
+                        if creature.hp < 0.0:
+                            if creature.type_id == 1:
+                                creature.hp = 1.0
+                            else:
+                                radioactive_player.experience = int(
+                                    float(radioactive_player.experience) + float(creature.reward_value)
+                                )
+                                creature.hitbox_size -= float(dt)
+                                continue
+
             frozen_by_evil_eyes = idx == evil_target
             if frozen_by_evil_eyes:
                 creature.move_scale = 0.0

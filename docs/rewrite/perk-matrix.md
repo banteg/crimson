@@ -12,7 +12,7 @@ Notes:
 | ID | PerkId | Name | Original hook | Port refs | Tests |
 | -- | ------ | ---- | ------------ | -------- | ----- |
 | 0 | ANTIPERK | AntiPerk | TBD | `src/crimson/gameplay.py:perk_can_offer` | — |
-| 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | `tests/test_bloody_mess_quick_learner_perk.py` |
+| 1 | BLOODY_MESS_QUICK_LEARNER | Bloody Mess | TBD | `src/crimson/creatures/runtime.py:CreaturePool._start_death`<br>`src/crimson/game_world.py:GameWorld._queue_projectile_decals` | `tests/test_bloody_mess_quick_learner_perk.py`<br>`tests/test_radioactive_perk.py` |
 | 2 | SHARPSHOOTER | Sharpshooter | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon`<br>`src/crimson/gameplay.py:player_update` | `tests/test_perk_selection.py` |
 | 3 | FASTLOADER | Fastloader | TBD | `src/crimson/gameplay.py:player_start_reload` | — |
 | 4 | LEAN_MEAN_EXP_MACHINE | Lean Mean Exp Machine | TBD | `src/crimson/gameplay.py:perks_update_effects` | `tests/test_lean_mean_exp_machine.py` |
@@ -24,7 +24,7 @@ Notes:
 | 10 | PLAGUEBEARER | Plaguebearer | Sets `player_plaguebearer_active` (`DAT_004908b9`); creature update checks it to infect nearby monsters. | `src/crimson/gameplay.py:perk_apply` | — |
 | 11 | EVIL_EYES | Evil Eyes | `perks_update_effects` sets `evil_eyes_target_creature` (`DAT_00490bbc`) to `creature_find_in_radius(&aim, 12.0, 0)` when the perk is active (else `-1`). `creature_update_all` checks this index and skips the target's AI update. | `src/crimson/creatures/runtime.py:CreaturePool.update`<br>`src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:perks_update_effects` | `tests/test_evil_eyes_perk.py`<br>`tests/test_perk_selection.py` |
 | 12 | AMMO_MANIAC | Ammo Maniac | TBD | `src/crimson/gameplay.py:perk_apply`<br>`src/crimson/gameplay.py:weapon_assign_player` | — |
-| 13 | RADIOACTIVE | Radioactive | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/render/world_renderer.py:WorldRenderer._draw_player_trooper_sprite` | `tests/test_perk_selection.py` |
+| 13 | RADIOACTIVE | Radioactive | `creature_update_all`: if a creature is within 100 units and Radioactive is active, decrement `collision_timer` by `dt * 1.5`; when it wraps, set it to `0.5` and deal `(100 - dist) * 0.3` damage. Kills bypass `creature_handle_death`: `experience = int(float(experience) + creature.reward_value)`; start death via `hitbox_size -= dt`. | `src/crimson/creatures/runtime.py:CreaturePool.update`<br>`src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/render/world_renderer.py:WorldRenderer._draw_player_trooper_sprite` | `tests/test_perk_selection.py`<br>`tests/test_radioactive_perk.py` |
 | 14 | FASTSHOT | Fastshot | TBD | `src/crimson/gameplay.py:perk_generate_choices`<br>`src/crimson/gameplay.py:player_fire_weapon` | `tests/test_perk_selection.py` |
 | 15 | FATAL_LOTTERY | Fatal Lottery | TBD | `src/crimson/gameplay.py:perk_apply` | — |
 | 16 | RANDOM_WEAPON | Random Weapon | TBD | — | — |

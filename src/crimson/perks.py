@@ -232,7 +232,12 @@ PERK_TABLE = [
         description="You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`creature_update_all`: if a creature is within 100 units and Radioactive is active, "
+            "decrement `collision_timer` by `dt * 1.5`; when it wraps, set it to `0.5` and deal "
+            "`(100 - dist) * 0.3` damage. Kills bypass `creature_handle_death`: "
+            "`experience = int(float(experience) + creature.reward_value)`; start death via `hitbox_size -= dt`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.FASTSHOT,
