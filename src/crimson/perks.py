@@ -114,7 +114,11 @@ PERK_TABLE = [
         description="Miraculously your aiming improves drastically, but you take a little bit more time on actually firing the gun. If you order now, you also get a fancy LASER SIGHT without ANY charge!",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`player_fire_weapon`: if Sharpshooter is active, multiplies `shot_cooldown` by `1.05` and does not "
+            "increase `player.spread_heat` by `weapon.spread_heat * 1.3` after firing. "
+            "`player_update`: while active, forces `player.spread_heat = 0.02`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.FASTLOADER,

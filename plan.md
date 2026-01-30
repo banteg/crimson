@@ -387,6 +387,10 @@ These usually live in `player_update`:
 
 * [x] Long Distance Runner
 
+**H. Accuracy / firing perks**
+
+* [x] Sharpshooter
+
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
 

@@ -1432,7 +1432,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     player.shot_cooldown = max(0.0, player.shot_cooldown - cooldown_decay)
 
     if perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = max(0.02, player.spread_heat - dt * 2.0)
+        player.spread_heat = 0.02
     else:
         player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
