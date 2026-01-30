@@ -266,7 +266,7 @@ PERK_TABLE = [
         description="Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_fire_weapon`: while active, multiplies `shot_cooldown` by `0.88`.",
     ),
     PerkMeta(
         perk_id=PerkId.FATAL_LOTTERY,

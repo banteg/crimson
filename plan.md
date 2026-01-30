@@ -415,7 +415,7 @@ These usually live in `player_update`:
 * [ ] Lean Mean Exp Machine
 * [ ] Instant Winner
 * [ ] Alternate Weapon
-* [ ] Fastshot
+* [x] Fastshot
 * [ ] Anxious Loader
 * [ ] Telekinetic
 * [x] Perk Expert
