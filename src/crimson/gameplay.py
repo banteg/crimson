@@ -1839,6 +1839,7 @@ def bonus_apply(
 
         bullet_count = int(rand()) & 3
         bullet_count += 4
+        assault_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ASSAULT_RIFLE))
         for _ in range(bullet_count):
             angle = float(int(rand()) % 0x274) * 0.01
             proj_id = state.projectiles.spawn(
@@ -1847,11 +1848,13 @@ def bonus_apply(
                 angle=float(angle),
                 type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
                 owner_id=-100,
+                base_damage=assault_meta,
             )
             if proj_id != -1:
                 speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
                 state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
+        minigun_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.MEAN_MINIGUN))
         for _ in range(2):
             angle = float(int(rand()) % 0x274) * 0.01
             state.projectiles.spawn(
@@ -1860,6 +1863,7 @@ def bonus_apply(
                 angle=float(angle),
                 type_id=int(ProjectileTypeId.MEAN_MINIGUN),
                 owner_id=-100,
+                base_damage=minigun_meta,
             )
 
         state.effects.spawn_explosion_burst(

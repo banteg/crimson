@@ -1,8 +1,19 @@
 from __future__ import annotations
 
+import math
+
 from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import GameplayState, PlayerState, bonus_apply
+from crimson.projectiles import ProjectileTypeId
+
+
+class _FixedRng:
+    def __init__(self, value: int) -> None:
+        self._value = int(value)
+
+    def rand(self) -> int:
+        return int(self._value)
 
 
 def test_nuke_damage_is_limited_to_radius() -> None:
@@ -36,3 +47,22 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
     assert near.hp <= 0.0
     assert far.hp == 10.0
+
+
+def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
+    state = GameplayState(rng=_FixedRng(0))
+    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+
+    bonus_apply(state, player, BonusId.NUKE, origin=player, detail_preset=5)
+
+    active = [entry for entry in state.projectiles.entries if entry.active]
+
+    assault = [entry for entry in active if entry.type_id == int(ProjectileTypeId.ASSAULT_RIFLE)]
+    assert len(assault) == 4
+    assert all(math.isclose(entry.base_damage, 50.0, abs_tol=1e-9) for entry in assault)
+    assert all(math.isclose(entry.speed_scale, 0.5, abs_tol=1e-9) for entry in assault)
+
+    minigun = [entry for entry in active if entry.type_id == int(ProjectileTypeId.MEAN_MINIGUN)]
+    assert len(minigun) == 2
+    assert all(math.isclose(entry.base_damage, 45.0, abs_tol=1e-9) for entry in minigun)
+    assert all(math.isclose(entry.speed_scale, 1.0, abs_tol=1e-9) for entry in minigun)
