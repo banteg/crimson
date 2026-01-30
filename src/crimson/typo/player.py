@@ -17,7 +17,7 @@ def enforce_typo_player_frame(player: PlayerState) -> None:
 
     player.shot_cooldown = 0.0
     player.spread_heat = 0.0
-    player.ammo = max(0, int(player.clip_size))
+    player.ammo = float(max(0, int(player.clip_size)))
 
     player.reload_active = False
     player.reload_timer = 0.0

@@ -65,7 +65,7 @@ class RushMode(BaseGameplayMode):
             if int(player.weapon_id) != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
             # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-            player.ammo = max(0, int(player.clip_size))
+            player.ammo = float(max(0, int(player.clip_size)))
 
     def open(self) -> None:
         super().open()

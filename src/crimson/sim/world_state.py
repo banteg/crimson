@@ -249,7 +249,37 @@ class WorldState:
             self.state.sfx_queue.append("sfx_explosion_large")
             self.state.sfx_queue.append("sfx_shockwave")
 
-        self.state.particles.update(dt)
+        def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
+            idx = int(creature_index)
+            if not (0 <= idx < len(self.creatures.entries)):
+                return
+            creature = self.creatures.entries[idx]
+            if not creature.active:
+                return
+            if float(creature.hp) <= 0.0:
+                return
+
+            creature.last_hit_owner_id = int(owner_id)
+            deaths.append(
+                self.creatures.handle_death(
+                    idx,
+                    state=self.state,
+                    players=self.players,
+                    rand=self.state.rng.rand,
+                    detail_preset=int(detail_preset),
+                    world_width=float(world_size),
+                    world_height=float(world_size),
+                    fx_queue=fx_queue,
+                    keep_corpse=False,
+                )
+            )
+
+        self.state.particles.update(
+            dt,
+            creatures=self.creatures.entries,
+            apply_creature_damage=_apply_projectile_damage_to_creature,
+            kill_creature=_kill_creature_no_corpse,
+        )
         self.state.sprite_effects.update(dt)
 
         for idx, player in enumerate(self.players):

@@ -452,18 +452,18 @@ This is how you keep “high fidelity” from regressing later.
 
 Once damage/death/perks are correct, weapon work becomes much less painful because all the downstream semantics are unified.
 
-1. [ ] Implement the documented non-projectile weapon paths
+1. [x] Implement the documented non-projectile weapon paths
    From `docs/structs/projectile.md`:
 
-- [ ] Plasma Rifle
-- [ ] HR Flamer
-- [ ] Mini-Rocket Swarmers
-- [ ] Rainbow Gun
+- [x] Plasma Rifle
+- [x] HR Flamer
+- [x] Mini-Rocket Swarmers
+- [x] Rainbow Gun
 
 These likely require:
 
-- [ ] a “particle weapon fire” path (spawn into particle pool)
-- [ ] correct hit checks/damage application for particles (which should call `creature_apply_damage`)
+- [x] a “particle weapon fire” path (spawn into particle pool)
+- [x] correct hit checks/damage application for particles (which should call `creature_apply_damage`)
 
 2. [ ] Close the secondary projectile fidelity gaps
 

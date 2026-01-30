@@ -72,7 +72,7 @@ class PlayerState:
 
     weapon_id: int = 0
     clip_size: int = 0
-    ammo: int = 0
+    ammo: float = 0.0
     reload_active: bool = False
     reload_timer: float = 0.0
     reload_timer_max: float = 0.0
@@ -83,7 +83,7 @@ class PlayerState:
 
     alt_weapon_id: int | None = None
     alt_clip_size: int = 0
-    alt_ammo: int = 0
+    alt_ammo: float = 0.0
     alt_reload_active: bool = False
     alt_reload_timer: float = 0.0
     alt_reload_timer_max: float = 0.0
@@ -1096,7 +1096,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
         clip_size += 2
 
     player.clip_size = max(0, int(clip_size))
-    player.ammo = player.clip_size
+    player.ammo = float(player.clip_size)
     player.reload_active = False
     player.reload_timer = 0.0
     player.reload_timer_max = 0.0
@@ -1288,7 +1288,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         return
 
     firing_during_reload = False
-    ammo_cost = 1
+    ammo_cost = 1.0
     if player.reload_timer > 0.0:
         if player.ammo <= 0 and player.experience > 0:
             if perk_active(player, PerkId.REGRESSION_BULLETS):
@@ -1362,84 +1362,78 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     muzzle_x = player.pos_x + player.aim_dir_x * 16.0
     muzzle_y = player.pos_y + player.aim_dir_y * 16.0
 
+    owner_id = _owner_id_for_player(player.index)
     shot_count = 1
-    if player.weapon_id not in (12, 13, 17, 18):
-        shot_count = max(1, int(pellet_count))
 
-    # Secondary-projectile weapons (effects.md).
-    if player.weapon_id == 12:
+    if player.fire_bullets_timer > 0.0:
+        pellets = max(1, int(pellet_count))
+        shot_count = pellets
+        meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
+        for _ in range(pellets):
+            angle = shot_angle
+            if pellets > 1:
+                angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
+            state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=ProjectileTypeId.FIRE_BULLETS,
+                owner_id=owner_id,
+                base_damage=meta,
+            )
+    elif player.weapon_id == 12:
         # Seeker Rockets -> secondary type 1.
-        state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
-            angle=shot_angle,
-            type_id=1,
-            owner_id=_owner_id_for_player(player.index),
-        )
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
     elif player.weapon_id == 13:
         # Plasma Shotgun -> secondary type 2.
-        state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
-            angle=shot_angle,
-            type_id=2,
-            owner_id=_owner_id_for_player(player.index),
-        )
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
     elif player.weapon_id == 17:
         # Rocket Minigun -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
         for _ in range(rocket_count):
-            state.secondary_projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
-                angle=angle,
-                type_id=2,
-                owner_id=_owner_id_for_player(player.index),
-            )
+            state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=angle, type_id=2, owner_id=owner_id)
             angle += step
-        ammo_cost = rocket_count
+        ammo_cost = float(rocket_count)
         shot_count = rocket_count
     elif player.weapon_id == 18:
         # Pulse Gun -> secondary type 4.
-        state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
-            angle=shot_angle,
-            type_id=4,
-            owner_id=_owner_id_for_player(player.index),
-        )
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
+    elif player.weapon_id == 8:
+        # Plasma Rifle -> fast particle weapon (style 0), fractional ammo drain.
+        state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        ammo_cost = 0.1
+    elif player.weapon_id == 15:
+        # HR Flamer -> fast particle weapon (style 1), fractional ammo drain.
+        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.entries[particle_id].style_id = 1
+        ammo_cost = 0.05
+    elif player.weapon_id == 16:
+        # Mini-Rocket Swarmers -> fast particle weapon (style 2), fractional ammo drain.
+        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.entries[particle_id].style_id = 2
+        ammo_cost = 0.1
+    elif player.weapon_id == 42:
+        # Rainbow Gun -> slow particle weapon (style 8), fractional ammo drain.
+        state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
+        ammo_cost = 0.15
     else:
-        def _spawn_pellet_shot(type_id: int, *, meta: float, pellets: int) -> None:
-            count = max(1, int(pellets))
-            for _ in range(count):
-                angle = shot_angle
-                if count > 1:
-                    angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
-                state.projectiles.spawn(
-                    pos_x=muzzle_x,
-                    pos_y=muzzle_y,
-                    angle=angle,
-                    type_id=type_id,
-                    owner_id=_owner_id_for_player(player.index),
-                    base_damage=meta,
-                )
-
-        if player.fire_bullets_timer > 0.0:
-            meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
-            _spawn_pellet_shot(
-                ProjectileTypeId.FIRE_BULLETS,
-                meta=meta,
-                pellets=pellet_count,
-            )
-        else:
-            # Most main-projectile weapons map `weapon_id -> projectile_type_id` in the rewrite.
-            type_id = int(player.weapon_id)
-            _spawn_pellet_shot(
-                type_id,
-                meta=_projectile_meta_for_type_id(type_id),
-                pellets=pellet_count,
+        pellets = max(1, int(pellet_count))
+        shot_count = pellets
+        type_id = int(player.weapon_id)
+        meta = _projectile_meta_for_type_id(type_id)
+        for _ in range(pellets):
+            angle = shot_angle
+            if pellets > 1:
+                angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
+            state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=type_id,
+                owner_id=owner_id,
+                base_damage=meta,
             )
 
     if 0 <= int(player.index) < len(state.shots_fired):
@@ -1457,9 +1451,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
     player.shot_seq += 1
-    if not firing_during_reload:
-        player.ammo = max(0, int(player.ammo) - int(ammo_cost))
-        if player.ammo <= 0:
+    if not firing_during_reload and state.bonuses.reflex_boost <= 0.0:
+        player.ammo = max(0.0, float(player.ammo) - float(ammo_cost))
+        if player.ammo <= 0.0:
             player_start_reload(player, state)
 
 
@@ -1588,7 +1582,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         player.reload_timer = 0.0
 
     if player.reload_active and player.reload_timer <= 0.0 and player.reload_timer_max > 0.0:
-        player.ammo = player.clip_size
+        player.ammo = float(player.clip_size)
         player.reload_active = False
         player.reload_timer_max = 0.0
 
@@ -1679,7 +1673,7 @@ def bonus_apply(
         player.reload_active = False
         player.reload_timer = 0.0
         player.reload_timer_max = 0.0
-        player.ammo = player.clip_size
+        player.ammo = float(player.clip_size)
         return
 
     if bonus_id == BonusId.DOUBLE_EXPERIENCE:
@@ -1697,7 +1691,7 @@ def bonus_apply(
 
         targets = players if players is not None else [player]
         for target in targets:
-            target.ammo = target.clip_size
+            target.ammo = float(target.clip_size)
             target.reload_active = False
             target.reload_timer = 0.0
             target.reload_timer_max = 0.0
@@ -1769,7 +1763,7 @@ def bonus_apply(
         player.reload_active = False
         player.reload_timer = 0.0
         player.reload_timer_max = 0.0
-        player.ammo = player.clip_size
+        player.ammo = float(player.clip_size)
         return
 
     if bonus_id == BonusId.SHOCK_CHAIN:
@@ -1809,7 +1803,7 @@ def bonus_apply(
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and player.alt_weapon_id is None:
             player.alt_weapon_id = int(player.weapon_id)
             player.alt_clip_size = int(player.clip_size)
-            player.alt_ammo = int(player.ammo)
+            player.alt_ammo = float(player.ammo)
             player.alt_reload_active = bool(player.reload_active)
             player.alt_reload_timer = float(player.reload_timer)
             player.alt_shot_cooldown = float(player.shot_cooldown)

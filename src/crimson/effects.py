@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Callable
+from typing import Callable, Protocol
 
 __all__ = [
     "FX_QUEUE_CAPACITY",
@@ -47,6 +47,23 @@ def _default_rand() -> int:
     return 0
 
 
+class _CreatureForParticles(Protocol):
+    active: bool
+    x: float
+    y: float
+    hp: float
+    size: float
+    hitbox_size: float
+    tint_r: float
+    tint_g: float
+    tint_b: float
+    tint_a: float
+
+
+CreatureDamageApplier = Callable[[int, float, int, float, float, int], None]
+CreatureKillHandler = Callable[[int, int], None]
+
+
 @dataclass(slots=True)
 class Particle:
     active: bool = False
@@ -64,6 +81,7 @@ class Particle:
     spin: float = 0.0
     style_id: int = 0
     target_id: int = -1
+    owner_id: int = -100
 
 
 class ParticlePool:
@@ -88,7 +106,15 @@ class ParticlePool:
         # Native: `crt_rand() & 0x7f` (pool size is 0x80).
         return int(self._rand()) % len(self._entries)
 
-    def spawn_particle(self, *, pos_x: float, pos_y: float, angle: float, intensity: float = 1.0) -> int:
+    def spawn_particle(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        angle: float,
+        intensity: float = 1.0,
+        owner_id: int = -100,
+    ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
 
         idx = self._alloc_slot()
@@ -107,9 +133,18 @@ class ParticlePool:
         entry.angle = float(angle)
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = 0
+        entry.target_id = -1
+        entry.owner_id = int(owner_id)
         return idx
 
-    def spawn_particle_slow(self, *, pos_x: float, pos_y: float, angle: float) -> int:
+    def spawn_particle_slow(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        angle: float,
+        owner_id: int = -100,
+    ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
 
         idx = self._alloc_slot()
@@ -129,24 +164,57 @@ class ParticlePool:
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = 8
         entry.target_id = -1
+        entry.owner_id = int(owner_id)
         return idx
 
     def iter_active(self) -> list[Particle]:
         return [entry for entry in self._entries if entry.active]
 
-    def update(self, dt: float) -> list[int]:
+    def update(
+        self,
+        dt: float,
+        *,
+        creatures: list[_CreatureForParticles] | None = None,
+        apply_creature_damage: CreatureDamageApplier | None = None,
+        kill_creature: CreatureKillHandler | None = None,
+    ) -> list[int]:
         """Advance particles and deactivate expired entries.
 
         This is a minimal port of the particle loop inside `projectile_update`
         (0x00420b90). It captures the per-style decay/movement rules that drive
-        visual lifetimes. Gameplay-driven interactions (e.g. creature hits) are
-        handled by higher-level systems in the original game and are omitted here.
+        visual lifetimes and the weapon-driven collision damage.
 
         Returns indices of particles that were deactivated this tick.
         """
 
         if dt <= 0.0:
             return []
+
+        def _creature_find_in_radius(*, pos_x: float, pos_y: float, radius: float) -> int:
+            if creatures is None:
+                return -1
+            max_index = min(len(creatures), 0x180)
+            pos_x = float(pos_x)
+            pos_y = float(pos_y)
+            radius = float(radius)
+
+            for creature_idx in range(max_index):
+                creature = creatures[creature_idx]
+                if not bool(getattr(creature, "active", False)):
+                    continue
+                if float(getattr(creature, "hp", 0.0)) <= 0.0:
+                    continue
+                if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
+                    continue
+
+                size = float(getattr(creature, "size", 50.0))
+                dist = math.hypot(float(getattr(creature, "x", 0.0)) - pos_x, float(getattr(creature, "y", 0.0)) - pos_y) - radius
+                threshold = size * 0.142857149 + 3.0
+                if threshold < dist:
+                    continue
+                return int(creature_idx)
+
+            return -1
 
         expired: list[int] = []
         rand = self._rand
@@ -199,6 +267,48 @@ class ParticlePool:
             if not alive:
                 entry.active = False
                 expired.append(idx)
+                if style == 8 and entry.target_id != -1:
+                    target_id = int(entry.target_id)
+                    entry.target_id = -1
+                    if kill_creature is not None:
+                        kill_creature(target_id, int(entry.owner_id))
+                    elif creatures is not None and 0 <= target_id < len(creatures):
+                        creatures[target_id].hp = -1.0
+                        creatures[target_id].active = False
+                continue
+
+            if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
+                target_id = int(entry.target_id)
+                if 0 <= target_id < len(creatures) and bool(getattr(creatures[target_id], "active", False)):
+                    entry.pos_x = float(getattr(creatures[target_id], "x", entry.pos_x))
+                    entry.pos_y = float(getattr(creatures[target_id], "y", entry.pos_y))
+
+            if entry.render_flag and creatures is not None:
+                hit_idx = _creature_find_in_radius(pos_x=entry.pos_x, pos_y=entry.pos_y, radius=max(entry.intensity, 0.0) * 8.0)
+                if hit_idx != -1:
+                    entry.render_flag = False
+                    creature = creatures[hit_idx]
+                    if style == 8:
+                        entry.target_id = int(hit_idx)
+                        entry.pos_x = float(getattr(creature, "x", entry.pos_x))
+                        entry.pos_y = float(getattr(creature, "y", entry.pos_y))
+                        entry.vel_x = 0.0
+                        entry.vel_y = 0.0
+                    else:
+                        damage = max(0.0, float(entry.intensity) * 10.0)
+                        if damage > 0.0:
+                            if apply_creature_damage is not None:
+                                apply_creature_damage(int(hit_idx), float(damage), 4, 0.0, 0.0, int(entry.owner_id))
+                            else:
+                                creature.hp = float(getattr(creature, "hp", 0.0)) - float(damage)
+
+                        tint_sum = float(getattr(creature, "tint_r", 1.0)) + float(getattr(creature, "tint_g", 1.0)) + float(getattr(creature, "tint_b", 1.0))
+                        if tint_sum > 1.6:
+                            factor = 1.0 - max(entry.intensity, 0.0) * 0.01
+                            creature.tint_r = _clamp(float(getattr(creature, "tint_r", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_g = _clamp(float(getattr(creature, "tint_g", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_b = _clamp(float(getattr(creature, "tint_b", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_a = _clamp(float(getattr(creature, "tint_a", 1.0)) * factor, 0.0, 1.0)
 
         return expired
 
