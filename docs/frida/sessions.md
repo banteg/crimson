@@ -326,3 +326,18 @@ Steps:
 
 We want the `mem_access` events with `kind=credits_flags`, especially the `from` address and
 `line_text` for each flag write.
+
+## Session 7
+
+- **Date:** 2026-01-30
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Script:** `weapon_switch_trace.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\weapon_switch_trace.js`
+- **Artifacts:** `artifacts/frida/share/weapon_switch_trace.jsonl`, `analysis/frida/weapon_switch_trace_summary.json`
+
+Summary:
+
+- 23 weapon switches via `[`/`]` (ids 1 → 29, skipping locked gaps).
+- 1,200 player-owned `projectile_spawn` events; 43 secondary spawns; 901 particle spawns.
+- 7,968 `effect_spawn` events (mostly from `projectile_update`).
+- No `weapon_fire`/`weapon_assign` or SFX-tagged events in this run (see summary for gaps).

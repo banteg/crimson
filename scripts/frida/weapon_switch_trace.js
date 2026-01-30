@@ -34,6 +34,8 @@ const CONFIG = {
   playerIndex: parseInt(getEnv("CRIMSON_FRIDA_PLAYER") || "0", 10) || 0,
   weaponMax: parseInt(getEnv("CRIMSON_FRIDA_WEAPON_MAX") || "53", 10) || 53,
   skipLocked: getEnv("CRIMSON_FRIDA_SKIP_LOCKED") !== "0",
+  fallbackWeapon: getEnv("CRIMSON_FRIDA_FALLBACK_WEAPON") !== "0",
+  logAllSfx: getEnv("CRIMSON_FRIDA_SFX_ALL") !== "0",
   keyPrev: 0x1a, // DIK_LBRACKET
   keyNext: 0x1b, // DIK_RBRACKET
 };
@@ -431,6 +433,40 @@ function main() {
     writeLine(Object.assign({ event: tag, weapon: snap }, extra || {}));
   }
 
+  function currentWeaponId(playerIndex) {
+    const idx = playerIndex != null ? playerIndex : CONFIG.playerIndex;
+    return readPlayerInt(dataPtrs.player_weapon_id, idx);
+  }
+
+  function resolveWeaponContext(opts) {
+    const fireCtx = opts && opts.fireCtx ? opts.fireCtx : null;
+    const assignCtx = opts && opts.assignCtx ? opts.assignCtx : null;
+    const ownerId = opts && opts.ownerId != null ? opts.ownerId : null;
+
+    if (fireCtx && fireCtx.weapon_id != null) {
+      return { weapon_id: fireCtx.weapon_id, weapon_source: "fire" };
+    }
+    if (assignCtx && assignCtx.weapon_id != null) {
+      return { weapon_id: assignCtx.weapon_id, weapon_source: "swap" };
+    }
+    if (ownerId != null) {
+      const ownerPlayer = mapOwnerToPlayer(ownerId);
+      if (ownerPlayer != null) {
+        const wid = currentWeaponId(ownerPlayer);
+        if (wid != null) {
+          return { weapon_id: wid, weapon_source: "owner_player" };
+        }
+      }
+    }
+    if (CONFIG.fallbackWeapon) {
+      const wid = currentWeaponId(CONFIG.playerIndex);
+      if (wid != null) {
+        return { weapon_id: wid, weapon_source: "current_weapon" };
+      }
+    }
+    return { weapon_id: null, weapon_source: null };
+  }
+
   function handleWeaponSwitch() {
     if (!grimIsKeyDown || !weaponAssignPlayer) return;
     const playerIndex = CONFIG.playerIndex;
@@ -535,20 +571,25 @@ function main() {
       const typeId = args[2].toInt32();
       const ownerId = args[3].toInt32();
       const fireCtx = fireContextByTid[this.threadId];
-      let weaponId = fireCtx ? fireCtx.weapon_id : null;
-      if (weaponId == null) {
-        const ownerPlayer = mapOwnerToPlayer(ownerId);
-        if (ownerPlayer != null) {
-          weaponId = readPlayerInt(dataPtrs.player_weapon_id, ownerPlayer);
-        }
-      }
-      this._projInfo = { pos: pos, angle: angle, type_id: typeId, owner_id: ownerId, weapon_id: weaponId };
+      const ctx = resolveWeaponContext({ fireCtx: fireCtx, ownerId: ownerId });
+      this._projInfo = {
+        pos: pos,
+        angle: angle,
+        type_id: typeId,
+        owner_id: ownerId,
+        weapon_id: ctx.weapon_id,
+        weapon_source: ctx.weapon_source,
+      };
     },
     onLeave(retval) {
       const info = this._projInfo || {};
       const idx = retval.toInt32();
-      projectileByIndex.set(idx, { type_id: info.type_id, weapon_id: info.weapon_id, owner_id: info.owner_id });
-      if (info.weapon_id != null) {
+      projectileByIndex.set(idx, {
+        type_id: info.type_id,
+        weapon_id: info.weapon_id,
+        owner_id: info.owner_id,
+      });
+      if (info.weapon_id != null && info.weapon_source !== "current_weapon") {
         projectileTypeToWeapon.set(info.type_id, info.weapon_id);
       }
       writeLine({
@@ -557,6 +598,7 @@ function main() {
         type_id: info.type_id,
         owner_id: info.owner_id,
         weapon_id: info.weapon_id,
+        weapon_source: info.weapon_source,
         pos: info.pos,
         angle: info.angle,
       });
@@ -570,7 +612,15 @@ function main() {
       const angle = argAsF32(args[1]);
       const typeId = args[2].toInt32();
       const fireCtx = fireContextByTid[this.threadId];
-      this._secInfo = { pos: pos, angle: angle, type_id: typeId, weapon_id: fireCtx ? fireCtx.weapon_id : null };
+      const assignCtx = assignContextByTid[this.threadId];
+      const ctx = resolveWeaponContext({ fireCtx: fireCtx, assignCtx: assignCtx });
+      this._secInfo = {
+        pos: pos,
+        angle: angle,
+        type_id: typeId,
+        weapon_id: ctx.weapon_id,
+        weapon_source: ctx.weapon_source,
+      };
     },
     onLeave(retval) {
       const info = this._secInfo || {};
@@ -579,6 +629,7 @@ function main() {
         index: retval.toInt32(),
         type_id: info.type_id,
         weapon_id: info.weapon_id,
+        weapon_source: info.weapon_source,
         pos: info.pos,
         angle: info.angle,
       });
@@ -592,10 +643,13 @@ function main() {
       const angle = argAsF32(args[1]);
       const intensity = argAsF32(args[3]);
       const fireCtx = fireContextByTid[this.threadId];
+      const assignCtx = assignContextByTid[this.threadId];
+      const ctx = resolveWeaponContext({ fireCtx: fireCtx, assignCtx: assignCtx });
       writeLine({
         event: "particle_spawn",
         slow: false,
-        weapon_id: fireCtx ? fireCtx.weapon_id : null,
+        weapon_id: ctx.weapon_id,
+        weapon_source: ctx.weapon_source,
         pos: pos,
         angle: angle,
         intensity: intensity,
@@ -608,10 +662,13 @@ function main() {
       const pos = readVec2(args[0]);
       const angle = argAsF32(args[1]);
       const fireCtx = fireContextByTid[this.threadId];
+      const assignCtx = assignContextByTid[this.threadId];
+      const ctx = resolveWeaponContext({ fireCtx: fireCtx, assignCtx: assignCtx });
       writeLine({
         event: "particle_spawn",
         slow: true,
-        weapon_id: fireCtx ? fireCtx.weapon_id : null,
+        weapon_id: ctx.weapon_id,
+        weapon_source: ctx.weapon_source,
         pos: pos,
         angle: angle,
       });
@@ -624,12 +681,18 @@ function main() {
       const pos = readVec2(args[1]);
       const fireCtx = fireContextByTid[this.threadId];
       const assignCtx = assignContextByTid[this.threadId];
+      const ctx = resolveWeaponContext({ fireCtx: fireCtx, assignCtx: assignCtx });
       const inUpdate = !!updateContextByTid[this.threadId];
+      let source = ctx.weapon_source;
+      if (!source && inUpdate) {
+        source = "projectile_update";
+      }
       writeLine({
         event: "effect_spawn",
         effect_id: effectId,
-        weapon_id: fireCtx ? fireCtx.weapon_id : assignCtx ? assignCtx.weapon_id : null,
-        source: fireCtx ? "fire" : assignCtx ? "swap" : inUpdate ? "projectile_update" : null,
+        weapon_id: ctx.weapon_id,
+        weapon_source: ctx.weapon_source,
+        source: source,
         pos: pos,
       });
     },
@@ -638,12 +701,14 @@ function main() {
   function logSfx(event, sfxId) {
     const fireCtx = fireContextByTid[this.threadId];
     const assignCtx = assignContextByTid[this.threadId];
-    if (!fireCtx && !assignCtx) return;
+    const ctx = resolveWeaponContext({ fireCtx: fireCtx, assignCtx: assignCtx });
+    if (!ctx.weapon_id && !CONFIG.logAllSfx) return;
     writeLine({
       event: event,
       sfx_id: sfxId,
-      weapon_id: fireCtx ? fireCtx.weapon_id : assignCtx.weapon_id,
-      source: fireCtx ? "fire" : "swap",
+      weapon_id: ctx.weapon_id,
+      weapon_source: ctx.weapon_source,
+      source: ctx.weapon_source,
     });
   }
 
