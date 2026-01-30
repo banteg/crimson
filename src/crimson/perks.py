@@ -347,7 +347,7 @@ PERK_TABLE = [
         description="Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`bonus_telekinetic_update`: aim at a bonus within 24 units for >650ms to pick it up remotely.",
     ),
     PerkMeta(
         perk_id=PerkId.PERK_EXPERT,
