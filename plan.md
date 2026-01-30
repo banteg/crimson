@@ -291,11 +291,11 @@ This will catch the most important class of fidelity bugs.
 
 Once Phase 2 is in, these become straightforward and correct.
 
-1. [ ] Freeze
+1. [x] Freeze
 
 - [x] On pickup: shatter/remove existing corpses.
 - [x] On death while active: ice-shatter + remove creature (no corpse).
-- [ ] On render: freeze overlay quad pass (optional parity).
+- [x] On render: freeze overlay quad pass (optional parity).
 
 2. [x] Energizer
 

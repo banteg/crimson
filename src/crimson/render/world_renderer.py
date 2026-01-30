@@ -1223,6 +1223,43 @@ class WorldRenderer:
                     shadow=shadow,
                 )
 
+            freeze_timer = float(self.state.bonuses.freeze)
+            if particles_texture is not None and freeze_timer > 0.0:
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0E)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        cell_w = float(particles_texture.width) / float(grid)
+                        cell_h = float(particles_texture.height) / float(grid)
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        src = rl.Rectangle(
+                            cell_w * float(col),
+                            cell_h * float(row),
+                            max(0.0, cell_w - 2.0),
+                            max(0.0, cell_h - 2.0),
+                        )
+
+                        fade = 1.0 if freeze_timer >= 1.0 else clamp(freeze_timer, 0.0, 1.0)
+                        freeze_alpha = clamp(fade * entity_alpha * 0.7, 0.0, 1.0)
+                        if freeze_alpha > 1e-3:
+                            tint = rl.Color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
+                            rl.begin_blend_mode(rl.BLEND_ALPHA)
+                            for idx, creature in enumerate(self.creatures.entries):
+                                if not creature.active:
+                                    continue
+                                size = float(creature.size) * scale
+                                if size <= 1e-3:
+                                    continue
+                                sx = (creature.x + cam_x) * scale_x
+                                sy = (creature.y + cam_y) * scale_y
+                                dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                                origin = rl.Vector2(size * 0.5, size * 0.5)
+                                rotation_deg = (float(idx) * 0.01 + float(creature.heading)) * _RAD_TO_DEG
+                                rl.draw_texture_pro(particles_texture, src, dst, origin, rotation_deg, tint)
+                            rl.end_blend_mode()
+
             for player in self.players:
                 if player.health > 0.0:
                     draw_player(player)
