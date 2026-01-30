@@ -790,7 +790,11 @@ PERK_TABLE = [
         description="The computer removes half of the wrong monsters for you. You don't gain any experience.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): iterates `creature_pool` in slot order, deactivating every other slot "
+            "(`bVar8` toggles each iteration) when it is active, has `health <= 500.0`, and `(flags & 4) == 0`; "
+            "for each deactivated creature it calls `effect_spawn_burst(creature.pos, 4)`."
+        ),
     ),
 ]
 

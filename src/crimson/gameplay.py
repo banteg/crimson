@@ -755,7 +755,26 @@ def perk_apply(
             return
 
         if perk_id == PerkId.LIFELINE_50_50:
-            # Requires creature pool access; keep as a no-op for now.
+            if creatures is None:
+                return
+
+            kill_toggle = False
+            for creature in creatures:
+                if (
+                    kill_toggle
+                    and creature.active
+                    and float(creature.hp) <= 500.0
+                    and (int(creature.flags) & 0x04) == 0
+                ):
+                    creature.active = False
+                    state.effects.spawn_burst(
+                        pos_x=float(creature.x),
+                        pos_y=float(creature.y),
+                        count=4,
+                        rand=state.rng.rand,
+                        detail_preset=5,
+                    )
+                kill_toggle = not kill_toggle
             return
 
         if perk_id == PerkId.THICK_SKINNED:

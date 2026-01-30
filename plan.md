@@ -433,7 +433,7 @@ These usually live in `player_update`:
 * [x] Perk Master
 * [x] Breathing Room
 * [x] Stationary Reloader
-* [ ] Lifeline 50-50
+* [x] Lifeline 50-50
 
 3. [ ] Add minimal scenario tests per perk
    For each perk, add one tiny deterministic scenario:
