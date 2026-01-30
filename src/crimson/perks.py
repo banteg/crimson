@@ -276,7 +276,10 @@ PERK_TABLE = [
         description="Fifty-fifty chance of dying OR gaining 10k experience points. Place your bets. Interested, anyone?",
         flags=PerkFlags.STACKABLE,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): rolls `crt_rand() & 1`. If the result is `0`, grants `+10000` experience; "
+            "otherwise sets `player.health = -1.0`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.RANDOM_WEAPON,

@@ -397,7 +397,7 @@ These usually live in `player_update`:
 
 **J. Perk apply (one-shot) perks**
 
-* [ ] Fatal Lottery
+* [x] Fatal Lottery
 * [x] Ammo Maniac
 * [ ] Grim Deal
 * [ ] Death Clock

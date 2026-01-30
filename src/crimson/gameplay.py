@@ -735,9 +735,7 @@ def perk_apply(
 
         if perk_id == PerkId.FATAL_LOTTERY:
             if state.rng.rand() & 1:
-                for player in players:
-                    if player.health > 0.0:
-                        player.health = -1.0
+                owner.health = -1.0
             else:
                 owner.experience += 10000
             return
