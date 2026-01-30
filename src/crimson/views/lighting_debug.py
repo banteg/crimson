@@ -264,7 +264,7 @@ class LightingDebugView:
         self._projectiles: list[_EmissiveProjectile] = []
         self._proj_fire_cd = 0.0
         self._proj_fire_interval = 0.08
-        self._proj_speed = 800.0
+        self._proj_speed = 350.0
         self._proj_ttl = 1.25
         self._proj_radius_px = 3.0
         self._proj_light_range = 220.0
