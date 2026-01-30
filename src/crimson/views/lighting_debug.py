@@ -177,15 +177,19 @@ void main()
     vec2 rd = to_light / max(dist, 1e-4);
     float maxt = max(0.0, dist - max(0.0, u_light_source_radius));
     float shadow = softshadow(p, rd, 0.5, maxt, k, skip_idx);
-    shadow = mix(clamp(u_shadow_floor, 0.0, 1.0), 1.0, shadow);
+
+    float a = 1.0 - clamp(dist / u_light_range, 0.0, 1.0);
+    float floor = clamp(u_shadow_floor, 0.0, 1.0);
+    float fill = min(floor * a, atten);
+    float shade = mix(fill, atten, shadow);
 
     if (u_debug_mode == 5)
     {{
-        finalColor = vec4(vec3(shadow), 1.0);
+        finalColor = vec4(vec3(shade), 1.0);
         return;
     }}
 
-    vec3 add = u_light_color.rgb * (atten * shadow);
+    vec3 add = u_light_color.rgb * shade;
     finalColor = vec4(clamp(add, 0.0, 1.0), 1.0);
 }}
 """
@@ -822,7 +826,7 @@ class LightingDebugView:
                 "WASD move  MOUSE light pos",
                 "SPACE simulate  R reset",
                 f",/. shadow_k={self._sdf_shadow_k:.1f}",
-                f"F6 sdf_debug={self._sdf_debug_mode}  (1 solid, 2 uv, 3 range, 4 atten, 5 shadow)",
+                f"F6 sdf_debug={self._sdf_debug_mode}  (1 solid, 2 uv, 3 range, 4 atten, 5 shade)",
                 f"+/- shadow_floor={self._sdf_shadow_floor:.2f}",
                 f"[ ] disc_radius={self._light_source_radius:.0f}   shift+[ ] light_radius={self._light_radius:.0f}",
                 "1 ui  2 occluders  4 lightmap preview",
