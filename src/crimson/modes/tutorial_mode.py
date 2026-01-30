@@ -241,7 +241,7 @@ class TutorialMode(BaseGameplayMode):
         self._perk_menu_open = True
         self._perk_menu_selected = 0
 
-    def _perk_menu_handle_input(self, dt_ms: float) -> None:
+    def _perk_menu_handle_input(self, dt_frame: float, dt_ms: float) -> None:
         if self._ui_assets is None:
             self._perk_menu_open = False
             return
@@ -302,6 +302,8 @@ class TutorialMode(BaseGameplayMode):
                         idx,
                         game_mode=int(GameMode.TUTORIAL),
                         player_count=1,
+                        dt=dt_frame,
+                        creatures=self._creatures.entries,
                     )
                     self._perk_menu_open = False
                     return
@@ -322,6 +324,8 @@ class TutorialMode(BaseGameplayMode):
                 self._perk_menu_selected,
                 game_mode=int(GameMode.TUTORIAL),
                 player_count=1,
+                dt=dt_frame,
+                creatures=self._creatures.entries,
             )
             self._perk_menu_open = False
 
@@ -339,7 +343,7 @@ class TutorialMode(BaseGameplayMode):
 
         perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
         if self._perk_menu_open:
-            self._perk_menu_handle_input(dt_ui_ms)
+            self._perk_menu_handle_input(dt_frame, dt_ui_ms)
 
         if self._perk_menu_open:
             self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, 200.0)

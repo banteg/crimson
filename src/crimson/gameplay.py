@@ -23,6 +23,7 @@ class _CreatureForPerks(Protocol):
     x: float
     y: float
     hp: float
+    flags: int
     hitbox_size: float
     collision_timer: float
     reward_value: float
@@ -720,6 +721,8 @@ def perk_apply(
     perk_id: PerkId,
     *,
     perk_state: PerkSelectionState | None = None,
+    dt: float | None = None,
+    creatures: list[_CreatureForPerks] | None = None,
 ) -> None:
     """Apply immediate perk effects and increment the perk counter."""
 
@@ -763,9 +766,15 @@ def perk_apply(
 
         if perk_id == PerkId.BREATHING_ROOM:
             for player in players:
-                if player.health > 0.0:
-                    player.health -= player.health * (2.0 / 3.0)
-            # Creature clear not modeled yet.
+                player.health -= player.health * (2.0 / 3.0)
+
+            frame_dt = float(dt) if dt is not None else 0.0
+            if creatures is not None:
+                for creature in creatures:
+                    if creature.active:
+                        creature.hitbox_size = float(creature.hitbox_size) - frame_dt
+
+            state.bonus_spawn_guard = False
             return
 
         if perk_id == PerkId.INFERNAL_CONTRACT:
@@ -833,6 +842,8 @@ def perk_auto_pick(
     *,
     game_mode: int,
     player_count: int | None = None,
+    dt: float | None = None,
+    creatures: list[_CreatureForPerks] | None = None,
 ) -> list[PerkId]:
     """Resolve pending perks by auto-selecting from generated choices."""
 
@@ -849,7 +860,7 @@ def perk_auto_pick(
             break
         idx = int(state.rng.rand() % len(perk_state.choices))
         perk_id = PerkId(perk_state.choices[idx])
-        perk_apply(state, players, perk_id, perk_state=perk_state)
+        perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)
         perk_state.pending_count -= 1
         perk_state.choices_dirty = True
@@ -888,6 +899,8 @@ def perk_selection_pick(
     *,
     game_mode: int,
     player_count: int | None = None,
+    dt: float | None = None,
+    creatures: list[_CreatureForPerks] | None = None,
 ) -> PerkId | None:
     """Pick a perk from the current choice list and apply it.
 
@@ -904,7 +917,7 @@ def perk_selection_pick(
     if idx < 0 or idx >= len(choices):
         return None
     perk_id = choices[idx]
-    perk_apply(state, players, perk_id, perk_state=perk_state)
+    perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
     perk_state.pending_count = max(0, int(perk_state.pending_count) - 1)
     perk_state.choices_dirty = True
     return perk_id
@@ -917,6 +930,8 @@ def survival_progression_update(
     game_mode: int,
     player_count: int | None = None,
     auto_pick: bool = True,
+    dt: float | None = None,
+    creatures: list[_CreatureForPerks] | None = None,
 ) -> list[PerkId]:
     """Advance survival level/perk progression and optionally auto-pick perks."""
 
@@ -932,6 +947,8 @@ def survival_progression_update(
             state.perk_selection,
             game_mode=game_mode,
             player_count=player_count,
+            dt=dt,
+            creatures=creatures,
         )
     return []
 

@@ -317,7 +317,7 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_prompt_hover = False
             self._perk_prompt_pulse = 0.0
 
-    def _perk_menu_handle_input(self, dt_ms: float) -> None:
+    def _perk_menu_handle_input(self, dt_frame: float, dt_ms: float) -> None:
         if self._perk_menu_assets is None:
             self._close_perk_menu()
             return
@@ -381,6 +381,8 @@ class SurvivalMode(BaseGameplayMode):
                         idx,
                         game_mode=int(GameMode.SURVIVAL),
                         player_count=len(players),
+                        dt=dt_frame,
+                        creatures=self._creatures.entries,
                     )
                     if picked is not None:
                         self._world.audio_router.play_sfx("sfx_ui_bonus")
@@ -414,6 +416,8 @@ class SurvivalMode(BaseGameplayMode):
                 self._perk_menu_selected,
                 game_mode=int(GameMode.SURVIVAL),
                 player_count=len(players),
+                dt=dt_frame,
+                creatures=self._creatures.entries,
             )
             if picked is not None:
                 self._world.audio_router.play_sfx("sfx_ui_bonus")
@@ -457,7 +461,7 @@ class SurvivalMode(BaseGameplayMode):
 
         self._perk_prompt_hover = False
         if self._perk_menu_open:
-            self._perk_menu_handle_input(dt_ui_ms)
+            self._perk_menu_handle_input(dt_frame, dt_ui_ms)
             dt = 0.0
 
         perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3

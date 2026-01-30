@@ -307,7 +307,14 @@ class WorldState:
                     )
 
         if perk_progression_enabled:
-            survival_progression_update(self.state, self.players, game_mode=game_mode, auto_pick=auto_pick_perks)
+            survival_progression_update(
+                self.state,
+                self.players,
+                game_mode=game_mode,
+                auto_pick=auto_pick_perks,
+                dt=dt,
+                creatures=self.creatures.entries,
+            )
 
         sfx = list(creature_result.sfx)
         if self.state.sfx_queue:

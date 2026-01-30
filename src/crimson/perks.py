@@ -656,7 +656,11 @@ PERK_TABLE = [
         description="Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience.",
         flags=PerkFlags.TWO_PLAYER_ONLY,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): scales `player.health` down by 2/3 for each player, then for every active "
+            "creature does `hitbox_size -= frame_dt` (starting death staging without XP/bonus logic) and clears "
+            "`bonus_spawn_guard`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.DEATH_CLOCK,
