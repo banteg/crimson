@@ -464,6 +464,7 @@ class GameplayState:
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
     lean_mean_exp_timer: float = 0.25
     jinxed_timer: float = 0.0
+    plaguebearer_infection_count: int = 0
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
     sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)

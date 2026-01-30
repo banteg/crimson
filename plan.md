@@ -354,7 +354,7 @@ Recommended workflow: **perk-by-perk audit + hook mapping**, not ad-hoc patching
 These typically require creature flags/timers:
 
 * [x] Poison Bullets
-* [ ] Plaguebearer
+* [x] Plaguebearer
 * [x] Veins of Poison
 * [x] Toxic Avenger
 * [x] Regression Bullets

@@ -196,6 +196,27 @@ class CreaturePool:
     def iter_active(self) -> list[CreatureState]:
         return [entry for entry in self._entries if entry.active and entry.hp > 0.0]
 
+    def _plaguebearer_spread_infection(self, origin_index: int) -> None:
+        """Port of `FUN_00425d80` (infects nearby creatures when Plaguebearer is active)."""
+
+        origin_index = int(origin_index)
+        if not (0 <= origin_index < len(self._entries)):
+            return
+        origin = self._entries[origin_index]
+        if not origin.active:
+            return
+
+        for idx, creature in enumerate(self._entries):
+            if not creature.active:
+                continue
+
+            if math.hypot(float(creature.x) - float(origin.x), float(creature.y) - float(origin.y)) < 45.0:
+                if creature.collision_flag != 0 and float(origin.hp) < 150.0:
+                    origin.collision_flag = 1
+                if origin.collision_flag != 0 and float(creature.hp) < 150.0:
+                    creature.collision_flag = 1
+                return
+
     def _alloc_slot(self, *, rand: Callable[[], int] | None = None) -> int:
         for i, entry in enumerate(self._entries):
             if not entry.active:
@@ -403,6 +424,38 @@ class CreaturePool:
                     )
                 continue
 
+            if creature.collision_flag != 0:
+                creature.collision_timer -= float(dt)
+                if creature.collision_timer < 0.0:
+                    creature.collision_timer += CONTACT_DAMAGE_PERIOD
+                    creature.hp -= 15.0
+                    if fx_queue is not None:
+                        fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+
+                    if creature.hp < 0.0:
+                        state.plaguebearer_infection_count += 1
+                        deaths.append(
+                            self.handle_death(
+                                idx,
+                                state=state,
+                                players=players,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                                world_width=world_width,
+                                world_height=world_height,
+                                fx_queue=fx_queue,
+                            )
+                        )
+                        if creature.active:
+                            self._tick_dead(
+                                creature,
+                                dt=dt,
+                                world_width=world_width,
+                                world_height=world_height,
+                                fx_queue_rotated=fx_queue_rotated,
+                            )
+                        continue
+
             target_player = int(creature.target_player)
             if not (0 <= target_player < len(players)):
                 target_player = 0
@@ -472,7 +525,7 @@ class CreaturePool:
                             )
                         continue
 
-                if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0:
+                if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.collision_flag != 0:
                     creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
 
                 turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
@@ -510,6 +563,13 @@ class CreaturePool:
                         creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
                         creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
+            if (
+                players
+                and perk_active(players[0], PerkId.PLAGUEBEARER)
+                and int(state.plaguebearer_infection_count) < 0x3C
+            ):
+                self._plaguebearer_spread_infection(idx)
+
             if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 380.0 and float(player.health) > 0.0:
                 eat_dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
                 if eat_dist_sq < 20.0 * 20.0:
@@ -546,13 +606,11 @@ class CreaturePool:
 
             # Contact damage throttle. While Energizer is active, the native suppresses
             # contact/melee interactions for most creatures (and instead allows "eat" kills).
-            if float(state.bonuses.energizer) > 0.0:
-                creature.collision_flag = 0
-            else:
+            if float(state.bonuses.energizer) <= 0.0:
+                dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
                 contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
-                in_contact = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y) <= contact_r * contact_r
+                in_contact = dist_sq <= contact_r * contact_r
                 if in_contact:
-                    creature.collision_flag = 1
                     creature.collision_timer -= dt
                     if creature.collision_timer < 0.0:
                         creature.collision_timer += CONTACT_DAMAGE_PERIOD
@@ -564,8 +622,14 @@ class CreaturePool:
                             elif perk_active(player, PerkId.VEINS_OF_POISON):
                                 creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
                         player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
-                else:
-                    creature.collision_flag = 0
+
+                if (
+                    bool(player.plaguebearer_active)
+                    and float(creature.hp) < 150.0
+                    and int(state.plaguebearer_infection_count) < 0x32
+                    and dist_sq < 30.0 * 30.0
+                ):
+                    creature.collision_flag = 1
 
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`

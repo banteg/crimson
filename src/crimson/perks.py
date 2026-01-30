@@ -198,7 +198,13 @@ PERK_TABLE = [
         description="You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.)",
         flags=None,
         prereq=(),
-        notes="Sets `player_plaguebearer_active` (`DAT_004908b9`); creature update checks it to infect nearby monsters.",
+        notes=(
+            "Sets `player_plaguebearer_active` (`DAT_004908b9`). In `creature_update_all`, infected creatures "
+            "(`collision_flag != 0`) take `15` damage every `0.5` seconds via `collision_timer`; on an infection kill, "
+            "increments `plaguebearer_infection_count`. While `plaguebearer_infection_count < 60`, "
+            "`FUN_00425d80` spreads infection between creatures within `45` units when the target has `<150` HP. "
+            "While `plaguebearer_infection_count < 50`, the player infects nearby creatures (`<30` units) with `<150` HP."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.EVIL_EYES,
