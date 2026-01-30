@@ -429,7 +429,7 @@ These usually live in `player_update`:
 * [ ] Thick Skinned
 * [ ] Regeneration
 * [x] Ninja
-* [ ] Highlander
+* [x] Highlander
 * [x] Perk Master
 * [ ] Breathing Room
 * [x] Stationary Reloader

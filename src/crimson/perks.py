@@ -578,7 +578,7 @@ PERK_TABLE = [
         description="You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know.",
         flags=None,
         prereq=(),
-        notes=None,
+        notes="`player_take_damage` (0x00425e50): when active, does not subtract damage; instead `crt_rand() % 10 == 0` sets `health = 0.0` (instant death).",
     ),
     PerkMeta(
         perk_id=PerkId.JINXED,
