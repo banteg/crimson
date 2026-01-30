@@ -804,6 +804,13 @@ def perk_apply(
                 if player.health > 0.0:
                     scale = float(state.rng.rand() % 50 + 1)
                     player.health = min(100.0, player.health * scale)
+                    state.effects.spawn_burst(
+                        pos_x=float(player.pos_x),
+                        pos_y=float(player.pos_y),
+                        count=8,
+                        rand=state.rng.rand,
+                        detail_preset=5,
+                    )
             return
 
         if perk_id == PerkId.MY_FAVOURITE_WEAPON:

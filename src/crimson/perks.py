@@ -675,7 +675,10 @@ PERK_TABLE = [
         description="Here, eat this bandage and you'll feel a lot better in no time. (restores up to 50% health)",
         flags=None,
         prereq=(),
-        notes=None,
+        notes=(
+            "`perk_apply` (0x004055e0): multiplies `player.health` by `(crt_rand() % 50 + 1)` and clamps to `100.0`, "
+            "then calls `effect_spawn_burst(player.pos, 8)`."
+        ),
     ),
     PerkMeta(
         perk_id=PerkId.ANGRY_RELOADER,

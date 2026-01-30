@@ -401,7 +401,7 @@ These usually live in `player_update`:
 * [x] Ammo Maniac
 * [x] Grim Deal
 * [x] Death Clock
-* [ ] Bandage
+* [x] Bandage
 * [x] My Favourite Weapon
 
 3. [ ] Add minimal scenario tests per perk
