@@ -40,7 +40,7 @@
 - [x] **Original behavior (decompile):** textured/rotated rocket quad using atlas frame `(grid=4, frame=3)`; rotation + glow + trail/detail effects.
 - [x] **Fix:** render secondary projectiles using atlas sprite `(grid=4, frame=3)` with rotation by heading.
 - [x] **Fix (fidelity):** add glow quad.
-- [ ] **Fix (fidelity):** add trail/detail sprite effects.
+- [x] **Fix (fidelity):** add trail/detail sprite effects.
 - [ ] **Verify:** rockets look correct in arsenal preview (no more circles/stubs).
 
 ---

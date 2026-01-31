@@ -1229,35 +1229,80 @@ class WorldRenderer:
 
         if proj_type in (1, 2, 4) and self.projs_texture is not None:
             texture = self.projs_texture
-            base_alpha = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
-            base_tint = rl.Color(255, 255, 255, base_alpha)
+            cell_w = float(texture.width) / 4.0
+            if cell_w <= 1e-6:
+                return
 
-            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            base_alpha = clamp(alpha * 0.9, 0.0, 1.0)
+            base_tint = self._color_from_rgba((0.8, 0.8, 0.8, base_alpha))
+            base_size = 14.0
+            if proj_type == 2:
+                base_size = 10.0
+            elif proj_type == 4:
+                base_size = 8.0
+            sprite_scale = (base_size * scale) / cell_w
+
             fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
-            if fx_detail_1:
-                glow_alpha = int(clamp(alpha * 0.35, 0.0, 1.0) * 255.0 + 0.5)
-                glow_tint = rl.Color(255, 255, 255, glow_alpha)
-                self._draw_atlas_sprite(
-                    texture,
-                    grid=4,
-                    frame=3,
-                    x=sx,
-                    y=sy,
-                    scale=1.2 * scale,
-                    rotation_rad=angle,
-                    tint=glow_tint,
-                )
+            if fx_detail_1 and self.particles_texture is not None:
+                particles_texture = self.particles_texture
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        particle_cell_w = float(particles_texture.width) / float(grid)
+                        particle_cell_h = float(particles_texture.height) / float(grid)
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        src = rl.Rectangle(
+                            particle_cell_w * float(col),
+                            particle_cell_h * float(row),
+                            max(0.0, particle_cell_w - 2.0),
+                            max(0.0, particle_cell_h - 2.0),
+                        )
+
+                        dir_x = math.cos(angle - math.pi / 2.0)
+                        dir_y = math.sin(angle - math.pi / 2.0)
+
+                        def _draw_rocket_fx(
+                            *,
+                            size: float,
+                            offset: float,
+                            rgba: tuple[float, float, float, float],
+                        ) -> None:
+                            fx_alpha = rgba[3]
+                            if fx_alpha <= 1e-3:
+                                return
+                            tint = self._color_from_rgba(rgba)
+                            fx_sx = sx - dir_x * offset * scale
+                            fx_sy = sy - dir_y * offset * scale
+                            dst_size = size * scale
+                            dst = rl.Rectangle(float(fx_sx), float(fx_sy), float(dst_size), float(dst_size))
+                            origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
+                            rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
+
+                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        # Large bloom around the rocket (effect_id=0x0D).
+                        _draw_rocket_fx(size=140.0, offset=5.0, rgba=(1.0, 1.0, 1.0, alpha * 0.48))
+
+                        if proj_type == 4:
+                            _draw_rocket_fx(size=30.0, offset=9.0, rgba=(0.7, 0.7, 1.0, alpha * 0.158))
+                        elif proj_type == 2:
+                            _draw_rocket_fx(size=40.0, offset=9.0, rgba=(1.0, 1.0, 1.0, alpha * 0.58))
+                        else:
+                            _draw_rocket_fx(size=60.0, offset=9.0, rgba=(1.0, 1.0, 1.0, alpha * 0.68))
+
+                        rl.end_blend_mode()
             self._draw_atlas_sprite(
                 texture,
                 grid=4,
                 frame=3,
                 x=sx,
                 y=sy,
-                scale=0.8 * scale,
+                scale=sprite_scale,
                 rotation_rad=angle,
                 tint=base_tint,
             )
-            rl.end_blend_mode()
             return
 
         if proj_type == 4:
