@@ -80,6 +80,7 @@ from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
 from .paths import default_runtime_dir
+from .assets_fetch import download_missing_paqs
 
 if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
@@ -2498,6 +2499,7 @@ def run_game(config: GameConfig) -> None:
         console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
+        download_missing_paqs(assets_dir, console)
         if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
             console.log.log(f"assets: missing {CRIMSON_PAQ_NAME} (textures will not load)")
         if not (assets_dir / MUSIC_PAQ_NAME).is_file():

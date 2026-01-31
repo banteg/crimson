@@ -218,7 +218,7 @@ def cmd_game(
     ),
     assets_dir: Path | None = typer.Option(
         None,
-        help="assets root (default: base-dir)",
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
     ),
 ) -> None:
     """Run the reimplementation game flow."""
