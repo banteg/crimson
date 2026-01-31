@@ -96,6 +96,60 @@
 
 ---
 
+### F) Ion / Fire Bullets beams: in-flight thickness + head/core behavior
+
+- [x] **Confirmed mismatch:** in-flight (`life_timer == 0.4`) beam thickness is incorrect because we force `effect_scale = 1.0` while traveling.
+- [x] **Confirmed mismatch:** head/core behavior differs across stages:
+  - in-flight: decompile draws a **yellow head** scaled by `effect_scale` (`size = effect_scale * 32`)
+  - fade: decompile draws a **fixed 32×32 blue core** (not scaled), and does **not** draw the yellow head
+- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` → `if type_id in BEAM_TYPES: ...`.
+- [x] **Original behavior (decompile):**
+  - scale constants apply during both travel and fade:
+    - Ion Minigun → `1.05`
+    - Ion Rifle → `2.2`
+    - Ion Cannon → `3.5`
+    - Fire Bullets → `0.8`
+  - in-flight (`life_timer == 0.4`): repeated glow streak quads + scaled yellow head
+  - fade (`life_timer != 0.4`): repeated glow streak quads + fixed 32×32 blue core (plus ion-only chain arcs)
+- [ ] **Fix:** apply `effect_scale` unconditionally (both stages) and match head/core draw rules (yellow head only in-flight; fixed blue core only in fade).
+- [ ] **Verify:** Ion Cannon / Rifle / Minigun thickness matches during flight; Fire Bullets beam is thinner; fade stage shows the correct fixed core.
+
+---
+
+### G) Splitter Gun: missing in-flight extra projectile sprite
+
+- [x] **Confirmed mismatch:** decompile draws an extra sprite only while traveling (`life_timer == 0.4`), and its size depends on distance traveled.
+- [x] **Original behavior (decompile):** `size = min(distance(origin, pos), 20)` (then drawn as an extra projectile sprite).
+- [x] **Current behavior:** generic projectile atlas draw runs all the time with constant scale.
+- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` generic projectile draw path.
+- [ ] **Fix:** special-case Splitter to draw the extra sprite only in-flight, with scale `min(dist, 20) / 32`.
+- [ ] **Verify:** Splitter shows the extra sprite only during travel and it grows with distance up to the cap.
+
+---
+
+### H) Blade Gun: missing in-flight extra projectile sprite + time-based spin
+
+- [x] **Confirmed mismatch:** like Splitter, the extra sprite should appear only in-flight, but Blade’s rotation is time-based/spinning (not travel direction).
+- [x] **Original behavior (decompile):**
+  - `size = min(distance(origin, pos), 20)`
+  - rotation/spin uses a time-based term + projectile index (not the projectile heading)
+- [x] **Current behavior:** generic projectile atlas draw runs all the time; rotation uses projectile angle.
+- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` generic projectile draw path.
+- [ ] **Fix:** special-case Blade to draw the extra sprite only in-flight, scale by `min(dist, 20) / 32`, and compute spin from game time + projectile index.
+- [ ] **Verify:** Blade shows the extra sprite only during travel, grows to the cap, and spins consistently over time.
+
+---
+
+### I) Plague Spreader: projectile visuals are missing
+
+- [x] **Confirmed mismatch:** Plague Spreader has a dedicated render block in the decompile (overlapping quads + offsets in-flight; different fade sprite), but we fall back to a placeholder.
+- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` (no Plague Spreader special-case yet).
+- [x] **Original behavior (decompile):** special plague block (multiple overlapping quads + offsets during travel; different fade behavior).
+- [ ] **Fix:** add a Plague Spreader render special-case matching the decompile block.
+- [ ] **Verify:** plague visuals match in-flight overlapping quads and fade behavior.
+
+---
+
 ## 2) Fire Bullets vs weapon clip (“works wrong with some weapons”)
 
 - [x] **Fixed:** Fire Bullets shots do **not** consume ammo:
@@ -152,3 +206,6 @@
 - [x] Ion hit effects (ring/burst) + remove incorrect `fx_queue` decal
 - [x] Ion cannon flare size (scale constants)
 - [x] Secondary projectile render (rocket sprite + rotation; glow/trails)
+- [ ] Ion / Fire Bullets beam in-flight scaling + head/core parity
+- [ ] Splitter/Blade in-flight extra sprite parity
+- [ ] Plague Spreader projectile rendering parity
