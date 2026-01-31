@@ -7,6 +7,7 @@ from typing import Callable, Iterable
 import math
 import pyray as rl
 
+from . import paq
 from grim.fonts.grim_mono import (
     GrimMonoFont,
     draw_grim_mono_text,
@@ -40,6 +41,7 @@ CONSOLE_BORDER_COLOR = (0.21875, 0.265625, 0.3671875)
 CONSOLE_PROMPT_MONO = ">"
 CONSOLE_PROMPT_SMALL_FMT = ">%s"
 CONSOLE_CARET_TEXT = "_"
+SCRIPT_PAQ_NAMES = ("music.paq", "crimson.paq", "sfx.paq")
 
 CommandHandler = Callable[[list[str]], None]
 
@@ -68,6 +70,37 @@ def _resolve_script_path(console: "ConsoleState", target: Path) -> Path | None:
         candidate = base / target
         if candidate.is_file():
             return candidate
+    return None
+
+
+def _iter_script_paq_paths(console: "ConsoleState") -> Iterable[Path]:
+    roots: list[Path] = []
+    if console.assets_dir is not None:
+        roots.append(console.assets_dir)
+    if console.base_dir not in roots:
+        roots.append(console.base_dir)
+    for root in roots:
+        for name in SCRIPT_PAQ_NAMES:
+            path = root / name
+            if path.is_file():
+                yield path
+
+
+def _load_script_from_paq(console: "ConsoleState", target: Path) -> str | None:
+    if target.is_absolute():
+        return None
+    normalized = target.as_posix().replace("\\", "/")
+    normalized_lower = normalized.lower()
+    for paq_path in _iter_script_paq_paths(console):
+        try:
+            for name, data in paq.iter_entries(paq_path):
+                entry_name = name.replace("\\", "/")
+                if entry_name == normalized or entry_name.lower() == normalized_lower:
+                    return data.decode("utf-8", errors="ignore")
+        except OSError:
+            continue
+        except Exception:
+            continue
     return None
 
 
@@ -655,12 +688,17 @@ def register_core_commands(console: ConsoleState) -> None:
             return
         target = _normalize_script_path(args[0])
         path = _resolve_script_path(console, target)
-        if path is None:
-            console.log.log(f"Cannot open file '{args[0]}'")
-            return
-        console.log.log(f"Executing '{args[0]}'")
         try:
-            for raw_line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            script_text: str | None = None
+            if path is None:
+                script_text = _load_script_from_paq(console, target)
+                if script_text is None:
+                    console.log.log(f"Cannot open file '{args[0]}'")
+                    return
+            console.log.log(f"Executing '{args[0]}'")
+            if script_text is None:
+                script_text = path.read_text(encoding="utf-8", errors="ignore")
+            for raw_line in script_text.splitlines():
                 line = raw_line.strip()
                 if line:
                     console.exec_line(line)
