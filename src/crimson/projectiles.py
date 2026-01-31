@@ -65,6 +65,7 @@ class ProjectileTypeId(IntEnum):
     ION_CANNON = 0x17
     SHRINKIFIER = 0x18
     BLADE_GUN = 0x19
+    SPIDER_PLASMA = 0x1A
     PLASMA_CANNON = 0x1C
     SPLITTER_GUN = 0x1D
     PLAGUE_SPREADER = 0x29

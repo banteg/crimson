@@ -76,7 +76,7 @@ Later in `projectile_render`, the original re-binds `particles_texture`, `effect
 
 ## Progress
 
-- [ ] A) Fix classification constants (stop overloading `BEAM_TYPES`)
+- [x] A) Fix classification constants (stop overloading `BEAM_TYPES`)
 - [ ] B) Implement Plasma particle rendering (replaces the pink fallback)
 - [ ] C) Implement Ion + Fire Bullets streak + ion chain arcs
 - [ ] D) Add the Fire Bullets particle overlay (missing pass)

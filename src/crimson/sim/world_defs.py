@@ -43,14 +43,25 @@ KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     ProjectileTypeId.ION_RIFLE: (4, 2),
 }
 
-BEAM_TYPES = frozenset(
+PLASMA_PARTICLE_TYPES = frozenset(
+    {
+        ProjectileTypeId.PLASMA_RIFLE,
+        ProjectileTypeId.PLASMA_MINIGUN,
+        ProjectileTypeId.PLASMA_CANNON,
+        ProjectileTypeId.SPIDER_PLASMA,
+        ProjectileTypeId.SHRINKIFIER,
+    }
+)
+
+ION_TYPES = frozenset(
     {
         ProjectileTypeId.ION_RIFLE,
         ProjectileTypeId.ION_MINIGUN,
         ProjectileTypeId.ION_CANNON,
-        ProjectileTypeId.SHRINKIFIER,
-        ProjectileTypeId.FIRE_BULLETS,
-        ProjectileTypeId.BLADE_GUN,
-        ProjectileTypeId.SPLITTER_GUN,
     }
 )
+
+FIRE_BULLETS_TYPES = frozenset({ProjectileTypeId.FIRE_BULLETS})
+
+# "Beam" in the original renderer is really the Ion/Fire streak + chain UV family.
+BEAM_TYPES = ION_TYPES | FIRE_BULLETS_TYPES
