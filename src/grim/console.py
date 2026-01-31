@@ -73,6 +73,23 @@ def _resolve_script_path(console: "ConsoleState", target: Path) -> Path | None:
     return None
 
 
+def _primary_script_dirs(console: "ConsoleState") -> tuple[Path, ...]:
+    dirs: list[Path] = [console.base_dir]
+    if console.assets_dir is not None and console.assets_dir not in dirs:
+        dirs.append(console.assets_dir)
+    return tuple(dirs)
+
+
+def _resolve_script_path_in(target: Path, roots: Iterable[Path]) -> Path | None:
+    if target.is_absolute():
+        return target if target.is_file() else None
+    for base in roots:
+        candidate = base / target
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _iter_script_paq_paths(console: "ConsoleState") -> Iterable[Path]:
     roots: list[Path] = []
     if console.assets_dir is not None:
@@ -687,14 +704,18 @@ def register_core_commands(console: ConsoleState) -> None:
             console.log.log("exec <script>")
             return
         target = _normalize_script_path(args[0])
-        path = _resolve_script_path(console, target)
         try:
             script_text: str | None = None
+            primary_dirs = _primary_script_dirs(console)
+            path = _resolve_script_path_in(target, primary_dirs)
             if path is None:
                 script_text = _load_script_from_paq(console, target)
-                if script_text is None:
-                    console.log.log(f"Cannot open file '{args[0]}'")
-                    return
+            if path is None and script_text is None:
+                fallback_dirs = [path for path in console.script_dirs if path not in primary_dirs]
+                path = _resolve_script_path_in(target, fallback_dirs)
+            if path is None and script_text is None:
+                console.log.log(f"Cannot open file '{args[0]}'")
+                return
             console.log.log(f"Executing '{args[0]}'")
             if script_text is None:
                 script_text = path.read_text(encoding="utf-8", errors="ignore")

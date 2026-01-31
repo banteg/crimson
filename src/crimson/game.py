@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import datetime as dt
 import faulthandler
 import math
 import random
-import shutil
 import time
 import traceback
 import webbrowser
@@ -85,12 +84,9 @@ from .paths import default_runtime_dir
 if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
 
-DEFAULT_BASE_DIR = default_runtime_dir()
-
-
 @dataclass(frozen=True, slots=True)
 class GameConfig:
-    base_dir: Path = DEFAULT_BASE_DIR
+    base_dir: Path = field(default_factory=default_runtime_dir)
     assets_dir: Path | None = None
     width: int | None = None
     height: int | None = None
@@ -2254,96 +2250,6 @@ class GameLoopView:
         rl.show_cursor()
 
 
-def _score_assets_dir(path: Path) -> tuple[int, str]:
-    score = 0
-    if (path / CRIMSON_PAQ_NAME).is_file():
-        score += 10
-    if (path / MUSIC_PAQ_NAME).is_file():
-        score += 5
-    if (path / SFX_PAQ_NAME).is_file():
-        score += 1
-    return score, path.name
-
-
-def _auto_detect_game_assets_dir() -> Path | None:
-    try:
-        repo_root = Path(__file__).resolve().parents[2]
-    except Exception:
-        repo_root = Path.cwd()
-
-    root = repo_root / "game_bins" / "crimsonland"
-    if not root.is_dir():
-        return None
-
-    best: Path | None = None
-    best_key: tuple[int, str] | None = None
-    for candidate in root.iterdir():
-        if not candidate.is_dir():
-            continue
-        key = _score_assets_dir(candidate)
-        if key[0] == 0:
-            continue
-        if best is None or (best_key is not None and key > best_key):
-            best = candidate
-            best_key = key
-    return best
-
-
-def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
-    assets_dir.mkdir(parents=True, exist_ok=True)
-
-    wanted = (CRIMSON_PAQ_NAME, MUSIC_PAQ_NAME, SFX_PAQ_NAME)
-    missing = [name for name in wanted if not (assets_dir / name).is_file()]
-    if not missing:
-        return
-
-    source_dir = _auto_detect_game_assets_dir()
-    if source_dir is None:
-        console.log.log(f"assets: missing {', '.join(missing)}")
-        console.log.log("assets: no game_bins source found for auto-copy")
-        raise FileNotFoundError(f"Missing assets: {', '.join(missing)} (no game_bins source found)")
-
-    still_missing: list[str] = []
-    for name in missing:
-        src = source_dir / name
-        dst = assets_dir / name
-        if dst.is_file():
-            continue
-        if not src.is_file():
-            console.log.log(f"assets: missing {name} (source missing)")
-            still_missing.append(name)
-            continue
-        try:
-            if src.resolve() == dst.resolve():
-                continue
-        except Exception:
-            pass
-        try:
-            shutil.copy2(src, dst)
-        except Exception as exc:
-            console.log.log(f"assets: failed to copy {name}: {exc}")
-            still_missing.append(name)
-            continue
-        console.log.log(f"assets: copied {name} from {source_dir}")
-    if still_missing:
-        raise FileNotFoundError(f"Missing assets after copy: {', '.join(still_missing)}")
-
-
-def _ensure_autoexec_file(base_dir: Path, source_dir: Path | None, console: ConsoleState) -> None:
-    dst = base_dir / AUTOEXEC_NAME
-    if dst.is_file():
-        return
-    if source_dir is None:
-        return
-    src = source_dir / AUTOEXEC_NAME
-    if not src.is_file():
-        return
-    try:
-        shutil.copy2(src, dst)
-    except Exception as exc:
-        console.log.log(f"assets: failed to copy {AUTOEXEC_NAME}: {exc}")
-
-
 def _parse_float_arg(value: str) -> float:
     try:
         return float(value)
@@ -2568,9 +2474,6 @@ def run_game(config: GameConfig) -> None:
     rng = random.Random(config.seed)
     assets_dir = _resolve_assets_dir(config)
     console = create_console(base_dir, assets_dir=assets_dir)
-    source_assets_dir = _auto_detect_game_assets_dir()
-    if source_assets_dir is not None:
-        console.add_script_dir(source_assets_dir)
     status = ensure_game_status(base_dir)
     state: GameState | None = None
     try:
@@ -2595,8 +2498,6 @@ def run_game(config: GameConfig) -> None:
         console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
-        _copy_missing_assets(assets_dir, console)
-        _ensure_autoexec_file(base_dir, source_assets_dir, console)
         if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
             console.log.log(f"assets: missing {CRIMSON_PAQ_NAME} (textures will not load)")
         if not (assets_dir / MUSIC_PAQ_NAME).is_file():

@@ -212,11 +212,13 @@ def cmd_game(
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
         help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
     assets_dir: Path | None = typer.Option(
         None,
-        help="assets root (default: base-dir; missing .paq copied from game_bins/)",
+        help="assets root (default: base-dir)",
     ),
 ) -> None:
     """Run the reimplementation game flow."""
@@ -240,6 +242,8 @@ def cmd_config(
     path: Path | None = typer.Option(None, help="path to crimson.cfg (default: base-dir/crimson.cfg)"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
         help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
 ) -> None:
