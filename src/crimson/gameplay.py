@@ -1874,11 +1874,12 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     else:
         player.long_distance_runner_timer = 0.0
 
-    speed = 120.0 * (player.move_speed_multiplier + runner_bonus)
+    speed_multiplier = float(player.move_speed_multiplier + runner_bonus)
+    if player.speed_bonus_timer > 0.0:
+        speed_multiplier += 1.0
+    speed = 120.0 * speed_multiplier
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
-    if player.speed_bonus_timer > 0.0:
-        speed *= 1.35
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
     player.pos_y = _clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
 

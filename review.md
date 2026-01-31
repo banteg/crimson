@@ -206,17 +206,9 @@ You can see both names being copied in `weapon_table_init @ 004519b0` in the Ghi
 
 ---
 
-## 6) Speed bonus multiplier doesn't match the decompile [ ]
+## 6) Speed bonus multiplier doesn't match the decompile [x]
 
-In your `player_update`:
-
-```py
-speed = 120.0 * (player.move_speed_multiplier + runner_bonus)
-if player.speed_bonus_timer > 0.0:
-    speed *= 1.35  # current
-```
-
-(`src/crimson/gameplay.py` lines ~1534–1536)
+Fixed: `player_update` applies the speed bonus via the native additive model (`+1.0` to the speed multiplier while the timer is active), instead of multiplying the final speed by `1.35`.
 
 In the original `player_update @ 004136b0`, speed bonus works by temporarily doing:
 
@@ -231,7 +223,7 @@ Given the baseline `speed_multiplier` is typically 2.0, the original effect is e
 
 **Actionable fix:**
 
-- [ ] Change to the additive model, or at minimum adjust the factor to 1.5× if your simplified model intentionally avoids the original's acceleration curves.
+- [x] Change to the additive model, or at minimum adjust the factor to 1.5× if your simplified model intentionally avoids the original's acceleration curves.
 
 ---
 
@@ -314,7 +306,7 @@ If you want faithful persistence interoperability with original files, this matt
 
 - [x] 3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
 
-- [ ] 4. **Correct Speed bonus scaling** (1.5× effective behavior)
+- [x] 4. **Correct Speed bonus scaling** (1.5× effective behavior)
 
 - [x] 5. **Fill missing weapon names** (RayGun, Lighting Rifle)
 
