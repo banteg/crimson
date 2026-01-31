@@ -107,7 +107,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=1,
         name='Pistol',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=12,
         shot_cooldown=0.7117000222206116,
         reload_time=1.2000000476837158,
@@ -123,7 +123,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=2,
         name='Assault Rifle',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=25,
         shot_cooldown=0.11699999868869781,
         reload_time=1.2000000476837158,
@@ -139,7 +139,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=3,
         name='Shotgun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=12,
         shot_cooldown=0.8500000238418579,
         reload_time=1.899999976158142,
@@ -155,7 +155,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=4,
         name='Sawed-off Shotgun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=12,
         shot_cooldown=0.8700000047683716,
         reload_time=1.899999976158142,
@@ -171,7 +171,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=5,
         name='Submachine Gun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=30,
         shot_cooldown=0.08811700344085693,
         reload_time=1.2000000476837158,
@@ -187,7 +187,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=6,
         name='Gauss Gun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=6,
         shot_cooldown=0.6000000238418579,
         reload_time=1.600000023841858,
@@ -203,7 +203,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=7,
         name='Mean Minigun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=120,
         shot_cooldown=0.09000000357627869,
         reload_time=4.0,
@@ -219,7 +219,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=8,
         name='Flamethrower',
-        ammo_class=None,
+        ammo_class=1,
         clip_size=30,
         shot_cooldown=0.008112999610602856,
         reload_time=2.0,
@@ -235,7 +235,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=9,
         name='Plasma Rifle',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=20,
         shot_cooldown=0.290811687707901,
         reload_time=1.2000000476837158,
@@ -251,7 +251,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=10,
         name='Multi-Plasma',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=8,
         shot_cooldown=0.6208117008209229,
         reload_time=1.399999976158142,
@@ -267,7 +267,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=11,
         name='Plasma Minigun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=30,
         shot_cooldown=0.10999999940395355,
         reload_time=1.2999999523162842,
@@ -283,7 +283,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=12,
         name='Rocket Launcher',
-        ammo_class=None,
+        ammo_class=2,
         clip_size=5,
         shot_cooldown=0.7408117055892944,
         reload_time=1.2000000476837158,
@@ -299,7 +299,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=13,
         name='Seeker Rockets',
-        ammo_class=None,
+        ammo_class=2,
         clip_size=8,
         shot_cooldown=0.31081169843673706,
         reload_time=1.2000000476837158,
@@ -315,7 +315,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=14,
         name='Plasma Shotgun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=8,
         shot_cooldown=0.47999998927116394,
         reload_time=3.0999999046325684,
@@ -331,7 +331,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=15,
         name='Blow Torch',
-        ammo_class=None,
+        ammo_class=1,
         clip_size=30,
         shot_cooldown=0.006113000214099884,
         reload_time=1.5,
@@ -347,7 +347,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=16,
         name='HR Flamer',
-        ammo_class=None,
+        ammo_class=1,
         clip_size=30,
         shot_cooldown=0.008500000461935997,
         reload_time=1.7999999523162842,
@@ -363,7 +363,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=17,
         name='Mini-Rocket Swarmers',
-        ammo_class=None,
+        ammo_class=2,
         clip_size=5,
         shot_cooldown=1.7999999523162842,
         reload_time=1.7999999523162842,
@@ -379,7 +379,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=18,
         name='Rocket Minigun',
-        ammo_class=None,
+        ammo_class=2,
         clip_size=16,
         shot_cooldown=0.11999999731779099,
         reload_time=1.7999999523162842,
@@ -395,7 +395,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=19,
         name='Pulse Gun',
-        ammo_class=None,
+        ammo_class=3,
         clip_size=16,
         shot_cooldown=0.10000000149011612,
         reload_time=0.10000000149011612,
@@ -411,7 +411,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=20,
         name='Jackhammer',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=16,
         shot_cooldown=0.14000000059604645,
         reload_time=3.0,
@@ -427,7 +427,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=21,
         name='Ion Rifle',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=8,
         shot_cooldown=0.4000000059604645,
         reload_time=1.350000023841858,
@@ -443,7 +443,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=22,
         name='Ion Minigun',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=20,
         shot_cooldown=0.10000000149011612,
         reload_time=1.7999999523162842,
@@ -459,7 +459,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=23,
         name='Ion Cannon',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=3,
         shot_cooldown=1.0,
         reload_time=3.0,
@@ -475,7 +475,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=24,
         name='Shrinkifier 5k',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=8,
         shot_cooldown=0.20999999344348907,
         reload_time=1.2200000286102295,
@@ -491,7 +491,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=25,
         name='Blade Gun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=6,
         shot_cooldown=0.3499999940395355,
         reload_time=3.5,
@@ -507,7 +507,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=26,
         name='Spider Plasma',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=5,
         shot_cooldown=0.20000000298023224,
         reload_time=1.2000000476837158,
@@ -523,7 +523,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=27,
         name='Evil Scythe',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=3,
         shot_cooldown=1.0,
         reload_time=3.0,
@@ -539,7 +539,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=28,
         name='Plasma Cannon',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=3,
         shot_cooldown=0.8999999761581421,
         reload_time=2.700000047683716,
@@ -555,7 +555,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=29,
         name='Splitter Gun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=6,
         shot_cooldown=0.699999988079071,
         reload_time=2.200000047683716,
@@ -571,7 +571,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=30,
         name='Gauss Shotgun',
-        ammo_class=None,
+        ammo_class=0,
         clip_size=4,
         shot_cooldown=1.0499999523162842,
         reload_time=2.0999999046325684,
@@ -587,7 +587,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=31,
         name='Ion Shotgun',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=10,
         shot_cooldown=0.8500000238418579,
         reload_time=1.899999976158142,
@@ -603,7 +603,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=32,
         name='Flameburst',
-        ammo_class=None,
+        ammo_class=4,
         clip_size=60,
         shot_cooldown=0.019999999552965164,
         reload_time=3.0,
@@ -619,7 +619,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=33,
         name=None,
-        ammo_class=None,
+        ammo_class=4,
         clip_size=12,
         shot_cooldown=0.699999988079071,
         reload_time=2.0,

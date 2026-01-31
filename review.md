@@ -128,9 +128,12 @@ Fixed: `perk_generate_choices` now mirrors the decompile’s selection quirks:
 
 ---
 
-## 4) Weapon ammo class is currently missing, affecting HUD + perk economics [ ]
+## 4) Weapon ammo class is currently missing, affecting HUD + perk economics [x]
 
-In `src/crimson/weapons.py`, every weapon has `ammo_class=None` today.
+Fixed: weapon entries now have `ammo_class` populated (at least 1..33), sourced from:
+
+* `analysis/frida/weapon_switch_trace_summary.json` (for weapons seen in the trace)
+* `weapon_table_init @ 004519b0` ammo-class table writes (for missing ids in 1..33)
 
 You already have multiple systems that consult this:
 
@@ -138,7 +141,7 @@ You already have multiple systems that consult this:
 * perk/bonus balancing (e.g., Regression Bullets / Ammunition Within costs differ by ammo class in the original)
 * the decomp and docs indicate ammo class is also used in some projectile hit-effect gating.
 
-You currently “paper over” one case (Flamethrower) with a special-case in `_weapon_ammo_class()`, but for fidelity you need the real values.
+This also removes the need for the Flamethrower ammo-class workaround in reload-firing perk costs (Regression Bullets / Ammunition Within).
 
 ### You already have authoritative ammo_class values for many weapons
 
@@ -175,8 +178,8 @@ From `analysis/frida/weapon_switch_trace_summary.json`, ammo class values are kn
 
 **Actionable fix:**
 
-- [ ] Populate `ammo_class` for weapons at least 1..33 immediately (from the FRIDA trace + a quick additional dump if needed).
-- [ ] Remove the Flamethrower special-case once you have correct data.
+- [x] Populate `ammo_class` for weapons at least 1..33 immediately (from the FRIDA trace + a quick additional dump if needed).
+- [x] Remove the Flamethrower special-case once you have correct data.
 
 ---
 
@@ -309,7 +312,7 @@ If you want faithful persistence interoperability with original files, this matt
   - [x] Death Clock offer restrictions
   - [x] rarity rerolls / special cases (Monster Vision quest insert)
 
-- [ ] 3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
+- [x] 3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
 
 - [ ] 4. **Correct Speed bonus scaling** (1.5× effective behavior)
 
@@ -536,14 +539,14 @@ So:
 
 ---
 
-## 5) HUD / panel rendering likely wrong because `ammo_class` is not populated [ ]
+## 5) HUD / panel rendering likely wrong because `ammo_class` is not populated [x]
 
-In `src/crimson/weapons.py`, every weapon entry currently has `ammo_class=None`, but:
+Fixed: `ammo_class` is now populated in the weapon table (at least 1..33), so:
 
 * HUD uses ammo_class to choose the ammo icon (`src/crimson/ui/hud.py` `_weapon_ammo_class`)
 * various logic (and native audio) uses ammo class to select hit sounds, etc.
 
-The trace summary already contains ammo_class values per weapon (e.g., rockets vs electric), but your runtime weapon table does not.
+The trace summary already contains ammo_class values per weapon (e.g., rockets vs electric), and the remaining gaps in 1..33 are filled from `weapon_table_init`.
 
 This can absolutely show up as “panel rendering wrong” (wrong ammo icon) even if the panel layout is otherwise fine.
 
@@ -594,7 +597,7 @@ At least:
 
 Use the native IDs and templates.
 
-## D) Populate `ammo_class` in weapon definitions [ ]
+## D) Populate `ammo_class` in weapon definitions [x]
 
 Use either:
 

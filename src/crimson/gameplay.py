@@ -1577,8 +1577,6 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             if perk_active(player, PerkId.REGRESSION_BULLETS):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and weapon_id == WeaponId.FLAMETHROWER:
-                    ammo_class = 1
 
                 reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
                 factor = 4.0 if ammo_class == 1 else 200.0
@@ -1588,8 +1586,6 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             elif perk_active(player, PerkId.AMMUNITION_WITHIN):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and weapon_id == WeaponId.FLAMETHROWER:
-                    ammo_class = 1
 
                 from .player_damage import player_take_damage
 
