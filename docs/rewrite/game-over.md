@@ -41,14 +41,14 @@ The rewrite currently:
 - Tracks per-weapon usage counts and populates `most_used_weapon_id` from the most-used weapon.
 - Tracks shots fired/hit for Survival/Rush/Quests (projectile-based) and Typ-o Shooter (typing-based).
 
-3) **SFX and transitions are incomplete**
+3) **SFX and transitions**
 
 The original flow plays UI SFX (type clicks, confirm, error buzzer) and uses the UI transition timeline (`ui_elements_update_and_render`) to animate screen entry/exit.
 
-The rewrite currently:
+The rewrite now:
 
 - Plays the core UI SFX set used by the flow (type clicks, confirm, error, button clicks, and panel open click).
-- Still renders without the original transition animation / exit timeline.
+- Animates panel entry/exit and delays navigation until the exit transition completes.
 
 4) **Quest mode uses a dedicated flow**
 

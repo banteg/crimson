@@ -548,9 +548,9 @@ This can absolutely show up as “panel rendering wrong” (wrong ammo icon) eve
 
 ---
 
-## 6) Screen/panel gap that's still explicitly missing: game-over transition timeline [ ]
+## 6) Screen/panel gap that's still explicitly missing: game-over transition timeline [x]
 
-You’ve got `docs/rewrite/game-over.md` explicitly stating the **transition timeline + full SFX parity** are still missing. If you’re seeing “screen feels wrong / panels appear abruptly”, that’s consistent with this being unimplemented.
+Fixed: Game Over now animates its exit transition (panel slide-out) before navigation, and the docs no longer flag it as missing.
 
 ---
 
@@ -602,11 +602,11 @@ Use either:
 
 This will fix HUD/panel ammo icons and some audio decisions.
 
-## E) Then re-check UI "panel rendering" [ ]
+## E) Then re-check UI "panel rendering" [x]
 
-Once the ammo_class and weapon previews are correct, re-evaluate what still feels off in UI. The likely remaining big one is:
+Once the ammo_class and weapon previews are correct, re-evaluate what still feels off in UI. The remaining big one was:
 
-* game-over transition timeline and SFX sequence.
+* game-over transition timeline and SFX sequence (fixed).
 
 ---
 

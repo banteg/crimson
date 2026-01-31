@@ -187,6 +187,8 @@ class GameOverUi:
     _hover_hit_ratio: float = 0.0
     _intro_ms: float = 0.0
     _panel_open_sfx_played: bool = False
+    _closing: bool = False
+    _close_action: str | None = None
 
     # Buttons (rendered via existing ui_button implementation)
     _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
@@ -216,6 +218,8 @@ class GameOverUi:
         self._hover_hit_ratio = 0.0
         self._intro_ms = 0.0
         self._panel_open_sfx_played = False
+        self._closing = False
+        self._close_action = None
         self.input_text = ""
         self.input_caret = 0
         self._consume_enter = True
@@ -259,6 +263,12 @@ class GameOverUi:
         panel = rl.Rectangle(float(left), float(top), GAME_OVER_PANEL_W * scale, GAME_OVER_PANEL_H * scale)
         return panel, left, top
 
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
+
     def update(
         self,
         dt: float,
@@ -278,6 +288,15 @@ class GameOverUi:
                 return 0
 
         if self.assets is None:
+            return None
+
+        if self._closing:
+            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
+            if self._intro_ms <= 1e-3 and self._close_action is not None:
+                action = self._close_action
+                self._close_action = None
+                self._closing = False
+                return action
             return None
 
         self._intro_ms = min(PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
@@ -376,21 +395,24 @@ class GameOverUi:
             if button_update(self._play_again_button, x=x, y=y, width=play_again_w, dt_ms=dt_ms, mouse=mouse, click=click):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
-                return "play_again"
+                self._begin_close_transition("play_again")
+                return None
             y += 32.0 * scale
 
             high_scores_w = button_width(self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide)
             if button_update(self._high_scores_button, x=x, y=y, width=high_scores_w, dt_ms=dt_ms, mouse=mouse, click=click):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
-                return "high_scores"
+                self._begin_close_transition("high_scores")
+                return None
             y += 32.0 * scale
 
             main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
             if button_update(self._main_menu_button, x=x, y=y, width=main_menu_w, dt_ms=dt_ms, mouse=mouse, click=click):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
-                return "main_menu"
+                self._begin_close_transition("main_menu")
+                return None
         return None
 
     def _draw_score_card(
