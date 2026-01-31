@@ -98,20 +98,13 @@
 
 ## 2) Fire Bullets vs weapon clip (“works wrong with some weapons”)
 
-- [x] **Parity confirmed:** we do NOT subtract ammo while Fire Bullets is active:
+- [x] **Fixed:** Fire Bullets shots do **not** consume ammo:
   ```py
-  if player.fire_bullets_timer <= 0.0:
-      player.ammo -= ammo_cost
+  if (not is_fire_bullets) and state.bonuses.reflex_boost <= 0.0:
+      player.ammo = max(0.0, player.ammo - ammo_cost)
   ```
-- [x] **Confirmed mismatch:** we still block firing if `ammo == 0` (even when Fire Bullets is active) because we early-return into reload:
-  ```py
-  if player.ammo <= 0.0 and not firing_during_reload:
-      player_start_reload(...)
-      return
-  ```
-- [x] **Confirmed mismatch:** spread heat increment is wrong for multi-pellet weapons (should always use Fire Bullets spread heat).
-- [ ] **Fix:** allow firing during Fire Bullets even if `ammo == 0` (avoid early reload return in that case).
-- [ ] **Fix:** spread heat increment always uses Fire Bullets spread heat regardless of pellet count.
+- [x] **Fixed:** Fire Bullets can still fire when `ammo == 0` (reload begins after the shot, not before).
+- [x] **Fixed:** spread heat increment always uses Fire Bullets spread heat regardless of pellet count.
 - [ ] **Verify:** Fire Bullets behavior is not tied to clip state; spread/accuracy feels like original.
 
 ---

@@ -1592,6 +1592,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
 
     firing_during_reload = False
     ammo_cost = 1.0
+    is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     if player.reload_timer > 0.0:
         if player.ammo <= 0 and player.experience > 0:
             if perk_active(player, PerkId.REGRESSION_BULLETS):
@@ -1616,7 +1617,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         else:
             return
 
-    if player.ammo <= 0 and not firing_during_reload:
+    if player.ammo <= 0 and not firing_during_reload and not is_fire_bullets:
         player_start_reload(player, state)
         return
 
@@ -1624,20 +1625,18 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
-    spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
-    spread_inc *= 1.3
-    if player.fire_bullets_timer > 0.0 and pellet_count == 1 and fire_bullets_weapon is not None:
+    spread_heat_base = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    if is_fire_bullets and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
+        spread_heat_base = float(fire_bullets_weapon.spread_heat_inc)
+
+    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
         shot_cooldown = (
             float(fire_bullets_weapon.shot_cooldown)
             if fire_bullets_weapon.shot_cooldown is not None
             else 0.0
         )
-        spread_inc = (
-            float(fire_bullets_weapon.spread_heat_inc)
-            if fire_bullets_weapon.spread_heat_inc is not None
-            else 0.0
-        )
-        spread_inc *= 1.3
+
+    spread_inc = spread_heat_base * 1.3
 
     if perk_active(player, PerkId.FASTSHOT):
         shot_cooldown *= 0.88
@@ -1677,7 +1676,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             return 0.0013
         return 0.0015
 
-    if player.fire_bullets_timer > 0.0:
+    if is_fire_bullets:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
         meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
@@ -1834,15 +1833,17 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
 
     muzzle_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
+        muzzle_inc = float(fire_bullets_weapon.spread_heat_inc)
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha)
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
     player.shot_seq += 1
-    if not firing_during_reload and state.bonuses.reflex_boost <= 0.0:
+    if (not firing_during_reload) and state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         player.ammo = max(0.0, float(player.ammo) - float(ammo_cost))
-        if player.ammo <= 0.0:
-            player_start_reload(player, state)
+    if (not firing_during_reload) and player.ammo <= 0.0 and player.reload_timer <= 0.0:
+        player_start_reload(player, state)
 
 
 def player_update(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState, *, world_size: float = 1024.0) -> None:
