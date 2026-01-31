@@ -4,7 +4,7 @@ I’m referencing the Ghidra decompile in `analysis/ghidra/raw/crimsonland.exe_d
 
 ---
 
-## 1) Weapon drops are not faithful to the original
+## 1) Weapon drops are not faithful to the original [ ]
 
 ### What the original does
 
@@ -35,17 +35,16 @@ In `src/crimson/gameplay.py`:
 
 **Actionable fix:**
 
-* Implement `weapon_refresh_available` logic (see next section) and store per-weapon `unlocked/available` state.
-* Re-implement `weapon_pick_random_available` to match the decompile:
-
-  * candidate range 1..33
-  * enforce unlocked
-  * usage-count reroll bias
-* Increment `status.weapon_usage_counts[weapon_id]` in the equivalent of `weapon_assign_player`.
+- [ ] Implement `weapon_refresh_available` logic (see next section) and store per-weapon `unlocked/available` state.
+- [ ] Re-implement `weapon_pick_random_available` to match the decompile:
+  - [ ] candidate range 1..33
+  - [ ] enforce unlocked
+  - [ ] usage-count reroll bias
+- [ ] Increment `status.weapon_usage_counts[weapon_id]` in the equivalent of `weapon_assign_player`.
 
 ---
 
-## 2) Weapon availability / unlock progression is not wired into gameplay
+## 2) Weapon availability / unlock progression is not wired into gameplay [ ]
 
 ### What the original does
 
@@ -73,18 +72,16 @@ Your quest completion flow updates `quest_unlock_index` (e.g. `QuestResultsView`
 
 **Actionable fix:**
 
-* Add a “weapon availability” table (either:
-
-  * add `unlocked` to your `Weapon` metadata at runtime, or
-  * keep a separate `available_weapon_ids` set/bitset in game state)
-* Rebuild it:
-
-  * on game start / mode switch
-  * whenever `quest_unlock_index` changes
+- [ ] Add a "weapon availability" table (either:
+  - [ ] add `unlocked` to your `Weapon` metadata at runtime, or
+  - [ ] keep a separate `available_weapon_ids` set/bitset in game state)
+- [ ] Rebuild it:
+  - [ ] on game start / mode switch
+  - [ ] whenever `quest_unlock_index` changes
 
 ---
 
-## 3) Perk availability + perk choice generation diverge from the original
+## 3) Perk availability + perk choice generation diverge from the original [ ]
 
 There are **two** distinct fidelity issues here: “what perks exist” and “how the perk choice list is generated”.
 
@@ -124,15 +121,14 @@ Your port:
 
 **Actionable fix:**
 
-* Implement:
-
-  * `perks_rebuild_available` equivalent (quest unlock driven)
-  * original `perk_can_offer` rules (especially Death Clock restrictions)
-  * original `perk_generate_choices` quirks (rarity rerolls + quest special cases)
+- [ ] Implement:
+  - [ ] `perks_rebuild_available` equivalent (quest unlock driven)
+  - [ ] original `perk_can_offer` rules (especially Death Clock restrictions)
+  - [ ] original `perk_generate_choices` quirks (rarity rerolls + quest special cases)
 
 ---
 
-## 4) Weapon ammo class is currently missing, affecting HUD + perk economics
+## 4) Weapon ammo class is currently missing, affecting HUD + perk economics [ ]
 
 In `src/crimson/weapons.py`, every weapon has `ammo_class=None` today.
 
@@ -179,12 +175,12 @@ From `analysis/frida/weapon_switch_trace_summary.json`, ammo class values are kn
 
 **Actionable fix:**
 
-* Populate `ammo_class` for weapons at least 1..33 immediately (from the FRIDA trace + a quick additional dump if needed).
-* Remove the Flamethrower special-case once you have correct data.
+- [ ] Populate `ammo_class` for weapons at least 1..33 immediately (from the FRIDA trace + a quick additional dump if needed).
+- [ ] Remove the Flamethrower special-case once you have correct data.
 
 ---
 
-## 5) Two weapon names are missing in your weapon table
+## 5) Two weapon names are missing in your weapon table [ ]
 
 In `src/crimson/weapons.py`:
 
@@ -203,11 +199,11 @@ You can see both names being copied in `weapon_table_init @ 004519b0` in the Ghi
 
 **Actionable fix:**
 
-* Fill the missing names.
+- [ ] Fill the missing names.
 
 ---
 
-## 6) Speed bonus multiplier doesn’t match the decompile
+## 6) Speed bonus multiplier doesn't match the decompile [ ]
 
 In your `player_update`:
 
@@ -232,11 +228,11 @@ Given the baseline `speed_multiplier` is typically 2.0, the original effect is e
 
 **Actionable fix:**
 
-* Change to the additive model, or at minimum adjust the factor to 1.5× if your simplified model intentionally avoids the original’s acceleration curves.
+- [ ] Change to the additive model, or at minimum adjust the factor to 1.5× if your simplified model intentionally avoids the original's acceleration curves.
 
 ---
 
-## 7) Weapon assignment side effects are missing (sound + latch/timer)
+## 7) Weapon assignment side effects are missing (sound + latch/timer) [ ]
 
 Original `weapon_assign_player @ 00452d40` does more than “set weapon id & ammo”:
 
@@ -258,15 +254,14 @@ Your `weapon_assign_player()` resets ammo/timers and applies perk adjustments, b
 
 **Actionable fix:**
 
-* Decide where “weapon switch SFX” belongs in your architecture:
-
-  * emit an explicit SFX event from `weapon_assign_player`, or
-  * have the caller enqueue it after assignment
-* Add the missing latch/timer fields if they’re used elsewhere in the original’s logic.
+- [ ] Decide where "weapon switch SFX" belongs in your architecture:
+  - [ ] emit an explicit SFX event from `weapon_assign_player`, or
+  - [ ] have the caller enqueue it after assignment
+- [ ] Add the missing latch/timer fields if they're used elsewhere in the original's logic.
 
 ---
 
-## 8) Quest-mode bonus suppression rules are missing in `bonus_pick_random_type`
+## 8) Quest-mode bonus suppression rules are missing in `bonus_pick_random_type` [ ]
 
 Your `bonus_pick_random_type()` matches the general 162-roll distribution and most suppression rules, **but not** the quest-stage-specific suppressions mentioned in your own docs (and visible in the decompile `bonus_pick_random_type @ 00412470`).
 
@@ -283,9 +278,9 @@ Your version doesn’t check quest stage at all when deciding bonus type.
 
 ---
 
-## 9) Two smaller but concrete fidelity risks
+## 9) Two smaller but concrete fidelity risks [ ]
 
-### 9a) Demo idle attract threshold is still a guess
+### 9a) Demo idle attract threshold is still a guess [ ]
 
 `src/crimson/frontend/menu.py` sets:
 
@@ -295,7 +290,7 @@ MENU_DEMO_IDLE_START_MS = 30000  # TODO: confirm via frida tracing
 
 If you’re aiming for high fidelity, this should be sourced from the original (your comment already flags it).
 
-### 9b) Hardcore quest highscores filename is marked as uncertain
+### 9b) Hardcore quest highscores filename is marked as uncertain [ ]
 
 `src/crimson/persistence/highscores.py` has an explicit TODO/comment questioning whether hardcore quest scores should use `questhcXX.dat` (line ~267).
 
@@ -305,24 +300,22 @@ If you want faithful persistence interoperability with original files, this matt
 
 ## Highest value next steps (in order)
 
-1. **Fix weapon drops**:
+- [ ] 1. **Fix weapon drops**:
+  - [ ] implement weapon availability (`weapon_refresh_available`) + usage counts bump
+  - [ ] reimplement `weapon_pick_random_available` to match the original algorithm and pool (1..33)
 
-   * implement weapon availability (`weapon_refresh_available`) + usage counts bump
-   * reimplement `weapon_pick_random_available` to match the original algorithm and pool (1..33)
+- [ ] 2. **Implement perk availability + original perk offering rules**:
+  - [ ] `perks_rebuild_available`
+  - [ ] Death Clock offer restrictions
+  - [ ] rarity rerolls / special cases (Monster Vision quest insert)
 
-2. **Implement perk availability + original perk offering rules**:
+- [ ] 3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
 
-   * `perks_rebuild_available`
-   * Death Clock offer restrictions
-   * rarity rerolls / special cases (Monster Vision quest insert)
+- [ ] 4. **Correct Speed bonus scaling** (1.5× effective behavior)
 
-3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
+- [ ] 5. **Fill missing weapon names** (RayGun, Lighting Rifle)
 
-4. **Correct Speed bonus scaling** (1.5× effective behavior)
-
-5. **Fill missing weapon names** (RayGun, Lighting Rifle)
-
-6. **Weapon-switch side effects** (reload SFX + latch/timer) if you care about near-perfect “feel”
+- [ ] 6. **Weapon-switch side effects** (reload SFX + latch/timer) if you care about near-perfect "feel"
 
 If you want, I can also give you a “diff-style” pseudo-patch outline for the weapon/perk selection functions that mirrors the decompile closely (without changing your broader architecture).
 
@@ -334,7 +327,7 @@ Below are the concrete inconsistencies (with pointers to *where* the native beha
 
 ---
 
-## 1) Critical: projectile `type_id` is not “0-based”; it’s the weapon-table index the native code uses
+## 1) Critical: projectile `type_id` is not "0-based"; it's the weapon-table index the native code uses [ ]
 
 ### What native does
 
@@ -375,7 +368,7 @@ This single mismatch can manifest exactly like what you described:
 
 ---
 
-## 2) Weapon firing behavior in `player_fire_weapon` is substantially different from native `player_update`
+## 2) Weapon firing behavior in `player_fire_weapon` is substantially different from native `player_update` [ ]
 
 Native firing logic lives in `player_update` (not in your Python `player_fire_weapon`), and it has a **per-weapon “spawn path table”** that you currently don’t match.
 
@@ -388,112 +381,112 @@ The native weapon switch inside `player_update` shows exactly what each weapon d
 
 I’m listing *native behavior → your behavior*, and the *native evidence lines*.
 
-#### Weapon 8: Flamethrower
+#### Weapon 8: Flamethrower [ ]
 
 * **Native:** spawns **fast particles** (`fx_spawn_particle`), ammo drain **0.1**
   Evidence: **13061–13064** (`iVar10 == 8` → `fx_spawn_particle(...); local_38 = 0.1`)
-* **Yours:** Flamethrower falls into the generic projectile path (no special-case) and fires “normal projectiles”.
+* **Yours:** Flamethrower falls into the generic projectile path (no special-case) and fires "normal projectiles".
   Code: `src/crimson/gameplay.py` — no `weapon_id == 8` particle branch.
 
-#### Weapon 9: Plasma Rifle
+#### Weapon 9: Plasma Rifle [ ]
 
 * **Native:** spawns a **projectile**: `projectile_spawn(..., 9, owner)`
   Evidence: **13114–13116** (`iVar10 == 9`)
 * **Yours:** treated as a **fast particle weapon** (style 0), fractional drain
   Code: `src/crimson/gameplay.py` branch `elif player.weapon_id == 9: # Plasma Rifle -> fast particle weapon`
 
-#### Weapon 10: Multi-Plasma
+#### Weapon 10: Multi-Plasma [ ]
 
 * **Native:** spawns **five projectiles** mixing type **9** and type **0x0B**
   Evidence: **13117–13132**
 * **Yours:** generic single projectile (or generic pellet logic depending on your weapon entry), no 5-shot pattern.
 
-#### Weapon 11: Plasma Minigun
+#### Weapon 11: Plasma Minigun [ ]
 
 * **Native:** `projectile_spawn(..., 0x0B, owner)`
   Evidence: **13176–13178**
 * **Yours:** generic path using your 0-based type mapping (so it will not be `0x0B` in the native sense).
 
-#### Weapon 12: Rocket Launcher
+#### Weapon 12: Rocket Launcher [ ]
 
 * **Native:** spawns **secondary projectile type 1** (`fx_spawn_secondary_projectile(..., 1)`), drain 1 ammo
   Evidence: **13272–13275**
 * **Yours:** generic main projectile path (not secondary)
-  Code: you don’t special-case weapon 12 at all.
+  Code: you don't special-case weapon 12 at all.
 
-#### Weapon 13: Seeker Rockets
+#### Weapon 13: Seeker Rockets [ ]
 
 * **Native:** spawns **secondary projectile type 2** (homing) + also spawns a sprite burst
   Evidence: **13342–13348**
 * **Yours:** spawns secondary type **1**
   Code: `elif player.weapon_id == 13: secondary_type_id = SecondaryProjectileTypeId.SEEKER_ROCKET` (you define that as 1)
 
-#### Weapon 14: Plasma Shotgun
+#### Weapon 14: Plasma Shotgun [ ]
 
 * **Native:** fires **14** projectiles of type **0x0B** with jitter `0.002` and per-pellet `speed_scale = 1.0..1.99`
   Evidence: **13372–13387**
 * **Yours:** spawns a secondary projectile (type 2)
   Code: `elif player.weapon_id == 14: secondary_type_id = SecondaryProjectileTypeId.PLASMA_SHOTGUN`
 
-#### Weapon 15: Blow Torch
+#### Weapon 15: Blow Torch [ ]
 
 * **Native:** spawns **fast particle** then sets `style_id = 1`, drain **0.05**
   Evidence: **13048–13053**
 * **Yours:** not special-cased → generic projectile path
 
-#### Weapon 16: HR Flamer
+#### Weapon 16: HR Flamer [ ]
 
 * **Native:** spawns **fast particle**, sets `style_id = 2`, drain **0.1**
   Evidence: **13042–13047**
 * **Yours:** `weapon_id == 16` uses fast particle but sets `style_id = 1` and drain `0.05`
   Code: `src/crimson/gameplay.py` branch `elif player.weapon_id == 16: ... style_id = 1 ... ammo_cost = 0.05`
 
-#### Weapon 17: Mini-Rocket Swarmers
+#### Weapon 17: Mini-Rocket Swarmers [ ]
 
 * **Native:** spawns **N** secondary projectiles **type 2** in a fan based on *current ammo*, then drains *all ammo* in the clip
   Evidence: **13312–13325**
 * **Yours:** treated as fast particle weapon style 2
   Code: `elif player.weapon_id == 17: # Mini-Rocket Swarmers -> fast particle weapon (style 2)`
 
-#### Weapon 18: Rocket Minigun
+#### Weapon 18: Rocket Minigun [ ]
 
 * **Native:** spawns **secondary type 4**, drain 1 ammo
   Evidence: **13326–13329**
 * **Yours:** spawns secondary type 2 and drains whole clip (rocket swarmers behavior)
   Code: `elif player.weapon_id == 18: secondary_type_id = SecondaryProjectileTypeId.PLASMA_SHOTGUN; ammo_cost = float(player.ammo)`
 
-#### Weapon 19: Pulse Gun
+#### Weapon 19: Pulse Gun [ ]
 
 * **Native:** `projectile_spawn(..., 0x13, owner)` (main projectile), not a secondary
   Evidence: **13148–13150**
 * **Yours:** secondary projectile type 4
   Code: `elif player.weapon_id == 19: secondary_type_id = SecondaryProjectileTypeId.PULSE_GUN`
 
-#### Weapon 20: Jackhammer
+#### Weapon 20: Jackhammer [ ]
 
 * **Native:** uses **shotgun projectile type 3**, spawns **4** pellets with jitter `0.0013` and speed_scale random `1.0..1.99`
   Evidence: **13014–13039**
-* **Yours:** generic pellet_count logic, but using your own derived type id — so it’s not using template 3 as native does.
+* **Yours:** generic pellet_count logic, but using your own derived type id — so it's not using template 3 as native does.
 
-#### Weapon 30: Gauss Shotgun
+#### Weapon 30: Gauss Shotgun [ ]
 
 * **Native:** spawns **8** gauss projectiles of type **6** with jitter `0.0026`, speed_scale `1.4..1.89`
   Evidence: **13180–13205**
-* **Yours:** generic path; not the “8× type 6” pattern.
+* **Yours:** generic path; not the "8× type 6" pattern.
 
-#### Weapon 31: Ion Shotgun
+#### Weapon 31: Ion Shotgun [ ]
 
 * **Native:** spawns **8** ion-minigun projectiles of type **0x16** with jitter `0.0026`, speed_scale `1.4..1.89`
   Evidence: **13161–13175**
 * **Yours:** generic path; not this pattern.
 
-#### Weapon 42: Bubblegun
+#### Weapon 42: Bubblegun [ ]
 
 * **Native:** uses **slow particle** (`fx_spawn_particle_slow`), drain `0.15`
   Evidence: **13399–13403** and `fx_spawn_particle_slow` sets `style_id = 8` always (see **18688–18705**)
 * **Yours:** not special-cased → generic projectile path.
 
-#### Weapon 43: Rainbow Gun
+#### Weapon 43: Rainbow Gun [ ]
 
 * **Native:** `projectile_spawn(..., 0x2B, owner)` (main projectile)
   Evidence: **13392–13398**
@@ -502,25 +495,25 @@ I’m listing *native behavior → your behavior*, and the *native evidence line
 
 ---
 
-## 3) Perk / bonus projectile spawns use the wrong projectile IDs right now
+## 3) Perk / bonus projectile spawns use the wrong projectile IDs right now [ ]
 
 Because the projectile type ID scheme is off, perks that spawn projectiles by numeric ID are also off.
 
-### Man Bomb perk
+### Man Bomb perk [ ]
 
 * **Native:** alternates projectile types **0x16** and **0x15**
   Evidence: `player_update` perk logic **11772–11782**
 * **Yours:** alternates **ION_CANNON** and **ION_MINIGUN**
   Code: `src/crimson/gameplay.py` `_perk_update_man_bomb`
 
-### Hot Tempered perk
+### Hot Tempered perk [ ]
 
 * **Native:** alternates projectile types **0x0B** and **0x09**
   Evidence: **11860–11870**
 * **Yours:** alternates `ROCKET_LAUNCHER` and `PLASMA_RIFLE`
   Code: `src/crimson/gameplay.py` `_perk_update_hot_tempered`
 
-### Fire Cough perk
+### Fire Cough perk [ ]
 
 * **Native:** spawns projectile type **0x2D** (`projectile_spawn(..., 0x2d, ...)`)
   Evidence: **11852–11859**
@@ -528,7 +521,7 @@ Because the projectile type ID scheme is off, perks that spawn projectiles by nu
 
 ---
 
-## 4) Effects style/type mapping in docs doesn’t match the decompile (and your code followed docs)
+## 4) Effects style/type mapping in docs doesn't match the decompile (and your code followed docs) [ ]
 
 Your `effects.py` implementation of the pools looks structurally fine, but the *weapon→style* mapping in gameplay is off because the docs are off.
 
@@ -546,7 +539,7 @@ So:
 
 ---
 
-## 5) HUD / panel rendering likely wrong because `ammo_class` is not populated
+## 5) HUD / panel rendering likely wrong because `ammo_class` is not populated [ ]
 
 In `src/crimson/weapons.py`, every weapon entry currently has `ammo_class=None`, but:
 
@@ -559,7 +552,7 @@ This can absolutely show up as “panel rendering wrong” (wrong ammo icon) eve
 
 ---
 
-## 6) Screen/panel gap that’s still explicitly missing: game-over transition timeline
+## 6) Screen/panel gap that's still explicitly missing: game-over transition timeline [ ]
 
 You’ve got `docs/rewrite/game-over.md` explicitly stating the **transition timeline + full SFX parity** are still missing. If you’re seeing “screen feels wrong / panels appear abruptly”, that’s consistent with this being unimplemented.
 
@@ -567,27 +560,25 @@ You’ve got `docs/rewrite/game-over.md` explicitly stating the **transition tim
 
 # Recommended fix order (to unblock golden-oracle validation)
 
-## A) Unify projectile `type_id` semantics with native (stop doing “weapon_id - 1”)
+## A) Unify projectile `type_id` semantics with native (stop doing "weapon_id - 1") [ ]
 
 This is the root-cause fix.
 
 Concrete steps:
 
-1. **Change projectile IDs to match native weapon-table indexing**
+- [ ] 1. **Change projectile IDs to match native weapon-table indexing**
+  - [ ] Update `ProjectileTypeId` to use native IDs (pistol = 1, assault = 2, …)
+  - [ ] Remove or quarantine `projectile_type_id_from_weapon_id` and `weapon_id_from_projectile_type_id` (they bake in the wrong assumption).
 
-   * Update `ProjectileTypeId` to use native IDs (pistol = 1, assault = 2, …)
-   * Remove or quarantine `projectile_type_id_from_weapon_id` and `weapon_id_from_projectile_type_id` (they bake in the wrong assumption).
-
-2. Update every subsystem that uses projectile IDs:
-
-   * `src/crimson/projectiles.py` (spawn specials: ion radii, gauss/fire/blade damage_pool, splitter type check, etc.)
-   * `src/crimson/sim/world_defs.py` (`KNOWN_PROJ_FRAMES`)
-   * `src/crimson/render/world_renderer.py` (any type-based branching like bullet trails / ion rendering)
-   * perks (`_perk_update_*`)
+- [ ] 2. Update every subsystem that uses projectile IDs:
+  - [ ] `src/crimson/projectiles.py` (spawn specials: ion radii, gauss/fire/blade damage_pool, splitter type check, etc.)
+  - [ ] `src/crimson/sim/world_defs.py` (`KNOWN_PROJ_FRAMES`)
+  - [ ] `src/crimson/render/world_renderer.py` (any type-based branching like bullet trails / ion rendering)
+  - [ ] perks (`_perk_update_*`)
 
 This will immediately make your golden-oracle traces line up without constant “+1/-1 mapping”.
 
-## B) Replace `player_fire_weapon`’s weapon switch with the native one
+## B) Replace `player_fire_weapon`'s weapon switch with the native one [ ]
 
 Implement weapon behavior exactly as in the decompile section:
 
@@ -596,17 +587,17 @@ Implement weapon behavior exactly as in the decompile section:
 
 If you want a clean architecture: encode the weapon fire behavior into a data-driven “fire profile” table (spawn kind, template ids, pellet counts, jitter, speed_scale ranges, ammo drain) to avoid a huge if/elif chain.
 
-## C) Fix perk spawns that hardcode projectile IDs
+## C) Fix perk spawns that hardcode projectile IDs [ ]
 
 At least:
 
-* Man Bomb
-* Hot Tempered
-* Fire Cough
+- [ ] Man Bomb
+- [ ] Hot Tempered
+- [ ] Fire Cough
 
 Use the native IDs and templates.
 
-## D) Populate `ammo_class` in weapon definitions
+## D) Populate `ammo_class` in weapon definitions [ ]
 
 Use either:
 
@@ -615,7 +606,7 @@ Use either:
 
 This will fix HUD/panel ammo icons and some audio decisions.
 
-## E) Then re-check UI “panel rendering”
+## E) Then re-check UI "panel rendering" [ ]
 
 Once the ammo_class and weapon previews are correct, re-evaluate what still feels off in UI. The likely remaining big one is:
 
@@ -623,17 +614,17 @@ Once the ammo_class and weapon previews are correct, re-evaluate what still feel
 
 ---
 
-# Quick “smoking gun” checklist you can use to validate after changes
+# Quick "smoking gun" checklist you can use to validate after changes
 
 Once you fix A+B, verify these in a deterministic test harness:
 
-* Firing **Flamethrower (weapon 8)** creates **particles**, not bullets.
-* Firing **Plasma Rifle (weapon 9)** creates **projectiles type 9**.
-* **Rocket Launcher (12)** spawns **secondary type 1**, **Seeker Rockets (13)** spawns **secondary type 2**.
-* **Mini-Rocket Swarmers (17)** drains the whole clip and spawns that many type-2 secondaries in a fan.
-* **Rocket Minigun (18)** spawns **secondary type 4** per shot.
-* **Bubblegun (42)** spawns **slow particles style 8**.
-* **Rainbow Gun (43)** spawns **projectiles type 0x2B** (not slow particles).
+- [ ] Firing **Flamethrower (weapon 8)** creates **particles**, not bullets.
+- [ ] Firing **Plasma Rifle (weapon 9)** creates **projectiles type 9**.
+- [ ] **Rocket Launcher (12)** spawns **secondary type 1**, **Seeker Rockets (13)** spawns **secondary type 2**.
+- [ ] **Mini-Rocket Swarmers (17)** drains the whole clip and spawns that many type-2 secondaries in a fan.
+- [ ] **Rocket Minigun (18)** spawns **secondary type 4** per shot.
+- [ ] **Bubblegun (42)** spawns **slow particles style 8**.
+- [ ] **Rainbow Gun (43)** spawns **projectiles type 0x2B** (not slow particles).
 
 If any of those are still wrong, something in the mapping is still off.
 
