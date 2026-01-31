@@ -23,8 +23,67 @@ Reference material:
 """
 
 from dataclasses import dataclass
+from enum import IntEnum
 
 MANUALLY_MAINTAINED = True
+
+
+class WeaponId(IntEnum):
+    NONE = 0
+    PISTOL = 1
+    ASSAULT_RIFLE = 2
+    SHOTGUN = 3
+    SAWED_OFF_SHOTGUN = 4
+    SUBMACHINE_GUN = 5
+    GAUSS_GUN = 6
+    MEAN_MINIGUN = 7
+    FLAMETHROWER = 8
+    PLASMA_RIFLE = 9
+    MULTI_PLASMA = 10
+    PLASMA_MINIGUN = 11
+    ROCKET_LAUNCHER = 12
+    SEEKER_ROCKETS = 13
+    PLASMA_SHOTGUN = 14
+    BLOW_TORCH = 15
+    HR_FLAMER = 16
+    MINI_ROCKET_SWARMERS = 17
+    ROCKET_MINIGUN = 18
+    PULSE_GUN = 19
+    JACKHAMMER = 20
+    ION_RIFLE = 21
+    ION_MINIGUN = 22
+    ION_CANNON = 23
+    SHRINKIFIER_5K = 24
+    BLADE_GUN = 25
+    SPIDER_PLASMA = 26
+    EVIL_SCYTHE = 27
+    PLASMA_CANNON = 28
+    SPLITTER_GUN = 29
+    GAUSS_SHOTGUN = 30
+    ION_SHOTGUN = 31
+    FLAMEBURST = 32
+    RAYGUN = 33
+    UNKNOWN_34 = 34
+    UNKNOWN_35 = 35
+    UNKNOWN_36 = 36
+    UNKNOWN_37 = 37
+    UNKNOWN_38 = 38
+    UNKNOWN_39 = 39
+    UNKNOWN_40 = 40
+    PLAGUE_SPHREADER_GUN = 41
+    BUBBLEGUN = 42
+    RAINBOW_GUN = 43
+    GRIM_WEAPON = 44
+    FIRE_BULLETS = 45
+    UNKNOWN_46 = 46
+    UNKNOWN_47 = 47
+    UNKNOWN_48 = 48
+    UNKNOWN_49 = 49
+    TRANSMUTATOR = 50
+    BLASTER_R_300 = 51
+    LIGHTING_RIFLE = 52
+    NUKE_LAUNCHER = 53
+
 
 @dataclass(frozen=True)
 class Weapon:

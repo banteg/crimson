@@ -14,6 +14,7 @@ from .weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
     Weapon,
+    WeaponId,
     projectile_type_id_from_weapon_id,
     weapon_entry_for_projectile_type_id,
 )
@@ -1285,7 +1286,8 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
 def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState) -> None:
     dt = float(dt)
 
-    weapon = _weapon_entry(player.weapon_id)
+    weapon_id = int(player.weapon_id)
+    weapon = _weapon_entry(weapon_id)
     if weapon is None:
         return
 
@@ -1301,7 +1303,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             if perk_active(player, PerkId.REGRESSION_BULLETS):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and player.weapon_id == 8:
+                if ammo_class == 0 and weapon_id == WeaponId.FLAMETHROWER:
                     ammo_class = 1
 
                 reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
@@ -1312,7 +1314,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             elif perk_active(player, PerkId.AMMUNITION_WITHIN):
                 firing_during_reload = True
                 ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
-                if ammo_class == 0 and player.weapon_id == 8:
+                if ammo_class == 0 and weapon_id == WeaponId.FLAMETHROWER:
                     ammo_class = 1
 
                 from .player_damage import player_take_damage
@@ -1376,11 +1378,11 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     # weapons. This is separate from aim-point jitter driven by `player.spread_heat`.
     def _pellet_jitter_step(weapon_id: int) -> float:
         weapon_id = int(weapon_id)
-        if weapon_id == 3:  # Shotgun
+        if weapon_id == WeaponId.SHOTGUN:
             return 0.0013
-        if weapon_id == 4:  # Sawed-off Shotgun
+        if weapon_id == WeaponId.SAWED_OFF_SHOTGUN:
             return 0.004
-        if weapon_id == 20:  # Jackhammer
+        if weapon_id == WeaponId.JACKHAMMER:
             return 0.0013
         return 0.0015
 
@@ -1400,13 +1402,13 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 owner_id=owner_id,
                 base_damage=meta,
             )
-    elif player.weapon_id == 12:
+    elif weapon_id == WeaponId.ROCKET_LAUNCHER:
         # Rocket Launcher -> secondary type 1.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
-    elif player.weapon_id == 13:
+    elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
-    elif player.weapon_id == 17:
+    elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
@@ -1416,28 +1418,28 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             angle += step
         ammo_cost = float(rocket_count)
         shot_count = rocket_count
-    elif player.weapon_id == 18:
+    elif weapon_id == WeaponId.ROCKET_MINIGUN:
         # Rocket Minigun -> secondary type 4.
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
-    elif player.weapon_id == 8:
+    elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
         state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
-    elif player.weapon_id == 15:
+    elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
-    elif player.weapon_id == 16:
+    elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
         particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
-    elif player.weapon_id == 42:
+    elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
         ammo_cost = 0.15
-    elif player.weapon_id == 10:
+    elif weapon_id == WeaponId.MULTI_PLASMA:
         # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
         # (`player_update` weapon_id==0x0a in crimsonland.exe)
         shot_count = 5
@@ -1460,7 +1462,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 owner_id=owner_id,
                 base_damage=_projectile_meta_for_type_id(type_id),
             )
-    elif player.weapon_id == 14:
+    elif weapon_id == WeaponId.PLASMA_SHOTGUN:
         # Plasma Shotgun: 14 plasma-minigun pellets with wide jitter and random speed_scale.
         # (`player_update` weapon_id==0x0e in crimsonland.exe)
         shot_count = 14
@@ -1476,7 +1478,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
-    elif player.weapon_id == 30:
+    elif weapon_id == WeaponId.GAUSS_SHOTGUN:
         # Gauss Shotgun: 6 gauss pellets, jitter 0.002 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1e in crimsonland.exe)
         shot_count = 6
@@ -1492,7 +1494,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
-    elif player.weapon_id == 31:
+    elif weapon_id == WeaponId.ION_SHOTGUN:
         # Ion Shotgun: 8 ion-minigun pellets, jitter 0.0026 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1f in crimsonland.exe)
         shot_count = 8
@@ -1511,11 +1513,11 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
-        type_id = projectile_type_id_from_weapon_id(int(player.weapon_id))
+        type_id = projectile_type_id_from_weapon_id(weapon_id)
         if type_id is None:
             return
         meta = _projectile_meta_for_type_id(type_id)
-        jitter_step = _pellet_jitter_step(int(player.weapon_id))
+        jitter_step = _pellet_jitter_step(weapon_id)
         for _ in range(pellets):
             angle = shot_angle
             if pellets > 1:
@@ -1529,12 +1531,11 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 base_damage=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).
-            if pellets > 1 and int(player.weapon_id) in (3, 4, 20):
+            if pellets > 1 and weapon_id in (WeaponId.SHOTGUN, WeaponId.SAWED_OFF_SHOTGUN, WeaponId.JACKHAMMER):
                 state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
 
     if 0 <= int(player.index) < len(state.shots_fired):
         state.shots_fired[int(player.index)] += int(shot_count)
-        weapon_id = int(player.weapon_id)
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
 
