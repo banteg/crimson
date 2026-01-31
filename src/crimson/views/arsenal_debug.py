@@ -129,7 +129,7 @@ class ArsenalDebugView:
         player = self._player
         if player is None:
             return
-        player.move_speed_multiplier = float(ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER)
+        player.speed_multiplier = float(ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER)
         player.shield_timer = float(ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:

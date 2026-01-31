@@ -111,18 +111,16 @@
 
 ## 3) Player default speed (“feels faster”)
 
-- [x] **Fixed:** base movement constant is now:
-  ```py
-  speed = 25.0 * speed_multiplier
-  ```
-  Default `PlayerState.move_speed_multiplier = 2.0`, so baseline is 50 units/s.
+- [x] **Fixed:** movement uses the decompile-style `move_speed` accel/decel:
+  - `move_speed` ramps up while moving, decays when idle (coasts to a stop).
+  - speed uses the original structure: `speed = move_speed * speed_multiplier * 25.0`.
 - [x] **Original behavior (decompile):** velocity magnitude:
   - `speed = move_speed * speed_multiplier * 25.0`
   - `move_speed` accelerates up to **2.0** normally; **2.8** with Long Distance Runner perk
   - heavy weapon (Mean Minigun) clamps `move_speed` to **0.8**
-  - baseline max: normal `50`, runner `70`, mean minigun clamp `20`
+  - baseline max (with `speed_multiplier=2.0`): normal `100`, runner `140`, mean minigun clamp `40`
 - [x] **Fix:** replace `120.0` base constant with `25.0`.
-- [ ] **Fix (fidelity):** port `move_speed` accel/decel + caps/clamps (runner perk, Mean Minigun clamp).
+- [x] **Fix (fidelity):** port `move_speed` accel/decel + caps/clamps (runner perk, Mean Minigun clamp).
 - [ ] **Verify:** baseline speed matches original (normal/runner/minigun clamp).
 
 ---

@@ -64,8 +64,8 @@ class PlayerState:
     health: float = 100.0
     size: float = 50.0
 
-    move_speed_multiplier: float = 2.0
-    long_distance_runner_timer: float = 0.0
+    speed_multiplier: float = 2.0
+    move_speed: float = 0.0
     move_phase: float = 0.0
     heading: float = 0.0
     death_timer: float = 16.0
@@ -1887,35 +1887,50 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         player.aim_heading = math.atan2(aim_dir_y, aim_dir_x) + math.pi / 2.0
 
     # Movement.
-    move_x, move_y = _normalize(float(input_state.move_x), float(input_state.move_y))
-    moving = move_x != 0.0 or move_y != 0.0
-    runner_bonus = 0.0
-    if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-        if moving:
-            player.long_distance_runner_timer = min(1.2, float(player.long_distance_runner_timer) + dt)
-        else:
-            player.long_distance_runner_timer = max(0.0, float(player.long_distance_runner_timer) - dt * 15.0)
-        runner_bonus = max(0.0, min(0.8, float(player.long_distance_runner_timer) - 0.4))
-    else:
-        player.long_distance_runner_timer = 0.0
+    raw_move_x = float(input_state.move_x)
+    raw_move_y = float(input_state.move_y)
+    raw_mag = math.hypot(raw_move_x, raw_move_y)
+    moving_input = raw_mag > 0.2
 
-    speed_multiplier = float(player.move_speed_multiplier + runner_bonus)
+    if moving_input:
+        inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
+        move_x = raw_move_x * inv
+        move_y = raw_move_y * inv
+        player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
+        if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+            if player.move_speed < 2.0:
+                player.move_speed = float(player.move_speed + dt * 4.0)
+            player.move_speed = float(player.move_speed + dt)
+            if player.move_speed > 2.8:
+                player.move_speed = 2.8
+        else:
+            player.move_speed = float(player.move_speed + dt * 5.0)
+            if player.move_speed > 2.0:
+                player.move_speed = 2.0
+    else:
+        player.move_speed = float(player.move_speed - dt * 15.0)
+        if player.move_speed < 0.0:
+            player.move_speed = 0.0
+        move_x = math.cos(player.heading - math.pi / 2.0)
+        move_y = math.sin(player.heading - math.pi / 2.0)
+
+    if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+        player.move_speed = 0.8
+
+    speed_multiplier = float(player.speed_multiplier)
     if player.speed_bonus_timer > 0.0:
         speed_multiplier += 1.0
-    speed = 25.0 * speed_multiplier
+
+    speed = player.move_speed * speed_multiplier * 25.0
+    if moving_input:
+        speed *= min(1.0, raw_mag)
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
+
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
     player.pos_y = _clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
 
-    if moving:
-        player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
-
-    move_dist = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
-    if move_dist > 1e-9:
-        # Port of `move_phase += frame_dt * move_speed * 19.0` (player_update).
-        move_speed = move_dist / dt / 25.0
-        player.move_phase += dt * move_speed * 19.0
+    player.move_phase += dt * player.move_speed * 19.0
 
     stationary = abs(player.pos_x - prev_x) <= 1e-9 and abs(player.pos_y - prev_y) <= 1e-9
     reload_scale = 1.0

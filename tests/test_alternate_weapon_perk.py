@@ -9,15 +9,15 @@ from crimson.perks import PerkId
 
 def test_alternate_weapon_slows_movement() -> None:
     state = GameplayState()
-    base = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    perk = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    base = PlayerState(index=0, pos_x=0.0, pos_y=0.0, move_speed=2.0)
+    perk = PlayerState(index=0, pos_x=0.0, pos_y=0.0, move_speed=2.0)
     perk.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     player_update(base, PlayerInput(move_x=1.0), dt=1.0, state=state)
     player_update(perk, PlayerInput(move_x=1.0), dt=1.0, state=state)
 
-    assert base.pos_x == pytest.approx(50.0)
-    assert perk.pos_x == pytest.approx(40.0)
+    assert base.pos_x == pytest.approx(100.0)
+    assert perk.pos_x == pytest.approx(80.0)
 
 
 def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:
