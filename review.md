@@ -517,9 +517,9 @@ Because the projectile type ID scheme is off, perks that spawn projectiles by nu
 
 ---
 
-## 4) Effects style/type mapping in docs doesn't match the decompile (and your code followed docs) [ ]
+## 4) Effects style/type mapping in docs doesn't match the decompile (and your code followed docs) [x]
 
-Your `effects.py` implementation of the pools looks structurally fine, but the *weapon→style* mapping in gameplay is off because the docs are off.
+Fixed: the particle style mapping in docs and the gameplay weapon special-cases now match the decompile.
 
 Concrete evidence:
 
