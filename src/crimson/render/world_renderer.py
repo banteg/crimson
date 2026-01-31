@@ -1151,6 +1151,91 @@ class WorldRenderer:
             )
             return
 
+        if type_id == int(ProjectileTypeId.PLAGUE_SPREADER) and texture is not None:
+            grid = 4
+            frame = 2
+            cell_w = float(texture.width) / float(grid)
+
+            if life >= 0.4:
+                tint = self._color_from_rgba((1.0, 1.0, 1.0, alpha))
+
+                def draw_plague_quad(*, px: float, py: float, size: float) -> None:
+                    size = float(size)
+                    if size <= 1e-3:
+                        return
+                    desired_size = size * scale
+                    sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
+                    if sprite_scale <= 1e-6:
+                        return
+                    psx, psy = self.world_to_screen(px, py)
+                    self._draw_atlas_sprite(
+                        texture,
+                        grid=grid,
+                        frame=frame,
+                        x=psx,
+                        y=psy,
+                        scale=sprite_scale,
+                        rotation_rad=0.0,
+                        tint=tint,
+                    )
+
+                draw_plague_quad(px=pos_x, py=pos_y, size=60.0)
+
+                offset_angle = angle + math.pi / 2.0
+                draw_plague_quad(
+                    px=pos_x + math.cos(offset_angle) * 15.0,
+                    py=pos_y + math.sin(offset_angle) * 15.0,
+                    size=60.0,
+                )
+
+                phase = float(int(proj_index)) + float(self._elapsed_ms) * 0.01
+                cos_phase = math.cos(phase)
+                sin_phase = math.sin(phase)
+                draw_plague_quad(
+                    px=pos_x + cos_phase * cos_phase - 5.0,
+                    py=pos_y + sin_phase * 11.0 - 5.0,
+                    size=52.0,
+                )
+
+                phase_120 = phase + 2.0943952
+                sin_phase_120 = math.sin(phase_120)
+                draw_plague_quad(
+                    px=pos_x + math.cos(phase_120) * 10.0,
+                    py=pos_y + sin_phase_120 * 10.0,
+                    size=62.0,
+                )
+
+                phase_240 = phase + 4.1887903
+                draw_plague_quad(
+                    px=pos_x + math.cos(phase_240) * 10.0,
+                    py=pos_y + math.sin(phase_240) * sin_phase_120,
+                    size=62.0,
+                )
+                return
+
+            fade = clamp(life * 2.5, 0.0, 1.0)
+            fade_alpha = fade * alpha
+            if fade_alpha <= 1e-3:
+                return
+
+            desired_size = (fade * 40.0 + 32.0) * scale
+            sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
+            if sprite_scale <= 1e-6:
+                return
+
+            tint = self._color_from_rgba((1.0, 1.0, 1.0, fade_alpha))
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                x=sx,
+                y=sy,
+                scale=sprite_scale,
+                rotation_rad=0.0,
+                tint=tint,
+            )
+            return
+
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
             rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))

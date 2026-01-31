@@ -145,7 +145,7 @@
 - [x] **Confirmed mismatch:** Plague Spreader has a dedicated render block in the decompile (overlapping quads + offsets in-flight; different fade sprite), but we fall back to a placeholder.
 - [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` (no Plague Spreader special-case yet).
 - [x] **Original behavior (decompile):** special plague block (multiple overlapping quads + offsets during travel; different fade behavior).
-- [ ] **Fix:** add a Plague Spreader render special-case matching the decompile block.
+- [x] **Fix:** add a Plague Spreader render special-case matching the decompile block.
 - [ ] **Verify:** plague visuals match in-flight overlapping quads and fade behavior.
 
 ---
@@ -208,4 +208,4 @@
 - [x] Secondary projectile render (rocket sprite + rotation; glow/trails)
 - [x] Ion / Fire Bullets beam in-flight scaling + head/core parity
 - [x] Splitter/Blade in-flight extra sprite parity
-- [ ] Plague Spreader projectile rendering parity
+- [x] Plague Spreader projectile rendering parity
