@@ -74,6 +74,15 @@ Later in `projectile_render`, the original re-binds `particles_texture`, `effect
 
 ## Detailed plan: fixes to apply
 
+## Progress
+
+- [ ] A) Fix classification constants (stop overloading `BEAM_TYPES`)
+- [ ] B) Implement Plasma particle rendering (replaces the pink fallback)
+- [ ] C) Implement Ion + Fire Bullets streak + ion chain arcs
+- [ ] D) Add the Fire Bullets particle overlay (missing pass)
+- [ ] E) Fix Splitter hit SFX routing (ammo_class-based like the original)
+- [ ] Verification checklist
+
 ### A) Fix classification constants (stop overloading BEAM_TYPES)
 
 **File:** `src/crimson/sim/world_defs.py`
@@ -416,31 +425,31 @@ After implementing the above, verify with a debug scene that spawns each project
 
 ### Plasma
 
-* Plasma Rifle (0x09): white 22px tail quads + 56px head, and with fx_detail_1 on you should see a faint 120px aura.
-* Plasma Minigun (0x0B): short white tail (12px) + 16px head, optional 120px aura.
-* Plasma Cannon (0x1C): larger 44px tail quads + 84px head, optional **blue-tinted** 120px aura.
-* Spider Plasma (0x1A): green tail/head, optional green 120px aura.
-* Shrinkifier (0x18): blue tail/head, optional blue 120px aura.
-* On hit/fade: plasma types should become a **single fading 56×56 white blob** (no tail).
+- [ ] Plasma Rifle (0x09): white 22px tail quads + 56px head, and with fx_detail_1 on you should see a faint 120px aura.
+- [ ] Plasma Minigun (0x0B): short white tail (12px) + 16px head, optional 120px aura.
+- [ ] Plasma Cannon (0x1C): larger 44px tail quads + 84px head, optional **blue-tinted** 120px aura.
+- [ ] Spider Plasma (0x1A): green tail/head, optional green 120px aura.
+- [ ] Shrinkifier (0x18): blue tail/head, optional blue 120px aura.
+- [ ] On hit/fade: plasma types should become a **single fading 56×56 white blob** (no tail).
 
 ### Ion
 
-* In flight: blue-ish streak with alpha gradient, head glow more yellow-white.
-* On hit/fade: streak still visible and fading, plus:
+- [ ] In flight: blue-ish streak with alpha gradient, head glow more yellow-white.
+- [ ] On hit/fade: streak still visible and fading, plus:
 
-  * 32×32 blue core at impact,
-  * arcs to nearby creatures (textured strips with the `u=0.625` slice),
-  * small glow on targets.
-* Ion Gun Master perk: arcs visibly thicker/reach slightly farther.
+  - [ ] 32×32 blue core at impact,
+  - [ ] arcs to nearby creatures (textured strips with the `u=0.625` slice),
+  - [ ] small glow on targets.
+- [ ] Ion Gun Master perk: arcs visibly thicker/reach slightly farther.
 
 ### Fire Bullets
 
-* Orange-ish streak + head glow
-* plus the **additional 64×64 particle overlay** (white, rotated).
+- [ ] Orange-ish streak + head glow
+- [ ] plus the **additional 64×64 particle overlay** (white, rotated).
 
 ### Splitter hit sound
 
-* Ensure impacts are **bullet_hit_01..06**, not shock_hit.
+- [ ] Ensure impacts are **bullet_hit_01..06**, not shock_hit.
 
 ---
 
