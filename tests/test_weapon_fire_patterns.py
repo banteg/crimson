@@ -33,12 +33,14 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     assert state.weapon_shots_fired[0][10] == 5
 
     shot_angle = math.pi / 2.0
+    spread_small = math.pi / 10.0
+    spread_large = math.pi / 6.0
     expected = (
-        (shot_angle - 0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
-        (shot_angle - 0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
+        (shot_angle - spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
+        (shot_angle - spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
         (shot_angle, int(ProjectileTypeId.PLASMA_RIFLE)),
-        (shot_angle + 0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
-        (shot_angle + 0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
+        (shot_angle + spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
+        (shot_angle + spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
     )
     for proj, (angle, type_id) in zip(spawned, expected, strict=True):
         assert int(getattr(proj, "type_id", -1)) == type_id
@@ -131,4 +133,3 @@ def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.ION_MINIGUN)
         assert math.isclose(float(getattr(proj, "angle", 0.0)), expected_angle, abs_tol=1e-9)
         assert math.isclose(float(getattr(proj, "speed_scale", 0.0)), 1.4, abs_tol=1e-9)
-
