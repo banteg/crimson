@@ -5,8 +5,9 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 !!! abstract "Current state"
     The rewrite now runs end-to-end: boot → menus/options → in-game for Survival,
     Rush, Quests (HUD + completion + results/failed flows), Tutorial, and
-    Typ-o-Shooter, all via `uv run crimson game`. The front-end includes perk
-    selection, statistics/high-scores screens, a console overlay, and the
+    Typ-o-Shooter. You can run the latest packaged build via `uvx crimsonland@latest`
+    (or run from a checkout with `uv run crimson`). The front-end includes
+    perk selection, statistics/high-scores screens, a console overlay, and the
     demo/trial overlay path for parity testing. Rendering covers terrain,
     sprites, decals, particles, and the core world draw order; audio covers
     music plus most moment-to-moment SFX (weapons, bonuses, level-ups, and
