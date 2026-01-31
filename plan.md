@@ -77,7 +77,7 @@ Later in `projectile_render`, the original re-binds `particles_texture`, `effect
 ## Progress
 
 - [x] A) Fix classification constants (stop overloading `BEAM_TYPES`)
-- [ ] B) Implement Plasma particle rendering (replaces the pink fallback)
+- [x] B) Implement Plasma particle rendering (replaces the pink fallback)
 - [ ] C) Implement Ion + Fire Bullets streak + ion chain arcs
 - [ ] D) Add the Fire Bullets particle overlay (missing pass)
 - [ ] E) Fix Splitter hit SFX routing (ammo_class-based like the original)
@@ -204,15 +204,20 @@ So:
 
 When `config_fx_detail_flag1` is enabled (your `config.fx_detail_1`), the original draws an extra aura:
 
-* Color: `(aura_rgb, alpha * 0.15)`
-* Size: **120×120**
-* Centered on projectile position
+* For Plasma Rifle (0x09) and Plasma Cannon (0x1C): **256×256** centered on the projectile.
+* For Plasma Minigun (0x0B), Spider Plasma (0x1A), and Shrinkifier (0x18): **120×120** centered on the projectile.
 
 Aura RGB is:
 
-* white for `0x09` and `0x0B`
+* white for `0x09`, `0x0B`, and `0x1C`
 * green `(0.3,1.0,0.3)` for `0x1A`
-* blue `(0.3,0.3,1.0)` for `0x18` and `0x1C`
+* blue `(0.3,0.3,1.0)` for `0x18`
+
+Aura alpha is:
+
+* `alpha * 0.3` for `0x09`
+* `alpha * 0.4` for `0x1C`
+* `alpha * 0.15` for `0x0B`, `0x1A`, and `0x18`
 
 #### 5) Hit/fade stage for plasma
 
@@ -425,9 +430,9 @@ After implementing the above, verify with a debug scene that spawns each project
 
 ### Plasma
 
-- [ ] Plasma Rifle (0x09): white 22px tail quads + 56px head, and with fx_detail_1 on you should see a faint 120px aura.
+- [ ] Plasma Rifle (0x09): white 22px tail quads + 56px head, and with fx_detail_1 on you should see a faint 256px aura.
 - [ ] Plasma Minigun (0x0B): short white tail (12px) + 16px head, optional 120px aura.
-- [ ] Plasma Cannon (0x1C): larger 44px tail quads + 84px head, optional **blue-tinted** 120px aura.
+- [ ] Plasma Cannon (0x1C): larger 44px tail quads + 84px head, optional 256px aura.
 - [ ] Spider Plasma (0x1A): green tail/head, optional green 120px aura.
 - [ ] Shrinkifier (0x18): blue tail/head, optional blue 120px aura.
 - [ ] On hit/fade: plasma types should become a **single fading 56×56 white blob** (no tail).

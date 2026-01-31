@@ -17,7 +17,13 @@ from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
 from ..gameplay import bonus_find_aim_hover_entry, perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
-from ..sim.world_defs import BEAM_TYPES, CREATURE_ANIM, CREATURE_ASSET, KNOWN_PROJ_FRAMES
+from ..sim.world_defs import (
+    BEAM_TYPES,
+    CREATURE_ANIM,
+    CREATURE_ASSET,
+    KNOWN_PROJ_FRAMES,
+    PLASMA_PARTICLE_TYPES,
+)
 from ..weapons import WEAPON_BY_ID
 
 if TYPE_CHECKING:
@@ -682,6 +688,123 @@ class WorldRenderer:
 
             if drawn:
                 return
+
+        if type_id in PLASMA_PARTICLE_TYPES and self.particles_texture is not None:
+            particles_texture = self.particles_texture
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+            if atlas is not None:
+                grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                if grid:
+                    cell_w = float(particles_texture.width) / float(grid)
+                    cell_h = float(particles_texture.height) / float(grid)
+                    frame = int(atlas.frame)
+                    col = frame % grid
+                    row = frame // grid
+                    src = rl.Rectangle(
+                        cell_w * float(col),
+                        cell_h * float(row),
+                        max(0.0, cell_w - 2.0),
+                        max(0.0, cell_h - 2.0),
+                    )
+
+                    speed_scale = float(getattr(proj, "speed_scale", 1.0))
+                    fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
+
+                    rgb = (1.0, 1.0, 1.0)
+                    spacing = 2.1
+                    seg_limit = 3
+                    tail_size = 12.0
+                    head_size = 16.0
+                    head_alpha_mul = 0.45
+                    aura_rgb = rgb
+                    aura_size = 120.0
+                    aura_alpha_mul = 0.15
+
+                    if type_id == int(ProjectileTypeId.PLASMA_RIFLE):
+                        spacing = 2.5
+                        seg_limit = 8
+                        tail_size = 22.0
+                        head_size = 56.0
+                        aura_size = 256.0
+                        aura_alpha_mul = 0.3
+                    elif type_id == int(ProjectileTypeId.PLASMA_MINIGUN):
+                        spacing = 2.1
+                        seg_limit = 3
+                        tail_size = 12.0
+                        head_size = 16.0
+                        aura_size = 120.0
+                        aura_alpha_mul = 0.15
+                    elif type_id == int(ProjectileTypeId.PLASMA_CANNON):
+                        spacing = 2.6
+                        seg_limit = 18
+                        tail_size = 44.0
+                        head_size = 84.0
+                        aura_size = 256.0
+                        # In the decompile, cannon reuses the tail alpha for the aura (0.4).
+                        aura_alpha_mul = 0.4
+                    elif type_id == int(ProjectileTypeId.SPIDER_PLASMA):
+                        rgb = (0.3, 1.0, 0.3)
+                        aura_rgb = rgb
+                    elif type_id == int(ProjectileTypeId.SHRINKIFIER):
+                        rgb = (0.3, 0.3, 1.0)
+                        aura_rgb = rgb
+
+                    if life >= 0.4:
+                        # Reconstruct the tail length heuristic used by the native render path.
+                        seg_count = int(float(getattr(proj, "base_damage", 0.0)))
+                        if seg_count < 0:
+                            seg_count = 0
+                        seg_count //= 5
+                        if seg_count > seg_limit:
+                            seg_count = seg_limit
+
+                        # The stored projectile angle is rotated by +pi/2 vs travel direction.
+                        dir_x = math.cos(angle + math.pi / 2.0) * speed_scale
+                        dir_y = math.sin(angle + math.pi / 2.0) * speed_scale
+
+                        tail_tint = self._color_from_rgba((rgb[0], rgb[1], rgb[2], alpha * 0.4))
+                        head_tint = self._color_from_rgba((rgb[0], rgb[1], rgb[2], alpha * head_alpha_mul))
+                        aura_tint = self._color_from_rgba((aura_rgb[0], aura_rgb[1], aura_rgb[2], alpha * aura_alpha_mul))
+
+                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+
+                        if seg_count > 0:
+                            size = tail_size * scale
+                            origin = rl.Vector2(size * 0.5, size * 0.5)
+                            step_x = dir_x * spacing
+                            step_y = dir_y * spacing
+                            for idx in range(seg_count):
+                                px = pos_x + float(idx) * step_x
+                                py = pos_y + float(idx) * step_y
+                                psx, psy = self.world_to_screen(px, py)
+                                dst = rl.Rectangle(float(psx), float(psy), float(size), float(size))
+                                rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tail_tint)
+
+                        size = head_size * scale
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, head_tint)
+
+                        if fx_detail_1:
+                            size = aura_size * scale
+                            origin = rl.Vector2(size * 0.5, size * 0.5)
+                            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                            rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, aura_tint)
+
+                        rl.end_blend_mode()
+                        return
+
+                    fade = clamp(life * 2.5, 0.0, 1.0)
+                    fade_alpha = fade * alpha
+                    if fade_alpha > 1e-3:
+                        tint = self._color_from_rgba((1.0, 1.0, 1.0, fade_alpha))
+                        size = 56.0 * scale
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
+                        rl.end_blend_mode()
+                    return
 
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
