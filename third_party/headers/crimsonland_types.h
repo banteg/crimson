@@ -312,6 +312,24 @@ typedef enum secondary_projectile_type_id_t {
     SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN = 0x04,
 } secondary_projectile_type_id_t;
 
+typedef struct secondary_projectile_vel_y_block_t {
+    float vel_y;
+    secondary_projectile_type_id_t type_id;
+    float trail_timer;
+    int target_id;
+    unsigned int reserved_0x28;
+} secondary_projectile_vel_y_block_t;
+
+typedef struct secondary_projectile_vel_x_block_t {
+    float vel_x;
+    secondary_projectile_vel_y_block_t vy;
+} secondary_projectile_vel_x_block_t;
+
+typedef struct secondary_projectile_pos_y_block_t {
+    float pos_y;
+    secondary_projectile_vel_x_block_t vx;
+} secondary_projectile_pos_y_block_t;
+
 typedef struct secondary_projectile_t {
     unsigned char active;
     unsigned char _pad0[3];
@@ -322,17 +340,7 @@ typedef struct secondary_projectile_t {
     //
     // Native code frequently takes the address of `pos_y` / `vel_y` and then
     // indexes into subsequent mixed-type fields.
-    struct secondary_projectile_pos_y_block_t {
-        float pos_y;
-        float vel_x;
-        struct secondary_projectile_vel_y_block_t {
-            float vel_y;
-            secondary_projectile_type_id_t type_id;
-            float trail_timer;
-            int target_id;
-            unsigned int reserved_0x28;
-        } vy;
-    } pos;
+    secondary_projectile_pos_y_block_t pos;
 } secondary_projectile_t;
 
 typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
@@ -571,9 +579,7 @@ typedef struct bonus_entry_t {
 
 typedef bonus_entry_t bonus_pool_t[0x10];
 
-typedef struct bonus_hud_slot_t {
-    unsigned char active;
-    unsigned char _pad0[3];
+typedef struct bonus_hud_slot_slide_x_block_t {
     float slide_x;
     float field_0x08;
     float *timer_ptr;
@@ -581,7 +587,15 @@ typedef struct bonus_hud_slot_t {
     char *label;
     int icon_id;
     float field_0x1c;
+} bonus_hud_slot_slide_x_block_t;
+
+typedef struct bonus_hud_slot_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    bonus_hud_slot_slide_x_block_t slide;
 } bonus_hud_slot_t;
+
+typedef bonus_hud_slot_t bonus_hud_slot_table_t[0x10];
 
 typedef struct mod_info_t {
     char name[0x20];

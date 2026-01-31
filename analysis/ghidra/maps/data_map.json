@@ -2149,7 +2149,7 @@
       "comment": "Bonus HUD slot table (0x10 entries, stride 0x20 bytes).",
       "name": "bonus_hud_slot_table",
       "program": "crimsonland.exe",
-      "type": "bonus_hud_slot_t"
+      "type": "bonus_hud_slot_table_t"
     },
     {
       "address": "0x0048f58c",

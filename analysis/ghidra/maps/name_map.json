@@ -1798,8 +1798,8 @@
     "program": "crimsonland.exe",
     "address": "0x0042f3f0",
     "name": "FUN_0042f3f0",
-    "signature": "void * FUN_0042f3f0(float *arg1, float arg2, float arg3)",
-    "comment": "[binja] void* sub_42f3f0(float* arg1, float arg2, float arg3)"
+    "signature": "void * FUN_0042f3f0(float *arg1, float arg2, int arg3)",
+    "comment": "[binja] void* sub_42f3f0(float* arg1, float arg2, int32_t arg3)"
   },
   {
     "program": "crimsonland.exe",
