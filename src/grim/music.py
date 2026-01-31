@@ -80,7 +80,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
         state.track_ids = {name: idx for idx, name in enumerate(state.tracks.keys())}
         state.next_track_id = len(state.track_ids)
         state.paq_entries = None
-        console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from files")
+        console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {music_dir}")
         console.log.flush()
         return
 
@@ -109,7 +109,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
     state.next_track_id = len(state.track_ids)
     state.paq_entries = entries
 
-    console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)}")
+    console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {paq_path}")
     console.log.flush()
 
 
