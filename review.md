@@ -284,11 +284,16 @@ MENU_DEMO_IDLE_START_MS = 30000  # TODO: confirm via frida tracing
 
 If you’re aiming for high fidelity, this should be sourced from the original (your comment already flags it).
 
-### 9b) Hardcore quest highscores filename is marked as uncertain [ ]
+### 9b) Hardcore quest highscores filename is marked as uncertain [x]
 
 `src/crimson/persistence/highscores.py` has an explicit TODO/comment questioning whether hardcore quest scores should use `questhcXX.dat` (line ~267).
 
 If you want faithful persistence interoperability with original files, this matters.
+
+Fixed: quest-mode highscores now match the native `highscore_build_path` behavior:
+
+- non-hardcore quests use `questhc{major}_{minor}.hi`
+- hardcore quests use `quest{major}_{minor}.hi`
 
 ---
 

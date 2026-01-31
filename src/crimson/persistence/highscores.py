@@ -223,6 +223,7 @@ def scores_path_for_mode(
     base_dir: Path,
     game_mode_id: int,
     *,
+    hardcore: bool = False,
     quest_stage_major: int = 0,
     quest_stage_minor: int = 0,
 ) -> Path:
@@ -235,7 +236,10 @@ def scores_path_for_mode(
     if mode == 4:
         return root / "typo.hi"
     if mode == 3:
-        return root / f"quest{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
+        # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
+        # and `quest*.hi` when hardcore is ON.
+        prefix = "quest" if hardcore else "questhc"
+        return root / f"{prefix}{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
     return root / "unknown.hi"
 
 
@@ -249,6 +253,7 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
     if mode == 4:
         return root / "typo.hi"
     if mode == 3:
+        hardcore = bool(int(config.data.get("hardcore_flag", 0) or 0))
         if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
             major = int(config.data.get("quest_stage_major", 0) or 0)
             minor = int(config.data.get("quest_stage_minor", 0) or 0)
@@ -264,9 +269,10 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
                         minor = 0
             quest_stage_major = major
             quest_stage_minor = minor
-        # NOTE: The decompile flips the quest/questhc filename based on `config_blob.hardcore`.
-        # We don't have enough evidence to rely on that yet, so keep the simpler non-hardcore path.
-        return root / f"quest{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
+        # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
+        # and `quest*.hi` when hardcore is ON.
+        prefix = "quest" if hardcore else "questhc"
+        return root / f"{prefix}{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
     return root / "unknown.hi"
 
 

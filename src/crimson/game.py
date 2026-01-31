@@ -1750,6 +1750,7 @@ class HighScoresView:
         path = scores_path_for_mode(
             self._state.base_dir,
             int(request.game_mode_id),
+            hardcore=bool(int(self._state.config.data.get("hardcore_flag", 0) or 0)),
             quest_stage_major=int(request.quest_stage_major),
             quest_stage_minor=int(request.quest_stage_minor),
         )

@@ -26,6 +26,12 @@ def _record_xp(*, mode: int, xp: int) -> HighScoreRecord:
 def test_scores_path_for_config_quest_mode_uses_quest_filename(tmp_path: Path) -> None:
     config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.QUESTS)})
     path = scores_path_for_config(tmp_path, config, quest_stage_major=1, quest_stage_minor=2)
+    assert path == tmp_path / "scores5" / "questhc1_2.hi"
+
+
+def test_scores_path_for_config_quest_mode_uses_quest_filename_when_hardcore(tmp_path: Path) -> None:
+    config = CrimsonConfig(path=tmp_path / "crimson.cfg", data={"game_mode": int(GameMode.QUESTS), "hardcore_flag": 1})
+    path = scores_path_for_config(tmp_path, config, quest_stage_major=1, quest_stage_minor=2)
     assert path == tmp_path / "scores5" / "quest1_2.hi"
 
 
@@ -51,7 +57,7 @@ def test_scores_path_for_config_quest_mode_uses_config_stage_fields_when_missing
         },
     )
     path = scores_path_for_config(tmp_path, config)
-    assert path == tmp_path / "scores5" / "quest4_7.hi"
+    assert path == tmp_path / "scores5" / "questhc4_7.hi"
 
 
 def test_scores_path_for_config_typo_mode_uses_typo_filename(tmp_path: Path) -> None:
