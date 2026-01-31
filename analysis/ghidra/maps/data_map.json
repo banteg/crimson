@@ -2876,7 +2876,7 @@
       "address": "0x004926b8",
       "comment": "Projectile pool base (0x60 entries, stride 0x40)",
       "name": "projectile_pool",
-      "type": "projectile_t",
+      "type": "projectile_pool_t",
       "program": "crimsonland.exe"
     },
     {
@@ -3076,7 +3076,7 @@
       "address": "0x00495ad8",
       "comment": "Secondary projectile pool base (0x40 entries, stride 0x2c)",
       "name": "secondary_projectile_pool",
-      "type": "secondary_projectile_t",
+      "type": "secondary_projectile_pool_t",
       "program": "crimsonland.exe"
     },
     {

@@ -208,17 +208,41 @@ typedef struct creature_spawn_slot_t {
     int template_id;
 } creature_spawn_slot_t;
 
-typedef struct projectile_t {
-    unsigned char active;
-    unsigned char _pad0[3];
-    float angle;
-    float pos_x;
-    float pos_y;
-    float origin_x;
+// Canonical projectile template ids used by `projectile_t.type_id`.
+//
+// Many weapons share a projectile template id (e.g. shotgun variants). We keep
+// unique enum values here so Ghidra doesn't have to pick between duplicate
+// names for the same value.
+typedef enum projectile_type_id_t {
+    PROJECTILE_TYPE_NONE = 0x00,
+    PROJECTILE_TYPE_PISTOL = 0x01,
+    PROJECTILE_TYPE_ASSAULT_RIFLE = 0x02,
+    PROJECTILE_TYPE_SHOTGUN = 0x03,
+    PROJECTILE_TYPE_SUBMACHINE_GUN = 0x05,
+    PROJECTILE_TYPE_GAUSS_GUN = 0x06,
+    PROJECTILE_TYPE_PLASMA_RIFLE = 0x09,
+    PROJECTILE_TYPE_PLASMA_MINIGUN = 0x0B,
+    PROJECTILE_TYPE_PULSE_GUN = 0x13,
+    PROJECTILE_TYPE_ION_RIFLE = 0x15,
+    PROJECTILE_TYPE_ION_MINIGUN = 0x16,
+    PROJECTILE_TYPE_ION_CANNON = 0x17,
+    PROJECTILE_TYPE_SHRINKIFIER = 0x18,
+    PROJECTILE_TYPE_BLADE_GUN = 0x19,
+    PROJECTILE_TYPE_PLASMA_CANNON = 0x1C,
+    PROJECTILE_TYPE_SPLITTER_GUN = 0x1D,
+    PROJECTILE_TYPE_PLAGUE_SPREADER = 0x29,
+    PROJECTILE_TYPE_RAINBOW_GUN = 0x2B,
+    PROJECTILE_TYPE_FIRE_BULLETS = 0x2D,
+} projectile_type_id_t;
+
+// Field grouping used to steer the decompiler away from float-bitpattern enums.
+// A lot of native code takes the address of `origin_y` and then indexes into
+// subsequent fields (+0xc hits `type_id`, etc).
+typedef struct projectile_tail_t {
     float origin_y;
     float vel_x;
     float vel_y;
-    int type_id;
+    projectile_type_id_t type_id;
     float life_timer;
     float reserved;
     float speed_scale;
@@ -226,7 +250,25 @@ typedef struct projectile_t {
     float hit_radius;
     float base_damage;
     int owner_id;
+} projectile_tail_t;
+
+// Similar to projectile_tail_t, but anchored at `pos_y` so loops that take
+// `&projectile_t.pos_y` get a mixed-type view (type_id as enum/int, not float).
+typedef struct projectile_pos_y_block_t {
+    float pos_y;
+    float origin_x;
+    projectile_tail_t tail;
+} projectile_pos_y_block_t;
+
+typedef struct projectile_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float pos_x;
+    projectile_pos_y_block_t pos;
 } projectile_t;
+
+typedef projectile_t projectile_pool_t[0x60];
 
 typedef struct particle_t {
     unsigned char active;
@@ -260,6 +302,8 @@ typedef struct secondary_projectile_t {
     float lifetime;
     int target_id;
 } secondary_projectile_t;
+
+typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
 
 typedef struct fx_queue_entry_t {
     int effect_id;
