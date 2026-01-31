@@ -492,6 +492,25 @@ typedef struct game_status_t {
     unsigned char reserved0[0x10];
 } game_status_t;
 
+// Sliding cursor view used by some quest builder loops.
+//
+// A common pattern is to iterate with a pointer to `entries[i].trigger_time_ms` and then use
+// negative indexing to access the rest of the current entry. Modeling the cursor as its own
+// struct (size 0x18) helps the decompiler keep `trigger_time_ms`/`count` as ints instead of
+// denormal floats.
+typedef struct quest_spawn_entry_next_block_t {
+    float pos_x;
+    float pos_y;
+    float heading;
+    int template_id;
+} quest_spawn_entry_next_block_t;
+
+typedef struct quest_spawn_entry_trigger_cursor_t {
+    int trigger_time_ms;
+    int count;
+    quest_spawn_entry_next_block_t next;
+} quest_spawn_entry_trigger_cursor_t;
+
 typedef struct quest_spawn_entry_t {
     float pos_x;
     // Field grouping used to steer the decompiler away from float-bitpattern ints.

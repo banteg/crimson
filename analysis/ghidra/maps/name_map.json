@@ -2141,7 +2141,7 @@
     "program": "crimsonland.exe",
     "address": "0x00437810",
     "name": "quest_build_sweep_stakes",
-    "signature": "void quest_build_sweep_stakes(quest_spawn_entry_t *entries, int *count)",
+    "signature": "void quest_build_sweep_stakes(quest_spawn_entry_trigger_cursor_t *cursor, int *count)",
     "comment": "quest builder for Tier 2 Quest 5 (Sweep Stakes)"
   },
   {

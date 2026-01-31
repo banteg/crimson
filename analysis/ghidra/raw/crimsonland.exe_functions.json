@@ -2482,7 +2482,7 @@
   {
     "name": "quest_build_sweep_stakes",
     "address": "00437810",
-    "signature": "void quest_build_sweep_stakes(quest_spawn_entry_t * entries, int * count)",
+    "signature": "void quest_build_sweep_stakes(quest_spawn_entry_trigger_cursor_t * cursor, int * count)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_rand"]
