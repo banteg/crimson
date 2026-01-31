@@ -284,6 +284,12 @@ MENU_DEMO_IDLE_START_MS = 30000  # TODO: confirm via frida tracing
 
 If you’re aiming for high fidelity, this should be sourced from the original (your comment already flags it).
 
+To close this item, capture the demo idle threshold from a demo build:
+
+- Docs: `docs/frida/demo-idle-threshold.md`
+- Trace: `scripts/frida/demo_idle_threshold_trace.js`
+- Summarize: `uv run scripts/demo_idle_threshold_summarize.py analysis/frida/raw/demo_idle_threshold_trace.jsonl`
+
 ### 9b) Hardcore quest highscores filename is marked as uncertain [x]
 
 `src/crimson/persistence/highscores.py` has an explicit TODO/comment questioning whether hardcore quest scores should use `questhcXX.dat` (line ~267).
