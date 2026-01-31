@@ -1166,6 +1166,41 @@ class WorldRenderer:
             return
         sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
         proj_type = int(getattr(proj, "type_id", 0))
+        angle = float(getattr(proj, "angle", 0.0))
+
+        if proj_type in (1, 2, 4) and self.projs_texture is not None:
+            texture = self.projs_texture
+            base_alpha = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
+            base_tint = rl.Color(255, 255, 255, base_alpha)
+
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
+            if fx_detail_1:
+                glow_alpha = int(clamp(alpha * 0.35, 0.0, 1.0) * 255.0 + 0.5)
+                glow_tint = rl.Color(255, 255, 255, glow_alpha)
+                self._draw_atlas_sprite(
+                    texture,
+                    grid=4,
+                    frame=3,
+                    x=sx,
+                    y=sy,
+                    scale=1.2 * scale,
+                    rotation_rad=angle,
+                    tint=glow_tint,
+                )
+            self._draw_atlas_sprite(
+                texture,
+                grid=4,
+                frame=3,
+                x=sx,
+                y=sy,
+                scale=0.8 * scale,
+                rotation_rad=angle,
+                tint=base_tint,
+            )
+            rl.end_blend_mode()
+            return
+
         if proj_type == 4:
             rl.draw_circle(int(sx), int(sy), max(1.0, 12.0 * scale), rl.Color(200, 120, 255, int(255 * alpha + 0.5)))
             return

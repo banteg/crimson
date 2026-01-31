@@ -35,11 +35,11 @@
 ### B) Rocket weapons: “stubs in arsenal view”
 
 - [x] **Confirmed mismatch:** secondary projectiles render as circles.
-- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_secondary_projectile_pool(...)`.
-- [x] **Current behavior:** uses `rl.draw_circle(...)` only.
+- [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_secondary_projectile(...)`.
+- [x] **Current behavior:** draws circles when textures are missing.
 - [x] **Original behavior (decompile):** textured/rotated rocket quad using atlas frame `(grid=4, frame=3)`; rotation + glow + trail/detail effects.
-- [ ] **Fix:** render secondary projectiles using atlas sprite `(grid=4, frame=3)` with rotation by heading.
-- [ ] **Fix (fidelity):** add glow quad.
+- [x] **Fix:** render secondary projectiles using atlas sprite `(grid=4, frame=3)` with rotation by heading.
+- [x] **Fix (fidelity):** add glow quad.
 - [ ] **Fix (fidelity):** add trail/detail sprite effects.
 - [ ] **Verify:** rockets look correct in arsenal preview (no more circles/stubs).
 
