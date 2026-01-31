@@ -89,6 +89,7 @@ jobs:
       - name: Notify release
         run: uv run scripts/release_notify.py
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           TAG_NAME: ${{ github.ref_name }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
