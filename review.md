@@ -4,7 +4,7 @@
 
 - [x] Compared `src/` against the authoritative decompile in `analysis/` (focus: `analysis/ghidra/raw/crimsonland.exe_decompiled.c`).
 - [x] Recorded confirmed mismatches + root causes (this doc).
-- [ ] Implement fixes in `src/`.
+- [x] Implement fixes in `src/`.
 - [ ] Verify behavior/visual parity after fixes.
 - [ ] Re-scan weapon logic for remaining gaps.
 
@@ -138,7 +138,7 @@
 
 - [x] **High-level firing logic scan:** most special-case firing patterns match the decompile set (Multi‑Plasma, rocket family uses secondary pool, Gauss Shotgun, Ion Shotgun, Bubblegun).
 - [x] **Known remaining gap within firing logic:** none found yet (Plasma Shotgun ammo cost verified).
-- [x] **Likely biggest remaining parity gaps:** render/effects parity (rocket trails/detail effects, secondary explosion flare rendering, ion/fire-bullets render special cases).
+- [x] **Likely biggest remaining parity gaps:** render/effects parity (secondary explosion flare rendering, ion/fire-bullets render special cases, and remaining visual verification items).
 - [ ] **Deep scan:** verify `projectile_update` behavior for every weapon type (beyond ion/pulse/rocket/flame/fire‑bullets).
 - [ ] **Optional deliverable:** weapon-by-weapon parity table (weapon id → expected → current → mismatch notes).
 
@@ -146,13 +146,9 @@
 
 ## 6) Recommended fix order (fastest “feels like original”)
 
-- [ ] Player speed constant (`120 → 25`) + Mean Minigun clamp
-- [ ] Flame angle (`dir_angle → aim_heading - pi/2`) + flame `style_id` overrides
-- [ ] Pulse Gun render (tint + distance-based scale + fade flash)
-- [ ] Ion hit effects (ring/burst) + remove incorrect `fx_queue` decal
-- [ ] Ion cannon flare size (scale constants)
-- [ ] Secondary projectile render (rocket sprite + rotation; optionally glow/trails)
-
----
-
-If you’d like, I can draft a patch diff for the core gameplay fixes (flame angle + plasma shotgun ammo + fire bullets gating + movement constant) and separately a renderer patch (secondary projectile sprites + pulse/ion render).
+- [x] Player speed constant (`120 → 25`) + Mean Minigun clamp
+- [x] Flame angle (`dir_angle → aim_heading - pi/2`) + flame `style_id` overrides
+- [x] Pulse Gun render (tint + distance-based scale + fade flash)
+- [x] Ion hit effects (ring/burst) + remove incorrect `fx_queue` decal
+- [x] Ion cannon flare size (scale constants)
+- [x] Secondary projectile render (rocket sprite + rotation; glow/trails)
