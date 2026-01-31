@@ -898,6 +898,29 @@ class WorldRenderer:
             )
 
             # Ion-only: impact core + chain arcs. (Fire Bullets renders an extra particles.png overlay in a later pass.)
+            if is_fire_bullets and life >= 0.4 and self.particles_texture is not None:
+                particles_texture = self.particles_texture
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        cell_w = float(particles_texture.width) / float(grid)
+                        cell_h = float(particles_texture.height) / float(grid)
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        src = rl.Rectangle(
+                            cell_w * float(col),
+                            cell_h * float(row),
+                            max(0.0, cell_w - 2.0),
+                            max(0.0, cell_h - 2.0),
+                        )
+                        tint = self._color_from_rgba((1.0, 1.0, 1.0, alpha))
+                        size = 64.0 * scale
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        rl.draw_texture_pro(particles_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
+
             if is_ion and life < 0.4:
                 core_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 self._draw_atlas_sprite(
