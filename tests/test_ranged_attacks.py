@@ -134,3 +134,53 @@ def test_ranged_projectile_can_damage_player() -> None:
     )
 
     assert player.health < 100.0
+
+
+def test_ranged_projectile_can_damage_creature_before_player() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=4.0, pos_y=0.0)
+
+    pool = CreaturePool()
+    shooter = pool.entries[0]
+    shooter.active = True
+    shooter.hp = 10.0
+    shooter.x = 0.0
+    shooter.y = 0.0
+
+    target = pool.entries[1]
+    target.active = True
+    target.hp = 100.0
+    target.x = 4.0
+    target.y = 0.0
+
+    state.projectiles.spawn(
+        pos_x=0.0,
+        pos_y=0.0,
+        angle=math.pi / 2.0,
+        type_id=9,
+        owner_id=0,
+        base_damage=45.0,
+        hits_players=True,
+    )
+
+    player_damage_called = False
+
+    def _apply_player_damage(player_index: int, damage: float) -> None:
+        nonlocal player_damage_called
+
+        player_damage_called = True
+        player.health -= float(damage)
+
+    state.projectiles.update(
+        0.1,
+        pool.entries[:2],
+        world_size=1024.0,
+        rng=state.rng.rand,
+        runtime_state=state,
+        players=[player],
+        apply_player_damage=_apply_player_damage,
+    )
+
+    assert target.hp < 100.0
+    assert player_damage_called is False
+    assert player.health == 100.0

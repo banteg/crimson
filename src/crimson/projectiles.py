@@ -567,54 +567,6 @@ class ProjectilePool:
                     acc_x = 0.0
                     acc_y = 0.0
 
-                    if proj.hits_players:
-                        hit_player_idx = None
-                        if players is not None:
-                            for idx, player in enumerate(players):
-                                if float(player.health) <= 0.0:
-                                    continue
-                                player_radius = _hit_radius_for(player)
-                                hit_r = proj.hit_radius + player_radius
-                                if _distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y) <= hit_r * hit_r:
-                                    hit_player_idx = idx
-                                    break
-
-                        if hit_player_idx is None:
-                            step += 3
-                            continue
-
-                        type_id = proj.type_id
-                        hit_x = float(proj.pos_x)
-                        hit_y = float(proj.pos_y)
-                        player = players[int(hit_player_idx)] if players is not None else None
-                        target_x = float(getattr(player, "pos_x", hit_x) if player is not None else hit_x)
-                        target_y = float(getattr(player, "pos_y", hit_y) if player is not None else hit_y)
-                        hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
-
-                        if proj.life_timer != 0.25 and type_id not in (
-                            ProjectileTypeId.FIRE_BULLETS,
-                            ProjectileTypeId.GAUSS_GUN,
-                            ProjectileTypeId.BLADE_GUN,
-                        ):
-                            proj.life_timer = 0.25
-                            jitter = rng() & 3
-                            proj.pos_x += dir_x * float(jitter)
-                            proj.pos_y += dir_y * float(jitter)
-
-                        dist = math.hypot(proj.origin_x - proj.pos_x, proj.origin_y - proj.pos_y)
-                        if dist < 50.0:
-                            dist = 50.0
-
-                        damage_scale = _damage_scale(type_id)
-                        damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
-                        if damage_amount > 0.0:
-                            if apply_player_damage is not None:
-                                apply_player_damage(int(hit_player_idx), float(damage_amount))
-                            elif players is not None:
-                                players[int(hit_player_idx)].health -= float(damage_amount)
-
-                        break
-
                     hit_idx = None
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
@@ -628,6 +580,61 @@ class ProjectilePool:
                             break
 
                     if hit_idx is None:
+                        if proj.hits_players:
+                            hit_player_idx = None
+                            owner_id = int(proj.owner_id)
+                            owner_player_index = -1 - owner_id if owner_id < 0 and owner_id != -100 else None
+                            if players is not None:
+                                for idx, player in enumerate(players):
+                                    if owner_player_index is not None and idx == owner_player_index:
+                                        continue
+                                    if float(player.health) <= 0.0:
+                                        continue
+                                    player_radius = _hit_radius_for(player)
+                                    hit_r = proj.hit_radius + player_radius
+                                    if (
+                                        _distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y)
+                                        <= hit_r * hit_r
+                                    ):
+                                        hit_player_idx = idx
+                                        break
+
+                            if hit_player_idx is None:
+                                step += 3
+                                continue
+
+                            type_id = proj.type_id
+                            hit_x = float(proj.pos_x)
+                            hit_y = float(proj.pos_y)
+                            player = players[int(hit_player_idx)] if players is not None else None
+                            target_x = float(getattr(player, "pos_x", hit_x) if player is not None else hit_x)
+                            target_y = float(getattr(player, "pos_y", hit_y) if player is not None else hit_y)
+                            hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
+
+                            if proj.life_timer != 0.25 and type_id not in (
+                                ProjectileTypeId.FIRE_BULLETS,
+                                ProjectileTypeId.GAUSS_GUN,
+                                ProjectileTypeId.BLADE_GUN,
+                            ):
+                                proj.life_timer = 0.25
+                                jitter = rng() & 3
+                                proj.pos_x += dir_x * float(jitter)
+                                proj.pos_y += dir_y * float(jitter)
+
+                            dist = math.hypot(proj.origin_x - proj.pos_x, proj.origin_y - proj.pos_y)
+                            if dist < 50.0:
+                                dist = 50.0
+
+                            damage_scale = _damage_scale(type_id)
+                            damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
+                            if damage_amount > 0.0:
+                                if apply_player_damage is not None:
+                                    apply_player_damage(int(hit_player_idx), float(damage_amount))
+                                elif players is not None:
+                                    players[int(hit_player_idx)].health -= float(damage_amount)
+
+                            break
+
                         step += 3
                         continue
 
