@@ -34,6 +34,9 @@ UI_TEXT = rl.Color(235, 235, 235, 255)
 UI_HINT = rl.Color(180, 180, 180, 255)
 UI_ERROR = rl.Color(240, 80, 80, 255)
 
+ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER = 6.0
+ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER = 1e-3
+
 DEFAULT_SPAWN_IDS = (
     SpawnId.ZOMBIE_CONST_GREY_42,
     SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
@@ -121,6 +124,13 @@ class ArsenalDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
+
+    def _apply_debug_player_cheats(self) -> None:
+        player = self._player
+        if player is None:
+            return
+        player.move_speed_multiplier = float(ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER)
+        player.shield_timer = float(ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -329,6 +339,7 @@ class ArsenalDebugView:
         if player is None:
             return
 
+        self._apply_debug_player_cheats()
         input_state = self._build_input()
         self._world.update(dt, inputs=[input_state], game_mode=int(GameMode.SURVIVAL))
 
