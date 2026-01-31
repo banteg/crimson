@@ -272,19 +272,23 @@ Fixed: `bonus_pick_random_type` now applies the quest-stage suppressions for Fre
 
 ---
 
-## 9) Two smaller but concrete fidelity risks [ ]
+## 9) Two smaller but concrete fidelity risks [x]
 
-### 9a) Demo idle attract threshold is still a guess [ ]
+### 9a) Demo idle attract threshold is still a guess [x]
 
 `src/crimson/frontend/menu.py` sets:
 
 ```py
-MENU_DEMO_IDLE_START_MS = 30000  # TODO: confirm via frida tracing
+MENU_DEMO_IDLE_START_MS = 23_000
 ```
 
-If you’re aiming for high fidelity, this should be sourced from the original (your comment already flags it).
+Fixed: set from a Frida trace of the shareware/demo behavior:
 
-To close this item, capture the demo idle threshold from a demo build:
+```json
+{"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0}
+```
+
+If you ever need to re-check it, capture the demo idle threshold from a demo build:
 
 - Docs: `docs/frida/demo-idle-threshold.md`
 - Trace: `scripts/frida/demo_idle_threshold_trace.js`

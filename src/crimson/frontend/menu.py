@@ -61,8 +61,9 @@ MENU_SIGN_POS_Y = 70.0
 MENU_SIGN_POS_Y_SMALL = 60.0
 MENU_SIGN_POS_X_PAD = 4.0
 
-# TODO: confirm the exact idle threshold from the original demo build.
-MENU_DEMO_IDLE_START_MS = 30_000
+# Measured in the shareware/demo attract loop trace:
+# {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
+MENU_DEMO_IDLE_START_MS = 23_000
 
 
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
