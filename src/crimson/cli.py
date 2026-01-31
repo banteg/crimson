@@ -202,8 +202,9 @@ def cmd_view(
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
-@app.command("game")
+@app.callback(invoke_without_command=True)
 def cmd_game(
+    ctx: typer.Context,
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
@@ -221,7 +222,9 @@ def cmd_game(
         help="assets root (default: base-dir; missing .paq files are downloaded)",
     ),
 ) -> None:
-    """Run the reimplementation game flow."""
+    """Run the reimplementation game flow (default command)."""
+    if ctx.invoked_subcommand:
+        return
     from .game import GameConfig, run_game
 
     config = GameConfig(
