@@ -51,12 +51,6 @@ def main() -> int:
         default=Path("analysis/ghidra/raw/grim.dll_decompiled.c"),
         help="path to grim.dll decompiled C",
     )
-    parser.add_argument(
-        "--index",
-        type=Path,
-        default=Path("docs/index.md"),
-        help="index doc to update",
-    )
     args = parser.parse_args()
 
     name_entries = map_progress.load_name_map(args.name_map)
@@ -90,20 +84,6 @@ def main() -> int:
     )
     metrics_path.write_text(metrics_text, encoding="utf-8")
     print(f"Updated {metrics_path}")
-
-    index_path = args.index
-    index_line = (
-        "Data map coverage: "
-        f"{map_progress.format_percent(total_cov.coverage_pct)} ({total_cov.labeled_in_decompiled} / {total_cov.total_symbols} symbols)"
-    )
-    index_text = replace_block(
-        index_path.read_text(encoding="utf-8"),
-        "<!-- data-map-coverage:start -->",
-        "<!-- data-map-coverage:end -->",
-        [index_line],
-    )
-    index_path.write_text(index_text, encoding="utf-8")
-    print(f"Updated {index_path}")
     return 0
 
 

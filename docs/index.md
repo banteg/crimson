@@ -14,10 +14,6 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
     weapon/creature coverage, multiplayer (2–4 players) completeness, remaining
     SFX/event hooks, and continued binary map/type recovery.
 
-<!-- data-map-coverage:start -->
-Data map coverage: 15.42% (471 / 3055 symbols)
-<!-- data-map-coverage:end -->
-
 ## Analysis
 
 - [Binary Analysis](binary-analysis.md)
