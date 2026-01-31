@@ -831,20 +831,20 @@ class WorldRenderer:
             if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in self.players):
                 perk_scale = 1.2
 
+            if type_id == int(ProjectileTypeId.ION_MINIGUN):
+                effect_scale = 1.05
+            elif type_id == int(ProjectileTypeId.ION_RIFLE):
+                effect_scale = 2.2
+            elif type_id == int(ProjectileTypeId.ION_CANNON):
+                effect_scale = 3.5
+            else:
+                effect_scale = 0.8
+
             if life >= 0.4:
                 base_alpha = alpha
-                effect_scale = 1.0
             else:
                 fade = clamp(life * 2.5, 0.0, 1.0)
                 base_alpha = fade * alpha
-                if type_id == int(ProjectileTypeId.ION_MINIGUN):
-                    effect_scale = 1.05
-                elif type_id == int(ProjectileTypeId.ION_RIFLE):
-                    effect_scale = 2.2
-                elif type_id == int(ProjectileTypeId.ION_CANNON):
-                    effect_scale = 3.5
-                else:
-                    effect_scale = 0.8
 
             if base_alpha <= 1e-3:
                 return
@@ -885,43 +885,43 @@ class WorldRenderer:
                     )
                 s += step
 
-            head_tint = self._color_from_rgba((head_rgb[0], head_rgb[1], head_rgb[2], base_alpha))
-            self._draw_atlas_sprite(
-                texture,
-                grid=grid,
-                frame=frame,
-                x=sx,
-                y=sy,
-                scale=sprite_scale,
-                rotation_rad=angle,
-                tint=head_tint,
-            )
+            if life >= 0.4:
+                head_tint = self._color_from_rgba((head_rgb[0], head_rgb[1], head_rgb[2], base_alpha))
+                self._draw_atlas_sprite(
+                    texture,
+                    grid=grid,
+                    frame=frame,
+                    x=sx,
+                    y=sy,
+                    scale=sprite_scale,
+                    rotation_rad=angle,
+                    tint=head_tint,
+                )
 
-            # Ion-only: impact core + chain arcs. (Fire Bullets renders an extra particles.png overlay in a later pass.)
-            if is_fire_bullets and life >= 0.4 and self.particles_texture is not None:
-                particles_texture = self.particles_texture
-                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
-                if atlas is not None:
-                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-                    if grid:
-                        cell_w = float(particles_texture.width) / float(grid)
-                        cell_h = float(particles_texture.height) / float(grid)
-                        frame = int(atlas.frame)
-                        col = frame % grid
-                        row = frame // grid
-                        src = rl.Rectangle(
-                            cell_w * float(col),
-                            cell_h * float(row),
-                            max(0.0, cell_w - 2.0),
-                            max(0.0, cell_h - 2.0),
-                        )
-                        tint = self._color_from_rgba((1.0, 1.0, 1.0, alpha))
-                        size = 64.0 * scale
-                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-                        origin = rl.Vector2(size * 0.5, size * 0.5)
-                        rl.draw_texture_pro(particles_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
-
-            if is_ion and life < 0.4:
+                # Fire Bullets renders an extra particles.png overlay in a later pass.
+                if is_fire_bullets and self.particles_texture is not None:
+                    particles_texture = self.particles_texture
+                    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+                    if atlas is not None:
+                        grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                        if grid:
+                            cell_w = float(particles_texture.width) / float(grid)
+                            cell_h = float(particles_texture.height) / float(grid)
+                            frame = int(atlas.frame)
+                            col = frame % grid
+                            row = frame // grid
+                            src = rl.Rectangle(
+                                cell_w * float(col),
+                                cell_h * float(row),
+                                max(0.0, cell_w - 2.0),
+                                max(0.0, cell_h - 2.0),
+                            )
+                            tint = self._color_from_rgba((1.0, 1.0, 1.0, alpha))
+                            size = 64.0 * scale
+                            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                            origin = rl.Vector2(size * 0.5, size * 0.5)
+                            rl.draw_texture_pro(particles_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
+            else:
                 core_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 self._draw_atlas_sprite(
                     texture,
@@ -934,118 +934,119 @@ class WorldRenderer:
                     tint=core_tint,
                 )
 
-                if type_id == int(ProjectileTypeId.ION_RIFLE):
-                    radius = 88.0
-                elif type_id == int(ProjectileTypeId.ION_MINIGUN):
-                    radius = 60.0
-                else:
-                    radius = 128.0
-                radius *= perk_scale
+                if is_ion:
+                    if type_id == int(ProjectileTypeId.ION_RIFLE):
+                        radius = 88.0
+                    elif type_id == int(ProjectileTypeId.ION_MINIGUN):
+                        radius = 60.0
+                    else:
+                        radius = 128.0
+                    radius *= perk_scale
 
-                # Pick a stable set of targets so the arc visuals don't flicker.
-                candidates: list[tuple[float, object]] = []
-                for creature in self.creatures.entries:
-                    if not creature.active or float(creature.hp) <= 0.0:
-                        continue
-                    if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
-                        continue
-                    d = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y)
-                    threshold = float(creature.size) * 0.142857149 + 3.0
-                    if d > radius + threshold:
-                        continue
-                    candidates.append((d, creature))
+                    # Pick a stable set of targets so the arc visuals don't flicker.
+                    candidates: list[tuple[float, object]] = []
+                    for creature in self.creatures.entries:
+                        if not creature.active or float(creature.hp) <= 0.0:
+                            continue
+                        if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
+                            continue
+                        d = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y)
+                        threshold = float(creature.size) * 0.142857149 + 3.0
+                        if d > radius + threshold:
+                            continue
+                        candidates.append((d, creature))
 
-                candidates.sort(key=lambda item: item[0])
-                targets = [creature for _d, creature in candidates[:8]]
+                    candidates.sort(key=lambda item: item[0])
+                    targets = [creature for _d, creature in candidates[:8]]
 
-                inner = 10.0 * perk_scale * scale
-                outer = 14.0 * perk_scale * scale
-                u = 0.625
-                v0 = 0.0
-                v1 = 0.25
+                    inner = 10.0 * perk_scale * scale
+                    outer = 14.0 * perk_scale * scale
+                    u = 0.625
+                    v0 = 0.0
+                    v1 = 0.25
 
-                glow_targets: list[object] = []
-                rl.rl_set_texture(texture.id)
-                rl.rl_begin(rl.RL_QUADS)
+                    glow_targets: list[object] = []
+                    rl.rl_set_texture(texture.id)
+                    rl.rl_begin(rl.RL_QUADS)
 
-                for creature in targets:
-                    tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
-                    ddx = tx - sx
-                    ddy = ty - sy
-                    dlen = math.hypot(ddx, ddy)
-                    if dlen <= 1e-3:
-                        continue
-                    glow_targets.append(creature)
-                    inv = 1.0 / dlen
-                    nx = ddx * inv
-                    ny = ddy * inv
-                    px = -ny
-                    py = nx
+                    for creature in targets:
+                        tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
+                        ddx = tx - sx
+                        ddy = ty - sy
+                        dlen = math.hypot(ddx, ddy)
+                        if dlen <= 1e-3:
+                            continue
+                        glow_targets.append(creature)
+                        inv = 1.0 / dlen
+                        nx = ddx * inv
+                        ny = ddy * inv
+                        px = -ny
+                        py = nx
 
-                    # Outer strip (softer).
-                    half = outer * 0.5
-                    off_x = px * half
-                    off_y = py * half
-                    x0 = sx - off_x
-                    y0 = sy - off_y
-                    x1 = sx + off_x
-                    y1 = sy + off_y
-                    x2 = tx + off_x
-                    y2 = ty + off_y
-                    x3 = tx - off_x
-                    y3 = ty - off_y
+                        # Outer strip (softer).
+                        half = outer * 0.5
+                        off_x = px * half
+                        off_y = py * half
+                        x0 = sx - off_x
+                        y0 = sy - off_y
+                        x1 = sx + off_x
+                        y1 = sy + off_y
+                        x2 = tx + off_x
+                        y2 = ty + off_y
+                        x3 = tx - off_x
+                        y3 = ty - off_y
 
-                    outer_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha * 0.5))
-                    rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
-                    rl.rl_tex_coord2f(u, v0)
-                    rl.rl_vertex2f(x0, y0)
-                    rl.rl_tex_coord2f(u, v1)
-                    rl.rl_vertex2f(x1, y1)
-                    rl.rl_tex_coord2f(u, v1)
-                    rl.rl_vertex2f(x2, y2)
-                    rl.rl_tex_coord2f(u, v0)
-                    rl.rl_vertex2f(x3, y3)
+                        outer_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha * 0.5))
+                        rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
+                        rl.rl_tex_coord2f(u, v0)
+                        rl.rl_vertex2f(x0, y0)
+                        rl.rl_tex_coord2f(u, v1)
+                        rl.rl_vertex2f(x1, y1)
+                        rl.rl_tex_coord2f(u, v1)
+                        rl.rl_vertex2f(x2, y2)
+                        rl.rl_tex_coord2f(u, v0)
+                        rl.rl_vertex2f(x3, y3)
 
-                    # Inner strip (brighter).
-                    half = inner * 0.5
-                    off_x = px * half
-                    off_y = py * half
-                    x0 = sx - off_x
-                    y0 = sy - off_y
-                    x1 = sx + off_x
-                    y1 = sy + off_y
-                    x2 = tx + off_x
-                    y2 = ty + off_y
-                    x3 = tx - off_x
-                    y3 = ty - off_y
+                        # Inner strip (brighter).
+                        half = inner * 0.5
+                        off_x = px * half
+                        off_y = py * half
+                        x0 = sx - off_x
+                        y0 = sy - off_y
+                        x1 = sx + off_x
+                        y1 = sy + off_y
+                        x2 = tx + off_x
+                        y2 = ty + off_y
+                        x3 = tx - off_x
+                        y3 = ty - off_y
 
-                    inner_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
-                    rl.rl_color4ub(inner_tint.r, inner_tint.g, inner_tint.b, inner_tint.a)
-                    rl.rl_tex_coord2f(u, v0)
-                    rl.rl_vertex2f(x0, y0)
-                    rl.rl_tex_coord2f(u, v1)
-                    rl.rl_vertex2f(x1, y1)
-                    rl.rl_tex_coord2f(u, v1)
-                    rl.rl_vertex2f(x2, y2)
-                    rl.rl_tex_coord2f(u, v0)
-                    rl.rl_vertex2f(x3, y3)
+                        inner_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
+                        rl.rl_color4ub(inner_tint.r, inner_tint.g, inner_tint.b, inner_tint.a)
+                        rl.rl_tex_coord2f(u, v0)
+                        rl.rl_vertex2f(x0, y0)
+                        rl.rl_tex_coord2f(u, v1)
+                        rl.rl_vertex2f(x1, y1)
+                        rl.rl_tex_coord2f(u, v1)
+                        rl.rl_vertex2f(x2, y2)
+                        rl.rl_tex_coord2f(u, v0)
+                        rl.rl_vertex2f(x3, y3)
 
-                rl.rl_end()
-                rl.rl_set_texture(0)
+                    rl.rl_end()
+                    rl.rl_set_texture(0)
 
-                for creature in glow_targets:
-                    tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
-                    target_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
-                    self._draw_atlas_sprite(
-                        texture,
-                        grid=grid,
-                        frame=frame,
-                        x=tx,
-                        y=ty,
-                        scale=sprite_scale,
-                        rotation_rad=0.0,
-                        tint=target_tint,
-                    )
+                    for creature in glow_targets:
+                        tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
+                        target_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
+                        self._draw_atlas_sprite(
+                            texture,
+                            grid=grid,
+                            frame=frame,
+                            x=tx,
+                            y=ty,
+                            scale=sprite_scale,
+                            rotation_rad=0.0,
+                            tint=target_tint,
+                        )
 
             rl.end_blend_mode()
             return

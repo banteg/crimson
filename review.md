@@ -111,7 +111,7 @@
     - Fire Bullets → `0.8`
   - in-flight (`life_timer == 0.4`): repeated glow streak quads + scaled yellow head
   - fade (`life_timer != 0.4`): repeated glow streak quads + fixed 32×32 blue core (plus ion-only chain arcs)
-- [ ] **Fix:** apply `effect_scale` unconditionally (both stages) and match head/core draw rules (yellow head only in-flight; fixed blue core only in fade).
+- [x] **Fix:** apply `effect_scale` unconditionally (both stages) and match head/core draw rules (yellow head only in-flight; fixed blue core only in fade).
 - [ ] **Verify:** Ion Cannon / Rifle / Minigun thickness matches during flight; Fire Bullets beam is thinner; fade stage shows the correct fixed core.
 
 ---
@@ -206,6 +206,6 @@
 - [x] Ion hit effects (ring/burst) + remove incorrect `fx_queue` decal
 - [x] Ion cannon flare size (scale constants)
 - [x] Secondary projectile render (rocket sprite + rotation; glow/trails)
-- [ ] Ion / Fire Bullets beam in-flight scaling + head/core parity
+- [x] Ion / Fire Bullets beam in-flight scaling + head/core parity
 - [ ] Splitter/Blade in-flight extra sprite parity
 - [ ] Plague Spreader projectile rendering parity
