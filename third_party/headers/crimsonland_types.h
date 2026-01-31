@@ -458,11 +458,19 @@ typedef struct game_status_t {
 
 typedef struct quest_spawn_entry_t {
     float pos_x;
-    float pos_y;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
+    // Field grouping used to steer the decompiler away from float-bitpattern ints.
+    //
+    // Quest builder code frequently takes the address of `pos_y` or `heading` and
+    // then indexes into subsequent (mixed-type) fields.
+    struct quest_spawn_entry_pos_y_block_t {
+        float pos_y;
+        struct quest_spawn_entry_heading_block_t {
+            float heading;
+            int template_id;
+            int trigger_time_ms;
+            int count;
+        } heading_block;
+    } pos_y_block;
 } quest_spawn_entry_t;
 
 typedef void (*quest_builder_fn_t)(quest_spawn_entry_t *entries, int *count);
