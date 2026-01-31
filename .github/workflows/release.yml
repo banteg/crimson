@@ -21,42 +21,48 @@ jobs:
           python-version: "3.14"
           enable-cache: true
 
-      - name: Check tag matches project version
-        run: |
-          uv run --no-project python - <<'PY'
-          import os
-          import re
-          import tomllib
-          from pathlib import Path
-
-          tag = os.environ.get('GITHUB_REF_NAME', '')
-          tag_version = tag[1:] if tag.startswith('v') else tag
-
-          pyproject = tomllib.loads(Path('pyproject.toml').read_text(encoding='utf-8'))
-          project_version = pyproject['project']['version']
-
-          init_version = None
-          init_path = Path('src') / 'crimson' / '__init__.py'
-          if init_path.is_file():
-            m = re.search(r'__version__\s*=\s*"([^"]+)"', init_path.read_text(encoding='utf-8'))
-            if m:
-              init_version = m.group(1)
-
-          if project_version != tag_version:
-            raise SystemExit(f"Tag {tag!r} does not match pyproject version {project_version!r}")
-          if init_version and init_version != project_version:
-            raise SystemExit(
-              f"src/crimson/__init__.py __version__ {init_version!r} does not match pyproject version {project_version!r}"
-            )
-
-          print(f"OK: tag {tag!r} matches version {project_version!r}")
-          PY
-
       - name: Run tests
         run: uv run pytest
 
       - name: Build (wheel + sdist)
         run: uv build
+
+      - name: Check tag matches built package version
+        run: |
+          uv run --no-project python - <<'PY'
+          import os
+          import re
+          import zipfile
+          from pathlib import Path
+
+          tag = os.environ.get('GITHUB_REF_NAME', '')
+          tag_version = tag[1:] if tag.startswith('v') else tag
+
+          dist_dir = Path('dist')
+          wheels = sorted(dist_dir.glob('*.whl'))
+          if not wheels:
+            raise SystemExit("No wheel found in dist/. Build must run before version check.")
+
+          wheel_path = wheels[0]
+          with zipfile.ZipFile(wheel_path) as zf:
+            metadata_name = next(
+              (name for name in zf.namelist() if name.endswith('.dist-info/METADATA')),
+              None,
+            )
+            if not metadata_name:
+              raise SystemExit(f"No METADATA found in {wheel_path.name}")
+            metadata = zf.read(metadata_name).decode('utf-8', errors='replace')
+
+          match = re.search(r'^Version:\\s*(.+)$', metadata, re.M)
+          if not match:
+            raise SystemExit(f"No Version field found in {wheel_path.name} METADATA")
+          wheel_version = match.group(1).strip()
+
+          if wheel_version != tag_version:
+            raise SystemExit(f"Tag {tag!r} does not match wheel version {wheel_version!r}")
+
+          print(f"OK: tag {tag!r} matches built version {wheel_version!r}")
+          PY
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
