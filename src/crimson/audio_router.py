@@ -111,7 +111,9 @@ class AudioRouter:
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        if type_id in beam_types:
+        weapon = WEAPON_BY_ID.get(int(type_id))
+        ammo_class = weapon.ammo_class if weapon is not None else None
+        if ammo_class == 4:
             return "sfx_shock_hit_01"
         return self._rand_choice(rand, _BULLET_HIT_SFX)
 

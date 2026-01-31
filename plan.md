@@ -80,7 +80,7 @@ Later in `projectile_render`, the original re-binds `particles_texture`, `effect
 - [x] B) Implement Plasma particle rendering (replaces the pink fallback)
 - [x] C) Implement Ion + Fire Bullets streak + ion chain arcs
 - [x] D) Add the Fire Bullets particle overlay (missing pass)
-- [ ] E) Fix Splitter hit SFX routing (ammo_class-based like the original)
+- [x] E) Fix Splitter hit SFX routing (ammo_class-based like the original)
 - [ ] Verification checklist
 
 ### A) Fix classification constants (stop overloading BEAM_TYPES)
