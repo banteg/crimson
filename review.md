@@ -91,7 +91,7 @@
   - Ion Rifle → `2.2`
   - Ion Cannon → `3.5`
   - uses `size = scale * 32` (ion cannon flare ~112px wide)
-- [ ] **Fix:** apply the decompile scale constants for the relevant render stage.
+- [x] **Fix:** apply the decompile scale constants for the relevant render stage (`BEAM_TYPES` render fade stage).
 - [ ] **Verify:** ion cannon flare size matches the original scale relationship.
 
 ---
