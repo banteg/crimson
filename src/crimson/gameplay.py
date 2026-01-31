@@ -1657,6 +1657,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     aim_jitter_x = aim_x + math.cos(dir_angle) * offset
     aim_jitter_y = aim_y + math.sin(dir_angle) * offset
     shot_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x)) + math.pi / 2.0
+    particle_angle = shot_angle - math.pi / 2.0
 
     muzzle_x = player.pos_x + player.aim_dir_x * 16.0
     muzzle_y = player.pos_y + player.aim_dir_y * 16.0
@@ -1713,16 +1714,16 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=dir_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:

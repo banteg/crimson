@@ -23,7 +23,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
-        state = GameplayState(rng=_FixedRng(0))
+        state = GameplayState(rng=_FixedRng(1))
         player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
         player.aim_dir_x = 1.0
         player.aim_dir_y = 0.0
@@ -38,6 +38,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         assert len(particles) == 1
         assert int(particles[0].style_id) == expected_style
         assert int(particles[0].owner_id) == -1
+        assert math.isclose(float(particles[0].angle), 0.0, abs_tol=1e-9)
 
         assert state.projectiles.iter_active() == []
         assert state.secondary_projectiles.iter_active() == []

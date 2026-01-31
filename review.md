@@ -26,11 +26,9 @@
   fVar14 = aim_heading - 1.5707964;
   fx_spawn_particle(&muzzle_pos, fVar14, ...);
   ```
-- [x] **Also confirmed mismatch:** Blow Torch / HR Flamer never override particle `style_id` (so they look like Flamethrower).
-- [ ] **Fix:** flame particle `angle = player.aim_heading - pi/2` (not `dir_angle`).
-- [ ] **Fix:** Blow Torch sets particle `style_id = 1` after spawn.
-- [ ] **Fix:** HR Flamer sets particle `style_id = 2` after spawn.
-- [ ] **Verify:** particles always fire forward along aim; Blow Torch/HR Flamer styles are visually distinct.
+- [x] **Verified:** Blow Torch / HR Flamer override particle `style_id` (1/2) after spawn.
+- [x] **Fix:** flame particle angle uses aim-forward direction (not random `dir_angle`).
+- [x] **Verify:** particles fire forward along aim and style ids match the original mapping.
 
 ---
 
