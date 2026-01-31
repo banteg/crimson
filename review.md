@@ -72,7 +72,7 @@ Fixed: weapon availability is tracked in `GameplayState.weapon_available` and re
 
 ---
 
-## 3) Perk availability + perk choice generation diverge from the original [ ]
+## 3) Perk availability + perk choice generation diverge from the original [x]
 
 There are **two** distinct fidelity issues here: “what perks exist” and “how the perk choice list is generated”.
 
@@ -85,7 +85,11 @@ Original behavior:
 
 Your port:
 
-* There is no `available` flag equivalent; perk selection is operating on “all perks in `PERK_TABLE`” (subject only to your simplified `perk_can_offer`).
+Fixed:
+
+* `GameplayState.perk_available` tracks the native `perk_meta_table[perk_id].available` flags.
+* `perks_rebuild_available(state)` rebuilds the availability table based on quest unlocks (`status.quest_unlock_index`) + base/permanent perks.
+* `perk_select_random(state, ...)` only picks from available perks.
 
 **Impact:**
 
@@ -103,8 +107,13 @@ Original behavior:
 
 Your port:
 
-* `perk_generate_choices()` in `src/crimson/gameplay.py` (lines ~699–716) is a uniform “sample without replacement” from a pool computed by your `perk_can_offer()`.
-* Your `perk_can_offer()` (lines ~550+) does **not** encode the big Death Clock interaction rules or the “rarity reroll” behavior from the original.
+Fixed: `perk_generate_choices` now mirrors the decompile’s selection quirks:
+
+* Death Clock blocks the native list of perks from being offered.
+* rarity rerolls (`(rand & 3) == 1` rejection) for the gated perk set.
+* quest 1-7 Monster Vision insertion.
+* Pyromaniac gating (only offered when Flamethrower is equipped).
+* tutorial mode override list.
 
 **Impact:**
 
@@ -112,10 +121,10 @@ Your port:
 
 **Actionable fix:**
 
-- [ ] Implement:
-  - [ ] `perks_rebuild_available` equivalent (quest unlock driven)
-  - [ ] original `perk_can_offer` rules (especially Death Clock restrictions)
-  - [ ] original `perk_generate_choices` quirks (rarity rerolls + quest special cases)
+- [x] Implement:
+  - [x] `perks_rebuild_available` equivalent (quest unlock driven)
+  - [x] original `perk_can_offer` rules (especially Death Clock restrictions)
+  - [x] original `perk_generate_choices` quirks (rarity rerolls + quest special cases)
 
 ---
 
@@ -295,10 +304,10 @@ If you want faithful persistence interoperability with original files, this matt
   - [x] implement weapon availability (`weapon_refresh_available`) + usage counts bump
   - [x] reimplement `weapon_pick_random_available` to match the original algorithm and pool (1..33)
 
-- [ ] 2. **Implement perk availability + original perk offering rules**:
-  - [ ] `perks_rebuild_available`
-  - [ ] Death Clock offer restrictions
-  - [ ] rarity rerolls / special cases (Monster Vision quest insert)
+- [x] 2. **Implement perk availability + original perk offering rules**:
+  - [x] `perks_rebuild_available`
+  - [x] Death Clock offer restrictions
+  - [x] rarity rerolls / special cases (Monster Vision quest insert)
 
 - [ ] 3. **Fill `ammo_class` for weapons** (you already have many in the FRIDA trace summary)
 

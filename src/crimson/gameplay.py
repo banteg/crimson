@@ -8,7 +8,7 @@ from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
-from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
+from .perks import PerkFlags, PerkId, PERK_BY_ID, PERK_TABLE
 from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
 from .weapons import (
     WEAPON_BY_ID,
@@ -52,6 +52,7 @@ class PlayerInput:
 
 
 PERK_COUNT_SIZE = 0x80
+PERK_ID_MAX = max(int(meta.perk_id) for meta in PERK_TABLE)
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 
@@ -481,9 +482,12 @@ class GameplayState:
     sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)
     demo_mode_active: bool = False
+    hardcore: bool = False
     status: GameStatus | None = None
     quest_stage_major: int = 0
     quest_stage_minor: int = 0
+    perk_available: list[bool] = field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
+    _perk_available_unlock_index: int = -1
     weapon_available: list[bool] = field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
     _weapon_available_game_mode: int = -1
     _weapon_available_unlock_index: int = -1
@@ -678,20 +682,139 @@ def perk_choice_count(player: PlayerState) -> int:
     return 5
 
 
-def perk_can_offer(player: PlayerState, meta: PerkMeta, *, game_mode: int, player_count: int) -> bool:
-    perk_id = meta.perk_id
+_PERK_BASE_AVAILABLE_MAX_ID = int(PerkId.BONUS_MAGNET)  # perks_rebuild_available @ 0x0042fc30
+_PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
+    PerkId.MAN_BOMB,
+    PerkId.LIVING_FORTRESS,
+    PerkId.FIRE_CAUGH,
+    PerkId.TOUGH_RELOADER,
+)
+
+_DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
+    (
+        PerkId.JINXED,
+        PerkId.BREATHING_ROOM,
+        PerkId.GRIM_DEAL,
+        PerkId.HIGHLANDER,
+        PerkId.FATAL_LOTTERY,
+        PerkId.AMMUNITION_WITHIN,
+        PerkId.INFERNAL_CONTRACT,
+        PerkId.REGENERATION,
+        PerkId.GREATER_REGENERATION,
+        PerkId.THICK_SKINNED,
+        PerkId.BANDAGE,
+    )
+)
+
+_PERK_RARITY_GATE: frozenset[PerkId] = frozenset(
+    (
+        PerkId.JINXED,
+        PerkId.AMMUNITION_WITHIN,
+        PerkId.ANXIOUS_LOADER,
+        PerkId.MONSTER_VISION,
+    )
+)
+
+
+def perks_rebuild_available(state: GameplayState) -> None:
+    """Rebuild quest unlock driven `perk_meta_table[perk_id].available` flags.
+
+    Port of `perks_rebuild_available` (0x0042fc30).
+    """
+
+    unlock_index = 0
+    if state.status is not None:
+        try:
+            unlock_index = int(state.status.quest_unlock_index)
+        except Exception:
+            unlock_index = 0
+
+    if int(state._perk_available_unlock_index) == unlock_index:
+        return
+
+    available = state.perk_available
+    for idx in range(len(available)):
+        available[idx] = False
+
+    for perk_id in range(1, _PERK_BASE_AVAILABLE_MAX_ID + 1):
+        if 0 <= perk_id < len(available):
+            available[perk_id] = True
+
+    for perk_id in _PERK_ALWAYS_AVAILABLE:
+        idx = int(perk_id)
+        if 0 <= idx < len(available):
+            available[idx] = True
+
+    if unlock_index > 0:
+        try:
+            from .quests import all_quests
+
+            quests = all_quests()
+        except Exception:
+            quests = []
+
+        for quest in quests[:unlock_index]:
+            perk_id = int(getattr(quest, "unlock_perk_id", 0) or 0)
+            if 0 < perk_id < len(available):
+                available[perk_id] = True
+
+    available[int(PerkId.ANTIPERK)] = False
+    state._perk_available_unlock_index = unlock_index
+
+
+def perk_can_offer(state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int) -> bool:
+    """Return whether `perk_id` is eligible for selection.
+
+    Used by `perk_select_random` and modeled after `perk_can_offer` (0x0042fb10).
+    """
+
     if perk_id == PerkId.ANTIPERK:
         return False
+
+    # Hardcore quest 2-10 blocks poison-related perks.
+    if (
+        int(game_mode) == int(GameMode.QUESTS)
+        and state.hardcore
+        and int(state.quest_stage_major) == 2
+        and int(state.quest_stage_minor) == 10
+        and perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER)
+    ):
+        return False
+
+    meta = PERK_BY_ID.get(int(perk_id))
+    if meta is None:
+        return False
+
     flags = meta.flags or PerkFlags(0)
     if (flags & PerkFlags.MODE_3_ONLY) and int(game_mode) != int(GameMode.QUESTS):
         return False
-    if (flags & PerkFlags.TWO_PLAYER_ONLY) and player_count != 2:
+    if (flags & PerkFlags.TWO_PLAYER_ONLY) and int(player_count) != 2:
         return False
-    if (flags & PerkFlags.STACKABLE) == 0 and perk_count_get(player, perk_id) > 0:
-        return False
+
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
         return False
+
     return True
+
+
+def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: int, player_count: int) -> PerkId:
+    """Randomly select an eligible perk id.
+
+    Port of `perk_select_random` (0x0042fbd0).
+    """
+
+    perks_rebuild_available(state)
+
+    for _ in range(1000):
+        perk_id = PerkId(int(state.rng.rand()) % PERK_ID_MAX + 1)
+        if not (0 <= int(perk_id) < len(state.perk_available)):
+            continue
+        if not state.perk_available[int(perk_id)]:
+            continue
+        if perk_can_offer(state, player, perk_id, game_mode=game_mode, player_count=player_count):
+            return perk_id
+
+    return PerkId.INSTANT_WINNER
 
 
 def perk_generate_choices(
@@ -706,23 +829,67 @@ def perk_generate_choices(
 
     if count is None:
         count = perk_choice_count(player)
+
+    # `perks_generate_choices` always fills a fixed array of 7 entries, even if the UI
+    # only shows 5/6 (Perk Expert/Master). Preserve RNG consumption by generating the
+    # full list, then slicing.
+    choices: list[PerkId] = [PerkId.ANTIPERK] * 7
+    choice_index = 0
+
+    # Quest 1-7 special-case: force Monster Vision as the first choice if not owned.
+    if (
+        int(state.quest_stage_major) == 1
+        and int(state.quest_stage_minor) == 7
+        and perk_count_get(player, PerkId.MONSTER_VISION) == 0
+    ):
+        choices[0] = PerkId.MONSTER_VISION
+        choice_index = 1
+
+    while choice_index < 7:
+        attempts = 0
+        while True:
+            attempts += 1
+            perk_id = perk_select_random(state, player, game_mode=game_mode, player_count=player_count)
+
+            # Pyromaniac can only be offered if the current weapon is Flamethrower.
+            if perk_id == PerkId.PYROMANIAC and int(player.weapon_id) != int(WeaponId.FLAMETHROWER):
+                continue
+
+            if perk_count_get(player, PerkId.DEATH_CLOCK) > 0 and perk_id in _DEATH_CLOCK_BLOCKED:
+                continue
+
+            # Global rarity gate: certain perks have a 25% chance to be rejected.
+            if perk_id in _PERK_RARITY_GATE and (int(state.rng.rand()) & 3) == 1:
+                continue
+
+            meta = PERK_BY_ID.get(int(perk_id))
+            flags = meta.flags if meta is not None and meta.flags is not None else PerkFlags(0)
+            stackable = (flags & PerkFlags.STACKABLE) != 0
+
+            if attempts > 10_000 and stackable:
+                break
+
+            if perk_id in choices[:choice_index]:
+                continue
+
+            if stackable or perk_count_get(player, perk_id) < 1 or attempts > 29_999:
+                break
+
+        choices[choice_index] = perk_id
+        choice_index += 1
+
     if int(game_mode) == int(GameMode.TUTORIAL):
-        fixed = [
+        choices = [
             PerkId.SHARPSHOOTER,
             PerkId.LONG_DISTANCE_RUNNER,
             PerkId.EVIL_EYES,
             PerkId.RADIOACTIVE,
             PerkId.FASTSHOT,
+            PerkId.FASTSHOT,
+            PerkId.FASTSHOT,
         ]
-        while len(fixed) < int(count):
-            fixed.append(PerkId.FASTSHOT)
-        return fixed[: int(count)]
-    pool = [meta.perk_id for meta in PERK_TABLE if perk_can_offer(player, meta, game_mode=game_mode, player_count=player_count)]
-    choices: list[PerkId] = []
-    while pool and len(choices) < count:
-        idx = int(state.rng.rand() % len(pool))
-        choices.append(pool.pop(idx))
-    return choices
+
+    return choices[: int(count)]
 
 
 def _increment_perk_count(player: PlayerState, perk_id: PerkId, *, amount: int = 1) -> None:

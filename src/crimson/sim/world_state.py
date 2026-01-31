@@ -60,6 +60,7 @@ class WorldState:
         )
         state = GameplayState()
         state.demo_mode_active = bool(demo_mode_active)
+        state.hardcore = bool(hardcore)
         players: list[PlayerState] = []
         creatures = CreaturePool(env=spawn_env)
         return cls(

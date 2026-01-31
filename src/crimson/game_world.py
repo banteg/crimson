@@ -17,7 +17,15 @@ from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
 from .effects import FxQueue, FxQueueRotated
-from .gameplay import GameplayState, PlayerInput, PlayerState, perk_active, weapon_assign_player, weapon_refresh_available
+from .gameplay import (
+    GameplayState,
+    PlayerInput,
+    PlayerState,
+    perk_active,
+    perks_rebuild_available,
+    weapon_assign_player,
+    weapon_refresh_available,
+)
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
@@ -389,6 +397,7 @@ class GameWorld:
         self.state.game_mode = int(game_mode)
         self.state.demo_mode_active = bool(self.demo_mode_active)
         weapon_refresh_available(self.state)
+        perks_rebuild_available(self.state)
 
         if self.audio_router is not None:
             self.audio_router.audio = self.audio

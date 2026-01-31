@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import PlayerState, perk_can_offer
+from crimson.gameplay import GameplayState, PlayerState, perk_can_offer
 from crimson.persistence.highscores import HighScoreRecord, rank_index, scores_path_for_config, sort_highscores
 from crimson.perks import PERK_BY_ID, PerkId
 from grim.config import CrimsonConfig
@@ -160,6 +160,7 @@ def test_perk_mode_3_only_is_offered_only_in_mode_3() -> None:
     meta = PERK_BY_ID.get(int(PerkId.ALTERNATE_WEAPON))
     assert meta is not None
 
+    state = GameplayState()
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    assert perk_can_offer(player, meta, game_mode=int(GameMode.SURVIVAL), player_count=1) is False
-    assert perk_can_offer(player, meta, game_mode=int(GameMode.QUESTS), player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
