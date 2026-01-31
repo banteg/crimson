@@ -7,7 +7,9 @@
 //
 // Notes:
 // - Addresses are for the repo's PE (1.9.93-gog) with link base 0x00400000.
-// - This is expected to work on demo builds where the attract loop is enabled.
+// - This tracer auto-enables demo/shareware behavior by patching game_is_full_version() to return 0,
+//   so the attract loop triggers on retail builds too.
+// - Disable the patch with: CRIMSON_FRIDA_DEMO_PATCH=0
 // - For other builds, override addresses via:
 //     CRIMSON_FRIDA_ADDRS="demo_mode_start=0x401000,ui_elements_max_timeline=0x402000"
 //     CRIMSON_FRIDA_LINK_BASE="0x00400000"
@@ -21,6 +23,15 @@ function getEnv(key) {
   } catch (_) {
     return null;
   }
+}
+
+function parseBoolEnv(key, defaultValue) {
+  const raw = getEnv(key);
+  if (raw === null) return defaultValue;
+  const value = String(raw).trim().toLowerCase();
+  if (value === '0' || value === 'false' || value === 'no') return false;
+  if (value === '1' || value === 'true' || value === 'yes') return true;
+  return defaultValue;
 }
 
 function getLogDir() {
@@ -38,6 +49,10 @@ const LOG_DIR = getLogDir();
 const CONFIG = {
   pollIntervalMs: 100,
   logPath: joinPath(LOG_DIR, 'demo_idle_threshold_trace.jsonl'),
+  enableDemoPatch: parseBoolEnv('CRIMSON_FRIDA_DEMO_PATCH', true),
+  demoPatchForceValue: 0, // 0 = demo/shareware behavior, 1 = full version
+  demoPatchKeepConfigPatched: true,
+  demoPatchKeepConfigIntervalMs: 1000,
 };
 
 const GAME_MODULE =
@@ -49,6 +64,9 @@ let LINK_BASE = ptr('0x00400000');
 const ADDR = {
   demo_mode_start: 0x00403390,
   ui_elements_max_timeline: 0x00446190,
+
+  game_is_full_version: 0x0041df40,
+  config_full_version: 0x00480791,
 
   demo_mode_active: 0x0048700d,
   ui_elements_timeline: 0x00487248,
@@ -170,6 +188,32 @@ function resolveAbi() {
   return null;
 }
 
+function patchReturnValue(addr, value) {
+  const v = value ? 1 : 0;
+  let bytes = null;
+
+  if (Process.arch === 'ia32') {
+    bytes = v === 0
+      ? [0x33, 0xc0, 0xc3] // xor eax, eax; ret
+      : [0xb8, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov eax, 1; ret
+  } else if (Process.arch === 'x64') {
+    bytes = v === 0
+      ? [0x48, 0x31, 0xc0, 0xc3] // xor rax, rax; ret
+      : [0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov rax, 1; ret
+  } else {
+    return { ok: false, error: 'unsupported_arch', arch: Process.arch };
+  }
+
+  try {
+    Memory.patchCode(addr, bytes.length, (code) => {
+      code.writeByteArray(bytes);
+    });
+    return { ok: true, method: 'asm_patch', value: v };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
 function readS32(staticVa) {
   const addr = exePtr(staticVa);
   if (!addr) return null;
@@ -187,6 +231,107 @@ function readU8(staticVa) {
     return addr.readU8();
   } catch (_) {
     return null;
+  }
+}
+
+function writeU8(staticVa, value) {
+  const addr = exePtr(staticVa);
+  if (!addr) return { ok: false, error: 'addr_unavailable' };
+  try {
+    addr.writeU8(value & 0xff);
+    return { ok: true, addr: addr.toString(), value: value & 0xff };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
+function demoPatchApply() {
+  if (!CONFIG.enableDemoPatch) {
+    writeLog({ event: 'demo_patch', enabled: false });
+    return;
+  }
+
+  const forceValue = CONFIG.demoPatchForceValue | 0;
+  writeLog({ event: 'demo_patch', enabled: true, force_value: forceValue });
+
+  const addrIsFull = exePtr(ADDR.game_is_full_version);
+  if (!addrIsFull) {
+    writeLog({ event: 'demo_patch_error', target: 'game_is_full_version', error: 'addr_unavailable' });
+  } else {
+    let replaced = false;
+    try {
+      Interceptor.replace(
+        addrIsFull,
+        new NativeCallback(function () {
+          return forceValue;
+        }, 'int', [])
+      );
+      replaced = true;
+      writeLog({
+        event: 'demo_patch_applied',
+        target: 'game_is_full_version',
+        method: 'interceptor_replace',
+        addr: addrIsFull.toString(),
+        value: forceValue,
+      });
+    } catch (e) {
+      writeLog({
+        event: 'demo_patch_error',
+        target: 'game_is_full_version',
+        method: 'interceptor_replace',
+        addr: addrIsFull.toString(),
+        error: String(e),
+      });
+    }
+
+    if (!replaced) {
+      const patched = patchReturnValue(addrIsFull, forceValue);
+      if (patched.ok) {
+        writeLog({
+          event: 'demo_patch_applied',
+          target: 'game_is_full_version',
+          method: patched.method,
+          addr: addrIsFull.toString(),
+          value: forceValue,
+        });
+      } else {
+        writeLog({
+          event: 'demo_patch_error',
+          target: 'game_is_full_version',
+          method: 'asm_patch',
+          addr: addrIsFull.toString(),
+          error: patched.error || 'unknown',
+          arch: patched.arch || null,
+        });
+      }
+    }
+  }
+
+  const writeConfig = writeU8(ADDR.config_full_version, forceValue);
+  if (writeConfig.ok) {
+    writeLog({
+      event: 'demo_patch_applied',
+      target: 'config_full_version',
+      method: 'write_u8',
+      addr: writeConfig.addr,
+      value: writeConfig.value,
+    });
+  } else {
+    writeLog({
+      event: 'demo_patch_error',
+      target: 'config_full_version',
+      method: 'write_u8',
+      error: writeConfig.error || 'unknown',
+    });
+  }
+
+  if (CONFIG.demoPatchKeepConfigPatched) {
+    setInterval(() => {
+      const current = readU8(ADDR.config_full_version);
+      if (current !== null && current !== (forceValue & 0xff)) {
+        writeU8(ADDR.config_full_version, forceValue);
+      }
+    }, parseInt(CONFIG.demoPatchKeepConfigIntervalMs, 10) || 1000);
   }
 }
 
@@ -241,6 +386,8 @@ function main() {
     static_addrs: staticAddrs,
     addrs: addrs,
   });
+
+  demoPatchApply();
 
   const addrDemoStart = ptrs.demo_mode_start;
   const addrMaxTimeline = ptrs.ui_elements_max_timeline;

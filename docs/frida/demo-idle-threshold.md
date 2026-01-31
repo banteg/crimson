@@ -5,13 +5,15 @@ Goal: confirm the **main menu idle timeout** (how long you must be inactive befo
 ## Capture (Windows VM)
 
 1. Launch the **demo build** and wait until the main menu is fully visible.
+   (If you only have a retail build, the tracer forces demo/shareware mode so the attract loop still triggers.)
 2. Attach:
 
    ```text
-   frida -n crimsonland.exe -l C:\share\frida\demo_idle_threshold_trace.js
+   just frida-demo-idle-threshold
    ```
 
-   (Or: `just frida-demo-idle-threshold`)
+   The tracer auto-enables **demo/shareware** behavior (so the attract loop triggers on retail builds).
+   To disable: set `CRIMSON_FRIDA_DEMO_PATCH=0` before attaching.
 
    If the script logs `error ... addr_unavailable` (or `start.addrs.* = null`), you're likely on a different build.
    Re-run with overrides (once you know the correct VAs for your demo build):
