@@ -1340,6 +1340,15 @@ def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: lis
             continue
         if state.shock_chain_links_left > 0 and bonus_id == int(BonusId.SHOCK_CHAIN):
             continue
+        if int(state.game_mode) == int(GameMode.QUESTS) and int(state.quest_stage_minor) == 10:
+            if bonus_id == int(BonusId.NUKE) and (
+                int(state.quest_stage_major) in (2, 4, 5) or (state.hardcore and int(state.quest_stage_major) == 3)
+            ):
+                continue
+            if bonus_id == int(BonusId.FREEZE) and (
+                int(state.quest_stage_major) == 4 or (state.hardcore and int(state.quest_stage_major) == 2)
+            ):
+                continue
         if bonus_id == int(BonusId.FREEZE) and state.bonuses.freeze > 0.0:
             continue
         if bonus_id == int(BonusId.SHIELD) and any(player.shield_timer > 0.0 for player in players):

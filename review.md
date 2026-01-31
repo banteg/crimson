@@ -255,7 +255,7 @@ Fixed:
 
 ---
 
-## 8) Quest-mode bonus suppression rules are missing in `bonus_pick_random_type` [ ]
+## 8) Quest-mode bonus suppression rules are missing in `bonus_pick_random_type` [x]
 
 Your `bonus_pick_random_type()` matches the general 162-roll distribution and most suppression rules, **but not** the quest-stage-specific suppressions mentioned in your own docs (and visible in the decompile `bonus_pick_random_type @ 00412470`).
 
@@ -264,7 +264,7 @@ The original suppresses:
 * **Freeze** in some quest stages
 * **Nuke** in some quest stages
 
-Your version doesn’t check quest stage at all when deciding bonus type.
+Fixed: `bonus_pick_random_type` now applies the quest-stage suppressions for Freeze and Nuke (quest mode, stage `*-10`) as in the decompile.
 
 **Impact:**
 
