@@ -170,6 +170,8 @@ class QuestMode(BaseGameplayMode):
                 player_count = 1
         self._world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
+        self._state.status = status
+        self._state.quest_stage_major, self._state.quest_stage_minor = quest.level_key
 
         base_id, overlay_id, detail_id = quest.terrain_ids or (0, 1, 0)
         base = terrain_texture_by_id(int(base_id))

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
@@ -18,6 +18,9 @@ from .weapons import (
     projectile_type_id_from_weapon_id,
     weapon_entry_for_projectile_type_id,
 )
+
+if TYPE_CHECKING:
+    from .persistence.save_status import GameStatus
 
 
 class _HasPos(Protocol):
@@ -170,7 +173,7 @@ BONUS_WEAPON_NEAR_RADIUS = 56.0
 BONUS_AIM_HOVER_RADIUS = 24.0
 BONUS_TELEKINETIC_PICKUP_MS = 650.0
 
-_WEAPON_RANDOM_IDS = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
+WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
 
 
 @dataclass(slots=True)
@@ -321,7 +324,7 @@ class BonusPool:
 
         rng = state.rng
         if entry.bonus_id == int(BonusId.WEAPON):
-            entry.amount = weapon_pick_random_available(rng)
+            entry.amount = weapon_pick_random_available(state)
         elif entry.bonus_id == int(BonusId.POINTS):
             entry.amount = 1000 if (rng.rand() & 7) < 3 else 500
         else:
@@ -478,6 +481,12 @@ class GameplayState:
     sfx_queue: list[str] = field(default_factory=list)
     game_mode: int = int(GameMode.SURVIVAL)
     demo_mode_active: bool = False
+    status: GameStatus | None = None
+    quest_stage_major: int = 0
+    quest_stage_minor: int = 0
+    weapon_available: list[bool] = field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
+    _weapon_available_game_mode: int = -1
+    _weapon_available_unlock_index: int = -1
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
@@ -754,11 +763,11 @@ def perk_apply(
             current = int(owner.weapon_id)
             weapon_id = int(current)
             for _ in range(100):
-                candidate = int(weapon_pick_random_available(state.rng))
+                candidate = int(weapon_pick_random_available(state))
                 if candidate != 0 and candidate != current:
                     weapon_id = candidate
                     break
-            weapon_assign_player(owner, weapon_id)
+            weapon_assign_player(owner, weapon_id, state=state)
             return
 
         if perk_id == PerkId.LIFELINE_50_50:
@@ -823,7 +832,7 @@ def perk_apply(
                 for player in players[1:]:
                     player.perk_counts[:] = owner.perk_counts
             for player in players:
-                weapon_assign_player(player, int(player.weapon_id))
+                weapon_assign_player(player, int(player.weapon_id), state=state)
             return
 
         if perk_id == PerkId.DEATH_CLOCK:
@@ -1010,11 +1019,102 @@ def _weapon_entry(weapon_id: int) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
 
-def weapon_pick_random_available(rng: Crand) -> int:
-    if not _WEAPON_RANDOM_IDS:
-        return 0
-    idx = int(rng.rand()) % len(_WEAPON_RANDOM_IDS)
-    return int(_WEAPON_RANDOM_IDS[idx])
+def weapon_refresh_available(state: "GameplayState") -> None:
+    """Rebuild `weapon_table[weapon_id].unlocked` equivalents from quest progression.
+
+    Port of `weapon_refresh_available` (0x00452e40).
+    """
+
+    unlock_index = 0
+    status = state.status
+    if status is not None:
+        try:
+            unlock_index = int(status.quest_unlock_index)
+        except Exception:
+            unlock_index = 0
+
+    game_mode = int(state.game_mode)
+    if (
+        int(state._weapon_available_game_mode) == game_mode
+        and int(state._weapon_available_unlock_index) == unlock_index
+    ):
+        return
+
+    # Clear unlocked flags.
+    available = state.weapon_available
+    for idx in range(len(available)):
+        available[idx] = False
+
+    # Pistol is always available.
+    pistol_id = int(WeaponId.PISTOL)
+    if 0 <= pistol_id < len(available):
+        available[pistol_id] = True
+
+    # Unlock weapons from the quest list (first `quest_unlock_index` entries).
+    if unlock_index > 0:
+        try:
+            from .quests import all_quests
+
+            quests = all_quests()
+        except Exception:
+            quests = []
+
+        for quest in quests[:unlock_index]:
+            weapon_id = int(getattr(quest, "unlock_weapon_id", 0) or 0)
+            if 0 < weapon_id < len(available):
+                available[weapon_id] = True
+
+    # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.
+    if game_mode == int(GameMode.SURVIVAL):
+        for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
+            idx = int(weapon_id)
+            if 0 <= idx < len(available):
+                available[idx] = True
+
+    state._weapon_available_game_mode = game_mode
+    state._weapon_available_unlock_index = unlock_index
+
+
+def weapon_pick_random_available(state: "GameplayState") -> int:
+    """Select a random available weapon id (1..33).
+
+    Port of `weapon_pick_random_available` (0x00452cd0).
+    """
+
+    weapon_refresh_available(state)
+    status = state.status
+
+    for _ in range(1000):
+        base_rand = int(state.rng.rand())
+        weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
+
+        # Bias: used weapons have a 50% chance to reroll once.
+        if status is not None:
+            try:
+                if status.weapon_usage_count(weapon_id) != 0:
+                    if (int(state.rng.rand()) & 1) == 0:
+                        base_rand = int(state.rng.rand())
+                        weapon_id = base_rand % WEAPON_DROP_ID_COUNT + 1
+            except Exception:
+                pass
+
+        if not (0 <= weapon_id < len(state.weapon_available)):
+            continue
+        if not state.weapon_available[weapon_id]:
+            continue
+
+        # Quest 5-10 special-case: suppress Ion Cannon.
+        if (
+            int(state.game_mode) == int(GameMode.QUESTS)
+            and int(state.quest_stage_major) == 5
+            and int(state.quest_stage_minor) == 10
+            and weapon_id == int(WeaponId.ION_CANNON)
+        ):
+            continue
+
+        return weapon_id
+
+    return int(WeaponId.PISTOL)
 
 
 def _projectile_meta_for_type_id(type_id: int) -> float:
@@ -1087,11 +1187,18 @@ def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: lis
     return int(BonusId.POINTS)
 
 
-def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
+def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: GameplayState | None = None) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
+    weapon_id = int(weapon_id)
+    if state is not None and state.status is not None and not state.demo_mode_active:
+        try:
+            state.status.increment_weapon_usage(weapon_id)
+        except Exception:
+            pass
+
     weapon = _weapon_entry(weapon_id)
-    player.weapon_id = int(weapon_id)
+    player.weapon_id = weapon_id
 
     clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
     clip_size = max(0, clip_size)
@@ -1905,7 +2012,7 @@ def bonus_apply(
             player.alt_reload_timer = float(player.reload_timer)
             player.alt_shot_cooldown = float(player.shot_cooldown)
             player.alt_reload_timer_max = float(player.reload_timer_max)
-        weapon_assign_player(player, weapon_id)
+        weapon_assign_player(player, weapon_id, state=state)
         return
 
     if bonus_id == BonusId.FIREBLAST:

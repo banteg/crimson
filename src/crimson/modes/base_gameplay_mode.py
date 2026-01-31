@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import random
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import pyray as rl
 
@@ -16,6 +16,9 @@ from ..game_world import GameWorld
 from ..persistence.highscores import HighScoreRecord
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
+
+if TYPE_CHECKING:
+    from ..persistence.save_status import GameStatus
 
 
 def _clamp(value: float, lo: float, hi: float) -> float:
@@ -57,6 +60,7 @@ class BaseGameplayMode:
         self.close_requested = False
         self._action: str | None = None
         self._paused = False
+        self._status: GameStatus | None = None
 
         self._world = GameWorld(
             assets_dir=ctx.assets_dir,
@@ -90,6 +94,11 @@ class BaseGameplayMode:
         self._state = self._world.state
         self._creatures = self._world.creatures
         self._player = self._world.players[0]
+        self._state.status = self._status
+
+    def bind_status(self, status: GameStatus | None) -> None:
+        self._status = status
+        self._state.status = status
 
     def bind_screen_fade(self, fade: _ScreenFade | None) -> None:
         self._screen_fade = fade

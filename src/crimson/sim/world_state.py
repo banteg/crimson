@@ -59,6 +59,7 @@ class WorldState:
             difficulty_level=int(difficulty_level),
         )
         state = GameplayState()
+        state.demo_mode_active = bool(demo_mode_active)
         players: list[PlayerState] = []
         creatures = CreaturePool(env=spawn_env)
         return cls(

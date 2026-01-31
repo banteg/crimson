@@ -805,6 +805,7 @@ class SurvivalGameView:
             # Original game: entering gameplay cuts the menu theme; in-game tunes
             # start later on the first creature hit.
             stop_music(self._state.audio)
+        self._mode.bind_status(self._state.status)
         self._mode.bind_audio(self._state.audio, self._state.rng)
         self._mode.bind_screen_fade(self._state)
         self._mode.open()
@@ -861,6 +862,7 @@ class RushGameView:
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
+        self._mode.bind_status(self._state.status)
         self._mode.bind_audio(self._state.audio, self._state.rng)
         self._mode.bind_screen_fade(self._state)
         self._mode.open()
@@ -917,6 +919,7 @@ class TypoShooterGameView:
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
+        self._mode.bind_status(self._state.status)
         self._mode.bind_audio(self._state.audio, self._state.rng)
         self._mode.bind_screen_fade(self._state)
         self._mode.open()
@@ -974,6 +977,7 @@ class TutorialGameView:
         self._state.screen_fade_ramp = False
         if self._state.audio is not None:
             stop_music(self._state.audio)
+        self._mode.bind_status(self._state.status)
         self._mode.bind_audio(self._state.audio, self._state.rng)
         self._mode.bind_screen_fade(self._state)
         self._mode.open()
@@ -1023,6 +1027,7 @@ class QuestGameView:
         self._state.quest_outcome = None
         if self._state.audio is not None:
             stop_music(self._state.audio)
+        self._mode.bind_status(self._state.status)
         self._mode.bind_audio(self._state.audio, self._state.rng)
         self._mode.bind_screen_fade(self._state)
         self._mode.open()

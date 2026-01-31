@@ -4,7 +4,7 @@ I’m referencing the Ghidra decompile in `analysis/ghidra/raw/crimsonland.exe_d
 
 ---
 
-## 1) Weapon drops are not faithful to the original [ ]
+## 1) Weapon drops are not faithful to the original [x]
 
 ### What the original does
 
@@ -21,11 +21,11 @@ In the original Crimsonland binary, the weapon drop chooser is **not** “pick a
 
 ### What your port does
 
-In `src/crimson/gameplay.py`:
+Fixed:
 
-* `weapon_pick_random_available()` (line ~1013) selects from `_WEAPON_RANDOM_IDS`, which is built from “all entries in `WEAPON_TABLE` with `name != None`”.
-* `_WEAPON_RANDOM_IDS` currently includes IDs **outside 1..33** (including “bonus weapons” / dev/secret entries like Fire Bullets etc. if they have a name), and it **does not** consult any “unlocked/available” flag or usage history.
-  That’s a large fidelity mismatch.
+* `weapon_refresh_available(state)` models the native `weapon_table[weapon_id].unlocked` flags.
+* `weapon_pick_random_available(state)` matches the native 1..33 pool + unlocked gating + usage-count reroll bias.
+* `weapon_assign_player(..., state=...)` bumps `status.weapon_usage_counts[weapon_id]` (unless demo mode).
 
 **Impact:**
 
@@ -35,16 +35,16 @@ In `src/crimson/gameplay.py`:
 
 **Actionable fix:**
 
-- [ ] Implement `weapon_refresh_available` logic (see next section) and store per-weapon `unlocked/available` state.
-- [ ] Re-implement `weapon_pick_random_available` to match the decompile:
-  - [ ] candidate range 1..33
-  - [ ] enforce unlocked
-  - [ ] usage-count reroll bias
-- [ ] Increment `status.weapon_usage_counts[weapon_id]` in the equivalent of `weapon_assign_player`.
+- [x] Implement `weapon_refresh_available` logic (see next section) and store per-weapon `unlocked/available` state.
+- [x] Re-implement `weapon_pick_random_available` to match the decompile:
+  - [x] candidate range 1..33
+  - [x] enforce unlocked
+  - [x] usage-count reroll bias
+- [x] Increment `status.weapon_usage_counts[weapon_id]` in the equivalent of `weapon_assign_player`.
 
 ---
 
-## 2) Weapon availability / unlock progression is not wired into gameplay [ ]
+## 2) Weapon availability / unlock progression is not wired into gameplay [x]
 
 ### What the original does
 
@@ -58,12 +58,7 @@ This is a key piece of progression logic.
 
 ### What your port does
 
-I didn’t find a runtime equivalent that:
-
-* clears + rebuilds “weapon unlocked/available” flags
-* uses `status.quest_unlock_index` to affect weapon drop/availability
-
-Your quest completion flow updates `quest_unlock_index` (e.g. `QuestResultsView`), but it doesn’t trigger any rebuild of weapon availability, and your weapon drop picker ignores unlock state anyway.
+Fixed: weapon availability is tracked in `GameplayState.weapon_available` and refreshed via `weapon_refresh_available(state)` using `status.quest_unlock_index` (plus Survival defaults).
 
 **Impact:**
 
@@ -72,12 +67,8 @@ Your quest completion flow updates `quest_unlock_index` (e.g. `QuestResultsView`
 
 **Actionable fix:**
 
-- [ ] Add a "weapon availability" table (either:
-  - [ ] add `unlocked` to your `Weapon` metadata at runtime, or
-  - [ ] keep a separate `available_weapon_ids` set/bitset in game state)
-- [ ] Rebuild it:
-  - [ ] on game start / mode switch
-  - [ ] whenever `quest_unlock_index` changes
+- [x] Add a "weapon availability" table (`GameplayState.weapon_available`).
+- [x] Rebuild it on game start / mode switch and when `quest_unlock_index` changes.
 
 ---
 
@@ -300,9 +291,9 @@ If you want faithful persistence interoperability with original files, this matt
 
 ## Highest value next steps (in order)
 
-- [ ] 1. **Fix weapon drops**:
-  - [ ] implement weapon availability (`weapon_refresh_available`) + usage counts bump
-  - [ ] reimplement `weapon_pick_random_available` to match the original algorithm and pool (1..33)
+- [x] 1. **Fix weapon drops**:
+  - [x] implement weapon availability (`weapon_refresh_available`) + usage counts bump
+  - [x] reimplement `weapon_pick_random_available` to match the original algorithm and pool (1..33)
 
 - [ ] 2. **Implement perk availability + original perk offering rules**:
   - [ ] `perks_rebuild_available`
