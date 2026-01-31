@@ -16,6 +16,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput
+from ..paths import default_runtime_dir
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
@@ -558,7 +559,7 @@ class LightingDebugView:
         except Exception:
             self._small = None
 
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():
             try:
                 self._world.config = ensure_crimson_cfg(runtime_dir)

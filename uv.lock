@@ -154,6 +154,7 @@ source = { editable = "." }
 dependencies = [
     { name = "construct" },
     { name = "pillow" },
+    { name = "platformdirs" },
     { name = "raylib" },
     { name = "typer" },
 ]
@@ -173,6 +174,7 @@ dev = [
 requires-dist = [
     { name = "construct", specifier = ">=2.10.70" },
     { name = "pillow", specifier = ">=12.1.0" },
+    { name = "platformdirs", specifier = ">=4.5.1" },
     { name = "raylib", specifier = ">=5.5.0.4" },
     { name = "typer", specifier = ">=0.21.1" },
 ]

@@ -80,11 +80,12 @@ from .frontend.panels.stats import StatisticsMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from .paths import default_runtime_dir
 
 if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
 
-DEFAULT_BASE_DIR = Path("artifacts") / "runtime"
+DEFAULT_BASE_DIR = default_runtime_dir()
 
 
 @dataclass(frozen=True, slots=True)

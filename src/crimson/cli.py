@@ -13,6 +13,7 @@ from PIL import Image
 
 from grim import jaz, paq
 from grim.rand import Crand
+from .paths import default_runtime_dir
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
@@ -210,8 +211,8 @@ def cmd_game(
     demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     base_dir: Path = typer.Option(
-        Path("artifacts") / "runtime",
-        help="base path for runtime files (default: artifacts/runtime)",
+        default_runtime_dir(),
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
     assets_dir: Path | None = typer.Option(
         None,
@@ -238,8 +239,8 @@ def cmd_game(
 def cmd_config(
     path: Path | None = typer.Option(None, help="path to crimson.cfg (default: base-dir/crimson.cfg)"),
     base_dir: Path = typer.Option(
-        Path("artifacts") / "runtime",
-        help="base path for runtime files (default: artifacts/runtime)",
+        default_runtime_dir(),
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
 ) -> None:
     """Inspect crimson.cfg configuration values."""

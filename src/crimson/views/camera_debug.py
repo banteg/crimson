@@ -13,6 +13,8 @@ from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
+
+from ..paths import default_runtime_dir
 from .registry import register_view
 
 
@@ -75,7 +77,7 @@ class CameraDebugView:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _load_runtime_config(self) -> None:
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if not runtime_dir.is_dir():
             return
         try:

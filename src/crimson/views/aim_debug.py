@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
 
 import pyray as rl
 
@@ -11,6 +10,7 @@ from grim.view import ViewContext
 
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput
+from ..paths import default_runtime_dir
 from ..ui.cursor import draw_cursor_glow
 from .registry import register_view
 
@@ -132,7 +132,7 @@ class AimDebugView:
         except Exception:
             self._small = None
 
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():
             try:
                 self._world.config = ensure_crimson_cfg(runtime_dir)

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import random
-from pathlib import Path
 
 import pyray as rl
 
@@ -16,6 +15,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, weapon_assign_player
+from ..paths import default_runtime_dir
 from ..projectiles import ProjectileTypeId
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_sfx import resolve_weapon_sfx_ref
@@ -284,7 +284,7 @@ class ArsenalDebugView:
         except Exception:
             self._small = None
 
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():
             try:
                 self._world.config = ensure_crimson_cfg(runtime_dir)

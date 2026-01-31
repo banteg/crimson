@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import pyray as rl
 
@@ -11,6 +10,7 @@ from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
+from ..paths import default_runtime_dir
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
 from .quest_title_overlay import draw_quest_title_overlay
@@ -188,7 +188,7 @@ class GroundView:
         self._draw_quest_title_overlay()
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():
             try:
                 cfg = ensure_crimson_cfg(runtime_dir)

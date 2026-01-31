@@ -20,6 +20,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 
+from ..paths import default_runtime_dir
 from .registry import register_view
 
 
@@ -133,7 +134,7 @@ class DecalsDebugView:
             self._stamp_log_file = None
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         if runtime_dir.is_dir():
             try:
                 cfg = ensure_crimson_cfg(runtime_dir)

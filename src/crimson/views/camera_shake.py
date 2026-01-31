@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from pathlib import Path
 
 import pyray as rl
 
@@ -14,6 +13,7 @@ from ..bonuses import BonusId
 from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, bonus_apply
+from ..paths import default_runtime_dir
 from .registry import register_view
 
 
@@ -47,7 +47,7 @@ class CameraShakeView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
 
-        runtime_dir = Path("artifacts") / "runtime"
+        runtime_dir = default_runtime_dir()
         config = None
         if runtime_dir.is_dir():
             try:
