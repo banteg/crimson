@@ -113,7 +113,7 @@ def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
     assert math.isclose(creatures[0].hp, 100.0 - expected_damage, abs_tol=1e-6)
 
 
-def test_projectile_pool_update_rocket_splash_damage_is_distance_scaled() -> None:
+def test_projectile_pool_update_type_0x0b_does_not_splash_damage() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(
         pos_x=0.0,
@@ -139,13 +139,13 @@ def test_projectile_pool_update_rocket_splash_damage_is_distance_scaled() -> Non
     )
 
     assert hits == [(0x0B, 0.0, 0.0, 60.0, 0.0, 71.1428574, 0.0)]
-    assert math.isclose(creatures[0].hp, 100.0 - _expected_damage(50.0), abs_tol=1e-6)
-    assert math.isclose(creatures[1].hp, 100.0 - _expected_damage(40.0), abs_tol=1e-6)
-    assert math.isclose(creatures[2].hp, 100.0 - _expected_damage(100.0), abs_tol=1e-6)
+    assert math.isclose(creatures[0].hp, 100.0 - _expected_damage(60.0), abs_tol=1e-6)
+    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
+    assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
     assert math.isclose(creatures[3].hp, 100.0, abs_tol=1e-9)
 
 
-def test_projectile_pool_update_rocket_splash_hits_nearby_creatures() -> None:
+def test_projectile_pool_update_type_0x0b_does_not_splash_nearby_creatures() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(
         pos_x=0.0,
@@ -164,7 +164,7 @@ def test_projectile_pool_update_rocket_splash_hits_nearby_creatures() -> None:
     pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x0B: 1.0})
 
     assert creatures[0].hp < 100.0
-    assert creatures[1].hp < 100.0
+    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
     assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
 
 
@@ -215,7 +215,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-9)
 
 
-def test_projectile_pool_rocket_splash_hits_nearby_creatures() -> None:
+def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=0x0B, owner_id=-100)
     creatures = [
@@ -229,10 +229,9 @@ def test_projectile_pool_rocket_splash_hits_nearby_creatures() -> None:
         world_size=1024.0,
         speed_by_type={0x0B: 100.0},
         damage_by_type={0x0B: 32.0},
-        rocket_splash_radius=90.0,
     )
     assert math.isclose(creatures[0].hp, 68.0, abs_tol=1e-9)
-    assert math.isclose(creatures[1].hp, 68.0, abs_tol=1e-9)
+    assert math.isclose(creatures[1].hp, 100.0, abs_tol=1e-9)
     assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
 
 

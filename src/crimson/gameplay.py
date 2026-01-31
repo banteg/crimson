@@ -16,7 +16,6 @@ from .weapons import (
     Weapon,
     projectile_type_id_from_weapon_id,
     weapon_entry_for_projectile_type_id,
-    weapon_id_from_projectile_type_id,
 )
 
 
@@ -1241,7 +1240,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = ProjectileTypeId.ROCKET_LAUNCHER if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
+        type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
         angle = float(idx) * (math.pi / 4.0)
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -1330,7 +1329,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
-    fire_bullets_weapon = _weapon_entry(weapon_id_from_projectile_type_id(ProjectileTypeId.FIRE_BULLETS))
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
     spread_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
@@ -1440,6 +1439,8 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         pellets = max(1, int(pellet_count))
         shot_count = pellets
         type_id = projectile_type_id_from_weapon_id(int(player.weapon_id))
+        if type_id is None:
+            return
         meta = _projectile_meta_for_type_id(type_id)
         jitter_step = _pellet_jitter_step(int(player.weapon_id))
         for _ in range(pellets):
@@ -1592,7 +1593,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
                     player,
                     count=count,
                     angle_offset=0.1,
-                    type_id=ProjectileTypeId.ROCKET_LAUNCHER,
+                    type_id=ProjectileTypeId.PLASMA_MINIGUN,
                     owner_id=_owner_id_for_player(player.index),
                 )
                 state.bonus_spawn_guard = False

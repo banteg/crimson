@@ -7,11 +7,15 @@ This file is **manually maintained** (do not auto-generate).
 
 It was originally seeded from `weapon_table_init` (`FUN_004519b0`) and the
 rewrite now uses the **native 1-based weapon ids** (e.g. pistol is
-`weapon_id=1`). Projectile type ids remain **0-based** and are **not a 1:1**
-mapping: multiple weapons share type ids and some weapons bypass
-`projectile_spawn` entirely (particles/secondary pools). Use
-`projectile_type_id_from_weapon_id` for the primary projectile id and
-`projectile_type_ids_from_weapon_id` when you need the full set.
+`weapon_id=1`). In the native code, projectile `type_id` values passed into
+`projectile_spawn` are **weapon table indices** (same numeric domain as weapon
+ids). They are **not** a 1:1 mapping: multiple weapons can share a projectile
+type id (e.g. Sawed-off and Jackhammer use the Shotgun template), and some
+weapons bypass `projectile_spawn` entirely (particles / secondary pool).
+
+Use `projectile_type_id_from_weapon_id` for the primary projectile `type_id`
+(or `None` for non-projectile weapons), and `projectile_type_ids_from_weapon_id`
+when you need the full set.
 
 Reference material:
 - `docs/weapon-table.md` (native struct + fields)
@@ -21,8 +25,6 @@ Reference material:
 from dataclasses import dataclass
 
 MANUALLY_MAINTAINED = True
-
-WEAPON_ID_BASE = 1
 
 @dataclass(frozen=True)
 class Weapon:
@@ -723,7 +725,8 @@ WEAPON_BY_ID = {
 
 WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
     # Source: analysis/ghidra/raw/crimsonland.exe_decompiled.c (`player_fire_weapon`).
-    # Weapon ids not listed here fall back to (weapon_id - 1) as a hypothesis.
+    # Weapon ids not listed here use `type_id == weapon_id` in the native
+    # `projectile_spawn` path.
     1: (0x01,),  # Pistol
     2: (0x02,),  # Assault Rifle
     3: (0x03,),  # Shotgun
@@ -759,42 +762,38 @@ WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
     45: (0x2D,),  # Fire Bullets
 }
 
-PROJECTILE_TYPE_TO_WEAPON_IDS: dict[int, tuple[int, ...]] = {}
-for weapon_id, type_ids in WEAPON_PROJECTILE_TYPE_IDS.items():
-    for type_id in type_ids:
-        PROJECTILE_TYPE_TO_WEAPON_IDS.setdefault(int(type_id), []).append(int(weapon_id))
-PROJECTILE_TYPE_TO_WEAPON_IDS = {
-    type_id: tuple(sorted(weapon_ids))
-    for type_id, weapon_ids in PROJECTILE_TYPE_TO_WEAPON_IDS.items()
-}
+def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
+    # Native `projectile_spawn` indexes the weapon table by `type_id`.
+    return WEAPON_BY_ID.get(int(type_id))
 
 
-def weapon_id_from_projectile_type_id(type_id: int) -> int:
-    type_id = int(type_id)
-    mapped = PROJECTILE_TYPE_TO_WEAPON_IDS.get(type_id)
-    if mapped:
-        return mapped[0]
-    return type_id + WEAPON_ID_BASE
+def projectile_type_id_from_weapon_id(weapon_id: int) -> int | None:
+    """Return the primary projectile `type_id` used by `weapon_id`.
 
+    Returns `None` for weapons that don't use the main projectile pool.
+    """
 
-def projectile_type_id_from_weapon_id(weapon_id: int) -> int:
     weapon_id = int(weapon_id)
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return type_ids[0] if type_ids else None
-    return weapon_id - WEAPON_ID_BASE
+        return int(type_ids[0]) if type_ids else None
+
+    # Default native behavior for projectile weapons is `type_id == weapon_id`.
+    if weapon_id in WEAPON_BY_ID:
+        return weapon_id
+    return None
 
 
 def projectile_type_ids_from_weapon_id(weapon_id: int) -> tuple[int, ...]:
+    """Return all projectile `type_id` values produced by `weapon_id`."""
+
     weapon_id = int(weapon_id)
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return tuple(type_ids)
-    return (weapon_id - WEAPON_ID_BASE,)
-
-
-def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
-    return WEAPON_BY_ID.get(weapon_id_from_projectile_type_id(type_id))
+        return tuple(int(v) for v in type_ids)
+    if weapon_id in WEAPON_BY_ID:
+        return (weapon_id,)
+    return ()
 
 
 WEAPON_BY_NAME = {

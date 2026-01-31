@@ -57,7 +57,6 @@ class ProjectileTypeId(IntEnum):
     GAUSS_SHOTGUN = 0x06
     PLASMA_RIFLE = 0x09
     MULTI_PLASMA = 0x09
-    ROCKET_LAUNCHER = 0x0B
     PLASMA_MINIGUN = 0x0B
     PLASMA_SHOTGUN = 0x0B
     PULSE_GUN = 0x13
@@ -71,9 +70,6 @@ class ProjectileTypeId(IntEnum):
     PLAGUE_SPREADER = 0x29
     RAINBOW_GUN = 0x2B
     FIRE_BULLETS = 0x2D
-
-
-ROCKET_SPLASH_RADIUS = 90.0
 
 
 def _rng_zero() -> int:
@@ -292,8 +288,8 @@ class ProjectilePool:
                 return float(damage_scale_default)
             return float(value)
 
-        def _damage_type_for(*, radius: bool = False) -> int:
-            return 3 if radius else 1
+        def _damage_type_for() -> int:
+            return 1
 
         def _apply_damage_to_creature(
             creature_index: int,
@@ -320,29 +316,6 @@ class ProjectilePool:
                 )
             else:
                 creatures[idx].hp -= float(damage)
-
-        def _apply_rocket_splash(x: float, y: float, owner_id: int, damage_scale: float) -> None:
-            for idx, creature in enumerate(creatures):
-                if creature.hp <= 0.0:
-                    continue
-                if idx == owner_id:
-                    continue
-                creature_radius = _hit_radius_for(creature)
-                hit_r = ROCKET_SPLASH_RADIUS + creature_radius
-                if _distance_sq(x, y, creature.x, creature.y) > hit_r * hit_r:
-                    continue
-                dist = math.hypot(creature.x - x, creature.y - y)
-                if dist < 50.0:
-                    dist = 50.0
-                damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
-                _apply_damage_to_creature(
-                    idx,
-                    damage_amount,
-                    damage_type=_damage_type_for(radius=True),
-                    impulse_x=0.0,
-                    impulse_y=0.0,
-                    owner_id=owner_id,
-                )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
             if runtime_state is None:
@@ -662,11 +635,6 @@ class ProjectilePool:
                         creature.y += move_dy * 3.0
                     elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "collision_flag"):
                         setattr(creature, "collision_flag", 1)
-                    elif type_id == ProjectileTypeId.ROCKET_LAUNCHER:
-                        damage_scale = _damage_scale(type_id)
-                        _apply_rocket_splash(proj.pos_x, proj.pos_y, proj.owner_id, damage_scale)
-                        proj.life_timer = 0.25
-                        break
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
@@ -726,7 +694,6 @@ class ProjectilePool:
         world_size: float,
         speed_by_type: dict[int, float],
         damage_by_type: dict[int, float],
-        rocket_splash_radius: float = 90.0,
     ) -> list[tuple[int, float, float, float, float, float, float]]:
         """Update a small projectile subset for the demo view.
 
@@ -806,18 +773,6 @@ class ProjectilePool:
             hit_y = float(proj.pos_y)
             creature = creatures[hit_idx]
             hits.append((proj.type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, float(creature.x), float(creature.y)))
-
-            if proj.type_id == 0x0B:
-                dmg = damage_by_type.get(proj.type_id, 32.0)
-                for creature in creatures:
-                    if creature.hp <= 0.0:
-                        continue
-                    creature_radius = _hit_radius_for(creature)
-                    hit_r = rocket_splash_radius + creature_radius
-                    if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                        creature.hp -= dmg
-                proj.life_timer = 0.25
-                continue
 
             creature = creatures[hit_idx]
             creature.hp -= damage_by_type.get(proj.type_id, 10.0)

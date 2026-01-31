@@ -35,7 +35,7 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     )
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
-    assert _signature(pool) == Counter({int(ProjectileTypeId.ROCKET_LAUNCHER): 15})
+    assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_MINIGUN): 15})
 
     pool.reset()
 
@@ -51,4 +51,4 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, hot_tempered_timer=1.95)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
-    assert _signature(pool) == Counter({int(ProjectileTypeId.ROCKET_LAUNCHER): 4, int(ProjectileTypeId.PLASMA_RIFLE): 4})
+    assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_MINIGUN): 4, int(ProjectileTypeId.PLASMA_RIFLE): 4})

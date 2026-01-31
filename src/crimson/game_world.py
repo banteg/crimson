@@ -25,7 +25,7 @@ from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldState
-from .weapons import WEAPON_TABLE, projectile_type_ids_from_weapon_id
+from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
 
 
@@ -93,16 +93,12 @@ class GameWorld:
         )
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {}
+        # Native `projectile_spawn` indexes the weapon table by `type_id`, so
+        # `damage_scale_by_type` is just `weapon_table[type_id].damage_scale`.
         for entry in WEAPON_TABLE:
             if entry.weapon_id <= 0:
                 continue
-            type_ids = projectile_type_ids_from_weapon_id(entry.weapon_id)
-            if not type_ids:
-                continue
-            for type_id in type_ids:
-                if type_id is None:
-                    continue
-                self._damage_scale_by_type[int(type_id)] = float(entry.damage_scale or 1.0)
+            self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
         player_count = 1
         if self.config is not None:
             try:
@@ -516,19 +512,6 @@ class GameWorld:
                         height=size,
                         rotation=rotation,
                         rgba=(0.7, 0.9, 1.0, 1.0),
-                    )
-            elif type_id == int(ProjectileTypeId.ROCKET_LAUNCHER):
-                if self.ground is not None and self.fx_textures is not None:
-                    size = float(int(rand()) % 18 + 18)
-                    rotation = float(int(rand()) % 628) * 0.01
-                    self.fx_queue.add(
-                        effect_id=0x11,
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
-                        width=size,
-                        height=size,
-                        rotation=rotation,
-                        rgba=(1.0, 0.6, 0.3, 1.0),
                     )
             elif not freeze_active:
                 for _ in range(3):

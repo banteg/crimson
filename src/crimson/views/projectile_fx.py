@@ -16,9 +16,7 @@ from ..projectiles import ProjectileTypeId
 from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
-    projectile_type_id_from_weapon_id,
     weapon_entry_for_projectile_type_id,
-    weapon_id_from_projectile_type_id,
 )
 
 WORLD_SIZE = 1024.0
@@ -59,7 +57,7 @@ class EffectFx:
 
 
 _KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
-    # Based on docs/atlas.md (projectile type ids are 0-based).
+    # Based on docs/atlas.md (projectile `type_id` values index the weapon table).
     ProjectileTypeId.PULSE_GUN: (2, 0),
     ProjectileTypeId.SPLITTER_GUN: (4, 3),
     ProjectileTypeId.BLADE_GUN: (4, 6),
@@ -120,13 +118,7 @@ class ProjectileFxView:
         self._camera_x = -1.0
         self._camera_y = -1.0
 
-        type_ids = [
-            projectile_type_id_from_weapon_id(entry.weapon_id)
-            for entry in WEAPON_TABLE
-            if entry.weapon_id > 0
-        ]
-        type_ids = [type_id for type_id in type_ids if type_id is not None]
-        max_type_id = max(type_ids, default=0)
+        max_type_id = max((int(entry.weapon_id) for entry in WEAPON_TABLE), default=0)
         self._type_ids = list(range(int(max_type_id) + 1))
         self._type_index = 0
 
@@ -134,10 +126,7 @@ class ProjectileFxView:
         for entry in WEAPON_TABLE:
             if entry.weapon_id <= 0:
                 continue
-            type_id = projectile_type_id_from_weapon_id(entry.weapon_id)
-            if type_id is None:
-                continue
-            self._damage_scale_by_type[int(type_id)] = float(entry.damage_scale or 1.0)
+            self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
 
         self._origin_x = WORLD_SIZE * 0.5
         self._origin_y = WORLD_SIZE * 0.5
@@ -385,7 +374,7 @@ class ProjectileFxView:
                 self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
                 self._spawn_effect(effect_id=0x01, x=hit_x, y=hit_y, scale=0.9, duration=0.25)
             else:
-                effect_id = 0x11 if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.ROCKET_LAUNCHER) else 0x00
+                effect_id = 0x11 if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS) else 0x00
                 self._spawn_effect(effect_id=effect_id, x=hit_x, y=hit_y, scale=1.2, duration=0.35)
 
         self._creatures = [c for c in self._creatures if c.hp > 0.0]
@@ -575,7 +564,7 @@ class ProjectileFxView:
         line = self._ui_line_height()
 
         type_id = self._selected_type_id()
-        weapon = WEAPON_BY_ID.get(weapon_id_from_projectile_type_id(type_id))
+        weapon = WEAPON_BY_ID.get(int(type_id))
         label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
         self._draw_ui_text(f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, UI_TEXT_COLOR)
         y += line + 4

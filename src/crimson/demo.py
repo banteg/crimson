@@ -1209,17 +1209,27 @@ class DemoView:
 
         play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
 
-        if player.weapon_id in {6, 12, 22}:
+        if player.weapon_id in {6, 22}:
             meta = float(weapon.projectile_meta) if weapon.projectile_meta is not None else 0.0
             if meta <= 0.0:
                 meta = 45.0
+            type_id = projectile_type_id_from_weapon_id(player.weapon_id)
+            if type_id is None:
+                return
             self._projectile_pool.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
                 angle=angle,
-                type_id=projectile_type_id_from_weapon_id(player.weapon_id),
+                type_id=type_id,
                 owner_id=-100,
                 base_damage=meta,
+            )
+        elif player.weapon_id == 12:
+            self._secondary_projectile_pool.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=1,
             )
         elif player.weapon_id == 19:
             self._secondary_projectile_pool.spawn(

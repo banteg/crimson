@@ -32,7 +32,7 @@ CREATURE_ASSET: dict[CreatureTypeId, str] = {
 }
 
 KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
-    # Based on docs/atlas.md (projectile type ids are 0-based).
+    # Based on docs/atlas.md (projectile `type_id` values index the weapon table).
     ProjectileTypeId.PULSE_GUN: (2, 0),
     ProjectileTypeId.SPLITTER_GUN: (4, 3),
     ProjectileTypeId.BLADE_GUN: (4, 6),

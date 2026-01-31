@@ -8,7 +8,6 @@ from grim.audio import AudioState, play_sfx, trigger_game_tune
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
-from .projectiles import ProjectileTypeId
 from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID
 
@@ -112,8 +111,6 @@ class AudioRouter:
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        if type_id == int(ProjectileTypeId.ROCKET_LAUNCHER):
-            return "sfx_explosion_large"
         if type_id in beam_types:
             return "sfx_shock_hit_01"
         return self._rand_choice(rand, _BULLET_HIT_SFX)

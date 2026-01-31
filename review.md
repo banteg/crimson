@@ -327,7 +327,7 @@ Below are the concrete inconsistencies (with pointers to *where* the native beha
 
 ---
 
-## 1) Critical: projectile `type_id` is not "0-based"; it's the weapon-table index the native code uses [ ]
+## 1) Critical: projectile `type_id` is not "0-based"; it's the weapon-table index the native code uses [x]
 
 ### What native does
 
@@ -347,14 +347,11 @@ This also explains why the trace sees pistol bullets as `type_id == 1`, assault 
 
 ### What your code does now
 
-You currently treat projectile IDs as “0-based” and translate:
+Fixed: projectile `type_id` values are treated as weapon-table indices (native).
 
 * `src/crimson/weapons.py`:
-
-  * `projectile_type_id_from_weapon_id(weapon_id)` returns `weapon_id - 1` (with a few specials)
-  * `weapon_id_from_projectile_type_id(type_id)` returns `type_id + 1`
-* `src/crimson/gameplay.py` uses those functions to decide what `type_id` to pass to your projectile pool.
-* Your `ProjectileTypeId` enum in `src/crimson/projectiles.py` is aligned to that 0-based scheme.
+  * `projectile_type_id_from_weapon_id(weapon_id)` returns the native projectile `type_id` (or `None` for non-projectile weapons).
+  * `weapon_entry_for_projectile_type_id(type_id)` indexes `WEAPON_BY_ID[type_id]` directly.
 
 ### Why this is a big deal
 
@@ -495,29 +492,29 @@ I’m listing *native behavior → your behavior*, and the *native evidence line
 
 ---
 
-## 3) Perk / bonus projectile spawns use the wrong projectile IDs right now [ ]
+## 3) Perk / bonus projectile spawns use the wrong projectile IDs right now [x]
 
 Because the projectile type ID scheme is off, perks that spawn projectiles by numeric ID are also off.
 
-### Man Bomb perk [ ]
+### Man Bomb perk [x]
 
 * **Native:** alternates projectile types **0x16** and **0x15**
   Evidence: `player_update` perk logic **11772–11782**
-* **Yours:** alternates **ION_CANNON** and **ION_MINIGUN**
+* **Yours:** alternates **ION_MINIGUN (0x16)** and **ION_RIFLE (0x15)**
   Code: `src/crimson/gameplay.py` `_perk_update_man_bomb`
 
-### Hot Tempered perk [ ]
+### Hot Tempered perk [x]
 
 * **Native:** alternates projectile types **0x0B** and **0x09**
   Evidence: **11860–11870**
-* **Yours:** alternates `ROCKET_LAUNCHER` and `PLASMA_RIFLE`
+* **Yours:** alternates **PLASMA_MINIGUN (0x0B)** and **PLASMA_RIFLE (0x09)**
   Code: `src/crimson/gameplay.py` `_perk_update_hot_tempered`
 
-### Fire Cough perk [ ]
+### Fire Cough perk [x]
 
 * **Native:** spawns projectile type **0x2D** (`projectile_spawn(..., 0x2d, ...)`)
   Evidence: **11852–11859**
-* **Yours:** uses `ProjectileTypeId.FIRE_BULLETS` from your 0-based enum → currently not `0x2D` in native terms.
+* **Yours:** uses `ProjectileTypeId.FIRE_BULLETS` (native `0x2D`).
 
 ---
 
@@ -560,21 +557,21 @@ You’ve got `docs/rewrite/game-over.md` explicitly stating the **transition tim
 
 # Recommended fix order (to unblock golden-oracle validation)
 
-## A) Unify projectile `type_id` semantics with native (stop doing "weapon_id - 1") [ ]
+## A) Unify projectile `type_id` semantics with native (stop doing "weapon_id - 1") [x]
 
 This is the root-cause fix.
 
 Concrete steps:
 
-- [ ] 1. **Change projectile IDs to match native weapon-table indexing**
-  - [ ] Update `ProjectileTypeId` to use native IDs (pistol = 1, assault = 2, …)
-  - [ ] Remove or quarantine `projectile_type_id_from_weapon_id` and `weapon_id_from_projectile_type_id` (they bake in the wrong assumption).
+- [x] 1. **Change projectile IDs to match native weapon-table indexing**
+  - [x] Update `ProjectileTypeId` to use native IDs (pistol = 1, assault = 2, …)
+  - [x] Remove or quarantine `projectile_type_id_from_weapon_id` and `weapon_id_from_projectile_type_id` (they bake in the wrong assumption).
 
-- [ ] 2. Update every subsystem that uses projectile IDs:
-  - [ ] `src/crimson/projectiles.py` (spawn specials: ion radii, gauss/fire/blade damage_pool, splitter type check, etc.)
-  - [ ] `src/crimson/sim/world_defs.py` (`KNOWN_PROJ_FRAMES`)
-  - [ ] `src/crimson/render/world_renderer.py` (any type-based branching like bullet trails / ion rendering)
-  - [ ] perks (`_perk_update_*`)
+- [x] 2. Update every subsystem that uses projectile IDs:
+  - [x] `src/crimson/projectiles.py` (spawn specials: ion radii, gauss/fire/blade damage_pool, splitter type check, etc.)
+  - [x] `src/crimson/sim/world_defs.py` (`KNOWN_PROJ_FRAMES`)
+  - [x] `src/crimson/render/world_renderer.py` (any type-based branching like bullet trails / ion rendering)
+  - [x] perks (`_perk_update_*`)
 
 This will immediately make your golden-oracle traces line up without constant “+1/-1 mapping”.
 
@@ -587,13 +584,13 @@ Implement weapon behavior exactly as in the decompile section:
 
 If you want a clean architecture: encode the weapon fire behavior into a data-driven “fire profile” table (spawn kind, template ids, pellet counts, jitter, speed_scale ranges, ammo drain) to avoid a huge if/elif chain.
 
-## C) Fix perk spawns that hardcode projectile IDs [ ]
+## C) Fix perk spawns that hardcode projectile IDs [x]
 
 At least:
 
-- [ ] Man Bomb
-- [ ] Hot Tempered
-- [ ] Fire Cough
+- [x] Man Bomb
+- [x] Hot Tempered
+- [x] Fire Cough
 
 Use the native IDs and templates.
 
@@ -631,4 +628,3 @@ If any of those are still wrong, something in the mapping is still off.
 ---
 
 If you want, I can also generate a compact “native fire-spec table” (weapon_id → spawn kind + template ids + counts + jitter + speed_scale range + ammo drain) from the decompile section so you can wire it in as data instead of a long conditional chain.
-
