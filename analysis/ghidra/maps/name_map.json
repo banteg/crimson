@@ -1411,7 +1411,7 @@
     "program": "crimsonland.exe",
     "address": "0x00420360",
     "name": "fx_spawn_secondary_projectile",
-    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, int type_id)",
+    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, secondary_projectile_type_id_t type_id)",
     "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
   },
   {

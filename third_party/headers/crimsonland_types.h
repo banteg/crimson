@@ -293,18 +293,37 @@ typedef struct particle_t {
     int target_id;
 } particle_t;
 
+// Canonical secondary projectile type ids used by `secondary_projectile_t.type_id`.
+typedef enum secondary_projectile_type_id_t {
+    SECONDARY_PROJECTILE_TYPE_NONE = 0x00,
+    SECONDARY_PROJECTILE_TYPE_ROCKET = 0x01,
+    SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET = 0x02,
+    // Used as a "detonating / exploded" state in update/render paths.
+    SECONDARY_PROJECTILE_TYPE_EXPLODING = 0x03,
+    SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN = 0x04,
+} secondary_projectile_type_id_t;
+
 typedef struct secondary_projectile_t {
     unsigned char active;
     unsigned char _pad0[3];
     float angle;
-    float speed;
+    float life_timer;
     float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
-    int type_id;
-    float lifetime;
-    int target_id;
+    // Field grouping used to steer the decompiler away from float-bitpattern type ids.
+    //
+    // Native code frequently takes the address of `pos_y` / `vel_y` and then
+    // indexes into subsequent mixed-type fields.
+    struct secondary_projectile_pos_y_block_t {
+        float pos_y;
+        float vel_x;
+        struct secondary_projectile_vel_y_block_t {
+            float vel_y;
+            secondary_projectile_type_id_t type_id;
+            float trail_timer;
+            int target_id;
+            unsigned int reserved_0x28;
+        } vy;
+    } pos;
 } secondary_projectile_t;
 
 typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
