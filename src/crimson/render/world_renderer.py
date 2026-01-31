@@ -21,6 +21,7 @@ from ..sim.world_defs import (
     BEAM_TYPES,
     CREATURE_ANIM,
     CREATURE_ASSET,
+    ION_TYPES,
     KNOWN_PROJ_FRAMES,
     PLASMA_PARTICLE_TYPES,
 )
@@ -806,6 +807,226 @@ class WorldRenderer:
                         rl.end_blend_mode()
                     return
 
+        if type_id in BEAM_TYPES and texture is not None:
+            # Ion weapons and Fire Bullets use the projs.png streak effect (and Ion adds chain arcs on impact).
+            grid = 4
+            frame = 2
+
+            is_fire_bullets = type_id == int(ProjectileTypeId.FIRE_BULLETS)
+            is_ion = type_id in ION_TYPES
+
+            ox = float(getattr(proj, "origin_x", pos_x))
+            oy = float(getattr(proj, "origin_y", pos_y))
+            dx = pos_x - ox
+            dy = pos_y - oy
+            dist = math.hypot(dx, dy)
+            if dist <= 1e-6:
+                return
+
+            dir_x = dx / dist
+            dir_y = dy / dist
+
+            # In the native renderer, Ion Gun Master increases the chain effect thickness and reach.
+            perk_scale = 1.0
+            if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in self.players):
+                perk_scale = 1.2
+
+            if life >= 0.4:
+                base_alpha = alpha
+                effect_scale = 1.0
+            else:
+                fade = clamp(life * 2.5, 0.0, 1.0)
+                base_alpha = fade * alpha
+                if type_id == int(ProjectileTypeId.ION_MINIGUN):
+                    effect_scale = 1.05
+                elif type_id == int(ProjectileTypeId.ION_RIFLE):
+                    effect_scale = 2.2
+                elif type_id == int(ProjectileTypeId.ION_CANNON):
+                    effect_scale = 3.5
+                else:
+                    effect_scale = 0.8
+
+            if base_alpha <= 1e-3:
+                return
+
+            streak_rgb = (1.0, 0.6, 0.1) if is_fire_bullets else (0.5, 0.6, 1.0)
+            head_rgb = (1.0, 1.0, 0.7)
+
+            # Only draw the last 256 units of the path.
+            start = 0.0
+            span = dist
+            if dist > 256.0:
+                start = dist - 256.0
+                span = 256.0
+
+            step = min(effect_scale * 3.1, 9.0)
+            sprite_scale = effect_scale * scale
+
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+
+            s = start
+            while s < dist:
+                t = (s - start) / span if span > 1e-6 else 1.0
+                seg_alpha = t * base_alpha
+                if seg_alpha > 1e-3:
+                    px = ox + dir_x * s
+                    py = oy + dir_y * s
+                    psx, psy = self.world_to_screen(px, py)
+                    tint = self._color_from_rgba((streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha))
+                    self._draw_atlas_sprite(
+                        texture,
+                        grid=grid,
+                        frame=frame,
+                        x=psx,
+                        y=psy,
+                        scale=sprite_scale,
+                        rotation_rad=angle,
+                        tint=tint,
+                    )
+                s += step
+
+            head_tint = self._color_from_rgba((head_rgb[0], head_rgb[1], head_rgb[2], base_alpha))
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                x=sx,
+                y=sy,
+                scale=sprite_scale,
+                rotation_rad=angle,
+                tint=head_tint,
+            )
+
+            # Ion-only: impact core + chain arcs. (Fire Bullets renders an extra particles.png overlay in a later pass.)
+            if is_ion and life < 0.4:
+                core_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
+                self._draw_atlas_sprite(
+                    texture,
+                    grid=grid,
+                    frame=frame,
+                    x=sx,
+                    y=sy,
+                    scale=1.0 * scale,
+                    rotation_rad=angle,
+                    tint=core_tint,
+                )
+
+                if type_id == int(ProjectileTypeId.ION_RIFLE):
+                    radius = 88.0
+                elif type_id == int(ProjectileTypeId.ION_MINIGUN):
+                    radius = 60.0
+                else:
+                    radius = 128.0
+                radius *= perk_scale
+
+                # Pick a stable set of targets so the arc visuals don't flicker.
+                candidates: list[tuple[float, object]] = []
+                for creature in self.creatures.entries:
+                    if not creature.active or float(creature.hp) <= 0.0:
+                        continue
+                    if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
+                        continue
+                    d = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y)
+                    threshold = float(creature.size) * 0.142857149 + 3.0
+                    if d > radius + threshold:
+                        continue
+                    candidates.append((d, creature))
+
+                candidates.sort(key=lambda item: item[0])
+                targets = [creature for _d, creature in candidates[:8]]
+
+                inner = 10.0 * perk_scale * scale
+                outer = 14.0 * perk_scale * scale
+                u = 0.625
+                v0 = 0.0
+                v1 = 0.25
+
+                glow_targets: list[object] = []
+                rl.rl_set_texture(texture.id)
+                rl.rl_begin(rl.RL_QUADS)
+
+                for creature in targets:
+                    tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
+                    ddx = tx - sx
+                    ddy = ty - sy
+                    dlen = math.hypot(ddx, ddy)
+                    if dlen <= 1e-3:
+                        continue
+                    glow_targets.append(creature)
+                    inv = 1.0 / dlen
+                    nx = ddx * inv
+                    ny = ddy * inv
+                    px = -ny
+                    py = nx
+
+                    # Outer strip (softer).
+                    half = outer * 0.5
+                    off_x = px * half
+                    off_y = py * half
+                    x0 = sx - off_x
+                    y0 = sy - off_y
+                    x1 = sx + off_x
+                    y1 = sy + off_y
+                    x2 = tx + off_x
+                    y2 = ty + off_y
+                    x3 = tx - off_x
+                    y3 = ty - off_y
+
+                    outer_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha * 0.5))
+                    rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
+                    rl.rl_tex_coord2f(u, v0)
+                    rl.rl_vertex2f(x0, y0)
+                    rl.rl_tex_coord2f(u, v1)
+                    rl.rl_vertex2f(x1, y1)
+                    rl.rl_tex_coord2f(u, v1)
+                    rl.rl_vertex2f(x2, y2)
+                    rl.rl_tex_coord2f(u, v0)
+                    rl.rl_vertex2f(x3, y3)
+
+                    # Inner strip (brighter).
+                    half = inner * 0.5
+                    off_x = px * half
+                    off_y = py * half
+                    x0 = sx - off_x
+                    y0 = sy - off_y
+                    x1 = sx + off_x
+                    y1 = sy + off_y
+                    x2 = tx + off_x
+                    y2 = ty + off_y
+                    x3 = tx - off_x
+                    y3 = ty - off_y
+
+                    inner_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
+                    rl.rl_color4ub(inner_tint.r, inner_tint.g, inner_tint.b, inner_tint.a)
+                    rl.rl_tex_coord2f(u, v0)
+                    rl.rl_vertex2f(x0, y0)
+                    rl.rl_tex_coord2f(u, v1)
+                    rl.rl_vertex2f(x1, y1)
+                    rl.rl_tex_coord2f(u, v1)
+                    rl.rl_vertex2f(x2, y2)
+                    rl.rl_tex_coord2f(u, v0)
+                    rl.rl_vertex2f(x3, y3)
+
+                rl.rl_end()
+                rl.rl_set_texture(0)
+
+                for creature in glow_targets:
+                    tx, ty = self.world_to_screen(float(creature.x), float(creature.y))
+                    target_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
+                    self._draw_atlas_sprite(
+                        texture,
+                        grid=grid,
+                        frame=frame,
+                        x=tx,
+                        y=ty,
+                        scale=sprite_scale,
+                        rotation_rad=0.0,
+                        tint=target_tint,
+                    )
+
+            rl.end_blend_mode()
+            return
+
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
             rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))
@@ -821,36 +1042,6 @@ class WorldRenderer:
             color = rl.Color(160, 255, 170, 255)
         elif type_id == ProjectileTypeId.BLADE_GUN:
             color = rl.Color(240, 120, 255, 255)
-
-        if type_id in BEAM_TYPES and life >= 0.4:
-            ox = float(getattr(proj, "origin_x", 0.0))
-            oy = float(getattr(proj, "origin_y", 0.0))
-            dx = float(getattr(proj, "pos_x", 0.0)) - ox
-            dy = float(getattr(proj, "pos_y", 0.0)) - oy
-            dist = math.hypot(dx, dy)
-            if dist > 1e-6:
-                step = 14.0
-                seg_count = max(1, int(dist // step) + 1)
-                dir_x = dx / dist
-                dir_y = dy / dist
-                for idx in range(seg_count):
-                    t = float(idx) / float(max(1, seg_count - 1))
-                    px = ox + dir_x * dist * t
-                    py = oy + dir_y * dist * t
-                    seg_alpha = int(clamp(220.0 * (1.0 - t * 0.75) * alpha, 0.0, 255.0) + 0.5)
-                    tint = rl.Color(color.r, color.g, color.b, seg_alpha)
-                    psx, psy = self.world_to_screen(px, py)
-                    self._draw_atlas_sprite(
-                        texture,
-                        grid=grid,
-                        frame=frame,
-                        x=psx,
-                        y=psy,
-                        scale=0.55 * scale,
-                        rotation_rad=angle,
-                        tint=tint,
-                    )
-                return
 
         alpha_byte = int(clamp(clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
         tint = rl.Color(color.r, color.g, color.b, alpha_byte)
