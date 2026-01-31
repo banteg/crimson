@@ -23,7 +23,8 @@ def _download_file(url: str, dest: Path) -> None:
     if tmp.exists():
         tmp.unlink()
     try:
-        with urllib.request.urlopen(url, timeout=30) as resp, tmp.open("wb") as handle:
+        req = urllib.request.Request(url, headers={"User-Agent": "crimsonland-decompile"})
+        with urllib.request.urlopen(req, timeout=30) as resp, tmp.open("wb") as handle:
             shutil.copyfileobj(resp, handle)
         tmp.replace(dest)
     finally:
@@ -55,4 +56,5 @@ def download_missing_paqs(
             continue
         results.append(DownloadResult(name=name, ok=True))
         console.log.log(f"assets: downloaded {name}")
+    console.log.flush()
     return tuple(results)
