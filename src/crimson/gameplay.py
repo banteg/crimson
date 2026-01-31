@@ -1380,6 +1380,8 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
             return 0.0013
         if weapon_id == 4:  # Sawed-off Shotgun
             return 0.004
+        if weapon_id == 20:  # Jackhammer
+            return 0.0013
         return 0.0015
 
     if player.fire_bullets_timer > 0.0:
@@ -1435,6 +1437,74 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
         ammo_cost = 0.15
+    elif player.weapon_id == 10:
+        # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
+        # (`player_update` weapon_id==0x0a in crimsonland.exe)
+        shot_count = 5
+        patterns = (
+            (-0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
+            (-0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
+            (0.0, int(ProjectileTypeId.PLASMA_RIFLE)),
+            (+0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
+            (+0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
+        )
+        for angle_offset, type_id in patterns:
+            state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=shot_angle + float(angle_offset),
+                type_id=type_id,
+                owner_id=owner_id,
+                base_damage=_projectile_meta_for_type_id(type_id),
+            )
+    elif player.weapon_id == 14:
+        # Plasma Shotgun: 14 plasma-minigun pellets with wide jitter and random speed_scale.
+        # (`player_update` weapon_id==0x0e in crimsonland.exe)
+        shot_count = 14
+        meta = _projectile_meta_for_type_id(int(ProjectileTypeId.PLASMA_MINIGUN))
+        for _ in range(14):
+            jitter = float((int(state.rng.rand()) & 0xFF) - 0x80) * 0.002
+            proj_id = state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=shot_angle + jitter,
+                type_id=ProjectileTypeId.PLASMA_MINIGUN,
+                owner_id=owner_id,
+                base_damage=meta,
+            )
+            state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
+    elif player.weapon_id == 30:
+        # Gauss Shotgun: 6 gauss pellets, jitter 0.002 and speed_scale 1.4..(1.4 + 0.79).
+        # (`player_update` weapon_id==0x1e in crimsonland.exe)
+        shot_count = 6
+        meta = _projectile_meta_for_type_id(int(ProjectileTypeId.GAUSS_GUN))
+        for _ in range(6):
+            jitter = float(int(state.rng.rand()) % 200 - 100) * 0.002
+            proj_id = state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=shot_angle + jitter,
+                type_id=ProjectileTypeId.GAUSS_GUN,
+                owner_id=owner_id,
+                base_damage=meta,
+            )
+            state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
+    elif player.weapon_id == 31:
+        # Ion Shotgun: 8 ion-minigun pellets, jitter 0.0026 and speed_scale 1.4..(1.4 + 0.79).
+        # (`player_update` weapon_id==0x1f in crimsonland.exe)
+        shot_count = 8
+        meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ION_MINIGUN))
+        for _ in range(8):
+            jitter = float(int(state.rng.rand()) % 200 - 100) * 0.0026
+            proj_id = state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=shot_angle + jitter,
+                type_id=ProjectileTypeId.ION_MINIGUN,
+                owner_id=owner_id,
+                base_damage=meta,
+            )
+            state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
@@ -1456,7 +1526,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 base_damage=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).
-            if pellets > 1 and int(player.weapon_id) in (3, 4):
+            if pellets > 1 and int(player.weapon_id) in (3, 4, 20):
                 state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
 
     if 0 <= int(player.index) < len(state.shots_fired):
