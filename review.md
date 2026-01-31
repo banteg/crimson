@@ -227,7 +227,7 @@ Given the baseline `speed_multiplier` is typically 2.0, the original effect is e
 
 ---
 
-## 7) Weapon assignment side effects are missing (sound + latch/timer) [ ]
+## 7) Weapon assignment side effects are missing (sound + latch/timer) [x]
 
 Original `weapon_assign_player @ 00452d40` does more than “set weapon id & ammo”:
 
@@ -236,11 +236,11 @@ Original `weapon_assign_player @ 00452d40` does more than “set weapon id & amm
 * sets `player_aux_timer = 2.0`
 * plays the weapon’s **reload SFX** immediately (`sfx_play_panned(weapon.reload_sfx_id)`)
 
-Your `weapon_assign_player()` resets ammo/timers and applies perk adjustments, but:
+Fixed:
 
-* does **not** play reload SFX on weapon switch
-* does not model `weapon_reset_latch` or `aux_timer`
-* does not bump persistent usage counts
+* `weapon_assign_player(..., state=...)` bumps persistent usage counts (unless demo).
+* Weapon assignment clears `weapon_reset_latch` and sets `aux_timer = 2.0`.
+* Weapon assignment queues the weapon reload SFX (equip sound) explicitly.
 
 **Impact:**
 
@@ -249,10 +249,9 @@ Your `weapon_assign_player()` resets ammo/timers and applies perk adjustments, b
 
 **Actionable fix:**
 
-- [ ] Decide where "weapon switch SFX" belongs in your architecture:
-  - [ ] emit an explicit SFX event from `weapon_assign_player`, or
-  - [ ] have the caller enqueue it after assignment
-- [ ] Add the missing latch/timer fields if they're used elsewhere in the original's logic.
+- [x] Decide where "weapon switch SFX" belongs in your architecture:
+  - [x] emit an explicit SFX event from `weapon_assign_player`
+- [x] Add the missing latch/timer fields if they're used elsewhere in the original's logic.
 
 ---
 
@@ -310,7 +309,7 @@ If you want faithful persistence interoperability with original files, this matt
 
 - [x] 5. **Fill missing weapon names** (RayGun, Lighting Rifle)
 
-- [ ] 6. **Weapon-switch side effects** (reload SFX + latch/timer) if you care about near-perfect "feel"
+- [x] 6. **Weapon-switch side effects** (reload SFX + latch/timer) if you care about near-perfect "feel"
 
 If you want, I can also give you a “diff-style” pseudo-patch outline for the weapon/perk selection functions that mirrors the decompile closely (without changing your broader architecture).
 

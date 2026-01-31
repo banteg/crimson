@@ -89,6 +89,8 @@ class PlayerState:
     reload_timer_max: float = 0.0
     shot_cooldown: float = 0.0
     shot_seq: int = 0
+    weapon_reset_latch: int = 0
+    aux_timer: float = 0.0
     spread_heat: float = 0.01
     muzzle_flash_alpha: float = 0.0
 
@@ -1378,10 +1380,19 @@ def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: Gameplay
 
     player.clip_size = max(0, int(clip_size))
     player.ammo = float(player.clip_size)
+    player.weapon_reset_latch = 0
     player.reload_active = False
     player.reload_timer = 0.0
     player.reload_timer_max = 0.0
     player.shot_cooldown = 0.0
+    player.aux_timer = 2.0
+
+    if state is not None and weapon is not None:
+        from .weapon_sfx import resolve_weapon_sfx_ref
+
+        key = resolve_weapon_sfx_ref(weapon.reload_sound)
+        if key is not None:
+            state.sfx_queue.append(key)
 
 
 def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, fallback_weapon_id: int) -> int:
@@ -1849,6 +1860,9 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     player.shield_timer = max(0.0, player.shield_timer - dt)
     player.fire_bullets_timer = max(0.0, player.fire_bullets_timer - dt)
     player.speed_bonus_timer = max(0.0, player.speed_bonus_timer - dt)
+    if player.aux_timer > 0.0:
+        aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
+        player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
     # Aim: compute direction from (player -> aim point).
     player.aim_x = float(input_state.aim_x)
@@ -1958,7 +1972,11 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         if perk_active(player, PerkId.ALTERNATE_WEAPON) and player_swap_alt_weapon(player):
             weapon = _weapon_entry(player.weapon_id)
             if weapon is not None and weapon.reload_sound is not None:
-                state.sfx_queue.append(str(weapon.reload_sound))
+                from .weapon_sfx import resolve_weapon_sfx_ref
+
+                key = resolve_weapon_sfx_ref(weapon.reload_sound)
+                if key is not None:
+                    state.sfx_queue.append(key)
             player.shot_cooldown = float(player.shot_cooldown) + 0.1
         elif player.reload_timer == 0.0:
             player_start_reload(player, state)
@@ -2037,6 +2055,7 @@ def bonus_apply(
         if old <= 0.0:
             _register_global("weapon_power_up")
         state.bonuses.weapon_power_up = float(old + float(amount) * economist_multiplier)
+        player.weapon_reset_latch = 0
         player.shot_cooldown = 0.0
         player.reload_active = False
         player.reload_timer = 0.0
@@ -2127,6 +2146,7 @@ def bonus_apply(
         if should_register:
             _register_player("fire_bullets_timer")
         player.fire_bullets_timer = float(player.fire_bullets_timer + float(amount) * economist_multiplier)
+        player.weapon_reset_latch = 0
         player.shot_cooldown = 0.0
         player.reload_active = False
         player.reload_timer = 0.0
