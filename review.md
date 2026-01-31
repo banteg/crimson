@@ -183,12 +183,12 @@ From `analysis/frida/weapon_switch_trace_summary.json`, ammo class values are kn
 
 ---
 
-## 5) Two weapon names are missing in your weapon table [ ]
+## 5) Two weapon names are missing in your weapon table [x]
 
-In `src/crimson/weapons.py`:
+Fixed:
 
-* `weapon_id=33` has `name=None` but should be **RayGun**.
-* `weapon_id=52` has `name=None` but should be **Lighting Rifle** (note: original string is “Lighting”, not “Lightning”).
+* weapon 33 name is **RayGun**
+* weapon 52 name is **Lighting Rifle** (note: original string is “Lighting”, not “Lightning”)
 
 You can see both names being copied in `weapon_table_init @ 004519b0` in the Ghidra decompile:
 
@@ -202,7 +202,7 @@ You can see both names being copied in `weapon_table_init @ 004519b0` in the Ghi
 
 **Actionable fix:**
 
-- [ ] Fill the missing names.
+- [x] Fill the missing names.
 
 ---
 
@@ -316,7 +316,7 @@ If you want faithful persistence interoperability with original files, this matt
 
 - [ ] 4. **Correct Speed bonus scaling** (1.5× effective behavior)
 
-- [ ] 5. **Fill missing weapon names** (RayGun, Lighting Rifle)
+- [x] 5. **Fill missing weapon names** (RayGun, Lighting Rifle)
 
 - [ ] 6. **Weapon-switch side effects** (reload SFX + latch/timer) if you care about near-perfect "feel"
 

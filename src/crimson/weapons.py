@@ -618,7 +618,7 @@ WEAPON_TABLE = [
     ),
     Weapon(
         weapon_id=33,
-        name=None,
+        name='RayGun',
         ammo_class=4,
         clip_size=12,
         shot_cooldown=0.699999988079071,
@@ -746,7 +746,7 @@ WEAPON_TABLE = [
     ),
     Weapon(
         weapon_id=52,
-        name=None,
+        name='Lighting Rifle',
         ammo_class=None,
         clip_size=500,
         shot_cooldown=4.0,
