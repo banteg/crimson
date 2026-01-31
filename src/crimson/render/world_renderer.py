@@ -650,7 +650,7 @@ class WorldRenderer:
         )
         draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
-    def _draw_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
+    def _draw_projectile(self, proj: object, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
@@ -1108,6 +1108,47 @@ class WorldRenderer:
                 tint=tint,
             )
             rl.end_blend_mode()
+            return
+
+        if type_id in (int(ProjectileTypeId.SPLITTER_GUN), int(ProjectileTypeId.BLADE_GUN)) and texture is not None:
+            mapping = KNOWN_PROJ_FRAMES.get(type_id)
+            if mapping is None:
+                return
+            grid, frame = mapping
+            cell_w = float(texture.width) / float(grid)
+
+            if life < 0.4:
+                return
+
+            ox = float(getattr(proj, "origin_x", pos_x))
+            oy = float(getattr(proj, "origin_y", pos_y))
+            dist = math.hypot(pos_x - ox, pos_y - oy)
+
+            desired_size = min(dist, 20.0) * scale
+            if desired_size <= 1e-3:
+                return
+
+            sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
+            if sprite_scale <= 1e-6:
+                return
+
+            rotation_rad = angle
+            rgb = (1.0, 1.0, 1.0)
+            if type_id == int(ProjectileTypeId.BLADE_GUN):
+                rotation_rad = float(int(proj_index)) * 0.1 - float(self._elapsed_ms) * 0.1
+                rgb = (0.8, 0.8, 0.8)
+
+            tint = self._color_from_rgba((rgb[0], rgb[1], rgb[2], alpha))
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                x=sx,
+                y=sy,
+                scale=sprite_scale,
+                rotation_rad=rotation_rad,
+                tint=tint,
+            )
             return
 
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
@@ -1767,10 +1808,10 @@ class WorldRenderer:
                 if player.health > 0.0:
                     draw_player(player)
 
-            for proj in self.state.projectiles.entries:
+            for proj_index, proj in enumerate(self.state.projectiles.entries):
                 if not proj.active:
                     continue
-                self._draw_projectile(proj, scale=scale, alpha=entity_alpha)
+                self._draw_projectile(proj, proj_index=proj_index, scale=scale, alpha=entity_alpha)
 
             self._draw_particle_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
 

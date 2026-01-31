@@ -122,7 +122,7 @@
 - [x] **Original behavior (decompile):** `size = min(distance(origin, pos), 20)` (then drawn as an extra projectile sprite).
 - [x] **Current behavior:** generic projectile atlas draw runs all the time with constant scale.
 - [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` generic projectile draw path.
-- [ ] **Fix:** special-case Splitter to draw the extra sprite only in-flight, with scale `min(dist, 20) / 32`.
+- [x] **Fix:** special-case Splitter to draw the extra sprite only in-flight, with scale `min(dist, 20) / 32`.
 - [ ] **Verify:** Splitter shows the extra sprite only during travel and it grows with distance up to the cap.
 
 ---
@@ -135,7 +135,7 @@
   - rotation/spin uses a time-based term + projectile index (not the projectile heading)
 - [x] **Current behavior:** generic projectile atlas draw runs all the time; rotation uses projectile angle.
 - [x] **Where:** `src/crimson/render/world_renderer.py` → `_draw_projectile()` generic projectile draw path.
-- [ ] **Fix:** special-case Blade to draw the extra sprite only in-flight, scale by `min(dist, 20) / 32`, and compute spin from game time + projectile index.
+- [x] **Fix:** special-case Blade to draw the extra sprite only in-flight, scale by `min(dist, 20) / 32`, and compute spin from game time + projectile index.
 - [ ] **Verify:** Blade shows the extra sprite only during travel, grows to the cap, and spins consistently over time.
 
 ---
@@ -207,5 +207,5 @@
 - [x] Ion cannon flare size (scale constants)
 - [x] Secondary projectile render (rocket sprite + rotation; glow/trails)
 - [x] Ion / Fire Bullets beam in-flight scaling + head/core parity
-- [ ] Splitter/Blade in-flight extra sprite parity
+- [x] Splitter/Blade in-flight extra sprite parity
 - [ ] Plague Spreader projectile rendering parity

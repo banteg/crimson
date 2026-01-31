@@ -326,8 +326,10 @@ class ProjectileRenderDebugView:
             rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, radius)), TARGET_OUTLINE)
 
         # Projectiles.
-        for proj in self._world.state.projectiles.iter_active():
-            self._world._draw_projectile(proj, scale=scale)
+        for proj_index, proj in enumerate(self._world.state.projectiles.entries):
+            if not proj.active:
+                continue
+            self._world._draw_projectile(proj, proj_index=proj_index, scale=scale)
         for proj in self._world.state.secondary_projectiles.iter_active():
             self._world._draw_secondary_projectile(proj, scale=scale)
 
