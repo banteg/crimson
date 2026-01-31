@@ -238,9 +238,7 @@ typedef enum projectile_type_id_t {
 // Field grouping used to steer the decompiler away from float-bitpattern enums.
 // A lot of native code takes the address of `origin_y` and then indexes into
 // subsequent fields (+0xc hits `type_id`, etc).
-typedef struct projectile_tail_t {
-    float origin_y;
-    float vel_x;
+typedef struct projectile_vel_y_block_t {
     float vel_y;
     projectile_type_id_t type_id;
     float life_timer;
@@ -250,6 +248,12 @@ typedef struct projectile_tail_t {
     float hit_radius;
     float base_damage;
     int owner_id;
+} projectile_vel_y_block_t;
+
+typedef struct projectile_tail_t {
+    float origin_y;
+    float vel_x;
+    projectile_vel_y_block_t vy;
 } projectile_tail_t;
 
 // Similar to projectile_tail_t, but anchored at `pos_y` so loops that take
