@@ -1734,20 +1734,20 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         # (`player_update` weapon_id==0x0a in crimsonland.exe)
         shot_count = 5
         # Native literals: 0.31415927 (~ pi/10), 0.5235988 (~ pi/6).
-        spread_small = math.pi / 10.0
-        spread_large = math.pi / 6.0
-        patterns = (
-            (-spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
-            (-spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
-            (0.0, int(ProjectileTypeId.PLASMA_RIFLE)),
-            (+spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
-            (+spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
+        spread_small = math.pi / 10
+        spread_large = math.pi / 6
+        patterns: tuple[tuple[float, ProjectileTypeId], ...] = (
+            (-spread_small, ProjectileTypeId.PLASMA_RIFLE),
+            (-spread_large, ProjectileTypeId.PLASMA_MINIGUN),
+            (0.0, ProjectileTypeId.PLASMA_RIFLE),
+            (spread_large, ProjectileTypeId.PLASMA_MINIGUN),
+            (spread_small, ProjectileTypeId.PLASMA_RIFLE),
         )
         for angle_offset, type_id in patterns:
             state.projectiles.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
-                angle=shot_angle + float(angle_offset),
+                angle=shot_angle + angle_offset,
                 type_id=type_id,
                 owner_id=owner_id,
                 base_damage=_projectile_meta_for_type_id(type_id),

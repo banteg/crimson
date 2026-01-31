@@ -22,7 +22,7 @@ from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 from ...persistence.save_status import MODE_COUNT_ORDER
-from ...weapons import WEAPON_BY_ID
+from ...weapons import WEAPON_BY_ID, WeaponId
 
 if TYPE_CHECKING:
     from ...game import GameState
@@ -223,7 +223,7 @@ class StatisticsMenuView(PanelMenuView):
         items: list[tuple[int, int, str]] = []
         for idx, count in enumerate(usage):
             weapon_id = int(idx)
-            if weapon_id == 0:
+            if weapon_id == WeaponId.NONE:
                 continue
             count = int(count)
             weapon = WEAPON_BY_ID.get(weapon_id)

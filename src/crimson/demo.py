@@ -17,7 +17,7 @@ from grim.rand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 from .ui.cursor import draw_menu_cursor
-from .weapons import WEAPON_TABLE, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
+from .weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -1209,7 +1209,7 @@ class DemoView:
 
         play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
 
-        if player.weapon_id in {6, 22}:
+        if player.weapon_id in {WeaponId.GAUSS_GUN, WeaponId.ION_MINIGUN}:
             meta = float(weapon.projectile_meta) if weapon.projectile_meta is not None else 0.0
             if meta <= 0.0:
                 meta = 45.0
@@ -1224,14 +1224,14 @@ class DemoView:
                 owner_id=-100,
                 base_damage=meta,
             )
-        elif player.weapon_id == 12:
+        elif player.weapon_id == WeaponId.ROCKET_LAUNCHER:
             self._secondary_projectile_pool.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
                 angle=angle,
                 type_id=1,
             )
-        elif player.weapon_id == 19:
+        elif player.weapon_id == WeaponId.PULSE_GUN:
             self._secondary_projectile_pool.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
