@@ -21,7 +21,7 @@ jobs:
           - task: lint-imports
             do_sync: true
             command: uv run --no-sync lint-imports
-            sync_args: --no-install-project --group dev
+            sync_args: --group dev
           - task: lint-assets
             do_sync: true
             command: uv run --no-sync python scripts/check_asset_loader_usage.py
