@@ -1050,6 +1050,65 @@ class WorldRenderer:
             rl.end_blend_mode()
             return
 
+        if type_id == int(ProjectileTypeId.PULSE_GUN) and texture is not None:
+            mapping = KNOWN_PROJ_FRAMES.get(type_id)
+            if mapping is None:
+                return
+            grid, frame = mapping
+            cell_w = float(texture.width) / float(grid)
+
+            if life >= 0.4:
+                ox = float(getattr(proj, "origin_x", pos_x))
+                oy = float(getattr(proj, "origin_y", pos_y))
+                dist = math.hypot(pos_x - ox, pos_y - oy)
+
+                desired_size = dist * 0.16 * scale
+                if desired_size <= 1e-3:
+                    return
+                sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
+                if sprite_scale <= 1e-6:
+                    return
+
+                tint = self._color_from_rgba((0.1, 0.6, 0.2, alpha * 0.7))
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                self._draw_atlas_sprite(
+                    texture,
+                    grid=grid,
+                    frame=frame,
+                    x=sx,
+                    y=sy,
+                    scale=sprite_scale,
+                    rotation_rad=angle,
+                    tint=tint,
+                )
+                rl.end_blend_mode()
+                return
+
+            fade = clamp(life * 2.5, 0.0, 1.0)
+            fade_alpha = fade * alpha
+            if fade_alpha <= 1e-3:
+                return
+
+            desired_size = 56.0 * scale
+            sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
+            if sprite_scale <= 1e-6:
+                return
+
+            tint = self._color_from_rgba((1.0, 1.0, 1.0, fade_alpha))
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=frame,
+                x=sx,
+                y=sy,
+                scale=sprite_scale,
+                rotation_rad=angle,
+                tint=tint,
+            )
+            rl.end_blend_mode()
+            return
+
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
         if texture is None or mapping is None:
             rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))

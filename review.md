@@ -59,9 +59,9 @@
   ```
 - [x] **Original behavior (decompile):** on fade (`life_timer < 0.4`), draws a fixed 56×56 white flash that fades.
 - [x] **Notes:** knockback behavior looks consistent (no mismatch spotted).
-- [ ] **Fix:** tint to green `(0.1, 0.6, 0.2, alpha*0.7)`.
-- [ ] **Fix:** in-flight size grows with distance travelled.
-- [ ] **Fix:** fade stage draws 56×56 white flash fading by `min(life_timer*2.5, 1)`.
+- [x] **Fix:** tint to green `(0.1, 0.6, 0.2, alpha*0.7)`.
+- [x] **Fix:** in-flight size grows with distance travelled.
+- [x] **Fix:** fade stage draws 56×56 white flash fading by `min(life_timer*2.5, 1)`.
 - [ ] **Verify:** Pulse Gun visuals match size ramp + fade flash behavior.
 
 ---
