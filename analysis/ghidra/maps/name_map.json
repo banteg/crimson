@@ -970,7 +970,7 @@
     "program": "crimsonland.exe",
     "address": "0x00412470",
     "name": "bonus_pick_random_type",
-    "signature": "uint bonus_pick_random_type(void)",
+    "signature": "bonus_id_t bonus_pick_random_type(void)",
     "comment": "rolls a bonus id while respecting timers, perks, quest stage, and enabled flags"
   },
   {
@@ -1341,7 +1341,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041f5b0",
     "name": "bonus_spawn_at",
-    "signature": "bonus_entry_t * bonus_spawn_at(float *pos, int bonus_id, int duration_override)",
+    "signature": "bonus_entry_t * bonus_spawn_at(float *pos, bonus_id_t bonus_id, int duration_override)",
     "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
   },
   {
@@ -1418,7 +1418,7 @@
     "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
-    "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
+    "signature": "int projectile_spawn(float *pos, float angle, projectile_type_id_t type_id, int owner_id)",
     "comment": "allocates a projectile slot, initializes fields, and returns the index (overrides to type 0x2d when Fire Bullets is active)"
   },
   {

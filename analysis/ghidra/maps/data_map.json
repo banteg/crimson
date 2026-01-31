@@ -1306,7 +1306,7 @@
       "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)",
       "name": "bonus_pool",
       "program": "crimsonland.exe",
-      "type": "bonus_entry_t"
+      "type": "bonus_pool_t"
     },
     {
       "address": "0x0048294c",

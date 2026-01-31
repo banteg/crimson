@@ -155,6 +155,42 @@ typedef struct creature_type_t {
     int anim_flags;
 } creature_type_t;
 
+// Canonical projectile template ids used by `projectile_t.type_id`.
+//
+// Many weapons share a projectile template id (e.g. shotgun variants). We keep
+// unique enum values here so Ghidra doesn't have to pick between duplicate
+// names for the same value.
+typedef enum projectile_type_id_t {
+    PROJECTILE_TYPE_NONE = 0x00,
+    PROJECTILE_TYPE_PISTOL = 0x01,
+    PROJECTILE_TYPE_ASSAULT_RIFLE = 0x02,
+    PROJECTILE_TYPE_SHOTGUN = 0x03,
+    PROJECTILE_TYPE_SUBMACHINE_GUN = 0x05,
+    PROJECTILE_TYPE_GAUSS_GUN = 0x06,
+    PROJECTILE_TYPE_PLASMA_RIFLE = 0x09,
+    PROJECTILE_TYPE_PLASMA_MINIGUN = 0x0B,
+    PROJECTILE_TYPE_PULSE_GUN = 0x13,
+    PROJECTILE_TYPE_ION_RIFLE = 0x15,
+    PROJECTILE_TYPE_ION_MINIGUN = 0x16,
+    PROJECTILE_TYPE_ION_CANNON = 0x17,
+    PROJECTILE_TYPE_SHRINKIFIER = 0x18,
+    PROJECTILE_TYPE_BLADE_GUN = 0x19,
+    PROJECTILE_TYPE_SPIDER_PLASMA = 0x1A,
+    PROJECTILE_TYPE_PLASMA_CANNON = 0x1C,
+    PROJECTILE_TYPE_SPLITTER_GUN = 0x1D,
+    PROJECTILE_TYPE_PLAGUE_SPREADER = 0x29,
+    PROJECTILE_TYPE_RAINBOW_GUN = 0x2B,
+    PROJECTILE_TYPE_FIRE_BULLETS = 0x2D,
+} projectile_type_id_t;
+
+// `orbit_radius` is typically a float radius/timer, but some AI modes pack other
+// semantics into the raw bits (e.g. a projectile type id when `flags & 0x100`).
+typedef union creature_orbit_radius_t {
+    projectile_type_id_t projectile_type;
+    float radius;
+    unsigned int raw_u32;
+} creature_orbit_radius_t;
+
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
@@ -193,7 +229,7 @@ typedef struct creature_t {
     float target_offset_x;
     float target_offset_y;
     float orbit_angle;
-    float orbit_radius;
+    creature_orbit_radius_t orbit_radius;
     int flags;
     int ai_mode;
     float anim_phase;
@@ -207,33 +243,6 @@ typedef struct creature_spawn_slot_t {
     float timer_s;
     int template_id;
 } creature_spawn_slot_t;
-
-// Canonical projectile template ids used by `projectile_t.type_id`.
-//
-// Many weapons share a projectile template id (e.g. shotgun variants). We keep
-// unique enum values here so Ghidra doesn't have to pick between duplicate
-// names for the same value.
-typedef enum projectile_type_id_t {
-    PROJECTILE_TYPE_NONE = 0x00,
-    PROJECTILE_TYPE_PISTOL = 0x01,
-    PROJECTILE_TYPE_ASSAULT_RIFLE = 0x02,
-    PROJECTILE_TYPE_SHOTGUN = 0x03,
-    PROJECTILE_TYPE_SUBMACHINE_GUN = 0x05,
-    PROJECTILE_TYPE_GAUSS_GUN = 0x06,
-    PROJECTILE_TYPE_PLASMA_RIFLE = 0x09,
-    PROJECTILE_TYPE_PLASMA_MINIGUN = 0x0B,
-    PROJECTILE_TYPE_PULSE_GUN = 0x13,
-    PROJECTILE_TYPE_ION_RIFLE = 0x15,
-    PROJECTILE_TYPE_ION_MINIGUN = 0x16,
-    PROJECTILE_TYPE_ION_CANNON = 0x17,
-    PROJECTILE_TYPE_SHRINKIFIER = 0x18,
-    PROJECTILE_TYPE_BLADE_GUN = 0x19,
-    PROJECTILE_TYPE_PLASMA_CANNON = 0x1C,
-    PROJECTILE_TYPE_SPLITTER_GUN = 0x1D,
-    PROJECTILE_TYPE_PLAGUE_SPREADER = 0x29,
-    PROJECTILE_TYPE_RAINBOW_GUN = 0x2B,
-    PROJECTILE_TYPE_FIRE_BULLETS = 0x2D,
-} projectile_type_id_t;
 
 // Field grouping used to steer the decompiler away from float-bitpattern enums.
 // A lot of native code takes the address of `origin_y` and then indexes into
@@ -516,6 +525,25 @@ typedef struct perk_meta_t {
     int prerequisite;
 } perk_meta_t;
 
+// Canonical bonus ids used by `bonus_entry_t.bonus_id` and the bonus metadata table.
+typedef enum bonus_id_t {
+    BONUS_ID_NONE = 0x00,
+    BONUS_ID_POINTS = 0x01,
+    BONUS_ID_ENERGIZER = 0x02,
+    BONUS_ID_WEAPON = 0x03,
+    BONUS_ID_WEAPON_POWER_UP = 0x04,
+    BONUS_ID_NUKE = 0x05,
+    BONUS_ID_DOUBLE_EXPERIENCE = 0x06,
+    BONUS_ID_SHOCK_CHAIN = 0x07,
+    BONUS_ID_FIREBLAST = 0x08,
+    BONUS_ID_REFLEX_BOOST = 0x09,
+    BONUS_ID_SHIELD = 0x0A,
+    BONUS_ID_FREEZE = 0x0B,
+    BONUS_ID_MEDIKIT = 0x0C,
+    BONUS_ID_SPEED = 0x0D,
+    BONUS_ID_FIRE_BULLETS = 0x0E,
+} bonus_id_t;
+
 typedef struct bonus_meta_t {
     char *label;
     char *description;
@@ -526,15 +554,22 @@ typedef struct bonus_meta_t {
 } bonus_meta_t;
 
 typedef struct bonus_entry_t {
-    int bonus_id;
+    bonus_id_t bonus_id;
     unsigned char state;
     unsigned char _pad0[3];
-    float time_left;
-    float time_max;
-    float pos_x;
-    float pos_y;
-    int amount;
+    // Field grouping used to steer the decompiler away from float-bitpattern ints.
+    // Native code often takes the address of `time_left` and then indexes by
+    // +7 floats (stride 0x1c) across the pool.
+    struct bonus_entry_time_block_t {
+        float time_left;
+        float time_max;
+        float pos_x;
+        float pos_y;
+        int amount;
+    } time;
 } bonus_entry_t;
+
+typedef bonus_entry_t bonus_pool_t[0x10];
 
 typedef struct bonus_hud_slot_t {
     unsigned char active;

@@ -1074,7 +1074,7 @@
   {
     "name": "bonus_pick_random_type",
     "address": "00412470",
-    "signature": "uint bonus_pick_random_type(void)",
+    "signature": "bonus_id_t bonus_pick_random_type(void)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_rand", "perk_count_get"]
@@ -1570,7 +1570,7 @@
   {
     "name": "bonus_spawn_at",
     "address": "0041f5b0",
-    "signature": "bonus_entry_t * bonus_spawn_at(float * pos, int bonus_id, int duration_override)",
+    "signature": "bonus_entry_t * bonus_spawn_at(float * pos, bonus_id_t bonus_id, int duration_override)",
     "external": false,
     "calls_total": 3,
     "calls": ["bonus_alloc_slot", "crt_rand", "effect_spawn"]
@@ -1658,7 +1658,7 @@
   {
     "name": "projectile_spawn",
     "address": "00420440",
-    "signature": "int projectile_spawn(float * pos, float angle, int type_id, int owner_id)",
+    "signature": "int projectile_spawn(float * pos, float angle, projectile_type_id_t type_id, int owner_id)",
     "external": false,
     "calls_total": 0,
     "calls": []
