@@ -1441,12 +1441,15 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
         # (`player_update` weapon_id==0x0a in crimsonland.exe)
         shot_count = 5
+        # Native uses literal float offsets that are approximations of pi/10 and pi/6.
+        spread_small = 0.31415927  # ~= math.pi / 10
+        spread_large = 0.5235988  # ~= math.pi / 6
         patterns = (
-            (-0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
-            (-0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
+            (-spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
+            (-spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
             (0.0, int(ProjectileTypeId.PLASMA_RIFLE)),
-            (+0.5235988, int(ProjectileTypeId.PLASMA_MINIGUN)),
-            (+0.31415927, int(ProjectileTypeId.PLASMA_RIFLE)),
+            (+spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
+            (+spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
         )
         for angle_offset, type_id in patterns:
             state.projectiles.spawn(
