@@ -5,7 +5,7 @@ import os
 
 from platformdirs import PlatformDirs
 
-APP_NAME = "crimsonland"
+APP_NAME = "banteg/crimsonland"
 
 
 def default_runtime_dir() -> Path:
