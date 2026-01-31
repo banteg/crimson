@@ -136,24 +136,18 @@
 
 ## 4) Additional weapon parity findings
 
-### Plasma Shotgun ammo consumption is wrong
+### Plasma Shotgun ammo consumption
 
-- [x] **Confirmed mismatch:** Plasma Shotgun drains the entire clip:
-  ```py
-  ammo_cost = player.ammo
-  player.ammo = 0.0
-  ```
-- [x] **Original behavior (decompile):** consumes `1` ammo per shot (does not dump clip), while firing 14 plasma-minigun pellets.
-- [ ] **Fix:** Plasma Shotgun consumes `1` ammo per shot (not the entire clip).
-- [ ] **Verify:** clip decreases by 1 per shot; pellet behavior remains unchanged.
+- [x] **Verified:** consumes `1` ammo per shot (does not dump clip), while firing 14 plasma-minigun pellets.
+- [x] **Verify:** clip decreases by 1 per shot; pellet behavior remains unchanged.
 
 ---
 
 ## 5) “Check all other weapons logic”
 
 - [x] **High-level firing logic scan:** most special-case firing patterns match the decompile set (Multi‑Plasma, rocket family uses secondary pool, Gauss Shotgun, Ion Shotgun, Bubblegun).
-- [x] **Known remaining gap within firing logic:** Plasma Shotgun ammo cost (tracked above).
-- [x] **Likely biggest remaining parity gaps:** render/effects parity (rocket trails + glow, secondary explosion flare rendering, ion hit ring/burst, pulse scaling, ion/fire-bullets render special cases).
+- [x] **Known remaining gap within firing logic:** none found yet (Plasma Shotgun ammo cost verified).
+- [x] **Likely biggest remaining parity gaps:** render/effects parity (rocket trails/detail effects, secondary explosion flare rendering, ion/fire-bullets render special cases).
 - [ ] **Deep scan:** verify `projectile_update` behavior for every weapon type (beyond ion/pulse/rocket/flame/fire‑bullets).
 - [ ] **Optional deliverable:** weapon-by-weapon parity table (weapon id → expected → current → mismatch notes).
 
