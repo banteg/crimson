@@ -366,6 +366,7 @@ class ProjectileFxView:
             self._creatures,
             world_size=WORLD_SIZE,
             damage_scale_by_type=self._damage_scale_by_type,
+            detail_preset=5,
             rng=self._state.rng.rand,
             runtime_state=self._state,
         )

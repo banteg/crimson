@@ -68,13 +68,8 @@
 
 ### D) Ion hit decals / effects are wrong
 
-- [x] **Confirmed mismatch:** we add a blue `fx_queue` floor decal for all `BEAM_TYPES`.
-- [x] **Where:** `src/crimson/game_world.py` → `_queue_projectile_decals()`.
-- [x] **Current behavior:**
-  ```py
-  elif projectile.type_id in BEAM_TYPES:
-      self.fx_queue.add(effect_id=0x01, color=(0.7,0.9,1.0,1.0))
-  ```
+- [x] **Fixed:** ion hits no longer enqueue the blue `fx_queue` ground decal (`ION_TYPES` are skipped in `_queue_projectile_decals()`).
+- [x] **Where:** `src/crimson/game_world.py` and `src/crimson/projectiles.py`.
 - [x] **Original behavior (decompile):** ion hit spawns EffectPool-style ring + burst cloud (not floor decals):
   - `FUN_0042f270(pos, ring_scale, ring_strength)` → ring burst (`effect_id=1`)
   - `FUN_0042f540(pos, burst_scale)` → burst cloud (`effect_id=0`)
@@ -82,9 +77,9 @@
   - Ion Minigun: `FUN_0042f270(pos, 1.5, 0.1)` + `FUN_0042f540(pos, 0.8)`
   - Ion Rifle: `FUN_0042f270(pos, 1.2, 0.4)` + `FUN_0042f540(pos, 1.2)`
   - Ion Cannon: `FUN_0042f270(pos, 1.0, 1.0)` + `FUN_0042f540(pos, 2.2)`
-- [ ] **Fix:** remove `BEAM_TYPES` branch from `_queue_projectile_decals()`.
-- [ ] **Fix:** implement ion-hit ring/burst effects using EffectPool equivalents (matching params per weapon).
-- [ ] **Verify:** ion hits show ring/burst effects and no incorrect ground decal.
+- [x] **Fix:** remove `BEAM_TYPES` branch from `_queue_projectile_decals()`.
+- [x] **Fix:** implement ion-hit ring/burst effects using EffectPool equivalents (matching params per weapon).
+- [x] **Verify:** ion hits spawn ring/burst effects and no incorrect ground decal.
 
 ---
 

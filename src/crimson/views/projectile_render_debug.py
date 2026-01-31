@@ -255,12 +255,17 @@ class ProjectileRenderDebugView:
         if self._world.audio is not None:
             prev_audio = (int(self._player.shot_seq), bool(self._player.reload_active), float(self._player.reload_timer))
 
+        detail_preset = 5
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
+
         # Keep the scene stable: targets are static, only projectiles + player advance.
         hits = self._world.state.projectiles.update(
             float(dt),
             self._targets,
             world_size=WORLD_SIZE,
             damage_scale_by_type=self._world._damage_scale_by_type,
+            detail_preset=int(detail_preset),
             rng=self._world.state.rng.rand,
             runtime_state=self._world.state,
         )

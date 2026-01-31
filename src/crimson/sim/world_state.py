@@ -171,6 +171,7 @@ class WorldState:
             self.creatures.entries,
             world_size=float(world_size),
             damage_scale_by_type=damage_scale_by_type,
+            detail_preset=int(detail_preset),
             rng=self.state.rng.rand,
             runtime_state=self.state,
             players=self.players,

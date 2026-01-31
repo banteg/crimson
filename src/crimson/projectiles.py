@@ -220,6 +220,7 @@ class ProjectilePool:
         damage_scale_by_type: dict[int, float] | None = None,
         damage_scale_default: float = 1.0,
         ion_aoe_scale: float = 1.0,
+        detail_preset: int = 5,
         rng: Callable[[], int] | None = None,
         runtime_state: object | None = None,
         players: list[PlayerDamageable] | None = None,
@@ -280,6 +281,12 @@ class ProjectilePool:
         if rng is None:
             rng = _rng_zero
 
+        effects = None
+        sfx_queue = None
+        if runtime_state is not None:
+            effects = getattr(runtime_state, "effects", None)
+            sfx_queue = getattr(runtime_state, "sfx_queue", None)
+
         hits: list[tuple[int, float, float, float, float, float, float]] = []
         margin = 64.0
 
@@ -291,6 +298,90 @@ class ProjectilePool:
 
         def _damage_type_for() -> int:
             return 1
+
+        def _spawn_ion_hit_effects(type_id: int, pos_x: float, pos_y: float) -> None:
+            if effects is None or not hasattr(effects, "spawn"):
+                return
+
+            ring_scale = 0.0
+            ring_strength = 0.0
+            burst_scale = 0.0
+            if type_id == int(ProjectileTypeId.ION_MINIGUN):
+                ring_scale = 1.5
+                ring_strength = 0.1
+                burst_scale = 0.8
+            elif type_id == int(ProjectileTypeId.ION_RIFLE):
+                ring_scale = 1.2
+                ring_strength = 0.4
+                burst_scale = 1.2
+            elif type_id == int(ProjectileTypeId.ION_CANNON):
+                ring_scale = 1.0
+                ring_strength = 1.0
+                burst_scale = 2.2
+                if isinstance(sfx_queue, list):
+                    sfx_queue.append("sfx_shockwave")
+            else:
+                return
+
+            detail = int(detail_preset)
+
+            # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
+            effects.spawn(
+                effect_id=1,
+                pos_x=float(pos_x),
+                pos_y=float(pos_y),
+                vel_x=0.0,
+                vel_y=0.0,
+                rotation=0.0,
+                scale=1.0,
+                half_width=4.0,
+                half_height=4.0,
+                age=0.0,
+                lifetime=float(ring_strength) * 0.8,
+                flags=0x19,
+                color_r=0.6,
+                color_g=0.6,
+                color_b=0.9,
+                color_a=1.0,
+                rotation_step=0.0,
+                scale_step=float(ring_scale) * 45.0,
+                detail_preset=detail,
+            )
+
+            # Port of `FUN_0042f540(pos, burst_scale)`: burst cloud (effect_id=0).
+            burst = float(burst_scale) * 0.8
+            lifetime = min(burst * 0.7, 1.1)
+            half = burst * 32.0
+            count = int(half)
+            if detail < 3:
+                count //= 2
+
+            for _ in range(max(0, count)):
+                rotation = float(int(rng()) & 0x7F) * 0.049087387
+                vel_x = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+                vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+                scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
+                effects.spawn(
+                    effect_id=0,
+                    pos_x=float(pos_x),
+                    pos_y=float(pos_y),
+                    vel_x=vel_x,
+                    vel_y=vel_y,
+                    rotation=rotation,
+                    scale=1.0,
+                    half_width=half,
+                    half_height=half,
+                    age=0.0,
+                    lifetime=float(lifetime),
+                    flags=0x1D,
+                    color_r=0.4,
+                    color_g=0.5,
+                    color_b=1.0,
+                    color_a=0.5,
+                    rotation_step=0.0,
+                    scale_step=scale_step,
+                    detail_preset=detail,
+                )
 
         def _apply_damage_to_creature(
             creature_index: int,
@@ -598,6 +689,8 @@ class ProjectilePool:
                     if type_id == ProjectileTypeId.ION_RIFLE:
                         if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
                             proj.reserved = float(int(hit_idx) + 1)
+                    if type_id in (ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_CANNON):
+                        _spawn_ion_hit_effects(int(type_id), target_x, target_y)
                     elif type_id == ProjectileTypeId.PLASMA_CANNON:
                         size = float(getattr(creature, "size", 50.0) or 50.0)
                         ring_radius = size * 0.5 + 1.0

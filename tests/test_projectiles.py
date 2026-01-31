@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from crimson.gameplay import GameplayState, PlayerState
 from crimson.effects import FxQueue
-from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, SecondaryProjectilePool
+from crimson.projectiles import ProjectileTypeId
 
 
 @dataclass(slots=True)
@@ -185,6 +186,49 @@ def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
 
     pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x16: 1.4})
     assert creatures[0].hp < hp_after_hit
+
+
+def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
+    state = GameplayState()
+    state.projectiles.spawn(
+        pos_x=0.0,
+        pos_y=0.0,
+        angle=math.pi / 2.0,
+        type_id=int(ProjectileTypeId.ION_MINIGUN),
+        owner_id=-100,
+        base_damage=20.0,
+    )
+    creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
+
+    state.projectiles.update(
+        0.1,
+        creatures,
+        world_size=1024.0,
+        damage_scale_by_type={int(ProjectileTypeId.ION_MINIGUN): 1.0},
+        detail_preset=5,
+        rng=_fixed_rng(0),
+        runtime_state=state,
+        players=[PlayerState(index=0, pos_x=0.0, pos_y=0.0)],
+    )
+
+    active = state.effects.iter_active()
+    rings = [entry for entry in active if int(entry.effect_id) == 1]
+    bursts = [entry for entry in active if int(entry.effect_id) == 0]
+    assert len(rings) == 1
+    assert len(bursts) == 20
+
+    ring = rings[0]
+    assert math.isclose(float(ring.pos_x), 10.0, abs_tol=1e-9)
+    assert math.isclose(float(ring.pos_y), 0.0, abs_tol=1e-9)
+    assert math.isclose(float(ring.half_width), 4.0, abs_tol=1e-9)
+    assert math.isclose(float(ring.half_height), 4.0, abs_tol=1e-9)
+    assert math.isclose(float(ring.scale_step), 67.5, abs_tol=1e-9)
+    assert math.isclose(float(ring.lifetime), 0.08, abs_tol=1e-9)
+
+    burst = bursts[0]
+    assert math.isclose(float(burst.half_width), 20.48, abs_tol=1e-6)
+    assert math.isclose(float(burst.half_height), 20.48, abs_tol=1e-6)
+    assert math.isclose(float(burst.lifetime), 0.448, abs_tol=1e-6)
 
 
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:

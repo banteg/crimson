@@ -31,7 +31,7 @@ from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
-from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET
+from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET, ION_TYPES
 from .sim.world_state import ProjectileHit, WorldState
 from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
@@ -510,19 +510,8 @@ class GameWorld:
                         pos_y=float(target_y) + dir_y * dist * 20.0,
                         rand=rand,
                     )
-            elif type_id in BEAM_TYPES:
-                if self.ground is not None and self.fx_textures is not None:
-                    size = float(int(rand()) % 18 + 18)
-                    rotation = float(int(rand()) % 628) * 0.01
-                    self.fx_queue.add(
-                        effect_id=0x01,
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
-                        width=size,
-                        height=size,
-                        rotation=rotation,
-                        rgba=(0.7, 0.9, 1.0, 1.0),
-                    )
+            elif type_id in ION_TYPES:
+                pass
             elif not freeze_active:
                 for _ in range(3):
                     spread = float(int(rand()) % 0x14 - 10) * 0.1
