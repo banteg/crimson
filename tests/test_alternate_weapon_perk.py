@@ -16,8 +16,8 @@ def test_alternate_weapon_slows_movement() -> None:
     player_update(base, PlayerInput(move_x=1.0), dt=1.0, state=state)
     player_update(perk, PlayerInput(move_x=1.0), dt=1.0, state=state)
 
-    assert base.pos_x == pytest.approx(240.0)
-    assert perk.pos_x == pytest.approx(192.0)
+    assert base.pos_x == pytest.approx(50.0)
+    assert perk.pos_x == pytest.approx(40.0)
 
 
 def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:

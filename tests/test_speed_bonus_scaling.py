@@ -12,10 +12,10 @@ def test_speed_bonus_adds_one_to_speed_multiplier() -> None:
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
     player_update(base_player, input_state, dt, base_state)
-    assert base_player.pos_x == pytest.approx(124.0)
+    assert base_player.pos_x == pytest.approx(105.0)
 
     boosted_state = GameplayState()
     boosted_player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
     boosted_player.speed_bonus_timer = 1.0
     player_update(boosted_player, input_state, dt, boosted_state)
-    assert boosted_player.pos_x == pytest.approx(136.0)
+    assert boosted_player.pos_x == pytest.approx(107.5)

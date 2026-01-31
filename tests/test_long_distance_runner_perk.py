@@ -25,9 +25,9 @@ def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
     for _ in range(steps):
         player_update(perk_player, input_state, dt, perk_state)
 
-    assert base_player.pos_x == pytest.approx(base_start_x + 240.0 * dt * steps)
+    assert base_player.pos_x == pytest.approx(base_start_x + 50.0 * dt * steps)
     assert perk_player.long_distance_runner_timer == pytest.approx(1.2)
-    assert perk_player.pos_x == pytest.approx(perk_start_x + 331.2)
+    assert perk_player.pos_x == pytest.approx(perk_start_x + 69.0)
     assert perk_player.pos_x > base_player.pos_x
 
     player_update(perk_player, PlayerInput(aim_x=perk_player.pos_x + 1.0, aim_y=perk_player.pos_y), dt, perk_state)

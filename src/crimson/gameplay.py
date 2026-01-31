@@ -1900,7 +1900,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     speed_multiplier = float(player.move_speed_multiplier + runner_bonus)
     if player.speed_bonus_timer > 0.0:
         speed_multiplier += 1.0
-    speed = 120.0 * speed_multiplier
+    speed = 25.0 * speed_multiplier
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
@@ -1912,7 +1912,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     move_dist = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
     if move_dist > 1e-9:
         # Port of `move_phase += frame_dt * move_speed * 19.0` (player_update).
-        move_speed = move_dist / dt / 120.0
+        move_speed = move_dist / dt / 25.0
         player.move_phase += dt * move_speed * 19.0
 
     stationary = abs(player.pos_x - prev_x) <= 1e-9 and abs(player.pos_y - prev_y) <= 1e-9

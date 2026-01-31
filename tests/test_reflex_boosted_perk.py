@@ -35,4 +35,4 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         perk_progression_enabled=False,
     )
 
-    assert player.pos_x == pytest.approx(216.0)  # 240.0 * 0.9 (move_speed_multiplier=2.0)
+    assert player.pos_x == pytest.approx(45.0)  # 50.0 * 0.9 (move_speed_multiplier=2.0)
