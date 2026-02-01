@@ -197,12 +197,12 @@ But **`QuestMode` has no perk prompt/menu UI** at all (unlike `SurvivalMode` and
 
 Parity item(s):
 
-* [ ] Add the perk prompt + perk menu plumbing to **`QuestMode`**
+* [x] Add the perk prompt + perk menu plumbing to **`QuestMode`**
 
   * reuse the survival/tutorial implementations (or factor into a shared helper)
   * open menu on `keybind_pick_perk` (and/or click), respect `ui_info_texts`
   * pause world update while perk menu is open (as survival does)
-* [ ] Once perk UI exists, revisit whether quest HUD should show XP/level panel (very likely yes if perks are active)
+* [x] Once perk UI exists, revisit whether quest HUD should show XP/level panel (very likely yes if perks are active)
 
 ---
 
@@ -212,7 +212,7 @@ Parity item(s):
 
 * [ ] **Bonus HUD**: slide + timer bars + correct placement + small indicator mode
 * [x] **Quest HUD**: use the quest panel variant (mm:ss + progress panel), remove top-bar seconds timer usage
-* [ ] **Quest perk UI**: show level up prompt/menu so the level up sound corresponds to something actionable
+* [x] **Quest perk UI**: show level up prompt/menu so the level up sound corresponds to something actionable
 * [x] **Remove/gate survival debug overlay** (the “Minimal debug text”)
 
 ### Next
