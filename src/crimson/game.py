@@ -80,6 +80,7 @@ from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
+from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update
 from .paths import default_runtime_dir
 from .assets_fetch import download_missing_paqs
 
@@ -1135,6 +1136,15 @@ class QuestResultsView:
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._retry_button = UiButtonState("Retry", force_wide=True)
+        self._quest_list_button = UiButtonState("Quest list", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
+        self._button_textures: UiButtonTextureSet | None = None
+        self._play_again_button = UiButtonState("Play again", force_wide=True)
+        self._play_next_button = UiButtonState("Play next", force_wide=True)
+        self._high_scores_button = UiButtonState("High scores", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
 
     def open(self) -> None:
         from .quests.results import QuestResultsBreakdownAnim, compute_quest_final_time
@@ -1157,7 +1167,12 @@ class QuestResultsView:
         self._record = None
         self._rank_index = None
         self._button_tex = None
+        self._button_textures = None
         self._small_font = None
+        self._play_again_button = UiButtonState("Play again", force_wide=True)
+        self._play_next_button = UiButtonState("Play next", force_wide=True)
+        self._high_scores_button = UiButtonState("High scores", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
         if outcome is None:
             return
 
@@ -1255,6 +1270,7 @@ class QuestResultsView:
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
         self._record = record
         self._breakdown = breakdown
         self._breakdown_anim = QuestResultsBreakdownAnim.start()
@@ -1262,6 +1278,7 @@ class QuestResultsView:
     def close(self) -> None:
         self._small_font = None
         self._button_tex = None
+        self._button_textures = None
         self._record = None
         self._outcome = None
         self._breakdown = None
@@ -1295,33 +1312,6 @@ class QuestResultsView:
         if record is None or outcome is None or breakdown is None:
             return
 
-        anim = self._breakdown_anim
-        if anim is not None and not anim.done:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
-                anim.set_final(breakdown)
-                return
-
-            clinks = tick_quest_results_breakdown_anim(
-                anim,
-                frame_dt_ms=int(min(dt, 0.1) * 1000.0),
-                target=breakdown,
-            )
-            if clinks > 0 and self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_clink_01", rng=self._state.rng)
-            if not anim.done:
-                return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._state.pending_quest_level = outcome.level
-            self._action = "start_quest"
-            return
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
-            next_level = _next_quest_level(outcome.level)
-            if next_level is not None:
-                self._state.pending_quest_level = next_level
-                self._action = "start_quest"
-                return
-
         tex = self._button_tex
         if tex is None:
             return
@@ -1335,34 +1325,123 @@ class QuestResultsView:
         x1 = x0 + button_w + gap_x
         y1 = y0 + button_h + gap_y
 
-        buttons = [
-            ("Play again", rl.Rectangle(x0, y0, button_w, button_h), "play_again"),
-            ("Play next", rl.Rectangle(x1, y0, button_w, button_h), "play_next"),
-            ("High scores", rl.Rectangle(x0, y1, button_w, button_h), "high_scores"),
-            ("Main menu", rl.Rectangle(x1, y1, button_w, button_h), "main_menu"),
-        ]
         mouse = rl.get_mouse_position()
-        clicked = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-        for _label, rect, action in buttons:
-            hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-            if not hovered or not clicked:
-                continue
-            if action == "play_again":
-                self._state.pending_quest_level = outcome.level
+        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        dt_ms = min(float(dt), 0.1) * 1000.0
+
+        anim = self._breakdown_anim
+        if anim is not None and not anim.done:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or click:
+                anim.set_final(breakdown)
+                return
+
+            clinks = tick_quest_results_breakdown_anim(
+                anim,
+                frame_dt_ms=int(dt_ms),
+                target=breakdown,
+            )
+            if clinks > 0 and self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_clink_01", rng=self._state.rng)
+            if not anim.done:
+                # Keep hover/press animations alive even while the breakdown is running,
+                # but don't allow activating buttons until the animation is complete.
+                button_update(
+                    self._play_again_button,
+                    x=x0,
+                    y=y0,
+                    width=button_w,
+                    dt_ms=dt_ms,
+                    mouse=mouse,
+                    click=False,
+                )
+                button_update(
+                    self._play_next_button,
+                    x=x1,
+                    y=y0,
+                    width=button_w,
+                    dt_ms=dt_ms,
+                    mouse=mouse,
+                    click=False,
+                )
+                button_update(
+                    self._high_scores_button,
+                    x=x0,
+                    y=y1,
+                    width=button_w,
+                    dt_ms=dt_ms,
+                    mouse=mouse,
+                    click=False,
+                )
+                button_update(
+                    self._main_menu_button,
+                    x=x1,
+                    y=y1,
+                    width=button_w,
+                    dt_ms=dt_ms,
+                    mouse=mouse,
+                    click=False,
+                )
+                return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            self._state.pending_quest_level = outcome.level
+            self._action = "start_quest"
+            return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
+            next_level = _next_quest_level(outcome.level)
+            if next_level is not None:
+                self._state.pending_quest_level = next_level
                 self._action = "start_quest"
                 return
-            if action == "play_next":
-                next_level = _next_quest_level(outcome.level)
-                if next_level is not None:
-                    self._state.pending_quest_level = next_level
-                    self._action = "start_quest"
-                    return
-            if action == "main_menu":
-                self._action = "back_to_menu"
+
+        if button_update(
+            self._play_again_button,
+            x=x0,
+            y=y0,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._state.pending_quest_level = outcome.level
+            self._action = "start_quest"
+            return
+        if button_update(
+            self._play_next_button,
+            x=x1,
+            y=y0,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            next_level = _next_quest_level(outcome.level)
+            if next_level is not None:
+                self._state.pending_quest_level = next_level
+                self._action = "start_quest"
                 return
-            if action == "high_scores":
-                self._open_high_scores_list()
-                return
+        if button_update(
+            self._high_scores_button,
+            x=x0,
+            y=y1,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._open_high_scores_list()
+            return
+        if button_update(
+            self._main_menu_button,
+            x=x1,
+            y=y1,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._action = "back_to_menu"
+            return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -1457,8 +1536,8 @@ class QuestResultsView:
             draw_small_text(font, self._unlock_perk_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
         tex = self._button_tex
-        y0 = 0.0
-        if tex is not None:
+        textures = self._button_textures
+        if tex is not None and textures is not None:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             button_w = float(tex.width) * scale
             button_h = float(tex.height) * scale
@@ -1468,29 +1547,10 @@ class QuestResultsView:
             y0 = float(rl.get_screen_height()) - (button_h * 2.0 + gap_y) - 52.0 * scale
             x1 = x0 + button_w + gap_x
             y1 = y0 + button_h + gap_y
-
-            buttons = [
-                ("Play again", rl.Rectangle(x0, y0, button_w, button_h)),
-                ("Play next", rl.Rectangle(x1, y0, button_w, button_h)),
-                ("High scores", rl.Rectangle(x0, y1, button_w, button_h)),
-                ("Main menu", rl.Rectangle(x1, y1, button_w, button_h)),
-            ]
-            mouse = rl.get_mouse_position()
-            for label, rect in buttons:
-                hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-                alpha = 255 if hovered else 220
-                rl.draw_texture_pro(
-                    tex,
-                    rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
-                    rect,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, alpha),
-                )
-                label_w = measure_small_text_width(font, label, 1.0 * scale)
-                text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
-                text_y = rect.y + 10.0 * scale
-                draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
+            button_draw(textures, font, self._play_again_button, x=x0, y=y0, width=button_w, scale=scale)
+            button_draw(textures, font, self._play_next_button, x=x1, y=y0, width=button_w, scale=scale)
+            button_draw(textures, font, self._high_scores_button, x=x0, y=y1, width=button_w, scale=scale)
+            button_draw(textures, font, self._main_menu_button, x=x1, y=y1, width=button_w, scale=scale)
 
         if anim is not None and not anim.done:
             draw_small_text(
@@ -1554,6 +1614,10 @@ class QuestFailedView:
         self._quest_title = ""
         self._small_font = None
         self._button_tex = None
+        self._button_textures = None
+        self._retry_button = UiButtonState("Retry", force_wide=True)
+        self._quest_list_button = UiButtonState("Quest list", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
         outcome = self._outcome
         if outcome is not None:
             try:
@@ -1566,6 +1630,7 @@ class QuestFailedView:
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
 
     def close(self) -> None:
         self._ground = None
@@ -1573,6 +1638,7 @@ class QuestFailedView:
         self._quest_title = ""
         self._small_font = None
         self._button_tex = None
+        self._button_textures = None
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -1606,30 +1672,39 @@ class QuestFailedView:
         x0 = 32.0
         y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
 
-        buttons = [
-            ("Retry", rl.Rectangle(x0, y0, button_w, button_h), "retry"),
-            ("Quest list", rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h), "quest_list"),
-            ("Main menu", rl.Rectangle(x0 + (button_w + gap_x) * 2.0, y0, button_w, button_h), "main_menu"),
-        ]
         mouse = rl.get_mouse_position()
-        clicked = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-        for _label, rect, action in buttons:
-            hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-            if not hovered or not clicked:
-                continue
-            if action == "retry":
-                self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
-                self._state.pending_quest_level = outcome.level
-                self._action = "start_quest"
-                return
-            if action == "quest_list":
-                self._state.quest_fail_retry_count = 0
-                self._action = "open_quests"
-                return
-            if action == "main_menu":
-                self._state.quest_fail_retry_count = 0
-                self._action = "back_to_menu"
-                return
+        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        dt_ms = min(float(dt), 0.1) * 1000.0
+
+        if button_update(self._retry_button, x=x0, y=y0, width=button_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
+            self._state.pending_quest_level = outcome.level
+            self._action = "start_quest"
+            return
+        if button_update(
+            self._quest_list_button,
+            x=x0 + button_w + gap_x,
+            y=y0,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._state.quest_fail_retry_count = 0
+            self._action = "open_quests"
+            return
+        if button_update(
+            self._main_menu_button,
+            x=x0 + (button_w + gap_x) * 2.0,
+            y=y0,
+            width=button_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._state.quest_fail_retry_count = 0
+            self._action = "back_to_menu"
+            return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -1674,35 +1749,33 @@ class QuestFailedView:
             draw_small_text(font, f"XP: {int(outcome.experience)}", 32.0, y, 1.0, text_color)
 
         tex = self._button_tex
-        if tex is not None:
+        textures = self._button_textures
+        if tex is not None and textures is not None:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             button_w = float(tex.width) * scale
             button_h = float(tex.height) * scale
             gap_x = 18.0 * scale
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
-
-            buttons = [
-                ("Retry", rl.Rectangle(x0, y0, button_w, button_h)),
-                ("Quest list", rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h)),
-                ("Main menu", rl.Rectangle(x0 + (button_w + gap_x) * 2.0, y0, button_w, button_h)),
-            ]
-            mouse = rl.get_mouse_position()
-            for label, rect in buttons:
-                hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-                alpha = 255 if hovered else 220
-                rl.draw_texture_pro(
-                    tex,
-                    rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
-                    rect,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, alpha),
-                )
-                label_w = measure_small_text_width(font, label, 1.0 * scale)
-                text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
-                text_y = rect.y + 10.0 * scale
-                draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
+            button_draw(textures, font, self._retry_button, x=x0, y=y0, width=button_w, scale=scale)
+            button_draw(
+                textures,
+                font,
+                self._quest_list_button,
+                x=x0 + button_w + gap_x,
+                y=y0,
+                width=button_w,
+                scale=scale,
+            )
+            button_draw(
+                textures,
+                font,
+                self._main_menu_button,
+                x=x0 + (button_w + gap_x) * 2.0,
+                y=y0,
+                width=button_w,
+                scale=scale,
+            )
 
         draw_small_text(
             font,
@@ -1735,6 +1808,9 @@ class HighScoresView:
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._back_button = UiButtonState("Back", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
 
         self._request: HighScoresRequest | None = None
         self._records: list = []
@@ -1748,9 +1824,13 @@ class HighScoresView:
         self._cursor_pulse_time = 0.0
         self._small_font = None
         self._scroll_index = 0
+        self._button_textures = None
+        self._back_button = UiButtonState("Back", force_wide=True)
+        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
 
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
@@ -1787,6 +1867,7 @@ class HighScoresView:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._button_tex = None
+        self._button_textures = None
         self._request = None
         self._records = []
         self._scroll_index = 0
@@ -1804,24 +1885,31 @@ class HighScoresView:
             self._action = "back_to_previous"
             return
 
-        mouse = rl.get_mouse_position()
-        clicked = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
         tex = self._button_tex
-        if tex is not None and clicked:
+        if tex is not None:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             button_w = float(tex.width) * scale
             button_h = float(tex.height) * scale
             gap_x = 18.0 * scale
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
-            back_rect = rl.Rectangle(x0, y0, button_w, button_h)
-            menu_rect = rl.Rectangle(x0 + button_w + gap_x, y0, button_w, button_h)
-            if back_rect.x <= mouse.x <= back_rect.x + back_rect.width and back_rect.y <= mouse.y <= back_rect.y + back_rect.height:
+            mouse = rl.get_mouse_position()
+            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            dt_ms = min(float(dt), 0.1) * 1000.0
+            if button_update(self._back_button, x=x0, y=y0, width=button_w, dt_ms=dt_ms, mouse=mouse, click=click):
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "back_to_previous"
                 return
-            if menu_rect.x <= mouse.x <= menu_rect.x + menu_rect.width and menu_rect.y <= mouse.y <= menu_rect.y + menu_rect.height:
+            if button_update(
+                self._main_menu_button,
+                x=x0 + button_w + gap_x,
+                y=y0,
+                width=button_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "back_to_menu"
@@ -1911,7 +1999,8 @@ class HighScoresView:
                 y += row_step
 
         tex = self._button_tex
-        if tex is not None:
+        textures = self._button_textures
+        if tex is not None and textures is not None:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             button_w = float(tex.width) * scale
             button_h = float(tex.height) * scale
@@ -1919,27 +2008,8 @@ class HighScoresView:
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
             x1 = x0 + button_w + gap_x
-
-            buttons = [
-                ("Back", rl.Rectangle(x0, y0, button_w, button_h)),
-                ("Main menu", rl.Rectangle(x1, y0, button_w, button_h)),
-            ]
-            mouse = rl.get_mouse_position()
-            for label, rect in buttons:
-                hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-                alpha = 255 if hovered else 220
-                rl.draw_texture_pro(
-                    tex,
-                    rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
-                    rect,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, alpha),
-                )
-                label_w = measure_small_text_width(font, label, 1.0 * scale)
-                text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
-                text_y = rect.y + 10.0 * scale
-                draw_small_text(font, label, text_x, text_y, 1.0 * scale, rl.Color(20, 20, 20, 255))
+            button_draw(textures, font, self._back_button, x=x0, y=y0, width=button_w, scale=scale)
+            button_draw(textures, font, self._main_menu_button, x=x1, y=y0, width=button_w, scale=scale)
 
         draw_small_text(
             font,

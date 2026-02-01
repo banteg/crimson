@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Protocol
 
 import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+
+from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 
 
 UI_BASE_WIDTH = 640.0
@@ -143,13 +146,32 @@ def perk_menu_compute_layout(
     )
 
 
-def draw_menu_panel(texture: rl.Texture, *, dst: rl.Rectangle, tint: rl.Color = rl.WHITE) -> None:
+def draw_menu_panel(
+    texture: rl.Texture,
+    *,
+    dst: rl.Rectangle,
+    tint: rl.Color = rl.WHITE,
+    shadow: bool = False,
+) -> None:
     scale = float(dst.width) / float(texture.width)
     top_h = MENU_PANEL_SLICE_Y1 * scale
     bottom_h = (float(texture.height) - MENU_PANEL_SLICE_Y2) * scale
     mid_h = float(dst.height) - top_h - bottom_h
     if mid_h < 0.0:
         src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+        if shadow:
+            draw_ui_quad_shadow(
+                texture=texture,
+                src=src,
+                dst=rl.Rectangle(
+                    float(dst.x + UI_SHADOW_OFFSET),
+                    float(dst.y + UI_SHADOW_OFFSET),
+                    float(dst.width),
+                    float(dst.height),
+                ),
+                origin=rl.Vector2(0.0, 0.0),
+                rotation_deg=0.0,
+            )
         rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
         return
 
@@ -165,6 +187,43 @@ def draw_menu_panel(texture: rl.Texture, *, dst: rl.Rectangle, tint: rl.Color = 
     dst_bot = rl.Rectangle(float(dst.x), float(dst.y) + top_h + mid_h, float(dst.width), bottom_h)
 
     origin = rl.Vector2(0.0, 0.0)
+    if shadow:
+        draw_ui_quad_shadow(
+            texture=texture,
+            src=src_top,
+            dst=rl.Rectangle(
+                float(dst_top.x + UI_SHADOW_OFFSET),
+                float(dst_top.y + UI_SHADOW_OFFSET),
+                float(dst_top.width),
+                float(dst_top.height),
+            ),
+            origin=origin,
+            rotation_deg=0.0,
+        )
+        draw_ui_quad_shadow(
+            texture=texture,
+            src=src_mid,
+            dst=rl.Rectangle(
+                float(dst_mid.x + UI_SHADOW_OFFSET),
+                float(dst_mid.y + UI_SHADOW_OFFSET),
+                float(dst_mid.width),
+                float(dst_mid.height),
+            ),
+            origin=origin,
+            rotation_deg=0.0,
+        )
+        draw_ui_quad_shadow(
+            texture=texture,
+            src=src_bot,
+            dst=rl.Rectangle(
+                float(dst_bot.x + UI_SHADOW_OFFSET),
+                float(dst_bot.y + UI_SHADOW_OFFSET),
+                float(dst_bot.width),
+                float(dst_bot.height),
+            ),
+            origin=origin,
+            rotation_deg=0.0,
+        )
     rl.draw_texture_pro(texture, src_top, dst_top, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_mid, dst_mid, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
@@ -281,6 +340,17 @@ def draw_menu_item(
     return float(width)
 
 
+class UiButtonTextures(Protocol):
+    button_sm: rl.Texture | None
+    button_md: rl.Texture | None
+
+
+@dataclass(slots=True)
+class UiButtonTextureSet:
+    button_sm: rl.Texture | None
+    button_md: rl.Texture | None
+
+
 @dataclass(slots=True)
 class UiButtonState:
     label: str
@@ -343,7 +413,7 @@ def _clamp(value: float, lo: float, hi: float) -> float:
 
 
 def button_draw(
-    assets: PerkMenuAssets,
+    assets: UiButtonTextures,
     font: SmallFontData | None,
     state: UiButtonState,
     *,
@@ -357,23 +427,43 @@ def button_draw(
         return
 
     if state.hover_t > 0:
-        alpha = 0.5
+        # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased yellow tint.
+        # - base: (0.5, 0.7, 0.0)
+        # - click_anim: +0.0005 / +0.0007, clamped to 1.0
+        # - alpha: hover_anim * 0.001 * button.alpha
+        r = 0.5
+        g = 0.7
         if state.press_t > 0:
-            alpha = min(1.0, 0.5 + (float(state.press_t) * 0.0005))
-        hl = rl.Color(255, 255, 255, int(255 * alpha * 0.25 * state.alpha))
-        rl.draw_rectangle(int(x + 12.0 * scale), int(y + 5.0 * scale), int(width - 24.0 * scale), int(22.0 * scale), hl)
+            click_t = float(state.press_t)
+            r = min(1.0, r + click_t * 0.0005)
+            g = min(1.0, g + click_t * 0.0007)
+        a = float(state.hover_t) * 0.001 * state.alpha
+        hl = rl.Color(
+            int(255 * r),
+            int(255 * g),
+            0,
+            int(255 * _clamp(a, 0.0, 1.0)),
+        )
+        rl.draw_rectangle(
+            int(x + 12.0 * scale),
+            int(y + 5.0 * scale),
+            int(width - 24.0 * scale),
+            int(22.0 * scale),
+            hl,
+        )
 
-    tint_a = state.alpha if state.hovered else state.alpha * 0.7
-    tint = rl.Color(255, 255, 255, int(255 * _clamp(tint_a, 0.0, 1.0)))
+    plate_tint = rl.Color(255, 255, 255, int(255 * _clamp(state.alpha, 0.0, 1.0)))
 
     src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
     dst = rl.Rectangle(float(x), float(y), float(width), float(32.0 * scale))
-    rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
 
+    text_a = state.alpha if state.hovered else state.alpha * 0.7
+    text_tint = rl.Color(255, 255, 255, int(255 * _clamp(text_a, 0.0, 1.0)))
     text_w = _ui_text_width(font, state.label, scale)
     text_x = x + width * 0.5 - text_w * 0.5 + 1.0 * scale
     text_y = y + 10.0 * scale
-    draw_ui_text(font, state.label, text_x, text_y, scale=scale, color=tint)
+    draw_ui_text(font, state.label, text_x, text_y, scale=scale, color=text_tint)
 
 
 def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:

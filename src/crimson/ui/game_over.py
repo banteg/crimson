@@ -31,6 +31,7 @@ from .perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
 )
+from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 
 
 UI_BASE_WIDTH = 640.0
@@ -568,9 +569,24 @@ class GameOverUi:
 
         # Panel background
         if self.assets.menu_panel is not None:
-            src = rl.Rectangle(0.0, 0.0, float(self.assets.menu_panel.width), float(self.assets.menu_panel.height))
+            panel_tex = self.assets.menu_panel
+            src = rl.Rectangle(0.0, 0.0, float(panel_tex.width), float(panel_tex.height))
             dst = rl.Rectangle(panel.x, panel.y, panel.width, panel.height)
-            rl.draw_texture_pro(self.assets.menu_panel, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            fx_detail = bool(int(getattr(self.config, "data", {}).get("fx_detail_0", 0) or 0))
+            if fx_detail:
+                draw_ui_quad_shadow(
+                    texture=panel_tex,
+                    src=src,
+                    dst=rl.Rectangle(
+                        float(dst.x + UI_SHADOW_OFFSET),
+                        float(dst.y + UI_SHADOW_OFFSET),
+                        float(dst.width),
+                        float(dst.height),
+                    ),
+                    origin=rl.Vector2(0.0, 0.0),
+                    rotation_deg=0.0,
+                )
+            rl.draw_texture_pro(panel_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         # Banner (Reaper / Well done)
         banner = self.assets.text_reaper if banner_kind == "reaper" else self.assets.text_well_done
