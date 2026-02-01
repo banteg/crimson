@@ -80,7 +80,7 @@ from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width, draw_menu_panel
 from .paths import default_runtime_dir
 from .assets_fetch import download_missing_paqs
 
@@ -171,6 +171,7 @@ QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
 
 QUEST_BACK_BUTTON_X_OFFSET = 148.0
 QUEST_BACK_BUTTON_Y_OFFSET = 212.0
+QUEST_PANEL_HEIGHT = 379.0
 
 
 class QuestsMenuView:
@@ -714,30 +715,16 @@ class QuestsMenuView:
         panel = self._panel_tex
         if panel is None:
             return
-        panel_scale = 0.9 if self._menu_screen_width < 641 else 1.0
-        dst = rl.Rectangle(
-            QUEST_MENU_BASE_X,
-            QUEST_MENU_BASE_Y + self._widescreen_y_shift,
-            MENU_PANEL_WIDTH * panel_scale,
-            MENU_PANEL_HEIGHT * panel_scale,
-        )
-        origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * panel_scale), -(MENU_PANEL_OFFSET_Y * panel_scale))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
-        if fx_detail:
-            MenuView._draw_ui_quad_shadow(
-                texture=panel,
-                src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
-                origin=origin,
-                rotation_deg=0.0,
-            )
-        MenuView._draw_ui_quad(
-            texture=panel,
-            src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-            dst=dst,
-            origin=origin,
-            rotation_deg=0.0,
-            tint=rl.WHITE,
+        draw_menu_panel(
+            panel,
+            dst=rl.Rectangle(
+                float(QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X),
+                float(QUEST_MENU_BASE_Y + self._widescreen_y_shift),
+                float(MENU_PANEL_WIDTH),
+                float(QUEST_PANEL_HEIGHT),
+            ),
+            shadow=fx_detail,
         )
 
 
