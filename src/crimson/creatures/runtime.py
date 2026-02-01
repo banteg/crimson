@@ -667,6 +667,21 @@ class CreaturePool:
                             elif perk_active(player, PerkId.VEINS_OF_POISON):
                                 creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
                         player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
+                        if fx_queue is not None:
+                            dx = float(player.pos_x) - float(creature.x)
+                            dy = float(player.pos_y) - float(creature.y)
+                            dist = math.hypot(dx, dy)
+                            if dist > 1e-9:
+                                dx /= dist
+                                dy /= dist
+                            else:
+                                dx = 0.0
+                                dy = 0.0
+                            fx_queue.add_random(
+                                pos_x=float(player.pos_x) + dx * 3.0,
+                                pos_y=float(player.pos_y) + dy * 3.0,
+                                rand=rand,
+                            )
 
                 if (
                     bool(player.plaguebearer_active)
