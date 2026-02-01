@@ -1,5 +1,18 @@
 Here’s what the original EXE does for “pause”, what our port currently does, and a concrete, low-risk plan to bring us to parity.
 
+## Status (2026-02-01)
+
+Implemented:
+
+* ESC in gameplay opens the pause menu (Options/Quit/Back) and freezes simulation.
+* Pause menu renders over the paused world (`state.pause_background`).
+* Options back returns to pause menu when in-game (and to main menu otherwise).
+* Panels render over paused world when `state.pause_background` is set.
+
+Remaining parity item:
+
+* F1 “key info pause” overlay (separate from ESC pause menu).
+
 ## What the original game does (authoritative behavior)
 
 ### 1) **ESC does not quit gameplay — it enters a pause menu (state 5)**
@@ -55,45 +68,16 @@ In the IDA decompile of `ui_menu_layout_init` (search hit around line ~58540), t
 
 ---
 
-## What our port does today (gaps)
+## What our port does today (current behavior)
 
-### A) ESC exits gameplay immediately
-
-In every gameplay mode, ESC sets `close_requested = True`, which results in `back_to_menu`:
-
-* `src/crimson/modes/quest_mode.py` lines **308–309**
-* `src/crimson/modes/survival_mode.py` lines **188–189**
-* `src/crimson/modes/rush_mode.py` lines **79–80**
-* `src/crimson/modes/tutorial_mode.py` lines **134–135**
-* `src/crimson/modes/typo_mode.py` lines **103–104**
-
-So we’re missing the pause menu state entirely.
-
-### B) We don’t have the in-game pause menu UI (Options/Quit/Back)
-
-No view/panel currently renders the pause overlay with those three menu items over the frozen world.
-
-### C) Options/Controls panels are “main-menu flavored”
-
-Even if we open options from pause later, our current panels:
-
-* draw the **menu ground** background (not the paused world)
-* and the Options back button is currently configured to return to menu flow, not pause flow
-
-(Also: `OptionsMenuView` and several panels override `draw()` and always draw the ground.)
-
-### D) Our “pause” key is TAB, but original uses ESC menu + F1 “key info pause”
-
-We currently toggle `_paused` with `TAB` in modes. The original has:
-
-* ESC: pause menu (state 5)
-* F1: toggles `game_paused_flag` and fades in the “key info” overlay (“Press F1 to return to game”)
-
-Your request is specifically about the **ESC pause menu**, so treat the F1 overlay as a follow-up parity item.
+* ESC: opens pause menu (and does **not** quit to main menu).
+* TAB: toggles per-mode `_paused` (dev pause); original uses F1 for the “key info pause” overlay.
 
 ---
 
 ## Concrete plan to reach parity (minimal churn, matches original architecture)
+
+Implemented in `src/` as of **2026-02-01** (Phase 1 + Phase 2), except Phase 3.
 
 ### Phase 1 — Add the pause menu view and wire ESC to open it
 
@@ -120,7 +104,6 @@ Then implement in `BaseGameplayMode` (`src/crimson/modes/base_gameplay_mode.py`)
 * `def draw_pause_background(self) -> None:`
 
   * `self._world.draw(draw_aim_indicators=False)` (or `True` if you want it)
-  * `self._draw_screen_fade()`
 
 This mirrors the EXE’s `gameplay_render_world()` usage for menu states (render world, not simulate).
 
@@ -213,28 +196,7 @@ So the same action string works in both contexts.
 
 #### 7) Options/Controls need to draw paused-world background instead of menu ground
 
-We have two options; pick one:
-
-**Option A (localized, safest):** Update only the views we need.
-
-* In `OptionsMenuView.draw()`:
-
-  * if `state.pause_background` exists: draw that background instead of ground
-* In `ControlsMenuView.draw()`:
-
-  * same idea
-
-**Option B (more general, closer to EXE “render_pass_mode”):** Teach `PanelMenuView` to draw the paused world when present.
-
-* Update `PanelMenuView._init_ground()` to **skip ground** when `state.pause_background` is set.
-* Update `PanelMenuView.draw()` to:
-
-  * if `state.pause_background`: call it
-  * else draw ground
-
-Then only fix the panel subclasses that override `draw()` and hardcode ground drawing (Options/Controls/Stats/etc).
-
-Given we’re aiming for parity and this behavior likely applies to other panels later, **Option B is probably the right long-term direction**, but Option A is a quick, bounded change.
+Implemented (Option B): `PanelMenuView` renders the paused world when `state.pause_background` is set (and skips menu ground generation). Panel subclasses that override `draw()` use the same background helper so this works consistently.
 
 #### 8) Ensure quitting clears the pause context
 
@@ -296,10 +258,8 @@ We can do this later by:
 
 ## “Do this first” sequence for fastest progress
 
-1. Implement `BaseGameplayMode.draw_pause_background()` + wrappers exposing it
-2. Implement `PauseMenuView` with Options/Quit/Back
-3. Wire `"open_pause_menu"` from gameplay ESC instead of `close_requested`
-4. Make Options back_action `"open_pause_menu"` and implement the handler logic (“if not paused, go to menu”)
-5. Make Options/Controls draw paused background when available
+Completed on **2026-02-01** (Phase 1 + Phase 2).
 
-That gets us very close to the EXE behavior with minimal refactors, and it sets us up to replicate the EXE’s “menus render gameplay when a game is running” model cleanly across other panels later.
+Next parity item:
+
+1. Implement F1 “key info pause” overlay (Phase 3).

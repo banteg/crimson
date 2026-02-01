@@ -42,7 +42,7 @@ class OptionsMenuView(PanelMenuView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options")
+        super().__init__(state, title="Options", back_action="open_pause_menu")
         self._small_font: SmallFontData | None = None
         self._rect_on: rl.Texture2D | None = None
         self._rect_off: rl.Texture2D | None = None
@@ -122,9 +122,7 @@ class OptionsMenuView(PanelMenuView):
             self._begin_close_transition("open_controls")
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+        self._draw_background()
         _draw_screen_fade(self._state)
         assets = self._assets
         entry = self._entry

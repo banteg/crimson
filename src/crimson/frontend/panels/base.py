@@ -163,9 +163,7 @@ class PanelMenuView:
             entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+        self._draw_background()
         _draw_screen_fade(self._state)
         assets = self._assets
         entry = self._entry
@@ -206,7 +204,19 @@ class PanelMenuView:
         return _ensure_texture_cache(self._state)
 
     def _init_ground(self) -> None:
+        if self._state.pause_background is not None:
+            self._ground = None
+            return
         self._ground = ensure_menu_ground(self._state)
+
+    def _draw_background(self) -> None:
+        rl.clear_background(rl.BLACK)
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+            return
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
 
     def _draw_panel(self) -> None:
         assets = self._assets

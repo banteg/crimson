@@ -155,9 +155,7 @@ class PlayGameMenuView(PanelMenuView):
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+        self._draw_background()
         _draw_screen_fade(self._state)
         assets = self._assets
         entry = self._entry

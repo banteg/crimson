@@ -306,7 +306,8 @@ class QuestMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self.close_requested = True
+            self._action = "open_pause_menu"
+            return
 
     def _build_input(self):
         keybinds = config_keybinds(self._config)
@@ -665,6 +666,8 @@ class QuestMode(BaseGameplayMode):
 
         dt_frame, dt_ui_ms = self._tick_frame(dt)
         self._handle_input()
+        if self._action == "open_pause_menu":
+            return
 
         if self.close_requested:
             return

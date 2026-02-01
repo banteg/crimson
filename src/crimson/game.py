@@ -76,6 +76,7 @@ from .frontend.panels.mods import ModsMenuView
 from .frontend.panels.options import OptionsMenuView
 from .frontend.panels.play_game import PlayGameMenuView
 from .frontend.panels.stats import StatisticsMenuView
+from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
@@ -124,6 +125,7 @@ class GameState:
     snd_freq_adjustment_enabled: bool = False
     menu_ground: GroundRenderer | None = None
     menu_sign_locked: bool = False
+    pause_background: PauseBackground | None = None
     pending_quest_level: str | None = None
     pending_high_scores: HighScoresRequest | None = None
     quest_outcome: QuestRunOutcome | None = None
@@ -758,6 +760,10 @@ class FrontView(Protocol):
     def take_action(self) -> str | None: ...
 
 
+class PauseBackground(Protocol):
+    def draw_pause_background(self) -> None: ...
+
+
 class SurvivalGameView:
     """Gameplay view wrapper that adapts SurvivalMode into `crimson game`."""
 
@@ -797,6 +803,9 @@ class SurvivalGameView:
     def update(self, dt: float) -> None:
         self._mode.update(dt)
         mode_action = self._mode.take_action()
+        if mode_action == "open_pause_menu":
+            self._action = "open_pause_menu"
+            return
         if mode_action == "open_high_scores":
             self._state.pending_high_scores = HighScoresRequest(game_mode_id=1)
             self._action = "open_high_scores"
@@ -811,6 +820,9 @@ class SurvivalGameView:
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def draw_pause_background(self) -> None:
+        self._mode.draw_pause_background()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -855,6 +867,9 @@ class RushGameView:
     def update(self, dt: float) -> None:
         self._mode.update(dt)
         mode_action = self._mode.take_action()
+        if mode_action == "open_pause_menu":
+            self._action = "open_pause_menu"
+            return
         if mode_action == "open_high_scores":
             self._state.pending_high_scores = HighScoresRequest(game_mode_id=2)
             self._action = "open_high_scores"
@@ -869,6 +884,9 @@ class RushGameView:
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def draw_pause_background(self) -> None:
+        self._mode.draw_pause_background()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -913,6 +931,9 @@ class TypoShooterGameView:
     def update(self, dt: float) -> None:
         self._mode.update(dt)
         mode_action = self._mode.take_action()
+        if mode_action == "open_pause_menu":
+            self._action = "open_pause_menu"
+            return
         if mode_action == "open_high_scores":
             self._state.pending_high_scores = HighScoresRequest(game_mode_id=4)
             self._action = "open_high_scores"
@@ -927,6 +948,9 @@ class TypoShooterGameView:
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def draw_pause_background(self) -> None:
+        self._mode.draw_pause_background()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -971,12 +995,19 @@ class TutorialGameView:
 
     def update(self, dt: float) -> None:
         self._mode.update(dt)
+        mode_action = self._mode.take_action()
+        if mode_action == "open_pause_menu":
+            self._action = "open_pause_menu"
+            return
         if getattr(self._mode, "close_requested", False):
             self._action = "back_to_menu"
             self._mode.close_requested = False
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def draw_pause_background(self) -> None:
+        self._mode.draw_pause_background()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1026,6 +1057,10 @@ class QuestGameView:
 
     def update(self, dt: float) -> None:
         self._mode.update(dt)
+        mode_action = self._mode.take_action()
+        if mode_action == "open_pause_menu":
+            self._action = "open_pause_menu"
+            return
         if getattr(self._mode, "close_requested", False):
             outcome = self._mode.consume_outcome()
             if outcome is not None:
@@ -1042,6 +1077,9 @@ class QuestGameView:
 
     def draw(self) -> None:
         self._mode.draw()
+
+    def draw_pause_background(self) -> None:
+        self._mode.draw_pause_background()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1966,6 +2004,7 @@ class GameLoopView:
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
             "open_quests": QuestsMenuView(state),
+            "open_pause_menu": PauseMenuView(state),
             "start_quest": QuestGameView(state),
             "quest_results": QuestResultsView(state),
             "quest_failed": QuestFailedView(state),
@@ -2032,6 +2071,7 @@ class GameLoopView:
         if self._front_active is not None:
             action = self._front_active.take_action()
             if action == "back_to_menu":
+                self._state.pause_background = None
                 self._front_active.close()
                 self._front_active = None
                 while self._front_stack:
@@ -2044,13 +2084,43 @@ class GameLoopView:
                 if self._front_stack:
                     self._front_active.close()
                     self._front_active = self._front_stack.pop()
+                    if self._front_active in self._gameplay_views:
+                        self._state.pause_background = None
                     self._active = self._front_active
                     return
                 self._front_active.close()
                 self._front_active = None
+                self._state.pause_background = None
                 self._menu.open()
                 self._active = self._menu
                 self._menu_active = True
+                return
+            if action == "open_pause_menu":
+                pause_view = self._front_views.get("open_pause_menu")
+                if pause_view is None:
+                    return
+                if self._front_active in self._gameplay_views:
+                    self._state.pause_background = self._front_active
+                    self._front_stack.append(self._front_active)
+                    pause_view.open()
+                    self._front_active = pause_view
+                    self._active = pause_view
+                    return
+                if self._state.pause_background is None:
+                    # Options panel uses open_pause_menu as back_action; when no game is
+                    # running, treat it like back_to_menu.
+                    self._front_active.close()
+                    self._front_active = None
+                    while self._front_stack:
+                        self._front_stack.pop().close()
+                    self._menu.open()
+                    self._active = self._menu
+                    self._menu_active = True
+                    return
+                self._front_active.close()
+                pause_view.open()
+                self._front_active = pause_view
+                self._active = pause_view
                 return
             if action in {"start_survival", "start_rush", "start_typo"}:
                 # Temporary: bump the counter on mode start so the Play Game overlay (F1)

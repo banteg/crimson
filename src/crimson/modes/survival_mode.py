@@ -186,7 +186,8 @@ class SurvivalMode(BaseGameplayMode):
             survival_check_level_up(self._player, self._state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self.close_requested = True
+            self._action = "open_pause_menu"
+            return
 
     def _build_input(self) -> PlayerInput:
         keybinds = config_keybinds(self._config)
@@ -441,6 +442,8 @@ class SurvivalMode(BaseGameplayMode):
         dt_frame, dt_ui_ms = self._tick_frame(dt)
         self._cursor_time += dt_frame
         self._handle_input()
+        if self._action == "open_pause_menu":
+            return
 
         if self._game_over_active:
             record = self._game_over_record
