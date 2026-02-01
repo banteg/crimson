@@ -452,13 +452,13 @@ class WorldRenderer:
         ):
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
             if atlas is not None:
-                grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-                if grid:
+                aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                if aura_grid:
                     frame = int(atlas.frame)
-                    col = frame % grid
-                    row = frame // grid
-                    cell_w = float(self.particles_texture.width) / float(grid)
-                    cell_h = float(self.particles_texture.height) / float(grid)
+                    col = frame % aura_grid
+                    row = frame // aura_grid
+                    cell_w = float(self.particles_texture.width) / float(aura_grid)
+                    cell_h = float(self.particles_texture.height) / float(aura_grid)
                     src = rl.Rectangle(
                         cell_w * float(col),
                         cell_h * float(row),
