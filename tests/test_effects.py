@@ -149,7 +149,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     assert len(active) == 1
     assert active[0].effect_id == 0x12
     assert active[0].flags == 0x1C5
-    assert math.isclose(active[0].lifetime, 0.15000000596046448, abs_tol=1e-9)
+    assert math.isclose(active[0].lifetime, 0.15, abs_tol=1e-9)
 
     pool.update(0.2, fx_queue=q)
     assert q.count == 1
