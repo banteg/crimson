@@ -47,7 +47,7 @@ EFFECT_LABELS = {
     0x0C: "explosion",
     0x0E: "shatter",
     0x11: "explosion",
-    0x12: "muzzle",
+    0x12: "casing",
 }
 
 EFFECT_ENTRIES = [

@@ -721,6 +721,51 @@ class EffectPool:
 
             self.free(idx)
 
+    def spawn_shell_casing(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        aim_heading: float,
+        weapon_flags: int,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None:
+        """Port of the casing spawn in `player_update` (effect_id 0x12)."""
+
+        if (int(weapon_flags) & 0x1) == 0:
+            return
+
+        angle = float(aim_heading) + float(int(rand()) & 0x3F) * 0.01
+        speed = float(int(rand()) & 0x3F) * 0.022727273 + 1.0
+        vel_x = math.cos(angle) * speed * 100.0
+        vel_y = math.sin(angle) * speed * 100.0
+
+        rotation = float((int(rand()) & 0x3F) - 0x20) * 0.1
+        rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 14.0
+
+        self.spawn(
+            effect_id=0x12,
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=float(vel_x),
+            vel_y=float(vel_y),
+            rotation=float(rotation),
+            scale=1.0,
+            half_width=2.0,
+            half_height=2.0,
+            age=0.0,
+            lifetime=0.15000000596046448,
+            flags=0x1C5,
+            color_r=1.0,
+            color_g=1.0,
+            color_b=1.0,
+            color_a=0.6000000238418579,
+            rotation_step=float(rotation_step),
+            scale_step=0.0,
+            detail_preset=int(detail_preset),
+        )
+
     def spawn_blood_splatter(
         self,
         *,

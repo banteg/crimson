@@ -230,6 +230,10 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     aim_y = 100.0
 
     expected_rng = Crand(seed)
+    # Weapons with `flags & 0x1` spawn the casing effect before aim jitter, which
+    # consumes 4 CRT rand() calls in the native firing path.
+    for _ in range(4):
+        expected_rng.rand()
     rand_dir = expected_rng.rand()
     rand_mag = expected_rng.rand()
 

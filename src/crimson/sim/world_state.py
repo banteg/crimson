@@ -290,7 +290,14 @@ class WorldState:
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player_update(player, input_state, dt, self.state, world_size=float(world_size))
+            player_update(
+                player,
+                input_state,
+                dt,
+                self.state,
+                detail_preset=int(detail_preset),
+                world_size=float(world_size),
+            )
 
         if dt > 0.0:
             self._advance_creature_anim(dt)
