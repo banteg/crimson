@@ -2574,6 +2574,7 @@ def run_game(config: GameConfig) -> None:
             title="Crimsonland",
             fps=config.fps,
             config_flags=config_flags,
+            exit_key=rl.KeyboardKey.KEY_NULL,
         )
         if state is not None:
             state.status.save_if_dirty()

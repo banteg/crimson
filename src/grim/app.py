@@ -37,11 +37,14 @@ def run_view(
     title: str = "Crimsonland",
     fps: int = 60,
     config_flags: int = 0,
+    exit_key: int | None = None,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
     if config_flags:
         rl.set_config_flags(config_flags)
     rl.init_window(width, height, title)
+    if exit_key is not None:
+        rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
     open_fn = getattr(view, "open", None)
     if callable(open_fn):
