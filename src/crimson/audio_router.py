@@ -9,7 +9,7 @@ from grim.audio import AudioState, play_sfx, trigger_game_tune
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
 from .weapon_sfx import resolve_weapon_sfx_ref
-from .weapons import WEAPON_BY_ID
+from .weapons import WEAPON_BY_ID, WeaponId
 
 _MAX_HIT_SFX_PER_FRAME = 4
 _MAX_DEATH_SFX_PER_FRAME = 3
@@ -96,7 +96,17 @@ class AudioRouter:
             return
 
         if int(getattr(player, "shot_seq", 0)) > int(prev_shot_seq):
-            self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
+            if float(getattr(player, "fire_bullets_timer", 0.0)) > 0.0:
+                # player_update (crimsonland.exe): when Fire Bullets is active, the regular per-weapon
+                # shot sfx is suppressed and replaced by Fire Bullets + Plasma Minigun fire sfx.
+                fire_bullets = WEAPON_BY_ID.get(int(WeaponId.FIRE_BULLETS))
+                plasma_minigun = WEAPON_BY_ID.get(int(WeaponId.PLASMA_MINIGUN))
+                if fire_bullets is not None:
+                    self.play_sfx(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
+                if plasma_minigun is not None:
+                    self.play_sfx(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
+            else:
+                self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
         reload_active = bool(getattr(player, "reload_active", False))
         reload_timer = float(getattr(player, "reload_timer", 0.0))
