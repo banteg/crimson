@@ -789,6 +789,7 @@ class SurvivalGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
         )
@@ -848,6 +849,7 @@ class RushGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
         )
@@ -905,6 +907,7 @@ class TypoShooterGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
         )
@@ -962,6 +965,7 @@ class TutorialGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
             demo_mode_active=state.demo_enabled,
@@ -1011,6 +1015,7 @@ class QuestGameView:
             ViewContext(assets_dir=state.assets_dir),
             texture_cache=state.texture_cache,
             config=state.config,
+            console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
             demo_mode_active=state.demo_enabled,

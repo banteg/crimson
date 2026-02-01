@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
+from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.view import ViewContext
@@ -146,6 +147,7 @@ class QuestMode(BaseGameplayMode):
         demo_mode_active: bool = False,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
+        console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
     ) -> None:
@@ -158,6 +160,7 @@ class QuestMode(BaseGameplayMode):
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
+            console=console,
             audio=audio,
             audio_rng=audio_rng,
         )
@@ -855,6 +858,7 @@ class QuestMode(BaseGameplayMode):
                 show_time=False,
                 show_quest_hud=True,
                 quest_progress_ratio=quest_progress_ratio,
+                small_indicators=self._hud_small_indicators(),
             )
 
         self._draw_quest_title()

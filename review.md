@@ -94,7 +94,7 @@ This is a good “bundle” to tackle together:
   * only in normal indicator mode
   * white color, alpha `hud_alpha * 0.7`
   * y = `+6` (no alt) / `+2` (alt)
-* [ ] Implement `cv_uiSmallIndicators` equivalent (likely derived from config; see item 5 below)
+* [x] Implement `cv_uiSmallIndicators` equivalent (likely derived from config; see item 5 below)
 
 ---
 
@@ -169,7 +169,7 @@ Parity items:
 
 * [ ] Identify which config bytes map to `reserved0._24_4_` (HUD preset) and to `cv_uiSmallIndicators`
 * [ ] Derive the same render flags and pass them into HUD rendering consistently
-* [ ] Add a “small indicators” toggle and implement the small-mode branch for bonus slots (it changes both panel geometry and whether text shows)
+* [x] Add a “small indicators” toggle and implement the small-mode branch for bonus slots (it changes both panel geometry and whether text shows)
 
 ---
 
@@ -210,7 +210,7 @@ Parity item(s):
 
 ### Highest impact (what players notice immediately)
 
-* [ ] **Bonus HUD**: slide + timer bars + correct placement + small indicator mode
+* [x] **Bonus HUD**: slide + timer bars + correct placement + small indicator mode
 * [x] **Quest HUD**: use the quest panel variant (mm:ss + progress panel), remove top-bar seconds timer usage
 * [x] **Quest perk UI**: show level up prompt/menu so the level up sound corresponds to something actionable
 * [x] **Remove/gate survival debug overlay** (the “Minimal debug text”)

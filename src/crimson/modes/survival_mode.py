@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
+from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
 
@@ -85,6 +86,7 @@ class SurvivalMode(BaseGameplayMode):
         *,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
+        console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
     ) -> None:
@@ -97,6 +99,7 @@ class SurvivalMode(BaseGameplayMode):
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
+            console=console,
             audio=audio,
             audio_rng=audio_rng,
         )
@@ -754,6 +757,7 @@ class SurvivalMode(BaseGameplayMode):
                 font=self._small,
                 alpha=hud_alpha,
                 frame_dt_ms=self._last_dt_ms,
+                small_indicators=self._hud_small_indicators(),
             )
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):

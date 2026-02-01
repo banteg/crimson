@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
+from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
 
@@ -69,6 +70,7 @@ class TutorialMode(BaseGameplayMode):
         demo_mode_active: bool = False,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
+        console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
     ) -> None:
@@ -81,6 +83,7 @@ class TutorialMode(BaseGameplayMode):
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
+            console=console,
             audio=audio,
             audio_rng=audio_rng,
         )
@@ -463,6 +466,7 @@ class TutorialMode(BaseGameplayMode):
                 font=self._small,
                 alpha=1.0,
                 frame_dt_ms=self._last_dt_ms,
+                small_indicators=self._hud_small_indicators(),
             )
 
         self._draw_tutorial_prompts(hud_bottom=hud_bottom)

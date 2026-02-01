@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, update_audio
+from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.view import ViewContext
@@ -45,6 +46,7 @@ class BaseGameplayMode:
         hardcore: bool = False,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
+        console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
     ) -> None:
@@ -55,6 +57,7 @@ class BaseGameplayMode:
         self._hud_assets: HudAssets | None = None
 
         self._config = config
+        self._console = console
         self._base_dir = config.path.parent if config is not None else Path.cwd()
 
         self.close_requested = False
@@ -89,6 +92,18 @@ class BaseGameplayMode:
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
+
+    def _cvar_float(self, name: str, default: float = 0.0) -> float:
+        console = self._console
+        if console is None:
+            return float(default)
+        cvar = console.cvars.get(name)
+        if cvar is None:
+            return float(default)
+        return float(cvar.value_f)
+
+    def _hud_small_indicators(self) -> bool:
+        return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
 
     def _bind_world(self) -> None:
         self._state = self._world.state

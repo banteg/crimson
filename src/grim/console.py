@@ -651,6 +651,20 @@ def register_boot_commands(
 
 
 def register_core_cvars(console: ConsoleState, width: int, height: int) -> None:
+    # Defaults match `register_core_cvars` (0x00402c00) in `crimsonland.exe`.
+    console.register_cvar("cv_silentloads", "1")
+    console.register_cvar("cv_terrainFilter", "1")
+    console.register_cvar("cv_bodiesFade", "1")
+    console.register_cvar("cv_uiTransparency", "1")
+    console.register_cvar("cv_uiPointFilterPanels", "0")
+    console.register_cvar("cv_enableMousePointAndClickMovement", "0")
+    console.register_cvar("cv_verbose", "0")
+    console.register_cvar("cv_terrainBodiesTransparency", "0")
+    console.register_cvar("cv_uiSmallIndicators", "0")
+    console.register_cvar("cv_aimEnhancementFade", "0.7")
+    console.register_cvar("cv_friendlyFire", "0")
+    console.register_cvar("cv_showFPS", "0")
+    console.register_cvar("cv_padAimDistMul", "96")
     console.register_cvar("v_width", str(width))
     console.register_cvar("v_height", str(height))
 
