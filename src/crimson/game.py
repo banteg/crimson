@@ -1104,59 +1104,35 @@ class QuestResultsView:
     def __init__(self, state: GameState) -> None:
         self._state = state
         self._ground: GroundRenderer | None = None
-        self._outcome: QuestRunOutcome | None = None
+        self._quest_level: str = ""
         self._quest_title: str = ""
         self._quest_stage_major = 0
         self._quest_stage_minor = 0
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
-        self._breakdown = None
-        self._breakdown_anim = None
-        self._record = None
-        self._rank_index: int | None = None
+        self._ui = None
         self._action: str | None = None
-        self._cursor_pulse_time = 0.0
-        self._small_font: SmallFontData | None = None
-        self._button_tex: rl.Texture2D | None = None
-        self._button_textures: UiButtonTextureSet | None = None
-        self._retry_button = UiButtonState("Retry", force_wide=True)
-        self._quest_list_button = UiButtonState("Quest list", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
-        self._button_textures: UiButtonTextureSet | None = None
-        self._play_again_button = UiButtonState("Play again", force_wide=True)
-        self._play_next_button = UiButtonState("Play next", force_wide=True)
-        self._high_scores_button = UiButtonState("High scores", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
 
     def open(self) -> None:
-        from .quests.results import QuestResultsBreakdownAnim, compute_quest_final_time
-        from .persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
+        from .persistence.highscores import HighScoreRecord
+        from .quests.results import compute_quest_final_time
+        from .ui.quest_results import QuestResultsUi
 
         self._action = None
-        self._ground = ensure_menu_ground(self._state)
-        self._cursor_pulse_time = 0.0
-        self._outcome = self._state.quest_outcome
-        self._state.quest_outcome = None
-        outcome = self._outcome
+        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._state.quest_fail_retry_count = 0
+        outcome = self._state.quest_outcome
+        self._state.quest_outcome = None
+        self._quest_level = ""
         self._quest_title = ""
         self._quest_stage_major = 0
         self._quest_stage_minor = 0
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
-        self._breakdown = None
-        self._breakdown_anim = None
-        self._record = None
-        self._rank_index = None
-        self._button_tex = None
-        self._button_textures = None
-        self._small_font = None
-        self._play_again_button = UiButtonState("Play again", force_wide=True)
-        self._play_next_button = UiButtonState("Play next", force_wide=True)
-        self._high_scores_button = UiButtonState("High scores", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
+        self._ui = None
         if outcome is None:
             return
+        self._quest_level = str(outcome.level or "")
 
         major, minor = 0, 0
         try:
@@ -1214,7 +1190,8 @@ class QuestResultsView:
             pending_perk_count=int(outcome.pending_perk_count),
         )
         record.survival_elapsed_ms = int(breakdown.final_time_ms)
-        record.set_name(_player_name_default(self._state.config) or "Player")
+        player_name_default = _player_name_default(self._state.config) or "Player"
+        record.set_name(player_name_default)
 
         global_index = (int(major) - 1) * 10 + (int(minor) - 1)
         if 0 <= global_index < 40:
@@ -1243,316 +1220,86 @@ class QuestResultsView:
         except Exception:
             pass
 
-        path = scores_path_for_config(self._state.base_dir, self._state.config, quest_stage_major=major, quest_stage_minor=minor)
-        try:
-            _table, rank_index = upsert_highscore_record(path, record)
-            self._rank_index = int(rank_index)
-        except Exception:
-            self._rank_index = None
-
-        cache = _ensure_texture_cache(self._state)
-        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
-        self._record = record
-        self._breakdown = breakdown
-        self._breakdown_anim = QuestResultsBreakdownAnim.start()
+        self._ui = QuestResultsUi(
+            assets_root=self._state.assets_dir,
+            base_dir=self._state.base_dir,
+            config=self._state.config,
+        )
+        self._ui.open(
+            record=record,
+            breakdown=breakdown,
+            quest_level=str(outcome.level or ""),
+            quest_title=str(self._quest_title or ""),
+            quest_stage_major=int(self._quest_stage_major),
+            quest_stage_minor=int(self._quest_stage_minor),
+            unlock_weapon_name=str(self._unlock_weapon_name or ""),
+            unlock_perk_name=str(self._unlock_perk_name or ""),
+            player_name_default=player_name_default,
+        )
 
     def close(self) -> None:
-        self._small_font = None
-        self._button_tex = None
-        self._button_textures = None
-        self._record = None
-        self._outcome = None
-        self._breakdown = None
-        self._breakdown_anim = None
-        self._rank_index = None
+        if self._ui is not None:
+            self._ui.close()
+            self._ui = None
+        self._ground = None
         self._quest_stage_major = 0
         self._quest_stage_minor = 0
+        self._quest_level = ""
+        self._quest_title = ""
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
 
     def update(self, dt: float) -> None:
-        from .quests.results import tick_quest_results_breakdown_anim
-
         if self._state.audio is not None:
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "back_to_menu"
+        ui = self._ui
+        if ui is None:
             return
+        audio = self._state.audio
+        rng = self._state.rng
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
-            self._open_high_scores_list()
-            return
-
-        outcome = self._outcome
-        record = self._record
-        breakdown = self._breakdown
-        if record is None or outcome is None or breakdown is None:
-            return
-
-        textures = self._button_textures
-        if textures is None or (textures.button_sm is None and textures.button_md is None):
-            return
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        button_w = button_width(None, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
-        button_h = 32.0 * scale
-        gap_x = 18.0 * scale
-        gap_y = 12.0 * scale
-        x0 = 32.0
-        y0 = float(rl.get_screen_height()) - (button_h * 2.0 + gap_y) - 52.0 * scale
-        x1 = x0 + button_w + gap_x
-        y1 = y0 + button_h + gap_y
-
-        mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
-
-        anim = self._breakdown_anim
-        if anim is not None and not anim.done:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or click:
-                anim.set_final(breakdown)
+        def _play(name: str) -> None:
+            if audio is None:
                 return
+            play_sfx(audio, name, rng=rng)
 
-            clinks = tick_quest_results_breakdown_anim(
-                anim,
-                frame_dt_ms=int(dt_ms),
-                target=breakdown,
-            )
-            if clinks > 0 and self._state.audio is not None:
-                play_sfx(self._state.audio, "sfx_ui_clink_01", rng=self._state.rng)
-            if not anim.done:
-                # Keep hover/press animations alive even while the breakdown is running,
-                # but don't allow activating buttons until the animation is complete.
-                button_update(
-                    self._play_again_button,
-                    x=x0,
-                    y=y0,
-                    width=button_w,
-                    dt_ms=dt_ms,
-                    mouse=mouse,
-                    click=False,
-                )
-                button_update(
-                    self._play_next_button,
-                    x=x1,
-                    y=y0,
-                    width=button_w,
-                    dt_ms=dt_ms,
-                    mouse=mouse,
-                    click=False,
-                )
-                button_update(
-                    self._high_scores_button,
-                    x=x0,
-                    y=y1,
-                    width=button_w,
-                    dt_ms=dt_ms,
-                    mouse=mouse,
-                    click=False,
-                )
-                button_update(
-                    self._main_menu_button,
-                    x=x1,
-                    y=y1,
-                    width=button_w,
-                    dt_ms=dt_ms,
-                    mouse=mouse,
-                    click=False,
-                )
-                return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._state.pending_quest_level = outcome.level
+        action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=lambda: rng.getrandbits(32))
+        if action == "play_again":
+            self._state.pending_quest_level = self._quest_level
             self._action = "start_quest"
             return
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
-            next_level = _next_quest_level(outcome.level)
+        if action == "play_next":
+            next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._state.pending_quest_level = next_level
                 self._action = "start_quest"
-                return
-
-        if button_update(
-            self._play_again_button,
-            x=x0,
-            y=y0,
-            width=button_w,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            self._state.pending_quest_level = outcome.level
-            self._action = "start_quest"
+            else:
+                self._action = "back_to_menu"
             return
-        if button_update(
-            self._play_next_button,
-            x=x1,
-            y=y0,
-            width=button_w,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            next_level = _next_quest_level(outcome.level)
-            if next_level is not None:
-                self._state.pending_quest_level = next_level
-                self._action = "start_quest"
-                return
-        if button_update(
-            self._high_scores_button,
-            x=x0,
-            y=y1,
-            width=button_w,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
+        if action == "high_scores":
             self._open_high_scores_list()
             return
-        if button_update(
-            self._main_menu_button,
-            x=x1,
-            y=y1,
-            width=button_w,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
+        if action == "main_menu":
             self._action = "back_to_menu"
             return
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        if self._ground is not None:
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+        elif self._ground is not None:
             self._ground.draw(0.0, 0.0)
         _draw_screen_fade(self._state)
-
-        record = self._record
-        outcome = self._outcome
-        breakdown = self._breakdown
-        if record is None or outcome is None or breakdown is None:
-            rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
-            rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
+        ui = self._ui
+        if ui is not None:
+            ui.draw()
             return
 
-        anim = self._breakdown_anim
-        base_time_ms = int(breakdown.base_time_ms)
-        life_bonus_ms = int(breakdown.life_bonus_ms)
-        perk_bonus_ms = int(breakdown.unpicked_perk_bonus_ms)
-        final_time_ms = int(breakdown.final_time_ms)
-        step = 4
-        highlight_alpha = 1.0
-        if anim is not None and not anim.done:
-            base_time_ms = int(anim.base_time_ms)
-            life_bonus_ms = int(anim.life_bonus_ms)
-            perk_bonus_ms = int(anim.unpicked_perk_bonus_s) * 1000
-            final_time_ms = int(anim.final_time_ms)
-            step = int(anim.step)
-            highlight_alpha = float(anim.highlight_alpha())
-
-        def _fmt_clock(ms: int) -> str:
-            total_seconds = max(0, int(ms) // 1000)
-            minutes = total_seconds // 60
-            seconds = total_seconds % 60
-            return f"{minutes:02d}:{seconds:02d}"
-
-        def _fmt_bonus(ms: int) -> str:
-            return f"-{float(max(0, int(ms))) / 1000.0:.2f}s"
-
-        def _breakdown_color(idx: int, *, final: bool = False) -> rl.Color:
-            if anim is None or anim.done:
-                if final:
-                    return rl.Color(255, 255, 255, 255)
-                return rl.Color(255, 255, 255, int(255 * 0.8))
-
-            alpha = 0.2
-            if idx < step:
-                alpha = 0.4
-            elif idx == step:
-                alpha = 1.0
-                if final:
-                    alpha *= highlight_alpha
-            rgb = (255, 255, 255)
-            if idx == step:
-                rgb = (25, 200, 25)
-            return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
-
-        title = f"Quest {outcome.level} completed"
-        subtitle = self._quest_title
-        rl.draw_text(title, 32, 120, 28, rl.Color(235, 235, 235, 255))
-        if subtitle:
-            rl.draw_text(subtitle, 32, 154, 18, rl.Color(190, 190, 200, 255))
-
-        font = self._ensure_small_font()
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
-        y = 196.0
-        draw_small_text(font, f"Base time: {_fmt_clock(base_time_ms)}", 32.0, y, 1.0, _breakdown_color(0))
-        y += 18.0
-        draw_small_text(font, f"Life bonus: {_fmt_bonus(life_bonus_ms)}", 32.0, y, 1.0, _breakdown_color(1))
-        y += 18.0
-        draw_small_text(font, f"Perk bonus: {_fmt_bonus(perk_bonus_ms)}", 32.0, y, 1.0, _breakdown_color(2))
-        y += 18.0
-        draw_small_text(font, f"Final time: {_fmt_clock(final_time_ms)}", 32.0, y, 1.0, _breakdown_color(3, final=True))
-        y += 26.0
-        draw_small_text(font, f"Kills: {int(record.creature_kill_count)}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
-        y += 18.0
-        draw_small_text(font, f"XP: {int(record.score_xp)}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
-        if self._rank_index is not None and self._rank_index < 100:
-            y += 18.0
-            draw_small_text(font, f"Rank: {int(self._rank_index) + 1}", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.8)))
-
-        if self._unlock_weapon_name:
-            y += 26.0
-            draw_small_text(font, "Weapon unlocked", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.7)))
-            y += 16.0
-            draw_small_text(font, self._unlock_weapon_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
-
-        if self._unlock_perk_name:
-            y += 20.0
-            draw_small_text(font, "Perk unlocked", 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.7)))
-            y += 16.0
-            draw_small_text(font, self._unlock_perk_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
-
-        textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = button_width(None, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
-            button_h = 32.0 * scale
-            gap_x = 18.0 * scale
-            gap_y = 12.0 * scale
-            x0 = 32.0
-            y0 = float(rl.get_screen_height()) - (button_h * 2.0 + gap_y) - 52.0 * scale
-            x1 = x0 + button_w + gap_x
-            y1 = y0 + button_h + gap_y
-            button_draw(textures, font, self._play_again_button, x=x0, y=y0, width=button_w, scale=scale)
-            button_draw(textures, font, self._play_next_button, x=x1, y=y0, width=button_w, scale=scale)
-            button_draw(textures, font, self._high_scores_button, x=x0, y=y1, width=button_w, scale=scale)
-            button_draw(textures, font, self._main_menu_button, x=x1, y=y1, width=button_w, scale=scale)
-
-        if anim is not None and not anim.done:
-            draw_small_text(
-                font,
-                "SPACE / click: skip breakdown",
-                32.0,
-                float(rl.get_screen_height()) - 46.0,
-                0.9,
-                rl.Color(190, 190, 200, 255),
-            )
-
-        draw_small_text(
-            font,
-            "ENTER: Replay    N: Next    H: High scores    ESC: Menu",
-            32.0,
-            float(rl.get_screen_height()) - 28.0,
-            1.0,
-            rl.Color(190, 190, 200, 255),
-        )
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+        rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
+        rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
 
     def take_action(self) -> str | None:
         action = self._action
@@ -1560,20 +1307,16 @@ class QuestResultsView:
         return action
 
     def _open_high_scores_list(self) -> None:
+        highlight_rank = None
+        if self._ui is not None:
+            highlight_rank = self._ui.highlight_rank
         self._state.pending_high_scores = HighScoresRequest(
             game_mode_id=3,
             quest_stage_major=int(self._quest_stage_major),
             quest_stage_minor=int(self._quest_stage_minor),
-            highlight_rank=self._rank_index,
+            highlight_rank=highlight_rank,
         )
         self._action = "open_high_scores"
-
-    def _ensure_small_font(self) -> SmallFontData:
-        if self._small_font is not None:
-            return self._small_font
-        missing_assets: list[str] = []
-        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
-        return self._small_font
 
 
 class QuestFailedView:
@@ -1589,7 +1332,7 @@ class QuestFailedView:
 
     def open(self) -> None:
         self._action = None
-        self._ground = ensure_menu_ground(self._state)
+        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
@@ -1691,7 +1434,10 @@ class QuestFailedView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        if self._ground is not None:
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+        elif self._ground is not None:
             self._ground.draw(0.0, 0.0)
         _draw_screen_fade(self._state)
 
@@ -1802,7 +1548,7 @@ class HighScoresView:
         from .persistence.highscores import read_highscore_table, scores_path_for_mode
 
         self._action = None
-        self._ground = ensure_menu_ground(self._state)
+        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
         self._small_font = None
         self._scroll_index = 0
@@ -1921,7 +1667,10 @@ class HighScoresView:
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        if self._ground is not None:
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+        elif self._ground is not None:
             self._ground.draw(0.0, 0.0)
         _draw_screen_fade(self._state)
 
@@ -2188,8 +1937,25 @@ class GameLoopView:
                 view = self._front_views.get(action)
                 if view is not None:
                     if action == "open_high_scores":
+                        if (self._front_active in self._gameplay_views) and (self._state.pause_background is None):
+                            self._state.pause_background = self._front_active
+                        self._front_stack.append(self._front_active)
+                    elif action in {"quest_results", "quest_failed"} and (self._front_active in self._gameplay_views):
+                        self._state.pause_background = self._front_active
                         self._front_stack.append(self._front_active)
                     else:
+                        if action in {
+                            "start_survival",
+                            "start_rush",
+                            "start_typo",
+                            "start_tutorial",
+                            "start_quest",
+                            "open_play_game",
+                            "open_quests",
+                        }:
+                            self._state.pause_background = None
+                            while self._front_stack:
+                                self._front_stack.pop().close()
                         self._front_active.close()
                     view.open()
                     self._front_active = view
