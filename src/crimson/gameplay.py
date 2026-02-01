@@ -974,8 +974,8 @@ def perk_apply(
             weapon_id = int(current)
             for _ in range(100):
                 candidate = int(weapon_pick_random_available(state))
-                if candidate != 0 and candidate != current:
-                    weapon_id = candidate
+                weapon_id = candidate
+                if candidate != int(WeaponId.PISTOL) and candidate != current:
                     break
             weapon_assign_player(owner, weapon_id, state=state)
             return
