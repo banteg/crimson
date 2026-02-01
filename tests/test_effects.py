@@ -132,6 +132,35 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     assert math.isclose(first.color_a, 0.8, abs_tol=1e-9)
 
 
+def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
+    q = FxQueue(capacity=4, max_count=4)
+    pool = EffectPool(size=4)
+
+    pool.spawn_shell_casing(
+        pos_x=10.0,
+        pos_y=20.0,
+        aim_heading=0.0,
+        weapon_flags=1,
+        rand=lambda: 0,
+        detail_preset=5,
+    )
+
+    active = pool.iter_active()
+    assert len(active) == 1
+    assert active[0].effect_id == 0x12
+    assert active[0].flags == 0x1C5
+    assert math.isclose(active[0].lifetime, 0.15, abs_tol=1e-9)
+
+    pool.update(0.2, fx_queue=q)
+    assert q.count == 1
+
+    entry = q.iter_active()[0]
+    assert entry.effect_id == 0x12
+    assert math.isclose(entry.width, 4.0, abs_tol=1e-9)
+    assert math.isclose(entry.height, 4.0, abs_tol=1e-9)
+    assert math.isclose(entry.color_a, 0.35, abs_tol=1e-9)
+
+
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
     pool = EffectPool(size=8)
 

@@ -1618,7 +1618,14 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0
 
 
-def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState) -> None:
+def player_fire_weapon(
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    state: GameplayState,
+    *,
+    detail_preset: int = 5,
+) -> None:
     dt = float(dt)
 
     weapon_id = int(player.weapon_id)
@@ -1689,6 +1696,20 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
     aim_y = float(input_state.aim_y)
     dx = aim_x - float(player.pos_x)
     dy = aim_y - float(player.pos_y)
+    aim_heading = math.atan2(dy, dx) + math.pi / 2.0
+
+    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
+    muzzle_shell_x = player.pos_x + math.cos(muzzle_dir) * 16.0
+    muzzle_shell_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    state.effects.spawn_shell_casing(
+        pos_x=muzzle_shell_x,
+        pos_y=muzzle_shell_y,
+        aim_heading=aim_heading,
+        weapon_flags=int(weapon.flags or 0),
+        rand=state.rng.rand,
+        detail_preset=int(detail_preset),
+    )
+
     dist = math.hypot(dx, dy)
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
@@ -1885,7 +1906,15 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         player_start_reload(player, state)
 
 
-def player_update(player: PlayerState, input_state: PlayerInput, dt: float, state: GameplayState, *, world_size: float = 1024.0) -> None:
+def player_update(
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    state: GameplayState,
+    *,
+    detail_preset: int = 5,
+    world_size: float = 1024.0,
+) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
     if dt <= 0.0:
@@ -2048,7 +2077,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         elif player.reload_timer == 0.0:
             player_start_reload(player, state)
 
-    player_fire_weapon(player, input_state, dt, state)
+    player_fire_weapon(player, input_state, dt, state, detail_preset=int(detail_preset))
 
     while player.move_phase > 14.0:
         player.move_phase -= 14.0
