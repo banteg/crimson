@@ -427,21 +427,23 @@ def button_draw(
         return
 
     if state.hover_t > 0:
-        # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased yellow tint.
-        # - base: (0.5, 0.7, 0.0)
-        # - click_anim: +0.0005 / +0.0007, clamped to 1.0
+        # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased blue tint.
+        # - base: (0.5, 0.5, 0.7)
+        # - click_anim: +0.0005 / +0.0007, clamped to 1.0 (towards white)
         # - alpha: hover_anim * 0.001 * button.alpha
         r = 0.5
-        g = 0.7
+        g = 0.5
+        b = 0.7
         if state.press_t > 0:
             click_t = float(state.press_t)
-            r = min(1.0, r + click_t * 0.0005)
-            g = min(1.0, g + click_t * 0.0007)
+            g = min(1.0, 0.5 + click_t * 0.0005)
+            r = g
+            b = min(1.0, 0.7 + click_t * 0.0007)
         a = float(state.hover_t) * 0.001 * state.alpha
         hl = rl.Color(
             int(255 * r),
             int(255 * g),
-            0,
+            int(255 * b),
             int(255 * _clamp(a, 0.0, 1.0)),
         )
         rl.draw_rectangle(

@@ -496,8 +496,6 @@ class PlayGameMenuView(PanelMenuView):
         else:
             rl.draw_text(self._title, int(panel_left + 212.0 * scale), int(panel_top + 32.0 * scale), int(24 * scale), rl.WHITE)
 
-        self._draw_player_count(drop_x, drop_y, scale)
-
         entries, y_step, y_start, y_end = self._mode_entries()
         y = base_y + y_start * scale
         show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
@@ -512,6 +510,8 @@ class PlayGameMenuView(PanelMenuView):
             y += y_step * scale
 
         self._draw_tooltips(entries, base_x, base_y, y_end, scale)
+        # ui_list_widget_update draws its dropdown list above subsequent UI elements.
+        self._draw_player_count(drop_x, drop_y, scale)
 
     def _draw_player_count(self, x: float, y: float, scale: float) -> None:
         drop_on = self._drop_on
@@ -533,13 +533,18 @@ class PlayGameMenuView(PanelMenuView):
 
         # `ui_list_widget_update` draws a single bordered black rect for the widget.
         widget_h = full_h if self._player_list_open else header_h
-        rl.draw_rectangle(int(x), int(y), int(w), int(widget_h), rl.BLACK)
-        rl.draw_rectangle_lines(int(x), int(y), int(w), int(widget_h), rl.WHITE)
+        rl.draw_rectangle(int(x), int(y), int(w), int(widget_h), rl.WHITE)
+        inner_w = max(0, int(w) - 2)
+        inner_h = max(0, int(widget_h) - 2)
+        rl.draw_rectangle(int(x) + 1, int(y) + 1, inner_w, inner_h, rl.BLACK)
 
         # Arrow icon (the ui_drop* assets are 16x16 icons, not the background).
         mouse = rl.get_mouse_position()
         hovered_header = x <= mouse.x <= x + w and y <= mouse.y <= y + header_h
         arrow_tex = drop_on if (self._player_list_open or hovered_header) else drop_off
+        if self._player_list_open or hovered_header:
+            line_h = max(1, int(1.0 * scale))
+            rl.draw_rectangle(int(x), int(y + 15.0 * scale), int(w), line_h, rl.Color(255, 255, 255, 128))
         if arrow_tex is not None:
             rl.draw_texture_pro(
                 arrow_tex,
@@ -556,7 +561,7 @@ class PlayGameMenuView(PanelMenuView):
         if player_count > len(self._PLAYER_COUNT_LABELS):
             player_count = len(self._PLAYER_COUNT_LABELS)
         label = self._PLAYER_COUNT_LABELS[player_count - 1]
-        header_alpha = 191 if self._player_list_open else 242  # 0x3f400000 / 0x3f733333
+        header_alpha = 242 if hovered_header else 191  # 0x3f733333 / 0x3f400000
         draw_small_text(font, label, text_x, text_y, text_scale, rl.Color(255, 255, 255, header_alpha))
 
         if not self._player_list_open:
@@ -565,7 +570,7 @@ class PlayGameMenuView(PanelMenuView):
         for idx, item in enumerate(self._PLAYER_COUNT_LABELS):
             item_y = rows_y0 + row_h * float(idx)
             hovered = x <= mouse.x <= x + w and item_y <= mouse.y <= item_y + row_h
-            alpha = 179  # 0x3f333333
+            alpha = 153  # 0x3f19999a
             if hovered:
                 alpha = 242  # 0x3f733333
             if idx == (player_count - 1):
