@@ -9,7 +9,8 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - `uv run crimson game`
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
-  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable (single-player).
+  - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable.
+  - Multiplayer (2–4): player count spawns multiple players, but all players currently share the same input (mirrored controls).
   - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
 - Quest results/failed screens (states 8 and 0xc) are fully implemented.
   - Menu idle triggers demo/attract mode.
@@ -33,13 +34,14 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - **Options panel (state `2`)**: partially implemented.
   - Code: `src/crimson/game.py` (`OptionsMenuView`)
   - Implemented: SFX/music volume sliders, detail preset slider, mouse sensitivity, “UI Info texts”, save-on-exit.
-  - Missing: full controls screen, video/window mode editing, broader parity of widgets/labels.
+  - Missing: interactive controls rebinding (Controls screen exists but is currently read-only), video/window mode editing, broader parity of widgets/labels.
 - **Statistics panel (state `4`)**: partially implemented (Summary/Weapons/Quests pages; reads `game.cfg` counters + checksum).
   - Code: `src/crimson/frontend/panels/stats.py` (`StatisticsMenuView`)
 - **Demo / attract mode**: implemented (variant sequencing + upsell + purchase screen flow).
   - Code: `src/crimson/demo.py`
   - Ref: `docs/crimsonland-exe/demo-mode.md`, `docs/crimsonland-exe/screens.md`
-  - Gap: demo trial overlay is not implemented.
+  - Demo trial overlay: implemented and wired into gameplay loop.
+    - Code: `src/crimson/ui/demo_trial_overlay.py`, `src/crimson/game.py` (`GameLoopView._update_demo_trial_overlay`)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
   - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game.py` (`*GameView`)
   - Ref: `docs/crimsonland-exe/screens.md`
@@ -63,8 +65,9 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Typ-o-Shooter has typing buffer with target matching and reload command (`src/crimson/typo/typing.py`).
 - **Quest mode**: all tiers 1-5 implemented with full spawn scripting.
   - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
-- **Multiplayer (2–4 players)**: not wired (Play Game panel exposes player count; modes currently hardcode `player_count=1`).
-  - Code: `src/crimson/modes/*` (modes currently use `player_count=1`)
+- **Multiplayer (2–4 players)**: partially wired (player count is read; multiple players spawn).
+  - Gap: per-player input is not implemented yet; Survival/Rush/Quest currently feed the same `PlayerInput` to every player (mirrored controls).
+  - Code: `src/crimson/modes/base_gameplay_mode.py` (reads `player_count`), `src/crimson/game_world.py` (`reset(... player_count=...)`), `src/crimson/modes/survival_mode.py` (mirrored input list)
 - **Progression/unlocks**: quest unlock indices + completion counters are updated on quest completion; mode play counters increment on mode start.
   - Code: `src/crimson/persistence/save_status.py`, `src/crimson/game.py`
 
@@ -90,9 +93,9 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 1) **Creature + weapon coverage**
    - Remaining per-weapon behaviors and AI edge cases.
 2) **Multiplayer (2–4 players)**
-   - Wire player count into the gameplay modes and sim.
+   - Player spawning is wired, but inputs are mirrored (all players share the same input).
 3) **UI completeness**
-   - Full Options/Controls parity and demo trial overlay.
+   - Full Options/Controls parity (Controls screen is currently non-interactive).
 4) **Progression + stats fidelity**
    - Some `game.cfg` counters and stats screen parity are still incomplete.
 5) **Out-of-scope / later**
