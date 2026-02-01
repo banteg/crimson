@@ -383,6 +383,86 @@ class ProjectilePool:
                     detail_preset=detail,
                 )
 
+        def _spawn_plasma_cannon_hit_effects(pos_x: float, pos_y: float) -> None:
+            """Port of `projectile_update` Plasma Cannon hit extras.
+
+            Native does:
+            - `sfx_play_panned(sfx_explosion_medium)`
+            - `sfx_play_panned(sfx_shockwave)`
+            - `FUN_0042f330(pos, 1.5, 1.0)`
+            - `FUN_0042f330(pos, 1.0, 1.0)`
+            """
+
+            if effects is None or not hasattr(effects, "spawn"):
+                return
+
+            if isinstance(sfx_queue, list):
+                sfx_queue.append("sfx_explosion_medium")
+                sfx_queue.append("sfx_shockwave")
+
+            detail = int(detail_preset)
+
+            def _spawn_ring(*, scale: float) -> None:
+                effects.spawn(
+                    effect_id=1,
+                    pos_x=float(pos_x),
+                    pos_y=float(pos_y),
+                    vel_x=0.0,
+                    vel_y=0.0,
+                    rotation=0.0,
+                    scale=1.0,
+                    half_width=4.0,
+                    half_height=4.0,
+                    age=0.1,
+                    lifetime=1.0,
+                    flags=0x19,
+                    color_r=0.9,
+                    color_g=0.6,
+                    color_b=0.3,
+                    color_a=1.0,
+                    rotation_step=0.0,
+                    scale_step=float(scale) * 45.0,
+                    detail_preset=detail,
+                )
+
+            _spawn_ring(scale=1.5)
+            _spawn_ring(scale=1.0)
+
+        def _spawn_splitter_hit_effects(pos_x: float, pos_y: float) -> None:
+            """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
+
+            if effects is None or not hasattr(effects, "spawn"):
+                return
+
+            detail = int(detail_preset)
+            for _ in range(3):
+                angle = float(int(rng()) & 0x1FF) * (math.tau / 512.0)
+                radius = float(int(rng()) % 26)
+                jitter_age = -float(int(rng()) & 0xFF) * 0.0012
+                lifetime = 0.1 - jitter_age
+
+                effects.spawn(
+                    effect_id=0,
+                    pos_x=float(pos_x) + math.cos(angle) * radius,
+                    pos_y=float(pos_y) + math.sin(angle) * radius,
+                    vel_x=0.0,
+                    vel_y=0.0,
+                    rotation=0.0,
+                    scale=1.0,
+                    half_width=4.0,
+                    half_height=4.0,
+                    age=jitter_age,
+                    lifetime=lifetime,
+                    flags=0x19,
+                    color_r=1.0,
+                    color_g=0.9,
+                    color_b=0.1,
+                    color_a=1.0,
+                    rotation_step=0.0,
+                    scale_step=55.0,
+                    detail_preset=detail,
+                )
+
         def _apply_damage_to_creature(
             creature_index: int,
             damage: float,
@@ -646,6 +726,7 @@ class ProjectilePool:
                             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
                     if type_id == ProjectileTypeId.SPLITTER_GUN:
+                        _spawn_splitter_hit_effects(proj.pos_x, proj.pos_y)
                         self.spawn(
                             pos_x=proj.pos_x,
                             pos_y=proj.pos_y,
@@ -717,6 +798,7 @@ class ProjectilePool:
                                 owner_id=-100,
                                 base_damage=plasma_meta,
                             )
+                        _spawn_plasma_cannon_hit_effects(proj.pos_x, proj.pos_y)
                     elif type_id == ProjectileTypeId.SHRINKIFIER:
                         if hasattr(creature, "size"):
                             new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
