@@ -847,6 +847,7 @@ class QuestMode(BaseGameplayMode):
             kills = int(self._creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
+            self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,

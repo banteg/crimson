@@ -438,6 +438,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         if show_gameplay_ui and self._hud_assets is not None:
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
+            self._draw_target_health_bar()
             draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,

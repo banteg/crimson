@@ -259,6 +259,7 @@ class RushMode(BaseGameplayMode):
         hud_bottom = 0.0
         if (not self._game_over_active) and self._hud_assets is not None:
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
+            self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,

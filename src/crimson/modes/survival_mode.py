@@ -748,6 +748,7 @@ class SurvivalMode(BaseGameplayMode):
         if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
             hud_alpha = _clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
+            self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,

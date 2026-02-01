@@ -16,7 +16,7 @@ from grim.view import ViewContext
 from ..game_world import GameWorld
 from ..persistence.highscores import HighScoreRecord
 from ..ui.game_over import GameOverUi
-from ..ui.hud import HudAssets, load_hud_assets
+from ..ui.hud import HudAssets, draw_target_health_bar, load_hud_assets
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
@@ -115,6 +115,40 @@ class BaseGameplayMode:
             return int(value or self._default_game_mode_id)
         except Exception:
             return int(self._default_game_mode_id)
+
+    def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
+        target_idx = int(getattr(self._player, "evil_eyes_target_creature", -1))
+        creatures = getattr(self._creatures, "entries", [])
+        if not (0 <= target_idx < len(creatures)):
+            return
+
+        creature = creatures[target_idx]
+        if not bool(getattr(creature, "active", False)):
+            return
+        hp = float(getattr(creature, "hp", 0.0))
+        max_hp = float(getattr(creature, "max_hp", 0.0))
+        if hp <= 0.0 or max_hp <= 0.0:
+            return
+
+        ratio = hp / max_hp
+        if ratio < 0.0:
+            ratio = 0.0
+        if ratio > 1.0:
+            ratio = 1.0
+
+        x0, y0 = self._world.world_to_screen(float(creature.x) - 32.0, float(creature.y) + 32.0)
+        x1, _y1 = self._world.world_to_screen(float(creature.x) + 32.0, float(creature.y) + 32.0)
+        width = float(x1) - float(x0)
+        if width <= 1e-3:
+            return
+        draw_target_health_bar(
+            x=float(x0),
+            y=float(y0),
+            width=width,
+            ratio=ratio,
+            alpha=float(alpha),
+            scale=width / 64.0,
+        )
 
     def _bind_world(self) -> None:
         self._state = self._world.state

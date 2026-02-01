@@ -179,7 +179,7 @@ Parity items:
 
 If we don’t have that mechanic yet (selection/target tracking), it may be fine to defer, but for full HUD parity it’s a real item:
 
-* [ ] Target creature health bar above world-space creature (camera offset + creature pos)
+* [x] Target creature health bar above world-space creature (camera offset + creature pos)
 
 ---
 
@@ -222,7 +222,7 @@ Parity item(s):
 
 ### Later / conditional
 
-* [ ] Target creature (boss) health bar UI
+* [x] Target creature (boss) health bar UI
 
 ---
 

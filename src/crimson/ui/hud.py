@@ -227,6 +227,18 @@ def _draw_progress_bar(x: float, y: float, width: float, ratio: float, rgba: tup
     rl.draw_rectangle(int(x + scale), int(y + scale), int(inner_w), int(inner_h), fg_color)
 
 
+def draw_target_health_bar(*, x: float, y: float, width: float, ratio: float, alpha: float = 1.0, scale: float = 1.0) -> None:
+    ratio = max(0.0, min(1.0, float(ratio)))
+    alpha = max(0.0, min(1.0, float(alpha)))
+    scale = max(0.1, float(scale))
+
+    # Matches `hud_update_and_render` (0x0041ca90): color shifts from red->green as ratio increases.
+    r = (1.0 - ratio) * 0.9 + 0.1
+    g = ratio * 0.9 + 0.1
+    rgba = (r, g, 0.7, 0.2 * alpha)
+    _draw_progress_bar(float(x), float(y), float(width), ratio, rgba, scale)
+
+
 def _weapon_icon_index(weapon_id: int) -> int | None:
     entry = WEAPON_BY_ID.get(int(weapon_id))
     icon_index = entry.icon_index if entry is not None else None
