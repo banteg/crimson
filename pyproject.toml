@@ -1,6 +1,6 @@
 [project]
 name = "crimsonland"
-version = "0.1.0.dev9"
+version = "0.1.0.dev10"
 requires-python = ">=3.13"
 dependencies = [
     "construct>=2.10.70",
