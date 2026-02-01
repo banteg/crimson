@@ -80,7 +80,7 @@ from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update
+from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .paths import default_runtime_dir
 from .assets_fetch import download_missing_paqs
 
