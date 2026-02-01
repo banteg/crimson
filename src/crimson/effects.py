@@ -261,7 +261,7 @@ class ParticlePool:
             entry.age = alpha
             entry.scale_x = shade
             entry.scale_y = shade
-            entry.scale_z = shade
+            # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
 
             alive = entry.intensity > (0.0 if style == 0 else 0.8)
             if not alive:
