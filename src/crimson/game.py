@@ -195,6 +195,8 @@ class QuestsMenuView:
         self._check_off: rl.Texture2D | None = None
         self._button_sm: rl.Texture2D | None = None
         self._button_md: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._back_button = UiButtonState("Back")
 
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
@@ -227,11 +229,13 @@ class QuestsMenuView:
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
         self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
 
         self._action = None
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
         self._cursor_pulse_time = 0.0
+        self._back_button = UiButtonState("Back")
 
         # Ensure the quest registry is populated so titles render.
         # (The package import registers all tier builders.)
@@ -250,6 +254,7 @@ class QuestsMenuView:
                 pass
             self._dirty = False
         self._ground = None
+        self._button_textures = None
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -286,9 +291,26 @@ class QuestsMenuView:
         if self._hardcore_checkbox_clicked(layout):
             return
 
-        if self._back_button_clicked(layout):
-            self._action = "open_play_game"
-            return
+        textures = self._button_textures
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
+            back_x = layout["list_x"] + QUEST_BACK_BUTTON_X_OFFSET
+            back_y = self._rows_y0(layout) + QUEST_BACK_BUTTON_Y_OFFSET
+            dt_ms = min(float(dt), 0.1) * 1000.0
+            font = self._ensure_small_font()
+            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+            mouse = rl.get_mouse_position()
+            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            if button_update(
+                self._back_button,
+                x=float(back_x),
+                y=float(back_y),
+                width=float(back_w),
+                dt_ms=float(dt_ms),
+                mouse=mouse,
+                click=bool(click),
+            ):
+                self._action = "open_play_game"
+                return
 
         # Quick-select row numbers 1..0 (10).
         row_from_key = self._digit_row_pressed()
@@ -394,20 +416,6 @@ class QuestsMenuView:
                 config.data["hardcore_flag"] = 0
             return True
         return False
-
-    def _back_button_clicked(self, layout: dict[str, float]) -> bool:
-        tex = self._button_sm
-        if tex is None:
-            tex = self._button_md
-        if tex is None:
-            return False
-        x = layout["list_x"] + QUEST_BACK_BUTTON_X_OFFSET
-        y = self._rows_y0(layout) + QUEST_BACK_BUTTON_Y_OFFSET
-        w = float(tex.width)
-        h = float(tex.height)
-        mouse = rl.get_mouse_position()
-        hovered = x <= mouse.x <= x + w and y <= mouse.y <= y + h
-        return hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
 
     @staticmethod
     def _digit_row_pressed() -> int | None:
@@ -653,28 +661,12 @@ class QuestsMenuView:
             draw_small_text(font, "(completed/games)", header_x, header_y, 1.0, base_color)
 
         # Back button.
-        button = self._button_sm or self._button_md
-        if button is not None:
+        textures = self._button_textures
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             back_x = list_x + QUEST_BACK_BUTTON_X_OFFSET
             back_y = y0 + QUEST_BACK_BUTTON_Y_OFFSET
-            back_w = float(button.width)
-            back_h = float(button.height)
-            mouse = rl.get_mouse_position()
-            hovered = back_x <= mouse.x <= back_x + back_w and back_y <= mouse.y <= back_y + back_h
-            rl.draw_texture_pro(
-                button,
-                rl.Rectangle(0.0, 0.0, float(button.width), float(button.height)),
-                rl.Rectangle(back_x, back_y, back_w, back_h),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
-            label = "Back"
-            label_w = measure_small_text_width(font, label, 1.0)
-            text_x = back_x + (back_w - label_w) * 0.5 + 1.0
-            text_y = back_y + 10.0
-            text_alpha = 255 if hovered else 179
-            draw_small_text(font, label, text_x, text_y, 1.0, rl.Color(255, 255, 255, text_alpha))
+            back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+            button_draw(textures, font, self._back_button, x=float(back_x), y=float(back_y), width=float(back_w), scale=1.0)
 
     def _draw_sign(self) -> None:
         assets = self._assets
@@ -1269,8 +1261,9 @@ class QuestResultsView:
             self._rank_index = None
 
         cache = _ensure_texture_cache(self._state)
-        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
+        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._record = record
         self._breakdown = breakdown
         self._breakdown_anim = QuestResultsBreakdownAnim.start()
@@ -1312,12 +1305,12 @@ class QuestResultsView:
         if record is None or outcome is None or breakdown is None:
             return
 
-        tex = self._button_tex
-        if tex is None:
+        textures = self._button_textures
+        if textures is None or (textures.button_sm is None and textures.button_md is None):
             return
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        button_w = float(tex.width) * scale
-        button_h = float(tex.height) * scale
+        button_w = button_width(None, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
+        button_h = 32.0 * scale
         gap_x = 18.0 * scale
         gap_y = 12.0 * scale
         x0 = 32.0
@@ -1535,12 +1528,11 @@ class QuestResultsView:
             y += 16.0
             draw_small_text(font, self._unlock_perk_name, 32.0, y, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
-        tex = self._button_tex
         textures = self._button_textures
-        if tex is not None and textures is not None:
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = float(tex.width) * scale
-            button_h = float(tex.height) * scale
+            button_w = button_width(None, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
+            button_h = 32.0 * scale
             gap_x = 18.0 * scale
             gap_y = 12.0 * scale
             x0 = 32.0
@@ -1629,8 +1621,9 @@ class QuestFailedView:
                 self._quest_title = ""
 
         cache = _ensure_texture_cache(self._state)
-        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
+        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
 
     def close(self) -> None:
         self._ground = None
@@ -1662,12 +1655,12 @@ class QuestFailedView:
             self._action = "open_quests"
             return
 
-        tex = self._button_tex
-        if tex is None or outcome is None:
+        textures = self._button_textures
+        if outcome is None or textures is None or (textures.button_sm is None and textures.button_md is None):
             return
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        button_w = float(tex.width) * scale
-        button_h = float(tex.height) * scale
+        button_w = button_width(None, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+        button_h = 32.0 * scale
         gap_x = 18.0 * scale
         x0 = 32.0
         y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
@@ -1748,12 +1741,11 @@ class QuestFailedView:
             y += 18.0
             draw_small_text(font, f"XP: {int(outcome.experience)}", 32.0, y, 1.0, text_color)
 
-        tex = self._button_tex
         textures = self._button_textures
-        if tex is not None and textures is not None:
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = float(tex.width) * scale
-            button_h = float(tex.height) * scale
+            button_w = button_width(None, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+            button_h = 32.0 * scale
             gap_x = 18.0 * scale
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
@@ -1829,8 +1821,9 @@ class HighScoresView:
         self._main_menu_button = UiButtonState("Main menu", force_wide=True)
 
         cache = _ensure_texture_cache(self._state)
-        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
+        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
 
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
@@ -1885,11 +1878,11 @@ class HighScoresView:
             self._action = "back_to_previous"
             return
 
-        tex = self._button_tex
-        if tex is not None:
+        textures = self._button_textures
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = float(tex.width) * scale
-            button_h = float(tex.height) * scale
+            button_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            button_h = 32.0 * scale
             gap_x = 18.0 * scale
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
@@ -1998,12 +1991,11 @@ class HighScoresView:
                 draw_small_text(font, value, 320.0, y, 1.0, color)
                 y += row_step
 
-        tex = self._button_tex
         textures = self._button_textures
-        if tex is not None and textures is not None:
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = float(tex.width) * scale
-            button_h = float(tex.height) * scale
+            button_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            button_h = 32.0 * scale
             gap_x = 18.0 * scale
             x0 = 32.0
             y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale

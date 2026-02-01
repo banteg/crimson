@@ -9,6 +9,7 @@ from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ...debug import debug_enabled
+from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
@@ -54,6 +55,7 @@ class PlayGameMenuView(PanelMenuView):
         self._small_font: SmallFontData | None = None
         self._button_sm: rl.Texture2D | None = None
         self._button_md: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
         self._drop_on: rl.Texture2D | None = None
         self._drop_off: rl.Texture2D | None = None
 
@@ -62,17 +64,20 @@ class PlayGameMenuView(PanelMenuView):
 
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
         self._tooltip_ms: dict[str, int] = {}
+        self._mode_buttons: dict[str, UiButtonState] = {}
 
     def open(self) -> None:
         super().open()
         cache = self._ensure_cache()
         self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
         self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._player_list_open = False
         self._dirty = False
         self._tooltip_ms.clear()
+        self._mode_buttons.clear()
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -133,14 +138,24 @@ class PlayGameMenuView(PanelMenuView):
         if consumed_click:
             return
 
-        # Mode buttons (disabled while the player dropdown is open).
-        if self._player_list_open:
-            return
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        button_enabled = not self._player_list_open
+
         y = base_y
         entries, y_step, y_start, y_end = self._mode_entries()
         y += y_start * scale
         for mode in entries:
-            clicked, hovered = self._update_mode_button(mode, base_x, y, scale)
+            clicked, hovered = self._update_mode_button(
+                mode,
+                base_x,
+                y,
+                scale,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+                enabled=button_enabled,
+            )
             self._update_tooltip_timer(mode.key, hovered, dt_ms)
             if clicked:
                 self._activate_mode(mode)
@@ -323,31 +338,33 @@ class PlayGameMenuView(PanelMenuView):
         y_end = y_start + y_step * float(len(entries))
         return entries, y_step, y_start, y_end
 
-    def _button_tex_for_label(self, label: str, scale: float) -> rl.Texture2D | None:
-        md = self._button_md
-        sm = self._button_sm
-        if md is None:
-            return sm
-        if sm is None:
-            return md
+    def _mode_button_state(self, mode: _PlayGameModeEntry) -> UiButtonState:
+        state = self._mode_buttons.get(mode.key)
+        if state is None:
+            state = UiButtonState(mode.label)
+            self._mode_buttons[mode.key] = state
+        else:
+            state.label = mode.label
+        return state
 
-        # `ui_button_update` picks between button sizes based on rendered label width.
+    def _update_mode_button(
+        self,
+        mode: _PlayGameModeEntry,
+        x: float,
+        y: float,
+        scale: float,
+        *,
+        dt_ms: int,
+        mouse: rl.Vector2,
+        click: bool,
+        enabled: bool,
+    ) -> tuple[bool, bool]:
+        state = self._mode_button_state(mode)
+        state.enabled = bool(enabled)
         font = self._ensure_small_font()
-        label_w = measure_small_text_width(font, label, 1.0 * scale)
-        return sm if label_w < 40.0 * scale else md
-
-    def _mode_button_rect(self, label: str, x: float, y: float, scale: float) -> rl.Rectangle:
-        tex = self._button_tex_for_label(label, scale)
-        if tex is None:
-            return rl.Rectangle(x, y, 145.0 * scale, 32.0 * scale)
-        return rl.Rectangle(x, y, float(tex.width) * scale, float(tex.height) * scale)
-
-    def _update_mode_button(self, mode: _PlayGameModeEntry, x: float, y: float, scale: float) -> tuple[bool, bool]:
-        rect = self._mode_button_rect(mode.label, x, y, scale)
-        mouse = rl.get_mouse_position()
-        hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-        clicked = hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-        return clicked, hovered
+        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
+        clicked = button_update(state, x=x, y=y, width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click))
+        return clicked, state.hovered
 
     def _activate_mode(self, mode: _PlayGameModeEntry) -> None:
         if mode.game_mode is not None:
@@ -556,32 +573,15 @@ class PlayGameMenuView(PanelMenuView):
             draw_small_text(font, item, text_x, item_y, text_scale, rl.Color(255, 255, 255, alpha))
 
     def _draw_mode_button(self, mode: _PlayGameModeEntry, x: float, y: float, scale: float) -> None:
-        tex = self._button_tex_for_label(mode.label, scale)
+        textures = self._button_textures
+        if textures is None:
+            return
+        if textures.button_sm is None and textures.button_md is None:
+            return
         font = self._ensure_small_font()
-        rect = self._mode_button_rect(mode.label, x, y, scale)
-
-        mouse = rl.get_mouse_position()
-        hovered = rect.x <= mouse.x <= rect.x + rect.width and rect.y <= mouse.y <= rect.y + rect.height
-        alpha = 255
-
-        if tex is not None:
-            rl.draw_texture_pro(
-                tex,
-                rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
-                rect,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, alpha),
-            )
-        else:
-            rl.draw_rectangle_lines(int(rect.x), int(rect.y), int(rect.width), int(rect.height), rl.Color(255, 255, 255, alpha))
-
-        label_w = measure_small_text_width(font, mode.label, 1.0 * scale)
-        # `ui_button_update` uses x centered (+1) and y = y + 10 (not fully centered).
-        text_x = rect.x + (rect.width - label_w) * 0.5 + 1.0 * scale
-        text_y = rect.y + 10.0 * scale
-        text_alpha = 255 if hovered else 179  # 0x3f800000 / 0x3f333333
-        draw_small_text(font, mode.label, text_x, text_y, 1.0 * scale, rl.Color(255, 255, 255, text_alpha))
+        state = self._mode_button_state(mode)
+        width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
+        button_draw(textures, font, state, x=x, y=y, width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, x: float, y: float, scale: float, color: rl.Color) -> None:
         status = self._state.status

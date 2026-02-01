@@ -67,8 +67,9 @@ class OptionsMenuView(PanelMenuView):
         self._rect_off = cache.get_or_load("ui_rectOff", "ui/ui_rectOff.jaz").texture
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=None, button_md=self._button_tex)
+        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._controls_button = UiButtonState("Controls", force_wide=True)
         self._active_slider = None
         self._dirty = False
