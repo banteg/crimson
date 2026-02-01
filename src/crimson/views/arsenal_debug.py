@@ -6,9 +6,11 @@ import random
 import pyray as rl
 
 from grim.audio import AudioState, shutdown_audio, update_audio
+from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
+from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
@@ -36,6 +38,7 @@ UI_ERROR = rl.Color(240, 80, 80, 255)
 
 ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER = 6.0
 ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER = 1e-3
+ARSENAL_BONUS_RING_RADIUS = 140.0
 
 DEFAULT_SPAWN_IDS = (
     SpawnId.ZOMBIE_CONST_GREY_42,
@@ -192,6 +195,45 @@ class ArsenalDebugView:
                 rand=self._world.state.rng.rand,
             )
 
+    def _spawn_all_bonuses(self) -> None:
+        player = self._player
+        if player is None:
+            return
+
+        bonus_pool = self._world.state.bonus_pool
+        bonus_pool.reset()
+
+        bonus_ids = [int(entry.bonus_id) for entry in BONUS_TABLE if int(entry.bonus_id) != int(BonusId.UNUSED)]
+        count = max(1, len(bonus_ids))
+
+        base_x = float(player.pos_x)
+        base_y = float(player.pos_y)
+        rng = self._world.state.rng.rand
+        current_weapon_id = int(player.weapon_id)
+
+        for idx, bonus_id in enumerate(bonus_ids):
+            angle = float(idx) / float(count) * math.tau
+            x = base_x + math.cos(angle) * float(ARSENAL_BONUS_RING_RADIUS)
+            y = base_y + math.sin(angle) * float(ARSENAL_BONUS_RING_RADIUS)
+
+            amount_override = -1
+            if bonus_id == int(BonusId.WEAPON) and self._weapon_ids:
+                weapon_id = int(current_weapon_id)
+                for _ in range(8):
+                    weapon_id = int(self._weapon_ids[int(rng()) % len(self._weapon_ids)])
+                    if weapon_id != current_weapon_id:
+                        break
+                amount_override = int(weapon_id)
+
+            bonus_pool.spawn_at(
+                x,
+                y,
+                bonus_id,
+                duration_override=int(amount_override),
+                world_width=float(WORLD_SIZE),
+                world_height=float(WORLD_SIZE),
+            )
+
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
@@ -208,6 +250,9 @@ class ArsenalDebugView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._reset_creatures()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
+            self._spawn_all_bonuses()
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
             self._reset_scene()
@@ -387,7 +432,7 @@ class ArsenalDebugView:
 
         y += 6.0
         self._draw_ui_text(
-            "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  T respawn  Backspace reset  Esc quit",
+            "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  T respawn  B spawn all bonuses  Backspace reset  Esc quit",
             x,
             y,
             UI_HINT,
