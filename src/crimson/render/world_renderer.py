@@ -939,21 +939,17 @@ class WorldRenderer:
                     # Native: chain reach is derived from the streak scale (`fVar29 * perk_scale * 40.0`).
                     radius = effect_scale * perk_scale * 40.0
 
-                    # Pick a stable set of targets so the arc visuals don't flicker.
-                    candidates: list[tuple[float, object]] = []
-                    for creature in self.creatures.entries:
-                        if not creature.active or float(creature.hp) <= 0.0:
+                    # Native iterates via creature_find_in_radius(pos, radius, start_index) in pool order.
+                    targets: list[object] = []
+                    for creature in self.creatures.entries[1:]:
+                        if not creature.active:
                             continue
-                        if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
+                        if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
                             continue
                         d = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y)
                         threshold = float(creature.size) * 0.142857149 + 3.0
-                        if d > radius + threshold:
-                            continue
-                        candidates.append((d, creature))
-
-                    candidates.sort(key=lambda item: item[0])
-                    targets = [creature for _d, creature in candidates[:8]]
+                        if d - radius < threshold:
+                            targets.append(creature)
 
                     inner_half = 10.0 * perk_scale * scale
                     outer_half = 14.0 * perk_scale * scale
