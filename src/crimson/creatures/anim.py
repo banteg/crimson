@@ -28,6 +28,7 @@ _CREATURE_CORPSE_FRAMES: dict[int, int] = {
     3: 1,  # spider sp1
     4: 2,  # spider sp2
     5: 7,  # trooper
+    7: 6,  # ping-pong strip corpse fallback
 }
 
 

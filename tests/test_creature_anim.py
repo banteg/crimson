@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
+from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
 from crimson.creatures.spawn import CreatureFlags
 
 
@@ -67,3 +67,8 @@ def test_creature_anim_select_frame_long_strip_mirror_flag_is_index_mirror() -> 
         16.0, base_frame=0x10, mirror_long=True, flags=CreatureFlags(0)
     )
     assert (frame, mirror_applied, mode) == (15, True, "long")
+
+
+def test_creature_corpse_frame_ping_pong_fallback_uses_native_special_entry() -> None:
+    # Native uses a special creature_type_table entry (effect id 7) for ping-pong strip corpses.
+    assert creature_corpse_frame_for_type(7) == 6
