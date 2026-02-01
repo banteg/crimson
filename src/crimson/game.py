@@ -646,12 +646,15 @@ class QuestsMenuView:
             else:
                 title = "???"
             draw_small_text(font, title, list_x + QUEST_LIST_NAME_X_OFFSET, y, 1.0, color)
+            title_w = measure_small_text_width(font, title, 1.0) if unlocked else 0.0
+            if unlocked:
+                line_y = y + 13.0
+                rl.draw_line(int(list_x), int(line_y), int(list_x + title_w + 32.0), int(line_y), color)
 
             if show_counts and unlocked:
                 counts = self._quest_counts(stage=stage, row=row)
                 if counts is not None:
                     completed, games = counts
-                    title_w = measure_small_text_width(font, title, 1.0)
                     counts_x = list_x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
                     draw_small_text(font, f"({completed}/{games})", counts_x, y, 1.0, color)
 
