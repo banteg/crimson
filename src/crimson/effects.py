@@ -209,7 +209,7 @@ class ParticlePool:
 
                 size = float(getattr(creature, "size", 50.0))
                 dist = math.hypot(float(getattr(creature, "x", 0.0)) - pos_x, float(getattr(creature, "y", 0.0)) - pos_y) - radius
-                threshold = size * 0.142857149 + 3.0
+                threshold = size * 0.14285715 + 3.0
                 if threshold < dist:
                     continue
                 return int(creature_idx)

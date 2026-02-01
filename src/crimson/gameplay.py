@@ -585,7 +585,7 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float
             continue
 
         dist = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y) - radius
-        threshold = float(creature.size) * 0.142857149 + 3.0
+        threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
         if float(creature.hitbox_size) < 5.0:
@@ -1511,9 +1511,9 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         player.reload_active = True
 
     if perk_active(player, PerkId.FASTLOADER):
-        reload_time *= 0.69999999
+        reload_time *= 0.7
     if state.bonuses.weapon_power_up > 0.0:
-        reload_time *= 0.60000002
+        reload_time *= 0.6
 
     player.reload_timer = max(0.0, reload_time)
     player.reload_timer_max = player.reload_timer

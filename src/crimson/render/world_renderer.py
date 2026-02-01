@@ -947,7 +947,7 @@ class WorldRenderer:
                         if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
                             continue
                         d = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y)
-                        threshold = float(creature.size) * 0.142857149 + 3.0
+                        threshold = float(creature.size) * 0.14285715 + 3.0
                         if d - radius < threshold:
                             targets.append(creature)
 

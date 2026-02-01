@@ -23,7 +23,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
 
     player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
 
-    assert player.experience == 759  # int(1000 - (pistol.reload_time=1.2000000477)*200)
+    assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
     assert player.ammo == 0
 

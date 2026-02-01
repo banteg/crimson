@@ -47,9 +47,9 @@ def tick_typo_spawns(
         y = math.cos(t) * 256.0 + float(world_height) * 0.5
 
         tint_t = float(elapsed_ms + 1)
-        tint_r = _clamp(tint_t * 0.0000083333334 + 0.30000001, 0.0, 1.0)
-        tint_g = _clamp(tint_t * 10000.0 + 0.30000001, 0.0, 1.0)
-        tint_b = _clamp(math.sin(tint_t * 0.0001) + 0.30000001, 0.0, 1.0)
+        tint_r = _clamp(tint_t * 0.0000083333334 + 0.3, 0.0, 1.0)
+        tint_g = _clamp(tint_t * 10000.0 + 0.3, 0.0, 1.0)
+        tint_b = _clamp(math.sin(tint_t * 0.0001) + 0.3, 0.0, 1.0)
         tint = (tint_r, tint_g, tint_b, 1.0)
 
         spawns.append(
@@ -70,4 +70,3 @@ def tick_typo_spawns(
         )
 
     return cooldown, spawns
-
