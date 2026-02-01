@@ -4706,7 +4706,7 @@
   {
     "name": "crt_atof_l",
     "address": "004610da",
-    "signature": "double crt_atof_l(void * this, void * locale, char * str)",
+    "signature": "float crt_atof_l(void * this, char * str)",
     "external": false,
     "calls_total": 3,
     "calls": ["FUN_00464be7", "_strlen", "crt_isctype"]

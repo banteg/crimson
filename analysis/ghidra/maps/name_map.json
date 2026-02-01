@@ -3512,8 +3512,8 @@
     "program": "crimsonland.exe",
     "address": "0x004610da",
     "name": "crt_atof_l",
-    "signature": "double crt_atof_l(void *locale, char *str)",
-    "comment": "CRT: parse string to double (atof-style, locale)"
+    "signature": "float crt_atof_l(char *str)",
+    "comment": "CRT-like parse string to float (atof-style)"
   },
   {
     "program": "crimsonland.exe",
