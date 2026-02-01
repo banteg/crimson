@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import SpawnEnv, SpawnSlotInit, build_spawn_plan
+from crimson.weapons import WeaponId
 from grim.rand import Crand
 
 
@@ -97,7 +98,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     # - points amount: (rand & 7) < 3 => 1000
     state.rng = _StubRand([1, 0, 0])  # type: ignore[assignment]
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
 
     creature = pool.entries[0]

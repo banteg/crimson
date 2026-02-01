@@ -358,11 +358,49 @@ class BonusPool:
             return None
 
         rng = state.rng
-        if rng.rand() % 9 != 1:
-            if not any(perk_active(player, PerkId.BONUS_MAGNET) for player in players):
-                return None
-            if rng.rand() % 10 != 2:
-                return None
+        # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
+        if players and any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players):
+            if (int(rng.rand()) & 3) < 3:
+                entry = self.spawn_at_pos(
+                    pos_x,
+                    pos_y,
+                    state=state,
+                    players=players,
+                    world_width=world_width,
+                    world_height=world_height,
+                )
+                if entry is None:
+                    return None
+
+                entry.bonus_id = int(BonusId.WEAPON)
+                weapon_id = int(weapon_pick_random_available(state))
+                entry.amount = int(weapon_id)
+                if weapon_id == int(WeaponId.PISTOL):
+                    weapon_id = int(weapon_pick_random_available(state))
+                    entry.amount = int(weapon_id)
+
+                matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
+                if matches > 1:
+                    self._clear_entry(entry)
+                    return None
+
+                if entry.amount == int(WeaponId.PISTOL) or (players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)):
+                    self._clear_entry(entry)
+                    return None
+
+                return entry
+
+        base_roll = int(rng.rand())
+        if base_roll % 9 != 1:
+            allow_without_magnet = False
+            if players and int(players[0].weapon_id) == int(WeaponId.PISTOL):
+                allow_without_magnet = int(rng.rand()) % 5 == 1
+
+            if not allow_without_magnet:
+                if not (players and perk_active(players[0], PerkId.BONUS_MAGNET)):
+                    return None
+                if int(rng.rand()) % 10 != 2:
+                    return None
 
         entry = self.spawn_at_pos(
             pos_x,
@@ -377,11 +415,9 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            for player in players:
-                if _distance_sq(pos_x, pos_y, player.pos_x, player.pos_y) < near_sq:
-                    entry.bonus_id = int(BonusId.POINTS)
-                    entry.amount = 100
-                    break
+            if players and _distance_sq(pos_x, pos_y, players[0].pos_x, players[0].pos_y) < near_sq:
+                entry.bonus_id = int(BonusId.POINTS)
+                entry.amount = 100
 
         if entry.bonus_id != int(BonusId.POINTS):
             matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
@@ -390,10 +426,9 @@ class BonusPool:
                 return None
 
         if entry.bonus_id == int(BonusId.WEAPON):
-            for player in players:
-                if entry.amount == player.weapon_id:
-                    self._clear_entry(entry)
-                    return None
+            if players and entry.amount == players[0].weapon_id:
+                self._clear_entry(entry)
+                return None
 
         return entry
 
