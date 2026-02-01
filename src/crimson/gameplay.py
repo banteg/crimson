@@ -1626,7 +1626,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
     spread_heat_base = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
-    if is_fire_bullets and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
+    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
         spread_heat_base = float(fire_bullets_weapon.spread_heat_inc)
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
@@ -1681,9 +1681,7 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         shot_count = pellets
         meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
         for _ in range(pellets):
-            angle = shot_angle
-            if pellets > 1:
-                angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
+            angle = shot_angle + float(int(state.rng.rand()) % 200 - 100) * 0.0015
             state.projectiles.spawn(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,

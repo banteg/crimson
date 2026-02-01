@@ -148,13 +148,35 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     assert player.reload_timer > 0.0
 
 
-def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
+def test_player_fire_weapon_fire_bullets_uses_weapon_spread_heat_inc_for_pellet_weapons() -> None:
+    from crimson.weapons import WEAPON_BY_ID
+
+    pool = ProjectilePool(size=64)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player.aim_dir_x = 1.0
+    player.aim_dir_y = 0.0
+
+    weapon = WEAPON_BY_ID.get(3)
+    assert weapon is not None
+    assert weapon.pellet_count == 12
+    assert weapon.spread_heat_inc is not None
+
+    start_heat = player.spread_heat
+    expected = start_heat + float(weapon.spread_heat_inc) * 1.3
+
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+
+    assert math.isclose(player.spread_heat, expected, abs_tol=1e-9)
+
+
+def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_single_pellet_weapons() -> None:
     from crimson.projectiles import ProjectileTypeId
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=3, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=2, clip_size=25, ammo=25, fire_bullets_timer=1.0)
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
