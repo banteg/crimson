@@ -992,7 +992,7 @@ class WorldRenderer:
                         x3 = tx - off_x
                         y3 = ty - off_y
 
-                        outer_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha * 0.5))
+                        outer_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                         rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
                         rl.rl_tex_coord2f(u, v0)
                         rl.rl_vertex2f(x0, y0)
