@@ -1577,7 +1577,7 @@ class WorldRenderer:
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
 
         if fx_detail_1 and src_large is not None:
-            alpha_byte = int(clamp(alpha * 0.04, 0.0, 1.0) * 255.0 + 0.5)
+            alpha_byte = int(clamp(alpha * 0.065, 0.0, 1.0) * 255.0 + 0.5)
             tint = rl.Color(255, 255, 255, alpha_byte)
             for idx, entry in enumerate(particles):
                 if not entry.active or (idx % 2) or int(entry.style_id) == 8:
