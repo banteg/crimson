@@ -169,7 +169,7 @@ QUEST_HARDCORE_CHECKBOX_X_OFFSET = 132.0
 QUEST_HARDCORE_CHECKBOX_Y_OFFSET = -12.0
 QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
 
-QUEST_BACK_BUTTON_X_OFFSET = 148.0
+QUEST_BACK_BUTTON_X_OFFSET = 138.0
 QUEST_BACK_BUTTON_Y_OFFSET = 212.0
 QUEST_PANEL_HEIGHT = 379.0
 
@@ -355,10 +355,10 @@ class QuestsMenuView:
 
     def _layout(self) -> dict[str, float]:
         # `sub_447d40` base sums:
-        #   x_sum = <ui_element_x> + (-5)
-        #   y_sum = <ui_element_y> + 185 (+ widescreen shift via ui_menu_layout_init)
-        x_sum = QUEST_MENU_BASE_X
-        y_sum = QUEST_MENU_BASE_Y + self._widescreen_y_shift
+        #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
+        #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
+        x_sum = QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X
+        y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
 
         title_x = x_sum + QUEST_TITLE_X_OFFSET
         title_y = y_sum + QUEST_TITLE_Y_OFFSET
@@ -723,7 +723,7 @@ class QuestsMenuView:
             panel,
             dst=rl.Rectangle(
                 float(QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X),
-                float(QUEST_MENU_BASE_Y + self._widescreen_y_shift),
+                float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),
                 float(MENU_PANEL_WIDTH),
                 float(QUEST_PANEL_HEIGHT),
             ),

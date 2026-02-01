@@ -38,7 +38,10 @@ MENU_ITEM_OFFSET_X = -72.0
 MENU_ITEM_OFFSET_Y = -60.0
 MENU_PANEL_WIDTH = 512.0
 MENU_PANEL_HEIGHT = 256.0
-MENU_PANEL_OFFSET_X = 20.0
+# ui_menu_assets_init:
+#   - ui_menuPanel starts with offset_x=+20 (ui_element_set_rect)
+#   - the menu-panel layout copy applies data_48fdb4 -= 116, so offset_x becomes -96
+MENU_PANEL_OFFSET_X = -96.0
 MENU_PANEL_OFFSET_Y = -82.0
 MENU_PANEL_BASE_X = -45.0
 MENU_PANEL_BASE_Y = 210.0

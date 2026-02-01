@@ -514,9 +514,9 @@ class PlayGameMenuView(PanelMenuView):
                 self._draw_mode_count(mode.key, base_x + 158.0 * scale, y + 8.0 * scale, text_scale, text_color)
             y += y_step * scale
 
-        self._draw_tooltips(entries, base_x, base_y, y_end, scale)
-        # ui_list_widget_update draws its dropdown list above subsequent UI elements.
+        # `sub_44ed80`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(drop_x, drop_y, scale)
+        self._draw_tooltips(entries, base_x, base_y, y_end, scale)
 
     def _draw_player_count(self, x: float, y: float, scale: float) -> None:
         drop_on = self._drop_on
