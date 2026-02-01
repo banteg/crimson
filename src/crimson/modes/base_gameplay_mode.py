@@ -56,6 +56,7 @@ class BaseGameplayMode:
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
 
+        self._default_game_mode_id = int(default_game_mode_id)
         self._config = config
         self._console = console
         self._base_dir = config.path.parent if config is not None else Path.cwd()
@@ -104,6 +105,16 @@ class BaseGameplayMode:
 
     def _hud_small_indicators(self) -> bool:
         return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
+
+    def _config_game_mode_id(self) -> int:
+        config = self._config
+        if config is None:
+            return int(self._default_game_mode_id)
+        try:
+            value = config.data.get("game_mode", self._default_game_mode_id)
+            return int(value or self._default_game_mode_id)
+        except Exception:
+            return int(self._default_game_mode_id)
 
     def _bind_world(self) -> None:
         self._state = self._world.state

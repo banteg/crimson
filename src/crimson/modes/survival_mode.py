@@ -18,7 +18,7 @@ from ..gameplay import PlayerInput, most_used_weapon_id_for_player, perk_selecti
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId, perk_display_description, perk_display_name
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..ui.perk_menu import (
     PerkMenuLayout,
@@ -747,6 +747,7 @@ class SurvivalMode(BaseGameplayMode):
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
             hud_alpha = _clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -757,6 +758,11 @@ class SurvivalMode(BaseGameplayMode):
                 font=self._small,
                 alpha=hud_alpha,
                 frame_dt_ms=self._last_dt_ms,
+                show_health=hud_flags.show_health,
+                show_weapon=hud_flags.show_weapon,
+                show_xp=hud_flags.show_xp,
+                show_time=hud_flags.show_time,
+                show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
             )
 

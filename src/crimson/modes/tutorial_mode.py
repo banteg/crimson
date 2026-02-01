@@ -20,7 +20,7 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..perks import PerkId, perk_display_description, perk_display_name
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_ui_scale
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode, hud_ui_scale
 from ..ui.perk_menu import (
     PerkMenuAssets,
     PerkMenuLayout,
@@ -456,6 +456,7 @@ class TutorialMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if (not perk_menu_active) and self._hud_assets is not None:
+            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -466,6 +467,11 @@ class TutorialMode(BaseGameplayMode):
                 font=self._small,
                 alpha=1.0,
                 frame_dt_ms=self._last_dt_ms,
+                show_health=hud_flags.show_health,
+                show_weapon=hud_flags.show_weapon,
+                show_xp=hud_flags.show_xp,
+                show_time=hud_flags.show_time,
+                show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
             )
 

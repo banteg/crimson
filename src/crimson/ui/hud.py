@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text
+from ..game_modes import GameMode
 from ..gameplay import BonusHudState, PlayerState, survival_level_threshold
 from ..weapons import WEAPON_BY_ID
 
@@ -73,6 +74,60 @@ class HudAssets:
     clock_pointer: rl.Texture | None
     bonuses: rl.Texture | None
     missing: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class HudRenderFlags:
+    show_health: bool
+    show_weapon: bool
+    show_xp: bool
+    show_time: bool
+    show_quest_hud: bool
+
+
+def hud_flags_for_game_mode(game_mode_id: int) -> HudRenderFlags:
+    """Match `hud_update_and_render` (0x0041ca90) flag mapping."""
+
+    mode = int(game_mode_id)
+    if mode == int(GameMode.QUESTS):
+        return HudRenderFlags(
+            show_health=True,
+            show_weapon=True,
+            show_xp=True,
+            show_time=False,
+            show_quest_hud=True,
+        )
+    if mode == int(GameMode.SURVIVAL):
+        return HudRenderFlags(
+            show_health=True,
+            show_weapon=True,
+            show_xp=True,
+            show_time=False,
+            show_quest_hud=False,
+        )
+    if mode == int(GameMode.RUSH):
+        return HudRenderFlags(
+            show_health=True,
+            show_weapon=False,
+            show_xp=False,
+            show_time=True,
+            show_quest_hud=False,
+        )
+    if mode == int(GameMode.TYPO):
+        return HudRenderFlags(
+            show_health=True,
+            show_weapon=False,
+            show_xp=True,
+            show_time=True,
+            show_quest_hud=False,
+        )
+    return HudRenderFlags(
+        show_health=False,
+        show_weapon=False,
+        show_xp=False,
+        show_time=False,
+        show_quest_hud=False,
+    )
 
 
 def hud_ui_scale(screen_w: float, screen_h: float) -> float:
@@ -216,6 +271,7 @@ def draw_hud_overlay(
     font: SmallFontData | None = None,
     alpha: float = 1.0,
     frame_dt_ms: float | None = None,
+    show_health: bool = True,
     show_weapon: bool = True,
     show_xp: bool = True,
     show_time: bool = False,
@@ -269,7 +325,7 @@ def draw_hud_overlay(
         max_y = max(max_y, dst.y + dst.height)
 
     # Pulsing heart.
-    if assets.life_heart is not None:
+    if show_health and assets.life_heart is not None:
         t = max(0.0, elapsed_ms) / 1000.0
         src = rl.Rectangle(0.0, 0.0, float(assets.life_heart.width), float(assets.life_heart.height))
         if player_count == 1:
@@ -305,7 +361,7 @@ def draw_hud_overlay(
             max_y = max(max_y, dst.y + dst.height)
 
     # Health bar.
-    if assets.ind_life is not None:
+    if show_health and assets.ind_life is not None:
         bar_x, bar_y = HUD_HEALTH_BAR_POS
         bar_w, bar_h = HUD_HEALTH_BAR_SIZE
         bg_src = rl.Rectangle(0.0, 0.0, float(assets.ind_life.width), float(assets.ind_life.height))

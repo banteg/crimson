@@ -21,7 +21,7 @@ from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.spawns import tick_typo_spawns
 from ..typo.typing import TypingBuffer
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from .base_gameplay_mode import BaseGameplayMode
 
@@ -437,6 +437,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_name_labels()
 
         if show_gameplay_ui and self._hud_assets is not None:
+            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -445,9 +446,11 @@ class TypoShooterMode(BaseGameplayMode):
                 elapsed_ms=float(self._typo.elapsed_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                show_weapon=False,
-                show_xp=True,
-                show_time=True,
+                show_health=hud_flags.show_health,
+                show_weapon=hud_flags.show_weapon,
+                show_xp=hud_flags.show_xp,
+                show_time=hud_flags.show_time,
+                show_quest_hud=hud_flags.show_quest_hud,
                 small_indicators=self._hud_small_indicators(),
             )
 

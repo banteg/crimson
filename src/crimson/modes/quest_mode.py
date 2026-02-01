@@ -23,7 +23,7 @@ from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import (
     PerkMenuAssets,
     PerkMenuLayout,
@@ -846,6 +846,7 @@ class QuestMode(BaseGameplayMode):
             total = int(self._quest.total_spawn_count)
             kills = int(self._creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
+            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -854,9 +855,11 @@ class QuestMode(BaseGameplayMode):
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                show_xp=True,
-                show_time=False,
-                show_quest_hud=True,
+                show_health=hud_flags.show_health,
+                show_weapon=hud_flags.show_weapon,
+                show_xp=hud_flags.show_xp,
+                show_time=hud_flags.show_time,
+                show_quest_hud=hud_flags.show_quest_hud,
                 quest_progress_ratio=quest_progress_ratio,
                 small_indicators=self._hud_small_indicators(),
             )

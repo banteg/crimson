@@ -167,8 +167,8 @@ In our port:
 
 Parity items:
 
-* [ ] Identify which config bytes map to `reserved0._24_4_` (HUD preset) and to `cv_uiSmallIndicators`
-* [ ] Derive the same render flags and pass them into HUD rendering consistently
+* [x] Identify which config bytes map to `reserved0._24_4_` (HUD preset) and to `cv_uiSmallIndicators`
+* [x] Derive the same render flags and pass them into HUD rendering consistently
 * [x] Add a “small indicators” toggle and implement the small-mode branch for bonus slots (it changes both panel geometry and whether text shows)
 
 ---
@@ -218,7 +218,7 @@ Parity item(s):
 ### Next
 
 * [x] Weapon aux timer overlay (weapon name popup)
-* [ ] Wire config-driven HUD presets (`reserved0._24_4_` equivalent) and `uiSmallIndicators`
+* [x] Wire config-driven HUD presets (`reserved0._24_4_` equivalent) and `uiSmallIndicators`
 
 ### Later / conditional
 
