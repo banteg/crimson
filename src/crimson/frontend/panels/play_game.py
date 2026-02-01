@@ -471,19 +471,24 @@ class PlayGameMenuView(PanelMenuView):
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
-        # Panel title label from ui_itemTexts (same as OptionsMenuView).
+        # `sub_44ed80`: title label at (xy - 64, var_1c - 8), size 128x32.
+        title_w = 128.0
+        title_h = MENU_LABEL_ROW_HEIGHT
+        title_x = base_x - 64.0 * scale
+        title_y = base_y - 8.0 * scale
+
         if labels_tex is not None:
             src = rl.Rectangle(
                 0.0,
                 float(MENU_LABEL_ROW_PLAY_GAME) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
-                MENU_LABEL_ROW_HEIGHT,
+                title_w,
+                title_h,
             )
             dst = rl.Rectangle(
-                panel_left + 212.0 * scale,
-                panel_top + 32.0 * scale,
-                MENU_LABEL_WIDTH * scale,
-                MENU_LABEL_ROW_HEIGHT * scale,
+                title_x,
+                title_y,
+                title_w * scale,
+                title_h * scale,
             )
             MenuView._draw_ui_quad(
                 texture=labels_tex,
@@ -494,7 +499,7 @@ class PlayGameMenuView(PanelMenuView):
                 tint=rl.WHITE,
             )
         else:
-            rl.draw_text(self._title, int(panel_left + 212.0 * scale), int(panel_top + 32.0 * scale), int(24 * scale), rl.WHITE)
+            rl.draw_text(self._title, int(title_x), int(title_y), int(24 * scale), rl.WHITE)
 
         entries, y_step, y_start, y_end = self._mode_entries()
         y = base_y + y_start * scale

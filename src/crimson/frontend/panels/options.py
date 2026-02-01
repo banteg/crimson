@@ -126,7 +126,8 @@ class OptionsMenuView(PanelMenuView):
 
         textures = self._button_textures
         if textures is not None and textures.button_md is not None:
-            x = label_x - 8.0 * scale
+            # `sub_4475d0`: controls button shares the slider column.
+            x = slider_x
             y = base_y + 155.0 * scale
             dt_ms = min(float(dt), 0.1) * 1000.0
             mouse = rl.get_mouse_position()
@@ -209,7 +210,8 @@ class OptionsMenuView(PanelMenuView):
         panel_left = panel_x - origin_x
         panel_top = panel_y - origin_y
         base_x = panel_left + 212.0 * panel_scale
-        base_y = panel_top + 32.0 * panel_scale
+        # `sub_4475d0`: title label is anchored at panel_top + 40.
+        base_y = panel_top + 40.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         slider_x = label_x + 130.0 * panel_scale
         return {
@@ -303,16 +305,17 @@ class OptionsMenuView(PanelMenuView):
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         if labels_tex is not None:
+            title_w = 128.0
             src = rl.Rectangle(
                 0.0,
                 float(MENU_LABEL_ROW_OPTIONS) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
+                title_w,
                 MENU_LABEL_ROW_HEIGHT,
             )
             dst = rl.Rectangle(
                 base_x,
                 base_y,
-                MENU_LABEL_WIDTH * scale,
+                title_w * scale,
                 MENU_LABEL_ROW_HEIGHT * scale,
             )
             MenuView._draw_ui_quad(
@@ -370,7 +373,7 @@ class OptionsMenuView(PanelMenuView):
         button = self._button_tex
         textures = self._button_textures
         if button is not None and textures is not None:
-            button_x = label_x - 8.0 * scale
+            button_x = slider_x
             button_y = base_y + 155.0 * scale
             button_w = button_width(font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide)
             button_draw(textures, font, self._controls_button, x=button_x, y=button_y, width=button_w, scale=scale)
