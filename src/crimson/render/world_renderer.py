@@ -922,6 +922,7 @@ class WorldRenderer:
                             origin = rl.Vector2(size * 0.5, size * 0.5)
                             rl.draw_texture_pro(particles_texture, src, dst, origin, float(angle * _RAD_TO_DEG), tint)
             else:
+                # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
                 core_tint = self._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 self._draw_atlas_sprite(
                     texture,
@@ -935,13 +936,8 @@ class WorldRenderer:
                 )
 
                 if is_ion:
-                    if type_id == int(ProjectileTypeId.ION_RIFLE):
-                        radius = 88.0
-                    elif type_id == int(ProjectileTypeId.ION_MINIGUN):
-                        radius = 60.0
-                    else:
-                        radius = 128.0
-                    radius *= perk_scale
+                    # Native: chain reach is derived from the streak scale (`fVar29 * perk_scale * 40.0`).
+                    radius = effect_scale * perk_scale * 40.0
 
                     # Pick a stable set of targets so the arc visuals don't flicker.
                     candidates: list[tuple[float, object]] = []
