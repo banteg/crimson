@@ -614,6 +614,7 @@ def draw_hud_overlay(
         max_y = max(max_y, sy(10.0 + line_h))
 
     # Bonus HUD slots (icon + timers), slide in/out from the left.
+    bonus_bottom_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
     if bonus_hud is not None:
         bonus_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
         bonus_panel_alpha = alpha * 0.7
@@ -695,5 +696,61 @@ def draw_hud_overlay(
 
             bonus_y += HUD_BONUS_SPACING
             max_y = max(max_y, sy(bonus_y))
+        bonus_bottom_y = bonus_y
+
+    # Weapon aux timer overlay (weapon name popup).
+    if assets.ind_panel is not None and assets.wicons is not None:
+        aux_base_y = float(bonus_bottom_y)
+        aux_step_y = 32.0
+        for idx, hud_player in enumerate(hud_players):
+            aux_timer = float(hud_player.aux_timer)
+            if aux_timer <= 0.0:
+                continue
+
+            fade = 2.0 - aux_timer if aux_timer > 1.0 else aux_timer
+            fade = max(0.0, min(1.0, fade)) * alpha
+            if fade <= 1e-3:
+                continue
+
+            panel_alpha = fade * 0.8
+            text_alpha = fade
+
+            panel_x = -12.0
+            panel_y = (aux_base_y - 17.0) + float(idx) * aux_step_y
+            panel_w = 182.0
+            panel_h = 53.0
+
+            src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
+            dst = rl.Rectangle(sx(panel_x), sy(panel_y), sx(panel_w), sy(panel_h))
+            rl.draw_texture_pro(
+                assets.ind_panel,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * panel_alpha)),
+            )
+            max_y = max(max_y, dst.y + dst.height)
+
+            icon_index = _weapon_icon_index(hud_player.weapon_id)
+            if icon_index is not None:
+                src = _weapon_icon_src(assets.wicons, icon_index)
+                icon_x = 105.0
+                icon_y = (aux_base_y - 5.0) + float(idx) * aux_step_y
+                dst = rl.Rectangle(sx(icon_x), sy(icon_y), sx(60.0), sy(30.0))
+                rl.draw_texture_pro(
+                    assets.wicons,
+                    src,
+                    dst,
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.Color(255, 255, 255, int(255 * panel_alpha)),
+                )
+                max_y = max(max_y, dst.y + dst.height)
+
+            weapon_entry = WEAPON_BY_ID.get(int(hud_player.weapon_id))
+            weapon_name = weapon_entry.name if weapon_entry is not None else f"weapon_{int(hud_player.weapon_id)}"
+            weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
+            _draw_text(font, weapon_name, sx(8.0), sy((aux_base_y + 1.0) + float(idx) * aux_step_y), text_scale, weapon_color)
 
     return max_y

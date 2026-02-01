@@ -144,7 +144,7 @@ We *already* have `PlayerState.aux_timer` and we update it in gameplay (`gamepla
 
 Parity item:
 
-* [ ] Add the aux-timer panel rendering in `draw_hud_overlay()` (or a helper), matching:
+* [x] Add the aux-timer panel rendering in `draw_hud_overlay()` (or a helper), matching:
 
   * panel at approx `x=-12`, y per-player
   * icon at x≈105, and weapon name at x≈8 (see decompile block after bonus slots)
@@ -217,7 +217,7 @@ Parity item(s):
 
 ### Next
 
-* [ ] Weapon aux timer overlay (weapon name popup)
+* [x] Weapon aux timer overlay (weapon name popup)
 * [ ] Wire config-driven HUD presets (`reserved0._24_4_` equivalent) and `uiSmallIndicators`
 
 ### Later / conditional
