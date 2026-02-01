@@ -13,8 +13,10 @@ from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.view import ViewContext
 
+from ..gameplay import _creature_find_in_radius, perk_count_get
 from ..game_world import GameWorld
 from ..persistence.highscores import HighScoreRecord
+from ..perks import PerkId
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, draw_target_health_bar, load_hud_assets
 
@@ -117,9 +119,21 @@ class BaseGameplayMode:
             return int(self._default_game_mode_id)
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
-        target_idx = int(getattr(self._player, "evil_eyes_target_creature", -1))
         creatures = getattr(self._creatures, "entries", [])
-        if not (0 <= target_idx < len(creatures)):
+        if not creatures:
+            return
+
+        if perk_count_get(self._player, PerkId.DOCTOR) <= 0:
+            return
+
+        target_idx = _creature_find_in_radius(
+            creatures,
+            pos_x=float(getattr(self._player, "aim_x", 0.0)),
+            pos_y=float(getattr(self._player, "aim_y", 0.0)),
+            radius=12.0,
+            start_index=0,
+        )
+        if target_idx == -1:
             return
 
         creature = creatures[target_idx]

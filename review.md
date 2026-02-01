@@ -177,6 +177,8 @@ Parity items:
 
 `hud_update_and_render` also draws a floating progress bar above a target creature when `DAT_00487268 != -1`.
 
+In the decompile, `DAT_00487268` is set when `perk_id_doctor` is active and `creature_find_in_radius(aim, 12.0, 0)` returns a creature index (the same “aim hover” target is also computed for Pyrokinetic/Evil Eyes, but the **health bar itself is Doctor-driven**).
+
 If we don’t have that mechanic yet (selection/target tracking), it may be fine to defer, but for full HUD parity it’s a real item:
 
 * [x] Target creature health bar above world-space creature (camera offset + creature pos)
