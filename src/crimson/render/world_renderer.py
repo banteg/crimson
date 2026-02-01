@@ -955,8 +955,8 @@ class WorldRenderer:
                     candidates.sort(key=lambda item: item[0])
                     targets = [creature for _d, creature in candidates[:8]]
 
-                    inner = 10.0 * perk_scale * scale
-                    outer = 14.0 * perk_scale * scale
+                    inner_half = 10.0 * perk_scale * scale
+                    outer_half = 14.0 * perk_scale * scale
                     u = 0.625
                     v0 = 0.0
                     v1 = 0.25
@@ -980,7 +980,7 @@ class WorldRenderer:
                         py = nx
 
                         # Outer strip (softer).
-                        half = outer * 0.5
+                        half = outer_half
                         off_x = px * half
                         off_y = py * half
                         x0 = sx - off_x
@@ -1004,7 +1004,7 @@ class WorldRenderer:
                         rl.rl_vertex2f(x3, y3)
 
                         # Inner strip (brighter).
-                        half = inner * 0.5
+                        half = inner_half
                         off_x = px * half
                         off_y = py * half
                         x0 = sx - off_x
