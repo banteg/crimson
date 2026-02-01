@@ -112,7 +112,7 @@ class SecondaryProjectile:
     vel_y: float = 0.0
     type_id: int = 0
     owner_id: int = -100
-    lifetime: float = 0.0
+    trail_timer: float = 0.0
     target_id: int = -1
 
 
@@ -1003,12 +1003,13 @@ class SecondaryProjectilePool:
         entry.pos_y = float(pos_y)
         entry.owner_id = int(owner_id)
         entry.target_id = -1
+        entry.trail_timer = 0.0
 
         if entry.type_id == 3:
+            # Detonation state: `vel_x` becomes the expansion timer and `vel_y` the scale.
             entry.vel_x = 0.0
-            entry.vel_y = 0.0
+            entry.vel_y = float(time_to_live)
             entry.speed = float(time_to_live)
-            entry.lifetime = 0.0
             return index
 
         # Effects.md: vel = cos/sin(angle - PI/2) * 90 (190 for type 2).
@@ -1020,7 +1021,6 @@ class SecondaryProjectilePool:
         entry.vel_x = vx
         entry.vel_y = vy
         entry.speed = float(time_to_live)
-        entry.lifetime = 0.0
         return index
 
     def iter_active(self) -> list[SecondaryProjectile]:
@@ -1055,6 +1055,7 @@ class SecondaryProjectilePool:
         rand = _rng_zero
         freeze_active = False
         effects = None
+        sprite_effects = None
         sfx_queue = None
         if runtime_state is not None:
             rng = getattr(runtime_state, "rng", None)
@@ -1066,6 +1067,7 @@ class SecondaryProjectilePool:
                 freeze_active = True
 
             effects = getattr(runtime_state, "effects", None)
+            sprite_effects = getattr(runtime_state, "sprite_effects", None)
             sfx_queue = getattr(runtime_state, "sfx_queue", None)
 
         for entry in self._entries:
@@ -1073,9 +1075,10 @@ class SecondaryProjectilePool:
                 continue
 
             if entry.type_id == 3:
-                entry.lifetime += dt * 3.0
-                t = entry.lifetime
-                scale = entry.speed
+                # Detonation: `vel_x` becomes the expansion timer (0..1) and `vel_y` the scale.
+                entry.vel_x += dt * 3.0
+                t = float(entry.vel_x)
+                scale = float(entry.vel_y)
                 if t > 1.0:
                     if fx_queue is not None:
                         fx_queue.add(
@@ -1155,6 +1158,23 @@ class SecondaryProjectilePool:
 
                 entry.speed -= dt * 0.5
 
+            # Rocket smoke trail (`trail_timer` in crimsonland.exe).
+            entry.trail_timer -= (abs(float(entry.vel_x)) + abs(float(entry.vel_y))) * dt * 0.01
+            if entry.trail_timer < 0.0:
+                dir_x = math.cos(float(entry.angle) - math.pi / 2.0)
+                dir_y = math.sin(float(entry.angle) - math.pi / 2.0)
+                spawn_x = float(entry.pos_x) - dir_x * 9.0
+                spawn_y = float(entry.pos_y) - dir_y * 9.0
+                vel_x = math.cos(float(entry.angle) + math.pi / 2.0) * 90.0
+                vel_y = math.sin(float(entry.angle) + math.pi / 2.0) * 90.0
+                if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                    sprite_id = sprite_effects.spawn(pos_x=spawn_x, pos_y=spawn_y, vel_x=vel_x, vel_y=vel_y, scale=14.0)
+                    try:
+                        sprite_effects.entries[int(sprite_id)].color_a = 0.25
+                    except Exception:
+                        pass
+                entry.trail_timer = 0.06
+
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
             for idx, creature in enumerate(creatures):
@@ -1207,16 +1227,70 @@ class SecondaryProjectilePool:
                             rand=rand,
                         )
 
+                if entry.type_id == 1 and effects is not None and hasattr(effects, "spawn_explosion_burst") and int(detail_preset) > 2:
+                    effects.spawn_explosion_burst(
+                        pos_x=float(entry.pos_x),
+                        pos_y=float(entry.pos_y),
+                        scale=0.4,
+                        rand=rand,
+                        detail_preset=int(detail_preset),
+                    )
+
                 entry.type_id = 3
                 entry.vel_x = 0.0
-                entry.vel_y = 0.0
-                entry.speed = det_scale
-                entry.lifetime = 0.0
+                entry.vel_y = float(det_scale)
+                entry.trail_timer = 0.0
+
+                # Extra debris and scorch decals on detonation.
+                if not freeze_active:
+                    extra_decals = 0
+                    extra_radius = 0.0
+                    if entry.type_id == 3:
+                        # NOTE: entry.type_id is already 3 here; use det_scale based on prior type.
+                        if det_scale == 1.0:
+                            extra_decals = 0x14
+                            extra_radius = 90.0
+                        elif det_scale == 0.35:
+                            extra_decals = 10
+                            extra_radius = 63.0
+                        elif det_scale == 0.25:
+                            extra_decals = 3
+                            extra_radius = 44.0
+                    if fx_queue is not None and extra_decals > 0:
+                        cx = float(creatures[hit_idx].x)
+                        cy = float(creatures[hit_idx].y)
+                        for _ in range(int(extra_decals)):
+                            angle = float(int(rand()) % 0x274) * 0.01
+                            radius = float(int(rand()) % max(1, int(extra_radius)))
+                            fx_queue.add_random(
+                                pos_x=cx + math.cos(angle) * radius,
+                                pos_y=cy + math.sin(angle) * radius,
+                                rand=rand,
+                            )
+
+                    if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                        step = math.tau / 10.0
+                        for idx in range(10):
+                            mag = float(int(rand()) % 800) * 0.1
+                            ang = float(idx) * step
+                            vel_x = math.cos(ang) * mag
+                            vel_y = math.sin(ang) * mag
+                            sprite_id = sprite_effects.spawn(
+                                pos_x=float(entry.pos_x),
+                                pos_y=float(entry.pos_y),
+                                vel_x=vel_x,
+                                vel_y=vel_y,
+                                scale=14.0,
+                            )
+                            try:
+                                sprite_effects.entries[int(sprite_id)].color_a = 0.37
+                            except Exception:
+                                pass
+
                 continue
 
             if entry.speed <= 0.0:
                 entry.type_id = 3
                 entry.vel_x = 0.0
-                entry.vel_y = 0.0
-                entry.speed = 0.5
-                entry.lifetime = 0.0
+                entry.vel_y = 0.5
+                entry.trail_timer = 0.0

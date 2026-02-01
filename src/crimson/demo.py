@@ -690,8 +690,8 @@ class DemoView:
                 rl.draw_circle(int(sx), int(sy), radius, rl.Color(200, 120, 255, 255))
                 continue
             if proj.type_id == 3:
-                t = _clamp(proj.lifetime, 0.0, 1.0)
-                radius = proj.speed * t * 80.0
+                t = _clamp(proj.vel_x, 0.0, 1.0)
+                radius = proj.vel_y * t * 80.0
                 alpha = int((1.0 - t) * 180.0)
                 color = rl.Color(200, 120, 255, alpha)
                 rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)

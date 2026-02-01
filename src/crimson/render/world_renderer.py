@@ -1525,11 +1525,53 @@ class WorldRenderer:
             rl.draw_circle(int(sx), int(sy), max(1.0, 12.0 * scale), rl.Color(200, 120, 255, int(255 * alpha + 0.5)))
             return
         if proj_type == 3:
-            t = clamp(float(getattr(proj, "lifetime", 0.0)), 0.0, 1.0)
-            radius = float(getattr(proj, "speed", 1.0)) * t * 80.0
-            alpha_byte = int(clamp((1.0 - t) * 180.0 * alpha, 0.0, 255.0) + 0.5)
-            color = rl.Color(200, 120, 255, alpha_byte)
-            rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
+            # Secondary projectile detonation visuals (secondary_projectile_update + render).
+            t = clamp(float(getattr(proj, "vel_x", 0.0)), 0.0, 1.0)
+            det_scale = float(getattr(proj, "vel_y", 1.0))
+            fade = (1.0 - t) * alpha
+            if fade <= 1e-3 or det_scale <= 1e-6:
+                return
+            if self.particles_texture is None:
+                radius = det_scale * t * 80.0
+                alpha_byte = int(clamp((1.0 - t) * 180.0 * alpha, 0.0, 255.0) + 0.5)
+                color = rl.Color(255, 180, 100, alpha_byte)
+                rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
+                return
+
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+            if atlas is None:
+                return
+            grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+            if not grid:
+                return
+            frame = int(atlas.frame)
+            col = frame % grid
+            row = frame // grid
+            cell_w = float(self.particles_texture.width) / float(grid)
+            cell_h = float(self.particles_texture.height) / float(grid)
+            src = rl.Rectangle(
+                cell_w * float(col),
+                cell_h * float(row),
+                max(0.0, cell_w - 2.0),
+                max(0.0, cell_h - 2.0),
+            )
+
+            def _draw_detonation_quad(*, size: float, alpha_mul: float) -> None:
+                a = fade * alpha_mul
+                if a <= 1e-3:
+                    return
+                dst_size = size * scale
+                if dst_size <= 1e-3:
+                    return
+                tint = self._color_from_rgba((1.0, 0.6, 0.1, a))
+                dst = rl.Rectangle(float(sx), float(sy), float(dst_size), float(dst_size))
+                origin = rl.Vector2(float(dst_size) * 0.5, float(dst_size) * 0.5)
+                rl.draw_texture_pro(self.particles_texture, src, dst, origin, 0.0, tint)
+
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            _draw_detonation_quad(size=det_scale * t * 64.0, alpha_mul=1.0)
+            _draw_detonation_quad(size=det_scale * t * 200.0, alpha_mul=0.3)
+            rl.end_blend_mode()
             return
         rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
 

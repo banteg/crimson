@@ -312,8 +312,9 @@ def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert entry.speed == 0.25
-    assert entry.lifetime == 0.0
+    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel_y, 0.25, abs_tol=1e-9)
+    assert math.isclose(entry.trail_timer, 0.0, abs_tol=1e-9)
 
     hp_after_hit = creatures[0].hp
     pool.update_pulse_gun(0.1, creatures)
@@ -332,7 +333,8 @@ def test_secondary_projectile_pool_timeout_switches_to_generic_detonation() -> N
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert entry.speed == 0.5
+    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel_y, 0.5, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
@@ -369,7 +371,8 @@ def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> N
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert entry.speed == 1.0
+    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel_y, 1.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> None:
@@ -402,10 +405,11 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert math.isclose(entry.speed, 0.35, abs_tol=1e-9)
+    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel_y, 0.35, abs_tol=1e-9)
 
     assert state.sfx_queue == ["sfx_explosion_medium"]
-    assert fx_queue.count == 3
+    assert fx_queue.count == 13
 
     pool.update_pulse_gun(0.5, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
     assert not entry.active
