@@ -81,15 +81,15 @@ In **`src/crimson/ui/hud.py`** (bonus section around **lines ~531+**):
 
 This is a good “bundle” to tackle together:
 
-* [ ] Add per-slot `slide_x` state (init `-184.0` on register, clamp to `-2.0`)
-* [ ] Stop killing slots immediately on timer expiry; let them slide out until `slide_x < -184`
-* [ ] Render progress bars:
+* [x] Add per-slot `slide_x` state (init `-184.0` on register, clamp to `-2.0`)
+* [x] Stop killing slots immediately on timer expiry; let them slide out until `slide_x < -184`
+* [x] Render progress bars:
 
   * width `100` (normal) / `32` (small)
   * ratio `timer * 0.05`
   * stacked layout when alt timer exists
-* [ ] Fix panel x/y offsets & sizes to match decompile
-* [ ] Match text behavior:
+* [x] Fix panel x/y offsets & sizes to match decompile
+* [x] Match text behavior:
 
   * only in normal indicator mode
   * white color, alpha `hud_alpha * 0.7`

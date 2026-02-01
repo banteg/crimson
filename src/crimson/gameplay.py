@@ -159,8 +159,11 @@ class BonusHudSlot:
     bonus_id: int = 0
     label: str = ""
     icon_id: int = -1
+    slide_x: float = -184.0
     timer_ref: _TimerRef | None = None
     timer_ref_alt: _TimerRef | None = None
+    timer_value: float = 0.0
+    timer_value_alt: float = 0.0
 
 
 BONUS_HUD_SLOT_COUNT = 16
@@ -199,8 +202,11 @@ class BonusHudState:
         slot.bonus_id = int(bonus_id)
         slot.label = label
         slot.icon_id = int(icon_id)
+        slot.slide_x = -184.0
         slot.timer_ref = timer_ref
         slot.timer_ref_alt = timer_ref_alt
+        slot.timer_value = 0.0
+        slot.timer_value_alt = 0.0
 
 
 @dataclass(slots=True)
@@ -2356,8 +2362,8 @@ def bonus_apply(
     return
 
 
-def bonus_hud_update(state: GameplayState, players: list[PlayerState]) -> None:
-    """Refresh HUD slots based on current timer values."""
+def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: float = 0.0) -> None:
+    """Refresh HUD slots based on current timer values + advance slide animation."""
 
     def _timer_value(ref: _TimerRef | None) -> float:
         if ref is None:
@@ -2371,16 +2377,35 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState]) -> None:
             return float(getattr(players[idx], ref.key, 0.0) or 0.0)
         return 0.0
 
-    for slot in state.bonus_hud.slots:
+    player_count = len(players)
+    dt = max(0.0, float(dt))
+
+    for slot_index, slot in enumerate(state.bonus_hud.slots):
         if not slot.active:
             continue
-        timer = _timer_value(slot.timer_ref)
-        if slot.timer_ref_alt is not None:
-            timer = max(timer, _timer_value(slot.timer_ref_alt))
-        if timer <= 0.0:
+        timer = max(0.0, _timer_value(slot.timer_ref))
+        timer_alt = max(0.0, _timer_value(slot.timer_ref_alt)) if (slot.timer_ref_alt is not None and player_count > 1) else 0.0
+        slot.timer_value = float(timer)
+        slot.timer_value_alt = float(timer_alt)
+
+        if timer > 0.0 or timer_alt > 0.0:
+            slot.slide_x += dt * 350.0
+        else:
+            slot.slide_x -= dt * 320.0
+
+        if slot.slide_x > -2.0:
+            slot.slide_x = -2.0
+
+        if slot.slide_x < -184.0 and not any(other.active for other in state.bonus_hud.slots[slot_index + 1 :]):
             slot.active = False
+            slot.bonus_id = 0
+            slot.label = ""
+            slot.icon_id = -1
+            slot.slide_x = -184.0
             slot.timer_ref = None
             slot.timer_ref_alt = None
+            slot.timer_value = 0.0
+            slot.timer_value_alt = 0.0
 
 
 def bonus_telekinetic_update(
@@ -2495,6 +2520,6 @@ def bonus_update(
         state.bonuses.freeze = max(0.0, state.bonuses.freeze - dt)
 
     if update_hud:
-        bonus_hud_update(state, players)
+        bonus_hud_update(state, players, dt=dt)
 
     return pickups

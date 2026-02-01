@@ -218,6 +218,7 @@ def draw_hud_overlay(
     show_weapon: bool = True,
     show_xp: bool = True,
     show_time: bool = False,
+    small_indicators: bool = False,
 ) -> float:
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
@@ -528,35 +529,60 @@ def draw_hud_overlay(
         _draw_text(font, time_text, sx(255.0), sy(10.0), text_scale, text_color)
         max_y = max(max_y, sy(10.0 + line_h))
 
-    # Bonus HUD slots (text + icons), anchored below the survival panel.
-    slots = [slot for slot in bonus_hud.slots if slot.active] if bonus_hud is not None else []
-    if slots:
-        bonus_x = sx(4.0)
-        bonus_y = sy(HUD_BONUS_BASE_Y)
-        for slot in slots[:16]:
+    # Bonus HUD slots (icon + timers), slide in/out from the left.
+    if bonus_hud is not None:
+        bonus_y = float(HUD_BONUS_BASE_Y)
+        bonus_panel_alpha = alpha * 0.7
+        bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
+        bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], bonus_panel_alpha)
+
+        slots = bonus_hud.slots[:16]
+        for slot in slots:
+            if not slot.active:
+                continue
+
+            if slot.slide_x < -184.0:
+                bonus_y += HUD_BONUS_SPACING
+                continue
+
+            has_alt = slot.timer_ref_alt is not None and player_count > 1
+            timer = float(slot.timer_value)
+            timer_alt = float(slot.timer_value_alt) if has_alt else 0.0
+
+            # Slot panel.
             if assets.ind_panel is not None:
-                panel_x, panel_y = HUD_SURV_PANEL_POS
-                dst = rl.Rectangle(
-                    sx(panel_x),
-                    bonus_y + sy(HUD_BONUS_PANEL_OFFSET_Y),
-                    sx(HUD_SURV_PANEL_SIZE[0]),
-                    sy(HUD_SURV_PANEL_SIZE[1]),
-                )
+                if not small_indicators:
+                    panel_x = slot.slide_x
+                    panel_y = bonus_y + HUD_BONUS_PANEL_OFFSET_Y
+                    panel_w = 182.0
+                    panel_h = 53.0
+                else:
+                    panel_x = (slot.slide_x - 100.0) + 4.0
+                    panel_y = bonus_y + 5.0
+                    panel_w = 182.0
+                    panel_h = 26.5
+
                 src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
+                dst = rl.Rectangle(sx(panel_x), sy(panel_y), sx(panel_w), sy(panel_h))
                 rl.draw_texture_pro(
                     assets.ind_panel,
                     src,
                     dst,
                     rl.Vector2(0.0, 0.0),
                     0.0,
-                    rl.Color(255, 255, 255, int(255 * alpha * HUD_TOP_BAR_ALPHA)),
+                    rl.Color(255, 255, 255, int(255 * bonus_panel_alpha)),
                 )
                 max_y = max(max_y, dst.y + dst.height)
 
-            icon_drawn = False
+            # Slot icon.
             if assets.bonuses is not None and slot.icon_id >= 0:
                 src = _bonus_icon_src(assets.bonuses, slot.icon_id)
-                dst = rl.Rectangle(bonus_x, bonus_y, sx(HUD_BONUS_ICON_SIZE), sy(HUD_BONUS_ICON_SIZE))
+                dst = rl.Rectangle(
+                    sx(slot.slide_x - 1.0),
+                    sy(bonus_y),
+                    sx(HUD_BONUS_ICON_SIZE),
+                    sy(HUD_BONUS_ICON_SIZE),
+                )
                 rl.draw_texture_pro(
                     assets.bonuses,
                     src,
@@ -565,37 +591,25 @@ def draw_hud_overlay(
                     0.0,
                     rl.Color(255, 255, 255, int(255 * alpha)),
                 )
-                label_x = bonus_x + sx(HUD_BONUS_TEXT_OFFSET[0])
-                icon_drawn = True
                 max_y = max(max_y, dst.y + dst.height)
+
+            # Slot timer bars.
+            if not small_indicators:
+                if not has_alt:
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 21.0), sx(100.0), timer * 0.05, bar_rgba, scale)
+                    _draw_text(font, slot.label, sx(slot.slide_x + 36.0), sy(bonus_y + 6.0), text_scale, bonus_text_color)
+                else:
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0), sx(100.0), timer * 0.05, bar_rgba, scale)
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 23.0), sx(100.0), timer_alt * 0.05, bar_rgba, scale)
+                    _draw_text(font, slot.label, sx(slot.slide_x + 36.0), sy(bonus_y + 2.0), text_scale, bonus_text_color)
             else:
-                label_x = bonus_x
+                if not has_alt:
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0), sx(32.0), timer * 0.05, bar_rgba, scale)
+                else:
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 13.0), sx(32.0), timer * 0.05, bar_rgba, scale)
+                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 19.0), sx(32.0), timer_alt * 0.05, bar_rgba, scale)
 
-            if not icon_drawn and assets.wicons is not None:
-                alt_icon_index = _weapon_icon_index(player.weapon_id)
-                if alt_icon_index is not None:
-                    src = _weapon_icon_src(assets.wicons, alt_icon_index)
-                    dst = rl.Rectangle(bonus_x, bonus_y, sx(HUD_BONUS_ICON_SIZE), sy(HUD_BONUS_ICON_SIZE))
-                    rl.draw_texture_pro(
-                        assets.wicons,
-                        src,
-                        dst,
-                        rl.Vector2(0.0, 0.0),
-                        0.0,
-                        rl.Color(255, 255, 255, int(255 * alpha)),
-                    )
-                    label_x = bonus_x + sx(HUD_BONUS_TEXT_OFFSET[0])
-                    max_y = max(max_y, dst.y + dst.height)
-
-            _draw_text(
-                font,
-                slot.label,
-                label_x,
-                bonus_y + sy(HUD_BONUS_TEXT_OFFSET[1]),
-                text_scale,
-                accent_color,
-            )
-            bonus_y += sy(HUD_BONUS_SPACING)
-            max_y = max(max_y, bonus_y)
+            bonus_y += HUD_BONUS_SPACING
+            max_y = max(max_y, sy(bonus_y))
 
     return max_y

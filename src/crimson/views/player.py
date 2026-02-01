@@ -206,7 +206,7 @@ class PlayerSandboxView:
             self._player.shield_timer = 0.0
             self._player.speed_bonus_timer = 0.0
             self._player.fire_bullets_timer = 0.0
-            bonus_hud_update(self._state, [self._player])
+            bonus_hud_update(self._state, [self._player], dt=0.0)
 
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         return self._camera_x + x, self._camera_y + y
@@ -308,7 +308,7 @@ class PlayerSandboxView:
         input_state = self._build_input()
         player_update(self._player, input_state, dt, self._state, world_size=WORLD_SIZE)
 
-        bonus_hud_update(self._state, [self._player])
+        bonus_hud_update(self._state, [self._player], dt=dt)
         self._update_camera(dt)
 
     def draw(self) -> None:

@@ -270,12 +270,14 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
 
     bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3)
-    bonus_hud_update(state, [player])
+    for _ in range(40):
+        bonus_hud_update(state, [player], dt=1.0 / 60.0)
 
     assert any(slot.active and slot.bonus_id == int(BonusId.WEAPON_POWER_UP) for slot in state.bonus_hud.slots)
 
     state.bonuses.weapon_power_up = 0.0
-    bonus_hud_update(state, [player])
+    for _ in range(60):
+        bonus_hud_update(state, [player], dt=1.0 / 60.0)
     assert not any(slot.active and slot.bonus_id == int(BonusId.WEAPON_POWER_UP) for slot in state.bonus_hud.slots)
 
 
