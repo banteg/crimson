@@ -1346,6 +1346,99 @@ class WorldRenderer:
         rl.end_blend_mode()
         return True
 
+    def _draw_sharpshooter_laser_sight(
+        self,
+        *,
+        cam_x: float,
+        cam_y: float,
+        scale_x: float,
+        scale_y: float,
+        scale: float,
+        alpha: float,
+    ) -> None:
+        """Laser sight overlay for the Sharpshooter perk (`projectile_render` @ 0x00422c70)."""
+
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
+        if self.bullet_trail_texture is None:
+            return
+
+        players = self.players
+        if not players:
+            return
+
+        tail_alpha = int(clamp(alpha * 0.5, 0.0, 1.0) * 255.0 + 0.5)
+        head_alpha = int(clamp(alpha * 0.2, 0.0, 1.0) * 255.0 + 0.5)
+        tail = rl.Color(255, 0, 0, tail_alpha)
+        head = rl.Color(255, 0, 0, head_alpha)
+
+        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.rl_set_texture(self.bullet_trail_texture.id)
+        rl.rl_begin(rl.RL_QUADS)
+
+        for player in players:
+            if float(getattr(player, "health", 0.0)) <= 0.0:
+                continue
+            if not perk_active(player, PerkId.SHARPSHOOTER):
+                continue
+
+            aim_heading = float(getattr(player, "aim_heading", 0.0))
+            dir_x = math.cos(aim_heading - math.pi / 2.0)
+            dir_y = math.sin(aim_heading - math.pi / 2.0)
+
+            start_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 15.0
+            start_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 15.0
+            end_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 512.0
+            end_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 512.0
+
+            sx0 = (start_x + cam_x) * scale_x
+            sy0 = (start_y + cam_y) * scale_y
+            sx1 = (end_x + cam_x) * scale_x
+            sy1 = (end_y + cam_y) * scale_y
+
+            dx = sx1 - sx0
+            dy = sy1 - sy0
+            dist = math.hypot(dx, dy)
+            if dist <= 1e-3:
+                continue
+
+            thickness = max(1.0, 2.0 * scale)
+            half = thickness * 0.5
+            inv = 1.0 / dist
+            nx = dx * inv
+            ny = dy * inv
+            px = -ny
+            py = nx
+            ox = px * half
+            oy = py * half
+
+            x0 = sx0 - ox
+            y0 = sy0 - oy
+            x1 = sx0 + ox
+            y1 = sy0 + oy
+            x2 = sx1 + ox
+            y2 = sy1 + oy
+            x3 = sx1 - ox
+            y3 = sy1 - oy
+
+            rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+            rl.rl_tex_coord2f(0.0, 0.0)
+            rl.rl_vertex2f(x0, y0)
+            rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+            rl.rl_tex_coord2f(1.0, 0.0)
+            rl.rl_vertex2f(x1, y1)
+            rl.rl_color4ub(head.r, head.g, head.b, head.a)
+            rl.rl_tex_coord2f(1.0, 0.5)
+            rl.rl_vertex2f(x2, y2)
+            rl.rl_color4ub(head.r, head.g, head.b, head.a)
+            rl.rl_tex_coord2f(0.0, 0.5)
+            rl.rl_vertex2f(x3, y3)
+
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_blend_mode()
+
     def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
@@ -1892,6 +1985,15 @@ class WorldRenderer:
             for player in self.players:
                 if player.health > 0.0:
                     draw_player(player)
+
+            self._draw_sharpshooter_laser_sight(
+                cam_x=cam_x,
+                cam_y=cam_y,
+                scale_x=scale_x,
+                scale_y=scale_y,
+                scale=scale,
+                alpha=entity_alpha,
+            )
 
             for proj_index, proj in enumerate(self.state.projectiles.entries):
                 if not proj.active:
