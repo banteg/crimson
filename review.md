@@ -213,7 +213,7 @@ Parity item(s):
 * [ ] **Bonus HUD**: slide + timer bars + correct placement + small indicator mode
 * [ ] **Quest HUD**: use the quest panel variant (mm:ss + progress panel), remove top-bar seconds timer usage
 * [ ] **Quest perk UI**: show level up prompt/menu so the level up sound corresponds to something actionable
-* [ ] **Remove/gate survival debug overlay** (the “Minimal debug text”)
+* [x] **Remove/gate survival debug overlay** (the “Minimal debug text”)
 
 ### Next
 

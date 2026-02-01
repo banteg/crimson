@@ -756,7 +756,7 @@ class SurvivalMode(BaseGameplayMode):
                 frame_dt_ms=self._last_dt_ms,
             )
 
-        if (not self._game_over_active) and (not perk_menu_active):
+        if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):
             # Minimal debug text.
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
