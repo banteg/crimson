@@ -746,26 +746,6 @@ class QuestsMenuView:
         )
 
 
-class QuestStartView(PanelMenuView):
-    def __init__(self, state: GameState) -> None:
-        super().__init__(
-            state,
-            title="Quest",
-            body="Quest gameplay is not implemented yet.",
-            back_action="open_quests",
-        )
-
-    def open(self) -> None:
-        level = self._state.pending_quest_level or "unknown"
-        self._title = f"Quest {level}"
-        self._body_lines = [
-            f"Selected quest: {level}",
-            "",
-            "Quest gameplay is not implemented yet.",
-        ]
-        super().open()
-
-
 class FrontView(Protocol):
     def open(self) -> None: ...
 
