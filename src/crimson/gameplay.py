@@ -1929,7 +1929,9 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     raw_move_x = float(input_state.move_x)
     raw_move_y = float(input_state.move_y)
     raw_mag = math.hypot(raw_move_x, raw_move_y)
-    moving_input = raw_mag > 0.2
+    # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
+    # heading alignment slowdown; don't apply a deadzone there.
+    moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
 
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0

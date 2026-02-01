@@ -475,6 +475,9 @@ class DemoView:
             player = self._world.players[idx]
             player.pos_x = float(x)
             player.pos_y = float(y)
+            # Keep aim anchored to the spawn position so demo aim starts stable.
+            player.aim_x = float(x)
+            player.aim_y = float(y)
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
@@ -549,7 +552,8 @@ class DemoView:
 
     def _setup_variant_0(self) -> None:
         self._demo_time_limit_ms = 4000
-        weapon_id = 12
+        # demo_setup_variant_0 uses weapon_id=0x0B.
+        weapon_id = 11
         self._setup_world_players(
             [
                 (448.0, 384.0, weapon_id),
@@ -567,7 +571,8 @@ class DemoView:
 
     def _setup_variant_1(self) -> None:
         self._demo_time_limit_ms = 5000
-        weapon_id = 6
+        # demo_setup_variant_1 uses weapon_id=0x05.
+        weapon_id = 5
         self._setup_world_players(
             [
                 (490.0, 448.0, weapon_id),
@@ -586,7 +591,8 @@ class DemoView:
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
-        weapon_id = 22
+        # demo_setup_variant_2 uses weapon_id=0x15.
+        weapon_id = 21
         self._setup_world_players([(512.0, 512.0, weapon_id)])
         y = 128
         i = 0
@@ -601,7 +607,8 @@ class DemoView:
 
     def _setup_variant_3(self) -> None:
         self._demo_time_limit_ms = 4000
-        weapon_id = 19
+        # demo_setup_variant_3 uses weapon_id=0x12.
+        weapon_id = 18
         self._setup_world_players([(512.0, 512.0, weapon_id)])
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
@@ -881,10 +888,10 @@ class DemoView:
     def _update_world(self, dt: float) -> None:
         if not self._world.players:
             return
-        inputs = self._build_demo_inputs()
+        inputs = self._build_demo_inputs(dt)
         self._world.update(dt, inputs=inputs, auto_pick_perks=False, game_mode=0, perk_progression_enabled=False)
 
-    def _build_demo_inputs(self) -> list[PlayerInput]:
+    def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._world.players
         creatures = self._world.creatures.entries
         if len(self._demo_targets) != len(players):
@@ -892,42 +899,77 @@ class DemoView:
         center_x = float(self._world.world_size) * 0.5
         center_y = float(self._world.world_size) * 0.5
 
+        dt = float(dt)
+
+        def _turn_towards_heading(cur: float, target: float) -> tuple[float, float]:
+            cur = cur % math.tau
+            target = target % math.tau
+            delta = (target - cur + math.pi) % math.tau - math.pi
+            diff = abs(delta)
+            if diff <= 1e-9:
+                return cur, 0.0
+            step = dt * diff * 5.0
+            cur = (cur + step) % math.tau if delta > 0.0 else (cur - step) % math.tau
+            return cur, diff
+
         inputs: list[PlayerInput] = []
         for idx, player in enumerate(players):
             target_idx = self._select_demo_target(idx, player, creatures)
-            aim_x = center_x
-            aim_y = center_y
             target = None
             if target_idx is not None and 0 <= target_idx < len(creatures):
                 candidate = creatures[target_idx]
-                if candidate.hp > 0.0:
+                if candidate.active and candidate.hp > 0.0:
                     target = candidate
-                    aim_x = candidate.x
-                    aim_y = candidate.y
 
-            move_x, move_y = 0.0, 0.0
-            to_cx = center_x - player.pos_x
-            to_cy = center_y - player.pos_y
-            nx, ny, d = _normalize(to_cx, to_cy)
-            if d > 120.0:
-                move_x += nx
-                move_y += ny
-
+            # Aim: ease the aim point toward the target.
+            aim_x = float(player.aim_x)
+            aim_y = float(player.aim_y)
+            auto_fire = False
             if target is not None:
-                rx = player.pos_x - target.x
-                ry = player.pos_y - target.y
-                rnx, rny, rd = _normalize(rx, ry)
-                if 0.0 < rd < 160.0:
-                    strength = (160.0 - rd) / 160.0
-                    move_x += rnx * (1.5 * strength)
-                    move_y += rny * (1.5 * strength)
+                aim_dx = float(target.x) - aim_x
+                aim_dy = float(target.y) - aim_y
+                aim_dir_x, aim_dir_y, aim_dist = _normalize(aim_dx, aim_dy)
+                if aim_dist >= 4.0:
+                    step = aim_dist * 6.0 * dt
+                    aim_x += aim_dir_x * step
+                    aim_y += aim_dir_y * step
+                else:
+                    aim_x = float(target.x)
+                    aim_y = float(target.y)
+                auto_fire = aim_dist < 128.0
+            else:
+                ax, ay, amag = _normalize(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                if amag <= 1e-6:
+                    ax, ay = 0.0, -1.0
+                aim_x = float(player.pos_x) + ax * 60.0
+                aim_y = float(player.pos_y) + ay * 60.0
 
-            orbit_dir = -1.0 if (player.index % 2) else 1.0
-            ox, oy, _ = _normalize(-(player.pos_y - center_y), player.pos_x - center_x)
-            move_x += ox * 0.55 * orbit_dir
-            move_y += oy * 0.55 * orbit_dir
+            # Movement:
+            # - orbit center if no target
+            # - chase target when near center
+            # - return to center when too far
+            if target is None:
+                move_dx = -(float(player.pos_y) - center_y)
+                move_dy = float(player.pos_x) - center_x
+            else:
+                center_dist = math.hypot(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                if center_dist <= 300.0:
+                    move_dx = float(target.x) - float(player.pos_x)
+                    move_dy = float(target.y) - float(player.pos_y)
+                else:
+                    move_dx = center_x - float(player.pos_x)
+                    move_dy = center_y - float(player.pos_y)
 
-            fire_down = target is not None
+            desired_x, desired_y, desired_mag = _normalize(move_dx, move_dy)
+            if desired_mag <= 1e-6:
+                move_x = 0.0
+                move_y = 0.0
+            else:
+                desired_heading = math.atan2(desired_y, desired_x) + math.pi / 2.0
+                smoothed_heading, angle_diff = _turn_towards_heading(float(player.heading), desired_heading)
+                move_mag = max(0.001, (math.pi - angle_diff) / math.pi)
+                move_x = math.cos(smoothed_heading - math.pi / 2.0) * move_mag
+                move_y = math.sin(smoothed_heading - math.pi / 2.0) * move_mag
 
             inputs.append(
                 PlayerInput(
@@ -935,8 +977,8 @@ class DemoView:
                     move_y=move_y,
                     aim_x=aim_x,
                     aim_y=aim_y,
-                    fire_down=fire_down,
-                    fire_pressed=fire_down,
+                    fire_down=auto_fire,
+                    fire_pressed=auto_fire,
                     reload_pressed=False,
                 )
             )
