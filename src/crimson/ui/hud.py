@@ -53,6 +53,7 @@ HUD_BONUS_TEXT_OFFSET = (36.0, 6.0)
 HUD_BONUS_SPACING = 52.0
 HUD_BONUS_PANEL_OFFSET_Y = -11.0
 HUD_XP_BAR_RGBA = (0.1, 0.3, 0.6, 1.0)
+HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 _SURVIVAL_XP_SMOOTHED = 0
 
@@ -218,6 +219,8 @@ def draw_hud_overlay(
     show_weapon: bool = True,
     show_xp: bool = True,
     show_time: bool = False,
+    show_quest_hud: bool = False,
+    quest_progress_ratio: float | None = None,
     small_indicators: bool = False,
 ) -> float:
     if frame_dt_ms is None:
@@ -242,8 +245,8 @@ def draw_hud_overlay(
     max_y = 0.0
     alpha = max(0.0, min(1.0, float(alpha)))
     text_color = _with_alpha(HUD_TEXT_COLOR, alpha)
-    accent_color = _with_alpha(HUD_ACCENT_COLOR, alpha)
     panel_text_color = _with_alpha(HUD_TEXT_COLOR, alpha * HUD_PANEL_ALPHA)
+    hud_y_shift = HUD_QUEST_LEFT_Y_SHIFT if show_quest_hud else 0.0
 
     # Top bar background.
     if assets.game_top is not None:
@@ -428,11 +431,91 @@ def draw_hud_overlay(
                 text_y = base_y + HUD_AMMO_TEXT_OFFSET[1]
                 _draw_text(font, f"+ {extra}", sx(text_x), sy(text_y), text_scale, text_color)
 
+    # Quest HUD panels (mm:ss timer + progress).
+    if show_quest_hud:
+        time_ms = max(0.0, float(elapsed_ms))
+        slide_x = 0.0
+        if time_ms < 1000.0:
+            slide_x = (1000.0 - time_ms) * -0.128
+
+        quest_panel_alpha = alpha * 0.7
+        quest_text_color = _with_alpha(HUD_TEXT_COLOR, quest_panel_alpha)
+
+        if assets.ind_panel is not None:
+            src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
+
+            # Sliding top panel (first second).
+            dst = rl.Rectangle(sx(slide_x - 90.0), sy(67.0), sx(182.0), sy(53.0))
+            rl.draw_texture_pro(
+                assets.ind_panel,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
+            )
+            max_y = max(max_y, dst.y + dst.height)
+
+            # Static progress panel.
+            dst = rl.Rectangle(sx(-80.0), sy(107.0), sx(182.0), sy(53.0))
+            rl.draw_texture_pro(
+                assets.ind_panel,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * quest_panel_alpha)),
+            )
+            max_y = max(max_y, dst.y + dst.height)
+
+        # Clock table + pointer inside the sliding panel.
+        clock_alpha = alpha * HUD_CLOCK_ALPHA
+        if assets.clock_table is not None:
+            dst = rl.Rectangle(sx(slide_x + 2.0), sy(78.0), sx(32.0), sy(32.0))
+            src = rl.Rectangle(0.0, 0.0, float(assets.clock_table.width), float(assets.clock_table.height))
+            rl.draw_texture_pro(
+                assets.clock_table,
+                src,
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(255, 255, 255, int(255 * clock_alpha)),
+            )
+
+        if assets.clock_pointer is not None:
+            # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+            # offset by half-size so the 32x32 quad stays aligned with the table.
+            dst = rl.Rectangle(sx(slide_x + 2.0 + 16.0), sy(78.0 + 16.0), sx(32.0), sy(32.0))
+            src = rl.Rectangle(0.0, 0.0, float(assets.clock_pointer.width), float(assets.clock_pointer.height))
+            rotation = time_ms / 1000.0 * 6.0
+            origin = rl.Vector2(sx(16.0), sy(16.0))
+            rl.draw_texture_pro(
+                assets.clock_pointer,
+                src,
+                dst,
+                origin,
+                rotation,
+                rl.Color(255, 255, 255, int(255 * clock_alpha)),
+            )
+
+        total_seconds = max(0, int(time_ms) // 1000)
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        _draw_text(font, f"{minutes}:{seconds:02d}", sx(slide_x + 32.0), sy(86.0), text_scale, quest_text_color)
+
+        _draw_text(font, "Progress", sx(18.0), sy(122.0), text_scale, quest_text_color)
+
+        if quest_progress_ratio is not None:
+            ratio = max(0.0, min(1.0, float(quest_progress_ratio)))
+            quest_bar_rgba = (0.2, 0.8, 0.3, alpha * 0.8)
+            _draw_progress_bar(sx(10.0), sy(139.0), sx(70.0), ratio, quest_bar_rgba, scale)
+
     # Survival XP panel.
     xp_target = int(player.experience if score is None else score)
     xp_display = _smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
     if show_xp and assets.ind_panel is not None:
         panel_x, panel_y = HUD_SURV_PANEL_POS
+        panel_y += hud_y_shift
         panel_w, panel_h = HUD_SURV_PANEL_SIZE
         dst = rl.Rectangle(sx(panel_x), sy(panel_y), sx(panel_w), sy(panel_h))
         src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
@@ -451,7 +534,7 @@ def draw_hud_overlay(
             font,
             "Xp",
             sx(HUD_SURV_XP_LABEL_POS[0]),
-            sy(HUD_SURV_XP_LABEL_POS[1]),
+            sy(HUD_SURV_XP_LABEL_POS[1] + hud_y_shift),
             text_scale,
             panel_text_color,
         )
@@ -459,7 +542,7 @@ def draw_hud_overlay(
             font,
             f"{xp_display}",
             sx(HUD_SURV_XP_VALUE_POS[0]),
-            sy(HUD_SURV_XP_VALUE_POS[1]),
+            sy(HUD_SURV_XP_VALUE_POS[1] + hud_y_shift),
             text_scale,
             panel_text_color,
         )
@@ -467,7 +550,7 @@ def draw_hud_overlay(
             font,
             f"{int(player.level)}",
             sx(HUD_SURV_LVL_VALUE_POS[0]),
-            sy(HUD_SURV_LVL_VALUE_POS[1]),
+            sy(HUD_SURV_LVL_VALUE_POS[1] + hud_y_shift),
             text_scale,
             panel_text_color,
         )
@@ -479,6 +562,7 @@ def draw_hud_overlay(
         if next_threshold > prev_threshold:
             progress_ratio = (xp_target - prev_threshold) / float(next_threshold - prev_threshold)
         bar_x, bar_y = HUD_SURV_PROGRESS_POS
+        bar_y += hud_y_shift
         bar_w = HUD_SURV_PROGRESS_WIDTH
         bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], HUD_XP_BAR_RGBA[3] * alpha)
         _draw_progress_bar(sx(bar_x), sy(bar_y), sx(bar_w), progress_ratio, bar_rgba, scale)
@@ -531,7 +615,7 @@ def draw_hud_overlay(
 
     # Bonus HUD slots (icon + timers), slide in/out from the left.
     if bonus_hud is not None:
-        bonus_y = float(HUD_BONUS_BASE_Y)
+        bonus_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
         bonus_panel_alpha = alpha * 0.7
         bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
         bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], bonus_panel_alpha)

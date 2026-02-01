@@ -124,13 +124,13 @@ In **`src/crimson/modes/quest_mode.py`**:
 
 ### Parity work items for quest HUD
 
-* [ ] Implement the quest HUD panels (the `DAT_004871b3` branch behavior) instead of the top-bar seconds clock:
+* [x] Implement the quest HUD panels (the `DAT_004871b3` branch behavior) instead of the top-bar seconds clock:
 
   * sliding top panel in first 1000ms
   * mm:ss formatting
   * “Progress” label + bar at decompile positions
-* [ ] Remove / replace the current ad-hoc kills/total bar (it doesn’t exist in that form in the HUD decompile)
-* [ ] Reconsider `show_xp=False` in quest mode:
+* [x] Remove / replace the current ad-hoc kills/total bar (it doesn’t exist in that form in the HUD decompile)
+* [x] Reconsider `show_xp=False` in quest mode:
 
   * since perk progression is enabled in quests (and the game plays the level up SFX), hiding XP/level is likely wrong for parity
 
@@ -211,7 +211,7 @@ Parity item(s):
 ### Highest impact (what players notice immediately)
 
 * [ ] **Bonus HUD**: slide + timer bars + correct placement + small indicator mode
-* [ ] **Quest HUD**: use the quest panel variant (mm:ss + progress panel), remove top-bar seconds timer usage
+* [x] **Quest HUD**: use the quest panel variant (mm:ss + progress panel), remove top-bar seconds timer usage
 * [ ] **Quest perk UI**: show level up prompt/menu so the level up sound corresponds to something actionable
 * [x] **Remove/gate survival debug overlay** (the “Minimal debug text”)
 

@@ -21,7 +21,7 @@ from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_ui_scale
+from ..ui.hud import draw_hud_overlay
 from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from .base_gameplay_mode import BaseGameplayMode
@@ -410,6 +410,9 @@ class QuestMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if self._hud_assets is not None:
+            total = int(self._quest.total_spawn_count)
+            kills = int(self._creatures.kill_count)
+            quest_progress_ratio = float(kills) / float(total) if total > 0 else None
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -418,31 +421,11 @@ class QuestMode(BaseGameplayMode):
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 font=self._small,
                 frame_dt_ms=self._last_dt_ms,
-                show_xp=False,
-                show_time=True,
+                show_xp=True,
+                show_time=False,
+                show_quest_hud=True,
+                quest_progress_ratio=quest_progress_ratio,
             )
-            total = int(self._quest.total_spawn_count)
-            if total > 0:
-                kills = int(self._creatures.kill_count)
-                ratio = max(0.0, min(1.0, float(kills) / float(total)))
-                scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
-                bar_x = 255.0 * scale
-                bar_y = 30.0 * scale
-                bar_w = 120.0 * scale
-                bar_h = 6.0 * scale
-                bg = rl.Color(40, 40, 48, 200)
-                fg = rl.Color(220, 220, 220, 240)
-                rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), bg)
-                inner_w = max(0.0, bar_w - 2.0 * scale)
-                inner_h = max(0.0, bar_h - 2.0 * scale)
-                rl.draw_rectangle(
-                    int(bar_x + scale),
-                    int(bar_y + scale),
-                    int(inner_w * ratio),
-                    int(inner_h),
-                    fg,
-                )
-                self._draw_ui_text(f"{kills}/{total}", bar_x + bar_w + 8.0 * scale, bar_y - 3.0 * scale, rl.Color(220, 220, 220, 255), scale=0.8 * scale)
 
         self._draw_quest_title()
 
