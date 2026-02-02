@@ -38,7 +38,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from .debug import debug_enabled
+from .debug import debug_enabled, set_debug_enabled
 from grim import music
 
 from .demo import DemoView
@@ -113,6 +113,7 @@ class GameConfig:
     seed: int | None = None
     demo_enabled: bool = False
     no_intro: bool = False
+    debug: bool = False
 
 
 @dataclass(slots=True)
@@ -301,12 +302,21 @@ class QuestsMenuView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         config = self._state.config
+        status = self._state.status
 
         # The original forcibly clears hardcore in the demo build.
         if self._state.demo_enabled:
             if int(config.data.get("hardcore_flag", 0) or 0) != 0:
                 config.data["hardcore_flag"] = 0
                 self._dirty = True
+
+        if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
+            unlock = 49
+            if int(status.quest_unlock_index) < unlock:
+                status.quest_unlock_index = unlock
+            if int(status.quest_unlock_index_full) < unlock:
+                status.quest_unlock_index_full = unlock
+            self._state.console.log.log("debug: unlocked all quests")
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_play_game"
@@ -2708,6 +2718,8 @@ def _resolve_assets_dir(config: GameConfig) -> Path:
 
 
 def run_game(config: GameConfig) -> None:
+    if config.debug:
+        set_debug_enabled(True)
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
     crash_path = base_dir / "crash.log"

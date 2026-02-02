@@ -548,6 +548,7 @@ class GameplayState:
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
     shots_hit: list[int] = field(default_factory=lambda: [0] * 4)
     weapon_shots_fired: list[list[int]] = field(default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)])
+    debug_god_mode: bool = False
 
     def __post_init__(self) -> None:
         rand = self.rng.rand

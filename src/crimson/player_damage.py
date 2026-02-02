@@ -32,6 +32,8 @@ def player_take_damage(
     dmg = float(damage)
     if dmg <= 0.0:
         return 0.0
+    if state.debug_god_mode:
+        return 0.0
 
     # 1) Death Clock immunity.
     if perk_active(player, PerkId.DEATH_CLOCK):
