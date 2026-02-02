@@ -19,18 +19,20 @@ from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId, perk_display_description, perk_display_name
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.menu_panel import draw_classic_menu_panel
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..ui.perk_menu import (
+    PERK_MENU_TRANSITION_MS,
     PerkMenuLayout,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
-    draw_menu_panel,
     draw_menu_item,
     draw_ui_text,
     load_perk_menu_assets,
     menu_item_hit_rect,
+    perk_menu_panel_slide_x,
     perk_menu_compute_layout,
     ui_origin,
     ui_scale,
@@ -68,8 +70,6 @@ PERK_PROMPT_LEVEL_UP_SHIFT_Y = -4.0
 
 PERK_PROMPT_TEXT_MARGIN_X = 16.0
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
-
-PERK_MENU_TRANSITION_MS = 500.0
 
 
 @dataclass(slots=True)
@@ -358,8 +358,7 @@ class SurvivalMode(BaseGameplayMode):
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
-        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
+        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -369,12 +368,13 @@ class SurvivalMode(BaseGameplayMode):
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
             screen_w=screen_w,
-            origin_x=origin_x + slide_x,
+            origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
@@ -654,25 +654,26 @@ class SurvivalMode(BaseGameplayMode):
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = (menu_t - 1.0) * (self._perk_ui_layout.panel_w * scale)
+        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._perk_ui_layout,
             screen_w=screen_w,
-            origin_x=origin_x + slide_x,
+            origin_x=origin_x,
             origin_y=origin_y,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         panel_tex = self._perk_menu_assets.menu_panel
         if panel_tex is not None:
             fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
-            draw_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
+            draw_classic_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
 
         title_tex = self._perk_menu_assets.title_pick_perk
         if title_tex is not None:

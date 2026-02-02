@@ -21,7 +21,9 @@ from ..perks import PerkId, perk_display_description, perk_display_name
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode, hud_ui_scale
+from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
+    PERK_MENU_TRANSITION_MS,
     PerkMenuAssets,
     PerkMenuLayout,
     UiButtonState,
@@ -29,10 +31,10 @@ from ..ui.perk_menu import (
     button_update,
     button_width,
     draw_menu_item,
-    draw_menu_panel,
     draw_ui_text,
     load_perk_menu_assets,
     menu_item_hit_rect,
+    perk_menu_panel_slide_x,
     perk_menu_compute_layout,
     ui_origin,
     ui_scale,
@@ -282,6 +284,8 @@ class TutorialMode(BaseGameplayMode):
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
+        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -297,6 +301,7 @@ class TutorialMode(BaseGameplayMode):
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
@@ -361,9 +366,9 @@ class TutorialMode(BaseGameplayMode):
             self._perk_menu_handle_input(dt_frame, dt_ui_ms)
 
         if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, 200.0)
+            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, 200.0)
+            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt_frame
 
@@ -604,12 +609,13 @@ class TutorialMode(BaseGameplayMode):
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
+            panel_slide_x=slide_x,
         )
 
         panel_tex = assets.menu_panel
         if panel_tex is not None:
             fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
-            draw_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
+            draw_classic_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
 
         title_tex = assets.title_pick_perk
         if title_tex is not None:

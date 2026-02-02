@@ -8,6 +8,7 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..gameplay import GameplayState, PlayerState, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
+from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
     PerkMenuLayout,
     UiButtonState,
@@ -15,7 +16,6 @@ from ..ui.perk_menu import (
     button_update,
     button_width,
     cursor_draw,
-    draw_menu_panel,
     draw_menu_item,
     draw_ui_text,
     load_perk_menu_assets,
@@ -300,7 +300,7 @@ class PerkSelectionView:
 
         panel_tex = self._ui_assets.menu_panel
         if panel_tex is not None:
-            draw_menu_panel(panel_tex, dst=computed.panel)
+            draw_classic_menu_panel(panel_tex, dst=computed.panel)
 
         title_tex = self._ui_assets.title_pick_perk
         if title_tex is not None:

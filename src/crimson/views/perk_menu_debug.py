@@ -6,6 +6,7 @@ from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_
 from grim.view import View, ViewContext
 
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
+from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
     PerkMenuAssets,
     PerkMenuLayout,
@@ -14,7 +15,6 @@ from ..ui.perk_menu import (
     button_update,
     button_width,
     cursor_draw,
-    draw_menu_panel,
     draw_menu_item,
     draw_ui_text,
     load_perk_menu_assets,
@@ -336,7 +336,7 @@ class PerkMenuDebugView:
                 )
 
                 if self._assets.menu_panel is not None:
-                    draw_menu_panel(self._assets.menu_panel, dst=computed.panel)
+                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel)
 
                 if self._assets.title_pick_perk is not None:
                     tex = self._assets.title_pick_perk

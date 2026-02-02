@@ -191,11 +191,11 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Rewrite `draw_menu_panel()` (`src/crimson/ui/perk_menu.py`) to render **Variant B** using the captured geometry and UV trims.
-* [ ] Update in-game perk panel width to **510** and height to **378** (not 512×379).
-* [ ] Change layout anchor: compute panel left/top from **pos + slide + (geom_x0/geom_y0)**, not from `offset (20,-82)`.
-* [ ] Match slide timing: add the 100ms “hold hidden” (end_ms=100) before sliding, and use width 510.
-* [ ] Fix draw ordering to “all shadows first, then mains”.
+* [x] Rewrite `draw_menu_panel()` (`src/crimson/ui/perk_menu.py`) to render **Variant B** using the captured geometry and UV trims.
+* [x] Update in-game perk panel width to **510** and height to **378** (not 512×379).
+* [x] Change layout anchor: compute panel left/top from **pos + slide + (geom_x0/geom_y0)**, not from `offset (20,-82)`.
+* [x] Match slide timing: add the 100ms “hold hidden” (end_ms=100) before sliding, and use width 510.
+* [x] Fix draw ordering to “all shadows first, then mains”.
 
 ---
 

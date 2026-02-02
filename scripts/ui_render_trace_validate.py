@@ -734,6 +734,56 @@ def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str
     return errors
 
 
+def validate_perk_selection_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    """
+    Validate the in-game perk selection panel (state_6) which uses the tall 3-slice menu panel.
+    """
+
+    from crimson.ui.perk_menu import PerkMenuLayout, perk_menu_compute_layout
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_6")
+
+    screen_w = 1024
+    screen_h = 768
+    _ = screen_h
+
+    computed = perk_menu_compute_layout(
+        PerkMenuLayout(),
+        screen_w=float(screen_w),
+        origin_x=0.0,
+        origin_y=0.0,
+        scale=1.0,
+        choice_count=0,
+        expert_owned=False,
+        master_owned=False,
+    )
+
+    x0 = float(computed.panel.x)
+    y0 = float(computed.panel.y)
+    panel_w = float(computed.panel.width)
+    panel_h = float(computed.panel.height)
+
+    # Keep in sync with crimson.ui.menu_panel.draw_classic_menu_panel (scale by width/510).
+    panel_scale = panel_w / 510.0 if panel_w != 0.0 else 1.0
+    top_h = 138.0 * panel_scale
+    bottom_h = 116.0 * panel_scale
+    mid_h = panel_h - top_h - bottom_h
+
+    exp = [
+        BBox(x0, y0, x0 + panel_w, y0 + top_h),
+        BBox(x0, y0 + top_h, x0 + panel_w, y0 + top_h + mid_h),
+        BBox(x0, y0 + top_h + mid_h, x0 + panel_w, y0 + panel_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"perk_menu: panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    return errors
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Validate UI layout constants against a captured oracle.")
     p.add_argument(
@@ -759,6 +809,7 @@ def main(argv: list[str] | None = None) -> int:
     errors.extend(validate_perk_database_screen(oracle, tol=float(args.tol)))
     errors.extend(validate_high_scores_screens(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
+    errors.extend(validate_perk_selection_panel(oracle, tol=float(args.tol)))
 
     if not errors:
         print("OK")

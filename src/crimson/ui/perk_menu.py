@@ -9,15 +9,19 @@ import pyray as rl
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
-from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from .menu_panel import draw_classic_menu_panel
 
 
 UI_BASE_WIDTH = 640.0
 UI_BASE_HEIGHT = 480.0
 
-
-MENU_PANEL_SLICE_Y1 = 130.0
-MENU_PANEL_SLICE_Y2 = 150.0
+# Perk selection screen panel uses ui_element-style timeline animation:
+# - fully hidden until end_ms
+# - slides in over (end_ms..start_ms)
+# - fully visible at start_ms
+PERK_MENU_ANIM_START_MS = 400.0
+PERK_MENU_ANIM_END_MS = 100.0
+PERK_MENU_TRANSITION_MS = PERK_MENU_ANIM_START_MS
 
 # Layout offsets from the classic game (perk selection screen), derived from
 # `perk_selection_screen_update` (see analysis/ghidra + BN).
@@ -45,11 +49,13 @@ MENU_DESC_RIGHT_X = 480.0
 @dataclass(slots=True)
 class PerkMenuLayout:
     # Coordinates live in the original 640x480 UI space.
-    # Matches the classic menu panel: pos (-45, 110) + offset (20, -82).
-    panel_x: float = -25.0
-    panel_y: float = 28.0
-    panel_w: float = 512.0
-    panel_h: float = 379.0
+    # Capture (1024x768) shows the perk menu panel uses the 3-slice variant:
+    #   open bbox (-108,119) -> (402,497)
+    # which corresponds to ui_element pos (-45,110) + geom (-63,-81) and size 510x378.
+    panel_x: float = -108.0
+    panel_y: float = 29.0
+    panel_w: float = 510.0
+    panel_h: float = 378.0
 
 
 @dataclass(slots=True)
@@ -145,88 +151,47 @@ def perk_menu_compute_layout(
         cancel_y=float(cancel_y),
     )
 
-
-def draw_menu_panel(
-    texture: rl.Texture,
+def ui_element_slide_x(
+    t_ms: float,
     *,
-    dst: rl.Rectangle,
-    tint: rl.Color = rl.WHITE,
-    shadow: bool = False,
-) -> None:
-    scale = float(dst.width) / float(texture.width)
-    top_h = MENU_PANEL_SLICE_Y1 * scale
-    bottom_h = (float(texture.height) - MENU_PANEL_SLICE_Y2) * scale
-    mid_h = float(dst.height) - top_h - bottom_h
-    if mid_h < 0.0:
-        src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-        if shadow:
-            draw_ui_quad_shadow(
-                texture=texture,
-                src=src,
-                dst=rl.Rectangle(
-                    float(dst.x + UI_SHADOW_OFFSET),
-                    float(dst.y + UI_SHADOW_OFFSET),
-                    float(dst.width),
-                    float(dst.height),
-                ),
-                origin=rl.Vector2(0.0, 0.0),
-                rotation_deg=0.0,
-            )
-        rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
-        return
+    start_ms: float,
+    end_ms: float,
+    width: float,
+    direction_flag: int = 0,
+) -> float:
+    """
+    Slide offset helper matching ui_element_update semantics (see MenuView._ui_element_anim).
 
-    src_w = float(texture.width)
-    src_h = float(texture.height)
+    direction_flag=0: slide from left  (-width -> 0)
+    direction_flag=1: slide from right (+width -> 0)
+    """
 
-    src_top = rl.Rectangle(0.0, 0.0, src_w, MENU_PANEL_SLICE_Y1)
-    src_mid = rl.Rectangle(0.0, MENU_PANEL_SLICE_Y1, src_w, MENU_PANEL_SLICE_Y2 - MENU_PANEL_SLICE_Y1)
-    src_bot = rl.Rectangle(0.0, MENU_PANEL_SLICE_Y2, src_w, src_h - MENU_PANEL_SLICE_Y2)
+    if start_ms <= end_ms or width <= 0.0:
+        return 0.0
 
-    dst_top = rl.Rectangle(float(dst.x), float(dst.y), float(dst.width), top_h)
-    dst_mid = rl.Rectangle(float(dst.x), float(dst.y) + top_h, float(dst.width), mid_h)
-    dst_bot = rl.Rectangle(float(dst.x), float(dst.y) + top_h + mid_h, float(dst.width), bottom_h)
+    width = abs(float(width))
+    t = float(t_ms)
+    if t < float(end_ms):
+        slide = width
+    elif t < float(start_ms):
+        elapsed = t - float(end_ms)
+        span = float(start_ms) - float(end_ms)
+        p = elapsed / span if span > 1e-6 else 1.0
+        slide = (1.0 - p) * width
+    else:
+        slide = 0.0
 
-    origin = rl.Vector2(0.0, 0.0)
-    if shadow:
-        draw_ui_quad_shadow(
-            texture=texture,
-            src=src_top,
-            dst=rl.Rectangle(
-                float(dst_top.x + UI_SHADOW_OFFSET),
-                float(dst_top.y + UI_SHADOW_OFFSET),
-                float(dst_top.width),
-                float(dst_top.height),
-            ),
-            origin=origin,
-            rotation_deg=0.0,
-        )
-        draw_ui_quad_shadow(
-            texture=texture,
-            src=src_mid,
-            dst=rl.Rectangle(
-                float(dst_mid.x + UI_SHADOW_OFFSET),
-                float(dst_mid.y + UI_SHADOW_OFFSET),
-                float(dst_mid.width),
-                float(dst_mid.height),
-            ),
-            origin=origin,
-            rotation_deg=0.0,
-        )
-        draw_ui_quad_shadow(
-            texture=texture,
-            src=src_bot,
-            dst=rl.Rectangle(
-                float(dst_bot.x + UI_SHADOW_OFFSET),
-                float(dst_bot.y + UI_SHADOW_OFFSET),
-                float(dst_bot.width),
-                float(dst_bot.height),
-            ),
-            origin=origin,
-            rotation_deg=0.0,
-        )
-    rl.draw_texture_pro(texture, src_top, dst_top, origin, 0.0, tint)
-    rl.draw_texture_pro(texture, src_mid, dst_mid, origin, 0.0, tint)
-    rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
+    return slide if int(direction_flag) else -slide
+
+
+def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
+    return ui_element_slide_x(
+        t_ms,
+        start_ms=PERK_MENU_ANIM_START_MS,
+        end_ms=PERK_MENU_ANIM_END_MS,
+        width=width,
+        direction_flag=0,
+    )
 
 
 @dataclass(slots=True)
