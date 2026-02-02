@@ -47,6 +47,11 @@ def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, fl
     return 0.0, 0.0
 
 
+def _menu_widescreen_y_shift(layout_w: float) -> float:
+    # ui_menu_layout_init: pos_y += (screen_width / 640.0) * 150.0 - 150.0
+    return (layout_w / UI_BASE_WIDTH) * 150.0 - 150.0
+
+
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
 # the quest results screen composes `ui_menuPanel` geometry:
@@ -283,13 +288,15 @@ class QuestResultsUi:
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
-    def _panel_layout(self, *, scale: float) -> tuple[rl.Rectangle, float, float]:
+    def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
         t = self._intro_ms / PANEL_SLIDE_DURATION_MS if PANEL_SLIDE_DURATION_MS > 1e-6 else 1.0
         eased = _ease_out_cubic(t)
         panel_slide_x = -QUEST_RESULTS_PANEL_W * (1.0 - eased)
 
         left = (QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + QUEST_RESULTS_PANEL_BASE_X + panel_slide_x) * scale
-        top = (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y) * scale
+        layout_w = screen_w / scale if scale else screen_w
+        widescreen_shift_y = _menu_widescreen_y_shift(layout_w)
+        top = (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
         panel = rl.Rectangle(float(left), float(top), QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return panel, left, top
 
@@ -386,7 +393,7 @@ class QuestResultsUi:
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
-            _panel, panel_left, panel_top = self._panel_layout(scale=scale)
+            _panel, panel_left, panel_top = self._panel_layout(screen_w=screen_w, scale=scale)
             anchor_x = panel_left + 40.0 * scale
             input_y = panel_top + 150.0 * scale
             ok_x = anchor_x + 170.0 * scale
@@ -437,7 +444,7 @@ class QuestResultsUi:
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
             _origin_x, _origin_y = ui_origin(screen_w, screen_h, scale)
-            _panel, left, top = self._panel_layout(scale=scale)
+            _panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
             qualifies = int(self.rank) < TABLE_MAX
             score_card_x = left + 70.0 * scale
 
@@ -497,7 +504,7 @@ class QuestResultsUi:
         _origin_x, _origin_y = ui_origin(screen_w, screen_h, scale)
         _ = _origin_x, _origin_y
 
-        panel, left, top = self._panel_layout(scale=scale)
+        panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
 
         if self.assets.menu_panel is not None:
             draw_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE)
