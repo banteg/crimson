@@ -141,7 +141,7 @@ Fix plan:
 
   * [x] Left: Variant A quad panel at the captured position.
   * [x] Right: Variant B sliced tall panel at the captured position.
-* [ ] Add direction-aware slide (+510 → 0) for the right panel (direction_flag=1).
+* [x] Add direction-aware slide (+510 → 0) for the right panel (direction_flag=1).
 * [x] Ensure both panels use correct UV trims and shadow offsets.
 * [x] Verify the right panel being partially off-screen (x2=1121) is intended and match it exactly.
 

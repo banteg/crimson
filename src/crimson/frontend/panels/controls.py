@@ -111,6 +111,7 @@ class ControlsMenuView(PanelMenuView):
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
+            direction_flag=1,
         )
         right_x0 = CONTROLS_RIGHT_PANEL_POS_X + slide_x + MENU_PANEL_OFFSET_X * panel_scale
         right_y0 = CONTROLS_RIGHT_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * panel_scale
