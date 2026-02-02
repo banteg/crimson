@@ -219,24 +219,6 @@ def scores_dir_for_base_dir(base_dir: Path) -> Path:
     return base_dir / "scores5"
 
 
-def _maybe_migrate_alt_quest_scores_file(path: Path, alt: Path) -> None:
-    """Copy an alternate quest score file into the expected naming scheme (once).
-
-    The classic game uses the underscore format (e.g. questhc1_1.hi). Some ports used
-    zero-padded numbers without separators (e.g. questhc0101.hi).
-    """
-
-    if path.is_file():
-        return
-    if not alt.is_file():
-        return
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(alt.read_bytes())
-    except Exception:
-        return
-
-
 def scores_path_for_mode(
     base_dir: Path,
     game_mode_id: int,
@@ -259,10 +241,7 @@ def scores_path_for_mode(
         prefix = "quest" if hardcore else "questhc"
         major = int(quest_stage_major)
         minor = int(quest_stage_minor)
-        path = root / f"{prefix}{major}_{minor}.hi"
-        alt = root / f"{prefix}{major:02d}{minor:02d}.hi"
-        _maybe_migrate_alt_quest_scores_file(path, alt)
-        return path
+        return root / f"{prefix}{major}_{minor}.hi"
     return root / "unknown.hi"
 
 
@@ -297,10 +276,7 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
         prefix = "quest" if hardcore else "questhc"
         major = int(quest_stage_major)
         minor = int(quest_stage_minor)
-        path = root / f"{prefix}{major}_{minor}.hi"
-        alt = root / f"{prefix}{major:02d}{minor:02d}.hi"
-        _maybe_migrate_alt_quest_scores_file(path, alt)
-        return path
+        return root / f"{prefix}{major}_{minor}.hi"
     return root / "unknown.hi"
 
 
