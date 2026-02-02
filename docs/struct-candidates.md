@@ -107,21 +107,18 @@ These items have some fields mapped but could use expansion:
 
 ## Verification Commands
 
-To verify struct mappings in Ghidra:
+To verify struct mappings in Ghidra (interactive):
 
-```bash
-# Check creature type stride (0x44 bytes)
-just ghidra-print 0x00482728 0x44 1
+1. Apply `data_map.json` (headless: `just ghidra-exe`, or in Ghidra via the map scripts).
+2. Press `G` and jump to an address.
+3. Inspect the data type/array stride in the Listing window (and use `Data → Create Array…` as needed).
 
-# Check weapon usage time array (64 ints)
-just ghidra-print 0x0048708c 0x04 64
+Useful addresses (crimsonland.exe):
 
-# Check player aim screen (8 floats)
-just ghidra-print 0x004871f4 0x04 8
-
-# Check terrain texture handles
-just ghidra-print 0x0048f548 0x04 16
-```
+- `0x00482728` — creature type array (`creature_type_t`, stride 0x44)
+- `0x0048708c` — weapon usage time array (u32[64])
+- `0x004871f4` — player aim screen array (float[8])
+- `0x0048f548` — terrain texture handles (u32[16])
 
 ---
 

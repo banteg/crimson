@@ -11,7 +11,7 @@ conversions.
 ## Command
 
 ```bash
-uv run paq extract game_bins/crimsonland/1.9.93-gog artifacts/assets
+uv run crimson extract game_bins/crimsonland/1.9.93-gog artifacts/assets
 ```
 
 ## Output rules
