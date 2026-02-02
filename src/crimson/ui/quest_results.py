@@ -21,6 +21,7 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
+from .menu_panel import draw_classic_menu_panel
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -28,7 +29,6 @@ from .perk_menu import (
     button_update,
     button_width,
     cursor_draw,
-    draw_menu_panel,
     draw_ui_text,
     load_perk_menu_assets,
 )
@@ -55,7 +55,7 @@ def _menu_widescreen_y_shift(layout_w: float) -> float:
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
 # the quest results screen composes `ui_menuPanel` geometry:
-#   panel_left = geom_x0 + pos_x + 180 + slide_x
+#   panel_left = geom_x0 + pos_x + slide_x
 #   panel_top  = geom_y0 + pos_y
 #
 # Where:
@@ -66,10 +66,9 @@ QUEST_RESULTS_PANEL_POS_X = -45.0
 QUEST_RESULTS_PANEL_POS_Y = 110.0
 QUEST_RESULTS_PANEL_GEOM_X0 = -63.0
 QUEST_RESULTS_PANEL_GEOM_Y0 = -81.0
-QUEST_RESULTS_PANEL_BASE_X = 180.0
 
-QUEST_RESULTS_PANEL_W = 512.0
-QUEST_RESULTS_PANEL_H = 379.0
+QUEST_RESULTS_PANEL_W = 510.0
+QUEST_RESULTS_PANEL_H = 378.0
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
@@ -77,7 +76,11 @@ TEXTURE_TOP_BANNER_H = 64.0
 INPUT_BOX_W = 166.0
 INPUT_BOX_H = 18.0
 
-PANEL_SLIDE_DURATION_MS = 250.0
+# Capture (1024x768) shows the quest results panel uses the same ui_element
+# timeline pattern as other screens: fully hidden until 100ms, then slides in
+# over 300ms (end=100, start=400).
+PANEL_SLIDE_START_MS = 400.0
+PANEL_SLIDE_END_MS = 100.0
 
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
@@ -99,11 +102,6 @@ def _poll_text_input(max_len: int, *, allow_space: bool = True) -> str:
             continue
         out += chr(int(value))
     return out
-
-
-def _ease_out_cubic(t: float) -> float:
-    t = max(0.0, min(1.0, float(t)))
-    return 1.0 - (1.0 - t) ** 3
 
 
 def _format_ordinal(value_1_based: int) -> str:
@@ -289,11 +287,18 @@ class QuestResultsUi:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
-        t = self._intro_ms / PANEL_SLIDE_DURATION_MS if PANEL_SLIDE_DURATION_MS > 1e-6 else 1.0
-        eased = _ease_out_cubic(t)
-        panel_slide_x = -QUEST_RESULTS_PANEL_W * (1.0 - eased)
+        # Match MenuView._ui_element_anim offset math (linear, with a 100ms hold hidden).
+        t_ms = float(self._intro_ms)
+        if t_ms < PANEL_SLIDE_END_MS:
+            panel_slide_x = -QUEST_RESULTS_PANEL_W
+        elif t_ms < PANEL_SLIDE_START_MS:
+            span = float(PANEL_SLIDE_START_MS - PANEL_SLIDE_END_MS)
+            p = (t_ms - PANEL_SLIDE_END_MS) / span if span > 1e-6 else 1.0
+            panel_slide_x = -((1.0 - p) * QUEST_RESULTS_PANEL_W)
+        else:
+            panel_slide_x = 0.0
 
-        left = (QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + QUEST_RESULTS_PANEL_BASE_X + panel_slide_x) * scale
+        left = (QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = _menu_widescreen_y_shift(layout_w)
         top = (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
@@ -328,8 +333,8 @@ class QuestResultsUi:
                 return action
             return None
 
-        self._intro_ms = min(PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
-        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= PANEL_SLIDE_DURATION_MS - 1e-3:
+        self._intro_ms = min(PANEL_SLIDE_START_MS, self._intro_ms + dt_ms)
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= PANEL_SLIDE_START_MS - 1e-3:
             play_sfx("sfx_ui_panelclick")
             self._panel_open_sfx_played = True
         if self._consume_enter:
@@ -507,7 +512,8 @@ class QuestResultsUi:
         panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
 
         if self.assets.menu_panel is not None:
-            draw_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE)
+            fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
+            draw_classic_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         banner_x = left + 22.0 * scale
         banner_y = top + 36.0 * scale

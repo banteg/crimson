@@ -217,11 +217,11 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Remove/verify the extra `QUEST_RESULTS_PANEL_BASE_X` offset (runtime panel is anchored directly off `pos_x + slide_x`).
-* [ ] Switch quest-results panel to **Variant B tall** with width **510** and height **378**.
-* [ ] Match timing: timeline start=400/end=100, linear slide, width 510.
-* [ ] Use the corrected `draw_menu_panel()` (geometry-based slices, UV trims, correct shadow ordering).
-* [ ] Re-anchor quest-results text once panel position is corrected (it will move ~180px left).
+* [x] Remove/verify the extra `QUEST_RESULTS_PANEL_BASE_X` offset (runtime panel is anchored directly off `pos_x + slide_x`).
+* [x] Switch quest-results panel to **Variant B tall** with width **510** and height **378**.
+* [x] Match timing: timeline start=400/end=100, linear slide, width 510.
+* [x] Use the corrected `draw_menu_panel()` (geometry-based slices, UV trims, correct shadow ordering).
+* [x] Re-anchor quest-results text once panel position is corrected (it will move ~180px left).
 
 ---
 
