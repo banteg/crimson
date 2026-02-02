@@ -4,15 +4,15 @@
 void console_input_clear()
 {
   console_input_ready = 0;
-  dword_47EA54 = 0;
-  byte_47E448[0] = 0;
+  console_input_cursor = 0;
+  console_input_buf[0] = 0;
 }
 
 // console_input_buffer @ 0x00401050
 // returns console input buffer pointer
 char *console_input_buffer()
 {
-  return byte_47E448;
+  return console_input_buf;
 }
 
 // console_input_poll @ 0x00401060
@@ -32,27 +32,27 @@ int console_input_poll()
     return 0;
   if ( result == 13 )
   {
-    v1 = dword_47EA54;
+    v1 = console_input_cursor;
     console_input_ready = 1;
-    byte_47E448[dword_47EA54] = 0;
-    dword_47EA54 = v1 + 1;
+    console_input_buf[console_input_cursor] = 0;
+    console_input_cursor = v1 + 1;
     return 0;
   }
   if ( result != 8 )
   {
-    v3 = dword_47EA54;
-    byte_47E448[dword_47EA54] = result;
+    v3 = console_input_cursor;
+    console_input_buf[console_input_cursor] = result;
     v4 = v3 + 1;
-    dword_47EA54 = v4;
+    console_input_cursor = v4;
     if ( v4 >= 1024 )
-      dword_47EA54 = --v4;
-    byte_47E448[v4] = 0;
+      console_input_cursor = --v4;
+    console_input_buf[v4] = 0;
     return 0;
   }
-  v2 = dword_47EA54;
-  if ( dword_47EA54 > 0 )
-    v2 = --dword_47EA54;
-  byte_47E448[v2] = 0;
+  v2 = console_input_cursor;
+  if ( console_input_cursor > 0 )
+    v2 = --console_input_cursor;
+  console_input_buf[v2] = 0;
   return 0;
 }
 
@@ -99,7 +99,7 @@ int console_cmd_argc_get()
 // [binja] int32_t sub_401180()
 int sub_401160()
 {
-  FUN_00401170();
+  console_global_init();
   return crt_atexit(func);
 }
 
@@ -342,14 +342,14 @@ int *console_init(int *console_state)
     v5 = 0;
   }
   v2[4] = (int)v5;
-  *(_DWORD *)v2[4] = strdup_malloc(szPassword);
+  *(_DWORD *)v2[4] = strdup_malloc(s_empty_string);
   v2[5] = 0;
   return v2;
 }
 
-// FUN_004016e0 @ 0x004016E0
+// console_destroy @ 0x004016E0
 // [binja] void __fastcall sub_4016e0(int32_t* arg1)
-void FUN_004016e0(int *arg1)
+void console_destroy(int *arg1)
 {
   int v1; // ecx
   int v2; // edi
@@ -517,8 +517,8 @@ void console_history_apply(int console_state)
     *(_DWORD *)(v1 + 20) = v3;
   }
 LABEL_6:
-  strcpy(byte_47E448, *(const char **)v2);
-  dword_47EA54 = strlen(byte_47E448);
+  strcpy(console_input_buf, *(const char **)v2);
+  console_input_cursor = strlen(console_input_buf);
   console_input_ready = 0;
 }
 
@@ -532,7 +532,6 @@ char console_exec_line(char *line)
   const char **v4; // esi
   char (**v5)(void); // eax
   double v6; // st7
-  char *v7; // [esp+4h] [ebp-Ch]
 
   v2 = v1;
   console_tokenize_line(line);
@@ -549,7 +548,7 @@ char console_exec_line(char *line)
           crt_free((void *)v4[4]);
         v4[4] = 0;
         v4[4] = strdup_malloc(console_cmd_arg1);
-        v6 = crt_atof_l(console_cmd_arg1, v7);
+        v6 = crt_atof_l(console_cmd_arg1);
         *((float *)v4 + 3) = v6;
         result = v2[12];
         if ( result )
@@ -637,14 +636,14 @@ void console_update(int console_state)
     }
     if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 203) )
     {
-      if ( --dword_47EA54 < 0 )
-        dword_47EA54 = 0;
+      if ( --console_input_cursor < 0 )
+        console_input_cursor = 0;
     }
     if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 205) )
     {
-      ++dword_47EA54;
-      if ( dword_47EA54 > (int)strlen(byte_47E448) )
-        dword_47EA54 = strlen(byte_47E448);
+      ++console_input_cursor;
+      if ( console_input_cursor > (int)strlen(console_input_buf) )
+        console_input_cursor = strlen(console_input_buf);
     }
     if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 201) )
       *(_DWORD *)(v3 + 36) += 2;
@@ -667,8 +666,8 @@ void console_update(int console_state)
       v9 = console_cvar_autocomplete(v8);
       if ( v9 || (v10 = console_input_buffer(), (v9 = console_command_autocomplete(v10)) != 0) )
       {
-        strcpy(byte_47E448, v9);
-        dword_47EA54 = strlen(v9);
+        strcpy(console_input_buf, v9);
+        console_input_cursor = strlen(v9);
       }
     }
     if ( console_input_ready )
@@ -715,9 +714,9 @@ void console_update(int console_state)
   }
 }
 
-// FUN_00401dd0 @ 0x00401DD0
+// console_render @ 0x00401DD0
 // [binja] int32_t __fastcall sub_401dd0(void* arg1)
-int FUN_00401dd0(void *arg1)
+int console_render(void *arg1)
 {
   int v1; // ecx
   int v2; // esi
@@ -965,7 +964,7 @@ LABEL_14:
     if ( v24 > v63 / 16 - 2 )
       v24 = v63 / 16 - 2;
     v25 = v24 + 1;
-    v26 = sin(flt_47EA4C * 3.0);
+    v26 = sin(game_time_s * 3.0);
     *(float *)&v65 = v26;
     v27 = 8.0;
     crt_ci_pow();
@@ -1007,9 +1006,9 @@ LABEL_14:
       v65 = 16 * v25;
       v28 = (double)(16 * v25) + *(float *)(v2 + 28);
       v29 = *(_DWORD *)grim_interface_ptr;
-      v65 = 8 * dword_47EA54;
+      v65 = 8 * console_input_cursor;
       v45 = v28 + 2.0;
-      v36 = (double)(8 * dword_47EA54) + 26.0;
+      v36 = (double)(8 * console_input_cursor) + 26.0;
       (*(void (__stdcall **)(_DWORD, _DWORD, char *))(v29 + 316))(LODWORD(v36), LODWORD(v45), asc_4712B8);
     }
     return (*(int (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
@@ -1038,9 +1037,6 @@ void *console_register_cvar(char *name, char *value)
   char **v11; // esi
   char **v12; // eax
   char **v13; // esi
-  char *v14; // [esp-4h] [ebp-14h]
-  char *v15; // [esp-4h] [ebp-14h]
-  char *v16; // [esp-4h] [ebp-14h]
 
   v3 = v2;
   v4 = (void **)console_cvar_find(name);
@@ -1051,7 +1047,7 @@ void *console_register_cvar(char *name, char *value)
       crt_free(v4[4]);
     v5[4] = 0;
     v5[4] = strdup_malloc(value);
-    *((float *)v5 + 3) = crt_atof_l(value, v14);
+    *((float *)v5 + 3) = crt_atof_l(value);
     return v5;
   }
   else
@@ -1082,7 +1078,7 @@ void *console_register_cvar(char *name, char *value)
       }
       *((_DWORD *)v8 + 1) = v11;
       *(_DWORD *)(*((_DWORD *)v8 + 1) + 16) = strdup_malloc(value);
-      *(float *)(*((_DWORD *)v8 + 1) + 12) = crt_atof_l(value, v15);
+      *(float *)(*((_DWORD *)v8 + 1) + 12) = crt_atof_l(value);
       return (void *)*((_DWORD *)v8 + 1);
     }
     else
@@ -1107,7 +1103,7 @@ void *console_register_cvar(char *name, char *value)
       }
       *v3 = v13;
       *((_DWORD *)*v3 + 4) = strdup_malloc(value);
-      *((float *)*v3 + 3) = crt_atof_l(value, v16);
+      *((float *)*v3 + 3) = crt_atof_l(value);
       return *v3;
     }
   }
@@ -1553,9 +1549,9 @@ void register_core_cvars()
   cv_padAimDistMul = (int)console_register_cvar(aCvPadaimdistmu, a96);
 }
 
-// FUN_00402d50 @ 0x00402D50
+// ui_render_loading @ 0x00402D50
 // [binja] int32_t sub_402d50()
-int FUN_00402d50()
+int ui_render_loading()
 {
   int v0; // esi
   int v2; // [esp+40h] [ebp-30h]
@@ -1947,169 +1943,169 @@ char *input_key_name(int key_code)
     switch ( key_code )
     {
       case 256:
-        strcpy(String, aMouse1);
-        return String;
+        strcpy(input_key_name_buf, aMouse1);
+        return input_key_name_buf;
       case 257:
         v2 = aMouse2;
         break;
       case 258:
-        strcpy(String, aMouse3);
-        return String;
+        strcpy(input_key_name_buf, aMouse3);
+        return input_key_name_buf;
       case 259:
         v2 = aMouse4;
         break;
       case 260:
-        strcpy(String, aMouse5);
-        return String;
+        strcpy(input_key_name_buf, aMouse5);
+        return input_key_name_buf;
       case 265:
         v2 = aMwheelup;
         break;
       case 266:
-        strcpy(String, aMwheeldown);
-        return String;
+        strcpy(input_key_name_buf, aMwheeldown);
+        return input_key_name_buf;
       case 287:
         v2 = aJoys1;
         break;
       case 288:
-        strcpy(String, aJoys2);
-        return String;
+        strcpy(input_key_name_buf, aJoys2);
+        return input_key_name_buf;
       case 289:
         v2 = aJoys3;
         break;
       case 290:
-        strcpy(String, aJoys4);
-        return String;
+        strcpy(input_key_name_buf, aJoys4);
+        return input_key_name_buf;
       case 291:
         v2 = aJoys5;
         break;
       case 292:
-        strcpy(String, aJoys6);
-        return String;
+        strcpy(input_key_name_buf, aJoys6);
+        return input_key_name_buf;
       case 293:
         v2 = aJoys7;
         break;
       case 294:
-        strcpy(String, aJoys8);
-        return String;
+        strcpy(input_key_name_buf, aJoys8);
+        return input_key_name_buf;
       case 295:
         v2 = aJoys9;
         break;
       case 296:
-        strcpy(String, aJoys10);
-        return String;
+        strcpy(input_key_name_buf, aJoys10);
+        return input_key_name_buf;
       case 297:
         v2 = aJoys11;
         break;
       case 298:
-        strcpy(String, aJoys12);
-        return String;
+        strcpy(input_key_name_buf, aJoys12);
+        return input_key_name_buf;
       case 305:
         v2 = aJoysup;
         break;
       case 306:
-        strcpy(String, aJoysdown);
-        return String;
+        strcpy(input_key_name_buf, aJoysdown);
+        return input_key_name_buf;
       case 307:
         v2 = aJoysleft;
         break;
       case 308:
-        strcpy(String, aJoysright);
-        return String;
+        strcpy(input_key_name_buf, aJoysright);
+        return input_key_name_buf;
       case 319:
         v2 = aJoyaxisx;
         break;
       case 320:
-        strcpy(String, aJoyaxisy);
-        return String;
+        strcpy(input_key_name_buf, aJoyaxisy);
+        return input_key_name_buf;
       case 321:
         v2 = aJoyaxisz;
         break;
       case 339:
-        strcpy(String, aJoyrotx);
-        return String;
+        strcpy(input_key_name_buf, aJoyrotx);
+        return input_key_name_buf;
       case 340:
         v2 = aJoyroty;
         break;
       case 341:
-        strcpy(String, aJoyrotz);
-        return String;
+        strcpy(input_key_name_buf, aJoyrotz);
+        return input_key_name_buf;
       case 382:
         v2 = aUnbound;
         break;
       case 355:
-        strcpy(String, aRim0xaxis);
-        return String;
+        strcpy(input_key_name_buf, aRim0xaxis);
+        return input_key_name_buf;
       case 356:
         v2 = aRim1xaxis;
         break;
       case 357:
-        strcpy(String, aRim2xaxis);
-        return String;
+        strcpy(input_key_name_buf, aRim2xaxis);
+        return input_key_name_buf;
       case 360:
         v2 = aRim0yaxis;
         break;
       case 361:
-        strcpy(String, aRim1yaxis);
-        return String;
+        strcpy(input_key_name_buf, aRim1yaxis);
+        return input_key_name_buf;
       case 362:
         v2 = aRim2yaxis;
         break;
       case 365:
-        strcpy(String, aRim0btn1);
-        return String;
+        strcpy(input_key_name_buf, aRim0btn1);
+        return input_key_name_buf;
       case 366:
         v2 = aRim0btn2;
         break;
       case 367:
-        strcpy(String, aRim0btn3);
-        return String;
+        strcpy(input_key_name_buf, aRim0btn3);
+        return input_key_name_buf;
       case 368:
         v2 = aRim0btn4;
         break;
       case 369:
-        strcpy(String, aRim0btn5);
-        return String;
+        strcpy(input_key_name_buf, aRim0btn5);
+        return input_key_name_buf;
       case 370:
         v2 = aRim1btn1;
         break;
       case 371:
-        strcpy(String, aRim1btn2);
-        return String;
+        strcpy(input_key_name_buf, aRim1btn2);
+        return input_key_name_buf;
       case 372:
         v2 = aRim1btn3;
         break;
       case 373:
-        strcpy(String, aRim1btn4);
-        return String;
+        strcpy(input_key_name_buf, aRim1btn4);
+        return input_key_name_buf;
       case 374:
         v2 = aRim1btn5;
         break;
       case 375:
-        strcpy(String, aRim2btn1);
-        return String;
+        strcpy(input_key_name_buf, aRim2btn1);
+        return input_key_name_buf;
       case 376:
         v2 = aRim2btn2;
         break;
       case 377:
-        strcpy(String, aRim2btn3);
-        return String;
+        strcpy(input_key_name_buf, aRim2btn3);
+        return input_key_name_buf;
       case 378:
         v2 = aRim2btn4;
         break;
       case 379:
-        strcpy(String, aRim2btn5);
-        return String;
+        strcpy(input_key_name_buf, aRim2btn5);
+        return input_key_name_buf;
       default:
         if ( key_code <= 355 )
-          return String;
+          return input_key_name_buf;
         v2 = aRawinput;
         break;
     }
-    strcpy(String, v2);
-    return String;
+    strcpy(input_key_name_buf, v2);
+    return input_key_name_buf;
   }
-  if ( GetKeyNameTextA(key_code << 16, String, 63) )
-    return String;
+  if ( GetKeyNameTextA(key_code << 16, input_key_name_buf, 63) )
+    return input_key_name_buf;
   switch ( key_code )
   {
     case 1:
@@ -2771,8 +2767,8 @@ void demo_trial_overlay_render(float *xy, float alpha)
   v37 = *xy + 26.0;
   v38 = v4 + 80.0;
   v5 = sub_41DF50() - *(_DWORD *)&game_sequence_id;
-  if ( dword_48084C > 0 )
-    v5 = 300000 - dword_48084C;
+  if ( demo_trial_elapsed_ms > 0 )
+    v5 = 300000 - demo_trial_elapsed_ms;
   v6 = v5 / 1000 / 60
      + 60
      * (((unsigned int)(((unsigned __int64)(2004318071LL * (v5 / 1000 / 60)) >> 32) - v5 / 1000 / 60) >> 31)
@@ -2805,13 +2801,13 @@ void demo_trial_overlay_render(float *xy, float alpha)
   *(_DWORD *)&game_sequence_id = game_sequence_get();
   if ( *(int *)&game_sequence_id > 2400000 )
     goto LABEL_27;
-  if ( dword_48084C <= 0 )
+  if ( demo_trial_elapsed_ms <= 0 )
   {
     if ( config_game_mode != 3 )
       goto LABEL_27;
   }
   else if ( config_game_mode != 3
-         || (LODWORD(v39) = dword_48084C / 1000, (double)(dword_48084C / 1000) * 0.016666668 > 5.0) )
+         || (LODWORD(v39) = demo_trial_elapsed_ms / 1000, (double)(demo_trial_elapsed_ms / 1000) * 0.016666668 > 5.0) )
   {
 LABEL_27:
     if ( v6 > 0 || v7 > 0 )
@@ -2913,7 +2909,7 @@ LABEL_27:
     goto LABEL_27;
   v38 = v38 - 6.0;
   v9 = v37;
-  if ( dword_48084C > 0 )
+  if ( demo_trial_elapsed_ms > 0 )
   {
     v13 = *(_DWORD *)grim_interface_ptr;
     v38 = v38 + 6.0;
@@ -2945,7 +2941,7 @@ LABEL_27:
       grim_interface_ptr,
       COERCE_FLOAT(LODWORD(v37)),
       COERCE_FLOAT(LODWORD(v38)),
-      szPassword);
+      s_empty_string);
     v12 = v38 + 14.0;
   }
   v38 = v12;
@@ -3197,7 +3193,7 @@ void ui_render_keybind_help(float *xy, float alpha)
     grim_interface_ptr,
     LODWORD(alphab),
     LODWORD(v37),
-    aS_0,
+    s_fmt_percent_s,
     v6);
   v7 = 0;
   alphaa = 0;
@@ -3234,7 +3230,7 @@ void ui_render_keybind_help(float *xy, float alpha)
       grim_interface_ptr,
       LODWORD(xya),
       LODWORD(v39),
-      aS_0,
+      s_fmt_percent_s,
       v12);
     v40 = v39 + 16.0;
     (*(void (__cdecl **)(int, float, _DWORD, char *))(*(_DWORD *)grim_interface_ptr + 328))(
@@ -3249,7 +3245,7 @@ void ui_render_keybind_help(float *xy, float alpha)
       grim_interface_ptr,
       LODWORD(xya),
       LODWORD(v40),
-      aS_0,
+      s_fmt_percent_s,
       v15);
     v41 = v40 + 16.0;
     (*(void (__cdecl **)(int, float, _DWORD, char *))(*(_DWORD *)grim_interface_ptr + 328))(
@@ -3264,7 +3260,7 @@ void ui_render_keybind_help(float *xy, float alpha)
       grim_interface_ptr,
       LODWORD(xya),
       LODWORD(v41),
-      aS_0,
+      s_fmt_percent_s,
       v18);
     v42 = v41 + 16.0;
     (*(void (__cdecl **)(int, float, _DWORD, char *))(*(_DWORD *)grim_interface_ptr + 328))(
@@ -3278,7 +3274,7 @@ void ui_render_keybind_help(float *xy, float alpha)
       grim_interface_ptr,
       LODWORD(xya),
       LODWORD(v42),
-      aS_0,
+      s_fmt_percent_s,
       v20);
     v38 = v42 + 16.0;
     v8 = v38;
@@ -3293,7 +3289,7 @@ void ui_render_keybind_help(float *xy, float alpha)
       grim_interface_ptr,
       COERCE_FLOAT(LODWORD(v13)),
       COERCE_FLOAT(LODWORD(v38)),
-      aS_0,
+      s_fmt_percent_s,
       v21);
     if ( !alphaa )
     {
@@ -3724,19 +3720,19 @@ void perk_selection_screen_update()
     v16[0] = 18.0;
   }
   v18 = v0;
-  if ( (byte_4807C8 & 1) == 0 )
+  if ( (perk_selection_screen_flags & 1) == 0 )
   {
     dword_480298 = 1049398413;
-    byte_4807C8 |= 1u;
+    perk_selection_screen_flags |= 1u;
     dword_48029C = 1060418741;
     dword_4802A0 = 1064366321;
     dword_4802A4 = 1058642330;
     crt_atexit(nullsub_8);
   }
-  if ( (byte_4807C8 & 2) == 0 )
+  if ( (perk_selection_screen_flags & 2) == 0 )
   {
     dword_480310 = 1049398413;
-    byte_4807C8 |= 2u;
+    perk_selection_screen_flags |= 2u;
     dword_480314 = 1060418741;
     dword_480318 = 1064366321;
     dword_48031C = 1065353216;
@@ -3748,10 +3744,10 @@ void perk_selection_screen_update()
     1065353216,
     1065353216,
     1065353216);
-  if ( (byte_4807C8 & 4) == 0 )
+  if ( (perk_selection_screen_flags & 4) == 0 )
   {
     v1 = 10;
-    byte_4807C8 |= 4u;
+    perk_selection_screen_flags |= 4u;
     v2 = &unk_4800B4;
     do
     {
@@ -3777,7 +3773,7 @@ void perk_selection_screen_update()
     if ( *((_BYTE *)v4 + 4) )
     {
       v14 = 1;
-      dword_48089C = v3;
+      perk_selection_index = v3;
     }
     ++v3;
     ++v5;
@@ -3806,11 +3802,11 @@ void perk_selection_screen_update()
   (*(void (__stdcall **)(_DWORD, float, int))(*(_DWORD *)grim_interface_ptr + 324))(
     LODWORD(v9),
     COERCE_FLOAT(LODWORD(v18)),
-    perk_desc_table[5 * perk_choice_ids[dword_48089C]]);
-  if ( (byte_4807C8 & 8) == 0 )
+    perk_desc_table[5 * perk_choice_ids[perk_selection_index]]);
+  if ( (perk_selection_screen_flags & 8) == 0 )
   {
     byte_480096 = 1;
-    byte_4807C8 |= 8u;
+    perk_selection_screen_flags |= 8u;
     byte_4800A5 = 0;
     byte_4800A4 = 0;
     dword_4800A0 = 1065353216;
@@ -3822,10 +3818,10 @@ void perk_selection_screen_update()
     crt_atexit(nullsub_5);
   }
   dword_480090 = (int)aCancel;
-  if ( (byte_4807C8 & 0x10) == 0 )
+  if ( (perk_selection_screen_flags & 0x10) == 0 )
   {
     byte_480826 = 1;
-    byte_4807C8 |= 0x10u;
+    perk_selection_screen_flags |= 0x10u;
     byte_480835 = 0;
     byte_480834 = 0;
     dword_480830 = 1065353216;
@@ -3846,12 +3842,12 @@ void perk_selection_screen_update()
   }
   perk_prompt_update_and_render();
   ui_cursor_render();
-  if ( v14 && dword_48089C >= 0 )
+  if ( v14 && perk_selection_index >= 0 )
   {
-    if ( byte_4800AD[16 * dword_48089C] )
+    if ( byte_4800AD[16 * perk_selection_index] )
     {
       sfx_play(sfx_ui_buttonclick);
-      perk_apply(perk_choice_ids[dword_48089C]);
+      perk_apply(perk_choice_ids[perk_selection_index]);
       ui_transition_direction = 0;
       game_state_pending = 9;
       --perk_pending_count;
@@ -3984,9 +3980,9 @@ void ui_draw_clock_gauge()
   (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
 }
 
-// FUN_00406350 @ 0x00406350
+// game_update_victory_screen @ 0x00406350
 // [binja] int32_t sub_406350()
-int FUN_00406350()
+int game_update_victory_screen()
 {
   int v0; // ecx
   int v1; // ecx
@@ -4017,8 +4013,8 @@ int FUN_00406350()
     1065353216,
     1065353216);
   v10 = v12 + 6.0;
-  if ( dword_487234 == -1 )
-    dword_487234 = 0;
+  if ( ui_screen_phase == -1 )
+    ui_screen_phase = 0;
   (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
     grim_interface_ptr,
     24,
@@ -4079,13 +4075,13 @@ int FUN_00406350()
       grim_interface_ptr,
       COERCE_FLOAT(LODWORD(v9)),
       COERCE_FLOAT(LODWORD(v10)),
-      szPassword);
+      s_empty_string);
     v10 = v10 + 14.0;
     (*(void (__cdecl **)(int, float, float, CHAR *))(*(_DWORD *)grim_interface_ptr + 328))(
       grim_interface_ptr,
       COERCE_FLOAT(LODWORD(v9)),
       COERCE_FLOAT(LODWORD(v10)),
-      szPassword);
+      s_empty_string);
   }
   else
   {
@@ -4142,10 +4138,10 @@ int FUN_00406350()
   v12 = v13 + 40.0;
   v9 = v11 + flt_48DBC8 + 44.0 + 20.0;
   v10 = v12 + 170.0;
-  if ( (byte_480321 & 1) == 0 )
+  if ( (game_completed_screen_flags & 1) == 0 )
   {
     byte_47F5E6 = 1;
-    byte_480321 |= 1u;
+    game_completed_screen_flags |= 1u;
     byte_47F5F5 = 0;
     byte_47F5F4 = 0;
     dword_47F5F0 = 1065353216;
@@ -4157,10 +4153,10 @@ int FUN_00406350()
     crt_atexit(nullsub_12);
   }
   dword_47F5E0 = (int)aSurvival;
-  if ( (byte_480321 & 2) == 0 )
+  if ( (game_completed_screen_flags & 2) == 0 )
   {
     byte_480286 = 1;
-    byte_480321 |= 2u;
+    game_completed_screen_flags |= 2u;
     byte_480295 = 0;
     byte_480294 = 0;
     dword_480290 = 1065353216;
@@ -4172,10 +4168,10 @@ int FUN_00406350()
     crt_atexit(nullsub_11);
   }
   dword_480280 = (int)aRush;
-  if ( (byte_480321 & 4) == 0 )
+  if ( (game_completed_screen_flags & 4) == 0 )
   {
     byte_48032E = 1;
-    byte_480321 |= 4u;
+    game_completed_screen_flags |= 4u;
     byte_48033D = 0;
     byte_48033C = 0;
     dword_480338 = 1065353216;
@@ -4187,10 +4183,10 @@ int FUN_00406350()
     crt_atexit(nullsub_10);
   }
   dword_480328 = (int)aTypOShooter;
-  if ( (byte_480321 & 8) == 0 )
+  if ( (game_completed_screen_flags & 8) == 0 )
   {
     byte_48026E = 1;
-    byte_480321 |= 8u;
+    game_completed_screen_flags |= 8u;
     byte_48027D = 0;
     byte_48027C = 0;
     dword_480278 = 1065353216;
@@ -4278,9 +4274,9 @@ void __cdecl nullsub_12()
   ;
 }
 
-// FUN_00406af0 @ 0x00406AF0
+// game_update_generic_menu @ 0x00406AF0
 // [binja] int32_t sub_406af0()
-int FUN_00406af0()
+int game_update_generic_menu()
 {
   int result; // eax
 
@@ -4656,7 +4652,7 @@ LABEL_45:
             fild    player_experience
             fadd    dword ptr [esi+49BF9Ch]
           }
-          player_experience[0] = ((signed __int64 (__usercall *)@<edx:eax>())_ftol)();
+          player_experience[0] = _ftol();
           sfx_play_panned(sfx_trooper_inpain_01_alias_1);
         }
       }
@@ -4681,15 +4677,15 @@ void quest_mode_update()
   quest_spawn_timeline_update();
   if ( !demo_mode_active && (unsigned __int8)creatures_none_active() && (unsigned __int8)quest_spawn_table_empty() )
   {
-    v0 = dword_487088;
+    v0 = quest_transition_timer_ms;
     bonus_reflex_boost_timer = 0.0;
-    if ( dword_487088 >= 0 )
+    if ( quest_transition_timer_ms >= 0 )
     {
-      if ( dword_487088 <= 800 || dword_487088 > 850 )
+      if ( quest_transition_timer_ms <= 800 || quest_transition_timer_ms > 850 )
       {
-        if ( dword_487088 <= 2000 || dword_487088 > 2050 )
+        if ( quest_transition_timer_ms <= 2000 || quest_transition_timer_ms > 2050 )
         {
-          if ( dword_487088 > 2500 )
+          if ( quest_transition_timer_ms > 2500 )
           {
             v2 = quest_stage_minor + 10 * *(_DWORD *)quest_stage_major - 10;
             if ( v2 > quest_unlock_index )
@@ -4704,31 +4700,31 @@ void quest_mode_update()
             ui_transition_direction = 0;
             (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 76))(grim_interface_ptr);
             console_input_poll();
-            v0 = dword_487088;
+            v0 = quest_transition_timer_ms;
             highscore_score_xp = 0;
           }
-          dword_487088 = frame_dt_ms + v0;
+          quest_transition_timer_ms = frame_dt_ms + v0;
         }
         else
         {
-          dword_487088 = 2051;
+          quest_transition_timer_ms = 2051;
           sfx_play_exclusive(music_track_crimsonquest_id);
-          v1 = frame_dt_ms + dword_487088;
+          v1 = frame_dt_ms + quest_transition_timer_ms;
           sfx_volume_table[music_track_crimsonquest_id] = 0.0;
-          dword_487088 = v1;
+          quest_transition_timer_ms = v1;
         }
       }
       else
       {
         sfx_play(sfx_questhit);
-        dword_487088 = frame_dt_ms + 851;
+        quest_transition_timer_ms = frame_dt_ms + 851;
       }
     }
     else
     {
       sfx_mute_all(music_track_extra_0);
       ++dword_4856B8[10 * *(_DWORD *)quest_stage_major + quest_stage_minor];
-      dword_487088 = frame_dt_ms;
+      quest_transition_timer_ms = frame_dt_ms;
     }
   }
 }
@@ -6881,7 +6877,7 @@ LABEL_12:
       frame_dt = 0.0;
       goto LABEL_19;
     }
-    if ( dword_48084C <= 0 )
+    if ( demo_trial_elapsed_ms <= 0 )
     {
       if ( config_game_mode != 3 )
         goto LABEL_17;
@@ -6890,7 +6886,7 @@ LABEL_12:
     {
       if ( config_game_mode != 3 )
         goto LABEL_12;
-      v27 = dword_48084C / 1000;
+      v27 = demo_trial_elapsed_ms / 1000;
       __asm
       {
         fild    [esp+1Ch+var_8]
@@ -6917,11 +6913,11 @@ LABEL_22:
     *(_DWORD *)&game_sequence_id = game_sequence_get();
     if ( *(int *)&game_sequence_id > 2400000 )
       goto LABEL_37;
-    if ( dword_48084C > 0 )
+    if ( demo_trial_elapsed_ms > 0 )
     {
       if ( config_game_mode != 3 )
         goto LABEL_37;
-      v27 = dword_48084C / 1000;
+      v27 = demo_trial_elapsed_ms / 1000;
       __asm
       {
         fild    [esp+1Ch+var_8]
@@ -6951,11 +6947,11 @@ LABEL_37:
     *(_DWORD *)&game_sequence_id = game_sequence_get();
     if ( *(int *)&game_sequence_id > 2400000 )
       goto LABEL_53;
-    if ( dword_48084C > 0 )
+    if ( demo_trial_elapsed_ms > 0 )
     {
       if ( config_game_mode != 3 )
         goto LABEL_53;
-      v27 = dword_48084C / 1000;
+      v27 = demo_trial_elapsed_ms / 1000;
       __asm
       {
         fild    [esp+1Ch+var_8]
@@ -7041,7 +7037,7 @@ LABEL_53:
       __asm { fstp    bonus_reflex_boost_timer }
     }
     survival_elapsed_ms += frame_dt_ms;
-    dword_48708C[player_weapon_id[0]] += frame_dt_ms;
+    weapon_usage_time[player_weapon_id[0]] += frame_dt_ms;
   }
   camera_update();
   gameplay_render_world();
@@ -7278,7 +7274,7 @@ LABEL_118:
   *(_DWORD *)&game_sequence_id = game_sequence_get();
   if ( *(int *)&game_sequence_id > 2400000 )
     goto LABEL_132;
-  if ( dword_48084C <= 0 )
+  if ( demo_trial_elapsed_ms <= 0 )
   {
     if ( config_game_mode != 3 )
       goto LABEL_131;
@@ -7286,7 +7282,7 @@ LABEL_118:
   }
   if ( config_game_mode == 3 )
   {
-    xy = dword_48084C / 1000;
+    xy = demo_trial_elapsed_ms / 1000;
     __asm
     {
       fild    [esp+18h+xy]
@@ -7331,7 +7327,7 @@ LABEL_145:
     byte_480850 = 1;
     goto LABEL_147;
   }
-  if ( dword_48084C <= 0 )
+  if ( demo_trial_elapsed_ms <= 0 )
   {
     if ( config_game_mode != 3 )
       goto LABEL_146;
@@ -7340,7 +7336,7 @@ LABEL_145:
   {
     if ( config_game_mode != 3 )
       goto LABEL_145;
-    xy = dword_48084C / 1000;
+    xy = demo_trial_elapsed_ms / 1000;
     __asm
     {
       fild    [esp+18h+xy]
@@ -7381,7 +7377,7 @@ LABEL_165:
       v24 = dword_487284 - 4 * frame_dt_ms;
       goto LABEL_166;
     }
-    if ( dword_48084C <= 0 )
+    if ( demo_trial_elapsed_ms <= 0 )
     {
       if ( config_game_mode != 3 )
         goto LABEL_168;
@@ -7390,7 +7386,7 @@ LABEL_165:
     {
       if ( config_game_mode != 3 )
         goto LABEL_164;
-      v27 = dword_48084C / 1000;
+      v27 = demo_trial_elapsed_ms / 1000;
       __asm
       {
         fild    [esp+1Ch+var_8]
@@ -7445,7 +7441,7 @@ LABEL_174:
     *(_DWORD *)&game_sequence_id = game_sequence_get();
     if ( *(int *)&game_sequence_id > 2400000 )
       goto LABEL_185;
-    if ( dword_48084C <= 0 )
+    if ( demo_trial_elapsed_ms <= 0 )
     {
       if ( config_game_mode != 3 )
         return;
@@ -7454,7 +7450,7 @@ LABEL_174:
     {
       if ( config_game_mode != 3 )
         goto LABEL_185;
-      v27 = dword_48084C / 1000;
+      v27 = demo_trial_elapsed_ms / 1000;
       __asm
       {
         fild    [esp+18h+var_8]
@@ -7544,8 +7540,8 @@ int sub_40B630()
       (*(void (__thiscall **)(int))(*(_DWORD *)plugin_interface_ptr + 4))(plugin_interface_ptr);
       sfx_mute_all(music_track_extra_0);
       plugin_interface_ptr = 0;
-      FreeLibrary(hLibModule);
-      hLibModule = 0;
+      FreeLibrary(plugin_module_handle);
+      plugin_module_handle = 0;
       byte_471304 = 1;
       game_state_pending = 20;
       ui_transition_direction = 0;
@@ -7703,7 +7699,7 @@ void demo_purchase_screen_update()
     v11,
     v14,
     v18);
-  v38 = szPassword;
+  v38 = s_empty_string;
   if ( !demo_purchase_screen_active )
   {
     v10 = demo_upsell_message_index;
@@ -8124,7 +8120,7 @@ void console_hotkey_update()
     audio_resume_all();
     return;
   }
-  dword_480848 += frame_dt_ms;
+  game_time_ms += frame_dt_ms;
   if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 41) )
     console_set_open(console_open_flag == 0);
   console_update(v42);
@@ -8164,19 +8160,19 @@ void console_hotkey_update()
     *(_DWORD *)&game_sequence_id = game_sequence_get();
     if ( !console_open_flag && render_pass_mode && game_state_id == 9 )
       *(_DWORD *)&game_sequence_id += (__int64)(frame_dt * 1000.0);
-    if ( dword_48084C > 0 && !console_open_flag )
+    if ( demo_trial_elapsed_ms > 0 && !console_open_flag )
     {
       if ( !render_pass_mode )
         goto LABEL_59;
       if ( game_state_id == 9 && config_game_mode != 8 )
-        dword_48084C += (__int64)(frame_dt * 1000.0);
+        demo_trial_elapsed_ms += (__int64)(frame_dt * 1000.0);
     }
   }
   if ( render_pass_mode && perk_count_get(perk_id_reflex_boosted) && game_state_id == 9 )
     frame_dt = frame_dt * 0.89999998;
 LABEL_59:
   dword_47EA48 = LODWORD(frame_dt);
-  flt_47EA4C = flt_47EA4C + frame_dt;
+  game_time_s = game_time_s + frame_dt;
   v5 = (__int64)(frame_dt * 1000.0);
   frame_dt_ms = v5;
   if ( !console_open_flag && render_pass_mode && game_state_id == 9 && config_game_mode != 8 )
@@ -8250,7 +8246,7 @@ LABEL_59:
   v11 = ((double (__thiscall *)(int))*(_DWORD *)(*(_DWORD *)grim_interface_ptr + 112))(grim_interface_ptr);
   ui_mouse_x = v11 * flt_4807BC + v11 * flt_4807BC + ui_mouse_x;
   v12 = ((double (__thiscall *)(int))*(_DWORD *)(*(_DWORD *)grim_interface_ptr + 116))(grim_interface_ptr);
-  v13 = (float *)dword_4871F4;
+  v13 = (float *)player_aim_screen_x;
   ui_mouse_y = v12 * flt_4807BC + v12 * flt_4807BC + ui_mouse_y;
   do
   {
@@ -8298,11 +8294,11 @@ LABEL_88:
           survival_gameplay_update_and_render();
           break;
         case 21:
-          FUN_00406350();
+          game_update_victory_screen();
           break;
         default:
           demo_purchase_screen_active = 0;
-          FUN_00406af0();
+          game_update_generic_menu();
           break;
       }
       goto LABEL_125;
@@ -8403,7 +8399,7 @@ LABEL_125:
     1065353216,
     1065353216,
     1058642330);
-  FUN_00401dd0(v43);
+  console_render(v43);
   crt_rand();
   audio_update();
   if ( !(*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 1) )
@@ -8560,24 +8556,24 @@ LABEL_186:
     if ( byte_4D7A24 )
     {
       byte_4D7A24 = 0;
-      FUN_00402d50();
-      FUN_00402d50();
+      ui_render_loading();
+      ui_render_loading();
       audio_suspend_all();
       game_is_full_version();
     }
     if ( byte_4D7A25 )
     {
       byte_4D7A25 = 0;
-      FUN_00402d50();
-      FUN_00402d50();
+      ui_render_loading();
+      ui_render_loading();
       audio_suspend_all();
       game_is_full_version();
     }
     if ( byte_4D7A26 )
     {
       byte_4D7A26 = 0;
-      FUN_00402d50();
-      FUN_00402d50();
+      ui_render_loading();
+      ui_render_loading();
       audio_suspend_all();
       game_is_full_version();
     }
@@ -8658,44 +8654,44 @@ void credits_line_clear_flag(int index)
 // populates credits line table with headings, names, and hint lines
 void credits_build_lines()
 {
-  credits_line_set(0, szPassword, 0);
+  credits_line_set(0, s_empty_string, 0);
   credits_line_set(1, szAgent, 1);
-  credits_line_set(2, szPassword, 0);
-  credits_line_set(3, szPassword, 0);
+  credits_line_set(2, s_empty_string, 0);
+  credits_line_set(3, s_empty_string, 0);
   credits_line_set(4, aGameDesign, 1);
   credits_line_set(5, aTeroAlatalo, 0);
-  credits_line_set(6, szPassword, 0);
+  credits_line_set(6, s_empty_string, 0);
   credits_line_set(7, aProgramming, 1);
   credits_line_set(8, aTeroAlatalo, 0);
-  credits_line_set(9, szPassword, 0);
+  credits_line_set(9, s_empty_string, 0);
   credits_line_set(10, aProducer, 1);
   credits_line_set(11, aZachYoung, 0);
-  credits_line_set(12, szPassword, 0);
+  credits_line_set(12, s_empty_string, 0);
   credits_line_set(13, a2dArt, 1);
   credits_line_set(14, aTeroAlatalo, 0);
-  credits_line_set(15, szPassword, 0);
+  credits_line_set(15, s_empty_string, 0);
   credits_line_set(16, a3dModelling, 1);
   credits_line_set(17, aTeroAlatalo, 0);
   credits_line_set(18, aTimoPalonen, 0);
-  credits_line_set(19, szPassword, 0);
+  credits_line_set(19, s_empty_string, 0);
   credits_line_set(20, aMusic, 1);
   credits_line_set(21, aValtteriPihlaj, 0);
   credits_line_set(22, aVilleEriksson, 0);
-  credits_line_set(23, szPassword, 0);
+  credits_line_set(23, s_empty_string, 0);
   credits_line_set(24, aSoundEffects, 1);
   credits_line_set(25, aIonHardie, 0);
   credits_line_set(26, aTeroAlatalo, 0);
   credits_line_set(27, aValtteriPihlaj, 0);
   credits_line_set(28, aVilleEriksson, 0);
-  credits_line_set(29, szPassword, 0);
+  credits_line_set(29, s_empty_string, 0);
   credits_line_set(30, aManual, 1);
   credits_line_set(31, aMiikkaKulmala, 0);
   credits_line_set(32, aZachYoung, 0);
-  credits_line_set(33, szPassword, 0);
+  credits_line_set(33, s_empty_string, 0);
   credits_line_set(34, aSpecialThanksT, 1);
   credits_line_set(35, aPetriJ, 0);
   credits_line_set(36, aPeterHajbaReme, 0);
-  credits_line_set(37, szPassword, 0);
+  credits_line_set(37, s_empty_string, 0);
   credits_line_set(38, aPlayTesters, 1);
   credits_line_set(39, aAvrahamPetrosy, 0);
   credits_line_set(40, aBryceBaker, 0);
@@ -8723,72 +8719,72 @@ void credits_build_lines()
   credits_line_set(62, aVilleEriksson, 0);
   credits_line_set(63, aVilleM, 0);
   credits_line_set(64, aZachYoung, 0);
-  credits_line_set(65, szPassword, 0);
+  credits_line_set(65, s_empty_string, 0);
   credits_line_set(66, aGreetingTo, 0);
   credits_line_set(66, aChaos, 0);
   credits_line_set(66, aMatricks, 0);
   credits_line_set(66, aMuzzy, 0);
-  credits_line_set(66, szPassword, 0);
-  credits_line_set(67, szPassword, 0);
+  credits_line_set(66, s_empty_string, 0);
+  credits_line_set(67, s_empty_string, 0);
   credits_line_set(68, a2003C10tonsEnt, 0);
   credits_line_set(69, a10tonsLogoBy, 0);
   credits_line_set(70, aPasiHeinonen, 0);
-  credits_line_set(71, szPassword, 0);
-  credits_line_set(72, szPassword, 0);
-  credits_line_set(73, szPassword, 0);
+  credits_line_set(71, s_empty_string, 0);
+  credits_line_set(72, s_empty_string, 0);
+  credits_line_set(73, s_empty_string, 0);
   credits_line_set(74, aUsesVorbisAudi, 0);
   credits_line_set(75, a2003CXiphOrgFo, 0);
   credits_line_set(76, aSeeVorbisTxt, 0);
-  credits_line_set(77, szPassword, 0);
-  credits_line_set(78, szPassword, 0);
-  credits_line_set(79, szPassword, 0);
-  credits_line_set(80, szPassword, 0);
-  credits_line_set(81, szPassword, 0);
-  credits_line_set(82, szPassword, 0);
-  credits_line_set(83, szPassword, 0);
+  credits_line_set(77, s_empty_string, 0);
+  credits_line_set(78, s_empty_string, 0);
+  credits_line_set(79, s_empty_string, 0);
+  credits_line_set(80, s_empty_string, 0);
+  credits_line_set(81, s_empty_string, 0);
+  credits_line_set(82, s_empty_string, 0);
+  credits_line_set(83, s_empty_string, 0);
   credits_secret_line_base_index = 84;
-  credits_line_set(84, szPassword, 0);
-  credits_line_set(85, szPassword, 0);
-  credits_line_set(86, szPassword, 0);
+  credits_line_set(84, s_empty_string, 0);
+  credits_line_set(85, s_empty_string, 0);
+  credits_line_set(86, s_empty_string, 0);
   credits_line_set(87, aYouCanStopWatc, 0);
-  credits_line_set(88, szPassword, 0);
-  credits_line_set(89, szPassword, 0);
-  credits_line_set(90, szPassword, 0);
-  credits_line_set(91, szPassword, 0);
-  credits_line_set(92, szPassword, 0);
-  credits_line_set(93, szPassword, 0);
-  credits_line_set(94, szPassword, 0);
-  credits_line_set(95, szPassword, 0);
-  credits_line_set(96, szPassword, 0);
-  credits_line_set(97, szPassword, 0);
-  credits_line_set(98, szPassword, 0);
-  credits_line_set(99, szPassword, 0);
-  credits_line_set(100, szPassword, 0);
-  credits_line_set(101, szPassword, 0);
-  credits_line_set(102, szPassword, 0);
-  credits_line_set(103, szPassword, 0);
-  credits_line_set(104, szPassword, 0);
-  credits_line_set(105, szPassword, 0);
-  credits_line_set(106, szPassword, 0);
-  credits_line_set(107, szPassword, 0);
-  credits_line_set(108, szPassword, 0);
-  credits_line_set(109, szPassword, 0);
-  credits_line_set(110, szPassword, 0);
-  credits_line_set(111, szPassword, 0);
-  credits_line_set(112, szPassword, 0);
-  credits_line_set(113, szPassword, 0);
-  credits_line_set(114, szPassword, 0);
-  credits_line_set(115, szPassword, 0);
-  credits_line_set(116, szPassword, 0);
-  credits_line_set(117, szPassword, 0);
-  credits_line_set(118, szPassword, 0);
+  credits_line_set(88, s_empty_string, 0);
+  credits_line_set(89, s_empty_string, 0);
+  credits_line_set(90, s_empty_string, 0);
+  credits_line_set(91, s_empty_string, 0);
+  credits_line_set(92, s_empty_string, 0);
+  credits_line_set(93, s_empty_string, 0);
+  credits_line_set(94, s_empty_string, 0);
+  credits_line_set(95, s_empty_string, 0);
+  credits_line_set(96, s_empty_string, 0);
+  credits_line_set(97, s_empty_string, 0);
+  credits_line_set(98, s_empty_string, 0);
+  credits_line_set(99, s_empty_string, 0);
+  credits_line_set(100, s_empty_string, 0);
+  credits_line_set(101, s_empty_string, 0);
+  credits_line_set(102, s_empty_string, 0);
+  credits_line_set(103, s_empty_string, 0);
+  credits_line_set(104, s_empty_string, 0);
+  credits_line_set(105, s_empty_string, 0);
+  credits_line_set(106, s_empty_string, 0);
+  credits_line_set(107, s_empty_string, 0);
+  credits_line_set(108, s_empty_string, 0);
+  credits_line_set(109, s_empty_string, 0);
+  credits_line_set(110, s_empty_string, 0);
+  credits_line_set(111, s_empty_string, 0);
+  credits_line_set(112, s_empty_string, 0);
+  credits_line_set(113, s_empty_string, 0);
+  credits_line_set(114, s_empty_string, 0);
+  credits_line_set(115, s_empty_string, 0);
+  credits_line_set(116, s_empty_string, 0);
+  credits_line_set(117, s_empty_string, 0);
+  credits_line_set(118, s_empty_string, 0);
   credits_line_set(119, aClickTheOnesWi, 0);
   credits_line_set(120, aAndBePatient, 0);
-  credits_line_set(121, szPassword, 0);
-  credits_line_set(122, szPassword, 0);
-  credits_line_set(123, szPassword, 0);
-  credits_line_set(124, szPassword, 0);
-  credits_line_set(125, szPassword, 0);
+  credits_line_set(121, s_empty_string, 0);
+  credits_line_set(122, s_empty_string, 0);
+  credits_line_set(123, s_empty_string, 0);
+  credits_line_set(124, s_empty_string, 0);
+  credits_line_set(125, s_empty_string, 0);
 }
 
 // credits_screen_update @ 0x0040D800
@@ -8877,15 +8873,15 @@ void credits_screen_update()
   v39 = v44 + 40.0;
   v42 = v39 + 10.0;
   v41 = v38 + flt_489DE8 + 48.0 - 110.0 - 40.0;
-  if ( !dword_487234 )
+  if ( !ui_screen_phase )
   {
-    dword_487234 = 1;
+    ui_screen_phase = 1;
     credits_build_lines();
     dword_4811C0 = 0;
     dword_481184 = 0;
     goto LABEL_7;
   }
-  if ( dword_487234 == 1 )
+  if ( ui_screen_phase == 1 )
   {
     (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
       grim_interface_ptr,
@@ -9501,7 +9497,7 @@ void *mod_load_info()
   crt_sprintf(LibFileName, "mods\\%s", v5);
   console_printf(&console_log_queue, "CMOD: '%s'\n", LibFileName);
   LibraryA = LoadLibraryA(LibFileName);
-  hLibModule = LibraryA;
+  plugin_module_handle = LibraryA;
   if ( LibraryA )
   {
     CMOD_GetInfo = GetProcAddress(LibraryA, ProcName);
@@ -9521,14 +9517,14 @@ void *mod_load_info()
         qmemcpy(mod_info_block, v3, 0x48u);
       else
         console_printf(&console_log_queue, aCmodBadCmodGet);
-      FreeLibrary(hLibModule);
+      FreeLibrary(plugin_module_handle);
       console_printf(&console_log_queue, "CMOD: mod enum '%s'\n", mod_info_block);
       return mod_info_block;
     }
     else
     {
       console_printf(&console_log_queue, aCmodGetinfoFai);
-      FreeLibrary(hLibModule);
+      FreeLibrary(plugin_module_handle);
       return 0;
     }
   }
@@ -9559,7 +9555,7 @@ void *mod_load_mod()
   crt_sprintf(LibFileName, "mods\\%s", v6);
   console_printf(&console_log_queue, "CMOD: '%s'\n", LibFileName);
   LibraryA = LoadLibraryA(LibFileName);
-  hLibModule = LibraryA;
+  plugin_module_handle = LibraryA;
   if ( LibraryA )
   {
     CMOD_GetMod = GetProcAddress(LibraryA, aCmodGetmod);
@@ -9577,7 +9573,7 @@ void *mod_load_mod()
     else
     {
       console_printf(&console_log_queue, aCmodCmodGetmod);
-      FreeLibrary(hLibModule);
+      FreeLibrary(plugin_module_handle);
       return 0;
     }
   }
@@ -9797,7 +9793,7 @@ int sub_40E9A0()
               grim_interface_ptr,
               Buffer,
               COERCE_FLOAT(LODWORD(v28)),
-              aS_0,
+              s_fmt_percent_s,
               Buffer));
     v14 = v28 - (double)SLODWORD(v29);
     (*(void (__cdecl **)(int, _DWORD))(v6 + 328))(grim_interface_ptr, LODWORD(v14));
@@ -9866,7 +9862,7 @@ int sub_40E9A0()
               grim_interface_ptr,
               dword_4824E0 + 32,
               COERCE_FLOAT(LODWORD(v28)),
-              aS_0,
+              s_fmt_percent_s,
               dword_4824E0 + 32));
     v15 = v28 - (double)SLODWORD(v29);
     (*(void (__cdecl **)(int, _DWORD))(v8 + 328))(grim_interface_ptr, LODWORD(v15));
@@ -9896,7 +9892,7 @@ int sub_40E9A0()
               grim_interface_ptr,
               &byte_4811C8[64 * dword_481BE0],
               COERCE_FLOAT(LODWORD(v28)),
-              aS_0,
+              s_fmt_percent_s,
               &byte_4811C8[64 * dword_481BE0]));
     v16 = v28 - (double)SLODWORD(v29);
     (*(void (__cdecl **)(int, _DWORD))(v9 + 328))(grim_interface_ptr, LODWORD(v16));
@@ -10638,10 +10634,10 @@ void game_over_screen_update()
   float v10; // [esp+30h] [ebp-8h]
   float v11; // [esp+34h] [ebp-4h]
 
-  if ( (byte_4825FC & 1) == 0 )
+  if ( (game_over_screen_flags & 1) == 0 )
   {
     byte_4825AE = 1;
-    byte_4825FC |= 1u;
+    game_over_screen_flags |= 1u;
     byte_4825BD = 0;
     byte_4825BC = 0;
     dword_4825B8 = 1065353216;
@@ -10652,10 +10648,10 @@ void game_over_screen_update()
     dword_4825B0 = 0;
     crt_atexit(nullsub_31);
   }
-  if ( (byte_4825FC & 2) == 0 )
+  if ( (game_over_screen_flags & 2) == 0 )
   {
     dword_4825A0 = 1065353216;
-    byte_4825FC |= 2u;
+    game_over_screen_flags |= 2u;
     ::input_state = (int)byte_48256C;
     dword_482594 = 0;
     dword_482598 = 24;
@@ -10663,10 +10659,10 @@ void game_over_screen_update()
     crt_atexit(nullsub_30);
   }
   bonus_reflex_boost_timer = 0.0;
-  if ( ui_transition_direction && byte_48724D )
+  if ( ui_transition_direction && highscore_return_latch )
   {
-    byte_48724D = 0;
-    dword_487234 = 1;
+    highscore_return_latch = 0;
+    ui_screen_phase = 1;
   }
   if ( game_state_id == 7
     && game_state_pending == 25
@@ -10685,7 +10681,7 @@ void game_over_screen_update()
   *(float *)&xy = flt_48CC50 + *(float *)&input_state + 44.0 - 10.0;
   v10 = *(float *)&xy;
   ui_draw_textured_quad((__int64)(*(float *)&xy - 2.0), (__int64)v9, 256, 64, dword_48F7F8);
-  switch ( dword_487234 )
+  switch ( ui_screen_phase )
   {
     case -1:
       j_highscore_load_table();
@@ -10696,7 +10692,7 @@ void game_over_screen_update()
       (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 28);
       if ( dword_4825A4 >= 100 )
       {
-        dword_487234 = 1;
+        ui_screen_phase = 1;
 LABEL_29:
         v7 = v9;
         ::input_state = (int)byte_48256C;
@@ -10723,10 +10719,10 @@ LABEL_29:
         v9 = v7 + 16.0;
         ui_text_input_render(&input_state, COERCE_FLOAT(&highscore_active_record), 1.0);
         v7 = v7 + 146.0;
-        if ( (byte_4825FC & 4) == 0 )
+        if ( (game_over_screen_flags & 4) == 0 )
         {
           byte_48250E = 1;
-          byte_4825FC |= 4u;
+          game_over_screen_flags |= 4u;
           byte_48251D = 0;
           byte_48251C = 0;
           dword_482518 = 1065353216;
@@ -10738,10 +10734,10 @@ LABEL_29:
           crt_atexit(nullsub_29);
         }
         dword_482508 = (int)aPlayAgain;
-        if ( (byte_4825FC & 8) == 0 )
+        if ( (game_over_screen_flags & 8) == 0 )
         {
           byte_482556 = 1;
-          byte_4825FC |= 8u;
+          game_over_screen_flags |= 8u;
           byte_482565 = 0;
           byte_482564 = 0;
           dword_482560 = 1065353216;
@@ -10753,10 +10749,10 @@ LABEL_29:
           crt_atexit(nullsub_28);
         }
         dword_482550 = (int)aHighScores;
-        if ( (byte_4825FC & 0x10) == 0 )
+        if ( (game_over_screen_flags & 0x10) == 0 )
         {
           byte_48253E = 1;
-          byte_4825FC |= 0x10u;
+          game_over_screen_flags |= 0x10u;
           byte_48254D = 0;
           byte_48254C = 0;
           dword_482548 = 1065353216;
@@ -10788,7 +10784,7 @@ LABEL_29:
         if ( byte_482555 )
         {
           dword_487258 = config_game_mode;
-          byte_48724D = 1;
+          highscore_return_latch = 1;
           dword_487250 = *(_DWORD *)quest_stage_major;
           dword_487254 = quest_stage_minor;
           byte_48725C = config_hardcore;
@@ -10807,7 +10803,7 @@ LABEL_29:
         }
         break;
       }
-      dword_487234 = 0;
+      ui_screen_phase = 0;
       dword_482598 = 20;
       ::input_state = (int)strcpy(byte_48256C, (const char *)&highscore_active_record);
       dword_482594 = strlen((const char *)&highscore_active_record);
@@ -10846,7 +10842,7 @@ LABEL_18:
         while ( v0 < (int)(v1 - 1) );
         if ( byte_48256C[v0] )
         {
-          dword_487234 = 1;
+          ui_screen_phase = 1;
           sfx_play(sfx_ui_typeenter);
           memset(&highscore_active_record, 0, 0x1Cu);
           ::input_state = (int)byte_48256C;
@@ -10940,7 +10936,7 @@ void quest_failed_screen_update()
   *(float *)&v1 = flt_48DBC8 + *(float *)&input_state + 44.0 - 10.0;
   v5 = v1;
   ui_draw_textured_quad((__int64)(*(float *)&v1 - 2.0), (__int64)v4, 256, 64, dword_48F7F8);
-  if ( dword_487234 == -1 )
+  if ( ui_screen_phase == -1 )
   {
     j_highscore_load_table();
     dword_482604 = highscore_rank_index();
@@ -10948,15 +10944,15 @@ void quest_failed_screen_update()
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 76))(grim_interface_ptr);
     console_input_poll();
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 28);
-    dword_487234 = 0;
+    ui_screen_phase = 0;
   }
-  else if ( dword_487234 )
+  else if ( ui_screen_phase )
   {
     goto LABEL_28;
   }
   *(float *)&v1 = *(float *)&v5 + 30.0;
   v2 = v4 + 70.0 + 16.0;
-  switch ( dword_487194 )
+  switch ( quest_fail_retry_count )
   {
     case 1:
       (*(void (__stdcall **)(int, float, char *))(*(_DWORD *)grim_interface_ptr + 324))(
@@ -11056,7 +11052,7 @@ void quest_failed_screen_update()
   v2 = v2 + 32.0;
   if ( byte_482685 )
   {
-    ++dword_487194;
+    ++quest_fail_retry_count;
     ui_transition_direction = 0;
     game_state_pending = 9;
     sfx_mute_all(music_track_crimson_theme_id);
@@ -11066,7 +11062,7 @@ void quest_failed_screen_update()
   }
   if ( byte_48269D )
   {
-    dword_487194 = 0;
+    quest_fail_retry_count = 0;
     ui_transition_direction = 0;
     game_state_pending = 11;
     ui_sign_crimson_update_disabled = 0;
@@ -11077,7 +11073,7 @@ void quest_failed_screen_update()
   }
   if ( byte_4824F5 )
   {
-    dword_487194 = 0;
+    quest_fail_retry_count = 0;
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
@@ -11154,7 +11150,7 @@ void quest_results_screen_update()
   float v39; // [esp+C0h] [ebp-4h]
 
   bonus_reflex_boost_timer = 0.0;
-  dword_487194 = 0;
+  quest_fail_retry_count = 0;
   if ( game_state_id == 8
     && game_state_pending == 25
     && ui_transition_direction
@@ -11164,10 +11160,10 @@ void quest_results_screen_update()
   }
   gameplay_render_world();
   ui_elements_update_and_render();
-  if ( (byte_482568 & 1) == 0 )
+  if ( (quest_results_screen_flags & 1) == 0 )
   {
     byte_482526 = 1;
-    byte_482568 |= 1u;
+    quest_results_screen_flags |= 1u;
     byte_482535 = 0;
     byte_482534 = 0;
     dword_482530 = 1065353216;
@@ -11178,10 +11174,10 @@ void quest_results_screen_update()
     dword_482528 = 0;
     crt_atexit(nullsub_40);
   }
-  if ( (byte_482568 & 2) == 0 )
+  if ( (quest_results_screen_flags & 2) == 0 )
   {
     dword_4826F8 = 1065353216;
-    byte_482568 |= 2u;
+    quest_results_screen_flags |= 2u;
     dword_4826E8 = (int)byte_4825DC;
     dword_4826EC = 0;
     dword_4826F0 = 24;
@@ -11201,14 +11197,14 @@ void quest_results_screen_update()
     1065353216,
     1065353216,
     1065353216);
-  if ( game_state_prev == 14 && ui_transition_direction && byte_48724D )
+  if ( game_state_prev == 14 && ui_transition_direction && highscore_return_latch )
   {
-    byte_48724D = 0;
-    dword_487234 = 2;
+    highscore_return_latch = 0;
+    ui_screen_phase = 2;
     goto LABEL_77;
   }
-  v0 = dword_487234;
-  if ( dword_487234 == -2 )
+  v0 = ui_screen_phase;
+  if ( ui_screen_phase == -2 )
   {
     v1 = 11 * (quest_stage_minor + 10 * *(_DWORD *)quest_stage_major - 11);
     v2 = quest_unlock_perk_id[v1];
@@ -11228,16 +11224,16 @@ void quest_results_screen_update()
     survival_elapsed_ms = quest_spawn_timeline - 1000 * perk_pending_count - v4;
     if ( !dword_48270C )
       survival_elapsed_ms = 1;
-    dword_482708 = 0;
+    quest_results_anim_timer = 0;
     highscore_record_init();
     dword_482724 = 700;
-    v0 = dword_487234 + 1;
+    v0 = ui_screen_phase + 1;
     dword_482710 = 0;
     dword_482714 = 0;
     arg1 = 0;
-    dword_48271C = 0;
+    quest_results_step = 0;
     dword_482720 = 0;
-    ++dword_487234;
+    ++ui_screen_phase;
   }
   if ( v0 == -1 )
   {
@@ -11252,17 +11248,17 @@ void quest_results_screen_update()
     v37 = v37 + 40.0;
     if ( v5 )
     {
-      if ( dword_48271C >= 3 )
+      if ( quest_results_step >= 3 )
       {
-        if ( dword_48271C == 3 )
+        if ( quest_results_step == 3 )
         {
           dword_482724 = 50;
-          ++dword_482708;
+          ++quest_results_anim_timer;
         }
       }
-      else if ( dword_48271C )
+      else if ( quest_results_step )
       {
-        if ( dword_48271C == 1 )
+        if ( quest_results_step == 1 )
         {
           dword_482714 += 1000;
           dword_482724 = 150;
@@ -11271,10 +11267,10 @@ void quest_results_screen_update()
           if ( dword_482714 >= dword_482600 )
           {
             dword_482714 = dword_482600;
-            ++dword_48271C;
+            ++quest_results_step;
           }
         }
-        else if ( dword_48271C == 2 )
+        else if ( quest_results_step == 2 )
         {
           dword_482724 = 300;
           ++arg1;
@@ -11284,7 +11280,7 @@ void quest_results_screen_update()
           {
             arg1 = perk_pending_count;
             dword_482724 = 1000;
-            ++dword_48271C;
+            ++quest_results_step;
             survival_elapsed_ms = dword_48270C;
             dword_482720 = dword_48270C;
           }
@@ -11300,12 +11296,12 @@ void quest_results_screen_update()
         {
           v6 = quest_spawn_timeline;
           dword_482710 = quest_spawn_timeline;
-          ++dword_48271C;
+          ++quest_results_step;
         }
         dword_482720 = v6;
       }
     }
-    v7 = 1.0 - (double)dword_482708 * 0.1;
+    v7 = 1.0 - (double)quest_results_anim_timer * 0.1;
     *(float *)&alpha = v7;
     if ( v7 >= 0.0 )
     {
@@ -11318,7 +11314,7 @@ void quest_results_screen_update()
     }
     *(float *)&xy = *(float *)&xy + 32.0;
     v37 = v37 + 20.0;
-    if ( dword_48271C )
+    if ( quest_results_step )
     {
       v29 = *(float *)&alpha * 0.40000001;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -11348,10 +11344,10 @@ void quest_results_screen_update()
       grim_interface_ptr,
       LODWORD(v21),
       COERCE_FLOAT(LODWORD(v37)),
-      aS_0,
+      s_fmt_percent_s,
       v9);
     v37 = v37 + 20.0;
-    if ( dword_48271C == 1 )
+    if ( quest_results_step == 1 )
     {
       (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -11369,7 +11365,7 @@ void quest_results_screen_update()
         1065353216,
         LODWORD(v30));
     }
-    if ( dword_48271C < 1 )
+    if ( quest_results_step < 1 )
     {
       v31 = *(float *)&alpha * 0.2;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -11390,10 +11386,10 @@ void quest_results_screen_update()
       grim_interface_ptr,
       LODWORD(v22),
       COERCE_FLOAT(LODWORD(v37)),
-      aS_0,
+      s_fmt_percent_s,
       v11);
     v37 = v37 + 20.0;
-    if ( dword_48271C == 2 )
+    if ( quest_results_step == 2 )
     {
       (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -11411,7 +11407,7 @@ void quest_results_screen_update()
         1065353216,
         LODWORD(v32));
     }
-    if ( dword_48271C < 2 )
+    if ( quest_results_step < 2 )
     {
       v33 = *(float *)&alpha * 0.2;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -11432,7 +11428,7 @@ void quest_results_screen_update()
       grim_interface_ptr,
       LODWORD(v23),
       COERCE_FLOAT(LODWORD(v37)),
-      aS_0,
+      s_fmt_percent_s,
       v13);
     v37 = v37 + 20.0;
     (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -11461,24 +11457,24 @@ void quest_results_screen_update()
       grim_interface_ptr,
       LODWORD(v24),
       COERCE_FLOAT(LODWORD(v37)),
-      aS_0,
+      s_fmt_percent_s,
       v15);
     v37 = v37 + 20.0;
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 76))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 28);
-    if ( dword_487234 == -1
+    if ( ui_screen_phase == -1
       && ((*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 57)
        || (unsigned __int8)input_primary_just_pressed()) )
     {
-      ++dword_487234;
+      ++ui_screen_phase;
       perk_prompt_update_and_render();
       ui_cursor_render();
       return;
     }
-    if ( dword_482708 > 10 )
+    if ( quest_results_anim_timer > 10 )
     {
-      dword_482708 = 0;
-      ++dword_487234;
+      quest_results_anim_timer = 0;
+      ++ui_screen_phase;
       perk_prompt_update_and_render();
       ui_cursor_render();
       return;
@@ -11497,11 +11493,11 @@ LABEL_108:
         return;
       }
 LABEL_77:
-      if ( dword_482708 >= 500 )
-        dword_482708 = 500;
+      if ( quest_results_anim_timer >= 500 )
+        quest_results_anim_timer = 500;
       else
-        dword_482708 += frame_dt_ms;
-      *(float *)&alpha = (double)dword_482708 * 0.0020000001;
+        quest_results_anim_timer += frame_dt_ms;
+      *(float *)&alpha = (double)quest_results_anim_timer * 0.0020000001;
       *(float *)&xy = *(float *)&input_state + 30.0;
       (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -11554,7 +11550,7 @@ LABEL_77:
           grim_interface_ptr,
           xy,
           COERCE_FLOAT(LODWORD(v37)),
-          aS_0,
+          s_fmt_percent_s,
           v20);
         v37 = v37 + 16.0;
       }
@@ -11583,14 +11579,14 @@ LABEL_77:
           grim_interface_ptr,
           xy,
           COERCE_FLOAT(LODWORD(v37)),
-          aS_0,
+          s_fmt_percent_s,
           perk_meta_table[5 * quest_unlock_perk_id[110 * *(_DWORD *)quest_stage_major - 121 + 11 * quest_stage_minor]]);
         v37 = v37 + 16.0;
       }
-      if ( (byte_482568 & 4) == 0 )
+      if ( (quest_results_screen_flags & 4) == 0 )
       {
         byte_4825C6 = 1;
-        byte_482568 |= 4u;
+        quest_results_screen_flags |= 4u;
         byte_4825D5 = 0;
         byte_4825D4 = 0;
         dword_4825D0 = 1065353216;
@@ -11602,10 +11598,10 @@ LABEL_77:
         crt_atexit(nullsub_38);
       }
       dword_4825C0 = (int)aPlayNext;
-      if ( (byte_482568 & 8) == 0 )
+      if ( (quest_results_screen_flags & 8) == 0 )
       {
         byte_48260E = 1;
-        byte_482568 |= 8u;
+        quest_results_screen_flags |= 8u;
         byte_48261D = 0;
         byte_48261C = 0;
         dword_482618 = 1065353216;
@@ -11617,10 +11613,10 @@ LABEL_77:
         crt_atexit(nullsub_37);
       }
       dword_482608 = (int)aPlayAgain;
-      if ( (byte_482568 & 0x10) == 0 )
+      if ( (quest_results_screen_flags & 0x10) == 0 )
       {
         byte_48266E = 1;
-        byte_482568 |= 0x10u;
+        quest_results_screen_flags |= 0x10u;
         byte_48267D = 0;
         byte_48267C = 0;
         dword_482678 = 1065353216;
@@ -11632,9 +11628,9 @@ LABEL_77:
         crt_atexit(nullsub_36);
       }
       dword_482668 = (int)aHighScores;
-      if ( (byte_482568 & 0x20) == 0 )
+      if ( (quest_results_screen_flags & 0x20) == 0 )
       {
-        byte_482568 |= 0x20u;
+        quest_results_screen_flags |= 0x20u;
         byte_4826B6 = 1;
         byte_4826C5 = 0;
         byte_4826C4 = 0;
@@ -11694,7 +11690,7 @@ LABEL_77:
       if ( byte_48266D )
       {
         dword_487258 = config_game_mode;
-        byte_48724D = 1;
+        highscore_return_latch = 1;
         dword_487250 = *(_DWORD *)quest_stage_major;
         dword_487254 = quest_stage_minor;
         byte_48725C = config_hardcore;
@@ -11713,11 +11709,11 @@ LABEL_77:
       }
       goto LABEL_108;
     }
-    if ( dword_482708 >= 500 )
-      dword_482708 = 500;
+    if ( quest_results_anim_timer >= 500 )
+      quest_results_anim_timer = 500;
     else
-      dword_482708 += frame_dt_ms;
-    *(float *)&alpha = (double)dword_482708 * 0.0020000001;
+      quest_results_anim_timer += frame_dt_ms;
+    *(float *)&alpha = (double)quest_results_anim_timer * 0.0020000001;
     v37 = v37 + 22.0;
     flt_496604 = *(float *)&alpha;
     (*(void (__thiscall **)(int, int *))(*(_DWORD *)grim_interface_ptr + 272))(grim_interface_ptr, &dword_4965F8);
@@ -11751,7 +11747,7 @@ LABEL_77:
       while ( v16 < (int)(v17 - 1) );
       if ( byte_4825DC[v16] )
       {
-        dword_487234 = 2;
+        ui_screen_phase = 2;
         sfx_play(sfx_ui_typeenter);
         v18 = dword_4826EC;
         player_name_length = dword_4826EC;
@@ -11788,7 +11784,7 @@ LABEL_74:
     {
       dword_4826F0 = 20;
       dword_4826E8 = (int)byte_4825DC;
-      dword_487234 = 1;
+      ui_screen_phase = 1;
       strcpy(byte_4825DC, (const char *)&highscore_active_record);
       dword_4826EC = strlen((const char *)&highscore_active_record);
     }
@@ -11797,7 +11793,7 @@ LABEL_74:
       dword_4826EC = 0;
       dword_4826F0 = 0;
       dword_4826E8 = (int)byte_4825DC;
-      dword_487234 = 2;
+      ui_screen_phase = 2;
     }
     perk_prompt_update_and_render();
     ui_cursor_render();
@@ -11859,13 +11855,13 @@ int FUN_004120b0()
   bonus_energizer_timer = 0.0;
   survival_spawn_stage = 0;
   dword_487028 = 0;
-  dword_487194 = 0;
+  quest_fail_retry_count = 0;
   demo_mode_active = 0;
   byte_486FAA = 0;
   quest_unlock_index = 0;
   creature_active_count = 0;
   *(_DWORD *)&dword_48718C = 0;
-  dword_487088 = -1;
+  quest_transition_timer_ms = -1;
   *(_DWORD *)quest_stage_major = 1;
   quest_stage_minor = 1;
   return 1;
@@ -11881,13 +11877,13 @@ void nullsub_107()
 // [binja] int32_t sub_4121f0()
 int sub_412180()
 {
-  FUN_00412190();
+  quest_meta_init();
   return crt_atexit(sub_412200);
 }
 
-// FUN_00412190 @ 0x00412190
+// quest_meta_init @ 0x00412190
 // [binja] int32_t sub_412190()
-int FUN_00412190()
+int quest_meta_init()
 {
   int result; // eax
 
@@ -11988,9 +11984,9 @@ int sub_4122A0()
   return v0 / 345354345;
 }
 
-// FUN_00412360 @ 0x00412360
+// highscore_init_sentinels @ 0x00412360
 // [binja] int32_t sub_412360()
-int FUN_00412360()
+int highscore_init_sentinels()
 {
   _BYTE *v0; // ebp
   int v1; // ebx
@@ -12167,64 +12163,64 @@ void bonus_metadata_init()
   char *v0; // eax
 
   dword_4853E4 = (int)strdup_malloc(aPoints);
-  dword_4853E8 = (int)sub_42FD00(aYouGainSomeExp, 256);
+  dword_4853E8 = (int)wrap_text_to_width_alloc(aYouGainSomeExp, 256);
   dword_4853EC = 12;
   dword_4853F4 = 500;
   byte_4853F0 = 1;
   dword_48540C = (int)strdup_malloc(aWeapon);
-  dword_485410 = (int)sub_42FD00(aYouGetANewWeap, 256);
+  dword_485410 = (int)wrap_text_to_width_alloc(aYouGetANewWeap, 256);
   dword_485414 = -1;
   dword_48541C = 3;
   dword_485434 = (int)strdup_malloc(aNuke);
-  dword_485438 = (int)sub_42FD00(aAnAmazingExplo, 256);
+  dword_485438 = (int)wrap_text_to_width_alloc(aAnAmazingExplo, 256);
   dword_48543C = 1;
   dword_485448 = (int)strdup_malloc(aDoubleExperien);
-  dword_48544C = (int)sub_42FD00(aEveryExperienc, 256);
+  dword_48544C = (int)wrap_text_to_width_alloc(aEveryExperienc, 256);
   dword_485450 = 4;
   dword_485470 = (int)strdup_malloc(aFireblast);
-  dword_485474 = (int)sub_42FD00(aFireballsAllOv, 256);
+  dword_485474 = (int)wrap_text_to_width_alloc(aFireballsAllOv, 256);
   dword_485478 = 2;
   dword_48545C = (int)strdup_malloc(aShockChain);
-  dword_485460 = (int)sub_42FD00(aChainOfShocksS, 256);
+  dword_485460 = (int)wrap_text_to_width_alloc(aChainOfShocksS, 256);
   dword_485464 = 3;
   dword_485484 = (int)strdup_malloc(aReflexBoost);
-  dword_485488 = (int)sub_42FD00(aYouGetMoreTime, 256);
+  dword_485488 = (int)wrap_text_to_width_alloc(aYouGetMoreTime, 256);
   dword_48548C = 5;
   dword_485494 = 3;
   dword_485498 = (int)strdup_malloc(aShield);
-  dword_48549C = (int)sub_42FD00(aForceFieldProt, 256);
+  dword_48549C = (int)wrap_text_to_width_alloc(aForceFieldProt, 256);
   dword_4854A0 = 6;
   dword_4854A8 = 7;
   dword_4854AC = (int)strdup_malloc(aFreeze);
-  dword_4854B0 = (int)sub_42FD00(aMonstersAreFro, 256);
+  dword_4854B0 = (int)wrap_text_to_width_alloc(aMonstersAreFro, 256);
   dword_4854B4 = 8;
   dword_4854BC = 5;
   dword_4854D4 = (int)strdup_malloc(aSpeed);
-  dword_4854D8 = (int)sub_42FD00(aYourMovementSp, 256);
+  dword_4854D8 = (int)wrap_text_to_width_alloc(aYourMovementSp, 256);
   dword_4854DC = 9;
   dword_4854E4 = 8;
   dword_4853F8 = (int)strdup_malloc(aEnergizer);
-  dword_4853FC = (int)sub_42FD00(aSuddenlyMonste, 256);
+  dword_4853FC = (int)wrap_text_to_width_alloc(aSuddenlyMonste, 256);
   dword_485400 = 10;
   dword_485408 = 8;
   dword_485420 = (int)strdup_malloc(aWeaponPowerUp);
-  dword_485424 = (int)sub_42FD00(aYourFirerateAn, 256);
+  dword_485424 = (int)wrap_text_to_width_alloc(aYourFirerateAn, 256);
   dword_485428 = 7;
   dword_485430 = 10;
   dword_4854E8 = (int)strdup_malloc(aFireBullets);
-  dword_4854EC = (int)sub_42FD00(aForFewSecondsM, 256);
+  dword_4854EC = (int)wrap_text_to_width_alloc(aForFewSecondsM, 256);
   dword_4854F0 = 11;
   dword_4854F8 = 4;
   dword_4854C0 = (int)strdup_malloc(aMedikit);
-  v0 = sub_42FD00(aYouRegainSomeO, 256);
+  v0 = wrap_text_to_width_alloc(aYouRegainSomeO, 256);
   dword_4854D0 = 10;
   dword_4854C4 = (int)v0;
   dword_4854C8 = 14;
 }
 
-// FUN_00412940 @ 0x00412940
+// bonus_reset_availability @ 0x00412940
 // [binja] char* sub_412940()
-char *FUN_00412940()
+char *bonus_reset_availability()
 {
   char *result; // eax
 
@@ -12455,11 +12451,11 @@ void gameplay_reset_state()
   tutorial_stage_index = -1;
   tutorial_stage_timer = 0;
   tutorial_stage_transition_timer = -1000;
-  dword_487088 = -1;
+  quest_transition_timer_ms = -1;
   bonus_double_xp_timer = 0.0;
   survival_spawn_stage = 0;
   camera_shake_pulses = 0;
-  FUN_00412940();
+  bonus_reset_availability();
   dword_482940 = 6;
   creature_type_table[0] = (*(int (__thiscall **)(int, char *))(*(_DWORD *)grim_interface_ptr + 192))(
                              grim_interface_ptr,
@@ -12535,7 +12531,7 @@ void gameplay_reset_state()
                    aTrooper);
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
-  memset(dword_48708C, 0, sizeof(dword_48708C));
+  memset(weapon_usage_time, 0, sizeof(weapon_usage_time));
   *(float *)&v11 = (double)terrain_texture_width * 0.5;
   camera_offset_x = v11;
   *(float *)&v12 = (double)terrain_texture_height * 0.5;
@@ -12577,8 +12573,8 @@ void gameplay_reset_state()
   flt_4AAF2C = -1.0;
   perk_prompt_timer = 0;
   projectile_reset_pools();
-  FUN_0041fc80();
-  dword_4871D0[0] = 0;
+  player_reset_all();
+  player_aux_timer[0] = 0;
   dword_4871D4 = 0;
   v2 = player_low_health_timer;
   do
@@ -12617,7 +12613,7 @@ void gameplay_reset_state()
     *v6 = 0;
     v6 += 44;
   }
-  while ( (int)v6 < (int)&dword_4965D8 );
+  while ( (int)v6 < (int)&render_scratch_f0 );
   v7 = 0;
   v8 = creature_target_player;
   do
@@ -12802,158 +12798,153 @@ LABEL_18:
 // per-player gameplay update: movement, firing, status timers, and effects
 void player_update()
 {
-  float *v0; // ebp
+  float v0; // ebp
   int v2; // edi
-  float v11; // ebp
-  char v12; // al
-  int v23; // ebp
-  int v24; // ebx
-  float v33; // eax
-  int v36; // eax
-  int v41; // ebp
-  int v42; // ebx
-  int v47; // edx
-  int v48; // eax
-  int v51; // edx
-  int v55; // eax
-  char v91; // bl
-  int v94; // eax
+  char v11; // al
+  int v22; // ebp
+  int v23; // ebx
+  float v32; // eax
+  int v35; // eax
+  int v40; // ebp
+  int v41; // ebx
+  int v46; // edx
+  int v47; // eax
+  int v50; // edx
+  int v54; // eax
+  float *p_vel; // ecx
+  int v74; // edx
+  char v92; // bl
   int v95; // eax
-  int v101; // eax
+  int v96; // eax
   int v102; // eax
-  int v140; // eax
-  int v160; // eax
-  int v179; // ebx
-  int v180; // ebp
-  int v183; // eax
-  int v186; // eax
-  int v194; // eax
-  int v195; // ecx
-  int v202; // edx
-  char v209; // bl
-  int v214; // ecx
-  float *v216; // ecx
+  int v103; // eax
+  float *v106; // ecx
+  int v142; // eax
+  int v162; // eax
+  float v181; // ebx
+  int v182; // ebp
+  int v185; // eax
+  int v188; // eax
+  int v190; // eax
+  int v197; // eax
+  int v198; // ecx
+  int v205; // edx
+  char v212; // bl
+  int v217; // ecx
   float *v219; // ecx
-  char v224; // al
-  char v225; // al
+  float *v222; // ecx
   int v226; // eax
-  int v230; // ebp
-  float v232; // ecx
-  int v234; // eax
-  int v237; // ebx
-  int v239; // edx
-  int v241; // eax
-  int v246; // ebx
-  int v247; // eax
-  int v248; // eax
-  int v249; // eax
-  int v250; // eax
+  char v228; // al
+  char v229; // al
+  int v230; // eax
+  int v234; // ebp
+  float v236; // ecx
+  int v238; // eax
+  int v241; // ebx
+  int v243; // edx
+  int v245; // eax
+  int v250; // ebx
   int v251; // eax
   int v252; // eax
   int v253; // eax
   int v254; // eax
   int v255; // eax
   int v256; // eax
-  int v258; // ebx
+  int v257; // eax
+  int v258; // eax
   int v259; // eax
-  bool v260; // zf
-  int v262; // eax
-  int v264; // ebx
-  int v265; // eax
-  int v267; // eax
-  int v268; // eax
-  int v270; // ebx
+  int v260; // eax
+  int v262; // ebx
+  int v263; // eax
+  bool v264; // zf
+  int v266; // eax
+  int v268; // ebx
+  int v269; // eax
   int v271; // eax
-  int v273; // eax
-  int v274; // eax
+  int v272; // eax
+  int v274; // ebx
   int v275; // eax
-  int v276; // eax
-  int v278; // ebx
+  int v277; // eax
+  int v278; // eax
   int v279; // eax
-  int v281; // eax
-  int v282; // eax
-  int v284; // ebx
+  int v280; // eax
+  int v282; // ebx
+  int v283; // eax
   int v285; // eax
-  int v287; // eax
-  int v288; // eax
+  int v286; // eax
+  int v288; // ebx
   int v289; // eax
-  int v290; // eax
   int v291; // eax
-  float v293; // ebx
+  int v292; // eax
+  int v293; // eax
+  int v294; // eax
   int v295; // eax
-  int v296; // eax
-  int v297; // eax
-  int v299; // ebx
+  float v297; // ebx
+  int v299; // eax
   int v300; // eax
-  int v329; // [esp+14h] [ebp-68h]
-  float angle; // [esp+18h] [ebp-64h]
-  float anglea; // [esp+18h] [ebp-64h]
-  float angleb; // [esp+18h] [ebp-64h]
-  float anglec; // [esp+18h] [ebp-64h]
-  float angled; // [esp+18h] [ebp-64h]
-  float anglee; // [esp+18h] [ebp-64h]
-  float anglef; // [esp+18h] [ebp-64h]
-  float angleg; // [esp+18h] [ebp-64h]
-  float angleh; // [esp+18h] [ebp-64h]
-  float anglei; // [esp+18h] [ebp-64h]
-  float anglej; // [esp+18h] [ebp-64h]
-  float anglek; // [esp+18h] [ebp-64h]
-  float anglel; // [esp+18h] [ebp-64h]
-  int v343; // [esp+1Ch] [ebp-60h]
-  int v344; // [esp+1Ch] [ebp-60h]
-  float v345; // [esp+1Ch] [ebp-60h]
-  float *v346; // [esp+24h] [ebp-58h]
-  char v347; // [esp+36h] [ebp-46h]
-  char v348; // [esp+37h] [ebp-45h]
-  int v349; // [esp+38h] [ebp-44h]
-  float v351; // [esp+38h] [ebp-44h]
-  int owner_id; // [esp+3Ch] [ebp-40h]
-  int owner_ida; // [esp+3Ch] [ebp-40h]
-  int owner_idb; // [esp+3Ch] [ebp-40h]
-  int v367; // [esp+40h] [ebp-3Ch]
-  int v368; // [esp+40h] [ebp-3Ch]
-  int v369; // [esp+40h] [ebp-3Ch]
-  int v371; // [esp+40h] [ebp-3Ch]
-  int v372; // [esp+40h] [ebp-3Ch]
-  int v373; // [esp+40h] [ebp-3Ch]
-  int v378; // [esp+40h] [ebp-3Ch]
-  int v379; // [esp+40h] [ebp-3Ch]
-  int v381; // [esp+40h] [ebp-3Ch]
-  int v383; // [esp+40h] [ebp-3Ch]
-  int v385; // [esp+40h] [ebp-3Ch]
-  float v389; // [esp+40h] [ebp-3Ch]
-  int v391; // [esp+40h] [ebp-3Ch]
-  int v392; // [esp+44h] [ebp-38h]
-  int v393; // [esp+44h] [ebp-38h]
-  float v395; // [esp+44h] [ebp-38h]
-  int v396; // [esp+44h] [ebp-38h]
-  int v399; // [esp+44h] [ebp-38h]
-  int v401; // [esp+44h] [ebp-38h]
-  int v404; // [esp+44h] [ebp-38h]
-  float v405; // [esp+48h] [ebp-34h]
-  float v406; // [esp+48h] [ebp-34h]
-  float arg1[2]; // [esp+4Ch] [ebp-30h] BYREF
-  int v408; // [esp+54h] [ebp-28h]
-  int v409; // [esp+58h] [ebp-24h]
-  float arg2; // [esp+5Ch] [ebp-20h] BYREF
-  float v411; // [esp+60h] [ebp-1Ch] BYREF
-  float pos; // [esp+64h] [ebp-18h] BYREF
-  float v413; // [esp+68h] [ebp-14h]
-  float vel; // [esp+6Ch] [ebp-10h] BYREF
-  float v415; // [esp+70h] [ebp-Ch]
-  int v416; // [esp+74h] [ebp-8h]
-  int v417; // [esp+78h] [ebp-4h]
+  int v301; // eax
+  int v303; // ebx
+  int v304; // eax
+  int v333; // [esp-24h] [ebp-A4h]
+  float *v334; // [esp-20h] [ebp-A0h]
+  float *v335; // [esp-1Ch] [ebp-9Ch]
+  float v336; // [esp+0h] [ebp-80h]
+  int v337; // [esp+4h] [ebp-7Ch]
+  int v338; // [esp+4h] [ebp-7Ch]
+  float v340; // [esp+8h] [ebp-78h]
+  float v341; // [esp+8h] [ebp-78h]
+  float v342; // [esp+8h] [ebp-78h]
+  float v343; // [esp+8h] [ebp-78h]
+  float v344; // [esp+8h] [ebp-78h]
+  float v345; // [esp+8h] [ebp-78h]
+  float v346; // [esp+8h] [ebp-78h]
+  float v347; // [esp+8h] [ebp-78h]
+  float v348; // [esp+8h] [ebp-78h]
+  float v349; // [esp+8h] [ebp-78h]
+  float v350; // [esp+Ch] [ebp-74h]
+  int v351; // [esp+10h] [ebp-70h]
+  int v352; // [esp+14h] [ebp-6Ch]
+  int v353; // [esp+14h] [ebp-6Ch]
+  int v354; // [esp+18h] [ebp-68h]
+  float v355; // [esp+18h] [ebp-68h]
+  float *angle; // [esp+1Ch] [ebp-64h]
+  float anglea; // [esp+1Ch] [ebp-64h]
+  float angleb; // [esp+1Ch] [ebp-64h]
+  int v359; // [esp+20h] [ebp-60h]
+  int v360; // [esp+20h] [ebp-60h]
+  float *v361; // [esp+20h] [ebp-60h]
+  int v362; // [esp+24h] [ebp-5Ch]
+  int v363; // [esp+24h] [ebp-5Ch]
+  float v364; // [esp+28h] [ebp-58h]
+  int v365; // [esp+2Ch] [ebp-54h]
+  float v367; // [esp+2Ch] [ebp-54h]
+  int v380; // [esp+30h] [ebp-50h] BYREF
+  float v381; // [esp+34h] [ebp-4Ch]
+  float v382; // [esp+38h] [ebp-48h]
+  _DWORD *v383; // [esp+3Ch] [ebp-44h]
+  int owner_id; // [esp+40h] [ebp-40h]
+  int v385; // [esp+44h] [ebp-3Ch]
+  int v386; // [esp+48h] [ebp-38h]
+  float v387; // [esp+4Ch] [ebp-34h]
+  float arg1[2]; // [esp+50h] [ebp-30h] BYREF
+  float v389; // [esp+58h] [ebp-28h] BYREF
+  int v390; // [esp+5Ch] [ebp-24h] BYREF
+  float arg2; // [esp+60h] [ebp-20h] BYREF
+  float v392; // [esp+64h] [ebp-1Ch]
+  float pos; // [esp+68h] [ebp-18h] BYREF
+  float delta; // [esp+6Ch] [ebp-14h] BYREF
+  float vel; // [esp+70h] [ebp-10h] BYREF
 
   if ( console_open_flag )
     return;
   _EAX = render_overlay_player_index;
   v2 = 3 * render_overlay_player_index;
-  dword_4871F4[2 * render_overlay_player_index] = LODWORD(ui_mouse_x);
-  dword_4871F8[2 * _EAX] = ui_mouse_y;
+  player_aim_screen_x[2 * render_overlay_player_index] = LODWORD(ui_mouse_x);
+  player_aim_screen_y[2 * _EAX] = ui_mouse_y;
   _EDI = (char *)&unk_4908B0 + 288 * v2;
   _ESI = (float *)(_EDI + 20);
-  v408 = *((int *)_EDI + 5);
-  v409 = *((_DWORD *)_EDI + 6);
+  v389 = *((float *)_EDI + 5);
+  v390 = *((int *)_EDI + 6);
   __asm
   {
     fld     dword ptr [edi+24h]
@@ -12988,7 +12979,7 @@ void player_update()
     }
     *((float *)_EDI + 23) = _ET1;
   }
-  v346 = v0;
+  v364 = v0;
   if ( *((_DWORD *)_EDI + 196) != 1120403456 )
   {
     __asm
@@ -13028,22 +13019,22 @@ void player_update()
           fsub    ds:flt_46F24C
           fsin
           fmul    ds:flt_46F53C
-          fstp    [esp+5Ch+var_14]
+          fstp    [esp+5Ch+delta]
         }
         __asm { fadd    dword ptr [esi] }
-        v11 = *((float *)_EDI + 192);
+        v387 = *((float *)_EDI + 192);
         __asm
         {
           fstp    [esp+64h+pos]
-          fld     [esp+64h+var_14]
+          fld     [esp+64h+delta]
           fadd    dword ptr [esi+4]
-          fstp    [esp+64h+var_14]
+          fstp    [esp+64h+delta]
         }
-        effect_spawn_blood_splatter(&pos, v11, 0.0);
-        effect_spawn_blood_splatter(&pos, v11, 0.0);
-        effect_spawn_blood_splatter(&pos, v11, 0.0);
-        v12 = crt_rand();
-        sfx_play_panned(COERCE_FLOAT(sfx_bloodspill_01 + (v12 & 1)));
+        effect_spawn_blood_splatter(&pos, v387, 0.0);
+        effect_spawn_blood_splatter(&pos, v387, 0.0);
+        effect_spawn_blood_splatter(&pos, v387, 0.0);
+        v11 = crt_rand();
+        sfx_play_panned(COERCE_FLOAT(sfx_bloodspill_01 + (v11 & 1)));
         *((_DWORD *)_EDI + 196) = 1065353216;
       }
     }
@@ -13054,7 +13045,7 @@ void player_update()
     fadd    st, st
   }
   _ECX = (float *)(_EDI + 764);
-  v405 = *(float *)&_ECX;
+  v387 = *(float *)&_ECX;
   __asm
   {
     fsubr   dword ptr [ecx]
@@ -13125,23 +13116,23 @@ void player_update()
         fnstsw  ax
       }
       if ( (_AX & 0x4000) != 0 )
-        v23 = -100;
+        v22 = -100;
       else
-        v23 = -1 - render_overlay_player_index;
-      v24 = 0;
-      v392 = 0;
+        v22 = -1 - render_overlay_player_index;
+      *(float *)&v23 = 0.0;
+      *(float *)&v386 = 0.0;
       do
       {
-        if ( (v24 & 1) != 0 )
+        if ( (v23 & 1) != 0 )
         {
-          v343 = 21;
-          v367 = crt_rand() % 50;
+          v359 = 21;
+          v385 = crt_rand() % 50;
           __asm { fild    [esp+60h+var_3C] }
         }
         else
         {
-          v343 = 22;
-          v368 = crt_rand() % 50;
+          v359 = 22;
+          v385 = crt_rand() % 50;
           __asm { fild    [esp+60h+var_3C] }
         }
         __asm
@@ -13156,10 +13147,10 @@ void player_update()
           fsub    ds:flt_46F534
           fstp    [esp+64h+angle]; angle
         }
-        projectile_spawn((float *)_EDI + 5, angle, v343, v23);
-        v392 = ++v24;
+        projectile_spawn((float *)_EDI + 5, anglea, v359, v22);
+        v386 = ++v23;
       }
-      while ( v24 < 8 );
+      while ( v23 < 8 );
       sfx_play_panned(sfx_explosion_small);
       __asm
       {
@@ -13220,12 +13211,12 @@ void player_update()
         fnstsw  ax
       }
       if ( (_AX & 0x4000) != 0 )
-        owner_id = -100;
+        *(float *)&owner_id = NAN;
       else
         owner_id = -1 - render_overlay_player_index;
       sfx_play_panned(flt_4D9050);
       sfx_play_panned(flt_4D7FD8);
-      v392 = *((_DWORD *)_EDI + 192);
+      v386 = *((int *)_EDI + 192);
       __asm
       {
         fld     [esp+70h+var_38]
@@ -13238,17 +13229,17 @@ void player_update()
         fld     st
         fcos
       }
-      v33 = *(float *)&player_aim_x[216 * render_overlay_player_index];
-      v411 = *(float *)&player_aim_y[216 * render_overlay_player_index];
+      v32 = *(float *)&player_aim_x[216 * render_overlay_player_index];
+      v392 = *(float *)&player_aim_y[216 * render_overlay_player_index];
       _EBX = &player_pos_x[216 * render_overlay_player_index];
-      arg2 = v33;
+      arg2 = v32;
       __asm
       {
         fmul    ds:flt_46F230
         fstp    [esp+74h+pos]
         fsin
         fmul    ds:flt_46F230
-        fstp    [esp+74h+var_14]
+        fstp    [esp+74h+delta]
         fld     [esp+74h+var_1C]
         fsub    dword ptr [ebx+4]
         fld     [esp+74h+arg2]
@@ -13256,17 +13247,17 @@ void player_update()
         fstp    [esp+74h+vel]
         fstp    [esp+74h+var_C]
       }
-      sub_417660(&vel);
+      vec2_length(&vel);
       __asm { fmul    ds:flt_46F24C }
       __asm { fstp    [esp+58h+arg1] }
-      v369 = crt_rand() & 0x1FF;
+      v385 = crt_rand() & 0x1FF;
       __asm
       {
         fild    [esp+58h+var_3C]
         fmul    ds:flt_46F52C
         fstp    [esp+58h+var_3C]
       }
-      v349 = crt_rand() & 0x1FF;
+      v383 = (_DWORD *)(crt_rand() & 0x1FF);
       __asm
       {
         fild    [esp+58h+var_44]
@@ -13289,7 +13280,7 @@ void player_update()
         fstp    [esp+60h+var_1C]
         fstp    st
       }
-      _EAX = FUN_00417640(arg1, &arg2, v346);
+      _EAX = vec2_sub(arg1, &arg2, (float *)LODWORD(v364));
       __asm
       {
         fld     dword ptr [eax]
@@ -13301,7 +13292,7 @@ void player_update()
       {
         fsub    ds:flt_46F220
         fstp    [esp+60h+arg1]
-        fld     [esp+60h+var_14]
+        fld     [esp+60h+delta]
         fadd    dword ptr [esi+4]
         fld     [esp+60h+pos]
         fadd    dword ptr [esi]
@@ -13325,18 +13316,18 @@ void player_update()
         fsin
         fmul    ds:flt_46F524
         fstp    [esp+74h+var_C]
-        fld     [esp+74h+var_14]
+        fld     [esp+74h+delta]
         fadd    dword ptr [esi+4]
         fld     [esp+74h+pos]
         fadd    dword ptr [esi]
         fstp    [esp+74h+pos]
-        fstp    [esp+74h+var_14]
+        fstp    [esp+74h+delta]
       }
-      v36 = 11 * fx_spawn_sprite(&pos, &vel, 1.0);
-      sprite_effect_color_r[v36] = 1056964608;
-      sprite_effect_color_g[v36] = 1056964608;
-      sprite_effect_color_b[v36] = 1056964608;
-      sprite_effect_color_a[v36] = 1054045372;
+      v35 = 11 * fx_spawn_sprite(&pos, &vel, 1.0);
+      sprite_effect_color_r[v35] = 1056964608;
+      sprite_effect_color_g[v35] = 1056964608;
+      sprite_effect_color_b[v35] = 1056964608;
+      sprite_effect_color_a[v35] = 1054045372;
       __asm
       {
         fld     dword ptr [edi+0A8h]
@@ -13381,27 +13372,27 @@ void player_update()
         fnstsw  ax
       }
       if ( (_EAX & 0x4000) != 0 )
-        v41 = -100;
+        v40 = -100;
       else
-        v41 = -1 - render_overlay_player_index;
-      v42 = 0;
-      v392 = 0;
+        v40 = -1 - render_overlay_player_index;
+      *(float *)&v41 = 0.0;
+      *(float *)&v386 = 0.0;
       do
       {
-        if ( (v42 & 1) != 0 )
-          v344 = 9;
+        if ( (v41 & 1) != 0 )
+          v360 = 9;
         else
-          v344 = 11;
+          v360 = 11;
         __asm { fild    [esp+60h+var_38] }
         __asm
         {
           fmul    ds:flt_46F538
           fstp    [esp+64h+angle]; angle
         }
-        projectile_spawn((float *)_EDI + 5, anglea, v344, v41);
-        v392 = ++v42;
+        projectile_spawn((float *)_EDI + 5, angleb, v360, v40);
+        v386 = ++v41;
       }
-      while ( v42 < 8 );
+      while ( v41 < 8 );
       sfx_play_panned(sfx_explosion_small);
       __asm
       {
@@ -13456,12 +13447,12 @@ void player_update()
     if ( (_AX & 0x100) != 0 )
       flt_473A40 = 0.30000001;
   }
-  v47 = *((_DWORD *)_EDI + 23);
+  v46 = *((int *)_EDI + 23);
   pos = 0.0;
-  v413 = 0.0;
+  delta = 0.0;
   *((_DWORD *)_EDI + 7) = 0;
-  *((float *)_EDI + 8) = v413;
-  v371 = v47;
+  *((float *)_EDI + 8) = delta;
+  v385 = v46;
   if ( time_scale_active )
   {
     __asm
@@ -13472,7 +13463,7 @@ void player_update()
       fstp    frame_dt
     }
   }
-  v48 = render_overlay_player_index;
+  v47 = render_overlay_player_index;
   if ( demo_mode_active
     || config_player_mode_flags[render_overlay_player_index] == 5
     || config_aim_scheme[render_overlay_player_index] == 5 )
@@ -13511,7 +13502,7 @@ LABEL_67:
         fstp    st
       }
     }
-    v51 = 0;
+    v50 = 0;
     _ECX = creature_pool;
     do
     {
@@ -13549,28 +13540,28 @@ LABEL_67:
           if ( (_AX & 0x100) != 0 )
           {
             __asm { fstp    st }
-            *((_DWORD *)_EDI + 200) = v51;
+            *((_DWORD *)_EDI + 200) = v50;
             __asm { fld     [esp+58h+arg1] }
           }
         }
       }
       _ECX += 152;
-      ++v51;
+      ++v50;
     }
     while ( (int)_ECX < (int)byte_4AA338 );
     __asm { fstp    st }
     if ( demo_mode_active )
-      goto LABEL_216;
-    v48 = render_overlay_player_index;
+      goto LABEL_213;
+    v47 = render_overlay_player_index;
   }
-  v55 = config_player_mode_flags[v48];
-  if ( v55 == 5 )
+  v54 = config_player_mode_flags[v47];
+  if ( v54 == 5 )
   {
-LABEL_216:
-    v140 = *((_DWORD *)_EDI + 200);
-    if ( v140 < 0 )
-      goto LABEL_222;
-    _EDX = 19 * v140;
+LABEL_213:
+    v142 = *((_DWORD *)_EDI + 200);
+    if ( v142 < 0 )
+      goto LABEL_219;
+    _EDX = 19 * v142;
     __asm
     {
       fld     creature_health[edx*8]
@@ -13579,7 +13570,7 @@ LABEL_216:
     }
     if ( (_AX & 0x4100) != 0 )
     {
-LABEL_222:
+LABEL_219:
       __asm
       {
         fld     dword ptr [esi+4]
@@ -13635,10 +13626,10 @@ LABEL_222:
         __asm { fstp    [esp+58h+var_1C] }
       }
       pos = arg2;
-      v413 = v411;
+      delta = v392;
       __asm
       {
-        fld     [esp+58h+var_14]
+        fld     [esp+58h+delta]
         fld     [esp+58h+pos]
         fpatan
         fsub    ds:flt_46F220
@@ -13652,7 +13643,7 @@ LABEL_222:
     }
     if ( (_AX & 0x4000) == 0 )
     {
-      sub_413540(*(float *)&v399);
+      sub_413540(*(float *)&v386);
       if ( (int)*(&player_perk_counts + perk_id_long_distance_runner) <= 0 )
       {
         __asm
@@ -13760,8 +13751,8 @@ LABEL_222:
         fstp    [esp+64h+vel]
         fstp    [esp+64h+var_C]
       }
-      player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
-      goto LABEL_239;
+      player_apply_move_with_spawn_avoidance(v354, (float *)render_overlay_player_index, (float *)_EDI + 5);
+      goto LABEL_237;
     }
     __asm
     {
@@ -13783,6 +13774,7 @@ LABEL_222:
       fld     dword ptr [edi+2Ch]
       fsub    ds:flt_46F220
     }
+    p_vel = &vel;
     __asm
     {
       fcos
@@ -13813,30 +13805,30 @@ LABEL_222:
       fstp    [esp+58h+vel]
       fstp    [esp+58h+var_C]
     }
-    goto LABEL_238;
+    goto LABEL_235;
   }
-  if ( v55 != 4 )
+  if ( v54 != 4 )
   {
-    if ( v55 == 3 )
+    if ( v54 == 3 )
     {
       (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 132))(
         grim_interface_ptr,
         *((_DWORD *)_EDI + 215));
       __asm { fchs }
-      __asm { fstp    [esp+5Ch+var_38] }
-      (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 132))(
-        grim_interface_ptr,
-        *((_DWORD *)_EDI + 214));
+      v74 = *(_DWORD *)grim_interface_ptr;
+      v361 = (float *)*((_DWORD *)_EDI + 214);
+      __asm { fstp    [esp+60h+var_3C] }
+      (*(void (__thiscall **)(int))(v74 + 132))(grim_interface_ptr);
       __asm
       {
         fchs
-        fstp    [esp+58h+arg2]
-        fld     [esp+58h+arg2]
-        fmul    [esp+58h+arg2]
-        fld     [esp+58h+var_38]
-        fmul    [esp+58h+var_38]
+        fstp    [esp+60h+var_28]
+        fld     [esp+60h+var_28]
+        fmul    [esp+60h+var_28]
+        fld     [esp+60h+owner_id]
+        fmul    [esp+60h+owner_id]
       }
-      v411 = v395;
+      v390 = owner_id;
       __asm
       {
         faddp   st(1), st
@@ -13846,15 +13838,16 @@ LABEL_222:
       }
       if ( (_AX & 0x4100) != 0 )
         goto LABEL_118;
-      j_FUN_00452f1d(&arg2);
+      angle = &v389;
+      j_FUN_00452f1d(&v389);
       __asm
       {
-        fld     [esp+58h+var_1C]
-        fld     [esp+58h+arg2]
+        fld     [esp+68h+arg1+4]
+        fld     [esp+68h+arg1]
         fpatan
         fsub    ds:flt_46F220
         fcom    ds:flt_46F228
-        fst     [esp+58h+var_38]
+        fst     [esp+68h+var_48]
         fnstsw  ax
       }
       if ( (_AX & 0x100) != 0 )
@@ -13869,7 +13862,7 @@ LABEL_222:
           }
         }
         while ( (_AX & 0x100) != 0 );
-        __asm { fst     [esp+58h+var_38] }
+        __asm { fst     [esp+68h+var_48] }
       }
       __asm
       {
@@ -13903,7 +13896,7 @@ LABEL_118:
         {
           fcos
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+70h+var_4C]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+1Ch]
         }
@@ -13914,7 +13907,7 @@ LABEL_118:
           fsub    ds:flt_46F220
           fsin
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+70h+var_4C]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+20h]
         }
@@ -13929,14 +13922,13 @@ LABEL_118:
         }
         __asm
         {
-          fstp    [esp+64h+vel]
-          fstp    [esp+64h+var_C]
+          fstp    [esp+74h+arg2]
+          fstp    [esp+74h+var_1C]
         }
-        player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
       }
       else
       {
-        sub_413540(*(float *)&v396);
+        sub_413540(v382);
         if ( (int)*(&player_perk_counts + perk_id_long_distance_runner) <= 0 )
         {
           __asm
@@ -14009,12 +14001,12 @@ LABEL_118:
         }
         __asm
         {
-          fstp    [esp+60h+var_38]
+          fstp    [esp+70h+var_48]
           fcos
           fstp    st(1)
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_38]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+70h+var_48]
+          fmul    [esp+70h+var_4C]
           fmul    ds:flt_46F518
           fstp    dword ptr [edi+1Ch]
         }
@@ -14025,8 +14017,8 @@ LABEL_118:
           fsub    ds:flt_46F220
           fsin
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_38]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+70h+var_48]
+          fmul    [esp+70h+var_4C]
           fmul    ds:flt_46F518
           fstp    dword ptr [edi+20h]
         }
@@ -14041,21 +14033,20 @@ LABEL_118:
         }
         __asm
         {
-          fstp    [esp+64h+vel]
-          fstp    [esp+64h+var_C]
+          fstp    [esp+74h+arg2]
+          fstp    [esp+74h+var_1C]
         }
-        player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
       }
-      goto LABEL_239;
+      goto LABEL_236;
     }
-    if ( v55 == 1 )
+    if ( v54 == 1 )
     {
       __asm
       {
         fld     dword ptr [edi+304h]
         fcomp   ds:flt_46F224
       }
-      v91 = 0;
+      v92 = 0;
       __asm { fnstsw  ax }
       if ( (_AX & 0x100) != 0 )
         *((_DWORD *)_EDI + 193) = 1065353216;
@@ -14067,14 +14058,12 @@ LABEL_118:
       }
       if ( (_AX & 0x4100) == 0 )
         *((_DWORD *)_EDI + 193) = 1088421888;
-      v94 = (*(int (__thiscall **)(int, _DWORD, float *))(*(_DWORD *)grim_interface_ptr + 128))(
-              grim_interface_ptr,
-              *((_DWORD *)_EDI + 205),
-              v346);
-      if ( (_BYTE)v94
+      v362 = *((_DWORD *)_EDI + 205);
+      v95 = (*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr);
+      if ( (_BYTE)v95
         || config_player_count == 1
-        && (LOBYTE(v94) = player_alt_turn_key_left,
-            (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, v94)) )
+        && (LOBYTE(v95) = player_alt_turn_key_left,
+            (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, v95)) )
       {
         __asm
         {
@@ -14102,17 +14091,17 @@ LABEL_118:
       }
       else
       {
-        v95 = (*(int (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
+        v96 = (*(int (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
                 grim_interface_ptr,
                 *((_DWORD *)_EDI + 206));
-        if ( !(_BYTE)v95 )
+        if ( !(_BYTE)v96 )
         {
           if ( config_player_count != 1 )
             goto LABEL_135;
-          LOBYTE(v95) = player_alt_turn_key_right;
+          LOBYTE(v96) = player_alt_turn_key_right;
           if ( !(*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(
                   grim_interface_ptr,
-                  v95) )
+                  v96) )
             goto LABEL_135;
         }
         __asm
@@ -14141,16 +14130,15 @@ LABEL_118:
       }
       __asm { fstp    dword ptr [edi+300h] }
       *((float *)_EDI + 192) = _ET1;
-      v91 = 1;
+      v92 = 1;
 LABEL_135:
-      v405 = 1.0;
-      v101 = (*(int (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-               grim_interface_ptr,
-               *((_DWORD *)_EDI + 203));
-      if ( (_BYTE)v101
+      v352 = *((_DWORD *)_EDI + 203);
+      v382 = 1.0;
+      v102 = (*(int (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr, v352);
+      if ( (_BYTE)v102
         || config_player_count == 1
-        && (LOBYTE(v101) = player_alt_move_key_forward,
-            (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, v101)) )
+        && (LOBYTE(v102) = player_alt_move_key_forward,
+            (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, v102)) )
       {
         if ( (int)*(&player_perk_counts + perk_id_long_distance_runner) <= 0 )
         {
@@ -14220,11 +14208,12 @@ LABEL_135:
           fld     dword ptr [edi+2Ch]
           fsub    ds:flt_46F220
         }
+        v106 = &v389;
         __asm
         {
           fcos
           fmul    dword ptr [edi+68h]
-          fmul    [esp+58h+var_3C]
+          fmul    [esp+70h+var_54]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+1Ch]
         }
@@ -14235,7 +14224,7 @@ LABEL_135:
           fsub    ds:flt_46F220
           fsin
           fmul    dword ptr [edi+68h]
-          fmul    [esp+58h+var_3C]
+          fmul    [esp+70h+var_54]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+20h]
         }
@@ -14247,21 +14236,21 @@ LABEL_135:
           fmul    dword ptr [edi+20h]
           fxch    st(1)
           fmul    dword ptr [edi+1Ch]
-          fstp    [esp+58h+vel]
-          fstp    [esp+58h+var_C]
+          fstp    [esp+70h+var_28]
+          fstp    [esp+70h+var_24]
         }
       }
       else
       {
-        v102 = (*(int (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
+        v103 = (*(int (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
                  grim_interface_ptr,
                  *((_DWORD *)_EDI + 204));
-        if ( (_BYTE)v102
+        if ( (_BYTE)v103
           || config_player_count == 1
-          && (LOBYTE(v102) = player_alt_move_key_backward,
+          && (LOBYTE(v103) = player_alt_move_key_backward,
               (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(
                 grim_interface_ptr,
-                v102)) )
+                v103)) )
         {
           if ( (int)*(&player_perk_counts + perk_id_long_distance_runner) <= 0 )
           {
@@ -14320,12 +14309,13 @@ LABEL_135:
             fld     dword ptr [edi+2Ch]
             fsub    ds:flt_46F220
           }
-          v392 = -1082130432;
+          v364 = -1.0;
+          v106 = arg1;
           __asm
           {
             fcos
             fmul    dword ptr [edi+68h]
-            fmul    [esp+58h+var_3C]
+            fmul    [esp+78h+var_5C]
             fmul    ds:flt_46F514
             fstp    dword ptr [edi+1Ch]
           }
@@ -14336,7 +14326,7 @@ LABEL_135:
             fsub    ds:flt_46F220
             fsin
             fmul    dword ptr [edi+68h]
-            fmul    [esp+58h+var_3C]
+            fmul    [esp+78h+var_5C]
             fmul    ds:flt_46F514
             fstp    dword ptr [edi+20h]
           }
@@ -14348,13 +14338,13 @@ LABEL_135:
             fmul    dword ptr [edi+20h]
             fxch    st(1)
             fmul    dword ptr [edi+1Ch]
-            fstp    [esp+58h+vel]
-            fstp    [esp+58h+var_C]
+            fstp    [esp+78h+arg1]
+            fstp    [esp+78h+arg1+4]
           }
         }
         else
         {
-          if ( !v91 )
+          if ( !v92 )
             *((_DWORD *)_EDI + 193) = 1065353216;
           __asm
           {
@@ -14376,11 +14366,12 @@ LABEL_135:
             fld     dword ptr [edi+2Ch]
             fsub    ds:flt_46F220
           }
+          v106 = arg1;
           __asm
           {
             fcos
             fmul    dword ptr [edi+68h]
-            fmul    [esp+58h+var_3C]
+            fmul    [esp+78h+var_5C]
             fmul    ds:flt_46F524
             fstp    dword ptr [edi+1Ch]
           }
@@ -14391,7 +14382,7 @@ LABEL_135:
             fsub    ds:flt_46F220
             fsin
             fmul    dword ptr [edi+68h]
-            fmul    [esp+58h+var_3C]
+            fmul    [esp+78h+var_5C]
             fmul    ds:flt_46F524
             fstp    dword ptr [edi+20h]
           }
@@ -14403,33 +14394,31 @@ LABEL_135:
             fmul    dword ptr [edi+20h]
             fxch    st(1)
             fmul    dword ptr [edi+1Ch]
-            fstp    [esp+58h+vel]
-            fstp    [esp+58h+var_C]
+            fstp    [esp+78h+arg1]
+            fstp    [esp+78h+arg1+4]
           }
         }
       }
-      player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
+      player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, v106);
       __asm
       {
-        fld     [esp+64h+var_38]
+        fld     [esp+84h+var_58]
         fmul    dword ptr [edi+68h]
       }
       __asm { fmul    frame_dt }
-      goto LABEL_240;
+      goto LABEL_238;
     }
-    if ( v55 != 2 )
-      goto LABEL_241;
-    owner_ida = -1082130432;
-    if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD, float *))(*(_DWORD *)grim_interface_ptr + 128))(
-           grim_interface_ptr,
-           *((_DWORD *)_EDI + 205),
-           v346)
+    if ( v54 != 2 )
+      goto LABEL_239;
+    v363 = *((_DWORD *)_EDI + 205);
+    *(float *)&owner_id = -1.0;
+    if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr, v363)
       || config_player_count == 1
       && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
            grim_interface_ptr,
            player_alt_turn_key_left) )
     {
-      v371 = 1083624420;
+      v382 = 4.712389;
     }
     if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
            grim_interface_ptr,
@@ -14439,39 +14428,29 @@ LABEL_135:
            grim_interface_ptr,
            player_alt_turn_key_right) )
     {
-      v371 = 1070141403;
+      *(float *)&v380 = 1.5707964;
     }
-    if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-           grim_interface_ptr,
-           *((_DWORD *)_EDI + 203))
+    v353 = *((_DWORD *)_EDI + 203);
+    if ( (*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr)
       || config_player_count == 1
-      && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
-           grim_interface_ptr,
-           player_alt_move_key_forward) )
+      && (v351 = player_alt_move_key_forward,
+          (*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr)) )
     {
-      if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-             grim_interface_ptr,
-             *((_DWORD *)_EDI + 205))
-        || config_player_count == 1
-        && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
-             grim_interface_ptr,
-             player_alt_turn_key_left) )
+      if ( !(*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
+              grim_interface_ptr,
+              *((_DWORD *)_EDI + 205))
+        && (config_player_count != 1
+         || !(*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
+               grim_interface_ptr,
+               player_alt_turn_key_left)) )
       {
-        v371 = 1085271520;
-      }
-      else if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-                  grim_interface_ptr,
-                  *((_DWORD *)_EDI + 206))
-             || config_player_count == 1
-             && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
-                  grim_interface_ptr,
-                  player_alt_turn_key_right) )
-      {
-        v371 = 1061752795;
-      }
-      else
-      {
-        v371 = 0;
+        v337 = *((_DWORD *)_EDI + 206);
+        if ( !(*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr)
+          && config_player_count == 1 )
+        {
+          v336 = *(float *)&player_alt_turn_key_right;
+          (*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr);
+        }
       }
     }
     if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
@@ -14482,36 +14461,36 @@ LABEL_135:
            grim_interface_ptr,
            player_alt_move_key_backward) )
     {
-      if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-             grim_interface_ptr,
-             *((_DWORD *)_EDI + 205))
-        || config_player_count == 1
-        && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
-             grim_interface_ptr,
-             player_alt_turn_key_left) )
+      if ( !(*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
+              grim_interface_ptr,
+              *((_DWORD *)_EDI + 205))
+        && (config_player_count != 1
+         || !(*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
+               grim_interface_ptr,
+               player_alt_turn_key_left)) )
       {
-        sub_413540(3.926991);
-      }
-      else if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-                  grim_interface_ptr,
-                  *((_DWORD *)_EDI + 206))
-             || config_player_count == 1
-             && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
-                  grim_interface_ptr,
-                  player_alt_turn_key_right) )
-      {
-        sub_413540(2.3561945);
-      }
-      else
-      {
-        sub_413540(3.1415927);
+        if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
+               grim_interface_ptr,
+               *((_DWORD *)_EDI + 206))
+          || config_player_count == 1
+          && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
+               grim_interface_ptr,
+               player_alt_turn_key_right) )
+        {
+          sub_413540(2.3561945);
+        }
+        else
+        {
+          sub_413540(3.1415927);
+        }
+        goto LABEL_198;
       }
     }
     else
     {
       __asm
       {
-        fld     [esp+58h+owner_id]
+        fld     [esp+88h+var_70]
         fcomp   ds:flt_46F36C
         fnstsw  ax
       }
@@ -14541,7 +14520,7 @@ LABEL_135:
         {
           fcos
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+90h+var_6C]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+1Ch]
         }
@@ -14552,7 +14531,7 @@ LABEL_135:
           fsub    ds:flt_46F220
           fsin
           fmul    dword ptr [edi+68h]
-          fmul    [esp+60h+var_3C]
+          fmul    [esp+90h+var_6C]
           fmul    ds:flt_46F524
           fstp    dword ptr [edi+20h]
         }
@@ -14567,14 +14546,15 @@ LABEL_135:
         }
         __asm
         {
-          fstp    [esp+64h+vel]
-          fstp    [esp+64h+var_C]
+          fstp    [esp+94h+owner_id]
+          fstp    [esp+94h+var_3C]
         }
-        player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
-        goto LABEL_215;
+        player_apply_move_with_spawn_avoidance(v333, v334, v335);
+        goto LABEL_212;
       }
-      sub_413540(-1.0);
     }
+    sub_413540(v336);
+LABEL_198:
     __asm
     {
       fld     flt_487198
@@ -14654,12 +14634,12 @@ LABEL_135:
     }
     __asm
     {
-      fstp    [esp+60h+var_38]
+      fstp    [esp+0A0h+var_78]
       fcos
       fstp    st(1)
       fmul    dword ptr [edi+68h]
-      fmul    [esp+60h+var_38]
-      fmul    [esp+60h+var_3C]
+      fmul    [esp+0A0h+var_78]
+      fmul    [esp+0A0h+var_7C]
       fmul    ds:flt_46F518
       fstp    dword ptr [edi+1Ch]
     }
@@ -14670,8 +14650,8 @@ LABEL_135:
       fsub    ds:flt_46F220
       fsin
       fmul    dword ptr [edi+68h]
-      fmul    [esp+60h+var_38]
-      fmul    [esp+60h+var_3C]
+      fmul    [esp+0A0h+var_78]
+      fmul    [esp+0A0h+var_7C]
       fmul    ds:flt_46F518
       fstp    dword ptr [edi+20h]
     }
@@ -14686,11 +14666,11 @@ LABEL_135:
     }
     __asm
     {
-      fstp    [esp+64h+vel]
-      fstp    [esp+64h+var_C]
+      fstp    [esp+0A4h+var_50]
+      fstp    [esp+0A4h+var_4C]
     }
-    player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
-LABEL_215:
+    player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, (float *)&v380);
+LABEL_212:
     __asm
     {
       fld     frame_dt
@@ -14703,7 +14683,7 @@ LABEL_215:
       fstp    dword ptr [edi+94h]
     }
     *((float *)_EDI + 37) = _ET1;
-    goto LABEL_241;
+    goto LABEL_239;
   }
   if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
          grim_interface_ptr,
@@ -14712,15 +14692,15 @@ LABEL_215:
     _EAX = render_overlay_player_index;
     __asm
     {
-      fld     dword_4871F8[eax*8]
+      fld     player_aim_screen_y[eax*8]
       fsub    camera_offset_y
-      fld     dword_4871F4[eax*8]
+      fld     player_aim_screen_x[eax*8]
       fsub    camera_offset_x
-      fstp    [esp+58h+pos]
+      fstp    [esp+5Ch+var_1C]
     }
-    __asm { fstp    [esp+58h+var_14] }
-    *((float *)_EDI + 201) = pos;
-    *((float *)_EDI + 202) = v413;
+    __asm { fstp    [esp+5Ch+pos] }
+    *((float *)_EDI + 201) = v392;
+    *((float *)_EDI + 202) = pos;
   }
   if ( *((_DWORD *)_EDI + 201) == -1082130432 )
     goto LABEL_98;
@@ -14771,7 +14751,7 @@ LABEL_98:
     {
       fcos
       fmul    dword ptr [edi+68h]
-      fmul    [esp+60h+var_3C]
+      fmul    [esp+64h+owner_id]
       fmul    ds:flt_46F524
       fstp    dword ptr [edi+1Ch]
     }
@@ -14782,7 +14762,7 @@ LABEL_98:
       fsub    ds:flt_46F220
       fsin
       fmul    dword ptr [edi+68h]
-      fmul    [esp+60h+var_3C]
+      fmul    [esp+64h+owner_id]
       fmul    ds:flt_46F524
       fstp    dword ptr [edi+20h]
     }
@@ -14797,18 +14777,18 @@ LABEL_98:
     }
     __asm
     {
-      fstp    [esp+64h+vel]
-      fstp    [esp+64h+var_C]
+      fstp    [esp+68h+delta]
+      fstp    [esp+68h+vel]
     }
-    player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
-    goto LABEL_239;
+    player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &delta);
+    goto LABEL_237;
   }
   __asm
   {
     fpatan
     fsub    ds:flt_46F220
     fcom    ds:flt_46F228
-    fst     [esp+58h+var_38]
+    fst     [esp+5Ch+var_3C]
     fnstsw  ax
   }
   if ( (_AX & 0x100) != 0 )
@@ -14823,7 +14803,7 @@ LABEL_98:
       }
     }
     while ( (_AX & 0x100) != 0 );
-    __asm { fst     [esp+58h+var_38] }
+    __asm { fst     [esp+5Ch+var_3C] }
   }
   __asm
   {
@@ -14832,7 +14812,7 @@ LABEL_98:
   }
   if ( (_AX & 0x4000) != 0 )
     goto LABEL_98;
-  sub_413540(*(float *)&v393);
+  sub_413540(*(float *)&v385);
   if ( (int)*(&player_perk_counts + perk_id_long_distance_runner) <= 0 )
   {
     __asm
@@ -14903,14 +14883,15 @@ LABEL_98:
     fld     ds:flt_46F378
     fsub    st, st(2)
   }
+  p_vel = &delta;
   __asm
   {
-    fstp    [esp+58h+var_38]
+    fstp    [esp+5Ch+var_3C]
     fcos
     fstp    st(1)
     fmul    dword ptr [edi+68h]
-    fmul    [esp+58h+var_38]
-    fmul    [esp+58h+var_3C]
+    fmul    [esp+5Ch+var_3C]
+    fmul    [esp+5Ch+owner_id]
     fmul    ds:flt_46F518
     fstp    dword ptr [edi+1Ch]
   }
@@ -14921,8 +14902,8 @@ LABEL_98:
     fsub    ds:flt_46F220
     fsin
     fmul    dword ptr [edi+68h]
-    fmul    [esp+58h+var_38]
-    fmul    [esp+58h+var_3C]
+    fmul    [esp+5Ch+var_3C]
+    fmul    [esp+5Ch+owner_id]
     fmul    ds:flt_46F518
     fstp    dword ptr [edi+20h]
   }
@@ -14934,18 +14915,22 @@ LABEL_98:
     fmul    dword ptr [edi+20h]
     fxch    st(1)
     fmul    dword ptr [edi+1Ch]
-    fstp    [esp+58h+vel]
-    fstp    [esp+58h+var_C]
+    fstp    [esp+5Ch+delta]
+    fstp    [esp+5Ch+vel]
   }
-LABEL_238:
-  player_apply_move_with_spawn_avoidance(render_overlay_player_index, (float *)_EDI + 5, &vel);
-LABEL_239:
+LABEL_235:
+  v361 = p_vel;
+  angle = (float *)(_EDI + 20);
+  v354 = render_overlay_player_index;
+LABEL_236:
+  player_apply_move_with_spawn_avoidance(v354, angle, v361);
+LABEL_237:
   __asm
   {
     fld     frame_dt
     fmul    dword ptr [edi+68h]
   }
-LABEL_240:
+LABEL_238:
   __asm { fmul    ds:flt_46F510 }
   __asm
   {
@@ -14953,7 +14938,7 @@ LABEL_240:
     fstp    dword ptr [edi+94h]
   }
   *((float *)_EDI + 37) = _ET1;
-LABEL_241:
+LABEL_239:
   if ( time_scale_active )
   {
     __asm
@@ -14964,9 +14949,9 @@ LABEL_241:
       fstp    frame_dt
     }
   }
-  v160 = perk_count_get(perk_id_sharpshooter);
+  v162 = perk_count_get(perk_id_sharpshooter);
   __asm { fld     frame_dt }
-  if ( v160 )
+  if ( v162 )
   {
     __asm
     {
@@ -15059,31 +15044,31 @@ LABEL_241:
   __asm
   {
     fld     dword ptr [esi]
-    fcomp   [esp+58h+var_28]
+    fcomp   [esp+5Ch+arg1+4]
   }
-  v401 = 1065353216;
+  *(float *)&v385 = 1.0;
   __asm { fnstsw  ax }
   if ( (_AX & 0x4000) == 0 )
-    goto LABEL_261;
+    goto LABEL_259;
   __asm
   {
     fld     dword ptr [edi+18h]
-    fcomp   [esp+58h+var_24]
+    fcomp   [esp+5Ch+var_28]
     fnstsw  ax
   }
   if ( (_AX & 0x4000) != 0 )
   {
     if ( perk_count_get(perk_id_stationary_reloader) )
-      v401 = 1077936128;
+      *(float *)&v385 = 3.0;
   }
   else
   {
-LABEL_261:
+LABEL_259:
     *((_DWORD *)_EDI + 40) = 0;
     *((_DWORD *)_EDI + 41) = 0;
   }
   if ( !perk_count_get(perk_id_angry_reloader) )
-    goto LABEL_274;
+    goto LABEL_272;
   __asm
   {
     fld     dword ptr [edi+2D8h]
@@ -15091,7 +15076,7 @@ LABEL_261:
     fnstsw  ax
   }
   if ( (_AX & 0x4100) != 0 )
-    goto LABEL_274;
+    goto LABEL_272;
   __asm
   {
     fld     dword ptr [edi+2D8h]
@@ -15102,20 +15087,20 @@ LABEL_261:
   if ( (_AX & 0x100) == 0 )
   {
     __asm { fstp    st }
-LABEL_274:
+LABEL_272:
     __asm
     {
-      fld     [esp+58h+var_38]
+      fld     [esp+5Ch+var_3C]
       fmul    frame_dt
       fsubr   dword ptr [edi+2D0h]
       fstp    dword ptr [edi+2D0h]
     }
     *((float *)_EDI + 180) = _ET1;
-    goto LABEL_275;
+    goto LABEL_273;
   }
   __asm
   {
-    fld     [esp+58h+var_38]
+    fld     [esp+5Ch+var_3C]
     fmul    frame_dt
     fsubr   dword ptr [edi+2D0h]
     fst     dword ptr [edi+2D0h]
@@ -15138,44 +15123,45 @@ LABEL_274:
       fnstsw  ax
     }
     if ( (_AX & 0x4000) != 0 )
-      v401 = -100;
+      *(float *)&v385 = NAN;
     else
-      v401 = -1 - render_overlay_player_index;
+      v385 = -1 - render_overlay_player_index;
     __asm
     {
       fld     dword ptr [edi+2D8h]
       fmul    ds:flt_46F504
     }
-    v179 = 0;
-    v180 = 7 - _ftol();
-    v372 = 0;
-    LODWORD(arg1[0]) = v180;
-    if ( v180 > 0 )
+    v181 = 0.0;
+    v182 = 7 - _ftol();
+    *(float *)&owner_id = 0.0;
+    v387 = *(float *)&v182;
+    if ( v182 > 0 )
     {
       __asm
       {
-        fild    [esp+58h+arg1]
+        fild    [esp+5Ch+var_34]
         fdivr   ds:flt_46F3B0
-        fstp    [esp+58h+arg1]
+        fstp    [esp+5Ch+var_34]
       }
       do
       {
-        __asm { fild    [esp+58h+var_3C] }
-        __asm { fmul    [esp+60h+arg1] }
+        __asm { fild    [esp+5Ch+owner_id] }
+        __asm { fmul    [esp+64h+var_34] }
         __asm
         {
           fadd    ds:flt_46F2FC
-          fstp    [esp+64h+angle]; angle
+          fstp    [esp+68h+var_68]; angle
         }
-        projectile_spawn((float *)_EDI + 5, angleb, 11, v401);
-        v372 = ++v179;
+        projectile_spawn((float *)_EDI + 5, v355, 11, v385);
+        ++LODWORD(v181);
+        *(float *)&owner_id = v181;
       }
-      while ( v179 < v180 );
+      while ( SLODWORD(v181) < v182 );
     }
     bonus_spawn_guard = 0;
     sfx_play_panned(sfx_explosion_small);
   }
-LABEL_275:
+LABEL_273:
   __asm
   {
     fld     dword ptr [edi+2D0h]
@@ -15185,10 +15171,10 @@ LABEL_275:
   if ( (_AX & 0x100) != 0 )
     *((_DWORD *)_EDI + 180) = 0;
   if ( demo_mode_active )
-    goto LABEL_284;
-  v183 = perk_count_get(perk_id_alternate_weapon);
+    goto LABEL_282;
+  v185 = perk_count_get(perk_id_alternate_weapon);
   _ECX = render_overlay_player_index;
-  if ( !v183 && config_player_mode_flags[render_overlay_player_index] != 4 )
+  if ( !v185 && config_player_mode_flags[render_overlay_player_index] != 4 )
   {
     if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(
            grim_interface_ptr,
@@ -15203,11 +15189,11 @@ LABEL_275:
       if ( (_AX & 0x4000) != 0 && config_player_count == 1 )
         player_start_reload();
     }
-LABEL_284:
+LABEL_282:
     _ECX = render_overlay_player_index;
   }
-  v348 = 0;
-  if ( demo_mode_active || (v186 = config_aim_scheme[_ECX], v186 == 5) )
+  HIBYTE(v380) = 0;
+  if ( demo_mode_active || (v188 = config_aim_scheme[_ECX], v188 == 5) )
   {
     _EBP = (float *)(_EDI + 80);
     _EAX = 19 * *((_DWORD *)_EDI + 200);
@@ -15220,38 +15206,38 @@ LABEL_284:
     __asm
     {
       fsub    dword ptr [ebp+0]
-      fstp    [esp+58h+arg2]
-      fst     [esp+58h+var_1C]
-      fld     [esp+58h+arg2]
-      fmul    [esp+58h+arg2]
+      fstp    [esp+60h+var_28]
+      fst     [esp+60h+var_24]
+      fld     [esp+60h+var_28]
+      fmul    [esp+60h+var_28]
       fld     st(1)
       fmul    st, st(2)
       faddp   st(1), st
       fsqrt
       fstp    st(1)
-      fst     [esp+58h+var_38]
+      fst     [esp+60h+owner_id]
       fcomp   ds:flt_46F25C
       fnstsw  ax
     }
     if ( (_EAX & 0x100) != 0 )
     {
-      v202 = 19 * *((_DWORD *)_EDI + 200);
+      v205 = 19 * *((_DWORD *)_EDI + 200);
       *_EBP = *(&creature_pos_x + 38 * *((_DWORD *)_EDI + 200));
-      *((float *)_EDI + 21) = creature_pos_y[2 * v202];
+      *((float *)_EDI + 21) = creature_pos_y[2 * v205];
     }
     else
     {
-      j_FUN_00452f1d(&arg2);
+      j_FUN_00452f1d(&v389);
       __asm
       {
-        fld     [esp+58h+var_38]
+        fld     [esp+68h+var_48]
         fmul    ds:flt_46F284
         fmul    frame_dt
-        fld     [esp+58h+arg2]
+        fld     [esp+68h+arg1]
         fmul    st, st(1)
-        fstp    [esp+58h+vel]
-        fmul    [esp+58h+var_1C]
-        fld     [esp+58h+vel]
+        fstp    [esp+68h+arg2]
+        fmul    [esp+68h+arg1+4]
+        fld     [esp+68h+arg2]
         fadd    dword ptr [ebp+0]
         fstp    dword ptr [ebp+0]
       }
@@ -15265,7 +15251,7 @@ LABEL_284:
     }
     __asm
     {
-      fld     [esp+58h+var_38]
+      fld     [esp+60h+owner_id]
       fcomp   ds:flt_46F2B8
       fnstsw  ax
     }
@@ -15279,26 +15265,26 @@ LABEL_284:
         fnstsw  ax
       }
       if ( (_AX & 0x4100) == 0 )
-        v348 = 1;
+        HIBYTE(v380) = 1;
     }
   }
   else
   {
-    switch ( v186 )
+    switch ( v188 )
     {
       case 0:
         __asm
         {
-          fld     dword_4871F8[ecx*8]
+          fld     player_aim_screen_y[ecx*8]
           fsub    camera_offset_y
-          fld     dword_4871F4[ecx*8]
+          fld     player_aim_screen_x[ecx*8]
           fsub    camera_offset_x
-          fstp    [esp+58h+pos]
+          fstp    [esp+60h+arg2]
         }
-        __asm { fstp    [esp+58h+var_14] }
-        *((float *)_EDI + 20) = pos;
-        *((float *)_EDI + 21) = v413;
-LABEL_289:
+        __asm { fstp    [esp+60h+var_1C] }
+        *((float *)_EDI + 20) = arg2;
+        *((float *)_EDI + 21) = v392;
+LABEL_287:
         __asm
         {
           fld     dword ptr [esi+4]
@@ -15312,23 +15298,21 @@ LABEL_289:
         *((float *)_EDI + 192) = _ET1;
         break;
       case 4:
-        (*(void (__thiscall **)(int, _DWORD, float *))(*(_DWORD *)grim_interface_ptr + 132))(
-          grim_interface_ptr,
-          *((_DWORD *)_EDI + 213),
-          v346);
-        __asm { fstp    [esp+54h+var_34] }
         (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 132))(
           grim_interface_ptr,
-          *((_DWORD *)_EDI + 212));
+          *((_DWORD *)_EDI + 213));
+        v190 = *((_DWORD *)_EDI + 212);
+        __asm { fstp    [esp+64h+var_44] }
+        (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 132))(grim_interface_ptr, v190);
         __asm
         {
-          fstp    [esp+54h+var_1C]
-          fld     [esp+54h+var_1C]
-          fmul    [esp+54h+var_1C]
-          fld     [esp+54h+var_34]
-          fmul    [esp+54h+var_34]
+          fstp    [esp+68h+arg1]
+          fld     [esp+68h+arg1]
+          fmul    [esp+68h+arg1]
+          fld     [esp+68h+var_48]
+          fmul    [esp+68h+var_48]
         }
-        pos = v406;
+        arg1[1] = v382;
         __asm
         {
           faddp   st(1), st
@@ -15340,47 +15324,47 @@ LABEL_289:
         if ( (_AX & 0x100) != 0 )
         {
           __asm { fstp    st }
-          v405 = 1.0;
+          v382 = 1.0;
         }
         else
         {
-          __asm { fstp    [esp+54h+var_34] }
+          __asm { fstp    [esp+68h+var_48] }
         }
-        j_FUN_00452f1d(&v411);
+        j_FUN_00452f1d(arg1);
         _ECX = cv_padAimDistMul;
         __asm
         {
-          fld     [esp+58h+var_38]
+          fld     [esp+70h+var_50]
           fmul    dword ptr [ecx+0Ch]
           fadd    ds:flt_46F4B4
           fld     st
-          fmul    [esp+58h+arg2]
-          fstp    [esp+58h+vel]
-          fmul    [esp+58h+var_1C]
+          fmul    [esp+70h+var_38]
+          fstp    [esp+70h+var_28]
+          fmul    [esp+70h+var_34]
           fadd    dword ptr [esi+4]
-          fld     [esp+58h+vel]
+          fld     [esp+70h+var_28]
           fadd    dword ptr [esi]
-          fstp    [esp+58h+pos]
+          fstp    [esp+70h+arg1]
         }
-        __asm { fstp    [esp+58h+var_14] }
-        *((float *)_EDI + 20) = pos;
-        *((float *)_EDI + 21) = v413;
-        goto LABEL_289;
+        __asm { fstp    [esp+70h+arg1+4] }
+        *((float *)_EDI + 20) = arg1[0];
+        *((float *)_EDI + 21) = arg1[1];
+        goto LABEL_287;
       case 3:
         __asm
         {
-          fld     dword_4871F8[ecx*8]
+          fld     player_aim_screen_y[ecx*8]
           fsub    ds:flt_46F49C
-          fld     dword_4871F4[ecx*8]
+          fld     player_aim_screen_x[ecx*8]
           fsub    ds:flt_46F49C
-          fstp    [esp+58h+arg2]
-          fst     [esp+58h+var_1C]
-          fld     [esp+58h+arg2]
+          fstp    [esp+60h+var_28]
+          fst     [esp+60h+var_24]
+          fld     [esp+60h+var_28]
           fcomp   ds:flt_46F228
           fnstsw  ax
         }
         if ( (_AX & 0x4000) == 0 )
-          goto LABEL_298;
+          goto LABEL_296;
         __asm
         {
           fcom    ds:flt_46F228
@@ -15392,10 +15376,10 @@ LABEL_289:
         }
         else
         {
-LABEL_298:
+LABEL_296:
           __asm
           {
-            fld     [esp+58h+arg2]
+            fld     [esp+60h+var_28]
             fpatan
             fadd    ds:flt_46F220
             fst     dword ptr [edi+300h]
@@ -15404,29 +15388,29 @@ LABEL_298:
           __asm
           {
             fsub    ds:flt_46F220
-            fst     [esp+58h+arg1]
+            fst     [esp+60h+var_38]
             fcos
-            fld     [esp+58h+arg1]
+            fld     [esp+60h+var_38]
             fsin
-            fstp    [esp+58h+var_C]
+            fstp    [esp+60h+delta]
             fmul    ds:flt_46F384
-            fld     [esp+58h+var_C]
+            fld     [esp+60h+delta]
             fmul    ds:flt_46F384
             fadd    dword ptr [esi+4]
             fxch    st(1)
             fadd    dword ptr [esi]
-            fstp    [esp+58h+pos]
+            fstp    [esp+60h+arg2]
           }
-          __asm { fstp    [esp+58h+var_14] }
-          *((float *)_EDI + 20) = pos;
-          *((float *)_EDI + 21) = v413;
+          __asm { fstp    [esp+60h+var_1C] }
+          *((float *)_EDI + 20) = arg2;
+          *((float *)_EDI + 21) = v392;
         }
         __asm
         {
-          fld     [esp+58h+var_1C]
-          fmul    [esp+58h+var_1C]
-          fld     [esp+58h+arg2]
-          fmul    [esp+58h+arg2]
+          fld     [esp+60h+var_24]
+          fmul    [esp+60h+var_24]
+          fld     [esp+60h+var_28]
+          fmul    [esp+60h+var_28]
           faddp   st(1), st
           fsqrt
           fcomp   ds:flt_46F4B0
@@ -15434,36 +15418,35 @@ LABEL_298:
         }
         if ( (_AX & 0x4100) == 0 )
         {
-          j_FUN_00452f1d(&arg2);
+          j_FUN_00452f1d(&v389);
           __asm
           {
-            fld     [esp+58h+arg2]
+            fld     [esp+68h+arg1]
             fmul    ds:flt_46F4B0
-            fld     [esp+58h+var_1C]
+            fld     [esp+68h+arg1+4]
             fmul    ds:flt_46F4B0
           }
-          v194 = render_overlay_player_index;
+          v197 = render_overlay_player_index;
           __asm
           {
-            fstp    [esp+58h+var_C]
+            fstp    [esp+68h+var_1C]
             fadd    ds:flt_46F49C
-            fstp    [esp+58h+pos]
-            fld     [esp+58h+var_C]
+            fstp    [esp+68h+var_28]
+            fld     [esp+68h+var_1C]
             fadd    ds:flt_46F49C
           }
-          *(float *)&dword_4871F4[2 * render_overlay_player_index] = pos;
-          __asm { fstp    [esp+58h+var_14] }
-          dword_4871F8[2 * v194] = v413;
+          *(float *)&player_aim_screen_x[2 * render_overlay_player_index] = v389;
+          __asm { fstp    [esp+68h+var_24] }
+          player_aim_screen_y[2 * v197] = *(float *)&v390;
         }
         break;
       case 1:
-        v195 = config_player_mode_flags[_ECX];
-        if ( v195 == 1 || v195 == 2 )
+        v198 = config_player_mode_flags[_ECX];
+        if ( v198 == 1 || v198 == 2 )
         {
-          if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD, float *))(*(_DWORD *)grim_interface_ptr + 128))(
+          if ( (*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
                  grim_interface_ptr,
-                 *((_DWORD *)_EDI + 211),
-                 v346) )
+                 *((_DWORD *)_EDI + 211)) )
           {
             __asm
             {
@@ -15491,22 +15474,22 @@ LABEL_298:
           {
             fld     dword ptr [edi+300h]
             fsub    ds:flt_46F220
-            fst     [esp+58h+arg1]
+            fst     [esp+68h+owner_id]
             fcos
-            fld     [esp+58h+arg1]
+            fld     [esp+68h+owner_id]
             fsin
-            fstp    [esp+58h+var_C]
+            fstp    [esp+68h+var_1C]
             fmul    ds:flt_46F384
-            fld     [esp+58h+var_C]
+            fld     [esp+68h+var_1C]
             fmul    ds:flt_46F384
             fadd    dword ptr [esi+4]
             fxch    st(1)
             fadd    dword ptr [esi]
-            fstp    [esp+58h+pos]
+            fstp    [esp+68h+var_28]
           }
-          __asm { fstp    [esp+58h+var_14] }
-          *((float *)_EDI + 20) = pos;
-          *((float *)_EDI + 21) = v413;
+          __asm { fstp    [esp+68h+var_24] }
+          *((float *)_EDI + 20) = v389;
+          *((float *)_EDI + 21) = *(float *)&v390;
         }
         break;
       default:
@@ -15536,22 +15519,22 @@ LABEL_298:
         {
           fld     dword ptr [edi+300h]
           fsub    ds:flt_46F220
-          fst     [esp+58h+arg1]
+          fst     [esp+60h+var_38]
           fcos
-          fld     [esp+58h+arg1]
+          fld     [esp+60h+var_38]
           fsin
-          fstp    [esp+58h+var_C]
+          fstp    [esp+60h+delta]
           fmul    ds:flt_46F384
-          fld     [esp+58h+var_C]
+          fld     [esp+60h+delta]
           fmul    ds:flt_46F384
           fadd    dword ptr [esi+4]
           fxch    st(1)
           fadd    dword ptr [esi]
-          fstp    [esp+58h+pos]
+          fstp    [esp+60h+arg2]
         }
-        __asm { fstp    [esp+58h+var_14] }
-        *((float *)_EDI + 20) = pos;
-        *((float *)_EDI + 21) = v413;
+        __asm { fstp    [esp+60h+var_1C] }
+        *((float *)_EDI + 20) = arg2;
+        *((float *)_EDI + 21) = v392;
         break;
     }
   }
@@ -15564,8 +15547,8 @@ LABEL_298:
     fpatan
   }
   _EBP = _EDI + 724;
-  v209 = 0;
-  v347 = 0;
+  v212 = 0;
+  BYTE2(v380) = 0;
   __asm
   {
     fsub    ds:flt_46F220
@@ -15588,7 +15571,7 @@ LABEL_298:
     }
     if ( (_AX & 0x4000) != 0 )
     {
-      v209 = 1;
+      v212 = 1;
       _EDI[712] = 0;
     }
   }
@@ -15602,7 +15585,7 @@ LABEL_298:
     && *((int *)_EDI + 43) > 0
     && (perk_count_get(perk_id_regression_bullets) || perk_count_get(perk_id_ammunition_within)) )
   {
-    v347 = 1;
+    BYTE2(v380) = 1;
   }
   if ( perk_count_get(perk_id_alternate_weapon) )
   {
@@ -15611,30 +15594,30 @@ LABEL_298:
            grim_interface_ptr,
            config_key_reload) )
     {
-      v214 = *((_DWORD *)_EDI + 183);
+      v217 = *((_DWORD *)_EDI + 183);
       *((_DWORD *)_EDI + 183) = *((_DWORD *)_EDI + 176);
-      *((_DWORD *)_EDI + 176) = v214;
+      *((_DWORD *)_EDI + 176) = v217;
       __asm { fld     dword ptr [edi+2E0h] }
       *((_DWORD *)_EDI + 184) = *((_DWORD *)_EDI + 177);
       __asm { fstp    dword ptr [edi+2C4h] }
       *((float *)_EDI + 177) = _ET1;
-      LOBYTE(v214) = _EDI[740];
+      LOBYTE(v217) = _EDI[740];
       _EDI[740] = _EDI[712];
-      _EDI[712] = v214;
+      _EDI[712] = v217;
       __asm { fld     dword ptr [edi+2E8h] }
       *((_DWORD *)_EDI + 186) = *((_DWORD *)_EDI + 179);
-      v216 = (float *)(_EDI + 720);
+      v219 = (float *)(_EDI + 720);
       __asm { fstp    dword ptr [edi+2CCh] }
       *((float *)_EDI + 179) = _ET1;
       __asm { fld     dword ptr [edi+2ECh] }
       *((_DWORD *)_EDI + 187) = *((_DWORD *)_EDI + 180);
       __asm { fstp    dword ptr [ecx] }
-      *v216 = _ET1;
+      *v219 = _ET1;
       __asm { fld     dword ptr [edi+2F0h] }
-      v219 = (float *)(_EDI + 724);
+      v222 = (float *)(_EDI + 724);
       *((_DWORD *)_EDI + 188) = *_EBP;
       __asm { fstp    dword ptr [ecx] }
-      *v219 = _ET1;
+      *v222 = _ET1;
       __asm { fld     dword ptr [edi+2F4h] }
       *((_DWORD *)_EDI + 189) = *((_DWORD *)_EDI + 182);
       __asm { fstp    dword ptr [edi+2D8h] }
@@ -15656,18 +15639,17 @@ LABEL_298:
       dword_48719C = 0;
     }
   }
-  if ( !v209 && !v347 )
-    goto LABEL_464;
-  v373 = *((_DWORD *)_EDI + 192);
-  if ( !(*(unsigned __int8 (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 128))(
-          grim_interface_ptr,
-          *((_DWORD *)_EDI + 207))
-    && !v348 )
+  if ( !v212 && !BYTE2(v365) )
+    goto LABEL_462;
+  v226 = *((_DWORD *)_EDI + 207);
+  v382 = *((float *)_EDI + 192);
+  if ( !(*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 128))(grim_interface_ptr, v226)
+    && !HIBYTE(v364) )
   {
-    goto LABEL_464;
+    goto LABEL_462;
   }
   survival_reward_fire_seen = 1;
-  if ( !v209 )
+  if ( !v212 )
   {
     if ( perk_count_get(perk_id_regression_bullets) )
     {
@@ -15704,42 +15686,42 @@ LABEL_298:
   }
   __asm
   {
-    fld     [esp+58h+var_3C]
+    fld     [esp+68h+var_4C]
     fsub    ds:flt_46F220
-    fst     [esp+58h+owner_id]
+    fst     [esp+68h+var_50]
     fsub    ds:flt_46F530
     fld     st
     fcos
     fmul    ds:flt_46F230
-    fstp    [esp+58h+arg2]
+    fstp    [esp+68h+arg1]
     fsin
     fmul    ds:flt_46F230
-    fstp    [esp+58h+var_1C]
+    fstp    [esp+68h+arg1+4]
   }
   if ( (byte_4D7A94[124 * *((_DWORD *)_EDI + 176)] & 1) != 0 )
   {
-    LODWORD(arg1[0]) = crt_rand() & 0x3F;
+    owner_id = crt_rand() & 0x3F;
     __asm
     {
-      fild    [esp+58h+arg1]
+      fild    [esp+68h+owner_id]
       fmul    ds:flt_46F300
-      fadd    [esp+58h+var_3C]
-      fstp    [esp+58h+var_38]
+      fadd    [esp+68h+var_4C]
+      fstp    [esp+68h+var_48]
     }
-    v224 = crt_rand();
-    vel = 1.0;
-    LODWORD(arg1[0]) = v224 & 0x3F;
-    __asm { fild    [esp+58h+arg1] }
-    v415 = 1.0;
-    v416 = 1065353216;
+    v228 = crt_rand();
+    arg2 = 1.0;
+    owner_id = v228 & 0x3F;
+    __asm { fild    [esp+68h+owner_id] }
+    v392 = 1.0;
+    pos = 1.0;
     __asm { fmul    ds:flt_46F500 }
-    v417 = 1058642330;
+    delta = 0.60000002;
     effect_template_color_r = 1065353216;
     effect_template_flags = 453;
     __asm
     {
       fadd    ds:flt_46F224
-      fld     [esp+58h+var_38]
+      fld     [esp+68h+var_48]
       fcos
     }
     effect_template_color_g = 1065353216;
@@ -15750,49 +15732,49 @@ LABEL_298:
     __asm
     {
       fmul    st, st(1)
-      fstp    [esp+58h+pos]
-      fld     [esp+58h+var_38]
+      fstp    [esp+68h+var_28]
+      fld     [esp+68h+var_48]
       fsin
       fmul    st, st(1)
-      fstp    [esp+58h+var_14]
+      fstp    [esp+68h+var_24]
       fstp    st
     }
-    v225 = crt_rand();
+    v229 = crt_rand();
     effect_template_half_height = 0x40000000;
     effect_template_half_width = 0x40000000;
-    LODWORD(arg1[0]) = (v225 & 0x3F) - 32;
+    owner_id = (v229 & 0x3F) - 32;
     __asm
     {
-      fild    [esp+58h+arg1]
+      fild    [esp+68h+owner_id]
       fmul    ds:flt_46F2FC
       fstp    effect_template_rotation
-      fld     [esp+58h+pos]
+      fld     [esp+68h+var_28]
       fmul    ds:flt_46F2C4
       fstp    effect_template_vel_x
-      fld     [esp+58h+var_14]
+      fld     [esp+68h+var_24]
       fmul    ds:flt_46F2C4
       fstp    effect_template_vel_y
     }
-    v226 = crt_rand();
+    v230 = crt_rand();
     effect_template_scale_step = 0;
-    LODWORD(arg1[0]) = v226 % 20;
-    __asm { fild    [esp+58h+arg1] }
+    owner_id = v230 % 20;
+    __asm { fild    [esp+68h+owner_id] }
     __asm
     {
       fmul    ds:flt_46F2FC
       fsub    ds:flt_46F224
       fmul    ds:flt_46F280
       fstp    effect_template_rotation_step
-      fld     [esp+60h+var_1C]
+      fld     [esp+70h+arg1+4]
       fadd    dword ptr [esi+4]
-      fld     [esp+60h+arg2]
+      fld     [esp+70h+arg1]
       fadd    dword ptr [esi]
-      fstp    [esp+60h+vel]
-      fstp    [esp+60h+var_C]
+      fstp    [esp+70h+arg2]
+      fstp    [esp+70h+var_1C]
     }
-    effect_spawn(18, &vel);
+    effect_spawn(18, &arg2);
   }
-  _ECX = v405;
+  _ECX = v383;
   __asm
   {
     fld     dword ptr [ecx]
@@ -15800,9 +15782,9 @@ LABEL_298:
     fnstsw  ax
   }
   if ( (_AX & 0x4100) == 0 )
-    *(_DWORD *)LODWORD(v405) = 1065353216;
+    *v383 = 1065353216;
   _EAX = cv_friendlyFire;
-  v404 = 1065353216;
+  v382 = 1.0;
   __asm
   {
     fld     dword ptr [eax+0Ch]
@@ -15810,60 +15792,60 @@ LABEL_298:
     fnstsw  ax
   }
   if ( (_EAX & 0x4000) != 0 )
-    v230 = -100;
+    v234 = -100;
   else
-    v230 = -1 - render_overlay_player_index;
+    v234 = -1 - render_overlay_player_index;
   _EBX = 864 * render_overlay_player_index;
-  v232 = *(float *)&player_aim_x[216 * render_overlay_player_index];
-  v413 = *(float *)&player_aim_y[216 * render_overlay_player_index];
-  pos = v232;
+  v236 = *(float *)&player_aim_x[216 * render_overlay_player_index];
+  v390 = player_aim_y[216 * render_overlay_player_index];
+  v389 = v236;
   __asm
   {
-    fld     [esp+5Ch+var_14]
+    fld     [esp+6Ch+var_24]
     fsub    dword ptr [ebx+4908C8h]
-    fld     [esp+5Ch+pos]
+    fld     [esp+6Ch+var_28]
     fsub    dword ptr [ebx+4908C4h]
-    fstp    [esp+5Ch+vel]
-    fstp    [esp+5Ch+var_C]
+    fstp    [esp+6Ch+arg2]
+    fstp    [esp+6Ch+var_1C]
   }
-  sub_417660(&vel);
+  vec2_length(&arg2);
   __asm { fmul    ds:flt_46F24C }
-  __asm { fstp    [esp+58h+var_28] }
-  LODWORD(arg1[0]) = crt_rand() & 0x1FF;
+  __asm { fstp    [esp+68h+var_38] }
+  owner_id = crt_rand() & 0x1FF;
   __asm
   {
-    fild    [esp+58h+arg1]
+    fild    [esp+68h+owner_id]
     fmul    ds:flt_46F52C
-    fstp    [esp+58h+var_44]
+    fstp    [esp+68h+var_54]
   }
-  LODWORD(arg1[0]) = crt_rand() & 0x1FF;
+  owner_id = crt_rand() & 0x1FF;
   __asm
   {
-    fild    [esp+5Ch+arg1]
-    fld     [esp+5Ch+var_28]
+    fild    [esp+6Ch+owner_id]
+    fld     [esp+6Ch+var_38]
     fmul    dword ptr [ebx+490B68h]
     fmulp   st(1), st
     fmul    ds:flt_46F528
-    fld     [esp+5Ch+var_44]
+    fld     [esp+6Ch+var_54]
     fcos
     fmul    st, st(1)
-    fadd    [esp+5Ch+pos]
-    fstp    [esp+5Ch+pos]
-    fld     [esp+5Ch+var_44]
+    fadd    [esp+6Ch+var_28]
+    fstp    [esp+6Ch+var_28]
+    fld     [esp+6Ch+var_54]
     fsin
   }
   __asm
   {
     fmulp   st(1), st
-    fadd    [esp+5Ch+var_14]
+    fadd    [esp+6Ch+var_24]
     fsubr   dword ptr [ebx+4908C8h]
     fld     dword ptr [ebx+4908C4h]
-    fsub    [esp+5Ch+pos]
+    fsub    [esp+6Ch+var_28]
     fpatan
     fsub    ds:flt_46F220
-    fstp    [esp+5Ch+var_44]
+    fstp    [esp+6Ch+var_54]
   }
-  if ( (*(unsigned __int8 (__stdcall **)(int))(*(_DWORD *)grim_interface_ptr + 128))(34) )
+  if ( (*(unsigned __int8 (__cdecl **)(int))(*(_DWORD *)grim_interface_ptr + 128))(34) )
     *((_DWORD *)_EDI + 199) = 1092616192;
   __asm
   {
@@ -15875,7 +15857,7 @@ LABEL_298:
   {
     *((_DWORD *)_EDI + 181) = dword_4D7A74[31 * *((_DWORD *)_EDI + 176)];
     _ECX = 31 * *((_DWORD *)_EDI + 176);
-    _EAX = (float *)LODWORD(v405);
+    _EAX = (float *)LODWORD(v382);
     __asm
     {
       fld     flt_4D7A7C[ecx*4]
@@ -15883,1068 +15865,1072 @@ LABEL_298:
       fstp    dword ptr [eax]
     }
     *_EAX = _ET1;
-    v246 = 31 * *((_DWORD *)_EDI + 176);
-    v247 = crt_rand();
-    sfx_play_panned(COERCE_FLOAT(*(_DWORD *)((char *)&flt_4D7A84 + v246 * 4) + v247 % dword_4D7A88[v246]));
-    v248 = *((_DWORD *)_EDI + 176);
-    if ( v248 == 24 )
+    v250 = 31 * *((_DWORD *)_EDI + 176);
+    v251 = crt_rand();
+    sfx_play_panned(COERCE_FLOAT(*(_DWORD *)((char *)&flt_4D7A84 + v250 * 4) + v251 % dword_4D7A88[v250]));
+    v252 = *((_DWORD *)_EDI + 176);
+    if ( v252 == 24 )
     {
       __asm
       {
-        fld     [esp+58h+var_1C]
+        fld     [esp+6Ch+arg1]
         fadd    dword ptr [esi+4]
-        fld     [esp+58h+arg2]
+        fld     [esp+6Ch+var_34]
         fadd    dword ptr [esi]
       }
-      __asm { fstp    [esp+60h+vel] }
-      __asm { fstp    [esp+68h+var_C] }
-      projectile_spawn(&vel, v351, v248, v230);
+      __asm { fstp    [esp+74h+var_24] }
+      __asm { fstp    [esp+7Ch+arg2] }
+      projectile_spawn((float *)&v390, v364, v252, v234);
       __asm
       {
-        fld     [esp+68h+var_3C]
+        fld     [esp+7Ch+var_50]
         fcos
       }
       __asm
       {
-        fst     [esp+74h+owner_id]
+        fst     [esp+88h+var_54]
         fmul    ds:flt_46F524
-        fstp    [esp+74h+vel]
-        fld     [esp+74h+var_3C]
+        fstp    [esp+88h+var_24]
+        fld     [esp+88h+var_50]
         fsin
-        fst     [esp+74h+var_3C]
+        fst     [esp+88h+var_50]
         fmul    ds:flt_46F524
-        fstp    [esp+74h+var_C]
-        fld     [esp+74h+var_1C]
+        fstp    [esp+88h+arg2]
+        fld     [esp+88h+arg1]
         fadd    dword ptr [esi+4]
-        fld     [esp+74h+arg2]
+        fld     [esp+88h+var_34]
         fadd    dword ptr [esi]
-        fstp    [esp+74h+pos]
-        fstp    [esp+74h+var_14]
+        fstp    [esp+88h+arg1+4]
+        fstp    [esp+88h+var_28]
       }
-      v249 = fx_spawn_sprite(&pos, &vel, 1.0);
+      v253 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
       __asm
       {
-        fld     [esp+74h+owner_id]
+        fld     [esp+88h+var_54]
         fmul    ds:flt_46F360
       }
       __asm
       {
-        fstp    [esp+7Ch+vel]
-        fld     [esp+7Ch+var_3C]
+        fstp    [esp+90h+var_24]
+        fld     [esp+90h+var_50]
         fmul    ds:flt_46F360
       }
-      v249 *= 44;
+      v253 *= 44;
       __asm
       {
-        fstp    [esp+7Ch+var_C]
-        fld     [esp+7Ch+var_1C]
+        fstp    [esp+90h+arg2]
+        fld     [esp+90h+arg1]
       }
-      *(int *)((char *)sprite_effect_color_r + v249) = 1056964608;
-      *(int *)((char *)sprite_effect_color_g + v249) = 1056964608;
-      *(int *)((char *)sprite_effect_color_b + v249) = 1056964608;
-      *(int *)((char *)sprite_effect_color_a + v249) = 1047233823;
+      *(int *)((char *)sprite_effect_color_r + v253) = 1056964608;
+      *(int *)((char *)sprite_effect_color_g + v253) = 1056964608;
+      *(int *)((char *)sprite_effect_color_b + v253) = 1056964608;
+      *(int *)((char *)sprite_effect_color_a + v253) = 1047233823;
       __asm
       {
         fadd    dword ptr [esi+4]
-        fld     [esp+7Ch+arg2]
+        fld     [esp+90h+var_34]
         fadd    dword ptr [esi]
       }
       __asm
       {
-        fstp    [esp+7Ch+pos]
-        fstp    [esp+7Ch+var_14]
+        fstp    [esp+90h+arg1+4]
+        fstp    [esp+90h+var_28]
       }
-      v250 = fx_spawn_sprite(&pos, &vel, 2.0);
+      v254 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
     }
     else
     {
-      if ( v248 != 1 )
+      if ( v252 != 1 )
       {
-        switch ( v248 )
+        switch ( v252 )
         {
           case 2:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v253 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v257 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v253 *= 44;
+            v257 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v253) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v253) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v253) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v253) = 1047233823;
+            *(int *)((char *)sprite_effect_color_r + v257) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v257) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v257) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v257) = 1047233823;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v254 = fx_spawn_sprite(&pos, &vel, 2.0);
-            __asm { fld     [esp+70h+var_1C] }
-            v254 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v254) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v254) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v254) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v254) = 1046092972;
+            v258 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            __asm { fld     [esp+84h+arg1] }
+            v258 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v258) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v258) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v258) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v258) = 1046092972;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+7Ch+arg2]
+              fld     [esp+90h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+80h+vel]
-              fstp    [esp+80h+var_C]
+              fstp    [esp+94h+var_24]
+              fstp    [esp+94h+arg2]
             }
-            projectile_spawn(&vel, v351, 2, v230);
+            projectile_spawn((float *)&v390, v364, 2, v234);
             break;
           case 3:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v255 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v259 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v255 *= 44;
+            v259 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v255) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v255) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v255) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v255) = 1048576000;
+            *(int *)((char *)sprite_effect_color_r + v259) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v259) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v259) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v259) = 1048576000;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v378 = 12;
-            v256 = 11 * fx_spawn_sprite(&pos, &vel, 2.0);
-            sprite_effect_color_r[v256] = 1056964608;
-            sprite_effect_color_g[v256] = 1056964608;
-            sprite_effect_color_b[v256] = 1056964608;
-            sprite_effect_color_a[v256] = 1046764061;
+            v260 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            v380 = 12;
+            v260 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v260) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v260) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v260) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v260) = 1046764061;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = crt_rand() % 200 - 100;
+              v385 = crt_rand() % 200 - 100;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F4F8
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v258 = projectile_spawn(&vel, anglec, 3, v230);
-              v259 = crt_rand();
-              v258 <<= 6;
-              v260 = v378-- == 1;
-              v408 = v259 % 100;
+              v262 = projectile_spawn((float *)&v390, v340, 3, v234);
+              v263 = crt_rand();
+              v262 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v263 % 100;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F224
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v258 + 4794084) = _ET1;
+              *(float *)(v262 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 20:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
               fmul    ds:flt_46F360
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
               fmul    ds:flt_46F360
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v379 = 4;
-            v262 = 11 * fx_spawn_sprite(&pos, &vel, 2.0);
-            sprite_effect_color_r[v262] = 1056964608;
-            sprite_effect_color_g[v262] = 1056964608;
-            sprite_effect_color_b[v262] = 1056964608;
-            sprite_effect_color_a[v262] = 1046764061;
+            v266 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            v380 = 4;
+            v266 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v266) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v266) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v266) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v266) = 1046764061;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = crt_rand() % 200 - 100;
+              v385 = crt_rand() % 200 - 100;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F4F8
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v264 = projectile_spawn(&vel, angled, 3, v230);
-              v265 = crt_rand();
-              v264 <<= 6;
-              v260 = v379-- == 1;
-              v408 = v265 % 100;
+              v268 = projectile_spawn((float *)&v390, v341, 3, v234);
+              v269 = crt_rand();
+              v268 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v269 % 100;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F224
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v264 + 4794084) = _ET1;
+              *(float *)(v268 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 4:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v267 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v271 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v267 *= 44;
+            v271 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v267) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v267) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v267) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v267) = 1048911544;
+            *(int *)((char *)sprite_effect_color_r + v271) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v271) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v271) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v271) = 1048911544;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v381 = 12;
-            v268 = 11 * fx_spawn_sprite(&pos, &vel, 2.0);
-            sprite_effect_color_r[v268] = 1056964608;
-            sprite_effect_color_g[v268] = 1056964608;
-            sprite_effect_color_b[v268] = 1056964608;
-            sprite_effect_color_a[v268] = 1047435149;
+            v272 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            v380 = 12;
+            v272 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v272) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v272) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v272) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v272) = 1047435149;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = crt_rand() % 200 - 100;
+              v385 = crt_rand() % 200 - 100;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F4F4
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v270 = projectile_spawn(&vel, anglee, 3, v230);
-              v271 = crt_rand();
-              v270 <<= 6;
-              v260 = v381-- == 1;
-              v408 = v271 % 100;
+              v274 = projectile_spawn((float *)&v390, v342, 3, v234);
+              v275 = crt_rand();
+              v274 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v275 % 100;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F224
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v270 + 4794084) = _ET1;
+              *(float *)(v274 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 8:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+64h+var_C] }
-            fx_spawn_particle(&vel, *(float *)&owner_idb, _EDI + 28, 1.0);
-            v404 = 1036831949;
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+78h+arg2] }
+            fx_spawn_particle((float *)&v390, v367, _EDI + 28, 1.0);
+            v381 = 0.1;
             break;
           case 16:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+64h+var_C] }
-            v273 = fx_spawn_particle(&vel, *(float *)&owner_idb, _EDI + 28, 1.0);
-            if ( v273 != -1 )
-              particle_style_id[56 * v273] = 2;
-            v404 = 1036831949;
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+78h+arg2] }
+            v277 = fx_spawn_particle((float *)&v390, v367, _EDI + 28, 1.0);
+            if ( v277 != -1 )
+              particle_style_id[56 * v277] = 2;
+            v381 = 0.1;
             break;
           case 15:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+64h+var_C] }
-            v274 = fx_spawn_particle(&vel, *(float *)&owner_idb, _EDI + 28, 1.0);
-            if ( v274 != -1 )
-              particle_style_id[56 * v274] = 1;
-            v404 = 1028443341;
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+78h+arg2] }
+            v278 = fx_spawn_particle((float *)&v390, v367, _EDI + 28, 1.0);
+            if ( v278 != -1 )
+              particle_style_id[56 * v278] = 1;
+            v381 = 0.050000001;
             break;
           case 5:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v275 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v279 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v275 *= 44;
+            v279 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v275) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v275) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v275) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v275) = 1047233823;
+            *(int *)((char *)sprite_effect_color_r + v279) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v279) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v279) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v279) = 1047233823;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v276 = fx_spawn_sprite(&pos, &vel, 2.0);
-            __asm { fld     [esp+70h+var_1C] }
-            v276 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v276) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v276) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v276) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v276) = 1046092972;
+            v280 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            __asm { fld     [esp+84h+arg1] }
+            v280 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v280) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v280) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v280) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v280) = 1046092972;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+7Ch+arg2]
+              fld     [esp+90h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+80h+vel]
-              fstp    [esp+80h+var_C]
+              fstp    [esp+94h+var_24]
+              fstp    [esp+94h+arg2]
             }
-            projectile_spawn(&vel, v351, 5, v230);
+            projectile_spawn((float *)&v390, v364, 5, v234);
             break;
           case 9:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 10:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+64h+vel]
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_44]
+              fstp    [esp+78h+var_24]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+var_58]
               fsub    ds:flt_46F4F0
-              fstp    [esp+64h+angle]; angle
+              fstp    [esp+78h+var_78]; angle
             }
-            projectile_spawn(&vel, anglef, 9, v230);
+            projectile_spawn((float *)&v390, v343, 9, v234);
             __asm
             {
-              fld     [esp+68h+var_1C]
+              fld     [esp+7Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+68h+arg2]
+              fld     [esp+7Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+58h+vel] }
+            __asm { fstp    [esp+6Ch+var_24] }
             __asm
             {
-              fstp    [esp+60h+var_C]
-              fld     [esp+60h+var_44]
+              fstp    [esp+74h+arg2]
+              fld     [esp+74h+var_58]
               fsub    ds:flt_46F4EC
             }
-            __asm { fstp    [esp+64h+angle]; angle }
-            projectile_spawn(&vel, angleg, 11, v230);
+            __asm { fstp    [esp+78h+var_78]; angle }
+            projectile_spawn((float *)&v390, v344, 11, v234);
             __asm
             {
-              fld     [esp+68h+var_1C]
+              fld     [esp+7Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+68h+arg2]
+              fld     [esp+7Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+70h+vel] }
-            __asm { fstp    [esp+78h+var_C] }
-            projectile_spawn(&vel, v351, 9, v230);
+            __asm { fstp    [esp+84h+var_24] }
+            __asm { fstp    [esp+8Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, 9, v234);
             __asm
             {
-              fld     [esp+78h+var_1C]
+              fld     [esp+8Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+78h+arg2]
+              fld     [esp+8Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+58h+vel] }
+            __asm { fstp    [esp+6Ch+var_24] }
             __asm
             {
-              fstp    [esp+60h+var_C]
-              fld     [esp+60h+var_44]
+              fstp    [esp+74h+arg2]
+              fld     [esp+74h+var_58]
               fadd    ds:flt_46F4EC
             }
-            __asm { fstp    [esp+64h+angle]; angle }
-            projectile_spawn(&vel, angleh, 11, v230);
+            __asm { fstp    [esp+78h+var_78]; angle }
+            projectile_spawn((float *)&v390, v345, 11, v234);
             __asm
             {
-              fld     [esp+68h+var_1C]
+              fld     [esp+7Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+68h+arg2]
+              fld     [esp+7Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+58h+vel] }
+            __asm { fstp    [esp+6Ch+var_24] }
             __asm
             {
-              fstp    [esp+60h+var_C]
-              fld     [esp+60h+var_44]
+              fstp    [esp+74h+arg2]
+              fld     [esp+74h+var_58]
               fadd    ds:flt_46F4F0
             }
-            __asm { fstp    [esp+64h+angle]; angle }
-            projectile_spawn(&vel, anglei, 9, v230);
+            __asm { fstp    [esp+78h+var_78]; angle }
+            projectile_spawn((float *)&v390, v346, 9, v234);
             break;
           case 19:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 25:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 29:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 21:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 22:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 23:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 28:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 31:
-            v383 = 8;
+            v380 = 8;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = crt_rand() % 200 - 100;
+              v385 = crt_rand() % 200 - 100;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F4E8
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v278 = projectile_spawn(&vel, anglej, 22, v230);
-              v279 = crt_rand();
-              v278 <<= 6;
-              v260 = v383-- == 1;
-              v408 = v279 % 80;
+              v282 = projectile_spawn((float *)&v390, v347, 22, v234);
+              v283 = crt_rand();
+              v282 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v283 % 80;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F308
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v278 + 4794084) = _ET1;
+              *(float *)(v282 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 11:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 30:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v281 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v285 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v281 *= 44;
+            v285 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v281) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v281) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v281) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v281) = 1051260355;
+            *(int *)((char *)sprite_effect_color_r + v285) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v285) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v285) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v285) = 1051260355;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v385 = 6;
-            v282 = 11 * fx_spawn_sprite(&pos, &vel, 2.0);
-            sprite_effect_color_r[v282] = 1056964608;
-            sprite_effect_color_g[v282] = 1056964608;
-            sprite_effect_color_b[v282] = 1056964608;
-            sprite_effect_color_a[v282] = 1049012208;
+            v286 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            v380 = 6;
+            v286 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v286) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v286) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v286) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v286) = 1049012208;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = crt_rand() % 200 - 100;
+              v385 = crt_rand() % 200 - 100;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F3B4
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v284 = projectile_spawn(&vel, anglek, 6, v230);
-              v285 = crt_rand();
-              v284 <<= 6;
-              v260 = v385-- == 1;
-              v408 = v285 % 80;
+              v288 = projectile_spawn((float *)&v390, v348, 6, v234);
+              v289 = crt_rand();
+              v288 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v289 % 80;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F308
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v284 + 4794084) = _ET1;
+              *(float *)(v288 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 6:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v287 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v291 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
-              fmul    ds:flt_46F360
-            }
-            v287 *= 44;
-            __asm
-            {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
-            }
-            *(int *)((char *)sprite_effect_color_r + v287) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v287) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v287) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v287) = 1051260355;
-            __asm
-            {
-              fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
-              fadd    dword ptr [esi]
-            }
-            __asm
-            {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
-            }
-            v288 = fx_spawn_sprite(&pos, &vel, 2.0);
-            __asm { fld     [esp+70h+var_1C] }
-            v288 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v288) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v288) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v288) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v288) = 1049012208;
-            __asm
-            {
-              fadd    dword ptr [esi+4]
-              fld     [esp+7Ch+arg2]
-              fadd    dword ptr [esi]
-            }
-            __asm
-            {
-              fstp    [esp+80h+vel]
-              fstp    [esp+80h+var_C]
-            }
-            projectile_spawn(&vel, v351, 6, v230);
-            break;
-          case 12:
-            __asm
-            {
-              fld     [esp+58h+var_3C]
-              fcos
-            }
-            __asm
-            {
-              fst     [esp+64h+owner_id]
-              fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
-              fsin
-              fst     [esp+64h+var_3C]
-              fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
-              fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
-              fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
-            }
-            v289 = fx_spawn_sprite(&pos, &vel, 1.0);
-            __asm
-            {
-              fld     [esp+64h+owner_id]
-              fmul    ds:flt_46F360
-            }
-            __asm
-            {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
-              fmul    ds:flt_46F360
-            }
-            v289 *= 44;
-            __asm
-            {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
-            }
-            *(int *)((char *)sprite_effect_color_r + v289) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v289) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v289) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v289) = 1051595899;
-            __asm
-            {
-              fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
-              fadd    dword ptr [esi]
-            }
-            __asm
-            {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
-            }
-            v290 = fx_spawn_sprite(&pos, &vel, 2.0);
-            __asm { fld     [esp+70h+var_1C] }
-            v290 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v290) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v290) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v290) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v290) = 1049683296;
-            __asm
-            {
-              fadd    dword ptr [esi+4]
-              fld     [esp+78h+arg2]
-              fadd    dword ptr [esi]
-            }
-            __asm
-            {
-              fstp    [esp+7Ch+vel]
-              fstp    [esp+7Ch+var_C]
-            }
-            fx_spawn_secondary_projectile(&vel, v351, 1);
-            break;
-          case 17:
-            __asm
-            {
-              fld     [esp+58h+var_3C]
-              fcos
-            }
-            __asm
-            {
-              fst     [esp+64h+owner_id]
-              fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
-              fsin
-              fst     [esp+64h+var_3C]
-              fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
-              fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
-              fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
-            }
-            v291 = fx_spawn_sprite(&pos, &vel, 1.0);
-            __asm
-            {
-              fld     [esp+64h+owner_id]
-              fmul    ds:flt_46F360
-            }
-            __asm
-            {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
             v291 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
             *(int *)((char *)sprite_effect_color_r + v291) = 1056964608;
             *(int *)((char *)sprite_effect_color_g + v291) = 1056964608;
             *(int *)((char *)sprite_effect_color_b + v291) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v291) = 1051595899;
+            *(int *)((char *)sprite_effect_color_a + v291) = 1051260355;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            _EAX = 44 * fx_spawn_sprite(&pos, &vel, 2.0);
+            v292 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            __asm { fld     [esp+84h+arg1] }
+            v292 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v292) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v292) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v292) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v292) = 1049012208;
+            __asm
+            {
+              fadd    dword ptr [esi+4]
+              fld     [esp+90h+var_34]
+              fadd    dword ptr [esi]
+            }
+            __asm
+            {
+              fstp    [esp+94h+var_24]
+              fstp    [esp+94h+arg2]
+            }
+            projectile_spawn((float *)&v390, v364, 6, v234);
+            break;
+          case 12:
+            __asm
+            {
+              fld     [esp+6Ch+var_50]
+              fcos
+            }
+            __asm
+            {
+              fst     [esp+78h+var_54]
+              fmul    ds:flt_46F524
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
+              fsin
+              fst     [esp+78h+var_50]
+              fmul    ds:flt_46F524
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
+              fadd    dword ptr [esi+4]
+              fld     [esp+78h+var_34]
+              fadd    dword ptr [esi]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
+            }
+            v293 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
+            __asm
+            {
+              fld     [esp+78h+var_54]
+              fmul    ds:flt_46F360
+            }
+            __asm
+            {
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
+              fmul    ds:flt_46F360
+            }
+            v293 *= 44;
+            __asm
+            {
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
+            }
+            *(int *)((char *)sprite_effect_color_r + v293) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v293) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v293) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v293) = 1051595899;
+            __asm
+            {
+              fadd    dword ptr [esi+4]
+              fld     [esp+80h+var_34]
+              fadd    dword ptr [esi]
+            }
+            __asm
+            {
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
+            }
+            v294 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            __asm { fld     [esp+84h+arg1] }
+            v294 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v294) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v294) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v294) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v294) = 1049683296;
+            __asm
+            {
+              fadd    dword ptr [esi+4]
+              fld     [esp+8Ch+var_34]
+              fadd    dword ptr [esi]
+            }
+            __asm
+            {
+              fstp    [esp+90h+var_24]
+              fstp    [esp+90h+arg2]
+            }
+            fx_spawn_secondary_projectile((float *)&v390, v364, 1);
+            break;
+          case 17:
+            __asm
+            {
+              fld     [esp+6Ch+var_50]
+              fcos
+            }
+            __asm
+            {
+              fst     [esp+78h+var_54]
+              fmul    ds:flt_46F524
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
+              fsin
+              fst     [esp+78h+var_50]
+              fmul    ds:flt_46F524
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
+              fadd    dword ptr [esi+4]
+              fld     [esp+78h+var_34]
+              fadd    dword ptr [esi]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
+            }
+            v295 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
+            __asm
+            {
+              fld     [esp+78h+var_54]
+              fmul    ds:flt_46F360
+            }
+            __asm
+            {
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
+              fmul    ds:flt_46F360
+            }
+            v295 *= 44;
+            __asm
+            {
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
+            }
+            *(int *)((char *)sprite_effect_color_r + v295) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v295) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v295) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v295) = 1051595899;
+            __asm
+            {
+              fadd    dword ptr [esi+4]
+              fld     [esp+80h+var_34]
+              fadd    dword ptr [esi]
+            }
+            __asm
+            {
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
+            }
+            _EAX = 44 * fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
             *(int *)((char *)sprite_effect_color_r + _EAX) = 1056964608;
             *(int *)((char *)sprite_effect_color_g + _EAX) = 1056964608;
             *(int *)((char *)sprite_effect_color_b + _EAX) = 1056964608;
@@ -16954,17 +16940,17 @@ LABEL_298:
               fld     dword ptr [edi+2CCh]
               fmul    ds:flt_46F4E4
             }
-            v293 = 0.0;
+            v297 = 0.0;
             __asm
             {
-              fstp    [esp+58h+owner_id]
-              fld     [esp+58h+var_44]
+              fstp    [esp+6Ch+var_54]
+              fld     [esp+6Ch+var_58]
               fsub    ds:flt_46F378
-              fld     [esp+58h+owner_id]
+              fld     [esp+6Ch+var_54]
               fmul    dword ptr [edi+2CCh]
               fmul    ds:flt_46F24C
               fsubp   st(1), st
-              fstp    [esp+58h+var_3C]
+              fstp    [esp+6Ch+var_50]
               fld     ds:flt_46F228
               fcomp   dword ptr [edi+2CCh]
               fnstsw  ax
@@ -16975,319 +16961,319 @@ LABEL_298:
               {
                 __asm
                 {
-                  fld     [esp+58h+var_1C]
+                  fld     [esp+6Ch+arg1]
                   fadd    dword ptr [esi+4]
-                  fld     [esp+58h+arg2]
+                  fld     [esp+6Ch+var_34]
                   fadd    dword ptr [esi]
                 }
-                __asm { fstp    [esp+60h+vel] }
-                __asm { fstp    [esp+64h+var_C] }
-                fx_spawn_secondary_projectile(&vel, v389, 2);
+                __asm { fstp    [esp+74h+var_24] }
+                __asm { fstp    [esp+78h+arg2] }
+                fx_spawn_secondary_projectile((float *)&v390, *(float *)&v380, 2);
                 __asm
                 {
-                  fld     [esp+64h+var_3C]
-                  fadd    [esp+64h+owner_id]
+                  fld     [esp+78h+var_50]
+                  fadd    [esp+78h+var_54]
                 }
-                ++LODWORD(v293);
-                *(float *)&v408 = v293;
+                ++LODWORD(v297);
+                *(float *)&v385 = v297;
                 __asm
                 {
-                  fstp    [esp+58h+var_3C]
-                  fild    [esp+58h+var_28]
+                  fstp    [esp+6Ch+var_50]
+                  fild    [esp+6Ch+var_3C]
                   fcomp   dword ptr [edi+2CCh]
                   fnstsw  ax
                 }
               }
               while ( (_AX & 0x100) != 0 );
             }
-            v404 = *((_DWORD *)_EDI + 179);
+            v381 = *((float *)_EDI + 179);
             break;
           case 18:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v295 = fx_spawn_sprite(&pos, &vel, 1.0);
-            __asm { fld     [esp+64h+var_1C] }
-            v295 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v295) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v295) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v295) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v295) = 1051595899;
+            v299 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
+            __asm { fld     [esp+78h+arg1] }
+            v299 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v299) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v299) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v299) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v299) = 1051595899;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+vel]
-              fstp    [esp+70h+var_C]
+              fstp    [esp+84h+var_24]
+              fstp    [esp+84h+arg2]
             }
-            fx_spawn_secondary_projectile(&vel, v351, 4);
+            fx_spawn_secondary_projectile((float *)&v390, v364, 4);
             break;
           case 13:
             __asm
             {
-              fld     [esp+58h+var_3C]
+              fld     [esp+6Ch+var_50]
               fcos
             }
             __asm
             {
-              fst     [esp+64h+owner_id]
+              fst     [esp+78h+var_54]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+vel]
-              fld     [esp+64h+var_3C]
+              fstp    [esp+78h+var_24]
+              fld     [esp+78h+var_50]
               fsin
-              fst     [esp+64h+var_3C]
+              fst     [esp+78h+var_50]
               fmul    ds:flt_46F524
-              fstp    [esp+64h+var_C]
-              fld     [esp+64h+var_1C]
+              fstp    [esp+78h+arg2]
+              fld     [esp+78h+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+64h+arg2]
+              fld     [esp+78h+var_34]
               fadd    dword ptr [esi]
-              fstp    [esp+64h+pos]
-              fstp    [esp+64h+var_14]
+              fstp    [esp+78h+arg1+4]
+              fstp    [esp+78h+var_28]
             }
-            v296 = fx_spawn_sprite(&pos, &vel, 1.0);
+            v300 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
             __asm
             {
-              fld     [esp+64h+owner_id]
+              fld     [esp+78h+var_54]
               fmul    ds:flt_46F360
             }
             __asm
             {
-              fstp    [esp+6Ch+vel]
-              fld     [esp+6Ch+var_3C]
+              fstp    [esp+80h+var_24]
+              fld     [esp+80h+var_50]
               fmul    ds:flt_46F360
             }
-            v296 *= 44;
+            v300 *= 44;
             __asm
             {
-              fstp    [esp+6Ch+var_C]
-              fld     [esp+6Ch+var_1C]
+              fstp    [esp+80h+arg2]
+              fld     [esp+80h+arg1]
             }
-            *(int *)((char *)sprite_effect_color_r + v296) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v296) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v296) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v296) = 1050589266;
+            *(int *)((char *)sprite_effect_color_r + v300) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v300) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v300) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v300) = 1050589266;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+6Ch+arg2]
+              fld     [esp+80h+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+70h+pos]
-              fstp    [esp+70h+var_14]
+              fstp    [esp+84h+arg1+4]
+              fstp    [esp+84h+var_28]
             }
-            v297 = fx_spawn_sprite(&pos, &vel, 2.0);
-            __asm { fld     [esp+70h+var_1C] }
-            v297 *= 44;
-            *(int *)((char *)sprite_effect_color_r + v297) = 1056964608;
-            *(int *)((char *)sprite_effect_color_g + v297) = 1056964608;
-            *(int *)((char *)sprite_effect_color_b + v297) = 1056964608;
-            *(int *)((char *)sprite_effect_color_a + v297) = 1048106238;
+            v301 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
+            __asm { fld     [esp+84h+arg1] }
+            v301 *= 44;
+            *(int *)((char *)sprite_effect_color_r + v301) = 1056964608;
+            *(int *)((char *)sprite_effect_color_g + v301) = 1056964608;
+            *(int *)((char *)sprite_effect_color_b + v301) = 1056964608;
+            *(int *)((char *)sprite_effect_color_a + v301) = 1048106238;
             __asm
             {
               fadd    dword ptr [esi+4]
-              fld     [esp+78h+arg2]
+              fld     [esp+8Ch+var_34]
               fadd    dword ptr [esi]
             }
             __asm
             {
-              fstp    [esp+7Ch+vel]
-              fstp    [esp+7Ch+var_C]
+              fstp    [esp+90h+var_24]
+              fstp    [esp+90h+arg2]
             }
-            fx_spawn_secondary_projectile(&vel, v351, 2);
+            fx_spawn_secondary_projectile((float *)&v390, v364, 2);
             break;
           case 7:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, 1, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, 1, v234);
             break;
           case 14:
-            v391 = 14;
+            v380 = 14;
             do
             {
-              __asm { fld     [esp+58h+var_1C] }
+              __asm { fld     [esp+6Ch+arg1] }
               _EAX = _EDI + 20;
               __asm
               {
                 fadd    dword ptr [eax+4]
-                fld     [esp+60h+arg2]
+                fld     [esp+74h+var_34]
                 fadd    dword ptr [eax]
-                fstp    [esp+60h+vel]
-                fstp    [esp+60h+var_C]
+                fstp    [esp+74h+var_24]
+                fstp    [esp+74h+arg2]
               }
-              v408 = (unsigned __int8)crt_rand() - 128;
+              v385 = (unsigned __int8)crt_rand() - 128;
               __asm
               {
-                fild    [esp+64h+var_28]
+                fild    [esp+78h+var_3C]
                 fmul    ds:flt_46F3B4
-                fadd    [esp+64h+var_44]
-                fstp    [esp+64h+angle]; angle
+                fadd    [esp+78h+var_58]
+                fstp    [esp+78h+var_78]; angle
               }
-              v299 = projectile_spawn(&vel, anglel, 11, v230);
-              v300 = crt_rand();
-              v299 <<= 6;
-              v260 = v391-- == 1;
-              v408 = v300 % 100;
+              v303 = projectile_spawn((float *)&v390, v349, 11, v234);
+              v304 = crt_rand();
+              v303 <<= 6;
+              v264 = v380-- == 1;
+              v385 = v304 % 100;
               __asm
               {
-                fild    [esp+58h+var_28]
+                fild    [esp+6Ch+var_3C]
                 fmul    ds:flt_46F300
                 fadd    ds:flt_46F224
                 fstp    dword ptr [ebx+4926E4h]
               }
-              *(float *)(v299 + 4794084) = _ET1;
+              *(float *)(v303 + 4794084) = _ET1;
             }
-            while ( !v260 );
+            while ( !v264 );
             break;
           case 41:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 43:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
-            __asm { fstp    [esp+68h+var_C] }
-            projectile_spawn(&vel, v351, v248, v230);
+            __asm { fstp    [esp+74h+var_24] }
+            __asm { fstp    [esp+7Ch+arg2] }
+            projectile_spawn((float *)&v390, v364, v252, v234);
             break;
           case 42:
             __asm
             {
-              fld     [esp+58h+var_1C]
+              fld     [esp+6Ch+arg1]
               fadd    dword ptr [esi+4]
-              fld     [esp+58h+arg2]
+              fld     [esp+6Ch+var_34]
               fadd    dword ptr [esi]
             }
-            __asm { fstp    [esp+60h+vel] }
+            __asm { fstp    [esp+74h+var_24] }
             __asm
             {
-              fstp    [esp+60h+var_C]
-              fld     [esp+60h+var_44]
+              fstp    [esp+74h+arg2]
+              fld     [esp+74h+var_58]
               fsub    ds:flt_46F220
-              fstp    [esp+60h+var_60]; angle
+              fstp    [esp+74h+var_74]; angle
             }
-            fx_spawn_particle_slow(&vel, v345);
-            v404 = 1041865114;
+            fx_spawn_particle_slow((float *)&v390, v350);
+            v381 = 0.15000001;
             break;
         }
-        goto LABEL_452;
+        goto LABEL_450;
       }
       __asm
       {
-        fld     [esp+58h+var_1C]
+        fld     [esp+6Ch+arg1]
         fadd    dword ptr [esi+4]
-        fld     [esp+58h+arg2]
+        fld     [esp+6Ch+var_34]
         fadd    dword ptr [esi]
       }
-      __asm { fstp    [esp+60h+vel] }
-      __asm { fstp    [esp+68h+var_C] }
-      projectile_spawn(&vel, v351, v248, v230);
+      __asm { fstp    [esp+74h+var_24] }
+      __asm { fstp    [esp+7Ch+arg2] }
+      projectile_spawn((float *)&v390, v364, v252, v234);
       __asm
       {
-        fld     [esp+68h+var_3C]
+        fld     [esp+7Ch+var_50]
         fcos
       }
       __asm
       {
-        fst     [esp+74h+owner_id]
+        fst     [esp+88h+var_54]
         fmul    ds:flt_46F524
-        fstp    [esp+74h+vel]
-        fld     [esp+74h+var_3C]
+        fstp    [esp+88h+var_24]
+        fld     [esp+88h+var_50]
         fsin
-        fst     [esp+74h+var_3C]
+        fst     [esp+88h+var_50]
         fmul    ds:flt_46F524
-        fstp    [esp+74h+var_C]
-        fld     [esp+74h+var_1C]
+        fstp    [esp+88h+arg2]
+        fld     [esp+88h+arg1]
         fadd    dword ptr [esi+4]
-        fld     [esp+74h+arg2]
+        fld     [esp+88h+var_34]
         fadd    dword ptr [esi]
-        fstp    [esp+74h+pos]
-        fstp    [esp+74h+var_14]
+        fstp    [esp+88h+arg1+4]
+        fstp    [esp+88h+var_28]
       }
-      v252 = fx_spawn_sprite(&pos, &vel, 1.0);
+      v256 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
       __asm
       {
-        fld     [esp+74h+owner_id]
+        fld     [esp+88h+var_54]
         fmul    ds:flt_46F360
       }
       __asm
       {
-        fstp    [esp+7Ch+vel]
-        fld     [esp+7Ch+var_3C]
+        fstp    [esp+90h+var_24]
+        fld     [esp+90h+var_50]
         fmul    ds:flt_46F360
       }
-      v252 *= 44;
+      v256 *= 44;
       __asm
       {
-        fstp    [esp+7Ch+var_C]
-        fld     [esp+7Ch+var_1C]
+        fstp    [esp+90h+arg2]
+        fld     [esp+90h+arg1]
       }
-      *(int *)((char *)sprite_effect_color_r + v252) = 1056964608;
-      *(int *)((char *)sprite_effect_color_g + v252) = 1056964608;
-      *(int *)((char *)sprite_effect_color_b + v252) = 1056964608;
-      *(int *)((char *)sprite_effect_color_a + v252) = 1047233823;
+      *(int *)((char *)sprite_effect_color_r + v256) = 1056964608;
+      *(int *)((char *)sprite_effect_color_g + v256) = 1056964608;
+      *(int *)((char *)sprite_effect_color_b + v256) = 1056964608;
+      *(int *)((char *)sprite_effect_color_a + v256) = 1047233823;
       __asm
       {
         fadd    dword ptr [esi+4]
-        fld     [esp+7Ch+arg2]
+        fld     [esp+90h+var_34]
         fadd    dword ptr [esi]
       }
       __asm
       {
-        fstp    [esp+7Ch+pos]
-        fstp    [esp+7Ch+var_14]
+        fstp    [esp+90h+arg1+4]
+        fstp    [esp+90h+var_28]
       }
-      v250 = fx_spawn_sprite(&pos, &vel, 2.0);
+      v254 = fx_spawn_sprite(&arg1[1], (float *)&v390, 2.0);
     }
-    v251 = 11 * v250;
-    sprite_effect_color_r[v251] = 1056964608;
-    sprite_effect_color_g[v251] = 1056964608;
-    sprite_effect_color_b[v251] = 1056964608;
-    sprite_effect_color_a[v251] = 1046092972;
-LABEL_452:
+    v255 = 11 * v254;
+    sprite_effect_color_r[v255] = 1056964608;
+    sprite_effect_color_g[v255] = 1056964608;
+    sprite_effect_color_b[v255] = 1056964608;
+    sprite_effect_color_a[v255] = 1046092972;
+LABEL_450:
     if ( !perk_count_get(perk_id_sharpshooter) )
     {
       _EDX = 31 * *((_DWORD *)_EDI + 176);
@@ -17311,29 +17297,29 @@ LABEL_452:
       __asm
       {
         fld     dword ptr [edi+2CCh]
-        fsub    [esp+58h+var_38]
+        fsub    [esp+6Ch+var_4C]
         fstp    dword ptr [edi+2CCh]
       }
       *((float *)_EDI + 179) = _ET1;
     }
-    goto LABEL_456;
+    goto LABEL_454;
   }
   sfx_play_panned(flt_4D9050);
   sfx_play_panned(flt_4D7FD8);
-  v234 = 31 * *((_DWORD *)_EDI + 176);
-  if ( weapon_projectile_pellet_count[v234] == 1 )
+  v238 = 31 * *((_DWORD *)_EDI + 176);
+  if ( weapon_projectile_pellet_count[v238] == 1 )
   {
     *((_DWORD *)_EDI + 181) = dword_4D9040;
     __asm { fld     flt_4D9048 }
   }
   else
   {
-    *((_DWORD *)_EDI + 181) = dword_4D7A74[v234];
+    *((_DWORD *)_EDI + 181) = dword_4D7A74[v238];
     _ECX = 31 * *((_DWORD *)_EDI + 176);
     __asm { fld     flt_4D7A7C[ecx*4] }
   }
-  _EAX = (float *)LODWORD(v405);
-  v237 = 0;
+  _EAX = (float *)LODWORD(v382);
+  v241 = 0;
   __asm
   {
     fadd    dword ptr [eax]
@@ -17344,58 +17330,58 @@ LABEL_452:
   {
     do
     {
-      v239 = crt_rand() % 200;
+      v243 = crt_rand() % 200;
       _EAX = _EDI + 20;
-      v408 = v239 - 100;
+      v385 = v243 - 100;
       __asm
       {
-        fild    [esp+60h+var_28]
+        fild    [esp+74h+var_3C]
         fmul    ds:flt_46F4FC
-        fadd    [esp+60h+var_44]
-        fstp    [esp+60h+var_28]
-        fld     [esp+60h+var_1C]
+        fadd    [esp+74h+var_58]
+        fstp    [esp+74h+var_3C]
+        fld     [esp+74h+arg1]
         fadd    dword ptr [eax+4]
-        fld     [esp+60h+arg2]
+        fld     [esp+74h+var_34]
         fadd    dword ptr [eax]
       }
       __asm
       {
-        fstp    [esp+68h+vel]
-        fstp    [esp+68h+var_C]
+        fstp    [esp+7Ch+var_24]
+        fstp    [esp+7Ch+arg2]
       }
-      projectile_spawn(&vel, *(float *)&v408, 45, v230);
-      ++v237;
+      projectile_spawn((float *)&v390, *(float *)&v385, 45, v234);
+      ++v241;
     }
-    while ( v237 < weapon_projectile_pellet_count[31 * *((_DWORD *)_EDI + 176)] );
+    while ( v241 < weapon_projectile_pellet_count[31 * *((_DWORD *)_EDI + 176)] );
   }
   __asm
   {
-    fld     [esp+58h+var_3C]
+    fld     [esp+6Ch+var_50]
     fcos
   }
   __asm
   {
     fmul    ds:flt_46F524
-    fstp    [esp+64h+vel]
-    fld     [esp+64h+var_3C]
+    fstp    [esp+78h+var_24]
+    fld     [esp+78h+var_50]
     fsin
     fmul    ds:flt_46F524
-    fstp    [esp+64h+var_C]
-    fld     [esp+64h+var_1C]
+    fstp    [esp+78h+arg2]
+    fld     [esp+78h+arg1]
     fadd    dword ptr [esi+4]
-    fld     [esp+64h+arg2]
+    fld     [esp+78h+var_34]
     fadd    dword ptr [esi]
-    fstp    [esp+64h+pos]
-    fstp    [esp+64h+var_14]
+    fstp    [esp+78h+arg1+4]
+    fstp    [esp+78h+var_28]
   }
-  v241 = fx_spawn_sprite(&pos, &vel, 1.0);
-  v329 = perk_id_sharpshooter;
-  v241 *= 44;
-  *(int *)((char *)sprite_effect_color_r + v241) = 1056964608;
-  *(int *)((char *)sprite_effect_color_g + v241) = 1056964608;
-  *(int *)((char *)sprite_effect_color_b + v241) = 1056964608;
-  *(int *)((char *)sprite_effect_color_a + v241) = 1054045372;
-  if ( !perk_count_get(v329) )
+  v245 = fx_spawn_sprite(&arg1[1], (float *)&v390, 1.0);
+  v338 = perk_id_sharpshooter;
+  v245 *= 44;
+  *(int *)((char *)sprite_effect_color_r + v245) = 1056964608;
+  *(int *)((char *)sprite_effect_color_g + v245) = 1056964608;
+  *(int *)((char *)sprite_effect_color_b + v245) = 1056964608;
+  *(int *)((char *)sprite_effect_color_a + v245) = 1054045372;
+  if ( !perk_count_get(v338) )
   {
     __asm
     {
@@ -17406,7 +17392,7 @@ LABEL_452:
     }
     *((float *)_EDI + 174) = _ET1;
   }
-LABEL_456:
+LABEL_454:
   __asm
   {
     fld     dword ptr [edi+2B8h]
@@ -17443,7 +17429,7 @@ LABEL_456:
   }
   if ( (_AX & 0x4100) != 0 )
     player_start_reload();
-LABEL_464:
+LABEL_462:
   __asm
   {
     fld     dword ptr [edi+94h]
@@ -17561,7 +17547,7 @@ LABEL_464:
   {
     __asm { fstp    st }
   }
-  _ECX = v405;
+  _ECX = v382;
   __asm
   {
     fld     dword ptr [ecx]
@@ -17569,12 +17555,12 @@ LABEL_464:
     fnstsw  ax
   }
   if ( (_AX & 0x4100) == 0 )
-    *(_DWORD *)LODWORD(v405) = 1061997773;
+    *(_DWORD *)LODWORD(v382) = 1061997773;
 }
 
-// FUN_00417640 @ 0x00417640
+// vec2_sub @ 0x00417640
 // [binja] float* __thiscall sub_417640(float* arg1, float* arg2, float* arg3)
-float *FUN_00417640(float *arg1, float *arg2, float *arg3)
+float *vec2_sub(float *arg1, float *arg2, float *arg3)
 {
   float *v3; // ecx
   double v4; // st7
@@ -17585,10 +17571,11 @@ float *FUN_00417640(float *arg1, float *arg2, float *arg3)
   return arg1;
 }
 
-// sub_417660 @ 0x00417660
-long double __cdecl sub_417660(float *a1)
+// vec2_length @ 0x00417660
+// returns sqrt(x*x + y*y) for a 2-float vector
+float vec2_length(float *v)
 {
-  return sqrt(*a1 * *a1 + a1[1] * a1[1]);
+  return sqrt(*v * *v + v[1] * v[1]);
 }
 
 // FUN_00417690 @ 0x00417690
@@ -17649,7 +17636,7 @@ int FUN_00417690()
   }
   while ( v7 );
   dword_48FBA4 = 4;
-  v8 = (Iostream_init *)&unk_48FBA8;
+  v8 = (Iostream_init *)&ui_menu_item_element;
   v9 = 8;
   do
   {
@@ -17792,7 +17779,7 @@ int sub_4177F0()
   FUN_00417ab0(v44);
   FUN_00417ab0(v45);
   FUN_00417ab0(v46);
-  byte_48724D = 0;
+  highscore_return_latch = 0;
   byte_48727C = 0;
   dword_487284 = 0;
   player_name_length = 0;
@@ -17916,7 +17903,7 @@ void terrain_generate(void *desc)
   v15 = 1.0 / *(float *)config_texture_scale;
   if ( terrain_texture_failed )
   {
-    terrain_render_target = dword_48F548[*((_DWORD *)desc + 4)];
+    terrain_render_target = terrain_texture_handles[*((_DWORD *)desc + 4)];
   }
   else
   {
@@ -17964,7 +17951,7 @@ void terrain_generate(void *desc)
       1065353216);
     (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
       grim_interface_ptr,
-      dword_48F548[*((_DWORD *)desc + 4)],
+      terrain_texture_handles[*((_DWORD *)desc + 4)],
       0);
     v2 = *(_DWORD *)grim_interface_ptr;
     qmemcpy(v14, "333?333?333?fff?", sizeof(v14));
@@ -18003,7 +17990,7 @@ void terrain_generate(void *desc)
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
       grim_interface_ptr,
-      dword_48F548[*((_DWORD *)desc + 5)],
+      terrain_texture_handles[*((_DWORD *)desc + 5)],
       0);
     v6 = *(_DWORD *)grim_interface_ptr;
     qmemcpy(v14, "333?333?333?fff?", sizeof(v14));
@@ -18042,7 +18029,7 @@ void terrain_generate(void *desc)
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
       grim_interface_ptr,
-      dword_48F548[*((_DWORD *)desc + 6)],
+      terrain_texture_handles[*((_DWORD *)desc + 6)],
       0);
     v14[3] = 1058642330;
     v10 = *(_DWORD *)grim_interface_ptr;
@@ -18170,12 +18157,12 @@ void terrain_generate_random()
   dword_48F53C = crt_rand() % 7;
   dword_48F540 = crt_rand() % 7;
   crt_rand();
-  v0 = dword_48F548[0];
+  v0 = terrain_texture_handles[0];
   v1 = dword_48F54C;
   dword_48F53C = 0;
   dword_48F540 = 1;
   dword_48F544 = 0;
-  v24 = dword_48F548[0];
+  v24 = terrain_texture_handles[0];
   if ( (unsigned __int16)game_status_blob >= 0x28u && (crt_rand() & 7) == 3 )
   {
     terrain_generate(dword_484C84);
@@ -19384,10 +19371,10 @@ void ui_menu_assets_init()
   v2 = -1005560791;
   v3 = -1032323072;
   ui_element_set_rect((int)&unk_48FAC0, 573.44, 143.36, (float *)&v2);
-  ui_element_load((int)&unk_48FBA8, aUiUiMenuitemJa);
+  ui_element_load((int)&ui_menu_item_element, aUiUiMenuitemJa);
   v2 = -1030750208;
   v3 = -1032847360;
-  ui_element_set_rect((int)&unk_48FBA8, 512.0, 64.0, (float *)&v2);
+  ui_element_set_rect((int)&ui_menu_item_element, 512.0, 64.0, (float *)&v2);
   ui_element_load((int)&unk_48FC90, aUiUiMenupanelJ);
   v2 = 1101004800;
   v3 = -1029439488;
@@ -20245,7 +20232,7 @@ void ui_render_hud()
     {
       if ( *(float *)player_health < 30.0 )
         v163 = 5.0;
-      v1 = sin(flt_47EA4C * v163);
+      v1 = sin(game_time_s * v163);
       *(float *)&v174 = v1;
       crt_ci_pow();
       v0 = 4.0 * 4.0 + 14.0;
@@ -20259,7 +20246,7 @@ void ui_render_hud()
     {
       if ( *(float *)player_health < 30.0 )
         v163 = 5.0;
-      v8 = sin(flt_47EA4C * v163);
+      v8 = sin(game_time_s * v163);
       *(float *)&v174 = v8;
       crt_ci_pow();
       v9 = (4.0 * 4.0 + 14.0) * 0.5;
@@ -20276,7 +20263,7 @@ void ui_render_hud()
         v10 = v163;
       else
         v10 = 5.0;
-      *(float *)&v174 = sin(flt_47EA4C * v10 + 1.5707964);
+      *(float *)&v174 = sin(game_time_s * v10 + 1.5707964);
       v1 = *(float *)&v174;
       crt_ci_pow();
       v6 = *(_DWORD *)grim_interface_ptr;
@@ -20867,11 +20854,11 @@ LABEL_75:
       LODWORD(ratiop),
       byte_48F788);
   }
-  if ( dword_487088 > 0 )
+  if ( quest_transition_timer_ms > 0 )
   {
-    if ( dword_487088 >= 500 )
+    if ( quest_transition_timer_ms >= 500 )
     {
-      if ( dword_487088 < 1500 )
+      if ( quest_transition_timer_ms < 1500 )
       {
         v155 = 1.0;
 LABEL_96:
@@ -20885,7 +20872,7 @@ LABEL_96:
           v127,
           v1,
           v0);
-        v161 = (double)dword_487088 * 0.00039999999 * 0.13 + 0.95;
+        v161 = (double)quest_transition_timer_ms * 0.00039999999 * 0.13 + 0.95;
         v134 = v155 * v179;
         (*(void (__thiscall **)(int, int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
           grim_interface_ptr,
@@ -20919,18 +20906,18 @@ LABEL_96:
         (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
         goto LABEL_97;
       }
-      if ( dword_487088 >= 2500 )
+      if ( quest_transition_timer_ms >= 2500 )
       {
 LABEL_95:
         v155 = 0.0;
         goto LABEL_96;
       }
-      xy = 2000 - dword_487088;
-      v37 = (double)(2000 - dword_487088) * 0.0020000001 + 1.0;
+      xy = 2000 - quest_transition_timer_ms;
+      v37 = (double)(2000 - quest_transition_timer_ms) * 0.0020000001 + 1.0;
     }
     else
     {
-      v37 = (double)dword_487088 * 0.0020000001;
+      v37 = (double)quest_transition_timer_ms * 0.0020000001;
     }
     v155 = v37;
     if ( v155 > 1.0 )
@@ -21204,15 +21191,15 @@ LABEL_116:
     LODWORD(rgba) = v52;
     do
     {
-      if ( *(float *)&dword_4871D0[v51] > 0.0 )
+      if ( *(float *)&player_aux_timer[v51] > 0.0 )
       {
-        v53 = *(float *)&dword_4871D0[v51];
+        v53 = *(float *)&player_aux_timer[v51];
         v55 = frame_dt;
         if ( v56 )
           v57 = v55 * 0.5;
         else
           v57 = v55 * 1.4;
-        *(float *)&dword_4871D0[v51] = *(float *)&dword_4871D0[v51] - v57;
+        *(float *)&player_aux_timer[v51] = *(float *)&player_aux_timer[v51] - v57;
         if ( v53 > 1.0 )
           v53 = 2.0 - v53;
         if ( v53 < 0.0 )
@@ -23445,9 +23432,9 @@ char *weapon_table_entry(int weapon_id)
   return (char *)(124 * weapon_id + 5077548);
 }
 
-// FUN_0041fc80 @ 0x0041FC80
+// player_reset_all @ 0x0041FC80
 // [binja] void* sub_41fc80()
-void *FUN_0041fc80()
+void *player_reset_all()
 {
   int v0; // esi
   int v1; // eax
@@ -23853,7 +23840,7 @@ int fx_spawn_secondary_projectile(float *pos, float angle, int type_id)
   {
     v4 += 44;
     ++v3;
-    if ( (int)v4 >= (int)&dword_4965D8 )
+    if ( (int)v4 >= (int)&render_scratch_f0 )
     {
       v3 = 63;
       break;
@@ -24397,26 +24384,31 @@ void projectile_update()
   int v131; // ebx
   float v132; // edx
   int v149; // eax
+  float v166; // [esp+0h] [ebp-118h]
+  float v167; // [esp+0h] [ebp-118h]
+  float v168; // [esp+4h] [ebp-114h]
   float radius; // [esp+8h] [ebp-110h]
   float radiusa; // [esp+8h] [ebp-110h]
   float radiusb; // [esp+8h] [ebp-110h]
   float radiusc; // [esp+8h] [ebp-110h]
   float radiusd; // [esp+8h] [ebp-110h]
-  float radiuse; // [esp+8h] [ebp-110h]
-  float radiusf; // [esp+8h] [ebp-110h]
   float damage; // [esp+Ch] [ebp-10Ch]
   float damagea; // [esp+Ch] [ebp-10Ch]
   float damageb; // [esp+Ch] [ebp-10Ch]
   float damagec; // [esp+Ch] [ebp-10Ch]
   float damaged; // [esp+Ch] [ebp-10Ch]
   float damagee; // [esp+Ch] [ebp-10Ch]
-  float damagef; // [esp+Ch] [ebp-10Ch]
   float v180; // [esp+10h] [ebp-108h]
   float v181; // [esp+10h] [ebp-108h]
   float v182; // [esp+10h] [ebp-108h]
   float v183; // [esp+10h] [ebp-108h]
   float v184; // [esp+10h] [ebp-108h]
   float v185; // [esp+10h] [ebp-108h]
+  int v186; // [esp+1Ch] [ebp-FCh]
+  int v187; // [esp+1Ch] [ebp-FCh]
+  int v188; // [esp+1Ch] [ebp-FCh]
+  int v189; // [esp+1Ch] [ebp-FCh]
+  int v190; // [esp+1Ch] [ebp-FCh]
   float wb; // [esp+24h] [ebp-F4h]
   int wc; // [esp+24h] [ebp-F4h]
   int wd; // [esp+24h] [ebp-F4h]
@@ -24436,41 +24428,36 @@ void projectile_update()
   int wr; // [esp+24h] [ebp-F4h]
   int ws; // [esp+24h] [ebp-F4h]
   int wt; // [esp+24h] [ebp-F4h]
-  int wu; // [esp+24h] [ebp-F4h]
-  int wv; // [esp+24h] [ebp-F4h]
-  int ww; // [esp+24h] [ebp-F4h]
-  int wx; // [esp+24h] [ebp-F4h]
-  int wy; // [esp+24h] [ebp-F4h]
-  int v212; // [esp+28h] [ebp-F0h]
+  float wu; // [esp+24h] [ebp-F4h]
   int v213; // [esp+28h] [ebp-F0h]
   int v214; // [esp+28h] [ebp-F0h]
   int v215; // [esp+28h] [ebp-F0h]
   int v216; // [esp+28h] [ebp-F0h]
   int v217; // [esp+28h] [ebp-F0h]
   int v218; // [esp+28h] [ebp-F0h]
-  int v220; // [esp+28h] [ebp-F0h]
+  int v219; // [esp+28h] [ebp-F0h]
   int v221; // [esp+28h] [ebp-F0h]
   int v222; // [esp+28h] [ebp-F0h]
   int v223; // [esp+28h] [ebp-F0h]
-  int v224; // [esp+2Ch] [ebp-ECh]
-  int v225; // [esp+2Ch] [ebp-ECh]
+  int v224; // [esp+28h] [ebp-F0h]
+  int v225; // [esp+28h] [ebp-F0h]
   int v226; // [esp+2Ch] [ebp-ECh]
-  float v227; // [esp+2Ch] [ebp-ECh]
+  int v227; // [esp+2Ch] [ebp-ECh]
   int v228; // [esp+2Ch] [ebp-ECh]
-  int v229; // [esp+2Ch] [ebp-ECh]
+  float v229; // [esp+2Ch] [ebp-ECh]
   int v230; // [esp+2Ch] [ebp-ECh]
   int v231; // [esp+2Ch] [ebp-ECh]
   int v232; // [esp+2Ch] [ebp-ECh]
-  float v233; // [esp+2Ch] [ebp-ECh]
+  int v233; // [esp+2Ch] [ebp-ECh]
+  int v234; // [esp+2Ch] [ebp-ECh]
   int i; // [esp+30h] [ebp-E8h]
-  int v238; // [esp+30h] [ebp-E8h]
   int angle; // [esp+34h] [ebp-E4h]
   float angleb; // [esp+34h] [ebp-E4h]
   int v244; // [esp+3Ch] [ebp-DCh]
   float v245; // [esp+3Ch] [ebp-DCh]
   int v246; // [esp+40h] [ebp-D8h]
   float v248; // [esp+40h] [ebp-D8h]
-  int v253; // [esp+48h] [ebp-D0h]
+  int v252; // [esp+40h] [ebp-D8h]
   int v254; // [esp+48h] [ebp-D0h]
   int v255; // [esp+48h] [ebp-D0h]
   float arg2; // [esp+4Ch] [ebp-CCh] BYREF
@@ -24479,8 +24466,8 @@ void projectile_update()
   float v259; // [esp+58h] [ebp-C0h] BYREF
   int v260; // [esp+5Ch] [ebp-BCh]
   float v261; // [esp+60h] [ebp-B8h] BYREF
+  float v262; // [esp+64h] [ebp-B4h]
   float vel; // [esp+68h] [ebp-B0h] BYREF
-  float v264; // [esp+6Ch] [ebp-ACh]
   float delta; // [esp+70h] [ebp-A8h] BYREF
   float v266; // [esp+74h] [ebp-A4h]
   float v267; // [esp+78h] [ebp-A0h] BYREF
@@ -24492,7 +24479,7 @@ void projectile_update()
   float v279; // [esp+A8h] [ebp-70h] BYREF
   float v281; // [esp+B0h] [ebp-68h]
   int v282; // [esp+B4h] [ebp-64h]
-  int v283; // [esp+B8h] [ebp-60h]
+  float v283; // [esp+B8h] [ebp-60h]
   int v284; // [esp+BCh] [ebp-5Ch]
   float v288; // [esp+D0h] [ebp-48h] BYREF
   float pos; // [esp+F8h] [ebp-20h] BYREF
@@ -24624,7 +24611,7 @@ LABEL_126:
     }
     if ( (_AX & 0x100) != 0 )
       goto LABEL_126;
-    v224 = terrain_texture_width + 64;
+    v226 = terrain_texture_width + 64;
     __asm
     {
       fild    [esp+104h+var_EC]
@@ -24633,7 +24620,7 @@ LABEL_126:
     }
     if ( (_AX & 0x100) != 0 )
       goto LABEL_126;
-    v225 = terrain_texture_height + 64;
+    v227 = terrain_texture_height + 64;
     __asm
     {
       fild    [esp+104h+var_EC]
@@ -24708,7 +24695,7 @@ LABEL_126:
           FUN_0041e270((float *)_ESI + 2, &arg2);
           v16 = creature_find_in_radius((float *)_ESI + 2, *((float *)_ESI + 13), 0);
           v17 = v16;
-          v226 = v16;
+          v228 = v16;
           if ( v16 == -1 || v16 == *((_DWORD *)_ESI + 15) )
           {
             if ( i != shock_chain_projectile_id )
@@ -24750,7 +24737,7 @@ LABEL_126:
               v19 = 8;
               do
               {
-                v212 = (unsigned __int8)crt_rand();
+                v213 = (unsigned __int8)crt_rand();
                 __asm
                 {
                   fild    [esp+10Ch+var_F0]
@@ -24764,7 +24751,7 @@ LABEL_126:
             }
             else if ( v18 == 29 )
             {
-              FUN_0042f3f0((float *)_ESI + 2, 26.0, COERCE_FLOAT(3));
+              FUN_0042f3f0((float *)_ESI + 2, 26.0, 3);
               __asm
               {
                 fld     dword ptr [esi+4]
@@ -24783,7 +24770,7 @@ LABEL_126:
             v282 = 1065353216;
             v281 = 1.0;
             effect_template_color_g = 1065353216;
-            v283 = 1065353216;
+            v283 = 1.0;
             v284 = 1065353216;
             effect_template_color_r = 1065353216;
             effect_template_flags = 89;
@@ -24800,7 +24787,7 @@ LABEL_126:
                 v20 = 8;
                 do
                 {
-                  v213 = (crt_rand() & 0x1F) - 16;
+                  v214 = (crt_rand() & 0x1F) - 16;
                   __asm
                   {
                     fild    [esp+10Ch+var_F0]
@@ -24875,13 +24862,13 @@ LABEL_126:
               v24 = -30;
               do
               {
-                v214 = v24 + crt_rand() % (v246 - v24);
+                v215 = v24 + crt_rand() % (v246 - v24);
                 __asm
                 {
                   fild    [esp+104h+var_F0]
                   fstp    [esp+104h+var_58]
                 }
-                v215 = v24 + crt_rand() % (v246 - v24);
+                v216 = v24 + crt_rand() % (v246 - v24);
                 __asm
                 {
                   fild    [esp+108h+var_F0]
@@ -24892,13 +24879,13 @@ LABEL_126:
                   fstp    [esp+108h+var_1C]
                 }
                 fx_queue_add_random(&pos);
-                v216 = v24 + crt_rand() % (v246 - v24);
+                v217 = v24 + crt_rand() % (v246 - v24);
                 __asm
                 {
                   fild    [esp+108h+var_F0]
                   fstp    [esp+108h+var_28]
                 }
-                v217 = v24 + crt_rand() % (v246 - v24);
+                v218 = v24 + crt_rand() % (v246 - v24);
                 __asm
                 {
                   fild    [esp+10Ch+var_F0]
@@ -24913,13 +24900,13 @@ LABEL_126:
                 v246 += 10;
               }
               while ( v24 > -60 );
-              v17 = v226;
+              v17 = v228;
             }
             v25 = *((_DWORD *)_ESI + 8);
             if ( v25 != 45 && v25 != 6 && v25 != 25 )
             {
               *((_DWORD *)_ESI + 9) = 1048576000;
-              v218 = crt_rand() & 3;
+              v219 = crt_rand() & 3;
               __asm
               {
                 fild    [esp+104h+var_F0]
@@ -25066,7 +25053,7 @@ LABEL_126:
                 sfx_play_panned(sfx_shockwave);
                 FUN_0042f330((float *)_ESI + 2, 1.5, 1065353216);
                 FUN_0042f330((float *)_ESI + 2, 1.0, 1065353216);
-                v17 = v226;
+                v17 = v228;
                 break;
               case 24:
                 FUN_0042f080((float *)_ESI + 2);
@@ -25163,7 +25150,7 @@ LABEL_126:
                   __asm { fstp    [esp+104h+impulse] }
                   __asm { fmul    dword ptr [esi+2Ch] }
                   __asm { fstp    [esp+114h+var_74] }
-                  creature_apply_damage(v17, v227, 1, &impulse);
+                  creature_apply_damage(v17, v229, 1, &impulse);
                   __asm
                   {
                     fld     dword ptr [esi+30h]
@@ -25187,10 +25174,10 @@ LABEL_126:
             if ( v44 == 6 || v44 == 45 )
             {
               perk_count_get(perk_id_bloody_mess_quick_learner);
-              v230 = 6;
+              v232 = 6;
               do
               {
-                v220 = crt_rand() % 100;
+                v221 = crt_rand() % 100;
                 __asm
                 {
                   fild    [esp+104h+var_F0]
@@ -25201,7 +25188,7 @@ LABEL_126:
                 if ( (_AX & 0x4100) == 0 )
                 {
                   __asm { fstp    st }
-                  v221 = crt_rand() % 90 + 10;
+                  v222 = crt_rand() % 90 + 10;
                   __asm
                   {
                     fild    [esp+104h+var_F0]
@@ -25216,7 +25203,7 @@ LABEL_126:
                 if ( (_AX & 0x4100) == 0 )
                 {
                   __asm { fstp    st }
-                  v222 = crt_rand() % 80 + 20;
+                  v223 = crt_rand() % 80 + 20;
                   __asm
                   {
                     fild    [esp+104h+var_F0]
@@ -25271,7 +25258,7 @@ LABEL_126:
                     fadd    dword ptr [edi+4]
                     fstp    [esp+104h+var_9C]
                   }
-                  v223 = crt_rand() % 100;
+                  v224 = crt_rand() % 100;
                   __asm
                   {
                     fild    [esp+108h+var_F0]
@@ -25296,9 +25283,9 @@ LABEL_126:
                   fstp    [esp+108h+var_B4]
                 }
                 fx_queue_add_random(&v261);
-                --v230;
+                --v232;
               }
-              while ( v230 );
+              while ( v232 );
             }
             else
             {
@@ -25314,7 +25301,7 @@ LABEL_126:
                 v47 = 3;
                 do
                 {
-                  v229 = crt_rand() % 20 - 10;
+                  v231 = crt_rand() % 20 - 10;
                   __asm
                   {
                     fild    [esp+108h+var_EC]
@@ -25388,7 +25375,7 @@ LABEL_126:
               }
               else
               {
-                v228 = crt_rand() % 100;
+                v230 = crt_rand() % 100;
                 __asm
                 {
                   fild    [esp+108h+var_EC]
@@ -25523,28 +25510,28 @@ LABEL_126:
             if ( (_AX & 0x100) != 0 )
             {
               __asm { fstp    [esp+104h+var_C0] }
-              v260 = v253;
+              v260 = v254;
               j_FUN_00452f1d(&v259);
               __asm
               {
-                fld     [esp+104h+var_C0]
+                fld     [esp+10Ch+var_C8]
                 fmul    ds:flt_46F2FC
               }
               __asm
               {
-                fstp    [esp+10Ch+var_B8]
-                fld     [esp+10Ch+var_BC]
+                fstp    [esp+114h+var_C0]
+                fld     [esp+114h+var_C4]
                 fmul    ds:flt_46F2FC
               }
               __asm
               {
-                fstp    [esp+110h+var_B4]
+                fstp    [esp+118h+var_BC]
                 fld     frame_dt
                 fmul    dword ptr [esi]
                 fmul    ds:flt_46F620
-                fstp    [esp+110h+radius]; damage
+                fstp    [esp+118h+var_118]; damage
               }
-              creature_apply_damage(v61, radiuse, 3, &v261);
+              creature_apply_damage(v61, v166, 3, &v259);
               __asm
               {
                 fld     dword ptr [edi+0Ch]
@@ -25756,7 +25743,7 @@ LABEL_157:
     __asm { fstp    dword ptr [esi-10h] }
     *(_ESI - 4) = _ET1;
 LABEL_158:
-    v254 = *(_DWORD *)(_ESI - 1) & 0x7FFFFFFF;
+    v255 = *(_DWORD *)(_ESI - 1) & 0x7FFFFFFF;
     wc = *(_DWORD *)_ESI & 0x7FFFFFFF;
     v258 = *_ESI;
     __asm
@@ -25889,7 +25876,7 @@ LABEL_158:
     }
     else
     {
-      v231 = 4;
+      v233 = 4;
       do
       {
         wd = crt_rand() % 612;
@@ -25900,9 +25887,9 @@ LABEL_158:
           fstp    [esp+108h+var_108]; angle
         }
         effect_spawn_freeze_shard(_ESI - 3, v182);
-        --v231;
+        --v233;
       }
-      while ( v231 );
+      while ( v233 );
     }
     v86 = *((_DWORD *)_ESI + 1);
     v245 = 150.0;
@@ -26163,7 +26150,7 @@ LABEL_176:
         break;
     }
     v98 = 0;
-    v232 = 0;
+    v234 = 0;
     do
     {
       wt = crt_rand() % 800;
@@ -26184,7 +26171,7 @@ LABEL_176:
         fstp    [esp+110h+var_1C]
         fstp    st
       }
-      v232 = ++v98;
+      v234 = ++v98;
       sprite_effect_color_a[11 * fx_spawn_sprite(_ESI - 3, &pos, 14.0)] = 1052602532;
     }
     while ( v98 < 10 );
@@ -26215,9 +26202,9 @@ LABEL_208:
         fld     frame_dt
         fld     st
         fmul    dword ptr [ecx+4]
-        fstp    [esp+104h+var_68]
+        fstp    [esp+10Ch+var_70]
         fmul    dword ptr [ecx+8]
-        fld     [esp+104h+var_68]
+        fld     [esp+10Ch+var_70]
         fadd    dword ptr [ecx-4]
         fstp    dword ptr [ecx-4]
       }
@@ -26262,7 +26249,7 @@ LABEL_208:
     _ECX += 11;
   }
   while ( (int)_ECX < (int)flt_49AA3C );
-  v238 = 0;
+  v225 = 0;
   _ESI = (struct _SYSTEMTIME *)&particle_vel_y;
   while ( 2 )
   {
@@ -26299,42 +26286,42 @@ LABEL_208:
         }
         if ( (_AX & 0x4100) == 0 )
         {
-          __asm { fstp    [esp+104h+var_68] }
+          __asm { fstp    [esp+10Ch+var_70] }
           __asm
           {
             fmul    dword ptr [esi]
             fld     dword ptr [esi+14h]
-            fld     [esp+108h+var_68]
+            fld     [esp+110h+var_70]
             fmul    st, st(1)
           }
           __asm
           {
-            fstp    [esp+110h+var_B8]
+            fstp    [esp+118h+var_C0]
             fxch    st(1)
             fmul    st, st(1)
-            fstp    [esp+110h+var_B4]
+            fstp    [esp+118h+var_BC]
             fstp    st
           }
-          FUN_0041e270((float *)&_ESI[-1].wDayOfWeek, &v261);
+          FUN_0041e270((float *)&_ESI[-1].wDayOfWeek, &v259);
           goto LABEL_226;
         }
         __asm
         {
-          fstp    [esp+104h+var_30]
+          fstp    [esp+10Ch+var_38]
           fmul    dword ptr [esi]
-          fld     [esp+104h+var_30]
+          fld     [esp+10Ch+var_38]
           fmul    ds:flt_46F3AC
-          fstp    [esp+104h+var_40]
+          fstp    [esp+10Ch+var_48]
           fmul    ds:flt_46F3AC
           fld     dword ptr [esi+14h]
-          fld     [esp+104h+var_40]
+          fld     [esp+10Ch+var_48]
           fmul    st, st(1)
-          fstp    [esp+104h+var_50]
+          fstp    [esp+10Ch+var_58]
           fxch    st(1)
           fmul    st, st(1)
           fxch    st(1)
           fstp    st
-          fld     [esp+104h+var_50]
+          fld     [esp+10Ch+var_58]
         }
 LABEL_225:
         __asm
@@ -26379,41 +26366,41 @@ LABEL_225:
         {
           __asm
           {
-            fstp    [esp+104h+var_28]
+            fstp    [esp+10Ch+var_30]
             fmul    dword ptr [esi]
-            fld     [esp+104h+var_28]
+            fld     [esp+10Ch+var_30]
             fmul    ds:flt_46F624
-            fstp    [esp+104h+var_58]
+            fstp    [esp+10Ch+var_60]
             fmul    ds:flt_46F624
-            fld     [esp+104h+var_58]
+            fld     [esp+10Ch+var_60]
             fmul    ds:flt_46F60C
-            fstp    [esp+104h+var_90]
+            fstp    [esp+10Ch+var_98]
             fmul    ds:flt_46F60C
-            fld     [esp+104h+var_90]
+            fld     [esp+10Ch+var_98]
           }
           goto LABEL_225;
         }
-        __asm { fstp    [esp+104h+var_18] }
+        __asm { fstp    [esp+10Ch+pos] }
         __asm
         {
           fmul    dword ptr [esi]
-          fld     [esp+108h+var_18]
+          fld     [esp+110h+pos]
           fmul    ds:flt_46F624
         }
         __asm
         {
-          fstp    [esp+110h+var_38]
+          fstp    [esp+118h+var_40]
           fmul    ds:flt_46F624
           fld     dword ptr [esi+14h]
-          fld     [esp+110h+var_38]
+          fld     [esp+118h+var_40]
           fmul    st, st(1)
-          fstp    [esp+110h+var_A0]
+          fstp    [esp+118h+delta]
           fxch    st(1)
           fmul    st, st(1)
-          fstp    [esp+110h+var_9C]
+          fstp    [esp+118h+var_A4]
           fstp    st
         }
-        FUN_0041e270((float *)&_ESI[-1].wDayOfWeek, &v267);
+        FUN_0041e270((float *)&_ESI[-1].wDayOfWeek, &delta);
       }
 LABEL_226:
       wYear = _ESI[2].wYear;
@@ -26461,10 +26448,10 @@ LABEL_235:
         {
           if ( !wYear )
           {
-            wu = crt_rand() % 100 - 50;
+            v186 = crt_rand() % 100 - 50;
             __asm
             {
-              fild    [esp+104h+w]
+              fild    [esp+10Ch+var_FC]
               fmul    ds:flt_46F608
               fmul    dword ptr [esi+14h]
               fmul    frame_dt
@@ -26474,10 +26461,10 @@ LABEL_235:
           }
           if ( wYear == 8 )
           {
-            wv = crt_rand() % 100 - 50;
+            v187 = crt_rand() % 100 - 50;
             __asm
             {
-              fild    [esp+104h+w]
+              fild    [esp+10Ch+var_FC]
               fmul    ds:flt_46F608
               fmul    dword ptr [esi+14h]
               fmul    frame_dt
@@ -26502,10 +26489,10 @@ LABEL_235:
           }
           else
           {
-            ww = crt_rand() % 100 - 50;
+            v188 = crt_rand() % 100 - 50;
             __asm
             {
-              fild    [esp+104h+w]
+              fild    [esp+10Ch+var_FC]
               fmul    ds:flt_46F608
               fmul    dword ptr [esi+14h]
               fmul    frame_dt
@@ -26565,8 +26552,8 @@ LABEL_241:
             fmul    ds:flt_46F268
           }
           _EDI = (float *)&_ESI[-1].wDayOfWeek;
-          __asm { fstp    [esp+10Ch+damage]; radius }
-          v131 = creature_find_in_radius((float *)&_ESI[-1].wDayOfWeek, damagef, 0);
+          __asm { fstp    [esp+114h+var_114]; radius }
+          v131 = creature_find_in_radius((float *)&_ESI[-1].wDayOfWeek, v168, 0);
           if ( v131 != -1 )
           {
             HIBYTE(_ESI[-1].wYear) = 0;
@@ -26640,22 +26627,22 @@ LABEL_241:
               }
               __asm
               {
-                fstp    [esp+104h+var_80]
+                fstp    [esp+10Ch+var_88]
                 fmul    dword ptr [esi]
                 fld     dword ptr [edi]
-                fsub    [esp+104h+var_80]
+                fsub    [esp+10Ch+var_88]
               }
               _EDI = 152 * v131;
-              __asm { fstp    [esp+104h+var_70] }
+              __asm { fstp    [esp+10Ch+impulse] }
               _EBP = &creature_pos_x + 38 * v131;
               __asm
               {
                 fsubr   dword ptr [esi-8]
-                fld     [esp+104h+var_70]
+                fld     [esp+10Ch+impulse]
                 fsub    dword ptr [ebp+0]
-                fstp    [esp+104h+var_98]
+                fstp    [esp+10Ch+var_A0]
                 fsub    dword ptr [ebp+4]
-                fld     [esp+104h+var_98]
+                fld     [esp+10Ch+var_A0]
                 fpatan
                 fcom    ds:flt_46F3B0
                 fnstsw  ax
@@ -26721,10 +26708,10 @@ LABEL_241:
               *(float *)&_ESI->wYear = _ET1;
               v149 = crt_rand();
               creature_state_flag[152 * v131] = 1;
-              vel = 0.0;
-              v264 = 0.0;
-              wx = v149 % 10;
-              __asm { fild    [esp+104h+w] }
+              v261 = 0.0;
+              v262 = 0.0;
+              v189 = v149 % 10;
+              __asm { fild    [esp+10Ch+var_FC] }
               __asm
               {
                 fmul    ds:flt_46F2FC
@@ -26743,9 +26730,9 @@ LABEL_241:
               {
                 fld     dword ptr [esi+14h]
                 fmul    ds:flt_46F260
-                fstp    [esp+110h+radius]; damage
+                fstp    [esp+118h+var_118]; damage
               }
-              creature_apply_damage(v131, radiusf, 4, &vel);
+              creature_apply_damage(v131, v167, 4, &v261);
               __asm
               {
                 fld     dword ptr [edi+49BF78h]
@@ -26867,21 +26854,21 @@ LABEL_241:
                     creature_tint_a[38 * v131] = 1065353216;
                 }
               }
-              if ( !(v238 % 3) )
+              if ( !(v225 % 3) )
               {
-                v255 = crt_rand() % 60 - 30;
-                wy = crt_rand() % 60 - 30;
+                v252 = crt_rand() % 60 - 30;
+                v190 = crt_rand() % 60 - 30;
                 __asm
                 {
-                  fild    [esp+108h+w]
-                  fild    [esp+108h+var_D0]
+                  fild    [esp+110h+var_FC]
+                  fild    [esp+110h+var_D8]
                 }
                 __asm
                 {
-                  fstp    [esp+110h+delta]
-                  fstp    [esp+110h+var_A4]
+                  fstp    [esp+118h+vel]
+                  fstp    [esp+118h+var_AC]
                 }
-                sprite_effect_color_a[11 * fx_spawn_sprite(&creature_pos_x + 38 * v131, &delta, 13.0)] = 1060320051;
+                sprite_effect_color_a[11 * fx_spawn_sprite(&creature_pos_x + 38 * v131, &vel, 13.0)] = 1060320051;
               }
               fx_queue_add_random(&creature_pos_x + 38 * v131);
               __asm
@@ -26889,21 +26876,21 @@ LABEL_241:
                 fld     dword ptr [esi-4]
                 fld     dword ptr [esi]
               }
-              __asm { fstp    [esp+104h+var_74] }
-              v233 = frame_dt;
+              __asm { fstp    [esp+10Ch+var_7C] }
+              wu = frame_dt;
               __asm
               {
-                fmul    [esp+104h+var_EC]
-                fld     [esp+104h+var_74]
-                fmul    [esp+104h+var_EC]
-                fstp    [esp+104h+var_84]
+                fmul    [esp+10Ch+w]
+                fld     [esp+10Ch+var_7C]
+                fmul    [esp+10Ch+w]
+                fstp    [esp+10Ch+var_8C]
                 fadd    dword ptr [ebp+0]
                 fstp    dword ptr [ebp+0]
               }
               *_EBP = _ET1;
               __asm
               {
-                fld     [esp+104h+var_84]
+                fld     [esp+10Ch+var_8C]
                 fadd    dword ptr [ebp+4]
                 fstp    dword ptr [ebp+4]
               }
@@ -26915,7 +26902,7 @@ LABEL_241:
     }
 LABEL_281:
     _ESI = (struct _SYSTEMTIME *)((char *)_ESI + 56);
-    ++v238;
+    ++v225;
     if ( (int)_ESI < (int)&local_system_time )
       continue;
     break;
@@ -27165,7 +27152,7 @@ void projectile_render()
   float v236; // [esp+4E4h] [ebp-184h]
   float v237; // [esp+4E8h] [ebp-180h]
   float v238; // [esp+4ECh] [ebp-17Ch]
-  int v239; // [esp+4F0h] [ebp-178h]
+  float v239; // [esp+4F0h] [ebp-178h]
   float v240; // [esp+4F4h] [ebp-174h]
   float v241; // [esp+4F8h] [ebp-170h]
   float v242; // [esp+4FCh] [ebp-16Ch]
@@ -27175,7 +27162,7 @@ void projectile_render()
   float v246; // [esp+50Ch] [ebp-15Ch]
   float v247; // [esp+510h] [ebp-158h] BYREF
   float v248; // [esp+514h] [ebp-154h]
-  float v249; // [esp+518h] [ebp-150h]
+  float v249; // [esp+518h] [ebp-150h] BYREF
   float v250; // [esp+51Ch] [ebp-14Ch]
   float v251; // [esp+520h] [ebp-148h]
   float v252; // [esp+524h] [ebp-144h]
@@ -27478,7 +27465,7 @@ void projectile_render()
             v279 = v230 + v240;
             v21 = v279;
             v28 = *(float *)&camera_offset_x + *((float *)v11 - 5);
-            *(float *)&v239 = v28;
+            v239 = v28;
             v230 = *(float *)&camera_offset_y + *((float *)v11 - 4);
             v303 = v230;
             v286 = v28 + v26;
@@ -27486,7 +27473,7 @@ void projectile_render()
             v287 = v230 + v240;
             v242 = v287;
             v304 = v240;
-            v251 = *(float *)&v239 - v26;
+            v251 = v239 - v26;
             v305 = v230;
             v253 = v251;
             v252 = v230 - v240;
@@ -27527,7 +27514,7 @@ void projectile_render()
             v268 = v230 + v240;
             v21 = v268;
             v31 = *(float *)&camera_offset_x + *((float *)v11 - 5);
-            *(float *)&v239 = v31;
+            v239 = v31;
             v230 = *(float *)&camera_offset_y + *((float *)v11 - 4);
             v290 = v230;
             radius = v31 + v29;
@@ -27536,7 +27523,7 @@ void projectile_render()
             v242 = v256;
             v294 = v240;
             v300 = v230;
-            v232 = *(float *)&v239 - v29;
+            v232 = v239 - v29;
             v253 = v232;
             v233 = v230 - v240;
             v25 = v233;
@@ -27562,7 +27549,7 @@ void projectile_render()
             v258 = v230 + v240;
             v21 = v258;
             v34 = *(float *)&camera_offset_x + *((float *)v11 - 5);
-            *(float *)&v239 = v34;
+            v239 = v34;
             v230 = *(float *)&camera_offset_y + *((float *)v11 - 4);
             v281 = v230;
             v259 = v34 + v32;
@@ -27570,7 +27557,7 @@ void projectile_render()
             v260 = v230 + v240;
             v242 = v260;
             v272 = v240;
-            v237 = *(float *)&v239 - v32;
+            v237 = v239 - v32;
             v276 = v230;
             v253 = v237;
             v238 = v230 - v240;
@@ -28067,7 +28054,7 @@ LABEL_76:
     0);
   (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
   v103 = v314;
-  *(float *)&v239 = 0.0;
+  v239 = 0.0;
   v104 = &projectile_origin_y;
   while ( 2 )
   {
@@ -28181,16 +28168,21 @@ LABEL_76:
                   if ( v107 != 45 )
                     v235 = 3.5;
                 }
-                (*(void (__thiscall **)(int, int, int))(*(_DWORD *)grim_interface_ptr + 260))(grim_interface_ptr, 2, 2);
+                (*(void (__thiscall **)(int, int, int, float, int))(*(_DWORD *)grim_interface_ptr + 260))(
+                  grim_interface_ptr,
+                  2,
+                  2,
+                  COERCE_FLOAT(LODWORD(v226)),
+                  v227);
                 v128 = *((float *)v104 - 3) - *((float *)v104 - 1);
-                v225 = COERCE_FLOAT(&v247);
-                v263 = v128;
+                v227 = (int)&v249;
+                v265 = v128;
                 v129 = *((float *)v104 - 2) - *(float *)v104;
-                v247 = v263;
-                v264 = v129;
-                v248 = v264;
-                radius = sqrt(v263 * v263 + v264 * v264);
-                j_FUN_00452f1d(&v247);
+                v249 = v265;
+                v266 = v129;
+                v250 = v266;
+                v257 = sqrt(v265 * v265 + v266 * v266);
+                j_FUN_00452f1d(&v249);
                 if ( v104[3] == 45 )
                   (*(void (__thiscall **)(int, int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
                     grim_interface_ptr,
@@ -28318,19 +28310,24 @@ LABEL_76:
                 v140 = v104[3];
                 if ( v140 == 22 )
                 {
-                  v235 = 1.05;
+                  v233 = 1.05;
                 }
                 else if ( v140 == 21 )
                 {
-                  v235 = 2.2;
+                  v233 = 2.2;
                 }
                 else
                 {
-                  v235 = 0.80000001;
+                  v233 = 0.80000001;
                   if ( v140 != 45 )
-                    v235 = 3.5;
+                    v233 = 3.5;
                 }
-                (*(void (__thiscall **)(int, int, int))(*(_DWORD *)grim_interface_ptr + 260))(grim_interface_ptr, 4, 2);
+                (*(void (__thiscall **)(int, int, int, _DWORD, float))(*(_DWORD *)grim_interface_ptr + 260))(
+                  grim_interface_ptr,
+                  4,
+                  2,
+                  LODWORD(v224[2]),
+                  COERCE_FLOAT(LODWORD(v225)));
                 v267 = v235 * 16.0;
                 v265 = *(float *)&camera_offset_x + *((float *)v104 - 1) - v267;
                 v266 = *(float *)&camera_offset_y + *(float *)v104 - v267;
@@ -28450,52 +28447,54 @@ LABEL_76:
                         0);
                       v225 = COERCE_FLOAT(&v247);
                       v237 = *(&creature_pos_x + 38 * v152) - *v149;
-                      v153 = creature_pos_y[38 * v152] - *(float *)(LODWORD(v240) + 12);
+                      v153 = creature_pos_y[38 * v152] - v149[1];
                       v247 = v237;
                       v238 = v153;
                       v248 = v238;
                       j_FUN_00452f1d(&v247);
-                      v251 = v247;
-                      v247 = -v248;
-                      v248 = v251;
-                      v273 = *(float *)&camera_offset_x + *v149;
-                      v274 = *(float *)&camera_offset_y + *(float *)(LODWORD(v240) + 12);
-                      v154 = v247 * v235;
-                      v251 = v235 * v251;
-                      v272 = v251;
-                      v276 = v251 * 10.0;
-                      v243 = v273 - v154 * 10.0;
-                      v277 = v251;
-                      v244 = v274 - v276;
-                      v281 = v276;
-                      v249 = v273 + v154 * 10.0;
-                      v250 = v276 + v274;
-                      v269 = *(float *)&camera_offset_x + *(&creature_pos_x + 38 * v152);
+                      v249 = v245;
+                      v245 = -v246;
+                      v246 = v249;
+                      v271 = *(float *)&camera_offset_x + *v149;
+                      v272 = *(float *)&camera_offset_y + v149[1];
+                      v154 = v245 * v233;
+                      v249 = v233 * v249;
+                      v270 = v249;
+                      v274 = v249 * 10.0;
+                      v241 = v271 - v154 * 10.0;
+                      v276 = v249;
+                      v242 = v272 - v274;
+                      v279 = v274;
+                      v247 = v271 + v154 * 10.0;
+                      v248 = v274 + v272;
+                      v267 = *(float *)&camera_offset_x + *(&creature_pos_x + 38 * v152);
                       v155 = *(float *)&camera_offset_y + creature_pos_y[38 * v152];
-                      v241 = v269;
-                      v253 = v269;
-                      v270 = v155;
-                      v242 = v270;
-                      v254 = v270;
-                      v302 = v251;
-                      v294 = v251;
-                      v298 = v276;
+                      v239 = v267;
+                      v251 = v267;
+                      v268 = v155;
+                      v240 = v268;
+                      v252 = v268;
+                      v300 = v249;
+                      v293 = v249;
+                      v296 = v274;
                       v156 = *(_DWORD *)grim_interface_ptr;
-                      v241 = v154 * 10.0 + v269;
-                      v242 = v276 + v270;
-                      v300 = v276;
-                      v253 = v269 - v154 * 10.0;
-                      v254 = v270 - v276;
-                      (*(void (__thiscall **)(int, float, float, float, float, float, float, float, float))(v156 + 312))(
+                      v239 = v154 * 10.0 + v267;
+                      v240 = v274 + v268;
+                      v298 = v274;
+                      v251 = v267 - v154 * 10.0;
+                      v252 = v268 - v274;
+                      (*(void (__thiscall **)(int, float, float, float, float, float, float, float, float, _DWORD, float *))(v156 + 312))(
                         grim_interface_ptr,
-                        COERCE_FLOAT(LODWORD(v243)),
-                        COERCE_FLOAT(LODWORD(v244)),
-                        COERCE_FLOAT(LODWORD(v249)),
-                        COERCE_FLOAT(LODWORD(v250)),
                         COERCE_FLOAT(LODWORD(v241)),
                         COERCE_FLOAT(LODWORD(v242)),
-                        COERCE_FLOAT(LODWORD(v253)),
-                        COERCE_FLOAT(LODWORD(v254)));
+                        COERCE_FLOAT(LODWORD(v247)),
+                        COERCE_FLOAT(LODWORD(v248)),
+                        COERCE_FLOAT(LODWORD(v239)),
+                        COERCE_FLOAT(LODWORD(v240)),
+                        COERCE_FLOAT(LODWORD(v251)),
+                        COERCE_FLOAT(LODWORD(v252)),
+                        LODWORD(v224[2]),
+                        &v247);
                       v157 = v247 * v235;
                       v251 = v248 * v235;
                       v291 = v251;
@@ -28566,7 +28565,7 @@ LABEL_76:
             v235 = 20.0;
           v225 = *(float *)&grim_interface_ptr;
           v127 = *(_DWORD *)grim_interface_ptr;
-          v225 = (double)v239 * 0.1 - (double)quest_spawn_timeline * 0.1;
+          v225 = (double)SLODWORD(v239) * 0.1 - (double)quest_spawn_timeline * 0.1;
           (*(void (__thiscall **)(int, float, float, int, float, float))(v127 + 252))(
             grim_interface_ptr,
             COERCE_FLOAT(LODWORD(v225)),
@@ -28600,7 +28599,7 @@ LABEL_84:
     }
 LABEL_153:
     v104 += 16;
-    ++v239;
+    ++LODWORD(v239);
     if ( (int)v104 < (int)particle_scale_x )
       continue;
     break;
@@ -28624,7 +28623,7 @@ LABEL_153:
     LODWORD(v224[2]),
     COERCE_FLOAT(LODWORD(v225)));
   (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
-  *(float *)&v239 = 0.0;
+  v239 = 0.0;
   v162 = (float *)&projectile_pos_y;
   do
   {
@@ -28666,7 +28665,7 @@ LABEL_153:
         v225 = 52.0;
         v224[2] = 52.0;
         LODWORD(v224[1]) = grim_interface_ptr;
-        v167 = (double)v239 + v278;
+        v167 = (double)SLODWORD(v239) + v278;
         v168 = *(_DWORD *)grim_interface_ptr;
         v234 = v167;
         v169 = cos(v167);
@@ -28740,7 +28739,7 @@ LABEL_153:
       }
     }
     v162 += 16;
-    ++v239;
+    ++LODWORD(v239);
   }
   while ( (int)v162 < (int)&particle_vel_x );
   (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
@@ -28946,7 +28945,7 @@ LABEL_153:
       }
       v192 += 11;
     }
-    while ( (int)v192 < (int)&dword_4965DC );
+    while ( (int)v192 < (int)&render_scratch_f1 );
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int, int, _DWORD, _DWORD, float))(*(_DWORD *)grim_interface_ptr + 32))(
       grim_interface_ptr,
@@ -29485,37 +29484,36 @@ void creature_update_all()
   __int16 v11; // ax
   int v12; // eax
   char v15; // bl
-  int v22; // ebp
-  int v30; // edx
+  int v29; // edx
+  int v30; // eax
   int v31; // eax
-  int v32; // eax
-  bool v34; // zf
-  int v35; // eax
-  int v43; // eax
-  int v44; // edx
-  int v57; // eax
-  int v60; // eax
-  int v61; // edx
-  float v65; // eax
-  float v67; // edx
-  float *v75; // edx
-  int v80; // ecx
-  int v93; // eax
-  int v94; // edx
-  int v99; // eax
-  int v139; // ecx
-  int v142; // eax
-  int v154; // eax
-  char v155; // al
-  float v156; // eax
+  bool v33; // zf
+  int v34; // eax
+  int v42; // eax
+  int v43; // edx
+  int v56; // eax
+  int v59; // eax
+  int v60; // edx
+  float v64; // eax
+  float v66; // edx
+  float *v74; // edx
+  int v79; // ecx
+  int v92; // eax
+  int v93; // edx
+  int v98; // eax
+  int v138; // ecx
+  int v141; // eax
+  int v153; // eax
+  char v154; // al
+  float v155; // eax
+  int v156; // ebx
   int v157; // ebx
   int v158; // ebx
-  int v159; // ebx
-  int v162; // eax
+  int v161; // eax
+  float v168; // [esp-10h] [ebp-A8h]
   float v169; // [esp-10h] [ebp-A8h]
-  float v170; // [esp-10h] [ebp-A8h]
+  float *v170; // [esp-4h] [ebp-9Ch]
   float *v171; // [esp-4h] [ebp-9Ch]
-  float *v172; // [esp-4h] [ebp-9Ch]
   float damage; // [esp+0h] [ebp-98h]
   float damagea; // [esp+0h] [ebp-98h]
   float damageb; // [esp+0h] [ebp-98h]
@@ -29527,29 +29525,33 @@ void creature_update_all()
   float rate; // [esp+8h] [ebp-90h]
   float ratea; // [esp+8h] [ebp-90h]
   int rateb; // [esp+8h] [ebp-90h]
+  int v183; // [esp+14h] [ebp-84h]
+  int v184; // [esp+18h] [ebp-80h]
   int creature_id; // [esp+1Ch] [ebp-7Ch]
-  int v185; // [esp+20h] [ebp-78h]
-  float v188; // [esp+28h] [ebp-70h]
-  int v189; // [esp+2Ch] [ebp-6Ch]
-  int v190; // [esp+30h] [ebp-68h]
-  int v191; // [esp+38h] [ebp-60h]
-  int v192; // [esp+3Ch] [ebp-5Ch]
+  float *v186; // [esp+20h] [ebp-78h]
+  float v189; // [esp+28h] [ebp-70h]
+  float *v190; // [esp+2Ch] [ebp-6Ch]
+  int v191; // [esp+30h] [ebp-68h]
+  int v192; // [esp+38h] [ebp-60h]
   int v193; // [esp+3Ch] [ebp-5Ch]
   int v194; // [esp+3Ch] [ebp-5Ch]
-  float v195; // [esp+40h] [ebp-58h] BYREF
-  float v197[2]; // [esp+48h] [ebp-50h] BYREF
+  int v195; // [esp+3Ch] [ebp-5Ch]
+  int v196; // [esp+3Ch] [ebp-5Ch]
+  float v197[2]; // [esp+40h] [ebp-58h] BYREF
+  float v198[2]; // [esp+48h] [ebp-50h] BYREF
   float impulse[2]; // [esp+50h] [ebp-48h] BYREF
-  float v199[2]; // [esp+58h] [ebp-40h] BYREF
-  float v200[2]; // [esp+60h] [ebp-38h] BYREF
-  float v201[2]; // [esp+68h] [ebp-30h] BYREF
-  float pos[2]; // [esp+70h] [ebp-28h] BYREF
-  float v203[2]; // [esp+78h] [ebp-20h] BYREF
-  float v204[2]; // [esp+80h] [ebp-18h] BYREF
+  float v200[2]; // [esp+58h] [ebp-40h] BYREF
+  float v201[2]; // [esp+60h] [ebp-38h] BYREF
+  float v202; // [esp+68h] [ebp-30h] BYREF
+  float v203; // [esp+6Ch] [ebp-2Ch]
+  float v204[2]; // [esp+78h] [ebp-20h] BYREF
+  float v205[2]; // [esp+80h] [ebp-18h] BYREF
 
   v0 = 0;
   ++creature_update_tick;
   creature_active_count = 0;
-  for ( creature_id = 0; ; v0 = creature_id )
+  creature_id = 0;
+  while ( 1 )
   {
     _ESI = 19 * v0;
     if ( creature_pool[8 * _ESI] )
@@ -29601,10 +29603,10 @@ void creature_update_all()
             fld     frame_dt
             fmul    ds:flt_46F2F0
           }
-          v197[0] = 0.0;
-          v197[1] = 0.0;
+          v198[0] = 0.0;
+          v198[1] = 0.0;
           __asm { fstp    [esp+98h+damage] }
-          creature_apply_damage(creature_id, damage, 0, v197);
+          creature_apply_damage(0, damage, 0, v198);
         }
         else if ( (v8 & 1) != 0 )
         {
@@ -29616,7 +29618,7 @@ void creature_update_all()
           impulse[0] = 0.0;
           impulse[1] = 0.0;
           __asm { fstp    [esp+98h+damage]; damage }
-          creature_apply_damage(creature_id, damagea, 0, impulse);
+          creature_apply_damage(0, damagea, 0, impulse);
         }
         if ( SLOBYTE(creature_flags[2 * _ESI]) < 0 )
         {
@@ -29679,25 +29681,53 @@ void creature_update_all()
           fstp    st
           fstp    [esp+8Ch+var_78]
         }
-        if ( !(creature_update_tick % 70) )
-          goto LABEL_31;
-        if ( config_player_count == 2 )
+        if ( creature_update_tick % 70 )
         {
-          _EDX = &player2_health[_ECX / 0xFFFFFFFC];
-          __asm
+          if ( config_player_count == 2 )
           {
-            fld     dword ptr [edx]
-            fcomp   ds:flt_46F228
-            fnstsw  ax
-          }
-          if ( (_AX & 0x4100) == 0 )
-          {
-            _EAX = &player2_pos_x[_ECX / 0xFFFFFFFC];
+            _EDX = &player2_health[_ECX / 0xFFFFFFFC];
             __asm
             {
-              fld     dword ptr [eax]
+              fld     dword ptr [edx]
+              fcomp   ds:flt_46F228
+              fnstsw  ax
+            }
+            if ( (_AX & 0x4100) == 0 )
+            {
+              _EAX = &player2_pos_x[_ECX / 0xFFFFFFFC];
+              __asm
+              {
+                fld     dword ptr [eax]
+                fsub    dword ptr [edi]
+                fld     dword ptr [eax+4]
+                fsub    dword ptr [edi+4]
+                fld     st(1)
+                fmulp   st(2), st
+                fld     st
+                fmul    st, st(1)
+                faddp   st(2), st
+                fxch    st(1)
+                fsqrt
+                fxch    st(1)
+                fstp    st
+                fst     [esp+8Ch+var_6C]
+                fcomp   [esp+8Ch+var_78]
+                fnstsw  ax
+              }
+              if ( (BYTE1(_EAX) & 1) != 0 )
+              {
+                v186 = v190;
+                creature_target_player[8 * _ESI] = 1 - v15;
+              }
+            }
+          }
+          else
+          {
+            __asm
+            {
+              fld     player_pos_x
               fsub    dword ptr [edi]
-              fld     dword ptr [eax+4]
+              fld     player_pos_y
               fsub    dword ptr [edi+4]
               fld     st(1)
               fmulp   st(2), st
@@ -29708,25 +29738,21 @@ void creature_update_all()
               fsqrt
               fxch    st(1)
               fstp    st
-              fst     [esp+8Ch+var_6C]
-              fcomp   [esp+8Ch+var_78]
-              fnstsw  ax
-            }
-            if ( (BYTE1(_EAX) & 1) != 0 )
-            {
-              v185 = v189;
-              creature_target_player[8 * _ESI] = 1 - v15;
+              fstp    [esp+8Ch+var_6C]
             }
           }
-        }
-        else
-        {
+          v15 = creature_target_player[8 * _ESI];
+          __asm { fld     player_pos_x }
+          _ECX = 864 * v15;
+          _EAX = 19 * player_auto_target[_ECX / 4];
           __asm
           {
-            fld     player_pos_x
-            fsub    dword ptr [edi]
+            fsub    creature_pos_x[eax*8]
             fld     player_pos_y
-            fsub    dword ptr [edi+4]
+            fsub    creature_pos_y[eax*8]
+          }
+          __asm
+          {
             fld     st(1)
             fmulp   st(2), st
             fld     st
@@ -29736,42 +29762,11 @@ void creature_update_all()
             fsqrt
             fxch    st(1)
             fstp    st
-            fstp    [esp+8Ch+var_6C]
+            fcomp   [esp+8Ch+var_6C]
+            fnstsw  ax
           }
-        }
-        v15 = creature_target_player[8 * _ESI];
-        __asm { fld     player_pos_x }
-        _ECX = 864 * v15;
-        _EAX = 19 * player_auto_target[_ECX / 4];
-        __asm
-        {
-          fsub    creature_pos_x[eax*8]
-          fld     player_pos_y
-          fsub    creature_pos_y[eax*8]
-        }
-        __asm
-        {
-          fld     st(1)
-          fmulp   st(2), st
-          fld     st
-          fmul    st, st(1)
-          faddp   st(2), st
-          fxch    st(1)
-          fsqrt
-          fxch    st(1)
-          fstp    st
-          fcomp   [esp+8Ch+var_6C]
-          fnstsw  ax
-        }
-        if ( (_EAX & 0x4100) != 0 )
-        {
-LABEL_31:
-          v22 = creature_id;
-        }
-        else
-        {
-          v22 = creature_id;
-          player_auto_target[216 * v15] = creature_id;
+          if ( (_EAX & 0x4100) == 0 )
+            player_auto_target[216 * v15] = 0;
         }
         __asm
         {
@@ -29784,6 +29779,7 @@ LABEL_31:
         _EBX = 8 * _ESI + 4833096;
         if ( creature_hitbox_size[2 * _ESI] == 1098907648 )
         {
+          v193 = 8 * _ESI + 4833089;
           if ( creature_collision_flag[8 * _ESI] )
           {
             __asm
@@ -29817,9 +29813,9 @@ LABEL_31:
               if ( (BYTE1(_EAX) & 1) != 0 )
               {
                 ++plaguebearer_infection_count;
-                creature_handle_death(v22, 1);
-                v30 = crt_rand() % 2;
-                sfx_play_panned(*(&creature_type_sfx_b0 + 17 * *(&creature_type_id + 2 * _ESI) + v30));
+                creature_handle_death(0, 1);
+                v29 = crt_rand() % 2;
+                sfx_play_panned(*(&creature_type_sfx_b0 + 17 * *(&creature_type_id + 2 * _ESI) + v29));
               }
               fx_queue_add_random((float *)(8 * _ESI + 4833100));
             }
@@ -29829,21 +29825,21 @@ LABEL_31:
             }
           }
           __asm { fild    creature_phase_seed[esi*8] }
-          v31 = evil_eyes_target_creature;
+          v30 = evil_eyes_target_creature;
           creature_force_target[8 * _ESI] = 0;
-          v188 = 1.0;
+          v189 = 1.0;
           __asm
           {
             fmul    ds:flt_46F688
             fmul    ds:flt_46F378
             fstp    [esp+8Ch+var_74]
           }
-          if ( v22 != v31 )
+          if ( v30 )
           {
-            v32 = creature_ai_mode[2 * _ESI];
-            if ( v32 )
+            v31 = creature_ai_mode[2 * _ESI];
+            if ( v31 )
             {
-              switch ( v32 )
+              switch ( v31 )
               {
                 case 8:
                   __asm
@@ -29878,10 +29874,10 @@ LABEL_31:
                     fcomp   ds:flt_46F618
                     fnstsw  ax
                   }
-                  v34 = (_AX & 0x4100) == 0;
-                  v35 = 27 * creature_target_player[8 * _ESI];
-                  if ( v34 )
-                    goto LABEL_49;
+                  v33 = (_AX & 0x4100) == 0;
+                  v34 = 27 * creature_target_player[8 * _ESI];
+                  if ( v33 )
+                    goto LABEL_48;
                   __asm
                   {
                     fld     [esp+8Ch+var_74]
@@ -29948,9 +29944,9 @@ LABEL_31:
                   if ( (_AX & 0x4100) != 0 )
                   {
                     creature_ai_mode[2 * _ESI] = 0;
-                    v199[0] = 0.0;
-                    v199[1] = 0.0;
-                    creature_apply_damage(creature_id, 1000.0, 1, v199);
+                    v200[0] = 0.0;
+                    v200[1] = 0.0;
+                    creature_apply_damage(0, 1000.0, 1, v200);
                   }
                   else
                   {
@@ -30009,9 +30005,9 @@ LABEL_31:
                 fcomp   ds:flt_46F618
                 fnstsw  ax
               }
-              v34 = (_AX & 0x4100) == 0;
-              v35 = 27 * creature_target_player[8 * _ESI];
-              if ( !v34 )
+              v33 = (_AX & 0x4100) == 0;
+              v34 = 27 * creature_target_player[8 * _ESI];
+              if ( !v33 )
               {
                 __asm
                 {
@@ -30037,17 +30033,17 @@ LABEL_31:
                   fstp    creature_target_y[esi*8]
                 }
                 creature_target_y[2 * _ESI] = _ET1;
-                goto LABEL_61;
+                goto LABEL_60;
               }
-LABEL_49:
-              v43 = 8 * v35;
-              v44 = player_pos_y[v43];
-              LODWORD(creature_target_x[2 * _ESI]) = player_pos_x[v43];
-              LODWORD(creature_target_y[2 * _ESI]) = v44;
+LABEL_48:
+              v42 = 8 * v34;
+              v43 = player_pos_y[v42];
+              LODWORD(creature_target_x[2 * _ESI]) = player_pos_x[v42];
+              LODWORD(creature_target_y[2 * _ESI]) = v43;
             }
-LABEL_61:
-            v57 = creature_ai_mode[2 * _ESI];
-            switch ( v57 )
+LABEL_60:
+            v56 = creature_ai_mode[2 * _ESI];
+            switch ( v56 )
             {
               case 4:
                 _EAX = 19 * creature_link_index[2 * _ESI];
@@ -30060,9 +30056,9 @@ LABEL_61:
                 if ( (_EAX & 0x4100) != 0 )
                 {
                   creature_ai_mode[2 * _ESI] = 0;
-                  v200[0] = 0.0;
-                  v200[1] = 0.0;
-                  creature_apply_damage(creature_id, 1000.0, 1, v200);
+                  v201[0] = 0.0;
+                  v201[1] = 0.0;
+                  creature_apply_damage(0, 1000.0, 1, v201);
                 }
                 else
                 {
@@ -30101,20 +30097,20 @@ LABEL_61:
                   }
                   else
                   {
-                    v60 = 216 * creature_target_player[8 * _ESI];
-                    v61 = player_pos_y[v60];
-                    LODWORD(creature_target_x[2 * _ESI]) = player_pos_x[v60];
-                    LODWORD(creature_target_y[2 * _ESI]) = v61;
+                    v59 = 216 * creature_target_player[8 * _ESI];
+                    v60 = player_pos_y[v59];
+                    LODWORD(creature_target_x[2 * _ESI]) = player_pos_x[v59];
+                    LODWORD(creature_target_y[2 * _ESI]) = v60;
                   }
                 }
-                goto LABEL_78;
+                goto LABEL_77;
               case 7:
                 if ( (creature_flags[2 * _ESI] & 0x80) != 0 && creature_link_index[2 * _ESI] > 0 )
                 {
-                  v65 = creature_pos_y[2 * _ESI];
+                  v64 = creature_pos_y[2 * _ESI];
                   creature_target_x[2 * _ESI] = *(&creature_pos_x + 2 * _ESI);
-                  creature_target_y[2 * _ESI] = v65;
-LABEL_78:
+                  creature_target_y[2 * _ESI] = v64;
+LABEL_77:
                   __asm
                   {
                     fld     creature_target_x[esi*8]
@@ -30155,9 +30151,9 @@ LABEL_78:
                     creature_force_target[8 * _ESI] = 1;
                   if ( creature_force_target[8 * _ESI] || creature_ai_mode[2 * _ESI] == 2 )
                   {
-                    v75 = (float *)&player_pos_x[216 * creature_target_player[8 * _ESI]];
-                    creature_target_x[2 * _ESI] = *v75;
-                    creature_target_y[2 * _ESI] = v75[1];
+                    v74 = (float *)&player_pos_x[216 * creature_target_player[8 * _ESI]];
+                    creature_target_x[2 * _ESI] = *v74;
+                    creature_target_y[2 * _ESI] = v74[1];
                   }
                   __asm
                   {
@@ -30186,11 +30182,11 @@ LABEL_78:
                       fnstsw  ax
                     }
                     if ( (_AX & 0x100) != 0 )
-                      goto LABEL_88;
+                      goto LABEL_87;
                   }
                   if ( creature_collision_flag[8 * _ESI] )
                   {
-LABEL_88:
+LABEL_87:
                     __asm
                     {
                       fadd    ds:flt_46F378
@@ -30202,8 +30198,8 @@ LABEL_88:
                   {
                     __asm { fstp    st }
                   }
-                  v80 = creature_flags[2 * _ESI];
-                  if ( (v80 & 4) != 0 )
+                  v79 = creature_flags[2 * _ESI];
+                  if ( (v79 & 4) != 0 )
                   {
                     __asm
                     {
@@ -30247,7 +30243,7 @@ LABEL_88:
                     {
                       __asm { fstp    st }
                     }
-                    if ( (v80 & 0x40) != 0 )
+                    if ( (v79 & 0x40) != 0 )
                     {
                       __asm
                       {
@@ -30267,7 +30263,7 @@ LABEL_88:
                         fld     dword ptr [ebx]
                         fsub    ds:flt_46F220
                       }
-                      v171 = (float *)(8 * _ESI + 4833108);
+                      v170 = (float *)(8 * _ESI + 4833108);
                       __asm
                       {
                         fld     st
@@ -30281,7 +30277,7 @@ LABEL_88:
                         fmul    ds:flt_46F4B0
                         fstp    dword ptr [eax]
                       }
-                      *v171 = _ET1;
+                      *v170 = _ET1;
                       __asm
                       {
                         fsin
@@ -30292,7 +30288,7 @@ LABEL_88:
                         fstp    creature_vel_y[esi*8]
                       }
                       creature_vel_y[2 * _ESI] = _ET1;
-                      vec2_add_inplace(creature_id, (float *)(8 * _ESI + 4833100), v171);
+                      vec2_add_inplace(0, (float *)(8 * _ESI + 4833100), v170);
                     }
                     else
                     {
@@ -30316,13 +30312,13 @@ LABEL_88:
                     if ( (_EAX & 0x100) != 0 )
                     {
                       __asm { fadd    dword ptr [ecx+0Ch] }
-                      v93 = *(_DWORD *)(_ECX + 4);
-                      v94 = *(_DWORD *)(_ECX + 8);
+                      v92 = *(_DWORD *)(_ECX + 4);
+                      v93 = *(_DWORD *)(_ECX + 8);
                       __asm { fstp    dword ptr [ecx+10h] }
                       *(float *)(_ECX + 16) = _ET1;
-                      if ( v94 > v93 )
+                      if ( v93 > v92 )
                       {
-                        *(_DWORD *)(_ECX + 4) = v93 + 1;
+                        *(_DWORD *)(_ECX + 4) = v92 + 1;
                         creature_spawn_template(*(_DWORD *)(_ECX + 20), (float *)(8 * _ESI + 4833100), -100.0);
                       }
                     }
@@ -30351,7 +30347,7 @@ LABEL_88:
                       fld     dword ptr [ebx]
                       fsub    ds:flt_46F220
                     }
-                    v172 = (float *)(8 * _ESI + 4833108);
+                    v171 = (float *)(8 * _ESI + 4833108);
                     __asm
                     {
                       fld     st
@@ -30362,7 +30358,7 @@ LABEL_88:
                       fmul    ds:flt_46F4B0
                       fstp    dword ptr [eax]
                     }
-                    *v172 = _ET1;
+                    *v171 = _ET1;
                     __asm { fsin }
                     __asm
                     {
@@ -30373,17 +30369,17 @@ LABEL_88:
                       fstp    creature_vel_y[esi*8]
                     }
                     creature_vel_y[2 * _ESI] = _ET1;
-                    vec2_add_inplace(creature_id, (float *)(8 * _ESI + 4833100), v172);
+                    vec2_add_inplace(0, (float *)(8 * _ESI + 4833100), v171);
                   }
                   if ( perk_count_get(perk_id_plaguebearer) && plaguebearer_infection_count < 60 )
-                    sub_425D80(creature_id);
+                    sub_425D80(0);
                   __asm
                   {
                     fld     ds:flt_46F4B0
                     fdiv    creature_size[esi*8]
                   }
-                  v99 = creature_flags[2 * _ESI];
-                  if ( (v99 & 4) == 0 || (v99 & 0x40) != 0 )
+                  v98 = creature_flags[2 * _ESI];
+                  if ( (v98 & 4) == 0 || (v98 & 0x40) != 0 )
                   {
                     if ( creature_ai_mode[2 * _ESI] == 7 )
                     {
@@ -30603,16 +30599,16 @@ LABEL_88:
                       }
                       if ( (_AX & 0x4100) != 0 )
                       {
-                        projectile_spawn((float *)(8 * _ESI + 4833100), *(&creature_heading + 2 * _ESI), 9, creature_id);
+                        projectile_spawn((float *)(8 * _ESI + 4833100), *(&creature_heading + 2 * _ESI), 9, 0);
                         __asm
                         {
                           fld     dword ptr [ebp+0]
                           fadd    ds:flt_46F224
                         }
-                        v169 = sfx_shock_fire;
+                        v168 = sfx_shock_fire;
                         __asm { fstp    dword ptr [ebp+0] }
                         creature_attack_cooldown[2 * _ESI] = _ET1;
-                        sfx_play_panned(v169);
+                        sfx_play_panned(v168);
                       }
                     }
                     if ( (creature_flags[2 * _ESI] & 0x100) != 0 )
@@ -30629,10 +30625,10 @@ LABEL_88:
                           (float *)(8 * _ESI + 4833100),
                           *(&creature_heading + 2 * _ESI),
                           *(&creature_orbit_radius + 2 * _ESI),
-                          creature_id);
-                        v191 = crt_rand() & 3;
+                          0);
+                        v192 = crt_rand() & 3;
                         __asm { fild    [esp+0A0h+var_60] }
-                        v170 = sfx_plasmaminigun_fire;
+                        v169 = sfx_plasmaminigun_fire;
                         __asm
                         {
                           fmul    ds:flt_46F628
@@ -30641,7 +30637,7 @@ LABEL_88:
                           fstp    dword ptr [ebp+0]
                         }
                         creature_attack_cooldown[2 * _ESI] = _ET1;
-                        sfx_play_panned(v170);
+                        sfx_play_panned(v169);
                       }
                     }
                   }
@@ -30692,7 +30688,7 @@ LABEL_88:
                         effect_spawn_burst((float *)(8 * _ESI + 4833100), 6);
                         sfx_play_panned(sfx_ui_bonus);
                         bonus_spawn_guard = 1;
-                        creature_handle_death(creature_id, 0);
+                        creature_handle_death(0, 0);
                         bonus_spawn_guard = 0;
                       }
                     }
@@ -30713,7 +30709,7 @@ LABEL_88:
                       fnstsw  ax
                     }
                     if ( (_AX & 0x100) == 0 )
-                      goto LABEL_191;
+                      goto LABEL_190;
                     _EDX = 864 * creature_target_player[8 * _ESI];
                     __asm
                     {
@@ -30739,13 +30735,13 @@ LABEL_88:
                         }
                         if ( (_AX & 0x4100) != 0 )
                         {
-                          v139 = crt_rand() % 2;
-                          sfx_play_panned(*(&creature_type_sfx_b0 + 17 * *(&creature_type_id + 2 * _ESI) + v139));
+                          v138 = crt_rand() % 2;
+                          sfx_play_panned(*(&creature_type_sfx_b0 + 17 * *(&creature_type_id + 2 * _ESI) + v138));
                           if ( perk_count_get(perk_id_mr_melee) )
                           {
-                            v201[0] = 0.0;
-                            v201[1] = 0.0;
-                            creature_apply_damage(creature_id, 25.0, 2, v201);
+                            v202 = 0.0;
+                            v203 = 0.0;
+                            creature_apply_damage(0, 25.0, 2, &v202);
                           }
                           _ECX = 864 * creature_target_player[8 * _ESI];
                           __asm
@@ -30758,16 +30754,16 @@ LABEL_88:
                           {
                             if ( perk_count_get(perk_id_toxic_avenger) )
                             {
-                              v142 = creature_flags[2 * _ESI];
-                              LOBYTE(v142) = v142 | 3;
-                              goto LABEL_158;
+                              v141 = creature_flags[2 * _ESI];
+                              LOBYTE(v141) = v141 | 3;
+                              goto LABEL_157;
                             }
                             if ( perk_count_get(perk_id_veins_of_poison) )
                             {
-                              v142 = creature_flags[2 * _ESI];
-                              LOBYTE(v142) = v142 | 1;
-LABEL_158:
-                              creature_flags[2 * _ESI] = v142;
+                              v141 = creature_flags[2 * _ESI];
+                              LOBYTE(v141) = v141 | 1;
+LABEL_157:
+                              creature_flags[2 * _ESI] = v141;
                             }
                           }
                           player_take_damage(creature_target_player[8 * _ESI], *(&creature_contact_damage + 2 * _ESI));
@@ -30784,12 +30780,12 @@ LABEL_158:
                             fstp    [esp+94h+var_58]
                             fstp    [esp+94h+var_54]
                           }
-                          j_FUN_00452f1d(&v195);
+                          j_FUN_00452f1d(v197);
                           __asm
                           {
-                            fld     [esp+8Ch+var_58]
+                            fld     [esp+94h+var_60]
                             fmul    ds:flt_46F248
-                            fld     [esp+8Ch+var_54]
+                            fld     [esp+94h+var_5C]
                           }
                           __asm { fmul    ds:flt_46F248 }
                           _EAX = &player_pos_x[216 * creature_target_player[8 * _ESI]];
@@ -30798,10 +30794,10 @@ LABEL_158:
                             fadd    dword ptr [eax+4]
                             fxch    st(1)
                             fadd    dword ptr [eax]
-                            fstp    [esp+90h+pos]
-                            fstp    [esp+90h+var_24]
+                            fstp    [esp+98h+var_30]
+                            fstp    [esp+98h+var_2C]
                           }
-                          fx_queue_add_random(pos);
+                          fx_queue_add_random(&v202);
                           __asm
                           {
                             fld     dword ptr [ebp+0]
@@ -30812,7 +30808,7 @@ LABEL_158:
                         }
                         if ( player_plaguebearer_active[864 * creature_target_player[8 * _ESI]] )
                         {
-                          _ECX = 8 * _ESI + 4833116;
+                          _ECX = v189;
                           __asm
                           {
                             fld     dword ptr [ecx]
@@ -30820,20 +30816,20 @@ LABEL_158:
                             fnstsw  ax
                           }
                           if ( (_AX & 0x100) != 0 && plaguebearer_infection_count < 50 )
-                            creature_collision_flag[8 * _ESI] = 1;
+                            LOBYTE(creature_hitbox_size[2 * _ESI]) = 1;
                         }
                       }
                     }
                   }
                   __asm
                   {
-                    fld     [esp+8Ch+var_74]
+                    fld     [esp+94h+creature_id]
                     fcomp   ds:flt_46F4B0
                     fnstsw  ax
                   }
                   if ( (_AX & 0x100) != 0 )
                   {
-                    _EAX = 8 * _ESI + 4833132;
+                    _EAX = v184;
                     __asm
                     {
                       fld     dword ptr [eax]
@@ -30842,8 +30838,8 @@ LABEL_158:
                     }
                     if ( (_EAX & 0x4100) != 0 )
                     {
-                      _EAX = (float *)(8 * _ESI + 4833096);
-                      creature_health[2 * _ESI] = 0;
+                      _EAX = v190;
+                      *(_DWORD *)LODWORD(v189) = 0;
                       __asm
                       {
                         fld     dword ptr [eax]
@@ -30853,7 +30849,7 @@ LABEL_158:
                       *_EAX = _ET1;
                     }
                   }
-                  goto LABEL_191;
+                  goto LABEL_190;
                 }
                 __asm
                 {
@@ -30868,12 +30864,12 @@ LABEL_158:
                     fld     creature_orbit_radius[esi*8]
                     fsub    frame_dt
                   }
-                  v67 = creature_pos_y[2 * _ESI];
+                  v66 = creature_pos_y[2 * _ESI];
                   creature_target_x[2 * _ESI] = *(&creature_pos_x + 2 * _ESI);
-                  creature_target_y[2 * _ESI] = v67;
+                  creature_target_y[2 * _ESI] = v66;
                   __asm { fstp    creature_orbit_radius[esi*8] }
                   *(&creature_orbit_radius + 2 * _ESI) = _ET1;
-                  goto LABEL_78;
+                  goto LABEL_77;
                 }
                 break;
               case 6:
@@ -30905,14 +30901,14 @@ LABEL_158:
                     fstp    creature_target_y[esi*8]
                   }
                   creature_target_y[2 * _ESI] = _ET1;
-                  goto LABEL_78;
+                  goto LABEL_77;
                 }
                 break;
               default:
-                goto LABEL_78;
+                goto LABEL_77;
             }
             creature_ai_mode[2 * _ESI] = 0;
-            goto LABEL_78;
+            goto LABEL_77;
           }
         }
         else
@@ -30944,21 +30940,21 @@ LABEL_158:
               fld     [esp+8Ch+var_68]
               fcomp   ds:flt_46F228
             }
-            creature_hitbox_size[2 * _ESI] = v190;
+            creature_hitbox_size[2 * _ESI] = v191;
             __asm { fnstsw  ax }
             if ( (_AX & 0x4100) != 0 )
             {
               if ( config_fx_toggle )
-                goto LABEL_176;
-              v154 = creature_flags[2 * _ESI];
-              if ( (v154 & 4) == 0 || (v154 & 0x40) != 0 )
+                goto LABEL_175;
+              v153 = creature_flags[2 * _ESI];
+              if ( (v153 & 4) == 0 || (v153 & 0x40) != 0 )
               {
                 __asm
                 {
                   fld     creature_size[esi*8]
                   fmul    ds:flt_46F24C
                 }
-                v156 = *(&creature_heading + 2 * _ESI);
+                v155 = *(&creature_heading + 2 * _ESI);
                 rateb = *(&creature_type_id + 2 * _ESI);
                 anglea = *(&creature_size + 2 * _ESI);
                 __asm
@@ -30975,7 +30971,7 @@ LABEL_158:
                   fstp    [esp+0A0h+var_14]
                   fstp    st
                 }
-                v155 = fx_queue_add_rotated(v204, (float *)(8 * _ESI + 4833140), v156, anglea, rateb);
+                v154 = fx_queue_add_rotated(v205, (float *)(8 * _ESI + 4833140), v155, anglea, rateb);
               }
               else
               {
@@ -31000,43 +30996,15 @@ LABEL_158:
                   fstp    [esp+0A0h+var_1C]
                   fstp    st
                 }
-                v155 = fx_queue_add_rotated(v203, (float *)(8 * _ESI + 4833140), damageb, angle, 7);
+                v154 = fx_queue_add_rotated(v204, (float *)(8 * _ESI + 4833140), damageb, angle, 7);
               }
-              if ( v155 )
+              if ( v154 )
               {
-LABEL_176:
+LABEL_175:
                 ++creature_kill_count;
                 if ( !config_fx_toggle && (creature_flags[2 * _ESI] & 4) != 0 )
                 {
-                  v157 = 8;
-                  do
-                  {
-                    v192 = crt_rand() % 612;
-                    __asm
-                    {
-                      fild    [esp+94h+var_5C]
-                      fmul    ds:flt_46F300
-                      fstp    [esp+94h+angle]; angle
-                    }
-                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), angleb, 0.0);
-                    --v157;
-                  }
-                  while ( v157 );
-                  v158 = 6;
-                  do
-                  {
-                    v193 = crt_rand() % 612;
-                    __asm
-                    {
-                      fild    [esp+94h+var_5C]
-                      fmul    ds:flt_46F300
-                      fstp    [esp+94h+angle]; angle
-                    }
-                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), anglec, -0.07);
-                    --v158;
-                  }
-                  while ( v158 );
-                  v159 = 5;
+                  v156 = 8;
                   do
                   {
                     v194 = crt_rand() % 612;
@@ -31046,10 +31014,38 @@ LABEL_176:
                       fmul    ds:flt_46F300
                       fstp    [esp+94h+angle]; angle
                     }
-                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), angled, -0.12);
-                    --v159;
+                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), angleb, 0.0);
+                    --v156;
                   }
-                  while ( v159 );
+                  while ( v156 );
+                  v157 = 6;
+                  do
+                  {
+                    v195 = crt_rand() % 612;
+                    __asm
+                    {
+                      fild    [esp+94h+var_5C]
+                      fmul    ds:flt_46F300
+                      fstp    [esp+94h+angle]; angle
+                    }
+                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), anglec, -0.07);
+                    --v157;
+                  }
+                  while ( v157 );
+                  v158 = 5;
+                  do
+                  {
+                    v196 = crt_rand() % 612;
+                    __asm
+                    {
+                      fild    [esp+94h+var_5C]
+                      fmul    ds:flt_46F300
+                      fstp    [esp+94h+angle]; angle
+                    }
+                    effect_spawn_blood_splatter((float *)(8 * _ESI + 4833100), angled, -0.12);
+                    --v158;
+                  }
+                  while ( v158 );
                 }
                 _EDX = cv_bodiesFade;
                 __asm
@@ -31068,8 +31064,8 @@ LABEL_176:
             }
             else
             {
-              v162 = creature_flags[2 * _ESI];
-              if ( (v162 & 4) == 0 || (v162 & 0x40) != 0 )
+              v161 = creature_flags[2 * _ESI];
+              if ( (v161 & 4) == 0 || (v161 & 0x40) != 0 )
               {
                 __asm
                 {
@@ -31121,9 +31117,10 @@ LABEL_176:
         }
       }
     }
-LABEL_191:
-    if ( ++creature_id >= 384 )
+LABEL_190:
+    if ( ++v183 >= 384 )
       break;
+    v0 = v183;
   }
 }
 
@@ -31326,16 +31323,16 @@ void fx_queue_render()
         {
           v3 = creature_type_corpse_frame[17 * fx_rotated_effect_id[v0]];
           v4 = effect_uv4_v[2 * v3];
-          dword_4965D8 = effect_uv4[2 * v3];
-          dword_4965DC = LODWORD(v4);
+          render_scratch_f0 = effect_uv4[2 * v3];
+          render_scratch_f1 = LODWORD(v4);
           *(float *)&v76 = *(float *)&effect_uv4[2 * v3] + 0.25;
           v5 = effect_uv4_v[2 * v3] + 0.25;
-          dword_4965E0 = v76;
+          render_scratch_f2 = v76;
           *(float *)&v79 = v5;
-          dword_4965E4 = v79;
+          render_scratch_f3 = v79;
           (*(void (__thiscall **)(int, int, float, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
             grim_interface_ptr,
-            dword_4965D8,
+            render_scratch_f0,
             COERCE_FLOAT(LODWORD(v4)),
             v76,
             v79);
@@ -31350,10 +31347,10 @@ void fx_queue_render()
           (*(void (__stdcall **)(_DWORD))(*(_DWORD *)grim_interface_ptr + 252))(LODWORD(v58));
           *(float *)&v72 = *v1 + 2.0;
           v6 = v1[1] + 2.0;
-          dword_4965D8 = v72;
+          render_scratch_f0 = v72;
           *(float *)&v75 = v6;
           v7 = fx_rotated_scale[v0] * 1.04;
-          dword_4965DC = v75;
+          render_scratch_f1 = v75;
           v71 = v7;
           v38 = *(float *)&v75 + *(float *)&camera_offset_y;
           v30 = *(float *)&v72 + *(float *)&camera_offset_x;
@@ -31393,16 +31390,16 @@ void fx_queue_render()
         {
           v11 = creature_type_corpse_frame[17 * fx_rotated_effect_id[v8]];
           v12 = effect_uv4_v[2 * v11];
-          dword_4965D8 = effect_uv4[2 * v11];
-          dword_4965DC = LODWORD(v12);
+          render_scratch_f0 = effect_uv4[2 * v11];
+          render_scratch_f1 = LODWORD(v12);
           *(float *)&v77 = *(float *)&effect_uv4[2 * v11] + 0.25;
           v13 = effect_uv4_v[2 * v11] + 0.25;
-          dword_4965E0 = v77;
+          render_scratch_f2 = v77;
           *(float *)&v80 = v13;
-          dword_4965E4 = v80;
+          render_scratch_f3 = v80;
           (*(void (__thiscall **)(int, int, float, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
             grim_interface_ptr,
-            dword_4965D8,
+            render_scratch_f0,
             COERCE_FLOAT(LODWORD(v12)),
             v77,
             v80);
@@ -31501,16 +31498,16 @@ void fx_queue_render()
         {
           v19 = creature_type_corpse_frame[17 * fx_rotated_effect_id[v16]];
           v20 = effect_uv4_v[2 * v19];
-          dword_4965D8 = effect_uv4[2 * v19];
-          dword_4965DC = LODWORD(v20);
+          render_scratch_f0 = effect_uv4[2 * v19];
+          render_scratch_f1 = LODWORD(v20);
           *(float *)&v82 = *(float *)&effect_uv4[2 * v19] + 0.25;
           v21 = effect_uv4_v[2 * v19] + 0.25;
-          dword_4965E0 = v82;
+          render_scratch_f2 = v82;
           *(float *)&v84 = v21;
-          dword_4965E4 = v84;
+          render_scratch_f3 = v84;
           (*(void (__thiscall **)(int, int, float, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
             grim_interface_ptr,
-            dword_4965D8,
+            render_scratch_f0,
             COERCE_FLOAT(LODWORD(v20)),
             v82,
             v84);
@@ -31525,10 +31522,10 @@ void fx_queue_render()
           (*(void (__stdcall **)(_DWORD))(*(_DWORD *)grim_interface_ptr + 252))(LODWORD(v66));
           *(float *)&v78 = *v17 - 0.5;
           v22 = v17[1] - 0.5;
-          dword_4965D8 = v78;
+          render_scratch_f0 = v78;
           *(float *)&v81 = v22;
           v23 = v69 * fx_rotated_scale[v16];
-          dword_4965DC = v81;
+          render_scratch_f1 = v81;
           v73 = v23 * 1.064;
           v44 = *(float *)&v81 * v69 - v70;
           v33 = *(float *)&v78 * v69 - v70;
@@ -31568,16 +31565,16 @@ void fx_queue_render()
         {
           v27 = creature_type_corpse_frame[17 * fx_rotated_effect_id[v24]];
           v28 = effect_uv4_v[2 * v27];
-          dword_4965D8 = effect_uv4[2 * v27];
-          dword_4965DC = LODWORD(v28);
+          render_scratch_f0 = effect_uv4[2 * v27];
+          render_scratch_f1 = LODWORD(v28);
           *(float *)&v83 = *(float *)&effect_uv4[2 * v27] + 0.25;
           v29 = effect_uv4_v[2 * v27] + 0.25;
-          dword_4965E0 = v83;
+          render_scratch_f2 = v83;
           *(float *)&v85 = v29;
-          dword_4965E4 = v85;
+          render_scratch_f3 = v85;
           (*(void (__thiscall **)(int, int, float, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
             grim_interface_ptr,
-            dword_4965D8,
+            render_scratch_f0,
             COERCE_FLOAT(LODWORD(v28)),
             v83,
             v85);
@@ -31729,7 +31726,7 @@ int creature_spawn(float *pos, float *tint_rgba, int type_id)
 }
 
 // player_render_overlays @ 0x00428390
-// renders per-player overlays/indicators using DAT_004908** tables
+// Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0–14) and effect_uv8[frame+0x10] (16–30) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[ftol(death_timer)] (32–51) with 0x34 fallback, also with shadow+main passes.
 void player_render_overlays()
 {
   int v0; // esi
@@ -31821,71 +31818,69 @@ void player_render_overlays()
   float v86; // [esp+2CCh] [ebp-44h]
   int v87; // [esp+2CCh] [ebp-44h]
   int v88; // [esp+2CCh] [ebp-44h]
-  int v89; // [esp+2D0h] [ebp-40h]
-  float v90; // [esp+2D0h] [ebp-40h]
-  int v91; // [esp+2D0h] [ebp-40h]
+  int v89; // [esp+2CCh] [ebp-44h]
+  int v90; // [esp+2D0h] [ebp-40h]
+  float v91; // [esp+2D0h] [ebp-40h]
   int v92; // [esp+2D0h] [ebp-40h]
-  float v93; // [esp+2D0h] [ebp-40h]
-  int v94; // [esp+2D0h] [ebp-40h]
+  int v93; // [esp+2D0h] [ebp-40h]
+  float v94; // [esp+2D0h] [ebp-40h]
   int v95; // [esp+2D0h] [ebp-40h]
-  float v96; // [esp+2D0h] [ebp-40h]
+  int v96; // [esp+2D0h] [ebp-40h]
   float v97; // [esp+2D0h] [ebp-40h]
-  int v98; // [esp+2D0h] [ebp-40h]
+  float v98; // [esp+2D0h] [ebp-40h]
   int v99; // [esp+2D0h] [ebp-40h]
   int v100; // [esp+2D0h] [ebp-40h]
   int v101; // [esp+2D0h] [ebp-40h]
-  float v102; // [esp+2D0h] [ebp-40h]
+  int v102; // [esp+2D0h] [ebp-40h]
   float v103; // [esp+2D0h] [ebp-40h]
   float v104; // [esp+2D0h] [ebp-40h]
   float v105; // [esp+2D0h] [ebp-40h]
-  int v106; // [esp+2D0h] [ebp-40h]
+  float v106; // [esp+2D0h] [ebp-40h]
   int v107; // [esp+2D0h] [ebp-40h]
   int v108; // [esp+2D0h] [ebp-40h]
-  float v109; // [esp+2D0h] [ebp-40h]
+  int v109; // [esp+2D0h] [ebp-40h]
   float v110; // [esp+2D0h] [ebp-40h]
-  int v111; // [esp+2D0h] [ebp-40h]
+  float v111; // [esp+2D0h] [ebp-40h]
   int v112; // [esp+2D0h] [ebp-40h]
   int v113; // [esp+2D0h] [ebp-40h]
-  float v114; // [esp+2E4h] [ebp-2Ch]
-  float v115; // [esp+2E8h] [ebp-28h]
+  int v114; // [esp+2D0h] [ebp-40h]
+  float v115; // [esp+2E4h] [ebp-2Ch]
   float v116; // [esp+2E8h] [ebp-28h]
-  float v117; // [esp+2ECh] [ebp-24h]
+  float v117; // [esp+2E8h] [ebp-28h]
   float v118; // [esp+2ECh] [ebp-24h]
-  int v119; // [esp+2ECh] [ebp-24h]
+  float v119; // [esp+2ECh] [ebp-24h]
   int v120; // [esp+2ECh] [ebp-24h]
   int v121; // [esp+2ECh] [ebp-24h]
-  float v122; // [esp+2ECh] [ebp-24h]
-  int v123; // [esp+2F0h] [ebp-20h]
+  int v122; // [esp+2ECh] [ebp-24h]
+  float v123; // [esp+2ECh] [ebp-24h]
   float v124; // [esp+2F0h] [ebp-20h]
   float v125; // [esp+2F0h] [ebp-20h]
-  float v126; // [esp+2F0h] [ebp-20h]
-  int v127; // [esp+2F4h] [ebp-1Ch]
-  float v128; // [esp+2F4h] [ebp-1Ch]
+  float v126; // [esp+2F4h] [ebp-1Ch]
+  float v127; // [esp+2F8h] [ebp-18h]
+  int v128; // [esp+2F8h] [ebp-18h]
   float v129; // [esp+2F8h] [ebp-18h]
-  int v130; // [esp+2F8h] [ebp-18h]
+  float v130; // [esp+2F8h] [ebp-18h]
   float v131; // [esp+2F8h] [ebp-18h]
-  float v132; // [esp+2F8h] [ebp-18h]
-  float v133; // [esp+2F8h] [ebp-18h]
+  float v132; // [esp+2FCh] [ebp-14h]
+  float v133; // [esp+2FCh] [ebp-14h]
   float v134; // [esp+2FCh] [ebp-14h]
-  float v135; // [esp+2FCh] [ebp-14h]
+  int v135; // [esp+2FCh] [ebp-14h]
   float v136; // [esp+2FCh] [ebp-14h]
-  int v137; // [esp+2FCh] [ebp-14h]
+  float v137; // [esp+2FCh] [ebp-14h]
   float v138; // [esp+2FCh] [ebp-14h]
   float v139; // [esp+2FCh] [ebp-14h]
-  float v140; // [esp+2FCh] [ebp-14h]
-  float v141; // [esp+2FCh] [ebp-14h]
-  int v142; // [esp+300h] [ebp-10h]
+  int v140; // [esp+300h] [ebp-10h]
+  float v141; // [esp+300h] [ebp-10h]
+  float v142; // [esp+300h] [ebp-10h]
   float v143; // [esp+300h] [ebp-10h]
-  float v144; // [esp+300h] [ebp-10h]
-  float v145; // [esp+300h] [ebp-10h]
-  int v146; // [esp+304h] [ebp-Ch]
+  int v144; // [esp+304h] [ebp-Ch]
+  float v145; // [esp+304h] [ebp-Ch]
+  float v146; // [esp+304h] [ebp-Ch]
   float v147; // [esp+304h] [ebp-Ch]
-  float v148; // [esp+304h] [ebp-Ch]
-  float v149; // [esp+304h] [ebp-Ch]
-  float v150; // [esp+308h] [ebp-8h] BYREF
-  float v151; // [esp+30Ch] [ebp-4h]
+  float v148; // [esp+308h] [ebp-8h] BYREF
+  float v149; // [esp+30Ch] [ebp-4h]
 
-  v114 = ui_transition_alpha;
+  v115 = ui_transition_alpha;
   if ( !byte_48727C
     && ui_transition_alpha > 0.0
     && game_state_id != 20
@@ -31902,19 +31897,19 @@ void player_render_overlays()
         2,
         v53,
         v73,
-        v89);
+        v90);
       (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
         grim_interface_ptr,
         particles_texture,
         0);
       effect_select_texture(16);
-      v90 = ((sin(flt_47EA4C) + 1.0) * 0.1875 + 0.25) * v114;
+      v91 = ((sin(game_time_s) + 1.0) * 0.1875 + 0.25) * v115;
       (*(void (__thiscall **)(int, int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
         1050253722,
         1058642330,
         1050253722,
-        LODWORD(v90));
+        LODWORD(v91));
       (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 252))(grim_interface_ptr, 0);
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
       v54 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index] - 50.0;
@@ -31936,14 +31931,14 @@ void player_render_overlays()
       1,
       v52,
       v74,
-      v91);
+      v92);
     (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
       grim_interface_ptr,
       20,
       6,
       v55,
       v75,
-      v92);
+      v93);
     if ( *(float *)&player_health[216 * render_overlay_player_index] <= 0.0 )
     {
       if ( player_state_table[216 * render_overlay_player_index] >= 0.0 )
@@ -31952,44 +31947,44 @@ void player_render_overlays()
         v0 = 52;
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
       v1 = effect_uv8_v[2 * v0];
-      dword_4965D8 = effect_uv8[2 * v0];
-      dword_4965DC = LODWORD(v1);
-      v150 = *(float *)&effect_uv8[2 * v0] + 0.125;
+      render_scratch_f0 = effect_uv8[2 * v0];
+      render_scratch_f1 = LODWORD(v1);
+      v148 = *(float *)&effect_uv8[2 * v0] + 0.125;
       v2 = effect_uv8_v[2 * v0] + 0.125;
-      dword_4965E0 = LODWORD(v150);
-      v151 = v2;
-      dword_4965E4 = LODWORD(v151);
+      render_scratch_f2 = LODWORD(v148);
+      v149 = v2;
+      render_scratch_f3 = LODWORD(v149);
       (*(void (__thiscall **)(int, int, float, float, float))(*(_DWORD *)grim_interface_ptr + 256))(
         grim_interface_ptr,
-        dword_4965D8,
+        render_scratch_f0,
         COERCE_FLOAT(LODWORD(v1)),
-        COERCE_FLOAT(LODWORD(v150)),
-        COERCE_FLOAT(LODWORD(v151)));
-      v93 = v114 * 0.34999999;
+        COERCE_FLOAT(LODWORD(v148)),
+        COERCE_FLOAT(LODWORD(v149)));
+      v94 = v115 * 0.34999999;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
         1065353216,
         1065353216,
         1065353216,
-        LODWORD(v93));
+        LODWORD(v94));
       (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
         grim_interface_ptr,
         player_aim_heading[216 * render_overlay_player_index]);
       v3 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5;
-      v150 = v3;
-      v134 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-      *(float *)&v142 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-      dword_4965D8 = v142;
-      *(float *)&v146 = v134 - v3;
+      v148 = v3;
+      v132 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+      *(float *)&v140 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+      render_scratch_f0 = v140;
+      *(float *)&v144 = v132 - v3;
       v4 = *(float *)&player_size[216 * render_overlay_player_index] * 1.03;
-      dword_4965DC = v146;
-      v117 = v4;
-      v56 = *(float *)&v146 + 1.0;
-      v45 = *(float *)&v142 + 1.0;
+      render_scratch_f1 = v144;
+      v118 = v4;
+      v56 = *(float *)&v144 + 1.0;
+      v45 = *(float *)&v140 + 1.0;
       (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_interface_ptr + 284))(
         LODWORD(v45),
         LODWORD(v56),
-        LODWORD(v117),
-        LODWORD(v117));
+        LODWORD(v118),
+        LODWORD(v118));
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
@@ -31997,17 +31992,17 @@ void player_render_overlays()
         5,
         v57,
         v76,
-        v94);
+        v95);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         20,
         6,
         v58,
         v77,
-        v95);
+        v96);
       if ( config_player_count == 1 )
       {
-        v96 = v114;
+        v97 = v115;
         v78 = 1065353216;
         v5 = *(_DWORD *)grim_interface_ptr;
         v59 = 1065353216;
@@ -32015,19 +32010,19 @@ void player_render_overlays()
       else
       {
         v5 = *(_DWORD *)grim_interface_ptr;
-        v96 = v114;
+        v97 = v115;
         if ( !render_overlay_player_index )
         {
           v78 = 1065353216;
           v59 = 1050253722;
           v46 = 1050253722;
 LABEL_19:
-          (*(void (__stdcall **)(int, int, int, float))(v5 + 276))(v46, v59, v78, COERCE_FLOAT(LODWORD(v96)));
+          (*(void (__stdcall **)(int, int, int, float))(v5 + 276))(v46, v59, v78, COERCE_FLOAT(LODWORD(v97)));
           (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
           (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 284))(
             grim_interface_ptr,
-            dword_4965D8,
-            dword_4965DC,
+            render_scratch_f0,
+            render_scratch_f1,
             player_size[216 * render_overlay_player_index],
             player_size[216 * render_overlay_player_index]);
           (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
@@ -32041,85 +32036,85 @@ LABEL_19:
     }
     v6 = *(float *)&player_aim_heading[216 * render_overlay_player_index] + 1.5707964;
     v7 = (__int64)(*((float *)&player_move_phase + 216 * render_overlay_player_index) + 0.5);
-    v143 = cos(v6) * *(float *)&player_muzzle_flash_alpha[216 * render_overlay_player_index] * 12.0;
-    v147 = sin(v6) * *(float *)&player_muzzle_flash_alpha[216 * render_overlay_player_index] * 12.0;
-    v97 = v114 * 0.34999999;
+    v141 = cos(v6) * *(float *)&player_muzzle_flash_alpha[216 * render_overlay_player_index] * 12.0;
+    v145 = sin(v6) * *(float *)&player_muzzle_flash_alpha[216 * render_overlay_player_index] * 12.0;
+    v98 = v115 * 0.34999999;
     (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
       1065353216,
       1065353216,
       1065353216,
-      LODWORD(v97));
+      LODWORD(v98));
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
       grim_interface_ptr,
       player_heading[216 * render_overlay_player_index]);
     v8 = effect_uv8_v[2 * v7];
     v9 = (int *)(8 * v7 + 4788240);
-    dword_4965D8 = effect_uv8[2 * v7];
-    dword_4965DC = LODWORD(v8);
-    v150 = *(float *)&effect_uv8[2 * v7] + 0.125;
+    render_scratch_f0 = effect_uv8[2 * v7];
+    render_scratch_f1 = LODWORD(v8);
+    v148 = *(float *)&effect_uv8[2 * v7] + 0.125;
     v10 = effect_uv8_v[2 * v7] + 0.125;
-    dword_4965E0 = LODWORD(v150);
-    v151 = v10;
-    dword_4965E4 = LODWORD(v151);
+    render_scratch_f2 = LODWORD(v148);
+    v149 = v10;
+    render_scratch_f3 = LODWORD(v149);
     (*(void (__thiscall **)(int, int, float, float, float))(*(_DWORD *)grim_interface_ptr + 256))(
       grim_interface_ptr,
-      dword_4965D8,
+      render_scratch_f0,
       COERCE_FLOAT(LODWORD(v8)),
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)));
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)));
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
     v11 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5 - 2.0;
-    v150 = v11;
-    v135 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-    *(float *)&v123 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-    dword_4965D8 = v123;
-    *(float *)&v127 = v135 - v11;
+    v148 = v11;
+    v133 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+    v124 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+    render_scratch_f0 = LODWORD(v124);
+    v126 = v133 - v11;
     v12 = *(float *)&player_size[216 * render_overlay_player_index] * 1.02;
-    dword_4965DC = v127;
-    v129 = v12;
-    v60 = *(float *)&v127 + 1.0;
-    v47 = *(float *)&v123 + 1.0;
+    render_scratch_f1 = LODWORD(v126);
+    v127 = v12;
+    v60 = v126 + 1.0;
+    v47 = v124 + 1.0;
     (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_interface_ptr + 284))(
       LODWORD(v47),
       LODWORD(v60),
-      LODWORD(v129),
-      LODWORD(v129));
+      LODWORD(v127),
+      LODWORD(v127));
     v13 = dword_491090[2 * v7];
     v14 = dword_491094[2 * v7];
     v15 = (float *)(8 * v7 + 4788368);
-    dword_4965D8 = v13;
-    dword_4965DC = v14;
-    v150 = *v15 + 0.125;
+    render_scratch_f0 = v13;
+    render_scratch_f1 = v14;
+    v148 = *v15 + 0.125;
     v16 = v15[1] + 0.125;
-    dword_4965E0 = LODWORD(v150);
-    v151 = v16;
-    dword_4965E4 = LODWORD(v151);
+    render_scratch_f2 = LODWORD(v148);
+    v149 = v16;
+    render_scratch_f3 = LODWORD(v149);
     (*(void (__thiscall **)(int, int, int, float, float))(*(_DWORD *)grim_interface_ptr + 256))(
       grim_interface_ptr,
       v13,
       v14,
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)));
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)));
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
       grim_interface_ptr,
       player_aim_heading[216 * render_overlay_player_index]);
     v17 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5;
-    v150 = v17;
-    v136 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-    v150 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-    *(float *)&v130 = v150 + v143;
-    dword_4965D8 = v130;
-    *(float *)&v137 = v136 - v17 + v147;
+    v148 = v17;
+    v134 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+    v148 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+    *(float *)&v128 = v148 + v141;
+    render_scratch_f0 = v128;
+    *(float *)&v135 = v134 - v17 + v145;
     v18 = *(float *)&player_size[216 * render_overlay_player_index] * 1.03;
-    dword_4965DC = v137;
-    v118 = v18;
-    v61 = *(float *)&v137 + 1.0;
-    v48 = *(float *)&v130 + 1.0;
+    render_scratch_f1 = v135;
+    v119 = v18;
+    v61 = *(float *)&v135 + 1.0;
+    v48 = *(float *)&v128 + 1.0;
     (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_interface_ptr + 284))(
       LODWORD(v48),
       LODWORD(v61),
-      LODWORD(v118),
-      LODWORD(v118));
+      LODWORD(v119),
+      LODWORD(v119));
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
       grim_interface_ptr,
@@ -32131,57 +32126,57 @@ LABEL_19:
       5,
       v62,
       v79,
-      v98);
+      v99);
     (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
       grim_interface_ptr,
       20,
       6,
       v63,
       v80,
-      v99);
+      v100);
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
     (*(void (__thiscall **)(int, int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
       grim_interface_ptr,
       1065353216,
       1065353216,
       1065353216,
-      COERCE_FLOAT(LODWORD(v114)));
+      COERCE_FLOAT(LODWORD(v115)));
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
       grim_interface_ptr,
       player_heading[216 * render_overlay_player_index]);
     v19 = v9[1];
-    dword_4965D8 = *v9;
-    dword_4965DC = v19;
-    v150 = *(float *)v9 + 0.125;
-    v151 = *((float *)v9 + 1) + 0.125;
-    dword_4965E0 = LODWORD(v150);
-    dword_4965E4 = LODWORD(v151);
+    render_scratch_f0 = *v9;
+    render_scratch_f1 = v19;
+    v148 = *(float *)v9 + 0.125;
+    v149 = *((float *)v9 + 1) + 0.125;
+    render_scratch_f2 = LODWORD(v148);
+    render_scratch_f3 = LODWORD(v149);
     (*(void (__thiscall **)(int, int, int, float, float))(*(_DWORD *)grim_interface_ptr + 256))(
       grim_interface_ptr,
-      dword_4965D8,
+      render_scratch_f0,
       v19,
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)));
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)));
     v20 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5;
-    v119 = player_size[216 * render_overlay_player_index];
-    v150 = v20;
-    v138 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-    v150 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-    dword_4965D8 = LODWORD(v150);
-    v151 = v138 - v20;
-    dword_4965DC = LODWORD(v151);
+    v120 = player_size[216 * render_overlay_player_index];
+    v148 = v20;
+    v136 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+    v148 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+    render_scratch_f0 = LODWORD(v148);
+    v149 = v136 - v20;
+    render_scratch_f1 = LODWORD(v149);
     (*(void (__thiscall **)(int, float, float, int, int))(*(_DWORD *)grim_interface_ptr + 284))(
       grim_interface_ptr,
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)),
-      v119,
-      v119);
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)),
+      v120,
+      v120);
     (*(void (__thiscall **)(int, int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
       grim_interface_ptr,
       1065353216,
       1065353216,
       1065353216,
-      COERCE_FLOAT(LODWORD(v114)));
+      COERCE_FLOAT(LODWORD(v115)));
     if ( config_player_count > 1 )
     {
       if ( render_overlay_player_index )
@@ -32190,47 +32185,47 @@ LABEL_19:
           1065353216,
           1057803469,
           1051931443,
-          COERCE_FLOAT(LODWORD(v114)));
+          COERCE_FLOAT(LODWORD(v115)));
       else
         (*(void (__thiscall **)(int, int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
           grim_interface_ptr,
           1050253722,
           1050253722,
           1065353216,
-          COERCE_FLOAT(LODWORD(v114)));
+          COERCE_FLOAT(LODWORD(v115)));
     }
     v21 = *((_DWORD *)v15 + 1);
-    dword_4965D8 = *(_DWORD *)v15;
-    dword_4965DC = v21;
-    v150 = *v15 + 0.125;
+    render_scratch_f0 = *(_DWORD *)v15;
+    render_scratch_f1 = v21;
+    v148 = *v15 + 0.125;
     v22 = v15[1] + 0.125;
-    dword_4965E0 = LODWORD(v150);
-    v151 = v22;
-    dword_4965E4 = LODWORD(v151);
+    render_scratch_f2 = LODWORD(v148);
+    v149 = v22;
+    render_scratch_f3 = LODWORD(v149);
     (*(void (__thiscall **)(int, int, int, float, float))(*(_DWORD *)grim_interface_ptr + 256))(
       grim_interface_ptr,
-      dword_4965D8,
+      render_scratch_f0,
       v21,
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)));
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)));
     (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
       grim_interface_ptr,
       player_aim_heading[216 * render_overlay_player_index]);
     v23 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5;
-    v120 = player_size[216 * render_overlay_player_index];
-    v150 = v23;
-    v139 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-    v150 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-    v150 = v150 + v143;
-    dword_4965D8 = LODWORD(v150);
-    v151 = v139 - v23 + v147;
-    dword_4965DC = LODWORD(v151);
+    v121 = player_size[216 * render_overlay_player_index];
+    v148 = v23;
+    v137 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+    v148 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+    v148 = v148 + v141;
+    render_scratch_f0 = LODWORD(v148);
+    v149 = v137 - v23 + v145;
+    render_scratch_f1 = LODWORD(v149);
     (*(void (__thiscall **)(int, float, float, int, int))(*(_DWORD *)grim_interface_ptr + 284))(
       grim_interface_ptr,
-      COERCE_FLOAT(LODWORD(v150)),
-      COERCE_FLOAT(LODWORD(v151)),
-      v120,
-      v120);
+      COERCE_FLOAT(LODWORD(v148)),
+      COERCE_FLOAT(LODWORD(v149)),
+      v121,
+      v121);
     (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     v24 = render_overlay_player_index;
     if ( *(float *)&player_shield_timer[216 * render_overlay_player_index] > 0.0 )
@@ -32241,66 +32236,66 @@ LABEL_19:
         5,
         v64,
         v81,
-        v100);
+        v101);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         20,
         2,
         v65,
         v82,
-        v101);
+        v102);
       (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
         grim_interface_ptr,
         particles_texture,
         0);
       effect_select_texture(2);
       v25 = (float *)&player_shield_timer[216 * render_overlay_player_index];
-      v26 = (sin(flt_47EA4C) + 1.0) * 0.25 + *v25;
+      v26 = (sin(game_time_s) + 1.0) * 0.25 + *v25;
       if ( *v25 < 1.0 )
         v26 = v26 * *v25;
       if ( v26 > 1.0 )
         v26 = 1.0;
-      v131 = v26 * v114;
-      v102 = v131 * 0.40000001;
+      v129 = v26 * v115;
+      v103 = v129 * 0.40000001;
       (*(void (__thiscall **)(int, int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
         1052161719,
         1060418741,
         1065353216,
-        LODWORD(v102));
+        LODWORD(v103));
       v27 = *(_DWORD *)grim_interface_ptr;
-      v115 = sin(flt_47EA4C * 3.0) + 17.5;
+      v116 = sin(game_time_s * 3.0) + 17.5;
       v28 = *(float *)&player_aim_heading[216 * render_overlay_player_index] - 1.5707964;
-      v150 = cos(v28) * 3.0;
-      v151 = sin(v28) * 3.0;
-      v103 = flt_47EA4C + flt_47EA4C;
-      (*(void (__stdcall **)(_DWORD))(v27 + 252))(LODWORD(v103));
+      v148 = cos(v28) * 3.0;
+      v149 = sin(v28) * 3.0;
+      v104 = game_time_s + game_time_s;
+      (*(void (__stdcall **)(_DWORD))(v27 + 252))(LODWORD(v104));
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
-      v124 = v115 + v115;
-      v66 = v151 + *(float *)&player_pos_y[216 * render_overlay_player_index] + *(float *)&camera_offset_y - v115;
-      v49 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v115 + v150;
+      v125 = v116 + v116;
+      v66 = v149 + *(float *)&player_pos_y[216 * render_overlay_player_index] + *(float *)&camera_offset_y - v116;
+      v49 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v116 + v148;
       (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_interface_ptr + 284))(
         LODWORD(v49),
         LODWORD(v66),
-        LODWORD(v124),
-        LODWORD(v124));
-      v104 = v131 * 0.30000001;
+        LODWORD(v125),
+        LODWORD(v125));
+      v105 = v129 * 0.30000001;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
         1052161719,
         1060418741,
         1065353216,
-        LODWORD(v104));
-      v116 = sin(flt_47EA4C * 3.0) * 4.0 + 24.0;
-      v105 = flt_47EA4C * -2.0;
-      (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 252))(grim_interface_ptr, LODWORD(v105));
-      v125 = v116 + v116;
-      v67 = v151 + *(float *)&player_pos_y[216 * render_overlay_player_index] + *(float *)&camera_offset_y - v116;
-      v50 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v116 + v150;
-      (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_interface_ptr + 284))(
+        LODWORD(v105));
+      v117 = sin(game_time_s * 3.0) * 4.0 + 24.0;
+      v106 = game_time_s * -2.0;
+      (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 252))(grim_interface_ptr, LODWORD(v106));
+      v124 = v117 + v117;
+      v67 = v149 + *(float *)&player_pos_y[216 * render_overlay_player_index] + *(float *)&camera_offset_y - v117;
+      v50 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v117 + v148;
+      (*(void (__stdcall **)(_DWORD, _DWORD, float, float))(*(_DWORD *)grim_interface_ptr + 284))(
         LODWORD(v50),
         LODWORD(v67),
-        LODWORD(v125),
-        LODWORD(v125));
+        COERCE_FLOAT(LODWORD(v124)),
+        COERCE_FLOAT(LODWORD(v124)));
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
@@ -32308,16 +32303,16 @@ LABEL_19:
         6,
         v68,
         v83,
-        v106);
+        v107);
       v24 = render_overlay_player_index;
     }
     if ( (byte_4D7A94[124 * player_weapon_id[216 * v24]] & 8) == 0 )
     {
       v29 = *(float *)&player_aim_heading[216 * v24] + 1.5707964;
       v30 = cos(v29);
-      v144 = v30 * *(float *)&player_muzzle_flash_alpha[216 * v24] * 12.0 - v30 * 21.0;
+      v142 = v30 * *(float *)&player_muzzle_flash_alpha[216 * v24] * 12.0 - v30 * 21.0;
       v31 = sin(v29);
-      v148 = v31 * *(float *)&player_muzzle_flash_alpha[216 * v24] * 12.0 - v31 * 21.0;
+      v146 = v31 * *(float *)&player_muzzle_flash_alpha[216 * v24] * 12.0 - v31 * 21.0;
       (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
         grim_interface_ptr,
         dword_48F7E0,
@@ -32328,14 +32323,14 @@ LABEL_19:
         2,
         v64,
         v84,
-        v107);
+        v108);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         20,
         2,
         v69,
         v85,
-        v108);
+        v109);
       (*(void (__thiscall **)(int, _DWORD, _DWORD, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
         grim_interface_ptr,
         0,
@@ -32345,12 +32340,12 @@ LABEL_19:
       v32 = *(float *)&player_muzzle_flash_alpha[216 * render_overlay_player_index] * 0.80000001;
       if ( v32 > 1.0 )
         v32 = 1.0;
-      v109 = v32 * v114;
+      v110 = v32 * v115;
       (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
         1065353216,
         1065353216,
         1065353216,
-        LODWORD(v109));
+        LODWORD(v110));
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
       (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 252))(
         grim_interface_ptr,
@@ -32359,39 +32354,39 @@ LABEL_19:
       if ( (byte_4D7A94[124 * player_weapon_id[216 * render_overlay_player_index]] & 4) != 0 )
       {
         v34 = v33 * 0.25;
-        v150 = v34;
-        v140 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-        v150 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-        v150 = v150 + v144;
-        dword_4965D8 = LODWORD(v150);
-        v151 = v140 - v34 + v148;
+        v148 = v34;
+        v138 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+        v148 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+        v148 = v148 + v142;
+        render_scratch_f0 = LODWORD(v148);
+        v149 = v138 - v34 + v146;
         v35 = *(float *)&player_size[216 * render_overlay_player_index] * 0.5;
-        dword_4965DC = LODWORD(v151);
+        render_scratch_f1 = LODWORD(v149);
         v36 = *(_DWORD *)grim_interface_ptr;
-        v132 = v35;
-        v110 = v132;
-        v86 = v132;
+        v130 = v35;
+        v111 = v130;
+        v86 = v130;
       }
       else
       {
         v37 = v33 * 0.5;
-        v121 = player_size[216 * render_overlay_player_index];
-        v150 = v37;
-        v110 = *(float *)&v121;
-        v86 = *(float *)&v121;
-        v141 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
-        v150 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v150;
-        v150 = v150 + v144;
-        dword_4965D8 = LODWORD(v150);
-        v151 = v141 - v37 + v148;
-        dword_4965DC = LODWORD(v151);
+        v122 = player_size[216 * render_overlay_player_index];
+        v148 = v37;
+        v111 = *(float *)&v122;
+        v86 = *(float *)&v122;
+        v139 = *(float *)&camera_offset_y + *(float *)&player_pos_y[216 * render_overlay_player_index];
+        v148 = *(float *)&camera_offset_x + *(float *)&player_pos_x[216 * render_overlay_player_index] - v148;
+        v148 = v148 + v142;
+        render_scratch_f0 = LODWORD(v148);
+        v149 = v139 - v37 + v146;
+        render_scratch_f1 = LODWORD(v149);
         v36 = *(_DWORD *)grim_interface_ptr;
       }
       (*(void (__stdcall **)(float, float, float, float))(v36 + 284))(
-        COERCE_FLOAT(LODWORD(v150)),
-        COERCE_FLOAT(LODWORD(v151)),
+        COERCE_FLOAT(LODWORD(v148)),
+        COERCE_FLOAT(LODWORD(v149)),
         COERCE_FLOAT(LODWORD(v86)),
-        COERCE_FLOAT(LODWORD(v110)));
+        COERCE_FLOAT(LODWORD(v111)));
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 240))(grim_interface_ptr);
     }
     if ( perk_count_get(perk_id) )
@@ -32402,14 +32397,14 @@ LABEL_19:
         5,
         v64,
         v81,
-        v111);
+        v112);
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         20,
         2,
         v70,
         v87,
-        v112);
+        v113);
       (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 196))(
         grim_interface_ptr,
         projectile_texture,
@@ -32428,36 +32423,36 @@ LABEL_19:
             v41 = *(&creature_pos_x + 38 * *v39) - *((float *)v39 - 195);
             if ( sqrt(v40 * v40 + v41 * v41) <= 80.0 )
             {
-              v145 = *(&creature_pos_x + 38 * *v39) - *((float *)v39 - 195);
+              v143 = *(&creature_pos_x + 38 * *v39) - *((float *)v39 - 195);
               v42 = creature_pos_y[38 * *v39] - *((float *)v39 - 194);
-              v150 = v145;
-              v149 = v42;
-              v151 = v149;
-              v133 = sqrt(v149 * v149 + v145 * v145);
-              j_FUN_00452f1d(&v150);
-              v126 = *(float *)&camera_offset_x + *((float *)v39 - 195) - 16.0;
-              v128 = *(float *)&camera_offset_y + *((float *)v39 - 194) - 16.0;
-              (*(void (__stdcall **)(int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
+              v148 = v143;
+              v147 = v42;
+              v149 = v147;
+              v131 = sqrt(v147 * v147 + v143 * v143);
+              j_FUN_00452f1d(&v148);
+              (*(void (__stdcall **)(int, int, int, float, int, float *))(*(_DWORD *)grim_interface_ptr + 276))(
                 1056964608,
                 1058642330,
                 1065353216,
-                COERCE_FLOAT(LODWORD(v114)));
-              v122 = 0.0;
-              if ( v133 > 0.0 )
+                COERCE_FLOAT(LODWORD(v115)),
+                v88,
+                &v148);
+              v123 = 0.0;
+              if ( v131 > 0.0 )
               {
                 do
                 {
-                  v71 = v151 * v122 + v128;
-                  v51 = v150 * v122 + v126;
+                  v71 = v149 * v123 + v126;
+                  v51 = v148 * v123 + v124;
                   (*(void (__stdcall **)(_DWORD, _DWORD, int, int))(*(_DWORD *)grim_interface_ptr + 284))(
                     LODWORD(v51),
                     LODWORD(v71),
                     1107296256,
                     1107296256);
-                  v43 = v122 + 8.0;
-                  v122 = v43;
+                  v43 = v123 + 8.0;
+                  v123 = v43;
                 }
-                while ( v43 < v133 );
+                while ( v43 < v131 );
               }
             }
           }
@@ -32474,14 +32469,14 @@ LABEL_19:
       5,
       v64,
       v81,
-      v111);
+      v112);
     (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
       grim_interface_ptr,
       20,
       6,
       v72,
-      v88,
-      v113);
+      v89,
+      v114);
   }
 }
 
@@ -33561,7 +33556,7 @@ void game_startup_init_prelude()
   DWORD Type; // [esp+54h] [ebp-Ch] BYREF
   LARGE_INTEGER PerformanceCount; // [esp+58h] [ebp-8h] BYREF
 
-  dword_4AAEE4 = strdup_malloc(szPassword);
+  dword_4AAEE4 = strdup_malloc(s_empty_string);
   (*(void (__thiscall **)(int, int, char))(*(_DWORD *)grim_interface_ptr + 32))(grim_interface_ptr, 18, 1);
   (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
     grim_interface_ptr,
@@ -33611,7 +33606,7 @@ LABEL_10:
     v0,
     v3,
     v6,
-    szPassword);
+    s_empty_string);
   PerformanceCount.QuadPart = local_system_time.wMilliseconds;
   QueryPerformanceCounter(&PerformanceCount);
   crt_srand(PerformanceCount.LowPart);
@@ -33756,8 +33751,8 @@ void game_startup_init()
     crt_beginthread(sub_42B250, 0, 0);
     byte_4AAF86 = 0;
     byte_4AAF9C = 1;
-    if ( flt_4AAF90 > 0.5 )
-      flt_4AAF90 = 0.5;
+    if ( startup_splash_timer > 0.5 )
+      startup_splash_timer = 0.5;
   }
   if ( byte_4AAF8C && byte_4AAF9D )
   {
@@ -33773,7 +33768,7 @@ void game_startup_init()
         1065353216);
       audio_update();
       console_update(SLODWORD(console_state));
-      FUN_00401dd0(console_statea);
+      console_render(console_statea);
       if ( *(float *)(cv_showFPS + 12) != 0.0 )
       {
         (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -33812,7 +33807,7 @@ void game_startup_init()
         (*(void (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, 56);
       return;
     }
-    if ( flt_4AAF90 > 14.0 )
+    if ( startup_splash_timer > 14.0 )
     {
       (*(void (__thiscall **)(int, int, int, int, int, void (*)()))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
@@ -33860,7 +33855,7 @@ void game_startup_init()
       if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 41) )
         console_set_open(console_open_flag == 0);
       dword_47EA48 = LODWORD(frame_dt);
-      flt_47EA4C = flt_47EA4C + frame_dt;
+      game_time_s = game_time_s + frame_dt;
       (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_interface_ptr + 44))(
         grim_interface_ptr,
         0,
@@ -33871,7 +33866,7 @@ void game_startup_init()
       {
 LABEL_81:
         console_update(SLODWORD(console_state));
-        FUN_00401dd0(console_stateb);
+        console_render(console_stateb);
         if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, 16)
           && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, 56)
           || byte_47EA50 )
@@ -33882,7 +33877,7 @@ LABEL_81:
       }
       if ( !(unsigned __int8)sfx_is_unmuted(music_track_intro_id) )
         sfx_play_exclusive(music_track_intro_id);
-      flt_4AAF90 = frame_dt * 1.1 + flt_4AAF90;
+      startup_splash_timer = frame_dt * 1.1 + startup_splash_timer;
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         21,
@@ -33890,13 +33885,18 @@ LABEL_81:
         v52,
         v63,
         v71);
-      flt_4AAF90 = flt_4AAF90 - 2.0;
+      startup_splash_timer = startup_splash_timer - 2.0;
       if ( byte_4AAF94 )
       {
-        if ( flt_4AAF90 >= 1.0 && (flt_4AAF90 < 5.0 || flt_4AAF90 >= 7.0 && flt_4AAF90 < 11.0) )
-          flt_4AAF90 = frame_dt * 4.0 + flt_4AAF90;
+        if ( startup_splash_timer >= 1.0
+          && (startup_splash_timer < 5.0 || startup_splash_timer >= 7.0 && startup_splash_timer < 11.0) )
+        {
+          startup_splash_timer = frame_dt * 4.0 + startup_splash_timer;
+        }
         else
-          flt_4AAF90 = 16.0;
+        {
+          startup_splash_timer = 16.0;
+        }
       }
       v9 = 64;
       (*(void (__thiscall **)(int, _DWORD, _DWORD, int, int))(*(_DWORD *)grim_interface_ptr + 256))(
@@ -33906,9 +33906,9 @@ LABEL_81:
         1065353216,
         1065353216);
       (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 252))(grim_interface_ptr, 0);
-      if ( flt_4AAF90 <= 1.0 || flt_4AAF90 >= 5.0 )
+      if ( startup_splash_timer <= 1.0 || startup_splash_timer >= 5.0 )
       {
-        if ( flt_4AAF90 <= 6.0 )
+        if ( startup_splash_timer <= 6.0 )
           goto LABEL_53;
         v10 = (*(int (__thiscall **)(int, char *))(*(_DWORD *)grim_interface_ptr + 192))(
                 grim_interface_ptr,
@@ -33928,16 +33928,16 @@ LABEL_53:
       (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
       if ( v12 | v13 )
       {
-        if ( flt_4AAF90 < 2.0 )
+        if ( startup_splash_timer < 2.0 )
         {
-          if ( flt_4AAF90 < 4.0 )
+          if ( startup_splash_timer < 4.0 )
             goto LABEL_66;
           goto LABEL_60;
         }
       }
-      else if ( flt_4AAF90 < 2.0 )
+      else if ( startup_splash_timer < 2.0 )
       {
-        v73 = flt_4AAF90 - 1.0;
+        v73 = startup_splash_timer - 1.0;
         (*(void (__stdcall **)(int, int, int, _DWORD, float, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
           1065353216,
           1065353216,
@@ -33954,7 +33954,7 @@ LABEL_79:
         (*(void (__stdcall **)(_DWORD))(v14 + 284))(LODWORD(v75));
         goto LABEL_80;
       }
-      if ( flt_4AAF90 < 4.0 )
+      if ( startup_splash_timer < 4.0 )
       {
 LABEL_58:
         (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -33969,9 +33969,9 @@ LABEL_58:
         goto LABEL_79;
       }
 LABEL_60:
-      if ( flt_4AAF90 < 5.0 )
+      if ( startup_splash_timer < 5.0 )
       {
-        v16 = 1.0 - (flt_4AAF90 - 4.0);
+        v16 = 1.0 - (startup_splash_timer - 4.0);
         v88[0] = v16;
         if ( v16 >= 0.0 )
         {
@@ -33996,16 +33996,16 @@ LABEL_60:
 LABEL_66:
       if ( v18 | v19 )
       {
-        if ( flt_4AAF90 < 8.0 )
+        if ( startup_splash_timer < 8.0 )
         {
-          if ( flt_4AAF90 < 10.0 )
+          if ( startup_splash_timer < 10.0 )
             goto LABEL_80;
           goto LABEL_73;
         }
       }
-      else if ( flt_4AAF90 < 8.0 )
+      else if ( startup_splash_timer < 8.0 )
       {
-        v74 = flt_4AAF90 - 6.0 - 1.0;
+        v74 = startup_splash_timer - 6.0 - 1.0;
         (*(void (__thiscall **)(int, int, int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 276))(
           grim_interface_ptr,
           1065353216,
@@ -34017,12 +34017,12 @@ LABEL_66:
         v15 = (double)(*(_DWORD *)config_screen_width / 2 - 256);
         goto LABEL_79;
       }
-      if ( flt_4AAF90 < 10.0 )
+      if ( startup_splash_timer < 10.0 )
         goto LABEL_58;
 LABEL_73:
-      if ( flt_4AAF90 < 11.0 )
+      if ( startup_splash_timer < 11.0 )
       {
-        v20 = 1.0 - (flt_4AAF90 - 6.0 - 4.0);
+        v20 = 1.0 - (startup_splash_timer - 6.0 - 4.0);
         v88[0] = v20;
         if ( v20 >= 0.0 )
         {
@@ -34051,7 +34051,7 @@ LABEL_73:
         goto LABEL_79;
       }
 LABEL_80:
-      flt_4AAF90 = flt_4AAF90 + 2.0;
+      startup_splash_timer = startup_splash_timer + 2.0;
       (*(void (__thiscall **)(int, int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 32))(
         grim_interface_ptr,
         21,
@@ -34102,11 +34102,11 @@ LABEL_86:
   }
   if ( byte_4AAF8C )
   {
-    v24 = flt_4AAF90 - frame_dt;
-    flt_4AAF90 = v24;
+    v24 = startup_splash_timer - frame_dt;
+    startup_splash_timer = v24;
     if ( v24 < 0.0 )
     {
-      flt_4AAF90 = 0.0;
+      startup_splash_timer = 0.0;
       byte_4AAF9D = 1;
       v25 = *(_DWORD *)grim_interface_ptr;
       v26 = (*(int (__thiscall **)(int, char *))(*(_DWORD *)grim_interface_ptr + 192))(grim_interface_ptr, aLoading);
@@ -34118,7 +34118,7 @@ LABEL_86:
     goto LABEL_95;
   }
 LABEL_94:
-  flt_4AAF90 = flt_4AAF90 + frame_dt;
+  startup_splash_timer = startup_splash_timer + frame_dt;
 LABEL_95:
   (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_interface_ptr + 44))(
     grim_interface_ptr,
@@ -34133,7 +34133,7 @@ LABEL_95:
     v55,
     v66,
     v77);
-  v29 = flt_4AAF90 + flt_4AAF90;
+  v29 = startup_splash_timer + startup_splash_timer;
   v87 = v29;
   if ( v29 <= 1.0 )
   {
@@ -34223,7 +34223,7 @@ LABEL_95:
       LODWORD(v39),
       LODWORD(v47),
       aGrimGfxDD,
-      dword_4AAF88,
+      startup_texture_load_stage,
       dword_473A5C - 1);
     v48 = flt_471144 * 0.5 + 45.0;
     v40 = screen_width_f * 0.5 - 246.0;
@@ -34253,7 +34253,7 @@ LABEL_95:
     LODWORD(v68),
     1124073472);
   console_update(SLODWORD(console_state));
-  FUN_00401dd0(console_statec);
+  console_render(console_statec);
   if ( *(float *)(cv_showFPS + 12) != 0.0 )
   {
     (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -34318,15 +34318,14 @@ void console_cmd_snd_add_game_tune()
 void console_cmd_set_gamma_ramp()
 {
   char *v0; // eax
-  char *ArgList_4; // [esp+18h] [ebp-8h]
-  float v2; // [esp+1Ch] [ebp-4h]
+  float v1; // [esp+1Ch] [ebp-4h]
 
   if ( console_cmd_argc_get() == 2 )
   {
     v0 = console_cmd_arg_get(1);
-    v2 = crt_atof_l(v0, ArgList_4);
-    (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 32))(grim_interface_ptr, 28, LODWORD(v2));
-    console_printf(&console_log_queue, "Gamma ramp regenerated and multiplied with %f\n", v2);
+    v1 = crt_atof_l(v0);
+    (*(void (__thiscall **)(int, int, _DWORD))(*(_DWORD *)grim_interface_ptr + 32))(grim_interface_ptr, 28, LODWORD(v1));
+    console_printf(&console_log_queue, "Gamma ramp regenerated and multiplied with %f\n", v1);
   }
   else
   {
@@ -34885,7 +34884,7 @@ void __cdecl __noreturn sub_42D0E0()
   if ( (unsigned __int8)game_is_full_version() )
   {
     v29 = 0;
-    if ( (int)dword_4C395C > 0 )
+    if ( (int)highscore_table_count > 0 )
     {
       v2 = (std::codecvt_base *)&v0[v1];
       v3 = byte_482B54;
@@ -34910,9 +34909,9 @@ void __cdecl __noreturn sub_42D0E0()
             console_printf(&console_log_queue, aDetectedAPoten);
           }
         }
-        v2 = dword_4C395C;
+        v2 = highscore_table_count;
         v3 += 72;
-        v5 = ++v29 < (int)dword_4C395C;
+        v5 = ++v29 < (int)highscore_table_count;
         dwError = (DWORD)v3;
       }
       while ( v5 );
@@ -34929,7 +34928,7 @@ void __cdecl __noreturn sub_42D0E0()
   }
   memset(szServerName, 0, sizeof(szServerName));
   qmemcpy(szServerName, "scores.crimsonland.com", 22);
-  v7 = InternetConnectA(v6, szServerName, 0x50u, szUserName, szPassword, 3u, 0x44000000u, 0x1289u);
+  v7 = InternetConnectA(v6, szServerName, 0x50u, szUserName, s_empty_string, 3u, 0x44000000u, 0x1289u);
   memset(szServerName, 0, sizeof(szServerName));
   hInternet = v7;
   qmemcpy(szServerName, "/scoring_v2_7.php", 17);
@@ -35126,7 +35125,7 @@ void __cdecl __noreturn sub_42D8A0()
   {
     memset(szServerName, 0, sizeof(szServerName));
     strcpy(szServerName, aWwwCrimsonland);
-    v2 = InternetConnectA(hInternet, szServerName, 0x50u, szUserName, szPassword, 3u, 0x44000000u, 0x1289u);
+    v2 = InternetConnectA(hInternet, szServerName, 0x50u, szUserName, s_empty_string, 3u, 0x44000000u, 0x1289u);
     memset(szServerName, 0, sizeof(szServerName));
     v23 = v2;
     qmemcpy(szServerName, "/ra_version.php", 15);
@@ -36039,10 +36038,10 @@ void *FUN_0042f330(float *arg1, float arg2, int arg3)
 }
 
 // FUN_0042f3f0 @ 0x0042F3F0
-// [binja] void* sub_42f3f0(float* arg1, float arg2, float arg3)
-void *FUN_0042f3f0(float *arg1, float arg2, float arg3)
+// [binja] void* sub_42f3f0(float* arg1, float arg2, int32_t arg3)
+void *FUN_0042f3f0(float *arg1, float arg2, int arg3)
 {
-  float v3; // edi
+  int v3; // edi
   void *result; // eax
   double v5; // st7
   float pos; // [esp+4h] [ebp-10h] BYREF
@@ -36068,7 +36067,7 @@ void *FUN_0042f3f0(float *arg1, float arg2, float arg3)
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
   effect_template_scale_step = 1113325568;
-  if ( SLODWORD(arg3) > 0 )
+  if ( arg3 > 0 )
   {
     do
     {
@@ -36079,9 +36078,9 @@ void *FUN_0042f3f0(float *arg1, float arg2, float arg3)
       *(float *)&effect_template_age = (double)-(unsigned __int8)crt_rand() * 0.0012000001;
       *(float *)&effect_template_lifetime = 0.1 - *(float *)&effect_template_age;
       result = effect_spawn(0, &pos);
-      --LODWORD(v3);
+      --v3;
     }
-    while ( v3 != 0.0 );
+    while ( v3 );
   }
   return result;
 }
@@ -36395,8 +36394,9 @@ int perk_count_get(int perk_id)
   return (int)*(&player_perk_counts + perk_id);
 }
 
-// sub_42FD00 @ 0x0042FD00
-char *__cdecl sub_42FD00(const char *a1, int a2)
+// wrap_text_to_width_alloc @ 0x0042FD00
+// allocates a wrapped copy of text to fit max_width_px (replaces spaces with '\n' using grim_measure_text_width per char)
+char *wrap_text_to_width_alloc(char *text, int max_width_px)
 {
   unsigned int v2; // kr08_4
   char *v3; // ebx
@@ -36405,11 +36405,11 @@ char *__cdecl sub_42FD00(const char *a1, int a2)
   char v6; // al
   _BYTE v8[2]; // [esp+12h] [ebp-2h] BYREF
 
-  v2 = strlen(a1) + 1;
+  v2 = strlen(text) + 1;
   v8[1] = 0;
   v3 = (char *)operator new(v2);
-  strcpy(v3, a1);
-  v4 = a2;
+  strcpy(v3, text);
+  v4 = max_width_px;
   for ( i = 0; i < (int)(v2 - 1); ++i )
   {
     v8[0] = v3[i];
@@ -36419,7 +36419,7 @@ char *__cdecl sub_42FD00(const char *a1, int a2)
       do
         v6 = v3[--i];
       while ( v6 != 32 );
-      v4 = a2;
+      v4 = max_width_px;
       v3[i] = 10;
     }
   }
@@ -36436,13 +36436,13 @@ void perks_init_database()
   int v3; // eax
 
   perk_id_antiperk = 0;
-  perk_meta_table[0] = (int)sub_42FD00(aAntiperk, 256);
-  perk_desc_table[0] = (int)sub_42FD00(aYouShouldnTBeS, 256);
+  perk_meta_table[0] = (int)wrap_text_to_width_alloc(text, 256);
+  perk_desc_table[0] = (int)wrap_text_to_width_alloc(aYouShouldnTBeS, 256);
   perk_id_bloody_mess_quick_learner = 1;
-  dword_4C3640 = (int)sub_42FD00(aBloodyMess, 256);
-  dword_4C3648 = (int)sub_42FD00(aMoreTheMerrier, 256);
-  dword_4C3644 = (int)sub_42FD00(aQuickLearner, 256);
-  v0 = sub_42FD00(aYouLearnThings, 256);
+  dword_4C3640 = (int)wrap_text_to_width_alloc(aBloodyMess, 256);
+  dword_4C3648 = (int)wrap_text_to_width_alloc(aMoreTheMerrier, 256);
+  dword_4C3644 = (int)wrap_text_to_width_alloc(aQuickLearner, 256);
+  v0 = wrap_text_to_width_alloc(aYouLearnThings, 256);
   dword_4C364C = (int)v0;
   if ( config_fx_toggle )
   {
@@ -36458,186 +36458,186 @@ void perks_init_database()
     perk_desc_table[v3] = v2;
   }
   perk_id_sharpshooter = 2;
-  dword_4C2C68 = (int)sub_42FD00(aSharpshooter, 256);
-  dword_4C2C6C = (int)sub_42FD00(aMiraculouslyYo, 256);
+  dword_4C2C68 = (int)wrap_text_to_width_alloc(aSharpshooter, 256);
+  dword_4C2C6C = (int)wrap_text_to_width_alloc(aMiraculouslyYo, 256);
   perk_id_fastloader = 3;
-  dword_4C2C7C = (int)sub_42FD00(aFastloader, 256);
-  dword_4C2C80 = (int)sub_42FD00(aManYouSureKnow, 256);
+  dword_4C2C7C = (int)wrap_text_to_width_alloc(aFastloader, 256);
+  dword_4C2C80 = (int)wrap_text_to_width_alloc(aManYouSureKnow, 256);
   perk_id_lean_mean_exp_machine = 4;
-  dword_4C2C90 = (int)sub_42FD00(aLeanMeanExpMac, 256);
-  dword_4C2C94 = (int)sub_42FD00(aWhyKillForExpe, 256);
+  dword_4C2C90 = (int)wrap_text_to_width_alloc(aLeanMeanExpMac, 256);
+  dword_4C2C94 = (int)wrap_text_to_width_alloc(aWhyKillForExpe, 256);
   perk_id_long_distance_runner = 5;
-  dword_4C2CA4 = (int)sub_42FD00(aLongDistanceRu, 256);
-  dword_4C2CA8 = (int)sub_42FD00(aYouMoveLikeATr, 256);
+  dword_4C2CA4 = (int)wrap_text_to_width_alloc(aLongDistanceRu, 256);
+  dword_4C2CA8 = (int)wrap_text_to_width_alloc(aYouMoveLikeATr, 256);
   perk_id_pyrokinetic = 6;
-  dword_4C2CB8 = (int)sub_42FD00(aPyrokinetic, 256);
-  dword_4C2CBC = (int)sub_42FD00(aYouSeeFlamesEv, 256);
+  dword_4C2CB8 = (int)wrap_text_to_width_alloc(aPyrokinetic, 256);
+  dword_4C2CBC = (int)wrap_text_to_width_alloc(aYouSeeFlamesEv, 256);
   perk_id_instant_winner = 7;
-  dword_4C2CCC = (int)sub_42FD00(aInstantWinner, 256);
-  dword_4C2CD0 = (int)sub_42FD00(a2500Experience, 256);
+  dword_4C2CCC = (int)wrap_text_to_width_alloc(aInstantWinner, 256);
+  dword_4C2CD0 = (int)wrap_text_to_width_alloc(a2500Experience, 256);
   dword_4C2CD4 |= 4u;
   perk_id_grim_deal = 8;
   dword_4C2CE8 = 0;
-  dword_4C2CE0 = (int)sub_42FD00(aGrimDeal, 256);
-  dword_4C2CE4 = (int)sub_42FD00(aILlMakeYouADea, 256);
+  dword_4C2CE0 = (int)wrap_text_to_width_alloc(aGrimDeal, 256);
+  dword_4C2CE4 = (int)wrap_text_to_width_alloc(aILlMakeYouADea, 256);
   perk_id_alternate_weapon = 9;
   dword_4C2CFC = 1;
-  dword_4C2CF4 = (int)sub_42FD00(aAlternateWeapo, 256);
-  dword_4C2CF8 = (int)sub_42FD00(aEverFanciedAbo, 256);
+  dword_4C2CF4 = (int)wrap_text_to_width_alloc(aAlternateWeapo, 256);
+  dword_4C2CF8 = (int)wrap_text_to_width_alloc(aEverFanciedAbo, 256);
   perk_id_plaguebearer = 10;
-  dword_4C2D08 = (int)sub_42FD00(aPlaguebearer, 256);
-  dword_4C2D0C = (int)sub_42FD00(aYouCarryAHorri, 256);
+  dword_4C2D08 = (int)wrap_text_to_width_alloc(aPlaguebearer, 256);
+  dword_4C2D0C = (int)wrap_text_to_width_alloc(aYouCarryAHorri, 256);
   perk_id_evil_eyes = 11;
-  dword_4C2D1C = (int)sub_42FD00(aEvilEyes, 256);
-  dword_4C2D20 = (int)sub_42FD00(aNoLivingNorDea, 256);
+  dword_4C2D1C = (int)wrap_text_to_width_alloc(aEvilEyes, 256);
+  dword_4C2D20 = (int)wrap_text_to_width_alloc(aNoLivingNorDea, 256);
   perk_id_ammo_maniac = 12;
-  dword_4C2D30 = (int)sub_42FD00(aAmmoManiac, 256);
-  dword_4C2D34 = (int)sub_42FD00(aYouSqueezeAndY, 256);
+  dword_4C2D30 = (int)wrap_text_to_width_alloc(aAmmoManiac, 256);
+  dword_4C2D34 = (int)wrap_text_to_width_alloc(aYouSqueezeAndY, 256);
   perk_id_radioactive = 13;
-  dword_4C2D44 = (int)sub_42FD00(aRadioactive, 256);
-  dword_4C2D48 = (int)sub_42FD00(aYouAreTheRadio, 256);
+  dword_4C2D44 = (int)wrap_text_to_width_alloc(aRadioactive, 256);
+  dword_4C2D48 = (int)wrap_text_to_width_alloc(aYouAreTheRadio, 256);
   perk_id_fastshot = 14;
-  dword_4C2D58 = (int)sub_42FD00(aFastshot, 256);
-  dword_4C2D5C = (int)sub_42FD00(aFunnyHowYouMak, 256);
+  dword_4C2D58 = (int)wrap_text_to_width_alloc(aFastshot, 256);
+  dword_4C2D5C = (int)wrap_text_to_width_alloc(aFunnyHowYouMak, 256);
   perk_id_fatal_lottery = 15;
   dword_4C2D74 = 4;
-  dword_4C2D6C = (int)sub_42FD00(aFatalLottery, 256);
-  dword_4C2D70 = (int)sub_42FD00(aFiftyFiftyChan, 256);
+  dword_4C2D6C = (int)wrap_text_to_width_alloc(aFatalLottery, 256);
+  dword_4C2D70 = (int)wrap_text_to_width_alloc(aFiftyFiftyChan, 256);
   perk_id_random_weapon = 16;
   dword_4C2D88 = 5;
-  dword_4C2D80 = (int)sub_42FD00(aRandomWeapon, 256);
-  dword_4C2D84 = (int)sub_42FD00(aHereHaveThisWe, 256);
+  dword_4C2D80 = (int)wrap_text_to_width_alloc(aRandomWeapon, 256);
+  dword_4C2D84 = (int)wrap_text_to_width_alloc(aHereHaveThisWe, 256);
   perk_id_mr_melee = 17;
-  dword_4C2D94 = (int)sub_42FD00(aMrMelee, 256);
-  dword_4C2D98 = (int)sub_42FD00(aYouMasterTheAr, 256);
+  dword_4C2D94 = (int)wrap_text_to_width_alloc(aMrMelee, 256);
+  dword_4C2D98 = (int)wrap_text_to_width_alloc(aYouMasterTheAr, 256);
   perk_id_anxious_loader = 18;
-  dword_4C2DA8 = (int)sub_42FD00(aAnxiousLoader, 256);
-  dword_4C2DAC = (int)sub_42FD00(aWhenYouCanTSta, 256);
+  dword_4C2DA8 = (int)wrap_text_to_width_alloc(aAnxiousLoader, 256);
+  dword_4C2DAC = (int)wrap_text_to_width_alloc(aWhenYouCanTSta, 256);
   perk_id_final_revenge = 19;
   dword_4C2DC4 = 0;
-  dword_4C2DBC = (int)sub_42FD00(aFinalRevenge, 256);
-  dword_4C2DC0 = (int)sub_42FD00(aPickThisAndYou, 256);
+  dword_4C2DBC = (int)wrap_text_to_width_alloc(aFinalRevenge, 256);
+  dword_4C2DC0 = (int)wrap_text_to_width_alloc(aPickThisAndYou, 256);
   perk_id_telekinetic = 20;
-  dword_4C2DD0 = (int)sub_42FD00(aTelekinetic, 256);
-  dword_4C2DD4 = (int)sub_42FD00(aPickingUpBonus, 256);
+  dword_4C2DD0 = (int)wrap_text_to_width_alloc(aTelekinetic, 256);
+  dword_4C2DD4 = (int)wrap_text_to_width_alloc(aPickingUpBonus, 256);
   perk_id_perk_expert = 21;
-  dword_4C2DE4 = (int)sub_42FD00(aPerkExpert, 256);
-  dword_4C2DE8 = (int)sub_42FD00(aYouSureKnowHow, 256);
+  dword_4C2DE4 = (int)wrap_text_to_width_alloc(aPerkExpert, 256);
+  dword_4C2DE8 = (int)wrap_text_to_width_alloc(aYouSureKnowHow, 256);
   perk_id_unstoppable = 22;
-  dword_4C2DF8 = (int)sub_42FD00(aUnstoppable, 256);
-  dword_4C2DFC = (int)sub_42FD00(aMonstersCanTSl, 256);
+  dword_4C2DF8 = (int)wrap_text_to_width_alloc(aUnstoppable, 256);
+  dword_4C2DFC = (int)wrap_text_to_width_alloc(aMonstersCanTSl, 256);
   perk_id_regression_bullets = 23;
-  dword_4C2E0C = (int)sub_42FD00(aRegressionBull, 256);
-  dword_4C2E10 = (int)sub_42FD00(aAttemptToShoot, 256);
+  dword_4C2E0C = (int)wrap_text_to_width_alloc(aRegressionBull, 256);
+  dword_4C2E10 = (int)wrap_text_to_width_alloc(aAttemptToShoot, 256);
   perk_id_infernal_contract = 24;
-  dword_4C2E20 = (int)sub_42FD00(aInfernalContra, 256);
-  dword_4C2E24 = (int)sub_42FD00(aInExchangeForY, 256);
+  dword_4C2E20 = (int)wrap_text_to_width_alloc(aInfernalContra, 256);
+  dword_4C2E24 = (int)wrap_text_to_width_alloc(aInExchangeForY, 256);
   perk_id_poison_bullets = 25;
-  dword_4C2E34 = (int)sub_42FD00(aPoisonBullets, 256);
-  dword_4C2E38 = (int)sub_42FD00(aYouTendToExpli, 256);
+  dword_4C2E34 = (int)wrap_text_to_width_alloc(aPoisonBullets, 256);
+  dword_4C2E38 = (int)wrap_text_to_width_alloc(aYouTendToExpli, 256);
   perk_id_dodger = 26;
-  dword_4C2E48 = (int)sub_42FD00(aDodger, 256);
-  dword_4C2E4C = (int)sub_42FD00(aItSeemsSoStupi, 256);
+  dword_4C2E48 = (int)wrap_text_to_width_alloc(aDodger, 256);
+  dword_4C2E4C = (int)wrap_text_to_width_alloc(aItSeemsSoStupi, 256);
   perk_id_bonus_magnet = 27;
-  dword_4C2E5C = (int)sub_42FD00(aBonusMagnet, 256);
-  dword_4C2E60 = (int)sub_42FD00(aYouSomehowSeem, 256);
+  dword_4C2E5C = (int)wrap_text_to_width_alloc(aBonusMagnet, 256);
+  dword_4C2E60 = (int)wrap_text_to_width_alloc(aYouSomehowSeem, 256);
   perk_id_uranium_filled_bullets = 28;
-  dword_4C2E70 = (int)sub_42FD00(aUraniumFilledB, 256);
-  dword_4C2E74 = (int)sub_42FD00(aYourBulletsHav, 256);
+  dword_4C2E70 = (int)wrap_text_to_width_alloc(aUraniumFilledB, 256);
+  dword_4C2E74 = (int)wrap_text_to_width_alloc(aYourBulletsHav, 256);
   perk_id_doctor = 29;
-  dword_4C2E84 = (int)sub_42FD00(aDoctor, 256);
-  dword_4C2E88 = (int)sub_42FD00(aWithASingleGla, 256);
+  dword_4C2E84 = (int)wrap_text_to_width_alloc(aDoctor, 256);
+  dword_4C2E88 = (int)wrap_text_to_width_alloc(aWithASingleGla, 256);
   perk_id_monster_vision = 30;
-  dword_4C2E98 = (int)sub_42FD00(aMonsterVision, 256);
-  dword_4C2E9C = (int)sub_42FD00(aWithYourNewlyE, 256);
+  dword_4C2E98 = (int)wrap_text_to_width_alloc(aMonsterVision, 256);
+  dword_4C2E9C = (int)wrap_text_to_width_alloc(aWithYourNewlyE, 256);
   perk_id_hot_tempered = 31;
-  dword_4C2EAC = (int)sub_42FD00(aHotTempered, 256);
-  dword_4C2EB0 = (int)sub_42FD00(aItLiterallyBoi, 256);
+  dword_4C2EAC = (int)wrap_text_to_width_alloc(aHotTempered, 256);
+  dword_4C2EB0 = (int)wrap_text_to_width_alloc(aItLiterallyBoi, 256);
   perk_id_bonus_economist = 32;
-  dword_4C2EC0 = (int)sub_42FD00(aBonusEconomist, 256);
-  dword_4C2EC4 = (int)sub_42FD00(aYourBonusPower, 256);
+  dword_4C2EC0 = (int)wrap_text_to_width_alloc(aBonusEconomist, 256);
+  dword_4C2EC4 = (int)wrap_text_to_width_alloc(aYourBonusPower, 256);
   perk_id = 0;
   perk_id_thick_skinned = 33;
-  dword_4C2ED4 = (int)sub_42FD00(aThickSkinned, 256);
-  dword_4C2ED8 = (int)sub_42FD00(aTrade13OfYourH, 256);
+  dword_4C2ED4 = (int)wrap_text_to_width_alloc(aThickSkinned, 256);
+  dword_4C2ED8 = (int)wrap_text_to_width_alloc(aTrade13OfYourH, 256);
   perk_id_barrel_greaser = 34;
-  dword_4C2EE8 = (int)sub_42FD00(aBarrelGreaser, 256);
-  dword_4C2EEC = (int)sub_42FD00(aAfterStudyingA, 256);
+  dword_4C2EE8 = (int)wrap_text_to_width_alloc(aBarrelGreaser, 256);
+  dword_4C2EEC = (int)wrap_text_to_width_alloc(aAfterStudyingA, 256);
   perk_id_ammunition_within = 35;
-  dword_4C2EFC = (int)sub_42FD00(aAmmunitionWith, 256);
-  dword_4C2F00 = (int)sub_42FD00(aEmptyClipDoesn, 256);
+  dword_4C2EFC = (int)wrap_text_to_width_alloc(aAmmunitionWith, 256);
+  dword_4C2F00 = (int)wrap_text_to_width_alloc(aEmptyClipDoesn, 256);
   perk_id_veins_of_poison = 36;
-  dword_4C2F10 = (int)sub_42FD00(aVeinsOfPoison, 256);
-  dword_4C2F14 = (int)sub_42FD00(aAStrongPoisonR, 256);
+  dword_4C2F10 = (int)wrap_text_to_width_alloc(aVeinsOfPoison, 256);
+  dword_4C2F14 = (int)wrap_text_to_width_alloc(aAStrongPoisonR, 256);
   perk_id_toxic_avenger = 37;
-  dword_4C2F24 = (int)sub_42FD00(aToxicAvenger, 256);
-  dword_4C2F28 = (int)sub_42FD00(aYouStartedOutJ, 256);
+  dword_4C2F24 = (int)wrap_text_to_width_alloc(aToxicAvenger, 256);
+  dword_4C2F28 = (int)wrap_text_to_width_alloc(aYouStartedOutJ, 256);
   perk_id_regeneration = 38;
   dword_4C2F34 = perk_id_veins_of_poison;
-  dword_4C2F38 = (int)sub_42FD00(aRegeneration, 256);
-  dword_4C2F3C = (int)sub_42FD00(aYourHealthRepl, 256);
+  dword_4C2F38 = (int)wrap_text_to_width_alloc(aRegeneration, 256);
+  dword_4C2F3C = (int)wrap_text_to_width_alloc(aYourHealthRepl, 256);
   perk_id_pyromaniac = 39;
-  dword_4C2F4C = (int)sub_42FD00(aPyromaniac, 256);
-  dword_4C2F50 = (int)sub_42FD00(aYouJustEnjoyUs, 256);
+  dword_4C2F4C = (int)wrap_text_to_width_alloc(aPyromaniac, 256);
+  dword_4C2F50 = (int)wrap_text_to_width_alloc(aYouJustEnjoyUs, 256);
   perk_id_ninja = 40;
-  dword_4C2F60 = (int)sub_42FD00(aNinja, 256);
-  dword_4C2F64 = (int)sub_42FD00(aYouVeTakenYour, 256);
+  dword_4C2F60 = (int)wrap_text_to_width_alloc(aNinja, 256);
+  dword_4C2F64 = (int)wrap_text_to_width_alloc(aYouVeTakenYour, 256);
   dword_4C2F70 = perk_id_dodger;
   perk_id_highlander = 41;
   dword_4C2F7C = 0;
-  dword_4C2F74 = (int)sub_42FD00(aHighlander, 256);
-  dword_4C2F78 = (int)sub_42FD00(aYouAreImmortal, 256);
+  dword_4C2F74 = (int)wrap_text_to_width_alloc(aHighlander, 256);
+  dword_4C2F78 = (int)wrap_text_to_width_alloc(aYouAreImmortal, 256);
   perk_id_jinxed = 42;
-  dword_4C2F88 = (int)sub_42FD00(aJinxed, 256);
-  dword_4C2F8C = (int)sub_42FD00(aThingsHappenNe, 256);
+  dword_4C2F88 = (int)wrap_text_to_width_alloc(aJinxed, 256);
+  dword_4C2F8C = (int)wrap_text_to_width_alloc(aThingsHappenNe, 256);
   perk_id_perk_master = 43;
-  dword_4C2F9C = (int)sub_42FD00(aPerkMaster, 256);
-  dword_4C2FA0 = (int)sub_42FD00(aBeingThePerkEx, 256);
+  dword_4C2F9C = (int)wrap_text_to_width_alloc(aPerkMaster, 256);
+  dword_4C2FA0 = (int)wrap_text_to_width_alloc(aBeingThePerkEx, 256);
   dword_4C2FAC = perk_id_perk_expert;
   perk_id_reflex_boosted = 44;
-  dword_4C2FB0 = (int)sub_42FD00(aReflexBoosted, 256);
-  dword_4C2FB4 = (int)sub_42FD00(aToYouTheWorldS, 256);
+  dword_4C2FB0 = (int)wrap_text_to_width_alloc(aReflexBoosted, 256);
+  dword_4C2FB4 = (int)wrap_text_to_width_alloc(aToYouTheWorldS, 256);
   perk_id_greater_regeneration = 45;
-  dword_4C2FC4 = (int)sub_42FD00(aGreaterRegener, 256);
-  dword_4C2FC8 = (int)sub_42FD00(aYourHealthRepl_0, 256);
+  dword_4C2FC4 = (int)wrap_text_to_width_alloc(aGreaterRegener, 256);
+  dword_4C2FC8 = (int)wrap_text_to_width_alloc(aYourHealthRepl_0, 256);
   perk_id_breathing_room = 46;
   dword_4C2FD4 = perk_id_regeneration;
   dword_4C2FE0 = 2;
-  dword_4C2FD8 = (int)sub_42FD00(aBreathingRoom, 256);
-  dword_4C2FDC = (int)sub_42FD00(aTrade23rdsOfYo, 256);
+  dword_4C2FD8 = (int)wrap_text_to_width_alloc(aBreathingRoom, 256);
+  dword_4C2FDC = (int)wrap_text_to_width_alloc(aTrade23rdsOfYo, 256);
   perk_id_death_clock = 47;
-  dword_4C2FEC = (int)sub_42FD00(aDeathClock, 256);
-  dword_4C2FF0 = (int)sub_42FD00(aYouDieExactlyI, 256);
+  dword_4C2FEC = (int)wrap_text_to_width_alloc(aDeathClock, 256);
+  dword_4C2FF0 = (int)wrap_text_to_width_alloc(aYouDieExactlyI, 256);
   perk_id_my_favourite_weapon = 48;
-  dword_4C3000 = (int)sub_42FD00(aMyFavouriteWea, 256);
-  dword_4C3004 = (int)sub_42FD00(aYouVeGrownVery, 256);
+  dword_4C3000 = (int)wrap_text_to_width_alloc(aMyFavouriteWea, 256);
+  dword_4C3004 = (int)wrap_text_to_width_alloc(aYouVeGrownVery, 256);
   perk_id_bandage = 49;
-  dword_4C3014 = (int)sub_42FD00(aBandage, 256);
-  dword_4C3018 = (int)sub_42FD00(aHereEatThisBan, 256);
+  dword_4C3014 = (int)wrap_text_to_width_alloc(aBandage, 256);
+  dword_4C3018 = (int)wrap_text_to_width_alloc(aHereEatThisBan, 256);
   perk_id_angry_reloader = 50;
-  dword_4C3028 = (int)sub_42FD00(aAngryReloader, 256);
-  dword_4C302C = (int)sub_42FD00(aYouHateItWhenY, 256);
+  dword_4C3028 = (int)wrap_text_to_width_alloc(aAngryReloader, 256);
+  dword_4C302C = (int)wrap_text_to_width_alloc(aYouHateItWhenY, 256);
   perk_id_ion_gun_master = 51;
-  dword_4C303C = (int)sub_42FD00(aIonGunMaster, 256);
-  dword_4C3040 = (int)sub_42FD00(aYouReGoodWithI, 256);
+  dword_4C303C = (int)wrap_text_to_width_alloc(aIonGunMaster, 256);
+  dword_4C3040 = (int)wrap_text_to_width_alloc(aYouReGoodWithI, 256);
   perk_id_stationary_reloader = 52;
-  dword_4C3050 = (int)sub_42FD00(aStationaryRelo, 256);
-  dword_4C3054 = (int)sub_42FD00(aItSIncrediblyH, 256);
+  dword_4C3050 = (int)wrap_text_to_width_alloc(aStationaryRelo, 256);
+  dword_4C3054 = (int)wrap_text_to_width_alloc(aItSIncrediblyH, 256);
   perk_id_man_bomb = 53;
-  dword_4C3064 = (int)sub_42FD00(aManBomb, 256);
-  dword_4C3068 = (int)sub_42FD00(aYouHaveTheAbil, 256);
+  dword_4C3064 = (int)wrap_text_to_width_alloc(aManBomb, 256);
+  dword_4C3068 = (int)wrap_text_to_width_alloc(aYouHaveTheAbil, 256);
   perk_id_fire_caugh = 54;
-  dword_4C3078 = (int)sub_42FD00(aFireCaugh, 256);
-  dword_4C307C = (int)sub_42FD00(aYouHaveAFireba, 256);
+  dword_4C3078 = (int)wrap_text_to_width_alloc(aFireCaugh, 256);
+  dword_4C307C = (int)wrap_text_to_width_alloc(aYouHaveAFireba, 256);
   perk_id_living_fortress = 55;
-  dword_4C308C = (int)sub_42FD00(aLivingFortress, 256);
-  dword_4C3090 = (int)sub_42FD00(aItComesATimeIn, 256);
+  dword_4C308C = (int)wrap_text_to_width_alloc(aLivingFortress, 256);
+  dword_4C3090 = (int)wrap_text_to_width_alloc(aItComesATimeIn, 256);
   perk_id_tough_reloader = 56;
-  dword_4C30A0 = (int)sub_42FD00(aToughReloader, 256);
-  dword_4C30A4 = (int)sub_42FD00(aDamageReceived, 256);
+  dword_4C30A0 = (int)wrap_text_to_width_alloc(aToughReloader, 256);
+  dword_4C30A4 = (int)wrap_text_to_width_alloc(aDamageReceived, 256);
   perk_id_lifeline_50_50 = 57;
-  dword_4C30B4 = (int)sub_42FD00(aLifeline5050, 256);
-  dword_4C30B8 = (int)sub_42FD00(aTheComputerRem, 256);
+  dword_4C30B4 = (int)wrap_text_to_width_alloc(aLifeline5050, 256);
+  dword_4C30B8 = (int)wrap_text_to_width_alloc(aTheComputerRem, 256);
   dword_4C2C38 = 57;
   dword_4C2B8C = 58;
   perks_rebuild_available();
@@ -38427,7 +38427,7 @@ LABEL_17:
                                                                + 0.2,
         config_hardcore) )
   {
-    dword_487194 = 0;
+    quest_fail_retry_count = 0;
     *((float *)v5 + 23) = *((float *)v5 + 23) * 1.05;
     *((float *)v5 + 22) = *((float *)v5 + 22) * 1.4;
     *((float *)v5 + 9) = *((float *)v5 + 9) * 1.2;
@@ -38443,9 +38443,9 @@ LABEL_17:
       }
     }
   }
-  else if ( dword_487194 > 0 )
+  else if ( quest_fail_retry_count > 0 )
   {
-    switch ( dword_487194 )
+    switch ( quest_fail_retry_count )
     {
       case 1:
         *((float *)v5 + 25) = *((float *)v5 + 25) * 0.89999998;
@@ -38481,7 +38481,7 @@ LABEL_17:
     *((float *)v5 + 9) = v99;
     if ( (v5[140] & 4) != 0 )
     {
-      v100 = (double)dword_487194 * 0.34999999;
+      v100 = (double)quest_fail_retry_count * 0.34999999;
       if ( v100 > 3.0 )
         v100 = 3.0;
       creature_spawn_slot_interval[6 * *((_DWORD *)v5 + 30)] = v100
@@ -43101,7 +43101,7 @@ void highscore_load_table()
   HIWORD(Buffer[17]) = -132;
   Buffer[14] = crt_rand() & 0xFEE050F;
   v0 = highscore_build_path();
-  dword_4C395C = 0;
+  highscore_table_count = 0;
   v1 = &unk_482B56;
   do
   {
@@ -43209,7 +43209,7 @@ LABEL_31:
         else
         {
           v9 = 9 * v2++;
-          dword_4C395C = (std::codecvt_base *)v2;
+          highscore_table_count = (std::codecvt_base *)v2;
           qmemcpy((void *)(8 * v9 + 4729616), Buffer, 0x48u);
         }
         continue;
@@ -43217,8 +43217,8 @@ LABEL_31:
       qmemcpy(name_entry, Buffer, 0x48u);
     }
     crt_fclose(v3);
-    if ( (int)dword_4C395C > 100 )
-      dword_4C395C = (std::codecvt_base *)100;
+    if ( (int)highscore_table_count > 100 )
+      highscore_table_count = (std::codecvt_base *)100;
     if ( config_game_mode == 2 )
     {
       crt_qsort(&highscore_table, 0x64u, 0x48u, highscore_compare_rush_field32_desc);
@@ -43233,10 +43233,10 @@ LABEL_31:
     }
     if ( config_name_slot_selected )
     {
-      if ( (int)dword_4C395C > 0 )
+      if ( (int)highscore_table_count > 0 )
       {
         v17 = byte_482B54;
-        v18 = dword_4C395C;
+        v18 = highscore_table_count;
         do
         {
           if ( (*v17 & 1) != 0 )
@@ -43249,10 +43249,10 @@ LABEL_31:
     }
     else
     {
-      v10 = dword_4C395C;
+      v10 = highscore_table_count;
       v11 = 0;
       v23 = 0;
-      if ( (int)dword_4C395C > 0 )
+      if ( (int)highscore_table_count > 0 )
       {
         v12 = 0;
         v21 = 0;
@@ -43292,10 +43292,10 @@ LABEL_72:
             v19 = v15;
           }
 LABEL_70:
-          v10 = dword_4C395C;
+          v10 = highscore_table_count;
           ++v14;
           v15 += 72;
-          if ( v14 >= (int)dword_4C395C )
+          if ( v14 >= (int)highscore_table_count )
           {
             v11 = v23;
             byte_482B54[72 * v20] |= 4u;
@@ -43370,14 +43370,14 @@ int highscore_rank_index()
 
   if ( config_game_mode == 2 )
   {
-    v0 = dword_4C395C;
+    v0 = highscore_table_count;
     result = 0;
-    if ( (int)dword_4C395C > 0 )
+    if ( (int)highscore_table_count > 0 )
     {
       for ( i = &dword_482B30; survival_elapsed_ms <= *i; i += 18 )
       {
-        if ( ++result >= (int)dword_4C395C )
-          return (int)dword_4C395C;
+        if ( ++result >= (int)highscore_table_count )
+          return (int)highscore_table_count;
       }
       return result;
     }
@@ -43385,25 +43385,25 @@ int highscore_rank_index()
   }
   if ( config_game_mode == 3 )
   {
-    v0 = dword_4C395C;
+    v0 = highscore_table_count;
     result = 0;
-    if ( (int)dword_4C395C <= 0 )
+    if ( (int)highscore_table_count <= 0 )
       return (int)v0;
     for ( j = &dword_482B30; survival_elapsed_ms >= *j; j += 18 )
     {
-      if ( ++result >= (int)dword_4C395C )
-        return (int)dword_4C395C;
+      if ( ++result >= (int)highscore_table_count )
+        return (int)highscore_table_count;
     }
   }
   else
   {
-    v0 = dword_4C395C;
+    v0 = highscore_table_count;
     result = 0;
-    if ( (int)dword_4C395C <= 0 )
+    if ( (int)highscore_table_count <= 0 )
       return (int)v0;
     for ( k = &dword_482B34; highscore_score_xp <= *k; k += 18 )
     {
-      if ( ++result >= (int)dword_4C395C )
+      if ( ++result >= (int)highscore_table_count )
         return (int)v0;
     }
   }
@@ -43477,7 +43477,7 @@ void highscore_record_init()
   v2 = 1;
   do
   {
-    if ( dword_48708C[v1] > dword_48708C[v2] )
+    if ( weapon_usage_time[v1] > weapon_usage_time[v2] )
     {
       v0 = v1;
       v2 = v1;
@@ -43529,16 +43529,16 @@ void *FUN_0043b810(void *arg1)
 // initializes the buffer reader cursor and length
 void buffer_reader_init(void *data, int size)
 {
-  dword_4C3C70 = (int)data;
-  dword_4C3C74 = size;
-  dword_4C3C78 = 0;
+  buffer_reader_data = (int)data;
+  buffer_reader_size = size;
+  buffer_reader_offset = 0;
 }
 
 // buffer_reader_seek @ 0x0043B870
 // sets the buffer reader cursor
 void buffer_reader_seek(int offset)
 {
-  dword_4C3C78 = offset;
+  buffer_reader_offset = offset;
 }
 
 // buffer_reader_read_u16 @ 0x0043B880
@@ -43547,9 +43547,9 @@ int buffer_reader_read_u16()
 {
   int result; // eax
 
-  HIWORD(result) = HIWORD(dword_4C3C70);
-  LOWORD(result) = *(_WORD *)(dword_4C3C78 + dword_4C3C70);
-  dword_4C3C78 += 2;
+  HIWORD(result) = HIWORD(buffer_reader_data);
+  LOWORD(result) = *(_WORD *)(buffer_reader_offset + buffer_reader_data);
+  buffer_reader_offset += 2;
   return result;
 }
 
@@ -43559,8 +43559,8 @@ uint buffer_reader_read_u32()
 {
   uint result; // eax
 
-  result = *(_DWORD *)(dword_4C3C78 + dword_4C3C70);
-  dword_4C3C78 += 4;
+  result = *(_DWORD *)(buffer_reader_offset + buffer_reader_data);
+  buffer_reader_offset += 4;
   return result;
 }
 
@@ -43568,7 +43568,7 @@ uint buffer_reader_read_u32()
 // advances the buffer reader cursor
 void buffer_reader_skip(int count)
 {
-  dword_4C3C78 += count;
+  buffer_reader_offset += count;
 }
 
 // buffer_reader_find_tag @ 0x0043B8E0
@@ -43578,9 +43578,9 @@ int buffer_reader_find_tag(char *tag, int tag_len)
   int result; // eax
   int v3; // edi
 
-  result = dword_4C3C74;
+  result = buffer_reader_size;
   v3 = 0;
-  if ( dword_4C3C74 <= 0 )
+  if ( buffer_reader_size <= 0 )
   {
 LABEL_7:
     LOBYTE(result) = 0;
@@ -43591,17 +43591,17 @@ LABEL_7:
     {
       for ( result = 0; result < tag_len; ++result )
       {
-        if ( *(_BYTE *)(dword_4C3C70 + v3 + result) != tag[result] )
+        if ( *(_BYTE *)(buffer_reader_data + v3 + result) != tag[result] )
           break;
       }
       if ( result == tag_len )
         break;
-      result = dword_4C3C74;
-      if ( ++v3 >= dword_4C3C74 )
+      result = buffer_reader_size;
+      if ( ++v3 >= buffer_reader_size )
         goto LABEL_7;
     }
     LOBYTE(result) = 1;
-    dword_4C3C78 = tag_len + v3;
+    buffer_reader_offset = tag_len + v3;
   }
   return result;
 }
@@ -43635,14 +43635,14 @@ int resource_pack_set(char *path)
   if ( v1 )
   {
     strcpy(&byte_4C3968, path);
-    byte_4C3C6C = 1;
+    resource_pack_enabled = 1;
     result = crt_fclose(v1);
     LOBYTE(result) = 1;
   }
   else
   {
     byte_4C3968 = 0;
-    byte_4C3C6C = 0;
+    resource_pack_enabled = 0;
     LOBYTE(result) = 0;
   }
   return result;
@@ -43657,10 +43657,10 @@ int resource_open_read(byte *path, int *size_out)
   FILE *v4; // esi
 
   v2 = size_out;
-  if ( byte_4C3C6C )
+  if ( resource_pack_enabled )
   {
     result = (int)crt_fopen(&byte_4C3968, file_mode_read_binary);
-    fp = (FILE *)result;
+    resource_fp = (FILE *)result;
     if ( !result )
     {
       LOBYTE(result) = 0;
@@ -43680,15 +43680,15 @@ int resource_open_read(byte *path, int *size_out)
     crt_fclose(v4);
   }
   result = (int)crt_fopen((char *)path, file_mode_read_binary);
-  fp = (FILE *)result;
+  resource_fp = (FILE *)result;
   if ( !result )
   {
     LOBYTE(result) = 0;
     return result;
   }
   crt_fseek((FILE *)result, 0, 2);
-  *v2 = crt_ftell(fp);
-  result = crt_fseek(fp, 0, 0);
+  *v2 = crt_ftell(resource_fp);
+  result = crt_fseek(resource_fp, 0, 0);
 LABEL_11:
   LOBYTE(result) = 1;
   return result;
@@ -43698,8 +43698,8 @@ LABEL_11:
 // closes the current resource file handle
 void resource_close()
 {
-  if ( fp )
-    crt_fclose(fp);
+  if ( resource_fp )
+    crt_fclose(resource_fp);
 }
 
 // dsound_init @ 0x0043BAF0
@@ -43719,13 +43719,13 @@ int dsound_init(void *hwnd, uint coop_level)
   int v12; // [esp+74h] [ebp+10h]
   unsigned __int16 v13; // [esp+78h] [ebp+14h]
 
-  if ( ppDS8 )
-    ppDS8->lpVtbl->Release(ppDS8);
-  ppDS8 = 0;
-  result = DirectSoundCreate8(0, &ppDS8, 0);
+  if ( dsound_iface )
+    dsound_iface->lpVtbl->Release(dsound_iface);
+  dsound_iface = 0;
+  result = DirectSoundCreate8(0, &dsound_iface, 0);
   if ( result >= 0 )
   {
-    result = ppDS8->lpVtbl->SetCooperativeLevel(ppDS8, (HWND)hwnd, coop_level);
+    result = dsound_iface->lpVtbl->SetCooperativeLevel(dsound_iface, (HWND)hwnd, coop_level);
     if ( result >= 0 )
     {
       memset(v10, 0, sizeof(v10));
@@ -43734,7 +43734,11 @@ int dsound_init(void *hwnd, uint coop_level)
       v10[1] = 1;
       v10[2] = 0;
       v10[4] = 0;
-      result = ppDS8->lpVtbl->CreateSoundBuffer(ppDS8, (LPCDSBUFFERDESC)v10, (LPDIRECTSOUNDBUFFER *)&v3, 0);
+      result = dsound_iface->lpVtbl->CreateSoundBuffer(
+                 dsound_iface,
+                 (LPCDSBUFFERDESC)v10,
+                 (LPDIRECTSOUNDBUFFER *)&v3,
+                 0);
       if ( result >= 0 )
       {
         v4[0] = 1;
@@ -43819,7 +43823,7 @@ int resource_read_alloc(byte *path, void **out_data, uint *out_size)
   result = resource_open_read(path, (int *)out_size);
   if ( (_BYTE)result )
   {
-    v4 = fp;
+    v4 = resource_fp;
     v5 = operator new(*out_size);
     crt_fread(v5, *out_size, 1u, v4);
     resource_close();
@@ -43855,7 +43859,7 @@ int sfx_entry_load_ogg(void *entry, byte *path)
   result = resource_open_read(path, (int *)&ElementSize);
   if ( (_BYTE)result )
   {
-    v3 = fp;
+    v3 = resource_fp;
     v4 = (char *)operator new(ElementSize + 8);
     crt_fread(v4 + 8, ElementSize, 1u, v3);
     resource_close();
@@ -44157,7 +44161,7 @@ int wav_parse_into_entry(void *entry, void *data, int size)
     *((_DWORD *)entry + 5) = v8;
     v9 = v8;
     result = u32;
-    qmemcpy(v9, (char *)data + dword_4C3C78, u32);
+    qmemcpy(v9, (char *)data + buffer_reader_offset, u32);
     LOBYTE(result) = 1;
   }
   return result;
@@ -44213,14 +44217,18 @@ int sfx_entry_create_buffers(int entry)
   v6[0] = 36;
   v6[1] = 32992;
   v6[4] = entry;
-  result = ppDS8->lpVtbl->CreateSoundBuffer(ppDS8, (LPCDSBUFFERDESC)v6, (LPDIRECTSOUNDBUFFER *)(entry + 36), 0);
+  result = dsound_iface->lpVtbl->CreateSoundBuffer(
+             dsound_iface,
+             (LPCDSBUFFERDESC)v6,
+             (LPDIRECTSOUNDBUFFER *)(entry + 36),
+             0);
   if ( result >= 0 )
   {
     v2 = 1;
     v3 = (LPDIRECTSOUNDBUFFER *)(entry + 40);
     do
     {
-      if ( ppDS8->lpVtbl->DuplicateSoundBuffer(ppDS8, *(LPDIRECTSOUNDBUFFER *)(entry + 36), v3) < 0 )
+      if ( dsound_iface->lpVtbl->DuplicateSoundBuffer(dsound_iface, *(LPDIRECTSOUNDBUFFER *)(entry + 36), v3) < 0 )
       {
         OutputDebugStringA(aSndFailedToDup);
         LOBYTE(result) = 0;
@@ -44272,7 +44280,7 @@ int music_entry_load_ogg(void *entry, byte *path)
   result = resource_open_read(path, (int *)&path);
   if ( (_BYTE)result )
   {
-    v3 = fp;
+    v3 = resource_fp;
     v4 = (char *)operator new((unsigned int)(path + 8));
     crt_fread(v4 + 8, (uint)path, 1u, v3);
     resource_close();
@@ -44309,8 +44317,8 @@ int music_entry_load_ogg(void *entry, byte *path)
       v14[0] = 36;
       v14[1] = 98496;
       v14[4] = entry;
-      result = ppDS8->lpVtbl->CreateSoundBuffer(
-                 ppDS8,
+      result = dsound_iface->lpVtbl->CreateSoundBuffer(
+                 dsound_iface,
                  (LPCDSBUFFERDESC)v14,
                  (LPDIRECTSOUNDBUFFER *)((char *)entry + 36),
                  0);
@@ -44830,9 +44838,9 @@ void audio_shutdown_all()
 {
   sfx_release_all();
   music_release_all();
-  if ( ppDS8 )
-    ppDS8->lpVtbl->Release(ppDS8);
-  ppDS8 = 0;
+  if ( dsound_iface )
+    dsound_iface->lpVtbl->Release(dsound_iface);
+  dsound_iface = 0;
 }
 
 // sfx_play @ 0x0043D120
@@ -45180,19 +45188,19 @@ void ui_focus_set(int id, char reset_timer)
   int v2; // eax
   int *i; // ecx
 
-  if ( ui_focus_candidates[dword_4D11E4] != id )
+  if ( ui_focus_candidates[ui_focus_index] != id )
   {
     if ( reset_timer )
-      dword_4D11EC = 1000;
+      ui_focus_timer_ms = 1000;
     v2 = 0;
-    if ( dword_4D11E0 > 0 )
+    if ( ui_focus_count > 0 )
     {
       for ( i = ui_focus_candidates; *i != id; ++i )
       {
-        if ( ++v2 >= dword_4D11E0 )
+        if ( ++v2 >= ui_focus_count )
           return;
       }
-      dword_4D11E4 = v2;
+      ui_focus_index = v2;
     }
   }
 }
@@ -45207,49 +45215,49 @@ int ui_focus_update(int id)
   int result; // eax
   int v5; // eax
 
-  v1 = id == ui_focus_candidates[dword_4D11E4];
-  if ( dword_4D11E8 == dword_480848 )
+  v1 = id == ui_focus_candidates[ui_focus_index];
+  if ( ui_focus_frame_marker_ms == game_time_ms )
   {
-    v5 = dword_4D11E0;
-    if ( dword_4D11E0 >= 32 )
+    v5 = ui_focus_count;
+    if ( ui_focus_count >= 32 )
       v5 = 31;
     ui_focus_candidates[v5] = id;
     result = v5 + 1;
-    dword_4D11E0 = result;
+    ui_focus_count = result;
     LOBYTE(result) = v1;
   }
   else
   {
-    dword_4D11EC -= frame_dt_ms;
-    if ( dword_4D11EC < 0 )
-      dword_4D11EC = 0;
+    ui_focus_timer_ms -= frame_dt_ms;
+    if ( ui_focus_timer_ms < 0 )
+      ui_focus_timer_ms = 0;
     if ( !byte_4871CA
       && (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 72))(grim_interface_ptr, 15) )
     {
       if ( (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, 42)
         || (*(unsigned __int8 (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 68))(grim_interface_ptr, 54) )
       {
-        v2 = dword_4D11E4 - 1;
+        v2 = ui_focus_index - 1;
       }
       else
       {
-        v2 = dword_4D11E4 + 1;
+        v2 = ui_focus_index + 1;
       }
-      dword_4D11E4 = v2;
-      dword_4D11EC = 1000;
+      ui_focus_index = v2;
+      ui_focus_timer_ms = 1000;
     }
-    v3 = dword_4D11E4;
-    if ( dword_4D11E4 < 0 )
+    v3 = ui_focus_index;
+    if ( ui_focus_index < 0 )
     {
-      v3 = dword_4D11E0 - 1;
-      dword_4D11E4 = dword_4D11E0 - 1;
+      v3 = ui_focus_count - 1;
+      ui_focus_index = ui_focus_count - 1;
     }
-    if ( v3 > dword_4D11E0 - 1 )
-      dword_4D11E4 = 0;
-    dword_4D11E8 = dword_480848;
+    if ( v3 > ui_focus_count - 1 )
+      ui_focus_index = 0;
+    ui_focus_frame_marker_ms = game_time_ms;
     ui_focus_candidates[0] = id;
     result = 1;
-    dword_4D11E0 = 1;
+    ui_focus_count = 1;
     LOBYTE(result) = v1;
   }
   return result;
@@ -45265,7 +45273,7 @@ void ui_focus_draw(float *xy)
   v2[0] = 1061997773;
   v2[1] = 1061997773;
   v2[2] = 1058642330;
-  *(float *)&v2[3] = (double)dword_4D11EC * 0.00080000004;
+  *(float *)&v2[3] = (double)ui_focus_timer_ms * 0.00080000004;
   v1[0] = *xy;
   v1[1] = xy[1] + 4.0;
   (*(void (__thiscall **)(int, float *, int, int, _DWORD *))(*(_DWORD *)grim_interface_ptr + 208))(
@@ -45932,7 +45940,7 @@ int ui_menu_item_update(float *xy, int *item)
     grim_interface_ptr,
     *(_DWORD *)v5,
     *((_DWORD *)v5 + 1),
-    aS_0,
+    s_fmt_percent_s,
     *v3);
   (*(void (__thiscall **)(int))(*(_DWORD *)grim_interface_ptr + 232))(grim_interface_ptr);
   xy = *(float **)v5;
@@ -46047,7 +46055,7 @@ char __cdecl sub_43E830(float *a1, int a2)
   a1[1] = a1[1] - 2.0;
   if ( *(_BYTE *)(v2 + 4) )
     ui_focus_set(v2, 0);
-  if ( *(_BYTE *)(v2 + 6) && (*(_BYTE *)(v2 + 4) || (_BYTE)a2 && dword_4D11EC > 800) )
+  if ( *(_BYTE *)(v2 + 6) && (*(_BYTE *)(v2 + 4) || (_BYTE)a2 && ui_focus_timer_ms > 800) )
     v4 = 6 * frame_dt_ms + *(_DWORD *)(v2 + 8);
   else
     v4 = -4 * frame_dt_ms + *(_DWORD *)(v2 + 8);
@@ -46172,7 +46180,7 @@ char __cdecl sub_43E830(float *a1, int a2)
   v12 = *(_DWORD *)grim_interface_ptr;
   v22 = a1[1] + 10.0;
   v31 = *(float *)&a2 * 0.5 + *a1;
-  v37 = (*(int (**)(int, _DWORD, char *, ...))(v12 + 332))(v28, LODWORD(v22), aS_0, v28) / 2;
+  v37 = (*(int (**)(int, _DWORD, char *, ...))(v12 + 332))(v28, LODWORD(v22), s_fmt_percent_s, v28) / 2;
   v14 = *(float *)&v30 - (double)v37 + 1.0;
   (*(void (__cdecl **)(int, _DWORD))(v12 + 328))(grim_interface_ptr, LODWORD(v14));
   if ( *(_BYTE *)(v2 + 6) )
@@ -46304,10 +46312,10 @@ int ui_text_input_update(float *xy, int *input_state)
     grim_interface_ptr,
     LODWORD(v12),
     LODWORD(v15),
-    aS_0,
+    s_fmt_percent_s,
     v10 + *input_state);
   input_statec = 1065353216;
-  if ( sin(flt_47EA4C * 4.0) > 0.0 )
+  if ( sin(game_time_s * 4.0) > 0.0 )
     input_statec = 1053609165;
   (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
     grim_interface_ptr,
@@ -46548,7 +46556,7 @@ int ui_list_widget_update(float *xy, char *list)
     grim_interface_ptr,
     LODWORD(v20),
     LODWORD(v25),
-    aS_0,
+    s_fmt_percent_s,
     *(_DWORD *)(*((_DWORD *)list + 3) + 4 * *((_DWORD *)list + 2)));
   if ( *((int *)list + 1) <= 0 )
     return v15;
@@ -46600,7 +46608,7 @@ int ui_list_widget_update(float *xy, char *list)
         grim_interface_ptr,
         LODWORD(v21),
         LODWORD(v26),
-        aS_0,
+        s_fmt_percent_s,
         *(_DWORD *)(*((_DWORD *)list + 3) + 4 * v17++));
       v18 += 4;
       xyb = v18;
@@ -46919,7 +46927,7 @@ void sub_43F550()
     1065353216,
     1065353216,
     1065353216);
-  v1 = szPassword;
+  v1 = s_empty_string;
   switch ( dword_4D11F0 )
   {
     case 1:
@@ -47387,7 +47395,7 @@ LABEL_26:
       grim_interface_ptr,
       COERCE_FLOAT(LODWORD(v32)),
       COERCE_FLOAT(LODWORD(v33)),
-      aS_0,
+      s_fmt_percent_s,
       (char *)&weapon_table + 124 * v0);
     v32 = v32 + 32.0;
     v33 = v33 + 22.0 + 26.0;
@@ -48240,7 +48248,7 @@ void ui_text_input_render(void *input_state, float y, float alpha)
     v67 = v37 / 2;
     v55[1] = retaddr + 32.0 - (double)(v37 / 2);
     (*(void (__stdcall **)(_DWORD, _DWORD, char *))(v39 + 324))(LODWORD(v55[1]), LODWORD(v55[2]), byte_4D0DA0);
-    flt_4D120C = flt_4D120C - (frame_dt + frame_dt);
+    ui_stats_hover_time = ui_stats_hover_time - (frame_dt + frame_dt);
   }
   else
   {
@@ -48260,14 +48268,14 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       || input_statea + 16.0 >= ui_mouse_y
       || input_statea + 45.0 <= ui_mouse_y )
     {
-      v40 = flt_4D120C - (frame_dt + frame_dt);
+      v40 = ui_stats_hover_time - (frame_dt + frame_dt);
     }
     else
     {
-      v40 = frame_dt + frame_dt + flt_4D120C;
+      v40 = frame_dt + frame_dt + ui_stats_hover_time;
     }
     v56 = *(float *)&v25;
-    flt_4D120C = v40;
+    ui_stats_hover_time = v40;
     v41 = *(_DWORD *)grim_interface_ptr;
     qmemcpy(v55, "fff?fff?fff?", sizeof(v55));
     (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(v41 + 276))(
@@ -48296,10 +48304,10 @@ void ui_text_input_render(void *input_state, float y, float alpha)
   }
   input_stateb = input_statea + 52.0;
   retaddr = retaddr - 96.0;
-  if ( dword_487234 == 2 && game_state_id == 8
-    || (game_state_id == 7 || game_state_id == 8 || game_state_id == 12) && !dword_487234 )
+  if ( ui_screen_phase == 2 && game_state_id == 8
+    || (game_state_id == 7 || game_state_id == 8 || game_state_id == 12) && !ui_screen_phase )
   {
-    flt_4D1210 = 0.0;
+    ui_stats_hover_hit_ratio = 0.0;
   }
   else
   {
@@ -48353,13 +48361,13 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       || ui_mouse_y <= (double)input_stateb
       || input_stateb + 32.0 <= ui_mouse_y )
     {
-      v46 = flt_4D1208 - (frame_dt + frame_dt);
+      v46 = ui_stats_hover_weapon - (frame_dt + frame_dt);
     }
     else
     {
-      v46 = frame_dt + frame_dt + flt_4D1208;
+      v46 = frame_dt + frame_dt + ui_stats_hover_weapon;
     }
-    flt_4D1208 = v46;
+    ui_stats_hover_weapon = v46;
     v47 = *(_DWORD *)grim_interface_ptr;
     qmemcpy(v55, "fff?fff?fff?", sizeof(v55));
     (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(v47 + 276))(
@@ -48407,13 +48415,13 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       || input_stateb + 16.0 - 1.0 >= ui_mouse_y
       || input_stateb + 32.0 <= ui_mouse_y )
     {
-      v52 = flt_4D1210 - (frame_dt + frame_dt);
+      v52 = ui_stats_hover_hit_ratio - (frame_dt + frame_dt);
     }
     else
     {
-      v52 = frame_dt + frame_dt + flt_4D1210;
+      v52 = frame_dt + frame_dt + ui_stats_hover_hit_ratio;
     }
-    flt_4D1210 = v52;
+    ui_stats_hover_hit_ratio = v52;
   }
   (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
     grim_interface_ptr,
@@ -48422,32 +48430,32 @@ void ui_text_input_render(void *input_state, float y, float alpha)
     1065353216,
     v7);
   sub_4411C0(&v58);
-  if ( flt_4D1208 <= 1.0 )
+  if ( ui_stats_hover_weapon <= 1.0 )
   {
-    if ( flt_4D1208 < 0.0 )
-      flt_4D1208 = 0.0;
+    if ( ui_stats_hover_weapon < 0.0 )
+      ui_stats_hover_weapon = 0.0;
   }
   else
   {
-    flt_4D1208 = 1.0;
+    ui_stats_hover_weapon = 1.0;
   }
-  if ( flt_4D120C <= 1.0 )
+  if ( ui_stats_hover_time <= 1.0 )
   {
-    if ( flt_4D120C < 0.0 )
-      flt_4D120C = 0.0;
-  }
-  else
-  {
-    flt_4D120C = 1.0;
-  }
-  if ( flt_4D1210 <= 1.0 )
-  {
-    if ( flt_4D1210 < 0.0 )
-      flt_4D1210 = 0.0;
+    if ( ui_stats_hover_time < 0.0 )
+      ui_stats_hover_time = 0.0;
   }
   else
   {
-    flt_4D1210 = 1.0;
+    ui_stats_hover_time = 1.0;
+  }
+  if ( ui_stats_hover_hit_ratio <= 1.0 )
+  {
+    if ( ui_stats_hover_hit_ratio < 0.0 )
+      ui_stats_hover_hit_ratio = 0.0;
+  }
+  else
+  {
+    ui_stats_hover_hit_ratio = 1.0;
   }
   if ( game_state_id == 7 || game_state_id == 8 || game_state_id == 12 )
   {
@@ -48458,9 +48466,9 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       v53[1],
       v53[2],
       COERCE_FLOAT(LODWORD(v57)));
-    if ( flt_4D1208 > 0.5 )
+    if ( ui_stats_hover_weapon > 0.5 )
     {
-      v54 = (flt_4D1208 - 0.5) * alpha + (flt_4D1208 - 0.5) * alpha;
+      v54 = (ui_stats_hover_weapon - 0.5) * alpha + (ui_stats_hover_weapon - 0.5) * alpha;
       qmemcpy(v53, "fff?fff?fff?", sizeof(v53));
       (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, float))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -48471,9 +48479,9 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       *(float *)&v53[1] = v58 - 20.0;
       (*(void (__stdcall **)(_DWORD, int, char *))(*(_DWORD *)grim_interface_ptr + 324))(v53[1], v59, aMostUsedWeapon);
     }
-    if ( flt_4D120C > 0.5 )
+    if ( ui_stats_hover_time > 0.5 )
     {
-      v54 = (flt_4D120C - 0.5) * alpha + (flt_4D120C - 0.5) * alpha;
+      v54 = (ui_stats_hover_time - 0.5) * alpha + (ui_stats_hover_time - 0.5) * alpha;
       qmemcpy(v53, "fff?fff?fff?", sizeof(v53));
       (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, float))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -48484,9 +48492,9 @@ void ui_text_input_render(void *input_state, float y, float alpha)
       *(float *)&v53[1] = v58 + 12.0;
       (*(void (__stdcall **)(_DWORD, int, char *))(*(_DWORD *)grim_interface_ptr + 324))(v53[1], v59, aTheTimeTheGame);
     }
-    if ( flt_4D1210 > 0.5 )
+    if ( ui_stats_hover_hit_ratio > 0.5 )
     {
-      v54 = (flt_4D1210 - 0.5) * alpha + (flt_4D1210 - 0.5) * alpha;
+      v54 = (ui_stats_hover_hit_ratio - 0.5) * alpha + (ui_stats_hover_hit_ratio - 0.5) * alpha;
       qmemcpy(v53, "fff?fff?fff?", sizeof(v53));
       (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, float))(*(_DWORD *)grim_interface_ptr + 276))(
         grim_interface_ptr,
@@ -48575,14 +48583,14 @@ void ui_update_notice_update(float *xy, float alpha)
     grim_interface_ptr,
     LODWORD(v5),
     LODWORD(v10),
-    szPassword);
+    s_empty_string);
   v11 = xy[1] + 46.0;
   v6 = *xy + 60.0;
   (*(void (__cdecl **)(int, _DWORD, _DWORD, CHAR *))(*(_DWORD *)grim_interface_ptr + 328))(
     grim_interface_ptr,
     LODWORD(v6),
     LODWORD(v11),
-    szPassword);
+    s_empty_string);
   if ( (byte_4CC930 & 1) == 0 )
   {
     byte_4D0ED6 = 1;
@@ -49166,7 +49174,7 @@ LABEL_88:
   v90 = v83;
   if ( ui_button_update(&v89, (int)&dword_4D0F90) )
   {
-    if ( byte_48724D )
+    if ( highscore_return_latch )
     {
       v19 = bonus_pool;
       do
@@ -49195,7 +49203,7 @@ LABEL_88:
         *v22 = 0;
         v22 += 44;
       }
-      while ( (int)v22 < (int)&dword_4965D8 );
+      while ( (int)v22 < (int)&render_scratch_f0 );
       v23 = creature_pool;
       do
       {
@@ -49294,7 +49302,7 @@ LABEL_88:
         aSelectedScoreL);
       v92 = v86 + 114.0;
       v91 = v97[0];
-      FUN_004443c0(&v91, byte_478678);
+      ui_profile_menu_update(&v91, byte_478678);
     }
     dword_4D0D80 = SBYTE2(config_blob[0]);
     (*(void (__thiscall **)(int, int, int, int, int))(*(_DWORD *)grim_interface_ptr + 276))(
@@ -50014,9 +50022,9 @@ void __cdecl nullsub_66()
   ;
 }
 
-// FUN_004443c0 @ 0x004443C0
+// ui_profile_menu_update @ 0x004443C0
 // [binja] int32_t sub_4443c0(float* arg1, char arg2)
-int FUN_004443c0(float *arg1, char arg2)
+int ui_profile_menu_update(float *arg1, char arg2)
 {
   int v2; // edx
   int *v3; // ecx
@@ -50924,9 +50932,9 @@ LABEL_10:
     return &byte_4D1228[32 * (crt_rand() % dword_4D7584)];
 }
 
-// FUN_00445310 @ 0x00445310
+// creature_is_name_unique @ 0x00445310
 // [binja] int32_t sub_445310(char* arg1, int32_t arg2)
-int FUN_00445310(char *arg1, int arg2)
+int creature_is_name_unique(char *arg1, int arg2)
 {
   int v2; // edx
   const char *v3; // ebp
@@ -51021,7 +51029,7 @@ void creature_name_assign_random(int creature_id)
       crt_sprintf(v1, "%s", v5);
     }
 LABEL_19:
-    if ( (unsigned __int8)FUN_00445310(v1, creature_id) )
+    if ( (unsigned __int8)creature_is_name_unique(v1, creature_id) )
     {
       if ( strlen(v1) <= 0xF )
         break;
@@ -51347,7 +51355,7 @@ void survival_gameplay_update_and_render()
     bonus_reflex_boost_timer = 0.0;
     time_scale_active = 0;
     survival_elapsed_ms += v13;
-    dword_48708C[v12] += v13;
+    weapon_usage_time[v12] += v13;
   }
   camera_update();
   gameplay_render_world();
@@ -51443,7 +51451,7 @@ void survival_gameplay_update_and_render()
     aS_1,
     byte_4D14A8);
   v36 = 1.0;
-  if ( sin(flt_47EA4C * 4.0) > 0.0 )
+  if ( sin(game_time_s * 4.0) > 0.0 )
     v36 = 0.40000001;
   (*(void (__thiscall **)(int, int, int, int, float))(*(_DWORD *)grim_interface_ptr + 276))(
     grim_interface_ptr,
@@ -51561,7 +51569,8 @@ void nullsub_72()
   ;
 }
 
-// sub_446150 @ 0x00446150
+// ui_get_element_index @ 0x00446150
+// returns index of element in ui_element_table_end list, or -1
 int __cdecl sub_446150(int a1)
 {
   int result; // eax
@@ -51653,7 +51662,7 @@ void game_state_set(int state_id)
   switch ( state_id )
   {
     case 0:
-      byte_48724D = 0;
+      highscore_return_latch = 0;
       render_pass_mode = 0;
       ui_sign_crimson = 1;
       if ( (unsigned __int8)game_is_full_version() && mods_any_available() )
@@ -51744,7 +51753,7 @@ void game_state_set(int state_id)
       byte_48702C = 0;
       if ( !render_pass_mode )
       {
-        byte_48724D = 0;
+        highscore_return_latch = 0;
         gameplay_reset_state();
         switch ( config_game_mode )
         {
@@ -51784,7 +51793,7 @@ void game_state_set(int state_id)
       byte_48702C = 0;
       if ( !render_pass_mode )
       {
-        byte_48724D = 0;
+        highscore_return_latch = 0;
         gameplay_reset_state();
         render_pass_mode = 1;
         byte_487241 = 1;
@@ -51801,11 +51810,11 @@ void game_state_set(int state_id)
       byte_488B50 = 1;
       dword_48CF78 = -1033371648;
       byte_488E68 = 1;
-      dword_487234 = 0;
+      ui_screen_phase = 0;
       *(float *)&dword_48CF7C = (double)*(int *)config_screen_width * 0.0015625 * 150.0 + 10.0 - 150.0 + 135.0;
       break;
     case 4:
-      byte_48724D = 0;
+      highscore_return_latch = 0;
       ui_sign_crimson = 1;
       byte_48E820 = 1;
       dword_48E858 = (int)sub_43F550;
@@ -51862,7 +51871,7 @@ LABEL_56:
       dword_489E18 = (int)sub_440960;
       break;
     case 17:
-      dword_487234 = 0;
+      ui_screen_phase = 0;
       ui_sign_crimson = 1;
       byte_489DE0 = 1;
       dword_489E18 = (int)credits_screen_update;
@@ -51888,7 +51897,7 @@ LABEL_56:
         case 8:
           byte_48DBC0 = 1;
           game_save_status();
-          dword_487234 = -2;
+          ui_screen_phase = -2;
           goto LABEL_86;
         case 21:
           byte_48DBC0 = 1;
@@ -51903,11 +51912,11 @@ LABEL_56:
         default:
           goto LABEL_86;
       }
-      dword_487234 = -1;
+      ui_screen_phase = -1;
       break;
   }
 LABEL_86:
-  if ( byte_48724D )
+  if ( highscore_return_latch )
     ui_sign_crimson = 0;
   ui_elements_timeline = 0;
   ui_transition_direction = 1;
@@ -52026,7 +52035,7 @@ void __cdecl sub_446900(int a1)
       v16 = 0.0;
       *(_DWORD *)(a1 + 12) = 0;
     }
-    if ( !sub_446150(a1) )
+    if ( !ui_get_element_index(a1) )
       v16 = -COERCE_FLOAT(LODWORD(v16) & 0x7FFFFFFF);
     if ( ui_elements_timeline < *(_DWORD *)(a1 + 16) )
     {
@@ -52127,8 +52136,8 @@ void __cdecl sub_446C40(int a1)
   (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)grim_interface_ptr + 252))(grim_interface_ptr, 0);
   if ( *(_DWORD *)(v1 + 516) != -1 )
   {
-    if ( v2 && dword_4D11EC > 0 )
-      *(_DWORD *)(v1 + 760) = dword_4D11EC;
+    if ( v2 && ui_focus_timer_ms > 0 )
+      *(_DWORD *)(v1 + 760) = ui_focus_timer_ms;
     if ( *(_DWORD *)(v1 + 52) )
     {
       v6 = v1 + 311;
@@ -52540,8 +52549,8 @@ void sub_4474E0()
     (*(void (__thiscall **)(int))(*(_DWORD *)plugin_interface_ptr + 4))(plugin_interface_ptr);
     sfx_mute_all(music_track_extra_0);
     plugin_interface_ptr = 0;
-    FreeLibrary(hLibModule);
-    hLibModule = 0;
+    FreeLibrary(plugin_module_handle);
+    plugin_module_handle = 0;
     byte_471304 = 1;
     game_state_pending = 20;
   }
@@ -53236,7 +53245,7 @@ LABEL_53:
       grim_interface_ptr,
       LODWORD(v21),
       COERCE_FLOAT(LODWORD(v14)),
-      aS_0,
+      s_fmt_percent_s,
       quest_meta_name[110 * dword_478E58 - 110 + 11 * v9]);
     v31 = (float)((*(int (__thiscall **)(int, int))(*(_DWORD *)grim_interface_ptr + 332))(
                     grim_interface_ptr,
@@ -53932,208 +53941,208 @@ int sub_448CD0()
       switch ( v14 )
       {
         case 256:
-          strcpy(String, aMouse1);
-          v15 = String;
+          strcpy(input_key_name_buf, aMouse1);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 257:
           v16 = aMouse2;
           break;
         case 258:
-          strcpy(String, aMouse3);
-          v15 = String;
+          strcpy(input_key_name_buf, aMouse3);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 259:
           v16 = aMouse4;
           break;
         case 260:
-          strcpy(String, aMouse5);
-          v15 = String;
+          strcpy(input_key_name_buf, aMouse5);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 265:
           v16 = aMwheelup;
           break;
         case 266:
-          strcpy(String, aMwheeldown);
-          v15 = String;
+          strcpy(input_key_name_buf, aMwheeldown);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 287:
           v16 = aJoys1;
           break;
         case 288:
-          strcpy(String, aJoys2);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys2);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 289:
           v16 = aJoys3;
           break;
         case 290:
-          strcpy(String, aJoys4);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys4);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 291:
           v16 = aJoys5;
           break;
         case 292:
-          strcpy(String, aJoys6);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys6);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 293:
           v16 = aJoys7;
           break;
         case 294:
-          strcpy(String, aJoys8);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys8);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 295:
           v16 = aJoys9;
           break;
         case 296:
-          strcpy(String, aJoys10);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys10);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 297:
           v16 = aJoys11;
           break;
         case 298:
-          strcpy(String, aJoys12);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoys12);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 305:
           v16 = aJoysup;
           break;
         case 306:
-          strcpy(String, aJoysdown);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoysdown);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 307:
           v16 = aJoysleft;
           break;
         case 308:
-          strcpy(String, aJoysright);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoysright);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 319:
           v16 = aJoyaxisx;
           break;
         case 320:
-          strcpy(String, aJoyaxisy);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoyaxisy);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 321:
           v16 = aJoyaxisz;
           break;
         case 339:
-          strcpy(String, aJoyrotx);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoyrotx);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 340:
           v16 = aJoyroty;
           break;
         case 341:
-          strcpy(String, aJoyrotz);
-          v15 = String;
+          strcpy(input_key_name_buf, aJoyrotz);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 382:
           v16 = aUnbound;
           break;
         case 355:
-          strcpy(String, aRim0xaxis);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim0xaxis);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 356:
           v16 = aRim1xaxis;
           break;
         case 357:
-          strcpy(String, aRim2xaxis);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim2xaxis);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 360:
           v16 = aRim0yaxis;
           break;
         case 361:
-          strcpy(String, aRim1yaxis);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim1yaxis);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 362:
           v16 = aRim2yaxis;
           break;
         case 365:
-          strcpy(String, aRim0btn1);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim0btn1);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 366:
           v16 = aRim0btn2;
           break;
         case 367:
-          strcpy(String, aRim0btn3);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim0btn3);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 368:
           v16 = aRim0btn4;
           break;
         case 369:
-          strcpy(String, aRim0btn5);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim0btn5);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 370:
           v16 = aRim1btn1;
           break;
         case 371:
-          strcpy(String, aRim1btn2);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim1btn2);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 372:
           v16 = aRim1btn3;
           break;
         case 373:
-          strcpy(String, aRim1btn4);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim1btn4);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 374:
           v16 = aRim1btn5;
           break;
         case 375:
-          strcpy(String, aRim2btn1);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim2btn1);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 376:
           v16 = aRim2btn2;
           break;
         case 377:
-          strcpy(String, aRim2btn3);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim2btn3);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         case 378:
           v16 = aRim2btn4;
           break;
         case 379:
-          strcpy(String, aRim2btn5);
-          v15 = String;
+          strcpy(input_key_name_buf, aRim2btn5);
+          v15 = input_key_name_buf;
           v12 = v139;
           goto LABEL_283;
         default:
@@ -54142,15 +54151,15 @@ int sub_448CD0()
           v16 = aRawinput;
           break;
       }
-      strcpy(String, v16);
+      strcpy(input_key_name_buf, v16);
 LABEL_134:
       v12 = v139;
-      v15 = String;
+      v15 = input_key_name_buf;
       goto LABEL_283;
     }
-    if ( GetKeyNameTextA(v14 << 16, String, 63) )
+    if ( GetKeyNameTextA(v14 << 16, input_key_name_buf, 63) )
     {
-      v15 = String;
+      v15 = input_key_name_buf;
     }
     else
     {
@@ -54604,9 +54613,9 @@ LABEL_283:
   v18 = config_p1_move_forward[LODWORD(v12)];
   if ( v18 <= 255 )
   {
-    if ( GetKeyNameTextA(v18 << 16, String, 63) )
+    if ( GetKeyNameTextA(v18 << 16, input_key_name_buf, 63) )
     {
-      v19 = String;
+      v19 = input_key_name_buf;
     }
     else
     {
@@ -55055,166 +55064,166 @@ LABEL_283:
     switch ( v18 )
     {
       case 256:
-        v19 = strcpy(String, aMouse1);
+        v19 = strcpy(input_key_name_buf, aMouse1);
         break;
       case 257:
         v20 = aMouse2;
         goto LABEL_391;
       case 258:
-        v19 = strcpy(String, aMouse3);
+        v19 = strcpy(input_key_name_buf, aMouse3);
         break;
       case 259:
         v20 = aMouse4;
         goto LABEL_391;
       case 260:
-        v19 = strcpy(String, aMouse5);
+        v19 = strcpy(input_key_name_buf, aMouse5);
         break;
       case 265:
         v20 = aMwheelup;
         goto LABEL_391;
       case 266:
-        v19 = strcpy(String, aMwheeldown);
+        v19 = strcpy(input_key_name_buf, aMwheeldown);
         break;
       case 287:
         v20 = aJoys1;
         goto LABEL_391;
       case 288:
-        v19 = strcpy(String, aJoys2);
+        v19 = strcpy(input_key_name_buf, aJoys2);
         break;
       case 289:
         v20 = aJoys3;
         goto LABEL_391;
       case 290:
-        v19 = strcpy(String, aJoys4);
+        v19 = strcpy(input_key_name_buf, aJoys4);
         break;
       case 291:
         v20 = aJoys5;
         goto LABEL_391;
       case 292:
-        v19 = strcpy(String, aJoys6);
+        v19 = strcpy(input_key_name_buf, aJoys6);
         break;
       case 293:
         v20 = aJoys7;
         goto LABEL_391;
       case 294:
-        v19 = strcpy(String, aJoys8);
+        v19 = strcpy(input_key_name_buf, aJoys8);
         break;
       case 295:
         v20 = aJoys9;
         goto LABEL_391;
       case 296:
-        v19 = strcpy(String, aJoys10);
+        v19 = strcpy(input_key_name_buf, aJoys10);
         break;
       case 297:
         v20 = aJoys11;
         goto LABEL_391;
       case 298:
-        v19 = strcpy(String, aJoys12);
+        v19 = strcpy(input_key_name_buf, aJoys12);
         break;
       case 305:
         v20 = aJoysup;
         goto LABEL_391;
       case 306:
-        v19 = strcpy(String, aJoysdown);
+        v19 = strcpy(input_key_name_buf, aJoysdown);
         break;
       case 307:
         v20 = aJoysleft;
         goto LABEL_391;
       case 308:
-        v19 = strcpy(String, aJoysright);
+        v19 = strcpy(input_key_name_buf, aJoysright);
         break;
       case 319:
         v20 = aJoyaxisx;
         goto LABEL_391;
       case 320:
-        v19 = strcpy(String, aJoyaxisy);
+        v19 = strcpy(input_key_name_buf, aJoyaxisy);
         break;
       case 321:
         v20 = aJoyaxisz;
         goto LABEL_391;
       case 339:
-        v19 = strcpy(String, aJoyrotx);
+        v19 = strcpy(input_key_name_buf, aJoyrotx);
         break;
       case 340:
         v20 = aJoyroty;
         goto LABEL_391;
       case 341:
-        v19 = strcpy(String, aJoyrotz);
+        v19 = strcpy(input_key_name_buf, aJoyrotz);
         break;
       case 382:
         v20 = aUnbound;
         goto LABEL_391;
       case 355:
-        v19 = strcpy(String, aRim0xaxis);
+        v19 = strcpy(input_key_name_buf, aRim0xaxis);
         break;
       case 356:
         v20 = aRim1xaxis;
         goto LABEL_391;
       case 357:
-        v19 = strcpy(String, aRim2xaxis);
+        v19 = strcpy(input_key_name_buf, aRim2xaxis);
         break;
       case 360:
         v20 = aRim0yaxis;
         goto LABEL_391;
       case 361:
-        v19 = strcpy(String, aRim1yaxis);
+        v19 = strcpy(input_key_name_buf, aRim1yaxis);
         break;
       case 362:
         v20 = aRim2yaxis;
         goto LABEL_391;
       case 365:
-        v19 = strcpy(String, aRim0btn1);
+        v19 = strcpy(input_key_name_buf, aRim0btn1);
         break;
       case 366:
         v20 = aRim0btn2;
         goto LABEL_391;
       case 367:
-        v19 = strcpy(String, aRim0btn3);
+        v19 = strcpy(input_key_name_buf, aRim0btn3);
         break;
       case 368:
         v20 = aRim0btn4;
         goto LABEL_391;
       case 369:
-        v19 = strcpy(String, aRim0btn5);
+        v19 = strcpy(input_key_name_buf, aRim0btn5);
         break;
       case 370:
         v20 = aRim1btn1;
         goto LABEL_391;
       case 371:
-        v19 = strcpy(String, aRim1btn2);
+        v19 = strcpy(input_key_name_buf, aRim1btn2);
         break;
       case 372:
         v20 = aRim1btn3;
         goto LABEL_391;
       case 373:
-        v19 = strcpy(String, aRim1btn4);
+        v19 = strcpy(input_key_name_buf, aRim1btn4);
         break;
       case 374:
         v20 = aRim1btn5;
         goto LABEL_391;
       case 375:
-        v19 = strcpy(String, aRim2btn1);
+        v19 = strcpy(input_key_name_buf, aRim2btn1);
         break;
       case 376:
         v20 = aRim2btn2;
         goto LABEL_391;
       case 377:
-        v19 = strcpy(String, aRim2btn3);
+        v19 = strcpy(input_key_name_buf, aRim2btn3);
         break;
       case 378:
         v20 = aRim2btn4;
         goto LABEL_391;
       case 379:
-        v19 = strcpy(String, aRim2btn5);
+        v19 = strcpy(input_key_name_buf, aRim2btn5);
         break;
       default:
         if ( v18 > 355 )
         {
           v20 = aRawinput;
 LABEL_391:
-          strcpy(String, v20);
+          strcpy(input_key_name_buf, v20);
         }
-        v19 = String;
+        v19 = input_key_name_buf;
         break;
     }
   }
@@ -55224,9 +55233,9 @@ LABEL_391:
   v21 = config_key_pick_perk;
   if ( config_key_pick_perk <= 255 )
   {
-    if ( GetKeyNameTextA(config_key_pick_perk << 16, String, 63) )
+    if ( GetKeyNameTextA(config_key_pick_perk << 16, input_key_name_buf, 63) )
     {
-      v22 = String;
+      v22 = input_key_name_buf;
     }
     else
     {
@@ -55675,192 +55684,192 @@ LABEL_391:
     switch ( config_key_pick_perk )
     {
       case 256:
-        strcpy(String, aMouse1);
-        v22 = String;
+        strcpy(input_key_name_buf, aMouse1);
+        v22 = input_key_name_buf;
         break;
       case 257:
         v23 = aMouse2;
         goto LABEL_648;
       case 258:
-        strcpy(String, aMouse3);
-        v22 = String;
+        strcpy(input_key_name_buf, aMouse3);
+        v22 = input_key_name_buf;
         break;
       case 259:
         v23 = aMouse4;
         goto LABEL_648;
       case 260:
-        strcpy(String, aMouse5);
-        v22 = String;
+        strcpy(input_key_name_buf, aMouse5);
+        v22 = input_key_name_buf;
         break;
       case 265:
         v23 = aMwheelup;
         goto LABEL_648;
       case 266:
-        strcpy(String, aMwheeldown);
-        v22 = String;
+        strcpy(input_key_name_buf, aMwheeldown);
+        v22 = input_key_name_buf;
         break;
       case 287:
         v23 = aJoys1;
         goto LABEL_648;
       case 288:
-        strcpy(String, aJoys2);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys2);
+        v22 = input_key_name_buf;
         break;
       case 289:
         v23 = aJoys3;
         goto LABEL_648;
       case 290:
-        strcpy(String, aJoys4);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys4);
+        v22 = input_key_name_buf;
         break;
       case 291:
         v23 = aJoys5;
         goto LABEL_648;
       case 292:
-        strcpy(String, aJoys6);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys6);
+        v22 = input_key_name_buf;
         break;
       case 293:
         v23 = aJoys7;
         goto LABEL_648;
       case 294:
-        strcpy(String, aJoys8);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys8);
+        v22 = input_key_name_buf;
         break;
       case 295:
         v23 = aJoys9;
         goto LABEL_648;
       case 296:
-        strcpy(String, aJoys10);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys10);
+        v22 = input_key_name_buf;
         break;
       case 297:
         v23 = aJoys11;
         goto LABEL_648;
       case 298:
-        strcpy(String, aJoys12);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoys12);
+        v22 = input_key_name_buf;
         break;
       case 305:
         v23 = aJoysup;
         goto LABEL_648;
       case 306:
-        strcpy(String, aJoysdown);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoysdown);
+        v22 = input_key_name_buf;
         break;
       case 307:
         v23 = aJoysleft;
         goto LABEL_648;
       case 308:
-        strcpy(String, aJoysright);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoysright);
+        v22 = input_key_name_buf;
         break;
       case 319:
         v23 = aJoyaxisx;
         goto LABEL_648;
       case 320:
-        strcpy(String, aJoyaxisy);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoyaxisy);
+        v22 = input_key_name_buf;
         break;
       case 321:
         v23 = aJoyaxisz;
         goto LABEL_648;
       case 339:
-        strcpy(String, aJoyrotx);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoyrotx);
+        v22 = input_key_name_buf;
         break;
       case 340:
         v23 = aJoyroty;
         goto LABEL_648;
       case 341:
-        strcpy(String, aJoyrotz);
-        v22 = String;
+        strcpy(input_key_name_buf, aJoyrotz);
+        v22 = input_key_name_buf;
         break;
       case 382:
         v23 = aUnbound;
         goto LABEL_648;
       case 355:
-        strcpy(String, aRim0xaxis);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim0xaxis);
+        v22 = input_key_name_buf;
         break;
       case 356:
         v23 = aRim1xaxis;
         goto LABEL_648;
       case 357:
-        strcpy(String, aRim2xaxis);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim2xaxis);
+        v22 = input_key_name_buf;
         break;
       case 360:
         v23 = aRim0yaxis;
         goto LABEL_648;
       case 361:
-        strcpy(String, aRim1yaxis);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim1yaxis);
+        v22 = input_key_name_buf;
         break;
       case 362:
         v23 = aRim2yaxis;
         goto LABEL_648;
       case 365:
-        strcpy(String, aRim0btn1);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim0btn1);
+        v22 = input_key_name_buf;
         break;
       case 366:
         v23 = aRim0btn2;
         goto LABEL_648;
       case 367:
-        strcpy(String, aRim0btn3);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim0btn3);
+        v22 = input_key_name_buf;
         break;
       case 368:
         v23 = aRim0btn4;
         goto LABEL_648;
       case 369:
-        strcpy(String, aRim0btn5);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim0btn5);
+        v22 = input_key_name_buf;
         break;
       case 370:
         v23 = aRim1btn1;
         goto LABEL_648;
       case 371:
-        strcpy(String, aRim1btn2);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim1btn2);
+        v22 = input_key_name_buf;
         break;
       case 372:
         v23 = aRim1btn3;
         goto LABEL_648;
       case 373:
-        strcpy(String, aRim1btn4);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim1btn4);
+        v22 = input_key_name_buf;
         break;
       case 374:
         v23 = aRim1btn5;
         goto LABEL_648;
       case 375:
-        strcpy(String, aRim2btn1);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim2btn1);
+        v22 = input_key_name_buf;
         break;
       case 376:
         v23 = aRim2btn2;
         goto LABEL_648;
       case 377:
-        strcpy(String, aRim2btn3);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim2btn3);
+        v22 = input_key_name_buf;
         break;
       case 378:
         v23 = aRim2btn4;
         goto LABEL_648;
       case 379:
-        strcpy(String, aRim2btn5);
-        v22 = String;
+        strcpy(input_key_name_buf, aRim2btn5);
+        v22 = input_key_name_buf;
         break;
       default:
         if ( config_key_pick_perk > 355 )
         {
           v23 = aRawinput;
 LABEL_648:
-          strcpy(String, v23);
+          strcpy(input_key_name_buf, v23);
         }
-        v22 = String;
+        v22 = input_key_name_buf;
         break;
     }
   }
@@ -55870,9 +55879,9 @@ LABEL_648:
   v24 = config_key_reload;
   if ( config_key_reload <= 255 )
   {
-    if ( GetKeyNameTextA(config_key_reload << 16, String, 63) )
+    if ( GetKeyNameTextA(config_key_reload << 16, input_key_name_buf, 63) )
     {
-      v25 = String;
+      v25 = input_key_name_buf;
     }
     else
     {
@@ -56321,166 +56330,166 @@ LABEL_648:
     switch ( config_key_reload )
     {
       case 256:
-        v25 = strcpy(String, aMouse1);
+        v25 = strcpy(input_key_name_buf, aMouse1);
         break;
       case 257:
         v26 = aMouse2;
         goto LABEL_905;
       case 258:
-        v25 = strcpy(String, aMouse3);
+        v25 = strcpy(input_key_name_buf, aMouse3);
         break;
       case 259:
         v26 = aMouse4;
         goto LABEL_905;
       case 260:
-        v25 = strcpy(String, aMouse5);
+        v25 = strcpy(input_key_name_buf, aMouse5);
         break;
       case 265:
         v26 = aMwheelup;
         goto LABEL_905;
       case 266:
-        v25 = strcpy(String, aMwheeldown);
+        v25 = strcpy(input_key_name_buf, aMwheeldown);
         break;
       case 287:
         v26 = aJoys1;
         goto LABEL_905;
       case 288:
-        v25 = strcpy(String, aJoys2);
+        v25 = strcpy(input_key_name_buf, aJoys2);
         break;
       case 289:
         v26 = aJoys3;
         goto LABEL_905;
       case 290:
-        v25 = strcpy(String, aJoys4);
+        v25 = strcpy(input_key_name_buf, aJoys4);
         break;
       case 291:
         v26 = aJoys5;
         goto LABEL_905;
       case 292:
-        v25 = strcpy(String, aJoys6);
+        v25 = strcpy(input_key_name_buf, aJoys6);
         break;
       case 293:
         v26 = aJoys7;
         goto LABEL_905;
       case 294:
-        v25 = strcpy(String, aJoys8);
+        v25 = strcpy(input_key_name_buf, aJoys8);
         break;
       case 295:
         v26 = aJoys9;
         goto LABEL_905;
       case 296:
-        v25 = strcpy(String, aJoys10);
+        v25 = strcpy(input_key_name_buf, aJoys10);
         break;
       case 297:
         v26 = aJoys11;
         goto LABEL_905;
       case 298:
-        v25 = strcpy(String, aJoys12);
+        v25 = strcpy(input_key_name_buf, aJoys12);
         break;
       case 305:
         v26 = aJoysup;
         goto LABEL_905;
       case 306:
-        v25 = strcpy(String, aJoysdown);
+        v25 = strcpy(input_key_name_buf, aJoysdown);
         break;
       case 307:
         v26 = aJoysleft;
         goto LABEL_905;
       case 308:
-        v25 = strcpy(String, aJoysright);
+        v25 = strcpy(input_key_name_buf, aJoysright);
         break;
       case 319:
         v26 = aJoyaxisx;
         goto LABEL_905;
       case 320:
-        v25 = strcpy(String, aJoyaxisy);
+        v25 = strcpy(input_key_name_buf, aJoyaxisy);
         break;
       case 321:
         v26 = aJoyaxisz;
         goto LABEL_905;
       case 339:
-        v25 = strcpy(String, aJoyrotx);
+        v25 = strcpy(input_key_name_buf, aJoyrotx);
         break;
       case 340:
         v26 = aJoyroty;
         goto LABEL_905;
       case 341:
-        v25 = strcpy(String, aJoyrotz);
+        v25 = strcpy(input_key_name_buf, aJoyrotz);
         break;
       case 382:
         v26 = aUnbound;
         goto LABEL_905;
       case 355:
-        v25 = strcpy(String, aRim0xaxis);
+        v25 = strcpy(input_key_name_buf, aRim0xaxis);
         break;
       case 356:
         v26 = aRim1xaxis;
         goto LABEL_905;
       case 357:
-        v25 = strcpy(String, aRim2xaxis);
+        v25 = strcpy(input_key_name_buf, aRim2xaxis);
         break;
       case 360:
         v26 = aRim0yaxis;
         goto LABEL_905;
       case 361:
-        v25 = strcpy(String, aRim1yaxis);
+        v25 = strcpy(input_key_name_buf, aRim1yaxis);
         break;
       case 362:
         v26 = aRim2yaxis;
         goto LABEL_905;
       case 365:
-        v25 = strcpy(String, aRim0btn1);
+        v25 = strcpy(input_key_name_buf, aRim0btn1);
         break;
       case 366:
         v26 = aRim0btn2;
         goto LABEL_905;
       case 367:
-        v25 = strcpy(String, aRim0btn3);
+        v25 = strcpy(input_key_name_buf, aRim0btn3);
         break;
       case 368:
         v26 = aRim0btn4;
         goto LABEL_905;
       case 369:
-        v25 = strcpy(String, aRim0btn5);
+        v25 = strcpy(input_key_name_buf, aRim0btn5);
         break;
       case 370:
         v26 = aRim1btn1;
         goto LABEL_905;
       case 371:
-        v25 = strcpy(String, aRim1btn2);
+        v25 = strcpy(input_key_name_buf, aRim1btn2);
         break;
       case 372:
         v26 = aRim1btn3;
         goto LABEL_905;
       case 373:
-        v25 = strcpy(String, aRim1btn4);
+        v25 = strcpy(input_key_name_buf, aRim1btn4);
         break;
       case 374:
         v26 = aRim1btn5;
         goto LABEL_905;
       case 375:
-        v25 = strcpy(String, aRim2btn1);
+        v25 = strcpy(input_key_name_buf, aRim2btn1);
         break;
       case 376:
         v26 = aRim2btn2;
         goto LABEL_905;
       case 377:
-        v25 = strcpy(String, aRim2btn3);
+        v25 = strcpy(input_key_name_buf, aRim2btn3);
         break;
       case 378:
         v26 = aRim2btn4;
         goto LABEL_905;
       case 379:
-        v25 = strcpy(String, aRim2btn5);
+        v25 = strcpy(input_key_name_buf, aRim2btn5);
         break;
       default:
         if ( config_key_reload > 355 )
         {
           v26 = aRawinput;
 LABEL_905:
-          strcpy(String, v26);
+          strcpy(input_key_name_buf, v26);
         }
-        v25 = String;
+        v25 = input_key_name_buf;
         break;
     }
   }
@@ -57909,9 +57918,9 @@ char *FUN_0044faa0(char *arg1)
   return result;
 }
 
-// FUN_0044fb50 @ 0x0044FB50
+// ui_element_layout_calc @ 0x0044FB50
 // [binja] float sub_44fb50(float arg1)
-float FUN_0044fb50(float arg1)
+float ui_element_layout_calc(float arg1)
 {
   double v2; // st7
   double v3; // st7
@@ -58099,10 +58108,10 @@ void ui_menu_layout_init()
     dword_48F180 = (int)&byte_488838;
   }
   dword_48F1E4 = (int)&byte_488B50;
-  dword_48F1E8 = (int)&byte_488E68;
+  ui_menu_layout_c = (int)&byte_488E68;
   dword_48F190 = (int)&unk_489180;
   dword_48F194 = (int)&byte_489498;
-  dword_48F198 = (int)&byte_4897B0;
+  ui_menu_layout_a = (int)&byte_4897B0;
   dword_48F1A4 = (int)&unk_48A410;
   dword_48F1A8 = (int)&unk_48A728;
   dword_48F1AC = (int)&unk_48AA40;
@@ -58120,7 +58129,7 @@ void ui_menu_layout_init()
   dword_48F1E0 = (int)&byte_48CC48;
   dword_48F19C = (int)&unk_48CF60;
   dword_48F1A0 = (int)&byte_48D278;
-  dword_48F1B0 = (int)&byte_48D590;
+  ui_menu_layout_b = (int)&byte_48D590;
   dword_48F188 = (int)&unk_489AC8;
   dword_48F18C = (int)&byte_489DE0;
   dword_48F1EC = (int)&byte_48A0F8;
@@ -58148,7 +58157,7 @@ void ui_menu_layout_init()
   dword_48F7FC = texture_get_or_load_alt(aUiUiTextcontro, v265);
   h = texture_get_or_load_alt(aUiUiTextpickap, v264);
   dword_48F804 = texture_get_or_load_alt(aUiUiTextwelldo, v263);
-  qmemcpy(&unk_488244, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_488244, &ui_menu_item_element, 0xE8u);
   dword_488220 = -1032847360;
   dword_488224 = 1129447424;
   *(float *)&v290 = 270.0;
@@ -58158,7 +58167,7 @@ void ui_menu_layout_init()
   dword_48823C = (int)sub_44FC70;
   if ( (unsigned __int8)game_is_full_version() )
     dword_48823C = (int)sub_447350;
-  qmemcpy(&unk_4878FC, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_4878FC, &ui_menu_item_element, 0xE8u);
   dword_4878D8 = -1032847360;
   dword_4878DC = 1132920832;
   *(float *)&v290 = 270.0;
@@ -58167,7 +58176,7 @@ void ui_menu_layout_init()
   dword_4878F4 = (int)ui_menu_main_click_play_game;
   dword_4878F0 = 25;
   *(float *)&v290 = 270.0;
-  qmemcpy(&unk_487C14, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_487C14, &ui_menu_item_element, 0xE8u);
   dword_487BF0 = -1032847360;
   dword_487BF4 = 1134886912;
   v291 = -38.0;
@@ -58175,7 +58184,7 @@ void ui_menu_layout_init()
   dword_487C0C = (int)ui_menu_main_click_options;
   dword_487C08 = 24;
   *(float *)&v290 = 270.0;
-  qmemcpy(&unk_487F2C, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_487F2C, &ui_menu_item_element, 0xE8u);
   dword_487F08 = -1032847360;
   dword_487F0C = 1136852992;
   v291 = -38.0;
@@ -58188,7 +58197,7 @@ void ui_menu_layout_init()
                    &v290,
                    100) )
   {
-    qmemcpy(&unk_48855C, &unk_48FBA8, 0xE8u);
+    qmemcpy(&unk_48855C, &ui_menu_item_element, 0xE8u);
     dword_488538 = -1032847360;
     dword_48853C = 1138819072;
     *(float *)&v290 = 270.0;
@@ -58198,7 +58207,7 @@ void ui_menu_layout_init()
     dword_488554 = (int)sub_44FCA0;
     v2 = 6;
   }
-  qmemcpy(&unk_488874, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_488874, &ui_menu_item_element, 0xE8u);
   *(float *)&v290 = 270.0;
   dword_488850 = -1032847360;
   v274 = 60 * v2 + 150;
@@ -58521,7 +58530,7 @@ void ui_menu_layout_init()
   dword_488B88 = (int)sub_4475D0;
   dword_488B78 = (int)v290;
   dword_488B54 = 1;
-  qmemcpy(&unk_488EA4, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_488EA4, &ui_menu_item_element, 0xE8u);
   dword_488E80 = -1034158080;
   dword_488E84 = 1138163712;
   *(float *)&v290 = 270.0;
@@ -58539,21 +58548,21 @@ void ui_menu_layout_init()
   dword_488E9C = (int)FUN_00447420;
   dword_488E6C = 1;
   dword_488E98 = 48;
-  qmemcpy(&unk_48B9F4, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_48B9F4, &ui_menu_item_element, 0xE8u);
   dword_48B9D0 = -1032847360;
   dword_48B9D4 = 1129447424;
   qmemcpy(&unk_48BADC, &unk_487CFC, 0xE8u);
   dword_48B9C8 += 100;
   dword_48B9CC += 100;
   dword_48B9EC = (int)ui_menu_main_click_options;
-  qmemcpy(&unk_48BD0C, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_48BD0C, &ui_menu_item_element, 0xE8u);
   dword_48BCE8 = -1029701632;
   dword_48BCEC = 1132920832;
   qmemcpy(&unk_48BDF4, &unk_48895C, 0xE8u);
   dword_48BD04 = (int)sub_4474E0;
   dword_48BCE0 += 200;
   dword_48BCE4 += 200;
-  qmemcpy(&unk_48C024, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_48C024, &ui_menu_item_element, 0xE8u);
   dword_48C000 = -1027080192;
   dword_48C004 = 1134886912;
   qmemcpy(&unk_48C10C, &unk_488F8C, 0xE8u);
@@ -58600,7 +58609,7 @@ void ui_menu_layout_init()
   while ( (int)_EAX < (int)flt_48962C );
   dword_4894D0 = (int)sub_44ED80;
   dword_48949C = 1;
-  qmemcpy(&unk_4897EC, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_4897EC, &ui_menu_item_element, 0xE8u);
   dword_4897CC = 1139212288;
   dword_4897C8 = -1034158080;
   qmemcpy(&unk_4898D4, &unk_488F8C, 0xE8u);
@@ -58629,7 +58638,7 @@ void ui_menu_layout_init()
     dword_48D290 = -1019805696;
   dword_48D2B0 = (int)sub_448CD0;
   dword_48D27C = 1;
-  qmemcpy(&unk_48D5CC, &unk_48FBA8, 0xE8u);
+  qmemcpy(&unk_48D5CC, &ui_menu_item_element, 0xE8u);
   dword_48D5A8 = -1021640704;
   dword_48D5AC = 1137836032;
   qmemcpy(&unk_48D6B4, &unk_488F8C, 0xE8u);
@@ -58982,13 +58991,13 @@ LABEL_69:
   {
     for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
     {
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+3Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 60);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 60);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -58998,13 +59007,13 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _EDX = dword_48F1E8;
+      _EDX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+edx+20Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 524);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 524);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59014,13 +59023,13 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+124h]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 292);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 292);
       _EAX += 28;
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
@@ -59031,7 +59040,7 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+24h]
@@ -59039,7 +59048,7 @@ LABEL_69:
         fstp    dword ptr [eax+ecx+24h]
       }
       *(float *)(_EAX + _ECX + 36) = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+1F4h]
@@ -59047,7 +59056,7 @@ LABEL_69:
         fstp    dword ptr [eax+ecx+1F4h]
       }
       *(float *)(_EAX + _ECX + 500) = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+10Ch]
@@ -59061,13 +59070,13 @@ LABEL_69:
   {
     for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
     {
-      _EDX = dword_48F1E8;
+      _EDX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+edx+3Ch]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 60);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 60);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59077,13 +59086,13 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+20Ch]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 524);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 524);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59093,13 +59102,13 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _EDX = dword_48F1E8;
+      _EDX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+edx+124h]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F1E8 + 292);
+      _ECX = (float *)(_EAX + ui_menu_layout_c + 292);
       _EAX += 28;
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
@@ -59110,7 +59119,7 @@ LABEL_69:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+24h]
@@ -59118,7 +59127,7 @@ LABEL_69:
         fstp    dword ptr [eax+ecx+24h]
       }
       *(float *)(_EAX + _ECX + 36) = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+1F4h]
@@ -59126,7 +59135,7 @@ LABEL_69:
         fstp    dword ptr [eax+ecx+1F4h]
       }
       *(float *)(_EAX + _ECX + 500) = _ET1;
-      _ECX = dword_48F1E8;
+      _ECX = ui_menu_layout_c;
       __asm
       {
         fld     dword ptr [eax+ecx+10Ch]
@@ -59141,13 +59150,13 @@ LABEL_77:
   {
     for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
     {
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+3Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 60);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 60);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59157,13 +59166,13 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _EDX = dword_48F198;
+      _EDX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+edx+20Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 524);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 524);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59173,13 +59182,13 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+124h]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 292);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 292);
       _EAX += 28;
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
@@ -59190,7 +59199,7 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+24h]
@@ -59198,7 +59207,7 @@ LABEL_77:
         fstp    dword ptr [eax+ecx+24h]
       }
       *(float *)(_EAX + _ECX + 36) = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+1F4h]
@@ -59206,7 +59215,7 @@ LABEL_77:
         fstp    dword ptr [eax+ecx+1F4h]
       }
       *(float *)(_EAX + _ECX + 500) = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+10Ch]
@@ -59220,13 +59229,13 @@ LABEL_77:
   {
     for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
     {
-      _EDX = dword_48F198;
+      _EDX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+edx+3Ch]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 60);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 60);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59236,13 +59245,13 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+20Ch]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 524);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 524);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59252,13 +59261,13 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _EDX = dword_48F198;
+      _EDX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+edx+124h]
         fmul    ds:flt_46F34C
       }
-      _ECX = (float *)(_EAX + dword_48F198 + 292);
+      _ECX = (float *)(_EAX + ui_menu_layout_a + 292);
       _EAX += 28;
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
@@ -59269,7 +59278,7 @@ LABEL_77:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+24h]
@@ -59277,7 +59286,7 @@ LABEL_77:
         fstp    dword ptr [eax+ecx+24h]
       }
       *(float *)(_EAX + _ECX + 36) = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+1F4h]
@@ -59285,7 +59294,7 @@ LABEL_77:
         fstp    dword ptr [eax+ecx+1F4h]
       }
       *(float *)(_EAX + _ECX + 500) = _ET1;
-      _ECX = dword_48F198;
+      _ECX = ui_menu_layout_a;
       __asm
       {
         fld     dword ptr [eax+ecx+10Ch]
@@ -59302,13 +59311,13 @@ LABEL_85:
     {
       for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
       {
-        _EDX = dword_48F1B0;
+        _EDX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+edx+3Ch]
           fmul    ds:flt_46F34C
         }
-        _ECX = (float *)(_EAX + dword_48F1B0 + 60);
+        _ECX = (float *)(_EAX + ui_menu_layout_b + 60);
         __asm { fstp    dword ptr [ecx] }
         *_ECX = _ET1;
         __asm
@@ -59318,13 +59327,13 @@ LABEL_85:
           fstp    dword ptr [ecx+4]
         }
         _ECX[1] = _ET1;
-        _ECX = dword_48F1B0;
+        _ECX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+ecx+20Ch]
           fmul    ds:flt_46F34C
         }
-        _ECX = (float *)(_EAX + dword_48F1B0 + 524);
+        _ECX = (float *)(_EAX + ui_menu_layout_b + 524);
         __asm { fstp    dword ptr [ecx] }
         *_ECX = _ET1;
         __asm
@@ -59334,13 +59343,13 @@ LABEL_85:
           fstp    dword ptr [ecx+4]
         }
         _ECX[1] = _ET1;
-        _EDX = dword_48F1B0;
+        _EDX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+edx+124h]
           fmul    ds:flt_46F34C
         }
-        _ECX = (float *)(_EAX + dword_48F1B0 + 292);
+        _ECX = (float *)(_EAX + ui_menu_layout_b + 292);
         _EAX += 28;
         __asm { fstp    dword ptr [ecx] }
         *_ECX = _ET1;
@@ -59351,7 +59360,7 @@ LABEL_85:
           fstp    dword ptr [ecx+4]
         }
         _ECX[1] = _ET1;
-        _ECX = dword_48F1B0;
+        _ECX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+ecx+24h]
@@ -59359,7 +59368,7 @@ LABEL_85:
           fstp    dword ptr [eax+ecx+24h]
         }
         *(float *)(_EAX + _ECX + 36) = _ET1;
-        _ECX = dword_48F1B0;
+        _ECX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+ecx+1F4h]
@@ -59367,7 +59376,7 @@ LABEL_85:
           fstp    dword ptr [eax+ecx+1F4h]
         }
         *(float *)(_EAX + _ECX + 500) = _ET1;
-        _ECX = dword_48F1B0;
+        _ECX = ui_menu_layout_b;
         __asm
         {
           fld     dword ptr [eax+ecx+10Ch]
@@ -59381,13 +59390,13 @@ LABEL_85:
   {
     for ( _EAX = 0; _EAX < 112; *(float *)(_EAX + _ECX + 268) = _ET1 )
     {
-      _ECX = dword_48F1B0;
+      _ECX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+ecx+3Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1B0 + 60);
+      _ECX = (float *)(_EAX + ui_menu_layout_b + 60);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59397,13 +59406,13 @@ LABEL_85:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _EDX = dword_48F1B0;
+      _EDX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+edx+20Ch]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1B0 + 524);
+      _ECX = (float *)(_EAX + ui_menu_layout_b + 524);
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
       __asm
@@ -59413,13 +59422,13 @@ LABEL_85:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1B0;
+      _ECX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+ecx+124h]
         fmul    ds:flt_46F2A4
       }
-      _ECX = (float *)(_EAX + dword_48F1B0 + 292);
+      _ECX = (float *)(_EAX + ui_menu_layout_b + 292);
       _EAX += 28;
       __asm { fstp    dword ptr [ecx] }
       *_ECX = _ET1;
@@ -59430,7 +59439,7 @@ LABEL_85:
         fstp    dword ptr [ecx+4]
       }
       _ECX[1] = _ET1;
-      _ECX = dword_48F1B0;
+      _ECX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+ecx+24h]
@@ -59438,7 +59447,7 @@ LABEL_85:
         fstp    dword ptr [eax+ecx+24h]
       }
       *(float *)(_EAX + _ECX + 36) = _ET1;
-      _ECX = dword_48F1B0;
+      _ECX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+ecx+1F4h]
@@ -59446,7 +59455,7 @@ LABEL_85:
         fstp    dword ptr [eax+ecx+1F4h]
       }
       *(float *)(_EAX + _ECX + 500) = _ET1;
-      _ECX = dword_48F1B0;
+      _ECX = ui_menu_layout_b;
       __asm
       {
         fld     dword ptr [eax+ecx+10Ch]
@@ -59457,7 +59466,7 @@ LABEL_85:
   }
   FUN_0044faa0((char *)byte_48F20C);
   dword_48F240 = (int)nullsub_72;
-  qmemcpy(&perk_prompt_bounds_min_x, &unk_48FBA8, 0xE8u);
+  qmemcpy(&perk_prompt_bounds_min_x, &ui_menu_item_element, 0xE8u);
   dword_48F25C = 1065353216;
   dword_48F278 = 0;
   dword_48F2B0 = 1065353216;
@@ -59575,7 +59584,7 @@ LABEL_85:
   byte_48F164 = 1;
   v262 = (float *)ui_element_table_end;
   do
-    FUN_0044fb50(*v262++);
+    ui_element_layout_calc(*v262++);
   while ( (int)v262 < (int)byte_48F20C );
 }
 
@@ -59640,7 +59649,7 @@ void weapon_table_init()
     *v1 = 1;
     v1 += 31;
   }
-  while ( (int)v1 < (int)&dword_4D99A0 );
+  while ( (int)v1 < (int)&crt_environ );
   effect_subrect_frame_table[0] = 0;
   dword_4D7EF4 = 1106247680;
   dword_4D7FEC = 1108082688;
@@ -60092,7 +60101,7 @@ void weapon_assign_player(int player_index, int weapon_id)
   player_weapon_reset_latch[216 * player_index] = 0;
   player_shot_cooldown[216 * player_index] = 0;
   player_reload_timer[216 * player_index] = 0;
-  dword_4871D0[player_index] = 0x40000000;
+  player_aux_timer[player_index] = 0x40000000;
   sfx_play_panned(v4);
 }
 
@@ -61147,9 +61156,8 @@ float *__stdcall sub_454859(float *a1, float a2, float *a3, int a4, float *a5)
 {
   int v6; // [esp+0h] [ebp-50h]
   int v7; // [esp+4h] [ebp-4Ch]
-  int v8; // [esp+8h] [ebp-48h]
-  _BYTE v9[12]; // [esp+10h] [ebp-40h] BYREF
-  _BYTE v10[52]; // [esp+1Ch] [ebp-34h] BYREF
+  _DWORD v8[2]; // [esp+8h] [ebp-48h] BYREF
+  _BYTE v9[64]; // [esp+10h] [ebp-40h] BYREF
 
   a1[14] = 0.0;
   a1[13] = 0.0;
@@ -61169,20 +61177,20 @@ float *__stdcall sub_454859(float *a1, float a2, float *a3, int a4, float *a5)
   a1[15] = 1.0;
   if ( a4 )
   {
-    j_FUN_004546fe(v9, a4, v6, v7, v8);
+    j_FUN_004546fe(v9, a4, v6, v7, v8[0]);
     if ( a3 )
     {
       a1[12] = a1[12] - *a3;
       a1[13] = a1[13] - a3[1];
       a1[14] = a1[14] - a3[2];
-      j_FUN_00453a57(a1, a1, v10);
+      j_FUN_00453a57(a1, a1, v8);
       a1[12] = *a3 + a1[12];
       a1[13] = a1[13] + a3[1];
       a1[14] = a3[2] + a1[14];
     }
     else
     {
-      j_FUN_00453a57(a1, a1, v10);
+      j_FUN_00453a57(a1, a1, v8);
     }
   }
   if ( a5 )
@@ -61996,125 +62004,63 @@ float *FUN_004557db(float *arg1, float *arg2, float *arg3)
   return result;
 }
 
-// sub_45589A @ 0x0045589A
-float *__stdcall sub_45589A(float *a1, int a2, int a3, float *a4, float *a5, float *a6)
-{
-  float *v6; // esi
-  float *v8; // [esp-4h] [ebp-54h]
-  float v9[16]; // [esp+10h] [ebp-40h] BYREF
-
-  v6 = v9;
-  switch ( (a4 != 0) | (2 * ((a5 != 0) | (2 * (a6 != 0)))) )
-  {
-    case 0:
-      v9[14] = 0.0;
-      v9[13] = 0.0;
-      v9[12] = 0.0;
-      v9[11] = 0.0;
-      v9[9] = 0.0;
-      v9[8] = 0.0;
-      v9[7] = 0.0;
-      v9[6] = 0.0;
-      v9[4] = 0.0;
-      v9[3] = 0.0;
-      v9[2] = 0.0;
-      v9[1] = 0.0;
-      v9[15] = 1.0;
-      v9[10] = 1.0;
-      v9[5] = 1.0;
-      v9[0] = 1.0;
-      break;
-    case 1:
-      v6 = a4;
-      break;
-    case 2:
-      v6 = a5;
-      break;
-    case 3:
-      j_FUN_00453a57(v9, a5, a4);
-      break;
-    case 4:
-      v6 = a6;
-      break;
-    case 5:
-      v8 = a4;
-      goto LABEL_9;
-    case 6:
-      v8 = a5;
-LABEL_9:
-      j_FUN_00453a57(v9, a6, v8);
-      break;
-    case 7:
-      j_FUN_00453a57(v9, a6, a5);
-      j_FUN_00453a57(v9, v9, a4);
-      break;
-    default:
-      break;
-  }
-  j_FUN_00453464(a1, a2, v6);
-  if ( a3 )
-  {
-    *a1 = (*a1 + 1.0) * (double)*(unsigned int *)(a3 + 8) * 0.5 + (double)*(unsigned int *)a3;
-    a1[1] = (1.0 - a1[1]) * (double)*(unsigned int *)(a3 + 12) * 0.5 + (double)*(unsigned int *)(a3 + 4);
-    a1[2] = (*(float *)(a3 + 20) - *(float *)(a3 + 16)) * a1[2] + *(float *)(a3 + 16);
-  }
-  return a1;
-}
-
 // FUN_00455a27 @ 0x00455A27
 // [binja] float* __stdcall sub_455a27(float* arg1, float* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)
 float *FUN_00455a27(float *arg1, float *arg2, int *arg3, int *arg4, int *arg5, int *arg6)
 {
   double v6; // st7
   double v7; // st7
-  int *v9; // [esp+10h] [ebp-54h]
-  float v10[16]; // [esp+24h] [ebp-40h] BYREF
+  int v9; // [esp+Ch] [ebp-58h]
+  int v10; // [esp+10h] [ebp-54h]
+  int *v11; // [esp+10h] [ebp-54h]
+  int v12; // [esp+10h] [ebp-54h]
+  float v13[16]; // [esp+24h] [ebp-40h] BYREF
 
   switch ( (arg4 != 0) | (2 * ((arg5 != 0) | (2 * (arg6 != 0)))) )
   {
     case 0:
-      v10[14] = 0.0;
-      v10[13] = 0.0;
-      v10[12] = 0.0;
-      v10[11] = 0.0;
-      v10[9] = 0.0;
-      v10[8] = 0.0;
-      v10[7] = 0.0;
-      v10[6] = 0.0;
-      v10[4] = 0.0;
-      v10[3] = 0.0;
-      v10[2] = 0.0;
-      v10[1] = 0.0;
-      v10[15] = 1.0;
-      v10[10] = 1.0;
-      v10[5] = 1.0;
-      v10[0] = 1.0;
+      v13[14] = 0.0;
+      v13[13] = 0.0;
+      v13[12] = 0.0;
+      v13[11] = 0.0;
+      v13[9] = 0.0;
+      v13[8] = 0.0;
+      v13[7] = 0.0;
+      v13[6] = 0.0;
+      v13[4] = 0.0;
+      v13[3] = 0.0;
+      v13[2] = 0.0;
+      v13[1] = 0.0;
+      v13[15] = 1.0;
+      v13[10] = 1.0;
+      v13[5] = 1.0;
+      v13[0] = 1.0;
       break;
     case 1:
-      j_FUN_00453f63(v10, 0, arg4);
+      j_FUN_00453f63(v13, 0, arg4);
       break;
     case 2:
-      j_FUN_00453f63(v10, 0, arg5);
+      j_FUN_00453f63(v13, 0, arg5);
       break;
     case 3:
-      j_FUN_00453a57(v10, arg5, arg4);
+      j_FUN_00453a57(v13, arg5, arg4);
       goto LABEL_11;
     case 4:
-      j_FUN_00453f63(v10, 0, arg6);
+      j_FUN_00453f63(v13, 0, arg6);
       break;
     case 5:
-      v9 = arg4;
+      v11 = arg4;
       goto LABEL_9;
     case 6:
-      v9 = arg5;
+      v11 = arg5;
 LABEL_9:
-      j_FUN_00453a57(v10, arg6, v9);
+      j_FUN_00453a57(v13, arg6, v11);
       goto LABEL_11;
     case 7:
-      j_FUN_00453a57(v10, arg6, arg5);
-      j_FUN_00453a57(v10, v10, arg4);
+      j_FUN_00453a57(v13, arg6, arg5);
+      j_FUN_00453a57(v13, v9, v12);
 LABEL_11:
-      j_FUN_00453f63(v10, 0, v10);
+      j_FUN_00453f63(v13, 0, v10);
       break;
     default:
       break;
@@ -62126,11 +62072,11 @@ LABEL_11:
     v7 = arg2[1] - (double)(unsigned int)arg3[1];
     arg1[1] = -(v7 / (double)(unsigned int)arg3[3] + v7 / (double)(unsigned int)arg3[3] - 1.0);
     arg1[2] = (arg2[2] - *((float *)arg3 + 4)) / (*((float *)arg3 + 5) - *((float *)arg3 + 4));
-    j_FUN_00453464(arg1, arg1, v10);
+    j_FUN_00453464(arg1, arg1, v13);
   }
   else
   {
-    j_FUN_00453464(arg1, arg2, v10);
+    j_FUN_00453464(arg1, arg2, v13);
   }
   return arg1;
 }
@@ -62199,46 +62145,51 @@ int FUN_00455c86(int arg1, float arg2, float arg3, float arg4)
 float *__stdcall sub_455CBF(float *a1, float *a2, int a3, float *a4, float *a5, int a6, float *a7)
 {
   int v7; // ecx
-  int v8; // ecx
+  float v8; // ecx
   float *v9; // esi
   int v10; // eax
-  char *v12; // [esp+Ch] [ebp-D0h]
-  int v13; // [esp+10h] [ebp-CCh]
-  int v14; // [esp+14h] [ebp-C8h]
-  _DWORD v15[16]; // [esp+1Ch] [ebp-C0h] BYREF
-  _BYTE v16[4]; // [esp+5Ch] [ebp-80h] BYREF
-  char v17; // [esp+60h] [ebp-7Ch] BYREF
-  _BYTE v18[52]; // [esp+68h] [ebp-74h] BYREF
-  _BYTE v19[4]; // [esp+9Ch] [ebp-40h] BYREF
-  _BYTE v20[60]; // [esp+A0h] [ebp-3Ch] BYREF
+  int v12; // [esp-28h] [ebp-104h]
+  int v13; // [esp-24h] [ebp-100h]
+  int v14; // [esp-20h] [ebp-FCh]
+  _DWORD v15[3]; // [esp+0h] [ebp-DCh] BYREF
+  _DWORD v16[5]; // [esp+Ch] [ebp-D0h] BYREF
+  float v17[2]; // [esp+20h] [ebp-BCh] BYREF
+  float v18[3]; // [esp+28h] [ebp-B4h] BYREF
+  float v19[3]; // [esp+34h] [ebp-A8h] BYREF
+  float v20[5]; // [esp+40h] [ebp-9Ch] BYREF
+  float v21[2]; // [esp+54h] [ebp-88h] BYREF
+  _BYTE v22[48]; // [esp+5Ch] [ebp-80h] BYREF
+  _BYTE v23[8]; // [esp+8Ch] [ebp-50h] BYREF
+  _BYTE v24[8]; // [esp+94h] [ebp-48h] BYREF
 
   if ( a4 )
   {
     if ( a3 )
     {
-      *(float *)&v15[14] = 0.0;
+      v21[0] = 0.0;
       v7 = *(_DWORD *)a4;
-      *(float *)&v15[13] = 0.0;
-      v15[0] = v7;
-      v8 = *((_DWORD *)a4 + 1);
-      *(float *)&v15[12] = 0.0;
-      *(float *)&v15[10] = a4[2];
-      *(float *)&v15[11] = 0.0;
-      v15[5] = v8;
-      *(float *)&v15[9] = 0.0;
-      *(float *)&v15[8] = 0.0;
-      *(float *)&v15[7] = 0.0;
-      *(float *)&v15[6] = 0.0;
-      *(float *)&v15[4] = 0.0;
-      *(float *)&v15[3] = 0.0;
-      *(float *)&v15[2] = 0.0;
-      *(float *)&v15[1] = 0.0;
-      *(float *)&v15[15] = 1.0;
-      j_FUN_004546fe(v16, a3, v12, v13, v14);
-      v12 = &v17;
+      v15[2] = a3;
+      v20[4] = 0.0;
+      v16[4] = v7;
+      v8 = a4[1];
+      v20[3] = 0.0;
+      v20[1] = a4[2];
+      v20[2] = 0.0;
+      v18[2] = v8;
+      v20[0] = 0.0;
+      v19[2] = 0.0;
+      v19[1] = 0.0;
+      v19[0] = 0.0;
+      v18[1] = 0.0;
+      v18[0] = 0.0;
+      v17[1] = 0.0;
+      v17[0] = 0.0;
+      v21[1] = 1.0;
+      j_FUN_004546fe(v22, a3, v16[0], v16[1], v16[2]);
+      v15[0] = v21;
       if ( a2 )
       {
-        j_FUN_00453ca0(v20);
+        j_FUN_00453ca0(v24);
         v9 = a1;
         a1[14] = 0.0;
         a1[13] = 0.0;
@@ -62259,9 +62210,9 @@ float *__stdcall sub_455CBF(float *a1, float *a2, int a3, float *a4, float *a5, 
         a1[12] = -*a2;
         a1[13] = -a2[1];
         a1[14] = -a2[2];
-        j_FUN_00453a57(a1, a1, v19);
+        j_FUN_00453a57(a1, a1, v23);
         j_FUN_00453a57(v9, v9, v15);
-        j_FUN_00453a57(v9, v9, v16);
+        j_FUN_00453a57(v9, v9, v19);
         a1[12] = a1[12] + *a2;
         a1[13] = a2[1] + a1[13];
         a1[14] = a1[14] + a2[2];
@@ -62270,8 +62221,8 @@ float *__stdcall sub_455CBF(float *a1, float *a2, int a3, float *a4, float *a5, 
       {
         v9 = a1;
         j_FUN_00453ca0(a1);
-        j_FUN_00453a57(v9, v9, v15);
         j_FUN_00453a57(v9, v9, v16);
+        j_FUN_00453a57(v9, v9, v20);
       }
     }
     else
@@ -62318,20 +62269,20 @@ float *__stdcall sub_455CBF(float *a1, float *a2, int a3, float *a4, float *a5, 
   }
   if ( a6 )
   {
-    j_FUN_004546fe(v16, a6, v12, v13, v14);
+    j_FUN_004546fe(v18, a6, v12, v13, v14);
     if ( a5 )
     {
       v9[12] = v9[12] - *a5;
       v9[13] = v9[13] - a5[1];
       v9[14] = v9[14] - a5[2];
-      j_FUN_00453a57(v9, v9, v18);
+      j_FUN_00453a57(v9, v9, v17);
       v9[12] = v9[12] + *a5;
       v9[13] = v9[13] + a5[1];
       v9[14] = v9[14] + a5[2];
     }
     else
     {
-      j_FUN_00453a57(v9, v9, v18);
+      j_FUN_00453a57(v9, v9, v17);
     }
   }
   if ( a7 )
@@ -63928,27 +63879,27 @@ double *__stdcall sub_457D0E(double *a1, __m128 *a2, __m128 *a3)
   v7.m128_f32[0] = v7.m128_f32[0] + v6.m128_f32[0];
   if ( v7.m128_f32[0] != 0.0 )
   {
-    v8 = String[96];
-    if ( (String[96] & 1) != 0 )
+    v8 = input_key_name_buf[96];
+    if ( (input_key_name_buf[96] & 1) != 0 )
     {
-      v9 = *(__m128 *)&String[64];
+      v9 = *(__m128 *)&input_key_name_buf[64];
     }
     else
     {
-      v8 = String[96] | 1;
+      v8 = input_key_name_buf[96] | 1;
       v9 = (__m128)(unsigned int)dword_4DC0C0;
-      String[96] |= 1u;
-      *(_OWORD *)&String[64] = (unsigned int)dword_4DC0C0;
+      input_key_name_buf[96] |= 1u;
+      *(_OWORD *)&input_key_name_buf[64] = (unsigned int)dword_4DC0C0;
     }
     if ( (v8 & 2) != 0 )
     {
-      v10 = *(float *)&String[80];
+      v10 = *(float *)&input_key_name_buf[80];
     }
     else
     {
       v10 = *(float *)&dword_4DC0C4;
-      String[96] = v8 | 2;
-      *(_OWORD *)&String[80] = (unsigned int)dword_4DC0C4;
+      input_key_name_buf[96] = v8 | 2;
+      *(_OWORD *)&input_key_name_buf[80] = (unsigned int)dword_4DC0C4;
     }
     v11 = 1.0 / fsqrt(v7.m128_f32[0]);
     v9.m128_f32[0] = (float)(v9.m128_f32[0] * v11) * (float)(v10 - (float)((float)(v7.m128_f32[0] * v11) * v11));
@@ -64971,27 +64922,27 @@ double *__stdcall sub_458FEE(double *a1, __m128 *a2, __m128 *a3)
   v7.m128_f32[0] = v7.m128_f32[0] + v6.m128_f32[0];
   if ( v7.m128_f32[0] != 0.0 )
   {
-    v8 = String[96];
-    if ( (String[96] & 1) != 0 )
+    v8 = input_key_name_buf[96];
+    if ( (input_key_name_buf[96] & 1) != 0 )
     {
-      v9 = *(__m128 *)&String[64];
+      v9 = *(__m128 *)&input_key_name_buf[64];
     }
     else
     {
-      v8 = String[96] | 1;
+      v8 = input_key_name_buf[96] | 1;
       v9 = (__m128)(unsigned int)dword_4DC220;
-      String[96] |= 1u;
-      *(_OWORD *)&String[64] = (unsigned int)dword_4DC220;
+      input_key_name_buf[96] |= 1u;
+      *(_OWORD *)&input_key_name_buf[64] = (unsigned int)dword_4DC220;
     }
     if ( (v8 & 2) != 0 )
     {
-      v10 = *(float *)&String[80];
+      v10 = *(float *)&input_key_name_buf[80];
     }
     else
     {
       v10 = *(float *)&dword_4DC224;
-      String[96] = v8 | 2;
-      *(_OWORD *)&String[80] = (unsigned int)dword_4DC224;
+      input_key_name_buf[96] = v8 | 2;
+      *(_OWORD *)&input_key_name_buf[80] = (unsigned int)dword_4DC224;
     }
     v11 = 1.0 / fsqrt(v7.m128_f32[0]);
     v9.m128_f32[0] = (float)(v9.m128_f32[0] * v11) * (float)(v10 - (float)((float)(v7.m128_f32[0] * v11) * v11));
@@ -70864,11 +70815,11 @@ int sub_461FD5(int a1, ...)
   va_list va; // [esp+14h] [ebp+8h] BYREF
 
   va_start(va, a1);
-  crt_lock_file2(1, &stream);
-  v1 = FUN_004666f5(&stream);
-  v2 = crt_output(&stream, a1, (int)va);
-  _ftbuf(v1, &stream);
-  crt_unlock_file2(1, &stream);
+  crt_lock_file2(1, &fp);
+  v1 = FUN_004666f5(&fp);
+  v2 = crt_output(&fp, a1, (int)va);
+  _ftbuf(v1, &fp);
+  crt_unlock_file2(1, &fp);
   return v2;
 }
 
@@ -70929,7 +70880,7 @@ void crt_free_base(void *ptr)
       if ( crt_heap_mode != 2 )
       {
 LABEL_11:
-        HeapFree(hHeap, 0, ptr);
+        HeapFree(crt_heap_handle, 0, ptr);
         return;
       }
       crt_lock(9);
@@ -71016,7 +70967,7 @@ void *crt_realloc(void *ptr, size_t size)
               if ( !v4 )
                 v4 = 1;
               v4 = (v4 + 15) & 0xFFFFFFF0;
-              dst = HeapAlloc(hHeap, 0, v4);
+              dst = HeapAlloc(crt_heap_handle, 0, v4);
               if ( dst )
               {
                 v7 = *((_DWORD *)ptr - 1) - 1;
@@ -71035,7 +70986,7 @@ void *crt_realloc(void *ptr, size_t size)
             if ( !v4 )
               v4 = 1;
             v4 = (v4 + 15) & 0xFFFFFFF0;
-            dst = HeapReAlloc(hHeap, 0, ptr, v4);
+            dst = HeapReAlloc(crt_heap_handle, 0, ptr, v4);
           }
         }
         result = dst;
@@ -71084,7 +71035,7 @@ void *crt_realloc(void *ptr, size_t size)
             }
             if ( !dst )
             {
-              dst = HeapAlloc(hHeap, 0, v4);
+              dst = HeapAlloc(crt_heap_handle, 0, v4);
               if ( dst )
               {
                 v11 = 16 * (unsigned __int8)*v9;
@@ -71098,7 +71049,7 @@ void *crt_realloc(void *ptr, size_t size)
           }
           else
           {
-            dst = HeapReAlloc(hHeap, 0, v2, v4);
+            dst = HeapReAlloc(crt_heap_handle, 0, v2, v4);
           }
           ms_exc.registration.TryLevel = -1;
           crt_unlock(9);
@@ -71120,7 +71071,7 @@ void *crt_realloc(void *ptr, size_t size)
           if ( !v4 )
             v4 = 1;
           v4 = (v4 + 15) & 0xFFFFFFF0;
-          result = HeapReAlloc(hHeap, 0, ptr, v4);
+          result = HeapReAlloc(crt_heap_handle, 0, ptr, v4);
         }
         if ( result || !dword_4D9A78 )
           break;
@@ -71169,20 +71120,20 @@ LABEL_12:
       v3 = 1;
     v4 = v3 + 15;
     LOBYTE(v4) = v4 & 0xF0;
-    return HeapAlloc(hHeap, 0, v4);
+    return HeapAlloc(crt_heap_handle, 0, v4);
   }
   if ( arg1 )
     v2 = (arg1 + 15) & 0xFFFFFFF0;
   else
     v2 = 16;
   if ( v2 > dword_47DB14 )
-    return HeapAlloc(hHeap, 0, v2);
+    return HeapAlloc(crt_heap_handle, 0, v2);
   crt_lock(9);
   v6 = crt_sbh_alloc_units(v2 >> 4);
   crt_unlock(9);
   result = v6;
   if ( !v6 )
-    return HeapAlloc(hHeap, 0, v2);
+    return HeapAlloc(crt_heap_handle, 0, v2);
   return result;
 }
 
@@ -71227,7 +71178,7 @@ size_t crt_msize(void *ptr)
   else
   {
     if ( crt_heap_mode != 2 )
-      return HeapSize(hHeap, 0, ptr);
+      return HeapSize(crt_heap_handle, 0, ptr);
     crt_lock(9);
     ms_exc.registration.TryLevel = 1;
     block = (unsigned __int8 *)crt_sbh_find_block(ptr, &region_out, &page_base);
@@ -71246,7 +71197,7 @@ size_t crt_msize(void *ptr)
     v2 = v6 == 0;
   }
   if ( v2 )
-    return HeapSize(hHeap, 0, ptr);
+    return HeapSize(crt_heap_handle, 0, ptr);
   return v1;
 }
 
@@ -71765,14 +71716,14 @@ LABEL_179:
 void crt_dosmaperr(uint os_error)
 {
   int v1; // esi
-  void (__noreturn **v2)(); // eax
+  void (**v2)(); // eax
 
   v1 = 0;
   *crt_doserrno_ptr() = os_error;
-  v2 = (void (__noreturn **)())&crt_dosmaperr_table;
+  v2 = (void (**)())&crt_dosmaperr_table;
   do
   {
-    if ( (void (__noreturn *)())os_error == *v2 )
+    if ( (void (*)())os_error == *v2 )
     {
       *crt_errno_ptr() = dword_47B7C4[2 * v1];
       return;
@@ -71852,7 +71803,7 @@ void *crt_calloc(unsigned int count, unsigned int size)
           goto LABEL_14;
         }
 LABEL_15:
-        v4 = HeapAlloc(hHeap, 8u, v2);
+        v4 = HeapAlloc(crt_heap_handle, 8u, v2);
         goto LABEL_16;
       }
       if ( crt_heap_mode == 2 && v2 <= dword_47DB14 )
@@ -71981,8 +71932,8 @@ int __cdecl sub_466BD6(int a1)
   int v1; // eax
   int v2; // eax
 
-  hHeap = HeapCreate(a1 == 0, 0x1000u, 0);
-  if ( !hHeap )
+  crt_heap_handle = HeapCreate(a1 == 0, 0x1000u, 0);
+  if ( !crt_heap_handle )
     return 0;
   v1 = crt_heap_select();
   crt_heap_mode = v1;
@@ -71998,7 +71949,7 @@ int __cdecl sub_466BD6(int a1)
   }
   if ( !v2 )
   {
-    HeapDestroy(hHeap);
+    HeapDestroy(crt_heap_handle);
     return 0;
   }
   return 1;
@@ -72167,7 +72118,7 @@ int *FUN_00466ca6(void *arg1, int *arg2)
         if ( v18[2] == (LPVOID)-1 )
         {
           VirtualFree(v18[3], 0, 0x8000u);
-          HeapFree(hHeap, 0, *((LPVOID *)dword_4DA394 + 4));
+          HeapFree(crt_heap_handle, 0, *((LPVOID *)dword_4DA394 + 4));
           crt_memmove(
             dword_4DA394,
             (char *)dword_4DA394 + 20,
@@ -72203,7 +72154,7 @@ int *sub_46777A()
   }
   else
   {
-    v0 = (int *)HeapAlloc(hHeap, 0, 0x2020u);
+    v0 = (int *)HeapAlloc(crt_heap_handle, 0, 0x2020u);
     if ( !v0 )
       return 0;
   }
@@ -72213,7 +72164,7 @@ int *sub_46777A()
   {
 LABEL_19:
     if ( v0 != (int *)&off_47BAF0 )
-      HeapFree(hHeap, 0, v0);
+      HeapFree(crt_heap_handle, 0, v0);
     return 0;
   }
   if ( !VirtualAlloc(v1, 0x10000u, 0x1000u, 4u) )
@@ -72280,7 +72231,7 @@ BOOL FUN_004678be(int *arg1)
   {
     *(_DWORD *)arg1[1] = *arg1;
     *(_DWORD *)(*arg1 + 4) = arg1[1];
-    return HeapFree(hHeap, 0, arg1);
+    return HeapFree(crt_heap_handle, 0, arg1);
   }
   return result;
 }

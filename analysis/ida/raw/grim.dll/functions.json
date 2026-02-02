@@ -1061,8 +1061,8 @@
     "end": "0x1000655C",
     "external": false,
     "library": false,
-    "name": "sub_10006030",
-    "signature": "char __cdecl(int)",
+    "name": "grim_set_texture_stage_ops",
+    "signature": "uint(uint mode)",
     "size": 1324,
     "thunk": false
   },
@@ -1073,8 +1073,8 @@
       "??2@YAPAXI@Z",
       "??3@YAXPAX@Z",
       "_ftol",
-      "sub_10005A40",
-      "sub_10006030"
+      "grim_set_texture_stage_ops",
+      "sub_10005A40"
     ],
     "end": "0x10006B7E",
     "external": false,
@@ -4488,7 +4488,7 @@
     "end": "0x10011083",
     "external": false,
     "library": false,
-    "name": "FUN_10010e13",
+    "name": "grim_load_image_jpg",
     "signature": "int(int *arg1, int arg2, int arg3)",
     "size": 624,
     "thunk": false
@@ -4516,7 +4516,7 @@
     "end": "0x100117B0",
     "external": false,
     "library": false,
-    "name": "FUN_1001152a",
+    "name": "grim_load_image_pnm",
     "signature": "int(int *arg1, char *arg2, int arg3)",
     "size": 646,
     "thunk": false
@@ -4582,7 +4582,7 @@
     "end": "0x10011D95",
     "external": false,
     "library": false,
-    "name": "FUN_100117ff",
+    "name": "grim_load_image_png",
     "signature": "int(int *arg1, void *arg2, void *arg3)",
     "size": 1430,
     "thunk": false
@@ -4597,7 +4597,7 @@
     "end": "0x100120D6",
     "external": false,
     "library": false,
-    "name": "FUN_10011d95",
+    "name": "grim_load_image_dds",
     "signature": "int(int *arg1, uint arg2, int *arg3)",
     "size": 833,
     "thunk": false
@@ -4649,7 +4649,7 @@
     "end": "0x10012677",
     "external": false,
     "library": false,
-    "name": "FUN_10012647",
+    "name": "grim_load_image_bmp",
     "signature": "int(__int16 *arg1, void *arg2)",
     "size": 48,
     "thunk": false
@@ -4660,12 +4660,12 @@
       "??3@YAXPAX@Z",
       "FUN_100102f7",
       "FUN_100103d6",
-      "FUN_10010e13",
       "FUN_10011083",
-      "FUN_1001152a",
-      "FUN_100117ff",
-      "FUN_10011d95",
-      "FUN_10012647",
+      "grim_load_image_bmp",
+      "grim_load_image_dds",
+      "grim_load_image_jpg",
+      "grim_load_image_png",
+      "grim_load_image_pnm",
       "sub_1000AC8F"
     ],
     "end": "0x1001284C",
@@ -7118,11 +7118,11 @@
   {
     "address": "0x1001C188",
     "calls": [
+      "grim_init_mmx_sse_functions",
       "sub_1001BEDD",
       "sub_1001C0D4",
       "sub_100221D0",
       "sub_100222E0",
-      "sub_100224C5",
       "sub_10022B47"
     ],
     "end": "0x1001C265",
@@ -7624,13 +7624,13 @@
   {
     "address": "0x1001E294",
     "calls": [
-      "FUN_10025163",
-      "FUN_10025359",
       "FUN_10025483",
       "FUN_100254cd",
       "FUN_100255d8",
       "FUN_100256c7",
-      "FUN_1002587e",
+      "grim_png_read_IHDR",
+      "grim_png_read_PLTE",
+      "grim_png_read_chunk_generic",
       "png_crc_read",
       "png_error",
       "png_get_uint_32",
@@ -8515,8 +8515,8 @@
     "end": "0x100226EB",
     "external": false,
     "library": false,
-    "name": "sub_100224C5",
-    "signature": "int __cdecl(__m64 *(__stdcall **)(__m64 *, __m64 *, __m64 *))",
+    "name": "grim_init_mmx_sse_functions",
+    "signature": "void(unsigned int *table)",
     "size": 550,
     "thunk": false
   },
@@ -9397,7 +9397,7 @@
     "end": "0x10025359",
     "external": false,
     "library": false,
-    "name": "FUN_10025163",
+    "name": "grim_png_read_IHDR",
     "signature": "void(void *png_ptr, unsigned int *param_2, int param_3)",
     "size": 502,
     "thunk": false
@@ -9415,7 +9415,7 @@
     "end": "0x10025483",
     "external": false,
     "library": false,
-    "name": "FUN_10025359",
+    "name": "grim_png_read_PLTE",
     "signature": "void(void *this, void *png_ptr, int param_2, unsigned int param_3)",
     "size": 298,
     "thunk": false
@@ -9498,7 +9498,7 @@
     "end": "0x100258C8",
     "external": false,
     "library": false,
-    "name": "FUN_1002587e",
+    "name": "grim_png_read_chunk_generic",
     "signature": "void(void *png_ptr, int param_2, unsigned int param_3)",
     "size": 74,
     "thunk": false

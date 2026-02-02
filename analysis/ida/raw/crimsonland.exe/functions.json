@@ -68,7 +68,7 @@
   {
     "address": "0x00401160",
     "calls": [
-      "FUN_00401170",
+      "console_global_init",
       "crt_atexit"
     ],
     "end": "0x0040116A",
@@ -85,7 +85,7 @@
     "end": "0x0040117A",
     "external": false,
     "library": true,
-    "name": "FUN_00401170",
+    "name": "console_global_init",
     "signature": "int()",
     "size": 10,
     "thunk": false
@@ -96,7 +96,7 @@
     "end": "0x0040119A",
     "external": false,
     "library": true,
-    "name": "unknown_libname_2",
+    "name": "func",
     "signature": "void __cdecl()",
     "size": 10,
     "thunk": false
@@ -262,7 +262,7 @@
     "end": "0x0040179B",
     "external": false,
     "library": false,
-    "name": "FUN_004016e0",
+    "name": "console_destroy",
     "signature": "void(int *arg1)",
     "size": 187,
     "thunk": false
@@ -370,7 +370,7 @@
     "end": "0x00402350",
     "external": false,
     "library": false,
-    "name": "FUN_00401dd0",
+    "name": "console_render",
     "signature": "int(void *arg1)",
     "size": 1408,
     "thunk": false
@@ -564,7 +564,7 @@
     "end": "0x00402EC7",
     "external": false,
     "library": false,
-    "name": "FUN_00402d50",
+    "name": "ui_render_loading",
     "signature": "int()",
     "size": 375,
     "thunk": false
@@ -963,7 +963,7 @@
     "end": "0x00406AAB",
     "external": false,
     "library": false,
-    "name": "FUN_00406350",
+    "name": "game_update_victory_screen",
     "signature": "int()",
     "size": 1883,
     "thunk": false
@@ -1023,7 +1023,7 @@
     "end": "0x00406B38",
     "external": false,
     "library": false,
-    "name": "FUN_00406af0",
+    "name": "game_update_generic_menu",
     "signature": "int()",
     "size": 72,
     "thunk": false
@@ -1391,15 +1391,12 @@
     "address": "0x0040C1C0",
     "calls": [
       "0x0046F0E4",
-      "FUN_00401dd0",
-      "FUN_00402d50",
-      "FUN_00406350",
-      "FUN_00406af0",
       "__ftol",
       "audio_resume_all",
       "audio_suspend_all",
       "audio_update",
       "config_sync_from_grim",
+      "console_render",
       "console_set_open",
       "console_update",
       "crt_fclose",
@@ -1411,6 +1408,8 @@
       "game_is_full_version",
       "game_over_screen_update",
       "game_sequence_get",
+      "game_update_generic_menu",
+      "game_update_victory_screen",
       "gameplay_update_and_render",
       "perk_count_get",
       "perk_selection_screen_update",
@@ -1423,7 +1422,8 @@
       "survival_gameplay_update_and_render",
       "terrain_generate",
       "terrain_generate_random",
-      "ui_elements_max_timeline"
+      "ui_elements_max_timeline",
+      "ui_render_loading"
     ],
     "end": "0x0040CFC4",
     "external": false,
@@ -2491,8 +2491,8 @@
   {
     "address": "0x00412180",
     "calls": [
-      "FUN_00412190",
-      "crt_atexit"
+      "crt_atexit",
+      "quest_meta_init"
     ],
     "end": "0x0041218A",
     "external": false,
@@ -2510,7 +2510,7 @@
     "end": "0x004121A9",
     "external": false,
     "library": false,
-    "name": "FUN_00412190",
+    "name": "quest_meta_init",
     "signature": "int()",
     "size": 25,
     "thunk": false
@@ -2521,7 +2521,7 @@
     "end": "0x004121DD",
     "external": false,
     "library": false,
-    "name": "sub_4121B0",
+    "name": "ctor",
     "signature": "void __thiscall(_DWORD *this)",
     "size": 45,
     "thunk": false
@@ -2534,7 +2534,7 @@
     "end": "0x004121EF",
     "external": false,
     "library": false,
-    "name": "sub_4121E0",
+    "name": "dtor",
     "signature": "void __thiscall(LPVOID *this)",
     "size": 15,
     "thunk": false
@@ -2639,7 +2639,7 @@
     "end": "0x004123C0",
     "external": false,
     "library": false,
-    "name": "FUN_00412360",
+    "name": "highscore_init_sentinels",
     "signature": "int()",
     "size": 96,
     "thunk": false
@@ -2726,7 +2726,7 @@
     "address": "0x00412660",
     "calls": [
       "strdup_malloc",
-      "sub_42FD00"
+      "wrap_text_to_width_alloc"
     ],
     "end": "0x0041293F",
     "external": false,
@@ -2742,7 +2742,7 @@
     "end": "0x0041295A",
     "external": false,
     "library": false,
-    "name": "FUN_00412940",
+    "name": "bonus_reset_availability",
     "signature": "char *()",
     "size": 26,
     "thunk": false
@@ -2819,11 +2819,11 @@
   {
     "address": "0x00412DC0",
     "calls": [
-      "FUN_00412940",
-      "FUN_0041fc80",
+      "bonus_reset_availability",
       "crt_rand",
       "effect_defaults_reset",
       "perks_rebuild_available",
+      "player_reset_all",
       "projectile_reset_pools",
       "terrain_generate_random",
       "weapon_refresh_available",
@@ -2865,7 +2865,6 @@
   {
     "address": "0x004136B0",
     "calls": [
-      "FUN_00417640",
       "__ftol",
       "crt_rand",
       "effect_spawn",
@@ -2883,9 +2882,10 @@
       "projectile_spawn",
       "sfx_play_panned",
       "sub_413540",
-      "sub_417660",
       "sub_41E8D0",
-      "sub_41E8F0"
+      "sub_41E8F0",
+      "vec2_length",
+      "vec2_sub"
     ],
     "end": "0x00417631",
     "external": false,
@@ -2901,7 +2901,7 @@
     "end": "0x0041765A",
     "external": false,
     "library": false,
-    "name": "FUN_00417640",
+    "name": "vec2_sub",
     "signature": "float *(float *arg1, float *arg2, float *arg3)",
     "size": 26,
     "thunk": false
@@ -2912,8 +2912,8 @@
     "end": "0x0041767A",
     "external": false,
     "library": false,
-    "name": "sub_417660",
-    "signature": "long double __cdecl(float *)",
+    "name": "vec2_length",
+    "signature": "float(float *v)",
     "size": 26,
     "thunk": false
   },
@@ -4366,7 +4366,7 @@
     "end": "0x0041FEC8",
     "external": false,
     "library": false,
-    "name": "FUN_0041fc80",
+    "name": "player_reset_all",
     "signature": "void *()",
     "size": 584,
     "thunk": false
@@ -5012,9 +5012,9 @@
     "address": "0x0042B290",
     "calls": [
       "0x0046F0E4",
-      "FUN_00401dd0",
       "__ftol",
       "audio_update",
+      "console_render",
       "console_set_open",
       "console_update",
       "crt_beginthread",
@@ -5434,7 +5434,7 @@
     "external": false,
     "library": false,
     "name": "FUN_0042f3f0",
-    "signature": "void *(float *arg1, float arg2, float arg3)",
+    "signature": "void *(float *arg1, float arg2, int arg3)",
     "size": 333,
     "thunk": false
   },
@@ -5576,8 +5576,8 @@
     "end": "0x0042FD8F",
     "external": false,
     "library": false,
-    "name": "sub_42FD00",
-    "signature": "char *__cdecl(const char *, int)",
+    "name": "wrap_text_to_width_alloc",
+    "signature": "char *(char *text, int max_width_px)",
     "size": 143,
     "thunk": false
   },
@@ -5585,7 +5585,7 @@
     "address": "0x0042FD90",
     "calls": [
       "perks_rebuild_available",
-      "sub_42FD00"
+      "wrap_text_to_width_alloc"
     ],
     "end": "0x00430A1B",
     "external": false,
@@ -7737,7 +7737,6 @@
     "address": "0x004423D0",
     "calls": [
       "0x0046F0E4",
-      "FUN_004443c0",
       "crt_atexit",
       "crt_beginthread",
       "crt_sprintf",
@@ -7749,6 +7748,7 @@
       "ui_button_update",
       "ui_checkbox_update",
       "ui_list_widget_update",
+      "ui_profile_menu_update",
       "ui_scrollbar_update",
       "ui_text_input_render",
       "ui_update_notice_update"
@@ -7875,7 +7875,7 @@
     "end": "0x004447C9",
     "external": false,
     "library": false,
-    "name": "FUN_004443c0",
+    "name": "ui_profile_menu_update",
     "signature": "int(float *arg1, char arg2)",
     "size": 1033,
     "thunk": false
@@ -7994,7 +7994,7 @@
     "end": "0x0044537E",
     "external": false,
     "library": false,
-    "name": "FUN_00445310",
+    "name": "creature_is_name_unique",
     "signature": "int(char *arg1, int arg2)",
     "size": 110,
     "thunk": false
@@ -8003,7 +8003,7 @@
     "address": "0x00445380",
     "calls": [
       "FUN_004451b0",
-      "FUN_00445310",
+      "creature_is_name_unique",
       "crt_rand",
       "crt_sprintf",
       "sub_444F70"
@@ -8132,7 +8132,7 @@
     "end": "0x0044616F",
     "external": false,
     "library": false,
-    "name": "sub_446150",
+    "name": "ui_get_element_index",
     "signature": "int __cdecl(int)",
     "size": 31,
     "thunk": false
@@ -8184,7 +8184,7 @@
     "calls": [
       "input_primary_just_pressed",
       "sfx_play",
-      "sub_446150"
+      "ui_get_element_index"
     ],
     "end": "0x00446C3F",
     "external": false,
@@ -8805,7 +8805,7 @@
     "end": "0x0044FC70",
     "external": false,
     "library": false,
-    "name": "FUN_0044fb50",
+    "name": "ui_element_layout_calc",
     "signature": "float(float arg1)",
     "size": 288,
     "thunk": false
@@ -8838,9 +8838,9 @@
     "address": "0x0044FCB0",
     "calls": [
       "FUN_0044faa0",
-      "FUN_0044fb50",
       "game_is_full_version",
       "texture_get_or_load_alt",
+      "ui_element_layout_calc",
       "ui_element_load",
       "ui_element_set_rect"
     ],
@@ -12323,7 +12323,7 @@
     "external": false,
     "library": true,
     "name": "__ftol",
-    "signature": "",
+    "signature": "signed __int64 __usercall@<edx:eax>()",
     "size": 39,
     "thunk": false
   },
@@ -12365,7 +12365,7 @@
     "external": false,
     "library": true,
     "name": "crt_atof_l",
-    "signature": "double(void *locale, char *str)",
+    "signature": "float(char *str)",
     "size": 87,
     "thunk": false
   },
@@ -13352,7 +13352,6 @@
       "crimsonland_main",
       "crt_build_argv",
       "crt_build_environ",
-      "crt_exception_filter",
       "crt_exit",
       "crt_get_environment_strings",
       "crt_heap_init",

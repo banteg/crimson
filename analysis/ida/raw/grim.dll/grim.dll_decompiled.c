@@ -3726,100 +3726,102 @@ void grim_apply_settings()
   sub_10003C00(v0);
 }
 
-// sub_10006030 @ 0x10006030
-char __cdecl sub_10006030(int a1)
+// grim_set_texture_stage_ops @ 0x10006030
+// sets D3D texture stage states for a small set of blend modes (mode 0..3)
+uint grim_set_texture_stage_ops(uint mode)
 {
-  char result; // al
+  uint result; // eax
 
-  switch ( a1 )
+  result = mode;
+  switch ( mode )
   {
-    case 0:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
-      result = 1;
+    case 0u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 3);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 3);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 1:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
-      result = 1;
+    case 1u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 2:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
-      result = 1;
+    case 2u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 4);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 4);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 5, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 6, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 3:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 7);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 7);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
-      result = 1;
+    case 3u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 7);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 7);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 4);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 4);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 5, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 6, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 4:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
-      result = 1;
+    case 4u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 24);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 3);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 5:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
-      result = 1;
+    case 5u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 24);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      LOBYTE(result) = 1;
       break;
-    case 6:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 24);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
-      result = 1;
+    case 6u:
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
+      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 24);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
+      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      LOBYTE(result) = 1;
       break;
     default:
-      result = 0;
+      LOBYTE(result) = 0;
       break;
   }
   return result;
@@ -3923,7 +3925,7 @@ LABEL_44:
       }
       return;
     case 0x1Au:
-      if ( sub_10006030(value) )
+      if ( (unsigned __int8)grim_set_texture_stage_ops(value) )
       {
         v2 = &grim_config_var0_table[4 * id];
         *v2 = value;
@@ -9757,7 +9759,7 @@ float *FUN_1000cdff(float *arg1, float *arg2, float *arg3, float *arg4, float ar
 int sub_1000CE42()
 {
   grim_select_renderer_backend(1u);
-  return off_10053C58();
+  return table();
 }
 
 // sub_1000CE69 @ 0x1000CE69
@@ -12984,9 +12986,9 @@ _DWORD *__cdecl sub_10010E02(int a1, int a2)
   return result;
 }
 
-// FUN_10010e13 @ 0x10010E13
+// grim_load_image_jpg @ 0x10010E13
 // [binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)
-int FUN_10010e13(int *arg1, int arg2, int arg3)
+int grim_load_image_jpg(int *arg1, int arg2, int arg3)
 {
   _DWORD *v3; // ecx
   int v4; // esi
@@ -13450,9 +13452,9 @@ LABEL_80:
   return -2147467259;
 }
 
-// FUN_1001152a @ 0x1001152A
+// grim_load_image_pnm @ 0x1001152A
 // [binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)
-int FUN_1001152a(int *arg1, char *arg2, int arg3)
+int grim_load_image_pnm(int *arg1, char *arg2, int arg3)
 {
   _DWORD *v3; // ecx
   _DWORD *v4; // esi
@@ -13636,9 +13638,9 @@ void __cdecl __noreturn sub_100117F3(jmp_buf Buf)
   longjmp(Buf, 1);
 }
 
-// FUN_100117ff @ 0x100117FF
+// grim_load_image_png @ 0x100117FF
 // [binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)
-int FUN_100117ff(int *arg1, void *arg2, void *arg3)
+int grim_load_image_png(int *arg1, void *arg2, void *arg3)
 {
   int *v3; // ecx
   int *v4; // eax
@@ -13973,9 +13975,9 @@ LABEL_97:
   return v15;
 }
 
-// FUN_10011d95 @ 0x10011D95
+// grim_load_image_dds @ 0x10011D95
 // [binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)
-int FUN_10011d95(int *arg1, uint arg2, int *arg3)
+int grim_load_image_dds(int *arg1, uint arg2, int *arg3)
 {
   int *v3; // ecx
   int *v4; // esi
@@ -14575,7 +14577,7 @@ int FUN_10012677(int *arg1, void *arg2, int *arg3, int *arg4, int arg5)
   int v11; // eax
   int v12; // eax
   int v13; // eax
-  int v14; // eax
+  int image_bmp; // eax
   bool v15; // cf
   _DWORD *i; // eax
   _DWORD *v18; // eax
@@ -14602,44 +14604,44 @@ int FUN_10012677(int *arg1, void *arg2, int *arg3, int *arg4, int arg5)
     *(_DWORD *)(v7 + 68) = 3;
     if ( !v8 )
     {
-      v14 = FUN_10012647((__int16 *)arg1, arg2);
+      image_bmp = grim_load_image_bmp((__int16 *)arg1, arg2);
       goto LABEL_16;
     }
     v9 = v8 - 1;
     if ( !v9 )
     {
-      v14 = FUN_10010e13(arg1, (int)arg2, (int)v20);
+      image_bmp = grim_load_image_jpg(arg1, (int)arg2, (int)v20);
       goto LABEL_16;
     }
     v10 = v9 - 1;
     if ( !v10 )
     {
-      v14 = FUN_10011083(arg1, arg2, (int)v20);
+      image_bmp = FUN_10011083(arg1, arg2, (int)v20);
       goto LABEL_16;
     }
     v11 = v10 - 1;
     if ( !v11 )
     {
-      v14 = FUN_100117ff(arg1, arg2, v20);
+      image_bmp = grim_load_image_png(arg1, arg2, v20);
       goto LABEL_16;
     }
     v12 = v11 - 1;
     if ( !v12 )
     {
-      v14 = FUN_10011d95(arg1, (uint)arg2, (int *)v20);
+      image_bmp = grim_load_image_dds(arg1, (uint)arg2, (int *)v20);
       goto LABEL_16;
     }
     v13 = v12 - 1;
     if ( !v13 )
     {
-      v14 = FUN_1001152a(arg1, (char *)arg2, (int)v20);
+      image_bmp = grim_load_image_pnm(arg1, (char *)arg2, (int)v20);
       goto LABEL_16;
     }
     if ( v13 == 1 )
     {
-      v14 = FUN_100103d6(arg1, arg2, v20);
+      image_bmp = FUN_100103d6(arg1, arg2, v20);
 LABEL_16:
-      v6 = (void *)v14;
+      v6 = (void *)image_bmp;
     }
     if ( (int)v6 >= 0 )
       break;
@@ -23500,25 +23502,25 @@ int grim_select_renderer_backend(int force)
     if ( dword_1005449C == 0xFFFF )
     {
       dword_1005449C = 0;
-      qmemcpy(&off_10053C58, &off_10053D40, 0xE4u);
-      sub_10022B47((float *(__stdcall **)(float *, float *, float *))&off_10053C58);
+      qmemcpy(&table, &off_10053D40, 0xE4u);
+      sub_10022B47((float *(__stdcall **)(float *, float *, float *))&table);
       if ( !sub_1001BEDD(4, "DisableD3DXPSGP", (LPBYTE)&force, 4u) )
         force = 0;
       if ( force != 1 )
       {
         if ( sub_1001C0D4(7u) )
         {
-          sub_100224C5((__m64 *(__stdcall **)(__m64 *, __m64 *, __m64 *))&off_10053C58);
+          grim_init_mmx_sse_functions((unsigned int *)&table);
           dword_1005449C = 1;
         }
         else if ( sub_1001C0D4(0xAu) )
         {
-          sub_100222E0((__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *))&off_10053C58);
+          sub_100222E0((__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *))&table);
           dword_1005449C = 2;
         }
         else if ( sub_1001C0D4(6u) )
         {
-          sub_100221D0((__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *))&off_10053C58);
+          sub_100221D0((__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *))&table);
           dword_1005449C = 3;
         }
       }
@@ -23527,7 +23529,7 @@ int grim_select_renderer_backend(int force)
   else
   {
     dword_1005449C = 0xFFFF;
-    qmemcpy(&off_10053C58, &off_10053D40, 0xE4u);
+    qmemcpy(&table, &off_10053D40, 0xE4u);
   }
   return dword_1005449C;
 }
@@ -25956,11 +25958,11 @@ void FUN_1001e294(void *png_ptr, unsigned int *param_2)
           png_crc_read(v2, (unsigned __int8 *)v2 + 268, 4u);
           if ( *v6 != *(_DWORD *)"IHDR" )
             break;
-          FUN_10025163(v2, param_2, uint_32);
+          grim_png_read_IHDR(v2, param_2, uint_32);
         }
         if ( *v6 != *(_DWORD *)"PLTE" )
           break;
-        FUN_10025359(v2, param_2, uint_32, v10);
+        grim_png_read_PLTE(v2, param_2, uint_32, v10);
       }
       if ( *v6 != *(_DWORD *)"IEND" )
         break;
@@ -25982,7 +25984,7 @@ void FUN_1001e294(void *png_ptr, unsigned int *param_2)
     }
     else
     {
-      FUN_1002587e(v2, (int)param_2, uint_32);
+      grim_png_read_chunk_generic(v2, (int)param_2, uint_32);
     }
   }
   v8 = *((_DWORD *)v2 + 22);
@@ -30427,81 +30429,81 @@ int sub_100223F0()
   return v28;
 }
 
-// sub_100224C5 @ 0x100224C5
-int __cdecl sub_100224C5(__m64 *(__stdcall **a1)(__m64 *, __m64 *, __m64 *))
+// grim_init_mmx_sse_functions @ 0x100224C5
+// fills a function pointer table with MMX/SSE implementations based on CPUID
+void grim_init_mmx_sse_functions(unsigned int *table)
 {
-  int result; // eax
+  __int16 v1; // ax
 
-  result = sub_100223F0();
-  if ( (result & 0x20) != 0 && (result & 0x80u) != 0 )
+  v1 = sub_100223F0();
+  if ( (v1 & 0x20) != 0 && (v1 & 0x80u) != 0 )
   {
-    *a1 = sub_1002DCA8;
-    a1[1] = sub_1002D1EA;
-    a1[2] = sub_1002DF69;
-    a1[3] = sub_1002943A;
-    a1[5] = sub_1002DCFD;
-    a1[6] = sub_1002D25B;
-    a1[7] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D2C2;
-    a1[8] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DFEB;
-    a1[9] = sub_1002DD36;
-    a1[10] = sub_1002D7A2;
-    a1[11] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002966C;
-    a1[12] = sub_1002E393;
-    a1[13] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E3D6;
-    a1[14] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D7A7;
-    a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D92F;
-    a1[16] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E04A;
-    a1[17] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DD9A;
-    a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D1CE;
-    a1[19] = sub_10027ED0;
-    a1[20] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027F69;
-    a1[21] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E578;
-    a1[22] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E4BA;
-    a1[23] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027FC6;
-    a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028079;
-    a1[25] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100284AA;
-    a1[26] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002973B;
-    a1[27] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002978B;
-    a1[28] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029876;
-    a1[29] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002856F;
-    a1[30] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029952;
-    a1[31] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100299B5;
-    a1[32] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A13;
-    a1[33] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A6C;
-    a1[34] = sub_1002E5DC;
-    a1[35] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100285DB;
-    a1[36] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028712;
-    a1[37] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029AB3;
-    a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029B5B;
-    a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029CE2;
-    a1[40] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002AE7A;
-    a1[41] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B01F;
-    a1[42] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B553;
-    a1[43] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002879F;
-    a1[44] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028831;
-    a1[54] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E17C;
-    a1[51] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D321;
-    a1[48] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE32;
-    a1[46] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE7B;
-    a1[52] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E1ED;
-    a1[49] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D392;
-    a1[55] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028895;
-    a1[56] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002893C;
-    a1[53] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E2B5;
-    a1[47] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DEBE;
-    a1[50] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D466;
-    a1[4] = sub_1002CAA2;
-    a1[45] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100289E1;
-    if ( (result & 0x100) != 0 && (result & 0x200) != 0 )
+    *table = (unsigned int)sub_1002DCA8;
+    table[1] = (unsigned int)sub_1002D1EA;
+    table[2] = (unsigned int)sub_1002DF69;
+    table[3] = (unsigned int)sub_1002943A;
+    table[5] = (unsigned int)sub_1002DCFD;
+    table[6] = (unsigned int)sub_1002D25B;
+    table[7] = (unsigned int)sub_1002D2C2;
+    table[8] = (unsigned int)sub_1002DFEB;
+    table[9] = (unsigned int)sub_1002DD36;
+    table[10] = (unsigned int)sub_1002D7A2;
+    table[11] = (unsigned int)sub_1002966C;
+    table[12] = (unsigned int)sub_1002E393;
+    table[13] = (unsigned int)sub_1002E3D6;
+    table[14] = (unsigned int)sub_1002D7A7;
+    table[15] = (unsigned int)sub_1002D92F;
+    table[16] = (unsigned int)sub_1002E04A;
+    table[17] = (unsigned int)sub_1002DD9A;
+    table[18] = (unsigned int)sub_1002D1CE;
+    table[19] = (unsigned int)sub_10027ED0;
+    table[20] = (unsigned int)sub_10027F69;
+    table[21] = (unsigned int)sub_1002E578;
+    table[22] = (unsigned int)sub_1002E4BA;
+    table[23] = (unsigned int)sub_10027FC6;
+    table[24] = (unsigned int)sub_10028079;
+    table[25] = (unsigned int)sub_100284AA;
+    table[26] = (unsigned int)sub_1002973B;
+    table[27] = (unsigned int)sub_1002978B;
+    table[28] = (unsigned int)sub_10029876;
+    table[29] = (unsigned int)sub_1002856F;
+    table[30] = (unsigned int)sub_10029952;
+    table[31] = (unsigned int)sub_100299B5;
+    table[32] = (unsigned int)sub_10029A13;
+    table[33] = (unsigned int)sub_10029A6C;
+    table[34] = (unsigned int)sub_1002E5DC;
+    table[35] = (unsigned int)sub_100285DB;
+    table[36] = (unsigned int)sub_10028712;
+    table[37] = (unsigned int)sub_10029AB3;
+    table[38] = (unsigned int)sub_10029B5B;
+    table[39] = (unsigned int)sub_10029CE2;
+    table[40] = (unsigned int)sub_1002AE7A;
+    table[41] = (unsigned int)sub_1002B01F;
+    table[42] = (unsigned int)sub_1002B553;
+    table[43] = (unsigned int)sub_1002879F;
+    table[44] = (unsigned int)sub_10028831;
+    table[54] = (unsigned int)sub_1002E17C;
+    table[51] = (unsigned int)sub_1002D321;
+    table[48] = (unsigned int)sub_1002DE32;
+    table[46] = (unsigned int)sub_1002DE7B;
+    table[52] = (unsigned int)sub_1002E1ED;
+    table[49] = (unsigned int)sub_1002D392;
+    table[55] = (unsigned int)sub_10028895;
+    table[56] = (unsigned int)sub_1002893C;
+    table[53] = (unsigned int)sub_1002E2B5;
+    table[47] = (unsigned int)sub_1002DEBE;
+    table[50] = (unsigned int)sub_1002D466;
+    table[4] = (unsigned int)sub_1002CAA2;
+    table[45] = (unsigned int)sub_100289E1;
+    if ( (v1 & 0x100) != 0 && (v1 & 0x200) != 0 )
     {
-      a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DB55;
-      a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002C7C0;
-      a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029C2D;
-      a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B66C;
-      a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028295;
+      table[15] = (unsigned int)sub_1002DB55;
+      table[18] = (unsigned int)sub_1002C7C0;
+      table[38] = (unsigned int)sub_10029C2D;
+      table[39] = (unsigned int)sub_1002B66C;
+      table[24] = (unsigned int)sub_10028295;
     }
   }
-  return result;
 }
 
 // sub_100226EB @ 0x100226EB
@@ -33694,8 +33696,8 @@ int png_crc_finish(void *png_ptr, unsigned int skip)
   return 1;
 }
 
-// FUN_10025163 @ 0x10025163
-void FUN_10025163(void *png_ptr, unsigned int *param_2, int param_3)
+// grim_png_read_IHDR @ 0x10025163
+void grim_png_read_IHDR(void *png_ptr, unsigned int *param_2, int param_3)
 {
   int uint_32; // edi
   signed int v5; // eax
@@ -33778,8 +33780,8 @@ LABEL_39:
   FUN_1002031c(png_ptr, param_2, uint_32, (unsigned int)Buf, v6, param_3a, v8, v9, v10);
 }
 
-// FUN_10025359 @ 0x10025359
-void FUN_10025359(void *this, void *png_ptr, int param_2, unsigned int param_3)
+// grim_png_read_PLTE @ 0x10025359
+void grim_png_read_PLTE(void *this, void *png_ptr, int param_2, unsigned int param_3)
 {
   void *v4; // esi
   int v5; // eax
@@ -34065,8 +34067,8 @@ LABEL_25:
       (int)png_ptr + 352);
 }
 
-// FUN_1002587e @ 0x1002587E
-void FUN_1002587e(void *png_ptr, int param_2, unsigned int param_3)
+// grim_png_read_chunk_generic @ 0x1002587E
+void grim_png_read_chunk_generic(void *png_ptr, int param_2, unsigned int param_3)
 {
   int v3; // eax
 
