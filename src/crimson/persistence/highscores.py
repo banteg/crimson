@@ -239,7 +239,9 @@ def scores_path_for_mode(
         # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
         # and `quest*.hi` when hardcore is ON.
         prefix = "quest" if hardcore else "questhc"
-        return root / f"{prefix}{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
+        major = int(quest_stage_major)
+        minor = int(quest_stage_minor)
+        return root / f"{prefix}{major}_{minor}.hi"
     return root / "unknown.hi"
 
 
@@ -272,7 +274,9 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
         # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
         # and `quest*.hi` when hardcore is ON.
         prefix = "quest" if hardcore else "questhc"
-        return root / f"{prefix}{int(quest_stage_major)}_{int(quest_stage_minor)}.hi"
+        major = int(quest_stage_major)
+        minor = int(quest_stage_minor)
+        return root / f"{prefix}{major}_{minor}.hi"
     return root / "unknown.hi"
 
 
