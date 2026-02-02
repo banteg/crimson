@@ -930,6 +930,8 @@ class QuestMode(BaseGameplayMode):
             self._draw_game_cursor()
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
+            if debug_enabled() and (not perk_menu_active):
+                y += float(self._ui_line_height(scale=0.9))
             self._draw_ui_text("paused (TAB)", x, y, UI_HINT_COLOR)
         else:
             self._draw_aim_cursor()
