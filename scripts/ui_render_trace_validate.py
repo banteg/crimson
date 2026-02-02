@@ -252,6 +252,80 @@ def validate_options_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     return errors
 
 
+def validate_pause_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    """
+    Validate the gameplay pause menu (state_5) which reuses the menu item + sign
+    layout with three entries.
+    """
+
+    from crimson.frontend import menu as m
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_5")
+
+    screen_w = 1024
+
+    # --- Sign ---
+    scale, shift_x = _panel_scale_and_shift(screen_w)
+    sign_w = m.MENU_SIGN_WIDTH * scale
+    sign_h = m.MENU_SIGN_HEIGHT * scale
+    offset_x = m.MENU_SIGN_OFFSET_X * scale + shift_x
+    offset_y = m.MENU_SIGN_OFFSET_Y * scale
+    pos_x = float(screen_w) + m.MENU_SIGN_POS_X_PAD
+    pos_y = m.MENU_SIGN_POS_Y
+    exp_sign = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=sign_w,
+        h=sign_h,
+        origin_x=-offset_x,
+        origin_y=-offset_y,
+        rotation_deg=0.0,
+    )
+    got_sign, d_sign = _match_bbox(_instances(screen, "ui\\ui_signCrimson"), exp_sign)
+    if got_sign is None or d_sign > tol:
+        errors.append(f"pause_menu: sign bbox mismatch: expected={exp_sign} got={got_sign} max_abs_delta={d_sign:.3f}")
+
+    # --- Menu items + labels ---
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+    item_w = 510.0
+    item_h = 62.0
+    for slot in (0, 1, 2):
+        pos_x = m.MenuView._menu_slot_pos_x(int(slot))
+        pos_y = m.MENU_LABEL_BASE_Y + m.MENU_LABEL_STEP * float(slot) + y_shift
+        exp_item = _draw_texture_pro_bbox(
+            x=pos_x,
+            y=pos_y,
+            w=item_w,
+            h=item_h,
+            origin_x=-(m.MENU_ITEM_OFFSET_X),
+            origin_y=-(m.MENU_ITEM_OFFSET_Y),
+            rotation_deg=0.0,
+        )
+        got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_item)
+        if got_item is None or d_item > tol:
+            errors.append(
+                f"pause_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}"
+            )
+
+        exp_label = _draw_texture_pro_bbox(
+            x=pos_x,
+            y=pos_y,
+            w=m.MENU_LABEL_WIDTH,
+            h=m.MENU_LABEL_HEIGHT,
+            origin_x=-(m.MENU_LABEL_OFFSET_X),
+            origin_y=-(m.MENU_LABEL_OFFSET_Y),
+            rotation_deg=0.0,
+        )
+        got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_label)
+        if got_label is None or d_label > tol:
+            errors.append(
+                f"pause_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}"
+            )
+
+    return errors
+
+
 def validate_play_game_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
 
@@ -340,6 +414,7 @@ def main(argv: list[str] | None = None) -> int:
     errors: list[str] = []
     errors.extend(validate_main_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_options_panel(oracle, tol=float(args.tol)))
+    errors.extend(validate_pause_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_play_game_panel(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
