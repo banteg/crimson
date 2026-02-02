@@ -49,18 +49,18 @@ There are **two distinct render variants** for `ui_menuPanel` in the capture:
 
 ## Global fixes (affect every state that draws `ui_menuPanel`)
 
-* [ ] Introduce a single source of truth for `ui_menuPanel` geometry + UV trims:
+* [x] Introduce a single source of truth for `ui_menuPanel` geometry + UV trims:
 
-  * [ ] Variant A (`quad_mode=4`): local bbox `(21,-81)-(531,173)` and src rect `(x=1,y=1,w=510,h=254.5)`
-  * [ ] Variant B (`quad_mode=8`): local x `(-63..447)`, y slices `(-81..57..81/181..197/297)` and src slice rects:
+  * [x] Variant A (`quad_mode=4`): local bbox `(21,-81)-(531,173)` and src rect `(x=1,y=1,w=510,h=254.5)`
+  * [x] Variant B (`quad_mode=8`): local x `(-63..447)`, y slices `(-81..57..81/181..197/297)` and src slice rects:
 
     * top: `(1,1,510,129)`
     * mid: `(1,130,510,20)`
     * bottom: `(1,150,510,105.5)`
-* [ ] Refactor `draw_menu_panel()` so it **does not derive slice heights from texture scaling**; it should use the **captured geometry heights** (138/24/116) and only expand the mid slice by `delta_h`.
-* [ ] Fix `draw_menu_panel()` draw ordering to match capture: **all 3 shadow slices first, then all 3 main slices** (right now we interleave shadow/main per slice).
-* [ ] Stop using `MENU_PANEL_WIDTH=512` and `MENU_PANEL_HEIGHT=256` as *drawn* dimensions for the panel; those are texture dimensions, but runtime draws **510-wide** panels and either **254 / 278 / 378** tall depending on variant.
-* [ ] Update slide width for panels to **510** everywhere (capture slide is ±510, not ±512).
+* [x] Refactor `draw_menu_panel()` so it **does not derive slice heights from texture scaling**; it should use the **captured geometry heights** (138/24/116) and only expand the mid slice by `delta_h`.
+* [x] Fix `draw_menu_panel()` draw ordering to match capture: **all 3 shadow slices first, then all 3 main slices** (right now we interleave shadow/main per slice).
+* [x] Stop using `MENU_PANEL_WIDTH=512` and `MENU_PANEL_HEIGHT=256` as *drawn* dimensions for the panel; those are texture dimensions, but runtime draws **510-wide** panels and either **254 / 278 / 378** tall depending on variant.
+* [x] Update slide width for panels to **510** everywhere (capture slide is ±510, not ±512).
 * [ ] Extend `_ui_element_anim()` (or wrapper) to support **direction_flag** so right-sliding panels can use **+510 → 0** (needed in states 3, 14–16).
 
 ---
@@ -69,7 +69,7 @@ There are **two distinct render variants** for `ui_menuPanel` in the capture:
 
 (Doesn’t draw `ui_menuPanel` in the marked frames.)
 
-* [ ] No panel-specific action.
+* [x] No panel-specific action.
 
 ---
 
@@ -91,12 +91,12 @@ There are **two distinct render variants** for `ui_menuPanel` in the capture:
 
 Fix plan:
 
-* [ ] Update `PanelMenuView._draw_panel` (`src/crimson/frontend/panels/base.py`) to use **Variant B (sliced)** for this state.
-* [ ] Use **base height 278** (not 256) for the Play Game panel.
-* [ ] Apply **UV trimming** (x=1..511, y starts at 1, bottom ends at 255.5).
-* [ ] Fix panel shadow offset: add `UI_SHADOW_OFFSET` to panel shadow draws (or have the panel renderer do it).
-* [ ] Update slide width passed into `_ui_element_anim()` for the panel from **512 → 510**.
-* [ ] Recompute any content anchoring in `play_game.py` that depends on the old `MENU_PANEL_OFFSET_X/-Y` assumptions (panel_left/panel_top will change when we switch to the real geom x0/y0).
+* [x] Update `PanelMenuView._draw_panel` (`src/crimson/frontend/panels/base.py`) to use **Variant B (sliced)** for this state.
+* [x] Use **base height 278** (not 256) for the Play Game panel.
+* [x] Apply **UV trimming** (x=1..511, y starts at 1, bottom ends at 255.5).
+* [x] Fix panel shadow offset: add `UI_SHADOW_OFFSET` to panel shadow draws (or have the panel renderer do it).
+* [x] Update slide width passed into `_ui_element_anim()` for the panel from **512 → 510**.
+* [x] Recompute any content anchoring in `play_game.py` that depends on the old `MENU_PANEL_OFFSET_X/-Y` assumptions (panel_left/panel_top will change when we switch to the real geom x0/y0).
 
 ---
 
@@ -115,11 +115,11 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Make Options use **Variant A (quad_mode=4)**, not the sliced panel.
-* [ ] Render with trimmed src rect `(1,1,510,254.5)` into dst size **510×254** using local geom `(21,-81)`.
-* [ ] Fix shadow offset (+7/+7) on the panel.
-* [ ] Change panel slide width in this state to **510**.
-* [ ] Adjust Options content layout offsets after panel bbox changes (it will move significantly: runtime panel is much farther right than our current).
+* [x] Make Options use **Variant A (quad_mode=4)**, not the sliced panel.
+* [x] Render with trimmed src rect `(1,1,510,254.5)` into dst size **510×254** using local geom `(21,-81)`.
+* [x] Fix shadow offset (+7/+7) on the panel.
+* [x] Change panel slide width in this state to **510**.
+* [x] Adjust Options content layout offsets after panel bbox changes (it will move significantly: runtime panel is much farther right than our current).
 
 ---
 
@@ -137,13 +137,13 @@ Two panels:
 
 Fix plan:
 
-* [ ] Implement the **dual-panel layout** for state 3:
+* [x] Implement the **dual-panel layout** for state 3:
 
-  * [ ] Left: Variant A quad panel at the captured position.
-  * [ ] Right: Variant B sliced tall panel at the captured position.
+  * [x] Left: Variant A quad panel at the captured position.
+  * [x] Right: Variant B sliced tall panel at the captured position.
 * [ ] Add direction-aware slide (+510 → 0) for the right panel (direction_flag=1).
-* [ ] Ensure both panels use correct UV trims and shadow offsets.
-* [ ] Verify the right panel being partially off-screen (x2=1121) is intended and match it exactly.
+* [x] Ensure both panels use correct UV trims and shadow offsets.
+* [x] Verify the right panel being partially off-screen (x2=1121) is intended and match it exactly.
 
 ---
 
@@ -162,10 +162,10 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Switch Statistics panel to **Variant B tall (378)** and **pos (-5,185)** (then widescreen shift).
-* [ ] Fix shadow offset and UV trims.
-* [ ] Update slide width 512→510.
-* [ ] Re-anchor the contents once the panel geometry is correct (our current stats content is not the classic menu anyway, but at minimum the panel itself should match).
+* [x] Switch Statistics panel to **Variant B tall (378)** and **pos (-5,185)** (then widescreen shift).
+* [x] Fix shadow offset and UV trims.
+* [x] Update slide width 512→510.
+* [x] Re-anchor the contents once the panel geometry is correct (our current stats content is not the classic menu anyway, but at minimum the panel itself should match).
 
 ---
 
@@ -243,10 +243,10 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Use **pos_x=-5,pos_y=185** as the element anchor, then apply local geom x0=-63/y0=-81.
-* [ ] Switch panel width to **510**, height to **378**.
-* [ ] Update `_ui_element_anim(width=...)` calls to use **510**.
-* [ ] Use corrected `draw_menu_panel()` (Variant B tall, correct UV trims, correct draw ordering).
+* [x] Use **pos_x=-5,pos_y=185** as the element anchor, then apply local geom x0=-63/y0=-81.
+* [x] Switch panel width to **510**, height to **378**.
+* [x] Update `_ui_element_anim(width=...)` calls to use **510**.
+* [x] Use corrected `draw_menu_panel()` (Variant B tall, correct UV trims, correct draw ordering).
 
 ---
 
@@ -261,10 +261,10 @@ Two panels:
 
 Fix plan:
 
-* [ ] When we implement state 14, render both panels using the shared renderer:
+* [x] When we implement state 14, render both panels using the shared renderer:
 
-  * [ ] Main panel = Variant B tall at (-35,185)+shift.
-  * [ ] Side panel = Variant A quad at (609,200)+shift with direction_flag=1.
+  * [x] Main panel = Variant B tall at (-35,185)+shift.
+  * [x] Side panel = Variant A quad at (609,200)+shift with direction_flag=1.
 * [ ] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
@@ -273,7 +273,8 @@ Fix plan:
 
 (Panel usage matches state 14: one tall sliced + one quad side panel.)
 
-* [ ] Same implementation checklist as state 14, with state-specific content.
+* [x] Render both panels using the shared renderer (layout matches state 14).
+* [ ] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
 
@@ -281,7 +282,8 @@ Fix plan:
 
 (Panel usage matches state 14: one tall sliced + one quad side panel.)
 
-* [ ] Same implementation checklist as state 14, with state-specific content.
+* [x] Render both panels using the shared renderer (layout matches state 14).
+* [ ] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
 
@@ -293,8 +295,8 @@ Fix plan:
 
 Fix plan:
 
-* [ ] Render credits panel with Variant B tall at pos (-5,185)+shift using width 510, height 378.
-* [ ] Use corrected `draw_menu_panel()` and slide width 510.
+* [x] Render credits panel with Variant B tall at pos (-5,185)+shift using width 510, height 378.
+* [x] Use corrected `draw_menu_panel()` and slide width 510.
 
 ---
 
