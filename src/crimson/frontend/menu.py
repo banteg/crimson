@@ -36,13 +36,12 @@ MENU_LABEL_OFFSET_Y = -37.0
 MENU_LABEL_STEP = 60.0
 MENU_ITEM_OFFSET_X = -71.0
 MENU_ITEM_OFFSET_Y = -59.0
-MENU_PANEL_WIDTH = 512.0
-MENU_PANEL_HEIGHT = 256.0
-# ui_menu_assets_init:
-#   - ui_menuPanel starts with offset_x=+20 (ui_element_set_rect)
-#   - the menu-panel layout copy applies data_48fdb4 -= 116, so offset_x becomes -96
-MENU_PANEL_OFFSET_X = -96.0
-MENU_PANEL_OFFSET_Y = -82.0
+MENU_PANEL_WIDTH = 510.0
+MENU_PANEL_HEIGHT = 254.0
+# Measured from ui_render_trace at 1024x768 (stable timeline):
+# panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
+MENU_PANEL_OFFSET_X = 21.0
+MENU_PANEL_OFFSET_Y = -81.0
 MENU_PANEL_BASE_X = -45.0
 MENU_PANEL_BASE_Y = 210.0
 MENU_SCALE_SMALL_THRESHOLD = 640
