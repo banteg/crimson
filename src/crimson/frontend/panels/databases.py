@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -274,34 +274,322 @@ class _DatabaseBaseView:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state)
+        self._wicons_tex: rl.Texture2D | None = None
+        self._weapon_ids: list[int] = []
+        self._selected_weapon_id: int = 2
+
+    def open(self) -> None:
+        super().open()
+        self._weapon_ids = self._build_weapon_database_ids()
+        self._selected_weapon_id = 2 if 2 in self._weapon_ids else (self._weapon_ids[0] if self._weapon_ids else 2)
+
+        if self._wicons_tex is not None:
+            rl.unload_texture(self._wicons_tex)
+            self._wicons_tex = None
+        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
+        if wicons_path.is_file():
+            self._wicons_tex = rl.load_texture(str(wicons_path))
+
+    def close(self) -> None:
+        if self._wicons_tex is not None:
+            rl.unload_texture(self._wicons_tex)
+            self._wicons_tex = None
+        super().close()
+
     def _back_button_pos(self) -> tuple[float, float]:
         # state_15: ui_buttonSm bbox [270,507]..[352,539] => relative to left panel (-98,194): (368, 313)
         return (368.0, 313.0)
 
     def _draw_contents(self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData) -> None:
+        text_scale = 1.0 * scale
+        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
         draw_small_text(
             font,
             "Unlocked Weapons Database",
             left_x0 + 251.0 * scale,
             left_y0 + 50.0 * scale,
-            1.0 * scale,
+            text_scale,
             rl.Color(255, 255, 255, 255),
         )
 
+        weapon_ids = self._weapon_ids
+        count = len(weapon_ids)
+        weapon_label = "weapon" if count == 1 else "weapons"
+        draw_small_text(
+            font,
+            f"{count} {weapon_label} in database",
+            left_x0 + 210.0 * scale,
+            left_y0 + 80.0 * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Weapon",
+            left_x0 + 210.0 * scale,
+            left_y0 + 108.0 * scale,
+            text_scale,
+            text_color,
+        )
+
+        # List items (oracle shows 9-row list widget; render the top slice for now).
+        list_x = left_x0 + 218.0 * scale
+        list_y0 = left_y0 + 130.0 * scale
+        row_step = 16.0 * scale
+        for row, weapon_id in enumerate(weapon_ids[:9]):
+            name, _icon = self._weapon_label_and_icon(weapon_id)
+            draw_small_text(font, name, list_x, list_y0 + float(row) * row_step, text_scale, text_color)
+
+        weapon_id = int(self._selected_weapon_id)
+        name, icon_index = self._weapon_label_and_icon(weapon_id)
+        weapon = self._weapon_entry(weapon_id)
+        draw_small_text(
+            font,
+            f"wepno #{weapon_id}",
+            right_x0 + 240.0 * scale,
+            right_y0 + 32.0 * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(font, name, right_x0 + 50.0 * scale, right_y0 + 50.0 * scale, text_scale, text_color)
+        if icon_index is not None:
+            self._draw_wicon(icon_index, x=right_x0 + 82.0 * scale, y=right_y0 + 82.0 * scale, scale=scale)
+
+        if weapon is not None:
+            rpm = self._weapon_rpm(weapon)
+            reload_time = weapon.reload_time
+            clip_size = weapon.clip_size
+            if rpm is not None:
+                draw_small_text(
+                    font,
+                    f"Firerate: {rpm} rpm",
+                    right_x0 + 66.0 * scale,
+                    right_y0 + 128.0 * scale,
+                    text_scale,
+                    text_color,
+                )
+            if reload_time is not None:
+                draw_small_text(
+                    font,
+                    f"Reload time: {reload_time:g} secs",
+                    right_x0 + 66.0 * scale,
+                    right_y0 + 146.0 * scale,
+                    text_scale,
+                    text_color,
+                )
+            if clip_size is not None:
+                draw_small_text(
+                    font,
+                    f"Clip size: {int(clip_size)}",
+                    right_x0 + 66.0 * scale,
+                    right_y0 + 164.0 * scale,
+                    text_scale,
+                    text_color,
+                )
+
+    def _build_weapon_database_ids(self) -> list[int]:
+        try:
+            from ...weapons import WEAPON_TABLE
+        except Exception:
+            return []
+        status = self._state.status
+        used: list[int] = []
+        for weapon in WEAPON_TABLE:
+            if weapon.name is None:
+                continue
+            weapon_id = int(weapon.weapon_id)
+            try:
+                if status.weapon_usage_count(weapon_id) != 0:
+                    used.append(weapon_id)
+            except Exception:
+                continue
+        used.sort()
+        return used
+
+    def _weapon_entry(self, weapon_id: int) -> object | None:
+        try:
+            from ...weapons import WEAPON_BY_ID
+        except Exception:
+            return None
+        return WEAPON_BY_ID.get(int(weapon_id))
+
+    def _weapon_rpm(self, weapon: object) -> int | None:
+        try:
+            cooldown = getattr(weapon, "shot_cooldown", None)
+            if cooldown is None:
+                return None
+            cooldown = float(cooldown)
+        except Exception:
+            return None
+        if cooldown <= 0.0:
+            return None
+        return int(60.0 / cooldown)
+
+    def _draw_wicon(self, icon_index: int, *, x: float, y: float, scale: float) -> None:
+        tex = self._wicons_tex
+        if tex is None:
+            return
+        idx = int(icon_index)
+        if idx < 0 or idx > 31:
+            return
+        cols = 4
+        rows = 8
+        icon_w = float(tex.width) / float(cols)
+        icon_h = float(tex.height) / float(rows)
+        src_x = float(idx % cols) * icon_w
+        src_y = float(idx // cols) * icon_h
+        rl.draw_texture_pro(
+            tex,
+            rl.Rectangle(src_x, src_y, icon_w, icon_h),
+            rl.Rectangle(float(x), float(y), icon_w * scale, icon_h * scale),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
+
+    @staticmethod
+    def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
+        try:
+            from ...weapons import WEAPON_BY_ID
+        except Exception:
+            WEAPON_BY_ID = {}
+        weapon = WEAPON_BY_ID.get(int(weapon_id))
+        if weapon is None:
+            return f"Weapon {int(weapon_id)}", None
+        name = weapon.name or f"weapon_{int(weapon.weapon_id)}"
+        return name, weapon.icon_index
+
 
 class UnlockedPerksDatabaseView(_DatabaseBaseView):
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state)
+        self._perk_ids: list[int] = []
+        self._selected_perk_id: int = 4
+
+    def open(self) -> None:
+        super().open()
+        self._perk_ids = self._build_perk_database_ids()
+        self._selected_perk_id = 4 if 4 in self._perk_ids else (self._perk_ids[0] if self._perk_ids else 4)
+
     def _back_button_pos(self) -> tuple[float, float]:
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
         return (356.0, 315.0)
 
     def _draw_contents(self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData) -> None:
+        text_scale = 1.0 * scale
+        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         draw_small_text(
             font,
             "Unlocked Perks Database",
             left_x0 + 261.0 * scale,
             left_y0 + 50.0 * scale,
-            1.0 * scale,
+            text_scale,
             rl.Color(255, 255, 255, 255),
         )
+
+        perk_ids = self._perk_ids
+        count = len(perk_ids)
+        perk_label = "perk" if count == 1 else "perks"
+        draw_small_text(
+            font,
+            f"{count} {perk_label} in database",
+            left_x0 + 210.0 * scale,
+            left_y0 + 78.0 * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Perks",
+            left_x0 + 210.0 * scale,
+            left_y0 + 106.0 * scale,
+            text_scale,
+            text_color,
+        )
+
+        list_x = left_x0 + 218.0 * scale
+        list_y0 = left_y0 + 128.0 * scale
+        row_step = 16.0 * scale
+        for row, perk_id in enumerate(perk_ids[:9]):
+            draw_small_text(font, self._perk_name(perk_id), list_x, list_y0 + float(row) * row_step, text_scale, text_color)
+
+        perk_id = int(self._selected_perk_id)
+        perk_name = self._perk_name(perk_id)
+        draw_small_text(
+            font,
+            f"perkno #{perk_id}",
+            right_x0 + 224.0 * scale,
+            right_y0 + 32.0 * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(font, perk_name, right_x0 + 93.0 * scale, right_y0 + 50.0 * scale, text_scale, text_color)
+
+        desc_x = right_x0 + 50.0 * scale
+        desc_y = right_y0 + 72.0 * scale
+        max_w = float(rl.get_screen_width()) - desc_x - 4.0 * scale
+        desc = self._perk_desc(perk_id)
+        first_line = self._truncate_small_line(font, desc, max_w, scale=text_scale)
+        if first_line:
+            draw_small_text(font, first_line, desc_x, desc_y, text_scale, text_color)
+
+    def _build_perk_database_ids(self) -> list[int]:
+        try:
+            from ...gameplay import PERK_COUNT_SIZE, perks_rebuild_available
+        except Exception:
+            return []
+
+        # Avoid spinning up a full GameplayState; perks_rebuild_available only needs these fields.
+        class _Stub:
+            status: object | None
+            perk_available: list[bool]
+            _perk_available_unlock_index: int
+
+        stub = _Stub()
+        stub.status = self._state.status
+        stub.perk_available = [False] * int(PERK_COUNT_SIZE)
+        stub._perk_available_unlock_index = -1
+        perks_rebuild_available(stub)  # type: ignore[arg-type]
+
+        perk_ids = [idx for idx, available in enumerate(stub.perk_available) if available and idx > 0]
+        perk_ids.sort()
+        return perk_ids
+
+    @staticmethod
+    def _perk_name(perk_id: int) -> str:
+        try:
+            from ...perks import perk_display_name
+
+            return perk_display_name(int(perk_id))
+        except Exception:
+            return f"Perk {int(perk_id)}"
+
+    @staticmethod
+    def _perk_desc(perk_id: int) -> str:
+        try:
+            from ...perks import perk_display_description
+
+            return perk_display_description(int(perk_id))
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _truncate_small_line(font: SmallFontData, text: str, max_width: float, *, scale: float) -> str:
+        text = str(text).strip()
+        if not text:
+            return ""
+        words = text.split()
+        line = ""
+        for word in words:
+            candidate = word if not line else f"{line} {word}"
+            if measure_small_text_width(font, candidate, float(scale)) <= float(max_width):
+                line = candidate
+                continue
+            break
+        return line

@@ -57,12 +57,78 @@ from .frontend.high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
+    HS_LOCAL_DATE_X,
+    HS_LOCAL_DATE_Y,
+    HS_LOCAL_FRAGS_X,
+    HS_LOCAL_FRAGS_Y,
+    HS_LOCAL_HIT_X,
+    HS_LOCAL_HIT_Y,
+    HS_LOCAL_LABEL_X,
+    HS_LOCAL_LABEL_Y,
+    HS_LOCAL_NAME_X,
+    HS_LOCAL_NAME_Y,
+    HS_LOCAL_RANK_X,
+    HS_LOCAL_RANK_Y,
+    HS_LOCAL_SCORE_LABEL_X,
+    HS_LOCAL_SCORE_LABEL_Y,
+    HS_LOCAL_SCORE_VALUE_X,
+    HS_LOCAL_SCORE_VALUE_Y,
+    HS_LOCAL_TIME_LABEL_X,
+    HS_LOCAL_TIME_LABEL_Y,
+    HS_LOCAL_TIME_VALUE_X,
+    HS_LOCAL_TIME_VALUE_Y,
+    HS_LOCAL_WEAPON_X,
+    HS_LOCAL_WEAPON_Y,
+    HS_LOCAL_WICON_X,
+    HS_LOCAL_WICON_Y,
     HS_LEFT_PANEL_HEIGHT,
     HS_LEFT_PANEL_POS_X,
     HS_LEFT_PANEL_POS_Y,
+    HS_QUEST_ARROW_X,
+    HS_QUEST_ARROW_Y,
+    HS_RIGHT_CHECK_X,
+    HS_RIGHT_CHECK_Y,
     HS_RIGHT_PANEL_HEIGHT,
     HS_RIGHT_PANEL_POS_X,
     HS_RIGHT_PANEL_POS_Y,
+    HS_RIGHT_GAME_MODE_DROP_X,
+    HS_RIGHT_GAME_MODE_DROP_Y,
+    HS_RIGHT_GAME_MODE_VALUE_X,
+    HS_RIGHT_GAME_MODE_VALUE_Y,
+    HS_RIGHT_GAME_MODE_WIDGET_W,
+    HS_RIGHT_GAME_MODE_WIDGET_X,
+    HS_RIGHT_GAME_MODE_WIDGET_Y,
+    HS_RIGHT_GAME_MODE_X,
+    HS_RIGHT_GAME_MODE_Y,
+    HS_RIGHT_NUMBER_PLAYERS_X,
+    HS_RIGHT_NUMBER_PLAYERS_Y,
+    HS_RIGHT_PLAYER_COUNT_DROP_X,
+    HS_RIGHT_PLAYER_COUNT_DROP_Y,
+    HS_RIGHT_PLAYER_COUNT_VALUE_X,
+    HS_RIGHT_PLAYER_COUNT_VALUE_Y,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_W,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_X,
+    HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
+    HS_RIGHT_SCORE_LIST_DROP_X,
+    HS_RIGHT_SCORE_LIST_DROP_Y,
+    HS_RIGHT_SCORE_LIST_VALUE_X,
+    HS_RIGHT_SCORE_LIST_VALUE_Y,
+    HS_RIGHT_SCORE_LIST_WIDGET_W,
+    HS_RIGHT_SCORE_LIST_WIDGET_X,
+    HS_RIGHT_SCORE_LIST_WIDGET_Y,
+    HS_RIGHT_SCORE_LIST_X,
+    HS_RIGHT_SCORE_LIST_Y,
+    HS_RIGHT_SHOW_INTERNET_X,
+    HS_RIGHT_SHOW_INTERNET_Y,
+    HS_RIGHT_SHOW_SCORES_DROP_X,
+    HS_RIGHT_SHOW_SCORES_DROP_Y,
+    HS_RIGHT_SHOW_SCORES_VALUE_X,
+    HS_RIGHT_SHOW_SCORES_VALUE_Y,
+    HS_RIGHT_SHOW_SCORES_WIDGET_W,
+    HS_RIGHT_SHOW_SCORES_WIDGET_X,
+    HS_RIGHT_SHOW_SCORES_WIDGET_Y,
+    HS_RIGHT_SHOW_SCORES_X,
+    HS_RIGHT_SHOW_SCORES_Y,
 )
 from .frontend.menu import (
     MENU_PANEL_HEIGHT,
@@ -1801,6 +1867,10 @@ class HighScoresView:
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture2D | None = None
         self._button_textures: UiButtonTextureSet | None = None
+        self._check_on: rl.Texture2D | None = None
+        self._drop_off: rl.Texture2D | None = None
+        self._arrow_tex: rl.Texture2D | None = None
+        self._wicons_tex: rl.Texture2D | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -1831,6 +1901,16 @@ class HighScoresView:
         self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
+        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
+        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
+        self._arrow_tex = cache.get_or_load("ui_arrow", "ui/ui_arrow.jaz").texture
+
+        if self._wicons_tex is not None:
+            rl.unload_texture(self._wicons_tex)
+            self._wicons_tex = None
+        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
+        if wicons_path.is_file():
+            self._wicons_tex = rl.load_texture(str(wicons_path))
 
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
@@ -1866,9 +1946,15 @@ class HighScoresView:
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
+        if self._wicons_tex is not None:
+            rl.unload_texture(self._wicons_tex)
+            self._wicons_tex = None
         self._assets = None
         self._button_tex = None
         self._button_textures = None
+        self._check_on = None
+        self._drop_off = None
+        self._arrow_tex = None
         self._request = None
         self._records = []
         self._scroll_index = 0
@@ -2022,10 +2108,22 @@ class HighScoresView:
         )
 
         title = "High scores - Quests" if int(mode_id) == 3 else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
-        draw_small_text(font, title, left_x0 + 269.0 * scale, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        title_x = 269.0
+        if int(mode_id) == 1:
+            # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
+            title_x = 266.0
+        draw_small_text(font, title, left_x0 + title_x * scale, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
         if int(mode_id) == 3:
             quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
             draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+            arrow = self._arrow_tex
+            if arrow is not None:
+                dst_w = float(arrow.width) * scale
+                dst_h = float(arrow.height) * scale
+                # state_14 draws ui_arrow.jaz flipped (uv 1..0) to point left.
+                src = rl.Rectangle(float(arrow.width), 0.0, -float(arrow.width), float(arrow.height))
+                dst = rl.Rectangle(left_x0 + HS_QUEST_ARROW_X * scale, left_y0 + HS_QUEST_ARROW_Y * scale, dst_w, dst_h)
+                rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         header_color = rl.Color(255, 255, 255, int(255 * 0.85))
         row_y0 = left_y0 + 84.0 * scale
@@ -2084,8 +2182,350 @@ class HighScoresView:
                 scale=scale,
             )
 
+        self._draw_right_panel(font=font, right_x0=right_x0, right_y0=right_y0, scale=scale, mode_id=mode_id, highlight_rank=highlight_rank)
         self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def _draw_right_panel(
+        self,
+        *,
+        font: SmallFontData,
+        right_x0: float,
+        right_y0: float,
+        scale: float,
+        mode_id: int,
+        highlight_rank: int | None,
+    ) -> None:
+        if int(mode_id) == 3:
+            self._draw_right_panel_quest_options(font=font, right_x0=right_x0, right_y0=right_y0, scale=scale)
+            return
+        self._draw_right_panel_local_score(
+            font=font,
+            right_x0=right_x0,
+            right_y0=right_y0,
+            scale=scale,
+            highlight_rank=highlight_rank,
+        )
+
+    def _draw_right_panel_quest_options(self, *, font: SmallFontData, right_x0: float, right_y0: float, scale: float) -> None:
+        text_scale = 1.0 * scale
+        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+
+        check_on = self._check_on
+        if check_on is not None:
+            check_w = float(check_on.width) * scale
+            check_h = float(check_on.height) * scale
+            rl.draw_texture_pro(
+                check_on,
+                rl.Rectangle(0.0, 0.0, float(check_on.width), float(check_on.height)),
+                rl.Rectangle(right_x0 + HS_RIGHT_CHECK_X * scale, right_y0 + HS_RIGHT_CHECK_Y * scale, check_w, check_h),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+        draw_small_text(
+            font,
+            "Show internet scores",
+            right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale,
+            right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Number of players",
+            right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale,
+            right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Game mode",
+            right_x0 + HS_RIGHT_GAME_MODE_X * scale,
+            right_y0 + HS_RIGHT_GAME_MODE_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Show scores:",
+            right_x0 + HS_RIGHT_SHOW_SCORES_X * scale,
+            right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Selected score list:",
+            right_x0 + HS_RIGHT_SCORE_LIST_X * scale,
+            right_y0 + HS_RIGHT_SCORE_LIST_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        # Closed list widgets (state_14 quest variant): white border + black fill.
+        widget_h = 16.0 * scale
+        for wx, wy, ww in (
+            (HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y, HS_RIGHT_PLAYER_COUNT_WIDGET_W),
+            (HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y, HS_RIGHT_GAME_MODE_WIDGET_W),
+            (HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y, HS_RIGHT_SHOW_SCORES_WIDGET_W),
+            (HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y, HS_RIGHT_SCORE_LIST_WIDGET_W),
+        ):
+            x = right_x0 + float(wx) * scale
+            y = right_y0 + float(wy) * scale
+            w = float(ww) * scale
+            rl.draw_rectangle(int(x), int(y), int(w), int(widget_h), rl.WHITE)
+            rl.draw_rectangle(int(x) + 1, int(y) + 1, max(0, int(w) - 2), max(0, int(widget_h) - 2), rl.BLACK)
+
+        # Values (static in the oracle).
+        draw_small_text(
+            font,
+            "1 player",
+            right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale,
+            right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Quests",
+            right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale,
+            right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Best of all time",
+            right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale,
+            right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "default",
+            right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale,
+            right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        drop_off = self._drop_off
+        if drop_off is None:
+            return
+        drop_w = float(drop_off.width) * scale
+        drop_h = float(drop_off.height) * scale
+        for dx, dy in (
+            (HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
+            (HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
+            (HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
+            (HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
+        ):
+            rl.draw_texture_pro(
+                drop_off,
+                rl.Rectangle(0.0, 0.0, float(drop_off.width), float(drop_off.height)),
+                rl.Rectangle(right_x0 + float(dx) * scale, right_y0 + float(dy) * scale, drop_w, drop_h),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+
+    def _draw_right_panel_local_score(
+        self,
+        *,
+        font: SmallFontData,
+        right_x0: float,
+        right_y0: float,
+        scale: float,
+        highlight_rank: int | None,
+    ) -> None:
+        if not self._records:
+            return
+        idx = int(highlight_rank) if highlight_rank is not None else int(self._scroll_index)
+        if idx < 0:
+            idx = 0
+        if idx >= len(self._records):
+            idx = len(self._records) - 1
+        entry = self._records[idx]
+
+        text_scale = 1.0 * scale
+        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+
+        name = ""
+        try:
+            name = str(entry.name())
+        except Exception:
+            name = ""
+        if not name:
+            name = "???"
+        draw_small_text(font, name, right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale, text_scale, text_color)
+        draw_small_text(
+            font,
+            "Local score",
+            right_x0 + HS_LOCAL_LABEL_X * scale,
+            right_y0 + HS_LOCAL_LABEL_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        date_text = self._format_score_date(entry)
+        if date_text:
+            draw_small_text(
+                font,
+                date_text,
+                right_x0 + HS_LOCAL_DATE_X * scale,
+                right_y0 + HS_LOCAL_DATE_Y * scale,
+                text_scale,
+                text_color,
+            )
+
+        draw_small_text(
+            font,
+            "Score",
+            right_x0 + HS_LOCAL_SCORE_LABEL_X * scale,
+            right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale,
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            "Game time",
+            right_x0 + HS_LOCAL_TIME_LABEL_X * scale,
+            right_y0 + HS_LOCAL_TIME_LABEL_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        score_value = f"{int(getattr(entry, 'score_xp', 0))}"
+        draw_small_text(
+            font,
+            score_value,
+            right_x0 + HS_LOCAL_SCORE_VALUE_X * scale,
+            right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+        draw_small_text(
+            font,
+            self._format_elapsed_mm_ss(elapsed_ms),
+            right_x0 + HS_LOCAL_TIME_VALUE_X * scale,
+            right_y0 + HS_LOCAL_TIME_VALUE_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        draw_small_text(
+            font,
+            f"Rank: {self._ordinal(idx + 1)}",
+            right_x0 + HS_LOCAL_RANK_X * scale,
+            right_y0 + HS_LOCAL_RANK_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        frags = int(getattr(entry, "creature_kill_count", 0) or 0)
+        draw_small_text(
+            font,
+            f"Frags: {frags}",
+            right_x0 + HS_LOCAL_FRAGS_X * scale,
+            right_y0 + HS_LOCAL_FRAGS_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        shots_fired = int(getattr(entry, "shots_fired", 0) or 0)
+        shots_hit = int(getattr(entry, "shots_hit", 0) or 0)
+        hit_pct = 0
+        if shots_fired > 0:
+            hit_pct = int((shots_hit * 100) // shots_fired)
+        draw_small_text(
+            font,
+            f"Hit %: {hit_pct}%",
+            right_x0 + HS_LOCAL_HIT_X * scale,
+            right_y0 + HS_LOCAL_HIT_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+        weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
+        weapon_name, icon_index = self._weapon_label_and_icon(weapon_id)
+        if icon_index is not None:
+            self._draw_wicon(icon_index, x=right_x0 + HS_LOCAL_WICON_X * scale, y=right_y0 + HS_LOCAL_WICON_Y * scale, scale=scale)
+        draw_small_text(
+            font,
+            weapon_name,
+            right_x0 + HS_LOCAL_WEAPON_X * scale,
+            right_y0 + HS_LOCAL_WEAPON_Y * scale,
+            text_scale,
+            text_color,
+        )
+
+    def _draw_wicon(self, icon_index: int, *, x: float, y: float, scale: float) -> None:
+        tex = self._wicons_tex
+        if tex is None:
+            return
+        idx = int(icon_index)
+        if idx < 0 or idx > 31:
+            return
+        cols = 4
+        rows = 8
+        icon_w = float(tex.width) / float(cols)
+        icon_h = float(tex.height) / float(rows)
+        src_x = float(idx % cols) * icon_w
+        src_y = float(idx // cols) * icon_h
+        rl.draw_texture_pro(
+            tex,
+            rl.Rectangle(src_x, src_y, icon_w, icon_h),
+            rl.Rectangle(float(x), float(y), icon_w * scale, icon_h * scale),
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
+
+    @staticmethod
+    def _ordinal(value: int) -> str:
+        n = int(value)
+        if 10 <= (n % 100) <= 20:
+            return f"{n}th"
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
+    @staticmethod
+    def _format_elapsed_mm_ss(value_ms: int) -> str:
+        total = max(0, int(value_ms)) // 1000
+        minutes, seconds = divmod(total, 60)
+        return f"{minutes}:{seconds:02d}"
+
+    @staticmethod
+    def _format_score_date(entry: object) -> str:
+        try:
+            day = int(getattr(entry, "day", 0) or 0)
+            month = int(getattr(entry, "month", 0) or 0)
+            year_off = int(getattr(entry, "year_offset", 0) or 0)
+        except Exception:
+            return ""
+        if day <= 0 or month <= 0:
+            return ""
+        months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        month_name = months[month - 1] if 1 <= month <= 12 else f"{month}"
+        year = 2000 + year_off if year_off >= 0 else 2000
+        return f"{day}. {month_name} {year}"
+
+    @staticmethod
+    def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
+        try:
+            from .weapons import WEAPON_BY_ID
+        except Exception:
+            WEAPON_BY_ID = {}
+        weapon = WEAPON_BY_ID.get(int(weapon_id))
+        if weapon is None:
+            return f"Weapon {int(weapon_id)}", None
+        name = weapon.name or f"weapon_{int(weapon.weapon_id)}"
+        return name, weapon.icon_index
 
     def _draw_sign(self, assets: MenuAssets) -> None:
         if assets.sign is None:
