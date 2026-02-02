@@ -403,7 +403,7 @@ class QuestsMenuView:
         # `sub_447d40` base sums:
         #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
         #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
-        x_sum = QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X
+        x_sum = QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X
         y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
 
         title_x = x_sum + QUEST_TITLE_X_OFFSET

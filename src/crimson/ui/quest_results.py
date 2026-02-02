@@ -73,6 +73,14 @@ QUEST_RESULTS_PANEL_H = 378.0
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
 
+# `quest_results_screen_update` uses the classic UI element sums for positioning:
+#   content_x = (pos_x + offset_x + slide_x) + 180.0 + 40.0
+#   banner_x  = content_x - 18.0
+#   score_x   = content_x + 30.0
+QUEST_RESULTS_CONTENT_X = 220.0
+QUEST_RESULTS_BANNER_X_FROM_CONTENT = -18.0
+QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT = 30.0
+
 INPUT_BOX_W = 166.0
 INPUT_BOX_H = 18.0
 
@@ -399,7 +407,7 @@ class QuestResultsUi:
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
             _panel, panel_left, panel_top = self._panel_layout(screen_w=screen_w, scale=scale)
-            anchor_x = panel_left + 40.0 * scale
+            anchor_x = panel_left + QUEST_RESULTS_CONTENT_X * scale
             input_y = panel_top + 150.0 * scale
             ok_x = anchor_x + 170.0 * scale
             ok_y = input_y - 8.0 * scale
@@ -451,7 +459,8 @@ class QuestResultsUi:
             _origin_x, _origin_y = ui_origin(screen_w, screen_h, scale)
             _panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
             qualifies = int(self.rank) < TABLE_MAX
-            score_card_x = left + 70.0 * scale
+            content_x = left + QUEST_RESULTS_CONTENT_X * scale
+            score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
 
             var_c_12 = top + (96.0 if qualifies else 108.0) * scale
             var_c_14 = var_c_12 + 84.0 * scale
@@ -515,7 +524,8 @@ class QuestResultsUi:
             fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
             draw_classic_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
-        banner_x = left + 22.0 * scale
+        content_x = left + QUEST_RESULTS_CONTENT_X * scale
+        banner_x = content_x + QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale
         banner_y = top + 36.0 * scale
         if self.assets.text_well_done is not None:
             src = rl.Rectangle(0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height))
@@ -525,7 +535,7 @@ class QuestResultsUi:
         qualifies = int(self.rank) < TABLE_MAX
 
         if self.phase == 0:
-            anchor_x = left + 40.0 * scale
+            anchor_x = content_x
             label_x = anchor_x + 32.0 * scale
             value_x = label_x + 132.0 * scale
 
@@ -587,7 +597,7 @@ class QuestResultsUi:
             self._draw_small(final_value, value_x, y, 1.0 * scale, _row_color(3, final=True))
 
         elif self.phase == 1:
-            anchor_x = left + 40.0 * scale
+            anchor_x = content_x
             text_y = top + 118.0 * scale
             self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_TEXT)
 
@@ -615,7 +625,7 @@ class QuestResultsUi:
             button_draw(self.assets.perk_menu_assets, self.font, self._ok_button, x=ok_x, y=ok_y, width=ok_w, scale=scale)
 
         else:
-            score_card_x = left + 70.0 * scale
+            score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
             var_c_12 = top + (96.0 if qualifies else 108.0) * scale
             if (not qualifies) and self.font is not None:
                 self._draw_small(
