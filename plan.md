@@ -265,7 +265,7 @@ Fix plan:
 
   * [x] Main panel = Variant B tall at (-35,185)+shift.
   * [x] Side panel = Variant A quad at (609,200)+shift with direction_flag=1.
-* [ ] Ensure right-side panel slide uses **+510 → 0**.
+* [x] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
 

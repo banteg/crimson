@@ -1553,6 +1553,8 @@ class HighScoresView:
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture2D | None = None
         self._button_textures: UiButtonTextureSet | None = None
@@ -1573,6 +1575,8 @@ class HighScoresView:
         self._assets = load_menu_assets(self._state)
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._small_font = None
         self._scroll_index = 0
         self._button_textures = None
@@ -1638,14 +1642,20 @@ class HighScoresView:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
+
+        enabled = self._timeline_ms >= self._timeline_max_ms
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_previous"
             return
 
         textures = self._button_textures
-        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
+        if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             panel_x0, panel_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
 
@@ -1653,7 +1663,6 @@ class HighScoresView:
             y0 = panel_y0 + HS_BUTTON_Y0 * scale
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-            dt_ms = min(float(dt), 0.1) * 1000.0
             w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             if button_update(self._update_button, x=x0, y=y0, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 # Reload scores from disk (no view transition).
@@ -1694,22 +1703,23 @@ class HighScoresView:
         rows = 10
         max_scroll = max(0, len(self._records) - rows)
 
-        wheel = int(rl.get_mouse_wheel_move())
-        if wheel:
-            self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
+        if enabled:
+            wheel = int(rl.get_mouse_wheel_move())
+            if wheel:
+                self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._scroll_index = max(0, int(self._scroll_index) - 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
-            self._scroll_index = max(0, int(self._scroll_index) - rows)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
-            self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-            self._scroll_index = 0
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-            self._scroll_index = max_scroll
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+                self._scroll_index = max(0, int(self._scroll_index) - 1)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+                self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
+                self._scroll_index = max(0, int(self._scroll_index) - rows)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+                self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
+                self._scroll_index = 0
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
+                self._scroll_index = max_scroll
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -1733,18 +1743,38 @@ class HighScoresView:
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        panel_w = MENU_PANEL_WIDTH * scale
+        _angle_rad, left_slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=0,
+        )
+        _angle_rad, right_slide_x = MenuView._ui_element_anim(
+            self,
+            index=2,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=1,
+        )
+
         left_x0, left_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
         right_x0, right_y0 = self._panel_top_left(pos_x=HS_RIGHT_PANEL_POS_X, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
+        left_x0 += float(left_slide_x)
+        right_x0 += float(right_slide_x)
 
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(left_x0, left_y0, MENU_PANEL_WIDTH * scale, HS_LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_x0, left_y0, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(right_x0, right_y0, MENU_PANEL_WIDTH * scale, HS_RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_x0, right_y0, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
