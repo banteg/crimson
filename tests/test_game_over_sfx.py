@@ -48,8 +48,8 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
 
 
 def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(monkeypatch, tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
+    # Unit test: avoid depending on proprietary assets / PAQ archives.
+    assets_dir = tmp_path
 
     cfg = ensure_crimson_cfg(tmp_path)
     state = GameState(
@@ -63,7 +63,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         logos=None,
         texture_cache=None,
         audio=object(),
-        resource_paq=assets_dir / "crimson.paq",
+        resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=1)
@@ -80,6 +80,10 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     monkeypatch.setattr("crimson.game.update_audio", lambda _audio, _dt: None)
     monkeypatch.setattr("crimson.game.play_sfx", _play_sfx)
     monkeypatch.setattr("crimson.game._ensure_texture_cache", lambda _state: _DummyCache())
+    monkeypatch.setattr(
+        "crimson.game.load_menu_assets",
+        lambda _state: SimpleNamespace(sign=None, item=None, panel=None, labels=None),
+    )
 
     view = HighScoresView(state)
     view.open()
@@ -89,10 +93,13 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
     def _is_key_pressed(key: int) -> bool:
         return int(key) == int(rl.KeyboardKey.KEY_ESCAPE)
 
+    # High scores view animates in; advance its timeline before pressing escape.
+    monkeypatch.setattr("crimson.game.rl.is_key_pressed", lambda _key: False)
+    view.update(0.1)
+    view.update(0.1)
     monkeypatch.setattr("crimson.game.rl.is_key_pressed", _is_key_pressed)
 
     view.update(0.1)
 
     assert played == ["sfx_ui_panelclick", "sfx_ui_buttonclick"]
     assert view.take_action() == "back_to_previous"
-
