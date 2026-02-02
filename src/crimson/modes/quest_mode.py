@@ -518,6 +518,42 @@ class QuestMode(BaseGameplayMode):
                 self._world.audio_router.play_sfx("sfx_ui_bonus")
             self._close_perk_menu()
 
+    def _close_failed_run(self) -> None:
+        if self._outcome is None:
+            fired = 0
+            hit = 0
+            try:
+                fired = int(self._state.shots_fired[int(self._player.index)])
+                hit = int(self._state.shots_hit[int(self._player.index)])
+            except Exception:
+                fired = 0
+                hit = 0
+            fired = max(0, int(fired))
+            hit = max(0, min(int(hit), fired))
+            most_used_weapon_id = most_used_weapon_id_for_player(
+                self._state,
+                player_index=int(self._player.index),
+                fallback_weapon_id=int(self._player.weapon_id),
+            )
+            player2_health = None
+            if len(self._world.players) >= 2:
+                player2_health = float(self._world.players[1].health)
+            self._outcome = QuestRunOutcome(
+                kind="failed",
+                level=str(self._quest.level),
+                base_time_ms=int(self._quest.spawn_timeline_ms),
+                player_health=float(self._player.health),
+                player2_health=player2_health,
+                pending_perk_count=int(self._state.perk_selection.pending_count),
+                experience=int(self._player.experience),
+                kill_count=int(self._creatures.kill_count),
+                weapon_id=int(self._player.weapon_id),
+                shots_fired=fired,
+                shots_hit=hit,
+                most_used_weapon_id=int(most_used_weapon_id),
+            )
+        self.close_requested = True
+
     def _draw_perk_prompt(self) -> None:
         if self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3:
             return
@@ -723,6 +759,8 @@ class QuestMode(BaseGameplayMode):
 
         dt_world = 0.0 if self._paused or (not any_alive) or perk_menu_active else dt_frame
         if dt_world <= 0.0:
+            if not any(player.health > 0.0 for player in self._world.players):
+                self._close_failed_run()
             return
 
         self._quest.quest_name_timer_ms += dt_world * 1000.0
@@ -738,40 +776,7 @@ class QuestMode(BaseGameplayMode):
 
         any_alive_after = any(player.health > 0.0 for player in self._world.players)
         if not any_alive_after:
-            if self._outcome is None:
-                fired = 0
-                hit = 0
-                try:
-                    fired = int(self._state.shots_fired[int(self._player.index)])
-                    hit = int(self._state.shots_hit[int(self._player.index)])
-                except Exception:
-                    fired = 0
-                    hit = 0
-                fired = max(0, int(fired))
-                hit = max(0, min(int(hit), fired))
-                most_used_weapon_id = most_used_weapon_id_for_player(
-                    self._state,
-                    player_index=int(self._player.index),
-                    fallback_weapon_id=int(self._player.weapon_id),
-                )
-                player2_health = None
-                if len(self._world.players) >= 2:
-                    player2_health = float(self._world.players[1].health)
-                self._outcome = QuestRunOutcome(
-                    kind="failed",
-                    level=str(self._quest.level),
-                    base_time_ms=int(self._quest.spawn_timeline_ms),
-                    player_health=float(self._player.health),
-                    player2_health=player2_health,
-                    pending_perk_count=int(self._state.perk_selection.pending_count),
-                    experience=int(self._player.experience),
-                    kill_count=int(self._creatures.kill_count),
-                    weapon_id=int(self._player.weapon_id),
-                    shots_fired=fired,
-                    shots_hit=hit,
-                    most_used_weapon_id=int(most_used_weapon_id),
-                )
-            self.close_requested = True
+            self._close_failed_run()
             return
 
         creatures_none_active = not bool(self._creatures.iter_active())
