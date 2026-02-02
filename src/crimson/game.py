@@ -51,6 +51,19 @@ from .demo_trial import (
 )
 from .frontend.boot import BootView
 from .frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from .frontend.high_scores_layout import (
+    HS_BACK_BUTTON_X,
+    HS_BACK_BUTTON_Y,
+    HS_BUTTON_STEP_Y,
+    HS_BUTTON_X,
+    HS_BUTTON_Y0,
+    HS_LEFT_PANEL_HEIGHT,
+    HS_LEFT_PANEL_POS_X,
+    HS_LEFT_PANEL_POS_Y,
+    HS_RIGHT_PANEL_HEIGHT,
+    HS_RIGHT_PANEL_POS_X,
+    HS_RIGHT_PANEL_POS_Y,
+)
 from .frontend.menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
@@ -1535,14 +1548,17 @@ class QuestFailedView:
 class HighScoresView:
     def __init__(self, state: GameState) -> None:
         self._state = state
+        self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
+        self._widescreen_y_shift = 0.0
         self._small_font: SmallFontData | None = None
         self._button_tex: rl.Texture2D | None = None
         self._button_textures: UiButtonTextureSet | None = None
-        self._back_button = UiButtonState("Back", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
+        self._update_button = UiButtonState("Update scores", force_wide=True)
+        self._play_button = UiButtonState("Play a game", force_wide=True)
+        self._back_button = UiButtonState("Back", force_wide=False)
 
         self._request: HighScoresRequest | None = None
         self._records: list = []
@@ -1551,14 +1567,18 @@ class HighScoresView:
     def open(self) -> None:
         from .persistence.highscores import read_highscore_table, scores_path_for_mode
 
+        layout_w = float(self._state.config.screen_width)
+        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
+        self._assets = load_menu_assets(self._state)
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._cursor_pulse_time = 0.0
         self._small_font = None
         self._scroll_index = 0
         self._button_textures = None
-        self._back_button = UiButtonState("Back", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
+        self._update_button = UiButtonState("Update scores", force_wide=True)
+        self._play_button = UiButtonState("Play a game", force_wide=True)
+        self._back_button = UiButtonState("Back", force_wide=False)
 
         cache = _ensure_texture_cache(self._state)
         self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
@@ -1599,11 +1619,17 @@ class HighScoresView:
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
+        self._assets = None
         self._button_tex = None
         self._button_textures = None
         self._request = None
         self._records = []
         self._scroll_index = 0
+
+    def _panel_top_left(self, *, pos_x: float, pos_y: float, scale: float) -> tuple[float, float]:
+        x0 = float(pos_x + MENU_PANEL_OFFSET_X * scale)
+        y0 = float(pos_y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale)
+        return x0, y0
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -1621,35 +1647,51 @@ class HighScoresView:
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_h = 32.0 * scale
-            gap_x = 18.0 * scale
-            x0 = 32.0
-            y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
+            panel_x0, panel_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
+
+            x0 = panel_x0 + HS_BUTTON_X * scale
+            y0 = panel_y0 + HS_BUTTON_Y0 * scale
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
             dt_ms = min(float(dt), 0.1) * 1000.0
-            if button_update(self._back_button, x=x0, y=y0, width=button_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            if button_update(self._update_button, x=x0, y=y0, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+                # Reload scores from disk (no view transition).
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-                self._action = "back_to_previous"
+                self.open()
                 return
+            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
-                self._main_menu_button,
-                x=x0 + button_w + gap_x,
-                y=y0,
-                width=button_w,
+                self._play_button,
+                x=x0,
+                y=y0 + HS_BUTTON_STEP_Y * scale,
+                width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
             ):
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-                self._action = "back_to_menu"
+                self._action = "open_play_game"
+                return
+            back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            if button_update(
+                self._back_button,
+                x=panel_x0 + HS_BACK_BUTTON_X * scale,
+                y=panel_y0 + HS_BACK_BUTTON_Y * scale,
+                width=back_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
+                if self._state.audio is not None:
+                    play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+                self._action = "back_to_previous"
                 return
 
         font = self._ensure_small_font()
-        rows = self._visible_rows(font)
+        rows = 10
         max_scroll = max(0, len(self._records) - rows)
 
         wheel = int(rl.get_mouse_wheel_move())
@@ -1678,6 +1720,10 @@ class HighScoresView:
             self._ground.draw(0.0, 0.0)
         _draw_screen_fade(self._state)
 
+        assets = self._assets
+        if assets is None or assets.panel is None:
+            return
+
         font = self._ensure_small_font()
         request = self._request
         mode_id = int(request.game_mode_id) if request is not None else int(self._state.config.data.get("game_mode", 1) or 1)
@@ -1685,26 +1731,44 @@ class HighScoresView:
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
         highlight_rank = request.highlight_rank if request is not None else None
 
-        title = "High scores"
-        subtitle = self._mode_label(mode_id, quest_major, quest_minor)
-        draw_small_text(font, title, 32.0, 120.0, 1.2, rl.Color(235, 235, 235, 255))
-        draw_small_text(font, subtitle, 32.0, 152.0, 1.0, rl.Color(190, 190, 200, 255))
+        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        left_x0, left_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
+        right_x0, right_y0 = self._panel_top_left(pos_x=HS_RIGHT_PANEL_POS_X, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
+
+        draw_classic_menu_panel(
+            assets.panel,
+            dst=rl.Rectangle(left_x0, left_y0, MENU_PANEL_WIDTH * scale, HS_LEFT_PANEL_HEIGHT * scale),
+            tint=rl.WHITE,
+            shadow=fx_detail,
+        )
+        draw_classic_menu_panel(
+            assets.panel,
+            dst=rl.Rectangle(right_x0, right_y0, MENU_PANEL_WIDTH * scale, HS_RIGHT_PANEL_HEIGHT * scale),
+            tint=rl.WHITE,
+            shadow=fx_detail,
+        )
+
+        title = "High scores - Quests" if int(mode_id) == 3 else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
+        draw_small_text(font, title, left_x0 + 269.0 * scale, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        if int(mode_id) == 3:
+            quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
+            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
 
         header_color = rl.Color(255, 255, 255, int(255 * 0.85))
-        row_y0 = 188.0
-        draw_small_text(font, "Rank", 32.0, row_y0, 1.0, header_color)
-        draw_small_text(font, "Name", 96.0, row_y0, 1.0, header_color)
-        score_label = "Score" if mode_id not in (2, 3) else "Time"
-        draw_small_text(font, score_label, 320.0, row_y0, 1.0, header_color)
+        row_y0 = left_y0 + 84.0 * scale
+        draw_small_text(font, "Rank", left_x0 + 211.0 * scale, row_y0, 1.0 * scale, header_color)
+        draw_small_text(font, "Score", left_x0 + 246.0 * scale, row_y0, 1.0 * scale, header_color)
+        draw_small_text(font, "Player", left_x0 + 302.0 * scale, row_y0, 1.0 * scale, header_color)
 
-        row_step = float(font.cell_size)
-        rows = self._visible_rows(font)
+        row_step = 16.0 * scale
+        rows = 10
         start = max(0, int(self._scroll_index))
         end = min(len(self._records), start + rows)
-        y = row_y0 + row_step
+        y = left_y0 + 103.0 * scale
 
         if start >= end:
-            draw_small_text(font, "No scores yet.", 32.0, y + 8.0, 1.0, rl.Color(190, 190, 200, 255))
+            draw_small_text(font, "No scores yet.", left_x0 + 211.0 * scale, y + 8.0 * scale, 1.0 * scale, rl.Color(190, 190, 200, 255))
         else:
             for idx in range(start, end):
                 entry = self._records[idx]
@@ -1718,43 +1782,81 @@ class HighScoresView:
                 if len(name) > 16:
                     name = name[:16]
 
-                value = ""
-                if mode_id in (2, 3):
-                    seconds = float(int(getattr(entry, "survival_elapsed_ms", 0))) * 0.001
-                    value = f"{seconds:7.2f}s"
-                else:
-                    value = f"{int(getattr(entry, 'score_xp', 0)):7d}"
+                value = f"{int(getattr(entry, 'score_xp', 0))}"
 
                 color = rl.Color(255, 255, 255, int(255 * 0.7))
                 if highlight_rank is not None and int(highlight_rank) == idx:
                     color = rl.Color(255, 255, 255, 255)
 
-                draw_small_text(font, f"{idx + 1:>3}", 32.0, y, 1.0, color)
-                draw_small_text(font, name, 96.0, y, 1.0, color)
-                draw_small_text(font, value, 320.0, y, 1.0, color)
+                draw_small_text(font, f"{idx + 1}", left_x0 + 216.0 * scale, y, 1.0 * scale, color)
+                draw_small_text(font, value, left_x0 + 246.0 * scale, y, 1.0 * scale, color)
+                draw_small_text(font, name, left_x0 + 304.0 * scale, y, 1.0 * scale, color)
                 y += row_step
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
-            button_h = 32.0 * scale
-            gap_x = 18.0 * scale
-            x0 = 32.0
-            y0 = float(rl.get_screen_height()) - button_h - 52.0 * scale
-            x1 = x0 + button_w + gap_x
-            button_draw(textures, font, self._back_button, x=x0, y=y0, width=button_w, scale=scale)
-            button_draw(textures, font, self._main_menu_button, x=x1, y=y0, width=button_w, scale=scale)
+            button_x = left_x0 + HS_BUTTON_X * scale
+            button_y0 = left_y0 + HS_BUTTON_Y0 * scale
+            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            button_draw(textures, font, self._update_button, x=button_x, y=button_y0, width=w, scale=scale)
+            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            button_draw(textures, font, self._play_button, x=button_x, y=button_y0 + HS_BUTTON_STEP_Y * scale, width=w, scale=scale)
+            w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            button_draw(
+                textures,
+                font,
+                self._back_button,
+                x=left_x0 + HS_BACK_BUTTON_X * scale,
+                y=left_y0 + HS_BACK_BUTTON_Y * scale,
+                width=w,
+                scale=scale,
+            )
 
-        draw_small_text(
-            font,
-            "UP/DOWN: Scroll    PGUP/PGDN: Page    ESC: Back",
-            32.0,
-            float(rl.get_screen_height()) - 28.0,
-            1.0,
-            rl.Color(190, 190, 200, 255),
-        )
+        self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def _draw_sign(self, assets: MenuAssets) -> None:
+        if assets.sign is None:
+            return
+        sign = assets.sign
+        screen_w = float(self._state.config.screen_width)
+        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
+        pos_x = screen_w + MENU_SIGN_POS_X_PAD
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_w = MENU_SIGN_WIDTH * sign_scale
+        sign_h = MENU_SIGN_HEIGHT * sign_scale
+        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
+        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
+        rotation_deg = 0.0
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad_shadow(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=rotation_deg,
+            )
+        MenuView._draw_ui_quad(
+            texture=sign,
+            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            origin=rl.Vector2(-offset_x, -offset_y),
+            rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
+
+    @staticmethod
+    def _quest_title(major: int, minor: int) -> str:
+        try:
+            from .quests import quest_by_level
+
+            q = quest_by_level(f"{int(major)}.{int(minor)}")
+            if q is not None and q.title:
+                return str(q.title)
+        except Exception:
+            pass
+        return "???"
 
     def take_action(self) -> str | None:
         action = self._action
