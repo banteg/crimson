@@ -8,6 +8,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import play_sfx, update_audio
 from grim.terrain_render import GroundRenderer
 
+from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_ITEM_OFFSET_X,
@@ -70,6 +71,9 @@ class PanelMenuView:
         body: str | None = None,
         panel_pos_x: float = PANEL_POS_X,
         panel_pos_y: float = PANEL_POS_Y,
+        panel_offset_x: float = MENU_PANEL_OFFSET_X,
+        panel_offset_y: float = MENU_PANEL_OFFSET_Y,
+        panel_height: float = MENU_PANEL_HEIGHT,
         back_pos_x: float = PANEL_BACK_POS_X,
         back_pos_y: float = PANEL_BACK_POS_Y,
         back_action: str = "back_to_menu",
@@ -79,6 +83,9 @@ class PanelMenuView:
         self._body_lines = (body or "").splitlines()
         self._panel_pos_x = panel_pos_x
         self._panel_pos_y = panel_pos_y
+        self._panel_offset_x = panel_offset_x
+        self._panel_offset_y = panel_offset_y
+        self._panel_height = panel_height
         self._back_pos_x = back_pos_x
         self._back_pos_y = back_pos_y
         self._back_action = back_action
@@ -223,40 +230,21 @@ class PanelMenuView:
         if assets is None or assets.panel is None:
             return
         panel = assets.panel
-        panel_w = MENU_PANEL_WIDTH
-        panel_h = MENU_PANEL_HEIGHT
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w * self._menu_item_scale(0)[0],
+            width=MENU_PANEL_WIDTH * self._menu_item_scale(0)[0],
         )
         item_scale, _local_y_shift = self._menu_item_scale(0)
-        dst = rl.Rectangle(
-            self._panel_pos_x + slide_x,
-            self._panel_pos_y + self._widescreen_y_shift,
-            panel_w * item_scale,
-            panel_h * item_scale,
-        )
-        origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * item_scale), -(MENU_PANEL_OFFSET_Y * item_scale))
+        panel_w = MENU_PANEL_WIDTH * item_scale
+        panel_h = float(self._panel_height) * item_scale
+        top_left_x = self._panel_pos_x + slide_x + self._panel_offset_x * item_scale
+        top_left_y = self._panel_pos_y + self._widescreen_y_shift + self._panel_offset_y * item_scale
+        dst = rl.Rectangle(float(top_left_x), float(top_left_y), float(panel_w), float(panel_h))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
-        if fx_detail:
-            MenuView._draw_ui_quad_shadow(
-                texture=panel,
-                src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
-                origin=origin,
-                rotation_deg=0.0,
-            )
-        MenuView._draw_ui_quad(
-            texture=panel,
-            src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-            dst=dst,
-            origin=origin,
-            rotation_deg=0.0,
-            tint=rl.WHITE,
-        )
+        draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         assets = self._assets
