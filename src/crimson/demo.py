@@ -17,6 +17,7 @@ from grim.rand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 from .ui.cursor import draw_menu_cursor
+from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 
 WORLD_SIZE = 1024.0
@@ -123,6 +124,8 @@ class DemoView:
         self._small_font: SmallFontData | None = None
         self._purchase_active = False
         self._purchase_url_opened = False
+        self._purchase_button = UiButtonState("Purchase", force_wide=True)
+        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
 
     def open(self) -> None:
@@ -131,6 +134,8 @@ class DemoView:
         self._upsell_pulse_ms = 0
         self._purchase_active = False
         self._purchase_url_opened = False
+        self._purchase_button = UiButtonState("Purchase", force_wide=True)
+        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._variant_index = 0
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
@@ -166,7 +171,7 @@ class DemoView:
 
         if self._purchase_active:
             self._upsell_pulse_ms += frame_dt_ms
-            self._update_purchase_screen()
+            self._update_purchase_screen(frame_dt_ms)
             self._quest_spawn_timeline_ms += frame_dt_ms
             if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
                 # demo_purchase_screen_update restarts the demo once the purchase screen
@@ -214,6 +219,8 @@ class DemoView:
             self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = max(0, int(limit_ms))
         self._purchase_url_opened = False
+        self._purchase_button = UiButtonState("Purchase", force_wide=True)
+        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -230,18 +237,20 @@ class DemoView:
             return 128.0
         return 0.0
 
-    def _update_purchase_screen(self) -> None:
+    def _update_purchase_screen(self, dt_ms: int) -> None:
+        dt_ms = max(0, int(dt_ms))
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._purchase_active = False
             self._finished = True
             return
 
-        small = self._ensure_small_font()
-        # ui_button_update uses the medium (145px wide) button sprite here (the per-button
-        # "small" flag at +0x14 is 0 for both purchase/maybe-later globals).
-        button_tex = self._ensure_cache().get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-
-        if button_tex is None:
+        font = self._ensure_small_font()
+        cache = self._ensure_cache()
+        textures = UiButtonTextureSet(
+            button_sm=cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture,
+            button_md=cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture,
+        )
+        if textures.button_sm is None and textures.button_md is None:
             return
 
         w = float(self._state.config.screen_width)
@@ -252,14 +261,18 @@ class DemoView:
         purchase_y = button_base_y + 50.0
         maybe_y = button_base_y + 90.0
 
-        purchase_rect = rl.Rectangle(button_x, purchase_y, float(button_tex.width), float(button_tex.height))
-        maybe_rect = rl.Rectangle(button_x, maybe_y, float(button_tex.width), float(button_tex.height))
-
         mouse = rl.get_mouse_position()
-        if (
-            purchase_rect.x <= mouse.x <= purchase_rect.x + purchase_rect.width
-            and purchase_rect.y <= mouse.y <= purchase_rect.y + purchase_rect.height
-            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        scale = 1.0
+        button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
+        if button_update(
+            self._purchase_button,
+            x=float(button_x),
+            y=float(purchase_y),
+            width=float(button_w),
+            dt_ms=float(dt_ms),
+            mouse=mouse,
+            click=bool(click),
         ):
             if not self._purchase_url_opened:
                 self._purchase_url_opened = True
@@ -272,10 +285,14 @@ class DemoView:
             if hasattr(self._state, "quit_requested"):
                 self._state.quit_requested = True
 
-        if (
-            maybe_rect.x <= mouse.x <= maybe_rect.x + maybe_rect.width
-            and maybe_rect.y <= mouse.y <= maybe_rect.y + maybe_rect.height
-            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        if button_update(
+            self._maybe_later_button,
+            x=float(button_x),
+            y=float(maybe_y),
+            width=float(button_w),
+            dt_ms=float(dt_ms),
+            mouse=mouse,
+            click=bool(click),
         ):
             self._purchase_active = False
             self._finished = True
@@ -294,8 +311,8 @@ class DemoView:
             if hasattr(self._state, "quit_requested"):
                 self._state.quit_requested = True
 
-        # Keep small referenced to avoid unused warnings if this method grows.
-        _ = small
+        # Keep referenced to avoid unused warnings if this method grows.
+        _ = textures
 
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -393,29 +410,21 @@ class DemoView:
 
         # Buttons on the right.
         cache = self._ensure_cache()
-        button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
-        if button_tex is None:
+        textures = UiButtonTextureSet(
+            button_sm=cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture,
+            button_md=cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture,
+        )
+        if textures.button_sm is None and textures.button_md is None:
             return
 
         button_x = screen_w / 2.0 + 128.0
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         purchase_y = button_base_y + 50.0
         maybe_y = button_base_y + 90.0
-        mouse = rl.get_mouse_position()
-
-        def draw_button(texture: rl.Texture2D, label: str, x: float, y0: float) -> None:
-            hovered = x <= mouse.x <= x + texture.width and y0 <= mouse.y <= y0 + texture.height
-            tint = rl.Color(255, 255, 255, 255) if hovered else rl.Color(220, 220, 220, 255)
-            rl.draw_texture(texture, int(x), int(y0), tint)
-            label_scale = 1.0
-            text_w = measure_small_text_width(small, label, label_scale)
-            text_x = x + float(texture.width) * 0.5 - text_w * 0.5 + 1.0
-            text_y = y0 + 10.0
-            alpha = 1.0 if hovered else 0.7
-            draw_small_text(small, label, text_x, text_y, label_scale, rl.Color(255, 255, 255, int(255 * alpha)))
-
-        draw_button(button_tex, "Purchase", button_x, purchase_y)
-        draw_button(button_tex, "Maybe later", button_x, maybe_y)
+        scale = 1.0
+        button_w = button_width(small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
+        button_draw(textures, small, self._purchase_button, x=button_x, y=purchase_y, width=button_w, scale=scale)
+        button_draw(textures, small, self._maybe_later_button, x=button_x, y=maybe_y, width=button_w, scale=scale)
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
         particles = cache.get_or_load("particles", "game/particles.jaz").texture

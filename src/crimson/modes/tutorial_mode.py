@@ -608,7 +608,8 @@ class TutorialMode(BaseGameplayMode):
 
         panel_tex = assets.menu_panel
         if panel_tex is not None:
-            draw_menu_panel(panel_tex, dst=computed.panel)
+            fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+            draw_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
 
         title_tex = assets.title_pick_perk
         if title_tex is not None:

@@ -66,13 +66,14 @@ class DemoTrialOverlayUi:
 
         if self._assets is None:
             cursor = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
-            button_md = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+            button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+            button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
             self._assets = PerkMenuAssets(
                 menu_panel=None,
                 title_pick_perk=None,
                 title_level_up=None,
                 menu_item=None,
-                button_sm=None,
+                button_sm=button_sm,
                 button_md=button_md,
                 cursor=cursor,
                 aim=None,
@@ -232,4 +233,3 @@ class DemoTrialOverlayUi:
                 scale=float(scale),
             )
             cursor_draw(assets, mouse=rl.get_mouse_position(), scale=1.0, alpha=1.0)
-

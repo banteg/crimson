@@ -118,7 +118,8 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_checkOff", "ui/ui_checkOff.jaz"),
     ("ui_rectOff", "ui/ui_rectOff.jaz"),
     ("ui_rectOn", "ui/ui_rectOn.jaz"),
-    ("ui_button_md", "ui/ui_button_145x32.jaz"),
+    ("ui_buttonSm", "ui/ui_button_64x32.jaz"),
+    ("ui_buttonMd", "ui/ui_button_128x32.jaz"),
 )
 
 

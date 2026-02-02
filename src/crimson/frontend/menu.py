@@ -11,6 +11,7 @@ from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.terrain_render import GroundRenderer
 
 from ..ui.cursor import draw_menu_cursor
+from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  # noqa: F401
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .transitions import _draw_screen_fade
 
@@ -37,7 +38,10 @@ MENU_ITEM_OFFSET_X = -72.0
 MENU_ITEM_OFFSET_Y = -60.0
 MENU_PANEL_WIDTH = 512.0
 MENU_PANEL_HEIGHT = 256.0
-MENU_PANEL_OFFSET_X = 20.0
+# ui_menu_assets_init:
+#   - ui_menuPanel starts with offset_x=+20 (ui_element_set_rect)
+#   - the menu-panel layout copy applies data_48fdb4 -= 116, so offset_x becomes -96
+MENU_PANEL_OFFSET_X = -96.0
 MENU_PANEL_OFFSET_Y = -82.0
 MENU_PANEL_BASE_X = -45.0
 MENU_PANEL_BASE_Y = 210.0
@@ -47,11 +51,6 @@ MENU_SCALE_LARGE_MAX = 1024
 MENU_SCALE_SMALL = 0.8
 MENU_SCALE_LARGE = 1.2
 MENU_SCALE_SHIFT = 10.0
-
-# ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
-# blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).
-UI_SHADOW_OFFSET = 7.0
-UI_SHADOW_TINT = rl.Color(0x44, 0x44, 0x44, 0x44)
 
 MENU_SIGN_WIDTH = 573.44
 MENU_SIGN_HEIGHT = 143.36
@@ -628,27 +627,7 @@ class MenuView:
         origin: rl.Vector2,
         rotation_deg: float,
     ) -> None:
-        # NOTE: raylib/rlgl tracks custom blend factors as state; some backends
-        # only apply them when switching the blend mode.
-        rl.rl_set_blend_factors_separate(
-            rl.RL_ZERO,
-            rl.RL_ONE_MINUS_SRC_ALPHA,
-            rl.RL_ZERO,
-            rl.RL_ONE,
-            rl.RL_FUNC_ADD,
-            rl.RL_FUNC_ADD,
-        )
-        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-        rl.rl_set_blend_factors_separate(
-            rl.RL_ZERO,
-            rl.RL_ONE_MINUS_SRC_ALPHA,
-            rl.RL_ZERO,
-            rl.RL_ONE,
-            rl.RL_FUNC_ADD,
-            rl.RL_FUNC_ADD,
-        )
-        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, UI_SHADOW_TINT)
-        rl.end_blend_mode()
+        draw_ui_quad_shadow(texture=texture, src=src, dst=dst, origin=origin, rotation_deg=rotation_deg)
 
     def _draw_menu_sign(self) -> None:
         assets = self._assets

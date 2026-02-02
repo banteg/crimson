@@ -9,6 +9,7 @@ from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
+from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
@@ -49,6 +50,8 @@ class OptionsMenuView(PanelMenuView):
         self._check_on: rl.Texture2D | None = None
         self._check_off: rl.Texture2D | None = None
         self._button_tex: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
         self._slider_detail = SliderState(5, 1, 5)
@@ -64,7 +67,10 @@ class OptionsMenuView(PanelMenuView):
         self._rect_off = cache.get_or_load("ui_rectOff", "ui/ui_rectOff.jaz").texture
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
+        self._controls_button = UiButtonState("Controls", force_wide=True)
         self._active_slider = None
         self._dirty = False
         self._sync_from_config()
@@ -118,8 +124,22 @@ class OptionsMenuView(PanelMenuView):
             config.data["ui_info_texts"] = value
             self._dirty = True
 
-        if self._update_controls_button(label_x - 8.0 * scale, base_y + 155.0 * scale, scale):
-            self._begin_close_transition("open_controls")
+        textures = self._button_textures
+        if textures is not None and textures.button_md is not None:
+            # `sub_4475d0`: controls button shares the slider column.
+            x = slider_x
+            y = base_y + 155.0 * scale
+            dt_ms = min(float(dt), 0.1) * 1000.0
+            mouse = rl.get_mouse_position()
+            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            width = button_width(
+                self._ensure_small_font(),
+                self._controls_button.label,
+                scale=scale,
+                force_wide=self._controls_button.force_wide,
+            )
+            if button_update(self._controls_button, x=x, y=y, width=width, dt_ms=dt_ms, mouse=mouse, click=click):
+                self._begin_close_transition("open_controls")
 
     def draw(self) -> None:
         self._draw_background()
@@ -190,7 +210,8 @@ class OptionsMenuView(PanelMenuView):
         panel_left = panel_x - origin_x
         panel_top = panel_y - origin_y
         base_x = panel_left + 212.0 * panel_scale
-        base_y = panel_top + 32.0 * panel_scale
+        # `sub_4475d0`: title label is anchored at panel_top + 40.
+        base_y = panel_top + 40.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         slider_x = label_x + 130.0 * panel_scale
         return {
@@ -267,18 +288,6 @@ class OptionsMenuView(PanelMenuView):
             return True
         return False
 
-    def _update_controls_button(self, x: float, y: float, scale: float) -> bool:
-        tex = self._button_tex
-        if tex is None:
-            return False
-        w = float(tex.width) * scale
-        h = float(tex.height) * scale
-        mouse = rl.get_mouse_position()
-        hovered = x <= mouse.x <= x + w and y <= mouse.y <= y + h
-        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
-            return True
-        return False
-
     def _draw_options_contents(self) -> None:
         assets = self._assets
         if assets is None:
@@ -296,16 +305,17 @@ class OptionsMenuView(PanelMenuView):
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         if labels_tex is not None:
+            title_w = 128.0
             src = rl.Rectangle(
                 0.0,
                 float(MENU_LABEL_ROW_OPTIONS) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
+                title_w,
                 MENU_LABEL_ROW_HEIGHT,
             )
             dst = rl.Rectangle(
                 base_x,
                 base_y,
-                MENU_LABEL_WIDTH * scale,
+                title_w * scale,
                 MENU_LABEL_ROW_HEIGHT * scale,
             )
             MenuView._draw_ui_quad(
@@ -361,27 +371,12 @@ class OptionsMenuView(PanelMenuView):
             )
 
         button = self._button_tex
-        if button is not None:
-            button_x = label_x - 8.0 * scale
+        textures = self._button_textures
+        if button is not None and textures is not None:
+            button_x = slider_x
             button_y = base_y + 155.0 * scale
-            button_w = float(button.width) * scale
-            button_h = float(button.height) * scale
-            mouse = rl.get_mouse_position()
-            hovered = button_x <= mouse.x <= button_x + button_w and button_y <= mouse.y <= button_y + button_h
-            alpha = 255 if hovered else 220
-            rl.draw_texture_pro(
-                button,
-                rl.Rectangle(0.0, 0.0, float(button.width), float(button.height)),
-                rl.Rectangle(button_x, button_y, button_w, button_h),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.Color(255, 255, 255, alpha),
-            )
-            label = "Controls"
-            label_w = measure_small_text_width(font, label, text_scale)
-            text_x = button_x + (button_w - label_w) * 0.5
-            text_y = button_y + (button_h - font.cell_size * text_scale) * 0.5
-            draw_small_text(font, label, text_x, text_y, text_scale, rl.Color(20, 20, 20, 255))
+            button_w = button_width(font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide)
+            button_draw(textures, font, self._controls_button, x=button_x, y=button_y, width=button_w, scale=scale)
 
     def _draw_slider(
         self,
