@@ -72,6 +72,7 @@ from .frontend.menu import (
 )
 from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .frontend.panels.controls import ControlsMenuView
+from .frontend.panels.credits import CreditsView
 from .frontend.panels.mods import ModsMenuView
 from .frontend.panels.options import OptionsMenuView
 from .frontend.panels.play_game import PlayGameMenuView
@@ -1829,11 +1830,7 @@ class GameLoopView:
                 title="Unlocked Perks Database",
                 body="This menu is not implemented yet.",
             ),
-            "open_credits": PanelMenuView(
-                state,
-                title="Credits",
-                body="This menu is not implemented yet.",
-            ),
+            "open_credits": CreditsView(state),
             "open_mods": ModsMenuView(state),
             "open_other_games": PanelMenuView(
                 state,
@@ -1953,7 +1950,7 @@ class GameLoopView:
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
-                    if action == "open_high_scores":
+                    if action in {"open_high_scores", "open_weapon_database", "open_perk_database", "open_credits"}:
                         if (self._front_active in self._gameplay_views) and (self._state.pause_background is None):
                             self._state.pause_background = self._front_active
                         self._front_stack.append(self._front_active)

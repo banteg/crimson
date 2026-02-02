@@ -507,6 +507,44 @@ def validate_statistics_menu(oracle: dict[str, Any], *, tol: float) -> list[str]
     return errors
 
 
+def validate_credits_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import credits as c
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_17:credits")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # --- Panel (tall 378px, 3 slices) ---
+    x0 = c.CREDITS_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    y0 = c.CREDITS_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    panel_h = float(c.CREDITS_PANEL_HEIGHT)
+
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = panel_h - top_h - bottom_h
+    exp = [
+        BBox(x0, y0, x0 + m.MENU_PANEL_WIDTH, y0 + top_h),
+        BBox(x0, y0 + top_h, x0 + m.MENU_PANEL_WIDTH, y0 + top_h + mid_h),
+        BBox(x0, y0 + top_h + mid_h, x0 + m.MENU_PANEL_WIDTH, y0 + panel_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"credits: panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    # Back button (82x32).
+    bb_back = BBox(x0 + 298.0, y0 + 310.0, x0 + 298.0 + 82.0, y0 + 310.0 + 32.0)
+    got_back, d_back = _match_bbox(_instances(screen, "ui_buttonSm"), bb_back)
+    if got_back is None or d_back > tol:
+        errors.append(f"credits: back button bbox mismatch: expected={bb_back} got={got_back} max_abs_delta={d_back:.3f}")
+
+    return errors
+
+
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
     from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
@@ -560,6 +598,7 @@ def main(argv: list[str] | None = None) -> int:
     errors.extend(validate_play_game_panel(oracle, tol=float(args.tol)))
     errors.extend(validate_controls_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_statistics_menu(oracle, tol=float(args.tol)))
+    errors.extend(validate_credits_screen(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
     if not errors:
