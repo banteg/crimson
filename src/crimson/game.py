@@ -73,6 +73,7 @@ from .frontend.menu import (
 from .frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .frontend.panels.controls import ControlsMenuView
 from .frontend.panels.credits import CreditsView
+from .frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
 from .frontend.panels.mods import ModsMenuView
 from .frontend.panels.options import OptionsMenuView
 from .frontend.panels.play_game import PlayGameMenuView
@@ -1820,16 +1821,8 @@ class GameLoopView:
             "open_options": OptionsMenuView(state),
             "open_controls": ControlsMenuView(state),
             "open_statistics": StatisticsMenuView(state),
-            "open_weapon_database": PanelMenuView(
-                state,
-                title="Unlocked Weapons Database",
-                body="This menu is not implemented yet.",
-            ),
-            "open_perk_database": PanelMenuView(
-                state,
-                title="Unlocked Perks Database",
-                body="This menu is not implemented yet.",
-            ),
+            "open_weapon_database": UnlockedWeaponsDatabaseView(state),
+            "open_perk_database": UnlockedPerksDatabaseView(state),
             "open_credits": CreditsView(state),
             "open_mods": ModsMenuView(state),
             "open_other_games": PanelMenuView(

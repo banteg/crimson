@@ -545,6 +545,93 @@ def validate_credits_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
     return errors
 
 
+def validate_weapon_database_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import databases as d
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_15:Unlocked Weapons Database")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # Left tall panel.
+    left_x0 = d.LEFT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    left_y0 = d.LEFT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    left_h = float(d.LEFT_PANEL_HEIGHT)
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = left_h - top_h - bottom_h
+    exp_left = [
+        BBox(left_x0, left_y0, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + top_h),
+        BBox(left_x0, left_y0 + top_h, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + top_h + mid_h),
+        BBox(left_x0, left_y0 + top_h + mid_h, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + left_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp_left):
+        got, d0 = _match_bbox(inst, bb)
+        if got is None or d0 > tol:
+            errors.append(f"weapons_db: left panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d0:.3f}")
+
+    # Right short panel (254px => 1 quad).
+    right_x0 = d.RIGHT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    right_y0 = d.RIGHT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    exp_right = BBox(right_x0, right_y0, right_x0 + m.MENU_PANEL_WIDTH, right_y0 + 254.0)
+    got_right, d_right = _match_bbox(inst, exp_right)
+    if got_right is None or d_right > tol:
+        errors.append(f"weapons_db: right panel bbox mismatch: expected={exp_right} got={got_right} max_abs_delta={d_right:.3f}")
+
+    # Back button.
+    bb_back = BBox(left_x0 + 368.0, left_y0 + 313.0, left_x0 + 368.0 + 82.0, left_y0 + 313.0 + 32.0)
+    got_back, d_back = _match_bbox(_instances(screen, "ui_buttonSm"), bb_back)
+    if got_back is None or d_back > tol:
+        errors.append(f"weapons_db: back button bbox mismatch: expected={bb_back} got={got_back} max_abs_delta={d_back:.3f}")
+
+    return errors
+
+
+def validate_perk_database_screen(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import databases as d
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_16:Unlocked Perks Database")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    left_x0 = d.LEFT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    left_y0 = d.LEFT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    left_h = float(d.LEFT_PANEL_HEIGHT)
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = left_h - top_h - bottom_h
+    exp_left = [
+        BBox(left_x0, left_y0, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + top_h),
+        BBox(left_x0, left_y0 + top_h, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + top_h + mid_h),
+        BBox(left_x0, left_y0 + top_h + mid_h, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + left_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp_left):
+        got, d0 = _match_bbox(inst, bb)
+        if got is None or d0 > tol:
+            errors.append(f"perks_db: left panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d0:.3f}")
+
+    right_x0 = d.RIGHT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    right_y0 = d.RIGHT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    exp_right = BBox(right_x0, right_y0, right_x0 + m.MENU_PANEL_WIDTH, right_y0 + 254.0)
+    got_right, d_right = _match_bbox(inst, exp_right)
+    if got_right is None or d_right > tol:
+        errors.append(f"perks_db: right panel bbox mismatch: expected={exp_right} got={got_right} max_abs_delta={d_right:.3f}")
+
+    bb_back = BBox(left_x0 + 356.0, left_y0 + 315.0, left_x0 + 356.0 + 82.0, left_y0 + 315.0 + 32.0)
+    got_back, d_back = _match_bbox(_instances(screen, "ui_buttonSm"), bb_back)
+    if got_back is None or d_back > tol:
+        errors.append(f"perks_db: back button bbox mismatch: expected={bb_back} got={got_back} max_abs_delta={d_back:.3f}")
+
+    return errors
+
+
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
     from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
@@ -599,6 +686,8 @@ def main(argv: list[str] | None = None) -> int:
     errors.extend(validate_controls_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_statistics_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_credits_screen(oracle, tol=float(args.tol)))
+    errors.extend(validate_weapon_database_screen(oracle, tol=float(args.tol)))
+    errors.extend(validate_perk_database_screen(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
     if not errors:
