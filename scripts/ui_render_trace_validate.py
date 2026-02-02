@@ -1,0 +1,285 @@
+#!/usr/bin/env python3
+"""
+Validate a subset of our UI layout constants against a runtime oracle extracted
+from the original game (ui_render_trace_oracle_*.json).
+
+This is intentionally not a full renderer diff. For now we treat the oracle as
+"pixel truth" at a single resolution (1024x768) and validate:
+  - main menu sign + menu items + label quads
+  - panel menu (options) panel quad + back item + back label
+
+As we improve fidelity, extend this script screen-by-screen.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+@dataclass(frozen=True)
+class BBox:
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+
+    @property
+    def w(self) -> float:
+        return self.x1 - self.x0
+
+    @property
+    def h(self) -> float:
+        return self.y1 - self.y0
+
+
+def _as_bbox(v: object | None) -> BBox | None:
+    if not isinstance(v, list) or len(v) != 4:
+        return None
+    if not all(isinstance(x, (int, float)) for x in v):
+        return None
+    x0, y0, x1, y1 = (float(v[0]), float(v[1]), float(v[2]), float(v[3]))
+    return BBox(x0, y0, x1, y1)
+
+
+def _bbox_max_abs_delta(a: BBox, b: BBox) -> float:
+    return max(abs(a.x0 - b.x0), abs(a.y0 - b.y0), abs(a.x1 - b.x1), abs(a.y1 - b.y1))
+
+
+def _draw_texture_pro_bbox(*, x: float, y: float, w: float, h: float, origin_x: float, origin_y: float, rotation_deg: float) -> BBox:
+    # Match raylib DrawTexturePro math: pivot at (x, y), origin relative to dst rectangle.
+    # Corners in destination-space relative to pivot:
+    #   (-origin_x, -origin_y), (w-origin_x, -origin_y), (w-origin_x, h-origin_y), (-origin_x, h-origin_y)
+    if w == 0.0 or h == 0.0:
+        return BBox(x, y, x, y)
+    rad = math.radians(rotation_deg)
+    c = math.cos(rad)
+    s = math.sin(rad)
+    rel = [
+        (-origin_x, -origin_y),
+        (w - origin_x, -origin_y),
+        (w - origin_x, h - origin_y),
+        (-origin_x, h - origin_y),
+    ]
+    pts = [(x + rx * c - ry * s, y + rx * s + ry * c) for rx, ry in rel]
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    return BBox(min(xs), min(ys), max(xs), max(ys))
+
+
+def _find_screen(oracle: dict[str, Any], label: str) -> dict[str, Any]:
+    for s in oracle.get("screens") or []:
+        if isinstance(s, dict) and s.get("label") == label:
+            return s
+    raise KeyError(f"screen not found: {label}")
+
+
+def _instances(screen: dict[str, Any], texture_name: str) -> list[dict[str, Any]]:
+    layout = screen.get("layout") or {}
+    textures = layout.get("textures") or {}
+    tex = textures.get(texture_name) or {}
+    inst = tex.get("instances") or []
+    return [x for x in inst if isinstance(x, dict)]
+
+
+def _match_bbox(instances: list[dict[str, Any]], expected: BBox) -> tuple[BBox | None, float]:
+    best: tuple[BBox | None, float] = (None, float("inf"))
+    for inst in instances:
+        bb = _as_bbox(inst.get("bbox"))
+        if bb is None:
+            continue
+        d = _bbox_max_abs_delta(bb, expected)
+        if d < best[1]:
+            best = (bb, d)
+    return best
+
+
+def _panel_scale_and_shift(screen_w: int) -> tuple[float, float]:
+    # Keep in sync with MenuView._sign_layout_scale.
+    if screen_w <= 640:
+        return 0.8, 10.0
+    if 801 <= screen_w <= 1024:
+        return 1.2, 10.0
+    return 1.0, 0.0
+
+
+def validate_main_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_0")
+
+    screen_w = 1024
+    screen_h = 768
+    _ = screen_h
+
+    # --- Sign ---
+    scale, shift_x = _panel_scale_and_shift(screen_w)
+    sign_w = m.MENU_SIGN_WIDTH * scale
+    sign_h = m.MENU_SIGN_HEIGHT * scale
+    offset_x = m.MENU_SIGN_OFFSET_X * scale + shift_x
+    offset_y = m.MENU_SIGN_OFFSET_Y * scale
+    pos_x = float(screen_w) + m.MENU_SIGN_POS_X_PAD
+    pos_y = m.MENU_SIGN_POS_Y
+    exp_sign = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=sign_w,
+        h=sign_h,
+        origin_x=-offset_x,
+        origin_y=-offset_y,
+        rotation_deg=0.0,
+    )
+    got_sign, d_sign = _match_bbox(_instances(screen, "ui\\ui_signCrimson"), exp_sign)
+    if got_sign is None or d_sign > tol:
+        errors.append(f"main_menu: sign bbox mismatch: expected={exp_sign} got={got_sign} max_abs_delta={d_sign:.3f}")
+
+    # --- Menu items + labels ---
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+    # The capture's main menu has 4 entries (slots 1..4). Validate those slots explicitly.
+    slots = [1, 2, 3, 4]
+    item_w = 510.0  # inferred from oracle; avoids having to load textures
+    item_h = 62.0
+    for slot in slots:
+        pos_x = m.MenuView._menu_slot_pos_x(slot)
+        pos_y = m.MENU_LABEL_BASE_Y + m.MENU_LABEL_STEP * float(slot) + y_shift
+        item_scale = 1.0
+        local_y_shift = 0.0
+        offset_x = m.MENU_ITEM_OFFSET_X * item_scale
+        offset_y = m.MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+        exp_item = _draw_texture_pro_bbox(
+            x=pos_x,
+            y=pos_y,
+            w=item_w * item_scale,
+            h=item_h * item_scale,
+            origin_x=-offset_x,
+            origin_y=-offset_y,
+            rotation_deg=0.0,
+        )
+        got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_item)
+        if got_item is None or d_item > tol:
+            errors.append(
+                f"main_menu: menuItem slot={slot} bbox mismatch: expected={exp_item} got={got_item} max_abs_delta={d_item:.3f}"
+            )
+
+        exp_label = _draw_texture_pro_bbox(
+            x=pos_x,
+            y=pos_y,
+            w=m.MENU_LABEL_WIDTH * item_scale,
+            h=m.MENU_LABEL_HEIGHT * item_scale,
+            origin_x=-(m.MENU_LABEL_OFFSET_X * item_scale),
+            origin_y=-(m.MENU_LABEL_OFFSET_Y * item_scale - local_y_shift),
+            rotation_deg=0.0,
+        )
+        got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_label)
+        if got_label is None or d_label > tol:
+            errors.append(
+                f"main_menu: label slot={slot} bbox mismatch: expected={exp_label} got={got_label} max_abs_delta={d_label:.3f}"
+            )
+
+    return errors
+
+
+def validate_options_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import base as pb
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_2:Sound volume:")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # PanelMenuView draws the menu panel with slide_x=0 and rotation=0 at timeline>=300.
+    pos_x = pb.PANEL_POS_X
+    pos_y = pb.PANEL_POS_Y + y_shift
+    panel_scale = 1.0
+    panel_w = m.MENU_PANEL_WIDTH * panel_scale
+    panel_h = m.MENU_PANEL_HEIGHT * panel_scale
+    origin_x = -(m.MENU_PANEL_OFFSET_X * panel_scale)
+    origin_y = -(m.MENU_PANEL_OFFSET_Y * panel_scale)
+    exp_panel = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=panel_w,
+        h=panel_h,
+        origin_x=origin_x,
+        origin_y=origin_y,
+        rotation_deg=0.0,
+    )
+    got_panel, d_panel = _match_bbox(_instances(screen, "ui\\ui_menuPanel"), exp_panel)
+    if got_panel is None or d_panel > tol:
+        errors.append(f"options: panel bbox mismatch: expected={exp_panel} got={got_panel} max_abs_delta={d_panel:.3f}")
+
+    # Back item.
+    item_w = 510.0
+    item_h = 62.0
+    pos_x = pb.PANEL_BACK_POS_X
+    pos_y = pb.PANEL_BACK_POS_Y + y_shift
+    offset_x = m.MENU_ITEM_OFFSET_X
+    offset_y = m.MENU_ITEM_OFFSET_Y
+    exp_back_item = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=item_w,
+        h=item_h,
+        origin_x=-offset_x,
+        origin_y=-offset_y,
+        rotation_deg=0.0,
+    )
+    got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_back_item)
+    if got_item is None or d_item > tol:
+        errors.append(f"options: back menuItem bbox mismatch: expected={exp_back_item} got={got_item} max_abs_delta={d_item:.3f}")
+
+    exp_back_label = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=m.MENU_LABEL_WIDTH,
+        h=m.MENU_LABEL_HEIGHT,
+        origin_x=-(m.MENU_LABEL_OFFSET_X),
+        origin_y=-(m.MENU_LABEL_OFFSET_Y),
+        rotation_deg=0.0,
+    )
+    got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_back_label)
+    if got_label is None or d_label > tol:
+        errors.append(f"options: back label bbox mismatch: expected={exp_back_label} got={got_label} max_abs_delta={d_label:.3f}")
+
+    return errors
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(description="Validate UI layout constants against a captured oracle.")
+    p.add_argument(
+        "oracle",
+        type=Path,
+        nargs="?",
+        default=Path("analysis/frida/ui_render_trace_oracle_1024x768.json"),
+        help="Oracle JSON produced by scripts/ui_render_trace_oracle.py",
+    )
+    p.add_argument("--tol", type=float, default=1.01, help="Max allowed abs delta (pixels) for bbox coords")
+    args = p.parse_args(argv)
+
+    oracle = json.loads(args.oracle.read_text(encoding="utf-8"))
+    errors: list[str] = []
+    errors.extend(validate_main_menu(oracle, tol=float(args.tol)))
+    errors.extend(validate_options_panel(oracle, tol=float(args.tol)))
+
+    if not errors:
+        print("OK")
+        return 0
+
+    print(f"ERRORS: {len(errors)}")
+    for e in errors[:80]:
+        print(e)
+    if len(errors) > 80:
+        print(f"... ({len(errors) - 80} more)")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

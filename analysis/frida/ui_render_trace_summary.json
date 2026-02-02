@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-02-02T11:44:30.436570+00:00",
+  "source": {
+    "path": "artifacts/frida/share/ui_render_trace.jsonl",
+    "size_bytes": 583455668
+  },
+  "run_ids": [
+    "2026-02-02T11:13:46.376Z_fd7e311"
+  ],
+  "init": {
+    "event": "init",
+    "frida": {
+      "version": "17.6.1",
+      "runtime": "QJS"
+    },
+    "process": {
+      "pid": 5716,
+      "arch": "ia32",
+      "pointer_size": 4
+    },
+    "exe": {
+      "name": "crimsonland.exe",
+      "base": "0x400000",
+      "link_base": "0x400000"
+    },
+    "grim": {
+      "name": "grim.dll",
+      "base": "0x2560000"
+    },
+    "config": {
+      "logDir": "C:\\share\\frida",
+      "logPath": "C:\\share\\frida\\ui_render_trace.jsonl",
+      "logToConsole": false,
+      "maxEvents": 0,
+      "includeBacktrace": false,
+      "includeVerts": true,
+      "autoMark": true,
+      "autoMarkIntervalMs": 250,
+      "autoMarkTextLimit": 8,
+      "exeName": "crimsonland.exe",
+      "grimName": "grim.dll"
+    },
+    "state": {
+      "res": {
+        "w": 960,
+        "h": 600,
+        "windowed": 1,
+        "screen_width_f": 640
+      },
+      "time": {
+        "frame_dt_ms": 0,
+        "game_time_ms": 0
+      },
+      "ui": {
+        "timeline": 0,
+        "dir": 0,
+        "alpha": 1
+      },
+      "game": {
+        "state_prev": 0,
+        "state_id": 0,
+        "state_pending": 0
+      }
+    },
+    "ts": "2026-02-02T11:13:46.446Z",
+    "seq": 1,
+    "run_id": "2026-02-02T11:13:46.376Z_fd7e311"
+  },
+  "event_counts": {
+    "ui_table": 1,
+    "init": 1,
+    "texture_handle": 17426,
+    "ui_frame_begin": 4875,
+    "grim_set_config_var": 146935,
+    "ui_element_begin": 69491,
+    "grim_set_uv": 191919,
+    "grim_set_rotation": 53352,
+    "grim_bind_texture": 44536,
+    "grim_submit_vertices": 30301,
+    "grim_set_color": 28668,
+    "ui_frame_end": 4875,
+    "auto_mark": 74,
+    "grim_draw_quad": 224188,
+    "grim_draw_text": 19300,
+    "scope_begin": 12490,
+    "scope_end": 12490,
+    "grim_draw_rect_filled": 16751,
+    "grim_set_color_ptr": 18651,
+    "grim_draw_rect_outline": 3132,
+    "grim_set_sub_rect": 48,
+    "grim_draw_quad_xy": 5100
+  },
+  "auto_mark_count": 74,
+  "auto_mark_states": {
+    "0": 5,
+    "4": 5,
+    "14": 7,
+    "15": 1,
+    "16": 3,
+    "17": 8,
+    "2": 5,
+    "3": 14,
+    "1": 11,
+    "11": 5,
+    "9": 4,
+    "5": 3,
+    "8": 2,
+    "6": 1
+  },
+  "resolutions": {
+    "1024x768": 74
+  },
+  "first_ts": "2026-02-02T11:13:46.444Z",
+  "last_ts": "2026-02-02T11:20:51.921Z",
+  "texture_names": {
+    "62": "ui\\ui_menuItem",
+    "64": "ui\\ui_itemTexts.jaz",
+    "61": "ui\\ui_signCrimson",
+    "69": "ui\\ui_textLevelUp",
+    "63": "ui\\ui_menuPanel",
+    "6": "GRIM_Font2",
+    "20": "ui_buttonMd",
+    "19": "ui_buttonSm",
+    "22": "ui_checkOff",
+    "58": "ui_dropOff",
+    "54": "ui\\ui_clockTable.jaz",
+    "55": "ui\\ui_clockPointer.jaz",
+    "51": "ui_wicons",
+    "21": "ui_checkOn",
+    "57": "ui_dropOn",
+    "33": "ui\\ui_arrow.jaz",
+    "23": "ui_rectOff",
+    "24": "ui_rectOn",
+    "66": "ui\\ui_textControls.jaz",
+    "45": "ui\\ui_textQuest.jaz",
+    "46": "ui\\ui_num1.jaz",
+    "47": "ui\\ui_num2.jaz",
+    "48": "ui\\ui_num3.jaz",
+    "49": "ui\\ui_num4.jaz",
+    "50": "ui\\ui_num5.jaz",
+    "36": "ter\\ter_q1_base.jaz",
+    "37": "ter\\ter_q1_tex1.jaz",
+    "25": "bonuses",
+    "68": "ui\\ui_textWellDone.jaz",
+    "67": "ui\\ui_textPickAPerk.jaz"
+  },
+  "outputs": {
+    "marked_frames": "analysis/frida/ui_render_trace_marked_frames.jsonl",
+    "summary": "analysis/frida/ui_render_trace_summary.json"
+  }
+}
