@@ -81,11 +81,11 @@ Reverse-chronological log of notable repo changes, grouped by day.
 - Added a quest-driven ground preview and aligned ground rendering with config sizing.
 - Documented menu state0 and terrain pipeline, and added audio/weapon struct docs.
 - Added Frida mod API probe and tooling docs, plus zensical cheatsheet/markdown fixer.
-- Added a `just zip decompile` command.
+- Added a `just zip-decompile` command.
 
 ## 2026-01-20
 
-- Added entrypoint/boot pipeline scaffolding (`crimson game` step-1 runner), boot logs/crash-to-file, cvars/console command wiring, and splash/logo timing improvements.
+- Added entrypoint/boot pipeline scaffolding (`crimson` step-1 runner), boot logs/crash-to-file, cvars/console command wiring, and splash/logo timing improvements.
 - Documented `crimson.cfg` and added loaders/inspectors, defaults alignment, and keybind/name slot docs.
 - Added/expanded Raylib debug views (sprites, terrain, particles, UI, fonts) plus atlas/terrain/particle/icon previews and quest title layout matching.
 - Improved font handling (mono font behavior, filtering, grid alignment, quest title/number positioning) with supporting docs.

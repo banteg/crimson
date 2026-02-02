@@ -48,7 +48,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Completed (gameplay integration)
 
-- [x] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
+- [x] Wire gameplay scene into the default `crimson` runner (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
 - [x] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
 - [x] Game over / high score entry UI (Survival/Rush/Typ-o) -> Unlocks: post-run loop parity + score persistence.
 - [x] Quest results / quest failed screens -> Unlocks: quest completion flow parity.
@@ -62,7 +62,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
 - [x] Wire gameplay SFX/events (weapon fire/reload, hit, creature death) -> Unlocks: audio feedback parity.
 - [x] Audio routing system with per-creature-type death SFX -> Unlocks: immersive audio parity.
-- [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into `crimson game` -> Unlocks: additional playable modes.
+- [x] Wire Rush/Quest/Typ-o/Tutorial mode loops into the default `crimson` runner -> Unlocks: additional playable modes.
 - [x] Tutorial stage-based progression with hint system -> Unlocks: tutorial flow parity.
 - [x] Typ-o-Shooter typing mechanics with target matching -> Unlocks: Typ-o mode parity.
 

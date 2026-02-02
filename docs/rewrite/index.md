@@ -9,7 +9,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
+- `uv run crimson` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
 - `uv run crimson view <name>` (debug views + mode views)
 - `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
@@ -59,7 +59,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 ### Gameplay (modes)
 
 - `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
-- Survival/Rush/Quest/Typ-o/Tutorial loops are wired into `crimson game` via `src/crimson/modes/*`.
+- Survival/Rush/Quest/Typ-o/Tutorial loops are wired into the default `crimson` runner via `src/crimson/modes/*`.
   - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
   - Quest mode has all tiers 1-5 implemented with full spawn scripting.
   - Tutorial mode has full stage-based progression with hint system.

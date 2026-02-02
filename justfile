@@ -44,7 +44,7 @@ pyspy-game-record out="artifacts/profiling/pyspy.speedscope.json" duration="10" 
 
     mkdir -p "$(dirname "$out")"
 
-    uv run crimson game {{args}} &
+    uv run crimson {{args}} &
     launcher_pid="$!"
 
     pid="$launcher_pid"
@@ -68,7 +68,7 @@ pyspy-game-record out="artifacts/profiling/pyspy.speedscope.json" duration="10" 
 
 # Assets
 extract:
-    uv run paq extract {{game_dir}} {{assets_dir}}
+    uv run crimson extract {{game_dir}} {{assets_dir}}
 
 # Atlas
 atlas-scan:
@@ -82,7 +82,7 @@ atlas-export image grid:
 
 # Fonts
 font-sample:
-    uv run paq font --assets-dir {{assets_dir}} --out artifacts/fonts/small_font_sample.png
+    uv run crimson view fonts
 
 # Docs
 docs-map-progress:

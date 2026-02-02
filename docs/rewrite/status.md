@@ -6,7 +6,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 
 ## What you can run today
 
-- `uv run crimson game`
+- `uv run crimson`
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
   - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable.
