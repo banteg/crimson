@@ -61,7 +61,7 @@ There are **two distinct render variants** for `ui_menuPanel` in the capture:
 * [x] Fix `draw_menu_panel()` draw ordering to match capture: **all 3 shadow slices first, then all 3 main slices** (right now we interleave shadow/main per slice).
 * [x] Stop using `MENU_PANEL_WIDTH=512` and `MENU_PANEL_HEIGHT=256` as *drawn* dimensions for the panel; those are texture dimensions, but runtime draws **510-wide** panels and either **254 / 278 / 378** tall depending on variant.
 * [x] Update slide width for panels to **510** everywhere (capture slide is ±510, not ±512).
-* [ ] Extend `_ui_element_anim()` (or wrapper) to support **direction_flag** so right-sliding panels can use **+510 → 0** (needed in states 3, 14–16).
+* [x] Extend `_ui_element_anim()` (or wrapper) to support **direction_flag** so right-sliding panels can use **+510 → 0** (needed in states 3, 14–16).
 
 ---
 
