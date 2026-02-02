@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
 import shutil
+import tempfile
 import urllib.request
 
 from grim.console import ConsoleState
@@ -19,17 +21,30 @@ class DownloadResult:
 
 
 def _download_file(url: str, dest: Path) -> None:
-    tmp = dest.with_suffix(dest.suffix + ".tmp")
-    if tmp.exists():
-        tmp.unlink()
+    tmp_path: Path | None = None
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "crimsonland-decompile"})
-        with urllib.request.urlopen(req, timeout=30) as resp, tmp.open("wb") as handle:
-            shutil.copyfileobj(resp, handle)
-        tmp.replace(dest)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                delete=False,
+                dir=dest.parent,
+                prefix=dest.name + ".",
+                suffix=".tmp",
+            ) as handle:
+                tmp_path = Path(handle.name)
+                shutil.copyfileobj(resp, handle)
+                handle.flush()
+                os.fsync(handle.fileno())
+        if tmp_path is None:
+            raise RuntimeError("assets: temporary file not created")
+        tmp_path.replace(dest)
     finally:
-        if tmp.exists():
-            tmp.unlink()
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink()
+            except FileNotFoundError:
+                pass
 
 
 def download_missing_paqs(
