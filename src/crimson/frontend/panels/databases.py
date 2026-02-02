@@ -28,6 +28,7 @@ from ..menu import (
     ensure_menu_ground,
 )
 from ..transitions import _draw_screen_fade
+from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 if TYPE_CHECKING:
     from ...game import GameState
@@ -54,6 +55,8 @@ class _DatabaseBaseView:
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._action: str | None = None
 
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -65,6 +68,8 @@ class _DatabaseBaseView:
         self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
         self._small_font = None
         self._cursor_pulse_time = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._action = None
 
         cache = _ensure_texture_cache(self._state)
@@ -141,7 +146,13 @@ class _DatabaseBaseView:
             self._ground.process_pending()
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
+
+        enabled = self._timeline_ms >= self._timeline_max_ms
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_previous"
@@ -150,13 +161,14 @@ class _DatabaseBaseView:
         textures = self._button_textures
         if textures is None or (textures.button_md is None and textures.button_sm is None):
             return
+        if not enabled:
+            return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         left_x0, left_y0 = self._panel_top_left(pos_x=LEFT_PANEL_POS_X, pos_y=LEFT_PANEL_POS_Y, scale=scale)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
 
         bx, by = self._back_button_pos()
         back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
@@ -189,18 +201,38 @@ class _DatabaseBaseView:
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
 
+        panel_w = MENU_PANEL_WIDTH * scale
+        _angle_rad, left_slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=0,
+        )
+        _angle_rad, right_slide_x = MenuView._ui_element_anim(
+            self,
+            index=2,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=1,
+        )
+
         left_x0, left_y0 = self._panel_top_left(pos_x=LEFT_PANEL_POS_X, pos_y=LEFT_PANEL_POS_Y, scale=scale)
         right_x0, right_y0 = self._panel_top_left(pos_x=RIGHT_PANEL_POS_X, pos_y=RIGHT_PANEL_POS_Y, scale=scale)
+        left_x0 += float(left_slide_x)
+        right_x0 += float(right_slide_x)
 
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(left_x0, left_y0, MENU_PANEL_WIDTH * scale, LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_x0, left_y0, panel_w, LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(right_x0, right_y0, MENU_PANEL_WIDTH * scale, RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_x0, right_y0, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )

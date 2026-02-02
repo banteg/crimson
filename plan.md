@@ -274,7 +274,7 @@ Fix plan:
 (Panel usage matches state 14: one tall sliced + one quad side panel.)
 
 * [x] Render both panels using the shared renderer (layout matches state 14).
-* [ ] Ensure right-side panel slide uses **+510 → 0**.
+* [x] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
 
@@ -283,7 +283,7 @@ Fix plan:
 (Panel usage matches state 14: one tall sliced + one quad side panel.)
 
 * [x] Render both panels using the shared renderer (layout matches state 14).
-* [ ] Ensure right-side panel slide uses **+510 → 0**.
+* [x] Ensure right-side panel slide uses **+510 → 0**.
 
 ---
 
