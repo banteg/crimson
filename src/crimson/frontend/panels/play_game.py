@@ -15,8 +15,6 @@ from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
     MENU_LABEL_WIDTH,
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MenuView,
     _draw_menu_cursor,
@@ -50,6 +48,8 @@ class PlayGameMenuView(PanelMenuView):
         super().__init__(
             state,
             title="Play Game",
+            panel_offset_x=-63.0,
+            panel_height=278.0,
             back_pos_y=462.0,
         )
         self._small_font: SmallFontData | None = None
@@ -211,8 +211,8 @@ class PlayGameMenuView(PanelMenuView):
         )
         panel_x = self._panel_pos_x + slide_x
         panel_y = self._panel_pos_y + self._widescreen_y_shift
-        origin_x = -(MENU_PANEL_OFFSET_X * panel_scale)
-        origin_y = -(MENU_PANEL_OFFSET_Y * panel_scale)
+        origin_x = -(self._panel_offset_x * panel_scale)
+        origin_y = -(self._panel_offset_y * panel_scale)
         panel_left = panel_x - origin_x
         panel_top = panel_y - origin_y
 
