@@ -365,6 +365,94 @@ def validate_play_game_panel(oracle: dict[str, Any], *, tol: float) -> list[str]
     return errors
 
 
+def validate_controls_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import controls as c
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_3:Configure for:")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # --- Panels (left: 254px, right: 378px) ---
+    left_x0 = c.CONTROLS_LEFT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    left_y0 = c.CONTROLS_LEFT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    exp_left = BBox(left_x0, left_y0, left_x0 + m.MENU_PANEL_WIDTH, left_y0 + m.MENU_PANEL_HEIGHT)
+    got_left, d_left = _match_bbox(_instances(screen, "ui\\ui_menuPanel"), exp_left)
+    if got_left is None or d_left > tol:
+        errors.append(f"controls: left panel bbox mismatch: expected={exp_left} got={got_left} max_abs_delta={d_left:.3f}")
+
+    right_x0 = c.CONTROLS_RIGHT_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    right_y0 = c.CONTROLS_RIGHT_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    right_h = float(c.CONTROLS_RIGHT_PANEL_HEIGHT)
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = right_h - top_h - bottom_h
+    exp = [
+        BBox(right_x0, right_y0, right_x0 + m.MENU_PANEL_WIDTH, right_y0 + top_h),
+        BBox(right_x0, right_y0 + top_h, right_x0 + m.MENU_PANEL_WIDTH, right_y0 + top_h + mid_h),
+        BBox(right_x0, right_y0 + top_h + mid_h, right_x0 + m.MENU_PANEL_WIDTH, right_y0 + right_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"controls: right panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    # --- Back item + label ---
+    item_w = 510.0
+    item_h = 62.0
+    pos_x = c.CONTROLS_BACK_POS_X
+    pos_y = c.CONTROLS_BACK_POS_Y + y_shift
+    exp_back_item = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=item_w,
+        h=item_h,
+        origin_x=-(m.MENU_ITEM_OFFSET_X),
+        origin_y=-(m.MENU_ITEM_OFFSET_Y),
+        rotation_deg=0.0,
+    )
+    got_item, d_item = _match_bbox(_instances(screen, "ui\\ui_menuItem"), exp_back_item)
+    if got_item is None or d_item > tol:
+        errors.append(f"controls: back menuItem bbox mismatch: expected={exp_back_item} got={got_item} max_abs_delta={d_item:.3f}")
+
+    exp_back_label = _draw_texture_pro_bbox(
+        x=pos_x,
+        y=pos_y,
+        w=m.MENU_LABEL_WIDTH,
+        h=m.MENU_LABEL_HEIGHT,
+        origin_x=-(m.MENU_LABEL_OFFSET_X),
+        origin_y=-(m.MENU_LABEL_OFFSET_Y),
+        rotation_deg=0.0,
+    )
+    got_label, d_label = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_back_label)
+    if got_label is None or d_label > tol:
+        errors.append(f"controls: back label bbox mismatch: expected={exp_back_label} got={got_label} max_abs_delta={d_label:.3f}")
+
+    # --- Icons inside the left panel ---
+    # These are stable anchors for the rest of the layout.
+    exp_title = BBox(left_x0 + 206.0, left_y0 + 44.0, left_x0 + 206.0 + 128.0, left_y0 + 44.0 + 32.0)
+    got_title, d_title = _match_bbox(_instances(screen, "ui\\ui_textControls.jaz"), exp_title)
+    if got_title is None or d_title > tol:
+        errors.append(f"controls: ui_textControls bbox mismatch: expected={exp_title} got={got_title} max_abs_delta={d_title:.3f}")
+
+    exp_check = BBox(left_x0 + 213.0, left_y0 + 174.0, left_x0 + 213.0 + 16.0, left_y0 + 174.0 + 16.0)
+    got_check, d_check = _match_bbox(_instances(screen, "ui_checkOn"), exp_check)
+    if got_check is None or d_check > tol:
+        errors.append(f"controls: checkOn bbox mismatch: expected={exp_check} got={got_check} max_abs_delta={d_check:.3f}")
+
+    drop_inst = _instances(screen, "ui_dropOff")
+    for idx, (ox, oy) in enumerate(((418.0, 56.0), (336.0, 102.0), (336.0, 144.0))):
+        bb = BBox(left_x0 + ox, left_y0 + oy, left_x0 + ox + 16.0, left_y0 + oy + 16.0)
+        got, d = _match_bbox(drop_inst, bb)
+        if got is None or d > tol:
+            errors.append(f"controls: dropOff[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    return errors
+
+
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
     from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
@@ -416,6 +504,7 @@ def main(argv: list[str] | None = None) -> int:
     errors.extend(validate_options_panel(oracle, tol=float(args.tol)))
     errors.extend(validate_pause_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_play_game_panel(oracle, tol=float(args.tol)))
+    errors.extend(validate_controls_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
     if not errors:
