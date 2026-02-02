@@ -534,6 +534,7 @@ class GameplayState:
     weapon_available: list[bool] = field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
     _weapon_available_game_mode: int = -1
     _weapon_available_unlock_index: int = -1
+    _weapon_available_unlock_index_full: int = -1
     friendly_fire_enabled: bool = False
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
@@ -1236,17 +1237,23 @@ def weapon_refresh_available(state: "GameplayState") -> None:
     """
 
     unlock_index = 0
+    unlock_index_full = 0
     status = state.status
     if status is not None:
         try:
             unlock_index = int(status.quest_unlock_index)
         except Exception:
             unlock_index = 0
+        try:
+            unlock_index_full = int(status.quest_unlock_index_full)
+        except Exception:
+            unlock_index_full = 0
 
     game_mode = int(state.game_mode)
     if (
         int(state._weapon_available_game_mode) == game_mode
         and int(state._weapon_available_unlock_index) == unlock_index
+        and int(state._weapon_available_unlock_index_full) == unlock_index_full
     ):
         return
 
@@ -1281,8 +1288,16 @@ def weapon_refresh_available(state: "GameplayState") -> None:
             if 0 <= idx < len(available):
                 available[idx] = True
 
+    # Secret unlock: Splitter Gun (weapon id 29) becomes available once the hardcore
+    # unlock track reaches stage 5 (quest_unlock_index_full >= 40).
+    if (not state.demo_mode_active) and unlock_index_full >= 0x28:
+        splitter_id = int(WeaponId.SPLITTER_GUN)
+        if 0 <= splitter_id < len(available):
+            available[splitter_id] = True
+
     state._weapon_available_game_mode = game_mode
     state._weapon_available_unlock_index = unlock_index
+    state._weapon_available_unlock_index_full = unlock_index_full
 
 
 def weapon_pick_random_available(state: "GameplayState") -> int:
