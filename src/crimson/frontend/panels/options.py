@@ -85,6 +85,7 @@ class OptionsMenuView(PanelMenuView):
 
         config = self._state.config
         layout = self._content_layout()
+        base_x = layout["base_x"]
         label_x = layout["label_x"]
         base_y = layout["base_y"]
         scale = layout["scale"]
@@ -126,8 +127,8 @@ class OptionsMenuView(PanelMenuView):
 
         textures = self._button_textures
         if textures is not None and textures.button_md is not None:
-            # `sub_4475d0`: controls button shares the slider column.
-            x = slider_x
+            # `sub_4475d0`: controls button is aligned with the panel content base.
+            x = base_x
             y = base_y + 155.0 * scale
             dt_ms = min(float(dt), 0.1) * 1000.0
             mouse = rl.get_mouse_position()
@@ -373,7 +374,7 @@ class OptionsMenuView(PanelMenuView):
         button = self._button_tex
         textures = self._button_textures
         if button is not None and textures is not None:
-            button_x = slider_x
+            button_x = base_x
             button_y = base_y + 155.0 * scale
             button_w = button_width(font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide)
             button_draw(textures, font, self._controls_button, x=button_x, y=button_y, width=button_w, scale=scale)
