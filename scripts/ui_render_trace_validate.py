@@ -252,6 +252,78 @@ def validate_options_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     return errors
 
 
+def validate_play_game_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_1:Quests")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # Matches raw trace (ui_frame 1112 in ui_render_trace_oracle_1024x768.json):
+    # panel element pos = (-45, 210) (plus widescreen shift) and uses offset_x=-64 (+1 inset => -63).
+    panel_pos_x = -45.0
+    panel_pos_y = 210.0 + y_shift
+    panel_offset_x = -63.0
+    panel_offset_y = m.MENU_PANEL_OFFSET_Y
+    panel_w = m.MENU_PANEL_WIDTH
+    panel_h = 278.0
+
+    x0 = panel_pos_x + panel_offset_x
+    y0 = panel_pos_y + panel_offset_y
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = panel_h - top_h - bottom_h
+
+    exp = [
+        BBox(x0, y0, x0 + panel_w, y0 + top_h),
+        BBox(x0, y0 + top_h, x0 + panel_w, y0 + top_h + mid_h),
+        BBox(x0, y0 + top_h + mid_h, x0 + panel_w, y0 + panel_h),
+    ]
+
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"play_game: panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    return errors
+
+
+def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_11:#.#")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    x0 = float(QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X)
+    y0 = float(QUEST_MENU_BASE_Y + m.MENU_PANEL_OFFSET_Y + y_shift)
+    panel_w = m.MENU_PANEL_WIDTH
+    panel_h = float(QUEST_PANEL_HEIGHT)
+
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = panel_h - top_h - bottom_h
+
+    exp = [
+        BBox(x0, y0, x0 + panel_w, y0 + top_h),
+        BBox(x0, y0 + top_h, x0 + panel_w, y0 + top_h + mid_h),
+        BBox(x0, y0 + top_h + mid_h, x0 + panel_w, y0 + panel_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"quests: panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    return errors
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Validate UI layout constants against a captured oracle.")
     p.add_argument(
@@ -268,6 +340,8 @@ def main(argv: list[str] | None = None) -> int:
     errors: list[str] = []
     errors.extend(validate_main_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_options_panel(oracle, tol=float(args.tol)))
+    errors.extend(validate_play_game_panel(oracle, tol=float(args.tol)))
+    errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
     if not errors:
         print("OK")
