@@ -22,6 +22,7 @@ just frida-sync-share
 - `scripts/frida/menu_logo_pivot_trace.js`
 - `scripts/frida/screen_fade_trace.js`
 - `scripts/frida/perk_prompt_trace.js`
+- `scripts/frida/ui_render_trace.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -48,6 +49,12 @@ Screen fade trace (UI/fade globals + fullscreen overlay, JSONL to `screen_fade_t
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\screen_fade_trace.js
+```
+
+UI render trace (menus/panels/widgets, JSONL to `ui_render_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\ui_render_trace.js
 ```
 
 Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
@@ -81,6 +88,7 @@ Default logs written by the scripts:
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
 - `C:\share\frida\creature_anim_trace.jsonl`
+- `C:\share\frida\ui_render_trace.jsonl`
 - `C:\share\frida\demo_trial_overlay_trace.jsonl` (if you ran `demo_trial_overlay_trace.js`)
 - `C:\share\frida\demo_idle_threshold_trace.jsonl` (if you ran `demo_idle_threshold_trace.js`)
 
