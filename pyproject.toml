@@ -1,6 +1,7 @@
 [project]
 name = "crimsonland"
 version = "0.1.0.dev13"
+readme = { file = "readme.md", content-type = "text/markdown" }
 requires-python = ">=3.13"
 dependencies = [
     "construct>=2.10.70",
@@ -9,6 +10,10 @@ dependencies = [
     "raylib>=5.5.0.4",
     "typer>=0.21.1",
 ]
+
+[project.urls]
+Documentation = "https://crimson.banteg.xyz/"
+Repository = "https://github.com/banteg/crimson"
 
 [project.scripts]
 crimsonland = "crimson.cli:main"
