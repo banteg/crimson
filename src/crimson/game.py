@@ -1819,6 +1819,21 @@ class GameLoopView:
             "open_options": OptionsMenuView(state),
             "open_controls": ControlsMenuView(state),
             "open_statistics": StatisticsMenuView(state),
+            "open_weapon_database": PanelMenuView(
+                state,
+                title="Unlocked Weapons Database",
+                body="This menu is not implemented yet.",
+            ),
+            "open_perk_database": PanelMenuView(
+                state,
+                title="Unlocked Perks Database",
+                body="This menu is not implemented yet.",
+            ),
+            "open_credits": PanelMenuView(
+                state,
+                title="Credits",
+                body="This menu is not implemented yet.",
+            ),
             "open_mods": ModsMenuView(state),
             "open_other_games": PanelMenuView(
                 state,

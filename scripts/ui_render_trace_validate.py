@@ -453,6 +453,60 @@ def validate_controls_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
     return errors
 
 
+def validate_statistics_menu(oracle: dict[str, Any], *, tol: float) -> list[str]:
+    from crimson.frontend import menu as m
+    from crimson.frontend.panels import stats as s
+
+    errors: list[str] = []
+    screen = _find_screen(oracle, "state_4:played for # hours # minutes")
+
+    screen_w = 1024
+    y_shift = m.MenuView._menu_widescreen_y_shift(float(screen_w))
+
+    # --- Panel (tall 378px, 3 vertical slices) ---
+    x0 = s.STATISTICS_PANEL_POS_X + m.MENU_PANEL_OFFSET_X
+    y0 = s.STATISTICS_PANEL_POS_Y + y_shift + m.MENU_PANEL_OFFSET_Y
+    panel_h = float(s.STATISTICS_PANEL_HEIGHT)
+
+    top_h = 138.0
+    bottom_h = 116.0
+    mid_h = panel_h - top_h - bottom_h
+    exp = [
+        BBox(x0, y0, x0 + m.MENU_PANEL_WIDTH, y0 + top_h),
+        BBox(x0, y0 + top_h, x0 + m.MENU_PANEL_WIDTH, y0 + top_h + mid_h),
+        BBox(x0, y0 + top_h + mid_h, x0 + m.MENU_PANEL_WIDTH, y0 + panel_h),
+    ]
+    inst = _instances(screen, "ui\\ui_menuPanel")
+    for idx, bb in enumerate(exp):
+        got, d = _match_bbox(inst, bb)
+        if got is None or d > tol:
+            errors.append(f"statistics: panel slice[{idx}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    # Title label (full 128x32 row from ui_itemTexts).
+    exp_title = BBox(x0 + 290.0, y0 + 52.0, x0 + 290.0 + 128.0, y0 + 52.0 + 32.0)
+    got_title, d_title = _match_bbox(_instances(screen, "ui\\ui_itemTexts.jaz"), exp_title)
+    if got_title is None or d_title > tol:
+        errors.append(f"statistics: title bbox mismatch: expected={exp_title} got={got_title} max_abs_delta={d_title:.3f}")
+
+    # Buttons: 4x medium (145x32) + 1x small (82x32).
+    # These are stable and should not depend on text widths at 1024x768.
+    btn_x = x0 + 270.0
+    btn_y0 = y0 + 104.0
+    btn_step = 34.0
+    for i in range(4):
+        bb = BBox(btn_x, btn_y0 + btn_step * float(i), btn_x + 145.0, btn_y0 + btn_step * float(i) + 32.0)
+        got, d = _match_bbox(_instances(screen, "ui_buttonMd"), bb)
+        if got is None or d > tol:
+            errors.append(f"statistics: buttonMd[{i}] bbox mismatch: expected={bb} got={got} max_abs_delta={d:.3f}")
+
+    bb_back = BBox(x0 + 394.0, y0 + 290.0, x0 + 394.0 + 82.0, y0 + 290.0 + 32.0)
+    got_back, d_back = _match_bbox(_instances(screen, "ui_buttonSm"), bb_back)
+    if got_back is None or d_back > tol:
+        errors.append(f"statistics: back button bbox mismatch: expected={bb_back} got={got_back} max_abs_delta={d_back:.3f}")
+
+    return errors
+
+
 def validate_quest_menu_panel(oracle: dict[str, Any], *, tol: float) -> list[str]:
     from crimson.frontend import menu as m
     from crimson.game import QUEST_MENU_BASE_X, QUEST_MENU_BASE_Y, QUEST_MENU_PANEL_OFFSET_X, QUEST_PANEL_HEIGHT
@@ -505,6 +559,7 @@ def main(argv: list[str] | None = None) -> int:
     errors.extend(validate_pause_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_play_game_panel(oracle, tol=float(args.tol)))
     errors.extend(validate_controls_menu(oracle, tol=float(args.tol)))
+    errors.extend(validate_statistics_menu(oracle, tol=float(args.tol)))
     errors.extend(validate_quest_menu_panel(oracle, tol=float(args.tol)))
 
     if not errors:

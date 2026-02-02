@@ -4,97 +4,127 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
-from grim.audio import play_music, stop_music
+from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 
+from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
-    MENU_LABEL_WIDTH,
-    MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
+    MENU_SCALE_SMALL_THRESHOLD,
+    MENU_SIGN_HEIGHT,
+    MENU_SIGN_OFFSET_X,
+    MENU_SIGN_OFFSET_Y,
+    MENU_SIGN_POS_X_PAD,
+    MENU_SIGN_POS_Y,
+    MENU_SIGN_POS_Y_SMALL,
+    MENU_SIGN_WIDTH,
+    UI_SHADOW_OFFSET,
     MenuView,
     _draw_menu_cursor,
+    ensure_menu_ground,
 )
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-
-from ...persistence.save_status import MODE_COUNT_ORDER
-from ...weapons import WEAPON_BY_ID, WeaponId
 
 if TYPE_CHECKING:
     from ...game import GameState
+    from grim.terrain_render import GroundRenderer
 
 
-class StatisticsMenuView(PanelMenuView):
-    _PAGES = ("Summary", "Weapons", "Quests")
+# Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
+STATISTICS_PANEL_POS_X = -89.0
+STATISTICS_PANEL_POS_Y = 185.0
+STATISTICS_PANEL_HEIGHT = 378.0
+
+# Child layout inside the panel (relative to panel top-left).
+_TITLE_X = 290.0
+_TITLE_Y = 52.0
+_TITLE_W = 128.0
+_TITLE_H = 32.0
+
+_BUTTON_X = 270.0
+_BUTTON_Y0 = 104.0
+_BUTTON_STEP_Y = 34.0
+
+_BACK_BUTTON_X = 394.0
+_BACK_BUTTON_Y = 290.0
+
+_PLAYTIME_X = 204.0
+_PLAYTIME_Y = 334.0
+
+
+class StatisticsMenuView:
+    """
+    Classic "Statistics" menu (state_id=4).
+
+    This is a small hub panel with buttons for:
+      - High scores
+      - Weapons / Perks databases
+      - Credits
+    """
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Statistics")
+        self._state = state
+        self._assets: MenuAssets | None = None
+        self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._page_index = 0
-        self._scroll_index = 0
-        self._page_lines: list[list[str]] = []
+        self._button_textures: UiButtonTextureSet | None = None
+
+        self._cursor_pulse_time = 0.0
+        self._widescreen_y_shift = 0.0
+
+        self._action: str | None = None
+
+        self._btn_high_scores = UiButtonState("High scores", force_wide=True)
+        self._btn_weapons = UiButtonState("Weapons", force_wide=True)
+        self._btn_perks = UiButtonState("Perks", force_wide=True)
+        self._btn_credits = UiButtonState("Credits", force_wide=True)
+        self._btn_back = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        super().open()
-        self._page_index = 0
-        self._scroll_index = 0
-        self._page_lines = self._build_pages()
+        layout_w = float(self._state.config.screen_width)
+        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._assets = load_menu_assets(self._state)
+        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+        self._small_font = None
+        self._cursor_pulse_time = 0.0
+        self._action = None
+
+        cache = _ensure_texture_cache(self._state)
+        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
+
+        self._btn_high_scores = UiButtonState("High scores", force_wide=True)
+        self._btn_weapons = UiButtonState("Weapons", force_wide=True)
+        self._btn_perks = UiButtonState("Perks", force_wide=True)
+        self._btn_credits = UiButtonState("Credits", force_wide=True)
+        self._btn_back = UiButtonState("Back", force_wide=False)
+
         if self._state.audio is not None:
             if self._state.audio.music.active_track != "shortie_monk":
                 stop_music(self._state.audio)
             play_music(self._state.audio, "shortie_monk")
+            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
 
-    def draw(self) -> None:
-        self._draw_background()
-        _draw_screen_fade(self._state)
-        assets = self._assets
-        entry = self._entry
-        if assets is None or entry is None:
-            return
-        self._draw_panel()
-        self._draw_entry(entry)
-        self._draw_sign()
-        self._draw_stats_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+    def close(self) -> None:
+        if self._small_font is not None:
+            rl.unload_texture(self._small_font.texture)
+            self._small_font = None
+        self._button_textures = None
+        self._assets = None
+        self._ground = None
+        self._action = None
 
-    def update(self, dt: float) -> None:
-        super().update(dt)
-        if self._closing:
-            return
-        entry = self._entry
-        if entry is None or not self._entry_enabled(entry):
-            return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
-            self._switch_page(-1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
-            self._switch_page(1)
-
-        font = self._ensure_small_font()
-        layout = self._content_layout()
-        rows = self._visible_rows(font, layout)
-        max_scroll = max(0, len(self._active_page_lines()) - rows)
-
-        wheel = int(rl.get_mouse_wheel_move())
-        if wheel:
-            self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._scroll_index = max(0, int(self._scroll_index) - 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
-            self._scroll_index = max(0, int(self._scroll_index) - rows)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
-            self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-            self._scroll_index = 0
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-            self._scroll_index = max_scroll
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -103,247 +133,176 @@ class StatisticsMenuView(PanelMenuView):
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
-    def _content_layout(self) -> dict[str, float]:
-        panel_scale, _local_shift = self._menu_item_scale(0)
-        panel_w = MENU_PANEL_WIDTH * panel_scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        panel_x = self._panel_pos_x + slide_x
-        panel_y = self._panel_pos_y + self._widescreen_y_shift
-        origin_x = -(MENU_PANEL_OFFSET_X * panel_scale)
-        origin_y = -(MENU_PANEL_OFFSET_Y * panel_scale)
-        panel_left = panel_x - origin_x
-        panel_top = panel_y - origin_y
-        base_x = panel_left + 212.0 * panel_scale
-        base_y = panel_top + 32.0 * panel_scale
-        label_x = base_x + 8.0 * panel_scale
-        return {
-            "panel_left": panel_left,
-            "panel_top": panel_top,
-            "base_x": base_x,
-            "base_y": base_y,
-            "label_x": label_x,
-            "scale": panel_scale,
-        }
+    def _panel_top_left(self, *, scale: float) -> tuple[float, float]:
+        x0 = STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale
+        y0 = STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale
+        return float(x0), float(y0)
 
-    def _switch_page(self, delta: int) -> None:
-        if not self._page_lines:
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "back_to_menu"
             return
-        count = len(self._page_lines)
-        self._page_index = (int(self._page_index) + int(delta)) % count
-        self._scroll_index = 0
 
-    def _active_page_lines(self) -> list[str]:
-        if not self._page_lines:
-            return []
-        idx = int(self._page_index)
-        if idx < 0:
-            idx = 0
-        if idx >= len(self._page_lines):
-            idx = len(self._page_lines) - 1
-        return self._page_lines[idx]
+        textures = self._button_textures
+        if textures is None or (textures.button_md is None and textures.button_sm is None):
+            return
 
-    def _build_pages(self) -> list[list[str]]:
-        return [
-            self._build_summary_lines(),
-            self._build_weapon_usage_lines(),
-            self._build_quest_progress_lines(),
-        ]
+        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
 
-    def _build_summary_lines(self) -> list[str]:
-        status = self._state.status
-        mode_counts = {name: status.mode_play_count(name) for name, _offset in MODE_COUNT_ORDER}
-        quest_counts = status.data.get("quest_play_counts", [])
-        if isinstance(quest_counts, list):
-            quest_total = int(sum(int(v) for v in quest_counts[:40]))
-        else:
-            quest_total = 0
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        dt_ms = min(float(dt), 0.1) * 1000.0
 
-        checksum_text = "unknown"
-        try:
-            from ...persistence.save_status import load_status
+        def _update_button(btn: UiButtonState, *, x: float, y: float) -> bool:
+            w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
+            return button_update(btn, x=x, y=y, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
-            blob = load_status(status.path)
-            ok = "ok" if blob.checksum_valid else "BAD"
-            checksum_text = f"0x{blob.checksum:08x} ({ok})"
-        except Exception as exc:
-            checksum_text = f"error: {type(exc).__name__}"
+        x = panel_x0 + _BUTTON_X * scale
+        y0 = panel_y0 + _BUTTON_Y0 * scale
+        if _update_button(self._btn_high_scores, x=x, y=y0 + _BUTTON_STEP_Y * 0.0 * scale):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "open_high_scores"
+            return
+        if _update_button(self._btn_weapons, x=x, y=y0 + _BUTTON_STEP_Y * 1.0 * scale):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "open_weapon_database"
+            return
+        if _update_button(self._btn_perks, x=x, y=y0 + _BUTTON_STEP_Y * 2.0 * scale):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "open_perk_database"
+            return
+        if _update_button(self._btn_credits, x=x, y=y0 + _BUTTON_STEP_Y * 3.0 * scale):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "open_credits"
+            return
 
-        playtime_ms = int(status.game_sequence_id)
-        seconds = max(0, playtime_ms // 1000)
-        minutes = seconds // 60
-        hours = minutes // 60
-        minutes %= 60
-        seconds %= 60
+        back_x = panel_x0 + _BACK_BUTTON_X * scale
+        back_y = panel_y0 + _BACK_BUTTON_Y * scale
+        if _update_button(self._btn_back, x=back_x, y=back_y):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "back_to_menu"
+            return
 
-        lines = [
-            f"Played for: {hours}h {minutes:02d}m {seconds:02d}s",
-            f"Quest unlock: {status.quest_unlock_index} (full {status.quest_unlock_index_full})",
-            f"Quest plays (1-40): {quest_total}",
-            f"Mode plays: surv {mode_counts['survival']}  rush {mode_counts['rush']}",
-            f"            typo {mode_counts['typo']}  other {mode_counts['other']}",
-            f"Playtime ms: {int(status.game_sequence_id)}",
-            f"Checksum: {checksum_text}",
-        ]
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+        elif self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
 
-        usage = status.data.get("weapon_usage_counts", [])
-        top_weapons: list[tuple[int, int]] = []
-        if isinstance(usage, list):
-            for idx, count in enumerate(usage):
-                count = int(count)
-                if count > 0:
-                    top_weapons.append((idx, count))
-        top_weapons.sort(key=lambda item: (-item[1], item[0]))
-        top_weapons = top_weapons[:4]
-
-        if top_weapons:
-            lines.append("Top weapons:")
-            for idx, count in top_weapons:
-                weapon = WEAPON_BY_ID.get(idx)
-                name = weapon.name if weapon is not None and weapon.name else f"weapon_{idx}"
-                lines.append(f"  {name}: {count}")
-        else:
-            lines.append("Top weapons: none")
-
-        return lines
-
-    def _build_weapon_usage_lines(self) -> list[str]:
-        status = self._state.status
-        usage = status.data.get("weapon_usage_counts", [])
-        if not isinstance(usage, list):
-            return ["Weapon usage: error (missing weapon_usage_counts)"]
-
-        items: list[tuple[int, int, str]] = []
-        for idx, count in enumerate(usage):
-            weapon_id = int(idx)
-            if weapon_id == WeaponId.NONE:
-                continue
-            count = int(count)
-            weapon = WEAPON_BY_ID.get(weapon_id)
-            name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
-            items.append((weapon_id, count, name))
-
-        items.sort(key=lambda item: (-item[1], item[0]))
-        total = sum(count for _weapon_id, count, _name in items)
-        max_id_width = max(2, len(str(max((weapon_id for weapon_id, _count, _name in items), default=0))))
-
-        lines = [
-            f"Weapon uses (total {total}):",
-            "",
-        ]
-        for weapon_id, count, name in items:
-            lines.append(f"{weapon_id:>{max_id_width}}  {count:>8}  {name}")
-        return lines
-
-    def _build_quest_progress_lines(self) -> list[str]:
-        status = self._state.status
-        completed_total = 0
-        played_total = 0
-
-        lines = [
-            "Quest progress (stages 1-4):",
-            "",
-        ]
-        for global_index in range(40):
-            stage = (global_index // 10) + 1
-            row = global_index % 10
-            level = f"{stage}.{row + 1}"
-            title = "???"
-            try:
-                from ...quests import quest_by_level
-
-                quest = quest_by_level(level)
-                if quest is not None:
-                    title = quest.title
-            except Exception:
-                title = "???"
-
-            count_index = global_index + 10
-            games_idx = 1 + count_index
-            completed_idx = 41 + count_index
-            games = int(status.quest_play_count(games_idx))
-            completed = int(status.quest_play_count(completed_idx))
-
-            completed_total += completed
-            played_total += games
-            lines.append(f"{level:>4}  {completed:>3}/{games:<3}  {title}")
-
-        lines.extend(
-            [
-                "",
-                f"Completed: {completed_total}",
-                f"Played:    {played_total}",
-            ]
-        )
-        return lines
-
-    def _visible_rows(self, font: SmallFontData, layout: dict[str, float]) -> int:
-        scale = float(layout["scale"])
-        line_step = (float(font.cell_size) + 4.0) * scale
-        line_y0 = float(layout["base_y"]) + 66.0 * scale
-        panel_bottom = float(layout["panel_top"]) + (MENU_PANEL_HEIGHT * scale)
-        available = max(0.0, panel_bottom - line_y0 - 8.0 * scale)
-        return max(1, int(available // line_step))
-
-    def _draw_stats_contents(self) -> None:
         assets = self._assets
-        if assets is None:
+        if assets is None or assets.panel is None:
             return
-        labels_tex = assets.labels
-        layout = self._content_layout()
-        base_x = layout["base_x"]
-        base_y = layout["base_y"]
-        label_x = layout["label_x"]
-        scale = layout["scale"]
 
-        font = self._ensure_small_font()
-        text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
+        dst = rl.Rectangle(panel_x0, panel_y0, MENU_PANEL_WIDTH * scale, STATISTICS_PANEL_HEIGHT * scale)
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
-        if labels_tex is not None:
-            src = rl.Rectangle(
-                0.0,
-                float(MENU_LABEL_ROW_STATISTICS) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
-                MENU_LABEL_ROW_HEIGHT,
-            )
-            dst = rl.Rectangle(
-                base_x,
-                base_y,
-                MENU_LABEL_WIDTH * scale,
-                MENU_LABEL_ROW_HEIGHT * scale,
-            )
+        # Title: full-size row from ui_itemTexts.jaz (128x32).
+        if assets.labels is not None:
+            label_tex = assets.labels
+            row_h = float(MENU_LABEL_ROW_HEIGHT)
+            src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
             MenuView._draw_ui_quad(
-                texture=labels_tex,
+                texture=label_tex,
                 src=src,
-                dst=dst,
+                dst=rl.Rectangle(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale, _TITLE_W * scale, _TITLE_H * scale),
                 origin=rl.Vector2(0.0, 0.0),
                 rotation_deg=0.0,
                 tint=rl.WHITE,
             )
-        else:
-            rl.draw_text(self._title, int(base_x), int(base_y), int(24 * scale), rl.WHITE)
 
-        tabs_y = base_y + 44.0 * scale
-        x = label_x
-        for idx, label in enumerate(self._PAGES):
-            active = idx == int(self._page_index)
-            color = rl.Color(255, 255, 255, 255 if active else int(255 * 0.55))
-            draw_small_text(font, label, x, tabs_y, text_scale, color)
-            x += (len(label) * font.cell_size + 18.0) * scale
+        # "played for # hours # minutes"
+        font = self._ensure_small_font()
+        playtime_text = "played for 0 hours 0 minutes"
+        try:
+            # The classic menu shows a coarse playtime summary; our persisted value is ms.
+            ms = max(0, int(self._state.status.game_sequence_id))
+            minutes = (ms // 1000) // 60
+            hours = minutes // 60
+            minutes %= 60
+            playtime_text = f"played for {hours} hours {minutes} minutes"
+        except Exception:
+            playtime_text = "played for ? hours ? minutes"
 
-        lines = self._active_page_lines()
-        rows = self._visible_rows(font, layout)
-        start = max(0, int(self._scroll_index))
-        end = min(len(lines), start + rows)
+        draw_small_text(
+            font,
+            playtime_text,
+            panel_x0 + _PLAYTIME_X * scale,
+            panel_y0 + _PLAYTIME_Y * scale,
+            1.0 * scale,
+            rl.Color(255, 255, 255, int(255 * 0.8)),
+        )
 
-        line_y = base_y + 66.0 * scale
-        line_step = (font.cell_size + 4.0) * scale
-        for line in lines[start:end]:
-            draw_small_text(font, line, label_x, line_y, text_scale, text_color)
-            line_y += line_step
+        # Buttons.
+        textures = self._button_textures
+        if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
+            btn_x = panel_x0 + _BUTTON_X * scale
+            btn_y0 = panel_y0 + _BUTTON_Y0 * scale
+            for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
+                w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
+                button_draw(textures, font, btn, x=btn_x, y=btn_y0 + _BUTTON_STEP_Y * float(i) * scale, width=w, scale=scale)
+
+            back_w = button_width(None, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+            button_draw(
+                textures,
+                font,
+                self._btn_back,
+                x=panel_x0 + _BACK_BUTTON_X * scale,
+                y=panel_y0 + _BACK_BUTTON_Y * scale,
+                width=back_w,
+                scale=scale,
+            )
+
+        self._draw_sign(scale=scale)
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def _draw_sign(self, *, scale: float) -> None:
+        assets = self._assets
+        if assets is None or assets.sign is None:
+            return
+        sign = assets.sign
+        screen_w = float(self._state.config.screen_width)
+        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
+        pos_x = screen_w + MENU_SIGN_POS_X_PAD
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_w = MENU_SIGN_WIDTH * sign_scale
+        sign_h = MENU_SIGN_HEIGHT * sign_scale
+        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
+        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
+        rotation_deg = 0.0
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad_shadow(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=rotation_deg,
+            )
+        MenuView._draw_ui_quad(
+            texture=sign,
+            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            origin=rl.Vector2(-offset_x, -offset_y),
+            rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
