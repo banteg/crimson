@@ -12,6 +12,7 @@ from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.view import ViewContext
 
+from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import most_used_weapon_id_for_player, perk_selection_current_choices, perk_selection_pick, weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
@@ -44,6 +45,7 @@ from ..ui.perk_menu import (
     wrap_ui_text,
 )
 from ..views.quest_title_overlay import draw_quest_title_overlay
+from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode, _clamp
 
 WORLD_SIZE = 1024.0
@@ -78,6 +80,8 @@ PERK_PROMPT_LEVEL_UP_SHIFT_X = -46.0
 PERK_PROMPT_LEVEL_UP_SHIFT_Y = -4.0
 
 PERK_PROMPT_TEXT_MARGIN_X = 16.0
+
+_DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 
 
@@ -305,9 +309,34 @@ class QuestMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
+        if debug_enabled() and (not self._perk_menu_open):
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
+                self._state.debug_god_mode = not bool(self._state.debug_god_mode)
+                self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+                self._state.perk_selection.pending_count += 1
+                self._state.perk_selection.choices_dirty = True
+                self._world.audio_router.play_sfx("sfx_ui_levelup")
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+                self._debug_cycle_weapon(-1)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+                self._debug_cycle_weapon(1)
+
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_pause_menu"
             return
+
+    def _debug_cycle_weapon(self, delta: int) -> None:
+        weapon_ids = _DEBUG_WEAPON_IDS
+        if not weapon_ids:
+            return
+        current = int(self._player.weapon_id)
+        try:
+            idx = weapon_ids.index(current)
+        except ValueError:
+            idx = 0
+        weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_assign_player(self._player, weapon_id, state=self._state)
 
     def _build_input(self):
         keybinds = config_keybinds(self._config)
@@ -875,6 +904,12 @@ class QuestMode(BaseGameplayMode):
                 small_indicators=self._hud_small_indicators(),
             )
 
+        if debug_enabled() and (not perk_menu_active):
+            x = 18.0
+            y = max(18.0, hud_bottom + 10.0)
+            god = "on" if self._state.debug_god_mode else "off"
+            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", x, y, UI_HINT_COLOR, scale=0.9)
+
         self._draw_quest_title()
 
         warn_y = float(rl.get_screen_height()) - 28.0
@@ -895,6 +930,8 @@ class QuestMode(BaseGameplayMode):
             self._draw_game_cursor()
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
+            if debug_enabled() and (not perk_menu_active):
+                y += float(self._ui_line_height(scale=0.9))
             self._draw_ui_text("paused (TAB)", x, y, UI_HINT_COLOR)
         else:
             self._draw_aim_cursor()

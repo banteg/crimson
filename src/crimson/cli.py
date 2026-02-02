@@ -211,6 +211,7 @@ def cmd_game(
     seed: int | None = typer.Option(None, help="rng seed"),
     demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
+    debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -236,6 +237,7 @@ def cmd_game(
         seed=seed,
         demo_enabled=demo,
         no_intro=no_intro,
+        debug=debug,
     )
     run_game(config)
 

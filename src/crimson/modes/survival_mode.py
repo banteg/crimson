@@ -14,7 +14,14 @@ from grim.view import ViewContext
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, most_used_weapon_id_for_player, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
+from ..gameplay import (
+    PlayerInput,
+    most_used_weapon_id_for_player,
+    perk_selection_current_choices,
+    perk_selection_pick,
+    survival_check_level_up,
+    weapon_assign_player,
+)
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId, perk_display_description, perk_display_name
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
@@ -38,6 +45,7 @@ from ..ui.perk_menu import (
     ui_scale,
     wrap_ui_text,
 )
+from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode, _clamp
 
 WORLD_SIZE = 1024.0
@@ -70,6 +78,8 @@ PERK_PROMPT_LEVEL_UP_SHIFT_Y = -4.0
 
 PERK_PROMPT_TEXT_MARGIN_X = 16.0
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
+
+_DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
 
 @dataclass(slots=True)
@@ -181,13 +191,37 @@ class SurvivalMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
-        if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-            self._player.experience += 5000
-            survival_check_level_up(self._player, self._state.perk_selection)
+        if debug_enabled() and (not self._perk_menu_open):
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
+                self._state.debug_god_mode = not bool(self._state.debug_god_mode)
+                self._world.audio_router.play_sfx("sfx_ui_buttonclick")
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+                self._state.perk_selection.pending_count += 1
+                self._state.perk_selection.choices_dirty = True
+                self._world.audio_router.play_sfx("sfx_ui_levelup")
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+                self._debug_cycle_weapon(-1)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+                self._debug_cycle_weapon(1)
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
+                self._player.experience += 5000
+                survival_check_level_up(self._player, self._state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_pause_menu"
             return
+
+    def _debug_cycle_weapon(self, delta: int) -> None:
+        weapon_ids = _DEBUG_WEAPON_IDS
+        if not weapon_ids:
+            return
+        current = int(self._player.weapon_id)
+        try:
+            idx = weapon_ids.index(current)
+        except ValueError:
+            idx = 0
+        weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_assign_player(self._player, weapon_id, state=self._state)
 
     def _build_input(self) -> PlayerInput:
         keybinds = config_keybinds(self._config)
@@ -779,10 +813,12 @@ class SurvivalMode(BaseGameplayMode):
             line = float(self._ui_line_height())
             self._draw_ui_text(f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}", x, y, UI_TEXT_COLOR)
             self._draw_ui_text(f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
+            god = "on" if self._state.debug_god_mode else "off"
+            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000", x, y + line * 2.0, UI_HINT_COLOR, scale=0.9)
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", x, y + line * 3.0, UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", x, y + line * 3.0, UI_ERROR_COLOR)
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)

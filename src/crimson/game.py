@@ -38,7 +38,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
-from .debug import debug_enabled
+from .debug import debug_enabled, set_debug_enabled
 from grim import music
 
 from .demo import DemoView
@@ -113,6 +113,7 @@ class GameConfig:
     seed: int | None = None
     demo_enabled: bool = False
     no_intro: bool = False
+    debug: bool = False
 
 
 @dataclass(slots=True)
@@ -189,6 +190,25 @@ QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
 QUEST_BACK_BUTTON_X_OFFSET = 138.0
 QUEST_BACK_BUTTON_Y_OFFSET = 212.0
 QUEST_PANEL_HEIGHT = 378.0
+
+# game_update_victory_screen (0x00406350): used as the "end note" screen after the final quest.
+END_NOTE_PANEL_POS_X = -45.0
+END_NOTE_PANEL_POS_Y = 110.0
+END_NOTE_PANEL_GEOM_X0 = -63.0
+END_NOTE_PANEL_GEOM_Y0 = -81.0
+END_NOTE_PANEL_W = 510.0
+END_NOTE_PANEL_H = 378.0
+
+END_NOTE_HEADER_X_OFFSET = 214.0  # v11 + 44 - 10 in the decompile, relative to panel-left
+END_NOTE_HEADER_Y_OFFSET = 46.0  # (base_y + 40) + 6 in the decompile, relative to panel-top
+END_NOTE_BODY_X_OFFSET = END_NOTE_HEADER_X_OFFSET - 8.0
+END_NOTE_BODY_Y_GAP = 32.0
+END_NOTE_LINE_STEP_Y = 14.0
+END_NOTE_AFTER_BODY_Y_GAP = 22.0  # 14 + 8 in the decompile
+
+END_NOTE_BUTTON_X_OFFSET = 266.0  # (v11 + 44 + 20) - 4 + 26, relative to panel-left
+END_NOTE_BUTTON_Y_OFFSET = 210.0  # (base_y + 40) + 170 in the decompile, relative to panel-top
+END_NOTE_BUTTON_STEP_Y = 32.0
 
 
 class QuestsMenuView:
@@ -282,12 +302,21 @@ class QuestsMenuView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         config = self._state.config
+        status = self._state.status
 
         # The original forcibly clears hardcore in the demo build.
         if self._state.demo_enabled:
             if int(config.data.get("hardcore_flag", 0) or 0) != 0:
                 config.data["hardcore_flag"] = 0
                 self._dirty = True
+
+        if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
+            unlock = 49
+            if int(status.quest_unlock_index) < unlock:
+                status.quest_unlock_index = unlock
+            if int(status.quest_unlock_index_full) < unlock:
+                status.quest_unlock_index_full = unlock
+            self._state.console.log.log("debug: unlocked all quests")
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._action = "open_play_game"
@@ -1288,6 +1317,9 @@ class QuestResultsView:
             self._action = "start_quest"
             return
         if action == "play_next":
+            if int(self._quest_stage_major) == 5 and int(self._quest_stage_minor) == 10:
+                self._action = "end_note"
+                return
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._state.pending_quest_level = next_level
@@ -1334,6 +1366,217 @@ class QuestResultsView:
             highlight_rank=highlight_rank,
         )
         self._action = "open_high_scores"
+
+
+class EndNoteView:
+    """Final quest "Show End Note" flow.
+
+    Classic:
+      - quest_results_screen_update uses "Show End Note" instead of "Play Next" for quest 5.10
+      - clicking it transitions to state 0x15 (game_update_victory_screen @ 0x00406350)
+    """
+
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._ground: GroundRenderer | None = None
+        self._small_font: SmallFontData | None = None
+        self._panel_tex: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._action: str | None = None
+        self._cursor_pulse_time = 0.0
+
+        self._survival_button = UiButtonState("Survival", force_wide=True)
+        self._rush_button = UiButtonState("  Rush  ", force_wide=True)
+        self._typo_button = UiButtonState("Typ'o'Shooter", force_wide=True)
+        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
+
+    def open(self) -> None:
+        self._action = None
+        self._cursor_pulse_time = 0.0
+        self._ground = None if self._state.pause_background is not None else ensure_menu_ground(self._state)
+
+        cache = _ensure_texture_cache(self._state)
+        self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
+        self._small_font = None
+
+    def close(self) -> None:
+        self._ground = None
+        self._small_font = None
+        self._panel_tex = None
+        self._button_textures = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio, dt)
+        if self._ground is not None:
+            self._ground.process_pending()
+        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "back_to_menu"
+            return
+
+        textures = self._button_textures
+        if textures is None or (textures.button_sm is None and textures.button_md is None):
+            return
+
+        screen_w = float(rl.get_screen_width())
+        scale = 1.0
+
+        layout_w = screen_w / scale if scale else screen_w
+        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+
+        panel_left = (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale
+        panel_top = (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale
+
+        button_x = panel_left + END_NOTE_BUTTON_X_OFFSET * scale
+        button_y = panel_top + END_NOTE_BUTTON_Y_OFFSET * scale
+
+        font = self._ensure_small_font()
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        dt_ms = min(float(dt), 0.1) * 1000.0
+
+        survival_w = button_width(font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide)
+        if button_update(self._survival_button, x=button_x, y=button_y, width=survival_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            self._state.config.data["game_mode"] = 1
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "start_survival"
+            return
+
+        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+        if button_update(self._rush_button, x=button_x, y=button_y, width=rush_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            self._state.config.data["game_mode"] = 2
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "start_rush"
+            return
+
+        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+        if button_update(self._typo_button, x=button_x, y=button_y, width=typo_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            self._state.config.data["game_mode"] = 4
+            self._state.screen_fade_alpha = 0.0
+            self._state.screen_fade_ramp = True
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "start_typo"
+            return
+
+        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        main_w = button_width(font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
+        if button_update(self._main_menu_button, x=button_x, y=button_y, width=main_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if self._state.audio is not None:
+                play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+            self._action = "back_to_menu"
+            return
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        pause_background = self._state.pause_background
+        if pause_background is not None:
+            pause_background.draw_pause_background()
+        elif self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        _draw_screen_fade(self._state)
+
+        panel_tex = self._panel_tex
+        if panel_tex is None:
+            return
+
+        screen_w = float(rl.get_screen_width())
+        scale = 1.0
+        layout_w = screen_w / scale if scale else screen_w
+        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+
+        panel_left = (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale
+        panel_top = (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale
+        panel = rl.Rectangle(
+            float(panel_left),
+            float(panel_top),
+            float(END_NOTE_PANEL_W * scale),
+            float(END_NOTE_PANEL_H * scale),
+        )
+
+        fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+
+        font = self._ensure_small_font()
+        hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+        header = "   Incredible!" if hardcore else "Congratulations!"
+        body_lines = (
+            [
+                "You've done the thing we all thought was",
+                "virtually impossible. To reward your",
+                "efforts a new weapon has been unlocked ",
+                "for you: Splitter Gun.",
+                "",
+                "",
+            ]
+            if hardcore
+            else [
+                "You've completed all the levels but the battle",
+                "isn't over yet! With all of the unlocked perks",
+                "and weapons your Survival is just a bit easier.",
+                "You can also replay the quests in Hardcore.",
+                "As an additional reward for your victorious",
+                "playing, a completely new and different game",
+                "mode is unlocked for you: Typ'o'Shooter.",
+            ]
+        )
+
+        header_x = panel_left + END_NOTE_HEADER_X_OFFSET * scale
+        header_y = panel_top + END_NOTE_HEADER_Y_OFFSET * scale
+        header_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        body_color = rl.Color(255, 255, 255, int(255 * 0.5))
+
+        draw_small_text(font, header, header_x, header_y, 1.5 * scale, header_color)
+
+        body_x = panel_left + END_NOTE_BODY_X_OFFSET * scale
+        body_y = header_y + END_NOTE_BODY_Y_GAP * scale
+        for idx, line in enumerate(body_lines):
+            draw_small_text(font, line, body_x, body_y, 1.0 * scale, body_color)
+            if idx != len(body_lines) - 1:
+                body_y += END_NOTE_LINE_STEP_Y * scale
+        body_y += END_NOTE_AFTER_BODY_Y_GAP * scale
+        draw_small_text(font, "Good luck with your battles, trooper!", body_x, body_y, 1.0 * scale, body_color)
+
+        textures = self._button_textures
+        if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
+            button_x = panel_left + END_NOTE_BUTTON_X_OFFSET * scale
+            button_y = panel_top + END_NOTE_BUTTON_Y_OFFSET * scale
+            survival_w = button_width(font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide)
+            button_draw(textures, font, self._survival_button, x=button_x, y=button_y, width=survival_w, scale=scale)
+            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+            button_draw(textures, font, self._rush_button, x=button_x, y=button_y, width=rush_w, scale=scale)
+            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+            button_draw(textures, font, self._typo_button, x=button_x, y=button_y, width=typo_w, scale=scale)
+            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            main_w = button_width(font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
+            button_draw(textures, font, self._main_menu_button, x=button_x, y=button_y, width=main_w, scale=scale)
+
+        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+    def _ensure_small_font(self) -> SmallFontData:
+        if self._small_font is not None:
+            return self._small_font
+        missing_assets: list[str] = []
+        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        return self._small_font
 
 
 class QuestFailedView:
@@ -1944,6 +2187,7 @@ class GameLoopView:
             "start_quest": QuestGameView(state),
             "quest_results": QuestResultsView(state),
             "quest_failed": QuestFailedView(state),
+            "end_note": EndNoteView(state),
             "open_high_scores": HighScoresView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": RushGameView(state),
@@ -2474,6 +2718,8 @@ def _resolve_assets_dir(config: GameConfig) -> Path:
 
 
 def run_game(config: GameConfig) -> None:
+    if config.debug:
+        set_debug_enabled(True)
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
     crash_path = base_dir / "crash.log"
