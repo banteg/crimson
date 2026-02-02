@@ -1699,7 +1699,6 @@ class HighScoresView:
                 self._action = "back_to_previous"
                 return
 
-        font = self._ensure_small_font()
         rows = 10
         max_scroll = max(0, len(self._records) - rows)
 
