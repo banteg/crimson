@@ -57,6 +57,13 @@ UI render trace (menus/panels/widgets, JSONL to `ui_render_trace.jsonl`):
 frida -n crimsonland.exe -l C:\share\frida\ui_render_trace.js
 ```
 
+The UI render trace auto-inserts `auto_mark` events when it detects a screen/panel change.
+You can disable or tune it via:
+
+- `CRIMSON_UI_TRACE_AUTOMARK=0`
+- `CRIMSON_UI_TRACE_AUTOMARK_MS=250`
+- `CRIMSON_UI_TRACE_AUTOMARK_TEXTS=8`
+
 Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
 
 ```text

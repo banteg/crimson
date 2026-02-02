@@ -65,6 +65,10 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function nowMs() {
+  return Date.now();
+}
+
 function resolveAbi() {
   if (Process.platform !== 'windows') return null;
   if (Process.arch === 'x64') return 'win64';
@@ -179,6 +183,10 @@ const CONFIG = {
   maxEvents: envInt('CRIMSON_UI_TRACE_MAX_EVENTS', 0),
   includeBacktrace: envBool('CRIMSON_UI_TRACE_BACKTRACE', false),
   includeVerts: envBool('CRIMSON_UI_TRACE_VERTS', true),
+
+  autoMark: envBool('CRIMSON_UI_TRACE_AUTOMARK', true),
+  autoMarkIntervalMs: envInt('CRIMSON_UI_TRACE_AUTOMARK_MS', 250),
+  autoMarkTextLimit: envInt('CRIMSON_UI_TRACE_AUTOMARK_TEXTS', 8),
 
   exeName: getEnv('CRIMSON_FRIDA_MODULE') || 'crimsonland.exe',
   grimName: 'grim.dll',
@@ -312,6 +320,27 @@ globalThis.mark = function mark(label) {
   writeLog({ event: 'mark', label: String(label), state: exeMod ? readExeState(exeMod) : null });
 };
 
+function fnv1a32(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    // h *= 16777619 (FNV prime), modulo 2^32
+    h = (h + (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24)) >>> 0;
+  }
+  return ('00000000' + h.toString(16)).slice(-8);
+}
+
+function sanitizeText(s) {
+  if (!s) return null;
+  // Normalize for stable screen fingerprints (ignore variable numbers).
+  let out = String(s);
+  out = out.replace(/\s+/g, ' ').trim();
+  out = out.replace(/[0-9]+/g, '#');
+  if (!out) return null;
+  if (out.length > 120) out = out.slice(0, 120);
+  return out;
+}
+
 // --- Address helpers ---
 function exePtr(exeModule, staticVa) {
   if (!exeModule) return null;
@@ -369,6 +398,29 @@ function getUiElementIndex(elementPtr) {
   return null;
 }
 
+function collectUiActiveSignature(exeModule) {
+  const base = exeRvaPtr(exeModule, EXE_DATA_RVA.ui_element_table_end);
+  if (!base) return [];
+
+  const out = [];
+  for (let i = 0; i < EXE_DATA_RVA.ui_element_table_count; i++) {
+    const p = safeReadPtr(base.add(i * Process.pointerSize));
+    if (!p || p.isNull()) continue;
+    const active = safeReadU8(p.add(0x00));
+    if (!active) continue;
+    out.push({
+      index: i,
+      ptr: p.toString(),
+      tex: safeReadS32(p.add(0x11c)),
+      overlay_tex: safeReadS32(p.add(0x204)),
+      quad_mode: safeReadS32(p.add(0x120)),
+      on_activate: (safeReadPtr(p.add(0x34)) || ptr('0')).toString(),
+      custom_render: (safeReadPtr(p.add(0x38)) || ptr('0')).toString(),
+    });
+  }
+  return out;
+}
+
 // --- Runtime state snapshot helpers ---
 function readExeState(exeModule) {
   const out = {};
@@ -411,6 +463,8 @@ function getCtx(tid) {
       scope_stack: [],
       element_ptr: null,
       element_index: null,
+      frame_texts: [],
+      frame_text_set: {},
       draw: {
         texture0: null,
         uv: null,
@@ -605,6 +659,51 @@ function attachOnce() {
 
   refreshUiTable(exeMod);
 
+  let lastAutoMarkKey = null;
+  let lastAutoMarkAtMs = 0;
+  let lastAutoResKey = null;
+
+  function maybeAutoMark(ctx) {
+    if (!CONFIG.autoMark) return;
+    const t = nowMs();
+    if (t - lastAutoMarkAtMs < CONFIG.autoMarkIntervalMs) return;
+    lastAutoMarkAtMs = t;
+
+    const state = readExeState(exeMod);
+    if (!state || !state.res || !state.game) return;
+
+    const resKey = `${state.res.w}x${state.res.h}:${state.res.windowed ? 'win' : 'fs'}`;
+    if (lastAutoResKey && resKey !== lastAutoResKey) {
+      writeLog({ event: 'auto_mark', kind: 'resolution_change', from: lastAutoResKey, to: resKey, state: state });
+    }
+    lastAutoResKey = resKey;
+
+    const active = collectUiActiveSignature(exeMod);
+    const texts = (ctx && ctx.frame_texts) ? ctx.frame_texts.slice(0, CONFIG.autoMarkTextLimit) : [];
+
+    const fingerprintObj = {
+      res: resKey,
+      state_id: state.game.state_id,
+      active: active,
+      texts: texts,
+    };
+    const key = fnv1a32(JSON.stringify(fingerprintObj));
+    if (key === lastAutoMarkKey) return;
+    lastAutoMarkKey = key;
+
+    const title = texts.length > 0 ? texts[0] : null;
+    const label = title ? `state_${state.game.state_id}:${title}` : `state_${state.game.state_id}`;
+    writeLog({
+      event: 'auto_mark',
+      kind: 'screen',
+      key: key,
+      label: label,
+      state: state,
+      active: active,
+      texts: texts,
+    });
+  }
+
   writeLog({
     event: 'init',
     frida: { version: Frida.version, runtime: Script.runtime },
@@ -623,6 +722,8 @@ function attachOnce() {
       if (ctx.ui_depth === 1) {
         UI_FRAME += 1;
         ctx.ui_frame = UI_FRAME;
+        ctx.frame_texts = [];
+        ctx.frame_text_set = {};
         writeLog({ event: 'ui_frame_begin', tid: this.threadId, ui_frame: ctx.ui_frame, state: readExeState(exeMod) });
       }
       pushScope(ctx, { kind: 'ui_elements', ui_frame: ctx.ui_frame });
@@ -633,6 +734,7 @@ function attachOnce() {
       if (ctx.ui_depth > 0) ctx.ui_depth -= 1;
       if (ctx.ui_depth === 0) {
         writeLog({ event: 'ui_frame_end', tid: this.threadId, ui_frame: ctx.ui_frame });
+        maybeAutoMark(ctx);
       }
     },
   });
@@ -1029,12 +1131,18 @@ function attachOnce() {
       onEnter() {
         const ctx = getCtx(this.threadId);
         if (!inUiScope(ctx)) return;
+        const rawText = safeReadCString(readStackPtr(this, 12), 512);
+        const s = sanitizeText(rawText);
+        if (s && ctx.frame_texts.length < CONFIG.autoMarkTextLimit && !ctx.frame_text_set[s]) {
+          ctx.frame_text_set[s] = 1;
+          ctx.frame_texts.push(s);
+        }
         logDrawCall(this, {
           event: 'grim_draw_text',
           font: 'mono',
           x: readStackF32(this, 4),
           y: readStackF32(this, 8),
-          text: safeReadCString(readStackPtr(this, 12), 512),
+          text: rawText,
         });
       },
     });
@@ -1045,12 +1153,18 @@ function attachOnce() {
       onEnter() {
         const ctx = getCtx(this.threadId);
         if (!inUiScope(ctx)) return;
+        const rawText = safeReadCString(readStackPtr(this, 12), 512);
+        const s = sanitizeText(rawText);
+        if (s && ctx.frame_texts.length < CONFIG.autoMarkTextLimit && !ctx.frame_text_set[s]) {
+          ctx.frame_text_set[s] = 1;
+          ctx.frame_texts.push(s);
+        }
         logDrawCall(this, {
           event: 'grim_draw_text',
           font: 'small',
           x: readStackF32(this, 4),
           y: readStackF32(this, 8),
-          text: safeReadCString(readStackPtr(this, 12), 512),
+          text: rawText,
         });
       },
     });
