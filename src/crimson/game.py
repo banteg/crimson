@@ -80,7 +80,8 @@ from .frontend.pause_menu import PauseMenuView
 from .frontend.transitions import _draw_screen_fade, _update_screen_fade
 from .persistence.save_status import GameStatus, ensure_game_status
 from .ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayUi
-from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width, draw_menu_panel
+from .ui.menu_panel import draw_classic_menu_panel
+from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .paths import default_runtime_dir
 from .assets_fetch import download_missing_paqs
 
@@ -144,6 +145,7 @@ AUTOEXEC_NAME = "autoexec.txt"
 
 QUEST_MENU_BASE_X = -5.0
 QUEST_MENU_BASE_Y = 185.0
+QUEST_MENU_PANEL_OFFSET_X = -63.0
 
 QUEST_TITLE_X_OFFSET = 219.0  # 300 + 64 - 145
 QUEST_TITLE_Y_OFFSET = 44.0  # 40 + 4
@@ -171,7 +173,7 @@ QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
 
 QUEST_BACK_BUTTON_X_OFFSET = 138.0
 QUEST_BACK_BUTTON_Y_OFFSET = 212.0
-QUEST_PANEL_HEIGHT = 379.0
+QUEST_PANEL_HEIGHT = 378.0
 
 
 class QuestsMenuView:
@@ -719,10 +721,10 @@ class QuestsMenuView:
         if panel is None:
             return
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
-        draw_menu_panel(
+        draw_classic_menu_panel(
             panel,
             dst=rl.Rectangle(
-                float(QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X),
+                float(QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X),
                 float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),
                 float(MENU_PANEL_WIDTH),
                 float(QUEST_PANEL_HEIGHT),
