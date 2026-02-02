@@ -1,8 +1,8 @@
 # Rewrite status (Python + raylib)
 
 This page is the current snapshot of the **Python + raylib rewrite** under `src/`,
-and the **gaps vs the classic Windows build (v1.9.93)** as documented under
-`docs/crimsonland-exe/`.
+and the biggest **parity gaps vs the classic Windows build (v1.9.93)** as documented
+under `docs/crimsonland-exe/`.
 
 ## What you can run today
 
@@ -10,10 +10,9 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
   - Full boot flow (splash + company logos) → main menu.
   - Play Game / Options / Statistics panels.
   - Survival / Rush / Quests / Typ-o-Shooter / Tutorial gameplay loops are all wired and playable.
-  - Multiplayer (2–4): player count spawns multiple players, but all players currently share the same input (mirrored controls).
+  - Multiplayer (2–4): Survival/Rush/Quests can spawn multiple players, but all players currently share the same input (mirrored controls).
   - Game over → high score entry for Survival/Rush/Typ-o; Quest completion/failure routes to results/failed screens.
-- Quest results/failed screens (states 8 and 0xc) are fully implemented.
-  - Menu idle triggers demo/attract mode.
+- Menu idle triggers demo/attract mode.
 - `uv run crimson view <name>`: debug views (terrain, atlases, survival, player sandbox, etc).
 - `uv run crimson quests <level>`: quest builder output / spawn scripts.
 
@@ -88,7 +87,7 @@ and the **gaps vs the classic Windows build (v1.9.93)** as documented under
 - There is broad unit test coverage for deterministic subsystems (spawn plans, timelines, perks, config, etc):
   - Tests: `tests/test_spawn_plan.py`, `tests/test_survival_wave.py`, `tests/test_quest_spawn_timeline.py`, …
 
-## Biggest remaining gaps (vs v1.9.93)
+## Biggest remaining parity gaps (vs v1.9.93)
 
 1) **Creature + weapon coverage**
    - Remaining per-weapon behaviors and AI edge cases.

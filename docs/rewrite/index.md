@@ -27,11 +27,11 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
 - Play Game panel (mode select + player count dropdown + tooltips + F1 “times played” overlay).
 - Quest select menu UI (stage icons + hardcore toggle gating + quest list + counts overlay; quest gameplay wired).
-- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen pending).
+- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls screen is currently read-only).
 - Statistics panel (Summary/Weapons/Quests pages; playtime + weapon usage + quest counters).
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu sign shadow pass matches the original when `fx_detail` is enabled.
-- Demo/attract mode: idle trigger + variant sequencing; upsell overlay + purchase screen flow in demo builds (trial overlay pending).
+- Demo/attract mode: idle trigger + variant sequencing; upsell overlay + trial overlay + purchase screen flow in demo builds.
 
 ### Assets + rendering
 
@@ -123,10 +123,8 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Some gameplay SFX/events are still missing (perk UI selection sound, ranged enemy fire SFX).
-- Survival currently uses a fixed seed by default (good for repro, bad for variety).
-- Multiplayer (2-4 players): Play Game panel exposes player count, but gameplay modes currently hardcode `player_count=1`.
+- Multiplayer (2-4 players): multiple players spawn, but inputs are currently mirrored (shared controls).
 - `game.cfg` progression/unlock wiring and some statistics counters are still incomplete.
-- Demo trial overlay (time limit UI) is not implemented.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Online scores + mods/plugin interface (tracked but not yet implemented).
 
