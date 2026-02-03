@@ -5,7 +5,7 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
-from .creatures.spawn import CreatureFlags, CreatureInfectionFlags
+from .creatures.spawn import CreatureFlags
 from .perks import PerkId
 from .weapons import weapon_entry_for_projectile_type_id
 
@@ -816,8 +816,8 @@ class ProjectilePool:
                     elif type_id == ProjectileTypeId.PULSE_GUN:
                         creature.x += move_dx * 3.0
                         creature.y += move_dy * 3.0
-                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "collision_flag"):
-                        setattr(creature, "collision_flag", CreatureInfectionFlags.INFECTED)
+                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "plague_infected"):
+                        setattr(creature, "plague_infected", True)
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95

@@ -10,7 +10,6 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
-from ..creatures.spawn import CreatureInfectionFlags
 from ..effects_atlas import effect_src_rect
 from ..gameplay import GameplayState, PlayerState, bonus_apply
 from ..projectiles import ProjectileTypeId
@@ -35,7 +34,7 @@ class DummyCreature:
     y: float
     hp: float
     size: float = 42.0
-    collision_flag: CreatureInfectionFlags = CreatureInfectionFlags(0)
+    plague_infected: bool = False
 
 
 @dataclass(slots=True)
@@ -494,7 +493,7 @@ class ProjectileFxView:
             cx, cy = self._camera_world_to_screen(creature.x, creature.y)
             color = (
                 rl.Color(220, 90, 90, 255)
-                if creature.collision_flag == CreatureInfectionFlags(0)
+                if not creature.plague_infected
                 else rl.Color(240, 180, 90, 255)
             )
             rl.draw_circle(int(cx), int(cy), float(creature.size * 0.5), color)

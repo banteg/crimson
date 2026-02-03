@@ -25,7 +25,6 @@ from grim.rand import Crand
 __all__ = [
     "BurstEffect",
     "CreatureFlags",
-    "CreatureInfectionFlags",
     "CreatureInit",
     "CreatureTypeId",
     "SpawnId",
@@ -76,15 +75,6 @@ class CreatureFlags(IntFlag):
     AI7_LINK_TIMER = 0x80  # uses link index as timer for AI mode 7
     RANGED_ATTACK_VARIANT = 0x100  # ranged attack using orbit_radius as projectile type
     BONUS_ON_DEATH = 0x400  # spawns bonus on death
-
-
-class CreatureInfectionFlags(IntFlag):
-    """Low-byte creature infection flags.
-
-    This corresponds to the native `collision_flag` byte in `creature_t`.
-    """
-
-    INFECTED = 0x01
 
 
 class SpawnId(IntEnum):
