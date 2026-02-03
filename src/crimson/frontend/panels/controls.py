@@ -12,9 +12,7 @@ from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
     MenuView,
-    _draw_menu_cursor,
 )
-from ..transitions import _draw_screen_fade
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from ...input_codes import config_keybinds, input_code_name, player_move_fire_binds
@@ -60,19 +58,6 @@ class ControlsMenuView(PanelMenuView):
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-
-    def draw(self) -> None:
-        self._draw_background()
-        _draw_screen_fade(self._state)
-        assets = self._assets
-        entry = self._entry
-        if assets is None or entry is None:
-            return
-        self._draw_panel()
-        self._draw_entry(entry)
-        self._draw_sign()
-        self._draw_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:

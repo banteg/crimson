@@ -12,9 +12,7 @@ from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MenuView,
-    _draw_menu_cursor,
 )
-from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 if TYPE_CHECKING:
@@ -30,19 +28,6 @@ class ModsMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         self._lines = self._build_lines()
-
-    def draw(self) -> None:
-        self._draw_background()
-        _draw_screen_fade(self._state)
-        assets = self._assets
-        entry = self._entry
-        if assets is None or entry is None:
-            return
-        self._draw_panel()
-        self._draw_entry(entry)
-        self._draw_sign()
-        self._draw_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
