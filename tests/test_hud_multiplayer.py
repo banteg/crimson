@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import PlayerState
-from crimson.ui.hud import HudAssets, draw_hud_overlay
+from crimson.ui.hud import HudAssets, HudState, draw_hud_overlay
 
 
 class _TextureStub:
@@ -58,6 +58,7 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(monkeypatch) -> Non
 
     draw_hud_overlay(
         assets,
+        state=HudState(),
         player=player0,
         players=[player0, player1],
         bonus_hud=None,

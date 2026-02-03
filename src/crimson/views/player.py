@@ -20,7 +20,7 @@ from ..gameplay import (
     weapon_assign_player,
 )
 from ..perks import PerkId
-from ..ui.hud import HudAssets, draw_hud_overlay, hud_ui_scale, load_hud_assets
+from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_ui_scale, load_hud_assets
 from ..weapons import WEAPON_TABLE
 from ._ui_helpers import draw_ui_text, ui_line_height
 
@@ -60,6 +60,7 @@ class PlayerSandboxView:
 
         self._hud_assets: HudAssets | None = None
         self._hud_missing: list[str] = []
+        self._hud_state = HudState()
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
 
@@ -118,6 +119,7 @@ class PlayerSandboxView:
         self._hud_assets = load_hud_assets(self._assets_root)
         if self._hud_assets.missing:
             self._hud_missing = list(self._hud_assets.missing)
+        self._hud_state = HudState()
 
         self._state.rng.srand(0xBEEF)
         self._creatures.clear()
@@ -329,6 +331,7 @@ class PlayerSandboxView:
         if self._hud_assets is not None:
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=self._elapsed_ms,

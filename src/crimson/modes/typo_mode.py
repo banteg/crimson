@@ -416,6 +416,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_target_health_bar()
             draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
                 bonus_hud=self._state.bonus_hud,

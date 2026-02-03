@@ -19,7 +19,7 @@ from ..game_world import GameWorld
 from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId
 from ..ui.game_over import GameOverUi
-from ..ui.hud import HudAssets, draw_target_health_bar, load_hud_assets
+from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
@@ -50,6 +50,7 @@ class BaseGameplayMode:
         self._hud_missing: list[str] = []
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
+        self._hud_state = HudState()
 
         self._default_game_mode_id = int(default_game_mode_id)
         self._config = config
@@ -241,6 +242,7 @@ class BaseGameplayMode:
         self._hud_assets = load_hud_assets(self._assets_root)
         if self._hud_assets.missing:
             self._hud_missing = list(self._hud_assets.missing)
+        self._hud_state = HudState()
 
         self._game_over_active = False
         self._game_over_record = None

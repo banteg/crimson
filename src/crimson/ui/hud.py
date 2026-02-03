@@ -56,8 +56,6 @@ HUD_BONUS_PANEL_OFFSET_Y = -11.0
 HUD_XP_BAR_RGBA = (0.1, 0.3, 0.6, 1.0)
 HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
-_SURVIVAL_XP_SMOOTHED = 0
-
 
 @dataclass(slots=True)
 class HudAssets:
@@ -83,6 +81,46 @@ class HudRenderFlags:
     show_xp: bool
     show_time: bool
     show_quest_hud: bool
+
+
+@dataclass(slots=True)
+class HudState:
+    survival_xp_smoothed: int = 0
+
+    def smooth_xp(self, target: int, frame_dt_ms: float) -> int:
+        target = int(target)
+        if target <= 0:
+            self.survival_xp_smoothed = 0
+            return 0
+
+        smoothed = int(self.survival_xp_smoothed)
+        if smoothed == target:
+            return smoothed
+
+        step = max(1, int(frame_dt_ms) // 2)
+        diff = abs(smoothed - target)
+        if diff > 1000:
+            step *= diff // 100
+
+        if smoothed < target:
+            smoothed += step
+            if smoothed > target:
+                smoothed = target
+        else:
+            smoothed -= step
+            if smoothed < target:
+                smoothed = target
+
+        self.survival_xp_smoothed = smoothed
+        return smoothed
+
+
+@dataclass(frozen=True, slots=True)
+class HudLayout:
+    scale: float
+    text_scale: float
+    line_h: float
+    hud_y_shift: float
 
 
 def hud_flags_for_game_mode(game_mode_id: int) -> HudRenderFlags:
@@ -139,6 +177,14 @@ def hud_ui_scale(screen_w: float, screen_h: float) -> float:
     return float(scale)
 
 
+def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontData | None, show_quest_hud: bool) -> HudLayout:
+    scale = hud_ui_scale(float(screen_w), float(screen_h))
+    text_scale = 1.0 * scale
+    line_h = float(font.cell_size) * text_scale if font is not None else 18.0 * text_scale
+    hud_y_shift = HUD_QUEST_LEFT_Y_SHIFT if show_quest_hud else 0.0
+    return HudLayout(scale=scale, text_scale=text_scale, line_h=line_h, hud_y_shift=hud_y_shift)
+
+
 def load_hud_assets(assets_root: Path) -> HudAssets:
     loader = TextureLoader.from_assets_root(assets_root)
     return HudAssets(
@@ -178,29 +224,20 @@ def _with_alpha(color: rl.Color, alpha: float) -> rl.Color:
     return rl.Color(color.r, color.g, color.b, int(color.a * alpha))
 
 
-def _smooth_xp(target: int, frame_dt_ms: float) -> int:
-    global _SURVIVAL_XP_SMOOTHED
-    target = int(target)
-    if target <= 0:
-        _SURVIVAL_XP_SMOOTHED = 0
-        return 0
-    smoothed = int(_SURVIVAL_XP_SMOOTHED)
-    if smoothed == target:
-        return smoothed
-    step = max(1, int(frame_dt_ms) // 2)
-    diff = abs(smoothed - target)
-    if diff > 1000:
-        step *= diff // 100
-    if smoothed < target:
-        smoothed += step
-        if smoothed > target:
-            smoothed = target
-    else:
-        smoothed -= step
-        if smoothed < target:
-            smoothed = target
-    _SURVIVAL_XP_SMOOTHED = smoothed
-    return smoothed
+def _quest_panel_slide_x(time_ms: float) -> float:
+    time_ms = float(time_ms)
+    if time_ms < 1000.0:
+        return (1000.0 - time_ms) * -0.128
+    return 0.0
+
+
+def _survival_xp_progress_ratio(*, xp: int, level: int) -> float:
+    level = max(1, int(level))
+    prev_threshold = 0 if level <= 1 else survival_level_threshold(level - 1)
+    next_threshold = survival_level_threshold(level)
+    if next_threshold <= prev_threshold:
+        return 0.0
+    return (int(xp) - prev_threshold) / float(next_threshold - prev_threshold)
 
 
 def _draw_progress_bar(x: float, y: float, width: float, ratio: float, rgba: tuple[float, float, float, float], scale: float) -> None:
@@ -275,6 +312,7 @@ def _bonus_icon_src(texture: rl.Texture, icon_id: int) -> rl.Rectangle:
 def draw_hud_overlay(
     assets: HudAssets,
     *,
+    state: HudState,
     player: PlayerState,
     players: list[PlayerState] | None = None,
     bonus_hud: BonusHudState | None = None,
@@ -293,6 +331,7 @@ def draw_hud_overlay(
 ) -> float:
     if frame_dt_ms is None:
         frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
+    state = state or HudState()
     hud_players = list(players) if players is not None else [player]
     if not hud_players:
         hud_players = [player]
@@ -300,9 +339,10 @@ def draw_hud_overlay(
 
     screen_w = float(rl.get_screen_width())
     screen_h = float(rl.get_screen_height())
-    scale = hud_ui_scale(screen_w, screen_h)
-    text_scale = 1.0 * scale
-    line_h = float(font.cell_size) * text_scale if font is not None else 18.0 * text_scale
+    layout = hud_layout(screen_w, screen_h, font=font, show_quest_hud=show_quest_hud)
+    scale = layout.scale
+    text_scale = layout.text_scale
+    line_h = layout.line_h
 
     def sx(value: float) -> float:
         return value * scale
@@ -314,7 +354,7 @@ def draw_hud_overlay(
     alpha = max(0.0, min(1.0, float(alpha)))
     text_color = _with_alpha(HUD_TEXT_COLOR, alpha)
     panel_text_color = _with_alpha(HUD_TEXT_COLOR, alpha * HUD_PANEL_ALPHA)
-    hud_y_shift = HUD_QUEST_LEFT_Y_SHIFT if show_quest_hud else 0.0
+    hud_y_shift = layout.hud_y_shift
 
     # Top bar background.
     if assets.game_top is not None:
@@ -502,9 +542,7 @@ def draw_hud_overlay(
     # Quest HUD panels (mm:ss timer + progress).
     if show_quest_hud:
         time_ms = max(0.0, float(elapsed_ms))
-        slide_x = 0.0
-        if time_ms < 1000.0:
-            slide_x = (1000.0 - time_ms) * -0.128
+        slide_x = _quest_panel_slide_x(time_ms)
 
         quest_panel_alpha = alpha * 0.7
         quest_text_color = _with_alpha(HUD_TEXT_COLOR, quest_panel_alpha)
@@ -580,7 +618,7 @@ def draw_hud_overlay(
 
     # Survival XP panel.
     xp_target = int(player.experience if score is None else score)
-    xp_display = _smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
+    xp_display = state.smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
     if show_xp and assets.ind_panel is not None:
         panel_x, panel_y = HUD_SURV_PANEL_POS
         panel_y += hud_y_shift
@@ -623,12 +661,7 @@ def draw_hud_overlay(
             panel_text_color,
         )
 
-        level = max(1, int(player.level))
-        prev_threshold = 0 if level <= 1 else survival_level_threshold(level - 1)
-        next_threshold = survival_level_threshold(level)
-        progress_ratio = 0.0
-        if next_threshold > prev_threshold:
-            progress_ratio = (xp_target - prev_threshold) / float(next_threshold - prev_threshold)
+        progress_ratio = _survival_xp_progress_ratio(xp=xp_target, level=int(player.level))
         bar_x, bar_y = HUD_SURV_PROGRESS_POS
         bar_y += hud_y_shift
         bar_w = HUD_SURV_PROGRESS_WIDTH
