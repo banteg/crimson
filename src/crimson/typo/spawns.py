@@ -3,16 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from grim.math import clamp
+
 from ..creatures.spawn import CreatureTypeId
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
 
 @dataclass(frozen=True, slots=True)
 class TypoSpawnCall:
@@ -47,9 +40,9 @@ def tick_typo_spawns(
         y = math.cos(t) * 256.0 + float(world_height) * 0.5
 
         tint_t = float(elapsed_ms + 1)
-        tint_r = _clamp(tint_t * 0.0000083333334 + 0.3, 0.0, 1.0)
-        tint_g = _clamp(tint_t * 10000.0 + 0.3, 0.0, 1.0)
-        tint_b = _clamp(math.sin(tint_t * 0.0001) + 0.3, 0.0, 1.0)
+        tint_r = clamp(tint_t * 0.0000083333334 + 0.3, 0.0, 1.0)
+        tint_g = clamp(tint_t * 10000.0 + 0.3, 0.0, 1.0)
+        tint_b = clamp(math.sin(tint_t * 0.0001) + 0.3, 0.0, 1.0)
         tint = (tint_r, tint_g, tint_b, 1.0)
 
         spawns.append(

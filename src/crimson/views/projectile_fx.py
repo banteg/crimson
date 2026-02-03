@@ -7,6 +7,7 @@ import pyray as rl
 
 from .registry import register_view
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -79,14 +80,6 @@ _BEAM_TYPES = frozenset(
         ProjectileTypeId.SPLITTER_GUN,
     }
 )
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _lerp(a: float, b: float, t: float) -> float:
@@ -180,7 +173,7 @@ class ProjectileFxView:
         if desired_y < min_y:
             desired_y = min_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
+        t = clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
         self._camera_y = _lerp(self._camera_y, desired_y, t)
 
@@ -319,8 +312,8 @@ class ProjectileFxView:
         angle = _angle_to_target(self._origin_x, self._origin_y, aim_x, aim_y)
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-            self._origin_x = _clamp(aim_x, 0.0, WORLD_SIZE)
-            self._origin_y = _clamp(aim_y, 0.0, WORLD_SIZE)
+            self._origin_x = clamp(aim_x, 0.0, WORLD_SIZE)
+            self._origin_y = clamp(aim_y, 0.0, WORLD_SIZE)
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._spawn_projectile(type_id=self._selected_type_id(), angle=angle, owner_id=-1)
@@ -467,7 +460,7 @@ class ProjectileFxView:
                     )
                 return
 
-        alpha = int(_clamp(life / 0.4, 0.0, 1.0) * 255)
+        alpha = int(clamp(life / 0.4, 0.0, 1.0) * 255)
         tint = rl.Color(color.r, color.g, color.b, alpha)
         self._draw_atlas_sprite(texture, grid=grid, frame=frame, x=sx, y=sy, scale=0.6, rotation_rad=angle, tint=tint)
 
@@ -521,7 +514,7 @@ class ProjectileFxView:
 
         # Beam flashes from hit events.
         for beam in self._beams:
-            t = _clamp(beam.life / 0.08, 0.0, 1.0)
+            t = clamp(beam.life / 0.08, 0.0, 1.0)
             alpha = int(200 * t)
             x0s, y0s = self._camera_world_to_screen(beam.x0, beam.y0)
             x1s, y1s = self._camera_world_to_screen(beam.x1, beam.y1)
@@ -543,10 +536,10 @@ class ProjectileFxView:
                 if src is None:
                     continue
                 life = max(0.0, fx.life)
-                alpha = int(_clamp(life / 0.35, 0.0, 1.0) * 220)
+                alpha = int(clamp(life / 0.35, 0.0, 1.0) * 220)
                 tint = rl.Color(255, 255, 255, alpha)
                 sx, sy = self._camera_world_to_screen(fx.x, fx.y)
-                dst_scale = fx.scale * (1.0 + (0.7 - _clamp(life, 0.0, 0.7)) * 0.6)
+                dst_scale = fx.scale * (1.0 + (0.7 - clamp(life, 0.0, 0.7)) * 0.6)
                 dst = rl.Rectangle(float(sx), float(sy), src[2] * dst_scale, src[3] * dst_scale)
                 origin = rl.Vector2(dst.width * 0.5, dst.height * 0.5)
                 rl.draw_texture_pro(

@@ -12,6 +12,7 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.math import clamp, distance_sq
 
 from grim.rand import Crand
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
@@ -64,20 +65,6 @@ def _weapon_name(weapon_id: int) -> str:
         if weapon.weapon_id == weapon_id:
             return weapon.name or f"weapon_{weapon_id}"
     return f"weapon_{weapon_id}"
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
-def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
-    dx = x1 - x0
-    dy = y1 - y0
-    return dx * dx + dy * dy
 
 
 def _normalize(dx: float, dy: float) -> tuple[float, float, float]:
@@ -336,7 +323,7 @@ class DemoView:
         #   - per-corner color slots, with a sin^2 pulse at bottom-right
 
         def _to_u8(value: float) -> int:
-            return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
+            return int(clamp(value, 0.0, 1.0) * 255.0 + 0.5)
 
         c0 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.0), _to_u8(1.0))
         c1 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.3), _to_u8(1.0))
@@ -712,7 +699,7 @@ class DemoView:
                 rl.draw_circle(int(sx), int(sy), radius, rl.Color(200, 120, 255, 255))
                 continue
             if proj.type_id == 3:
-                t = _clamp(proj.vel_x, 0.0, 1.0)
+                t = clamp(proj.vel_x, 0.0, 1.0)
                 radius = proj.vel_y * t * 80.0
                 alpha = int((1.0 - t) * 180.0)
                 color = rl.Color(200, 120, 255, alpha)
@@ -721,15 +708,15 @@ class DemoView:
         for beam in self._beams:
             x0, y0 = self._world_to_screen(beam.x0, beam.y0)
             x1, y1 = self._world_to_screen(beam.x1, beam.y1)
-            alpha = int(_clamp(beam.life / 0.08, 0.0, 1.0) * 255.0)
+            alpha = int(clamp(beam.life / 0.08, 0.0, 1.0) * 255.0)
             color = rl.Color(120, 220, 255, alpha)
             rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0 * scale, color)
 
         for fx in self._explosions:
             t = fx.elapsed / fx.duration if fx.duration > 0 else 1.0
-            radius = fx.max_radius * _clamp(t, 0.0, 1.0)
+            radius = fx.max_radius * clamp(t, 0.0, 1.0)
             sx, sy = self._world_to_screen(fx.x, fx.y)
-            alpha = int((1.0 - _clamp(t, 0.0, 1.0)) * 180.0)
+            alpha = int((1.0 - clamp(t, 0.0, 1.0)) * 180.0)
             color = rl.Color(255, 180, 100, alpha) if fx.kind == "rocket" else rl.Color(200, 120, 255, alpha)
             rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
 
@@ -771,7 +758,7 @@ class DemoView:
             flags = creature.flags
 
             def _to_u8(value: float) -> int:
-                return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
+                return int(clamp(value, 0.0, 1.0) * 255.0 + 0.5)
 
             tint = rl.WHITE
             if creature.tint is not None and any(v is not None for v in creature.tint):
@@ -792,7 +779,7 @@ class DemoView:
                 scale_x,
                 scale_y,
                 tint=tint,
-                size_scale=_clamp(creature.size / 64.0, 0.25, 2.0),
+                size_scale=clamp(creature.size / 64.0, 0.25, 2.0),
             )
 
     def _draw_sprite(
@@ -869,7 +856,7 @@ class DemoView:
             alpha = var_2c * 0.05
         if timeline_ms > limit_ms - 500:
             alpha = float(limit_ms - timeline_ms) * 0.002
-        alpha = _clamp(alpha, 0.0, 1.0)
+        alpha = clamp(alpha, 0.0, 1.0)
 
         scale = 0.8
         text_w = float(len(msg)) * 12.8
@@ -881,9 +868,9 @@ class DemoView:
         bar_x = 64.0
         bar_y = var_2c + 72.0
 
-        bg_alpha = int(round(_clamp(alpha * 0.5, 0.0, 1.0) * 255.0))
-        bar_alpha = int(round(_clamp(alpha * 0.8, 0.0, 1.0) * 255.0))
-        txt_alpha = int(round(_clamp(alpha, 0.0, 1.0) * 255.0))
+        bg_alpha = int(round(clamp(alpha * 0.5, 0.0, 1.0) * 255.0))
+        bar_alpha = int(round(clamp(alpha * 0.8, 0.0, 1.0) * 255.0))
+        txt_alpha = int(round(clamp(alpha, 0.0, 1.0) * 255.0))
 
         rl.draw_rectangle_rec(
             rl.Rectangle(bg_x, bg_y, text_w + 12.0, 30.0),
@@ -892,7 +879,7 @@ class DemoView:
 
         progress = 0.0
         if limit_ms > 0:
-            progress = _clamp(float(timeline_ms) / float(limit_ms), 0.0, 1.0)
+            progress = clamp(float(timeline_ms) / float(limit_ms), 0.0, 1.0)
         rl.draw_rectangle_rec(
             rl.Rectangle(bar_x, bar_y, text_w * progress, 3.0),
             rl.Color(128, 26, 26, bar_alpha),
@@ -1006,7 +993,7 @@ class DemoView:
         for idx, creature in enumerate(self._world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
-            d = _distance_sq(x, y, creature.x, creature.y)
+            d = distance_sq(x, y, creature.x, creature.y)
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
@@ -1050,7 +1037,7 @@ class DemoView:
         best_idx = None
         best_dist = 0.0
         for idx, player in enumerate(self._players):
-            d = _distance_sq(x, y, player.x, player.y)
+            d = distance_sq(x, y, player.x, player.y)
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
@@ -1062,7 +1049,7 @@ class DemoView:
         for idx, creature in enumerate(self._creatures):
             if creature.hp <= 0.0:
                 continue
-            d = _distance_sq(x, y, creature.x, creature.y)
+            d = distance_sq(x, y, creature.x, creature.y)
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
@@ -1142,8 +1129,8 @@ class DemoView:
             creature.vy = direction_y * dt * creature.move_scale * speed
 
             radius = max(0.0, creature.size)
-            creature.x = _clamp(creature.x + creature.vx, radius, WORLD_SIZE - radius)
-            creature.y = _clamp(creature.y + creature.vy, radius, WORLD_SIZE - radius)
+            creature.x = clamp(creature.x + creature.vx, radius, WORLD_SIZE - radius)
+            creature.y = clamp(creature.y + creature.vy, radius, WORLD_SIZE - radius)
 
     def _select_player_target(self, player: DemoPlayer) -> int | None:
         candidate = self._nearest_creature_index(player.x, player.y)
@@ -1224,8 +1211,8 @@ class DemoView:
             speed = 150.0
             player.vx = mnx * speed
             player.vy = mny * speed
-            player.x = _clamp(player.x + player.vx * dt, 0.0, WORLD_SIZE)
-            player.y = _clamp(player.y + player.vy * dt, 0.0, WORLD_SIZE)
+            player.x = clamp(player.x + player.vx * dt, 0.0, WORLD_SIZE)
+            player.y = clamp(player.y + player.vy * dt, 0.0, WORLD_SIZE)
 
             self._player_fire(player, target)
 
@@ -1373,12 +1360,12 @@ class DemoView:
 
     def _apply_explosion_damage(self, fx: DemoExplosion) -> None:
         t = fx.elapsed / fx.duration if fx.duration > 0 else 1.0
-        radius = fx.max_radius * _clamp(t, 0.0, 1.0)
+        radius = fx.max_radius * clamp(t, 0.0, 1.0)
         rsq = radius * radius
         for creature in self._creatures:
             if creature.hp <= 0.0:
                 continue
-            if _distance_sq(fx.x, fx.y, creature.x, creature.y) <= rsq:
+            if distance_sq(fx.x, fx.y, creature.x, creature.y) <= rsq:
                 creature.hp -= fx.damage_per_tick
 
     def _update_camera(self, dt: float) -> None:
@@ -1412,6 +1399,6 @@ class DemoView:
         if desired_y < min_y:
             desired_y = min_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
+        t = clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
         self._camera_y = _lerp(self._camera_y, desired_y, t)

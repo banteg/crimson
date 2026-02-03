@@ -6,6 +6,7 @@ import pyray as rl
 
 from .registry import register_view
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -36,14 +37,6 @@ class DummyCreature:
     y: float
     hp: float
     size: float = 32.0
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _lerp(a: float, b: float, t: float) -> float:
@@ -239,7 +232,7 @@ class PlayerSandboxView:
         if desired_y < min_y:
             desired_y = min_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
+        t = clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
         self._camera_y = _lerp(self._camera_y, desired_y, t)
 

@@ -11,6 +11,7 @@ from grim.audio import AudioState, update_audio
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..gameplay import _creature_find_in_radius, perk_count_get
@@ -22,14 +23,6 @@ from ..ui.hud import HudAssets, draw_target_health_bar, load_hud_assets
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 class _ScreenFade(Protocol):
@@ -208,8 +201,8 @@ class BaseGameplayMode:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = _clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
+        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
     def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
         dt_frame = float(dt)

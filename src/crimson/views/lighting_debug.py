@@ -11,6 +11,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureInit, CreatureTypeId
@@ -200,14 +201,6 @@ void main()
 """
 
 
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
 @dataclass
 class _EmissiveProjectile:
     x: float
@@ -308,9 +301,9 @@ class LightingDebugView:
         base = self._ambient_base
         m = max(0.0, float(self._ambient_mul))
         self._ambient = rl.Color(
-            int(_clamp(float(base.r) * m, 0.0, 255.0)),
-            int(_clamp(float(base.g) * m, 0.0, 255.0)),
-            int(_clamp(float(base.b) * m, 0.0, 255.0)),
+            int(clamp(float(base.r) * m, 0.0, 255.0)),
+            int(clamp(float(base.g) * m, 0.0, 255.0)),
+            int(clamp(float(base.b) * m, 0.0, 255.0)),
             255,
         )
 
@@ -336,8 +329,8 @@ class LightingDebugView:
             c = palette[i % len(palette)]
             if rng.random() < 0.5:
                 c = palette[int(rng.random() * len(palette)) % len(palette)]
-            x = _clamp(px + math.cos(angle) * radius, 0.0, WORLD_SIZE)
-            y = _clamp(py + math.sin(angle) * radius, 0.0, WORLD_SIZE)
+            x = clamp(px + math.cos(angle) * radius, 0.0, WORLD_SIZE)
+            y = clamp(py + math.sin(angle) * radius, 0.0, WORLD_SIZE)
             r = float(self._fly_light_range) * (0.8 + rng.random() * 0.5)
             sr = float(self._fly_light_source_radius) * (0.7 + rng.random() * 0.7)
             self._fly_lights.append(
@@ -370,8 +363,8 @@ class LightingDebugView:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = _clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
+        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -401,18 +394,18 @@ class LightingDebugView:
         occ_mul_step = 0.05 if not shift else 0.10
         occ_pad_step = 1.0 if not shift else 4.0
         if rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-            self._occluder_radius_mul = _clamp(self._occluder_radius_mul - occ_mul_step, 0.25, 2.50)
+            self._occluder_radius_mul = clamp(self._occluder_radius_mul - occ_mul_step, 0.25, 2.50)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
-            self._occluder_radius_mul = _clamp(self._occluder_radius_mul + occ_mul_step, 0.25, 2.50)
+            self._occluder_radius_mul = clamp(self._occluder_radius_mul + occ_mul_step, 0.25, 2.50)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_K):
-            self._occluder_radius_pad_px = _clamp(self._occluder_radius_pad_px - occ_pad_step, -20.0, 60.0)
+            self._occluder_radius_pad_px = clamp(self._occluder_radius_pad_px - occ_pad_step, -20.0, 60.0)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_L):
-            self._occluder_radius_pad_px = _clamp(self._occluder_radius_pad_px + occ_pad_step, -20.0, 60.0)
+            self._occluder_radius_pad_px = clamp(self._occluder_radius_pad_px + occ_pad_step, -20.0, 60.0)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_MINUS) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_SUBTRACT):
-            self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor - 0.05, 0.0, 0.9)
+            self._sdf_shadow_floor = clamp(self._sdf_shadow_floor - 0.05, 0.0, 0.9)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_EQUAL) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ADD):
-            self._sdf_shadow_floor = _clamp(self._sdf_shadow_floor + 0.05, 0.0, 0.9)
+            self._sdf_shadow_floor = clamp(self._sdf_shadow_floor + 0.05, 0.0, 0.9)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
             if shift:
@@ -435,10 +428,10 @@ class LightingDebugView:
 
         amb_step = 0.10 if not shift else 0.25
         if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
-            self._ambient_mul = _clamp(self._ambient_mul - amb_step, 0.0, 8.0)
+            self._ambient_mul = clamp(self._ambient_mul - amb_step, 0.0, 8.0)
             self._update_ambient()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_M):
-            self._ambient_mul = _clamp(self._ambient_mul + amb_step, 0.0, 8.0)
+            self._ambient_mul = clamp(self._ambient_mul + amb_step, 0.0, 8.0)
             self._update_ambient()
 
     def _ensure_sdf_shader(self) -> rl.Shader | None:
@@ -534,8 +527,8 @@ class LightingDebugView:
             radius = 120.0 + rng.random() * 260.0
             x = center_x + math.cos(angle) * radius
             y = center_y + math.sin(angle) * radius
-            x = _clamp(x, 40.0, WORLD_SIZE - 40.0)
-            y = _clamp(y, 40.0, WORLD_SIZE - 40.0)
+            x = clamp(x, 40.0, WORLD_SIZE - 40.0)
+            y = clamp(y, 40.0, WORLD_SIZE - 40.0)
             init = CreatureInit(
                 origin_template_id=0,
                 pos_x=float(x),
@@ -656,8 +649,8 @@ class LightingDebugView:
                     fl.angle += fl.omega * dt_world
                     wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
                     r = fl.radius * wobble
-                    fl.x = _clamp(px + math.cos(fl.angle) * r, 0.0, WORLD_SIZE)
-                    fl.y = _clamp(py + math.sin(fl.angle) * r, 0.0, WORLD_SIZE)
+                    fl.x = clamp(px + math.cos(fl.angle) * r, 0.0, WORLD_SIZE)
+                    fl.y = clamp(py + math.sin(fl.angle) * r, 0.0, WORLD_SIZE)
 
             keep: list[_EmissiveProjectile] = []
             margin = 80.0
@@ -941,7 +934,7 @@ class LightingDebugView:
 
         def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
             sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
-            fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
+            fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
                 float(sx),
@@ -1057,7 +1050,7 @@ class LightingDebugView:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for proj in self._projectiles:
                 sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
-                fade = _clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
+                fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
                 c = self._proj_light_tint
                 rl.draw_circle(
                     int(sx),

@@ -10,6 +10,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..bonuses import BonusId
@@ -41,14 +42,6 @@ from ..ui.perk_menu import (
     wrap_ui_text,
 )
 from .base_gameplay_mode import BaseGameplayMode
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -214,7 +207,7 @@ class TutorialMode(BaseGameplayMode):
             self._play_button.enabled = prompt_alpha > 1e-3
             self._repeat_button.enabled = prompt_alpha > 1e-3
         else:
-            skip_alpha = _clamp(float(self._tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
+            skip_alpha = clamp(float(self._tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
             self._skip_button.alpha = skip_alpha
             self._skip_button.enabled = skip_alpha > 1e-3
 
@@ -366,9 +359,9 @@ class TutorialMode(BaseGameplayMode):
             self._perk_menu_handle_input(dt_frame, dt_ui_ms)
 
         if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt_frame
 
@@ -544,14 +537,14 @@ class TutorialMode(BaseGameplayMode):
             self._draw_ui_text("paused (TAB)", x, y, UI_HINT_COLOR)
 
     def _draw_prompt_panel(self, text: str, *, alpha: float, y: float) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         rect, lines, line_h = self._prompt_panel_rect(text, y=float(y), scale=1.0)
         fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
         border = rl.Color(255, 255, 255, int(255 * alpha))
         rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)
         rl.draw_rectangle_lines(int(rect.x), int(rect.y), int(rect.width), int(rect.height), border)
 
-        text_alpha = int(255 * _clamp(alpha * 0.9, 0.0, 1.0))
+        text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
         color = rl.Color(255, 255, 255, text_alpha)
         x = float(rect.x + self._ui_layout.panel_pad_x)
         line_y = float(rect.y + self._ui_layout.panel_pad_y)

@@ -8,6 +8,7 @@ import math
 import pyray as rl
 
 from . import paq
+from grim.math import clamp
 from grim.fonts.grim_mono import (
     GrimMonoFont,
     draw_grim_mono_text,
@@ -121,16 +122,12 @@ def _load_script_from_paq(console: "ConsoleState", target: Path) -> str | None:
     return None
 
 
-def _clamp(value: float, low: float, high: float) -> float:
-    return max(low, min(high, value))
-
-
 def _rgba(r: float, g: float, b: float, a: float) -> rl.Color:
     return rl.Color(
-        int(_clamp(r, 0.0, 1.0) * 255),
-        int(_clamp(g, 0.0, 1.0) * 255),
-        int(_clamp(b, 0.0, 1.0) * 255),
-        int(_clamp(a, 0.0, 1.0) * 255),
+        int(clamp(r, 0.0, 1.0) * 255),
+        int(clamp(g, 0.0, 1.0) * 255),
+        int(clamp(b, 0.0, 1.0) * 255),
+        int(clamp(a, 0.0, 1.0) * 255),
     )
 
 
@@ -518,12 +515,12 @@ class ConsoleState:
     def _open_ratio(self, height: float) -> float:
         if height <= 0.0:
             return 0.0
-        return _clamp((height + self._offset_y) / height, 0.0, 1.0)
+        return clamp((height + self._offset_y) / height, 0.0, 1.0)
 
     def _caret_blink_alpha(self) -> float:
         pulse = math.sin(self._blink_time * CONSOLE_BLINK_SPEED)
         value = max(0.2, abs(pulse) ** 2)
-        return _clamp(value, 0.0, 1.0)
+        return clamp(value, 0.0, 1.0)
 
     def _use_mono_font(self) -> bool:
         cvar = self.cvars.get("con_monoFont")

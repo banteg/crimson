@@ -14,6 +14,7 @@ from dataclasses import dataclass, replace
 import math
 from typing import Callable, Sequence
 
+from grim.math import clamp, distance_sq
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
@@ -63,14 +64,6 @@ CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
 
 
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
 def _wrap_angle(angle: float) -> float:
     return (angle + math.pi) % math.tau - math.pi
 
@@ -84,12 +77,6 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     else:
         current -= step
     return _wrap_angle(current)
-
-
-def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
-    dx = x1 - x0
-    dy = y1 - y0
-    return dx * dx + dy * dy
 
 
 def _owner_id_to_player_index(owner_id: int) -> int | None:
@@ -578,16 +565,16 @@ class CreaturePool:
                         dir_y = math.sin(creature.heading - math.pi / 2.0)
                         creature.vel_x = dir_x * speed
                         creature.vel_y = dir_y * speed
-                        creature.x = _clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
-                        creature.y = _clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
+                        creature.x = clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
+                        creature.y = clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
                 else:
                     # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
                     # unless ANIM_LONG_STRIP is set (see creature_update_all).
                     radius = max(0.0, float(creature.size))
                     max_x = max(radius, float(world_width) - radius)
                     max_y = max(radius, float(world_height) - radius)
-                    creature.x = _clamp(creature.x, radius, max_x)
-                    creature.y = _clamp(creature.y, radius, max_y)
+                    creature.x = clamp(creature.x, radius, max_x)
+                    creature.y = clamp(creature.y, radius, max_y)
                     if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
                         creature.vel_x = 0.0
                         creature.vel_y = 0.0
@@ -597,8 +584,8 @@ class CreaturePool:
                         dir_y = math.sin(creature.heading - math.pi / 2.0)
                         creature.vel_x = dir_x * speed
                         creature.vel_y = dir_y * speed
-                        creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
-                        creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
+                        creature.x = clamp(creature.x + creature.vel_x * dt, radius, max_x)
+                        creature.y = clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
             if (
                 players
@@ -608,10 +595,10 @@ class CreaturePool:
                 self._plaguebearer_spread_infection(idx)
 
             if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 380.0 and float(player.health) > 0.0:
-                eat_dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
+                eat_dist_sq = distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
                 if eat_dist_sq < 20.0 * 20.0:
-                    creature.x = _clamp(creature.x - creature.vel_x * dt, 0.0, float(world_width))
-                    creature.y = _clamp(creature.y - creature.vel_y * dt, 0.0, float(world_height))
+                    creature.x = clamp(creature.x - creature.vel_x * dt, 0.0, float(world_width))
+                    creature.y = clamp(creature.y - creature.vel_y * dt, 0.0, float(world_height))
 
                     state.effects.spawn_burst(
                         pos_x=float(creature.x),
@@ -644,7 +631,7 @@ class CreaturePool:
             # Contact damage throttle. While Energizer is active, the native suppresses
             # contact/melee interactions for most creatures (and instead allows "eat" kills).
             if float(state.bonuses.energizer) <= 0.0:
-                dist_sq = _distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
+                dist_sq = distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
                 contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
                 in_contact = dist_sq <= contact_r * contact_r
                 if in_contact:
@@ -946,8 +933,8 @@ class CreaturePool:
                 dir_y = math.sin(creature.heading - math.pi / 2.0)
                 creature.vel_x = dir_x * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
                 creature.vel_y = dir_y * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.x = _clamp(creature.x - creature.vel_x, 0.0, float(world_width))
-                creature.y = _clamp(creature.y - creature.vel_y, 0.0, float(world_height))
+                creature.x = clamp(creature.x - creature.vel_x, 0.0, float(world_width))
+                creature.y = clamp(creature.y - creature.vel_y, 0.0, float(world_height))
             else:
                 creature.vel_x = 0.0
                 creature.vel_y = 0.0

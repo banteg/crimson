@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.audio import AudioState, shutdown_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..game_world import GameWorld
@@ -37,14 +38,6 @@ class TargetDummy:
     y: float
     hp: float
     size: float = 56.0
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 class ProjectileRenderDebugView:
@@ -103,8 +96,8 @@ class ProjectileRenderDebugView:
         ring = 260.0
         for idx in range(10):
             angle = float(idx) / 10.0 * math.tau
-            x = _clamp(base_x + math.cos(angle) * ring, 40.0, WORLD_SIZE - 40.0)
-            y = _clamp(base_y + math.sin(angle) * ring, 40.0, WORLD_SIZE - 40.0)
+            x = clamp(base_x + math.cos(angle) * ring, 40.0, WORLD_SIZE - 40.0)
+            y = clamp(base_y + math.sin(angle) * ring, 40.0, WORLD_SIZE - 40.0)
             self._targets.append(TargetDummy(x=x, y=y, hp=260.0, size=64.0))
 
     def _reset_scene(self) -> None:

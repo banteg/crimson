@@ -5,6 +5,8 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
+from grim.math import distance_sq
+
 from .creatures.spawn import CreatureFlags
 from .perks import PerkId
 from .weapons import weapon_entry_for_projectile_type_id
@@ -114,12 +116,6 @@ class SecondaryProjectile:
     owner_id: int = -100
     trail_timer: float = 0.0
     target_id: int = -1
-
-
-def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
-    dx = x1 - x0
-    dy = y1 - y0
-    return dx * dx + dy * dy
 
 
 def _hit_radius_for(creature: Damageable) -> float:
@@ -517,7 +513,7 @@ class ProjectilePool:
                     continue
                 if creature.hp <= 0.0:
                     continue
-                d = _distance_sq(origin.x, origin.y, creature.x, creature.y)
+                d = distance_sq(origin.x, origin.y, creature.x, creature.y)
                 if d > max_dist * max_dist:
                     continue
                 if best_idx == -1 or d < best_dist:
@@ -576,7 +572,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             _apply_damage_to_creature(
                                 creature_idx,
                                 damage,
@@ -594,7 +590,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             _apply_damage_to_creature(
                                 creature_idx,
                                 damage,
@@ -655,7 +651,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = proj.hit_radius + creature_radius
-                        if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             hit_idx = idx
                             break
 
@@ -673,7 +669,7 @@ class ProjectilePool:
                                     player_radius = _hit_radius_for(player)
                                     hit_r = proj.hit_radius + player_radius
                                     if (
-                                        _distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y)
+                                        distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y)
                                         <= hit_r * hit_r
                                     ):
                                         hit_player_idx = idx
@@ -906,7 +902,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             creature.hp -= damage
                 elif proj.type_id == ProjectileTypeId.ION_MINIGUN:
                     damage = dt * 40.0
@@ -916,7 +912,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                             creature.hp -= damage
                 proj.life_timer -= dt
                 if proj.life_timer <= 0.0:
@@ -946,7 +942,7 @@ class ProjectilePool:
                     continue
                 creature_radius = _hit_radius_for(creature)
                 hit_r = proj.hit_radius + creature_radius
-                if _distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                     hit_idx = idx
                     break
             if hit_idx is None:
@@ -1099,7 +1095,7 @@ class SecondaryProjectilePool:
                         continue
                     creature_radius = _hit_radius_for(creature)
                     hit_r = radius + creature_radius
-                    if _distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                    if distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                         _apply_damage_to_creature(creature_idx, damage, owner_id=int(entry.owner_id))
                 continue
 
@@ -1133,7 +1129,7 @@ class SecondaryProjectilePool:
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
-                        d = _distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                        d = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
                         if best_idx == -1 or d < best_dist:
                             best_idx = idx
                             best_dist = d
@@ -1182,7 +1178,7 @@ class SecondaryProjectilePool:
                     continue
                 creature_radius = _hit_radius_for(creature)
                 hit_r = 8.0 + creature_radius
-                if _distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                if distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
                     hit_idx = idx
                     break
             if hit_idx is not None:

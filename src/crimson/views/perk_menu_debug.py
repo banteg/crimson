@@ -3,6 +3,7 @@ from __future__ import annotations
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
@@ -237,7 +238,7 @@ class PerkMenuDebugView:
         if rl.is_key_down(rl.KeyboardKey.KEY_RIGHT):
             self._panel_slide_x += step
 
-        self._panel_slide_x = _clamp(self._panel_slide_x, -self._layout.panel_w, 0.0)
+        self._panel_slide_x = clamp(self._panel_slide_x, -self._layout.panel_w, 0.0)
 
         self._prompt_hover = False
         self._prompt_rect = None
@@ -250,7 +251,7 @@ class PerkMenuDebugView:
                 self._prompt_hover = rl.check_collision_point_rec(mouse, rect)
 
         pulse_delta = dt_ms * (6.0 if self._prompt_hover else -2.0)
-        self._prompt_pulse = _clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
+        self._prompt_pulse = clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         if not self._show_menu or self._assets is None:
             return
@@ -409,14 +410,6 @@ class PerkMenuDebugView:
         for line in lines:
             draw_ui_text(self._small, line, x, y, scale=scale, color=UI_HINT_COLOR)
             y += line_h
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:

@@ -8,6 +8,7 @@ import pyray as rl
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusId
@@ -63,14 +64,6 @@ SPECIAL_PROJECTILES: dict[int, str] = {
     19: "secondary type 4 (pulse gun)",
     43: "particle style 8 (rainbow gun)",
 }
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _fmt_float(value: float | None, *, digits: int = 3) -> str:
@@ -187,8 +180,8 @@ class ArsenalDebugView:
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
-            x = _clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
-            y = _clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            x = clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            y = clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
             heading = angle + math.pi
             self._world.creatures.spawn_template(
                 spawn_id,

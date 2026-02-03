@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -23,14 +24,6 @@ UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,8 +84,8 @@ class CameraShakeView:
     def _spawn_creature(self, *, world_x: float, world_y: float, type_id: CreatureTypeId, hp: float) -> None:
         init = CreatureInit(
             origin_template_id=0,
-            pos_x=_clamp(world_x, 64.0, WORLD_SIZE - 64.0),
-            pos_y=_clamp(world_y, 64.0, WORLD_SIZE - 64.0),
+            pos_x=clamp(world_x, 64.0, WORLD_SIZE - 64.0),
+            pos_y=clamp(world_y, 64.0, WORLD_SIZE - 64.0),
             heading=math.pi,
             phase_seed=0.0,
             type_id=type_id,

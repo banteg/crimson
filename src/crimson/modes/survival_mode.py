@@ -9,6 +9,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
@@ -46,7 +47,7 @@ from ..ui.perk_menu import (
     wrap_ui_text,
 )
 from ..weapons import WEAPON_BY_ID
-from .base_gameplay_mode import BaseGameplayMode, _clamp
+from .base_gameplay_mode import BaseGameplayMode
 
 WORLD_SIZE = 1024.0
 
@@ -540,25 +541,25 @@ class SurvivalMode(BaseGameplayMode):
 
         if not self._paused and not self._game_over_active:
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
-            self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         if self._paused or (not any_alive) or perk_menu_active:
             dt = 0.0
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
         else:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
         if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         if self._perk_menu_timeline_ms > 1e-3 or self._perk_menu_open:
             self._hud_fade_ms = 0.0
         else:
-            self._hud_fade_ms = _clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._hud_fade_ms = clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         self._survival.elapsed_ms += dt * 1000.0
 
@@ -672,7 +673,7 @@ class SurvivalMode(BaseGameplayMode):
     def _draw_perk_menu(self) -> None:
         if self._game_over_active:
             return
-        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+        menu_t = clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
             return
         if self._perk_menu_assets is None:
@@ -790,7 +791,7 @@ class SurvivalMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
-            hud_alpha = _clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+            hud_alpha = clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(

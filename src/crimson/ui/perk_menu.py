@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.math import clamp
 
 from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .menu_panel import draw_classic_menu_panel
@@ -340,23 +341,15 @@ def button_update(
         state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(x=x, y=y, width=width))
 
     delta = 6 if (state.enabled and state.hovered) else -4
-    state.hover_t = int(_clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))
+    state.hover_t = int(clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))
 
     if state.press_t > 0:
-        state.press_t = int(_clamp(float(state.press_t - int(dt_ms) * 6), 0.0, 1000.0))
+        state.press_t = int(clamp(float(state.press_t - int(dt_ms) * 6), 0.0, 1000.0))
 
     state.activated = bool(state.enabled and state.hovered and click)
     if state.activated:
         state.press_t = 1000
     return state.activated
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def button_draw(
@@ -391,7 +384,7 @@ def button_draw(
             int(255 * r),
             int(255 * g),
             int(255 * b),
-            int(255 * _clamp(a, 0.0, 1.0)),
+            int(255 * clamp(a, 0.0, 1.0)),
         )
         rl.draw_rectangle(
             int(x + 12.0 * scale),
@@ -401,14 +394,14 @@ def button_draw(
             hl,
         )
 
-    plate_tint = rl.Color(255, 255, 255, int(255 * _clamp(state.alpha, 0.0, 1.0)))
+    plate_tint = rl.Color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
 
     src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
     dst = rl.Rectangle(float(x), float(y), float(width), float(32.0 * scale))
     rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
-    text_tint = rl.Color(255, 255, 255, int(255 * _clamp(text_a, 0.0, 1.0)))
+    text_tint = rl.Color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
     text_w = _ui_text_width(font, state.label, scale)
     text_x = x + width * 0.5 - text_w * 0.5 + 1.0 * scale
     text_y = y + 10.0 * scale
@@ -419,7 +412,7 @@ def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alph
     tex = assets.cursor
     if tex is None:
         return
-    a = int(255 * _clamp(alpha, 0.0, 1.0))
+    a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
     size = 32.0 * scale
     src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))

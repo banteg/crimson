@@ -10,6 +10,7 @@ from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
@@ -46,7 +47,7 @@ from ..ui.perk_menu import (
 )
 from ..views.quest_title_overlay import draw_quest_title_overlay
 from ..weapons import WEAPON_BY_ID
-from .base_gameplay_mode import BaseGameplayMode, _clamp
+from .base_gameplay_mode import BaseGameplayMode
 
 WORLD_SIZE = 1024.0
 QUEST_TITLE_FADE_IN_MS = 500.0
@@ -641,7 +642,7 @@ class QuestMode(BaseGameplayMode):
                 rl.end_blend_mode()
 
     def _draw_perk_menu(self) -> None:
-        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+        menu_t = clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
         if menu_t <= 1e-3:
             return
         if self._perk_menu_assets is None:
@@ -774,18 +775,18 @@ class QuestMode(BaseGameplayMode):
 
         if not self._paused:
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
-            self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
         else:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
         if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
         else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._perk_menu_timeline_ms = clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         dt_world = 0.0 if self._paused or (not any_alive) or perk_menu_active else dt_frame
         if dt_world <= 0.0:

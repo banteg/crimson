@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import math
 from typing import TYPE_CHECKING, Protocol
 
+from grim.math import clamp, distance_sq
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
@@ -277,8 +278,8 @@ class BonusPool:
         if entry is None:
             return None
 
-        x = _clamp(float(pos_x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
-        y = _clamp(float(pos_y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
+        x = clamp(float(pos_x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
+        y = clamp(float(pos_y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
 
         entry.bonus_id = int(bonus_id)
         entry.picked = False
@@ -316,7 +317,7 @@ class BonusPool:
         for entry in self._entries:
             if entry.bonus_id == 0:
                 continue
-            if _distance_sq(pos_x, pos_y, entry.pos_x, entry.pos_y) < min_dist_sq:
+            if distance_sq(pos_x, pos_y, entry.pos_x, entry.pos_y) < min_dist_sq:
                 return None
 
         entry = self._alloc_slot()
@@ -421,7 +422,7 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            if players and _distance_sq(pos_x, pos_y, players[0].pos_x, players[0].pos_y) < near_sq:
+            if players and distance_sq(pos_x, pos_y, players[0].pos_x, players[0].pos_y) < near_sq:
                 entry.bonus_id = int(BonusId.POINTS)
                 entry.amount = 100
 
@@ -466,7 +467,7 @@ class BonusPool:
                 continue
 
             for player in players:
-                if _distance_sq(entry.pos_x, entry.pos_y, player.pos_x, player.pos_y) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
+                if distance_sq(entry.pos_x, entry.pos_y, player.pos_x, player.pos_y) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
                     bonus_apply(
                         state,
                         player,
@@ -503,7 +504,7 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
             continue
-        if _distance_sq(aim_x, aim_y, entry.pos_x, entry.pos_y) < radius_sq:
+        if distance_sq(aim_x, aim_y, entry.pos_x, entry.pos_y) < radius_sq:
             return idx, entry
     return None
 
@@ -1200,26 +1201,12 @@ def survival_progression_update(
     return []
 
 
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
 def _normalize(x: float, y: float) -> tuple[float, float]:
     mag = math.hypot(x, y)
     if mag <= 1e-9:
         return 0.0, 0.0
     inv = 1.0 / mag
     return x * inv, y * inv
-
-
-def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
-    dx = x1 - x0
-    dy = y1 - y0
-    return dx * dx + dy * dy
 
 
 def _owner_id_for_player(player_index: int) -> int:
@@ -2013,8 +2000,8 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
-    player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
-    player.pos_y = _clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
+    player.pos_x = clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
+    player.pos_y = clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
 
     player.move_phase += dt * player.move_speed * 19.0
 
@@ -2274,7 +2261,7 @@ def bonus_apply(
             for idx, creature in enumerate(creatures):
                 if creature.hp <= 0.0:
                     continue
-                d = _distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
+                d = distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
                 if best_idx is None or d < best_dist:
                     best_idx = idx
                     best_dist = d
