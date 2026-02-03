@@ -136,8 +136,8 @@ class CreatureState:
     attack_cooldown: float = 0.0
     reward_value: float = 0.0
 
-    # Contact damage gate.
-    collision_flag: int = 0
+    # Plaguebearer infection state (native: `collision_flag` byte).
+    plague_infected: bool = False
     collision_timer: float = CONTACT_DAMAGE_PERIOD
     hitbox_size: float = CREATURE_HITBOX_ALIVE
 
@@ -211,10 +211,10 @@ class CreaturePool:
                 continue
 
             if math.hypot(float(creature.x) - float(origin.x), float(creature.y) - float(origin.y)) < 45.0:
-                if creature.collision_flag != 0 and float(origin.hp) < 150.0:
-                    origin.collision_flag = 1
-                if origin.collision_flag != 0 and float(creature.hp) < 150.0:
-                    creature.collision_flag = 1
+                if creature.plague_infected and float(origin.hp) < 150.0:
+                    origin.plague_infected = True
+                if origin.plague_infected and float(creature.hp) < 150.0:
+                    creature.plague_infected = True
                 return
 
     def _alloc_slot(self, *, rand: Callable[[], int] | None = None) -> int:
@@ -430,7 +430,7 @@ class CreaturePool:
                     )
                 continue
 
-            if creature.collision_flag != 0:
+            if creature.plague_infected:
                 creature.collision_timer -= float(dt)
                 if creature.collision_timer < 0.0:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
@@ -531,7 +531,7 @@ class CreaturePool:
                             )
                         continue
 
-                if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.collision_flag != 0:
+                if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
                     creature.target_heading = _wrap_angle(float(creature.target_heading) + math.pi)
 
                 turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
@@ -689,7 +689,7 @@ class CreaturePool:
                     and int(state.plaguebearer_infection_count) < 0x32
                     and dist_sq < 30.0 * 30.0
                 ):
-                    creature.collision_flag = 1
+                    creature.plague_infected = True
 
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
@@ -862,7 +862,7 @@ class CreaturePool:
         entry.tint_b = float(tint[2])
         entry.tint_a = float(tint[3])
 
-        entry.collision_flag = 0
+        entry.plague_infected = False
         entry.collision_timer = CONTACT_DAMAGE_PERIOD
         entry.hitbox_size = CREATURE_HITBOX_ALIVE
 

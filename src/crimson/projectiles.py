@@ -816,8 +816,8 @@ class ProjectilePool:
                     elif type_id == ProjectileTypeId.PULSE_GUN:
                         creature.x += move_dx * 3.0
                         creature.y += move_dy * 3.0
-                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "collision_flag"):
-                        setattr(creature, "collision_flag", 1)
+                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "plague_infected"):
+                        setattr(creature, "plague_infected", True)
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95

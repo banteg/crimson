@@ -219,7 +219,8 @@ PERK_TABLE = [
         prereq=(),
         notes=(
             "Sets `player_plaguebearer_active` (`DAT_004908b9`). In `creature_update_all`, infected creatures "
-            "(`collision_flag != 0`) take `15` damage every `0.5` seconds via `collision_timer`; on an infection kill, "
+            "(`collision_flag != 0`, i.e. `CreatureState.plague_infected`) take `15` damage every `0.5` seconds via "
+            "`collision_timer`; on an infection kill, "
             "increments `plaguebearer_infection_count`. While `plaguebearer_infection_count < 60`, "
             "`FUN_00425d80` spreads infection between creatures within `45` units when the target has `<150` HP. "
             "While `plaguebearer_infection_count < 50`, the player infects nearby creatures (`<30` units) with `<150` HP."

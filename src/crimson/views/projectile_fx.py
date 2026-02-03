@@ -34,7 +34,7 @@ class DummyCreature:
     y: float
     hp: float
     size: float = 42.0
-    collision_flag: int = 0
+    plague_infected: bool = False
 
 
 @dataclass(slots=True)
@@ -491,7 +491,11 @@ class ProjectileFxView:
         # Creatures.
         for creature in self._creatures:
             cx, cy = self._camera_world_to_screen(creature.x, creature.y)
-            color = rl.Color(220, 90, 90, 255) if creature.collision_flag == 0 else rl.Color(240, 180, 90, 255)
+            color = (
+                rl.Color(220, 90, 90, 255)
+                if not creature.plague_infected
+                else rl.Color(240, 180, 90, 255)
+            )
             rl.draw_circle(int(cx), int(cy), float(creature.size * 0.5), color)
             rl.draw_circle_lines(int(cx), int(cy), float(creature.size * 0.5), rl.Color(40, 40, 55, 255))
 
