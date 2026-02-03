@@ -278,7 +278,6 @@ class TutorialMode(BaseGameplayMode):
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
         slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
-        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -596,6 +595,7 @@ class TutorialMode(BaseGameplayMode):
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
