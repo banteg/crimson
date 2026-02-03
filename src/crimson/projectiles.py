@@ -132,6 +132,467 @@ def _hit_radius_for(creature: Damageable) -> float:
     return max(0.0, size * 0.14285715 + 3.0)
 
 
+def _apply_damage_to_creature(
+    creatures: list[Damageable],
+    creature_index: int,
+    damage: float,
+    *,
+    damage_type: int,
+    impulse_x: float,
+    impulse_y: float,
+    owner_id: int,
+    apply_creature_damage: CreatureDamageApplier | None = None,
+) -> None:
+    if damage <= 0.0:
+        return
+    idx = int(creature_index)
+    if not (0 <= idx < len(creatures)):
+        return
+    if apply_creature_damage is not None:
+        apply_creature_damage(
+            idx,
+            float(damage),
+            int(damage_type),
+            float(impulse_x),
+            float(impulse_y),
+            int(owner_id),
+        )
+    else:
+        creatures[idx].hp -= float(damage)
+
+
+def _spawn_ion_hit_effects(
+    effects: object | None,
+    sfx_queue: object | None,
+    *,
+    type_id: int,
+    pos_x: float,
+    pos_y: float,
+    rng: Callable[[], int],
+    detail_preset: int,
+) -> None:
+    if effects is None or not hasattr(effects, "spawn"):
+        return
+
+    ring_scale = 0.0
+    ring_strength = 0.0
+    burst_scale = 0.0
+    if type_id == int(ProjectileTypeId.ION_MINIGUN):
+        ring_scale = 1.5
+        ring_strength = 0.1
+        burst_scale = 0.8
+    elif type_id == int(ProjectileTypeId.ION_RIFLE):
+        ring_scale = 1.2
+        ring_strength = 0.4
+        burst_scale = 1.2
+    elif type_id == int(ProjectileTypeId.ION_CANNON):
+        ring_scale = 1.0
+        ring_strength = 1.0
+        burst_scale = 2.2
+        if isinstance(sfx_queue, list):
+            sfx_queue.append("sfx_shockwave")
+    else:
+        return
+
+    detail = int(detail_preset)
+
+    # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
+    effects.spawn(
+        effect_id=1,
+        pos_x=float(pos_x),
+        pos_y=float(pos_y),
+        vel_x=0.0,
+        vel_y=0.0,
+        rotation=0.0,
+        scale=1.0,
+        half_width=4.0,
+        half_height=4.0,
+        age=0.0,
+        lifetime=float(ring_strength) * 0.8,
+        flags=0x19,
+        color_r=0.6,
+        color_g=0.6,
+        color_b=0.9,
+        color_a=1.0,
+        rotation_step=0.0,
+        scale_step=float(ring_scale) * 45.0,
+        detail_preset=detail,
+    )
+
+    # Port of `FUN_0042f540(pos, burst_scale)`: burst cloud (effect_id=0).
+    burst = float(burst_scale) * 0.8
+    lifetime = min(burst * 0.7, 1.1)
+    half = burst * 32.0
+    count = int(half)
+    if detail < 3:
+        count //= 2
+
+    for _ in range(max(0, count)):
+        rotation = float(int(rng()) & 0x7F) * 0.049087387
+        vel_x = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+        vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+        scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
+        effects.spawn(
+            effect_id=0,
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=vel_x,
+            vel_y=vel_y,
+            rotation=rotation,
+            scale=1.0,
+            half_width=half,
+            half_height=half,
+            age=0.0,
+            lifetime=float(lifetime),
+            flags=0x1D,
+            color_r=0.4,
+            color_g=0.5,
+            color_b=1.0,
+            color_a=0.5,
+            rotation_step=0.0,
+            scale_step=scale_step,
+            detail_preset=detail,
+        )
+
+
+def _spawn_plasma_cannon_hit_effects(
+    effects: object | None,
+    sfx_queue: object | None,
+    *,
+    pos_x: float,
+    pos_y: float,
+    detail_preset: int,
+) -> None:
+    """Port of `projectile_update` Plasma Cannon hit extras.
+
+    Native does:
+    - `sfx_play_panned(sfx_explosion_medium)`
+    - `sfx_play_panned(sfx_shockwave)`
+    - `FUN_0042f330(pos, 1.5, 1.0)`
+    - `FUN_0042f330(pos, 1.0, 1.0)`
+    """
+
+    if effects is None or not hasattr(effects, "spawn"):
+        return
+
+    if isinstance(sfx_queue, list):
+        sfx_queue.append("sfx_explosion_medium")
+        sfx_queue.append("sfx_shockwave")
+
+    detail = int(detail_preset)
+
+    def _spawn_ring(*, scale: float) -> None:
+        effects.spawn(
+            effect_id=1,
+            pos_x=float(pos_x),
+            pos_y=float(pos_y),
+            vel_x=0.0,
+            vel_y=0.0,
+            rotation=0.0,
+            scale=1.0,
+            half_width=4.0,
+            half_height=4.0,
+            age=0.1,
+            lifetime=1.0,
+            flags=0x19,
+            color_r=0.9,
+            color_g=0.6,
+            color_b=0.3,
+            color_a=1.0,
+            rotation_step=0.0,
+            scale_step=float(scale) * 45.0,
+            detail_preset=detail,
+        )
+
+    _spawn_ring(scale=1.5)
+    _spawn_ring(scale=1.0)
+
+
+def _spawn_splitter_hit_effects(
+    effects: object | None,
+    *,
+    pos_x: float,
+    pos_y: float,
+    rng: Callable[[], int],
+    detail_preset: int,
+) -> None:
+    """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
+
+    if effects is None or not hasattr(effects, "spawn"):
+        return
+
+    detail = int(detail_preset)
+    for _ in range(3):
+        angle = float(int(rng()) & 0x1FF) * (math.tau / 512.0)
+        radius = float(int(rng()) % 26)
+        jitter_age = -float(int(rng()) & 0xFF) * 0.0012
+        lifetime = 0.1 - jitter_age
+
+        effects.spawn(
+            effect_id=0,
+            pos_x=float(pos_x) + math.cos(angle) * radius,
+            pos_y=float(pos_y) + math.sin(angle) * radius,
+            vel_x=0.0,
+            vel_y=0.0,
+            rotation=0.0,
+            scale=1.0,
+            half_width=4.0,
+            half_height=4.0,
+            age=jitter_age,
+            lifetime=lifetime,
+            flags=0x19,
+            color_r=1.0,
+            color_g=0.9,
+            color_b=0.1,
+            color_a=1.0,
+            rotation_step=0.0,
+            scale_step=55.0,
+            detail_preset=detail,
+        )
+
+
+@dataclass(slots=True)
+class _ProjectileUpdateCtx:
+    pool: ProjectilePool
+    creatures: list[Damageable]
+    dt: float
+    ion_scale: float
+    detail_preset: int
+    rng: Callable[[], int]
+    runtime_state: object | None
+    effects: object | None
+    sfx_queue: object | None
+    apply_creature_damage: CreatureDamageApplier | None
+
+
+@dataclass(slots=True)
+class _ProjectileHitInfo:
+    proj_index: int
+    proj: Projectile
+    hit_idx: int
+    move_dx: float
+    move_dy: float
+    target_x: float
+    target_y: float
+
+
+ProjectileLingerHandler = Callable[[_ProjectileUpdateCtx, Projectile], None]
+ProjectilePreHitCreatureHandler = Callable[[_ProjectileUpdateCtx, Projectile, int], None]
+ProjectilePostHitCreatureHandler = Callable[[_ProjectileUpdateCtx, _ProjectileHitInfo], None]
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectileBehavior:
+    linger: ProjectileLingerHandler
+    pre_hit_creature: ProjectilePreHitCreatureHandler | None = None
+    post_hit_creature: ProjectilePostHitCreatureHandler | None = None
+
+
+def _linger_default(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    proj.life_timer -= ctx.dt
+
+
+def _linger_gauss_gun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    proj.life_timer -= ctx.dt * 0.1
+
+
+def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    proj.life_timer -= ctx.dt
+    damage = ctx.dt * 40.0
+    radius = ctx.ion_scale * 60.0
+    for creature_idx, creature in enumerate(ctx.creatures):
+        if creature.hp <= 0.0:
+            continue
+        creature_radius = _hit_radius_for(creature)
+        hit_r = radius + creature_radius
+        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+            _apply_damage_to_creature(
+                ctx.creatures,
+                creature_idx,
+                damage,
+                damage_type=7,
+                impulse_x=0.0,
+                impulse_y=0.0,
+                owner_id=int(proj.owner_id),
+                apply_creature_damage=ctx.apply_creature_damage,
+            )
+
+
+def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    proj.life_timer -= ctx.dt
+    damage = ctx.dt * 100.0
+    radius = ctx.ion_scale * 88.0
+    for creature_idx, creature in enumerate(ctx.creatures):
+        if creature.hp <= 0.0:
+            continue
+        creature_radius = _hit_radius_for(creature)
+        hit_r = radius + creature_radius
+        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+            _apply_damage_to_creature(
+                ctx.creatures,
+                creature_idx,
+                damage,
+                damage_type=7,
+                impulse_x=0.0,
+                impulse_y=0.0,
+                owner_id=int(proj.owner_id),
+                apply_creature_damage=ctx.apply_creature_damage,
+            )
+
+
+def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    proj.life_timer -= ctx.dt * 0.7
+    damage = ctx.dt * 300.0
+    radius = ctx.ion_scale * 128.0
+    for creature_idx, creature in enumerate(ctx.creatures):
+        if creature.hp <= 0.0:
+            continue
+        creature_radius = _hit_radius_for(creature)
+        hit_r = radius + creature_radius
+        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+            _apply_damage_to_creature(
+                ctx.creatures,
+                creature_idx,
+                damage,
+                damage_type=7,
+                impulse_x=0.0,
+                impulse_y=0.0,
+                owner_id=int(proj.owner_id),
+                apply_creature_damage=ctx.apply_creature_damage,
+            )
+
+
+def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int) -> None:
+    _spawn_splitter_hit_effects(
+        ctx.effects,
+        pos_x=float(proj.pos_x),
+        pos_y=float(proj.pos_y),
+        rng=ctx.rng,
+        detail_preset=ctx.detail_preset,
+    )
+    ctx.pool.spawn(
+        pos_x=proj.pos_x,
+        pos_y=proj.pos_y,
+        angle=proj.angle - 1.0471976,
+        type_id=ProjectileTypeId.SPLITTER_GUN,
+        owner_id=int(hit_idx),
+        base_damage=proj.base_damage,
+        hits_players=proj.hits_players,
+    )
+    ctx.pool.spawn(
+        pos_x=proj.pos_x,
+        pos_y=proj.pos_y,
+        angle=proj.angle + 1.0471976,
+        type_id=ProjectileTypeId.SPLITTER_GUN,
+        owner_id=int(hit_idx),
+        base_damage=proj.base_damage,
+        hits_players=proj.hits_players,
+    )
+
+
+def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    _spawn_ion_hit_effects(
+        ctx.effects,
+        ctx.sfx_queue,
+        type_id=int(hit.proj.type_id),
+        pos_x=float(hit.target_x),
+        pos_y=float(hit.target_y),
+        rng=ctx.rng,
+        detail_preset=ctx.detail_preset,
+    )
+
+
+def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    if ctx.runtime_state is not None and getattr(ctx.runtime_state, "shock_chain_projectile_id", -1) == hit.proj_index:
+        hit.proj.reserved = float(int(hit.hit_idx) + 1)
+    _post_hit_ion_common(ctx, hit)
+
+
+def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    creature = ctx.creatures[int(hit.hit_idx)]
+    size = float(getattr(creature, "size", 50.0) or 50.0)
+    ring_radius = size * 0.5 + 1.0
+
+    plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
+    plasma_meta = float(plasma_entry.projectile_meta) if plasma_entry and plasma_entry.projectile_meta is not None else hit.proj.base_damage
+
+    for ring_idx in range(12):
+        ring_angle = float(ring_idx) * (math.pi / 6.0)
+        ctx.pool.spawn(
+            pos_x=hit.proj.pos_x + math.cos(ring_angle) * ring_radius,
+            pos_y=hit.proj.pos_y + math.sin(ring_angle) * ring_radius,
+            angle=ring_angle,
+            type_id=ProjectileTypeId.PLASMA_RIFLE,
+            owner_id=-100,
+            base_damage=plasma_meta,
+        )
+
+    _spawn_plasma_cannon_hit_effects(
+        ctx.effects,
+        ctx.sfx_queue,
+        pos_x=float(hit.proj.pos_x),
+        pos_y=float(hit.proj.pos_y),
+        detail_preset=ctx.detail_preset,
+    )
+
+
+def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    creature = ctx.creatures[int(hit.hit_idx)]
+    if hasattr(creature, "size"):
+        new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
+        setattr(creature, "size", new_size)
+        if new_size < 16.0:
+            _apply_damage_to_creature(
+                ctx.creatures,
+                int(hit.hit_idx),
+                float(creature.hp) + 1.0,
+                damage_type=1,
+                impulse_x=0.0,
+                impulse_y=0.0,
+                owner_id=int(hit.proj.owner_id),
+                apply_creature_damage=ctx.apply_creature_damage,
+            )
+    hit.proj.life_timer = 0.25
+
+
+def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    creature = ctx.creatures[int(hit.hit_idx)]
+    creature.x += hit.move_dx * 3.0
+    creature.y += hit.move_dy * 3.0
+
+
+def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    creature = ctx.creatures[int(hit.hit_idx)]
+    if hasattr(creature, "plague_infected"):
+        setattr(creature, "plague_infected", True)
+
+
+_DEFAULT_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
+
+# Public: used by tests to ensure handler coverage.
+PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
+    int(ProjectileTypeId.PISTOL): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.ASSAULT_RIFLE): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.SHOTGUN): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.SUBMACHINE_GUN): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.GAUSS_GUN): ProjectileBehavior(linger=_linger_gauss_gun),
+    int(ProjectileTypeId.PLASMA_RIFLE): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.PLASMA_MINIGUN): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.PULSE_GUN): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
+    int(ProjectileTypeId.ION_RIFLE): ProjectileBehavior(linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle),
+    int(ProjectileTypeId.ION_MINIGUN): ProjectileBehavior(linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common),
+    int(ProjectileTypeId.ION_CANNON): ProjectileBehavior(linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common),
+    int(ProjectileTypeId.SHRINKIFIER): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_shrinkifier),
+    int(ProjectileTypeId.BLADE_GUN): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.SPIDER_PLASMA): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.PLASMA_CANNON): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon),
+    int(ProjectileTypeId.SPLITTER_GUN): ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
+    int(ProjectileTypeId.PLAGUE_SPREADER): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_plague_spreader),
+    int(ProjectileTypeId.RAINBOW_GUN): _DEFAULT_BEHAVIOR,
+    int(ProjectileTypeId.FIRE_BULLETS): _DEFAULT_BEHAVIOR,
+}
+
+
 class ProjectilePool:
     def __init__(self, *, size: int = MAIN_PROJECTILE_POOL_SIZE) -> None:
         self._entries = [Projectile() for _ in range(size)]
@@ -295,195 +756,18 @@ class ProjectilePool:
         def _damage_type_for() -> int:
             return 1
 
-        def _spawn_ion_hit_effects(type_id: int, pos_x: float, pos_y: float) -> None:
-            if effects is None or not hasattr(effects, "spawn"):
-                return
-
-            ring_scale = 0.0
-            ring_strength = 0.0
-            burst_scale = 0.0
-            if type_id == int(ProjectileTypeId.ION_MINIGUN):
-                ring_scale = 1.5
-                ring_strength = 0.1
-                burst_scale = 0.8
-            elif type_id == int(ProjectileTypeId.ION_RIFLE):
-                ring_scale = 1.2
-                ring_strength = 0.4
-                burst_scale = 1.2
-            elif type_id == int(ProjectileTypeId.ION_CANNON):
-                ring_scale = 1.0
-                ring_strength = 1.0
-                burst_scale = 2.2
-                if isinstance(sfx_queue, list):
-                    sfx_queue.append("sfx_shockwave")
-            else:
-                return
-
-            detail = int(detail_preset)
-
-            # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
-            effects.spawn(
-                effect_id=1,
-                pos_x=float(pos_x),
-                pos_y=float(pos_y),
-                vel_x=0.0,
-                vel_y=0.0,
-                rotation=0.0,
-                scale=1.0,
-                half_width=4.0,
-                half_height=4.0,
-                age=0.0,
-                lifetime=float(ring_strength) * 0.8,
-                flags=0x19,
-                color_r=0.6,
-                color_g=0.6,
-                color_b=0.9,
-                color_a=1.0,
-                rotation_step=0.0,
-                scale_step=float(ring_scale) * 45.0,
-                detail_preset=detail,
-            )
-
-            # Port of `FUN_0042f540(pos, burst_scale)`: burst cloud (effect_id=0).
-            burst = float(burst_scale) * 0.8
-            lifetime = min(burst * 0.7, 1.1)
-            half = burst * 32.0
-            count = int(half)
-            if detail < 3:
-                count //= 2
-
-            for _ in range(max(0, count)):
-                rotation = float(int(rng()) & 0x7F) * 0.049087387
-                vel_x = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
-                vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
-                scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
-                effects.spawn(
-                    effect_id=0,
-                    pos_x=float(pos_x),
-                    pos_y=float(pos_y),
-                    vel_x=vel_x,
-                    vel_y=vel_y,
-                    rotation=rotation,
-                    scale=1.0,
-                    half_width=half,
-                    half_height=half,
-                    age=0.0,
-                    lifetime=float(lifetime),
-                    flags=0x1D,
-                    color_r=0.4,
-                    color_g=0.5,
-                    color_b=1.0,
-                    color_a=0.5,
-                    rotation_step=0.0,
-                    scale_step=scale_step,
-                    detail_preset=detail,
-                )
-
-        def _spawn_plasma_cannon_hit_effects(pos_x: float, pos_y: float) -> None:
-            """Port of `projectile_update` Plasma Cannon hit extras.
-
-            Native does:
-            - `sfx_play_panned(sfx_explosion_medium)`
-            - `sfx_play_panned(sfx_shockwave)`
-            - `FUN_0042f330(pos, 1.5, 1.0)`
-            - `FUN_0042f330(pos, 1.0, 1.0)`
-            """
-
-            if effects is None or not hasattr(effects, "spawn"):
-                return
-
-            if isinstance(sfx_queue, list):
-                sfx_queue.append("sfx_explosion_medium")
-                sfx_queue.append("sfx_shockwave")
-
-            detail = int(detail_preset)
-
-            def _spawn_ring(*, scale: float) -> None:
-                effects.spawn(
-                    effect_id=1,
-                    pos_x=float(pos_x),
-                    pos_y=float(pos_y),
-                    vel_x=0.0,
-                    vel_y=0.0,
-                    rotation=0.0,
-                    scale=1.0,
-                    half_width=4.0,
-                    half_height=4.0,
-                    age=0.1,
-                    lifetime=1.0,
-                    flags=0x19,
-                    color_r=0.9,
-                    color_g=0.6,
-                    color_b=0.3,
-                    color_a=1.0,
-                    rotation_step=0.0,
-                    scale_step=float(scale) * 45.0,
-                    detail_preset=detail,
-                )
-
-            _spawn_ring(scale=1.5)
-            _spawn_ring(scale=1.0)
-
-        def _spawn_splitter_hit_effects(pos_x: float, pos_y: float) -> None:
-            """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
-
-            if effects is None or not hasattr(effects, "spawn"):
-                return
-
-            detail = int(detail_preset)
-            for _ in range(3):
-                angle = float(int(rng()) & 0x1FF) * (math.tau / 512.0)
-                radius = float(int(rng()) % 26)
-                jitter_age = -float(int(rng()) & 0xFF) * 0.0012
-                lifetime = 0.1 - jitter_age
-
-                effects.spawn(
-                    effect_id=0,
-                    pos_x=float(pos_x) + math.cos(angle) * radius,
-                    pos_y=float(pos_y) + math.sin(angle) * radius,
-                    vel_x=0.0,
-                    vel_y=0.0,
-                    rotation=0.0,
-                    scale=1.0,
-                    half_width=4.0,
-                    half_height=4.0,
-                    age=jitter_age,
-                    lifetime=lifetime,
-                    flags=0x19,
-                    color_r=1.0,
-                    color_g=0.9,
-                    color_b=0.1,
-                    color_a=1.0,
-                    rotation_step=0.0,
-                    scale_step=55.0,
-                    detail_preset=detail,
-                )
-
-        def _apply_damage_to_creature(
-            creature_index: int,
-            damage: float,
-            *,
-            damage_type: int,
-            impulse_x: float,
-            impulse_y: float,
-            owner_id: int,
-        ) -> None:
-            if damage <= 0.0:
-                return
-            idx = int(creature_index)
-            if not (0 <= idx < len(creatures)):
-                return
-            if apply_creature_damage is not None:
-                apply_creature_damage(
-                    idx,
-                    float(damage),
-                    int(damage_type),
-                    float(impulse_x),
-                    float(impulse_y),
-                    int(owner_id),
-                )
-            else:
-                creatures[idx].hp -= float(damage)
+        ctx = _ProjectileUpdateCtx(
+            pool=self,
+            creatures=creatures,
+            dt=float(dt),
+            ion_scale=float(ion_scale),
+            detail_preset=int(detail_preset),
+            rng=rng,
+            runtime_state=runtime_state,
+            effects=effects,
+            sfx_queue=sfx_queue,
+            apply_creature_damage=apply_creature_damage,
+        )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
             if runtime_state is None:
@@ -545,6 +829,7 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
+            behavior = PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(proj.type_id), _DEFAULT_BEHAVIOR)
 
             if proj.life_timer <= 0.0:
                 _reset_shock_chain_if_owner(proj_index)
@@ -558,51 +843,7 @@ class ProjectilePool:
                     _try_spawn_shock_chain_link(proj_index, pending_hit - 1)
 
             if proj.life_timer < 0.4:
-                type_id = proj.type_id
-                if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
-                    proj.life_timer -= dt
-                    if type_id == ProjectileTypeId.ION_RIFLE:
-                        damage = dt * 100.0
-                        radius = ion_scale * 88.0
-                    else:
-                        damage = dt * 40.0
-                        radius = ion_scale * 60.0
-                    for creature_idx, creature in enumerate(creatures):
-                        if creature.hp <= 0.0:
-                            continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = radius + creature_radius
-                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                            _apply_damage_to_creature(
-                                creature_idx,
-                                damage,
-                                damage_type=7,
-                                impulse_x=0.0,
-                                impulse_y=0.0,
-                                owner_id=int(proj.owner_id),
-                            )
-                elif type_id == ProjectileTypeId.ION_CANNON:
-                    proj.life_timer -= dt * 0.7
-                    damage = dt * 300.0
-                    radius = ion_scale * 128.0
-                    for creature_idx, creature in enumerate(creatures):
-                        if creature.hp <= 0.0:
-                            continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = radius + creature_radius
-                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                            _apply_damage_to_creature(
-                                creature_idx,
-                                damage,
-                                damage_type=7,
-                                impulse_x=0.0,
-                                impulse_y=0.0,
-                                owner_id=int(proj.owner_id),
-                            )
-                elif type_id == ProjectileTypeId.GAUSS_GUN:
-                    proj.life_timer -= dt * 0.1
-                else:
-                    proj.life_timer -= dt
+                behavior.linger(ctx, proj)
 
                 if proj.life_timer <= 0.0:
                     proj.active = False
@@ -721,26 +962,8 @@ class ProjectilePool:
                         if hasattr(creature, "flags"):
                             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-                    if type_id == ProjectileTypeId.SPLITTER_GUN:
-                        _spawn_splitter_hit_effects(proj.pos_x, proj.pos_y)
-                        self.spawn(
-                            pos_x=proj.pos_x,
-                            pos_y=proj.pos_y,
-                            angle=proj.angle - 1.0471976,
-                            type_id=ProjectileTypeId.SPLITTER_GUN,
-                            owner_id=hit_idx,
-                            base_damage=proj.base_damage,
-                            hits_players=proj.hits_players,
-                        )
-                        self.spawn(
-                            pos_x=proj.pos_x,
-                            pos_y=proj.pos_y,
-                            angle=proj.angle + 1.0471976,
-                            type_id=ProjectileTypeId.SPLITTER_GUN,
-                            owner_id=hit_idx,
-                            base_damage=proj.base_damage,
-                            hits_players=proj.hits_players,
-                        )
+                    if behavior.pre_hit_creature is not None:
+                        behavior.pre_hit_creature(ctx, proj, int(hit_idx))
 
                     shots_hit = getattr(runtime_state, "shots_hit", None) if runtime_state is not None else None
                     if isinstance(shots_hit, list):
@@ -770,50 +993,19 @@ class ProjectilePool:
                     if dist < 50.0:
                         dist = 50.0
 
-                    if type_id == ProjectileTypeId.ION_RIFLE:
-                        if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
-                            proj.reserved = float(int(hit_idx) + 1)
-                    if type_id in (ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_CANNON):
-                        _spawn_ion_hit_effects(int(type_id), target_x, target_y)
-                    elif type_id == ProjectileTypeId.PLASMA_CANNON:
-                        size = float(getattr(creature, "size", 50.0) or 50.0)
-                        ring_radius = size * 0.5 + 1.0
-                        plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
-                        plasma_meta = (
-                            float(plasma_entry.projectile_meta)
-                            if plasma_entry and plasma_entry.projectile_meta is not None
-                            else proj.base_damage
+                    if behavior.post_hit_creature is not None:
+                        behavior.post_hit_creature(
+                            ctx,
+                            _ProjectileHitInfo(
+                                proj_index=int(proj_index),
+                                proj=proj,
+                                hit_idx=int(hit_idx),
+                                move_dx=float(move_dx),
+                                move_dy=float(move_dy),
+                                target_x=float(target_x),
+                                target_y=float(target_y),
+                            ),
                         )
-                        for ring_idx in range(12):
-                            ring_angle = float(ring_idx) * (math.pi / 6.0)
-                            self.spawn(
-                                pos_x=proj.pos_x + math.cos(ring_angle) * ring_radius,
-                                pos_y=proj.pos_y + math.sin(ring_angle) * ring_radius,
-                                angle=ring_angle,
-                                type_id=ProjectileTypeId.PLASMA_RIFLE,
-                                owner_id=-100,
-                                base_damage=plasma_meta,
-                            )
-                        _spawn_plasma_cannon_hit_effects(proj.pos_x, proj.pos_y)
-                    elif type_id == ProjectileTypeId.SHRINKIFIER:
-                        if hasattr(creature, "size"):
-                            new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
-                            setattr(creature, "size", new_size)
-                            if new_size < 16.0:
-                                _apply_damage_to_creature(
-                                    hit_idx,
-                                    float(creature.hp) + 1.0,
-                                    damage_type=_damage_type_for(),
-                                    impulse_x=0.0,
-                                    impulse_y=0.0,
-                                    owner_id=int(proj.owner_id),
-                                )
-                        proj.life_timer = 0.25
-                    elif type_id == ProjectileTypeId.PULSE_GUN:
-                        creature.x += move_dx * 3.0
-                        creature.y += move_dy * 3.0
-                    elif type_id == ProjectileTypeId.PLAGUE_SPREADER and hasattr(creature, "plague_infected"):
-                        setattr(creature, "plague_infected", True)
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
@@ -826,24 +1018,28 @@ class ProjectilePool:
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
-                                hit_idx,
-                                damage_amount,
+                                creatures,
+                                int(hit_idx),
+                                float(damage_amount),
                                 damage_type=damage_type,
                                 impulse_x=impulse_x,
                                 impulse_y=impulse_y,
                                 owner_id=int(proj.owner_id),
+                                apply_creature_damage=apply_creature_damage,
                             )
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
                             hp_before = float(creature.hp)
                             _apply_damage_to_creature(
-                                hit_idx,
-                                remaining,
+                                creatures,
+                                int(hit_idx),
+                                float(remaining),
                                 damage_type=damage_type,
                                 impulse_x=impulse_x,
                                 impulse_y=impulse_y,
                                 owner_id=int(proj.owner_id),
+                                apply_creature_damage=apply_creature_damage,
                             )
                             proj.damage_pool -= hp_before
 
