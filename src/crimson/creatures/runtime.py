@@ -22,6 +22,7 @@ from ..player_damage import player_take_damage
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
+    CreatureInfFlag,
     CreatureInit,
     SpawnEnv,
     SpawnPlan,
@@ -136,8 +137,8 @@ class CreatureState:
     attack_cooldown: float = 0.0
     reward_value: float = 0.0
 
-    # Contact damage gate.
-    collision_flag: int = 0
+    # Plaguebearer infection flag (native: `collision_flag` byte).
+    collision_flag: CreatureInfFlag = CreatureInfFlag(0)
     collision_timer: float = CONTACT_DAMAGE_PERIOD
     hitbox_size: float = CREATURE_HITBOX_ALIVE
 
@@ -212,9 +213,9 @@ class CreaturePool:
 
             if math.hypot(float(creature.x) - float(origin.x), float(creature.y) - float(origin.y)) < 45.0:
                 if creature.collision_flag != 0 and float(origin.hp) < 150.0:
-                    origin.collision_flag = 1
+                    origin.collision_flag = CreatureInfFlag.INFECTED
                 if origin.collision_flag != 0 and float(creature.hp) < 150.0:
-                    creature.collision_flag = 1
+                    creature.collision_flag = CreatureInfFlag.INFECTED
                 return
 
     def _alloc_slot(self, *, rand: Callable[[], int] | None = None) -> int:
@@ -689,7 +690,7 @@ class CreaturePool:
                     and int(state.plaguebearer_infection_count) < 0x32
                     and dist_sq < 30.0 * 30.0
                 ):
-                    creature.collision_flag = 1
+                    creature.collision_flag = CreatureInfFlag.INFECTED
 
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
@@ -862,7 +863,7 @@ class CreaturePool:
         entry.tint_b = float(tint[2])
         entry.tint_a = float(tint[3])
 
-        entry.collision_flag = 0
+        entry.collision_flag = CreatureInfFlag(0)
         entry.collision_timer = CONTACT_DAMAGE_PERIOD
         entry.hitbox_size = CREATURE_HITBOX_ALIVE
 

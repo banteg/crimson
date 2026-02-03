@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
-from crimson.creatures.spawn import CreatureFlags
+from crimson.creatures.spawn import CreatureFlags, CreatureInfFlag
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
 
@@ -24,7 +24,7 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
 
     pool.update(0.016, state=state, players=[player])
 
-    assert creature.collision_flag == 1
+    assert creature.collision_flag == CreatureInfFlag.INFECTED
 
 
 def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
@@ -36,7 +36,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.collision_flag = 1
+    creature.collision_flag = CreatureInfFlag.INFECTED
     creature.collision_timer = 0.1
     creature.x = 100.0
     creature.y = 100.0
@@ -58,7 +58,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     infected = pool.entries[0]
     infected.active = True
     infected.flags = CreatureFlags.ANIM_PING_PONG
-    infected.collision_flag = 1
+    infected.collision_flag = CreatureInfFlag.INFECTED
     infected.x = 100.0
     infected.y = 100.0
     infected.hp = 100.0
@@ -67,7 +67,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     other = pool.entries[1]
     other.active = True
     other.flags = CreatureFlags.ANIM_PING_PONG
-    other.collision_flag = 0
+    other.collision_flag = CreatureInfFlag(0)
     other.x = 130.0
     other.y = 100.0
     other.hp = 100.0
@@ -75,7 +75,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
 
     pool.update(0.016, state=state, players=[player])
 
-    assert other.collision_flag == 1
+    assert other.collision_flag == CreatureInfFlag.INFECTED
 
 
 def test_plaguebearer_infection_kill_increments_global_count() -> None:
@@ -88,7 +88,7 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.collision_flag = 1
+    creature.collision_flag = CreatureInfFlag.INFECTED
     creature.collision_timer = 0.1
     creature.x = 100.0
     creature.y = 100.0
@@ -100,4 +100,3 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
 
     assert state.plaguebearer_infection_count == 1
     assert len(result.deaths) == 1
-
