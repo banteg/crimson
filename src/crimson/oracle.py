@@ -6,6 +6,7 @@ and emits game state to stdout each frame for comparison with other implementati
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from dataclasses import asdict, dataclass
@@ -18,6 +19,14 @@ from .bonuses import BonusId
 from .sim.world_state import WorldState
 
 
+class OutputMode:
+    """Output modes for oracle state emission."""
+    FULL = "full"        # Complete state every sample
+    SUMMARY = "summary"  # Score, kills, player pos/health only
+    HASH = "hash"        # SHA256 hash of full state for fast comparison
+    CHECKPOINTS = "checkpoints"  # Only on significant events
+
+
 @dataclass(frozen=True, slots=True)
 class OracleConfig:
     """Configuration for headless oracle mode."""
@@ -26,6 +35,8 @@ class OracleConfig:
     input_file: Path | None
     max_frames: int = 36000  # 10 minutes at 60fps
     frame_rate: int = 60
+    sample_rate: int = 1     # Emit state every N frames (1 = every frame, 60 = once per second)
+    output_mode: str = OutputMode.SUMMARY
 
 
 @dataclass(slots=True)
@@ -122,7 +133,7 @@ def export_projectile_state(proj: Any) -> dict[str, Any]:
     }
 
 
-def export_game_state(
+def export_game_state_full(
     frame: int,
     world_state: WorldState,
     players: list[PlayerState],
@@ -171,6 +182,98 @@ def export_game_state(
     }
 
 
+def export_game_state_summary(
+    frame: int,
+    world_state: WorldState,
+    players: list[PlayerState],
+    rng_state: int,
+    elapsed_ms: float,
+) -> dict[str, Any]:
+    """Export minimal game state for fast comparison."""
+    total_experience = sum(p.experience for p in players)
+    kill_count = world_state.creatures.kill_count
+    creature_count = sum(1 for c in world_state.creatures.entries if c.active)
+
+    return {
+        "frame": frame,
+        "rng_state": rng_state,
+        "elapsed_ms": round(elapsed_ms, 4),
+        "score": int(total_experience),
+        "kills": int(kill_count),
+        "creature_count": creature_count,
+        "players": [
+            {
+                "pos_x": round(float(p.pos_x), 2),
+                "pos_y": round(float(p.pos_y), 2),
+                "health": round(float(p.health), 2),
+                "weapon_id": int(p.weapon_id),
+                "level": int(p.level),
+            }
+            for p in players
+        ],
+    }
+
+
+def export_game_state_hash(
+    frame: int,
+    world_state: WorldState,
+    players: list[PlayerState],
+    rng_state: int,
+    elapsed_ms: float,
+) -> dict[str, Any]:
+    """Export hash of game state for ultra-fast comparison."""
+    # Get full state and hash it
+    full_state = export_game_state_full(
+        frame, world_state, players, rng_state, elapsed_ms
+    )
+    # Remove frame from hash computation (it's metadata)
+    hashable = {k: v for k, v in full_state.items() if k != "frame"}
+    state_bytes = json.dumps(hashable, sort_keys=True).encode()
+    state_hash = hashlib.sha256(state_bytes).hexdigest()[:16]
+
+    return {
+        "frame": frame,
+        "hash": state_hash,
+        "score": full_state["score"],
+        "kills": full_state["kills"],
+    }
+
+
+@dataclass(slots=True)
+class CheckpointTracker:
+    """Track significant events for checkpoint-only output."""
+    last_score: int = 0
+    last_kills: int = 0
+    last_level: int = 1
+    last_health: float = 100.0
+    last_weapon_id: int = 1
+
+    def check_and_update(self, players: list[PlayerState], world_state: WorldState) -> bool:
+        """Return True if any significant change occurred."""
+        score = sum(p.experience for p in players)
+        kills = world_state.creatures.kill_count
+        level = players[0].level if players else 1
+        health = players[0].health if players else 0.0
+        weapon_id = players[0].weapon_id if players else 1
+
+        changed = (
+            score != self.last_score or
+            kills != self.last_kills or
+            level != self.last_level or
+            int(health) != int(self.last_health) or  # Only trigger on integer health change
+            weapon_id != self.last_weapon_id
+        )
+
+        if changed:
+            self.last_score = score
+            self.last_kills = kills
+            self.last_level = level
+            self.last_health = health
+            self.last_weapon_id = weapon_id
+
+        return changed
+
+
 def run_headless(config: OracleConfig) -> None:
     """Run the game in headless mode, emitting state JSON each frame."""
     from .sim.world_state import WorldState
@@ -211,6 +314,17 @@ def run_headless(config: OracleConfig) -> None:
     fx_queue = FxQueue()
     fx_queue_rotated = FxQueueRotated()
 
+    # Checkpoint tracker for event-driven output
+    checkpoint_tracker = CheckpointTracker()
+
+    # Select export function based on output mode
+    export_fn = {
+        OutputMode.FULL: export_game_state_full,
+        OutputMode.SUMMARY: export_game_state_summary,
+        OutputMode.HASH: export_game_state_hash,
+        OutputMode.CHECKPOINTS: export_game_state_summary,  # Same format, different trigger
+    }.get(config.output_mode, export_game_state_summary)
+
     for frame in range(config.max_frames):
         # Update current input if we have one for this frame
         if frame in inputs_by_frame:
@@ -245,16 +359,38 @@ def run_headless(config: OracleConfig) -> None:
 
         elapsed_ms += dt * 1000.0
 
-        # Export and emit state
-        state_json = export_game_state(
-            frame=frame,
-            world_state=world_state,
-            players=players,
-            rng_state=world_state.state.rng.state,
-            elapsed_ms=elapsed_ms,
-        )
-        print(json.dumps(state_json), flush=True)
+        # Determine if we should emit state this frame
+        should_emit = False
+        if config.output_mode == OutputMode.CHECKPOINTS:
+            # Only emit on significant changes
+            should_emit = checkpoint_tracker.check_and_update(players, world_state)
+            # Always emit first and last frame
+            if frame == 0:
+                should_emit = True
+        else:
+            # Sample rate based emission
+            should_emit = (frame % config.sample_rate == 0)
+
+        if should_emit:
+            state_json = export_fn(
+                frame=frame,
+                world_state=world_state,
+                players=players,
+                rng_state=world_state.state.rng.state,
+                elapsed_ms=elapsed_ms,
+            )
+            print(json.dumps(state_json), flush=True)
 
         # Check if all players dead
         if all(p.health <= 0 for p in players):
+            # Always emit final state on death
+            if not should_emit:
+                state_json = export_fn(
+                    frame=frame,
+                    world_state=world_state,
+                    players=players,
+                    rng_state=world_state.state.rng.state,
+                    elapsed_ms=elapsed_ms,
+                )
+                print(json.dumps(state_json), flush=True)
             break
