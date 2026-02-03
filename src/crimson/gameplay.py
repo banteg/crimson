@@ -597,6 +597,143 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float
     return -1
 
 
+@dataclass(slots=True)
+class _PerksUpdateEffectsCtx:
+    state: GameplayState
+    players: list[PlayerState]
+    dt: float
+    creatures: list[_CreatureForPerks] | None
+    fx_queue: FxQueue | None
+    _aim_target: int | None = None
+
+    def aim_target(self) -> int:
+        if self._aim_target is not None:
+            return int(self._aim_target)
+
+        target = -1
+        if self.players and self.creatures is not None and (
+            perk_active(self.players[0], PerkId.PYROKINETIC) or perk_active(self.players[0], PerkId.EVIL_EYES)
+        ):
+            target = _creature_find_in_radius(
+                self.creatures,
+                pos_x=self.players[0].aim_x,
+                pos_y=self.players[0].aim_y,
+                radius=12.0,
+                start_index=0,
+            )
+        self._aim_target = int(target)
+        return int(target)
+
+
+_PerksUpdateEffectsStep = Callable[[_PerksUpdateEffectsCtx], None]
+
+
+def _perks_update_regeneration(ctx: _PerksUpdateEffectsCtx) -> None:
+    if ctx.players and perk_active(ctx.players[0], PerkId.REGENERATION) and (ctx.state.rng.rand() & 1):
+        for player in ctx.players:
+            if not (0.0 < float(player.health) < 100.0):
+                continue
+            player.health = float(player.health) + ctx.dt
+            if player.health > 100.0:
+                player.health = 100.0
+
+
+def _perks_update_lean_mean_exp_machine(ctx: _PerksUpdateEffectsCtx) -> None:
+    ctx.state.lean_mean_exp_timer -= ctx.dt
+    if ctx.state.lean_mean_exp_timer < 0.0:
+        ctx.state.lean_mean_exp_timer = 0.25
+        for player in ctx.players:
+            perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
+            if perk_count > 0:
+                player.experience += perk_count * 10
+
+
+def _perks_update_evil_eyes_target(ctx: _PerksUpdateEffectsCtx) -> None:
+    if not ctx.players:
+        return
+
+    target = ctx.aim_target()
+    player0 = ctx.players[0]
+    player0.evil_eyes_target_creature = target if perk_active(player0, PerkId.EVIL_EYES) else -1
+
+
+def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
+    if not ctx.players:
+        return
+    if ctx.creatures is None:
+        return
+    if not perk_active(ctx.players[0], PerkId.PYROKINETIC):
+        return
+
+    target = ctx.aim_target()
+    if target == -1:
+        return
+
+    creature = ctx.creatures[target]
+    creature.collision_timer = float(creature.collision_timer) - ctx.dt
+    if creature.collision_timer < 0.0:
+        creature.collision_timer = 0.5
+        pos_x = float(creature.x)
+        pos_y = float(creature.y)
+        for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
+            angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
+            ctx.state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
+        if ctx.fx_queue is not None:
+            ctx.fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=ctx.state.rng.rand)
+
+
+def _perks_update_jinxed_timer(ctx: _PerksUpdateEffectsCtx) -> None:
+    if ctx.state.jinxed_timer >= 0.0:
+        ctx.state.jinxed_timer -= ctx.dt
+
+
+def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
+    if ctx.state.jinxed_timer >= 0.0:
+        return
+    if not ctx.players:
+        return
+    if not perk_active(ctx.players[0], PerkId.JINXED):
+        return
+
+    player = ctx.players[0]
+    if int(ctx.state.rng.rand()) % 10 == 3:
+        player.health = float(player.health) - 5.0
+        if ctx.fx_queue is not None:
+            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
+
+    ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
+
+    if float(ctx.state.bonuses.freeze) <= 0.0 and ctx.creatures is not None:
+        pool_mod = min(0x17F, len(ctx.creatures))
+        if pool_mod <= 0:
+            return
+
+        idx = int(ctx.state.rng.rand()) % pool_mod
+        attempts = 0
+        while attempts < 10 and not ctx.creatures[idx].active:
+            idx = int(ctx.state.rng.rand()) % pool_mod
+            attempts += 1
+        if not ctx.creatures[idx].active:
+            return
+
+        creature = ctx.creatures[idx]
+        creature.hp = -1.0
+        creature.hitbox_size = float(creature.hitbox_size) - ctx.dt * 20.0
+        player.experience = int(float(player.experience) + float(creature.reward_value))
+        ctx.state.sfx_queue.append("sfx_trooper_inpain_01")
+
+
+_PERKS_UPDATE_EFFECT_STEPS: tuple[_PerksUpdateEffectsStep, ...] = (
+    _perks_update_regeneration,
+    _perks_update_lean_mean_exp_machine,
+    _perks_update_evil_eyes_target,
+    _perks_update_pyrokinetic,
+    _perks_update_jinxed_timer,
+    _perks_update_jinxed,
+)
+
+
 def perks_update_effects(
     state: GameplayState,
     players: list[PlayerState],
@@ -610,83 +747,15 @@ def perks_update_effects(
     dt = float(dt)
     if dt <= 0.0:
         return
-
-    if players and perk_active(players[0], PerkId.REGENERATION) and (state.rng.rand() & 1):
-        for player in players:
-            if not (0.0 < float(player.health) < 100.0):
-                continue
-            player.health = float(player.health) + dt
-            if player.health > 100.0:
-                player.health = 100.0
-
-    state.lean_mean_exp_timer -= dt
-    if state.lean_mean_exp_timer < 0.0:
-        state.lean_mean_exp_timer = 0.25
-        for player in players:
-            perk_count = perk_count_get(player, PerkId.LEAN_MEAN_EXP_MACHINE)
-            if perk_count > 0:
-                player.experience += perk_count * 10
-
-    target = -1
-    if players and creatures is not None and (
-        perk_active(players[0], PerkId.PYROKINETIC) or perk_active(players[0], PerkId.EVIL_EYES)
-    ):
-        target = _creature_find_in_radius(
-            creatures,
-            pos_x=players[0].aim_x,
-            pos_y=players[0].aim_y,
-            radius=12.0,
-            start_index=0,
-        )
-
-    if players:
-        player0 = players[0]
-        player0.evil_eyes_target_creature = target if perk_active(player0, PerkId.EVIL_EYES) else -1
-
-    if players and creatures is not None and perk_active(players[0], PerkId.PYROKINETIC) and target != -1:
-        creature = creatures[target]
-        creature.collision_timer = float(creature.collision_timer) - dt
-        if creature.collision_timer < 0.0:
-            creature.collision_timer = 0.5
-            pos_x = float(creature.x)
-            pos_y = float(creature.y)
-            for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
-                angle = float(int(state.rng.rand()) % 0x274) * 0.01
-                state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
-            if fx_queue is not None:
-                fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=state.rng.rand)
-
-    if state.jinxed_timer >= 0.0:
-        state.jinxed_timer -= dt
-
-    if state.jinxed_timer < 0.0 and players and perk_active(players[0], PerkId.JINXED):
-        player = players[0]
-        if int(state.rng.rand()) % 10 == 3:
-            player.health = float(player.health) - 5.0
-            if fx_queue is not None:
-                fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=state.rng.rand)
-                fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=state.rng.rand)
-
-        state.jinxed_timer = float(int(state.rng.rand()) % 0x14) * 0.1 + float(state.jinxed_timer) + 2.0
-
-        if float(state.bonuses.freeze) <= 0.0 and creatures is not None:
-            pool_mod = min(0x17F, len(creatures))
-            if pool_mod <= 0:
-                return
-
-            idx = int(state.rng.rand()) % pool_mod
-            attempts = 0
-            while attempts < 10 and not creatures[idx].active:
-                idx = int(state.rng.rand()) % pool_mod
-                attempts += 1
-            if not creatures[idx].active:
-                return
-
-            creature = creatures[idx]
-            creature.hp = -1.0
-            creature.hitbox_size = float(creature.hitbox_size) - dt * 20.0
-            player.experience = int(float(player.experience) + float(creature.reward_value))
-            state.sfx_queue.append("sfx_trooper_inpain_01")
+    ctx = _PerksUpdateEffectsCtx(
+        state=state,
+        players=players,
+        dt=dt,
+        creatures=creatures,
+        fx_queue=fx_queue,
+    )
+    for step in _PERKS_UPDATE_EFFECT_STEPS:
+        step(ctx)
 
 
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
@@ -1674,6 +1743,53 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0
 
 
+@dataclass(slots=True)
+class _PlayerPerkTickCtx:
+    state: GameplayState
+    player: PlayerState
+    dt: float
+    stationary: bool
+
+
+_PlayerPerkTickStep = Callable[[_PlayerPerkTickCtx], None]
+
+
+def _player_perk_tick_man_bomb(ctx: _PlayerPerkTickCtx) -> None:
+    if ctx.stationary and perk_active(ctx.player, PerkId.MAN_BOMB):
+        _perk_update_man_bomb(ctx.player, ctx.dt, ctx.state)
+    else:
+        ctx.player.man_bomb_timer = 0.0
+
+
+def _player_perk_tick_living_fortress(ctx: _PlayerPerkTickCtx) -> None:
+    if ctx.stationary and perk_active(ctx.player, PerkId.LIVING_FORTRESS):
+        ctx.player.living_fortress_timer = min(30.0, ctx.player.living_fortress_timer + ctx.dt)
+    else:
+        ctx.player.living_fortress_timer = 0.0
+
+
+def _player_perk_tick_fire_cough(ctx: _PlayerPerkTickCtx) -> None:
+    if perk_active(ctx.player, PerkId.FIRE_CAUGH):
+        _perk_update_fire_cough(ctx.player, ctx.dt, ctx.state)
+    else:
+        ctx.player.fire_cough_timer = 0.0
+
+
+def _player_perk_tick_hot_tempered(ctx: _PlayerPerkTickCtx) -> None:
+    if perk_active(ctx.player, PerkId.HOT_TEMPERED):
+        _perk_update_hot_tempered(ctx.player, ctx.dt, ctx.state)
+    else:
+        ctx.player.hot_tempered_timer = 0.0
+
+
+_PLAYER_PERK_TICK_STEPS: tuple[_PlayerPerkTickStep, ...] = (
+    _player_perk_tick_man_bomb,
+    _player_perk_tick_living_fortress,
+    _player_perk_tick_fire_cough,
+    _player_perk_tick_hot_tempered,
+)
+
+
 def player_fire_weapon(
     player: PlayerState,
     input_state: PlayerInput,
@@ -2063,25 +2179,9 @@ def player_update(
     if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
 
-    if stationary and perk_active(player, PerkId.MAN_BOMB):
-        _perk_update_man_bomb(player, dt, state)
-    else:
-        player.man_bomb_timer = 0.0
-
-    if stationary and perk_active(player, PerkId.LIVING_FORTRESS):
-        player.living_fortress_timer = min(30.0, player.living_fortress_timer + dt)
-    else:
-        player.living_fortress_timer = 0.0
-
-    if perk_active(player, PerkId.FIRE_CAUGH):
-        _perk_update_fire_cough(player, dt, state)
-    else:
-        player.fire_cough_timer = 0.0
-
-    if perk_active(player, PerkId.HOT_TEMPERED):
-        _perk_update_hot_tempered(player, dt, state)
-    else:
-        player.hot_tempered_timer = 0.0
+    perk_ctx = _PlayerPerkTickCtx(state=state, player=player, dt=dt, stationary=stationary)
+    for step in _PLAYER_PERK_TICK_STEPS:
+        step(perk_ctx)
 
     # Reload + reload perks.
     if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
