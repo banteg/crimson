@@ -648,6 +648,17 @@ def _perks_update_lean_mean_exp_machine(ctx: _PerksUpdateEffectsCtx) -> None:
                 player.experience += perk_count * 10
 
 
+def _perks_update_death_clock(ctx: _PerksUpdateEffectsCtx) -> None:
+    for player in ctx.players:
+        if not perk_active(player, PerkId.DEATH_CLOCK):
+            continue
+
+        if float(player.health) <= 0.0:
+            player.health = 0.0
+        else:
+            player.health = float(player.health) - ctx.dt * 3.3333333
+
+
 def _perks_update_evil_eyes_target(ctx: _PerksUpdateEffectsCtx) -> None:
     if not ctx.players:
         return
@@ -727,6 +738,7 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
 _PERKS_UPDATE_EFFECT_STEPS: tuple[_PerksUpdateEffectsStep, ...] = (
     _perks_update_regeneration,
     _perks_update_lean_mean_exp_machine,
+    _perks_update_death_clock,
     _perks_update_evil_eyes_target,
     _perks_update_pyrokinetic,
     _perks_update_jinxed_timer,
