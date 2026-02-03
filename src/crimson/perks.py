@@ -674,7 +674,9 @@ PERK_TABLE = [
         notes=(
             "`player_take_damage` (0x00425e50): if Death Clock is active, returns immediately (immune to damage). "
             "`perk_apply` (0x004055e0): clears Regeneration and Greater Regeneration perk counts and sets "
-            "`player.health = 100.0` when `health > 0.0`."
+            "`player.health = 100.0` when `health > 0.0`. "
+            "`perks_update_effects` (0x00406b40): if `health <= 0.0`, sets it to `0.0`; otherwise decrements "
+            "`health -= frame_dt * 3.3333333`."
         ),
     ),
     PerkMeta(

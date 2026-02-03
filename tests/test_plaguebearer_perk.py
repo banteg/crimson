@@ -4,8 +4,19 @@ import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
-from crimson.gameplay import GameplayState, PlayerState
+from crimson.gameplay import GameplayState, PlayerState, perk_apply
 from crimson.perks import PerkId
+
+
+def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:
+    state = GameplayState()
+    owner = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    other = PlayerState(index=1, pos_x=0.0, pos_y=0.0)
+
+    perk_apply(state, [owner, other], PerkId.PLAGUEBEARER)
+
+    assert owner.plaguebearer_active
+    assert other.plaguebearer_active
 
 
 def test_plaguebearer_infects_weak_creatures_near_player() -> None:

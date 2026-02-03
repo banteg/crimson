@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState, PlayerState, perk_apply
+import pytest
+
+from crimson.gameplay import GameplayState, PlayerState, perk_apply, perks_update_effects
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 
@@ -35,3 +37,23 @@ def test_death_clock_blocks_damage() -> None:
 
     assert applied == 0.0
     assert player.health == 100.0
+
+
+def test_death_clock_drains_health_over_time() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0)
+    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    perks_update_effects(state, [player], 1.0)
+
+    assert player.health == pytest.approx(96.6666667)
+
+
+def test_death_clock_clamps_dead_health_to_zero() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=-1.0)
+    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    perks_update_effects(state, [player], 0.1)
+
+    assert player.health == 0.0

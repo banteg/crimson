@@ -135,7 +135,7 @@ class BaseGameplayMode:
             return
         hp = float(getattr(creature, "hp", 0.0))
         max_hp = float(getattr(creature, "max_hp", 0.0))
-        if hp <= 0.0 or max_hp <= 0.0:
+        if max_hp <= 0.0:
             return
 
         ratio = hp / max_hp

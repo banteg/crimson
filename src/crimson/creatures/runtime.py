@@ -252,12 +252,14 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
     creature.collision_timer += CONTACT_DAMAGE_PERIOD
 
+    mr_melee_killed = False
+    mr_melee_death_start_needed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
-        death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
+        mr_melee_death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
 
         from .damage import creature_apply_damage
 
-        killed = creature_apply_damage(
+        mr_melee_killed = creature_apply_damage(
             creature,
             damage_amount=25.0,
             damage_type=2,
@@ -268,29 +270,6 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             players=ctx.players,
             rand=ctx.rand,
         )
-        if killed and death_start_needed:
-            ctx.deaths.append(
-                ctx.pool.handle_death(
-                    ctx.creature_index,
-                    state=ctx.state,
-                    players=ctx.players,
-                    rand=ctx.rand,
-                    detail_preset=int(ctx.detail_preset),
-                    world_width=float(ctx.world_width),
-                    world_height=float(ctx.world_height),
-                    fx_queue=ctx.fx_queue,
-                )
-            )
-            if creature.active:
-                ctx.pool._tick_dead(
-                    creature,
-                    dt=ctx.dt,
-                    world_width=float(ctx.world_width),
-                    world_height=float(ctx.world_height),
-                    fx_queue_rotated=ctx.fx_queue_rotated,
-                )
-            ctx.skip_creature = True
-            return
 
     if float(ctx.player.shield_timer) <= 0.0:
         if perk_active(ctx.player, PerkId.TOXIC_AVENGER):
@@ -315,6 +294,29 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             pos_y=float(ctx.player.pos_y) + dy * 3.0,
             rand=ctx.rand,
         )
+
+    if mr_melee_killed and mr_melee_death_start_needed:
+        ctx.deaths.append(
+            ctx.pool.handle_death(
+                ctx.creature_index,
+                state=ctx.state,
+                players=ctx.players,
+                rand=ctx.rand,
+                detail_preset=int(ctx.detail_preset),
+                world_width=float(ctx.world_width),
+                world_height=float(ctx.world_height),
+                fx_queue=ctx.fx_queue,
+            )
+        )
+        if creature.active:
+            ctx.pool._tick_dead(
+                creature,
+                dt=ctx.dt,
+                world_width=float(ctx.world_width),
+                world_height=float(ctx.world_height),
+                fx_queue_rotated=ctx.fx_queue_rotated,
+            )
+        ctx.skip_creature = True
 
 
 def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx) -> None:
@@ -564,11 +566,36 @@ class CreaturePool:
                 creature.vel_y = 0.0
                 continue
 
+            poison_killed = False
             if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
-                creature.hp -= dt * 180.0
+                from .damage import creature_apply_damage
+
+                poison_killed = creature_apply_damage(
+                    creature,
+                    damage_amount=dt * 180.0,
+                    damage_type=0,
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=int(creature.last_hit_owner_id),
+                    dt=dt,
+                    players=players,
+                    rand=rand,
+                )
             elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
-                creature.hp -= dt * 60.0
-            if creature.hp <= 0.0:
+                from .damage import creature_apply_damage
+
+                poison_killed = creature_apply_damage(
+                    creature,
+                    damage_amount=dt * 60.0,
+                    damage_type=0,
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=int(creature.last_hit_owner_id),
+                    dt=dt,
+                    players=players,
+                    rand=rand,
+                )
+            if poison_killed:
                 deaths.append(
                     self.handle_death(
                         idx,

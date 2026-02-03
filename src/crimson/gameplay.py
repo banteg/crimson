@@ -648,6 +648,17 @@ def _perks_update_lean_mean_exp_machine(ctx: _PerksUpdateEffectsCtx) -> None:
                 player.experience += perk_count * 10
 
 
+def _perks_update_death_clock(ctx: _PerksUpdateEffectsCtx) -> None:
+    for player in ctx.players:
+        if not perk_active(player, PerkId.DEATH_CLOCK):
+            continue
+
+        if float(player.health) <= 0.0:
+            player.health = 0.0
+        else:
+            player.health = float(player.health) - ctx.dt * 3.3333333
+
+
 def _perks_update_evil_eyes_target(ctx: _PerksUpdateEffectsCtx) -> None:
     if not ctx.players:
         return
@@ -727,6 +738,7 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
 _PERKS_UPDATE_EFFECT_STEPS: tuple[_PerksUpdateEffectsStep, ...] = (
     _perks_update_regeneration,
     _perks_update_lean_mean_exp_machine,
+    _perks_update_death_clock,
     _perks_update_evil_eyes_target,
     _perks_update_pyrokinetic,
     _perks_update_jinxed_timer,
@@ -1150,7 +1162,8 @@ def _perk_apply_my_favourite_weapon(ctx: _PerkApplyCtx) -> None:
 
 
 def _perk_apply_plaguebearer(ctx: _PerkApplyCtx) -> None:
-    ctx.owner.plaguebearer_active = True
+    for player in ctx.players:
+        player.plaguebearer_active = True
 
 
 _PERK_APPLY_HANDLERS: dict[PerkId, _PerkApplyHandler] = {
@@ -1334,6 +1347,12 @@ def _normalize(x: float, y: float) -> tuple[float, float]:
 def _owner_id_for_player(player_index: int) -> int:
     # crimsonland.exe uses -1/-2/-3 for players (and sometimes -100 in demo paths).
     return -1 - int(player_index)
+
+
+def _owner_id_for_player_projectiles(state: "GameplayState", player_index: int) -> int:
+    if not state.friendly_fire_enabled:
+        return -100
+    return _owner_id_for_player(player_index)
 
 
 def _weapon_entry(weapon_id: int) -> Weapon | None:
@@ -1763,8 +1782,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
 
-    owner_id = _owner_id_for_player(player.index)
-    state.bonus_spawn_guard = True
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
     for idx in range(8):
         type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
@@ -1776,7 +1794,6 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
             owner_id=owner_id,
             base_damage=_projectile_meta_for_type_id(type_id),
         )
-    state.bonus_spawn_guard = False
     state.sfx_queue.append("sfx_explosion_small")
 
     player.man_bomb_timer -= state.perk_intervals.man_bomb
@@ -1788,7 +1805,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
     if player.hot_tempered_timer <= state.perk_intervals.hot_tempered:
         return
 
-    owner_id = _owner_id_for_player(player.index)
+    owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
     state.bonus_spawn_guard = True
     for idx in range(8):
         type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
@@ -1813,13 +1830,27 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     if player.fire_cough_timer <= state.perk_intervals.fire_cough:
         return
 
-    owner_id = _owner_id_for_player(player.index)
-    # Fire Cough spawns a fire projectile (and a small sprite burst) from the muzzle.
-    theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
-    jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
-    angle = theta + jitter + math.pi / 2.0
-    muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-    muzzle_y = player.pos_y + player.aim_dir_y * 16.0
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
+    state.sfx_queue.append("sfx_autorifle_fire")
+    state.sfx_queue.append("sfx_plasmaminigun_fire")
+
+    aim_heading = float(player.aim_heading)
+    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
+    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
+    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+
+    aim_x = float(player.aim_x)
+    aim_y = float(player.aim_y)
+    dx = aim_x - float(player.pos_x)
+    dy = aim_y - float(player.pos_y)
+    dist = math.hypot(dx, dy)
+    max_offset = dist * float(player.spread_heat) * 0.5
+    dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
+    mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
+    offset = max_offset * mag
+    jitter_x = aim_x + math.cos(dir_angle) * offset
+    jitter_y = aim_y + math.sin(dir_angle) * offset
+    angle = math.atan2(jitter_y - float(player.pos_y), jitter_x - float(player.pos_x)) + math.pi / 2.0
     state.projectiles.spawn(
         pos_x=muzzle_x,
         pos_y=muzzle_y,
@@ -1828,6 +1859,15 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         owner_id=owner_id,
         base_damage=_projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS),
     )
+
+    vel_x = math.cos(aim_heading) * 25.0
+    vel_y = math.sin(aim_heading) * 25.0
+    sprite_id = state.sprite_effects.spawn(pos_x=muzzle_x, pos_y=muzzle_y, vel_x=vel_x, vel_y=vel_y, scale=1.0)
+    sprite = state.sprite_effects.entries[int(sprite_id)]
+    sprite.color_r = 0.5
+    sprite.color_g = 0.5
+    sprite.color_b = 0.5
+    sprite.color_a = 0.413
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0
@@ -1904,26 +1944,25 @@ def player_fire_weapon(
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     if player.reload_timer > 0.0:
-        if player.ammo <= 0 and player.experience > 0:
-            if perk_active(player, PerkId.REGRESSION_BULLETS):
-                firing_during_reload = True
-                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+        if player.experience <= 0:
+            return
+        if perk_active(player, PerkId.REGRESSION_BULLETS):
+            firing_during_reload = True
+            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-                reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
-                factor = 4.0 if ammo_class == 1 else 200.0
-                player.experience = int(float(player.experience) - reload_time * factor)
-                if player.experience < 0:
-                    player.experience = 0
-            elif perk_active(player, PerkId.AMMUNITION_WITHIN):
-                firing_during_reload = True
-                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+            factor = 4.0 if ammo_class == 1 else 200.0
+            player.experience = int(float(player.experience) - reload_time * factor)
+            if player.experience < 0:
+                player.experience = 0
+        elif perk_active(player, PerkId.AMMUNITION_WITHIN):
+            firing_during_reload = True
+            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-                from .player_damage import player_take_damage
+            from .player_damage import player_take_damage
 
-                cost = 0.15 if ammo_class == 1 else 1.0
-                player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
-            else:
-                return
+            cost = 0.15 if ammo_class == 1 else 1.0
+            player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
         else:
             return
 
@@ -2295,7 +2334,7 @@ def player_update(
                     count=count,
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                    owner_id=_owner_id_for_player(player.index),
+                    owner_id=_owner_id_for_player_projectiles(state, player.index),
                 )
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")

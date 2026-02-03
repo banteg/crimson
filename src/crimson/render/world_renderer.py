@@ -1190,6 +1190,23 @@ class WorldRenderer:
                             max(0.0, cell_w - 2.0),
                             max(0.0, cell_h - 2.0),
                         )
+            poison_src: rl.Rectangle | None = None
+            if particles_texture is not None:
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x12)
+                if atlas is not None:
+                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if grid:
+                        frame = int(atlas.frame)
+                        col = frame % grid
+                        row = frame // grid
+                        cell_w = float(particles_texture.width) / float(grid)
+                        cell_h = float(particles_texture.height) / float(grid)
+                        poison_src = rl.Rectangle(
+                            cell_w * float(col),
+                            cell_h * float(row),
+                            max(0.0, cell_w - 2.0),
+                            max(0.0, cell_h - 2.0),
+                        )
 
             def draw_player(player: object) -> None:
                 if trooper_texture is not None:
@@ -1237,6 +1254,15 @@ class WorldRenderer:
                     type_id = None
                 asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
                 texture = self.creature_textures.get(asset) if asset is not None else None
+                if particles_texture is not None and poison_src is not None and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK):
+                    fade = monster_vision_fade_alpha(hitbox_size)
+                    poison_alpha = fade * entity_alpha
+                    if poison_alpha > 1e-3:
+                        size = 60.0 * scale
+                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                        rl.draw_texture_pro(particles_texture, poison_src, dst, origin, 0.0, tint)
                 if monster_vision and particles_texture is not None and monster_vision_src is not None:
                     fade = monster_vision_fade_alpha(hitbox_size)
                     mv_alpha = fade * entity_alpha
