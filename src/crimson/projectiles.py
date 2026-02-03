@@ -376,6 +376,27 @@ class _ProjectileHitInfo:
     target_y: float
 
 
+@dataclass(slots=True)
+class _ProjectileHitPerkCtx:
+    proj: Projectile
+    creature: Damageable
+    rng: Callable[[], int]
+    owner_perk_active: Callable[[int, int], bool]
+    poison_idx: int
+
+
+_ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
+
+
+def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
+    if ctx.owner_perk_active(int(ctx.proj.owner_id), int(ctx.poison_idx)) and (int(ctx.rng()) & 7) == 1:
+        if hasattr(ctx.creature, "flags"):
+            ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+
+
+_PROJECTILE_HIT_PERK_HOOKS: tuple[_ProjectileHitPerkHook, ...] = (_projectile_hit_perk_poison_bullets,)
+
+
 ProjectileLingerHandler = Callable[[_ProjectileUpdateCtx, Projectile], None]
 ProjectilePreHitCreatureHandler = Callable[[_ProjectileUpdateCtx, Projectile, int], None]
 ProjectilePostHitCreatureHandler = Callable[[_ProjectileUpdateCtx, _ProjectileHitInfo], None]
@@ -958,9 +979,15 @@ class ProjectilePool:
                     type_id = proj.type_id
                     creature = creatures[hit_idx]
 
-                    if _owner_perk_active(int(proj.owner_id), poison_idx) and (int(rng()) & 7) == 1:
-                        if hasattr(creature, "flags"):
-                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+                    perk_ctx = _ProjectileHitPerkCtx(
+                        proj=proj,
+                        creature=creature,
+                        rng=rng,
+                        owner_perk_active=_owner_perk_active,
+                        poison_idx=poison_idx,
+                    )
+                    for hook in _PROJECTILE_HIT_PERK_HOOKS:
+                        hook(perk_ctx)
 
                     if behavior.pre_hit_creature is not None:
                         behavior.pre_hit_creature(ctx, proj, int(hit_idx))
