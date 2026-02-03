@@ -6,12 +6,94 @@ This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
 See: `docs/crimsonland-exe/player-damage.md`.
 """
 
+from dataclasses import dataclass
 from typing import Callable
 
 from .gameplay import GameplayState, PlayerState, perk_active
 from .perks import PerkId
 
 __all__ = ["player_take_damage"]
+
+
+@dataclass(slots=True)
+class _PlayerDamageCtx:
+    state: GameplayState
+    player: PlayerState
+    dmg: float
+    dt: float | None
+    rng: Callable[[], int]
+
+
+_PlayerDamagePreStep = Callable[[_PlayerDamageCtx], bool]
+
+
+def _player_damage_gate_death_clock(ctx: _PlayerDamageCtx) -> bool:
+    return perk_active(ctx.player, PerkId.DEATH_CLOCK)
+
+
+def _player_damage_scale_tough_reloader(ctx: _PlayerDamageCtx) -> bool:
+    if perk_active(ctx.player, PerkId.TOUGH_RELOADER) and bool(ctx.player.reload_active):
+        ctx.dmg *= 0.5
+    return False
+
+
+def _player_damage_gate_shield(ctx: _PlayerDamageCtx) -> bool:
+    return float(ctx.player.shield_timer) > 0.0
+
+
+def _player_damage_scale_thick_skinned(ctx: _PlayerDamageCtx) -> bool:
+    if perk_active(ctx.player, PerkId.THICK_SKINNED):
+        ctx.dmg *= 2.0 / 3.0
+    return False
+
+
+def _player_damage_gate_dodge(ctx: _PlayerDamageCtx) -> bool:
+    if perk_active(ctx.player, PerkId.NINJA):
+        return (ctx.rng() % 3) == 0
+    if perk_active(ctx.player, PerkId.DODGER):
+        return (ctx.rng() % 5) == 0
+    return False
+
+
+_PLAYER_DAMAGE_PRE_STEPS: tuple[_PlayerDamagePreStep, ...] = (
+    _player_damage_gate_death_clock,
+    _player_damage_scale_tough_reloader,
+    _player_damage_gate_shield,
+    _player_damage_scale_thick_skinned,
+    _player_damage_gate_dodge,
+)
+
+
+def _player_damage_apply_health(ctx: _PlayerDamageCtx) -> None:
+    if perk_active(ctx.player, PerkId.HIGHLANDER):
+        if (ctx.rng() % 10) == 0:
+            ctx.player.health = 0.0
+    else:
+        ctx.player.health -= ctx.dmg
+        if ctx.player.health < 0.0 and ctx.dt is not None and float(ctx.dt) > 0.0:
+            ctx.player.death_timer -= float(ctx.dt) * 28.0
+
+
+_PlayerDamagePostStep = Callable[[_PlayerDamageCtx], None]
+
+
+def _player_damage_post_hit_disruption(ctx: _PlayerDamageCtx) -> None:
+    if perk_active(ctx.player, PerkId.UNSTOPPABLE):
+        return
+    # player_take_damage @ 0x00425e50: on-hit camera/spread disruption.
+    ctx.player.heading += float((ctx.rng() % 100) - 50) * 0.04
+    ctx.player.spread_heat = min(0.48, float(ctx.player.spread_heat) + ctx.dmg * 0.01)
+
+
+def _player_damage_post_low_health_warning(ctx: _PlayerDamageCtx) -> None:
+    if ctx.player.health <= 20.0 and (ctx.rng() & 7) == 3:
+        ctx.player.low_health_timer = 0.0
+
+
+_PLAYER_DAMAGE_POST_STEPS: tuple[_PlayerDamagePostStep, ...] = (
+    _player_damage_post_hit_disruption,
+    _player_damage_post_low_health_warning,
+)
 
 
 def player_take_damage(
@@ -35,45 +117,20 @@ def player_take_damage(
     if state.debug_god_mode:
         return 0.0
 
-    # 1) Death Clock immunity.
-    if perk_active(player, PerkId.DEATH_CLOCK):
-        return 0.0
-
-    # 2) Tough Reloader mitigation while reloading.
-    if perk_active(player, PerkId.TOUGH_RELOADER) and bool(player.reload_active):
-        dmg *= 0.5
-
-    # 3) Shield immunity.
-    if float(player.shield_timer) > 0.0:
-        return 0.0
-
-    # Damage scaling perks.
-    if perk_active(player, PerkId.THICK_SKINNED):
-        dmg *= 2.0 / 3.0
-
-    rng = rand or state.rng.rand
-    if perk_active(player, PerkId.NINJA):
-        if (rng() % 3) == 0:
-            return 0.0
-    elif perk_active(player, PerkId.DODGER):
-        if (rng() % 5) == 0:
+    ctx = _PlayerDamageCtx(
+        state=state,
+        player=player,
+        dmg=dmg,
+        dt=dt,
+        rng=rand or state.rng.rand,
+    )
+    for step in _PLAYER_DAMAGE_PRE_STEPS:
+        if step(ctx):
             return 0.0
 
     health_before = float(player.health)
 
-    if perk_active(player, PerkId.HIGHLANDER):
-        if (rng() % 10) == 0:
-            player.health = 0.0
-    else:
-        player.health -= dmg
-        if player.health < 0.0 and dt is not None and float(dt) > 0.0:
-            player.death_timer -= float(dt) * 28.0
-
-    if not perk_active(player, PerkId.UNSTOPPABLE):
-        # player_take_damage @ 0x00425e50: on-hit camera/spread disruption.
-        player.heading += float((rng() % 100) - 50) * 0.04
-        player.spread_heat = min(0.48, float(player.spread_heat) + dmg * 0.01)
-
-    if player.health <= 20.0 and (rng() & 7) == 3:
-        player.low_health_timer = 0.0
+    _player_damage_apply_health(ctx)
+    for step in _PLAYER_DAMAGE_POST_STEPS:
+        step(ctx)
     return max(0.0, health_before - float(player.health))
