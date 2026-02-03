@@ -6,8 +6,9 @@ import pyray as rl
 
 from ..bonuses import BONUS_TABLE, BonusMeta
 from ..weapons import WEAPON_TABLE
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0
@@ -46,24 +47,6 @@ class BonusIconView:
         self._texture: rl.Texture | None = None
         self._small: SmallFontData | None = None
 
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def open(self) -> None:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
@@ -88,10 +71,10 @@ class BonusIconView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
-            self._draw_ui_text("No bonuses texture loaded.", 24, 24, UI_TEXT_COLOR)
+            draw_ui_text(self._small, "No bonuses texture loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
 
         margin = 24
@@ -149,41 +132,45 @@ class BonusIconView:
 
         info_x = x + draw_w + panel_gap
         info_y = margin
-        self._draw_ui_text("bonuses.png (grid 4x4)", info_x, info_y, UI_TEXT_COLOR)
-        info_y += self._ui_line_height() + 12
+        draw_ui_text(self._small, "bonuses.png (grid 4x4)", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
         if hovered_index is not None:
             group = BONUS_ICON_GROUPS.get(hovered_index)
-            self._draw_ui_text(f"icon_id {hovered_index}", info_x, info_y, UI_TEXT_COLOR)
-            info_y += self._ui_line_height() + 6
+            draw_ui_text(self._small, f"icon_id {hovered_index}", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             if group is None:
-                self._draw_ui_text("no bonus mapping", info_x, info_y, UI_HINT_COLOR)
-                info_y += self._ui_line_height() + 6
+                draw_ui_text(self._small, "no bonus mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:
                 for entry in group.bonuses:
                     bonus_id = int(entry.bonus_id)
                     amount = entry.default_amount
                     amount_label = f" default={amount}" if amount is not None else ""
-                    self._draw_ui_text(
+                    draw_ui_text(
+                        self._small,
                         f"id {bonus_id:02d} {entry.name}{amount_label}",
                         info_x,
                         info_y,
-                        UI_TEXT_COLOR,
+                        scale=UI_TEXT_SCALE,
+                        color=UI_TEXT_COLOR,
                     )
-                    info_y += self._ui_line_height() + 4
+                    info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
                     if entry.description:
-                        self._draw_ui_text(
+                        draw_ui_text(
+                            self._small,
                             entry.description,
                             info_x,
                             info_y,
-                            UI_HINT_COLOR,
+                            scale=UI_TEXT_SCALE,
+                            color=UI_HINT_COLOR,
                         )
-                        info_y += self._ui_line_height() + 4
+                        info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             info_y += 8
 
         if WEAPON_BONUS is not None:
-            self._draw_ui_text("Weapon bonus icon", info_x, info_y, UI_TEXT_COLOR)
-            info_y += self._ui_line_height() + 4
+            draw_ui_text(self._small, "Weapon bonus icon", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             weapon_id = WEAPON_BONUS.default_amount
             weapon_name = None
             if weapon_id is not None:
@@ -193,7 +180,7 @@ class BonusIconView:
                         break
             name_label = f" ({weapon_name})" if weapon_name else ""
             weapon_label = f"icon_id = -1 → ui_wicons (default weapon {weapon_id}{name_label})"
-            self._draw_ui_text(weapon_label, info_x, info_y, UI_HINT_COLOR)
+            draw_ui_text(self._small, weapon_label, info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
 
 @register_view("bonuses", "Bonus icon preview")

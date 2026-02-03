@@ -13,10 +13,11 @@ from grim.terrain_render import GroundRenderer
 from ..paths import default_runtime_dir
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
+from ._ui_helpers import draw_ui_text
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 
@@ -59,24 +60,6 @@ class GroundView:
         self._fx_queue = FxQueue()
         self._fx_queue_rotated = FxQueueRotated()
         self._fx_textures: FxQueueTextures | None = None
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -179,10 +162,10 @@ class GroundView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._renderer is None:
-            self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         self._renderer.draw(self._camera_x, self._camera_y)
         self._draw_quest_title_overlay()

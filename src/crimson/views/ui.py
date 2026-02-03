@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0
@@ -27,24 +28,6 @@ class UiTextureView:
         self._textures: list[UiTexture] = []
         self._index = 0
         self._small: SmallFontData | None = None
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -84,10 +67,10 @@ class UiTextureView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._textures:
-            self._draw_ui_text("No UI textures loaded.", 24, 24, UI_TEXT_COLOR)
+            draw_ui_text(self._small, "No UI textures loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
 
         self._handle_input()
@@ -95,11 +78,11 @@ class UiTextureView:
 
         margin = 24
         header_y = margin
-        line_height = self._ui_line_height()
+        line_height = ui_line_height(self._small, scale=UI_TEXT_SCALE)
         title = f"{self._index + 1}/{len(self._textures)} {entry.name}"
-        self._draw_ui_text(title, margin, header_y, UI_TEXT_COLOR)
+        draw_ui_text(self._small, title, margin, header_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         header_y += line_height + 6
-        self._draw_ui_text("Left/Right: texture", margin, header_y, UI_HINT_COLOR)
+        draw_ui_text(self._small, "Left/Right: texture", margin, header_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         available_width = rl.get_screen_width() - margin * 2
         available_height = rl.get_screen_height() - (header_y + line_height + margin)

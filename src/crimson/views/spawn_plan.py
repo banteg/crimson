@@ -15,8 +15,9 @@ from ..creatures.spawn import (
     spawn_id_label,
     tick_spawn_slot,
 )
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.view import View, ViewContext
 
 
@@ -93,29 +94,11 @@ class SpawnPlanView:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def _draw_ui_label(self, label: str, value: str, x: float, y: float) -> None:
         label_text = f"{label}: "
-        self._draw_ui_text(label_text, x, y, UI_HINT_COLOR)
+        draw_ui_text(self._small, label_text, x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
         label_w = measure_small_text_width(self._small, label_text, UI_TEXT_SCALE) if self._small else 0.0
-        self._draw_ui_text(value, x + label_w, y, UI_TEXT_COLOR)
+        draw_ui_text(self._small, value, x + label_w, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
@@ -261,18 +244,19 @@ class SpawnPlanView:
         self._draw_grid()
 
         margin = 16.0
-        line_h = float(self._ui_line_height())
+        line_h = float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
 
         spawn_id = self._template_ids[self._index] if self._template_ids else 0
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"spawn-plan view  (template 0x{spawn_id:02x})",
             margin,
             margin,
-            UI_TEXT_COLOR,
             scale=0.8,
+            color=UI_TEXT_COLOR,
         )
         hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty  Space: sim  Backspace: reset"
-        self._draw_ui_text(hints, margin, margin + line_h, UI_HINT_COLOR)
+        draw_ui_text(self._small, hints, margin, margin + line_h, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
         self._draw_ui_label("seed", f"0x{self._seed:08x}", margin, y)
@@ -287,10 +271,10 @@ class SpawnPlanView:
         y += line_h
 
         if self._error is not None:
-            self._draw_ui_text(self._error, margin, y + 6.0, UI_ERROR_COLOR)
+            draw_ui_text(self._small, self._error, margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._plan is None or self._plan_summary is None:
-            self._draw_ui_text("No plan.", margin, y + 6.0, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "No plan.", margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         summary = self._plan_summary
@@ -313,10 +297,10 @@ class SpawnPlanView:
             )
             y += line_h
         if self._sim_events:
-            self._draw_ui_text("events:", margin, y + 2.0, UI_HINT_COLOR)
+            draw_ui_text(self._small, "events:", margin, y + 2.0, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line_h
             for ev in self._sim_events[-5:]:
-                self._draw_ui_text(ev, margin, y, UI_TEXT_COLOR)
+                draw_ui_text(self._small, ev, margin, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                 y += line_h
 
         # Link lines.

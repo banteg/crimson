@@ -11,10 +11,11 @@ import pyray as rl
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 from ..paths import default_runtime_dir
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 
@@ -57,24 +58,6 @@ class CameraDebugView:
         self._log_timer = 0.0
         self._log_path: Path | None = None
         self._log_file = None
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _load_runtime_config(self) -> None:
         runtime_dir = default_runtime_dir()
@@ -276,7 +259,7 @@ class CameraDebugView:
         rl.clear_background(clear_color)
 
         if self._renderer is None:
-            self._draw_ui_text("Ground renderer not initialized.", 16, 16, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         cam_x, cam_y, scale_x, scale_y, screen_w, screen_h = self._world_params()
@@ -327,31 +310,35 @@ class CameraDebugView:
         # HUD
         x = 16.0
         y = 16.0
-        line = self._ui_line_height()
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
         mode = "config" if self._use_config_screen else "window"
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"window={int(out_w)}x{int(rl.get_screen_height())}  camera={int(screen_w)}x{int(screen_h)} ({mode})",
             x,
             y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"config={int(self._config_screen_w)}x{int(self._config_screen_h)}  "
             f"scale={scale_x:.3f},{scale_y:.3f}  tex={self._texture_scale:.2f}",
             x,
             y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         y += line
-        self._draw_ui_text(f"player={self._player_x:.1f},{self._player_y:.1f}", x, y, UI_TEXT_COLOR)
+        draw_ui_text(self._small, f"player={self._player_x:.1f},{self._player_y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += line
-        self._draw_ui_text(f"camera={cam_x:.1f},{cam_y:.1f}", x, y, UI_TEXT_COLOR)
+        draw_ui_text(self._small, f"camera={cam_x:.1f},{cam_y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += line
         if self._log_path is not None:
-            self._draw_ui_text(f"log: {self._log_path}", x, y, UI_HINT_COLOR, scale=0.9)
+            draw_ui_text(self._small, f"log: {self._log_path}", x, y, scale=0.9, color=UI_HINT_COLOR)
             y += line
-        self._draw_ui_text("F1: toggle camera size (config/window)", x, y, UI_HINT_COLOR)
+        draw_ui_text(self._small, "F1: toggle camera size (config/window)", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
 
 @register_view("camera-debug", "Camera debug")

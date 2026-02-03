@@ -5,7 +5,7 @@ import math
 import pyray as rl
 
 from grim.config import ensure_crimson_cfg
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -13,6 +13,7 @@ from ..game_world import GameWorld
 from ..gameplay import PlayerInput
 from ..paths import default_runtime_dir
 from ..ui.cursor import draw_cursor_glow
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
@@ -53,24 +54,6 @@ class AimDebugView:
         self._force_heat = True
         self._forced_heat = 0.18
         self._test_circle_radius = 96.0
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _update_ui_mouse(self) -> None:
         mouse = rl.get_mouse_position()
@@ -257,11 +240,18 @@ class AimDebugView:
             ]
             x0 = 16.0
             y0 = 16.0
-            lh = float(self._ui_line_height())
+            lh = float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
             for idx, line in enumerate(lines):
-                self._draw_ui_text(line, x0, y0 + lh * float(idx), UI_TEXT_COLOR if idx < 6 else UI_HINT_COLOR)
+                draw_ui_text(
+                    self._small,
+                    line,
+                    x0,
+                    y0 + lh * float(idx),
+                    scale=UI_TEXT_SCALE,
+                    color=UI_TEXT_COLOR if idx < 6 else UI_HINT_COLOR,
+                )
         elif self._draw_expected_overlay and self._player is None:
-            self._draw_ui_text("Aim debug view: missing player", 16.0, 16.0, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "Aim debug view: missing player", 16.0, 16.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
 
 
 @register_view("aim-debug", "Aim indicator debug")

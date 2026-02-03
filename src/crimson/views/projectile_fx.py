@@ -5,8 +5,7 @@ import math
 
 import pyray as rl
 
-from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -19,6 +18,8 @@ from ..weapons import (
     WEAPON_TABLE,
     weapon_entry_for_projectile_type_id,
 )
+from ._ui_helpers import draw_ui_text, ui_line_height
+from .registry import register_view
 
 WORLD_SIZE = 1024.0
 
@@ -126,24 +127,6 @@ class ProjectileFxView:
 
         self._beams: list[BeamFx] = []
         self._effects: list[EffectFx] = []
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         return self._camera_x + x, self._camera_y + y
@@ -468,7 +451,7 @@ class ProjectileFxView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets and self._projs is None:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
@@ -559,46 +542,71 @@ class ProjectileFxView:
         margin = 18
         x = float(margin)
         y = float(margin)
-        line = self._ui_line_height()
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
 
         type_id = self._selected_type_id()
         weapon = WEAPON_BY_ID.get(int(type_id))
         label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
-        self._draw_ui_text(f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         y += line + 4
 
         if self._show_debug:
             meta = self._projectile_meta_for(type_id)
             dmg = self._damage_scale_by_type.get(type_id, 1.0)
             pellets = int(weapon.pellet_count) if weapon is not None and weapon.pellet_count is not None else 1
-            self._draw_ui_text(f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}", x, y, UI_HINT_COLOR)
+            draw_ui_text(
+                self._small,
+                f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}",
+                x,
+                y,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
             y += line + 4
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 f"shock_chain links {self._state.shock_chain_links_left}  proj {self._state.shock_chain_projectile_id}",
                 x,
                 y,
-                UI_HINT_COLOR,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
             )
             y += line + 8
 
         if self._show_help:
-            self._draw_ui_text("controls:", x, y, UI_ACCENT_COLOR)
+            draw_ui_text(self._small, "controls:", x, y, scale=UI_TEXT_SCALE, color=UI_ACCENT_COLOR)
             y += line + 2
-            self._draw_ui_text("- left/right: select projectile type", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- left/right: select projectile type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- mouse wheel: select type", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- mouse wheel: select type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- LMB: spawn projectile toward mouse", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- LMB: spawn projectile toward mouse", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- RMB: move spawn origin", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- RMB: move spawn origin", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- space: spawn ring", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- space: spawn ring", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- F: fire-bullets volley (uses pellet_count)", x, y, UI_HINT_COLOR)
+            draw_ui_text(
+                self._small,
+                "- F: fire-bullets volley (uses pellet_count)",
+                x,
+                y,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
             y += line + 2
-            self._draw_ui_text("- S: apply Shock Chain bonus", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- S: apply Shock Chain bonus", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- R: reset  Tab: pause  H: hide help  F3: toggle debug", x, y, UI_HINT_COLOR, scale=0.9)
+            draw_ui_text(
+                self._small,
+                "- R: reset  Tab: pause  H: hide help  F3: toggle debug",
+                x,
+                y,
+                scale=0.9,
+                color=UI_HINT_COLOR,
+            )
 
 
 @register_view("projectile_fx", "Projectile FX lab")

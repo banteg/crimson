@@ -5,8 +5,9 @@ from dataclasses import dataclass
 import pyray as rl
 
 from ..weapons import WEAPON_TABLE, Weapon
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0
@@ -45,24 +46,6 @@ class WeaponIconView:
         self._texture: rl.Texture | None = None
         self._small: SmallFontData | None = None
 
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def open(self) -> None:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
@@ -87,10 +70,17 @@ class WeaponIconView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
-            self._draw_ui_text("No weapon icon texture loaded.", 24, 24, UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small,
+                "No weapon icon texture loaded.",
+                24,
+                24,
+                scale=UI_TEXT_SCALE,
+                color=UI_TEXT_COLOR,
+            )
             return
 
         margin = 24
@@ -123,42 +113,47 @@ class WeaponIconView:
                 hovered_index = idx
                 rl.draw_rectangle_lines_ex(dst, 3, UI_HOVER_COLOR)
 
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 f"{idx:02d}",
                 dst_x + 4,
                 dst_y + 4,
-                UI_HINT_COLOR,
                 scale=0.75,
+                color=UI_HINT_COLOR,
             )
 
         info_x = x + cols * icon_w * scale + panel_gap
         info_y = margin
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "ui_wicons.png (8x8 grid, 2x1 subrects)",
             info_x,
             info_y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
-        info_y += self._ui_line_height() + 12
+        info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
         if hovered_index is not None:
             frame = hovered_index * 2
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 f"icon_index {hovered_index}  frame {frame}",
                 info_x,
                 info_y,
-                UI_TEXT_COLOR,
+                scale=UI_TEXT_SCALE,
+                color=UI_TEXT_COLOR,
             )
-            info_y += self._ui_line_height() + 6
+            info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             group = WEAPON_ICON_GROUPS.get(hovered_index)
             if group is None:
-                self._draw_ui_text("no weapon mapping", info_x, info_y, UI_HINT_COLOR)
-                info_y += self._ui_line_height() + 6
+                draw_ui_text(self._small, "no weapon mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:
                 for weapon in group.weapons:
                     name = weapon.name or f"weapon_{weapon.weapon_id}"
-                    self._draw_ui_text(name, info_x, info_y, UI_TEXT_COLOR)
-                    info_y += self._ui_line_height() + 4
+                    draw_ui_text(self._small, name, info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                    info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
 
 
 @register_view("wicons", "Weapon icon preview")
