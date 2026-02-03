@@ -76,6 +76,8 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
 
+    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
+    assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert type_ids.count(0x0B) == 15
 
@@ -88,6 +90,8 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
 
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
 
+    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
+    assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert type_ids.count(0x16) == 4
@@ -102,6 +106,8 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
 
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
 
+    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
+    assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert type_ids == [0x2D]
 

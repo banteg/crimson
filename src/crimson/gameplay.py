@@ -1349,6 +1349,12 @@ def _owner_id_for_player(player_index: int) -> int:
     return -1 - int(player_index)
 
 
+def _owner_id_for_player_projectiles(state: "GameplayState", player_index: int) -> int:
+    if not state.friendly_fire_enabled:
+        return -100
+    return _owner_id_for_player(player_index)
+
+
 def _weapon_entry(weapon_id: int) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
@@ -1776,7 +1782,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
 
-    owner_id = _owner_id_for_player(player.index)
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
         type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
@@ -1826,7 +1832,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     if player.fire_cough_timer <= state.perk_intervals.fire_cough:
         return
 
-    owner_id = _owner_id_for_player(player.index)
+    owner_id = _owner_id_for_player_projectiles(state, player.index)
     # Fire Cough spawns a fire projectile (and a small sprite burst) from the muzzle.
     theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
     jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
@@ -2307,7 +2313,7 @@ def player_update(
                     count=count,
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                    owner_id=_owner_id_for_player(player.index),
+                    owner_id=_owner_id_for_player_projectiles(state, player.index),
                 )
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")
