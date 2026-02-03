@@ -1601,6 +1601,31 @@ def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: lis
     return int(BonusId.POINTS)
 
 
+@dataclass(slots=True)
+class _WeaponAssignCtx:
+    player: PlayerState
+    clip_size: int
+
+
+_WeaponAssignClipModifier = Callable[[_WeaponAssignCtx], None]
+
+
+def _weapon_assign_clip_ammo_maniac(ctx: _WeaponAssignCtx) -> None:
+    if perk_active(ctx.player, PerkId.AMMO_MANIAC):
+        ctx.clip_size += max(1, int(float(ctx.clip_size) * 0.25))
+
+
+def _weapon_assign_clip_my_favourite_weapon(ctx: _WeaponAssignCtx) -> None:
+    if perk_active(ctx.player, PerkId.MY_FAVOURITE_WEAPON):
+        ctx.clip_size += 2
+
+
+_WEAPON_ASSIGN_CLIP_MODIFIERS: tuple[_WeaponAssignClipModifier, ...] = (
+    _weapon_assign_clip_ammo_maniac,
+    _weapon_assign_clip_my_favourite_weapon,
+)
+
+
 def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: GameplayState | None = None) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
@@ -1615,15 +1640,10 @@ def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: Gameplay
     player.weapon_id = weapon_id
 
     clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
-    clip_size = max(0, clip_size)
-
-    # weapon_assign_player @ 0x004220B0: clip-size perks are applied on every weapon assignment.
-    if perk_active(player, PerkId.AMMO_MANIAC):
-        clip_size += max(1, int(float(clip_size) * 0.25))
-    if perk_active(player, PerkId.MY_FAVOURITE_WEAPON):
-        clip_size += 2
-
-    player.clip_size = max(0, int(clip_size))
+    clip_ctx = _WeaponAssignCtx(player=player, clip_size=max(0, clip_size))
+    for modifier in _WEAPON_ASSIGN_CLIP_MODIFIERS:
+        modifier(clip_ctx)
+    player.clip_size = max(0, int(clip_ctx.clip_size))
     player.ammo = float(player.clip_size)
     player.weapon_reset_latch = 0
     player.reload_active = False
