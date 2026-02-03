@@ -121,12 +121,8 @@ class CrimsonConfig:
 
     @property
     def player_name(self) -> str:
-        raw = self.data.get("player_name")
-        if isinstance(raw, (bytes, bytearray)):
-            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-        if isinstance(raw, str):
-            return raw
-        return ""
+        raw = bytes(self.data["player_name"])
+        return raw.split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
 
     @player_name.setter
     def player_name(self, value: str) -> None:
@@ -140,9 +136,7 @@ class CrimsonConfig:
         buf[min(len(encoded), PLAYER_NAME_MAX_BYTES)] = 0
 
         # Match `highscore_save_record` trimming: strip trailing spaces in-place.
-        end = buf.find(0)
-        if end < 0:
-            end = PLAYER_NAME_SIZE
+        end = buf.index(0)
         i = end - 1
         while i > 0 and buf[i] == 0x20:
             buf[i] = 0
