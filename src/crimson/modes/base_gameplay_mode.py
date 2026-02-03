@@ -276,6 +276,32 @@ class BaseGameplayMode:
         self._action = None
         return action
 
+    def _update_game_over_ui(self, dt: float) -> None:
+        record = self._game_over_record
+        if record is None:
+            self._enter_game_over()
+            record = self._game_over_record
+        if record is None:
+            return
+
+        action = self._game_over_ui.update(
+            dt,
+            record=record,
+            player_name_default=self._player_name_default(),
+            play_sfx=self._world.audio_router.play_sfx,
+            rand=self._state.rng.rand,
+            mouse=self._ui_mouse_pos(),
+        )
+        if action == "play_again":
+            self.open()
+            return
+        if action == "high_scores":
+            self._action = "open_high_scores"
+            return
+        if action == "main_menu":
+            self._action = "back_to_menu"
+            self.close_requested = True
+
     def draw_pause_background(self) -> None:
         self._world.draw(draw_aim_indicators=False)
 
