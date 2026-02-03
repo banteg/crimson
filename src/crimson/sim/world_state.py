@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import Callable
 
 from ..bonuses import BonusId
 from ..creatures.damage import creature_apply_damage
@@ -33,6 +34,107 @@ class WorldEvents:
     deaths: tuple[object, ...]
     pickups: list[object]
     sfx: list[str]
+
+
+@dataclass(slots=True)
+class _WorldDtCtx:
+    dt: float
+    players: list[PlayerState]
+
+
+_WorldDtStep = Callable[[_WorldDtCtx], None]
+
+
+def _world_dt_reflex_boosted(ctx: _WorldDtCtx) -> None:
+    if ctx.dt > 0.0 and ctx.players and perk_active(ctx.players[0], PerkId.REFLEX_BOOSTED):
+        ctx.dt *= 0.9
+
+
+_WORLD_DT_STEPS: tuple[_WorldDtStep, ...] = (_world_dt_reflex_boosted,)
+
+
+@dataclass(slots=True)
+class _PlayerDeathCtx:
+    state: GameplayState
+    creatures: CreaturePool
+    players: list[PlayerState]
+    player_index: int
+    player: PlayerState
+    dt: float
+    world_size: float
+    detail_preset: int
+    fx_queue: FxQueue
+    deaths: list[object]
+
+
+_PlayerDeathHook = Callable[[_PlayerDeathCtx], None]
+
+
+def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
+    player = ctx.player
+    if not perk_active(player, PerkId.FINAL_REVENGE):
+        return
+
+    px = float(player.pos_x)
+    py = float(player.pos_y)
+    rand = ctx.state.rng.rand
+    ctx.state.effects.spawn_explosion_burst(
+        pos_x=px,
+        pos_y=py,
+        scale=1.8,
+        rand=rand,
+        detail_preset=int(ctx.detail_preset),
+    )
+
+    prev_guard = bool(ctx.state.bonus_spawn_guard)
+    ctx.state.bonus_spawn_guard = True
+    for creature_idx, creature in enumerate(ctx.creatures.entries):
+        if not creature.active:
+            continue
+        if float(creature.hp) <= 0.0:
+            continue
+
+        dx = float(creature.x) - px
+        dy = float(creature.y) - py
+        if abs(dx) > 512.0 or abs(dy) > 512.0:
+            continue
+
+        remaining = 512.0 - math.hypot(dx, dy)
+        if remaining <= 0.0:
+            continue
+
+        damage = remaining * 5.0
+        death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
+        killed = creature_apply_damage(
+            creature,
+            damage_amount=damage,
+            damage_type=3,
+            impulse_x=0.0,
+            impulse_y=0.0,
+            owner_id=-1 - int(player.index),
+            dt=float(ctx.dt),
+            players=ctx.players,
+            rand=rand,
+        )
+        if killed and death_start_needed:
+            ctx.deaths.append(
+                ctx.creatures.handle_death(
+                    int(creature_idx),
+                    state=ctx.state,
+                    players=ctx.players,
+                    rand=rand,
+                    detail_preset=int(ctx.detail_preset),
+                    world_width=float(ctx.world_size),
+                    world_height=float(ctx.world_size),
+                    fx_queue=ctx.fx_queue,
+                )
+            )
+    ctx.state.bonus_spawn_guard = prev_guard
+    ctx.state.sfx_queue.append("sfx_explosion_large")
+    ctx.state.sfx_queue.append("sfx_shockwave")
+
+
+_PLAYER_DEATH_HOOKS: tuple[_PlayerDeathHook, ...] = (_player_death_final_revenge,)
 
 
 @dataclass(slots=True)
@@ -84,9 +186,10 @@ class WorldState:
         game_mode: int,
         perk_progression_enabled: bool,
     ) -> WorldEvents:
-        dt = float(dt)
-        if dt > 0.0 and self.players and perk_active(self.players[0], PerkId.REFLEX_BOOSTED):
-            dt *= 0.9
+        dt_ctx = _WorldDtCtx(dt=float(dt), players=self.players)
+        for step in _WORLD_DT_STEPS:
+            step(dt_ctx)
+        dt = float(dt_ctx.dt)
 
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
@@ -194,66 +297,20 @@ class WorldState:
                 continue
             if float(player.health) >= 0.0:
                 continue
-            if not perk_active(player, PerkId.FINAL_REVENGE):
-                continue
-
-            px = float(player.pos_x)
-            py = float(player.pos_y)
-            rand = self.state.rng.rand
-            self.state.effects.spawn_explosion_burst(
-                pos_x=px,
-                pos_y=py,
-                scale=1.8,
-                rand=rand,
+            death_ctx = _PlayerDeathCtx(
+                state=self.state,
+                creatures=self.creatures,
+                players=self.players,
+                player_index=int(idx),
+                player=player,
+                dt=float(dt),
+                world_size=float(world_size),
                 detail_preset=int(detail_preset),
+                fx_queue=fx_queue,
+                deaths=deaths,
             )
-
-            prev_guard = bool(self.state.bonus_spawn_guard)
-            self.state.bonus_spawn_guard = True
-            for creature_idx, creature in enumerate(self.creatures.entries):
-                if not creature.active:
-                    continue
-                if float(creature.hp) <= 0.0:
-                    continue
-
-                dx = float(creature.x) - px
-                dy = float(creature.y) - py
-                if abs(dx) > 512.0 or abs(dy) > 512.0:
-                    continue
-
-                remaining = 512.0 - math.hypot(dx, dy)
-                if remaining <= 0.0:
-                    continue
-
-                damage = remaining * 5.0
-                death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
-                killed = creature_apply_damage(
-                    creature,
-                    damage_amount=damage,
-                    damage_type=3,
-                    impulse_x=0.0,
-                    impulse_y=0.0,
-                    owner_id=-1 - int(player.index),
-                    dt=float(dt),
-                    players=self.players,
-                    rand=rand,
-                )
-                if killed and death_start_needed:
-                    deaths.append(
-                        self.creatures.handle_death(
-                            int(creature_idx),
-                            state=self.state,
-                            players=self.players,
-                            rand=rand,
-                            detail_preset=int(detail_preset),
-                            world_width=float(world_size),
-                            world_height=float(world_size),
-                            fx_queue=fx_queue,
-                        )
-                    )
-            self.state.bonus_spawn_guard = prev_guard
-            self.state.sfx_queue.append("sfx_explosion_large")
-            self.state.sfx_queue.append("sfx_shockwave")
+            for hook in _PLAYER_DEATH_HOOKS:
+                hook(death_ctx)
 
         def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
             idx = int(creature_index)
