@@ -17,11 +17,9 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import (
     PlayerInput,
-    most_used_weapon_id_for_player,
     survival_check_level_up,
     weapon_assign_player,
 )
-from ..persistence.highscores import HighScoreRecord
 from ..perks import PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
@@ -29,6 +27,7 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode
+from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
 WORLD_SIZE = 1024.0
@@ -276,27 +275,14 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        record = HighScoreRecord.blank()
-        record.score_xp = int(self._player.experience)
-        record.survival_elapsed_ms = int(self._survival.elapsed_ms)
-        record.creature_kill_count = int(self._creatures.kill_count)
-
-        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
-        record.most_used_weapon_id = int(weapon_id)
-        fired = 0
-        hit = 0
-        try:
-            fired = int(self._state.shots_fired[int(self._player.index)])
-            hit = int(self._state.shots_hit[int(self._player.index)])
-        except Exception:
-            fired = 0
-            hit = 0
-        fired = max(0, int(fired))
-        hit = max(0, min(int(hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-
-        record.game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        record = build_highscore_record_for_game_over(
+            state=self._state,
+            player=self._player,
+            survival_elapsed_ms=int(self._survival.elapsed_ms),
+            creature_kill_count=int(self._creatures.kill_count),
+            game_mode_id=game_mode_id,
+        )
         self._game_over_record = record
         self._game_over_ui.open()
         self._game_over_active = True
