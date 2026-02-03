@@ -336,29 +336,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         if self._game_over_active:
-            record = self._game_over_record
-            if record is None:
-                self._enter_game_over()
-                record = self._game_over_record
-            if record is not None:
-                action = self._game_over_ui.update(
-                    dt,
-                    record=record,
-                    player_name_default=self._player_name_default(),
-                    play_sfx=self._world.audio_router.play_sfx,
-                    rand=self._state.rng.rand,
-                    mouse=self._ui_mouse_pos(),
-                )
-                if action == "play_again":
-                    self.open()
-                    return
-                if action == "high_scores":
-                    self._action = "open_high_scores"
-                    return
-                if action == "main_menu":
-                    self._action = "back_to_menu"
-                    self.close_requested = True
-                    return
+            self._update_game_over_ui(dt)
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
