@@ -85,11 +85,13 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     pool = ProjectilePool(size=32)
     state = GameplayState(projectiles=pool)
+    state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
 
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
 
+    assert state.bonus_spawn_guard
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
