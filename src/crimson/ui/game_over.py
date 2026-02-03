@@ -8,6 +8,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import TextureLoader
+from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ..persistence.highscores import (
@@ -169,7 +170,7 @@ class GameOverUi:
     assets_root: Path
     base_dir: Path
 
-    config: object  # CrimsonConfig-like
+    config: CrimsonConfig
 
     assets: GameOverAssets | None = None
     font: SmallFontData | None = None
@@ -309,7 +310,7 @@ class GameOverUi:
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
-            game_mode_id = int(getattr(self.config, "data", {}).get("game_mode", 1))
+            game_mode_id = int(self.config.data.get("game_mode", 1))
             candidate = record.copy()
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate
@@ -369,6 +370,8 @@ class GameOverUi:
                         play_sfx("sfx_ui_typeenter")
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
+                    self.config.set_player_name(self.input_text)
+                    self.config.save()
                     path = scores_path_for_config(self.base_dir, self.config)
                     if not self._saved:
                         upsert_highscore_record(path, candidate)
@@ -572,7 +575,7 @@ class GameOverUi:
             panel_tex = self.assets.menu_panel
             src = rl.Rectangle(0.0, 0.0, float(panel_tex.width), float(panel_tex.height))
             dst = rl.Rectangle(panel.x, panel.y, panel.width, panel.height)
-            fx_detail = bool(int(getattr(self.config, "data", {}).get("fx_detail_0", 0) or 0))
+            fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
             if fx_detail:
                 draw_ui_quad_shadow(
                     texture=panel_tex,

@@ -429,6 +429,8 @@ class QuestResultsUi:
                         except Exception:
                             self.highlight_rank = None
                         self._saved = True
+                    self.config.set_player_name(self.input_text)
+                    self.config.save()
                     self.phase = 2
                     return None
                 if play_sfx is not None:

@@ -7,6 +7,8 @@ from construct import Byte, Bytes, Float32l, Int32ul, Struct
 
 CRIMSON_CFG_NAME = "crimson.cfg"
 CRIMSON_CFG_SIZE = 0x480
+PLAYER_NAME_SIZE = 0x20
+PLAYER_NAME_MAX_BYTES = PLAYER_NAME_SIZE - 1
 
 CRIMSON_CFG_STRUCT = Struct(
     "sound_disable" / Byte,
@@ -35,7 +37,7 @@ CRIMSON_CFG_STRUCT = Struct(
     "saved_name_index" / Int32ul,
     "saved_name_order" / Bytes(0x20),
     "saved_names" / Bytes(0xD8),
-    "player_name" / Bytes(0x20),
+    "player_name" / Bytes(PLAYER_NAME_SIZE),
     "player_name_len" / Int32ul,
     "unknown_1a4" / Int32ul,
     "unknown_1a8" / Int32ul,
@@ -116,6 +118,32 @@ class CrimsonConfig:
     @windowed_flag.setter
     def windowed_flag(self, value: int) -> None:
         self.data["windowed_flag"] = int(value) & 0xFF
+
+    @property
+    def player_name(self) -> str:
+        raw = bytes(self.data["player_name"])
+        return raw.split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
+
+    @player_name.setter
+    def player_name(self, value: str) -> None:
+        self.set_player_name(value)
+
+    def set_player_name(self, name: str) -> None:
+        # Config stores a 0x20 buffer (latin-1) and a mirrored length integer.
+        encoded = name.encode("latin-1", errors="ignore")[:PLAYER_NAME_MAX_BYTES]
+        buf = bytearray(PLAYER_NAME_SIZE)
+        buf[: len(encoded)] = encoded
+        buf[min(len(encoded), PLAYER_NAME_MAX_BYTES)] = 0
+
+        # Match `highscore_save_record` trimming: strip trailing spaces in-place.
+        end = buf.index(0)
+        i = end - 1
+        while i > 0 and buf[i] == 0x20:
+            buf[i] = 0
+            i -= 1
+
+        self.data["player_name"] = bytes(buf)
+        self.data["player_name_len"] = int(len(encoded))
 
     def save(self) -> None:
         self.path.write_bytes(CRIMSON_CFG_STRUCT.build(self.data))
