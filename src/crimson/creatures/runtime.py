@@ -23,6 +23,7 @@ from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
     CreatureInit,
+    RANDOM_HEADING_SENTINEL,
     SpawnEnv,
     SpawnPlan,
     SpawnSlotInit,
@@ -776,7 +777,7 @@ class CreaturePool:
                 plan = build_spawn_plan(
                     int(child_template_id),
                     (owner.x, owner.y),
-                    -100.0,
+                    RANDOM_HEADING_SENTINEL,
                     state.rng,
                     spawn_env,
                 )
