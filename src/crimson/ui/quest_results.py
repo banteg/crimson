@@ -429,15 +429,12 @@ class QuestResultsUi:
                         except Exception:
                             self.highlight_rank = None
                         self._saved = True
-                    try:
-                        set_player_name = getattr(self.config, "set_player_name", None)
-                        if callable(set_player_name):
-                            set_player_name(self.input_text)
-                        save_config = getattr(self.config, "save", None)
-                        if callable(save_config):
-                            save_config()
-                    except Exception:
-                        pass
+                    set_player_name = getattr(self.config, "set_player_name", None)
+                    if callable(set_player_name):
+                        set_player_name(self.input_text)
+                    save_config = getattr(self.config, "save", None)
+                    if callable(save_config):
+                        save_config()
                     self.phase = 2
                     return None
                 if play_sfx is not None:

@@ -369,15 +369,12 @@ class GameOverUi:
                         play_sfx("sfx_ui_typeenter")
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
-                    try:
-                        set_player_name = getattr(self.config, "set_player_name", None)
-                        if callable(set_player_name):
-                            set_player_name(self.input_text)
-                        save_config = getattr(self.config, "save", None)
-                        if callable(save_config):
-                            save_config()
-                    except Exception:
-                        pass
+                    set_player_name = getattr(self.config, "set_player_name", None)
+                    if callable(set_player_name):
+                        set_player_name(self.input_text)
+                    save_config = getattr(self.config, "save", None)
+                    if callable(save_config):
+                        save_config()
                     path = scores_path_for_config(self.base_dir, self.config)
                     if not self._saved:
                         upsert_highscore_record(path, candidate)
