@@ -263,6 +263,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
 
+    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
+    assert owner_ids == {-100}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert type_ids.count(0x0B) == 4

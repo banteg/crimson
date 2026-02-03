@@ -1789,7 +1789,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
     if player.hot_tempered_timer <= state.perk_intervals.hot_tempered:
         return
 
-    owner_id = _owner_id_for_player(player.index)
+    owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
     state.bonus_spawn_guard = True
     for idx in range(8):
         type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
