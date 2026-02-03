@@ -418,6 +418,10 @@ class TutorialMode(BaseGameplayMode):
             self._player.experience = int(actions.force_player_experience)
             survival_check_level_up(self._player, self._state.perk_selection)
 
+        detail_preset = 5
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
+
         for call in actions.spawn_bonuses:
             spawned = self._state.bonus_pool.spawn_at(
                 float(call.pos[0]),
@@ -433,7 +437,7 @@ class TutorialMode(BaseGameplayMode):
                     pos_y=float(spawned.pos_y),
                     count=12,
                     rand=self._state.rng.rand,
-                    detail_preset=5,
+                    detail_preset=detail_preset,
                 )
 
         for call in actions.spawn_templates:
@@ -443,6 +447,8 @@ class TutorialMode(BaseGameplayMode):
                 float(call.heading),
                 self._state.rng,
                 rand=self._state.rng.rand,
+                state=self._state,
+                detail_preset=detail_preset,
             )
             if int(call.template_id) == 0x27 and primary is not None and actions.stage5_bonus_carrier_drop is not None:
                 drop_id, drop_amount = actions.stage5_bonus_carrier_drop

@@ -579,6 +579,9 @@ class SurvivalMode(BaseGameplayMode):
         # Scripted milestone spawns based on level.
         stage, milestone_calls = advance_survival_spawn_stage(self._survival.stage, player_level=self._player.level)
         self._survival.stage = stage
+        detail_preset = 5
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
         for call in milestone_calls:
             self._creatures.spawn_template(
                 int(call.template_id),
@@ -586,6 +589,8 @@ class SurvivalMode(BaseGameplayMode):
                 float(call.heading),
                 self._state.rng,
                 rand=self._state.rng.rand,
+                state=self._state,
+                detail_preset=detail_preset,
             )
 
         # Regular wave spawns based on elapsed time.
