@@ -387,29 +387,6 @@ This makes it readable without changing behavior.
 
 ---
 
-## 4) One extra “developer experience” suggestion
-
-Right now `src/crimson/__init__.py` tries to do:
-
-```py
-__version__ = importlib.metadata.version("crimsonland")
-```
-
-which crashes if the package metadata isn’t installed (i.e., running `pytest` without an editable install). In your environment you probably use `uv run` so it’s fine, but contributors (and tooling) often run `pytest` directly.
-
-Easy improvement:
-
-```py
-try:
-    __version__ = importlib.metadata.version("crimsonland")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.0.0"
-```
-
-Small change, less friction.
-
----
-
 ## If you want the biggest ROI shortlist
 
 If you only do 3 things first, I’d do:
