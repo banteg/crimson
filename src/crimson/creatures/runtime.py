@@ -566,11 +566,36 @@ class CreaturePool:
                 creature.vel_y = 0.0
                 continue
 
+            poison_killed = False
             if creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG:
-                creature.hp -= dt * 180.0
+                from .damage import creature_apply_damage
+
+                poison_killed = creature_apply_damage(
+                    creature,
+                    damage_amount=dt * 180.0,
+                    damage_type=0,
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=int(creature.last_hit_owner_id),
+                    dt=dt,
+                    players=players,
+                    rand=rand,
+                )
             elif creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
-                creature.hp -= dt * 60.0
-            if creature.hp <= 0.0:
+                from .damage import creature_apply_damage
+
+                poison_killed = creature_apply_damage(
+                    creature,
+                    damage_amount=dt * 60.0,
+                    damage_type=0,
+                    impulse_x=0.0,
+                    impulse_y=0.0,
+                    owner_id=int(creature.last_hit_owner_id),
+                    dt=dt,
+                    players=players,
+                    rand=rand,
+                )
+            if poison_killed:
                 deaths.append(
                     self.handle_death(
                         idx,
