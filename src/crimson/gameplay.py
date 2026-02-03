@@ -1831,12 +1831,26 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         return
 
     owner_id = _owner_id_for_player_projectiles(state, player.index)
-    # Fire Cough spawns a fire projectile (and a small sprite burst) from the muzzle.
-    theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
-    jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
-    angle = theta + jitter + math.pi / 2.0
-    muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-    muzzle_y = player.pos_y + player.aim_dir_y * 16.0
+    state.sfx_queue.append("sfx_autorifle_fire")
+    state.sfx_queue.append("sfx_plasmaminigun_fire")
+
+    aim_heading = float(player.aim_heading)
+    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
+    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
+    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+
+    aim_x = float(player.aim_x)
+    aim_y = float(player.aim_y)
+    dx = aim_x - float(player.pos_x)
+    dy = aim_y - float(player.pos_y)
+    dist = math.hypot(dx, dy)
+    max_offset = dist * float(player.spread_heat) * 0.5
+    dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
+    mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
+    offset = max_offset * mag
+    jitter_x = aim_x + math.cos(dir_angle) * offset
+    jitter_y = aim_y + math.sin(dir_angle) * offset
+    angle = math.atan2(jitter_y - float(player.pos_y), jitter_x - float(player.pos_x)) + math.pi / 2.0
     state.projectiles.spawn(
         pos_x=muzzle_x,
         pos_y=muzzle_y,
@@ -1845,6 +1859,15 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         owner_id=owner_id,
         base_damage=_projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS),
     )
+
+    vel_x = math.cos(aim_heading) * 25.0
+    vel_y = math.sin(aim_heading) * 25.0
+    sprite_id = state.sprite_effects.spawn(pos_x=muzzle_x, pos_y=muzzle_y, vel_x=vel_x, vel_y=vel_y, scale=1.0)
+    sprite = state.sprite_effects.entries[int(sprite_id)]
+    sprite.color_r = 0.5
+    sprite.color_g = 0.5
+    sprite.color_b = 0.5
+    sprite.color_a = 0.413
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0
