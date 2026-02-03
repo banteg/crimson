@@ -26,6 +26,7 @@ from ..sim.world_defs import (
     PLASMA_PARTICLE_TYPES,
 )
 from ..weapons import WEAPON_BY_ID
+from .projectile_render_registry import beam_effect_scale, known_proj_rgb, plasma_projectile_render_config
 
 if TYPE_CHECKING:
     from ..game_world import GameWorld
@@ -711,44 +712,16 @@ class WorldRenderer:
                     speed_scale = float(getattr(proj, "speed_scale", 1.0))
                     fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
 
-                    rgb = (1.0, 1.0, 1.0)
-                    spacing = 2.1
-                    seg_limit = 3
-                    tail_size = 12.0
-                    head_size = 16.0
-                    head_alpha_mul = 0.45
-                    aura_rgb = rgb
-                    aura_size = 120.0
-                    aura_alpha_mul = 0.15
-
-                    if type_id == int(ProjectileTypeId.PLASMA_RIFLE):
-                        spacing = 2.5
-                        seg_limit = 8
-                        tail_size = 22.0
-                        head_size = 56.0
-                        aura_size = 256.0
-                        aura_alpha_mul = 0.3
-                    elif type_id == int(ProjectileTypeId.PLASMA_MINIGUN):
-                        spacing = 2.1
-                        seg_limit = 3
-                        tail_size = 12.0
-                        head_size = 16.0
-                        aura_size = 120.0
-                        aura_alpha_mul = 0.15
-                    elif type_id == int(ProjectileTypeId.PLASMA_CANNON):
-                        spacing = 2.6
-                        seg_limit = 18
-                        tail_size = 44.0
-                        head_size = 84.0
-                        aura_size = 256.0
-                        # In the decompile, cannon reuses the tail alpha for the aura (0.4).
-                        aura_alpha_mul = 0.4
-                    elif type_id == int(ProjectileTypeId.SPIDER_PLASMA):
-                        rgb = (0.3, 1.0, 0.3)
-                        aura_rgb = rgb
-                    elif type_id == int(ProjectileTypeId.SHRINKIFIER):
-                        rgb = (0.3, 0.3, 1.0)
-                        aura_rgb = rgb
+                    plasma_cfg = plasma_projectile_render_config(type_id)
+                    rgb = plasma_cfg.rgb
+                    spacing = plasma_cfg.spacing
+                    seg_limit = plasma_cfg.seg_limit
+                    tail_size = plasma_cfg.tail_size
+                    head_size = plasma_cfg.head_size
+                    head_alpha_mul = plasma_cfg.head_alpha_mul
+                    aura_rgb = plasma_cfg.aura_rgb
+                    aura_size = plasma_cfg.aura_size
+                    aura_alpha_mul = plasma_cfg.aura_alpha_mul
 
                     if life >= 0.4:
                         # Reconstruct the tail length heuristic used by the native render path.
@@ -831,14 +804,7 @@ class WorldRenderer:
             if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in self.players):
                 perk_scale = 1.2
 
-            if type_id == int(ProjectileTypeId.ION_MINIGUN):
-                effect_scale = 1.05
-            elif type_id == int(ProjectileTypeId.ION_RIFLE):
-                effect_scale = 2.2
-            elif type_id == int(ProjectileTypeId.ION_CANNON):
-                effect_scale = 3.5
-            else:
-                effect_scale = 0.8
+            effect_scale = beam_effect_scale(type_id)
 
             if life >= 0.4:
                 base_alpha = alpha
@@ -1234,18 +1200,9 @@ class WorldRenderer:
             return
         grid, frame = mapping
 
-        color = rl.Color(240, 220, 160, 255)
-        if type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN, ProjectileTypeId.ION_CANNON):
-            color = rl.Color(120, 200, 255, 255)
-        elif type_id == ProjectileTypeId.FIRE_BULLETS:
-            color = rl.Color(255, 170, 90, 255)
-        elif type_id == ProjectileTypeId.SHRINKIFIER:
-            color = rl.Color(160, 255, 170, 255)
-        elif type_id == ProjectileTypeId.BLADE_GUN:
-            color = rl.Color(240, 120, 255, 255)
-
         alpha_byte = int(clamp(clamp(life / 0.4, 0.0, 1.0) * 255.0 * alpha, 0.0, 255.0) + 0.5)
-        tint = rl.Color(color.r, color.g, color.b, alpha_byte)
+        r, g, b = known_proj_rgb(type_id)
+        tint = rl.Color(int(r), int(g), int(b), alpha_byte)
         self._draw_atlas_sprite(
             texture,
             grid=grid,
