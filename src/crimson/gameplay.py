@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Callable, Protocol
 
 from grim.math import clamp, distance_sq
 from .bonuses import BONUS_BY_ID, BonusId
@@ -2088,6 +2088,336 @@ def player_update(
         player.move_phase += 14.0
 
 
+@dataclass(slots=True)
+class _BonusApplyCtx:
+    state: GameplayState
+    player: PlayerState
+    bonus_id: BonusId
+    amount: int
+    origin: _HasPos | None
+    creatures: list[Damageable] | None
+    players: list[PlayerState] | None
+    apply_creature_damage: CreatureDamageApplier | None
+    detail_preset: int
+    economist_multiplier: float
+    label: str
+    icon_id: int
+
+    def register_global(self, timer_key: str) -> None:
+        self.state.bonus_hud.register(
+            self.bonus_id,
+            label=self.label,
+            icon_id=self.icon_id,
+            timer_ref=_TimerRef("global", str(timer_key)),
+        )
+
+    def register_player(self, timer_key: str) -> None:
+        if self.players is not None and len(self.players) > 1:
+            self.state.bonus_hud.register(
+                self.bonus_id,
+                label=self.label,
+                icon_id=self.icon_id,
+                timer_ref=_TimerRef("player", str(timer_key), player_index=0),
+                timer_ref_alt=_TimerRef("player", str(timer_key), player_index=1),
+            )
+        else:
+            self.state.bonus_hud.register(
+                self.bonus_id,
+                label=self.label,
+                icon_id=self.icon_id,
+                timer_ref=_TimerRef("player", str(timer_key), player_index=int(self.player.index)),
+            )
+
+    def origin_pos(self) -> _HasPos:
+        return self.origin or self.player
+
+
+_BonusApplyHandler = Callable[[_BonusApplyCtx], None]
+
+
+def _bonus_apply_points(ctx: _BonusApplyCtx) -> None:
+    award_experience(ctx.state, ctx.player, int(ctx.amount))
+
+
+def _bonus_apply_energizer(ctx: _BonusApplyCtx) -> None:
+    old = float(ctx.state.bonuses.energizer)
+    if old <= 0.0:
+        ctx.register_global("energizer")
+    ctx.state.bonuses.energizer = float(old + float(ctx.amount) * ctx.economist_multiplier)
+
+
+def _bonus_apply_weapon_power_up(ctx: _BonusApplyCtx) -> None:
+    old = float(ctx.state.bonuses.weapon_power_up)
+    if old <= 0.0:
+        ctx.register_global("weapon_power_up")
+    ctx.state.bonuses.weapon_power_up = float(old + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.player.weapon_reset_latch = 0
+    ctx.player.shot_cooldown = 0.0
+    ctx.player.reload_active = False
+    ctx.player.reload_timer = 0.0
+    ctx.player.reload_timer_max = 0.0
+    ctx.player.ammo = float(ctx.player.clip_size)
+
+
+def _bonus_apply_double_experience(ctx: _BonusApplyCtx) -> None:
+    old = float(ctx.state.bonuses.double_experience)
+    if old <= 0.0:
+        ctx.register_global("double_experience")
+    ctx.state.bonuses.double_experience = float(old + float(ctx.amount) * ctx.economist_multiplier)
+
+
+def _bonus_apply_reflex_boost(ctx: _BonusApplyCtx) -> None:
+    old = float(ctx.state.bonuses.reflex_boost)
+    if old <= 0.0:
+        ctx.register_global("reflex_boost")
+    ctx.state.bonuses.reflex_boost = float(old + float(ctx.amount) * ctx.economist_multiplier)
+
+    targets = ctx.players if ctx.players is not None else [ctx.player]
+    for target in targets:
+        target.ammo = float(target.clip_size)
+        target.reload_active = False
+        target.reload_timer = 0.0
+        target.reload_timer_max = 0.0
+
+
+def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
+    old = float(ctx.state.bonuses.freeze)
+    if old <= 0.0:
+        ctx.register_global("freeze")
+    ctx.state.bonuses.freeze = float(old + float(ctx.amount) * ctx.economist_multiplier)
+
+    creatures = ctx.creatures
+    if creatures:
+        rand = ctx.state.rng.rand
+        for creature in creatures:
+            active = getattr(creature, "active", True)
+            if not bool(active):
+                continue
+            if float(getattr(creature, "hp", 0.0)) > 0.0:
+                continue
+            pos_x = float(getattr(creature, "x", 0.0))
+            pos_y = float(getattr(creature, "y", 0.0))
+            for _ in range(8):
+                angle = float(int(rand()) % 0x264) * 0.01
+                ctx.state.effects.spawn_freeze_shard(
+                    pos_x=pos_x,
+                    pos_y=pos_y,
+                    angle=angle,
+                    rand=rand,
+                    detail_preset=int(ctx.detail_preset),
+                )
+            angle = float(int(rand()) % 0x264) * 0.01
+            ctx.state.effects.spawn_freeze_shatter(
+                pos_x=pos_x,
+                pos_y=pos_y,
+                angle=angle,
+                rand=rand,
+                detail_preset=int(ctx.detail_preset),
+            )
+            if hasattr(creature, "active"):
+                setattr(creature, "active", False)
+
+    ctx.state.sfx_queue.append("sfx_shockwave")
+
+
+def _bonus_apply_shield(ctx: _BonusApplyCtx) -> None:
+    should_register = float(ctx.player.shield_timer) <= 0.0
+    if ctx.players is not None and len(ctx.players) > 1:
+        should_register = float(ctx.players[0].shield_timer) <= 0.0 and float(ctx.players[1].shield_timer) <= 0.0
+    if should_register:
+        ctx.register_player("shield_timer")
+    ctx.player.shield_timer = float(ctx.player.shield_timer + float(ctx.amount) * ctx.economist_multiplier)
+
+
+def _bonus_apply_speed(ctx: _BonusApplyCtx) -> None:
+    should_register = float(ctx.player.speed_bonus_timer) <= 0.0
+    if ctx.players is not None and len(ctx.players) > 1:
+        should_register = (
+            float(ctx.players[0].speed_bonus_timer) <= 0.0 and float(ctx.players[1].speed_bonus_timer) <= 0.0
+        )
+    if should_register:
+        ctx.register_player("speed_bonus_timer")
+    ctx.player.speed_bonus_timer = float(ctx.player.speed_bonus_timer + float(ctx.amount) * ctx.economist_multiplier)
+
+
+def _bonus_apply_fire_bullets(ctx: _BonusApplyCtx) -> None:
+    should_register = float(ctx.player.fire_bullets_timer) <= 0.0
+    if ctx.players is not None and len(ctx.players) > 1:
+        should_register = float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+    if should_register:
+        ctx.register_player("fire_bullets_timer")
+    ctx.player.fire_bullets_timer = float(ctx.player.fire_bullets_timer + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.player.weapon_reset_latch = 0
+    ctx.player.shot_cooldown = 0.0
+    ctx.player.reload_active = False
+    ctx.player.reload_timer = 0.0
+    ctx.player.reload_timer_max = 0.0
+    ctx.player.ammo = float(ctx.player.clip_size)
+
+
+def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
+    creatures = ctx.creatures
+    if not creatures:
+        return
+
+    origin_pos = ctx.origin_pos()
+    best_idx: int | None = None
+    best_dist = 0.0
+    for idx, creature in enumerate(creatures):
+        if creature.hp <= 0.0:
+            continue
+        d = distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
+        if best_idx is None or d < best_dist:
+            best_idx = idx
+            best_dist = d
+    if best_idx is None:
+        return
+
+    target = creatures[best_idx]
+    dx = target.x - float(origin_pos.pos_x)
+    dy = target.y - float(origin_pos.pos_y)
+    angle = math.atan2(dy, dx) + math.pi / 2.0
+    owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
+
+    ctx.state.bonus_spawn_guard = True
+    ctx.state.shock_chain_links_left = 0x20
+    ctx.state.shock_chain_projectile_id = ctx.state.projectiles.spawn(
+        pos_x=float(origin_pos.pos_x),
+        pos_y=float(origin_pos.pos_y),
+        angle=angle,
+        type_id=int(ProjectileTypeId.ION_RIFLE),
+        owner_id=int(owner_id),
+        base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_RIFLE)),
+    )
+    ctx.state.bonus_spawn_guard = False
+
+
+def _bonus_apply_weapon(ctx: _BonusApplyCtx) -> None:
+    weapon_id = int(ctx.amount)
+    if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon_id is None:
+        ctx.player.alt_weapon_id = int(ctx.player.weapon_id)
+        ctx.player.alt_clip_size = int(ctx.player.clip_size)
+        ctx.player.alt_ammo = float(ctx.player.ammo)
+        ctx.player.alt_reload_active = bool(ctx.player.reload_active)
+        ctx.player.alt_reload_timer = float(ctx.player.reload_timer)
+        ctx.player.alt_shot_cooldown = float(ctx.player.shot_cooldown)
+        ctx.player.alt_reload_timer_max = float(ctx.player.reload_timer_max)
+    weapon_assign_player(ctx.player, weapon_id, state=ctx.state)
+
+
+def _bonus_apply_fireblast(ctx: _BonusApplyCtx) -> None:
+    origin_pos = ctx.origin_pos()
+    owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
+    ctx.state.bonus_spawn_guard = True
+    _spawn_projectile_ring(
+        ctx.state,
+        origin_pos,
+        count=16,
+        angle_offset=0.0,
+        type_id=ProjectileTypeId.PLASMA_RIFLE,
+        owner_id=int(owner_id),
+    )
+    ctx.state.bonus_spawn_guard = False
+    ctx.state.sfx_queue.append("sfx_explosion_medium")
+
+
+def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
+    # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
+    #   camera_shake_pulses = 0x14;
+    #   camera_shake_timer = 0.2f;
+    ctx.state.camera_shake_pulses = 0x14
+    ctx.state.camera_shake_timer = 0.2
+
+    origin_pos = ctx.origin_pos()
+    ox = float(origin_pos.pos_x)
+    oy = float(origin_pos.pos_y)
+    rand = ctx.state.rng.rand
+
+    bullet_count = int(rand()) & 3
+    bullet_count += 4
+    assault_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ASSAULT_RIFLE))
+    for _ in range(bullet_count):
+        angle = float(int(rand()) % 0x274) * 0.01
+        proj_id = ctx.state.projectiles.spawn(
+            pos_x=ox,
+            pos_y=oy,
+            angle=float(angle),
+            type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
+            owner_id=-100,
+            base_damage=assault_meta,
+        )
+        if proj_id != -1:
+            speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
+            ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
+
+    minigun_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.MEAN_MINIGUN))
+    for _ in range(2):
+        angle = float(int(rand()) % 0x274) * 0.01
+        ctx.state.projectiles.spawn(
+            pos_x=ox,
+            pos_y=oy,
+            angle=float(angle),
+            type_id=int(ProjectileTypeId.MEAN_MINIGUN),
+            owner_id=-100,
+            base_damage=minigun_meta,
+        )
+
+    ctx.state.effects.spawn_explosion_burst(
+        pos_x=ox,
+        pos_y=oy,
+        scale=1.0,
+        rand=rand,
+        detail_preset=int(ctx.detail_preset),
+    )
+
+    creatures = ctx.creatures
+    if creatures:
+        prev_guard = bool(ctx.state.bonus_spawn_guard)
+        ctx.state.bonus_spawn_guard = True
+        for idx, creature in enumerate(creatures):
+            if creature.hp <= 0.0:
+                continue
+            dx = float(creature.x) - ox
+            dy = float(creature.y) - oy
+            if abs(dx) > 256.0 or abs(dy) > 256.0:
+                continue
+            dist = math.hypot(dx, dy)
+            if dist < 256.0:
+                damage = (256.0 - dist) * 5.0
+                if ctx.apply_creature_damage is not None:
+                    ctx.apply_creature_damage(
+                        int(idx),
+                        float(damage),
+                        3,
+                        0.0,
+                        0.0,
+                        _owner_id_for_player(ctx.player.index),
+                    )
+                else:
+                    creature.hp -= float(damage)
+        ctx.state.bonus_spawn_guard = prev_guard
+
+    ctx.state.sfx_queue.append("sfx_explosion_large")
+    ctx.state.sfx_queue.append("sfx_shockwave")
+
+
+_BONUS_APPLY_HANDLERS: dict[BonusId, _BonusApplyHandler] = {
+    BonusId.POINTS: _bonus_apply_points,
+    BonusId.ENERGIZER: _bonus_apply_energizer,
+    BonusId.WEAPON_POWER_UP: _bonus_apply_weapon_power_up,
+    BonusId.DOUBLE_EXPERIENCE: _bonus_apply_double_experience,
+    BonusId.REFLEX_BOOST: _bonus_apply_reflex_boost,
+    BonusId.FREEZE: _bonus_apply_freeze,
+    BonusId.SHIELD: _bonus_apply_shield,
+    BonusId.SPEED: _bonus_apply_speed,
+    BonusId.FIRE_BULLETS: _bonus_apply_fire_bullets,
+    BonusId.SHOCK_CHAIN: _bonus_apply_shock_chain,
+    BonusId.WEAPON: _bonus_apply_weapon,
+    BonusId.FIREBLAST: _bonus_apply_fireblast,
+    BonusId.NUKE: _bonus_apply_nuke,
+}
+
+
 def bonus_apply(
     state: GameplayState,
     player: PlayerState,
@@ -2108,289 +2438,26 @@ def bonus_apply(
     if amount is None:
         amount = int(meta.default_amount or 0)
 
-    if bonus_id == BonusId.POINTS:
-        award_experience(state, player, int(amount))
-        return
-
     economist_multiplier = 1.0 + 0.5 * float(perk_count_get(player, PerkId.BONUS_ECONOMIST))
-
     icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
     label = meta.name
-
-    def _register_global(timer_key: str) -> None:
-        state.bonus_hud.register(
-            bonus_id,
-            label=label,
-            icon_id=icon_id,
-            timer_ref=_TimerRef("global", timer_key),
-        )
-
-    def _register_player(timer_key: str) -> None:
-        if players is not None and len(players) > 1:
-            state.bonus_hud.register(
-                bonus_id,
-                label=label,
-                icon_id=icon_id,
-                timer_ref=_TimerRef("player", timer_key, player_index=0),
-                timer_ref_alt=_TimerRef("player", timer_key, player_index=1),
-            )
-        else:
-            state.bonus_hud.register(
-                bonus_id,
-                label=label,
-                icon_id=icon_id,
-                timer_ref=_TimerRef("player", timer_key, player_index=int(player.index)),
-            )
-
-    if bonus_id == BonusId.ENERGIZER:
-        old = float(state.bonuses.energizer)
-        if old <= 0.0:
-            _register_global("energizer")
-        state.bonuses.energizer = float(old + float(amount) * economist_multiplier)
-        return
-
-    if bonus_id == BonusId.WEAPON_POWER_UP:
-        old = float(state.bonuses.weapon_power_up)
-        if old <= 0.0:
-            _register_global("weapon_power_up")
-        state.bonuses.weapon_power_up = float(old + float(amount) * economist_multiplier)
-        player.weapon_reset_latch = 0
-        player.shot_cooldown = 0.0
-        player.reload_active = False
-        player.reload_timer = 0.0
-        player.reload_timer_max = 0.0
-        player.ammo = float(player.clip_size)
-        return
-
-    if bonus_id == BonusId.DOUBLE_EXPERIENCE:
-        old = float(state.bonuses.double_experience)
-        if old <= 0.0:
-            _register_global("double_experience")
-        state.bonuses.double_experience = float(old + float(amount) * economist_multiplier)
-        return
-
-    if bonus_id == BonusId.REFLEX_BOOST:
-        old = float(state.bonuses.reflex_boost)
-        if old <= 0.0:
-            _register_global("reflex_boost")
-        state.bonuses.reflex_boost = float(old + float(amount) * economist_multiplier)
-
-        targets = players if players is not None else [player]
-        for target in targets:
-            target.ammo = float(target.clip_size)
-            target.reload_active = False
-            target.reload_timer = 0.0
-            target.reload_timer_max = 0.0
-        return
-
-    if bonus_id == BonusId.FREEZE:
-        old = float(state.bonuses.freeze)
-        if old <= 0.0:
-            _register_global("freeze")
-        state.bonuses.freeze = float(old + float(amount) * economist_multiplier)
-        if creatures:
-            rand = state.rng.rand
-            for creature in creatures:
-                active = getattr(creature, "active", True)
-                if not bool(active):
-                    continue
-                if float(getattr(creature, "hp", 0.0)) > 0.0:
-                    continue
-                pos_x = float(getattr(creature, "x", 0.0))
-                pos_y = float(getattr(creature, "y", 0.0))
-                for _ in range(8):
-                    angle = float(int(rand()) % 0x264) * 0.01
-                    state.effects.spawn_freeze_shard(
-                        pos_x=pos_x,
-                        pos_y=pos_y,
-                        angle=angle,
-                        rand=rand,
-                        detail_preset=int(detail_preset),
-                    )
-                angle = float(int(rand()) % 0x264) * 0.01
-                state.effects.spawn_freeze_shatter(
-                    pos_x=pos_x,
-                    pos_y=pos_y,
-                    angle=angle,
-                    rand=rand,
-                    detail_preset=int(detail_preset),
-                )
-                if hasattr(creature, "active"):
-                    setattr(creature, "active", False)
-        state.sfx_queue.append("sfx_shockwave")
-        return
-
-    if bonus_id == BonusId.SHIELD:
-        should_register = float(player.shield_timer) <= 0.0
-        if players is not None and len(players) > 1:
-            should_register = float(players[0].shield_timer) <= 0.0 and float(players[1].shield_timer) <= 0.0
-        if should_register:
-            _register_player("shield_timer")
-        player.shield_timer = float(player.shield_timer + float(amount) * economist_multiplier)
-        return
-
-    if bonus_id == BonusId.SPEED:
-        should_register = float(player.speed_bonus_timer) <= 0.0
-        if players is not None and len(players) > 1:
-            should_register = float(players[0].speed_bonus_timer) <= 0.0 and float(players[1].speed_bonus_timer) <= 0.0
-        if should_register:
-            _register_player("speed_bonus_timer")
-        player.speed_bonus_timer = float(player.speed_bonus_timer + float(amount) * economist_multiplier)
-        return
-
-    if bonus_id == BonusId.FIRE_BULLETS:
-        should_register = float(player.fire_bullets_timer) <= 0.0
-        if players is not None and len(players) > 1:
-            should_register = float(players[0].fire_bullets_timer) <= 0.0 and float(players[1].fire_bullets_timer) <= 0.0
-        if should_register:
-            _register_player("fire_bullets_timer")
-        player.fire_bullets_timer = float(player.fire_bullets_timer + float(amount) * economist_multiplier)
-        player.weapon_reset_latch = 0
-        player.shot_cooldown = 0.0
-        player.reload_active = False
-        player.reload_timer = 0.0
-        player.reload_timer_max = 0.0
-        player.ammo = float(player.clip_size)
-        return
-
-    if bonus_id == BonusId.SHOCK_CHAIN:
-        if creatures:
-            origin_pos = origin or player
-            best_idx: int | None = None
-            best_dist = 0.0
-            for idx, creature in enumerate(creatures):
-                if creature.hp <= 0.0:
-                    continue
-                d = distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
-                if best_idx is None or d < best_dist:
-                    best_idx = idx
-                    best_dist = d
-            if best_idx is not None:
-                target = creatures[best_idx]
-                dx = target.x - float(origin_pos.pos_x)
-                dy = target.y - float(origin_pos.pos_y)
-                angle = math.atan2(dy, dx) + math.pi / 2.0
-                owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
-
-                state.bonus_spawn_guard = True
-                state.shock_chain_links_left = 0x20
-                state.shock_chain_projectile_id = state.projectiles.spawn(
-                    pos_x=float(origin_pos.pos_x),
-                    pos_y=float(origin_pos.pos_y),
-                    angle=angle,
-                    type_id=int(ProjectileTypeId.ION_RIFLE),
-                    owner_id=int(owner_id),
-                    base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_RIFLE)),
-                )
-                state.bonus_spawn_guard = False
-        return
-
-    if bonus_id == BonusId.WEAPON:
-        weapon_id = int(amount)
-        if perk_active(player, PerkId.ALTERNATE_WEAPON) and player.alt_weapon_id is None:
-            player.alt_weapon_id = int(player.weapon_id)
-            player.alt_clip_size = int(player.clip_size)
-            player.alt_ammo = float(player.ammo)
-            player.alt_reload_active = bool(player.reload_active)
-            player.alt_reload_timer = float(player.reload_timer)
-            player.alt_shot_cooldown = float(player.shot_cooldown)
-            player.alt_reload_timer_max = float(player.reload_timer_max)
-        weapon_assign_player(player, weapon_id, state=state)
-        return
-
-    if bonus_id == BonusId.FIREBLAST:
-        origin_pos = origin or player
-        owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
-        state.bonus_spawn_guard = True
-        _spawn_projectile_ring(
-            state,
-            origin_pos,
-            count=16,
-            angle_offset=0.0,
-            type_id=ProjectileTypeId.PLASMA_RIFLE,
-            owner_id=int(owner_id),
-        )
-        state.bonus_spawn_guard = False
-        state.sfx_queue.append("sfx_explosion_medium")
-        return
-
-    if bonus_id == BonusId.NUKE:
-        # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
-        #   camera_shake_pulses = 0x14;
-        #   camera_shake_timer = 0.2f;
-        state.camera_shake_pulses = 0x14
-        state.camera_shake_timer = 0.2
-
-        origin_pos = origin or player
-        ox = float(origin_pos.pos_x)
-        oy = float(origin_pos.pos_y)
-        rand = state.rng.rand
-
-        bullet_count = int(rand()) & 3
-        bullet_count += 4
-        assault_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ASSAULT_RIFLE))
-        for _ in range(bullet_count):
-            angle = float(int(rand()) % 0x274) * 0.01
-            proj_id = state.projectiles.spawn(
-                pos_x=ox,
-                pos_y=oy,
-                angle=float(angle),
-                type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
-                owner_id=-100,
-                base_damage=assault_meta,
-            )
-            if proj_id != -1:
-                speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
-                state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
-
-        minigun_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.MEAN_MINIGUN))
-        for _ in range(2):
-            angle = float(int(rand()) % 0x274) * 0.01
-            state.projectiles.spawn(
-                pos_x=ox,
-                pos_y=oy,
-                angle=float(angle),
-                type_id=int(ProjectileTypeId.MEAN_MINIGUN),
-                owner_id=-100,
-                base_damage=minigun_meta,
-            )
-
-        state.effects.spawn_explosion_burst(
-            pos_x=ox,
-            pos_y=oy,
-            scale=1.0,
-            rand=rand,
-            detail_preset=int(detail_preset),
-        )
-
-        if creatures:
-            prev_guard = bool(state.bonus_spawn_guard)
-            state.bonus_spawn_guard = True
-            for idx, creature in enumerate(creatures):
-                if creature.hp <= 0.0:
-                    continue
-                dx = float(creature.x) - ox
-                dy = float(creature.y) - oy
-                if abs(dx) > 256.0 or abs(dy) > 256.0:
-                    continue
-                dist = math.hypot(dx, dy)
-                if dist < 256.0:
-                    damage = (256.0 - dist) * 5.0
-                    if apply_creature_damage is not None:
-                        apply_creature_damage(
-                            int(idx),
-                            float(damage),
-                            3,
-                            0.0,
-                            0.0,
-                            _owner_id_for_player(player.index),
-                        )
-                    else:
-                        creature.hp -= float(damage)
-            state.bonus_spawn_guard = prev_guard
-        state.sfx_queue.append("sfx_explosion_large")
-        state.sfx_queue.append("sfx_shockwave")
-        return
+    ctx = _BonusApplyCtx(
+        state=state,
+        player=player,
+        bonus_id=bonus_id,
+        amount=int(amount),
+        origin=origin,
+        creatures=creatures,
+        players=players,
+        apply_creature_damage=apply_creature_damage,
+        detail_preset=int(detail_preset),
+        economist_multiplier=float(economist_multiplier),
+        label=str(label),
+        icon_id=int(icon_id),
+    )
+    handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
+    if handler is not None:
+        handler(ctx)
 
     # Bonus types not modeled yet.
     return
