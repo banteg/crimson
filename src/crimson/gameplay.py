@@ -1905,26 +1905,25 @@ def player_fire_weapon(
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     if player.reload_timer > 0.0:
-        if player.ammo <= 0 and player.experience > 0:
-            if perk_active(player, PerkId.REGRESSION_BULLETS):
-                firing_during_reload = True
-                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+        if player.experience <= 0:
+            return
+        if perk_active(player, PerkId.REGRESSION_BULLETS):
+            firing_during_reload = True
+            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-                reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
-                factor = 4.0 if ammo_class == 1 else 200.0
-                player.experience = int(float(player.experience) - reload_time * factor)
-                if player.experience < 0:
-                    player.experience = 0
-            elif perk_active(player, PerkId.AMMUNITION_WITHIN):
-                firing_during_reload = True
-                ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
+            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+            factor = 4.0 if ammo_class == 1 else 200.0
+            player.experience = int(float(player.experience) - reload_time * factor)
+            if player.experience < 0:
+                player.experience = 0
+        elif perk_active(player, PerkId.AMMUNITION_WITHIN):
+            firing_during_reload = True
+            ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-                from .player_damage import player_take_damage
+            from .player_damage import player_take_damage
 
-                cost = 0.15 if ammo_class == 1 else 1.0
-                player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
-            else:
-                return
+            cost = 0.15 if ammo_class == 1 else 1.0
+            player_take_damage(state, player, cost, dt=dt, rand=state.rng.rand)
         else:
             return
 
