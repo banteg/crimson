@@ -1150,7 +1150,8 @@ def _perk_apply_my_favourite_weapon(ctx: _PerkApplyCtx) -> None:
 
 
 def _perk_apply_plaguebearer(ctx: _PerkApplyCtx) -> None:
-    ctx.owner.plaguebearer_active = True
+    for player in ctx.players:
+        player.plaguebearer_active = True
 
 
 _PERK_APPLY_HANDLERS: dict[PerkId, _PerkApplyHandler] = {
