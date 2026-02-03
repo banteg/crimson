@@ -21,7 +21,9 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..weapons import WEAPON_BY_ID
+from .formatting import format_ordinal, format_time_mm_ss
 from .hud import HudAssets
+from .layout import ui_origin, ui_scale
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -33,20 +35,7 @@ from .perk_menu import (
     load_perk_menu_assets,
 )
 from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
-
-
-UI_BASE_WIDTH = 640.0
-UI_BASE_HEIGHT = 480.0
-
-
-def ui_scale(screen_w: float, screen_h: float) -> float:
-    # Matches the classic UI-space helpers we use elsewhere: render in 640x480 pixel space.
-    return 1.0
-
-
-def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, float]:
-    return 0.0, 0.0
-
+from .text_input import poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
 GAME_OVER_PANEL_Y = 210.0
@@ -68,28 +57,6 @@ COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_SCORE_LABEL = rl.Color(230, 230, 230, 255)
 COLOR_SCORE_VALUE = rl.Color(230, 230, 255, 255)
-
-
-def _format_ordinal(value_1_based: int) -> str:
-    value = int(value_1_based)
-    if value % 100 in (11, 12, 13):
-        suffix = "th"
-    elif value % 10 == 1:
-        suffix = "st"
-    elif value % 10 == 2:
-        suffix = "nd"
-    elif value % 10 == 3:
-        suffix = "rd"
-    else:
-        suffix = "th"
-    return f"{value}{suffix}"
-
-
-def _format_time_mm_ss(ms: int) -> str:
-    total_s = max(0, int(ms)) // 1000
-    minutes = total_s // 60
-    seconds = total_s % 60
-    return f"{minutes}:{seconds:02d}"
 
 
 def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
@@ -142,22 +109,6 @@ def _draw_texture_centered(tex: rl.Texture, x: float, y: float, w: float, h: flo
     dst = rl.Rectangle(float(x), float(y), float(w), float(h))
     tint = rl.Color(255, 255, 255, int(255 * max(0.0, min(1.0, alpha))))
     rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
-
-
-def _poll_text_input(max_len: int, *, allow_space: bool = True) -> str:
-    out = ""
-    while True:
-        value = rl.get_char_pressed()
-        if value == 0:
-            break
-        if value < 0x20 or value > 0xFF:
-            continue
-        if not allow_space and value == 0x20:
-            continue
-        if len(out) >= max_len:
-            continue
-        out += chr(int(value))
-    return out
 
 
 def _ease_out_cubic(t: float) -> float:
@@ -329,7 +280,7 @@ class GameOverUi:
         # Basic text input behavior for the name-entry phase.
         if self.phase == 0:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            typed = _poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
+            typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:
                 self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[:NAME_MAX_EDIT]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
@@ -452,7 +403,7 @@ class GameOverUi:
         score_value_w = self._text_width(score_value, 1.0 * scale)
         self._draw_small(score_value, base_x + 32.0 * scale - score_value_w * 0.5, base_y + 15.0 * scale, 1.0 * scale, value_color)
 
-        rank_value = _format_ordinal(int(self.rank) + 1)
+        rank_value = format_ordinal(int(self.rank) + 1)
         rank_text = f"Rank: {rank_value}"
         rank_w = self._text_width(rank_text, 1.0 * scale)
         self._draw_small(rank_text, base_x + 32.0 * scale - rank_w * 0.5, base_y + 30.0 * scale, 1.0 * scale, label_color)
@@ -490,7 +441,7 @@ class GameOverUi:
                 origin = rl.Vector2(16.0 * scale, 16.0 * scale)
                 rl.draw_texture_pro(hud_assets.clock_pointer, src, dst, origin, rotation, rl.Color(255, 255, 255, int(255 * alpha)))
 
-            time_text = _format_time_mm_ss(elapsed_ms)
+            time_text = format_time_mm_ss(elapsed_ms)
             self._draw_small(time_text, col2_x + 40.0 * scale, base_y + 19.0 * scale, 1.0 * scale, label_color)
 
         # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).

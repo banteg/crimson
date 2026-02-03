@@ -9,11 +9,8 @@ import pyray as rl
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
+from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .menu_panel import draw_classic_menu_panel
-
-
-UI_BASE_WIDTH = 640.0
-UI_BASE_HEIGHT = 480.0
 
 # Perk selection screen panel uses ui_element-style timeline animation:
 # - fully hidden until end_ms
@@ -71,21 +68,6 @@ class PerkMenuComputedLayout:
     cancel_x: float
     cancel_y: float
 
-
-def ui_scale(screen_w: float, screen_h: float) -> float:
-    # Classic UI renders in backbuffer pixels; keep menu scale fixed.
-    return 1.0
-
-
-def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, float]:
-    return 0.0, 0.0
-
-
-def _menu_widescreen_y_shift(layout_w: float) -> float:
-    # ui_menu_layout_init: pos_y += (screen_width / 640.0) * 150.0 - 150.0
-    return (layout_w / UI_BASE_WIDTH) * 150.0 - 150.0
-
-
 def perk_menu_compute_layout(
     layout: PerkMenuLayout,
     *,
@@ -99,7 +81,7 @@ def perk_menu_compute_layout(
     panel_slide_x: float = 0.0,
 ) -> PerkMenuComputedLayout:
     layout_w = screen_w / scale if scale else screen_w
-    widescreen_shift_y = _menu_widescreen_y_shift(layout_w)
+    widescreen_shift_y = menu_widescreen_y_shift(layout_w)
     panel_x = layout.panel_x + panel_slide_x
     panel_y = layout.panel_y + widescreen_shift_y
     panel = rl.Rectangle(
