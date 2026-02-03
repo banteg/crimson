@@ -1,303 +1,423 @@
-Below is what I’m seeing when I diff **our current ui_menuPanel rendering** against the **runtime capture** (marked frames). I’m focusing strictly on the **panel texture (`ui\ui_menuPanel`, tex id 63)**: geometry, UVs, shadow pass, and slide timing/width.
+Here’s what jumped out when scanning `src/` (especially for duplicated logic and “too-big-to-reason-about” modules), plus a concrete, incremental refactor + testing plan that matches the “quest builders / spawn templates” style (data-driven, isolated, testable pieces).
+
+I’ll reference files/functions directly so you can turn this into issues.
 
 ---
 
-## Runtime panel “truth” extracted from the capture
+## 1) High-value duplicate code to delete by introducing shared components
 
-There are **two distinct render variants** for `ui_menuPanel` in the capture:
+### A. Perk menu logic is copied across modes
 
-### Variant A — `quad_mode = 4` (single quad, “trimmed”)
+**Where:**
 
-* **Local geometry (screen-space relative to element offset):**
-  `x: 21 → 531` (**510 px**)
-  `y: -81 → 173` (**254 px**)
-* **UV trim (inset):** `u: 1/512 → 511/512`, `v: 1/256 → 255.5/256`
-  (so we *don’t* sample the outermost border pixels)
-* **Draw calls:** 1 shadow + 1 main
-* Used in: **state 2**, plus the “side panels” in **states 3, 14–16**
+* `src/crimson/modes/survival_mode.py`: `_open_perk_menu`, `_perk_menu_handle_input`, `_draw_perk_menu`, `_perk_prompt_rect`, plus a big perk prompt block in `update()`.
+* `src/crimson/modes/quest_mode.py`: same structure, with `GameMode.QUESTS` instead.
+* `src/crimson/modes/tutorial_mode.py`: same again with slightly different behavior (and it even has a small accidental duplication: `slide_x = ...` is assigned twice).
 
-### Variant B — `quad_mode = 8` (3-slice vertical panel)
+**Why it’s hurting you:**
 
-* **Local geometry (base):**
+* It’s ~the same UI state machine + input processing three times.
+* Fixes and UX changes will drift.
+* Tests like `tests/test_perk_menu_sfx.py` are forced to target one mode, but the same bug could exist in others.
 
-  * `x: -63 → 447` (**510 px**)
-  * `y0=-81, y1=57, y2=81, y3=197`
-    Heights: **top 138**, **mid 24**, **bottom 116** → total **278**
-* **Local geometry (tall):**
+**Refactor shape (idiomatic + testable):**
+Create a controller that owns the perk menu UI state and returns “actions” instead of directly mutating the mode beyond what it must.
 
-  * same x/y0/y1, but `y2=181, y3=297`
-    Heights: **top 138**, **mid 124**, **bottom 116** → total **378**
-* **UVs per slice:**
+Suggested new module:
 
-  * u always `1/512 → 511/512`
-  * v:
+* `src/crimson/modes/components/perk_menu_controller.py` (or `src/crimson/ui/perk_menu_controller.py` if you want it “UI-level”, but it currently needs mode/gameplay calls)
 
-    * top: `1/256 → 130/256`
-    * mid: `130/256 → 150/256`
-    * bottom: `150/256 → 255.5/256`
-* **Draw calls:** 3 shadow (top/mid/bot) + 3 main (top/mid/bot)
-  and importantly: **all shadow slices first, then all main slices**
-* Used in: **state 1, 4, 6, 8, 11, 14–17**, and as the “main” panel in some dual-panel screens.
+Core API idea:
 
-### Shadow pass (both variants)
+```py
+@dataclass(slots=True)
+class PerkMenuAction:
+    kind: Literal["picked", "cancelled", "noop"]
+    picked_index: int | None = None
 
-* Shadow is **offset by (+7, +7)** in screen pixels.
-* Shadow tint is **0x44444444** (as seen in capture).
-* Shadow blend is the special “darken” setup (we already have that in `crimson/ui/shadow.py`).
+@dataclass(slots=True)
+class PerkMenuConfig:
+    game_mode: int
+    player_count: int
+    play_sfx: bool = True
+    reset_prompt_on_close: bool = False  # quests currently does this
 
----
+class PerkMenuController:
+    def __init__(...):
+        # holds open/timeline/selected/cancel_button/etc
 
-## Global fixes (affect every state that draws `ui_menuPanel`)
+    def open_if_available(...) -> bool:
+        # checks pending_count + choices; optionally plays sfx
 
-* [x] Introduce a single source of truth for `ui_menuPanel` geometry + UV trims:
+    def update(...) -> PerkMenuAction:
+        # consumes input, updates selected, returns action
 
-  * [x] Variant A (`quad_mode=4`): local bbox `(21,-81)-(531,173)` and src rect `(x=1,y=1,w=510,h=254.5)`
-  * [x] Variant B (`quad_mode=8`): local x `(-63..447)`, y slices `(-81..57..81/181..197/297)` and src slice rects:
+    def draw(...) -> None:
+        # uses crimson.ui.perk_menu primitives
+```
 
-    * top: `(1,1,510,129)`
-    * mid: `(1,130,510,20)`
-    * bottom: `(1,150,510,105.5)`
-* [x] Refactor `draw_menu_panel()` so it **does not derive slice heights from texture scaling**; it should use the **captured geometry heights** (138/24/116) and only expand the mid slice by `delta_h`.
-* [x] Fix `draw_menu_panel()` draw ordering to match capture: **all 3 shadow slices first, then all 3 main slices** (right now we interleave shadow/main per slice).
-* [x] Stop using `MENU_PANEL_WIDTH=512` and `MENU_PANEL_HEIGHT=256` as *drawn* dimensions for the panel; those are texture dimensions, but runtime draws **510-wide** panels and either **254 / 278 / 378** tall depending on variant.
-* [x] Update slide width for panels to **510** everywhere (capture slide is ±510, not ±512).
-* [x] Extend `_ui_element_anim()` (or wrapper) to support **direction_flag** so right-sliding panels can use **+510 → 0** (needed in states 3, 14–16).
+Then each mode does:
 
----
+* Build `PerkMenuConfig(game_mode=..., player_count=len(players), reset_prompt_on_close=...)`
+* Call controller’s `update()` and interpret returned `picked`/`cancelled` action (apply perk, play `sfx_ui_bonus`, etc).
+* The “perk prompt” can either live in this controller too, or in a tiny `PerkPromptController` used by both quest/survival.
 
-## State 0 — Main menu
-
-(Doesn’t draw `ui_menuPanel` in the marked frames.)
-
-* [x] No panel-specific action.
+**Test win:**
+You can turn the existing `tests/test_perk_menu_sfx.py` into tests for the controller (one codepath), and add a couple of thin “mode wires controller correctly” tests for each mode.
 
 ---
 
-## State 1 — Play Game menu
+### B. Game-over handling block duplicated across modes
 
-**Runtime capture**
+**Where:**
 
-* Variant: **`quad_mode=8` sliced**, **base 278** tall
-* pos: `(-45, 300)` (already includes widescreen shift in capture)
-* open bbox (main): `(-108,219) → (402,497)`
-* shadow bbox is +7/+7
-* slide timeline: **start=300ms end=0ms**, width=510, direction_flag=0
+* `survival_mode.update`, `rush_mode.update`, `typo_mode.update` have nearly identical:
 
-**Our current**
+  * `if self._game_over_active:` block
+  * `record = self._game_over_record; if None: self._enter_game_over()`
+  * `action = self._game_over_ui.update(...)`
+  * action routing: play again / high scores / main menu
 
-* We draw a **single 512×256 quad** (no slicing)
-* Panel bbox open is effectively `(-141,218) → (371,474)` (wrong size/offset)
-* Panel shadow is currently drawn **without the +7/+7 offset** in `PanelMenuView._draw_panel`
+**Refactor:**
+Make `BaseGameplayMode` own the orchestration of “game over UI update → action decision”, and let derived modes only:
 
-Fix plan:
+* Provide `build_highscore_record()` implementation.
+* Decide what “play_again” means (often `self.open()`).
 
-* [x] Update `PanelMenuView._draw_panel` (`src/crimson/frontend/panels/base.py`) to use **Variant B (sliced)** for this state.
-* [x] Use **base height 278** (not 256) for the Play Game panel.
-* [x] Apply **UV trimming** (x=1..511, y starts at 1, bottom ends at 255.5).
-* [x] Fix panel shadow offset: add `UI_SHADOW_OFFSET` to panel shadow draws (or have the panel renderer do it).
-* [x] Update slide width passed into `_ui_element_anim()` for the panel from **512 → 510**.
-* [x] Recompute any content anchoring in `play_game.py` that depends on the old `MENU_PANEL_OFFSET_X/-Y` assumptions (panel_left/panel_top will change when we switch to the real geom x0/y0).
+Suggested:
 
----
+* `src/crimson/modes/components/game_over_controller.py`
+* Or just fold into `BaseGameplayMode` as `_update_game_over(dt) -> str | None`.
 
-## State 2 — Options menu
+Also extract the record-building duplication:
 
-**Runtime capture**
+* `rush_mode._enter_game_over`
+* `survival_mode._enter_game_over`
+* `typo_mode._enter_game_over`
 
-* Variant: **`quad_mode=4` single quad**
-* open bbox: `(-24,219) → (486,473)` (510×254)
-* slide: start=300/end=0, width=510, direction_flag=0
+into one helper:
 
-**Our current**
+* `crimson/persistence/highscores_helpers.py` (or `modes/components/highscore_record_builder.py`)
 
-* Uses the same `PanelMenuView` panel as Play Game (512×256, wrong origin)
-* Shadow offset bug applies here too
+**Test win:**
 
-Fix plan:
-
-* [x] Make Options use **Variant A (quad_mode=4)**, not the sliced panel.
-* [x] Render with trimmed src rect `(1,1,510,254.5)` into dst size **510×254** using local geom `(21,-81)`.
-* [x] Fix shadow offset (+7/+7) on the panel.
-* [x] Change panel slide width in this state to **510**.
-* [x] Adjust Options content layout offsets after panel bbox changes (it will move significantly: runtime panel is much farther right than our current).
+* Add “record builder” tests (pure, no `pyray`) for each mode, or parameterize by mode id.
+* Add “game over controller routes actions” test (monkeypatch sfx, mouse, RNG).
 
 ---
 
-## State 3 — Controls configuration
+### C. Menu/panel drawing boilerplate duplicated in several panel views
 
-**Runtime capture**
-Two panels:
+**Where:**
+`ControlsMenuView.draw`, `ModsMenuView.draw`, `PlayGameMenuView.draw` are structurally identical:
 
-1. **Left panel:** Variant A `quad_mode=4`, pos `(-165,290)`, open bbox `(-144,209)→(366,463)`, direction_flag=0, start=300/end=0
-2. **Right panel:** Variant B `quad_mode=8` **tall 378**, pos `(674,200)`, open bbox `(611,119)→(1121,497)`, direction_flag=1, start=300/end=0 (slides from right)
+* draw background
+* fade
+* check assets/entry
+* draw panel
+* draw entry
+* draw sign
+* draw contents
+* cursor
 
-**Our current**
+But `PanelMenuView.draw()` already does most of this — it just calls `_draw_title_text()` instead of allowing custom content.
 
-* `frontend/panels/controls.py` is a placeholder and uses the standard single-panel base behavior (wrong count, wrong positions, wrong variants).
+**Refactor:**
+Change `PanelMenuView.draw()` to call a hook:
 
-Fix plan:
+* `self._draw_contents()` (default implementation calls `_draw_title_text()`)
 
-* [x] Implement the **dual-panel layout** for state 3:
+Then remove the repeated `draw()` overrides in those panels.
 
-  * [x] Left: Variant A quad panel at the captured position.
-  * [x] Right: Variant B sliced tall panel at the captured position.
-* [x] Add direction-aware slide (+510 → 0) for the right panel (direction_flag=1).
-* [x] Ensure both panels use correct UV trims and shadow offsets.
-* [x] Verify the right panel being partially off-screen (x2=1121) is intended and match it exactly.
+**Test win:**
 
----
-
-## State 4 — Statistics menu
-
-**Runtime capture**
-
-* Variant: **`quad_mode=8` sliced**, **tall 378**
-* pos `(-5,275)`; open bbox `(-68,194) → (442,572)`
-* start=300/end=0, direction_flag=0
-
-**Our current**
-
-* `frontend/panels/stats.py` uses `PanelMenuView` defaults (pos -45/210, height 256, single-quad)
-* So: wrong variant, wrong size, wrong pos, shadow offset bug
-
-Fix plan:
-
-* [x] Switch Statistics panel to **Variant B tall (378)** and **pos (-5,185)** (then widescreen shift).
-* [x] Fix shadow offset and UV trims.
-* [x] Update slide width 512→510.
-* [x] Re-anchor the contents once the panel geometry is correct (our current stats content is not the classic menu anyway, but at minimum the panel itself should match).
+* Add one test for `PanelMenuView.draw()` to ensure it calls `_draw_contents` (monkeypatch to record calls), not per-panel.
 
 ---
 
-## State 6 — Perk selection (in-game)
+### D. UI “name entry” / “ordinal formatting” duplicated in results screens
 
-**Runtime capture**
+**Where:**
 
-* Variant: **`quad_mode=8` sliced**, **tall 378**
-* pos `(-45,200)` (base y=110 + widescreen shift)
-* timeline start=400/end=100 (100ms delay, 300ms slide), direction_flag=0
-* slide range **-510 → 0**
-* open bbox `(-108,119) → (402,497)`
+* `src/crimson/ui/game_over.py`: `_poll_text_input`, `_format_ordinal`, `ui_scale`, `ui_origin`, etc.
+* `src/crimson/ui/quest_results.py`: same `_poll_text_input`, `_format_ordinal`, plus time formatting.
 
-**Our current**
+**Refactor:**
+Create small shared helpers:
 
-* Uses `perk_menu.draw_menu_panel()` which:
+* `src/crimson/ui/text_input.py`: `poll_text_input(max_len, allow_space=True) -> str`
+* `src/crimson/ui/formatting.py`: `format_ordinal(n)`, `format_time_mm_ss(ms)`
+* `src/crimson/ui/layout.py`: `UI_BASE_WIDTH/HEIGHT`, `_menu_widescreen_y_shift`, `ui_scale`, `ui_origin`
 
-  * derives slice heights from texture scale (top 130 / mid huge / bottom 106) → wrong proportions
-  * uses full texture UVs (no 1px trim / no 255.5 bottom) → sampling mismatch
-  * uses **512** widths and slide widths
-  * panel placement in `PerkMenuLayout` is based on `pos+offset(20,-82)` → wrong for quad_mode=8 (should use local x0=-63)
-  * draw order interleaves shadow/main per slice → not matching capture
+Then both screens import them.
 
-Fix plan:
+**Test win:**
 
-* [x] Rewrite `draw_menu_panel()` (`src/crimson/ui/perk_menu.py`) to render **Variant B** using the captured geometry and UV trims.
-* [x] Update in-game perk panel width to **510** and height to **378** (not 512×379).
-* [x] Change layout anchor: compute panel left/top from **pos + slide + (geom_x0/geom_y0)**, not from `offset (20,-82)`.
-* [x] Match slide timing: add the 100ms “hold hidden” (end_ms=100) before sliding, and use width 510.
-* [x] Fix draw ordering to “all shadows first, then mains”.
+* Unit tests for `format_ordinal` edge cases (11/12/13).
+* Unit tests for `poll_text_input` behavior can monkeypatch `rl.get_char_pressed` once.
 
 ---
 
-## State 8 — Quest results screen
+### E. Debug views share the same helpers everywhere
 
-**Runtime capture**
+**Where:**
+Many files under `src/crimson/views/` re-define identical utilities:
 
-* Variant: **`quad_mode=8` sliced**, **tall 378**
-* pos `(-45,200)` (base y=110 + widescreen shift)
-* timeline start=400/end=100, direction_flag=0
-* open bbox `(-108,119) → (402,497)`
+* `_draw_ui_text` is identical across **17** view modules.
+* `_clamp` is redefined in tons of places.
+* Several views repeat similar “world init + small font + mouse tracking + close on ESC”.
 
-**Our current (`src/crimson/ui/quest_results.py`)**
+**Refactor options:**
 
-* Uses `QUEST_RESULTS_PANEL_BASE_X = 180` (panel is shifted right vs runtime)
-* Uses width=512 and height=379
-* Uses slide duration 250ms, not the captured 100ms delay + 300ms slide
-* Uses current `draw_menu_panel()` (wrong slice proportions + no UV trim)
+1. Small, low-risk:
 
-Fix plan:
+   * Create `src/crimson/views/_ui_helpers.py`:
 
-* [x] Remove/verify the extra `QUEST_RESULTS_PANEL_BASE_X` offset (runtime panel is anchored directly off `pos_x + slide_x`).
-* [x] Switch quest-results panel to **Variant B tall** with width **510** and height **378**.
-* [x] Match timing: timeline start=400/end=100, linear slide, width 510.
-* [x] Use the corrected `draw_menu_panel()` (geometry-based slices, UV trims, correct shadow ordering).
-* [x] Re-anchor quest-results text once panel position is corrected (it will move ~180px left).
+     * `draw_ui_text(font, text, x, y, *, scale, color)`
+     * `ui_line_height(font, *, scale)`
+     * `clamp_mouse_to_screen(pos)`
+   * Replace the copy/paste helpers with imports.
 
----
+2. Bigger, but cleaner:
 
-## State 11 — Quest select menu
+   * Create `BaseDebugView` mixin/base class that provides:
 
-**Runtime capture**
+     * `_ensure_small_font()`
+     * `_update_ui_mouse()`
+     * `_draw_ui_text()`
 
-* Variant: **`quad_mode=8` sliced**, **tall 378**
-* pos `(-5,275)` (base y=185 + widescreen shift)
-* timeline start=300/end=0, direction_flag=0
-* open bbox `(-68,194) → (442,572)`
+**Coverage reality check:**
+`src/crimson/views/` is ~9k LOC. If those are dev tools, you can either:
 
-**Our current (`src/crimson/game.py` QuestsMenuView)**
-
-* Draws panel at `QUEST_MENU_BASE_X + MENU_PANEL_OFFSET_X` → uses -96 instead of -63, so panel is ~33px too far left.
-* Uses width=512 and height=379.
-* Uses current `draw_menu_panel()` scaling logic (wrong slice proportions + no UV trim).
-* Slide width uses 512.
-
-Fix plan:
-
-* [x] Use **pos_x=-5,pos_y=185** as the element anchor, then apply local geom x0=-63/y0=-81.
-* [x] Switch panel width to **510**, height to **378**.
-* [x] Update `_ui_element_anim(width=...)` calls to use **510**.
-* [x] Use corrected `draw_menu_panel()` (Variant B tall, correct UV trims, correct draw ordering).
+* Add **one** parametrized smoke test that instantiates each view and runs one `update/draw` with raylib functions monkeypatched to no-ops (quick coverage bump + ensures they don’t crash), **or**
+* If they’re intentionally non-production tooling, exclude them from coverage and track coverage separately for shipped code. (This isn’t “cheating” if you explicitly decide they’re out-of-scope for production correctness.)
 
 ---
 
-## State 14 — High scores
+### F. Small math helpers are duplicated all over the place
 
-**Runtime capture**
-Two panels:
+**Where:**
+Many modules define their own `_clamp` and `_distance_sq`, even though you already have `grim.math.clamp`.
 
-* Main: Variant B tall, pos `(-35,275)`, dir=0
-* Side: Variant A quad, pos `(609,290)`, dir=1 (slides from right)
-* Both timeline start=300/end=0
+Files with `def _clamp(` include (non-exhaustive):
+`creatures/runtime.py`, `demo.py`, `effects.py`, `gameplay.py`, `modes/base_gameplay_mode.py`, `ui/perk_menu.py`, `views/*`, `typo/spawns.py`, etc.
 
-Fix plan:
+**Refactor:**
 
-* [x] When we implement state 14, render both panels using the shared renderer:
+* Use `from grim.math import clamp` everywhere.
+* Add `distance_sq`, `distance`, maybe `clamp_int` to `grim.math` if needed.
+* Delete the local copies.
 
-  * [x] Main panel = Variant B tall at (-35,185)+shift.
-  * [x] Side panel = Variant A quad at (609,200)+shift with direction_flag=1.
-* [x] Ensure right-side panel slide uses **+510 → 0**.
-
----
-
-## State 15 — Weapons database
-
-(Panel usage matches state 14: one tall sliced + one quad side panel.)
-
-* [x] Render both panels using the shared renderer (layout matches state 14).
-* [x] Ensure right-side panel slide uses **+510 → 0**.
+This is a classic “reduce noise” refactor that makes future diffs easier.
 
 ---
 
-## State 16 — Perks database
+## 2) “Poorly organized” hotspots: split the giant functions/modules the same way you did quests/spawns
 
-(Panel usage matches state 14: one tall sliced + one quad side panel.)
+The biggest maintainability issue in this repo is not “bad code”; it’s that some game systems are still implemented as single massive functions.
 
-* [x] Render both panels using the shared renderer (layout matches state 14).
-* [x] Ensure right-side panel slide uses **+510 → 0**.
+Top offenders by function size:
+
+* `crimson/projectiles.py:update` (~657 LOC)
+* `crimson/render/world_renderer.py:_draw_projectile` (~606 LOC)
+* `crimson/ui/hud.py:draw_hud_overlay` (~550 LOC)
+* `crimson/creatures/runtime.py:update` (~413 LOC)
+* `crimson/sim/world_state.py:step` (~312 LOC)
+
+These are exactly the places where “registry + small handlers” shines (your quest builder refactor pattern).
+
+### A. Refactor `ProjectilePool.update` into per-type behaviors (registry)
+
+**Goal:** Replace big switchy logic with a table of handlers.
+
+Structure:
+
+* `src/crimson/projectiles/behaviors.py`
+
+  * `ProjectileUpdateContext` (dt, world size, state refs, callbacks)
+  * `ProjectileBehavior` protocol: `update(projectile, ctx) -> None`
+  * `BEHAVIORS: dict[ProjectileTypeId, ProjectileBehavior]`
+
+Then in `ProjectilePool.update`:
+
+* Keep the outer loop, ordering, and shared collision helpers (for fidelity).
+* Dispatch to the behavior function for that projectile type.
+
+**Tests:**
+
+* “Registry completeness” test: every `ProjectileTypeId` has a handler (or is explicitly in `UNIMPLEMENTED` with a comment).
+* Per-projectile unit tests: small dt, known initial state → expected movement/damage/effects.
+
+This will also make it much easier to validate against your `analysis/` traces for specific projectile types.
 
 ---
 
-## State 17 — Credits
+### B. Refactor `_draw_projectile` into a renderer registry
 
-**Runtime capture**
+Mirror the same approach as projectile updates:
 
-* One panel: Variant B tall, pos `(-5,275)`, start=300/end=0, dir=0
+* `src/crimson/render/projectile_renderers.py`
 
-Fix plan:
+  * `draw(projectile, ctx)` per projectile type
 
-* [x] Render credits panel with Variant B tall at pos (-5,185)+shift using width 510, height 378.
-* [x] Use corrected `draw_menu_panel()` and slide width 510.
+Even if the draw logic has to remain imperative (because raylib), you can:
+
+* Extract “which sprite/atlas frame, which rotation, which scale” into pure functions.
+* Unit test those pure selectors without raylib.
 
 ---
 
-If you want, I can also turn this into a **single “panel spec” markdown file** under `docs/` (with the exact local coords + UVs + variants) so we stop re-deriving these numbers in multiple screens.
+### C. HUD: eliminate module-level state and split into “layout” vs “draw”
+
+`ui/hud.py` currently has:
+
+* a module global `_SURVIVAL_XP_SMOOTHED` (hard to test, hostile to multiple game instances, etc.)
+* a monolithic `draw_hud_overlay`
+
+Refactor:
+
+* `HudState` dataclass containing smoothed values
+* `HudLayout` pure computation:
+
+  * input: screen size, scale, number of players, flags
+  * output: rectangles/positions
+* `HudRenderer.draw(layout, state, inputs…)` does drawing
+
+**Tests:**
+
+* Smoothing behavior (given xp jumps, ensure the smoothing curve matches).
+* Layout invariants (positions stay within screen bounds; multiplayer spacing, etc.)
+
+---
+
+### D. World step: turn `WorldState.step` into explicit phases
+
+Even if you keep it in one file for ordering/fidelity, extract phase helpers:
+
+Example:
+
+* `_step_players(...)`
+* `_step_projectiles(...)`
+* `_step_creatures(...)`
+* `_step_spawns(...)`
+* `_apply_deaths_and_cleanup(...)`
+
+…and keep the orchestration ordering in `step()`.
+
+This makes it readable without changing behavior.
+
+---
+
+## 3) Concrete plan to improve the codebase (refactor + tests + guardrails)
+
+### Phase 1 — Quick wins (high impact, low risk)
+
+1. **Delete “utility duplication”**
+
+   * Replace local `_clamp` / `_distance_sq` with `grim.math`.
+   * Extract `ui/text_input.py`, `ui/formatting.py`, `ui/layout.py`.
+   * Extract `views/_ui_helpers.py` and use it across debug views.
+
+2. **Remove duplicated overrides that are purely structural**
+
+   * Add `PanelMenuView._draw_contents()` hook so panels stop duplicating `draw()`.
+
+3. **Fix obvious copy/paste issues while you’re here**
+
+   * `tutorial_mode._perk_menu_handle_input` assigns `slide_x` twice — clean that up during the perk-menu refactor.
+
+**Coverage bump:** Small, but you’ll gain meaningful unit tests for the new helper modules.
+
+---
+
+### Phase 2 — Shared controllers for mode UI flows
+
+4. **Introduce `PerkMenuController`**
+
+   * Remove perk menu duplication across quest/survival/tutorial modes.
+   * Convert existing perk-menu tests to controller tests + a couple of mode wiring tests.
+
+5. **Introduce `GameOverController` + record builder**
+
+   * Deduplicate game-over update flow across survival/rush/typo.
+   * Add tests for record building + action routing.
+
+**Coverage bump:** Medium/high. Modes are fat and controller extraction tends to create pure/testable code.
+
+---
+
+### Phase 3 — Registry refactors for the big “switch” systems
+
+6. **Projectiles: behavior registry**
+
+   * Split `ProjectilePool.update` into per-type handlers.
+   * Add “registry completeness” tests and per-type behavior tests.
+
+7. **Rendering: projectile renderer registry**
+
+   * Extract per-type renderer functions.
+   * Prefer extracting pure “sprite selection” helpers first (testable without raylib).
+
+8. **HUD: stateful renderer**
+
+   * Move module global into `HudState`.
+   * Split layout computation from drawing.
+
+**Coverage bump:** High if you extract selection/layout into pure functions and test them.
+
+---
+
+### Phase 4 — Keep it clean (prevent regressions)
+
+9. **Guardrails**
+
+   * Add a CI job that fails if:
+
+     * A registry is missing an enum handler (projectiles, bonuses, etc).
+     * Any function exceeds a “maximum” threshold (or at least warn) for core modules.
+   * You already use `import-linter`; keep expanding boundaries as you split modules (e.g., prevent `render/` from importing simulation internals directly).
+
+10. **Make coverage targets meaningful**
+
+* Track coverage per package area:
+
+  * `crimson/sim`, `crimson/creatures`, `crimson/gameplay` (core correctness) should be held to a high standard.
+  * `crimson/views` (debug tools) can be either excluded or covered by smoke tests.
+* Add a “new code must be tested” rule: e.g., require coverage to not decrease, or require a minimum for changed files.
+
+---
+
+## 4) One extra “developer experience” suggestion
+
+Right now `src/crimson/__init__.py` tries to do:
+
+```py
+__version__ = importlib.metadata.version("crimsonland")
+```
+
+which crashes if the package metadata isn’t installed (i.e., running `pytest` without an editable install). In your environment you probably use `uv run` so it’s fine, but contributors (and tooling) often run `pytest` directly.
+
+Easy improvement:
+
+```py
+try:
+    __version__ = importlib.metadata.version("crimsonland")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0"
+```
+
+Small change, less friction.
+
+---
+
+## If you want the biggest ROI shortlist
+
+If you only do 3 things first, I’d do:
+
+1. **PerkMenuController** (kills a lot of duplication + improves tests)
+2. **GameOverController/record builder** (same)
+3. **Projectile behavior registry** (turns a 657-line hotspot into testable pieces)
+
+Those are the most aligned with your “quest builders / spawn templates” standard: explicit, composable, and easy to unit test.
+
+Also: once the controllers exist, you can cleanly move shared mode code upward (or compose shared components) without creating a “god base class”.
