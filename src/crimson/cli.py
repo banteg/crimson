@@ -374,6 +374,32 @@ def cmd_spawn_plan(
             typer.echo(f"burst x={fx.x:.1f} y={fx.y:.1f} count={fx.count}")
 
 
+@app.command("oracle")
+def cmd_oracle(
+    seed: int = typer.Option(0xBEEF, help="RNG seed for deterministic runs"),
+    input_file: Path | None = typer.Option(None, "--input-file", "-i", help="JSON file with input sequence"),
+    max_frames: int = typer.Option(36000, help="Maximum frames to run (default: 10 min at 60fps)"),
+    frame_rate: int = typer.Option(60, help="Frame rate for simulation"),
+) -> None:
+    """Run headless oracle mode for differential testing.
+
+    Emits JSON game state to stdout each frame. Use with --seed for deterministic
+    runs and --input-file for replaying specific input sequences.
+
+    Example:
+        crimson oracle --seed 12345 --input-file replay.json > states.jsonl
+    """
+    from .oracle import OracleConfig, run_headless
+
+    config = OracleConfig(
+        seed=seed,
+        input_file=input_file,
+        max_frames=max_frames,
+        frame_rate=frame_rate,
+    )
+    run_headless(config)
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
