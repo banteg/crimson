@@ -17,9 +17,7 @@ from ..menu import (
     MENU_LABEL_WIDTH,
     MENU_PANEL_WIDTH,
     MenuView,
-    _draw_menu_cursor,
 )
-from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 if TYPE_CHECKING:
@@ -168,20 +166,6 @@ class PlayGameMenuView(PanelMenuView):
             if key in visible:
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
-
-    def draw(self) -> None:
-        self._draw_background()
-        _draw_screen_fade(self._state)
-        assets = self._assets
-        entry = self._entry
-        if assets is None or entry is None:
-            return
-
-        self._draw_panel()
-        self._draw_entry(entry)
-        self._draw_sign()
-        self._draw_contents()
-        _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:

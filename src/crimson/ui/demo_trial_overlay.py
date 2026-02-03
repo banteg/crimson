@@ -6,6 +6,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.math import clamp
 
 from ..demo_trial import DemoTrialOverlayInfo
 from .perk_menu import (
@@ -19,15 +20,6 @@ from .perk_menu import (
 )
 
 DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
 
 class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
@@ -94,8 +86,8 @@ class DemoTrialOverlayUi:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        mouse.x = _clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        mouse.y = _clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        mouse.x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
+        mouse.y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         panel_x, panel_y = self._panel_xy(screen_w=screen_w, screen_h=screen_h)

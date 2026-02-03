@@ -10,45 +10,26 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.math import clamp
 from grim.view import ViewContext
 
-from ..bonuses import BonusId
 from ..creatures.runtime import CreatureFlags
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick, survival_check_level_up, weapon_assign_player
+from ..gameplay import PlayerInput, survival_check_level_up, weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
-from ..perks import PerkId, perk_display_description, perk_display_name
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode, hud_ui_scale
-from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
-    PERK_MENU_TRANSITION_MS,
     PerkMenuAssets,
-    PerkMenuLayout,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
-    draw_menu_item,
-    draw_ui_text,
     load_perk_menu_assets,
-    menu_item_hit_rect,
-    perk_menu_panel_slide_x,
-    perk_menu_compute_layout,
-    ui_origin,
-    ui_scale,
-    wrap_ui_text,
 )
 from .base_gameplay_mode import BaseGameplayMode
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
+from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -95,11 +76,7 @@ class TutorialMode(BaseGameplayMode):
         self._ui_assets: PerkMenuAssets | None = None
         self._ui_layout = _TutorialUiLayout()
 
-        self._perk_ui_layout = PerkMenuLayout()
-        self._perk_cancel_button = UiButtonState("Cancel")
-        self._perk_menu_open = False
-        self._perk_menu_selected = 0
-        self._perk_menu_timeline_ms = 0.0
+        self._perk_menu = PerkMenuController()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -111,11 +88,7 @@ class TutorialMode(BaseGameplayMode):
         if self._ui_assets.missing:
             self._missing_assets.extend(self._ui_assets.missing)
 
-        self._perk_ui_layout = PerkMenuLayout()
-        self._perk_cancel_button = UiButtonState("Cancel")
-        self._perk_menu_open = False
-        self._perk_menu_selected = 0
-        self._perk_menu_timeline_ms = 0.0
+        self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -136,9 +109,28 @@ class TutorialMode(BaseGameplayMode):
         self._ui_assets = None
         super().close()
 
+    def _perk_menu_context(self) -> PerkMenuContext:
+        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
+        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        return PerkMenuContext(
+            state=self._state,
+            perk_state=self._state.perk_selection,
+            players=[self._player],
+            creatures=self._creatures.entries,
+            player=self._player,
+            game_mode=int(GameMode.TUTORIAL),
+            player_count=1,
+            fx_toggle=fx_toggle,
+            fx_detail=fx_detail,
+            font=self._small,
+            assets=self._ui_assets,
+            mouse=self._ui_mouse_pos(),
+            play_sfx=None,
+        )
+
     def _handle_input(self) -> None:
-        if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._perk_menu_open = False
+        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._perk_menu.close()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -214,7 +206,7 @@ class TutorialMode(BaseGameplayMode):
             self._play_button.enabled = prompt_alpha > 1e-3
             self._repeat_button.enabled = prompt_alpha > 1e-3
         else:
-            skip_alpha = _clamp(float(self._tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
+            skip_alpha = clamp(float(self._tutorial.stage_timer_ms - 1000) * 0.001, 0.0, 1.0)
             self._skip_button.alpha = skip_alpha
             self._skip_button.enabled = skip_alpha > 1e-3
 
@@ -240,113 +232,6 @@ class TutorialMode(BaseGameplayMode):
             if button_update(self._skip_button, x=10.0, y=y, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 self.close_requested = True
 
-    def _open_perk_menu(self) -> None:
-        if self._ui_assets is None:
-            return
-        choices = perk_selection_current_choices(
-            self._state,
-            [self._player],
-            self._state.perk_selection,
-            game_mode=int(GameMode.TUTORIAL),
-            player_count=1,
-        )
-        if not choices:
-            self._perk_menu_open = False
-            return
-        self._perk_menu_open = True
-        self._perk_menu_selected = 0
-
-    def _perk_menu_handle_input(self, dt_frame: float, dt_ms: float) -> None:
-        if self._ui_assets is None:
-            self._perk_menu_open = False
-            return
-
-        perk_state = self._state.perk_selection
-        choices = perk_selection_current_choices(
-            self._state,
-            [self._player],
-            perk_state,
-            game_mode=int(GameMode.TUTORIAL),
-            player_count=1,
-        )
-        if not choices:
-            self._perk_menu_open = False
-            return
-        if self._perk_menu_selected >= len(choices):
-            self._perk_menu_selected = 0
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._perk_menu_selected = (self._perk_menu_selected + 1) % len(choices)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._perk_menu_selected = (self._perk_menu_selected - 1) % len(choices)
-
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
-        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
-
-        mouse = self._ui_mouse_pos()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-
-        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
-        computed = perk_menu_compute_layout(
-            self._perk_ui_layout,
-            screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            scale=scale,
-            choice_count=len(choices),
-            expert_owned=expert_owned,
-            master_owned=master_owned,
-            panel_slide_x=slide_x,
-        )
-
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-            if rl.check_collision_point_rec(mouse, rect):
-                self._perk_menu_selected = idx
-                if click:
-                    perk_selection_pick(
-                        self._state,
-                        [self._player],
-                        perk_state,
-                        idx,
-                        game_mode=int(GameMode.TUTORIAL),
-                        player_count=1,
-                        dt=dt_frame,
-                        creatures=self._creatures.entries,
-                    )
-                    self._perk_menu_open = False
-                    return
-                break
-
-        cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = computed.cancel_x
-        cancel_y = computed.cancel_y
-        if button_update(self._perk_cancel_button, x=cancel_x, y=cancel_y, width=cancel_w, dt_ms=dt_ms, mouse=mouse, click=click):
-            self._perk_menu_open = False
-            return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
-            perk_selection_pick(
-                self._state,
-                [self._player],
-                perk_state,
-                self._perk_menu_selected,
-                game_mode=int(GameMode.TUTORIAL),
-                player_count=1,
-                dt=dt_frame,
-                creatures=self._creatures.entries,
-            )
-            self._perk_menu_open = False
-
     def update(self, dt: float) -> None:
         self._update_audio(dt)
         dt_frame, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
@@ -357,18 +242,15 @@ class TutorialMode(BaseGameplayMode):
         if self.close_requested:
             return
 
+        perk_ctx = self._perk_menu_context()
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
-        if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu_open:
-            self._open_perk_menu()
+        if int(self._tutorial.stage_index) == 6 and perk_pending and not self._perk_menu.open:
+            self._perk_menu.open_if_available(perk_ctx)
 
-        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
-        if self._perk_menu_open:
-            self._perk_menu_handle_input(dt_frame, dt_ui_ms)
-
-        if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
-        else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+        perk_menu_active = self._perk_menu.active
+        if self._perk_menu.open:
+            self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+        self._perk_menu.tick_timeline(dt_ui_ms)
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt_frame
 
@@ -464,7 +346,7 @@ class TutorialMode(BaseGameplayMode):
         self._update_prompt_buttons(dt_ms=dt_ui_ms, mouse=mouse, click=click)
 
     def draw(self) -> None:
-        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
+        perk_menu_active = self._perk_menu.active
         self._world.draw(draw_aim_indicators=not perk_menu_active)
         self._draw_screen_fade()
 
@@ -474,6 +356,7 @@ class TutorialMode(BaseGameplayMode):
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
                 bonus_hud=self._state.bonus_hud,
@@ -502,7 +385,7 @@ class TutorialMode(BaseGameplayMode):
             self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
 
         if perk_menu_active:
-            self._draw_perk_menu()
+            self._perk_menu.draw(self._perk_menu_context())
             self._draw_menu_cursor()
         else:
             self._draw_aim_cursor()
@@ -544,14 +427,14 @@ class TutorialMode(BaseGameplayMode):
             self._draw_ui_text("paused (TAB)", x, y, UI_HINT_COLOR)
 
     def _draw_prompt_panel(self, text: str, *, alpha: float, y: float) -> None:
-        alpha = _clamp(float(alpha), 0.0, 1.0)
+        alpha = clamp(float(alpha), 0.0, 1.0)
         rect, lines, line_h = self._prompt_panel_rect(text, y=float(y), scale=1.0)
         fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
         border = rl.Color(255, 255, 255, int(255 * alpha))
         rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)
         rl.draw_rectangle_lines(int(rect.x), int(rect.y), int(rect.width), int(rect.height), border)
 
-        text_alpha = int(255 * _clamp(alpha * 0.9, 0.0, 1.0))
+        text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
         color = rl.Color(255, 255, 255, text_alpha)
         x = float(rect.x + self._ui_layout.panel_pad_x)
         line_y = float(rect.y + self._ui_layout.panel_pad_y)
@@ -583,93 +466,3 @@ class TutorialMode(BaseGameplayMode):
             x=float(self._ui_mouse_x),
             y=float(self._ui_mouse_y),
         )
-
-    def _draw_perk_menu(self) -> None:
-        assets = self._ui_assets
-        if assets is None:
-            return
-        perk_state = self._state.perk_selection
-        choices = perk_selection_current_choices(
-            self._state,
-            [self._player],
-            perk_state,
-            game_mode=int(GameMode.TUTORIAL),
-            player_count=1,
-        )
-        if not choices:
-            return
-
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-
-        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
-        computed = perk_menu_compute_layout(
-            self._perk_ui_layout,
-            screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            scale=scale,
-            choice_count=len(choices),
-            expert_owned=expert_owned,
-            master_owned=master_owned,
-            panel_slide_x=slide_x,
-        )
-
-        panel_tex = assets.menu_panel
-        if panel_tex is not None:
-            fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
-            draw_classic_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
-
-        title_tex = assets.title_pick_perk
-        if title_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            rl.draw_texture_pro(title_tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-
-        sponsor = None
-        if master_owned:
-            sponsor = "extra perks sponsored by the Perk Master"
-        elif expert_owned:
-            sponsor = "extra perk sponsored by the Perk Expert"
-        if sponsor:
-            draw_ui_text(
-                self._small,
-                sponsor,
-                computed.sponsor_x,
-                computed.sponsor_y,
-                scale=scale,
-                color=UI_SPONSOR_COLOR,
-            )
-
-        mouse = self._ui_mouse_pos()
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-            hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
-            draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
-
-        selected = choices[self._perk_menu_selected]
-        desc = perk_display_description(int(selected), fx_toggle=fx_toggle)
-        desc_x = float(computed.desc.x)
-        desc_y = float(computed.desc.y)
-        desc_w = float(computed.desc.width)
-        desc_h = float(computed.desc.height)
-        desc_scale = scale * 0.85
-        desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
-        line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
-        y = desc_y
-        for line in desc_lines:
-            if y + line_h > desc_y + desc_h:
-                break
-            draw_ui_text(self._small, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
-            y += line_h
-
-        cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = computed.cancel_x
-        cancel_y = computed.cancel_y
-        button_draw(assets, self._small, self._perk_cancel_button, x=cancel_x, y=cancel_y, width=cancel_w, scale=scale)

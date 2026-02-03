@@ -9,6 +9,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.math import clamp
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
@@ -16,37 +17,18 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import (
     PlayerInput,
-    most_used_weapon_id_for_player,
-    perk_selection_current_choices,
-    perk_selection_pick,
     survival_check_level_up,
     weapon_assign_player,
 )
-from ..persistence.highscores import HighScoreRecord
-from ..perks import PerkId, perk_display_description, perk_display_name
+from ..perks import PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.menu_panel import draw_classic_menu_panel
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
-from ..ui.perk_menu import (
-    PERK_MENU_TRANSITION_MS,
-    PerkMenuLayout,
-    UiButtonState,
-    button_draw,
-    button_update,
-    button_width,
-    draw_menu_item,
-    draw_ui_text,
-    load_perk_menu_assets,
-    menu_item_hit_rect,
-    perk_menu_panel_slide_x,
-    perk_menu_compute_layout,
-    ui_origin,
-    ui_scale,
-    wrap_ui_text,
-)
+from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
-from .base_gameplay_mode import BaseGameplayMode, _clamp
+from .base_gameplay_mode import BaseGameplayMode
+from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
 WORLD_SIZE = 1024.0
 
@@ -118,14 +100,37 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
-        self._perk_menu_open = False
-        self._perk_menu_selected = 0
-        self._perk_menu_timeline_ms = 0.0
+        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt)
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._perk_menu_assets = None
-        self._perk_ui_layout = PerkMenuLayout()
-        self._perk_cancel_button = UiButtonState("Cancel")
         self._cursor_time = 0.0
+
+    def _reset_perk_prompt(self) -> None:
+        if int(self._state.perk_selection.pending_count) > 0:
+            # Reset the prompt swing so each pending perk replays the intro.
+            self._perk_prompt_timer_ms = 0.0
+            self._perk_prompt_hover = False
+            self._perk_prompt_pulse = 0.0
+
+    def _perk_menu_context(self) -> PerkMenuContext:
+        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
+        fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
+        players = self._world.players
+        return PerkMenuContext(
+            state=self._state,
+            perk_state=self._state.perk_selection,
+            players=players,
+            creatures=self._creatures.entries,
+            player=self._player,
+            game_mode=int(GameMode.SURVIVAL),
+            player_count=len(players),
+            fx_toggle=fx_toggle,
+            fx_detail=fx_detail,
+            font=self._small,
+            assets=self._perk_menu_assets,
+            mouse=self._ui_mouse_pos(),
+            play_sfx=self._world.audio_router.play_sfx,
+        )
 
     def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
         lines: list[str] = []
@@ -158,8 +163,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
         if self._perk_menu_assets.missing:
             self._missing_assets.extend(self._perk_menu_assets.missing)
-        self._perk_ui_layout = PerkMenuLayout()
-        self._perk_cancel_button = UiButtonState("Cancel")
+        self._perk_menu.reset()
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
         self._survival = _SurvivalState()
@@ -167,9 +171,6 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
-        self._perk_menu_open = False
-        self._perk_menu_selected = 0
-        self._perk_menu_timeline_ms = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
 
     def close(self) -> None:
@@ -183,15 +184,15 @@ class SurvivalMode(BaseGameplayMode):
                 self._action = "back_to_menu"
                 self.close_requested = True
             return
-        if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-            self._close_perk_menu()
+            self._perk_menu.close()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
-        if debug_enabled() and (not self._perk_menu_open):
+        if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self._state.debug_god_mode = not bool(self._state.debug_god_mode)
                 self._world.audio_router.play_sfx("sfx_ui_buttonclick")
@@ -274,31 +275,18 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        record = HighScoreRecord.blank()
-        record.score_xp = int(self._player.experience)
-        record.survival_elapsed_ms = int(self._survival.elapsed_ms)
-        record.creature_kill_count = int(self._creatures.kill_count)
-
-        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
-        record.most_used_weapon_id = int(weapon_id)
-        fired = 0
-        hit = 0
-        try:
-            fired = int(self._state.shots_fired[int(self._player.index)])
-            hit = int(self._state.shots_hit[int(self._player.index)])
-        except Exception:
-            fired = 0
-            hit = 0
-        fired = max(0, int(fired))
-        hit = max(0, min(int(hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-
-        record.game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        record = build_highscore_record_for_game_over(
+            state=self._state,
+            player=self._player,
+            survival_elapsed_ms=int(self._survival.elapsed_ms),
+            creature_kill_count=int(self._creatures.kill_count),
+            game_mode_id=game_mode_id,
+        )
         self._game_over_record = record
         self._game_over_ui.open()
         self._game_over_active = True
-        self._perk_menu_open = False
+        self._perk_menu.close()
 
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
@@ -338,138 +326,6 @@ class SurvivalMode(BaseGameplayMode):
         y = margin
         return rl.Rectangle(x, y, text_w, text_h)
 
-    def _open_perk_menu(self) -> None:
-        if self._perk_menu_open:
-            return
-        players = self._world.players
-        choices = perk_selection_current_choices(
-            self._state,
-            players,
-            self._state.perk_selection,
-            game_mode=int(GameMode.SURVIVAL),
-            player_count=len(players),
-        )
-        if not choices:
-            self._perk_menu_open = False
-            return
-        self._world.audio_router.play_sfx("sfx_ui_panelclick")
-        self._perk_menu_open = True
-        self._perk_menu_selected = 0
-
-    def _close_perk_menu(self) -> None:
-        self._perk_menu_open = False
-        if int(self._state.perk_selection.pending_count) > 0:
-            # Reset the prompt swing so each pending perk replays the intro.
-            self._perk_prompt_timer_ms = 0.0
-            self._perk_prompt_hover = False
-            self._perk_prompt_pulse = 0.0
-
-    def _perk_menu_handle_input(self, dt_frame: float, dt_ms: float) -> None:
-        if self._perk_menu_assets is None:
-            self._close_perk_menu()
-            return
-        perk_state = self._state.perk_selection
-        players = self._world.players
-        choices = perk_selection_current_choices(
-            self._state,
-            players,
-            perk_state,
-            game_mode=int(GameMode.SURVIVAL),
-            player_count=len(players),
-        )
-        if not choices:
-            self._close_perk_menu()
-            return
-        if self._perk_menu_selected >= len(choices):
-            self._perk_menu_selected = 0
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._perk_menu_selected = (self._perk_menu_selected + 1) % len(choices)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._perk_menu_selected = (self._perk_menu_selected - 1) % len(choices)
-
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
-
-        mouse = self._ui_mouse_pos()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-
-        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
-        computed = perk_menu_compute_layout(
-            self._perk_ui_layout,
-            screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            scale=scale,
-            choice_count=len(choices),
-            expert_owned=expert_owned,
-            master_owned=master_owned,
-            panel_slide_x=slide_x,
-        )
-
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-            if rl.check_collision_point_rec(mouse, rect):
-                self._perk_menu_selected = idx
-                if click:
-                    self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-                    picked = perk_selection_pick(
-                        self._state,
-                        players,
-                        perk_state,
-                        idx,
-                        game_mode=int(GameMode.SURVIVAL),
-                        player_count=len(players),
-                        dt=dt_frame,
-                        creatures=self._creatures.entries,
-                    )
-                    if picked is not None:
-                        self._world.audio_router.play_sfx("sfx_ui_bonus")
-                    self._close_perk_menu()
-                    return
-                break
-
-        cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = computed.cancel_x
-        button_y = computed.cancel_y
-
-        if button_update(
-            self._perk_cancel_button,
-            x=cancel_x,
-            y=button_y,
-            width=cancel_w,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-            self._close_perk_menu()
-            return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
-            self._world.audio_router.play_sfx("sfx_ui_buttonclick")
-            picked = perk_selection_pick(
-                self._state,
-                players,
-                perk_state,
-                self._perk_menu_selected,
-                game_mode=int(GameMode.SURVIVAL),
-                player_count=len(players),
-                dt=dt_frame,
-                creatures=self._creatures.entries,
-            )
-            if picked is not None:
-                self._world.audio_router.play_sfx("sfx_ui_bonus")
-            self._close_perk_menu()
-
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
@@ -480,40 +336,19 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         if self._game_over_active:
-            record = self._game_over_record
-            if record is None:
-                self._enter_game_over()
-                record = self._game_over_record
-            if record is not None:
-                action = self._game_over_ui.update(
-                    dt,
-                    record=record,
-                    player_name_default=self._player_name_default(),
-                    play_sfx=self._world.audio_router.play_sfx,
-                    rand=self._state.rng.rand,
-                    mouse=self._ui_mouse_pos(),
-                )
-                if action == "play_again":
-                    self.open()
-                    return
-                if action == "high_scores":
-                    self._action = "open_high_scores"
-                    return
-                if action == "main_menu":
-                    self._action = "back_to_menu"
-                    self.close_requested = True
-                    return
+            self._update_game_over_ui(dt)
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
-        if self._perk_menu_open:
-            self._perk_menu_handle_input(dt_frame, dt_ui_ms)
+        perk_ctx = self._perk_menu_context()
+        if self._perk_menu.open:
+            self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
             dt = 0.0
 
-        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
+        perk_menu_active = self._perk_menu.active
 
         if (not perk_menu_active) and perk_pending and (not self._paused):
             label = self._perk_prompt_label()
@@ -533,32 +368,29 @@ class SurvivalMode(BaseGameplayMode):
 
             if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
                 self._perk_prompt_pulse = 1000.0
-                self._open_perk_menu()
+                self._perk_menu.open_if_available(perk_ctx)
             elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
                 self._perk_prompt_pulse = 1000.0
-                self._open_perk_menu()
+                self._perk_menu.open_if_available(perk_ctx)
 
         if not self._paused and not self._game_over_active:
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
-            self._perk_prompt_pulse = _clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
         if self._paused or (not any_alive) or perk_menu_active:
             dt = 0.0
 
         prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
         if prompt_active:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
         else:
-            self._perk_prompt_timer_ms = _clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
 
-        if self._perk_menu_open:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
-        else:
-            self._perk_menu_timeline_ms = _clamp(self._perk_menu_timeline_ms - dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
-        if self._perk_menu_timeline_ms > 1e-3 or self._perk_menu_open:
+        self._perk_menu.tick_timeline(dt_ui_ms)
+        if self._perk_menu.active:
             self._hud_fade_ms = 0.0
         else:
-            self._hud_fade_ms = _clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
+            self._hud_fade_ms = clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         self._survival.elapsed_ms += dt * 1000.0
 
@@ -613,7 +445,7 @@ class SurvivalMode(BaseGameplayMode):
     def _draw_perk_prompt(self) -> None:
         if self._game_over_active:
             return
-        if self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3:
+        if self._perk_menu.active:
             return
         if not any(player.health > 0.0 for player in self._world.players):
             return
@@ -669,102 +501,6 @@ class SurvivalMode(BaseGameplayMode):
                 rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
                 rl.end_blend_mode()
 
-    def _draw_perk_menu(self) -> None:
-        if self._game_over_active:
-            return
-        menu_t = _clamp(self._perk_menu_timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
-        if menu_t <= 1e-3:
-            return
-        if self._perk_menu_assets is None:
-            return
-
-        perk_state = self._state.perk_selection
-        players = self._world.players
-        choices = perk_selection_current_choices(
-            self._state,
-            players,
-            perk_state,
-            game_mode=int(GameMode.SURVIVAL),
-            player_count=len(players),
-        )
-        if not choices:
-            return
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._perk_menu_timeline_ms, width=self._perk_ui_layout.panel_w)
-
-        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
-        computed = perk_menu_compute_layout(
-            self._perk_ui_layout,
-            screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
-            scale=scale,
-            choice_count=len(choices),
-            expert_owned=expert_owned,
-            master_owned=master_owned,
-            panel_slide_x=slide_x,
-        )
-
-        panel_tex = self._perk_menu_assets.menu_panel
-        if panel_tex is not None:
-            fx_detail = bool(int(self._config.data.get("fx_detail_0", 0) or 0)) if self._config is not None else False
-            draw_classic_menu_panel(panel_tex, dst=computed.panel, shadow=fx_detail)
-
-        title_tex = self._perk_menu_assets.title_pick_perk
-        if title_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            rl.draw_texture_pro(title_tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-
-        sponsor = None
-        if master_owned:
-            sponsor = "extra perks sponsored by the Perk Master"
-        elif expert_owned:
-            sponsor = "extra perk sponsored by the Perk Expert"
-        if sponsor:
-            draw_ui_text(
-                self._small,
-                sponsor,
-                computed.sponsor_x,
-                computed.sponsor_y,
-                scale=scale,
-                color=UI_SPONSOR_COLOR,
-            )
-
-        mouse = self._ui_mouse_pos()
-        fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
-        for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), fx_toggle=fx_toggle)
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-            hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
-            draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
-
-        selected = choices[self._perk_menu_selected]
-        desc = perk_display_description(int(selected), fx_toggle=fx_toggle)
-        desc_x = float(computed.desc.x)
-        desc_y = float(computed.desc.y)
-        desc_w = float(computed.desc.width)
-        desc_h = float(computed.desc.height)
-        desc_scale = scale * 0.85
-        desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
-        line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
-        y = desc_y
-        for line in desc_lines:
-            if y + line_h > desc_y + desc_h:
-                break
-            draw_ui_text(self._small, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
-            y += line_h
-
-        cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = computed.cancel_x
-        button_y = computed.cancel_y
-        button_draw(self._perk_menu_assets, self._small, self._perk_cancel_button, x=cancel_x, y=button_y, width=cancel_w, scale=scale)
-
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
         mouse_y = float(self._ui_mouse_y)
@@ -784,17 +520,18 @@ class SurvivalMode(BaseGameplayMode):
         draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
 
     def draw(self) -> None:
-        perk_menu_active = self._perk_menu_open or self._perk_menu_timeline_ms > 1e-3
+        perk_menu_active = self._perk_menu.active
         self._world.draw(draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active))
         self._draw_screen_fade()
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active) and self._hud_assets is not None:
-            hud_alpha = _clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+            hud_alpha = clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
                 bonus_hud=self._state.bonus_hud,
@@ -834,7 +571,8 @@ class SurvivalMode(BaseGameplayMode):
             self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
 
         self._draw_perk_prompt()
-        self._draw_perk_menu()
+        if not self._game_over_active:
+            self._perk_menu.draw(self._perk_menu_context())
         if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
         if (not self._game_over_active) and (not perk_menu_active):

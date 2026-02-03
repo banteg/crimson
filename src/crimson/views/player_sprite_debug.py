@@ -7,8 +7,9 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import resolve_asset_path
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 
@@ -53,24 +54,6 @@ class PlayerSpriteDebugView:
         self._show_grid = True
         self._show_shadow = True
         self._use_torso_offset = True
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _frame_src(self, texture: rl.Texture, frame_index: int) -> rl.Rectangle:
         cell = float(texture.width) / float(SPRITE_GRID)
@@ -204,7 +187,7 @@ class PlayerSpriteDebugView:
     def draw(self) -> None:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._assets is None:
-            self._draw_ui_text("Trooper sprite not loaded.", 16, 16, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "Trooper sprite not loaded.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         cam_x = float(rl.get_screen_width()) * 0.5 - self._player_x
@@ -271,41 +254,51 @@ class PlayerSpriteDebugView:
 
         hud_x = 16.0
         hud_y = 16.0
-        line = self._ui_line_height()
-        self._draw_ui_text(
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
+        draw_ui_text(
+            self._small,
             f"legs frame={leg_frame} (base {self._leg_base}, count {self._frame_count})",
             hud_x,
             hud_y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         hud_y += line
         torso_label = "offset" if self._use_torso_offset else "match"
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"torso frame={torso_frame} (base {self._torso_base}, mode {torso_label})",
             hud_x,
             hud_y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         hud_y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"move_heading={self._move_heading:.2f}  aim_heading={self._aim_heading:.2f}",
             hud_x,
             hud_y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         hud_y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "WASD move, mouse aim, LMB recoil, F1 grid, F2 shadow, F3 torso mode",
             hud_x,
             hud_y,
-            UI_HINT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
         )
         hud_y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "[/] torso base, ;/' legs base, ,/. frame count, R reset",
             hud_x,
             hud_y,
-            UI_HINT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
         )
 
 

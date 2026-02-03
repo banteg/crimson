@@ -20,8 +20,8 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(monk
     # Simulate Fatal Lottery killing the player while the perk menu is closing. Quest mode
     # should still produce a failure outcome and close the run instead of freezing.
     mode._player.health = -1.0
-    mode._perk_menu_open = False
-    mode._perk_menu_timeline_ms = 100.0
+    mode._perk_menu.open = False
+    mode._perk_menu.timeline_ms = 100.0
 
     monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
     monkeypatch.setattr("crimson.modes.base_gameplay_mode.rl.get_screen_width", lambda: 640)

@@ -16,11 +16,12 @@ from crimson.gameplay import GameplayState, PlayerState
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
 
 from ..paths import default_runtime_dir
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 
@@ -112,17 +113,6 @@ class DecalsDebugView:
 
         self._fx_queue = FxQueue()
         self._fx_queue_rotated = FxQueueRotated()
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _write_stamp_log(self, payload: dict) -> None:
         if self._stamp_log_file is None:
@@ -631,11 +621,18 @@ class DecalsDebugView:
         rl.clear_background(BG_LIGHT if self._light_mode else BG_DARK)
 
         if self._missing_assets:
-            self._draw_ui_text("Missing assets: " + ", ".join(self._missing_assets), 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small,
+                "Missing assets: " + ", ".join(self._missing_assets),
+                24,
+                24,
+                scale=UI_TEXT_SCALE,
+                color=UI_ERROR_COLOR,
+            )
             return
 
         if self._ground is None:
-            self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         self._ground.draw(self._camera_x, self._camera_y)
@@ -697,28 +694,44 @@ class DecalsDebugView:
         hint_color = UI_HINT_DARK if self._light_mode else UI_HINT_LIGHT
         x = 16
         y = 12
-        line = self._ui_line_height()
-        self._draw_ui_text("Decals debug", x, y, text_color)
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
+        draw_ui_text(self._small, "Decals debug", x, y, scale=UI_TEXT_SCALE, color=text_color)
         y += line
-        self._draw_ui_text("LMB: blood / damage enemy   RMB: spawn enemy", x, y, hint_color)
+        draw_ui_text(self._small, "LMB: blood / damage enemy   RMB: spawn enemy", x, y, scale=UI_TEXT_SCALE, color=hint_color)
         y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear   L: stamp log",
             x,
             y,
-            hint_color,
+            scale=UI_TEXT_SCALE,
+            color=hint_color,
         )
         y += line
-        self._draw_ui_text(f"enemies={len([c for c in self._creatures.entries if c.active])}", x, y, hint_color)
+        draw_ui_text(
+            self._small,
+            f"enemies={len([c for c in self._creatures.entries if c.active])}",
+            x,
+            y,
+            scale=UI_TEXT_SCALE,
+            color=hint_color,
+        )
         y += line
         if self._stamp_log_path is not None:
             status = "on" if self._show_stamp_log else "off"
-            self._draw_ui_text(f"stamp log ({status}): {self._stamp_log_path}", x, y, hint_color)
+            draw_ui_text(
+                self._small,
+                f"stamp log ({status}): {self._stamp_log_path}",
+                x,
+                y,
+                scale=UI_TEXT_SCALE,
+                color=hint_color,
+            )
             y += line
         if self._ground is not None and self._show_stamp_log:
             stamp_log = self._ground.debug_stamp_log()
             if stamp_log:
-                self._draw_ui_text("stamp order:", x, y, hint_color)
+                draw_ui_text(self._small, "stamp order:", x, y, scale=UI_TEXT_SCALE, color=hint_color)
                 y += line
                 for event in stamp_log[-6:]:
                     kind = str(event.get("kind", "?"))
@@ -730,7 +743,7 @@ class DecalsDebugView:
                         msg = f"{kind} draws={event.get('draws')}"
                     else:
                         msg = kind
-                    self._draw_ui_text(msg, x, y, hint_color)
+                    draw_ui_text(self._small, msg, x, y, scale=UI_TEXT_SCALE, color=hint_color)
                     y += line
 
 

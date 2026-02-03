@@ -7,13 +7,15 @@ import random
 import pyray as rl
 
 from grim.audio import AudioState, shutdown_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, player_update, weapon_assign_player
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_TABLE
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
 
@@ -37,14 +39,6 @@ class TargetDummy:
     y: float
     hp: float
     size: float = 56.0
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 class ProjectileRenderDebugView:
@@ -75,17 +69,6 @@ class ProjectileRenderDebugView:
         self._paused = False
         self._screenshot_requested = False
 
-    def _ui_line_height(self, scale: float = 1.0) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, scale: float = 1.0) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def _selected_weapon_id(self) -> int:
         if not self._weapon_ids:
             return 0
@@ -103,8 +86,8 @@ class ProjectileRenderDebugView:
         ring = 260.0
         for idx in range(10):
             angle = float(idx) / 10.0 * math.tau
-            x = _clamp(base_x + math.cos(angle) * ring, 40.0, WORLD_SIZE - 40.0)
-            y = _clamp(base_y + math.sin(angle) * ring, 40.0, WORLD_SIZE - 40.0)
+            x = clamp(base_x + math.cos(angle) * ring, 40.0, WORLD_SIZE - 40.0)
+            y = clamp(base_y + math.sin(angle) * ring, 40.0, WORLD_SIZE - 40.0)
             self._targets.append(TargetDummy(x=x, y=y, hp=260.0, size=64.0))
 
     def _reset_scene(self) -> None:
@@ -301,16 +284,17 @@ class ProjectileRenderDebugView:
 
         warn_x = 24.0
         warn_y = 24.0
-        warn_line = float(self._ui_line_height())
+        warn_line = float(ui_line_height(self._small))
         if self._missing_assets:
-            self._draw_ui_text("Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, UI_ERROR)
+            draw_ui_text(self._small, "Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, color=UI_ERROR)
             warn_y += warn_line
         if self._world.missing_assets:
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 "Missing assets (world): " + ", ".join(self._world.missing_assets),
                 warn_x,
                 warn_y,
-                UI_ERROR,
+                color=UI_ERROR,
             )
             warn_y += warn_line
 
@@ -363,26 +347,33 @@ class ProjectileRenderDebugView:
         # UI.
         x = 16.0
         y = 12.0
-        line = float(self._ui_line_height())
+        line = float(ui_line_height(self._small))
 
         weapon_id = int(player.weapon_id) if player is not None else 0
         weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
-        self._draw_ui_text("Projectile render debug", x, y, UI_TEXT)
+        draw_ui_text(self._small, "Projectile render debug", x, y, color=UI_TEXT)
         y += line
-        self._draw_ui_text(f"{weapon_name} (weapon_id={weapon_id})", x, y, UI_TEXT)
+        draw_ui_text(self._small, f"{weapon_name} (weapon_id={weapon_id})", x, y, color=UI_TEXT)
         y += line
         if player is not None:
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 f"ammo {player.ammo}/{player.clip_size}  reload {player.reload_timer:.2f}/{player.reload_timer_max:.2f}",
                 x,
                 y,
-                UI_TEXT,
+                color=UI_TEXT,
             )
             y += line
         y += 6.0
-        self._draw_ui_text("WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  P screenshot", x, y, UI_HINT)
+        draw_ui_text(
+            self._small,
+            "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  P screenshot",
+            x,
+            y,
+            color=UI_HINT,
+        )
         y += line
-        self._draw_ui_text("T reset targets  Backspace reset scene  Esc quit", x, y, UI_HINT)
+        draw_ui_text(self._small, "T reset targets  Backspace reset scene  Esc quit", x, y, color=UI_HINT)
 
         mouse = rl.get_mouse_position()
         draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))

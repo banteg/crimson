@@ -1,0 +1,139 @@
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+import pyray as rl
+
+from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from crimson.ui.perk_menu import PerkMenuAssets
+
+
+def _dummy_assets() -> PerkMenuAssets:
+    return PerkMenuAssets(
+        menu_panel=None,
+        title_pick_perk=None,
+        title_level_up=None,
+        menu_item=None,
+        button_sm=None,
+        button_md=None,
+        cursor=None,
+        aim=None,
+        missing=[],
+    )
+
+
+def test_open_perk_menu_plays_panel_click(monkeypatch) -> None:
+    menu = PerkMenuController()
+
+    played: list[str] = []
+
+    def _play_sfx(key: str) -> None:
+        played.append(key)
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
+
+    ctx = PerkMenuContext(
+        state=SimpleNamespace(),
+        perk_state=SimpleNamespace(),
+        players=[],
+        creatures=[],
+        player=SimpleNamespace(perk_counts=[0] * 128),
+        game_mode=1,
+        player_count=1,
+        fx_toggle=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=_play_sfx,
+    )
+
+    assert menu.open is False
+    assert menu.open_if_available(ctx) is True
+    assert menu.open is True
+    assert played == ["sfx_ui_panelclick"]
+
+
+def test_perk_menu_pick_plays_button_click(monkeypatch) -> None:
+    menu = PerkMenuController()
+    menu.open = True
+
+    played: list[str] = []
+
+    def _play_sfx(key: str) -> None:
+        played.append(key)
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_pick", lambda *args, **kwargs: object())
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.check_collision_point_rec", lambda _pos, _rect: False)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.measure_text", lambda _text, _size: 10)
+
+    def _is_key_pressed(key: int) -> bool:
+        return int(key) == int(rl.KeyboardKey.KEY_ENTER)
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", _is_key_pressed)
+
+    ctx = PerkMenuContext(
+        state=SimpleNamespace(),
+        perk_state=SimpleNamespace(),
+        players=[],
+        creatures=[],
+        player=SimpleNamespace(perk_counts=[0] * 128),
+        game_mode=1,
+        player_count=1,
+        fx_toggle=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=_play_sfx,
+    )
+
+    menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
+
+    assert played == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
+    assert menu.open is False
+
+
+def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
+    menu = PerkMenuController()
+    menu.open = True
+
+    played: list[str] = []
+
+    def _play_sfx(key: str) -> None:
+        played.append(key)
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.perk_selection_current_choices", lambda *args, **kwargs: [1])
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.button_update", lambda *args, **kwargs: True)  # noqa: ARG005
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.get_screen_height", lambda: 480)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_mouse_button_pressed", lambda _button: False)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.check_collision_point_rec", lambda _pos, _rect: False)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.measure_text", lambda _text, _size: 10)
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.rl.is_key_pressed", lambda _key: False)
+
+    ctx = PerkMenuContext(
+        state=SimpleNamespace(),
+        perk_state=SimpleNamespace(),
+        players=[],
+        creatures=[],
+        player=SimpleNamespace(perk_counts=[0] * 128),
+        game_mode=1,
+        player_count=1,
+        fx_toggle=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=_play_sfx,
+    )
+
+    menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
+
+    assert played == ["sfx_ui_buttonclick"]
+    assert menu.open is False
+

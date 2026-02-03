@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0
@@ -50,24 +51,6 @@ class SpriteSheetView:
         self._sheets: list[SpriteSheet] = []
         self._index = 0
         self._small: SmallFontData | None = None
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -135,10 +118,10 @@ class SpriteSheetView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._sheets:
-            self._draw_ui_text("No sprite sheets loaded.", 24, 24, UI_TEXT_COLOR)
+            draw_ui_text(self._small, "No sprite sheets loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
 
         self._handle_input()
@@ -147,9 +130,16 @@ class SpriteSheetView:
 
         margin = 24
         info = f"{sheet.name} (grid {grid}x{grid})"
-        self._draw_ui_text(info, margin, margin, UI_TEXT_COLOR)
+        draw_ui_text(self._small, info, margin, margin, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         hint = "Left/Right: sheet  Up/Down: grid  1/2/4/8: grid"
-        self._draw_ui_text(hint, margin, margin + self._ui_line_height() + 6, UI_HINT_COLOR)
+        draw_ui_text(
+            self._small,
+            hint,
+            margin,
+            margin + ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
+        )
 
         available_width = rl.get_screen_width() - margin * 2
         available_height = rl.get_screen_height() - margin * 2 - 60
@@ -201,12 +191,7 @@ class SpriteSheetView:
                     float(cell_h),
                 )
                 rl.draw_rectangle_lines_ex(hl, 2, rl.Color(240, 200, 80, 255))
-                self._draw_ui_text(
-                    f"frame {index:02d}",
-                    x,
-                    y + draw_h + 10,
-                    UI_TEXT_COLOR,
-                )
+                draw_ui_text(self._small, f"frame {index:02d}", x, y + draw_h + 10, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 
 
 @register_view("sprites", "Sprite atlas preview")

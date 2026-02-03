@@ -21,6 +21,8 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
+from .formatting import format_ordinal, format_time_mm_ss
+from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .menu_panel import draw_classic_menu_panel
 from .perk_menu import (
     PerkMenuAssets,
@@ -32,25 +34,7 @@ from .perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
 )
-
-
-UI_BASE_WIDTH = 640.0
-UI_BASE_HEIGHT = 480.0
-
-
-def ui_scale(screen_w: float, screen_h: float) -> float:
-    # Classic UI-space: draw in backbuffer pixels.
-    return 1.0
-
-
-def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, float]:
-    return 0.0, 0.0
-
-
-def _menu_widescreen_y_shift(layout_w: float) -> float:
-    # ui_menu_layout_init: pos_y += (screen_width / 640.0) * 150.0 - 150.0
-    return (layout_w / UI_BASE_WIDTH) * 150.0 - 150.0
-
+from .text_input import poll_text_input
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
@@ -94,44 +78,6 @@ COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
 COLOR_GREEN = rl.Color(25, 200, 25, 255)
-
-
-def _poll_text_input(max_len: int, *, allow_space: bool = True) -> str:
-    out = ""
-    while True:
-        value = rl.get_char_pressed()
-        if value == 0:
-            break
-        if value < 0x20 or value > 0xFF:
-            continue
-        if not allow_space and value == 0x20:
-            continue
-        if len(out) >= max_len:
-            continue
-        out += chr(int(value))
-    return out
-
-
-def _format_ordinal(value_1_based: int) -> str:
-    value = int(value_1_based)
-    if value % 100 in (11, 12, 13):
-        suffix = "th"
-    elif value % 10 == 1:
-        suffix = "st"
-    elif value % 10 == 2:
-        suffix = "nd"
-    elif value % 10 == 3:
-        suffix = "rd"
-    else:
-        suffix = "th"
-    return f"{value}{suffix}"
-
-
-def _format_time_mm_ss(ms: int) -> str:
-    total_s = max(0, int(ms)) // 1000
-    minutes = total_s // 60
-    seconds = total_s % 60
-    return f"{minutes}:{seconds:02d}"
 
 
 @dataclass(slots=True)
@@ -308,7 +254,7 @@ class QuestResultsUi:
 
         left = (QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale
         layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = _menu_widescreen_y_shift(layout_w)
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
         top = (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
         panel = rl.Rectangle(float(left), float(top), QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return panel, left, top
@@ -382,7 +328,7 @@ class QuestResultsUi:
 
         if self.phase == 1:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            typed = _poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
+            typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:
                 self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[:NAME_MAX_EDIT]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
@@ -572,10 +518,10 @@ class QuestResultsUi:
                 return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
 
             y = top + 156.0 * scale
-            base_value = _format_time_mm_ss(base_time_ms)
-            life_value = _format_time_mm_ss(life_bonus_ms)
-            perk_value = _format_time_mm_ss(perk_bonus_ms)
-            final_value = _format_time_mm_ss(final_time_ms)
+            base_value = format_time_mm_ss(base_time_ms)
+            life_value = format_time_mm_ss(life_bonus_ms)
+            perk_value = format_time_mm_ss(perk_bonus_ms)
+            final_value = format_time_mm_ss(final_time_ms)
 
             self._draw_small("Base Time:", label_x, y, 1.0 * scale, _row_color(0))
             self._draw_small(base_value, value_x, y, 1.0 * scale, _row_color(0))
@@ -641,7 +587,7 @@ class QuestResultsUi:
             seconds = float(int(self.record.survival_elapsed_ms)) * 0.001
             score_value = f"{seconds:.2f} secs"
             xp_value = f"{int(self.record.score_xp)}"
-            rank_text = _format_ordinal(int(self.rank) + 1) if qualifies else "--"
+            rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
 
             col_label = rl.Color(230, 230, 230, 255)
             col_value = rl.Color(230, 230, 255, 255)

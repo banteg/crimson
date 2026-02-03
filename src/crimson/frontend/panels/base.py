@@ -179,13 +179,16 @@ class PanelMenuView:
         self._draw_panel()
         self._draw_entry(entry)
         self._draw_sign()
-        self._draw_title_text()
+        self._draw_contents()
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def _draw_contents(self) -> None:
+        self._draw_title_text()
 
     def _draw_title_text(self) -> None:
         x = 32

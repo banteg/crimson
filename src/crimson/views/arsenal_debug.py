@@ -7,7 +7,8 @@ import pyray as rl
 
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusId
@@ -24,6 +25,7 @@ from ..weapons import (
     Weapon,
     projectile_type_id_from_weapon_id,
 )
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
 
@@ -63,14 +65,6 @@ SPECIAL_PROJECTILES: dict[int, str] = {
     19: "secondary type 4 (pulse gun)",
     43: "particle style 8 (rainbow gun)",
 }
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _fmt_float(value: float | None, *, digits: int = 3) -> str:
@@ -135,17 +129,6 @@ class ArsenalDebugView:
         player.speed_multiplier = float(ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER)
         player.shield_timer = float(ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER)
 
-    def _ui_line_height(self, scale: float = 1.0) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, scale: float = 1.0) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def _selected_weapon_id(self) -> int:
         if not self._weapon_ids:
             return 0
@@ -187,8 +170,8 @@ class ArsenalDebugView:
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
-            x = _clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
-            y = _clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            x = clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            y = clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
             heading = angle + math.pi
             self._world.creatures.spawn_template(
                 spawn_id,
@@ -407,43 +390,45 @@ class ArsenalDebugView:
 
         warn_x = 24.0
         warn_y = 24.0
-        warn_line = float(self._ui_line_height())
+        warn_line = float(ui_line_height(self._small))
         if self._missing_assets:
-            self._draw_ui_text("Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, UI_ERROR)
+            draw_ui_text(self._small, "Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, color=UI_ERROR)
             warn_y += warn_line
         if self._world.missing_assets:
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 "Missing assets (world): " + ", ".join(self._world.missing_assets),
                 warn_x,
                 warn_y,
-                UI_ERROR,
+                color=UI_ERROR,
             )
             warn_y += warn_line
 
         x = 16.0
         y = 12.0
-        line = float(self._ui_line_height())
+        line = float(ui_line_height(self._small))
 
         weapon = WEAPON_BY_ID.get(int(self._player.weapon_id)) if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
-            self._draw_ui_text(text, x, y, UI_TEXT)
+            draw_ui_text(self._small, text, x, y, color=UI_TEXT)
             y += line
 
         if self._player is not None:
             alive = sum(1 for c in self._world.creatures.entries if c.active and c.hp > 0.0)
             total = sum(1 for c in self._world.creatures.entries if c.active)
-            self._draw_ui_text(f"creatures alive {alive}/{total}", x, y, UI_TEXT)
+            draw_ui_text(self._small, f"creatures alive {alive}/{total}", x, y, color=UI_TEXT)
             y += line
 
         y += 6.0
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  T respawn  B spawn all bonuses  Backspace reset  Esc quit",
             x,
             y,
-            UI_HINT,
+            color=UI_HINT,
         )
         y += line
-        self._draw_ui_text("P screenshot", x, y, UI_HINT)
+        draw_ui_text(self._small, "P screenshot", x, y, color=UI_HINT)
 
         mouse = rl.get_mouse_position()
         draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))

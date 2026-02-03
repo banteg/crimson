@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import math
 from typing import Callable, Protocol
 
+from grim.math import clamp
+
 __all__ = [
     "FX_QUEUE_CAPACITY",
     "FX_QUEUE_MAX_COUNT",
@@ -33,14 +35,6 @@ FX_QUEUE_MAX_COUNT = 0x7F
 
 FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _default_rand() -> int:
@@ -256,7 +250,7 @@ class ParticlePool:
                 entry.vel_x = math.cos(entry.angle) * speed
                 entry.vel_y = math.sin(entry.angle) * speed
 
-            alpha = _clamp(entry.intensity, 0.0, 1.0)
+            alpha = clamp(entry.intensity, 0.0, 1.0)
             shade = 1.0 - max(entry.intensity, 0.0) * 0.95
             entry.age = alpha
             entry.scale_x = shade
@@ -305,10 +299,10 @@ class ParticlePool:
                         tint_sum = float(getattr(creature, "tint_r", 1.0)) + float(getattr(creature, "tint_g", 1.0)) + float(getattr(creature, "tint_b", 1.0))
                         if tint_sum > 1.6:
                             factor = 1.0 - max(entry.intensity, 0.0) * 0.01
-                            creature.tint_r = _clamp(float(getattr(creature, "tint_r", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_g = _clamp(float(getattr(creature, "tint_g", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_b = _clamp(float(getattr(creature, "tint_b", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_a = _clamp(float(getattr(creature, "tint_a", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_r = clamp(float(getattr(creature, "tint_r", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_g = clamp(float(getattr(creature, "tint_g", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_b = clamp(float(getattr(creature, "tint_b", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_a = clamp(float(getattr(creature, "tint_a", 1.0)) * factor, 0.0, 1.0)
 
         return expired
 

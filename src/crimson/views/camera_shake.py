@@ -6,7 +6,8 @@ import math
 import pyray as rl
 
 from grim.config import ensure_crimson_cfg
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -14,6 +15,7 @@ from ..creatures.spawn import CreatureInit, CreatureTypeId
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, bonus_apply
 from ..paths import default_runtime_dir
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 
@@ -23,14 +25,6 @@ UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,29 +64,11 @@ class CameraShakeView:
         self._reflex_boost_locked = False
         self._reset_scene()
 
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def _spawn_creature(self, *, world_x: float, world_y: float, type_id: CreatureTypeId, hp: float) -> None:
         init = CreatureInit(
             origin_template_id=0,
-            pos_x=_clamp(world_x, 64.0, WORLD_SIZE - 64.0),
-            pos_y=_clamp(world_y, 64.0, WORLD_SIZE - 64.0),
+            pos_x=clamp(world_x, 64.0, WORLD_SIZE - 64.0),
+            pos_y=clamp(world_y, 64.0, WORLD_SIZE - 64.0),
             heading=math.pi,
             phase_seed=0.0,
             type_id=type_id,
@@ -205,7 +181,7 @@ class CameraShakeView:
 
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
 
         state = self._world.state
         cam_x, cam_y, _sx, _sy = self._world._world_params()
@@ -217,11 +193,11 @@ class CameraShakeView:
             f"reflex_boost={state.bonuses.reflex_boost:.2f}  creatures_alive={len(self._world.creatures.iter_active())}",
         ]
         x = 24.0
-        y = 24.0 + float(self._ui_line_height()) + 12.0
+        y = 24.0 + float(ui_line_height(self._small, scale=UI_TEXT_SCALE)) + 12.0
         for idx, line in enumerate(lines):
             color = UI_HINT_COLOR if idx == 0 else UI_TEXT_COLOR
-            self._draw_ui_text(line, x, y, color)
-            y += float(self._ui_line_height())
+            draw_ui_text(self._small, line, x, y, scale=UI_TEXT_SCALE, color=color)
+            y += float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
 
 
 @register_view("camera-shake", "Camera shake")

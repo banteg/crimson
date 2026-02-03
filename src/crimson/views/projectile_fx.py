@@ -5,8 +5,8 @@ import math
 
 import pyray as rl
 
-from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -18,6 +18,8 @@ from ..weapons import (
     WEAPON_TABLE,
     weapon_entry_for_projectile_type_id,
 )
+from ._ui_helpers import draw_ui_text, ui_line_height
+from .registry import register_view
 
 WORLD_SIZE = 1024.0
 
@@ -81,14 +83,6 @@ _BEAM_TYPES = frozenset(
 )
 
 
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
-
-
 def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
 
@@ -134,24 +128,6 @@ class ProjectileFxView:
         self._beams: list[BeamFx] = []
         self._effects: list[EffectFx] = []
 
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
-
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         return self._camera_x + x, self._camera_y + y
 
@@ -180,7 +156,7 @@ class ProjectileFxView:
         if desired_y < min_y:
             desired_y = min_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
+        t = clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
         self._camera_y = _lerp(self._camera_y, desired_y, t)
 
@@ -319,8 +295,8 @@ class ProjectileFxView:
         angle = _angle_to_target(self._origin_x, self._origin_y, aim_x, aim_y)
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-            self._origin_x = _clamp(aim_x, 0.0, WORLD_SIZE)
-            self._origin_y = _clamp(aim_y, 0.0, WORLD_SIZE)
+            self._origin_x = clamp(aim_x, 0.0, WORLD_SIZE)
+            self._origin_y = clamp(aim_y, 0.0, WORLD_SIZE)
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._spawn_projectile(type_id=self._selected_type_id(), angle=angle, owner_id=-1)
@@ -467,7 +443,7 @@ class ProjectileFxView:
                     )
                 return
 
-        alpha = int(_clamp(life / 0.4, 0.0, 1.0) * 255)
+        alpha = int(clamp(life / 0.4, 0.0, 1.0) * 255)
         tint = rl.Color(color.r, color.g, color.b, alpha)
         self._draw_atlas_sprite(texture, grid=grid, frame=frame, x=sx, y=sy, scale=0.6, rotation_rad=angle, tint=tint)
 
@@ -475,7 +451,7 @@ class ProjectileFxView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets and self._projs is None:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
@@ -521,7 +497,7 @@ class ProjectileFxView:
 
         # Beam flashes from hit events.
         for beam in self._beams:
-            t = _clamp(beam.life / 0.08, 0.0, 1.0)
+            t = clamp(beam.life / 0.08, 0.0, 1.0)
             alpha = int(200 * t)
             x0s, y0s = self._camera_world_to_screen(beam.x0, beam.y0)
             x1s, y1s = self._camera_world_to_screen(beam.x1, beam.y1)
@@ -543,10 +519,10 @@ class ProjectileFxView:
                 if src is None:
                     continue
                 life = max(0.0, fx.life)
-                alpha = int(_clamp(life / 0.35, 0.0, 1.0) * 220)
+                alpha = int(clamp(life / 0.35, 0.0, 1.0) * 220)
                 tint = rl.Color(255, 255, 255, alpha)
                 sx, sy = self._camera_world_to_screen(fx.x, fx.y)
-                dst_scale = fx.scale * (1.0 + (0.7 - _clamp(life, 0.0, 0.7)) * 0.6)
+                dst_scale = fx.scale * (1.0 + (0.7 - clamp(life, 0.0, 0.7)) * 0.6)
                 dst = rl.Rectangle(float(sx), float(sy), src[2] * dst_scale, src[3] * dst_scale)
                 origin = rl.Vector2(dst.width * 0.5, dst.height * 0.5)
                 rl.draw_texture_pro(
@@ -566,46 +542,71 @@ class ProjectileFxView:
         margin = 18
         x = float(margin)
         y = float(margin)
-        line = self._ui_line_height()
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
 
         type_id = self._selected_type_id()
         weapon = WEAPON_BY_ID.get(int(type_id))
         label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
-        self._draw_ui_text(f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         y += line + 4
 
         if self._show_debug:
             meta = self._projectile_meta_for(type_id)
             dmg = self._damage_scale_by_type.get(type_id, 1.0)
             pellets = int(weapon.pellet_count) if weapon is not None and weapon.pellet_count is not None else 1
-            self._draw_ui_text(f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}", x, y, UI_HINT_COLOR)
+            draw_ui_text(
+                self._small,
+                f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}",
+                x,
+                y,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
             y += line + 4
-            self._draw_ui_text(
+            draw_ui_text(
+                self._small,
                 f"shock_chain links {self._state.shock_chain_links_left}  proj {self._state.shock_chain_projectile_id}",
                 x,
                 y,
-                UI_HINT_COLOR,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
             )
             y += line + 8
 
         if self._show_help:
-            self._draw_ui_text("controls:", x, y, UI_ACCENT_COLOR)
+            draw_ui_text(self._small, "controls:", x, y, scale=UI_TEXT_SCALE, color=UI_ACCENT_COLOR)
             y += line + 2
-            self._draw_ui_text("- left/right: select projectile type", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- left/right: select projectile type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- mouse wheel: select type", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- mouse wheel: select type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- LMB: spawn projectile toward mouse", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- LMB: spawn projectile toward mouse", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- RMB: move spawn origin", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- RMB: move spawn origin", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- space: spawn ring", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- space: spawn ring", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- F: fire-bullets volley (uses pellet_count)", x, y, UI_HINT_COLOR)
+            draw_ui_text(
+                self._small,
+                "- F: fire-bullets volley (uses pellet_count)",
+                x,
+                y,
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
             y += line + 2
-            self._draw_ui_text("- S: apply Shock Chain bonus", x, y, UI_HINT_COLOR)
+            draw_ui_text(self._small, "- S: apply Shock Chain bonus", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line + 2
-            self._draw_ui_text("- R: reset  Tab: pause  H: hide help  F3: toggle debug", x, y, UI_HINT_COLOR, scale=0.9)
+            draw_ui_text(
+                self._small,
+                "- R: reset  Tab: pause  H: hide help  F3: toggle debug",
+                x,
+                y,
+                scale=0.9,
+                color=UI_HINT_COLOR,
+            )
 
 
 @register_view("projectile_fx", "Projectile FX lab")

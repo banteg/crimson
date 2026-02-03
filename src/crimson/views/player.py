@@ -5,7 +5,8 @@ from dataclasses import dataclass
 import pyray as rl
 
 from .registry import register_view
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
+from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -19,8 +20,9 @@ from ..gameplay import (
     weapon_assign_player,
 )
 from ..perks import PerkId
-from ..ui.hud import HudAssets, draw_hud_overlay, hud_ui_scale, load_hud_assets
+from ..ui.hud import HudAssets, HudState, draw_hud_overlay, hud_ui_scale, load_hud_assets
 from ..weapons import WEAPON_TABLE
+from ._ui_helpers import draw_ui_text, ui_line_height
 
 WORLD_SIZE = 1024.0
 
@@ -36,14 +38,6 @@ class DummyCreature:
     y: float
     hp: float
     size: float = 32.0
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    if value < lo:
-        return lo
-    if value > hi:
-        return hi
-    return value
 
 
 def _lerp(a: float, b: float, t: float) -> float:
@@ -66,6 +60,7 @@ class PlayerSandboxView:
 
         self._hud_assets: HudAssets | None = None
         self._hud_missing: list[str] = []
+        self._hud_state = HudState()
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
 
@@ -80,24 +75,6 @@ class PlayerSandboxView:
             if entry.weapon_id <= 0:
                 continue
             self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
-
-    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
-
-    def _draw_ui_text(
-        self,
-        text: str,
-        x: float,
-        y: float,
-        color: rl.Color,
-        scale: float = UI_TEXT_SCALE,
-    ) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
-        else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _ensure_creatures(self, target_count: int) -> None:
         while len(self._creatures) < target_count:
@@ -142,6 +119,7 @@ class PlayerSandboxView:
         self._hud_assets = load_hud_assets(self._assets_root)
         if self._hud_assets.missing:
             self._hud_missing = list(self._hud_assets.missing)
+        self._hud_state = HudState()
 
         self._state.rng.srand(0xBEEF)
         self._creatures.clear()
@@ -239,7 +217,7 @@ class PlayerSandboxView:
         if desired_y < min_y:
             desired_y = min_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
+        t = clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
         self._camera_y = _lerp(self._camera_y, desired_y, t)
 
@@ -315,7 +293,7 @@ class PlayerSandboxView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
@@ -353,6 +331,7 @@ class PlayerSandboxView:
         if self._hud_assets is not None:
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 bonus_hud=self._state.bonus_hud,
                 elapsed_ms=self._elapsed_ms,
@@ -363,44 +342,64 @@ class PlayerSandboxView:
 
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24, rl.get_screen_height() - 28, UI_ERROR_COLOR, scale=0.8)
+            draw_ui_text(self._small, warn, 24, rl.get_screen_height() - 28, scale=0.8, color=UI_ERROR_COLOR)
 
         # UI.
         scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
         margin = 18
         x = float(margin)
         y = max(float(margin) + 110.0 * scale, hud_bottom + 12.0 * scale)
-        line = self._ui_line_height()
+        line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
 
         weapon_id = self._player.weapon_id
         weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
-        self._draw_ui_text(f"{weapon_name} (id {weapon_id})", x, y, UI_TEXT_COLOR)
+        draw_ui_text(self._small, f"{weapon_name} (id {weapon_id})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += line + 4
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"ammo {self._player.ammo}/{self._player.clip_size}  reload {self._player.reload_timer:.2f}/{self._player.reload_timer_max:.2f}",
             x,
             y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         y += line + 4
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"cooldown {self._player.shot_cooldown:.3f}  spread {self._player.spread_heat:.3f}",
             x,
             y,
-            UI_TEXT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         y += line + 8
 
-        self._draw_ui_text("WASD move  Mouse aim  LMB fire  R reload/swap  Q/E weapon  Tab pause", x, y, UI_HINT_COLOR)
+        draw_ui_text(
+            self._small,
+            "WASD move  Mouse aim  LMB fire  R reload/swap  Q/E weapon  Tab pause",
+            x,
+            y,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
+        )
         y += line + 4
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "1 Sharpshooter 2 Anxious 3 Stationary 4 Angry 5 Man Bomb 6 Hot Tempered 7 Fire Cough  T Alt Weapon",
             x,
             y,
-            UI_HINT_COLOR,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
         )
         y += line + 4
-        self._draw_ui_text("Z PowerUp  X Shield  C Speed  V FireBullets  B Fireblast  Backspace clear bonuses", x, y, UI_HINT_COLOR)
+        draw_ui_text(
+            self._small,
+            "Z PowerUp  X Shield  C Speed  V FireBullets  B Fireblast  Backspace clear bonuses",
+            x,
+            y,
+            scale=UI_TEXT_SCALE,
+            color=UI_HINT_COLOR,
+        )
         y += line + 10
 
         active_perks = []
@@ -416,16 +415,23 @@ class PlayerSandboxView:
         ):
             if self._player.perk_counts[int(perk)]:
                 active_perks.append(perk.name.lower())
-        self._draw_ui_text("perks: " + (", ".join(active_perks) if active_perks else "none"), x, y, UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small,
+            "perks: " + (", ".join(active_perks) if active_perks else "none"),
+            x,
+            y,
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
+        )
         y += line + 8
 
         # Bonus HUD slots (text-only).
         slots = [slot for slot in self._state.bonus_hud.slots if slot.active]
         if slots:
-            self._draw_ui_text("bonuses:", x, y, UI_TEXT_COLOR)
+            draw_ui_text(self._small, "bonuses:", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             y += line + 4
             for slot in slots:
-                self._draw_ui_text(f"- {slot.label}", x, y, UI_HINT_COLOR)
+                draw_ui_text(self._small, f"- {slot.label}", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
                 y += line + 2
 
 

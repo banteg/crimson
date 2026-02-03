@@ -13,13 +13,13 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import tick_rush_mode_spawns
 from ..game_modes import GameMode
-from ..gameplay import PlayerInput, most_used_weapon_id_for_player, weapon_assign_player
+from ..gameplay import PlayerInput, weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
-from ..persistence.highscores import HighScoreRecord
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from .base_gameplay_mode import BaseGameplayMode
+from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
 RUSH_WEAPON_ID = 2
@@ -146,25 +146,14 @@ class RushMode(BaseGameplayMode):
         if self._game_over_active:
             return
 
-        record = HighScoreRecord.blank()
-        record.score_xp = int(self._player.experience)
-        record.survival_elapsed_ms = int(self._rush.elapsed_ms)
-        record.creature_kill_count = int(self._creatures.kill_count)
-        weapon_id = most_used_weapon_id_for_player(self._state, player_index=int(self._player.index), fallback_weapon_id=int(self._player.weapon_id))
-        record.most_used_weapon_id = int(weapon_id)
-        fired = 0
-        hit = 0
-        try:
-            fired = int(self._state.shots_fired[int(self._player.index)])
-            hit = int(self._state.shots_hit[int(self._player.index)])
-        except Exception:
-            fired = 0
-            hit = 0
-        fired = max(0, int(fired))
-        hit = max(0, min(int(hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-        record.game_mode_id = int(self._config.data.get("game_mode", int(GameMode.RUSH))) if self._config is not None else int(GameMode.RUSH)
+        game_mode_id = int(self._config.data.get("game_mode", int(GameMode.RUSH))) if self._config is not None else int(GameMode.RUSH)
+        record = build_highscore_record_for_game_over(
+            state=self._state,
+            player=self._player,
+            survival_elapsed_ms=int(self._rush.elapsed_ms),
+            creature_kill_count=int(self._creatures.kill_count),
+            game_mode_id=game_mode_id,
+        )
 
         self._game_over_record = record
         self._game_over_ui.open()
@@ -179,28 +168,7 @@ class RushMode(BaseGameplayMode):
             return
 
         if self._game_over_active:
-            record = self._game_over_record
-            if record is None:
-                self._enter_game_over()
-                record = self._game_over_record
-            if record is not None:
-                action = self._game_over_ui.update(
-                    dt,
-                    record=record,
-                    player_name_default=self._player_name_default(),
-                    play_sfx=self._world.audio_router.play_sfx,
-                    rand=self._state.rng.rand,
-                    mouse=self._ui_mouse_pos(),
-                )
-                if action == "play_again":
-                    self.open()
-                    return
-                if action == "high_scores":
-                    self._action = "open_high_scores"
-                    return
-                if action == "main_menu":
-                    self._action = "back_to_menu"
-                    self.close_requested = True
+            self._update_game_over_ui(dt)
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
@@ -265,6 +233,7 @@ class RushMode(BaseGameplayMode):
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
+                state=self._hud_state,
                 player=self._player,
                 players=self._world.players,
                 bonus_hud=self._state.bonus_hud,

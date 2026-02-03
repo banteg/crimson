@@ -9,11 +9,12 @@ from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.creatures.spawn import CreatureTypeId
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font
 from grim.terrain_render import GroundCorpseDecal, GroundRenderer, _maybe_alpha_test
 from grim.view import View, ViewContext
 
 from ..paths import default_runtime_dir
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 
@@ -60,17 +61,6 @@ class CorpseStampDebugView:
         self._screenshot_requested = False
         self._dump_requested = False
         self._dump_index = 0
-
-    def _ui_line_height(self) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size)
-        return 20
-
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
-        if self._small is not None:
-            draw_small_text(self._small, text, x, y, 1.0, color)
-        else:
-            rl.draw_text(text, int(x), int(y), 20, color)
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
         runtime_dir = default_runtime_dir()
@@ -266,12 +256,12 @@ class CorpseStampDebugView:
         rl.clear_background(BG)
 
         if self._missing_assets:
-            self._draw_ui_text("Missing assets: " + ", ".join(self._missing_assets), 24, 24, UI_ERROR)
+            draw_ui_text(self._small, "Missing assets: " + ", ".join(self._missing_assets), 24, 24, color=UI_ERROR)
             return
 
         ground = self._ground
         if ground is None:
-            self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, color=UI_ERROR)
             return
 
         if self._dump_requested:
@@ -287,25 +277,27 @@ class CorpseStampDebugView:
         # UI
         x = 24.0
         y = 20.0
-        line = float(self._ui_line_height())
+        line = float(ui_line_height(self._small))
         step = _STEPS[self._step_index]
         alpha_test = bool(getattr(ground, "alpha_test", True))
-        self._draw_ui_text("Corpse stamp debug (SPIDER)", x, y, UI_TEXT)
+        draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", x, y, color=UI_TEXT)
         y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             "N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot   D: dump RT",
             x,
             y,
-            UI_HINT,
+            color=UI_HINT,
         )
         y += line
-        self._draw_ui_text(f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, UI_HINT)
+        draw_ui_text(self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, color=UI_HINT)
         y += line
-        self._draw_ui_text(
+        draw_ui_text(
+            self._small,
             f"alpha_test={'on' if alpha_test else 'off'}  size={self._corpse_size:.1f}  dump_index={self._dump_index}",
             x,
             y,
-            UI_HINT,
+            color=UI_HINT,
         )
 
         # Source preview (bodyset frame) in the corner for inspection.
