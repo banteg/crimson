@@ -24,7 +24,6 @@ from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
     CreatureInit,
-    RANDOM_HEADING_SENTINEL,
     SpawnEnv,
     SpawnPlan,
     SpawnSlotInit,
@@ -160,6 +159,180 @@ class CreatureUpdateResult:
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
     sfx: tuple[str, ...] = ()
+
+
+@dataclass(slots=True)
+class _CreatureInteractionCtx:
+    pool: CreaturePool
+    creature_index: int
+    creature: CreatureState
+    state: GameplayState
+    players: list[PlayerState]
+    player: PlayerState
+    dt: float
+    rand: Callable[[], int]
+    detail_preset: int
+    world_width: float
+    world_height: float
+    fx_queue: FxQueue | None
+    fx_queue_rotated: FxQueueRotated | None
+    deaths: list[CreatureDeath]
+    sfx: list[str]
+    skip_creature: bool = False
+    contact_dist_sq: float = 0.0
+
+
+_CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
+
+
+def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
+    if ctx.players and perk_active(ctx.players[0], PerkId.PLAGUEBEARER) and int(ctx.state.plaguebearer_infection_count) < 0x3C:
+        ctx.pool._plaguebearer_spread_infection(ctx.creature_index)
+
+
+def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
+    creature = ctx.creature
+    if float(ctx.state.bonuses.energizer) <= 0.0:
+        return
+    if float(creature.max_hp) >= 380.0:
+        return
+    if float(ctx.player.health) <= 0.0:
+        return
+
+    eat_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    if eat_dist_sq >= 20.0 * 20.0:
+        return
+
+    creature.x = clamp(creature.x - creature.vel_x * ctx.dt, 0.0, float(ctx.world_width))
+    creature.y = clamp(creature.y - creature.vel_y * ctx.dt, 0.0, float(ctx.world_height))
+
+    ctx.state.effects.spawn_burst(
+        pos_x=float(creature.x),
+        pos_y=float(creature.y),
+        count=6,
+        rand=ctx.rand,
+        detail_preset=int(ctx.detail_preset),
+    )
+    ctx.sfx.append("sfx_ui_bonus")
+
+    prev_guard = bool(ctx.state.bonus_spawn_guard)
+    ctx.state.bonus_spawn_guard = True
+    creature.last_hit_owner_id = -1 - int(ctx.player.index)
+    ctx.deaths.append(
+        ctx.pool.handle_death(
+            ctx.creature_index,
+            state=ctx.state,
+            players=ctx.players,
+            rand=ctx.rand,
+            detail_preset=int(ctx.detail_preset),
+            world_width=float(ctx.world_width),
+            world_height=float(ctx.world_height),
+            fx_queue=ctx.fx_queue,
+            keep_corpse=False,
+        )
+    )
+    ctx.state.bonus_spawn_guard = prev_guard
+    ctx.skip_creature = True
+
+
+def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
+    creature = ctx.creature
+    if float(ctx.state.bonuses.energizer) > 0.0:
+        return
+
+    ctx.contact_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
+    in_contact = ctx.contact_dist_sq <= contact_r * contact_r
+    if not in_contact:
+        return
+
+    creature.collision_timer -= ctx.dt
+    if creature.collision_timer >= 0.0:
+        return
+
+    creature.collision_timer += CONTACT_DAMAGE_PERIOD
+
+    if perk_active(ctx.player, PerkId.MR_MELEE):
+        death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
+
+        from .damage import creature_apply_damage
+
+        killed = creature_apply_damage(
+            creature,
+            damage_amount=25.0,
+            damage_type=2,
+            impulse_x=0.0,
+            impulse_y=0.0,
+            owner_id=-1 - int(ctx.player.index),
+            dt=ctx.dt,
+            players=ctx.players,
+            rand=ctx.rand,
+        )
+        if killed and death_start_needed:
+            ctx.deaths.append(
+                ctx.pool.handle_death(
+                    ctx.creature_index,
+                    state=ctx.state,
+                    players=ctx.players,
+                    rand=ctx.rand,
+                    detail_preset=int(ctx.detail_preset),
+                    world_width=float(ctx.world_width),
+                    world_height=float(ctx.world_height),
+                    fx_queue=ctx.fx_queue,
+                )
+            )
+            if creature.active:
+                ctx.pool._tick_dead(
+                    creature,
+                    dt=ctx.dt,
+                    world_width=float(ctx.world_width),
+                    world_height=float(ctx.world_height),
+                    fx_queue_rotated=ctx.fx_queue_rotated,
+                )
+            ctx.skip_creature = True
+            return
+
+    if float(ctx.player.shield_timer) <= 0.0:
+        if perk_active(ctx.player, PerkId.TOXIC_AVENGER):
+            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
+        elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
+            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+
+    player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
+
+    if ctx.fx_queue is not None:
+        dx = float(ctx.player.pos_x) - float(creature.x)
+        dy = float(ctx.player.pos_y) - float(creature.y)
+        dist = math.hypot(dx, dy)
+        if dist > 1e-9:
+            dx /= dist
+            dy /= dist
+        else:
+            dx = 0.0
+            dy = 0.0
+        ctx.fx_queue.add_random(
+            pos_x=float(ctx.player.pos_x) + dx * 3.0,
+            pos_y=float(ctx.player.pos_y) + dy * 3.0,
+            rand=ctx.rand,
+        )
+
+
+def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx) -> None:
+    if float(ctx.state.bonuses.energizer) > 0.0:
+        return
+
+    creature = ctx.creature
+    if bool(ctx.player.plaguebearer_active) and float(creature.hp) < 150.0 and int(ctx.state.plaguebearer_infection_count) < 0x32:
+        if ctx.contact_dist_sq < 30.0 * 30.0:
+            creature.plague_infected = True
+
+
+_CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
+    _creature_interaction_plaguebearer_spread,
+    _creature_interaction_energizer_eat,
+    _creature_interaction_contact_damage,
+    _creature_interaction_plaguebearer_contact_flag,
+)
 
 
 class CreaturePool:
@@ -320,8 +493,6 @@ class CreaturePool:
         *,
         rand: Callable[[], int] | None = None,
         env: SpawnEnv | None = None,
-        state: GameplayState | None = None,
-        detail_preset: int = 5,
     ) -> tuple[list[int], int | None]:
         """Build a spawn plan and materialize it into the pool."""
 
@@ -329,35 +500,7 @@ class CreaturePool:
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
         plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
-        mapping, primary = self.spawn_plan(plan, rand=rand)
-        if state is not None:
-            emit_rand = rand or rng.rand
-            self._emit_spawn_plan_effects(
-                plan,
-                state=state,
-                rand=emit_rand,
-                detail_preset=int(detail_preset),
-            )
-        return mapping, primary
-
-    def _emit_spawn_plan_effects(
-        self,
-        plan: SpawnPlan,
-        *,
-        state: GameplayState,
-        rand: Callable[[], int],
-        detail_preset: int,
-    ) -> None:
-        if not plan.effects:
-            return
-        for fx in plan.effects:
-            state.effects.spawn_burst(
-                pos_x=float(fx.x),
-                pos_y=float(fx.y),
-                count=int(fx.count),
-                rand=rand,
-                detail_preset=int(detail_preset),
-            )
+        return self.spawn_plan(plan, rand=rand)
 
     def update(
         self,
@@ -587,127 +730,29 @@ class CreaturePool:
                         creature.x = clamp(creature.x + creature.vel_x * dt, radius, max_x)
                         creature.y = clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
-            if (
-                players
-                and perk_active(players[0], PerkId.PLAGUEBEARER)
-                and int(state.plaguebearer_infection_count) < 0x3C
-            ):
-                self._plaguebearer_spread_infection(idx)
-
-            if float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 380.0 and float(player.health) > 0.0:
-                eat_dist_sq = distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
-                if eat_dist_sq < 20.0 * 20.0:
-                    creature.x = clamp(creature.x - creature.vel_x * dt, 0.0, float(world_width))
-                    creature.y = clamp(creature.y - creature.vel_y * dt, 0.0, float(world_height))
-
-                    state.effects.spawn_burst(
-                        pos_x=float(creature.x),
-                        pos_y=float(creature.y),
-                        count=6,
-                        rand=rand,
-                        detail_preset=int(detail_preset),
-                    )
-                    sfx.append("sfx_ui_bonus")
-
-                    prev_guard = bool(state.bonus_spawn_guard)
-                    state.bonus_spawn_guard = True
-                    creature.last_hit_owner_id = -1 - int(player.index)
-                    deaths.append(
-                        self.handle_death(
-                            idx,
-                            state=state,
-                            players=players,
-                            rand=rand,
-                            detail_preset=int(detail_preset),
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue=fx_queue,
-                            keep_corpse=False,
-                        )
-                    )
-                    state.bonus_spawn_guard = prev_guard
-                    continue
-
-            # Contact damage throttle. While Energizer is active, the native suppresses
-            # contact/melee interactions for most creatures (and instead allows "eat" kills).
-            if float(state.bonuses.energizer) <= 0.0:
-                dist_sq = distance_sq(creature.x, creature.y, player.pos_x, player.pos_y)
-                contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
-                in_contact = dist_sq <= contact_r * contact_r
-                if in_contact:
-                    creature.collision_timer -= dt
-                    if creature.collision_timer < 0.0:
-                        creature.collision_timer += CONTACT_DAMAGE_PERIOD
-                        if perk_active(player, PerkId.MR_MELEE):
-                            death_start_needed = creature.hp > 0.0 and creature.hitbox_size == CREATURE_HITBOX_ALIVE
-
-                            from .damage import creature_apply_damage
-
-                            killed = creature_apply_damage(
-                                creature,
-                                damage_amount=25.0,
-                                damage_type=2,
-                                impulse_x=0.0,
-                                impulse_y=0.0,
-                                owner_id=-1 - int(player.index),
-                                dt=dt,
-                                players=players,
-                                rand=rand,
-                            )
-                            if killed and death_start_needed:
-                                deaths.append(
-                                    self.handle_death(
-                                        idx,
-                                        state=state,
-                                        players=players,
-                                        rand=rand,
-                                        detail_preset=int(detail_preset),
-                                        world_width=world_width,
-                                        world_height=world_height,
-                                        fx_queue=fx_queue,
-                                    )
-                                )
-                                if creature.active:
-                                    self._tick_dead(
-                                        creature,
-                                        dt=dt,
-                                        world_width=world_width,
-                                        world_height=world_height,
-                                        fx_queue_rotated=fx_queue_rotated,
-                                    )
-                                continue
-
-                        if float(player.shield_timer) <= 0.0:
-                            if perk_active(player, PerkId.TOXIC_AVENGER):
-                                creature.flags |= (
-                                    CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-                                )
-                            elif perk_active(player, PerkId.VEINS_OF_POISON):
-                                creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
-                        player_take_damage(state, player, float(creature.contact_damage), dt=dt, rand=rand)
-                        if fx_queue is not None:
-                            dx = float(player.pos_x) - float(creature.x)
-                            dy = float(player.pos_y) - float(creature.y)
-                            dist = math.hypot(dx, dy)
-                            if dist > 1e-9:
-                                dx /= dist
-                                dy /= dist
-                            else:
-                                dx = 0.0
-                                dy = 0.0
-                            fx_queue.add_random(
-                                pos_x=float(player.pos_x) + dx * 3.0,
-                                pos_y=float(player.pos_y) + dy * 3.0,
-                                rand=rand,
-                            )
-
-                if (
-                    bool(player.plaguebearer_active)
-                    and float(creature.hp) < 150.0
-                    and int(state.plaguebearer_infection_count) < 0x32
-                    and dist_sq < 30.0 * 30.0
-                ):
-                    creature.plague_infected = True
+            interaction_ctx = _CreatureInteractionCtx(
+                pool=self,
+                creature_index=int(idx),
+                creature=creature,
+                state=state,
+                players=players,
+                player=player,
+                dt=dt,
+                rand=rand,
+                detail_preset=int(detail_preset),
+                world_width=float(world_width),
+                world_height=float(world_height),
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+                deaths=deaths,
+                sfx=sfx,
+            )
+            for step in _CREATURE_INTERACTION_STEPS:
+                step(interaction_ctx)
+                if interaction_ctx.skip_creature:
+                    break
+            if interaction_ctx.skip_creature:
+                continue
 
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
@@ -764,17 +809,11 @@ class CreaturePool:
                 plan = build_spawn_plan(
                     int(child_template_id),
                     (owner.x, owner.y),
-                    RANDOM_HEADING_SENTINEL,
+                    float(owner.heading),
                     state.rng,
                     spawn_env,
                 )
                 mapping, _ = self.spawn_plan(plan, rand=rand)
-                self._emit_spawn_plan_effects(
-                    plan,
-                    state=state,
-                    rand=rand,
-                    detail_preset=int(detail_preset),
-                )
                 spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
