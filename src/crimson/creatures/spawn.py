@@ -25,7 +25,7 @@ from grim.rand import Crand
 __all__ = [
     "BurstEffect",
     "CreatureFlags",
-    "CreatureInfFlag",
+    "CreatureInfectionFlags",
     "CreatureInit",
     "CreatureTypeId",
     "SpawnId",
@@ -78,7 +78,7 @@ class CreatureFlags(IntFlag):
     BONUS_ON_DEATH = 0x400  # spawns bonus on death
 
 
-class CreatureInfFlag(IntFlag):
+class CreatureInfectionFlags(IntFlag):
     """Low-byte creature infection flags.
 
     This corresponds to the native `collision_flag` byte in `creature_t`.
