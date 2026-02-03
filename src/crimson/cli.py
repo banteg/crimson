@@ -374,6 +374,67 @@ def cmd_spawn_plan(
             typer.echo(f"burst x={fx.x:.1f} y={fx.y:.1f} count={fx.count}")
 
 
+@app.command("oracle")
+def cmd_oracle(
+    seed: int = typer.Option(0xBEEF, help="RNG seed for deterministic runs"),
+    input_file: Path | None = typer.Option(None, "--input-file", "-i", help="JSON file with input sequence"),
+    max_frames: int = typer.Option(36000, help="Maximum frames to run (default: 10 min at 60fps)"),
+    frame_rate: int = typer.Option(60, help="Frame rate for simulation"),
+    sample_rate: int = typer.Option(60, "--sample-rate", "-s", help="Emit state every N frames (1=every frame, 60=1/sec)"),
+    output_mode: str = typer.Option(
+        "summary",
+        "--output", "-o",
+        help="Output mode: full (all entities), summary (fast), hash (ultra-fast), checkpoints (on events only)",
+    ),
+) -> None:
+    """Run headless oracle mode for differential testing.
+
+    Emits JSON game state to stdout. Use with --seed for deterministic runs
+    and --input-file for replaying specific input sequences.
+
+    Output modes:
+      - summary: Score, kills, player pos/health (default, fast)
+      - full: All entities including creatures, projectiles, bonuses
+      - hash: SHA256 hash of full state (ultra-fast comparison)
+      - checkpoints: Emit only when score/kills/level/weapon changes
+
+    Examples:
+        # Fast validation at 1 Hz sampling
+        crimson oracle --seed 12345 -i replay.json -s 60 -o summary
+
+        # Full frame-by-frame for debugging divergence
+        crimson oracle --seed 12345 -i replay.json -s 1 -o full
+
+        # Ultra-fast hash comparison
+        crimson oracle --seed 12345 -i replay.json -o hash
+
+        # Event-driven checkpoints only
+        crimson oracle --seed 12345 -i replay.json -o checkpoints
+    """
+    from .oracle import OracleConfig, OutputMode, run_headless
+
+    # Validate output mode
+    mode_map = {
+        "full": OutputMode.FULL,
+        "summary": OutputMode.SUMMARY,
+        "hash": OutputMode.HASH,
+        "checkpoints": OutputMode.CHECKPOINTS,
+    }
+    if output_mode not in mode_map:
+        typer.echo(f"Invalid output mode: {output_mode!r}. Choose from: {', '.join(mode_map)}", err=True)
+        raise typer.Exit(code=1)
+
+    config = OracleConfig(
+        seed=seed,
+        input_file=input_file,
+        max_frames=max_frames,
+        frame_rate=frame_rate,
+        sample_rate=sample_rate,
+        output_mode=mode_map[output_mode],
+    )
+    run_headless(config)
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
