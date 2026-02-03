@@ -27,6 +27,7 @@ __all__ = [
     "CreatureFlags",
     "CreatureInit",
     "CreatureTypeId",
+    "RANDOM_HEADING_SENTINEL",
     "SpawnId",
     "SPAWN_ID_TO_TEMPLATE",
     "SPAWN_TEMPLATES",
@@ -53,6 +54,9 @@ __all__ = [
 
 Tint = tuple[float | None, float | None, float | None, float | None]
 TintRGBA = tuple[float, float, float, float]
+
+# Heading sentinel that forces randomized heading in `creature_spawn_template`.
+RANDOM_HEADING_SENTINEL = -100.0
 
 
 class CreatureTypeId(IntEnum):
@@ -1366,7 +1370,7 @@ class CreatureInit:
     pos_y: float
 
     # Headings are in radians. The original seeds a random heading early, then overwrites it
-    # at the end with the function argument (or a randomized argument for `-100.0`).
+    # at the end with the function argument (or a randomized argument for `RANDOM_HEADING_SENTINEL`).
     heading: float
 
     phase_seed: float
@@ -1648,9 +1652,9 @@ class PlanBuilder:
         spawn_slots: list[SpawnSlotInit] = []
         effects: list[BurstEffect] = []
 
-        # `heading == -100.0` uses a randomized heading.
+        # `heading == RANDOM_HEADING_SENTINEL` uses a randomized heading.
         final_heading = heading
-        if final_heading == -100.0:
+        if final_heading == RANDOM_HEADING_SENTINEL:
             final_heading = float(rng.rand() % 628) * 0.01
 
         # Base initialization always consumes one rand() for a transient heading value.

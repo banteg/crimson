@@ -181,6 +181,9 @@ class ArsenalDebugView:
         count = max(1, len(self._spawn_ids))
         base_x = float(player.pos_x)
         base_y = float(player.pos_y)
+        detail_preset = 5
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
@@ -193,6 +196,8 @@ class ArsenalDebugView:
                 heading,
                 self._world.state.rng,
                 rand=self._world.state.rng.rand,
+                state=self._world.state,
+                detail_preset=detail_preset,
             )
 
     def _spawn_all_bonuses(self) -> None:

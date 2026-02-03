@@ -14,6 +14,7 @@ from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mo
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from grim.rand import Crand
+from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 from .ui.cursor import draw_menu_cursor
@@ -551,12 +552,17 @@ class DemoView:
 
     def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
         x, y = self._wrap_pos(x, y)
+        detail_preset = 5
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
         self._world.creatures.spawn_template(
             int(spawn_id),
             (x, y),
             float(heading),
             self._spawn_rng,
             rand=self._spawn_rng.rand,
+            state=self._world.state,
+            detail_preset=detail_preset,
         )
 
     def _setup_variant_0(self) -> None:
@@ -573,8 +579,8 @@ class DemoView:
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(0x38, float((col + 2) * 64), float(y), heading=-100.0)
-            self._spawn(0x38, float(col * 64 + 798), float(y), heading=-100.0)
+            self._spawn(0x38, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x38, float(col * 64 + 798), float(y), heading=RANDOM_HEADING_SENTINEL)
             y += 80
             i += 1
 
@@ -592,11 +598,11 @@ class DemoView:
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x34, x, y, heading=-100.0)
+            self._spawn(0x34, x, y, heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
                 x2 = float(self._crand_mod(30) + 32)
                 y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x35, x2, y2, heading=-100.0)
+                self._spawn(0x35, x2, y2, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
@@ -607,10 +613,10 @@ class DemoView:
         i = 0
         while y < 848:
             col = i % 2
-            self._spawn(0x41, float(col * 64 + 32), float(y), heading=-100.0)
-            self._spawn(0x41, float((col + 2) * 64), float(y), heading=-100.0)
-            self._spawn(0x41, float(col * 64 - 64), float(y), heading=-100.0)
-            self._spawn(0x41, float((col + 12) * 64), float(y), heading=-100.0)
+            self._spawn(0x41, float(col * 64 + 32), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, float(col * 64 - 64), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, float((col + 12) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
             y += 60
             i += 1
 
@@ -1082,7 +1088,7 @@ class DemoView:
             spawn_events.append((child_template_id, owner.x, owner.y))
 
         for child_template_id, x, y in spawn_events:
-            self._spawn(child_template_id, x, y, heading=-100.0)
+            self._spawn(child_template_id, x, y, heading=RANDOM_HEADING_SENTINEL)
 
     def _update_creatures(self, dt: float, dt_ms: int) -> None:
         if not self._creatures or not self._players:

@@ -23,6 +23,7 @@ from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
     CreatureInit,
+    RANDOM_HEADING_SENTINEL,
     SpawnEnv,
     SpawnPlan,
     SpawnSlotInit,
@@ -332,6 +333,8 @@ class CreaturePool:
         *,
         rand: Callable[[], int] | None = None,
         env: SpawnEnv | None = None,
+        state: GameplayState | None = None,
+        detail_preset: int = 5,
     ) -> tuple[list[int], int | None]:
         """Build a spawn plan and materialize it into the pool."""
 
@@ -339,7 +342,35 @@ class CreaturePool:
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
         plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
-        return self.spawn_plan(plan, rand=rand)
+        mapping, primary = self.spawn_plan(plan, rand=rand)
+        if state is not None:
+            emit_rand = rand or rng.rand
+            self._emit_spawn_plan_effects(
+                plan,
+                state=state,
+                rand=emit_rand,
+                detail_preset=int(detail_preset),
+            )
+        return mapping, primary
+
+    def _emit_spawn_plan_effects(
+        self,
+        plan: SpawnPlan,
+        *,
+        state: GameplayState,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None:
+        if not plan.effects:
+            return
+        for fx in plan.effects:
+            state.effects.spawn_burst(
+                pos_x=float(fx.x),
+                pos_y=float(fx.y),
+                count=int(fx.count),
+                rand=rand,
+                detail_preset=int(detail_preset),
+            )
 
     def update(
         self,
@@ -746,11 +777,17 @@ class CreaturePool:
                 plan = build_spawn_plan(
                     int(child_template_id),
                     (owner.x, owner.y),
-                    float(owner.heading),
+                    RANDOM_HEADING_SENTINEL,
                     state.rng,
                     spawn_env,
                 )
                 mapping, _ = self.spawn_plan(plan, rand=rand)
+                self._emit_spawn_plan_effects(
+                    plan,
+                    state=state,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
+                )
                 spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
