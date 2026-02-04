@@ -14,6 +14,7 @@ from .types import (
     pack_input_flags,
     unpack_input_flags,
 )
+from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
 
 __all__ = [
     "FIRE_DOWN_FLAG",
@@ -26,10 +27,12 @@ __all__ = [
     "ReplayRecorder",
     "ReplayStatusSnapshot",
     "UnknownEvent",
+    "ReplayGameVersionWarning",
     "dump_replay",
     "dump_replay_file",
     "load_replay",
     "load_replay_file",
     "pack_input_flags",
     "unpack_input_flags",
+    "warn_on_game_version_mismatch",
 ]

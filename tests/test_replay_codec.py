@@ -7,11 +7,13 @@ import pytest
 from crimson.gameplay import PlayerInput
 from crimson.replay import (
     PerkPickEvent,
+    ReplayGameVersionWarning,
     ReplayHeader,
     ReplayRecorder,
     ReplayStatusSnapshot,
     dump_replay,
     load_replay,
+    warn_on_game_version_mismatch,
 )
 
 
@@ -80,3 +82,12 @@ def test_replay_recorder_validates_player_count() -> None:
     with pytest.raises(ValueError, match="expected 2 player inputs"):
         rec.record_tick([PlayerInput()])
 
+
+def test_replay_version_mismatch_warns() -> None:
+    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1, game_version="0.0.0")
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput()])
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning, match="mismatch"):
+        assert warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
