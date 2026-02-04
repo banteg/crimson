@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 import random
 
 import pyray as rl
@@ -19,7 +18,7 @@ from ..gameplay import PlayerInput, survival_check_level_up, weapon_assign_playe
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
-from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode, hud_ui_scale
+from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -400,8 +399,6 @@ class TutorialMode(BaseGameplayMode):
             return
 
         stage = int(self._tutorial.stage_index)
-        mouse = self._ui_mouse_pos()
-        scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
         if stage == 8:
             rect, _lines, _line_h = self._prompt_panel_rect(actions.prompt_text, y=self._ui_layout.panel_y, scale=1.0)
             gap = 18.0

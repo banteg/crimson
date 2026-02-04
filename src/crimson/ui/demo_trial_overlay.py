@@ -5,7 +5,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import PaqTextureCache
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.math import clamp
 
 from ..demo_trial import DemoTrialOverlayInfo

@@ -13,7 +13,6 @@ from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, butt
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
-    MENU_LABEL_WIDTH,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,

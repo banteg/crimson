@@ -20,7 +20,6 @@ from ..gameplay import (
     survival_check_level_up,
     weapon_assign_player,
 )
-from ..perks import PerkId
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
