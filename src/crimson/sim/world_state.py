@@ -166,7 +166,7 @@ class WorldState:
         state.hardcore = bool(hardcore)
         state.preserve_bugs = bool(preserve_bugs)
         players: list[PlayerState] = []
-        creatures = CreaturePool(env=spawn_env)
+        creatures = CreaturePool(env=spawn_env, effects=state.effects)
         return cls(
             spawn_env=spawn_env,
             state=state,
