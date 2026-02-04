@@ -287,14 +287,15 @@ class SurvivalMode(BaseGameplayMode):
             path = Path(path)
         except Exception:
             return None
-        if path.exists() and path.is_dir():
-            import time
-
-            stamp = int(time.time())
-            return path / f"survival_{stamp}.crdemo"
-        if path.suffix.lower() != ".crdemo":
+        if path.suffix.lower() == ".crdemo":
+            return path
+        if path.exists() and path.is_file():
             return path.with_suffix(".crdemo")
-        return path
+
+        import time
+
+        stamp = int(time.time())
+        return path / f"survival_{stamp}.crdemo"
 
     def _maybe_begin_demo_recording(self) -> None:
         raw = os.environ.get("CRIMSON_RECORD_DEMO", "").strip()
