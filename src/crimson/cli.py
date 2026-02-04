@@ -492,6 +492,7 @@ def cmd_replay(
     )
 
     for tick, frame in enumerate(demo.frames):
+        skip_step = False
         for action in actions_by_tick.get(int(tick), []):
             action_type = int(action.action_type)
             if action_type == int(ActionType.PERK_MENU_OPEN):
@@ -502,6 +503,7 @@ def cmd_replay(
                     game_mode=int(GameMode.SURVIVAL),
                     player_count=len(session.world.players),
                 )
+                skip_step = True
                 continue
             if action_type != int(ActionType.PERK_PICK):
                 raise DemoError(f"unsupported action type: {action.action_type}")
@@ -521,7 +523,7 @@ def cmd_replay(
             if picked is None:
                 raise DemoError(f"perk pick failed at tick {tick}: {perk!s}")
 
-        if float(frame.dt) > 0.0:
+        if not skip_step and float(frame.dt) > 0.0:
             session.step(float(frame.dt), inputs=list(frame.inputs))
 
         if dump_fingerprints:
