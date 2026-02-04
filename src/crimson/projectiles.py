@@ -141,6 +141,9 @@ class SecondaryProjectile:
     owner_id: int = -100
     trail_timer: float = 0.0
     target_id: int = -1
+    target_hint_active: bool = False
+    target_hint_x: float = 0.0
+    target_hint_y: float = 0.0
 
 
 def _hit_radius_for(creature: Damageable) -> float:
@@ -1233,6 +1236,8 @@ class SecondaryProjectilePool:
         type_id: int,
         owner_id: int = -100,
         time_to_live: float = 2.0,
+        target_hint_x: float | None = None,
+        target_hint_y: float | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -1250,6 +1255,9 @@ class SecondaryProjectilePool:
         entry.pos_y = float(pos_y)
         entry.owner_id = int(owner_id)
         entry.target_id = -1
+        entry.target_hint_active = False
+        entry.target_hint_x = 0.0
+        entry.target_hint_y = 0.0
         entry.trail_timer = 0.0
 
         if entry.type_id == 3:
@@ -1268,6 +1276,12 @@ class SecondaryProjectilePool:
         entry.vel_x = vx
         entry.vel_y = vy
         entry.speed = float(time_to_live)
+
+        if entry.type_id == 2 and target_hint_x is not None and target_hint_y is not None:
+            entry.target_hint_active = True
+            entry.target_hint_x = float(target_hint_x)
+            entry.target_hint_y = float(target_hint_y)
+
         return index
 
     def iter_active(self) -> list[SecondaryProjectile]:
@@ -1369,12 +1383,18 @@ class SecondaryProjectilePool:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
                 if not (0 <= target_id < len(creatures)) or creatures[target_id].hp <= 0.0:
+                    search_x = float(entry.pos_x)
+                    search_y = float(entry.pos_y)
+                    if entry.target_hint_active:
+                        entry.target_hint_active = False
+                        search_x = float(entry.target_hint_x)
+                        search_y = float(entry.target_hint_y)
                     best_idx = -1
                     best_dist = 0.0
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
-                        d = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                        d = distance_sq(search_x, search_y, creature.x, creature.y)
                         if best_idx == -1 or d < best_dist:
                             best_idx = idx
                             best_dist = d
