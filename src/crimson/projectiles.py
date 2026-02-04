@@ -45,6 +45,7 @@ class ProjectileRuntimeState(Protocol):
     rng: _RngLike
     bonuses: _BonusesLike
     sfx_queue: list[str]
+    camera_shake_pulses: int
     shots_hit: list[int]
     shock_chain_links_left: int
     shock_chain_projectile_id: int
@@ -100,6 +101,14 @@ class ProjectileTypeId(IntEnum):
     FIRE_BULLETS = 0x2D
 
 
+class SecondaryProjectileTypeId(IntEnum):
+    NONE = 0
+    ROCKET = 1
+    HOMING_ROCKET = 2
+    DETONATION = 3
+    ROCKET_MINIGUN = 4
+
+
 def _rng_zero() -> int:
     return 0
 
@@ -141,6 +150,9 @@ class SecondaryProjectile:
     owner_id: int = -100
     trail_timer: float = 0.0
     target_id: int = -1
+    target_hint_active: bool = False
+    target_hint_x: float = 0.0
+    target_hint_y: float = 0.0
 
 
 def _hit_radius_for(creature: Damageable) -> float:
@@ -1233,6 +1245,8 @@ class SecondaryProjectilePool:
         type_id: int,
         owner_id: int = -100,
         time_to_live: float = 2.0,
+        target_hint_x: float | None = None,
+        target_hint_y: float | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -1250,9 +1264,12 @@ class SecondaryProjectilePool:
         entry.pos_y = float(pos_y)
         entry.owner_id = int(owner_id)
         entry.target_id = -1
+        entry.target_hint_active = False
+        entry.target_hint_x = 0.0
+        entry.target_hint_y = 0.0
         entry.trail_timer = 0.0
 
-        if entry.type_id == 3:
+        if entry.type_id == SecondaryProjectileTypeId.DETONATION:
             # Detonation state: `vel_x` becomes the expansion timer and `vel_y` the scale.
             entry.vel_x = 0.0
             entry.vel_y = float(time_to_live)
@@ -1261,13 +1278,19 @@ class SecondaryProjectilePool:
 
         # Effects.md: vel = cos/sin(angle - PI/2) * 90 (190 for type 2).
         base_speed = 90.0
-        if entry.type_id == 2:
+        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             base_speed = 190.0
         vx = math.cos(angle - math.pi / 2.0) * base_speed
         vy = math.sin(angle - math.pi / 2.0) * base_speed
         entry.vel_x = vx
         entry.vel_y = vy
         entry.speed = float(time_to_live)
+
+        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint_x is not None and target_hint_y is not None:
+            entry.target_hint_active = True
+            entry.target_hint_x = float(target_hint_x)
+            entry.target_hint_y = float(target_hint_y)
+
         return index
 
     def iter_active(self) -> list[SecondaryProjectile]:
@@ -1288,22 +1311,30 @@ class SecondaryProjectilePool:
         if dt <= 0.0:
             return
 
-        def _apply_damage_to_creature(creature_index: int, damage: float, *, owner_id: int) -> None:
-            if damage <= 0.0:
-                return
-            idx = int(creature_index)
-            if not (0 <= idx < len(creatures)):
-                return
-            if apply_creature_damage is not None:
-                apply_creature_damage(idx, float(damage), 3, 0.0, 0.0, int(owner_id))
-            else:
-                creatures[idx].hp -= float(damage)
+        def _apply_secondary_damage(
+            creature_index: int,
+            damage: float,
+            *,
+            owner_id: int,
+            impulse_x: float = 0.0,
+            impulse_y: float = 0.0,
+        ) -> None:
+            _apply_damage_to_creature(
+                creatures,
+                int(creature_index),
+                float(damage),
+                damage_type=3,
+                impulse_x=float(impulse_x),
+                impulse_y=float(impulse_y),
+                owner_id=int(owner_id),
+                apply_creature_damage=apply_creature_damage,
+            )
 
         rand = _rng_zero
         freeze_active = False
-        effects = None
-        sprite_effects = None
-        sfx_queue = None
+        effects: object | None = None
+        sprite_effects: object | None = None
+        sfx_queue: list[str] | None = None
         if runtime_state is not None:
             rand = runtime_state.rng.rand
             freeze_active = float(runtime_state.bonuses.freeze) > 0.0
@@ -1315,8 +1346,11 @@ class SecondaryProjectilePool:
             if not entry.active:
                 continue
 
-            if entry.type_id == 3:
+            if entry.type_id == SecondaryProjectileTypeId.DETONATION:
                 # Detonation: `vel_x` becomes the expansion timer (0..1) and `vel_y` the scale.
+                if runtime_state is not None:
+                    runtime_state.camera_shake_pulses = 4
+
                 entry.vel_x += dt * 3.0
                 t = float(entry.vel_x)
                 scale = float(entry.vel_y)
@@ -1334,17 +1368,37 @@ class SecondaryProjectilePool:
                     entry.active = False
 
                 radius = scale * t * 80.0
+                radius_sq = radius * radius
                 damage = dt * scale * 700.0
                 for creature_idx, creature in enumerate(creatures):
                     if creature.hp <= 0.0:
                         continue
-                    creature_radius = _hit_radius_for(creature)
-                    hit_r = radius + creature_radius
-                    if distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                        _apply_damage_to_creature(creature_idx, damage, owner_id=int(entry.owner_id))
+                    d_sq = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                    if d_sq < radius_sq:
+                        dx = float(creature.x) - float(entry.pos_x)
+                        dy = float(creature.y) - float(entry.pos_y)
+                        dist = math.hypot(dx, dy)
+                        if dist > 1e-6:
+                            inv = 0.1 / dist
+                            impulse_x = dx * inv
+                            impulse_y = dy * inv
+                        else:
+                            impulse_x = 0.0
+                            impulse_y = 0.0
+                        _apply_secondary_damage(
+                            creature_idx,
+                            damage,
+                            owner_id=int(entry.owner_id),
+                            impulse_x=impulse_x,
+                            impulse_y=impulse_y,
+                        )
                 continue
 
-            if entry.type_id not in (1, 2, 4):
+            if entry.type_id not in (
+                SecondaryProjectileTypeId.ROCKET,
+                SecondaryProjectileTypeId.HOMING_ROCKET,
+                SecondaryProjectileTypeId.ROCKET_MINIGUN,
+            ):
                 continue
 
             # Move.
@@ -1353,13 +1407,13 @@ class SecondaryProjectilePool:
 
             # Update velocity + countdown.
             speed_mag = math.hypot(entry.vel_x, entry.vel_y)
-            if entry.type_id == 1:
+            if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                 if speed_mag < 500.0:
                     factor = 1.0 + dt * 3.0
                     entry.vel_x *= factor
                     entry.vel_y *= factor
                 entry.speed -= dt
-            elif entry.type_id == 4:
+            elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                 if speed_mag < 600.0:
                     factor = 1.0 + dt * 4.0
                     entry.vel_x *= factor
@@ -1369,12 +1423,18 @@ class SecondaryProjectilePool:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
                 if not (0 <= target_id < len(creatures)) or creatures[target_id].hp <= 0.0:
+                    search_x = float(entry.pos_x)
+                    search_y = float(entry.pos_y)
+                    if entry.target_hint_active:
+                        entry.target_hint_active = False
+                        search_x = float(entry.target_hint_x)
+                        search_y = float(entry.target_hint_y)
                     best_idx = -1
                     best_dist = 0.0
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
-                        d = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                        d = distance_sq(search_x, search_y, creature.x, creature.y)
                         if best_idx == -1 or d < best_dist:
                             best_idx = idx
                             best_dist = d
@@ -1427,24 +1487,32 @@ class SecondaryProjectilePool:
                     hit_idx = idx
                     break
             if hit_idx is not None:
-                if isinstance(sfx_queue, list):
+                if sfx_queue is not None:
                     sfx_queue.append("sfx_explosion_medium")
 
+                hit_type_id = SecondaryProjectileTypeId(int(entry.type_id))
+
                 damage = 150.0
-                if entry.type_id == 1:
+                if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                     damage = entry.speed * 50.0 + 500.0
-                elif entry.type_id == 2:
+                elif entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
                     damage = entry.speed * 20.0 + 80.0
-                elif entry.type_id == 4:
+                elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                     damage = entry.speed * 20.0 + 40.0
-                _apply_damage_to_creature(hit_idx, damage, owner_id=int(entry.owner_id))
+                _apply_secondary_damage(
+                    hit_idx,
+                    damage,
+                    owner_id=int(entry.owner_id),
+                    impulse_x=float(entry.vel_x) / float(dt),
+                    impulse_y=float(entry.vel_y) / float(dt),
+                )
 
                 det_scale = 0.5
-                if entry.type_id == 1:
+                if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                     det_scale = 1.0
-                elif entry.type_id == 2:
+                elif entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
                     det_scale = 0.35
-                elif entry.type_id == 4:
+                elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                     det_scale = 0.25
 
                 if freeze_active:
@@ -1468,7 +1536,12 @@ class SecondaryProjectilePool:
                             rand=rand,
                         )
 
-                if entry.type_id == 1 and effects is not None and hasattr(effects, "spawn_explosion_burst") and int(detail_preset) > 2:
+                if (
+                    entry.type_id == SecondaryProjectileTypeId.ROCKET
+                    and effects is not None
+                    and hasattr(effects, "spawn_explosion_burst")
+                    and int(detail_preset) > 2
+                ):
                     effects.spawn_explosion_burst(
                         pos_x=float(entry.pos_x),
                         pos_y=float(entry.pos_y),
@@ -1477,23 +1550,39 @@ class SecondaryProjectilePool:
                         detail_preset=int(detail_preset),
                     )
 
-                entry.type_id = 3
+                entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel_x = 0.0
                 entry.vel_y = float(det_scale)
                 entry.trail_timer = 0.0
 
-                # Extra debris and scorch decals on detonation.
-                if not freeze_active:
+                # Extra debris/scorch decals (or freeze shards) on detonation.
+                if freeze_active:
+                    if effects is not None and hasattr(effects, "spawn_freeze_shard"):
+                        shard_x = float(entry.pos_x)
+                        shard_y = float(entry.pos_y)
+                        if hit_type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
+                            shard_x = float(creatures[hit_idx].x)
+                            shard_y = float(creatures[hit_idx].y)
+                        for _ in range(8):
+                            shard_angle = float(int(rand()) % 0x264) * 0.01
+                            effects.spawn_freeze_shard(
+                                pos_x=shard_x,
+                                pos_y=shard_y,
+                                angle=shard_angle,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                            )
+                else:
                     extra_decals = 0
                     extra_radius = 0.0
-                    if entry.type_id == 3:
+                    if entry.type_id == SecondaryProjectileTypeId.DETONATION:
                         # NOTE: entry.type_id is already 3 here; use det_scale based on prior type.
                         if det_scale == 1.0:
                             extra_decals = 0x14
                             extra_radius = 90.0
                         elif det_scale == 0.35:
                             extra_decals = 10
-                            extra_radius = 63.0
+                            extra_radius = 64.0
                         elif det_scale == 0.25:
                             extra_decals = 3
                             extra_radius = 44.0
@@ -1502,36 +1591,39 @@ class SecondaryProjectilePool:
                         cy = float(creatures[hit_idx].y)
                         for _ in range(int(extra_decals)):
                             angle = float(int(rand()) % 0x274) * 0.01
-                            radius = float(int(rand()) % max(1, int(extra_radius)))
+                            if det_scale == 0.35:
+                                radius = float(int(rand()) & 0x3F)
+                            else:
+                                radius = float(int(rand()) % max(1, int(extra_radius)))
                             fx_queue.add_random(
                                 pos_x=cx + math.cos(angle) * radius,
                                 pos_y=cy + math.sin(angle) * radius,
                                 rand=rand,
                             )
 
-                    if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                        step = math.tau / 10.0
-                        for idx in range(10):
-                            mag = float(int(rand()) % 800) * 0.1
-                            ang = float(idx) * step
-                            vel_x = math.cos(ang) * mag
-                            vel_y = math.sin(ang) * mag
-                            sprite_id = sprite_effects.spawn(
-                                pos_x=float(entry.pos_x),
-                                pos_y=float(entry.pos_y),
-                                vel_x=vel_x,
-                                vel_y=vel_y,
-                                scale=14.0,
-                            )
-                            try:
-                                sprite_effects.entries[int(sprite_id)].color_a = 0.37
-                            except Exception:
-                                pass
+                if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                    step = math.tau / 10.0
+                    for idx in range(10):
+                        mag = float(int(rand()) % 800) * 0.1
+                        ang = float(idx) * step
+                        vel_x = math.cos(ang) * mag
+                        vel_y = math.sin(ang) * mag
+                        sprite_id = sprite_effects.spawn(
+                            pos_x=float(entry.pos_x),
+                            pos_y=float(entry.pos_y),
+                            vel_x=vel_x,
+                            vel_y=vel_y,
+                            scale=14.0,
+                        )
+                        try:
+                            sprite_effects.entries[int(sprite_id)].color_a = 0.37
+                        except Exception:
+                            pass
 
                 continue
 
             if entry.speed <= 0.0:
-                entry.type_id = 3
+                entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel_x = 0.0
                 entry.vel_y = 0.5
                 entry.trail_timer = 0.0

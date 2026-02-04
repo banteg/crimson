@@ -10,7 +10,14 @@ from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PERK_BY_ID, PERK_TABLE
-from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from .projectiles import (
+    CreatureDamageApplier,
+    Damageable,
+    ProjectilePool,
+    ProjectileTypeId,
+    SecondaryProjectilePool,
+    SecondaryProjectileTypeId,
+)
 from .weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
@@ -2069,7 +2076,14 @@ def player_fire_weapon(
             return 0.0013
         return 0.0015
 
-    if is_fire_bullets:
+    rocket_weapon_ids = (
+        WeaponId.ROCKET_LAUNCHER,
+        WeaponId.SEEKER_ROCKETS,
+        WeaponId.MINI_ROCKET_SWARMERS,
+        WeaponId.ROCKET_MINIGUN,
+    )
+
+    if is_fire_bullets and weapon_id not in rocket_weapon_ids:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
         meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
@@ -2085,23 +2099,51 @@ def player_fire_weapon(
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
         # Rocket Launcher -> secondary type 1.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner_id=owner_id,
+        )
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+            owner_id=owner_id,
+            target_hint_x=float(aim_x),
+            target_hint_y=float(aim_y),
+        )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
         for _ in range(rocket_count):
-            state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=angle, type_id=2, owner_id=owner_id)
+            state.secondary_projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+                owner_id=owner_id,
+                target_hint_x=float(aim_x),
+                target_hint_y=float(aim_y),
+            )
             angle += step
         ammo_cost = float(rocket_count)
         shot_count = rocket_count
     elif weapon_id == WeaponId.ROCKET_MINIGUN:
         # Rocket Minigun -> secondary type 4.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
+            owner_id=owner_id,
+        )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
         state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
