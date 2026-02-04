@@ -24,13 +24,13 @@ from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_que
 from .formatting import format_ordinal, format_time_mm_ss
 from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .menu_panel import draw_classic_menu_panel
+from .cursor import draw_menu_cursor
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
-    cursor_draw,
     draw_ui_text,
     load_perk_menu_assets,
 )
@@ -84,6 +84,7 @@ COLOR_GREEN = rl.Color(25, 200, 25, 255)
 class QuestResultsAssets:
     menu_panel: rl.Texture | None
     text_well_done: rl.Texture | None
+    particles: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
     missing: list[str]
 
@@ -96,11 +97,13 @@ def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
         paq_rel="ui/ui_textWellDone.jaz",
         fs_rel="ui/ui_textWellDone.png",
     )
+    particles = loader.get(name="particles", paq_rel="game/particles.jaz", fs_rel="game/particles.png")
     missing: list[str] = list(perk_menu_assets.missing)
     missing.extend(loader.missing)
     return QuestResultsAssets(
         menu_panel=perk_menu_assets.menu_panel,
         text_well_done=text_well_done,
+        particles=particles,
         perk_menu_assets=perk_menu_assets,
         missing=missing,
     )
@@ -137,6 +140,7 @@ class QuestResultsUi:
     _saved: bool = False
 
     _intro_ms: float = 0.0
+    _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
     _close_action: str | None = None
@@ -210,6 +214,7 @@ class QuestResultsUi:
         self.input_caret = len(self.input_text)
 
         self._intro_ms = 0.0
+        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._closing = False
         self._close_action = None
@@ -269,6 +274,7 @@ class QuestResultsUi:
     ) -> str | None:
         dt_s = float(min(dt, 0.1))
         dt_ms = dt_s * 1000.0
+        self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
             mouse = rl.get_mouse_position()
         if rand is None:
@@ -624,4 +630,10 @@ class QuestResultsUi:
             main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
             button_draw(self.assets.perk_menu_assets, self.font, self._main_menu_button, x=button_x, y=button_y, width=main_menu_w, scale=scale)
 
-        cursor_draw(self.assets.perk_menu_assets, mouse=mouse, scale=scale)
+        draw_menu_cursor(
+            self.assets.particles,
+            self.assets.perk_menu_assets.cursor,
+            x=float(mouse.x),
+            y=float(mouse.y),
+            pulse_time=float(self._cursor_pulse_time),
+        )
