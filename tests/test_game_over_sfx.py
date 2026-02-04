@@ -60,6 +60,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(m
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
+        preserve_bugs=False,
         logos=None,
         texture_cache=None,
         audio=object(),

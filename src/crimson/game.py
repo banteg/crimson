@@ -177,6 +177,7 @@ class GameConfig:
     demo_enabled: bool = False
     no_intro: bool = False
     debug: bool = False
+    preserve_bugs: bool = False
 
 
 @dataclass(slots=True)
@@ -196,6 +197,7 @@ class GameState:
     status: GameStatus
     console: ConsoleState
     demo_enabled: bool
+    preserve_bugs: bool
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
@@ -864,7 +866,7 @@ class SurvivalGameView:
 
         self._state = state
         self._mode = SurvivalMode(
-            ViewContext(assets_dir=state.assets_dir),
+            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             console=state.console,
@@ -930,7 +932,7 @@ class RushGameView:
 
         self._state = state
         self._mode = RushMode(
-            ViewContext(assets_dir=state.assets_dir),
+            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             console=state.console,
@@ -994,7 +996,7 @@ class TypoShooterGameView:
 
         self._state = state
         self._mode = TypoShooterMode(
-            ViewContext(assets_dir=state.assets_dir),
+            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             console=state.console,
@@ -1058,7 +1060,7 @@ class TutorialGameView:
 
         self._state = state
         self._mode = TutorialMode(
-            ViewContext(assets_dir=state.assets_dir),
+            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             console=state.console,
@@ -1115,7 +1117,7 @@ class QuestGameView:
 
         self._state = state
         self._mode = QuestMode(
-            ViewContext(assets_dir=state.assets_dir),
+            ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             console=state.console,
@@ -3180,6 +3182,7 @@ def run_game(config: GameConfig) -> None:
             status=status,
             console=console,
             demo_enabled=bool(config.demo_enabled),
+            preserve_bugs=bool(config.preserve_bugs),
             skip_intro=bool(config.no_intro),
             logos=None,
             texture_cache=None,

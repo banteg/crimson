@@ -58,6 +58,7 @@ class DemoState(Protocol):
     config: CrimsonConfig
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
+    preserve_bugs: bool
 
 
 def _weapon_name(weapon_id: int) -> str:
@@ -94,6 +95,7 @@ class DemoView:
             demo_mode_active=True,
             hardcore=bool(int(state.config.data.get("hardcore_flag", 0) or 0)),
             difficulty_level=0,
+            preserve_bugs=bool(state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             audio=state.audio,

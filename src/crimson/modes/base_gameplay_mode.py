@@ -68,6 +68,7 @@ class BaseGameplayMode:
             demo_mode_active=bool(demo_mode_active),
             difficulty_level=int(difficulty_level),
             hardcore=bool(hardcore),
+            preserve_bugs=bool(ctx.preserve_bugs),
             texture_cache=texture_cache,
             config=config,
             audio=audio,

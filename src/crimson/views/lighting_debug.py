@@ -236,6 +236,7 @@ class LightingDebugView:
             demo_mode_active=False,
             difficulty_level=0,
             hardcore=False,
+            preserve_bugs=bool(ctx.preserve_bugs),
         )
         self._player = self._world.players[0] if self._world.players else None
 

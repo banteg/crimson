@@ -527,6 +527,7 @@ class GameplayState:
     game_mode: int = int(GameMode.SURVIVAL)
     demo_mode_active: bool = False
     hardcore: bool = False
+    preserve_bugs: bool = False
     status: GameStatus | None = None
     quest_stage_major: int = 0
     quest_stage_minor: int = 0

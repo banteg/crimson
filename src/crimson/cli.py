@@ -180,6 +180,7 @@ def cmd_view(
     width: int = typer.Option(1024, help="window width"),
     height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
+    preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
 ) -> None:
     """Launch a Raylib debug view."""
@@ -192,7 +193,7 @@ def cmd_view(
         available = ", ".join(view.name for view in all_views())
         typer.echo(f"unknown view {name!r}. Available: {available}", err=True)
         raise typer.Exit(code=1)
-    ctx = ViewContext(assets_dir=assets_dir)
+    ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=bool(preserve_bugs))
     params = inspect.signature(view_def.factory).parameters
     if "ctx" in params:
         view = view_def.factory(ctx=ctx)
@@ -212,6 +213,7 @@ def cmd_game(
     demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
+    preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -238,6 +240,7 @@ def cmd_game(
         demo_enabled=demo,
         no_intro=no_intro,
         debug=debug,
+        preserve_bugs=bool(preserve_bugs),
     )
     run_game(config)
 
@@ -381,6 +384,7 @@ def cmd_oracle(
     max_frames: int = typer.Option(36000, help="Maximum frames to run (default: 10 min at 60fps)"),
     frame_rate: int = typer.Option(60, help="Frame rate for simulation"),
     sample_rate: int = typer.Option(60, "--sample-rate", "-s", help="Emit state every N frames (1=every frame, 60=1/sec)"),
+    preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
     output_mode: str = typer.Option(
         "summary",
         "--output", "-o",
@@ -431,6 +435,7 @@ def cmd_oracle(
         frame_rate=frame_rate,
         sample_rate=sample_rate,
         output_mode=mode_map[output_mode],
+        preserve_bugs=bool(preserve_bugs),
     )
     run_headless(config)
 

@@ -8,6 +8,7 @@ from typing import Protocol
 @dataclass(frozen=True, slots=True)
 class ViewContext:
     assets_dir: Path = Path("artifacts") / "assets"
+    preserve_bugs: bool = False
 
 
 class View(Protocol):
