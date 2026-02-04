@@ -449,12 +449,9 @@ class GameWorld:
 
         if events.hits:
             self._queue_projectile_decals(events.hits)
-            self.audio_router.play_hit_sfx(
-                events.hits,
-                game_mode=game_mode,
-                rand=self.state.rng.rand,
-                beam_types=BEAM_TYPES,
-            )
+            audio_rng = self.audio_rng
+            audio_rand = self.state.rng.rand if audio_rng is None else (lambda: audio_rng.getrandbits(32))
+            self.audio_router.play_hit_sfx(events.hits, game_mode=game_mode, rand=audio_rand, beam_types=BEAM_TYPES)
 
         for idx, player in enumerate(self.players):
             if idx < len(prev_audio):
@@ -467,7 +464,9 @@ class GameWorld:
                 )
 
         if events.deaths:
-            self.audio_router.play_death_sfx(events.deaths, rand=self.state.rng.rand)
+            audio_rng = self.audio_rng
+            audio_rand = self.state.rng.rand if audio_rng is None else (lambda: audio_rng.getrandbits(32))
+            self.audio_router.play_death_sfx(events.deaths, rand=audio_rand)
 
         if events.pickups:
             for _ in events.pickups:
