@@ -8,7 +8,7 @@ import pyray as rl
 
 from grim.math import clamp
 
-from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
+from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
 from ..gameplay import perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
@@ -75,7 +75,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         return False
 
     particles_texture = renderer.particles_texture
-    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
     if atlas is None:
         return False
     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -265,7 +265,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         # Fire Bullets renders an extra particles.png overlay in a later pass.
         if is_fire_bullets and renderer.particles_texture is not None:
             particles_texture = renderer.particles_texture
-            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
             if atlas is not None:
                 grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                 if grid:
@@ -634,4 +634,3 @@ def draw_projectile_from_registry(ctx: ProjectileDrawCtx) -> bool:
         if handler(ctx):
             return True
     return False
-

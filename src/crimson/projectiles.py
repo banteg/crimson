@@ -8,6 +8,7 @@ from typing import Callable, Protocol
 from grim.math import distance_sq
 
 from .creatures.spawn import CreatureFlags
+from .effects_atlas import EffectId
 from .perks import PerkId
 from .weapons import weapon_entry_for_projectile_type_id
 
@@ -235,7 +236,7 @@ def _spawn_ion_hit_effects(
 
     # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
     effects.spawn(
-        effect_id=1,
+        effect_id=int(EffectId.RING),
         pos_x=float(pos_x),
         pos_y=float(pos_y),
         vel_x=0.0,
@@ -270,7 +271,7 @@ def _spawn_ion_hit_effects(
         vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
         scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
-            effect_id=0,
+            effect_id=int(EffectId.BURST),
             pos_x=float(pos_x),
             pos_y=float(pos_y),
             vel_x=vel_x,
@@ -320,7 +321,7 @@ def _spawn_plasma_cannon_hit_effects(
 
     def _spawn_ring(*, scale: float) -> None:
         effects.spawn(
-            effect_id=1,
+            effect_id=int(EffectId.RING),
             pos_x=float(pos_x),
             pos_y=float(pos_y),
             vel_x=0.0,
@@ -366,7 +367,7 @@ def _spawn_splitter_hit_effects(
         lifetime = 0.1 - jitter_age
 
         effects.spawn(
-            effect_id=0,
+            effect_id=int(EffectId.BURST),
             pos_x=float(pos_x) + math.cos(angle) * radius,
             pos_y=float(pos_y) + math.sin(angle) * radius,
             vel_x=0.0,
@@ -1357,7 +1358,7 @@ class SecondaryProjectilePool:
                 if t > 1.0:
                     if fx_queue is not None:
                         fx_queue.add(
-                            effect_id=0x10,
+                            effect_id=int(EffectId.AURA),
                             pos_x=float(entry.pos_x),
                             pos_y=float(entry.pos_y),
                             width=float(scale) * 256.0,

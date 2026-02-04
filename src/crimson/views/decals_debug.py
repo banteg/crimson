@@ -12,6 +12,7 @@ from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_se
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
+from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
@@ -541,7 +542,7 @@ class DecalsDebugView:
             else:
                 # Paint blood directly for ground decal checks.
                 self._fx_queue.add(
-                    effect_id=0x07,
+                    effect_id=int(EffectId.BLOOD_SPLATTER),
                     pos_x=float(x),
                     pos_y=float(y),
                     width=30.0,
