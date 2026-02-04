@@ -356,6 +356,7 @@ class WorldState:
                 self.state,
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
+                players=self.players,
             )
 
         if dt > 0.0:
