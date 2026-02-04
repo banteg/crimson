@@ -492,19 +492,25 @@ def cmd_replay(
     )
 
     for tick, frame in enumerate(demo.frames):
+        actions = actions_by_tick.get(int(tick), [])
+        for action in actions:
+            action_type = int(action.action_type)
+            if action_type != int(ActionType.PERK_MENU_OPEN):
+                continue
+            perk_selection_current_choices(
+                session.world.state,
+                session.world.players,
+                session.world.state.perk_selection,
+                game_mode=int(GameMode.SURVIVAL),
+                player_count=len(session.world.players),
+            )
+
         if float(frame.dt) > 0.0:
             session.step(float(frame.dt), inputs=list(frame.inputs))
 
-        for action in actions_by_tick.get(int(tick), []):
+        for action in actions:
             action_type = int(action.action_type)
             if action_type == int(ActionType.PERK_MENU_OPEN):
-                perk_selection_current_choices(
-                    session.world.state,
-                    session.world.players,
-                    session.world.state.perk_selection,
-                    game_mode=int(GameMode.SURVIVAL),
-                    player_count=len(session.world.players),
-                )
                 continue
             if action_type != int(ActionType.PERK_PICK):
                 raise DemoError(f"unsupported action type: {action.action_type}")
