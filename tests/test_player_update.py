@@ -16,7 +16,8 @@ from crimson.gameplay import (
     weapon_assign_player,
 )
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool
+from crimson.projectiles import ProjectilePool, SecondaryProjectileTypeId
+from crimson.weapons import WeaponId
 
 
 @dataclass(slots=True)
@@ -133,10 +134,11 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
 
 def test_player_fire_weapon_fire_bullets_does_not_override_rocket_weapons() -> None:
     rocket_cases = (
-        (12, 1, 1),  # Rocket Launcher -> secondary type 1
-        (13, 2, 1),  # Seeker Rockets -> secondary type 2
-        (17, 2, 3),  # Mini-Rocket Swarmers -> secondary type 2 (fires full clip; keep test small)
-        (18, 4, 1),  # Rocket Minigun -> secondary type 4
+        (WeaponId.ROCKET_LAUNCHER, SecondaryProjectileTypeId.ROCKET, 1),
+        (WeaponId.SEEKER_ROCKETS, SecondaryProjectileTypeId.HOMING_ROCKET, 1),
+        # Mini-Rocket Swarmers fire the full clip; keep the test small.
+        (WeaponId.MINI_ROCKET_SWARMERS, SecondaryProjectileTypeId.HOMING_ROCKET, 3),
+        (WeaponId.ROCKET_MINIGUN, SecondaryProjectileTypeId.ROCKET_MINIGUN, 1),
     )
 
     for weapon_id, expected_secondary_type, expected_count in rocket_cases:
@@ -147,7 +149,7 @@ def test_player_fire_weapon_fire_bullets_does_not_override_rocket_weapons() -> N
         player.spread_heat = 0.0
         weapon_assign_player(player, weapon_id)
 
-        if weapon_id == 17:
+        if weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
             player.clip_size = expected_count
             player.ammo = float(expected_count)
 
@@ -158,7 +160,7 @@ def test_player_fire_weapon_fire_bullets_does_not_override_rocket_weapons() -> N
         assert not any(entry.active for entry in state.projectiles.entries)
         spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
         assert len(spawned) == expected_count
-        assert {int(entry.type_id) for entry in spawned} == {expected_secondary_type}
+        assert {SecondaryProjectileTypeId(int(entry.type_id)) for entry in spawned} == {expected_secondary_type}
 
 
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
