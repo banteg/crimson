@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime as dt
+import hashlib
 import random
 
 import pyray as rl
@@ -18,6 +20,7 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
+from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -63,6 +66,7 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
 
         self._ui_assets = None
+        self._replay_recorder: ReplayRecorder | None = None
 
     def _enforce_rush_loadout(self) -> None:
         for player in self._world.players:
@@ -78,10 +82,29 @@ class RushMode(BaseGameplayMode):
             self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
         self._enforce_rush_loadout()
+        status = self._state.status
+        status_snapshot = ReplayStatusSnapshot(
+            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+        )
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=int(GameMode.RUSH),
+                seed=int(self._state.rng.state),
+                tick_rate=60,
+                difficulty_level=int(self._world.difficulty_level),
+                hardcore=bool(self._world.hardcore),
+                preserve_bugs=bool(self._world.preserve_bugs),
+                world_size=float(self._world.world_size),
+                player_count=len(self._world.players),
+                status=status_snapshot,
+            )
+        )
 
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
+        self._replay_recorder = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -158,6 +181,24 @@ class RushMode(BaseGameplayMode):
         self._game_over_record = record
         self._game_over_ui.open()
         self._game_over_active = True
+        self._save_replay()
+
+    def _save_replay(self) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        replay = recorder.finish()
+        data = dump_replay(replay)
+        digest = hashlib.sha256(data).hexdigest()
+        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        path = replay_dir / f"{stamp}_{digest}.crdemo.gz"
+        path.write_bytes(data)
+        self._replay_recorder = None
+        if self._console is not None:
+            self._console.log.log(f"replay: saved {path}")
+            self._console.log.flush()
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
@@ -182,9 +223,12 @@ class RushMode(BaseGameplayMode):
 
         self._enforce_rush_loadout()
         input_state = self._build_input()
+        inputs = [input_state for _ in self._world.players]
+        if self._replay_recorder is not None:
+            self._replay_recorder.record_tick(inputs)
         self._world.update(
             dt_world,
-            inputs=[input_state for _ in self._world.players],
+            inputs=inputs,
             auto_pick_perks=False,
             game_mode=int(GameMode.RUSH),
             perk_progression_enabled=False,

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime as dt
+import hashlib
 import random
 
 import pyray as rl
@@ -25,6 +27,7 @@ from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
+from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -99,10 +102,11 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
-        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt)
+        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt, on_pick=self._record_perk_pick)
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._perk_menu_assets = None
         self._cursor_time = 0.0
+        self._replay_recorder: ReplayRecorder | None = None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -110,6 +114,29 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_prompt_timer_ms = 0.0
             self._perk_prompt_hover = False
             self._perk_prompt_pulse = 0.0
+
+    def _record_perk_pick(self, choice_index: int) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
+
+    def _save_replay(self) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        replay = recorder.finish()
+        data = dump_replay(replay)
+        digest = hashlib.sha256(data).hexdigest()
+        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        path = replay_dir / f"{stamp}_{digest}.crdemo.gz"
+        path.write_bytes(data)
+        self._replay_recorder = None
+        if self._console is not None:
+            self._console.log.log(f"replay: saved {path}")
+            self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
         fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0) if self._config is not None else 0
@@ -171,10 +198,29 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
+        status = self._state.status
+        status_snapshot = ReplayStatusSnapshot(
+            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+        )
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=int(GameMode.SURVIVAL),
+                seed=int(self._state.rng.state),
+                tick_rate=60,
+                difficulty_level=int(self._world.difficulty_level),
+                hardcore=bool(self._world.hardcore),
+                preserve_bugs=bool(self._world.preserve_bugs),
+                world_size=float(self._world.world_size),
+                player_count=len(self._world.players),
+                status=status_snapshot,
+            )
+        )
 
     def close(self) -> None:
         if self._perk_menu_assets is not None:
             self._perk_menu_assets = None
+        self._replay_recorder = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -286,6 +332,7 @@ class SurvivalMode(BaseGameplayMode):
         self._game_over_ui.open()
         self._game_over_active = True
         self._perk_menu.close()
+        self._save_replay()
 
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
@@ -399,9 +446,12 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         input_state = self._build_input()
+        inputs = [input_state for _ in self._world.players]
+        if self._replay_recorder is not None:
+            self._replay_recorder.record_tick(inputs)
         self._world.update(
             dt,
-            inputs=[input_state for _ in self._world.players],
+            inputs=inputs,
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
