@@ -576,7 +576,7 @@ class QuestMode(BaseGameplayMode):
 
         dt_world = 0.0 if self._paused or (not any_alive) or self._perk_menu.active else dt_frame
         if dt_world <= 0.0:
-            if not any(player.health > 0.0 for player in self._world.players):
+            if not self._any_player_alive():
                 self._close_failed_run()
             return
 

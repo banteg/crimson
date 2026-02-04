@@ -394,7 +394,7 @@ class SurvivalMode(BaseGameplayMode):
         self._survival.elapsed_ms += dt * 1000.0
 
         if dt <= 0.0:
-            if not any_alive:
+            if not self._any_player_alive():
                 self._enter_game_over()
             return
 

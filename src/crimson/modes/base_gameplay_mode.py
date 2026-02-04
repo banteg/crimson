@@ -165,6 +165,9 @@ class BaseGameplayMode:
         self._player = self._world.players[0]
         self._state.status = self._status
 
+    def _any_player_alive(self) -> bool:
+        return any(player.health > 0.0 for player in self._world.players)
+
     def bind_status(self, status: GameStatus | None) -> None:
         self._status = status
         self._state.status = status
