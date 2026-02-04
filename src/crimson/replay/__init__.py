@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
+from .recorder import ReplayRecorder
 from .types import (
     FIRE_DOWN_FLAG,
     FIRE_PRESSED_FLAG,
@@ -22,6 +23,7 @@ __all__ = [
     "Replay",
     "ReplayCodecError",
     "ReplayHeader",
+    "ReplayRecorder",
     "ReplayStatusSnapshot",
     "UnknownEvent",
     "dump_replay",
@@ -31,4 +33,3 @@ __all__ = [
     "pack_input_flags",
     "unpack_input_flags",
 ]
-
