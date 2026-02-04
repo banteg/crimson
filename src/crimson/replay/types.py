@@ -13,12 +13,9 @@ InputQuantization: TypeAlias = Literal["raw", "f32"]
 
 
 def _default_game_version() -> str:
-    try:
-        from importlib.metadata import version
+    from .. import __version__
 
-        return str(version("crimsonland"))
-    except Exception:
-        return ""
+    return str(__version__)
 
 
 def pack_input_flags(*, fire_down: bool, fire_pressed: bool, reload_pressed: bool) -> int:
