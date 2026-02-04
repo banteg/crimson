@@ -507,33 +507,41 @@ def cmd_replay(
     debug_sidecar.parent.mkdir(parents=True, exist_ok=True)
     debug_fp = debug_sidecar.open("w", encoding="utf-8")
 
-    def emit_debug(*, phase: str, tick: int, frame: object, actions: list[object]) -> None:
-        if debug_fp is None:
-            return
+    def _debug_base(*, tick: int, frame: object) -> dict:
         perk_state = session.world.state.perk_selection
-        payload = {
-            "phase": phase,
+        return {
             "tick": int(tick),
             "dt": float(getattr(frame, "dt", 0.0)),
             "rng_state": int(session.world.state.rng.state),
             "pending_count": int(perk_state.pending_count),
             "choices": list(perk_state.choices),
+            "choices_dirty": bool(perk_state.choices_dirty),
             "score_xp": int(session.world.players[0].experience) if session.world.players else 0,
             "level": int(session.world.players[0].level) if session.world.players else 0,
             "kill_count": int(session.world.creatures.kill_count),
-            "actions": [
-                {
-                    "type": int(a.action_type),
-                    "player": int(a.player_index),
-                    "u16": int(a.payload_u16),
-                    "f32": float(a.payload_f32),
-                }
-                for a in actions
-            ],
         }
+
+    def emit_frame(*, tick: int, frame: object) -> None:
+        payload = _debug_base(tick=tick, frame=frame)
+        payload["action"] = "frame"
+        print(json.dumps(payload, sort_keys=True), file=debug_fp, flush=True)
+
+    def emit_debug(*, phase: str, tick: int, frame: object, actions: list[object]) -> None:
+        payload = _debug_base(tick=tick, frame=frame)
+        payload["phase"] = phase
+        payload["actions"] = [
+            {
+                "type": int(a.action_type),
+                "player": int(a.player_index),
+                "u16": int(a.payload_u16),
+                "f32": float(a.payload_f32),
+            }
+            for a in actions
+        ]
         print(json.dumps(payload, sort_keys=True), file=debug_fp, flush=True)
 
     for tick, frame in enumerate(demo.frames):
+        emit_frame(tick=tick, frame=frame)
         actions = actions_by_tick.get(int(tick), [])
         if actions:
             emit_debug(phase="before_actions", tick=tick, frame=frame, actions=actions)
