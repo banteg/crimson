@@ -22,7 +22,9 @@ class PlayerDamageable(Protocol):
     pos_x: float
     pos_y: float
     health: float
+    shield_timer: float
     size: float
+    perk_counts: list[int]
 
 
 class _RngLike(Protocol):
@@ -807,9 +809,7 @@ class ProjectilePool:
             barrel_idx = int(PerkId.BARREL_GREASER)
             ion_idx = int(PerkId.ION_GUN_MASTER)
             for player in players:
-                perk_counts = getattr(player, "perk_counts", None)
-                if not isinstance(perk_counts, list):
-                    continue
+                perk_counts = player.perk_counts
 
                 if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:
                     barrel_greaser_active = True
@@ -832,9 +832,7 @@ class ProjectilePool:
                 return False
             if not (0 <= player_index < len(players)):
                 return False
-            perk_counts = getattr(players[player_index], "perk_counts", None)
-            if not isinstance(perk_counts, list):
-                return False
+            perk_counts = players[player_index].perk_counts
             return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
 
         if damage_scale_by_type is None:
@@ -973,16 +971,17 @@ class ProjectilePool:
                             type_id = proj.type_id
                             hit_x = float(proj.pos_x)
                             hit_y = float(proj.pos_y)
-                            player = players[int(hit_player_idx)] if players is not None else None
-                            target_x = float(getattr(player, "pos_x", hit_x) if player is not None else hit_x)
-                            target_y = float(getattr(player, "pos_y", hit_y) if player is not None else hit_y)
+                            assert players is not None
+                            player = players[int(hit_player_idx)]
+                            target_x = float(player.pos_x)
+                            target_y = float(player.pos_y)
                             hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
                                 apply_player_damage(int(hit_player_idx), 10.0)
-                            elif player is not None:
-                                if float(getattr(player, "shield_timer", 0.0) or 0.0) <= 0.0:
+                            else:
+                                if float(player.shield_timer) <= 0.0:
                                     player.health -= 10.0
 
                             break
