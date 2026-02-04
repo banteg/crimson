@@ -502,10 +502,10 @@ def cmd_replay(
         perk_progression_enabled=header.flag(FLAG_PERK_PROGRESSION),
     )
 
-    debug_fp = None
-    if debug_sidecar is not None:
-        debug_sidecar.parent.mkdir(parents=True, exist_ok=True)
-        debug_fp = debug_sidecar.open("w", encoding="utf-8")
+    if debug_sidecar is None:
+        debug_sidecar = demo_path.with_suffix(".replay.jsonl")
+    debug_sidecar.parent.mkdir(parents=True, exist_ok=True)
+    debug_fp = debug_sidecar.open("w", encoding="utf-8")
 
     def emit_debug(*, phase: str, tick: int, frame: object, actions: list[object]) -> None:
         if debug_fp is None:
