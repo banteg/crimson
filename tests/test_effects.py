@@ -2,8 +2,24 @@ from __future__ import annotations
 
 import math
 
+from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
+
+
+class _SequenceRng:
+    def __init__(self, values: list[int]) -> None:
+        self._values = [int(value) for value in values]
+        self._idx = 0
+
+    def rand(self) -> int:
+        if not self._values:
+            return 0
+        if self._idx >= len(self._values):
+            return int(self._values[-1])
+        value = int(self._values[self._idx])
+        self._idx += 1
+        return value
 
 
 def test_effect_src_rect_uses_grid_and_frame() -> None:
@@ -95,6 +111,50 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     pool.update(1.0)
     assert p2.active
     assert math.isclose(p2.intensity, 0.89, abs_tol=1e-9)
+
+
+def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
+    # Rng consumption order:
+    # - spawn_particle: spin
+    # - update: random-walk jitter
+    # - hit: speed_scale
+    # - hit: sprite_vel_x, sprite_vel_y
+    # - fx_queue.add_random: gray, w, rotation, effect_id
+    rng = _SequenceRng([0, 50, 7, 0, 0, 0, 0, 0, 0])
+    pool = ParticlePool(size=1, rand=rng.rand)
+    fx_queue = FxQueue(capacity=1, max_count=1)
+    sprite_effects = SpriteEffectPool(size=1, rand=lambda: 0)
+
+    particle_id = pool.spawn_particle(pos_x=0.0, pos_y=0.0, angle=0.0, intensity=1.0, owner_id=-1)
+    particle = pool.entries[particle_id]
+
+    creature = CreatureState()
+    creature.active = True
+    creature.hp = 100.0
+    creature.x = 0.0
+    creature.y = 0.0
+    creature.size = 50.0
+    creature.hitbox_size = 16.0
+
+    dt = 0.016
+    pool.update(dt, creatures=[creature], fx_queue=fx_queue, sprite_effects=sprite_effects)
+
+    assert particle.render_flag is False
+    assert fx_queue.count == 1
+    assert sprite_effects.entries[0].active
+    assert math.isclose(sprite_effects.entries[0].color_a, 0.7, abs_tol=1e-9)
+
+    deflect_step = math.tau * 0.2
+    assert math.isclose(float(particle.angle), deflect_step, abs_tol=1e-6)
+
+    speed_scale = 0.7
+    expected_vel_x = math.cos(deflect_step) * 82.0 * speed_scale
+    expected_vel_y = math.sin(deflect_step) * 82.0 * speed_scale
+    assert math.isclose(float(particle.vel_x), expected_vel_x, abs_tol=1e-6)
+    assert math.isclose(float(particle.vel_y), expected_vel_y, abs_tol=1e-6)
+
+    assert math.isclose(float(creature.x), expected_vel_x * dt, abs_tol=1e-6)
+    assert math.isclose(float(creature.y), expected_vel_y * dt, abs_tol=1e-6)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
