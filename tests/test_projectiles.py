@@ -64,7 +64,7 @@ def test_projectile_pool_update_moves_by_projectile_meta() -> None:
 
     assert proj.active
     assert proj.life_timer == 0.4
-    assert math.isclose(proj.pos_x, 30.0, abs_tol=1e-9)
+    assert math.isclose(proj.pos_x, 90.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_applies_distance_scaled_damage() -> None:

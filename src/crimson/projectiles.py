@@ -589,16 +589,24 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
     plasma_meta = float(plasma_entry.projectile_meta) if plasma_entry and plasma_entry.projectile_meta is not None else hit.proj.base_damage
 
-    for ring_idx in range(12):
-        ring_angle = float(ring_idx) * (math.pi / 6.0)
-        ctx.pool.spawn(
-            pos_x=hit.proj.pos_x + math.cos(ring_angle) * ring_radius,
-            pos_y=hit.proj.pos_y + math.sin(ring_angle) * ring_radius,
-            angle=ring_angle,
-            type_id=ProjectileTypeId.PLASMA_RIFLE,
-            owner_id=-100,
-            base_damage=plasma_meta,
-        )
+    runtime_state = ctx.runtime_state
+    set_guard = runtime_state is not None and hasattr(runtime_state, "bonus_spawn_guard")
+    if set_guard:
+        setattr(runtime_state, "bonus_spawn_guard", True)
+    try:
+        for ring_idx in range(12):
+            ring_angle = float(ring_idx) * (math.pi / 6.0)
+            ctx.pool.spawn(
+                pos_x=hit.proj.pos_x + math.cos(ring_angle) * ring_radius,
+                pos_y=hit.proj.pos_y + math.sin(ring_angle) * ring_radius,
+                angle=ring_angle,
+                type_id=ProjectileTypeId.PLASMA_RIFLE,
+                owner_id=-100,
+                base_damage=plasma_meta,
+            )
+    finally:
+        if set_guard:
+            setattr(runtime_state, "bonus_spawn_guard", False)
 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
@@ -711,6 +719,9 @@ class ProjectilePool:
         entry.reserved = 0.0
         entry.speed_scale = 1.0
         entry.base_damage = float(base_damage)
+        weapon_entry = weapon_entry_for_projectile_type_id(entry.type_id)
+        if weapon_entry is not None and weapon_entry.projectile_meta is not None:
+            entry.base_damage = float(weapon_entry.projectile_meta)
         entry.owner_id = int(owner_id)
         entry.hits_players = bool(hits_players)
 
@@ -946,27 +957,12 @@ class ProjectilePool:
                             target_y = float(getattr(player, "pos_y", hit_y) if player is not None else hit_y)
                             hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
 
-                            if proj.life_timer != 0.25 and type_id not in (
-                                ProjectileTypeId.FIRE_BULLETS,
-                                ProjectileTypeId.GAUSS_GUN,
-                                ProjectileTypeId.BLADE_GUN,
-                            ):
-                                proj.life_timer = 0.25
-                                jitter = rng() & 3
-                                proj.pos_x += dir_x * float(jitter)
-                                proj.pos_y += dir_y * float(jitter)
-
-                            dist = math.hypot(proj.origin_x - proj.pos_x, proj.origin_y - proj.pos_y)
-                            if dist < 50.0:
-                                dist = 50.0
-
-                            damage_scale = _damage_scale(type_id)
-                            damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
-                            if damage_amount > 0.0:
-                                if apply_player_damage is not None:
-                                    apply_player_damage(int(hit_player_idx), float(damage_amount))
-                                elif players is not None:
-                                    players[int(hit_player_idx)].health -= float(damage_amount)
+                            proj.life_timer = 0.25
+                            if apply_player_damage is not None:
+                                apply_player_damage(int(hit_player_idx), 10.0)
+                            elif player is not None:
+                                if float(getattr(player, "shield_timer", 0.0) or 0.0) <= 0.0:
+                                    player.health -= 10.0
 
                             break
 
