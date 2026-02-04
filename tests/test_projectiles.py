@@ -396,6 +396,22 @@ def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> No
     assert abs(entry.vel_x) > 0.0
 
 
+def test_secondary_projectile_pool_type2_uses_hint_for_initial_target() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=2, target_hint_x=1000.0, target_hint_y=0.0)
+    creatures = [
+        _Creature(x=100.0, y=0.0, hp=100.0),
+        _Creature(x=1000.0, y=0.0, hp=100.0),
+    ]
+
+    pool.update_pulse_gun(0.01, creatures)
+    entry = pool.entries[0]
+    assert entry.active
+    assert entry.type_id == 2
+    assert entry.target_id == 1
+    assert entry.target_hint_active is False
+
+
 def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     state = GameplayState()
     fx_queue = FxQueue()
@@ -418,3 +434,113 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     pool.update_pulse_gun(0.5, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
     assert not entry.active
     assert any(int(fx_entry.effect_id) == 0x10 for fx_entry in fx_queue.iter_active())
+
+
+def test_secondary_projectile_pool_detonation_radius_does_not_pad_creature_radius() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=3, time_to_live=1.0)
+
+    # dt=0.25 => t=0.75 => radius = 1.0 * 0.75 * 80 = 60.
+    # Keep the creature just outside the raw radius; old code padded by creature radius.
+    creatures = [_Creature(x=70.0, y=0.0, hp=100.0)]
+    pool.update_pulse_gun(0.25, creatures)
+    assert math.isclose(creatures[0].hp, 100.0, abs_tol=1e-9)
+
+
+def test_secondary_projectile_pool_detonation_sets_camera_shake_pulses() -> None:
+    state = GameplayState()
+
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=3, time_to_live=1.0)
+    pool.update_pulse_gun(0.01, [], runtime_state=state)
+
+    assert state.camera_shake_pulses == 4
+
+
+def test_secondary_projectile_pool_direct_hit_passes_impulse() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=1, time_to_live=2.0)
+    creatures = [_Creature(x=0.0, y=-9.0, hp=1000.0)]
+
+    calls: list[tuple[float, float]] = []
+
+    def _apply(idx: int, damage: float, damage_type: int, impulse_x: float, impulse_y: float, owner_id: int) -> None:
+        calls.append((float(impulse_x), float(impulse_y)))
+
+    pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)
+
+    assert len(calls) == 1
+    impulse_x, impulse_y = calls[0]
+    assert abs(impulse_x) < 1e-6
+    assert math.isclose(impulse_y, -1170.0, abs_tol=1e-6)
+
+
+def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=3, time_to_live=1.0)
+    creatures = [_Creature(x=3.0, y=4.0, hp=1000.0)]
+
+    calls: list[tuple[float, float]] = []
+
+    def _apply(idx: int, damage: float, damage_type: int, impulse_x: float, impulse_y: float, owner_id: int) -> None:
+        calls.append((float(impulse_x), float(impulse_y)))
+
+    pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)
+
+    assert len(calls) == 1
+    impulse_x, impulse_y = calls[0]
+    assert math.isclose(impulse_x, 0.06, abs_tol=1e-9)
+    assert math.isclose(impulse_y, 0.08, abs_tol=1e-9)
+
+
+def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> None:
+    class _FixedRng:
+        def rand(self) -> int:
+            return 0
+
+    class _Bonuses:
+        freeze: float = 1.0
+
+    class _Effects:
+        def __init__(self) -> None:
+            self.calls: list[tuple[float, float]] = []
+
+        def spawn_freeze_shard(self, *, pos_x: float, pos_y: float, angle: float, rand, detail_preset: int) -> None:  # noqa: ANN001
+            self.calls.append((float(pos_x), float(pos_y)))
+
+    @dataclass(slots=True)
+    class _SpriteEntry:
+        color_a: float = 0.0
+
+    class _Sprites:
+        def __init__(self) -> None:
+            self.entries: list[_SpriteEntry] = []
+
+        def spawn(self, *, pos_x: float, pos_y: float, vel_x: float, vel_y: float, scale: float) -> int:
+            self.entries.append(_SpriteEntry())
+            return len(self.entries) - 1
+
+    class _RuntimeState:
+        def __init__(self) -> None:
+            self.rng = _FixedRng()
+            self.bonuses = _Bonuses()
+            self.effects = _Effects()
+            self.sprite_effects = _Sprites()
+            self.sfx_queue: list[str] = []
+
+    runtime = _RuntimeState()
+
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos_x=0.0, pos_y=0.0, angle=0.0, type_id=4)
+    pool.entries[0].trail_timer = 1.0
+
+    creatures = [_Creature(x=0.0, y=-4.0, hp=1000.0)]
+    pool.update_pulse_gun(0.1, creatures, runtime_state=runtime, detail_preset=5)
+
+    # Freeze bonus spawns 4 shards at impact, then 8 more on conversion.
+    assert len(runtime.effects.calls) == 12
+    assert all(math.isclose(y, -9.0, abs_tol=1e-9) for _, y in runtime.effects.calls[:4])
+    assert all(math.isclose(y, -4.0, abs_tol=1e-9) for _, y in runtime.effects.calls[4:])
+
+    # The 10-sprite burst happens regardless of freeze.
+    assert len(runtime.sprite_effects.entries) == 10
