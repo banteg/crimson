@@ -2062,7 +2062,14 @@ def player_fire_weapon(
             return 0.0013
         return 0.0015
 
-    if is_fire_bullets:
+    rocket_weapon_ids = (
+        WeaponId.ROCKET_LAUNCHER,
+        WeaponId.SEEKER_ROCKETS,
+        WeaponId.MINI_ROCKET_SWARMERS,
+        WeaponId.ROCKET_MINIGUN,
+    )
+
+    if is_fire_bullets and weapon_id not in rocket_weapon_ids:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
         meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
