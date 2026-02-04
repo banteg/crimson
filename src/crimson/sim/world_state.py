@@ -22,6 +22,7 @@ from ..gameplay import (
     survival_progression_update,
 )
 from ..perks import PerkId
+from ..player_damage import player_take_projectile_damage
 from .world_defs import CREATURE_ANIM
 
 ProjectileHit = tuple[int, float, float, float, float, float, float]
@@ -214,14 +215,7 @@ class WorldState:
             idx = int(player_index)
             if not (0 <= idx < len(self.players)):
                 return
-            if float(damage) <= 0.0:
-                return
-            if self.state.debug_god_mode:
-                return
-            player = self.players[idx]
-            if float(player.shield_timer) > 0.0:
-                return
-            player.health -= float(damage)
+            player_take_projectile_damage(self.state, self.players[idx], float(damage))
 
         creature_result = self.creatures.update(
             dt,
