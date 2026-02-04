@@ -2765,7 +2765,7 @@ def bonus_apply(
     if amount is None:
         amount = int(meta.default_amount or 0)
 
-    economist_multiplier = 1.0 + 0.5 * float(perk_count_get(player, PerkId.BONUS_ECONOMIST))
+    economist_multiplier = 1.5 if perk_count_get(player, PerkId.BONUS_ECONOMIST) != 0 else 1.0
     icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
     label = meta.name
     ctx = _BonusApplyCtx(
