@@ -121,9 +121,17 @@ def _quest_attempt_counter_index(level: str) -> int | None:
 def _quest_level_label(level: str) -> str:
     try:
         tier_text, quest_text = level.split(".", 1)
-        return f"{int(tier_text)}-{int(quest_text)}"
+        major = int(tier_text)
+        minor = int(quest_text)
     except Exception:
-        return level.replace(".", "-", 1)
+        return str(level)
+
+    # Match `ui_render_hud` (0x0041bf94): quest minor can temporarily exceed 10
+    # (e.g. after incrementing), and the HUD carries it into the major.
+    while minor > 10:
+        major += 1
+        minor -= 10
+    return f"{major}.{minor}"
 
 
 class QuestMode(BaseGameplayMode):
