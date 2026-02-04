@@ -1302,16 +1302,24 @@ class SecondaryProjectilePool:
         if dt <= 0.0:
             return
 
-        def _apply_damage_to_creature(creature_index: int, damage: float, *, owner_id: int) -> None:
-            if damage <= 0.0:
-                return
-            idx = int(creature_index)
-            if not (0 <= idx < len(creatures)):
-                return
-            if apply_creature_damage is not None:
-                apply_creature_damage(idx, float(damage), 3, 0.0, 0.0, int(owner_id))
-            else:
-                creatures[idx].hp -= float(damage)
+        def _apply_secondary_damage(
+            creature_index: int,
+            damage: float,
+            *,
+            owner_id: int,
+            impulse_x: float = 0.0,
+            impulse_y: float = 0.0,
+        ) -> None:
+            _apply_damage_to_creature(
+                creatures,
+                int(creature_index),
+                float(damage),
+                damage_type=3,
+                impulse_x=float(impulse_x),
+                impulse_y=float(impulse_y),
+                owner_id=int(owner_id),
+                apply_creature_damage=apply_creature_damage,
+            )
 
         rand = _rng_zero
         freeze_active = False
@@ -1331,6 +1339,9 @@ class SecondaryProjectilePool:
 
             if entry.type_id == 3:
                 # Detonation: `vel_x` becomes the expansion timer (0..1) and `vel_y` the scale.
+                if runtime_state is not None and hasattr(runtime_state, "camera_shake_pulses"):
+                    setattr(runtime_state, "camera_shake_pulses", 4)
+
                 entry.vel_x += dt * 3.0
                 t = float(entry.vel_x)
                 scale = float(entry.vel_y)
@@ -1348,14 +1359,30 @@ class SecondaryProjectilePool:
                     entry.active = False
 
                 radius = scale * t * 80.0
+                radius_sq = radius * radius
                 damage = dt * scale * 700.0
                 for creature_idx, creature in enumerate(creatures):
                     if creature.hp <= 0.0:
                         continue
-                    creature_radius = _hit_radius_for(creature)
-                    hit_r = radius + creature_radius
-                    if distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
-                        _apply_damage_to_creature(creature_idx, damage, owner_id=int(entry.owner_id))
+                    d_sq = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                    if d_sq < radius_sq:
+                        dx = float(creature.x) - float(entry.pos_x)
+                        dy = float(creature.y) - float(entry.pos_y)
+                        dist = math.hypot(dx, dy)
+                        if dist > 1e-6:
+                            inv = 0.1 / dist
+                            impulse_x = dx * inv
+                            impulse_y = dy * inv
+                        else:
+                            impulse_x = 0.0
+                            impulse_y = 0.0
+                        _apply_secondary_damage(
+                            creature_idx,
+                            damage,
+                            owner_id=int(entry.owner_id),
+                            impulse_x=impulse_x,
+                            impulse_y=impulse_y,
+                        )
                 continue
 
             if entry.type_id not in (1, 2, 4):
@@ -1457,7 +1484,13 @@ class SecondaryProjectilePool:
                     damage = entry.speed * 20.0 + 80.0
                 elif entry.type_id == 4:
                     damage = entry.speed * 20.0 + 40.0
-                _apply_damage_to_creature(hit_idx, damage, owner_id=int(entry.owner_id))
+                _apply_secondary_damage(
+                    hit_idx,
+                    damage,
+                    owner_id=int(entry.owner_id),
+                    impulse_x=float(entry.vel_x) / float(dt),
+                    impulse_y=float(entry.vel_y) / float(dt),
+                )
 
                 det_scale = 0.5
                 if entry.type_id == 1:
