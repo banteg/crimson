@@ -24,10 +24,9 @@ from ...ui.perk_menu import (
     menu_item_hit_rect,
     perk_menu_compute_layout,
     perk_menu_panel_slide_x,
-    ui_origin,
-    ui_scale,
     wrap_ui_text,
 )
+from ...ui.layout import ui_origin, ui_scale
 
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
