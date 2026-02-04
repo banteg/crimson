@@ -77,9 +77,8 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
-    if ctx.attacker is None or not perk_active(ctx.attacker, PerkId.ION_GUN_MASTER):
-        return
-    ctx.damage *= 1.2
+    if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in ctx.players):
+        ctx.damage *= 1.2
 
 
 def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
@@ -97,6 +96,9 @@ _CREATURE_DAMAGE_ATTACKER_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] 
         _damage_type1_doctor,
         _damage_type1_heading_jitter,
     ),
+}
+
+_CREATURE_DAMAGE_GLOBAL_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
     7: (_damage_type7_ion_gun_master,),
 }
 
@@ -145,6 +147,9 @@ def creature_apply_damage(
         rand=rand,
         attacker=attacker,
     )
+
+    for step in _CREATURE_DAMAGE_GLOBAL_PRE_STEPS.get(ctx.damage_type, ()):
+        step(ctx)
 
     if attacker is not None:
         for step in _CREATURE_DAMAGE_ATTACKER_PRE_STEPS.get(ctx.damage_type, ()):

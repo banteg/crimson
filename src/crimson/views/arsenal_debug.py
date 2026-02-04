@@ -315,11 +315,6 @@ class ArsenalDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        try:
-            self._small = load_small_font(self._assets_root, self._missing_assets)
-        except Exception:
-            self._small = None
-
         bootstrap = init_view_audio(self._assets_root)
         self._world.config = bootstrap.config
         self._console = bootstrap.console
@@ -327,6 +322,11 @@ class ArsenalDebugView:
         self._audio_rng = bootstrap.audio_rng
         self._world.audio = self._audio
         self._world.audio_rng = self._audio_rng
+
+        try:
+            self._small = load_small_font(self._assets_root, self._missing_assets)
+        except Exception:
+            self._small = None
 
         self._world.open()
         self._aim_texture = self._world._load_texture(

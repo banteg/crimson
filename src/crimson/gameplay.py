@@ -2572,6 +2572,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
         base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_RIFLE)),
     )
     ctx.state.bonus_spawn_guard = False
+    ctx.state.sfx_queue.append("sfx_shock_hit_01")
 
 
 def _bonus_apply_weapon(ctx: _BonusApplyCtx) -> None:

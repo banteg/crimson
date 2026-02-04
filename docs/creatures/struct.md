@@ -79,7 +79,7 @@ Field map (medium confidence):
 | `0x08` | state flag | `creature_state_flag` | set to `1` in spawners and during AI transitions; exact meaning TBD. |
 | `0x09` | collision flag | `creature_collision_flag` | set when two creatures are within 45 units; drives periodic contact damage ticks. |
 | `0x0c` | collision timer | `creature_collision_timer` | decremented when collision flag is set; when it wraps, applies damage. |
-| `0x10` | hitbox size | `creature_hitbox_size` | set to `16.0` on spawn; used as a sentinel in contact-damage logic. |
+| `0x10` | hitbox size | `creature_hitbox_size` | set to `16.0` on spawn; used as a sentinel in contact-damage logic and as an AoE eligibility gate (`creatures_apply_radius_damage`: `hitbox_size > 5.0`). |
 | `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
 | `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
 | `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `vec2_add_inplace` (`FUN_0041e400`). |

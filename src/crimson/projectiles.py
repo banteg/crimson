@@ -422,7 +422,9 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 40.0
     radius = ctx.ion_scale * 60.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if creature.hp <= 0.0:
+        if not bool(getattr(creature, "active", True)):
+            continue
+        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -444,7 +446,9 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 100.0
     radius = ctx.ion_scale * 88.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if creature.hp <= 0.0:
+        if not bool(getattr(creature, "active", True)):
+            continue
+        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -466,7 +470,9 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 300.0
     radius = ctx.ion_scale * 128.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if creature.hp <= 0.0:
+        if not bool(getattr(creature, "active", True)):
+            continue
+        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -524,8 +530,54 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
 
 
 def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
-    if ctx.runtime_state is not None and getattr(ctx.runtime_state, "shock_chain_projectile_id", -1) == hit.proj_index:
-        hit.proj.reserved = float(int(hit.hit_idx) + 1)
+    runtime_state = ctx.runtime_state
+    creatures = ctx.creatures
+    hit_creature = int(hit.hit_idx)
+    if (
+        runtime_state is not None
+        and getattr(runtime_state, "shock_chain_projectile_id", -1) == hit.proj_index
+        and 0 <= hit_creature < len(creatures)
+    ):
+        links_left = int(getattr(runtime_state, "shock_chain_links_left", 0) or 0)
+        if links_left > 0 and creatures:
+            setattr(runtime_state, "shock_chain_links_left", links_left - 1)
+
+            origin_x = float(hit.proj.pos_x)
+            origin_y = float(hit.proj.pos_y)
+            min_dist_sq = 100.0 * 100.0
+
+            best_idx = 0
+            best_dist_sq = 1e12
+            for creature_id, creature in enumerate(creatures):
+                if creature_id == hit_creature:
+                    continue
+                if not bool(getattr(creature, "active", True)):
+                    continue
+                d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
+                if d_sq <= min_dist_sq:
+                    continue
+                if d_sq < best_dist_sq:
+                    best_dist_sq = d_sq
+                    best_idx = creature_id
+
+            origin = creatures[hit_creature]
+            target = creatures[best_idx]
+            angle = math.atan2(target.y - origin.y, target.x - origin.x) + math.pi / 2.0
+
+            set_guard = hasattr(runtime_state, "bonus_spawn_guard")
+            if set_guard:
+                setattr(runtime_state, "bonus_spawn_guard", True)
+            proj_id = ctx.pool.spawn(
+                pos_x=origin_x,
+                pos_y=origin_y,
+                angle=angle,
+                type_id=int(hit.proj.type_id),
+                owner_id=hit_creature,
+                base_damage=hit.proj.base_damage,
+            )
+            if set_guard:
+                setattr(runtime_state, "bonus_spawn_guard", False)
+            setattr(runtime_state, "shock_chain_projectile_id", proj_id)
     _post_hit_ion_common(ctx, hit)
 
 
@@ -798,55 +850,6 @@ class ProjectilePool:
             setattr(runtime_state, "shock_chain_projectile_id", -1)
             setattr(runtime_state, "shock_chain_links_left", 0)
 
-        def _try_spawn_shock_chain_link(index: int, hit_creature: int) -> None:
-            if runtime_state is None:
-                return
-            if getattr(runtime_state, "shock_chain_projectile_id", -1) != index:
-                return
-            links_left = int(getattr(runtime_state, "shock_chain_links_left", 0) or 0)
-            if links_left <= 0:
-                return
-            if not (0 <= hit_creature < len(creatures)):
-                return
-
-            origin = creatures[hit_creature]
-            best_idx = -1
-            best_dist = 0.0
-            max_dist = 100.0
-            for creature_id, creature in enumerate(creatures):
-                if creature_id == hit_creature:
-                    continue
-                if creature.hp <= 0.0:
-                    continue
-                d = distance_sq(origin.x, origin.y, creature.x, creature.y)
-                if d > max_dist * max_dist:
-                    continue
-                if best_idx == -1 or d < best_dist:
-                    best_idx = creature_id
-                    best_dist = d
-
-            setattr(runtime_state, "shock_chain_links_left", links_left - 1)
-            if best_idx == -1:
-                return
-
-            target = creatures[best_idx]
-            angle = math.atan2(target.y - origin.y, target.x - origin.x) + math.pi / 2.0
-
-            set_guard = hasattr(runtime_state, "bonus_spawn_guard")
-            if set_guard:
-                setattr(runtime_state, "bonus_spawn_guard", True)
-            proj_id = self.spawn(
-                pos_x=proj.pos_x,
-                pos_y=proj.pos_y,
-                angle=angle,
-                type_id=int(proj.type_id),
-                owner_id=hit_creature,
-                base_damage=proj.base_damage,
-            )
-            if set_guard:
-                setattr(runtime_state, "bonus_spawn_guard", False)
-            setattr(runtime_state, "shock_chain_projectile_id", proj_id)
-
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
@@ -856,12 +859,6 @@ class ProjectilePool:
                 _reset_shock_chain_if_owner(proj_index)
                 proj.active = False
                 continue
-
-            if runtime_state is not None and getattr(runtime_state, "shock_chain_projectile_id", -1) == proj_index:
-                pending_hit = int(getattr(proj, "reserved", 0.0) or 0.0)
-                if pending_hit > 0:
-                    proj.reserved = 0.0
-                    _try_spawn_shock_chain_link(proj_index, pending_hit - 1)
 
             if proj.life_timer < 0.4:
                 behavior.linger(ctx, proj)
