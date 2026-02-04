@@ -539,17 +539,12 @@ class DemoView:
 
     def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
         x, y = self._wrap_pos(x, y)
-        detail_preset = 5
-        if self._world.config is not None:
-            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
         self._world.creatures.spawn_template(
             int(spawn_id),
             (x, y),
             float(heading),
             self._spawn_rng,
             rand=self._spawn_rng.rand,
-            state=self._world.state,
-            detail_preset=detail_preset,
         )
 
     def _setup_variant_0(self) -> None:

@@ -602,9 +602,6 @@ class QuestMode(BaseGameplayMode):
         self._quest.spawn_timeline_ms = float(timeline_ms)
         self._quest.no_creatures_timer_ms = float(no_creatures_timer_ms)
 
-        detail_preset = 5
-        if self._world.config is not None:
-            detail_preset = int(self._world.config.data.get("detail_preset", 5) or 5)
         for call in spawns:
             self._creatures.spawn_template(
                 int(call.template_id),
@@ -612,8 +609,6 @@ class QuestMode(BaseGameplayMode):
                 float(call.heading),
                 self._state.rng,
                 rand=self._state.rng.rand,
-                state=self._state,
-                detail_preset=detail_preset,
             )
 
         completion_ms, completed = tick_quest_completion_transition(
