@@ -24,6 +24,8 @@ class _Creature:
     y: float
     hp: float
     size: float = 50.0
+    active: bool = True
+    hitbox_size: float = 16.0
 
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:
