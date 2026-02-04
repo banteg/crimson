@@ -7,6 +7,7 @@ import random
 import pyray as rl
 
 from grim.audio import AudioState, shutdown_audio
+from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.math import clamp
 from grim.view import View, ViewContext

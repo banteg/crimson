@@ -15,7 +15,6 @@ import pyray as rl
 
 from grim.audio import (
     AudioState,
-    play_music,
     play_sfx,
     stop_music,
     update_audio,
@@ -131,7 +130,6 @@ from .frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_Y,
 )
 from .frontend.menu import (
-    MENU_PANEL_HEIGHT,
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -144,7 +142,6 @@ from .frontend.menu import (
     MENU_SIGN_POS_Y_SMALL,
     MENU_SIGN_WIDTH,
     UI_SHADOW_OFFSET,
-    UI_SHADOW_TINT,
     MenuView,
     _draw_menu_cursor,
     ensure_menu_ground,

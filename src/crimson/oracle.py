@@ -8,14 +8,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .gameplay import GameplayState, PlayerInput, PlayerState
-from .creatures.runtime import CreaturePool
-from .bonuses import BonusId
+from .gameplay import PlayerInput, PlayerState
 from .sim.world_state import WorldState
 
 

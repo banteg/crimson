@@ -124,7 +124,6 @@ class SmallFontDebugView:
         rl.draw_text("smallWhite atlas", margin, header_y, 20, UI_TEXT_COLOR)
         atlas_y = header_y + 28
         rl.draw_texture(self._small.texture, margin, atlas_y, rl.WHITE)
-        atlas_bottom = atlas_y + self._small.texture.height
 
         right_x = margin + self._small.texture.width + gap
         rl.draw_text("perk menu render", right_x, header_y, 20, UI_TEXT_COLOR)

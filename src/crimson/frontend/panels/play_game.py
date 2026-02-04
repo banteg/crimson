@@ -14,7 +14,6 @@ from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, butt
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
-    MENU_LABEL_WIDTH,
     MENU_PANEL_WIDTH,
     MenuView,
 )
@@ -443,8 +442,6 @@ class PlayGameMenuView(PanelMenuView):
             return
         labels_tex = assets.labels
         layout = self._content_layout()
-        panel_left = layout["panel_left"]
-        panel_top = layout["panel_top"]
         base_x = layout["base_x"]
         base_y = layout["base_y"]
         drop_x = layout["drop_x"]

@@ -10,8 +10,7 @@ from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.math import clamp
 
-from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
-from .menu_panel import draw_classic_menu_panel
+from .layout import menu_widescreen_y_shift
 
 # Perk selection screen panel uses ui_element-style timeline animation:
 # - fully hidden until end_ms

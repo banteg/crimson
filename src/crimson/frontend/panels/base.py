@@ -32,7 +32,6 @@ from ..menu import (
     MENU_SIGN_POS_Y_SMALL,
     MENU_SIGN_WIDTH,
     UI_SHADOW_OFFSET,
-    UI_SHADOW_TINT,
     MenuEntry,
     MenuView,
     _draw_menu_cursor,
