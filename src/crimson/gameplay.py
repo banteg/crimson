@@ -10,7 +10,14 @@ from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
 from .perks import PerkFlags, PerkId, PERK_BY_ID, PERK_TABLE
-from .projectiles import CreatureDamageApplier, Damageable, ProjectilePool, ProjectileTypeId, SecondaryProjectilePool
+from .projectiles import (
+    CreatureDamageApplier,
+    Damageable,
+    ProjectilePool,
+    ProjectileTypeId,
+    SecondaryProjectilePool,
+    SecondaryProjectileTypeId,
+)
 from .weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
@@ -2085,14 +2092,20 @@ def player_fire_weapon(
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
         # Rocket Launcher -> secondary type 1.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner_id=owner_id,
+        )
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
         state.secondary_projectiles.spawn(
             pos_x=muzzle_x,
             pos_y=muzzle_y,
             angle=shot_angle,
-            type_id=2,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
             owner_id=owner_id,
             target_hint_x=float(aim_x),
             target_hint_y=float(aim_y),
@@ -2107,7 +2120,7 @@ def player_fire_weapon(
                 pos_x=muzzle_x,
                 pos_y=muzzle_y,
                 angle=angle,
-                type_id=2,
+                type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
                 owner_id=owner_id,
                 target_hint_x=float(aim_x),
                 target_hint_y=float(aim_y),
@@ -2117,7 +2130,13 @@ def player_fire_weapon(
         shot_count = rocket_count
     elif weapon_id == WeaponId.ROCKET_MINIGUN:
         # Rocket Minigun -> secondary type 4.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
+            owner_id=owner_id,
+        )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
         state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
