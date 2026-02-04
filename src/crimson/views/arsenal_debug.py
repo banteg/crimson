@@ -57,11 +57,11 @@ DEFAULT_SPAWN_IDS = (
 
 SPECIAL_PROJECTILES: dict[int, str] = {
     9: "particle style 0 (plasma rifle)",
-    13: "secondary type 1 (seeker rockets)",
+    13: "secondary type 2 (seeker rockets)",
     14: "secondary type 2 (plasma shotgun)",
     16: "particle style 1 (hr flamer)",
-    17: "particle style 2 (mini-rocket swarmers)",
-    18: "secondary type 2 (rocket minigun)",
+    17: "secondary type 2 (mini-rocket swarmers)",
+    18: "secondary type 4 (rocket minigun)",
     19: "secondary type 4 (pulse gun)",
     43: "particle style 8 (rainbow gun)",
 }
