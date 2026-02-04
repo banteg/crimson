@@ -25,6 +25,26 @@ class PlayerDamageable(Protocol):
     size: float
 
 
+class _RngLike(Protocol):
+    def rand(self) -> int: ...
+
+
+class _BonusesLike(Protocol):
+    freeze: float
+
+
+class ProjectileRuntimeState(Protocol):
+    bonus_spawn_guard: bool
+    effects: object
+    sprite_effects: object
+    rng: _RngLike
+    bonuses: _BonusesLike
+    sfx_queue: list[str]
+    shots_hit: list[int]
+    shock_chain_links_left: int
+    shock_chain_projectile_id: int
+
+
 class FxQueueLike(Protocol):
     def add(
         self,
@@ -359,7 +379,7 @@ class _ProjectileUpdateCtx:
     ion_scale: float
     detail_preset: int
     rng: Callable[[], int]
-    runtime_state: object | None
+    runtime_state: ProjectileRuntimeState | None
     effects: object | None
     sfx_queue: object | None
     apply_creature_damage: CreatureDamageApplier | None
@@ -535,12 +555,12 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
     hit_creature = int(hit.hit_idx)
     if (
         runtime_state is not None
-        and getattr(runtime_state, "shock_chain_projectile_id", -1) == hit.proj_index
+        and runtime_state.shock_chain_projectile_id == hit.proj_index
         and 0 <= hit_creature < len(creatures)
     ):
-        links_left = int(getattr(runtime_state, "shock_chain_links_left", 0) or 0)
+        links_left = int(runtime_state.shock_chain_links_left)
         if links_left > 0 and creatures:
-            setattr(runtime_state, "shock_chain_links_left", links_left - 1)
+            runtime_state.shock_chain_links_left = links_left - 1
 
             origin_x = float(hit.proj.pos_x)
             origin_y = float(hit.proj.pos_y)
@@ -564,20 +584,20 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             target = creatures[best_idx]
             angle = math.atan2(target.y - origin.y, target.x - origin.x) + math.pi / 2.0
 
-            set_guard = hasattr(runtime_state, "bonus_spawn_guard")
-            if set_guard:
-                setattr(runtime_state, "bonus_spawn_guard", True)
-            proj_id = ctx.pool.spawn(
-                pos_x=origin_x,
-                pos_y=origin_y,
-                angle=angle,
-                type_id=int(hit.proj.type_id),
-                owner_id=hit_creature,
-                base_damage=hit.proj.base_damage,
-            )
-            if set_guard:
-                setattr(runtime_state, "bonus_spawn_guard", False)
-            setattr(runtime_state, "shock_chain_projectile_id", proj_id)
+            prev_guard = bool(runtime_state.bonus_spawn_guard)
+            runtime_state.bonus_spawn_guard = True
+            try:
+                proj_id = ctx.pool.spawn(
+                    pos_x=origin_x,
+                    pos_y=origin_y,
+                    angle=angle,
+                    type_id=int(hit.proj.type_id),
+                    owner_id=hit_creature,
+                    base_damage=hit.proj.base_damage,
+                )
+            finally:
+                runtime_state.bonus_spawn_guard = prev_guard
+            runtime_state.shock_chain_projectile_id = proj_id
     _post_hit_ion_common(ctx, hit)
 
 
@@ -590,9 +610,10 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     plasma_meta = float(plasma_entry.projectile_meta) if plasma_entry and plasma_entry.projectile_meta is not None else hit.proj.base_damage
 
     runtime_state = ctx.runtime_state
-    set_guard = runtime_state is not None and hasattr(runtime_state, "bonus_spawn_guard")
-    if set_guard:
-        setattr(runtime_state, "bonus_spawn_guard", True)
+    prev_guard = False
+    if runtime_state is not None:
+        prev_guard = bool(runtime_state.bonus_spawn_guard)
+        runtime_state.bonus_spawn_guard = True
     try:
         for ring_idx in range(12):
             ring_angle = float(ring_idx) * (math.pi / 6.0)
@@ -605,8 +626,8 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 base_damage=plasma_meta,
             )
     finally:
-        if set_guard:
-            setattr(runtime_state, "bonus_spawn_guard", False)
+        if runtime_state is not None:
+            runtime_state.bonus_spawn_guard = prev_guard
 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
@@ -763,7 +784,7 @@ class ProjectilePool:
         ion_aoe_scale: float = 1.0,
         detail_preset: int = 5,
         rng: Callable[[], int] | None = None,
-        runtime_state: object | None = None,
+        runtime_state: ProjectileRuntimeState | None = None,
         players: list[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
@@ -825,8 +846,8 @@ class ProjectilePool:
         effects = None
         sfx_queue = None
         if runtime_state is not None:
-            effects = getattr(runtime_state, "effects", None)
-            sfx_queue = getattr(runtime_state, "sfx_queue", None)
+            effects = runtime_state.effects
+            sfx_queue = runtime_state.sfx_queue
 
         hits: list[tuple[int, float, float, float, float, float, float]] = []
         margin = 64.0
@@ -856,10 +877,10 @@ class ProjectilePool:
         def _reset_shock_chain_if_owner(index: int) -> None:
             if runtime_state is None:
                 return
-            if getattr(runtime_state, "shock_chain_projectile_id", -1) != index:
+            if runtime_state.shock_chain_projectile_id != index:
                 return
-            setattr(runtime_state, "shock_chain_projectile_id", -1)
-            setattr(runtime_state, "shock_chain_links_left", 0)
+            runtime_state.shock_chain_projectile_id = -1
+            runtime_state.shock_chain_links_left = 0
 
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
@@ -985,10 +1006,10 @@ class ProjectilePool:
                     if behavior.pre_hit_creature is not None:
                         behavior.pre_hit_creature(ctx, proj, int(hit_idx))
 
-                    shots_hit = getattr(runtime_state, "shots_hit", None) if runtime_state is not None else None
-                    if isinstance(shots_hit, list):
+                    if runtime_state is not None:
                         owner_id = int(proj.owner_id)
                         if owner_id < 0 and owner_id != -100:
+                            shots_hit = runtime_state.shots_hit
                             player_index = -1 - owner_id
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
@@ -1244,7 +1265,7 @@ class SecondaryProjectilePool:
         creatures: list[Damageable],
         *,
         apply_creature_damage: CreatureDamageApplier | None = None,
-        runtime_state: object | None = None,
+        runtime_state: ProjectileRuntimeState | None = None,
         fx_queue: FxQueueLike | None = None,
         detail_preset: int = 5,
     ) -> None:
@@ -1270,17 +1291,11 @@ class SecondaryProjectilePool:
         sprite_effects = None
         sfx_queue = None
         if runtime_state is not None:
-            rng = getattr(runtime_state, "rng", None)
-            if rng is not None:
-                rand = getattr(rng, "rand", _rng_zero)
-
-            bonuses = getattr(runtime_state, "bonuses", None)
-            if bonuses is not None and float(getattr(bonuses, "freeze", 0.0)) > 0.0:
-                freeze_active = True
-
-            effects = getattr(runtime_state, "effects", None)
-            sprite_effects = getattr(runtime_state, "sprite_effects", None)
-            sfx_queue = getattr(runtime_state, "sfx_queue", None)
+            rand = runtime_state.rng.rand
+            freeze_active = float(runtime_state.bonuses.freeze) > 0.0
+            effects = runtime_state.effects
+            sprite_effects = runtime_state.sprite_effects
+            sfx_queue = runtime_state.sfx_queue
 
         for entry in self._entries:
             if not entry.active:

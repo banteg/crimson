@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pytest
 
 from crimson.creatures.runtime import CreatureState
-from crimson.effects import EffectPool
+from crimson.gameplay import GameplayState
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, x=0.0, y=0.0, size=50.0)
-    runtime_state = SimpleNamespace(effects=EffectPool(), sfx_queue=[])
+    runtime_state = GameplayState()
 
     pool.spawn(
         pos_x=0.0,
@@ -45,7 +43,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
 def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, x=0.0, y=0.0, size=50.0)
-    runtime_state = SimpleNamespace(effects=EffectPool(), sfx_queue=[])
+    runtime_state = GameplayState()
 
     pool.spawn(
         pos_x=0.0,
