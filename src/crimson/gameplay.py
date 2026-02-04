@@ -1343,6 +1343,39 @@ def perk_selection_pick(
     return perk_id
 
 
+def perk_selection_pick_by_id(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+    perk_id: PerkId | int,
+    *,
+    game_mode: int,
+    player_count: int | None = None,
+    dt: float | None = None,
+    creatures: list[_CreatureForPerks] | None = None,
+) -> PerkId | None:
+    """Pick and apply a perk by id, resolving the current choice list first."""
+
+    try:
+        target = PerkId(int(perk_id))
+    except Exception:
+        return None
+    choices = perk_selection_current_choices(state, players, perk_state, game_mode=game_mode, player_count=player_count)
+    for idx, cand in enumerate(choices):
+        if int(cand) == int(target):
+            return perk_selection_pick(
+                state,
+                players,
+                perk_state,
+                idx,
+                game_mode=game_mode,
+                player_count=player_count,
+                dt=dt,
+                creatures=creatures,
+            )
+    return None
+
+
 def survival_progression_update(
     state: GameplayState,
     players: list[PlayerState],

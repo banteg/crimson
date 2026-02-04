@@ -440,6 +440,115 @@ def cmd_oracle(
     run_headless(config)
 
 
+@app.command("replay")
+def cmd_replay(
+    demo_path: Path = typer.Argument(..., help="path to a .crdemo file"),
+    stop_on_game_over: bool = typer.Option(True, help="stop once all players are dead"),
+    dump_fingerprints: bool = typer.Option(False, "--fingerprints", help="emit per-tick fingerprint JSONL"),
+) -> None:
+    """Replay a deterministic demo in headless mode and print the resulting score record."""
+    import json
+
+    from .game_modes import GameMode
+    from .gameplay import perk_selection_pick_by_id
+    from .modes.components.highscore_record_builder import build_highscore_record_for_game_over
+    from .perks import PerkId
+    from .replay.crdemo import (
+        ActionType,
+        FLAG_AUTO_PICK_PERKS,
+        FLAG_DEMO_MODE_ACTIVE,
+        FLAG_HARDCORE,
+        FLAG_PERK_PROGRESSION,
+        FLAG_PRESERVE_BUGS,
+        DemoError,
+        load,
+        iter_actions_by_tick,
+    )
+    from .sim.fingerprint import fingerprint_world_state
+    from .sim.session import SurvivalSession
+
+    demo = load(demo_path)
+    header = demo.header
+    if int(header.game_mode) != int(GameMode.SURVIVAL):
+        raise typer.BadParameter("only Survival demos are supported right now")
+
+    actions_by_tick = iter_actions_by_tick(demo.actions)
+
+    status_blob = header.status_blob if header.status_blob else None
+    session = SurvivalSession.build(
+        world_size=float(header.world_size),
+        player_count=int(header.player_count),
+        player_inits=[(p.pos_x, p.pos_y, p.weapon_id) for p in header.player_inits],
+        rng_state=int(header.rng_state),
+        status_blob=status_blob,
+        demo_mode_active=header.flag(FLAG_DEMO_MODE_ACTIVE),
+        hardcore=header.flag(FLAG_HARDCORE),
+        difficulty_level=int(header.difficulty_level),
+        preserve_bugs=header.flag(FLAG_PRESERVE_BUGS),
+        detail_preset=int(header.detail_preset),
+        fx_toggle=int(header.fx_toggle),
+        auto_pick_perks=header.flag(FLAG_AUTO_PICK_PERKS),
+        perk_progression_enabled=header.flag(FLAG_PERK_PROGRESSION),
+    )
+
+    for tick, frame in enumerate(demo.frames):
+        for action in actions_by_tick.get(int(tick), []):
+            if int(action.action_type) != int(ActionType.PERK_PICK):
+                raise DemoError(f"unsupported action type: {action.action_type}")
+            if not (0 <= int(action.player_index) < len(session.world.players)):
+                raise DemoError(f"invalid player index: {action.player_index}")
+            perk = PerkId(int(action.payload_u16))
+            picked = perk_selection_pick_by_id(
+                session.world.state,
+                session.world.players,
+                session.world.state.perk_selection,
+                perk,
+                game_mode=int(GameMode.SURVIVAL),
+                player_count=len(session.world.players),
+                dt=float(action.payload_f32),
+                creatures=session.world.creatures.entries,
+            )
+            if picked is None:
+                raise DemoError(f"perk pick failed at tick {tick}: {perk!s}")
+
+        session.step(float(frame.dt), inputs=list(frame.inputs))
+
+        if dump_fingerprints:
+            fp = fingerprint_world_state(session.world)
+            payload = {
+                "tick": int(tick),
+                "fingerprint": f"0x{fp:016x}",
+                "rng_state": f"0x{int(session.world.state.rng.state):08x}",
+                "score_xp": int(session.world.players[0].experience) if session.world.players else 0,
+                "kills": int(session.world.creatures.kill_count),
+            }
+            print(json.dumps(payload, sort_keys=True), flush=True)
+
+        if stop_on_game_over and session.is_game_over():
+            break
+
+    if not session.world.players:
+        raise DemoError("demo ended with no players")
+
+    record = build_highscore_record_for_game_over(
+        state=session.world.state,
+        player=session.world.players[0],
+        survival_elapsed_ms=int(session.state.elapsed_ms),
+        creature_kill_count=int(session.world.creatures.kill_count),
+        game_mode_id=int(GameMode.SURVIVAL),
+    )
+    out = {
+        "game_mode_id": int(record.game_mode_id),
+        "score_xp": int(record.score_xp),
+        "survival_elapsed_ms": int(record.survival_elapsed_ms),
+        "creature_kill_count": int(record.creature_kill_count),
+        "most_used_weapon_id": int(record.most_used_weapon_id),
+        "shots_fired": int(record.shots_fired),
+        "shots_hit": int(record.shots_hit),
+    }
+    typer.echo(json.dumps(out, sort_keys=True))
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
