@@ -21,10 +21,9 @@ from ..ui.perk_menu import (
     load_perk_menu_assets,
     menu_item_hit_rect,
     perk_menu_compute_layout,
-    ui_origin,
-    ui_scale,
     wrap_ui_text,
 )
+from ..ui.layout import ui_origin, ui_scale
 from .registry import register_view
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
