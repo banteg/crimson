@@ -224,6 +224,11 @@ def cmd_game(
         None,
         help="assets root (default: base-dir; missing .paq files are downloaded)",
     ),
+    record_demo: Path | None = typer.Option(
+        None,
+        "--record-demo",
+        help="write gameplay demo (.crdemo) and debug sidecars to this file or directory",
+    ),
 ) -> None:
     """Run the reimplementation game flow (default command)."""
     if ctx.invoked_subcommand:
@@ -241,6 +246,7 @@ def cmd_game(
         no_intro=no_intro,
         debug=debug,
         preserve_bugs=bool(preserve_bugs),
+        demo_record_path=record_demo,
     )
     run_game(config)
 

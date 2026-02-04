@@ -81,6 +81,7 @@ class SurvivalMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        demo_record_path: "Path | None" = None,
     ) -> None:
         super().__init__(
             ctx,
@@ -105,7 +106,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu_assets = None
         self._cursor_time = 0.0
         self._demo_recorder = None
-        self._demo_record_path = None
+        self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
         self._demo_debug_full = False
@@ -178,7 +179,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._demo_recorder = None
-        self._demo_record_path = None
+        self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
         self._demo_debug_full = False
@@ -337,15 +338,17 @@ class SurvivalMode(BaseGameplayMode):
         return path.with_suffix(".jsonl")
 
     def _maybe_begin_demo_recording(self) -> None:
-        raw = os.environ.get("CRIMSON_RECORD_DEMO", "").strip()
-        if not raw:
-            return
-        try:
-            from pathlib import Path
+        out_path = self._demo_record_path
+        if out_path is None:
+            raw = os.environ.get("CRIMSON_RECORD_DEMO", "").strip()
+            if not raw:
+                return
+            try:
+                from pathlib import Path
 
-            out_path = Path(raw).expanduser()
-        except Exception:
-            return
+                out_path = Path(raw).expanduser()
+            except Exception:
+                return
 
         from ..persistence.save_status import build_status_blob
         from ..replay.crdemo import DemoHeader, PlayerInit, build_header_flags

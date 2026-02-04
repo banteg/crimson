@@ -178,6 +178,7 @@ class GameConfig:
     no_intro: bool = False
     debug: bool = False
     preserve_bugs: bool = False
+    demo_record_path: Path | None = None
 
 
 @dataclass(slots=True)
@@ -198,6 +199,7 @@ class GameState:
     console: ConsoleState
     demo_enabled: bool
     preserve_bugs: bool
+    demo_record_path: Path | None
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
@@ -872,6 +874,7 @@ class SurvivalGameView:
             console=state.console,
             audio=state.audio,
             audio_rng=state.rng,
+            demo_record_path=state.demo_record_path,
         )
         self._action: str | None = None
 
@@ -3183,6 +3186,7 @@ def run_game(config: GameConfig) -> None:
             console=console,
             demo_enabled=bool(config.demo_enabled),
             preserve_bugs=bool(config.preserve_bugs),
+            demo_record_path=config.demo_record_path,
             skip_intro=bool(config.no_intro),
             logos=None,
             texture_cache=None,
