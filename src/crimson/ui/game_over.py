@@ -23,27 +23,30 @@ from ..persistence.highscores import (
 from ..weapons import WEAPON_BY_ID
 from .formatting import format_ordinal, format_time_mm_ss
 from .hud import HudAssets
-from .layout import ui_origin, ui_scale
+from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
     button_draw,
     button_update,
     button_width,
-    cursor_draw,
     draw_ui_text,
     load_perk_menu_assets,
 )
+from .cursor import draw_menu_cursor
 from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .text_input import poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
 GAME_OVER_PANEL_Y = 210.0
-GAME_OVER_PANEL_W = 512.0
-GAME_OVER_PANEL_H = 256.0
+# Matches `ui_menuPanel` layout used in classic menus.
+GAME_OVER_PANEL_W = 510.0
+GAME_OVER_PANEL_H = 254.0
 
-GAME_OVER_PANEL_OFFSET_X = 20.0
-GAME_OVER_PANEL_OFFSET_Y = -82.0
+# Measured from ui_render_trace at 1024x768 (stable timeline):
+# panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
+GAME_OVER_PANEL_OFFSET_X = 21.0
+GAME_OVER_PANEL_OFFSET_Y = -81.0
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
@@ -79,6 +82,7 @@ class GameOverAssets:
     menu_panel: rl.Texture | None
     text_reaper: rl.Texture | None
     text_well_done: rl.Texture | None
+    particles: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
     missing: list[str]
 
@@ -93,12 +97,14 @@ def load_game_over_assets(assets_root: Path) -> GameOverAssets:
         paq_rel="ui/ui_textWellDone.jaz",
         fs_rel="ui/ui_textWellDone.png",
     )
+    particles = loader.get(name="particles", paq_rel="game/particles.jaz", fs_rel="game/particles.png")
     missing: list[str] = list(perk_menu_assets.missing)
     missing.extend(loader.missing)
     return GameOverAssets(
         menu_panel=menu_panel,
         text_reaper=text_reaper,
         text_well_done=text_well_done,
+        particles=particles,
         perk_menu_assets=perk_menu_assets,
         missing=missing,
     )
@@ -139,6 +145,7 @@ class GameOverUi:
     _hover_time: float = 0.0
     _hover_hit_ratio: float = 0.0
     _intro_ms: float = 0.0
+    _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
     _close_action: str | None = None
@@ -170,6 +177,7 @@ class GameOverUi:
         self._hover_time = 0.0
         self._hover_hit_ratio = 0.0
         self._intro_ms = 0.0
+        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._closing = False
         self._close_action = None
@@ -201,14 +209,16 @@ class GameOverUi:
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
-    def _panel_layout(self, *, scale: float) -> tuple[rl.Rectangle, float, float]:
+    def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
         # Keep consistent with the main menu panel offsets.
         t = self._intro_ms / PANEL_SLIDE_DURATION_MS if PANEL_SLIDE_DURATION_MS > 1e-6 else 1.0
         eased = _ease_out_cubic(t)
         panel_slide_x = -GAME_OVER_PANEL_W * (1.0 - eased)
 
         panel_x = (GAME_OVER_PANEL_X + panel_slide_x) * scale
-        panel_y = GAME_OVER_PANEL_Y * scale
+        layout_w = screen_w / scale if scale else screen_w
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
+        panel_y = (GAME_OVER_PANEL_Y + widescreen_shift_y) * scale
         origin_x = -(GAME_OVER_PANEL_OFFSET_X * scale)
         origin_y = -(GAME_OVER_PANEL_OFFSET_Y * scale)
         left = panel_x - origin_x
@@ -234,6 +244,7 @@ class GameOverUi:
     ) -> str | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
+        self._cursor_pulse_time += self._dt * 1.1
         if mouse is None:
             mouse = rl.get_mouse_position()
         if rand is None:
@@ -304,7 +315,7 @@ class GameOverUi:
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
-            _panel, panel_left, panel_top = self._panel_layout(scale=scale)
+            _panel, panel_left, panel_top = self._panel_layout(screen_w=screen_w, scale=scale)
             banner_x = panel_left + (GAME_OVER_PANEL_W * scale - TEXTURE_TOP_BANNER_W * scale) * 0.5
             banner_y = panel_top + 40.0 * scale
             base_x = banner_x + 8.0 * scale
@@ -338,7 +349,7 @@ class GameOverUi:
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
             origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-            _panel, left, top = self._panel_layout(scale=scale)
+            _panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
             banner_x = left + (GAME_OVER_PANEL_W * scale - TEXTURE_TOP_BANNER_W * scale) * 0.5
             banner_y = top + 40.0 * scale
             score_y = banner_y + (64.0 if self.rank < TABLE_MAX else 62.0) * scale
@@ -519,7 +530,7 @@ class GameOverUi:
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
         _ = origin_x, origin_y
 
-        panel, left, top = self._panel_layout(scale=scale)
+        panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
 
         # Panel background
         if self.assets.menu_panel is not None:
@@ -627,4 +638,10 @@ class GameOverUi:
             main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
             button_draw(self.assets.perk_menu_assets, self.font, self._main_menu_button, x=button_x, y=button_y, width=main_menu_w, scale=scale)
 
-        cursor_draw(self.assets.perk_menu_assets, mouse=mouse, scale=scale)
+        draw_menu_cursor(
+            self.assets.particles,
+            self.assets.perk_menu_assets.cursor,
+            x=float(mouse.x),
+            y=float(mouse.y),
+            pulse_time=float(self._cursor_pulse_time),
+        )
