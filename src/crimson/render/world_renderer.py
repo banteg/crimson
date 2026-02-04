@@ -1192,8 +1192,8 @@ class WorldRenderer:
                         )
             poison_src: rl.Rectangle | None = None
             if particles_texture is not None:
-                # Native uses `effect_select_texture(0x10)` for creature overlays (monster vision,
-                # shadow, poison aura). Using 0x12 here renders a shell casing sprite instead.
+                # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
+                # (monster vision, shadow, poison aura).
                 atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
                 if atlas is not None:
                     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
