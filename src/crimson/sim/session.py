@@ -7,6 +7,7 @@ from pathlib import Path
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
+from ..camera import camera_shake_update
 from ..gameplay import (
     GameplayState,
     PlayerInput,
@@ -214,6 +215,9 @@ class SurvivalSession:
             )
             self.state.spawn_cooldown = float(cooldown)
             self.world.creatures.spawn_inits(wave_spawns)
+
+        if dt_scaled > 0.0:
+            camera_shake_update(state, float(dt_scaled))
 
         self.tick += 1
         return events
