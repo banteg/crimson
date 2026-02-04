@@ -106,6 +106,7 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._demo_recorder = None
         self._demo_record_path = None
+        self._demo_debug_fp = None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -176,11 +177,18 @@ class SurvivalMode(BaseGameplayMode):
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._demo_recorder = None
         self._demo_record_path = None
+        self._demo_debug_fp = None
         self._maybe_begin_demo_recording()
 
     def close(self) -> None:
         if self._perk_menu_assets is not None:
             self._perk_menu_assets = None
+        if self._demo_debug_fp is not None:
+            try:
+                self._demo_debug_fp.close()
+            except Exception:
+                pass
+            self._demo_debug_fp = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -297,6 +305,24 @@ class SurvivalMode(BaseGameplayMode):
         stamp = int(time.time())
         return path / f"survival_{stamp}.crdemo"
 
+    def _demo_debug_out_path(self, demo_path: "Path") -> "Path | None":
+        raw = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG", "").strip()
+        if not raw:
+            return None
+        if raw.lower() in {"1", "true", "yes", "auto"}:
+            return demo_path.with_suffix(".debug.jsonl")
+        try:
+            from pathlib import Path
+
+            path = Path(raw).expanduser()
+        except Exception:
+            return None
+        if path.exists() and path.is_dir():
+            return path / f"{demo_path.stem}.debug.jsonl"
+        if path.suffix.lower() == ".jsonl":
+            return path
+        return path.with_suffix(".jsonl")
+
     def _maybe_begin_demo_recording(self) -> None:
         raw = os.environ.get("CRIMSON_RECORD_DEMO", "").strip()
         if not raw:
@@ -349,7 +375,27 @@ class SurvivalMode(BaseGameplayMode):
             player_inits=player_inits,
         )
         self._demo_record_path = out_path
+        demo_out_path = self._demo_out_path()
+        if demo_out_path is None:
+            return
+        debug_path = self._demo_debug_out_path(demo_out_path)
+        if debug_path is not None:
+            try:
+                debug_path.parent.mkdir(parents=True, exist_ok=True)
+                self._demo_debug_fp = debug_path.open("w", encoding="utf-8")
+            except Exception:
+                self._demo_debug_fp = None
         self._demo_recorder = DemoRecorder(header=header)
+
+    def _demo_debug_write(self, payload: dict) -> None:
+        if self._demo_debug_fp is None:
+            return
+        try:
+            import json
+
+            print(json.dumps(payload, sort_keys=True), file=self._demo_debug_fp, flush=True)
+        except Exception:
+            pass
 
     def _on_demo_perk_pick(self, perk_id: "PerkId", dt_frame: float) -> None:
         recorder = self._demo_recorder
@@ -357,6 +403,18 @@ class SurvivalMode(BaseGameplayMode):
             return
         try:
             recorder.record_perk_pick(player_index=0, perk_id=perk_id, dt=float(dt_frame))
+            perk_state = self._state.perk_selection
+            self._demo_debug_write(
+                {
+                    "action": "perk_pick",
+                    "tick": int(recorder.tick()),
+                    "dt": float(dt_frame),
+                    "perk_id": int(perk_id),
+                    "rng_state": int(self._state.rng.state),
+                    "pending_count": int(perk_state.pending_count),
+                    "choices": list(perk_state.choices),
+                }
+            )
         except Exception:
             pass
 
@@ -366,6 +424,17 @@ class SurvivalMode(BaseGameplayMode):
             return
         try:
             recorder.record_perk_menu_open(player_index=0, dt=float(dt_frame))
+            perk_state = self._state.perk_selection
+            self._demo_debug_write(
+                {
+                    "action": "perk_menu_open",
+                    "tick": int(recorder.tick()),
+                    "dt": float(dt_frame),
+                    "rng_state": int(self._state.rng.state),
+                    "pending_count": int(perk_state.pending_count),
+                    "choices": list(perk_state.choices),
+                }
+            )
         except Exception:
             pass
 
@@ -392,6 +461,12 @@ class SurvivalMode(BaseGameplayMode):
                 except Exception:
                     pass
             self._demo_recorder = None
+        if self._demo_debug_fp is not None:
+            try:
+                self._demo_debug_fp.close()
+            except Exception:
+                pass
+            self._demo_debug_fp = None
 
     def _perk_prompt_label(self) -> str:
         if self._config is not None and not bool(int(self._config.data.get("ui_info_texts", 1) or 0)):
