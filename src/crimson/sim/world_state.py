@@ -344,6 +344,8 @@ class WorldState:
             creatures=self.creatures.entries,
             apply_creature_damage=_apply_projectile_damage_to_creature,
             kill_creature=_kill_creature_no_corpse,
+            fx_queue=fx_queue,
+            sprite_effects=self.state.sprite_effects,
         )
         self.state.sprite_effects.update(dt)
 
