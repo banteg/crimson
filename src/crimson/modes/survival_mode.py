@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 import random
 
 import pyray as rl
@@ -179,10 +178,9 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._demo_recorder = None
-        self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
-        self._demo_debug_full = demo_record_path is not None
+        self._demo_debug_full = self._demo_record_path is not None
         self._maybe_begin_demo_recording()
 
     def close(self) -> None:
@@ -320,37 +318,14 @@ class SurvivalMode(BaseGameplayMode):
         return resolved
 
     def _demo_debug_out_path(self, demo_path: "Path") -> "Path | None":
-        if self._demo_record_path is not None:
-            return demo_path.with_suffix(".debug.jsonl")
-        raw = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG", "").strip()
-        if not raw:
+        if self._demo_record_path is None:
             return None
-        if raw.lower() in {"1", "true", "yes", "auto"}:
-            return demo_path.with_suffix(".debug.jsonl")
-        try:
-            from pathlib import Path
-
-            path = Path(raw).expanduser()
-        except Exception:
-            return None
-        if path.exists() and path.is_dir():
-            return path / f"{demo_path.stem}.debug.jsonl"
-        if path.suffix.lower() == ".jsonl":
-            return path
-        return path.with_suffix(".jsonl")
+        return demo_path.with_suffix(".debug.jsonl")
 
     def _maybe_begin_demo_recording(self) -> None:
         out_path = self._demo_record_path
         if out_path is None:
-            raw = os.environ.get("CRIMSON_RECORD_DEMO", "").strip()
-            if not raw:
-                return
-            try:
-                from pathlib import Path
-
-                out_path = Path(raw).expanduser()
-            except Exception:
-                return
+            return
 
         from ..persistence.save_status import build_status_blob
         from ..replay.crdemo import DemoHeader, PlayerInit, build_header_flags
