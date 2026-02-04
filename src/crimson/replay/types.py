@@ -12,6 +12,15 @@ RELOAD_PRESSED_FLAG = 1 << 2
 InputQuantization: TypeAlias = Literal["raw", "f32"]
 
 
+def _default_game_version() -> str:
+    try:
+        from importlib.metadata import version
+
+        return str(version("crimsonland"))
+    except Exception:
+        return ""
+
+
 def pack_input_flags(*, fire_down: bool, fire_pressed: bool, reload_pressed: bool) -> int:
     flags = 0
     if fire_down:
@@ -46,6 +55,7 @@ class ReplayStatusSnapshot:
 class ReplayHeader:
     game_mode_id: int
     seed: int
+    game_version: str = field(default_factory=_default_game_version)
     tick_rate: int = 60
     difficulty_level: int = 0
     hardcore: bool = False
@@ -79,4 +89,3 @@ class Replay:
     header: ReplayHeader
     inputs: list[PackedTickInputs]
     events: list[ReplayEvent] = field(default_factory=list)
-

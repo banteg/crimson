@@ -48,12 +48,18 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
         quest_unlock_index=int(status_in.get("quest_unlock_index", 0)),
         quest_unlock_index_full=int(status_in.get("quest_unlock_index_full", 0)),
     )
+    game_version = data.get("game_version")
+    if game_version is None:
+        game_version_str = ""
+    else:
+        game_version_str = str(game_version)
     input_quant = data.get("input_quantization", "raw")
     if input_quant not in ("raw", "f32"):
         raise ReplayCodecError(f"unknown input_quantization: {input_quant!r}")
     return ReplayHeader(
         game_mode_id=int(data["game_mode_id"]),
         seed=int(data["seed"]),
+        game_version=game_version_str,
         tick_rate=int(data.get("tick_rate", 60)),
         difficulty_level=int(data.get("difficulty_level", 0)),
         hardcore=bool(data.get("hardcore", False)),
@@ -199,4 +205,3 @@ def dump_replay_file(path: Path, replay: Replay) -> None:
 def load_replay_file(path: Path) -> Replay:
     path = Path(path)
     return load_replay(path.read_bytes())
-
