@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import io
 from pathlib import Path
-import struct
 from typing import Final, Iterable
+
+from construct import Array, Byte, Bytes, Const, ConstructError, ConstError, Float32l, Int16sl, Int16ul, Int32ul
+from construct import Padding, StreamError, Struct, Terminated, TerminatedError
 
 from ..gameplay import PlayerInput
 
@@ -25,11 +28,57 @@ class ActionType:
     PERK_PICK = 1
 
 
-_BASE_HEADER_V1 = struct.Struct("<H H B B h f I B B H I I I")
-_PLAYER_INIT_V1 = struct.Struct("<f f B B H")
-_INPUT_V1 = struct.Struct("<f f f f B B H")
-_FRAME_PREFIX_V1 = struct.Struct("<f")
-_ACTION_V1 = struct.Struct("<I B B H f I")
+_MAGIC = Const(MAGIC)
+
+_BASE_HEADER_V1 = Struct(
+    "version" / Int16ul,
+    "flags" / Int16ul,
+    "game_mode" / Byte,
+    "player_count" / Byte,
+    "difficulty_level" / Int16sl,
+    "world_size" / Float32l,
+    "rng_state" / Int32ul,
+    "detail_preset" / Byte,
+    "fx_toggle" / Byte,
+    Padding(2),
+    "status_blob_len" / Int32ul,
+    "frame_count" / Int32ul,
+    "action_count" / Int32ul,
+)
+
+_PLAYER_INIT_V1 = Struct(
+    "pos_x" / Float32l,
+    "pos_y" / Float32l,
+    "weapon_id" / Byte,
+    Padding(1),
+    Padding(2),
+)
+
+_INPUT_V1 = Struct(
+    "move_x" / Float32l,
+    "move_y" / Float32l,
+    "aim_x" / Float32l,
+    "aim_y" / Float32l,
+    "buttons" / Byte,
+    Padding(1),
+    Padding(2),
+)
+
+_ACTION_V1 = Struct(
+    "tick" / Int32ul,
+    "action_type" / Byte,
+    "player_index" / Byte,
+    "payload_u16" / Int16ul,
+    "payload_f32" / Float32l,
+    Padding(4),
+)
+
+
+def _frame_v1(player_count: int) -> Struct:
+    return Struct(
+        "dt" / Float32l,
+        "inputs" / Array(int(player_count), _INPUT_V1),
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,111 +127,98 @@ class Demo:
     actions: tuple[DemoAction, ...] = ()
 
 
-def _read_exact(buf: memoryview, offset: int, size: int) -> tuple[memoryview, int]:
-    end = offset + size
-    if end > len(buf):
-        raise DemoError("unexpected EOF")
-    return buf[offset:end], end
-
-
 def loads(data: bytes) -> Demo:
-    buf = memoryview(data)
-    offset = 0
+    stream = io.BytesIO(data)
 
-    magic, offset = _read_exact(buf, offset, len(MAGIC))
-    if bytes(magic) != MAGIC:
-        raise DemoError("invalid magic")
+    try:
+        _MAGIC.parse_stream(stream)
+    except StreamError as exc:
+        raise DemoError("unexpected EOF") from exc
+    except ConstError as exc:
+        raise DemoError("invalid magic") from exc
 
-    header_raw, offset = _read_exact(buf, offset, _BASE_HEADER_V1.size)
-    (
-        version,
-        flags,
-        game_mode,
-        player_count,
-        difficulty_level,
-        world_size,
-        rng_state,
-        detail_preset,
-        fx_toggle,
-        _reserved,
-        status_blob_len,
-        frame_count,
-        action_count,
-    ) = _BASE_HEADER_V1.unpack(header_raw)
+    try:
+        header_raw = _BASE_HEADER_V1.parse_stream(stream)
+    except ConstructError as exc:
+        raise DemoError("unexpected EOF") from exc
 
-    if int(version) != VERSION:
+    version = int(header_raw["version"])
+    if version != VERSION:
         raise DemoError(f"unsupported demo version: {version}")
 
-    player_count = int(player_count)
+    player_count = int(header_raw["player_count"])
     if not (1 <= player_count <= 4):
         raise DemoError(f"unsupported player_count: {player_count}")
 
-    status_blob = b""
-    if int(status_blob_len) > 0:
-        blob_raw, offset = _read_exact(buf, offset, int(status_blob_len))
-        status_blob = bytes(blob_raw)
+    try:
+        status_blob_len = int(header_raw["status_blob_len"])
+        status_blob = b"" if status_blob_len <= 0 else bytes(Bytes(status_blob_len).parse_stream(stream))
 
-    player_inits: list[PlayerInit] = []
-    for _ in range(player_count):
-        init_raw, offset = _read_exact(buf, offset, _PLAYER_INIT_V1.size)
-        pos_x, pos_y, weapon_id, _pad8, _pad16 = _PLAYER_INIT_V1.unpack(init_raw)
-        _ = _pad8, _pad16
-        player_inits.append(PlayerInit(pos_x=float(pos_x), pos_y=float(pos_y), weapon_id=int(weapon_id)))
+        player_inits_raw = Array(player_count, _PLAYER_INIT_V1).parse_stream(stream)
+
+        frames_raw = Array(int(header_raw["frame_count"]), _frame_v1(player_count)).parse_stream(stream)
+        actions_raw = Array(int(header_raw["action_count"]), _ACTION_V1).parse_stream(stream)
+
+        Terminated.parse_stream(stream)
+    except StreamError as exc:
+        raise DemoError("unexpected EOF") from exc
+    except TerminatedError as exc:
+        raise DemoError("trailing data") from exc
+    except ConstructError as exc:
+        raise DemoError(str(exc)) from exc
+
+    player_inits = tuple(
+        PlayerInit(
+            pos_x=float(entry["pos_x"]),
+            pos_y=float(entry["pos_y"]),
+            weapon_id=int(entry["weapon_id"]),
+        )
+        for entry in player_inits_raw
+    )
 
     frames: list[DemoFrame] = []
-    for _ in range(int(frame_count)):
-        dt_raw, offset = _read_exact(buf, offset, _FRAME_PREFIX_V1.size)
-        (dt,) = _FRAME_PREFIX_V1.unpack(dt_raw)
+    for frame in frames_raw:
         inputs: list[PlayerInput] = []
-        for _p in range(player_count):
-            inp_raw, offset = _read_exact(buf, offset, _INPUT_V1.size)
-            move_x, move_y, aim_x, aim_y, buttons, _pad8, _pad16 = _INPUT_V1.unpack(inp_raw)
-            _ = _pad8, _pad16
-            buttons = int(buttons)
+        for inp in frame["inputs"]:
+            buttons = int(inp["buttons"])
             inputs.append(
                 PlayerInput(
-                    move_x=float(move_x),
-                    move_y=float(move_y),
-                    aim_x=float(aim_x),
-                    aim_y=float(aim_y),
+                    move_x=float(inp["move_x"]),
+                    move_y=float(inp["move_y"]),
+                    aim_x=float(inp["aim_x"]),
+                    aim_y=float(inp["aim_y"]),
                     fire_down=(buttons & 0x01) != 0,
                     fire_pressed=(buttons & 0x02) != 0,
                     reload_pressed=(buttons & 0x04) != 0,
                 )
             )
-        frames.append(DemoFrame(dt=float(dt), inputs=tuple(inputs)))
+        frames.append(DemoFrame(dt=float(frame["dt"]), inputs=tuple(inputs)))
 
-    actions: list[DemoAction] = []
-    for _ in range(int(action_count)):
-        raw, offset = _read_exact(buf, offset, _ACTION_V1.size)
-        tick, action_type, player_index, payload_u16, payload_f32, _reserved_u32 = _ACTION_V1.unpack(raw)
-        _ = _reserved_u32
-        actions.append(
-            DemoAction(
-                tick=int(tick),
-                action_type=int(action_type),
-                player_index=int(player_index),
-                payload_u16=int(payload_u16),
-                payload_f32=float(payload_f32),
-            )
+    actions = tuple(
+        DemoAction(
+            tick=int(entry["tick"]),
+            action_type=int(entry["action_type"]),
+            player_index=int(entry["player_index"]),
+            payload_u16=int(entry["payload_u16"]),
+            payload_f32=float(entry["payload_f32"]),
         )
-
-    if offset != len(buf):
-        raise DemoError("trailing data")
+        for entry in actions_raw
+    )
 
     header = DemoHeader(
-        flags=int(flags),
-        game_mode=int(game_mode),
+        flags=int(header_raw["flags"]),
+        game_mode=int(header_raw["game_mode"]),
         player_count=player_count,
-        difficulty_level=int(difficulty_level),
-        world_size=float(world_size),
-        rng_state=int(rng_state),
-        detail_preset=int(detail_preset),
-        fx_toggle=int(fx_toggle),
+        difficulty_level=int(header_raw["difficulty_level"]),
+        world_size=float(header_raw["world_size"]),
+        rng_state=int(header_raw["rng_state"]),
+        detail_preset=int(header_raw["detail_preset"]),
+        fx_toggle=int(header_raw["fx_toggle"]),
         status_blob=status_blob,
-        player_inits=tuple(player_inits),
+        player_inits=player_inits,
     )
-    return Demo(header=header, frames=tuple(frames), actions=tuple(actions))
+
+    return Demo(header=header, frames=tuple(frames), actions=actions)
 
 
 def load(path: Path) -> Demo:
@@ -203,30 +239,33 @@ def dumps(demo: Demo) -> bytes:
 
     status_blob = bytes(header.status_blob or b"")
 
-    out = bytearray()
-    out += MAGIC
-    out += _BASE_HEADER_V1.pack(
-        VERSION,
-        int(header.flags),
-        int(header.game_mode),
-        player_count,
-        int(header.difficulty_level),
-        float(header.world_size),
-        int(header.rng_state) & 0xFFFF_FFFF,
-        int(header.detail_preset) & 0xFF,
-        int(header.fx_toggle) & 0xFF,
-        0,
-        len(status_blob),
-        len(frames),
-        len(actions),
-    )
-    out += status_blob
+    header_raw = {
+        "version": int(VERSION),
+        "flags": int(header.flags),
+        "game_mode": int(header.game_mode),
+        "player_count": player_count,
+        "difficulty_level": int(header.difficulty_level),
+        "world_size": float(header.world_size),
+        "rng_state": int(header.rng_state) & 0xFFFF_FFFF,
+        "detail_preset": int(header.detail_preset) & 0xFF,
+        "fx_toggle": int(header.fx_toggle) & 0xFF,
+        "status_blob_len": len(status_blob),
+        "frame_count": len(frames),
+        "action_count": len(actions),
+    }
 
-    for init in header.player_inits:
-        out += _PLAYER_INIT_V1.pack(float(init.pos_x), float(init.pos_y), int(init.weapon_id) & 0xFF, 0, 0)
+    player_inits_raw = [
+        {
+            "pos_x": float(init.pos_x),
+            "pos_y": float(init.pos_y),
+            "weapon_id": int(init.weapon_id) & 0xFF,
+        }
+        for init in header.player_inits
+    ]
 
+    frames_raw = []
     for frame in frames:
-        out += _FRAME_PREFIX_V1.pack(float(frame.dt))
+        inputs_raw = []
         for inp in frame.inputs:
             buttons = 0
             if inp.fire_down:
@@ -235,25 +274,38 @@ def dumps(demo: Demo) -> bytes:
                 buttons |= 0x02
             if inp.reload_pressed:
                 buttons |= 0x04
-            out += _INPUT_V1.pack(
-                float(inp.move_x),
-                float(inp.move_y),
-                float(inp.aim_x),
-                float(inp.aim_y),
-                buttons,
-                0,
-                0,
+            inputs_raw.append(
+                {
+                    "move_x": float(inp.move_x),
+                    "move_y": float(inp.move_y),
+                    "aim_x": float(inp.aim_x),
+                    "aim_y": float(inp.aim_y),
+                    "buttons": int(buttons) & 0xFF,
+                }
             )
+        frames_raw.append({"dt": float(frame.dt), "inputs": inputs_raw})
 
-    for action in actions:
-        out += _ACTION_V1.pack(
-            int(action.tick) & 0xFFFF_FFFF,
-            int(action.action_type) & 0xFF,
-            int(action.player_index) & 0xFF,
-            int(action.payload_u16) & 0xFFFF,
-            float(action.payload_f32),
-            0,
-        )
+    actions_raw = [
+        {
+            "tick": int(action.tick) & 0xFFFF_FFFF,
+            "action_type": int(action.action_type) & 0xFF,
+            "player_index": int(action.player_index) & 0xFF,
+            "payload_u16": int(action.payload_u16) & 0xFFFF,
+            "payload_f32": float(action.payload_f32),
+        }
+        for action in actions
+    ]
+
+    out = bytearray()
+    out += MAGIC
+    try:
+        out += _BASE_HEADER_V1.build(header_raw)
+        out += status_blob
+        out += Array(player_count, _PLAYER_INIT_V1).build(player_inits_raw)
+        out += Array(len(frames), _frame_v1(player_count)).build(frames_raw)
+        out += Array(len(actions), _ACTION_V1).build(actions_raw)
+    except ConstructError as exc:
+        raise DemoError(str(exc)) from exc
 
     return bytes(out)
 
@@ -289,4 +341,3 @@ def iter_actions_by_tick(actions: Iterable[DemoAction]) -> dict[int, list[DemoAc
     for action in actions:
         out.setdefault(int(action.tick), []).append(action)
     return out
-
