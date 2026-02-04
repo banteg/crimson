@@ -2661,31 +2661,31 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
 
     bullet_count = int(rand()) & 3
     bullet_count += 4
-    assault_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ASSAULT_RIFLE))
+    pistol_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.PISTOL))
     for _ in range(bullet_count):
         angle = float(int(rand()) % 0x274) * 0.01
         proj_id = ctx.state.projectiles.spawn(
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
+            type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
-            base_damage=assault_meta,
+            base_damage=pistol_meta,
         )
         if proj_id != -1:
             speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
             ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
-    minigun_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.MEAN_MINIGUN))
+    gauss_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.GAUSS_GUN))
     for _ in range(2):
         angle = float(int(rand()) % 0x274) * 0.01
         ctx.state.projectiles.spawn(
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.MEAN_MINIGUN),
+            type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
-            base_damage=minigun_meta,
+            base_damage=gauss_meta,
         )
 
     ctx.state.effects.spawn_explosion_burst(

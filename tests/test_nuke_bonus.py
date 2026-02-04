@@ -57,12 +57,12 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
 
     active = [entry for entry in state.projectiles.entries if entry.active]
 
-    assault = [entry for entry in active if entry.type_id == int(ProjectileTypeId.ASSAULT_RIFLE)]
-    assert len(assault) == 4
-    assert all(math.isclose(entry.base_damage, 50.0, abs_tol=1e-9) for entry in assault)
-    assert all(math.isclose(entry.speed_scale, 0.5, abs_tol=1e-9) for entry in assault)
+    pistol = [entry for entry in active if entry.type_id == int(ProjectileTypeId.PISTOL)]
+    assert len(pistol) == 4
+    assert all(math.isclose(entry.base_damage, 55.0, abs_tol=1e-9) for entry in pistol)
+    assert all(math.isclose(entry.speed_scale, 0.5, abs_tol=1e-9) for entry in pistol)
 
-    minigun = [entry for entry in active if entry.type_id == int(ProjectileTypeId.MEAN_MINIGUN)]
-    assert len(minigun) == 2
-    assert all(math.isclose(entry.base_damage, 55.0, abs_tol=1e-9) for entry in minigun)
-    assert all(math.isclose(entry.speed_scale, 1.0, abs_tol=1e-9) for entry in minigun)
+    gauss = [entry for entry in active if entry.type_id == int(ProjectileTypeId.GAUSS_GUN)]
+    assert len(gauss) == 2
+    assert all(math.isclose(entry.base_damage, 215.0, abs_tol=1e-9) for entry in gauss)
+    assert all(math.isclose(entry.speed_scale, 1.0, abs_tol=1e-9) for entry in gauss)
