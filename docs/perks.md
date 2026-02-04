@@ -903,6 +903,7 @@ Notes:
 
 - Ion blast damage multiplier: **×1.2**.
 - Ion AoE radii are scaled by **×1.2** for ion weapons.
+- The damage multiplier is global (not attacker-bound): any `damage_type == 7` damage is scaled while Ion Gun Master exists.
 
 ### Original
 
@@ -1023,4 +1024,3 @@ Notes:
 ### Rewrite
 
 - `src/crimson/gameplay.py`: `perk_apply()` (Lifeline 50-50 handler).
-
