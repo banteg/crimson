@@ -391,7 +391,16 @@ class SurvivalMode(BaseGameplayMode):
         else:
             self._hud_fade_ms = clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
-        self._survival.elapsed_ms += dt * 1000.0
+        # Match reflex boost time scaling in `GameWorld.update` so survival timers/spawns stay in sync.
+        dt_world = float(dt)
+        if dt_world > 0.0 and float(self._state.bonuses.reflex_boost) > 0.0:
+            time_scale_factor = 0.3
+            timer = float(self._state.bonuses.reflex_boost)
+            if timer < 1.0:
+                time_scale_factor = (1.0 - timer) * 0.7 + 0.3
+            dt_world = float(dt_world) * float(time_scale_factor)
+
+        self._survival.elapsed_ms += dt_world * 1000.0
 
         if dt <= 0.0:
             if not any_alive:
@@ -422,7 +431,7 @@ class SurvivalMode(BaseGameplayMode):
         # Regular wave spawns based on elapsed time.
         cooldown, wave_spawns = tick_survival_wave_spawns(
             self._survival.spawn_cooldown,
-            dt * 1000.0,
+            dt_world * 1000.0,
             self._state.rng,
             player_count=len(self._world.players),
             survival_elapsed_ms=self._survival.elapsed_ms,
