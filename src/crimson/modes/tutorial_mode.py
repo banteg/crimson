@@ -329,8 +329,6 @@ class TutorialMode(BaseGameplayMode):
                 float(call.heading),
                 self._state.rng,
                 rand=self._state.rng.rand,
-                state=self._state,
-                detail_preset=detail_preset,
             )
             if int(call.template_id) == 0x27 and primary is not None and actions.stage5_bonus_carrier_drop is not None:
                 drop_id, drop_amount = actions.stage5_bonus_carrier_drop
