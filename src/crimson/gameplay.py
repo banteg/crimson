@@ -2541,7 +2541,13 @@ def _bonus_apply_energizer(ctx: _BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.energizer)
     if old <= 0.0:
         ctx.register_global("energizer")
-    ctx.state.bonuses.energizer = float(old + float(ctx.amount) * ctx.economist_multiplier)
+
+    # Native `bonus_apply` ignores `bonus_entry.amount` for Energizer and always adds
+    # a fixed 8 seconds scaled by Bonus Economist.
+    #
+    # Ghidra (crimsonland.exe @ 0x00409890):
+    #   _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
+    ctx.state.bonuses.energizer = float(old + 8.0 * ctx.economist_multiplier)
 
 
 def _bonus_apply_weapon_power_up(ctx: _BonusApplyCtx) -> None:
