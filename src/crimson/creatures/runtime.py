@@ -20,6 +20,8 @@ from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
 from ..perks import PerkId
 from ..player_damage import player_take_damage
+from ..projectiles import ProjectileTypeId
+from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
@@ -85,6 +87,12 @@ def _owner_id_to_player_index(owner_id: int) -> int | None:
     if owner_id < 0:
         return -1 - owner_id
     return None
+
+
+def _projectile_meta_for_type_id(type_id: int) -> float:
+    entry = weapon_entry_for_projectile_type_id(int(type_id))
+    meta = entry.projectile_meta if entry is not None else None
+    return float(meta if meta is not None else 45.0)
 
 
 @dataclass(slots=True)
@@ -792,13 +800,14 @@ class CreaturePool:
                 dist = math.hypot(creature.x - player.pos_x, creature.y - player.pos_y)
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
+                        type_id = int(ProjectileTypeId.PLASMA_RIFLE)
                         state.projectiles.spawn(
                             pos_x=creature.x,
                             pos_y=creature.y,
                             angle=float(creature.heading),
-                            type_id=9,
+                            type_id=type_id,
                             owner_id=idx,
-                            base_damage=45.0,
+                            base_damage=_projectile_meta_for_type_id(type_id),
                             hits_players=True,
                         )
                         sfx.append("sfx_shock_fire")
@@ -812,7 +821,7 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=idx,
-                            base_damage=45.0,
+                            base_damage=_projectile_meta_for_type_id(projectile_type),
                             hits_players=True,
                         )
                         sfx.append("sfx_plasmaminigun_fire")
