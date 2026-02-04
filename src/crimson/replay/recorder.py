@@ -31,6 +31,17 @@ class DemoRecorder:
             )
         )
 
+    def record_perk_menu_open(self, *, player_index: int, dt: float) -> None:
+        self.actions.append(
+            DemoAction(
+                tick=int(self.tick()),
+                action_type=int(ActionType.PERK_MENU_OPEN),
+                player_index=int(player_index),
+                payload_u16=0,
+                payload_f32=float(dt),
+            )
+        )
+
     def finalize(self) -> Demo:
         player_count = int(self.header.player_count)
         if len(self.header.player_inits) != player_count:
@@ -44,4 +55,3 @@ class DemoRecorder:
         demo = self.finalize()
         path.parent.mkdir(parents=True, exist_ok=True)
         dump(demo, path)
-

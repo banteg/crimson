@@ -26,6 +26,7 @@ class DemoError(ValueError):
 
 class ActionType:
     PERK_PICK = 1
+    PERK_MENU_OPEN = 2
 
 
 _MAGIC = Const(MAGIC)

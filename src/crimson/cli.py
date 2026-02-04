@@ -450,7 +450,7 @@ def cmd_replay(
     import json
 
     from .game_modes import GameMode
-    from .gameplay import perk_selection_pick_by_id
+    from .gameplay import perk_selection_current_choices, perk_selection_pick_by_id
     from .modes.components.highscore_record_builder import build_highscore_record_for_game_over
     from .perks import PerkId
     from .replay.crdemo import (
@@ -493,7 +493,17 @@ def cmd_replay(
 
     for tick, frame in enumerate(demo.frames):
         for action in actions_by_tick.get(int(tick), []):
-            if int(action.action_type) != int(ActionType.PERK_PICK):
+            action_type = int(action.action_type)
+            if action_type == int(ActionType.PERK_MENU_OPEN):
+                perk_selection_current_choices(
+                    session.world.state,
+                    session.world.players,
+                    session.world.state.perk_selection,
+                    game_mode=int(GameMode.SURVIVAL),
+                    player_count=len(session.world.players),
+                )
+                continue
+            if action_type != int(ActionType.PERK_PICK):
                 raise DemoError(f"unsupported action type: {action.action_type}")
             if not (0 <= int(action.player_index) < len(session.world.players)):
                 raise DemoError(f"invalid player index: {action.player_index}")

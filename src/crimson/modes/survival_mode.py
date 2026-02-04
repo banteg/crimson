@@ -360,6 +360,15 @@ class SurvivalMode(BaseGameplayMode):
         except Exception:
             pass
 
+    def _on_demo_perk_menu_open(self, dt_frame: float) -> None:
+        recorder = self._demo_recorder
+        if recorder is None:
+            return
+        try:
+            recorder.record_perk_menu_open(player_index=0, dt=float(dt_frame))
+        except Exception:
+            pass
+
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
@@ -464,10 +473,14 @@ class SurvivalMode(BaseGameplayMode):
 
             if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
                 self._perk_prompt_pulse = 1000.0
-                self._perk_menu.open_if_available(perk_ctx)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened:
+                    self._on_demo_perk_menu_open(dt_frame)
             elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
                 self._perk_prompt_pulse = 1000.0
-                self._perk_menu.open_if_available(perk_ctx)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened:
+                    self._on_demo_perk_menu_open(dt_frame)
 
         if not self._paused and not self._game_over_active:
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
