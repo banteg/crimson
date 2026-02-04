@@ -2533,6 +2533,13 @@ class _BonusApplyCtx:
 _BonusApplyHandler = Callable[[_BonusApplyCtx], None]
 
 
+def _bonus_apply_seconds(ctx: _BonusApplyCtx) -> float:
+    meta = BONUS_BY_ID.get(int(ctx.bonus_id))
+    if meta is not None and meta.apply_seconds is not None:
+        return float(meta.apply_seconds)
+    return float(ctx.amount)
+
+
 def _bonus_apply_points(ctx: _BonusApplyCtx) -> None:
     # Native adds Points directly to player0 XP (no Double XP multiplier).
     amount = int(ctx.amount)
@@ -2549,12 +2556,7 @@ def _bonus_apply_energizer(ctx: _BonusApplyCtx) -> None:
     if old <= 0.0:
         ctx.register_global("energizer")
 
-    # Native `bonus_apply` ignores `bonus_entry.amount` for Energizer and always adds
-    # a fixed 8 seconds scaled by Bonus Economist.
-    #
-    # Ghidra (crimsonland.exe @ 0x00409890):
-    #   _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
-    ctx.state.bonuses.energizer = float(old + 8.0 * ctx.economist_multiplier)
+    ctx.state.bonuses.energizer = float(old + _bonus_apply_seconds(ctx) * ctx.economist_multiplier)
 
 
 def _bonus_apply_weapon_power_up(ctx: _BonusApplyCtx) -> None:
@@ -2574,8 +2576,7 @@ def _bonus_apply_double_experience(ctx: _BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.double_experience)
     if old <= 0.0:
         ctx.register_global("double_experience")
-    # Native uses a fixed +6 seconds per pickup (scaled by Bonus Economist).
-    ctx.state.bonuses.double_experience = float(old + 6.0 * ctx.economist_multiplier)
+    ctx.state.bonuses.double_experience = float(old + _bonus_apply_seconds(ctx) * ctx.economist_multiplier)
 
 
 def _bonus_apply_reflex_boost(ctx: _BonusApplyCtx) -> None:
@@ -2658,8 +2659,9 @@ def _bonus_apply_fire_bullets(ctx: _BonusApplyCtx) -> None:
         should_register = float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
     if should_register:
         ctx.register_player("fire_bullets_timer")
-    # Native uses a fixed +5 seconds per pickup (scaled by Bonus Economist).
-    ctx.player.fire_bullets_timer = float(ctx.player.fire_bullets_timer + 5.0 * ctx.economist_multiplier)
+    ctx.player.fire_bullets_timer = float(
+        ctx.player.fire_bullets_timer + _bonus_apply_seconds(ctx) * ctx.economist_multiplier
+    )
     ctx.player.weapon_reset_latch = 0
     ctx.player.shot_cooldown = 0.0
     ctx.player.reload_active = False
