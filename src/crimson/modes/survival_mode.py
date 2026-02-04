@@ -109,7 +109,7 @@ class SurvivalMode(BaseGameplayMode):
         self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
-        self._demo_debug_full = False
+        self._demo_debug_full = demo_record_path is not None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -182,7 +182,7 @@ class SurvivalMode(BaseGameplayMode):
         self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
-        self._demo_debug_full = False
+        self._demo_debug_full = demo_record_path is not None
         self._maybe_begin_demo_recording()
 
     def close(self) -> None:
@@ -320,6 +320,8 @@ class SurvivalMode(BaseGameplayMode):
         return resolved
 
     def _demo_debug_out_path(self, demo_path: "Path") -> "Path | None":
+        if self._demo_record_path is not None:
+            return demo_path.with_suffix(".debug.jsonl")
         raw = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG", "").strip()
         if not raw:
             return None
@@ -394,12 +396,6 @@ class SurvivalMode(BaseGameplayMode):
         demo_out_path = self._demo_out_path()
         if demo_out_path is None:
             return
-        self._demo_debug_full = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG_FULL", "").strip().lower() in {
-            "1",
-            "true",
-            "yes",
-            "on",
-        }
         debug_path = self._demo_debug_out_path(demo_out_path)
         if debug_path is not None:
             try:
