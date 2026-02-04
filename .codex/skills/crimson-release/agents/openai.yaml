@@ -1,0 +1,4 @@
+interface:
+  display_name: "Crimson Release"
+  short_description: "Cut a Crimson release: lint, test, tag"
+  default_prompt: "Follow the Crimson release checklist: ruff, pytest, uv version bump, uv lock, commit, tag, push. Ask before commit/tag/push."
