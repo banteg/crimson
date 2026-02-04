@@ -1090,6 +1090,7 @@ class CreaturePool:
                     creature.y,
                     int(creature.bonus_id),
                     int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                    state=state,
                     world_width=world_width,
                     world_height=world_height,
                 )

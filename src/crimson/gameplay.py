@@ -284,9 +284,12 @@ class BonusPool:
         bonus_id: int | BonusId,
         duration_override: int = -1,
         *,
+        state: "GameplayState",
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
+        if int(state.game_mode) == int(GameMode.RUSH):
+            return None
         if int(bonus_id) == 0:
             return None
         entry = self._alloc_slot()
@@ -320,6 +323,8 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
+        if int(state.game_mode) == int(GameMode.RUSH):
+            return None
         if (
             pos_x < BONUS_SPAWN_MARGIN
             or pos_y < BONUS_SPAWN_MARGIN

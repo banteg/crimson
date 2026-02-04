@@ -143,7 +143,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.POINTS))
+    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.POINTS), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -166,7 +166,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.FIREBLAST))
+    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.FIREBLAST), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)

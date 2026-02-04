@@ -134,7 +134,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
     creature.hp = 2000.0
     creature.max_hp = 2000.0
 
-    assert world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE)) is not None
+    assert world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE), state=world.state) is not None
 
     world.step(
         0.016,

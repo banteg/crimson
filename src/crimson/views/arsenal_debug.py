@@ -214,6 +214,7 @@ class ArsenalDebugView:
                 y,
                 bonus_id,
                 duration_override=int(amount_override),
+                state=self._world.state,
                 world_width=float(WORLD_SIZE),
                 world_height=float(WORLD_SIZE),
             )

@@ -309,6 +309,7 @@ class TutorialMode(BaseGameplayMode):
                 float(call.pos[1]),
                 int(call.bonus_id),
                 int(call.amount),
+                state=self._state,
                 world_width=float(self._world.world_size),
                 world_height=float(self._world.world_size),
             )
