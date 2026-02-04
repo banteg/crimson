@@ -1281,12 +1281,33 @@ class WorldRenderer:
                 if info is None:
                     continue
 
-                tint_alpha = float(creature.tint_a)
+                tint_r = float(creature.tint_r)
+                tint_g = float(creature.tint_g)
+                tint_b = float(creature.tint_b)
+                tint_a = float(creature.tint_a)
+
+                # Energizer: tint "weak" creatures blue-ish while active.
+                # Mirrors `creature_render_type` (0x00418b60) branch when
+                # `_bonus_energizer_timer > 0` and `max_health < 500`.
+                energizer_timer = float(self.state.bonuses.energizer)
+                if energizer_timer > 0.0 and float(getattr(creature, "max_hp", 0.0)) < 500.0:
+                    # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
+                    # Effect is full strength while timer >= 1 and fades out during the last second.
+                    t = energizer_timer
+                    if t >= 1.0:
+                        t = 1.0
+                    elif t < 0.0:
+                        t = 0.0
+                    inv = 1.0 - t
+                    tint_r = inv * tint_r + t * 0.5
+                    tint_g = inv * tint_g + t * 0.5
+                    tint_b = inv * tint_b + t * 1.0
+                    tint_a = inv * tint_a + t
                 if hitbox_size < 0.0:
                     # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
-                    tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
-                tint_alpha = clamp(tint_alpha * entity_alpha, 0.0, 1.0)
-                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
+                    tint_a = max(0.0, tint_a + hitbox_size * 0.1)
+                tint_a = clamp(tint_a * entity_alpha, 0.0, 1.0)
+                tint = self._color_from_rgba((tint_r, tint_g, tint_b, tint_a))
 
                 size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
                 fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
