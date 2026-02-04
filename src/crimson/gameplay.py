@@ -2088,14 +2088,30 @@ def player_fire_weapon(
         state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1, owner_id=owner_id)
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2, owner_id=owner_id)
+        state.secondary_projectiles.spawn(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=shot_angle,
+            type_id=2,
+            owner_id=owner_id,
+            target_hint_x=float(aim_x),
+            target_hint_y=float(aim_y),
+        )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
         rocket_count = max(1, int(player.ammo))
         step = float(rocket_count) * (math.pi / 3.0)
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
         for _ in range(rocket_count):
-            state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=angle, type_id=2, owner_id=owner_id)
+            state.secondary_projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=2,
+                owner_id=owner_id,
+                target_hint_x=float(aim_x),
+                target_hint_y=float(aim_y),
+            )
             angle += step
         ammo_cost = float(rocket_count)
         shot_count = rocket_count
