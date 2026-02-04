@@ -499,13 +499,8 @@ class SurvivalMode(BaseGameplayMode):
 
         self._survival.elapsed_ms += dt_world * 1000.0
 
-        if dt <= 0.0:
-            if not any_alive:
-                self._enter_game_over()
-            return
-
         input_state = self._build_input()
-        if self._demo_recorder is not None:
+        if self._demo_recorder is not None and (dt > 0.0 or self._perk_menu.open or perk_menu_active):
             try:
                 self._demo_recorder.record_frame(
                     float(dt),
@@ -513,6 +508,11 @@ class SurvivalMode(BaseGameplayMode):
                 )
             except Exception:
                 pass
+
+        if dt <= 0.0:
+            if not any_alive:
+                self._enter_game_over()
+            return
         self._world.update(
             dt,
             inputs=[input_state for _ in self._world.players],
