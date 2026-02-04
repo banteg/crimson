@@ -585,6 +585,7 @@ class SurvivalMode(BaseGameplayMode):
         self._survival.elapsed_ms += dt_world * 1000.0
 
         input_state = self._build_input()
+        demo_tick: int | None = None
         if self._demo_recorder is not None:
             try:
                 self._demo_recorder.record_frame(
@@ -592,11 +593,12 @@ class SurvivalMode(BaseGameplayMode):
                     [input_state for _ in self._world.players],
                 )
                 if self._demo_debug_full:
+                    demo_tick = int(self._demo_recorder.tick() - 1)
                     perk_state = self._state.perk_selection
                     self._demo_debug_write(
                         {
                             "action": "frame",
-                            "tick": int(self._demo_recorder.tick() - 1),
+                            "tick": int(demo_tick),
                             "dt": float(dt),
                             "rng_state": int(self._state.rng.state),
                             "pending_count": int(perk_state.pending_count),
@@ -647,6 +649,23 @@ class SurvivalMode(BaseGameplayMode):
         )
         self._survival.spawn_cooldown = cooldown
         self._creatures.spawn_inits(wave_spawns)
+
+        if self._demo_debug_full and demo_tick is not None:
+            perk_state = self._state.perk_selection
+            self._demo_debug_write(
+                {
+                    "action": "after_step",
+                    "tick": int(demo_tick),
+                    "dt": float(dt),
+                    "rng_state": int(self._state.rng.state),
+                    "pending_count": int(perk_state.pending_count),
+                    "choices": list(perk_state.choices),
+                    "choices_dirty": bool(perk_state.choices_dirty),
+                    "score_xp": int(self._player.experience),
+                    "level": int(self._player.level),
+                    "kill_count": int(self._creatures.kill_count),
+                }
+            )
 
         if not any(player.health > 0.0 for player in self._world.players):
             self._enter_game_over()

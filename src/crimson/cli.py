@@ -526,6 +526,11 @@ def cmd_replay(
         payload["action"] = "frame"
         print(json.dumps(payload, sort_keys=True), file=debug_fp, flush=True)
 
+    def emit_after_step(*, tick: int, frame: object) -> None:
+        payload = _debug_base(tick=tick, frame=frame)
+        payload["action"] = "after_step"
+        print(json.dumps(payload, sort_keys=True), file=debug_fp, flush=True)
+
     def emit_debug(*, phase: str, tick: int, frame: object, actions: list[object]) -> None:
         payload = _debug_base(tick=tick, frame=frame)
         payload["phase"] = phase
@@ -559,6 +564,7 @@ def cmd_replay(
 
         if float(frame.dt) > 0.0:
             session.step(float(frame.dt), inputs=list(frame.inputs))
+        emit_after_step(tick=tick, frame=frame)
         if actions:
             emit_debug(phase="after_step", tick=tick, frame=frame, actions=actions)
 
