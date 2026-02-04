@@ -521,7 +521,8 @@ def cmd_replay(
             if picked is None:
                 raise DemoError(f"perk pick failed at tick {tick}: {perk!s}")
 
-        session.step(float(frame.dt), inputs=list(frame.inputs))
+        if float(frame.dt) > 0.0:
+            session.step(float(frame.dt), inputs=list(frame.inputs))
 
         if dump_fingerprints:
             fp = fingerprint_world_state(session.world)
