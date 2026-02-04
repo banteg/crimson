@@ -1467,6 +1467,8 @@ class SecondaryProjectilePool:
                 if isinstance(sfx_queue, list):
                     sfx_queue.append("sfx_explosion_medium")
 
+                hit_type_id = int(entry.type_id)
+
                 damage = 150.0
                 if entry.type_id == 1:
                     damage = entry.speed * 50.0 + 500.0
@@ -1525,8 +1527,24 @@ class SecondaryProjectilePool:
                 entry.vel_y = float(det_scale)
                 entry.trail_timer = 0.0
 
-                # Extra debris and scorch decals on detonation.
-                if not freeze_active:
+                # Extra debris/scorch decals (or freeze shards) on detonation.
+                if freeze_active:
+                    if effects is not None and hasattr(effects, "spawn_freeze_shard"):
+                        shard_x = float(entry.pos_x)
+                        shard_y = float(entry.pos_y)
+                        if hit_type_id == 4:
+                            shard_x = float(creatures[hit_idx].x)
+                            shard_y = float(creatures[hit_idx].y)
+                        for _ in range(8):
+                            shard_angle = float(int(rand()) % 0x264) * 0.01
+                            effects.spawn_freeze_shard(
+                                pos_x=shard_x,
+                                pos_y=shard_y,
+                                angle=shard_angle,
+                                rand=rand,
+                                detail_preset=int(detail_preset),
+                            )
+                else:
                     extra_decals = 0
                     extra_radius = 0.0
                     if entry.type_id == 3:
@@ -1536,7 +1554,7 @@ class SecondaryProjectilePool:
                             extra_radius = 90.0
                         elif det_scale == 0.35:
                             extra_decals = 10
-                            extra_radius = 63.0
+                            extra_radius = 64.0
                         elif det_scale == 0.25:
                             extra_decals = 3
                             extra_radius = 44.0
@@ -1545,31 +1563,34 @@ class SecondaryProjectilePool:
                         cy = float(creatures[hit_idx].y)
                         for _ in range(int(extra_decals)):
                             angle = float(int(rand()) % 0x274) * 0.01
-                            radius = float(int(rand()) % max(1, int(extra_radius)))
+                            if det_scale == 0.35:
+                                radius = float(int(rand()) & 0x3F)
+                            else:
+                                radius = float(int(rand()) % max(1, int(extra_radius)))
                             fx_queue.add_random(
                                 pos_x=cx + math.cos(angle) * radius,
                                 pos_y=cy + math.sin(angle) * radius,
                                 rand=rand,
                             )
 
-                    if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                        step = math.tau / 10.0
-                        for idx in range(10):
-                            mag = float(int(rand()) % 800) * 0.1
-                            ang = float(idx) * step
-                            vel_x = math.cos(ang) * mag
-                            vel_y = math.sin(ang) * mag
-                            sprite_id = sprite_effects.spawn(
-                                pos_x=float(entry.pos_x),
-                                pos_y=float(entry.pos_y),
-                                vel_x=vel_x,
-                                vel_y=vel_y,
-                                scale=14.0,
-                            )
-                            try:
-                                sprite_effects.entries[int(sprite_id)].color_a = 0.37
-                            except Exception:
-                                pass
+                if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                    step = math.tau / 10.0
+                    for idx in range(10):
+                        mag = float(int(rand()) % 800) * 0.1
+                        ang = float(idx) * step
+                        vel_x = math.cos(ang) * mag
+                        vel_y = math.sin(ang) * mag
+                        sprite_id = sprite_effects.spawn(
+                            pos_x=float(entry.pos_x),
+                            pos_y=float(entry.pos_y),
+                            vel_x=vel_x,
+                            vel_y=vel_y,
+                            scale=14.0,
+                        )
+                        try:
+                            sprite_effects.entries[int(sprite_id)].color_a = 0.37
+                        except Exception:
+                            pass
 
                 continue
 
