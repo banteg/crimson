@@ -2625,6 +2625,12 @@ def _bonus_apply_weapon(ctx: _BonusApplyCtx) -> None:
     weapon_assign_player(ctx.player, weapon_id, state=ctx.state)
 
 
+def _bonus_apply_medikit(ctx: _BonusApplyCtx) -> None:
+    if float(ctx.player.health) >= 100.0:
+        return
+    ctx.player.health = min(100.0, float(ctx.player.health) + 10.0)
+
+
 def _bonus_apply_fireblast(ctx: _BonusApplyCtx) -> None:
     origin_pos = ctx.origin_pos()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
@@ -2729,6 +2735,7 @@ _BONUS_APPLY_HANDLERS: dict[BonusId, _BonusApplyHandler] = {
     BonusId.REFLEX_BOOST: _bonus_apply_reflex_boost,
     BonusId.FREEZE: _bonus_apply_freeze,
     BonusId.SHIELD: _bonus_apply_shield,
+    BonusId.MEDIKIT: _bonus_apply_medikit,
     BonusId.SPEED: _bonus_apply_speed,
     BonusId.FIRE_BULLETS: _bonus_apply_fire_bullets,
     BonusId.SHOCK_CHAIN: _bonus_apply_shock_chain,
