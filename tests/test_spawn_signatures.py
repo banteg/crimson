@@ -22,6 +22,13 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
 
     pool.reset()
 
+    # Fireblast should NOT convert to Fire Bullets because it sets bonus_spawn_guard.
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, fire_bullets_timer=1.0)
+    bonus_apply(state, player, BonusId.FIREBLAST, origin=player, players=[player])
+    assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_RIFLE): 16})
+
+    pool.reset()
+
     # Angry Reloader.
     player = PlayerState(
         index=0,

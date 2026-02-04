@@ -16,7 +16,7 @@ from crimson.gameplay import (
     weapon_assign_player,
 )
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, SecondaryProjectileTypeId
+from crimson.projectiles import ProjectilePool, ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.weapons import WeaponId
 
 
@@ -312,6 +312,21 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(0x0B) == 4
     assert type_ids.count(0x09) == 4
+
+
+def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> None:
+    pool = ProjectilePool(size=16)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, hot_tempered_timer=1.95, fire_bullets_timer=1.0)
+    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+
+    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state, players=[player])
+
+    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
+    assert owner_ids == {-100}
+    type_ids = _active_type_ids(pool)
+    assert len(type_ids) == 8
+    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:
