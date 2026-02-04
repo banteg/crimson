@@ -299,9 +299,11 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    far_y = math.sqrt(100.0 * 100.0 - 50.0 * 50.0)
     creatures = [
         _Creature(x=50.0, y=0.0, hp=100.0),
         _Creature(x=80.0, y=0.0, hp=100.0),
+        _Creature(x=100.0, y=far_y, hp=100.0),
     ]
 
     bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures)
@@ -317,11 +319,9 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
 
     pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
 
-    assert state.shock_chain_links_left == 0x20
-    assert state.shock_chain_projectile_id == first_proj
-
-    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
-
-    assert state.shock_chain_links_left < 0x20
+    assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj
     assert sum(1 for entry in pool.entries if entry.active) >= 2
+    chained = pool.entries[int(state.shock_chain_projectile_id)]
+    expected_angle = math.atan2(far_y, 50.0) + math.pi / 2.0
+    assert math.isclose(chained.angle, expected_angle, abs_tol=1e-9)
