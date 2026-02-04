@@ -13,6 +13,7 @@ from crimson.gameplay import (
     bonus_hud_update,
     player_fire_weapon,
     player_update,
+    weapon_assign_player,
 )
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool
@@ -128,6 +129,36 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
     assert set(type_ids) == {0x2D}
+
+
+def test_player_fire_weapon_fire_bullets_does_not_override_rocket_weapons() -> None:
+    rocket_cases = (
+        (12, 1, 1),  # Rocket Launcher -> secondary type 1
+        (13, 2, 1),  # Seeker Rockets -> secondary type 2
+        (17, 2, 3),  # Mini-Rocket Swarmers -> secondary type 2 (fires full clip; keep test small)
+        (18, 4, 1),  # Rocket Minigun -> secondary type 4
+    )
+
+    for weapon_id, expected_secondary_type, expected_count in rocket_cases:
+        state = GameplayState()
+        player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+        player.aim_dir_x = 1.0
+        player.aim_dir_y = 0.0
+        player.spread_heat = 0.0
+        weapon_assign_player(player, weapon_id)
+
+        if weapon_id == 17:
+            player.clip_size = expected_count
+            player.ammo = float(expected_count)
+
+        player.fire_bullets_timer = 1.0
+
+        player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+
+        assert not any(entry.active for entry in state.projectiles.entries)
+        spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
+        assert len(spawned) == expected_count
+        assert {int(entry.type_id) for entry in spawned} == {expected_secondary_type}
 
 
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
