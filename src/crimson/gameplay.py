@@ -2059,9 +2059,10 @@ def player_fire_weapon(
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
-    spread_heat_base = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
-    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
-        spread_heat_base = float(fire_bullets_weapon.spread_heat_inc)
+    weapon_spread_heat = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    fire_bullets_spread_heat = weapon_spread_heat
+    if fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
+        fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
         shot_cooldown = (
@@ -2070,6 +2071,7 @@ def player_fire_weapon(
             else 0.0
         )
 
+    spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = spread_heat_base * 1.3
 
     if perk_active(player, PerkId.FASTSHOT):
@@ -2124,15 +2126,8 @@ def player_fire_weapon(
             return 0.0013
         return 0.0015
 
-    rocket_weapon_ids = (
-        WeaponId.ROCKET_LAUNCHER,
-        WeaponId.SEEKER_ROCKETS,
-        WeaponId.MINI_ROCKET_SWARMERS,
-        WeaponId.ROCKET_MINIGUN,
-    )
-
-    if is_fire_bullets and weapon_id not in rocket_weapon_ids:
-        pellets = max(1, int(pellet_count))
+    if is_fire_bullets:
+        pellets = max(0, int(pellet_count))
         shot_count = pellets
         meta = _projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS)
         for _ in range(pellets):
@@ -2313,9 +2308,9 @@ def player_fire_weapon(
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
 
-    muzzle_inc = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
-    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
-        muzzle_inc = float(fire_bullets_weapon.spread_heat_inc)
+    muzzle_inc = weapon_spread_heat
+    if is_fire_bullets and pellet_count == 1:
+        muzzle_inc = fire_bullets_spread_heat
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha)
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)

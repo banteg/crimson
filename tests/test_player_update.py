@@ -16,7 +16,7 @@ from crimson.gameplay import (
     weapon_assign_player,
 )
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.weapons import WeaponId
 
 
@@ -132,35 +132,37 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     assert set(type_ids) == {0x2D}
 
 
-def test_player_fire_weapon_fire_bullets_does_not_override_rocket_weapons() -> None:
-    rocket_cases = (
-        (WeaponId.ROCKET_LAUNCHER, SecondaryProjectileTypeId.ROCKET, 1),
-        (WeaponId.SEEKER_ROCKETS, SecondaryProjectileTypeId.HOMING_ROCKET, 1),
-        # Mini-Rocket Swarmers fire the full clip; keep the test small.
-        (WeaponId.MINI_ROCKET_SWARMERS, SecondaryProjectileTypeId.HOMING_ROCKET, 3),
-        (WeaponId.ROCKET_MINIGUN, SecondaryProjectileTypeId.ROCKET_MINIGUN, 1),
+def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
+    from crimson.weapons import WEAPON_BY_ID
+
+    rocket_weapon_ids = (
+        WeaponId.ROCKET_LAUNCHER,
+        WeaponId.SEEKER_ROCKETS,
+        WeaponId.MINI_ROCKET_SWARMERS,
+        WeaponId.ROCKET_MINIGUN,
     )
 
-    for weapon_id, expected_secondary_type, expected_count in rocket_cases:
-        state = GameplayState()
+    for weapon_id in rocket_weapon_ids:
+        pool = ProjectilePool(size=64)
+        state = GameplayState(projectiles=pool)
         player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
         player.aim_dir_x = 1.0
         player.aim_dir_y = 0.0
         player.spread_heat = 0.0
         weapon_assign_player(player, weapon_id)
 
-        if weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
-            player.clip_size = expected_count
-            player.ammo = float(expected_count)
-
         player.fire_bullets_timer = 1.0
 
         player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
 
-        assert not any(entry.active for entry in state.projectiles.entries)
-        spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
-        assert len(spawned) == expected_count
-        assert {SecondaryProjectileTypeId(int(entry.type_id)) for entry in spawned} == {expected_secondary_type}
+        weapon = WEAPON_BY_ID.get(int(weapon_id))
+        assert weapon is not None
+        assert weapon.pellet_count is not None
+
+        type_ids = _active_type_ids(pool)
+        assert len(type_ids) == int(weapon.pellet_count)
+        assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
+        assert not any(entry.active for entry in state.secondary_projectiles.entries)
 
 
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
@@ -191,8 +193,8 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     assert player.reload_timer > 0.0
 
 
-def test_player_fire_weapon_fire_bullets_uses_weapon_spread_heat_inc_for_pellet_weapons() -> None:
-    from crimson.weapons import WEAPON_BY_ID
+def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
+    from crimson.weapons import weapon_entry_for_projectile_type_id
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
@@ -200,13 +202,12 @@ def test_player_fire_weapon_fire_bullets_uses_weapon_spread_heat_inc_for_pellet_
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
-    weapon = WEAPON_BY_ID.get(3)
-    assert weapon is not None
-    assert weapon.pellet_count == 12
-    assert weapon.spread_heat_inc is not None
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
+    assert fire_bullets_weapon is not None
+    assert fire_bullets_weapon.spread_heat_inc is not None
 
     start_heat = player.spread_heat
-    expected = start_heat + float(weapon.spread_heat_inc) * 1.3
+    expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
 
