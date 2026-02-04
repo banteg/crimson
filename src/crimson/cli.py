@@ -445,6 +445,11 @@ def cmd_replay(
     demo_path: Path = typer.Argument(..., help="path to a .crdemo file"),
     stop_on_game_over: bool = typer.Option(True, help="stop once all players are dead"),
     dump_fingerprints: bool = typer.Option(False, "--fingerprints", help="emit per-tick fingerprint JSONL"),
+    debug_sidecar: Path | None = typer.Option(
+        None,
+        "--debug-sidecar",
+        help="write per-tick debug JSONL to this path",
+    ),
 ) -> None:
     """Replay a deterministic demo in headless mode and print the resulting score record."""
     import json
@@ -491,8 +496,41 @@ def cmd_replay(
         perk_progression_enabled=header.flag(FLAG_PERK_PROGRESSION),
     )
 
+    debug_fp = None
+    if debug_sidecar is not None:
+        debug_sidecar.parent.mkdir(parents=True, exist_ok=True)
+        debug_fp = debug_sidecar.open("w", encoding="utf-8")
+
+    def emit_debug(*, phase: str, tick: int, frame: object, actions: list[object]) -> None:
+        if debug_fp is None:
+            return
+        perk_state = session.world.state.perk_selection
+        payload = {
+            "phase": phase,
+            "tick": int(tick),
+            "dt": float(getattr(frame, "dt", 0.0)),
+            "rng_state": int(session.world.state.rng.state),
+            "pending_count": int(perk_state.pending_count),
+            "choices": list(perk_state.choices),
+            "score_xp": int(session.world.players[0].experience) if session.world.players else 0,
+            "level": int(session.world.players[0].level) if session.world.players else 0,
+            "kill_count": int(session.world.creatures.kill_count),
+            "actions": [
+                {
+                    "type": int(a.action_type),
+                    "player": int(a.player_index),
+                    "u16": int(a.payload_u16),
+                    "f32": float(a.payload_f32),
+                }
+                for a in actions
+            ],
+        }
+        print(json.dumps(payload, sort_keys=True), file=debug_fp, flush=True)
+
     for tick, frame in enumerate(demo.frames):
         actions = actions_by_tick.get(int(tick), [])
+        if actions:
+            emit_debug(phase="before_actions", tick=tick, frame=frame, actions=actions)
         for action in actions:
             action_type = int(action.action_type)
             if action_type != int(ActionType.PERK_MENU_OPEN):
@@ -507,6 +545,8 @@ def cmd_replay(
 
         if float(frame.dt) > 0.0:
             session.step(float(frame.dt), inputs=list(frame.inputs))
+        if actions:
+            emit_debug(phase="after_step", tick=tick, frame=frame, actions=actions)
 
         for action in actions:
             action_type = int(action.action_type)
@@ -529,6 +569,8 @@ def cmd_replay(
             )
             if picked is None:
                 raise DemoError(f"perk pick failed at tick {tick}: {perk!s}")
+        if actions:
+            emit_debug(phase="after_actions", tick=tick, frame=frame, actions=actions)
 
         if dump_fingerprints:
             fp = fingerprint_world_state(session.world)
@@ -543,6 +585,9 @@ def cmd_replay(
 
         if stop_on_game_over and session.is_game_over():
             break
+
+    if debug_fp is not None:
+        debug_fp.close()
 
     if not session.world.players:
         raise DemoError("demo ended with no players")
