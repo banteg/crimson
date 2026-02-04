@@ -513,7 +513,7 @@ class SurvivalMode(BaseGameplayMode):
         self._survival.elapsed_ms += dt_world * 1000.0
 
         input_state = self._build_input()
-        if self._demo_recorder is not None and (dt > 0.0 or self._perk_menu.open or perk_menu_active):
+        if self._demo_recorder is not None:
             try:
                 self._demo_recorder.record_frame(
                     float(dt),
