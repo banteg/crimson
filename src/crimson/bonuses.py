@@ -31,6 +31,7 @@ class BonusMeta:
     description: str | None
     icon_id: int | None
     default_amount: int | None
+    apply_seconds: float | None = None
     notes: str | None = None
 
 
@@ -57,7 +58,8 @@ BONUS_TABLE = [
         description="Suddenly monsters run away from you and you can eat them.",
         icon_id=10,
         default_amount=8,
-        notes="`bonus_apply` updates `bonus_energizer_timer`.",
+        apply_seconds=8.0,
+        notes="`bonus_apply` updates `bonus_energizer_timer` (fixed +8 seconds, scaled by Bonus Economist).",
     ),
     BonusMeta(
         bonus_id=BonusId.WEAPON,
@@ -88,8 +90,10 @@ BONUS_TABLE = [
         name="Double Experience",
         description="Every experience point you get is doubled when this bonus is active.",
         icon_id=4,
-        default_amount=6,
-        notes="`bonus_apply` updates `bonus_double_xp_timer`.",
+        # Native default amount is 0; the pickup adds a fixed 6 seconds (scaled by Bonus Economist).
+        default_amount=0,
+        apply_seconds=6.0,
+        notes="`bonus_apply` updates `bonus_double_xp_timer` (fixed +6 seconds, scaled by Bonus Economist).",
     ),
     BonusMeta(
         bonus_id=BonusId.SHOCK_CHAIN,
@@ -152,8 +156,10 @@ BONUS_TABLE = [
         name="Fire Bullets",
         description="For few seconds -- make them count.",
         icon_id=11,
-        default_amount=5,
-        notes="`bonus_apply` updates `player_fire_bullets_timer` (`DAT_00490bcc`). While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`).",
+        # Native default amount is 4; the pickup adds a fixed 5 seconds (scaled by Bonus Economist).
+        default_amount=4,
+        apply_seconds=5.0,
+        notes="`bonus_apply` updates `player_fire_bullets_timer` (`DAT_00490bcc`) (fixed +5 seconds, scaled by Bonus Economist). While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`).",
     ),
 ]
 

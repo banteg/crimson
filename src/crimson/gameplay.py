@@ -2533,8 +2533,22 @@ class _BonusApplyCtx:
 _BonusApplyHandler = Callable[[_BonusApplyCtx], None]
 
 
+def _bonus_apply_seconds(ctx: _BonusApplyCtx) -> float:
+    meta = BONUS_BY_ID.get(int(ctx.bonus_id))
+    if meta is not None and meta.apply_seconds is not None:
+        return float(meta.apply_seconds)
+    return float(ctx.amount)
+
+
 def _bonus_apply_points(ctx: _BonusApplyCtx) -> None:
-    award_experience(ctx.state, ctx.player, int(ctx.amount))
+    # Native adds Points directly to player0 XP (no Double XP multiplier).
+    amount = int(ctx.amount)
+    if amount <= 0:
+        return
+    target = ctx.player
+    if ctx.players is not None and len(ctx.players) > 0:
+        target = ctx.players[0]
+    target.experience += int(amount)
 
 
 def _bonus_apply_energizer(ctx: _BonusApplyCtx) -> None:
@@ -2542,12 +2556,7 @@ def _bonus_apply_energizer(ctx: _BonusApplyCtx) -> None:
     if old <= 0.0:
         ctx.register_global("energizer")
 
-    # Native `bonus_apply` ignores `bonus_entry.amount` for Energizer and always adds
-    # a fixed 8 seconds scaled by Bonus Economist.
-    #
-    # Ghidra (crimsonland.exe @ 0x00409890):
-    #   _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
-    ctx.state.bonuses.energizer = float(old + 8.0 * ctx.economist_multiplier)
+    ctx.state.bonuses.energizer = float(old + _bonus_apply_seconds(ctx) * ctx.economist_multiplier)
 
 
 def _bonus_apply_weapon_power_up(ctx: _BonusApplyCtx) -> None:
@@ -2567,7 +2576,7 @@ def _bonus_apply_double_experience(ctx: _BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.double_experience)
     if old <= 0.0:
         ctx.register_global("double_experience")
-    ctx.state.bonuses.double_experience = float(old + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.state.bonuses.double_experience = float(old + _bonus_apply_seconds(ctx) * ctx.economist_multiplier)
 
 
 def _bonus_apply_reflex_boost(ctx: _BonusApplyCtx) -> None:
@@ -2650,7 +2659,9 @@ def _bonus_apply_fire_bullets(ctx: _BonusApplyCtx) -> None:
         should_register = float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
     if should_register:
         ctx.register_player("fire_bullets_timer")
-    ctx.player.fire_bullets_timer = float(ctx.player.fire_bullets_timer + float(ctx.amount) * ctx.economist_multiplier)
+    ctx.player.fire_bullets_timer = float(
+        ctx.player.fire_bullets_timer + _bonus_apply_seconds(ctx) * ctx.economist_multiplier
+    )
     ctx.player.weapon_reset_latch = 0
     ctx.player.shot_cooldown = 0.0
     ctx.player.reload_active = False
@@ -2795,7 +2806,10 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         prev_guard = bool(ctx.state.bonus_spawn_guard)
         ctx.state.bonus_spawn_guard = True
         for idx, creature in enumerate(creatures):
-            if creature.hp <= 0.0:
+            # Native applies explosion damage to any active creature, including
+            # those already in the death/corpse state (this shrinks corpses
+            # faster via the hp<=0 path in creature_apply_damage).
+            if not bool(getattr(creature, "active", True)):
                 continue
             dx = float(creature.x) - ox
             dy = float(creature.y) - oy
