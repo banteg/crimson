@@ -2566,29 +2566,36 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
         return
 
     origin_pos = ctx.origin_pos()
-    best_idx: int | None = None
-    best_dist = 0.0
+    # Mirrors the `exclude_id == -1` behavior of `creature_find_nearest(origin, -1, 0.0)`:
+    # - requires `active != 0`
+    # - requires `hitbox_size == 16.0` (alive sentinel)
+    # - no HP gate
+    # - falls back to index 0 if nothing qualifies
+    origin_x = float(origin_pos.pos_x)
+    origin_y = float(origin_pos.pos_y)
+    best_idx = 0
+    best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
-        if creature.hp <= 0.0:
+        if not bool(getattr(creature, "active", True)):
             continue
-        d = distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
-        if best_idx is None or d < best_dist:
+        if float(getattr(creature, "hitbox_size", 16.0)) != 16.0:
+            continue
+        d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
+        if d_sq < best_dist_sq:
+            best_dist_sq = d_sq
             best_idx = idx
-            best_dist = d
-    if best_idx is None:
-        return
 
     target = creatures[best_idx]
-    dx = target.x - float(origin_pos.pos_x)
-    dy = target.y - float(origin_pos.pos_y)
+    dx = target.x - origin_x
+    dy = target.y - origin_y
     angle = math.atan2(dy, dx) + math.pi / 2.0
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
     ctx.state.bonus_spawn_guard = True
     ctx.state.shock_chain_links_left = 0x20
     ctx.state.shock_chain_projectile_id = ctx.state.projectiles.spawn(
-        pos_x=float(origin_pos.pos_x),
-        pos_y=float(origin_pos.pos_y),
+        pos_x=origin_x,
+        pos_y=origin_y,
         angle=angle,
         type_id=int(ProjectileTypeId.ION_RIFLE),
         owner_id=int(owner_id),

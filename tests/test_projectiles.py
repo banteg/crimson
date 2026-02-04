@@ -218,8 +218,9 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
     assert len(bursts) == 20
 
     ring = rings[0]
-    assert math.isclose(float(ring.pos_x), 10.0, abs_tol=1e-9)
-    assert math.isclose(float(ring.pos_y), 0.0, abs_tol=1e-9)
+    [proj] = [entry for entry in state.projectiles.entries if entry.active]
+    assert math.isclose(float(ring.pos_x), float(proj.pos_x), abs_tol=1e-9)
+    assert math.isclose(float(ring.pos_y), float(proj.pos_y), abs_tol=1e-9)
     assert math.isclose(float(ring.half_width), 4.0, abs_tol=1e-9)
     assert math.isclose(float(ring.half_height), 4.0, abs_tol=1e-9)
     assert math.isclose(float(ring.scale_step), 67.5, abs_tol=1e-9)
