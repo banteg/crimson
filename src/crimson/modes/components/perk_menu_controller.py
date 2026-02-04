@@ -30,6 +30,7 @@ from ...ui.layout import ui_origin, ui_scale
 
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
+OnPickFn = Callable[[PerkId, float], None]
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -54,9 +55,16 @@ class PerkMenuContext:
 
 
 class PerkMenuController:
-    def __init__(self, *, cancel_label: str = "Cancel", on_close: OnCloseFn | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        cancel_label: str = "Cancel",
+        on_close: OnCloseFn | None = None,
+        on_pick: OnPickFn | None = None,
+    ) -> None:
         self._cancel_label = cancel_label
         self._on_close = on_close
+        self._on_pick = on_pick
         self.reset()
 
     @property
@@ -199,6 +207,8 @@ class PerkMenuController:
                     )
                     if picked is not None and ctx.play_sfx is not None:
                         ctx.play_sfx("sfx_ui_bonus")
+                    if picked is not None and self._on_pick is not None:
+                        self._on_pick(picked, float(dt_frame))
                     self.close()
                     return
                 break
@@ -240,6 +250,8 @@ class PerkMenuController:
             )
             if picked is not None and ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_bonus")
+            if picked is not None and self._on_pick is not None:
+                self._on_pick(picked, float(dt_frame))
             self.close()
 
     def draw(self, ctx: PerkMenuContext) -> None:
