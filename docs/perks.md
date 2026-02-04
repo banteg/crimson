@@ -449,13 +449,13 @@ Notes:
   - weak poison: `dt * 60`
   - strong poison (when Toxic Avenger sets the strong bit): `dt * 180`
 - Poison is applied via the “normal damage” path (hit flash / heading jitter side-effects occur).
-- Poisoned creatures render a **red aura** (60×60, effect atlas `0x12`) behind them with corpse-fade alpha.
+- Poisoned creatures render a **red aura** (60×60, effect atlas `0x10`) behind them with corpse-fade alpha.
 
 ### Original
 
 - `projectile_update` (0x00420b90): sets poison flags on hit.
 - `creature_update_all` (0x00426220): applies self-damage using `creature_apply_damage(..., damage_type=0, impulse=(0,0))`.
-- Rendering: creature overlay draws aura `0x12` when poison flag is set.
+- Rendering: creature overlay draws aura `0x10` when poison flag is set.
 
 ### Rewrite
 

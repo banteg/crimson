@@ -6,6 +6,8 @@ from typing import Callable, Protocol
 
 from grim.math import clamp
 
+from .effects_atlas import EffectId
+
 __all__ = [
     "FX_QUEUE_CAPACITY",
     "FX_QUEUE_MAX_COUNT",
@@ -781,7 +783,7 @@ class EffectPool:
         rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 14.0
 
         self.spawn(
-            effect_id=0x12,
+            effect_id=int(EffectId.CASING),
             pos_x=float(pos_x),
             pos_y=float(pos_y),
             vel_x=float(vel_x),
@@ -836,7 +838,7 @@ class EffectPool:
             scale_step = float(r4 & 0x7F) * 0.03 + 0.1
 
             self.spawn(
-                effect_id=7,
+                effect_id=int(EffectId.BLOOD_SPLATTER),
                 pos_x=pos_x,
                 pos_y=pos_y,
                 vel_x=vel_x,
@@ -889,7 +891,7 @@ class EffectPool:
                 step = float(scale_step)
 
             self.spawn(
-                effect_id=0,
+                effect_id=int(EffectId.BURST),
                 pos_x=pos_x,
                 pos_y=pos_y,
                 vel_x=vel_x,
@@ -926,7 +928,7 @@ class EffectPool:
         """Ring/halo burst used by bonus pickup effects (`bonus_apply`)."""
 
         self.spawn(
-            effect_id=1,
+            effect_id=int(EffectId.RING),
             pos_x=pos_x,
             pos_y=pos_y,
             vel_x=0.0,
@@ -1013,7 +1015,7 @@ class EffectPool:
             rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 1.9
 
             self.spawn(
-                effect_id=0x0E,
+                effect_id=int(EffectId.FREEZE_SHATTER),
                 pos_x=float(pos_x),
                 pos_y=float(pos_y),
                 vel_x=float(vel_x),
@@ -1060,7 +1062,7 @@ class EffectPool:
 
         # Shockwave ring.
         self.spawn(
-            effect_id=1,
+            effect_id=int(EffectId.RING),
             pos_x=float(pos_x),
             pos_y=float(pos_y),
             vel_x=0.0,
@@ -1088,7 +1090,7 @@ class EffectPool:
                 lifetime = float(idx) * 0.2 + 0.6
                 rotation = float(int(rand()) % 0x266) * 0.02
                 self.spawn(
-                    effect_id=0x11,
+                    effect_id=int(EffectId.EXPLOSION_PUFF),
                     pos_x=float(pos_x),
                     pos_y=float(pos_y),
                     vel_x=0.0,
@@ -1111,7 +1113,7 @@ class EffectPool:
 
         # Bright flash.
         self.spawn(
-            effect_id=0,
+            effect_id=int(EffectId.BURST),
             pos_x=float(pos_x),
             pos_y=float(pos_y),
             vel_x=0.0,
@@ -1145,7 +1147,7 @@ class EffectPool:
             scale_step = float((int(rand()) - 3) & 7) * scale
             rotation_step = float((int(rand()) + 3) & 7)
             self.spawn(
-                effect_id=0x0C,
+                effect_id=int(EffectId.EXPLOSION_BURST),
                 pos_x=float(pos_x),
                 pos_y=float(pos_y),
                 vel_x=float(vel_x),

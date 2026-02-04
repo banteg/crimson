@@ -13,7 +13,7 @@ from grim.terrain_render import _maybe_alpha_test
 from ..bonuses import BONUS_BY_ID, BonusId
 from ..creatures.anim import creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId
-from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
+from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
 from ..gameplay import bonus_find_aim_hover_entry, perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
@@ -450,7 +450,7 @@ class WorldRenderer:
             and perk_active(player, PerkId.RADIOACTIVE)
             and alpha > 1e-3
         ):
-            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
+            atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
             if atlas is not None:
                 aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                 if aura_grid:
@@ -547,7 +547,7 @@ class WorldRenderer:
             )
 
             if self.particles_texture is not None and float(player.shield_timer) > 1e-3 and alpha > 1e-3:
-                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x02)
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.SHIELD_RING))
                 if atlas is not None:
                     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                     if grid:
@@ -1016,7 +1016,7 @@ class WorldRenderer:
         if not any(entry.active for entry in effects):
             return
 
-        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x11)
+        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.EXPLOSION_PUFF))
         if atlas is None:
             return
         grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -1175,7 +1175,7 @@ class WorldRenderer:
             monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
             monster_vision_src: rl.Rectangle | None = None
             if monster_vision and particles_texture is not None:
-                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x10)
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
                 if atlas is not None:
                     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                     if grid:
@@ -1192,7 +1192,9 @@ class WorldRenderer:
                         )
             poison_src: rl.Rectangle | None = None
             if particles_texture is not None:
-                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x12)
+                # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
+                # (monster vision, shadow, poison aura).
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
                 if atlas is not None:
                     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                     if grid:
@@ -1353,7 +1355,7 @@ class WorldRenderer:
 
             freeze_timer = float(self.state.bonuses.freeze)
             if particles_texture is not None and freeze_timer > 0.0:
-                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0E)
+                atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.FREEZE_SHATTER))
                 if atlas is not None:
                     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
                     if grid:

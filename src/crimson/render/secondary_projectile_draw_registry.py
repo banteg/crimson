@@ -8,7 +8,7 @@ import pyray as rl
 
 from grim.math import clamp
 
-from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID
+from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
 
 if TYPE_CHECKING:
     from .world_renderer import WorldRenderer
@@ -53,7 +53,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
     fx_detail_1 = bool(renderer.config.data.get("fx_detail_1", 0)) if renderer.config is not None else True
     if fx_detail_1 and renderer.particles_texture is not None:
         particles_texture = renderer.particles_texture
-        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
         if atlas is not None:
             grid = SIZE_CODE_GRID.get(int(atlas.size_code))
             if grid:
@@ -154,7 +154,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
         return True
 
-    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(0x0D)
+    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
     if atlas is None:
         return True
     grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -203,4 +203,3 @@ def draw_secondary_projectile_from_registry(ctx: SecondaryProjectileDrawCtx) -> 
         if handler(ctx):
             return True
     return False
-

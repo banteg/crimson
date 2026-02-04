@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from ..effects_atlas import EFFECT_ID_ATLAS_TABLE, SIZE_CODE_GRID
+from ..effects_atlas import EFFECT_ID_ATLAS_TABLE, EffectId, SIZE_CODE_GRID
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
@@ -39,16 +39,18 @@ class EffectEntry:
 
 
 EFFECT_LABELS = {
-    0x00: "burst",
-    0x01: "ring",
-    0x07: "blood",
-    0x08: "freeze",
-    0x09: "freeze",
-    0x0A: "freeze",
-    0x0C: "explosion",
-    0x0E: "shatter",
-    0x11: "explosion",
-    0x12: "casing",
+    EffectId.BURST: "burst",
+    EffectId.RING: "ring",
+    EffectId.BLOOD_SPLATTER: "blood",
+    EffectId.FREEZE_SHARD_0: "freeze",
+    EffectId.FREEZE_SHARD_1: "freeze",
+    EffectId.FREEZE_SHARD_2: "freeze",
+    EffectId.EXPLOSION_BURST: "explosion",
+    EffectId.GLOW: "glow",
+    EffectId.FREEZE_SHATTER: "shatter",
+    EffectId.AURA: "aura",
+    EffectId.EXPLOSION_PUFF: "explosion",
+    EffectId.CASING: "casing",
 }
 
 EFFECT_ENTRIES = [

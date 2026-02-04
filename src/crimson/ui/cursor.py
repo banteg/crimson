@@ -4,9 +4,9 @@ import math
 
 import pyray as rl
 
-from ..effects_atlas import effect_src_rect
+from ..effects_atlas import EffectId, effect_src_rect
 
-CURSOR_EFFECT_ID = 0x0D
+CURSOR_EFFECT_ID = int(EffectId.GLOW)
 
 
 def _clamp01(value: float) -> float:
@@ -92,4 +92,3 @@ def draw_menu_cursor(
     src = rl.Rectangle(0.0, 0.0, float(cursor.width), float(cursor.height))
     dst = rl.Rectangle(float(x - 2.0), float(y - 2.0), 32.0, 32.0)
     rl.draw_texture_pro(cursor, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-

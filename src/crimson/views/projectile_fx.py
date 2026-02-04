@@ -10,7 +10,7 @@ from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
-from ..effects_atlas import effect_src_rect
+from ..effects_atlas import EffectId, effect_src_rect
 from ..gameplay import GameplayState, PlayerState, bonus_apply
 from ..projectiles import ProjectileTypeId
 from ..weapons import (
@@ -241,7 +241,7 @@ class ProjectileFxView:
 
     def _spawn_projectile(self, *, type_id: int, angle: float, owner_id: int = -100) -> None:
         meta = self._projectile_meta_for(type_id)
-        self._spawn_effect(effect_id=0x12, x=self._origin_x, y=self._origin_y, scale=0.55, duration=0.18)
+        self._spawn_effect(effect_id=int(EffectId.CASING), x=self._origin_x, y=self._origin_y, scale=0.55, duration=0.18)
         self._state.projectiles.spawn(
             pos_x=self._origin_x,
             pos_y=self._origin_y,
@@ -256,7 +256,7 @@ class ProjectileFxView:
         pellet_count = int(getattr(base, "pellet_count", 1) or 1)
         pellet_count = max(1, pellet_count)
         meta = self._projectile_meta_for(ProjectileTypeId.FIRE_BULLETS)
-        self._spawn_effect(effect_id=0x12, x=self._origin_x, y=self._origin_y, scale=0.6, duration=0.2)
+        self._spawn_effect(effect_id=int(EffectId.CASING), x=self._origin_x, y=self._origin_y, scale=0.6, duration=0.2)
         for _ in range(pellet_count):
             jitter = (float(self._state.rng.rand() % 200) - 100.0) * 0.0015
             self._state.projectiles.spawn(
@@ -351,9 +351,9 @@ class ProjectileFxView:
         for type_id, origin_x, origin_y, hit_x, hit_y, *_ in hits:
             if type_id in _BEAM_TYPES:
                 self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
-                self._spawn_effect(effect_id=0x01, x=hit_x, y=hit_y, scale=0.9, duration=0.25)
+                self._spawn_effect(effect_id=int(EffectId.RING), x=hit_x, y=hit_y, scale=0.9, duration=0.25)
             else:
-                effect_id = 0x11 if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS) else 0x00
+                effect_id = int(EffectId.EXPLOSION_PUFF) if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS) else int(EffectId.BURST)
                 self._spawn_effect(effect_id=effect_id, x=hit_x, y=hit_y, scale=1.2, duration=0.35)
 
         self._creatures = [c for c in self._creatures if c.hp > 0.0]

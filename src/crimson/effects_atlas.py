@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import IntEnum
 
 __all__ = [
     "EFFECT_ID_ATLAS_TABLE",
     "EFFECT_ID_ATLAS_TABLE_BY_ID",
+    "EffectId",
     "EffectAtlasEntry",
     "SIZE_CODE_GRID",
     "effect_src_rect",
@@ -54,6 +56,28 @@ EFFECT_ID_ATLAS_TABLE: tuple[EffectAtlasEntry, ...] = (
 )
 
 EFFECT_ID_ATLAS_TABLE_BY_ID: dict[int, EffectAtlasEntry] = {entry.effect_id: entry for entry in EFFECT_ID_ATLAS_TABLE}
+
+
+class EffectId(IntEnum):
+    BURST = 0x00
+    RING = 0x01
+    SHIELD_RING = 0x02
+    EFFECT_03 = 0x03
+    EFFECT_04 = 0x04
+    EFFECT_05 = 0x05
+    EFFECT_06 = 0x06
+    BLOOD_SPLATTER = 0x07
+    FREEZE_SHARD_0 = 0x08
+    FREEZE_SHARD_1 = 0x09
+    FREEZE_SHARD_2 = 0x0A
+    EFFECT_0B = 0x0B
+    EXPLOSION_BURST = 0x0C
+    GLOW = 0x0D
+    FREEZE_SHATTER = 0x0E
+    EFFECT_0F = 0x0F
+    AURA = 0x10
+    EXPLOSION_PUFF = 0x11
+    CASING = 0x12
 
 
 def effect_src_rect(effect_id: int, *, texture_width: float, texture_height: float) -> tuple[float, float, float, float] | None:
