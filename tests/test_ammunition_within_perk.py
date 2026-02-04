@@ -45,7 +45,7 @@ def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> N
     assert player.health == pytest.approx(9.0)
     assert player.experience == 1
     assert any(entry.active for entry in state.projectiles.entries)
-    assert player.ammo == 5
+    assert player.ammo == 4
 
 
 def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:

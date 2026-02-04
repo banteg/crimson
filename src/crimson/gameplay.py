@@ -2085,11 +2085,11 @@ def player_fire_weapon(
     aim_heading = math.atan2(dy, dx) + math.pi / 2.0
 
     muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    muzzle_shell_x = player.pos_x + math.cos(muzzle_dir) * 16.0
-    muzzle_shell_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
+    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
     state.effects.spawn_shell_casing(
-        pos_x=muzzle_shell_x,
-        pos_y=muzzle_shell_y,
+        pos_x=muzzle_x,
+        pos_y=muzzle_y,
         aim_heading=aim_heading,
         weapon_flags=int(weapon.flags or 0),
         rand=state.rng.rand,
@@ -2105,9 +2105,8 @@ def player_fire_weapon(
     aim_jitter_y = aim_y + math.sin(dir_angle) * offset
     shot_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x)) + math.pi / 2.0
     particle_angle = shot_angle - math.pi / 2.0
-
-    muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-    muzzle_y = player.pos_y + player.aim_dir_y * 16.0
+    if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
+        particle_angle = aim_heading - math.pi / 2.0
 
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
@@ -2321,9 +2320,9 @@ def player_fire_weapon(
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
     player.shot_seq += 1
-    if (not firing_during_reload) and state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
+    if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         player.ammo = max(0.0, float(player.ammo) - float(ammo_cost))
-    if (not firing_during_reload) and player.ammo <= 0.0 and player.reload_timer <= 0.0:
+    if player.ammo <= 0.0 and player.reload_timer <= 0.0:
         player_start_reload(player, state)
 
 

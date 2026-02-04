@@ -41,7 +41,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
 
     assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
-    assert player.ammo == 5
+    assert player.ammo == 4
 
 
 def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:

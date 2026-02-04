@@ -171,6 +171,8 @@ class ParticlePool:
         creatures: list[_CreatureForParticles] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         kill_creature: CreatureKillHandler | None = None,
+        fx_queue: FxQueue | None = None,
+        sprite_effects: SpriteEffectPool | None = None,
     ) -> list[int]:
         """Advance particles and deactivate expired entries.
 
@@ -289,6 +291,24 @@ class ParticlePool:
                         entry.vel_x = 0.0
                         entry.vel_y = 0.0
                     else:
+                        entry.angle = float(entry.angle) % math.tau
+                        hit_angle = math.atan2(
+                            (float(entry.pos_y) - float(entry.vel_y) * dt) - float(getattr(creature, "y", entry.pos_y)),
+                            (float(entry.pos_x) - float(entry.vel_x) * dt) - float(getattr(creature, "x", entry.pos_x)),
+                        )
+                        hit_angle = float(hit_angle) % math.tau
+                        deflect_step = math.tau * 0.2
+                        if float(entry.angle) <= float(hit_angle):
+                            entry.angle += deflect_step
+                        else:
+                            entry.angle -= deflect_step
+
+                        entry.vel_x = math.cos(float(entry.angle)) * 82.0
+                        entry.vel_y = math.sin(float(entry.angle)) * 82.0
+                        speed_scale = float(int(rand()) % 10) * 0.1
+                        entry.vel_x *= speed_scale
+                        entry.vel_y *= speed_scale
+
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
                             if apply_creature_damage is not None:
@@ -298,11 +318,33 @@ class ParticlePool:
 
                         tint_sum = float(getattr(creature, "tint_r", 1.0)) + float(getattr(creature, "tint_g", 1.0)) + float(getattr(creature, "tint_b", 1.0))
                         if tint_sum > 1.6:
-                            factor = 1.0 - max(entry.intensity, 0.0) * 0.01
+                            factor = 1.0 - float(entry.intensity) * 0.01
                             creature.tint_r = clamp(float(getattr(creature, "tint_r", 1.0)) * factor, 0.0, 1.0)
                             creature.tint_g = clamp(float(getattr(creature, "tint_g", 1.0)) * factor, 0.0, 1.0)
                             creature.tint_b = clamp(float(getattr(creature, "tint_b", 1.0)) * factor, 0.0, 1.0)
                             creature.tint_a = clamp(float(getattr(creature, "tint_a", 1.0)) * factor, 0.0, 1.0)
+
+                        if sprite_effects is not None and (idx % 3 == 0):
+                            sprite_vel_x = float(int(rand()) % 0x3C - 0x1E)
+                            sprite_vel_y = float(int(rand()) % 0x3C - 0x1E)
+                            sprite_id = sprite_effects.spawn(
+                                pos_x=float(getattr(creature, "x", entry.pos_x)),
+                                pos_y=float(getattr(creature, "y", entry.pos_y)),
+                                vel_x=sprite_vel_x,
+                                vel_y=sprite_vel_y,
+                                scale=13.0,
+                            )
+                            sprite_effects.entries[int(sprite_id)].color_a = 0.7
+
+                        if fx_queue is not None:
+                            fx_queue.add_random(
+                                pos_x=float(getattr(creature, "x", entry.pos_x)),
+                                pos_y=float(getattr(creature, "y", entry.pos_y)),
+                                rand=rand,
+                            )
+
+                        creature.x = float(getattr(creature, "x", 0.0)) + float(entry.vel_x) * dt
+                        creature.y = float(getattr(creature, "y", 0.0)) + float(entry.vel_y) * dt
 
         return expired
 
