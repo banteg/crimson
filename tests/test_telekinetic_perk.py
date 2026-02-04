@@ -11,7 +11,7 @@ from crimson.perks import PerkId
 def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
     state = GameplayState()
     state.bonus_pool = BonusPool()
-    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.POINTS)
+    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.POINTS, state=state)
     assert entry is not None
 
     base_player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, aim_x=100.0, aim_y=100.0)
@@ -30,7 +30,7 @@ def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
 def test_telekinetic_nuke_origin_is_bonus_position() -> None:
     state = GameplayState()
     state.bonus_pool = BonusPool()
-    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.NUKE)
+    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.NUKE, state=state)
     assert entry is not None
 
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, aim_x=100.0, aim_y=100.0)
@@ -47,7 +47,7 @@ def test_telekinetic_nuke_origin_is_bonus_position() -> None:
 def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:
     state = GameplayState()
     state.bonus_pool = BonusPool()
-    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.SHOCK_CHAIN)
+    entry = state.bonus_pool.spawn_at(100.0, 100.0, BonusId.SHOCK_CHAIN, state=state)
     assert entry is not None
 
     player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, aim_x=100.0, aim_y=100.0)

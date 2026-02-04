@@ -284,9 +284,12 @@ class BonusPool:
         bonus_id: int | BonusId,
         duration_override: int = -1,
         *,
+        state: "GameplayState",
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
+        if int(state.game_mode) == int(GameMode.RUSH):
+            return None
         if int(bonus_id) == 0:
             return None
         entry = self._alloc_slot()
@@ -320,6 +323,8 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
+        if int(state.game_mode) == int(GameMode.RUSH):
+            return None
         if (
             pos_x < BONUS_SPAWN_MARGIN
             or pos_y < BONUS_SPAWN_MARGIN
@@ -481,6 +486,8 @@ class BonusPool:
 
             decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
             entry.time_left -= decay
+            if not entry.picked and int(state.game_mode) == int(GameMode.TUTORIAL):
+                entry.time_left = 5.0
             if entry.time_left < 0.0:
                 self._clear_entry(entry)
                 continue
@@ -2618,6 +2625,12 @@ def _bonus_apply_weapon(ctx: _BonusApplyCtx) -> None:
     weapon_assign_player(ctx.player, weapon_id, state=ctx.state)
 
 
+def _bonus_apply_medikit(ctx: _BonusApplyCtx) -> None:
+    if float(ctx.player.health) >= 100.0:
+        return
+    ctx.player.health = min(100.0, float(ctx.player.health) + 10.0)
+
+
 def _bonus_apply_fireblast(ctx: _BonusApplyCtx) -> None:
     origin_pos = ctx.origin_pos()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
@@ -2648,31 +2661,31 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
 
     bullet_count = int(rand()) & 3
     bullet_count += 4
-    assault_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.ASSAULT_RIFLE))
+    pistol_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.PISTOL))
     for _ in range(bullet_count):
         angle = float(int(rand()) % 0x274) * 0.01
         proj_id = ctx.state.projectiles.spawn(
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.ASSAULT_RIFLE),
+            type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
-            base_damage=assault_meta,
+            base_damage=pistol_meta,
         )
         if proj_id != -1:
             speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
             ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
-    minigun_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.MEAN_MINIGUN))
+    gauss_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.GAUSS_GUN))
     for _ in range(2):
         angle = float(int(rand()) % 0x274) * 0.01
         ctx.state.projectiles.spawn(
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.MEAN_MINIGUN),
+            type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
-            base_damage=minigun_meta,
+            base_damage=gauss_meta,
         )
 
     ctx.state.effects.spawn_explosion_burst(
@@ -2722,6 +2735,7 @@ _BONUS_APPLY_HANDLERS: dict[BonusId, _BonusApplyHandler] = {
     BonusId.REFLEX_BOOST: _bonus_apply_reflex_boost,
     BonusId.FREEZE: _bonus_apply_freeze,
     BonusId.SHIELD: _bonus_apply_shield,
+    BonusId.MEDIKIT: _bonus_apply_medikit,
     BonusId.SPEED: _bonus_apply_speed,
     BonusId.FIRE_BULLETS: _bonus_apply_fire_bullets,
     BonusId.SHOCK_CHAIN: _bonus_apply_shock_chain,
@@ -2751,7 +2765,7 @@ def bonus_apply(
     if amount is None:
         amount = int(meta.default_amount or 0)
 
-    economist_multiplier = 1.0 + 0.5 * float(perk_count_get(player, PerkId.BONUS_ECONOMIST))
+    economist_multiplier = 1.5 if perk_count_get(player, PerkId.BONUS_ECONOMIST) != 0 else 1.0
     icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
     label = meta.name
     ctx = _BonusApplyCtx(
