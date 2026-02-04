@@ -12,7 +12,7 @@ from typing import Callable
 from .gameplay import GameplayState, PlayerState, perk_active
 from .perks import PerkId
 
-__all__ = ["player_take_damage"]
+__all__ = ["player_take_damage", "player_take_projectile_damage"]
 
 
 @dataclass(slots=True)
@@ -134,3 +134,22 @@ def player_take_damage(
     for step in _PLAYER_DAMAGE_POST_STEPS:
         step(ctx)
     return max(0.0, health_before - float(player.health))
+
+
+def player_take_projectile_damage(state: GameplayState, player: PlayerState, damage: float) -> float:
+    """Apply projectile damage to a player (modeled after `projectile_update` player-hit logic).
+
+    Native `projectile_update` does not call `player_take_damage` for projectile hits: it sets
+    `projectile.life_timer = 0.25` and subtracts a fixed amount (usually 10.0) if shield is down.
+    """
+
+    dmg = float(damage)
+    if dmg <= 0.0:
+        return 0.0
+    if state.debug_god_mode:
+        return 0.0
+    if float(player.shield_timer) > 0.0:
+        return 0.0
+
+    player.health -= dmg
+    return dmg
