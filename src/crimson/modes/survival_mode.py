@@ -108,6 +108,7 @@ class SurvivalMode(BaseGameplayMode):
         self._demo_record_path = None
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
+        self._demo_debug_full = False
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -180,6 +181,7 @@ class SurvivalMode(BaseGameplayMode):
         self._demo_record_path = None
         self._demo_record_path_resolved = None
         self._demo_debug_fp = None
+        self._demo_debug_full = False
         self._maybe_begin_demo_recording()
 
     def close(self) -> None:
@@ -191,6 +193,7 @@ class SurvivalMode(BaseGameplayMode):
             except Exception:
                 pass
             self._demo_debug_fp = None
+        self._demo_debug_full = False
         self._demo_record_path_resolved = None
         super().close()
 
@@ -388,6 +391,12 @@ class SurvivalMode(BaseGameplayMode):
         demo_out_path = self._demo_out_path()
         if demo_out_path is None:
             return
+        self._demo_debug_full = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG_FULL", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
         debug_path = self._demo_debug_out_path(demo_out_path)
         if debug_path is not None:
             try:
@@ -604,6 +613,22 @@ class SurvivalMode(BaseGameplayMode):
                     float(dt),
                     [input_state for _ in self._world.players],
                 )
+                if self._demo_debug_full:
+                    perk_state = self._state.perk_selection
+                    self._demo_debug_write(
+                        {
+                            "action": "frame",
+                            "tick": int(self._demo_recorder.tick() - 1),
+                            "dt": float(dt),
+                            "rng_state": int(self._state.rng.state),
+                            "pending_count": int(perk_state.pending_count),
+                            "choices": list(perk_state.choices),
+                            "choices_dirty": bool(perk_state.choices_dirty),
+                            "score_xp": int(self._player.experience),
+                            "level": int(self._player.level),
+                            "kill_count": int(self._creatures.kill_count),
+                        }
+                    )
             except Exception:
                 pass
 
