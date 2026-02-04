@@ -2576,9 +2576,9 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     best_idx = 0
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
-        if not bool(getattr(creature, "active", True)):
+        if not creature.active:
             continue
-        if float(getattr(creature, "hitbox_size", 16.0)) != 16.0:
+        if creature.hitbox_size != 16.0:
             continue
         d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
         if d_sq < best_dist_sq:

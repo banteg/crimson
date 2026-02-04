@@ -36,6 +36,8 @@ class DummyCreature:
     y: float
     hp: float
     size: float = 42.0
+    active: bool = True
+    hitbox_size: float = 16.0
     plague_infected: bool = False
 
 

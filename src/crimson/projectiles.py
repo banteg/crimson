@@ -13,9 +13,12 @@ from .weapons import weapon_entry_for_projectile_type_id
 
 
 class Damageable(Protocol):
+    active: bool
     x: float
     y: float
     hp: float
+    hitbox_size: float
+    size: float
 
 
 class PlayerDamageable(Protocol):
@@ -422,9 +425,9 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 40.0
     radius = ctx.ion_scale * 60.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if not bool(getattr(creature, "active", True)):
+        if not creature.active:
             continue
-        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
+        if creature.hitbox_size <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -446,9 +449,9 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 100.0
     radius = ctx.ion_scale * 88.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if not bool(getattr(creature, "active", True)):
+        if not creature.active:
             continue
-        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
+        if creature.hitbox_size <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -470,9 +473,9 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     damage = ctx.dt * 300.0
     radius = ctx.ion_scale * 128.0
     for creature_idx, creature in enumerate(ctx.creatures):
-        if not bool(getattr(creature, "active", True)):
+        if not creature.active:
             continue
-        if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
+        if creature.hitbox_size <= 5.0:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
@@ -551,7 +554,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             for creature_id, creature in enumerate(creatures):
                 if creature_id == hit_creature:
                     continue
-                if not bool(getattr(creature, "active", True)):
+                if not creature.active:
                     continue
                 d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
                 if d_sq <= min_dist_sq:
@@ -914,9 +917,9 @@ class ProjectilePool:
                         if idx == proj.owner_id:
                             continue
                         if ion_hit_test:
-                            if not bool(getattr(creature, "active", True)):
+                            if not creature.active:
                                 continue
-                            if float(getattr(creature, "hitbox_size", 16.0)) <= 5.0:
+                            if creature.hitbox_size <= 5.0:
                                 continue
                         elif creature.hp <= 0.0:
                             continue

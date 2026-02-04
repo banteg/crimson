@@ -14,6 +14,9 @@ class _Creature:
     x: float
     y: float
     hp: float
+    active: bool = True
+    hitbox_size: float = 16.0
+    size: float = 50.0
 
 
 def _fixed_rng(value: int):

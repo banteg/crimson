@@ -12,6 +12,9 @@ class _Creature:
     x: float
     y: float
     hp: float
+    active: bool = True
+    hitbox_size: float = 16.0
+    size: float = 50.0
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
@@ -98,4 +101,3 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     assert math.isclose(state.camera_shake_timer, 0.2, abs_tol=1e-9)
     assert creatures[0].hp <= 0.0
     assert creatures[1].hp == 100.0
-
