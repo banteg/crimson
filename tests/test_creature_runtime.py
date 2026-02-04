@@ -75,6 +75,26 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
     assert pool.spawn_slots[new_slot_idx].owner_creature == owner_idx
 
 
+def test_spawn_plan_materialization_spawns_burst_fx() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    state = GameplayState(rng=rng)
+    pool = CreaturePool(env=env, effects=state.effects)
+
+    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, rng, env)
+    pool.spawn_plan(plan, rand=rng.rand, detail_preset=5)
+
+    active = state.effects.iter_active()
+    assert len(active) == 8
+    assert all(int(entry.effect_id) == 0 for entry in active)
+
+
 @dataclass
 class _StubRand:
     values: list[int]

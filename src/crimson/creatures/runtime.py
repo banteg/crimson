@@ -12,7 +12,7 @@ See: `docs/creatures/update.md`.
 
 from dataclasses import dataclass, replace
 import math
-from typing import Callable, Sequence
+from typing import Callable, Protocol, Sequence
 
 from grim.math import clamp, distance_sq
 from grim.rand import Crand
@@ -63,6 +63,18 @@ CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
+
+
+class _EffectsForCreatureSpawns(Protocol):
+    def spawn_burst(
+        self,
+        *,
+        pos_x: float,
+        pos_y: float,
+        count: int,
+        rand: Callable[[], int],
+        detail_preset: int,
+    ) -> None: ...
 
 
 def _wrap_angle(angle: float) -> float:
@@ -346,10 +358,17 @@ _CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
 
 
 class CreaturePool:
-    def __init__(self, *, size: int = CREATURE_POOL_SIZE, env: SpawnEnv | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        size: int = CREATURE_POOL_SIZE,
+        env: SpawnEnv | None = None,
+        effects: _EffectsForCreatureSpawns | None = None,
+    ) -> None:
         self._entries = [CreatureState() for _ in range(int(size))]
         self.spawn_slots: list[SpawnSlotInit] = []
         self.env = env
+        self.effects = effects
         self.kill_count = 0
         self.spawned_count = 0
 
@@ -427,6 +446,8 @@ class CreaturePool:
         plan: SpawnPlan,
         *,
         rand: Callable[[], int] | None = None,
+        detail_preset: int = 5,
+        effects: _EffectsForCreatureSpawns | None = None,
     ) -> tuple[list[int], int | None]:
         """Materialize a pure `SpawnPlan` into the runtime pool.
 
@@ -492,6 +513,18 @@ class CreaturePool:
         primary_pool = None
         if 0 <= int(plan.primary) < len(mapping):
             primary_pool = mapping[int(plan.primary)]
+
+        effect_pool = self.effects if effects is None else effects
+        if effect_pool is not None and plan.effects:
+            fx_rand = rand if rand is not None else (lambda: 0)
+            for fx in plan.effects:
+                effect_pool.spawn_burst(
+                    pos_x=float(fx.x),
+                    pos_y=float(fx.y),
+                    count=int(fx.count),
+                    rand=fx_rand,
+                    detail_preset=int(detail_preset),
+                )
         return mapping, primary_pool
 
     def spawn_template(
@@ -503,6 +536,8 @@ class CreaturePool:
         *,
         rand: Callable[[], int] | None = None,
         env: SpawnEnv | None = None,
+        detail_preset: int = 5,
+        effects: _EffectsForCreatureSpawns | None = None,
     ) -> tuple[list[int], int | None]:
         """Build a spawn plan and materialize it into the pool."""
 
@@ -510,7 +545,12 @@ class CreaturePool:
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
         plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
-        return self.spawn_plan(plan, rand=rand)
+        return self.spawn_plan(
+            plan,
+            rand=rng.rand if rand is None else rand,
+            detail_preset=int(detail_preset),
+            effects=effects,
+        )
 
     def update(
         self,
@@ -849,7 +889,11 @@ class CreaturePool:
                     state.rng,
                     spawn_env,
                 )
-                mapping, _ = self.spawn_plan(plan, rand=rand)
+                mapping, _ = self.spawn_plan(
+                    plan,
+                    rand=rand,
+                    detail_preset=int(detail_preset),
+                )
                 spawned.extend(mapping)
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
