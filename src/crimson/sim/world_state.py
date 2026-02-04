@@ -152,6 +152,7 @@ class WorldState:
         demo_mode_active: bool,
         hardcore: bool,
         difficulty_level: int,
+        preserve_bugs: bool = False,
     ) -> WorldState:
         spawn_env = SpawnEnv(
             terrain_width=float(world_size),
@@ -163,6 +164,7 @@ class WorldState:
         state = GameplayState()
         state.demo_mode_active = bool(demo_mode_active)
         state.hardcore = bool(hardcore)
+        state.preserve_bugs = bool(preserve_bugs)
         players: list[PlayerState] = []
         creatures = CreaturePool(env=spawn_env)
         return cls(

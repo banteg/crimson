@@ -230,6 +230,21 @@ class BonusPickupEvent:
     pos_y: float
 
 
+# Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
+# suppression check: it clears the spawned entry when `amount == player1.weapon_id`
+# regardless of bonus type. In the rewrite, `amount` is used as the "effective"
+# duration/value for some bonuses, so `--preserve-bugs` compares against the
+# native amount domain (see docs/rewrite/original-bugs.md).
+_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[int, int] = {
+    int(BonusId.DOUBLE_EXPERIENCE): 0,
+    int(BonusId.FIRE_BULLETS): 4,
+}
+
+
+def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> int:
+    return int(_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(int(bonus_id), int(amount)))
+
+
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
@@ -432,10 +447,17 @@ class BonusPool:
                 self._clear_entry(entry)
                 return None
 
-        if entry.bonus_id == int(BonusId.WEAPON):
-            if players and entry.amount == players[0].weapon_id:
-                self._clear_entry(entry)
-                return None
+        if players:
+            weapon_id = int(players[0].weapon_id)
+            if bool(state.preserve_bugs):
+                amount = _bonus_amount_for_weapon_id_suppression(bonus_id=int(entry.bonus_id), amount=int(entry.amount))
+                if amount == weapon_id:
+                    self._clear_entry(entry)
+                    return None
+            else:
+                if entry.bonus_id == int(BonusId.WEAPON) and int(entry.amount) == weapon_id:
+                    self._clear_entry(entry)
+                    return None
 
         return entry
 
@@ -527,6 +549,7 @@ class GameplayState:
     game_mode: int = int(GameMode.SURVIVAL)
     demo_mode_active: bool = False
     hardcore: bool = False
+    preserve_bugs: bool = False
     status: GameStatus | None = None
     quest_stage_major: int = 0
     quest_stage_minor: int = 0

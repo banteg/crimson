@@ -56,6 +56,7 @@ class CameraShakeView:
             demo_mode_active=False,
             difficulty_level=0,
             hardcore=False,
+            preserve_bugs=bool(ctx.preserve_bugs),
             texture_cache=None,
             config=config,
             audio=None,

@@ -10,6 +10,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 ## How to run (current)
 
 - `uv run crimson` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
+- `uv run crimson --preserve-bugs` (re-enable known original exe bugs/quirks; useful for parity/diff testing)
 - `uv run crimson view <name>` (debug views + mode views)
 - `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
@@ -118,6 +119,7 @@ See also:
 - [Terrain (rewrite)](terrain.md)
 - [Bonus pickups (rewrite)](bonuses.md)
 - [Survival entry fade (decompile notes)](survival-transition-fade.md)
+- [Original bugs (and rewrite fixes)](original-bugs.md)
 
 ## Known gaps (short list)
 

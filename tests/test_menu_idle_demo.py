@@ -25,6 +25,7 @@ def _make_state(*, tmp_path: Path, demo_enabled: bool) -> GameState:
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=demo_enabled,
+        preserve_bugs=False,
         logos=None,
         texture_cache=None,
         audio=None,
@@ -92,4 +93,3 @@ def test_menu_idle_resets_on_key_press(monkeypatch, tmp_path: Path) -> None:
 
     view.update(0.1)
     assert view._idle_ms == 0
-

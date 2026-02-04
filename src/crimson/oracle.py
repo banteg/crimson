@@ -34,6 +34,7 @@ class OracleConfig:
     frame_rate: int = 60
     sample_rate: int = 1     # Emit state every N frames (1 = every frame, 60 = once per second)
     output_mode: str = OutputMode.SUMMARY
+    preserve_bugs: bool = False
 
 
 @dataclass(slots=True)
@@ -283,6 +284,7 @@ def run_headless(config: OracleConfig) -> None:
         demo_mode_active=False,
         hardcore=False,
         difficulty_level=0,
+        preserve_bugs=bool(config.preserve_bugs),
     )
 
     # Initialize with seed

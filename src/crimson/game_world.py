@@ -44,6 +44,7 @@ class GameWorld:
     demo_mode_active: bool = False
     difficulty_level: int = 0
     hardcore: bool = False
+    preserve_bugs: bool = False
     texture_cache: PaqTextureCache | None = None
     config: CrimsonConfig | None = None
     audio: AudioState | None = None
@@ -85,6 +86,7 @@ class GameWorld:
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
             difficulty_level=int(self.difficulty_level),
+            preserve_bugs=bool(self.preserve_bugs),
         )
         self.spawn_env = self.world_state.spawn_env
         self.state = self.world_state.state
@@ -128,6 +130,7 @@ class GameWorld:
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
             difficulty_level=int(self.difficulty_level),
+            preserve_bugs=bool(self.preserve_bugs),
         )
         self.spawn_env = self.world_state.spawn_env
         self.state = self.world_state.state
