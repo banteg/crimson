@@ -107,6 +107,7 @@ class SurvivalMode(BaseGameplayMode):
         self._demo_recorder = None
         self._demo_record_path = demo_record_path
         self._demo_record_path_resolved = None
+        self._demo_record_path_final = None
         self._demo_debug_fp = None
         self._demo_debug_full = demo_record_path is not None
 
@@ -179,6 +180,7 @@ class SurvivalMode(BaseGameplayMode):
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._demo_recorder = None
         self._demo_record_path_resolved = None
+        self._demo_record_path_final = None
         self._demo_debug_fp = None
         self._demo_debug_full = self._demo_record_path is not None
         self._maybe_begin_demo_recording()
@@ -194,6 +196,7 @@ class SurvivalMode(BaseGameplayMode):
             self._demo_debug_fp = None
         self._demo_debug_full = False
         self._demo_record_path_resolved = None
+        self._demo_record_path_final = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -371,6 +374,7 @@ class SurvivalMode(BaseGameplayMode):
         demo_out_path = self._demo_out_path()
         if demo_out_path is None:
             return
+        self._demo_record_path_final = demo_out_path
         debug_path = self._demo_debug_out_path(demo_out_path)
         if debug_path is not None:
             try:
@@ -447,7 +451,7 @@ class SurvivalMode(BaseGameplayMode):
         self._game_over_active = True
         self._perk_menu.close()
         if self._demo_recorder is not None:
-            out_path = self._demo_out_path()
+            out_path = self._demo_record_path_final or self._demo_out_path()
             if out_path is not None:
                 try:
                     self._demo_recorder.save(out_path)
