@@ -106,6 +106,7 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._demo_recorder = None
         self._demo_record_path = None
+        self._demo_record_path_resolved = None
         self._demo_debug_fp = None
 
     def _reset_perk_prompt(self) -> None:
@@ -177,6 +178,7 @@ class SurvivalMode(BaseGameplayMode):
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._demo_recorder = None
         self._demo_record_path = None
+        self._demo_record_path_resolved = None
         self._demo_debug_fp = None
         self._maybe_begin_demo_recording()
 
@@ -189,6 +191,7 @@ class SurvivalMode(BaseGameplayMode):
             except Exception:
                 pass
             self._demo_debug_fp = None
+        self._demo_record_path_resolved = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -286,6 +289,8 @@ class SurvivalMode(BaseGameplayMode):
         return ""
 
     def _demo_out_path(self) -> "Path | None":
+        if self._demo_record_path_resolved is not None:
+            return self._demo_record_path_resolved
         path = self._demo_record_path
         if path is None:
             return None
@@ -296,14 +301,19 @@ class SurvivalMode(BaseGameplayMode):
         except Exception:
             return None
         if path.suffix.lower() == ".crdemo":
+            self._demo_record_path_resolved = path
             return path
         if path.exists() and path.is_file():
-            return path.with_suffix(".crdemo")
+            resolved = path.with_suffix(".crdemo")
+            self._demo_record_path_resolved = resolved
+            return resolved
 
         import time
 
         stamp = int(time.time())
-        return path / f"survival_{stamp}.crdemo"
+        resolved = path / f"survival_{stamp}.crdemo"
+        self._demo_record_path_resolved = resolved
+        return resolved
 
     def _demo_debug_out_path(self, demo_path: "Path") -> "Path | None":
         raw = os.environ.get("CRIMSON_RECORD_DEMO_DEBUG", "").strip()
