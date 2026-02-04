@@ -486,6 +486,8 @@ class BonusPool:
 
             decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
             entry.time_left -= decay
+            if not entry.picked and int(state.game_mode) == int(GameMode.TUTORIAL):
+                entry.time_left = 5.0
             if entry.time_left < 0.0:
                 self._clear_entry(entry)
                 continue
