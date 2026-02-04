@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import math
 
 import pyray as rl
@@ -36,8 +35,7 @@ from .menu import (
 )
 from .transitions import _draw_screen_fade
 
-if TYPE_CHECKING:
-    from ..game import GameState, PauseBackground
+from .types import GameState, PauseBackground
 
 
 class PauseMenuView:
@@ -422,4 +420,3 @@ class PauseMenuView:
             if entry.row == row:
                 return idx
         return None
-

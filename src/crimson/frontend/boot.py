@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import os
 
 import pyray as rl
@@ -9,9 +8,7 @@ from grim.audio import init_audio_state, play_music, stop_music, update_audio, s
 from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets
 
 from .assets import _load_resource_entries
-
-if TYPE_CHECKING:
-    from ..game import GameState
+from .types import GameState
 
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {

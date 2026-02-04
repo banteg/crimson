@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pyray as rl
 
-if TYPE_CHECKING:
-    from ..game import GameState
+from .types import GameState
 
 
 SCREEN_FADE_OUT_RATE = 2.0

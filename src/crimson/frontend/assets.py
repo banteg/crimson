@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 import pyray as rl
 
 from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path
 
-if TYPE_CHECKING:
-    from ..game import GameState
+from .types import GameState
 
 
 @dataclass(slots=True)
