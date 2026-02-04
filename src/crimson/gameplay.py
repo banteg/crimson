@@ -1798,23 +1798,69 @@ def _spawn_projectile_ring(
     angle_offset: float,
     type_id: int,
     owner_id: int,
+    players: list[PlayerState] | None = None,
 ) -> None:
     if count <= 0:
         return
     step = math.tau / float(count)
-    meta = _projectile_meta_for_type_id(type_id)
     for idx in range(count):
-        state.projectiles.spawn(
+        _projectile_spawn(
+            state,
+            players=players,
             pos_x=float(origin.pos_x),
             pos_y=float(origin.pos_y),
             angle=float(idx) * step + float(angle_offset),
             type_id=int(type_id),
             owner_id=int(owner_id),
-            base_damage=meta,
         )
 
 
-def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) -> None:
+def _fire_bullets_active(players: list[PlayerState] | None) -> bool:
+    # Native `projectile_spawn` checks `player_state_table.fire_bullets_timer` and `player2_fire_bullets_timer`
+    # (i.e. the first two players).
+    if not players:
+        return False
+    for player in players[:2]:
+        if float(player.fire_bullets_timer) > 0.0:
+            return True
+    return False
+
+
+def _projectile_spawn(
+    state: GameplayState,
+    *,
+    players: list[PlayerState] | None,
+    pos_x: float,
+    pos_y: float,
+    angle: float,
+    type_id: int,
+    owner_id: int,
+    hits_players: bool = False,
+) -> int:
+    # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
+    type_id = int(type_id)
+    owner_id = int(owner_id)
+    if (
+        (not state.bonus_spawn_guard)
+        and owner_id in (-100, -1, -2, -3)
+        and type_id != int(ProjectileTypeId.FIRE_BULLETS)
+        and _fire_bullets_active(players)
+    ):
+        type_id = int(ProjectileTypeId.FIRE_BULLETS)
+
+    meta = _projectile_meta_for_type_id(type_id)
+    return state.projectiles.spawn(
+        pos_x=float(pos_x),
+        pos_y=float(pos_y),
+        angle=float(angle),
+        type_id=int(type_id),
+        owner_id=int(owner_id),
+        base_damage=float(meta),
+        hits_players=bool(hits_players),
+    )
+
+
+def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
     player.man_bomb_timer += dt
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
@@ -1823,13 +1869,14 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     for idx in range(8):
         type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
-        state.projectiles.spawn(
+        _projectile_spawn(
+            state,
+            players=players,
             pos_x=player.pos_x,
             pos_y=player.pos_y,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
-            base_damage=_projectile_meta_for_type_id(type_id),
         )
     state.sfx_queue.append("sfx_explosion_small")
 
@@ -1837,25 +1884,24 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     state.perk_intervals.man_bomb = 4.0
 
 
-def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplayState) -> None:
+def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
     player.hot_tempered_timer += dt
     if player.hot_tempered_timer <= state.perk_intervals.hot_tempered:
         return
 
     owner_id = _owner_id_for_player(player.index) if state.friendly_fire_enabled else -100
-    state.bonus_spawn_guard = True
     for idx in range(8):
         type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
         angle = float(idx) * (math.pi / 4.0)
-        state.projectiles.spawn(
+        _projectile_spawn(
+            state,
+            players=players,
             pos_x=player.pos_x,
             pos_y=player.pos_y,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
-            base_damage=_projectile_meta_for_type_id(type_id),
         )
-    state.bonus_spawn_guard = False
     state.sfx_queue.append("sfx_explosion_small")
 
     player.hot_tempered_timer -= state.perk_intervals.hot_tempered
@@ -1888,13 +1934,14 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     jitter_x = aim_x + math.cos(dir_angle) * offset
     jitter_y = aim_y + math.sin(dir_angle) * offset
     angle = math.atan2(jitter_y - float(player.pos_y), jitter_x - float(player.pos_x)) + math.pi / 2.0
-    state.projectiles.spawn(
+    _projectile_spawn(
+        state,
+        players=[player],
         pos_x=muzzle_x,
         pos_y=muzzle_y,
         angle=angle,
         type_id=ProjectileTypeId.FIRE_BULLETS,
         owner_id=owner_id,
-        base_damage=_projectile_meta_for_type_id(ProjectileTypeId.FIRE_BULLETS),
     )
 
     vel_x = math.cos(aim_heading) * 25.0
@@ -1914,6 +1961,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
 class _PlayerPerkTickCtx:
     state: GameplayState
     player: PlayerState
+    players: list[PlayerState] | None
     dt: float
     stationary: bool
 
@@ -1923,7 +1971,7 @@ _PlayerPerkTickStep = Callable[[_PlayerPerkTickCtx], None]
 
 def _player_perk_tick_man_bomb(ctx: _PlayerPerkTickCtx) -> None:
     if ctx.stationary and perk_active(ctx.player, PerkId.MAN_BOMB):
-        _perk_update_man_bomb(ctx.player, ctx.dt, ctx.state)
+        _perk_update_man_bomb(ctx.player, ctx.dt, ctx.state, players=ctx.players)
     else:
         ctx.player.man_bomb_timer = 0.0
 
@@ -1944,7 +1992,7 @@ def _player_perk_tick_fire_cough(ctx: _PlayerPerkTickCtx) -> None:
 
 def _player_perk_tick_hot_tempered(ctx: _PlayerPerkTickCtx) -> None:
     if perk_active(ctx.player, PerkId.HOT_TEMPERED):
-        _perk_update_hot_tempered(ctx.player, ctx.dt, ctx.state)
+        _perk_update_hot_tempered(ctx.player, ctx.dt, ctx.state, players=ctx.players)
     else:
         ctx.player.hot_tempered_timer = 0.0
 
@@ -2287,6 +2335,7 @@ def player_update(
     *,
     detail_preset: int = 5,
     world_size: float = 1024.0,
+    players: list[PlayerState] | None = None,
 ) -> None:
     """Port of `player_update` (0x004136b0) for the rewrite runtime."""
 
@@ -2380,7 +2429,7 @@ def player_update(
     if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
 
-    perk_ctx = _PlayerPerkTickCtx(state=state, player=player, dt=dt, stationary=stationary)
+    perk_ctx = _PlayerPerkTickCtx(state=state, player=player, players=players, dt=dt, stationary=stationary)
     for step in _PLAYER_PERK_TICK_STEPS:
         step(perk_ctx)
 
@@ -2407,6 +2456,7 @@ def player_update(
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,
                     owner_id=_owner_id_for_player_projectiles(state, player.index),
+                    players=players,
                 )
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")
@@ -2642,13 +2692,14 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
 
     ctx.state.bonus_spawn_guard = True
     ctx.state.shock_chain_links_left = 0x20
-    ctx.state.shock_chain_projectile_id = ctx.state.projectiles.spawn(
+    ctx.state.shock_chain_projectile_id = _projectile_spawn(
+        ctx.state,
+        players=ctx.players,
         pos_x=origin_x,
         pos_y=origin_y,
         angle=angle,
         type_id=int(ProjectileTypeId.ION_RIFLE),
         owner_id=int(owner_id),
-        base_damage=_projectile_meta_for_type_id(int(ProjectileTypeId.ION_RIFLE)),
     )
     ctx.state.bonus_spawn_guard = False
     ctx.state.sfx_queue.append("sfx_shock_hit_01")
@@ -2684,6 +2735,7 @@ def _bonus_apply_fireblast(ctx: _BonusApplyCtx) -> None:
         angle_offset=0.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
         owner_id=int(owner_id),
+        players=ctx.players,
     )
     ctx.state.bonus_spawn_guard = False
     ctx.state.sfx_queue.append("sfx_explosion_medium")
@@ -2703,31 +2755,31 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
 
     bullet_count = int(rand()) & 3
     bullet_count += 4
-    pistol_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.PISTOL))
     for _ in range(bullet_count):
         angle = float(int(rand()) % 0x274) * 0.01
-        proj_id = ctx.state.projectiles.spawn(
+        proj_id = _projectile_spawn(
+            ctx.state,
+            players=ctx.players,
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
             type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
-            base_damage=pistol_meta,
         )
         if proj_id != -1:
             speed_scale = float(int(rand()) % 0x32) * 0.01 + 0.5
             ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
 
-    gauss_meta = _projectile_meta_for_type_id(int(ProjectileTypeId.GAUSS_GUN))
     for _ in range(2):
         angle = float(int(rand()) % 0x274) * 0.01
-        ctx.state.projectiles.spawn(
+        _projectile_spawn(
+            ctx.state,
+            players=ctx.players,
             pos_x=ox,
             pos_y=oy,
             angle=float(angle),
             type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
-            base_damage=gauss_meta,
         )
 
     ctx.state.effects.spawn_explosion_burst(
