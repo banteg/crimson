@@ -1,448 +1,295 @@
-Here’s what I see in your repo **right now**, and a concrete “next phase” plan that turns your replay + headless verification + Frida differential fuzzing idea into a real subsystem that fits your current architecture.
+I pulled your patch on top of the 2026‑02‑05 zip and walked the phase 1–3 implementation end-to-end (new `crimson/replay/*`, `crimson/sim/runners/*`, integration in `SurvivalMode`/`RushMode` + `PerkMenuController`, plus `ReplayPlaybackMode` + CLI hook).
 
-## What you already have that’s perfect groundwork
+What you have is a solid “spine” — but there are a few determinism killers / missing bits that will make real-world replays diverge (and therefore make headless verification flaky) unless you address them **inside phases 1–3**.
 
-### 1) A clean “pure-ish” sim core
+## What’s already good
 
-* The deterministic core is basically `WorldState.step()` in **`src/crimson/sim/world_state.py`**.
-* The RNG is **MSVCRT-style and deterministic** (`grim.rand.Crand`), stored in `GameplayState.rng` (see **`src/crimson/gameplay.py`**).
-* You already enforce “sim code must not import pyray” via import-linter (`pyproject.toml`).
+* **Replay core** (`src/crimson/replay/codec.py`, `types.py`, `recorder.py`)
 
-This is exactly the separation you want for:
+  * Stable gzipped JSON with `mtime=0` + sorted keys + compact separators.
+  * Format versioning (`v=1`) and a structured header.
+  * Input packing is compact and reasonable (`[mx,my,ax,ay,flags]`).
+  * Quantization option (`input_quantization="f32"`) is a nice hook for “match original f32 input resolution” experiments later.
 
-* deterministic replays
-* server-side verification
-* differential testing
+* **Headless runners** (`src/crimson/sim/runners/survival.py`, `rush.py`)
 
-### 2) Mode-specific gameplay logic exists, but is currently “UI/loop-bound”
+  * Correctly rebuild mode state, apply events, step world, then do spawns using the same spawn helpers as the in-game modes.
+  * Returning a clean `RunResult` is exactly what you want for server verification later.
 
-Survival/Rush/Quest logic lives in **`src/crimson/modes/*`** and mixes:
+* **In-game recording** (`src/crimson/modes/survival_mode.py`, `rush_mode.py`)
 
-* input polling (raylib)
-* UI/perk menu behavior
-* sim stepping (`self._world.update(...)`)
-* mode-specific spawns (`tick_survival_wave_spawns`, etc.)
+  * Recording inputs only when sim advances (`dt_world > 0`) is correct.
+  * Hooking perk picks via `PerkMenuController(on_pick=…)` is the right direction.
 
-To make replays + headless runs real, the key gap is:
+* **Playback mode** (`src/crimson/modes/replay_playback_mode.py`)
 
-> There isn’t yet a *headless runner* for “real Survival/Rush/etc”, only a headless runner for the *micro-sim*.
+  * You already implemented a fixed-step accumulator pattern there (`_dt_accum` / `_tick_one()`), which becomes important below.
 
-### 3) You already have differential testing infrastructure
+## Biggest missing pieces (these will break determinism)
 
-* `crimson.oracle` is a headless harness (**`src/crimson/oracle.py`**) that emits state per frame.
-* Frida scripts already exist and emit structured logs (e.g. **`scripts/frida/weapon_switch_trace.js`**), reduced by **`scripts/weapon_switch_trace_reduce.py`**.
-* You even have a test asserting reduced oracle output: **`tests/test_oracle_weapon_switch_summary.py`**.
+### 1) Timebase mismatch: live run uses variable `dt`, replay assumes fixed `tick_rate`
 
-That’s huge. You’re not starting from zero.
+Right now:
 
-### Important reality check
+* Live game loop: `grim.app.run_view()` uses `rl.get_frame_time()` (variable dt).
+* `BaseGameplayMode._tick_frame()` returns `dt_frame = dt` (no fixed step).
+* `SurvivalMode` / `RushMode` record **one tick per rendered frame**.
+* Replay header hardcodes `tick_rate=60`.
+* Headless runner + playback mode simulate `dt_frame = 1 / tick_rate`.
 
-Your current `crimson.oracle.run_headless()` **does not run mode spawns** (it only calls `WorldState.step()`), so it’s not yet suitable for verifying survival highscores. It’s a differential harness (as the docstring says), not a full gameplay runner.
+That means: **your replay is not actually “inputs per tick”; it’s “inputs per rendered frame”, but your replayer interprets it as “inputs per 1/60 tick”.** Any run that isn’t exactly 60.000 FPS (and almost none are) will drift; and drift in this game will cascade into different RNG usage, different spawns, different hits → different score.
 
-So the “next phase” is mainly: **extract mode logic into headless runners** + **define a replay format** + **wire recording/playback**.
+This is the single highest priority fix.
+
+**Concrete fix options (pick one):**
+
+**Option A (recommended): make gameplay sim fixed-step at 60 Hz (like your playback mode).**
+You already wrote the pattern in `ReplayPlaybackMode`. Apply the same idea to real gameplay modes:
+
+* Keep UI animation on real `dt`.
+* Step simulation in a loop with `dt_tick = 1/60` (or header tick_rate).
+* Record one input packet per sim tick.
+
+This makes your recorded replays and headless runners consistent.
+
+**Option B: record `dt` per tick in the replay.**
+This preserves variable-dt behavior, but increases replay size and complexity, and makes server verification more expensive/less “canonical”.
+
+Given your current design already encodes `tick_rate`, Option A is much more aligned with what you’ve built.
+
+**Concrete plan for Option A:**
+
+* Introduce a reusable clock (e.g. `crimson/sim/clock.py`):
+
+  * `tick_rate`, `dt_tick`, `accum`
+  * `advance(real_dt) -> number_of_ticks`
+* In `SurvivalMode.update()` / `RushMode.update()`:
+
+  * Run `_tick_frame(dt)` for UI/mouse only.
+  * Accumulate real dt, then `for _ in range(ticks_to_run):`
+
+    * build input snapshot (same code you already have)
+    * **record tick** (recorder)
+    * advance sim exactly one tick (`dt_world = dt_tick`)
+* On pause/gameover/perk menu, clear the accumulator so you don’t “catch up” with a giant burst when unpausing.
+
+Until this is fixed, any replay correctness is basically “it works on my machine at perfect FPS”.
 
 ---
 
-## The target shape of the system
+### 2) Your “headless sim” is **not** executing the same RNG-consuming path as the live game
 
-You want one canonical artifact:
+This is the other big determinism breaker.
 
-> **Replay = (initial conditions) + (tick inputs) + (discrete events like perk picks)**
-> Compressed + versioned + replayable both in-game and headlessly.
+Live modes call `self._world.update(dt_world, inputs=…)` (GameWorld.update).
+Headless runners call `world.step(dt_sim, …)` (WorldState.step) directly.
 
-Then everything falls out naturally:
+That seems fine, except **`GameWorld.update()` consumes `state.rng` after the step**:
 
-* client can save replays
-* server can replay and verify claims
-* replays can be shared by ID
-* Frida can emit the same format from the original
-* fuzzing becomes “generate replays → run both → diff checkpoints”
+* It calls `AudioRouter.play_hit_sfx(..., rand=self.state.rng.rand)` for hits.
+* It calls `AudioRouter.play_death_sfx(..., rand=self.state.rng.rand)` for deaths.
+* It calls `_queue_projectile_decals(events.hits)` which in turn calls:
+
+  * `FxQueue.add_random(..., rand=state.rng.rand)` (4 rand calls per decal attempt)
+  * `effects.spawn_blood_splatter(..., rand=state.rng.rand, ...)` (more rand calls)
+
+None of that happens in the headless runner today. So the first time you hit something (which is… basically immediately in any real run), the RNG stream diverges and the whole run diverges.
+
+This is *not theoretical* — your current tests don’t catch it because the test replay never fires (no hits/deaths).
+
+**You need to decide what belongs inside the deterministic “sim boundary”:**
+
+* If decals/audio variations are **presentation-only**, they must not advance the sim RNG.
+* If they are **part of the original RNG stream**, then headless replay must execute the same RNG-consuming logic even if it doesn’t actually render/play sound.
+
+Right now you’re in the worst middle ground: they advance sim RNG in-game, but not in headless/playback → divergence.
+
+**Concrete plan (two viable approaches):**
+
+#### Approach 2A: Decouple presentation randomness from sim RNG
+
+Goal: make `GameplayState.rng` a “simulation RNG only”.
+
+* Change hit/death sfx selection to use `audio_rng` (or a dedicated `presentation_rng`), not `state.rng`.
+
+  * In `GameWorld.update`, you currently pass `rand=self.state.rng.rand` into audio router. That’s the coupling. Break it.
+* Change `_queue_projectile_decals` / blood splatter / `FxQueue.add_random` to use a presentation RNG too.
+
+After this, headless runner doesn’t need to care about decals/audio at all — sim RNG stays consistent.
+
+This best matches your “simulation is almost a pure function” direction.
+
+#### Approach 2B: Make post-step RNG consumption deterministic and share it between live + headless
+
+Goal: headless must consume the same RNG as live, without needing pyray/audio.
+
+* Factor the RNG-consuming parts of:
+
+  * hit/death sfx selection (but return “which sfx key” instead of playing it)
+  * projectile hit decal/blood logic
+    into a `crimson.sim.post_step` module **that does not import pyray**.
+* Call it from:
+
+  * `GameWorld.update()` (use outputs to play audio / enqueue decals)
+  * headless runner (discard outputs but still consume RNG & update fx queues/effects as needed)
+
+If you do this, also ensure **fx queues are cleared each tick** in headless, because:
+
+* `FxQueue.add_random()` *does not consume RNG* if the queue is full (`if self._count >= self._max_count: return False`).
+* In real game, `bake_fx_queues(..., clear=True)` clears queues every frame.
+* In headless, your `FxQueue` will otherwise eventually fill → RNG consumption changes → divergence again.
 
 ---
 
-## Phase 1: Define the replay format (MVP) + build the core library
+### 3) Status snapshot is incomplete for deterministic weapon drops
 
-### 1) Add `crimson/replay/` package
+You only snapshot:
 
-Create:
+* `quest_unlock_index`
+* `quest_unlock_index_full`
 
-* `src/crimson/replay/types.py`
-* `src/crimson/replay/codec.py`
-* `src/crimson/replay/recorder.py`
+…but gameplay uses persistent status **during the run** for weapon drop bias:
 
-#### Replay contents (MVP)
+* `weapon_pick_random_available()` checks `status.weapon_usage_count(candidate)` and may reroll.
 
-**Header**
+So two players with different `weapon_usage_counts` can get different drops from the same seed + inputs.
 
-* `format_version`
-* `game_mode_id` (your `GameMode` enum values)
-* `seed` (32-bit)
-* `tick_rate` (usually 60)
-* `difficulty_level`, `hardcore`, `preserve_bugs`
-* `world_size`
-* `player_count`
-* **status snapshot** (at least `quest_unlock_index`, `quest_unlock_index_full`)
-  because your sim calls `weapon_refresh_available()` / `perks_rebuild_available()` which depend on status.
+Your headless runner uses `status_from_snapshot()` which builds `default_status_data()` (weapon usage counts all zero). So any run where weapon drops happen can diverge purely because the player profile differed.
 
-**Tick inputs**
-Per simulation tick, per player:
+**Concrete fix:**
+Extend `ReplayStatusSnapshot` to also carry:
 
-* `move_x, move_y`
-* `aim_x, aim_y` (world coords)
-* `fire_down, fire_pressed, reload_pressed`
+* `weapon_usage_counts: list[int]` (or `tuple[int, ...]`)
 
-**Events**
-Discrete events with a `tick_index`:
+Then in `status_from_snapshot()` apply it to the constructed `GameStatus`.
 
-* `perk_pick`: `{player_index, choice_index}`
-  (optionally also record `choices` and `picked_perk_id` for debugging)
+This is cheap in size (53 ints) and removes a major nondeterminism source.
 
-This is enough to reproduce a run *exactly* in your rewrite.
+If you *don’t* want leaderboard runs to depend on profile state, then you should instead enforce a “clean status” for recorded/verified runs (state.status=None or reset counts). But that’s a design decision — current code implies status matters, so replay must capture it.
 
-### 2) Serialization: use “JSON + gzip” first
+---
 
-You’ll get compression “for free” and it’s dead easy to:
+### 4) Perk menu “open then cancel” is not recorded, but it can consume RNG
 
-* emit from Python
-* emit from Frida (JSON)
-* store/serve from a backend
+You record only `perk_pick` events.
 
-Later you can add a binary `construct` codec once the pipeline works end-to-end.
+However, `perk_selection_current_choices()` consumes RNG the first time it generates choices (when `choices_dirty` is set). That function is called by `PerkMenuController` when opening the menu (and every frame while open).
 
-**Key detail:** avoid per-frame dict verbosity. Use compact arrays.
-Example shape:
+If the player:
 
-```json
-{
-  "v": 1,
-  "header": { ... },
-  "inputs": [
-    [[mx,my,ax,ay,flags], ...players],
-    ...
-  ],
-  "events": [
-    [tick, "perk_pick", player, choice_index]
-  ]
-}
+1. has pending perks,
+2. opens perk menu (choices are generated; RNG consumed),
+3. closes/cancels without picking,
+4. continues playing,
+5. later opens again and picks,
+
+…then in the real run the RNG consumption happened back at step (2), not at pick time.
+
+Your replay runner, with only a later `perk_pick`, will generate choices later (at pick) and the run will diverge.
+
+**Concrete fix:**
+Add a new replay event kind, something like:
+
+* `perk_menu_open` (tick_index, player_index)
+
+Record it when the menu actually opens (or when choices generation actually happens). In the runner:
+
+* on `perk_menu_open` at tick N, call `perk_selection_current_choices(state, player, game_mode=..., player_count=...)`
+* on `perk_pick`, call `perk_selection_pick` as you do now
+
+This reproduces RNG consumption timing for cancel/reopen flows.
+
+If you want an even tighter spec: record an event specifically when `choices_dirty` flips false (i.e., “choices generated”), not merely when menu opens.
+
+---
+
+### 5) `crimson.__version__` currently breaks “run from source”
+
+Your new `src/crimson/__init__.py` does:
+
+```py
+from importlib.metadata import version
+__version__ = version("crimsonland")
 ```
 
-### 3) Decide input precision at the sim boundary (do this deliberately)
+If the package metadata isn’t installed (common in tests / running via `PYTHONPATH=src`), this raises `PackageNotFoundError` and `import crimson` fails. I hit this immediately when running your tests from the repo.
 
-Right now, live input is computed with Python floats (f64), but the original game uses f32-ish values.
+**Concrete fix:**
+Wrap with a fallback:
 
-You’ll get much stronger determinism if you define a single rule:
+```py
+from importlib.metadata import PackageNotFoundError, version
 
-* **Option A (simplest):** record and replay *exact Python floats* you fed into sim.
-* **Option B (recommended for long-term + original diffing):** quantize input at the boundary (e.g. cast through float32 or fixed-point) **before** it enters sim and **before** recording.
+try:
+    __version__ = version("crimsonland")
+except PackageNotFoundError:
+    __version__ = "0.0.0+dev"
+```
 
-If you do Option B, “recorded replay” becomes more portable and it narrows f64/f32 divergences when comparing against the original.
-
----
-
-## Phase 2: Build headless *mode runners* (this unlocks server verification)
-
-This is the main “make it real” work.
-
-### Why you need it
-
-Your interactive modes currently do:
-
-* compute dt + pause handling
-* compute input
-* call `GameWorld.update()` (which itself does time scaling + calls `WorldState.step()`)
-* then do mode spawns (survival/rush/quest)
-* then handle game over / highscores
-
-Headless verification needs to do the same *without pyray*.
-
-### 1) Create `src/crimson/sim/runners/`
-
-Add:
-
-* `src/crimson/sim/runners/common.py`
-* `src/crimson/sim/runners/survival.py`
-* `src/crimson/sim/runners/rush.py`
-
-Define:
-
-* `RunResult` (score, kills, elapsed_ms, etc.)
-* `Checkpoint` output (optional but very useful)
-
-### 2) Implement Survival runner by mirroring `SurvivalMode.update`
-
-Look at **`src/crimson/modes/survival_mode.py`**:
-
-* `_SurvivalState` tracks `elapsed_ms`, `stage`, `spawn_cooldown`
-* after `world.update(...)` it calls:
-
-  * `advance_survival_spawn_stage(...)`
-  * `tick_survival_wave_spawns(...)`
-  * then `creatures.spawn_template(...)` / `creatures.spawn_inits(...)`
-
-Your headless runner should do the same, but using `WorldState` directly (not `GameWorld`, because `GameWorld` imports pyray).
-
-Also, replicate the one piece of important sim logic currently in `GameWorld.update()`:
-
-* **Reflex Boost time scaling**:
-
-  * in `GameWorld.update()` it scales `dt` based on `state.bonuses.reflex_boost`
-  * do the same in headless runner before calling `WorldState.step()`
-
-Also replicate:
-
-* `weapon_refresh_available(state)`
-* `perks_rebuild_available(state)`
-
-(these are called inside `GameWorld.update()` today, and they matter for perk/weapon availability)
-
-### 3) Apply replay events in the runner
-
-For each tick:
-
-* before stepping sim, apply all events at that `tick_index`:
-
-  * for perk picks, call your existing `perk_selection_pick(...)`
-
-This is enough because:
-
-* if choices are dirty, `perk_selection_pick` will generate them (consuming RNG)
-* in the real game this happens during pause/UI, but simulation is paused so RNG state is the same
-
-### 4) Rush runner is even easier
-
-Mirror **`src/crimson/modes/rush_mode.py`**:
-
-* enforce loadout every tick (`weapon_assign_player` + ammo top-up)
-* call `tick_rush_mode_spawns(...)`
-* spawn inits
-* terminate on death
-
-No perks, no menu.
-
-### Output of runners
-
-Make them produce:
-
-* “final result” for verification:
-
-  * experience (score)
-  * kill_count
-  * elapsed_ms
-  * shots fired/hit (available in `GameplayState`)
-* optionally a deterministic `final_hash` or periodic checkpoint hashes (excellent for diff tests + fuzz)
+This matters because `ReplayHeader` defaults `game_version` via `crimson.__version__`.
 
 ---
 
-## Phase 3: Record replays in the live game + playback in-game
+## Smaller correctness nits (worth fixing while you’re here)
 
-### Recording hook points (concrete, in your current code)
+* **ReplayPlaybackMode dt scaling order**
 
-#### 1) Capture tick inputs
+  * In `ReplayPlaybackMode._tick_one()`, `dt_sim = time_scale_reflex_boost_bonus(...)` is computed *before* applying tick events (`perk_pick`).
+  * In your headless runner, you apply events first, *then* compute dt_sim.
+  * If any event can affect `state.bonuses.reflex_boost` or similar time scaling, playback could diverge.
+  * Fix: compute `dt_sim` after applying events for that tick.
 
-In SurvivalMode and RushMode, you already build one `PlayerInput` per frame:
+* **Event ordering / validation**
 
-* `input_state = self._build_input()`
-* passed to world: `inputs=[input_state for _ in self._world.players]`
+  * You don’t currently validate that event tick indices are within `[0, len(inputs)]` or non-negative.
+  * Fine for local files; for eventual verification you’ll want strict bounds. Even now it’s helpful to fail with a clean error.
 
-So for recording:
+* **Naming clarity**
 
-* right after `_build_input()` and before `_world.update(...)`, do `recorder.record_tick(...)`.
-
-#### 2) Capture perk selections
-
-Perk selection happens in **`PerkMenuController.handle_input()`** (see `src/crimson/modes/components/perk_menu_controller.py`):
-
-* it calls `perk_selection_pick(...)` when user clicks/presses enter.
-
-Add a minimal callback mechanism:
-
-* `PerkMenuController(..., on_pick: callable | None = None)`
-* when a pick happens, call `on_pick(tick_index, choice_index, picked_perk_id, choices_snapshot)`
-
-SurvivalMode has access to the current tick count (your recorder can maintain it).
-
-This avoids hacking gameplay.py and keeps recording logic in the UI layer where it belongs.
-
-#### 3) Save on game over
-
-SurvivalMode already builds a highscore record in `_enter_game_over()`.
-At that moment:
-
-* finalize replay
-* write `replays/<timestamp>_<sha256>.crdemo.gz`
-
-### Playback
-
-Add a `ReplayPlaybackMode` that:
-
-* loads replay
-* drives the sim using the headless runner but renders with your existing `GameWorld` drawing (or directly uses `WorldState` + renderer)
-* displays “REPLAY” overlay
-
-MVP can be survival-only.
+  * `ReplayHeader.seed` is actually “RNG state at tick 0” (post `GameWorld.open()` terrain seed consumption), not “the initial seed used for reset”.
+  * Not wrong, but I’d rename to `rng_state` (and optionally also store `reset_seed` later).
 
 ---
 
-## Phase 4: Server verification + replay hosting
+## Concrete “phase 1–3 hardening” plan
 
-Once you have:
+If I were sequencing this so you get a working, reliable replay loop **before** going to phase 4 (server), I’d do:
 
-* replay format
-* headless survival runner
-* `RunResult`
+1. **Fix the timebase first** (fixed-step sim at 60 Hz in Survival/Rush)
 
-Server is straightforward.
+   * This aligns recording ↔ playback ↔ headless.
+   * Without it, nothing else is stable.
 
-### Server verification contract
+2. **Pick & implement a determinism boundary**
 
-Client submits:
+   * Either:
 
-* replay blob
-* claimed `{score, kill_count, elapsed_ms}` (or just score)
+     * decouple decals/audio RNG from sim RNG (preferred for “pure function”),
+     * or factor post-step RNG consumers into shared sim code and call it in headless too.
+   * Add “clear fx queues per tick” to headless if you go with the latter.
 
-Server:
+3. **Expand replay snapshot to include status.weapon_usage_counts**
 
-* decompress + parse replay
-* run headless runner
-* compare computed result to claim
-* if match: accept, store replay by content hash
-* return `submission_id = sha256(replay_bytes)`
+   * Otherwise weapon drops alone will invalidate replays for many players.
 
-### Storage model
+4. **Add `perk_menu_open` (or “choices_generated”) event**
 
-Content addressed storage is perfect:
+   * Record it on menu open / choice generation, replay it in runners.
 
-* key: `sha256(compressed_replay_bytes)`
-* value: replay bytes + computed result + metadata (name/time/version)
+5. **Fix `__version__` fallback**
 
-Replay retrieval by ID is then trivial.
+   * Unblocks tests + tooling.
 
-Even if you don’t build a web API immediately, you can start with:
+6. **Add tests that actually exercise the problematic paths**
 
-* `crimson replay verify <file> --claim ...`
-* then wrap it later in FastAPI.
+   * A minimal headless test that fires enough to generate:
 
----
+     * projectile hits (to trigger decal/audio paths)
+     * a weapon drop (to trigger status bias)
+     * a perk menu open/cancel flow (to trigger choice generation timing)
 
-## Phase 5: Differential testing and fuzzing vs the original using Frida
-
-You already have the most important part: **Frida logging infrastructure + reduction scripts + test fixtures**.
-
-Now you want two new capabilities:
-
-1. **Emit the same replay format from original** (capture)
-2. **Drive original from a replay** (injection) to fuzz
-
-### 5.1 Capture from original (easy first step)
-
-Write `scripts/frida/replay_capture.js` that logs per tick:
-
-* input state (either high-level or low-level)
-* perk applied events
-* seed (if accessible)
-* enough header info to reproduce in rewrite
-
-If you want to match your replay schema:
-
-* emit JSONL that your Python tool converts into `.crdemo.gz`
-
-**Where to hook:**
-
-* `gameplay_update_and_render` or a per-frame function (you already know these in docs)
-* grim input functions (`grim_is_key_down`, mouse getters) to infer inputs
-
-### 5.2 Drive original from a replay (harder, but you’re already close)
-
-Create `scripts/frida/replay_driver.js`:
-
-* loads a replay JSON (or inputs JSON) path from env var
-* sets RNG seed by calling `crt_srand` (you have address in docs: `FUN_00461739`)
-* overrides grim input APIs:
-
-  * `grim_is_key_down`
-  * `grim_was_key_pressed`
-  * `grim_get_mouse_x/y`
-  * mouse button pressed/down
-* increments a `tick_index` by hooking a known “frame boundary” function
-
-Perk selection:
-
-* hook `perk_selection_screen_update` (probe already lists `0x00405be0`)
-* force the selection index recorded in replay (simulate mouse/enter press or write the selection state directly)
-* OR (first milestone) don’t inject perk selection, just run with auto-picks and compare perk_apply logs
-
-### 5.3 Compare using checkpoint hashing, not full state
-
-Because you’re f64 and original is f32, start with a **checkpoint schema** (like your oracle summary):
-
-* score (experience)
-* kills
-* player pos/health/weapon/level
-* bonus timers
-* creature_count
-
-Emit that from:
-
-* your headless replay runner
-* original frida script
-
-Then diff (with tolerances for floats). This is much more stable than comparing “everything”.
-
-### 5.4 Fuzzing harness
-
-Once the runner + driver exist:
-
-* generate random replay inputs/events
-* run rewrite headless → checkpoint trace
-* run original via frida driver → checkpoint trace
-* compare
-* on mismatch: delta-debug (minimize input stream), save as regression replay under `analysis/fuzz/`
-
-This plugs directly into your existing “analysis/fixtures + tests” pattern.
+Right now your tests validate the plumbing (codec, runner stepping), but they don’t hit the branches that will break real runs.
 
 ---
 
-## The fastest “next phase” path I’d execute in this repo
-
-If you want the shortest path to “this is real and useful” (replays + server verification):
-
-1. **Implement replay types + JSON+gzip codec** (`crimson/replay/*`)
-2. **Implement `crimson.sim.runners.survival`** (mirror survival spawns + reflex dt scaling)
-3. **Add CLI: `crimson replay run/verify`** (headless)
-4. **Wire recording into SurvivalMode** (tick inputs + perk picks)
-5. Save replay on game over; verify locally by running `crimson replay verify`
-
-Only after that:
-6) Playback mode (nice UX)
-7) Frida replay capture/driver + fuzz harness
-
-That sequencing avoids getting stuck in Frida complexity before you’ve nailed the replay contract and headless sim.
-
----
-
-## Gotchas to proactively design around
-
-* **Status/unlocks affect perk/weapon availability**
-  If you don’t include a status snapshot (or enforce “all unlocked”), server verification and diff testing will be unstable.
-
-* **Variable dt vs fixed tick**
-  Decide if ranked/verified runs use fixed tick dt (recommended).
-  If not, you must record dt-per-tick and then you’re trusting client timing.
-
-* **Perk pick timing matters**
-  Not just “which perks” but “when picked” affects survival outcome.
-  That’s why perk picks must be events with tick indices.
-
-* **Float64 vs float32** (original diffing)
-  Start by diffing checkpoint summaries with tolerances; only then expand.
-
----
-
-If you want one deliverable spec out of this: I’d write a `docs/replay-format.md` that locks:
-
-* header fields
-* tick input representation
-* event types
-* versioning rules
-
-…and then implement the headless Survival runner as the first “proof the format is sufficient” milestone. That’s the moment you can verify highscores and everything else becomes iteration, not invention.
+If you want, I can also point to the exact “RNG-coupling hotspots” you’ll want to audit beyond `GameWorld.update()` (anything that calls `state.rng.rand` but shouldn’t for sim purity), but the items above are the ones that will bite you immediately when you try to verify a real recorded run headlessly.
