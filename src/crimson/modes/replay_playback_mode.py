@@ -324,6 +324,13 @@ class ReplayPlaybackMode:
             self._tick_one()
             self._dt_accum -= self._dt_frame
 
+        # `GameWorld.open()` schedules terrain generation, but our playback loop
+        # steps `WorldState` directly (bypassing `GameWorld.update()`), so we
+        # must process pending ground work explicitly.
+        world = self._world
+        if world is not None and world.ground is not None:
+            world.ground.process_pending()
+
     def draw(self) -> None:
         world = self._world
         if world is not None:

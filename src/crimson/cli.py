@@ -208,8 +208,8 @@ def cmd_view(
 @replay_app.command("play")
 def cmd_replay_play(
     replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
-    width: int = typer.Option(1280, help="window width"),
-    height: int = typer.Option(720, help="window height"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
@@ -225,6 +225,7 @@ def cmd_replay_play(
     """Play back a recorded replay."""
     from grim.app import run_view
     from grim.console import create_console
+    from grim.config import ensure_crimson_cfg
     from grim.view import ViewContext
 
     from .assets_fetch import download_missing_paqs
@@ -233,6 +234,11 @@ def cmd_replay_play(
     if assets_dir is None:
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
+    cfg = ensure_crimson_cfg(base_dir)
+    if width is None:
+        width = int(cfg.screen_width)
+    if height is None:
+        height = int(cfg.screen_height)
     console = create_console(base_dir, assets_dir=assets_dir)
     download_missing_paqs(assets_dir, console)
 
