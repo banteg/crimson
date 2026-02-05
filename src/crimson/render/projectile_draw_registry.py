@@ -52,7 +52,16 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
         ox = float(getattr(ctx.proj, "origin_x", ctx.pos_x))
         oy = float(getattr(ctx.proj, "origin_y", ctx.pos_y))
         sx0, sy0 = renderer.world_to_screen(ox, oy)
-        drawn = renderer._draw_bullet_trail(sx0, sy0, ctx.sx, ctx.sy, type_id=type_id, alpha=alpha_byte, scale=ctx.scale)
+        drawn = renderer._draw_bullet_trail(
+            sx0,
+            sy0,
+            ctx.sx,
+            ctx.sy,
+            type_id=type_id,
+            alpha=alpha_byte,
+            scale=ctx.scale,
+            angle=ctx.angle,
+        )
 
     if renderer.bullet_texture is not None and float(ctx.life) >= 0.39:
         size = renderer._bullet_sprite_size(type_id, scale=ctx.scale)
