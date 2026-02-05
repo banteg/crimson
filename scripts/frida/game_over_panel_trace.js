@@ -14,6 +14,7 @@
 //   CRIMSON_FRIDA_LINK_BASE=0x00400000         # static image base
 //   CRIMSON_GAME_OVER_TRACE_CONSOLE=1          # mirror JSONL to console
 //   CRIMSON_GAME_OVER_TRACE_MAX_EVENTS=20000   # stop after N events (0 = unlimited)
+//   CRIMSON_GAME_OVER_PANEL_VA=0x0048cc48      # panel ui element base VA override
 //
 // REPL helpers:
 //   mark("name")
@@ -119,8 +120,10 @@ const EXE_DATA_RVA = {
 };
 
 const EXE_VA = {
-  // ui_menu_layout_init clone used by game-over flow.
-  game_over_panel_element: 0x0048cc84,
+  // game-over panel ui element base (v1.9.93).
+  // In the decompile, state-7 panel math uses fields at 0x48cc60/64/84/88,
+  // which correspond to offsets from this base.
+  game_over_panel_element: envInt('CRIMSON_GAME_OVER_PANEL_VA', 0x0048cc48),
 };
 
 const LOG = { ok: false, file: null };

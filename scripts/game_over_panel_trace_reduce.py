@@ -121,6 +121,7 @@ def main() -> int:
     resolutions = Counter()
     render_modes = Counter()
     quad_modes = Counter()
+    texture_handles = Counter()
     quad_sizes = Counter()
     panel_bbox_stats = BBoxStats()
 
@@ -191,6 +192,9 @@ def main() -> int:
             quad_mode = panel.get("quad_mode")
             if isinstance(quad_mode, int):
                 quad_modes[quad_mode] += 1
+            texture_handle = panel.get("texture_handle")
+            if isinstance(texture_handle, int):
+                texture_handles[texture_handle] += 1
 
             union_bbox = panel.get("union_bbox_world")
             if isinstance(union_bbox, list) and len(union_bbox) == 4:
@@ -218,6 +222,24 @@ def main() -> int:
                     "panel": panel,
                 }
 
+    warnings: list[str] = []
+    if (
+        panel_bbox_stats.samples > 0
+        and panel_bbox_stats.height_max is not None
+        and panel_bbox_stats.height_max <= 0.0
+    ):
+        warnings.append(
+            "Panel bbox height never became positive; trace may be reading the wrong element base or offsets."
+        )
+    if texture_handles and len(texture_handles) == 1 and 0 in texture_handles:
+        warnings.append(
+            "Panel texture_handle stayed 0 for all panel samples; geometry payload likely invalid."
+        )
+    if any(abs(int(mode)) > 1000 for mode in render_modes):
+        warnings.append(
+            "Outlier render_mode values detected; this usually indicates struct misalignment in the tracer."
+        )
+
     summary = {
         "generated_at": _now_iso(),
         "source": {
@@ -234,10 +256,12 @@ def main() -> int:
         "panel": {
             "render_modes": dict(render_modes),
             "quad_modes": dict(quad_modes),
+            "texture_handles": dict(texture_handles),
             "bbox_world": panel_bbox_stats.to_json(),
             "best_by_phase": {str(k): v for k, v in sorted(phase_best.items(), key=lambda kv: kv[0])},
         },
         "textured_quad_sizes": dict(quad_sizes),
+        "warnings": warnings,
     }
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
