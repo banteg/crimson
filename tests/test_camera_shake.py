@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from pathlib import Path
 
 from crimson.camera import camera_shake_update
+from crimson.game_world import GameWorld
 from crimson.gameplay import BonusId, GameplayState, PlayerState, bonus_apply
 
 
@@ -101,3 +103,18 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     assert math.isclose(state.camera_shake_timer, 0.2, abs_tol=1e-9)
     assert creatures[0].hp <= 0.0
     assert creatures[1].hp == 100.0
+
+
+def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+
+    player = world.players[0]
+    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE), state=world.state)
+    assert entry is not None
+
+    world.update(1.0 / 60.0, perk_progression_enabled=False)
+
+    assert entry.picked
+    assert world.state.camera_shake_pulses == 0x14
+    assert math.isclose(world.state.camera_shake_timer, 0.2, abs_tol=1e-9)
