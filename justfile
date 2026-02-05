@@ -225,6 +225,12 @@ frida-demo-idle-threshold process="crimsonland.exe" addrs="" link_base="" module
     frida -n {{process}} -l scripts\\frida\\demo_idle_threshold_trace.js
 
 [windows]
+frida-game-over-panel-trace process="crimsonland.exe":
+    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
+    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
+    frida -n {{process}} -l scripts\\frida\\game_over_panel_trace.js
+
+[windows]
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
 
@@ -260,7 +266,7 @@ frida-sync-share:
 [unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl; do \
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
@@ -273,6 +279,10 @@ frida-reduce:
       --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
       --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \
       --out-dir analysis/frida
+
+[unix]
+game-over-panel-reduce log="artifacts/frida/share/game_over_panel_trace.jsonl" out="analysis/frida/game_over_panel_trace_summary.json":
+    uv run scripts/game_over_panel_trace_reduce.py --log {{log}} --out {{out}}
 
 [unix]
 demo-trial-validate log="analysis/frida/raw/demo_trial_overlay_trace.jsonl":
