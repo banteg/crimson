@@ -33,7 +33,7 @@ from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET, ION_TYPES
-from .sim.world_state import ProjectileHit, WorldState
+from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
 
@@ -81,6 +81,7 @@ class GameWorld:
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
     _texture_loader: TextureLoader | None = field(init=False, default=None)
+    last_events: WorldEvents = field(init=False)
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
@@ -96,6 +97,7 @@ class GameWorld:
         self.creatures = self.world_state.creatures
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.camera_x = -1.0
         self.camera_y = -1.0
         self.audio_router = AudioRouter(
@@ -143,6 +145,7 @@ class GameWorld:
         self.presentation_rng.srand(int(seed) ^ 0xA5A5A5A5)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
         base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
@@ -388,6 +391,7 @@ class GameWorld:
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
 
     def update(
         self,
@@ -449,6 +453,7 @@ class GameWorld:
             game_mode=game_mode,
             perk_progression_enabled=bool(perk_progression_enabled),
         )
+        self.last_events = events
 
         if perk_progression_enabled and int(self.state.perk_selection.pending_count) > prev_perk_pending:
             self.audio_router.play_sfx("sfx_ui_levelup")

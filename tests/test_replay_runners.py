@@ -66,6 +66,30 @@ def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
             run_survival_replay(replay)
 
 
+def test_survival_runner_checkpoints_capture_rng_marks() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=False,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0, 2},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
+    for ckpt in checkpoints:
+        assert ckpt.rng_marks.keys() == {
+            "before_world_step",
+            "after_world_step",
+            "after_stage_spawns",
+            "after_wave_spawns",
+        }
+        assert isinstance(ckpt.deaths, list)
+
+
 def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
     rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
@@ -105,3 +129,25 @@ def test_rush_runner_rejects_events() -> None:
     with pytest.warns(ReplayGameVersionWarning):
         with pytest.raises(ReplayRunnerError, match="does not support events"):
             run_rush_replay(replay)
+
+
+def test_rush_runner_checkpoints_capture_rng_marks() -> None:
+    _header, rec = _blank_rush_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_rush_replay(
+            replay,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0, 2},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
+    for ckpt in checkpoints:
+        assert ckpt.rng_marks.keys() == {
+            "before_world_step",
+            "after_world_step",
+            "after_rush_spawns",
+        }
+        assert isinstance(ckpt.deaths, list)

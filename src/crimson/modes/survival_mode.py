@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import datetime as dt
 import hashlib
@@ -36,6 +37,7 @@ from ..replay.checkpoints import (
     build_checkpoint,
     default_checkpoints_path,
     dump_checkpoints_file,
+    resolve_checkpoint_sample_rate,
 )
 from ..sim.clock import FixedStepClock
 from .base_gameplay_mode import BaseGameplayMode
@@ -135,7 +137,14 @@ class SurvivalMode(BaseGameplayMode):
             return
         recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
 
-    def _record_replay_checkpoint(self, tick_index: int, *, force: bool = False) -> None:
+    def _record_replay_checkpoint(
+        self,
+        tick_index: int,
+        *,
+        force: bool = False,
+        rng_marks: dict[str, int] | None = None,
+        deaths: Sequence[object] | None = None,
+    ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
             return
@@ -150,6 +159,8 @@ class SurvivalMode(BaseGameplayMode):
                 tick_index=int(tick_index),
                 world=self._world.world_state,
                 elapsed_ms=float(self._survival.elapsed_ms),
+                rng_marks=rng_marks,
+                deaths=deaths,
             )
         )
         self._replay_checkpoints_last_tick = int(tick_index)
@@ -283,7 +294,7 @@ class SurvivalMode(BaseGameplayMode):
             )
         )
         tick_rate = int(self._replay_recorder.header.tick_rate)
-        self._replay_checkpoints_sample_rate = max(1, tick_rate)
+        self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
@@ -551,6 +562,7 @@ class SurvivalMode(BaseGameplayMode):
                 tick_index = None
 
             self._survival.elapsed_ms += dt_tick * 1000.0
+            rng_before_world_step = int(self._state.rng.state)
             self._world.update(
                 dt_tick,
                 inputs=inputs,
@@ -558,6 +570,8 @@ class SurvivalMode(BaseGameplayMode):
                 game_mode=int(GameMode.SURVIVAL),
                 perk_progression_enabled=True,
             )
+            world_events = self._world.last_events
+            rng_after_world_step = int(self._state.rng.state)
 
             # Scripted milestone spawns based on level.
             stage, milestone_calls = advance_survival_spawn_stage(self._survival.stage, player_level=self._player.level)
@@ -570,6 +584,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._state.rng,
                     rand=self._state.rng.rand,
                 )
+            rng_after_stage_spawns = int(self._state.rng.state)
 
             # Regular wave spawns based on elapsed time.
             cooldown, wave_spawns = tick_survival_wave_spawns(
@@ -584,9 +599,19 @@ class SurvivalMode(BaseGameplayMode):
             )
             self._survival.spawn_cooldown = cooldown
             self._creatures.spawn_inits(wave_spawns)
+            rng_after_wave_spawns = int(self._state.rng.state)
 
             if tick_index is not None:
-                self._record_replay_checkpoint(int(tick_index))
+                self._record_replay_checkpoint(
+                    int(tick_index),
+                    rng_marks={
+                        "before_world_step": int(rng_before_world_step),
+                        "after_world_step": int(rng_after_world_step),
+                        "after_stage_spawns": int(rng_after_stage_spawns),
+                        "after_wave_spawns": int(rng_after_wave_spawns),
+                    },
+                    deaths=world_events.deaths,
+                )
 
             if not any(player.health > 0.0 for player in self._world.players):
                 self._enter_game_over()

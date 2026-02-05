@@ -171,7 +171,8 @@ def run_survival_replay(
             )
 
         dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
-        world.step(
+        rng_before_world_step = int(state.rng.state)
+        events = world.step(
             dt_sim,
             inputs=player_inputs,
             world_size=world_size,
@@ -183,6 +184,7 @@ def run_survival_replay(
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
         )
+        rng_after_world_step = int(state.rng.state)
         # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
         # Headless verification has no render pass, so clear explicitly per simulated tick.
         fx_queue.clear()
@@ -200,6 +202,7 @@ def run_survival_replay(
                 state.rng,
                 rand=state.rng.rand,
             )
+        rng_after_stage_spawns = int(state.rng.state)
 
         # Regular wave spawns based on elapsed time.
         player_xp = world.players[0].experience if world.players else 0
@@ -215,6 +218,7 @@ def run_survival_replay(
         )
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(wave_spawns)
+        rng_after_wave_spawns = int(state.rng.state)
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
@@ -222,6 +226,13 @@ def run_survival_replay(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(run.elapsed_ms),
+                    rng_marks={
+                        "before_world_step": int(rng_before_world_step),
+                        "after_world_step": int(rng_after_world_step),
+                        "after_stage_spawns": int(rng_after_stage_spawns),
+                        "after_wave_spawns": int(rng_after_wave_spawns),
+                    },
+                    deaths=events.deaths,
                 )
             )
 
