@@ -28,8 +28,9 @@ from ..replay import (
     warn_on_game_version_mismatch,
 )
 from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot, time_scale_reflex_boost_bonus
+from ..weapons import WeaponId
 
-RUSH_WEAPON_ID = 2
+RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 
 @dataclass(slots=True)

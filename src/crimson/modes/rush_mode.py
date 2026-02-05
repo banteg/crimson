@@ -31,11 +31,12 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
 )
 from ..sim.clock import FixedStepClock
+from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
-RUSH_WEAPON_ID = 2
+RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)

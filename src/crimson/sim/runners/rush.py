@@ -7,6 +7,7 @@ from ...game_modes import GameMode
 from ...gameplay import PlayerInput, perks_rebuild_available, weapon_assign_player, weapon_refresh_available
 from ...replay import Replay, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...weapons import WeaponId
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -20,7 +21,7 @@ from .common import (
     time_scale_reflex_boost_bonus,
 )
 
-RUSH_WEAPON_ID = 2
+RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 
 @dataclass(slots=True)
