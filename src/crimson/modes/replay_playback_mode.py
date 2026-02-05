@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
@@ -61,6 +62,8 @@ class ReplayPlaybackMode:
         self._world: GameWorld | None = None
         self._events_by_tick: dict[int, list[object]] = {}
         self._damage_scale_by_type = build_damage_scale_by_type()
+        self._small: SmallFontData | None = None
+        self._missing_assets: list[str] = []
 
         self._tick_rate = 60
         self._dt_frame = 1.0 / 60.0
@@ -74,6 +77,12 @@ class ReplayPlaybackMode:
         self._rush: _RushPlaybackState | None = None
 
     def open(self) -> None:
+        self._missing_assets.clear()
+        try:
+            self._small = load_small_font(self._ctx.assets_dir, self._missing_assets)
+        except Exception:
+            self._small = None
+
         replay = load_replay_file(self._replay_path)
         self._replay = replay
         warn_on_game_version_mismatch(replay, action="playback")
@@ -133,10 +142,19 @@ class ReplayPlaybackMode:
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.header.game_mode_id)}")
 
     def close(self) -> None:
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
         world = self._world
         self._world = None
         if world is not None:
             world.close()
+
+    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, *, scale: float = 1.0) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def _enforce_rush_loadout(self) -> None:
         world = self._world
@@ -402,15 +420,27 @@ class ReplayPlaybackMode:
         else:
             rl.clear_background(rl.BLACK)
 
-        rl.draw_text("REPLAY", 18, 18, 20, rl.Color(255, 255, 255, 220))
+        self._draw_ui_text("REPLAY", 18.0, 18.0, rl.Color(255, 255, 255, 220), scale=1.0)
         replay = self._replay
         if replay is not None:
             total = len(replay.inputs)
             elapsed_s = float(self._tick_index) / float(self._tick_rate)
             total_s = float(total) / float(self._tick_rate)
-            rl.draw_text(f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s", 18, 42, 18, rl.Color(220, 220, 220, 200))
+            self._draw_ui_text(
+                f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s",
+                18.0,
+                42.0,
+                rl.Color(220, 220, 220, 200),
+                scale=0.9,
+            )
         status = "PAUSED" if self._paused else "PLAYING"
-        rl.draw_text(f"{status}  {self._playback_speed():.2f}x", 18, 66, 18, rl.Color(220, 220, 220, 200))
-        rl.draw_text("[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s", 18, 90, 18, rl.Color(190, 190, 190, 200))
+        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", 18.0, 66.0, rl.Color(220, 220, 220, 200), scale=0.9)
+        self._draw_ui_text(
+            "[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s",
+            18.0,
+            90.0,
+            rl.Color(190, 190, 190, 200),
+            scale=0.9,
+        )
         if self._finished:
-            rl.draw_text("REPLAY ENDED (ESC)", 18, 114, 18, rl.Color(220, 220, 220, 200))
+            self._draw_ui_text("REPLAY ENDED (ESC)", 18.0, 114.0, rl.Color(220, 220, 220, 200), scale=0.9)
