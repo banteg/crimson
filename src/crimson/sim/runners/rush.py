@@ -134,6 +134,10 @@ def run_rush_replay(
             game_mode=int(GameMode.RUSH),
             perk_progression_enabled=False,
         )
+        # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
+        # Headless verification has no render pass, so clear explicitly per simulated tick.
+        fx_queue.clear()
+        fx_queue_rotated.clear()
 
         cooldown, spawns = tick_rush_mode_spawns(
             run.spawn_cooldown_ms,

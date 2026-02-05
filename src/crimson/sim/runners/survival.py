@@ -170,6 +170,10 @@ def run_survival_replay(
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
         )
+        # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
+        # Headless verification has no render pass, so clear explicitly per simulated tick.
+        fx_queue.clear()
+        fx_queue_rotated.clear()
 
         # Scripted milestone spawns based on level.
         player_level = world.players[0].level if world.players else 1
