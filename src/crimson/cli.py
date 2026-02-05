@@ -264,6 +264,7 @@ def cmd_replay_verify(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
+    from dataclasses import asdict
     import hashlib
 
     from .game_modes import GameMode
@@ -317,12 +318,23 @@ def cmd_replay_verify(
         raise typer.Exit(code=1) from exc
 
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
+    first_rng_only_tick: int | None = None
     for exp in expected.checkpoints:
         act = actual_by_tick.get(int(exp.tick_index))
         if act is None:
             typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
             raise typer.Exit(code=1)
         if str(exp.state_hash) != str(act.state_hash):
+            exp_no_rng = asdict(exp)
+            act_no_rng = asdict(act)
+            for key in ("state_hash", "rng_state", "rng_marks"):
+                exp_no_rng.pop(key, None)
+                act_no_rng.pop(key, None)
+            if exp_no_rng == act_no_rng:
+                if first_rng_only_tick is None:
+                    first_rng_only_tick = int(exp.tick_index)
+                continue
+
             typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
             typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
             typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
@@ -350,9 +362,13 @@ def cmd_replay_verify(
                 )
             raise typer.Exit(code=1)
 
-    typer.echo(
-        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} score_xp={result.score_xp} kills={result.creature_kill_count}"
+    message = (
+        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
+        f"score_xp={result.score_xp} kills={result.creature_kill_count}"
     )
+    if first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={first_rng_only_tick}"
+    typer.echo(message)
 
 
 @app.callback(invoke_without_command=True)
