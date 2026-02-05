@@ -171,8 +171,11 @@ class SurvivalMode(BaseGameplayMode):
         recorder = self._replay_recorder
         if recorder is None:
             return
-        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         replay = recorder.finish()
+        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
+        terminal_tick = int(recorder.tick_index)
+        if any(int(getattr(event, "tick_index", -1)) == terminal_tick for event in replay.events):
+            self._record_replay_checkpoint(terminal_tick, force=True)
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
