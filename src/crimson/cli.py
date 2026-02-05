@@ -20,6 +20,8 @@ from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 
 app = typer.Typer(add_completion=False)
+replay_app = typer.Typer(add_completion=False)
+app.add_typer(replay_app, name="replay")
 
 _QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
@@ -200,6 +202,26 @@ def cmd_view(
     else:
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
+    run_view(view, width=width, height=height, title=title, fps=fps)
+
+
+@replay_app.command("play")
+def cmd_replay_play(
+    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    width: int = typer.Option(1280, help="window width"),
+    height: int = typer.Option(720, help="window height"),
+    fps: int = typer.Option(60, help="target fps"),
+    assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
+) -> None:
+    """Play back a recorded replay."""
+    from grim.app import run_view
+    from grim.view import ViewContext
+
+    from .modes.replay_playback_mode import ReplayPlaybackMode
+
+    ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
+    view = ReplayPlaybackMode(ctx, replay_path=replay_file)
+    title = f"Replay — {replay_file.name}"
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
