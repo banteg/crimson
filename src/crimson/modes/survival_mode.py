@@ -460,6 +460,7 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
+        any_alive = self._any_player_alive()
 
         if (not perk_menu_active) and perk_pending and (not self._paused):
             label = self._perk_prompt_label()
