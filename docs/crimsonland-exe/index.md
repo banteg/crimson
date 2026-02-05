@@ -11,6 +11,7 @@ behavior and ordering.
 Sections:
 
 - [State machine](state-machine.md)
+- [State id glossary](state-ids.md)
 - [Frame loop](frame-loop.md)
 - [Rendering](rendering.md)
 - [UI and menus](ui.md)

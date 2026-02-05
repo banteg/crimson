@@ -29,6 +29,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 - [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md)
 - [State machine](crimsonland-exe/state-machine.md)
+- [State id glossary](crimsonland-exe/state-ids.md)
 - [Frame loop](crimsonland-exe/frame-loop.md)
 - [Gameplay glue](crimsonland-exe/gameplay.md)
 - [Rendering pipeline](crimsonland-exe/rendering.md)
