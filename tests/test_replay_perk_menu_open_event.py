@@ -30,8 +30,8 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
         tick_index=0,
         dt_frame=1.0 / 60.0,
         world=world,
+        strict_events=True,
     )
     assert int(state.rng.state) != before
     assert not bool(state.perk_selection.choices_dirty)
     assert state.perk_selection.choices
-

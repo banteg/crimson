@@ -40,6 +40,7 @@ def _apply_tick_events(
     tick_index: int,
     dt_frame: float,
     world: WorldState,
+    strict_events: bool,
 ) -> None:
     state = world.state
     players = world.players
@@ -67,11 +68,16 @@ def _apply_tick_events(
                 creatures=world.creatures.entries,
             )
             if picked is None:
-                raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
+                if strict_events:
+                    raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
+                continue
             continue
         if isinstance(event, UnknownEvent):
-            raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
-        raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
+            if strict_events:
+                raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
+            continue
+        if strict_events:
+            raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
 
 
 def run_survival_replay(
@@ -79,6 +85,7 @@ def run_survival_replay(
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
+    strict_events: bool = True,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
@@ -138,7 +145,13 @@ def run_survival_replay(
         weapon_refresh_available(state)
         perks_rebuild_available(state)
 
-        _apply_tick_events(events_by_tick.get(tick_index, []), tick_index=tick_index, dt_frame=dt_frame, world=world)
+        _apply_tick_events(
+            events_by_tick.get(tick_index, []),
+            tick_index=tick_index,
+            dt_frame=dt_frame,
+            world=world,
+            strict_events=bool(strict_events),
+        )
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
