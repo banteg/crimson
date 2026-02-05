@@ -262,6 +262,25 @@ def run_survival_replay(
     else:
         tick_index = tick_limit
 
+    # Some UI-side events (e.g. final perk picks) can be recorded at the
+    # terminal boundary tick == len(inputs), after the last simulated input.
+    if int(tick_index) == int(len(inputs)):
+        _apply_tick_events(
+            events_by_tick.get(int(tick_index), []),
+            tick_index=int(tick_index),
+            dt_frame=dt_frame,
+            world=world,
+            strict_events=bool(strict_events),
+        )
+        if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoints_out.append(
+                build_checkpoint(
+                    tick_index=int(tick_index),
+                    world=world,
+                    elapsed_ms=float(run.elapsed_ms),
+                )
+            )
+
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
     score_xp = int(world.players[0].experience) if world.players else 0

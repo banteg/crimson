@@ -118,6 +118,40 @@ def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
     assert result.ticks == 3
 
 
+def test_survival_runner_applies_terminal_tick_events() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_menu_open(player_index=0, tick_index=3)
+    replay_with_terminal_event = rec.finish()
+
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay_without_terminal_event = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        with_terminal_event = run_survival_replay(replay_with_terminal_event)
+    with pytest.warns(ReplayGameVersionWarning):
+        without_terminal_event = run_survival_replay(replay_without_terminal_event)
+
+    assert with_terminal_event.rng_state != without_terminal_event.rng_state
+
+
+def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_menu_open(player_index=0, tick_index=3)
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=True,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={3},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [3]
+    assert checkpoints[0].rng_marks == {}
+
+
 def test_rush_runner_is_deterministic() -> None:
     _header, rec = _blank_rush_replay(ticks=10, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()

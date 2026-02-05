@@ -70,6 +70,7 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
+        self._terminal_events_applied = False
         self._paused = False
         self._speed_index = _DEFAULT_SPEED_INDEX
 
@@ -95,6 +96,7 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
+        self._terminal_events_applied = False
         self._paused = False
         self._speed_index = _DEFAULT_SPEED_INDEX
 
@@ -335,6 +337,9 @@ class ReplayPlaybackMode:
 
         tick_index = int(self._tick_index)
         if tick_index >= len(replay.inputs):
+            if (not self._terminal_events_applied) and tick_index == len(replay.inputs):
+                self._apply_tick_events(tick_index=tick_index, dt_frame=float(self._dt_frame))
+                self._terminal_events_applied = True
             self._finished = True
             return
 
