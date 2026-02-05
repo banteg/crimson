@@ -200,6 +200,14 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
             raise ReplayCodecError(f"replay event must be a list: {raw!r}")
         events.append(_event_from_array(raw))
 
+    input_len = len(inputs)
+    for event in events:
+        tick_index = int(getattr(event, "tick_index", 0))
+        if tick_index < 0:
+            raise ReplayCodecError(f"replay event tick_index must be non-negative, got {tick_index}")
+        if tick_index > input_len:
+            raise ReplayCodecError(f"replay event tick_index out of bounds: {tick_index} > {input_len}")
+
     return Replay(version=version, header=header, inputs=inputs, events=events)
 
 
