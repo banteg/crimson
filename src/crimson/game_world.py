@@ -10,6 +10,7 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
+from grim.rand import Crand
 from grim.terrain_render import GroundRenderer
 
 from .camera import camera_shake_update
@@ -76,6 +77,7 @@ class GameWorld:
     clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     wicons_texture: rl.Texture | None = field(init=False, default=None)
+    presentation_rng: Crand = field(init=False)
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
     _texture_loader: TextureLoader | None = field(init=False, default=None)
@@ -101,6 +103,7 @@ class GameWorld:
             audio_rng=self.audio_rng,
             demo_mode_active=self.demo_mode_active,
         )
+        self.presentation_rng = Crand(0xBEEF)
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {}
         # Native `projectile_spawn` indexes the weapon table by `type_id`, so
@@ -137,6 +140,7 @@ class GameWorld:
         self.players = self.world_state.players
         self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
+        self.presentation_rng.srand(int(seed) ^ 0xA5A5A5A5)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self._elapsed_ms = 0.0
@@ -454,7 +458,7 @@ class GameWorld:
             self.audio_router.play_hit_sfx(
                 events.hits,
                 game_mode=game_mode,
-                rand=self.state.rng.rand,
+                rand=self.presentation_rng.rand,
                 beam_types=BEAM_TYPES,
             )
 
@@ -469,7 +473,7 @@ class GameWorld:
                 )
 
         if events.deaths:
-            self.audio_router.play_death_sfx(events.deaths, rand=self.state.rng.rand)
+            self.audio_router.play_death_sfx(events.deaths, rand=self.presentation_rng.rand)
 
         if events.pickups:
             for _ in events.pickups:
@@ -483,7 +487,7 @@ class GameWorld:
         return events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
-        rand = self.state.rng.rand
+        rand = self.presentation_rng.rand
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
