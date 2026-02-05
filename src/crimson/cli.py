@@ -257,6 +257,11 @@ def cmd_replay_verify(
         help="checkpoint sidecar path (default: <replay>.checkpoints.json.gz)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        False,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: lenient)",
+    ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
     import hashlib
@@ -264,7 +269,7 @@ def cmd_replay_verify(
     from .game_modes import GameMode
     from .replay import load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
-    from .sim.runners import run_rush_replay, run_survival_replay
+    from .sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
     replay_bytes = Path(replay_file).read_bytes()
     replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
@@ -288,23 +293,28 @@ def cmd_replay_verify(
     actual = []
 
     mode = int(replay.header.game_mode_id)
-    if mode == int(GameMode.SURVIVAL):
-        result = run_survival_replay(
-            replay,
-            max_ticks=max_ticks,
-            checkpoints_out=actual,
-            checkpoint_ticks=checkpoint_ticks,
-        )
-    elif mode == int(GameMode.RUSH):
-        result = run_rush_replay(
-            replay,
-            max_ticks=max_ticks,
-            checkpoints_out=actual,
-            checkpoint_ticks=checkpoint_ticks,
-        )
-    else:
-        typer.echo(f"unsupported replay game_mode_id={mode}", err=True)
-        raise typer.Exit(code=1)
+    try:
+        if mode == int(GameMode.SURVIVAL):
+            result = run_survival_replay(
+                replay,
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                checkpoints_out=actual,
+                checkpoint_ticks=checkpoint_ticks,
+            )
+        elif mode == int(GameMode.RUSH):
+            result = run_rush_replay(
+                replay,
+                max_ticks=max_ticks,
+                checkpoints_out=actual,
+                checkpoint_ticks=checkpoint_ticks,
+            )
+        else:
+            typer.echo(f"unsupported replay game_mode_id={mode}", err=True)
+            raise typer.Exit(code=1)
+    except ReplayRunnerError as exc:
+        typer.echo(f"replay verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     for exp in expected.checkpoints:
@@ -314,8 +324,30 @@ def cmd_replay_verify(
             raise typer.Exit(code=1)
         if str(exp.state_hash) != str(act.state_hash):
             typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
-            typer.echo(f"  expected: {exp}", err=True)
-            typer.echo(f"  actual:   {act}", err=True)
+            typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+            typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+            typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+            typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+            typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+            typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+            mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
+            mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
+            if mark_mismatch:
+                first = mark_mismatch[0]
+                typer.echo(
+                    f"  rng_mark[{first}] expected={exp.rng_marks.get(first)} actual={act.rng_marks.get(first)}",
+                    err=True,
+                )
+            typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+            if exp.deaths or act.deaths:
+                typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+            if exp.perk != act.perk:
+                typer.echo(
+                    "  perk snapshot differs "
+                    f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                    f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                    err=True,
+                )
             raise typer.Exit(code=1)
 
     typer.echo(
