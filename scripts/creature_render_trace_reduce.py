@@ -6,7 +6,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from math import inf
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterator
 
 
 @dataclass
@@ -239,4 +239,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

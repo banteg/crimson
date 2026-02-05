@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -15,8 +14,7 @@ from ..menu import (
 )
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
-if TYPE_CHECKING:
-    from ...game import GameState
+from ..types import GameState
 
 
 class ModsMenuView(PanelMenuView):

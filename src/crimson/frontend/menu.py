@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 import math
 import os
 
@@ -15,8 +14,7 @@ from ..ui.shadow import UI_SHADOW_OFFSET, UI_SHADOW_TINT, draw_ui_quad_shadow  #
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .transitions import _draw_screen_fade
 
-if TYPE_CHECKING:
-    from ..game import GameState
+from .types import GameState
 
 
 MENU_LABEL_WIDTH = 122.0

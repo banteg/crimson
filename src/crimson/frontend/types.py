@@ -1,0 +1,30 @@
+from __future__ import annotations
+
+from pathlib import Path
+import random
+from typing import Any, Protocol
+
+
+class PauseBackground(Protocol):
+    def draw_pause_background(self) -> None: ...
+
+
+class GameState(Protocol):
+    # Keep this protocol lightweight: frontend code should not depend on the full
+    # gameplay/sim stack (enforced via import-linter).
+    base_dir: Path
+    assets_dir: Path
+    rng: random.Random
+    config: Any
+    preserve_bugs: bool
+
+    texture_cache: Any
+    audio: Any
+
+    menu_ground: Any
+    pause_background: PauseBackground | None
+
+    quit_requested: bool
+    screen_fade_alpha: float
+    screen_fade_ramp: bool
+

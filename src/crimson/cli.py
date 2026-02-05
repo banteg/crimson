@@ -20,6 +20,8 @@ from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 
 app = typer.Typer(add_completion=False)
+replay_app = typer.Typer(add_completion=False)
+app.add_typer(replay_app, name="replay")
 
 _QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
@@ -201,6 +203,209 @@ def cmd_view(
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
     run_view(view, width=width, height=height, title=title, fps=fps)
+
+
+@replay_app.command("play")
+def cmd_replay_play(
+    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    fps: int = typer.Option(60, help="target fps"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
+) -> None:
+    """Play back a recorded replay."""
+    from grim.app import run_view
+    from grim.console import create_console
+    from grim.config import ensure_crimson_cfg
+    from grim.view import ViewContext
+
+    from .assets_fetch import download_missing_paqs
+    from .modes.replay_playback_mode import ReplayPlaybackMode
+
+    if assets_dir is None:
+        assets_dir = base_dir
+    base_dir.mkdir(parents=True, exist_ok=True)
+    cfg = ensure_crimson_cfg(base_dir)
+    if width is None:
+        width = int(cfg.screen_width)
+    if height is None:
+        height = int(cfg.screen_height)
+    console = create_console(base_dir, assets_dir=assets_dir)
+    download_missing_paqs(assets_dir, console)
+
+    ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
+    view = ReplayPlaybackMode(ctx, replay_path=replay_file)
+    title = f"Replay — {replay_file.name}"
+    run_view(view, width=width, height=height, title=title, fps=fps)
+
+
+@replay_app.command("verify")
+def cmd_replay_verify(
+    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    checkpoints_file: Path | None = typer.Option(
+        None,
+        "--checkpoints",
+        help="checkpoint sidecar path (default: <replay>.checkpoints.json.gz)",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+    strict_events: bool = typer.Option(
+        False,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: lenient)",
+    ),
+) -> None:
+    """Verify a replay by comparing headless checkpoints with a sidecar file."""
+    from dataclasses import asdict
+    import hashlib
+
+    from .game_modes import GameMode
+    from .replay import load_replay
+    from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
+    from .sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
+
+    replay_bytes = Path(replay_file).read_bytes()
+    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    replay = load_replay(replay_bytes)
+
+    if checkpoints_file is None:
+        checkpoints_file = default_checkpoints_path(replay_file)
+    checkpoints_path = Path(checkpoints_file)
+    if not checkpoints_path.is_file():
+        typer.echo(f"checkpoints file not found: {checkpoints_path}", err=True)
+        raise typer.Exit(code=1)
+
+    expected = load_checkpoints_file(checkpoints_path)
+    if expected.replay_sha256 and str(expected.replay_sha256) != str(replay_sha256):
+        typer.echo(
+            f"warning: checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})",
+            err=True,
+        )
+
+    checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
+    actual = []
+
+    mode = int(replay.header.game_mode_id)
+    try:
+        if mode == int(GameMode.SURVIVAL):
+            result = run_survival_replay(
+                replay,
+                max_ticks=max_ticks,
+                strict_events=bool(strict_events),
+                checkpoints_out=actual,
+                checkpoint_ticks=checkpoint_ticks,
+            )
+        elif mode == int(GameMode.RUSH):
+            result = run_rush_replay(
+                replay,
+                max_ticks=max_ticks,
+                checkpoints_out=actual,
+                checkpoint_ticks=checkpoint_ticks,
+            )
+        else:
+            typer.echo(f"unsupported replay game_mode_id={mode}", err=True)
+            raise typer.Exit(code=1)
+    except ReplayRunnerError as exc:
+        typer.echo(f"replay verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
+    first_rng_only_tick: int | None = None
+    rng_mark_order = (
+        "before_world_step",
+        "gw_begin",
+        "gw_after_weapon_refresh",
+        "gw_after_perks_rebuild",
+        "gw_after_time_scale",
+        "ws_begin",
+        "ws_after_perk_effects",
+        "ws_after_effects_update",
+        "ws_after_creatures",
+        "ws_after_projectiles",
+        "ws_after_secondary_projectiles",
+        "ws_after_particles_update",
+        "ws_after_sprite_effects",
+        "ws_after_particles",
+        "ws_after_player_update_p0",
+        "ws_after_player_update",
+        "ws_after_bonus_update",
+        "ws_after_progression",
+        "ws_after_sfx_queue_merge",
+        "ws_after_player_damage_sfx",
+        "ws_after_sfx",
+        "after_world_step",
+        "after_stage_spawns",
+        "after_wave_spawns",
+        "after_rush_spawns",
+    )
+    for exp in expected.checkpoints:
+        act = actual_by_tick.get(int(exp.tick_index))
+        if act is None:
+            typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
+            raise typer.Exit(code=1)
+        if str(exp.state_hash) != str(act.state_hash):
+            exp_no_rng = asdict(exp)
+            act_no_rng = asdict(act)
+            for key in ("state_hash", "rng_state", "rng_marks"):
+                exp_no_rng.pop(key, None)
+                act_no_rng.pop(key, None)
+            # Legacy sidecars (without `events`) store unknown sentinel values.
+            if int(exp.events.hit_count) < 0:
+                exp_no_rng["events"] = act_no_rng.get("events")
+            if exp_no_rng == act_no_rng:
+                if first_rng_only_tick is None:
+                    first_rng_only_tick = int(exp.tick_index)
+                continue
+
+            typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
+            typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+            typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+            typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+            typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+            typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+            typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+            mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
+            mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
+            if mark_mismatch:
+                first = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0])
+                typer.echo(
+                    f"  rng_mark[{first}] expected={exp.rng_marks.get(first)} actual={act.rng_marks.get(first)}",
+                    err=True,
+                )
+            typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+            if exp.deaths or act.deaths:
+                typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+            if int(exp.events.hit_count) >= 0:
+                typer.echo(
+                    "  events "
+                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                    err=True,
+                )
+            if exp.perk != act.perk:
+                typer.echo(
+                    "  perk snapshot differs "
+                    f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                    f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                    err=True,
+                )
+            raise typer.Exit(code=1)
+
+    message = (
+        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
+        f"score_xp={result.score_xp} kills={result.creature_kill_count}"
+    )
+    if first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={first_rng_only_tick}"
+    typer.echo(message)
 
 
 @app.callback(invoke_without_command=True)

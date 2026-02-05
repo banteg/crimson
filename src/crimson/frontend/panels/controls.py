@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
@@ -16,9 +14,7 @@ from ..menu import (
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from ...input_codes import config_keybinds, input_code_name, player_move_fire_binds
-
-if TYPE_CHECKING:
-    from ...game import GameState
+from ..types import GameState
 
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).

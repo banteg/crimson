@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -28,11 +27,8 @@ from ..menu import (
     ensure_menu_ground,
 )
 from ..transitions import _draw_screen_fade
+from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-
-if TYPE_CHECKING:
-    from ...game import GameState
-    from grim.terrain_render import GroundRenderer
 
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.

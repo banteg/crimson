@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -20,10 +19,8 @@ from ..menu import (
     _draw_menu_cursor,
 )
 from ..transitions import _draw_screen_fade
+from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-
-if TYPE_CHECKING:
-    from ...game import GameState
 
 
 @dataclass(slots=True)

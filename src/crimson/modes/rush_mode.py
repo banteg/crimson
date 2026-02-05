@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
+import datetime as dt
+import hashlib
 import random
 
 import pyray as rl
@@ -18,11 +21,24 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..ui.cursor import draw_aim_cursor, draw_menu_cursor
 from ..ui.hud import draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
+from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay.types import WEAPON_USAGE_COUNT
+from ..replay.checkpoints import (
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+    ReplayCheckpoint,
+    ReplayCheckpoints,
+    build_checkpoint,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+    resolve_checkpoint_sample_rate,
+)
+from ..sim.clock import FixedStepClock
+from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
-RUSH_WEAPON_ID = 2
+RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -63,6 +79,41 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
 
         self._ui_assets = None
+        self._sim_clock = FixedStepClock(tick_rate=60)
+        self._replay_recorder: ReplayRecorder | None = None
+        self._replay_checkpoints: list[ReplayCheckpoint] = []
+        self._replay_checkpoints_sample_rate: int = 60
+        self._replay_checkpoints_last_tick: int | None = None
+
+    def _record_replay_checkpoint(
+        self,
+        tick_index: int,
+        *,
+        force: bool = False,
+        rng_marks: dict[str, int] | None = None,
+        deaths: Sequence[object] | None = None,
+        events: object | None = None,
+    ) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if tick_index < 0:
+            return
+        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
+            return
+        if self._replay_checkpoints_last_tick == int(tick_index):
+            return
+        self._replay_checkpoints.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self._world.world_state,
+                elapsed_ms=float(self._rush.elapsed_ms),
+                rng_marks=rng_marks,
+                deaths=deaths,
+                events=events,
+            )
+        )
+        self._replay_checkpoints_last_tick = int(tick_index)
 
     def _enforce_rush_loadout(self) -> None:
         for player in self._world.players:
@@ -77,11 +128,49 @@ class RushMode(BaseGameplayMode):
         if self._ui_assets.missing:
             self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
+        self._sim_clock.reset()
         self._enforce_rush_loadout()
+        status = self._state.status
+        weapon_usage_counts: tuple[int, ...] = ()
+        if status is not None:
+            try:
+                raw_counts = status.data.get("weapon_usage_counts")
+                if isinstance(raw_counts, list):
+                    weapon_usage_counts = tuple(int(value) & 0xFFFFFFFF for value in raw_counts[:WEAPON_USAGE_COUNT])
+            except Exception:
+                weapon_usage_counts = ()
+        if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
+            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(0, WEAPON_USAGE_COUNT - len(weapon_usage_counts))
+            weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
+        status_snapshot = ReplayStatusSnapshot(
+            quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+            weapon_usage_counts=weapon_usage_counts,
+        )
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=int(GameMode.RUSH),
+                seed=int(self._state.rng.state),
+                tick_rate=int(self._sim_clock.tick_rate),
+                difficulty_level=int(self._world.difficulty_level),
+                hardcore=bool(self._world.hardcore),
+                preserve_bugs=bool(self._world.preserve_bugs),
+                world_size=float(self._world.world_size),
+                player_count=len(self._world.players),
+                status=status_snapshot,
+            )
+        )
+        tick_rate = int(self._replay_recorder.header.tick_rate)
+        self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -158,6 +247,44 @@ class RushMode(BaseGameplayMode):
         self._game_over_record = record
         self._game_over_ui.open()
         self._game_over_active = True
+        self._save_replay()
+
+    def _save_replay(self) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
+        replay = recorder.finish()
+        data = dump_replay(replay)
+        digest = hashlib.sha256(data).hexdigest()
+        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        kills = int(self._creatures.kill_count)
+        base_name = f"rush_{stamp}_kills{kills}"
+        path = replay_dir / f"{base_name}.crdemo.gz"
+        counter = 1
+        while path.exists():
+            path = replay_dir / f"{base_name}_{counter}.crdemo.gz"
+            counter += 1
+        path.write_bytes(data)
+        checkpoints_path = default_checkpoints_path(path)
+        dump_checkpoints_file(
+            checkpoints_path,
+            ReplayCheckpoints(
+                version=CHECKPOINTS_FORMAT_VERSION,
+                replay_sha256=digest,
+                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
+                checkpoints=list(self._replay_checkpoints),
+            ),
+        )
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+        if self._console is not None:
+            self._console.log.log(f"replay: saved {path}")
+            self._console.log.log(f"replay: saved {checkpoints_path}")
+            self._console.log.flush()
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
@@ -172,38 +299,84 @@ class RushMode(BaseGameplayMode):
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
-        dt_world = 0.0 if self._paused or (not any_alive) else dt_frame
+        sim_active = (not self._paused) and any_alive
 
-        self._rush.elapsed_ms += dt_world * 1000.0
-        if dt_world <= 0.0:
+        if not sim_active:
+            self._sim_clock.reset()
             if not any_alive:
                 self._enter_game_over()
             return
 
-        self._enforce_rush_loadout()
-        input_state = self._build_input()
-        self._world.update(
-            dt_world,
-            inputs=[input_state for _ in self._world.players],
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            perk_progression_enabled=False,
-        )
+        ticks_to_run = self._sim_clock.advance(dt_frame)
+        if ticks_to_run <= 0:
+            return
 
-        cooldown, spawns = tick_rush_mode_spawns(
-            self._rush.spawn_cooldown_ms,
-            dt_world * 1000.0,
-            self._state.rng,
-            player_count=len(self._world.players),
-            survival_elapsed_ms=int(self._rush.elapsed_ms),
-            terrain_width=float(self._world.world_size),
-            terrain_height=float(self._world.world_size),
-        )
-        self._rush.spawn_cooldown_ms = cooldown
-        self._creatures.spawn_inits(spawns)
+        dt_tick = float(self._sim_clock.dt_tick)
+        input_frame = self._build_input()
+        input_tick = input_frame
 
-        if not any(player.health > 0.0 for player in self._world.players):
-            self._enter_game_over()
+        for tick_offset in range(int(ticks_to_run)):
+            if tick_offset:
+                input_tick = PlayerInput(
+                    move_x=float(input_frame.move_x),
+                    move_y=float(input_frame.move_y),
+                    aim_x=float(input_frame.aim_x),
+                    aim_y=float(input_frame.aim_y),
+                    fire_down=bool(input_frame.fire_down),
+                    fire_pressed=False,
+                    reload_pressed=False,
+                )
+
+            self._rush.elapsed_ms += dt_tick * 1000.0
+            self._enforce_rush_loadout()
+            inputs = [input_tick for _ in self._world.players]
+            recorder = self._replay_recorder
+            if recorder is not None:
+                tick_index = recorder.record_tick(inputs)
+            else:
+                tick_index = None
+            rng_before_world_step = int(self._state.rng.state)
+            world_step_marks: dict[str, int] = {}
+            self._world.update(
+                dt_tick,
+                inputs=inputs,
+                auto_pick_perks=False,
+                game_mode=int(GameMode.RUSH),
+                perk_progression_enabled=False,
+                rng_marks_out=world_step_marks,
+            )
+            world_events = self._world.last_events
+            rng_after_world_step = int(self._state.rng.state)
+
+            cooldown, spawns = tick_rush_mode_spawns(
+                self._rush.spawn_cooldown_ms,
+                dt_tick * 1000.0,
+                self._state.rng,
+                player_count=len(self._world.players),
+                survival_elapsed_ms=int(self._rush.elapsed_ms),
+                terrain_width=float(self._world.world_size),
+                terrain_height=float(self._world.world_size),
+            )
+            self._rush.spawn_cooldown_ms = cooldown
+            self._creatures.spawn_inits(spawns)
+            rng_after_rush_spawns = int(self._state.rng.state)
+
+            if tick_index is not None:
+                self._record_replay_checkpoint(
+                    int(tick_index),
+                    rng_marks={
+                        "before_world_step": int(rng_before_world_step),
+                        **world_step_marks,
+                        "after_world_step": int(rng_after_world_step),
+                        "after_rush_spawns": int(rng_after_rush_spawns),
+                    },
+                    deaths=world_events.deaths,
+                    events=world_events,
+                )
+
+            if not any(player.health > 0.0 for player in self._world.players):
+                self._enter_game_over()
+                break
 
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)

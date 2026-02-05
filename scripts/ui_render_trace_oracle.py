@@ -397,7 +397,6 @@ def main(argv: list[str] | None = None) -> int:
 
     counts = Counter()
     first_ts: str | None = None
-    last_ts: str | None = None
     run_ids: set[str] = set()
 
     # Frames currently being captured (per thread).
@@ -408,7 +407,6 @@ def main(argv: list[str] | None = None) -> int:
     pending_ended: Frame | None = None
 
     current_label: str | None = None
-    current_state_id: int | None = None
 
     # Per-label stats and best-frame selection (by max UI timeline).
     label_stats: dict[str, dict[str, Any]] = defaultdict(lambda: {"frames": 0, "timeline_min": None, "timeline_max": None})
@@ -473,7 +471,6 @@ def main(argv: list[str] | None = None) -> int:
             if isinstance(ts, str):
                 if first_ts is None:
                     first_ts = ts
-                last_ts = ts
 
             run_id = obj.get("run_id")
             if isinstance(run_id, str):
@@ -520,12 +517,8 @@ def main(argv: list[str] | None = None) -> int:
                     title = clean_title(txts[0])
                 _ = title  # currently unused; label already includes title when present
 
-                state = obj.get("state") or {}
-                st_id = _frame_state_id(state)
-
                 if label_clean:
                     current_label = label_clean
-                    current_state_id = st_id
                     if pending_ended is not None:
                         _maybe_adopt_frame(current_label, pending_ended)
                         pending_ended = None
@@ -576,4 +569,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

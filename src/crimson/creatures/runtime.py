@@ -172,6 +172,7 @@ class CreatureDeath:
     type_id: int
     reward_value: float
     xp_awarded: int
+    owner_id: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -1175,4 +1176,5 @@ class CreaturePool:
             type_id=int(creature.type_id),
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
+            owner_id=int(creature.last_hit_owner_id),
         )

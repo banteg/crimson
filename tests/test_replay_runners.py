@@ -1,0 +1,221 @@
+from __future__ import annotations
+
+import pytest
+
+from crimson.game_modes import GameMode
+from crimson.gameplay import PlayerInput
+from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
+from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
+
+
+def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+        game_version=game_version,
+    )
+    rec = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        rec.record_tick([PlayerInput(aim_x=512.0, aim_y=512.0)])
+    return header, rec
+
+
+def _blank_rush_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0") -> tuple[ReplayHeader, ReplayRecorder]:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.RUSH),
+        seed=int(seed),
+        tick_rate=60,
+        player_count=1,
+        game_version=game_version,
+    )
+    rec = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        rec.record_tick([PlayerInput(aim_x=512.0, aim_y=512.0)])
+    return header, rec
+
+
+def test_survival_runner_is_deterministic() -> None:
+    _header, rec = _blank_survival_replay(ticks=10, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result0 = run_survival_replay(replay)
+    with pytest.warns(ReplayGameVersionWarning):
+        result1 = run_survival_replay(replay)
+
+    assert result0 == result1
+    assert result0.game_mode_id == int(GameMode.SURVIVAL)
+    assert result0.ticks == 10
+    assert result0.elapsed_ms == int(10 * (1000.0 / 60.0))
+    assert result0.score_xp == 0
+    assert result0.creature_kill_count == 0
+    assert result0.most_used_weapon_id == 1
+    assert result0.shots_fired == 0
+    assert result0.shots_hit == 0
+
+
+def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        with pytest.raises(ReplayRunnerError, match="perk_pick failed"):
+            run_survival_replay(replay)
+
+
+def test_survival_runner_checkpoints_capture_rng_marks() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=False,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0, 2},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
+    for ckpt in checkpoints:
+        assert {
+            "before_world_step",
+            "gw_begin",
+            "gw_after_weapon_refresh",
+            "gw_after_perks_rebuild",
+            "gw_after_time_scale",
+            "after_world_step",
+            "after_stage_spawns",
+            "after_wave_spawns",
+        }.issubset(ckpt.rng_marks.keys())
+        assert {
+            "ws_begin",
+            "ws_after_particles_update",
+            "ws_after_sprite_effects",
+            "ws_after_projectiles",
+            "ws_after_bonus_update",
+            "ws_after_sfx_queue_merge",
+            "ws_after_player_damage_sfx",
+            "ws_after_sfx",
+        }.issubset(ckpt.rng_marks.keys())
+        assert isinstance(ckpt.events.hit_count, int)
+        assert isinstance(ckpt.events.pickup_count, int)
+        assert isinstance(ckpt.events.sfx_count, int)
+        assert isinstance(ckpt.deaths, list)
+
+
+def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(replay, strict_events=False)
+
+    assert result.ticks == 3
+
+
+def test_survival_runner_applies_terminal_tick_events() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_menu_open(player_index=0, tick_index=3)
+    replay_with_terminal_event = rec.finish()
+
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay_without_terminal_event = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        with_terminal_event = run_survival_replay(replay_with_terminal_event)
+    with pytest.warns(ReplayGameVersionWarning):
+        without_terminal_event = run_survival_replay(replay_without_terminal_event)
+
+    assert with_terminal_event.rng_state != without_terminal_event.rng_state
+
+
+def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_menu_open(player_index=0, tick_index=3)
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=True,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={3},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [3]
+    assert checkpoints[0].rng_marks == {}
+
+
+def test_rush_runner_is_deterministic() -> None:
+    _header, rec = _blank_rush_replay(ticks=10, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result0 = run_rush_replay(replay)
+    with pytest.warns(ReplayGameVersionWarning):
+        result1 = run_rush_replay(replay)
+
+    assert result0 == result1
+    assert result0.game_mode_id == int(GameMode.RUSH)
+    assert result0.ticks == 10
+    assert result0.elapsed_ms == int(10 * (1000.0 / 60.0))
+    assert result0.score_xp == 0
+    assert result0.creature_kill_count == 0
+    assert result0.most_used_weapon_id == 2
+    assert result0.shots_fired == 0
+    assert result0.shots_hit == 0
+
+
+def test_rush_runner_rejects_events() -> None:
+    _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        with pytest.raises(ReplayRunnerError, match="does not support events"):
+            run_rush_replay(replay)
+
+
+def test_rush_runner_checkpoints_capture_rng_marks() -> None:
+    _header, rec = _blank_rush_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_rush_replay(
+            replay,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0, 2},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
+    for ckpt in checkpoints:
+        assert {
+            "before_world_step",
+            "gw_begin",
+            "gw_after_weapon_refresh",
+            "gw_after_perks_rebuild",
+            "gw_after_time_scale",
+            "after_world_step",
+            "after_rush_spawns",
+        }.issubset(ckpt.rng_marks.keys())
+        assert {
+            "ws_begin",
+            "ws_after_particles_update",
+            "ws_after_sprite_effects",
+            "ws_after_projectiles",
+            "ws_after_bonus_update",
+            "ws_after_sfx_queue_merge",
+            "ws_after_player_damage_sfx",
+            "ws_after_sfx",
+        }.issubset(ckpt.rng_marks.keys())
+        assert isinstance(ckpt.events.hit_count, int)
+        assert isinstance(ckpt.events.pickup_count, int)
+        assert isinstance(ckpt.events.sfx_count, int)
+        assert isinstance(ckpt.deaths, list)

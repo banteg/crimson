@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pyray as rl
 
 from grim.assets import PaqTextureCache
@@ -39,8 +37,7 @@ from ..menu import (
 )
 from ..transitions import _draw_screen_fade
 
-if TYPE_CHECKING:
-    from ...game import GameState
+from ..types import GameState
 
 
 PANEL_POS_X = -45.0

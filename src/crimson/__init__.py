@@ -16,6 +16,7 @@ __all__ = [
     "perks",
     "persistence",
     "quests",
+    "replay",
     "render",
     "sim",
     "ui",

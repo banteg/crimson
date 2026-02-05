@@ -10,6 +10,7 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
+from grim.rand import Crand
 from grim.terrain_render import GroundRenderer
 
 from .creatures.anim import creature_corpse_frame_for_type
@@ -31,7 +32,7 @@ from .audio_router import AudioRouter
 from .perks import PerkId
 from .projectiles import ProjectileTypeId
 from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET, ION_TYPES
-from .sim.world_state import ProjectileHit, WorldState
+from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
 
@@ -75,9 +76,11 @@ class GameWorld:
     clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     wicons_texture: rl.Texture | None = field(init=False, default=None)
+    presentation_rng: Crand = field(init=False)
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
     _texture_loader: TextureLoader | None = field(init=False, default=None)
+    last_events: WorldEvents = field(init=False)
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
@@ -93,6 +96,7 @@ class GameWorld:
         self.creatures = self.world_state.creatures
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.camera_x = -1.0
         self.camera_y = -1.0
         self.audio_router = AudioRouter(
@@ -100,6 +104,7 @@ class GameWorld:
             audio_rng=self.audio_rng,
             demo_mode_active=self.demo_mode_active,
         )
+        self.presentation_rng = Crand(0xBEEF)
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {}
         # Native `projectile_spawn` indexes the weapon table by `type_id`, so
@@ -136,8 +141,10 @@ class GameWorld:
         self.players = self.world_state.players
         self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
+        self.presentation_rng.srand(int(seed) ^ 0xA5A5A5A5)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
         base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
@@ -383,6 +390,7 @@ class GameWorld:
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
 
     def update(
         self,
@@ -392,14 +400,23 @@ class GameWorld:
         auto_pick_perks: bool = False,
         game_mode: int = int(GameMode.SURVIVAL),
         perk_progression_enabled: bool = False,
+        rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
+        def _mark(name: str) -> None:
+            if rng_marks_out is None:
+                return
+            rng_marks_out[str(name)] = int(self.state.rng.state)
+
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
+        _mark("gw_begin")
         self.state.game_mode = int(game_mode)
         self.state.demo_mode_active = bool(self.demo_mode_active)
         weapon_refresh_available(self.state)
+        _mark("gw_after_weapon_refresh")
         perks_rebuild_available(self.state)
+        _mark("gw_after_perks_rebuild")
 
         if self.audio_router is not None:
             self.audio_router.audio = self.audio
@@ -416,6 +433,7 @@ class GameWorld:
             if timer < 1.0:
                 time_scale_factor = (1.0 - timer) * 0.7 + 0.3
             dt = float(dt) * float(time_scale_factor)
+        _mark("gw_after_time_scale")
 
         if dt > 0.0:
             self._elapsed_ms += float(dt) * 1000.0
@@ -443,7 +461,9 @@ class GameWorld:
             auto_pick_perks=auto_pick_perks,
             game_mode=game_mode,
             perk_progression_enabled=bool(perk_progression_enabled),
+            rng_marks=rng_marks_out,
         )
+        self.last_events = events
 
         if perk_progression_enabled and int(self.state.perk_selection.pending_count) > prev_perk_pending:
             self.audio_router.play_sfx("sfx_ui_levelup")
@@ -453,7 +473,7 @@ class GameWorld:
             self.audio_router.play_hit_sfx(
                 events.hits,
                 game_mode=game_mode,
-                rand=self.state.rng.rand,
+                rand=self.presentation_rng.rand,
                 beam_types=BEAM_TYPES,
             )
 
@@ -468,7 +488,7 @@ class GameWorld:
                 )
 
         if events.deaths:
-            self.audio_router.play_death_sfx(events.deaths, rand=self.state.rng.rand)
+            self.audio_router.play_death_sfx(events.deaths, rand=self.presentation_rng.rand)
 
         if events.pickups:
             for _ in events.pickups:
@@ -482,7 +502,7 @@ class GameWorld:
         return events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
-        rand = self.state.rng.rand
+        rand = self.presentation_rng.rand
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
