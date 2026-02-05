@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ...camera import camera_shake_update
 from ...creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ...game_modes import GameMode
 from ...gameplay import (
@@ -198,6 +199,9 @@ def run_survival_replay(
             perk_progression_enabled=True,
             rng_marks=world_step_marks,
         )
+        # `GameWorld.update` runs `camera_shake_update` after world simulation and
+        # before replay checkpoints are sampled in live recording paths.
+        camera_shake_update(state, dt_sim)
         rng_after_world_step = int(state.rng.state)
         # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
         # Headless verification has no render pass, so clear explicitly per simulated tick.
