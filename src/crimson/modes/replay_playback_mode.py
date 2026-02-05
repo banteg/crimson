@@ -94,6 +94,7 @@ class ReplayPlaybackMode:
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
+            weapon_usage_counts=replay.header.status.weapon_usage_counts,
         )
         # Important: `GameWorld.open()` consumes RNG for terrain generation. Treat `replay.header.seed` as the
         # gameplay RNG state at tick 0 and set it after `open()` to keep headless verification deterministic.

@@ -5,6 +5,8 @@ from typing import Literal, TypeAlias
 
 ReplayFormatVersion: TypeAlias = Literal[1]
 
+WEAPON_USAGE_COUNT = 53
+
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
 RELOAD_PRESSED_FLAG = 1 << 2
@@ -46,6 +48,7 @@ PackedTickInputs: TypeAlias = list[PackedPlayerInput]
 class ReplayStatusSnapshot:
     quest_unlock_index: int = 0
     quest_unlock_index_full: int = 0
+    weapon_usage_counts: tuple[int, ...] = field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
 
 
 @dataclass(frozen=True, slots=True)

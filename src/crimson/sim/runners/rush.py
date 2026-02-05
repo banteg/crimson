@@ -78,6 +78,7 @@ def run_rush_replay(
     world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
+        weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
     world.state.rng.srand(int(replay.header.seed))
 

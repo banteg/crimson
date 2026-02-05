@@ -28,6 +28,7 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay.types import WEAPON_USAGE_COUNT
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
     ReplayCheckpoint,
@@ -246,9 +247,21 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         status = self._state.status
+        weapon_usage_counts: tuple[int, ...] = ()
+        if status is not None:
+            try:
+                raw_counts = status.data.get("weapon_usage_counts")
+                if isinstance(raw_counts, list):
+                    weapon_usage_counts = tuple(int(value) & 0xFFFFFFFF for value in raw_counts[:WEAPON_USAGE_COUNT])
+            except Exception:
+                weapon_usage_counts = ()
+        if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
+            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(0, WEAPON_USAGE_COUNT - len(weapon_usage_counts))
+            weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
             quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+            weapon_usage_counts=weapon_usage_counts,
         )
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(

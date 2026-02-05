@@ -13,6 +13,7 @@ from .types import (
     ReplayEvent,
     ReplayHeader,
     ReplayStatusSnapshot,
+    WEAPON_USAGE_COUNT,
     UnknownEvent,
 )
 
@@ -44,9 +45,18 @@ def _validate_header_dict(header: dict[str, Any]) -> None:
 def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
     _validate_header_dict(data)
     status_in = data.get("status") or {}
+    weapon_usage_counts = [0] * WEAPON_USAGE_COUNT
+    raw_weapon_usage_counts = status_in.get("weapon_usage_counts")
+    if isinstance(raw_weapon_usage_counts, list):
+        for idx, value in enumerate(raw_weapon_usage_counts[:WEAPON_USAGE_COUNT]):
+            try:
+                weapon_usage_counts[idx] = int(value)
+            except Exception:
+                weapon_usage_counts[idx] = 0
     status = ReplayStatusSnapshot(
         quest_unlock_index=int(status_in.get("quest_unlock_index", 0)),
         quest_unlock_index_full=int(status_in.get("quest_unlock_index_full", 0)),
+        weapon_usage_counts=tuple(weapon_usage_counts),
     )
     game_version = data.get("game_version")
     if game_version is None:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ...effects import FxQueue, FxQueueRotated
 from ...gameplay import GameplayState, PlayerState, most_used_weapon_id_for_player, weapon_assign_player
-from ...persistence.save_status import GameStatus
+from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
 from ...weapons import WEAPON_TABLE
 
 
@@ -42,15 +42,25 @@ def build_empty_fx_queues() -> tuple[FxQueue, FxQueueRotated]:
     return FxQueue(), FxQueueRotated()
 
 
-def status_from_snapshot(*, quest_unlock_index: int, quest_unlock_index_full: int) -> GameStatus:
-    # Only unlock indices are required for `weapon_refresh_available` and `perks_rebuild_available`.
-    return GameStatus(
-        path=Path("replay://status"),
-        data={
-            "quest_unlock_index": int(quest_unlock_index) & 0xFFFF,
-            "quest_unlock_index_full": int(quest_unlock_index_full) & 0xFFFF,
-        },
-    )
+def status_from_snapshot(
+    *,
+    quest_unlock_index: int,
+    quest_unlock_index_full: int,
+    weapon_usage_counts: tuple[int, ...] | None = None,
+) -> GameStatus:
+    data = default_status_data()
+    data["quest_unlock_index"] = int(quest_unlock_index) & 0xFFFF
+    data["quest_unlock_index_full"] = int(quest_unlock_index_full) & 0xFFFF
+
+    if weapon_usage_counts is not None:
+        counts = list(data.get("weapon_usage_counts") or [0] * WEAPON_USAGE_COUNT)
+        if len(counts) != WEAPON_USAGE_COUNT:
+            counts = [0] * WEAPON_USAGE_COUNT
+        for idx, value in enumerate(weapon_usage_counts[:WEAPON_USAGE_COUNT]):
+            counts[idx] = int(value) & 0xFFFFFFFF
+        data["weapon_usage_counts"] = counts
+
+    return GameStatus(path=Path("replay://status"), data=data)
 
 
 def reset_players(
