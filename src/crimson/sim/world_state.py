@@ -5,6 +5,7 @@ import math
 from typing import Callable
 
 from ..bonuses import BonusId
+from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
 from ..creatures.runtime import CreaturePool
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE
@@ -364,6 +365,8 @@ class WorldState:
         if dt > 0.0:
             self._advance_creature_anim(dt)
             self._advance_player_anim(dt, prev_positions)
+
+        camera_shake_update(self.state, dt)
 
         pickups = bonus_update(
             self.state,

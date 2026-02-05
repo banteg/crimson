@@ -12,7 +12,6 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
-from .camera import camera_shake_update
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import SpawnEnv
@@ -626,10 +625,9 @@ class GameWorld:
         self._bake_fx_queues()
         self.renderer.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
 
-    def update_camera(self, dt: float) -> None:
+    def update_camera(self, _dt: float) -> None:
         if not self.players:
             return
-        camera_shake_update(self.state, dt)
 
         screen_w, screen_h = self.renderer._camera_screen_size()
 
