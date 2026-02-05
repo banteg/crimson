@@ -28,6 +28,14 @@ from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pre
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, draw_ui_text, load_perk_menu_assets
 from ..weapons import WEAPON_BY_ID
 from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay.checkpoints import (
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+    ReplayCheckpoint,
+    ReplayCheckpoints,
+    build_checkpoint,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+)
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -107,6 +115,9 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu_assets = None
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
+        self._replay_checkpoints: list[ReplayCheckpoint] = []
+        self._replay_checkpoints_sample_rate: int = 60
+        self._replay_checkpoints_last_tick: int | None = None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -120,11 +131,34 @@ class SurvivalMode(BaseGameplayMode):
         if recorder is None:
             return
         recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
+        # Force a checkpoint when perk picks happen; they are often the first
+        # place replays diverge, and sampling at 1 Hz would miss them.
+        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
+
+    def _record_replay_checkpoint(self, tick_index: int, *, force: bool = False) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if tick_index < 0:
+            return
+        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
+            return
+        if self._replay_checkpoints_last_tick == int(tick_index):
+            return
+        self._replay_checkpoints.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self._world.world_state,
+                elapsed_ms=float(self._survival.elapsed_ms),
+            )
+        )
+        self._replay_checkpoints_last_tick = int(tick_index)
 
     def _save_replay(self) -> None:
         recorder = self._replay_recorder
         if recorder is None:
             return
+        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         replay = recorder.finish()
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
@@ -133,9 +167,22 @@ class SurvivalMode(BaseGameplayMode):
         replay_dir.mkdir(parents=True, exist_ok=True)
         path = replay_dir / f"{stamp}_{digest}.crdemo.gz"
         path.write_bytes(data)
+        checkpoints_path = default_checkpoints_path(path)
+        dump_checkpoints_file(
+            checkpoints_path,
+            ReplayCheckpoints(
+                version=CHECKPOINTS_FORMAT_VERSION,
+                replay_sha256=digest,
+                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
+                checkpoints=list(self._replay_checkpoints),
+            ),
+        )
         self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
         if self._console is not None:
             self._console.log.log(f"replay: saved {path}")
+            self._console.log.log(f"replay: saved {checkpoints_path}")
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
@@ -216,11 +263,17 @@ class SurvivalMode(BaseGameplayMode):
                 status=status_snapshot,
             )
         )
+        tick_rate = int(self._replay_recorder.header.tick_rate)
+        self._replay_checkpoints_sample_rate = max(1, tick_rate)
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         if self._perk_menu_assets is not None:
             self._perk_menu_assets = None
         self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -448,7 +501,9 @@ class SurvivalMode(BaseGameplayMode):
         input_state = self._build_input()
         inputs = [input_state for _ in self._world.players]
         if self._replay_recorder is not None:
-            self._replay_recorder.record_tick(inputs)
+            tick_index = self._replay_recorder.record_tick(inputs)
+        else:
+            tick_index = None
         self._world.update(
             dt,
             inputs=inputs,
@@ -482,6 +537,9 @@ class SurvivalMode(BaseGameplayMode):
         )
         self._survival.spawn_cooldown = cooldown
         self._creatures.spawn_inits(wave_spawns)
+
+        if tick_index is not None:
+            self._record_replay_checkpoint(int(tick_index))
 
         if not any(player.health > 0.0 for player in self._world.players):
             self._enter_game_over()
