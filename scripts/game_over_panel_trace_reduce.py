@@ -113,7 +113,9 @@ def main() -> int:
     out_path: Path = args.out
 
     counts = Counter()
-    run_ids: set[str] = set()
+    run_ids: list[str] = []
+    run_ids_seen: set[str] = set()
+    selected_run_id: str | None = None
     first_ts: str | None = None
     last_ts: str | None = None
     states = Counter()
@@ -128,6 +130,25 @@ def main() -> int:
     # Keep one best sample per ui_screen_phase at max timeline.
     phase_best: dict[int, dict[str, Any]] = {}
 
+    # First pass: discover run ids and pick the latest observed run in the file.
+    with in_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for raw in fh:
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except Exception:
+                continue
+
+            run_id = obj.get("run_id")
+            if isinstance(run_id, str):
+                if run_id not in run_ids_seen:
+                    run_ids_seen.add(run_id)
+                    run_ids.append(run_id)
+                selected_run_id = run_id
+
+    # Second pass: summarize only the selected run (latest by appearance).
     with in_path.open("r", encoding="utf-8", errors="replace") as fh:
         for raw in fh:
             line = raw.strip()
@@ -139,6 +160,10 @@ def main() -> int:
                 counts["json_error"] += 1
                 continue
 
+            run_id = obj.get("run_id")
+            if selected_run_id is not None and run_id != selected_run_id:
+                continue
+
             evt = obj.get("event")
             counts[str(evt)] += 1
 
@@ -147,10 +172,6 @@ def main() -> int:
                 if first_ts is None:
                     first_ts = ts
                 last_ts = ts
-
-            run_id = obj.get("run_id")
-            if isinstance(run_id, str):
-                run_ids.add(run_id)
 
             state = obj.get("state")
             if isinstance(state, dict):
@@ -212,12 +233,20 @@ def main() -> int:
             if phase is None:
                 continue
             tl = _timeline(obj)
+            seq = obj.get("seq")
+            seq_i = int(seq) if isinstance(seq, (int, float)) and not isinstance(seq, bool) else -1
             cur = phase_best.get(phase)
-            if cur is None or tl > int(cur.get("timeline", -1)):
+            if cur is None:
+                should_replace = True
+            else:
+                cur_tl = int(cur.get("timeline", -1))
+                cur_seq = int(cur.get("seq", -1))
+                should_replace = tl > cur_tl or (tl == cur_tl and seq_i > cur_seq)
+            if should_replace:
                 phase_best[phase] = {
                     "timeline": tl,
                     "event": evt,
-                    "seq": obj.get("seq"),
+                    "seq": seq_i,
                     "state": state,
                     "panel": panel,
                 }
@@ -245,8 +274,9 @@ def main() -> int:
         "source": {
             "path": str(in_path),
             "size_bytes": in_path.stat().st_size if in_path.exists() else None,
+            "selected_run_id": selected_run_id,
         },
-        "run_ids": sorted(run_ids),
+        "run_ids": run_ids,
         "first_ts": first_ts,
         "last_ts": last_ts,
         "event_counts": dict(counts),
