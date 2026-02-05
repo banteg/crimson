@@ -50,3 +50,49 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
     # At 640x480: panel_left = -24, banner_x = panel_left + 214, first button x = banner_x + 52.
     assert captured_x
     assert captured_x[0] == 242.0
+
+
+def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> None:
+    ui = GameOverUi(
+        assets_root=tmp_path,
+        base_dir=tmp_path,
+        config=SimpleNamespace(data={"fx_detail_0": 0}),
+    )
+    ui.phase = 1
+    ui.rank = 0
+    ui._intro_ms = PANEL_SLIDE_DURATION_MS
+    ui.assets = SimpleNamespace(
+        menu_panel=SimpleNamespace(width=512, height=256),
+        text_reaper=None,
+        text_well_done=None,
+        particles=None,
+        perk_menu_assets=SimpleNamespace(cursor=None),
+    )
+
+    captured_panel: list[tuple[object, bool]] = []
+
+    def _draw_classic_menu_panel(_texture, *, dst, tint, shadow):  # noqa: ANN001, ARG001
+        captured_panel.append((dst, bool(shadow)))
+
+    monkeypatch.setattr("crimson.ui.game_over.draw_classic_menu_panel", _draw_classic_menu_panel)
+    monkeypatch.setattr("crimson.ui.game_over.draw_menu_cursor", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.ui.game_over.button_draw", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("crimson.ui.game_over.button_width", lambda *_args, **_kwargs: 82.0)
+    monkeypatch.setattr("crimson.ui.game_over.GameOverUi._draw_score_card", lambda _self, **_kwargs: None)
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
+
+    ui.draw(
+        record=HighScoreRecord.blank(),
+        banner_kind="reaper",
+        hud_assets=None,
+        mouse=SimpleNamespace(x=0.0, y=0.0),
+    )
+
+    assert len(captured_panel) == 1
+    panel_rect, shadow_enabled = captured_panel[0]
+    assert panel_rect.x == -24.0
+    assert panel_rect.y == 29.0
+    assert panel_rect.width == 510.0
+    assert panel_rect.height == 254.0
+    assert shadow_enabled is False

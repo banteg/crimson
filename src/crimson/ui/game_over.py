@@ -34,7 +34,7 @@ from .perk_menu import (
     load_perk_menu_assets,
 )
 from .cursor import draw_menu_cursor
-from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from .menu_panel import draw_classic_menu_panel
 from .text_input import poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
@@ -543,24 +543,8 @@ class GameOverUi:
 
         # Panel background
         if self.assets.menu_panel is not None:
-            panel_tex = self.assets.menu_panel
-            src = rl.Rectangle(0.0, 0.0, float(panel_tex.width), float(panel_tex.height))
-            dst = rl.Rectangle(panel.x, panel.y, panel.width, panel.height)
             fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
-            if fx_detail:
-                draw_ui_quad_shadow(
-                    texture=panel_tex,
-                    src=src,
-                    dst=rl.Rectangle(
-                        float(dst.x + UI_SHADOW_OFFSET),
-                        float(dst.y + UI_SHADOW_OFFSET),
-                        float(dst.width),
-                        float(dst.height),
-                    ),
-                    origin=rl.Vector2(0.0, 0.0),
-                    rotation_deg=0.0,
-                )
-            rl.draw_texture_pro(panel_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            draw_classic_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
         # Banner (Reaper / Well done)
         banner = self.assets.text_reaper if banner_kind == "reaper" else self.assets.text_well_done
