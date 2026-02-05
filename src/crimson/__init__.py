@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import version
 
-try:
-    __version__ = version("crimsonland")
-except PackageNotFoundError:  # pragma: no cover
-    # Allow running from source (e.g. `PYTHONPATH=src`) without installed package metadata.
-    __version__ = "0.0.0+dev"
+__version__ = version("crimsonland")
 
 __all__ = [
     "atlas",
