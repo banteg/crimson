@@ -23,19 +23,27 @@ known state ids. Names are inferred from call sites and screen behavior.
 
 ## Known state ids
 
+For the complete id-by-id glossary (`0x00..0x1a`, including uncertain/legacy ids),
+see [State id glossary](state-ids.md).
+
 | Id | Label (inferred) | Evidence |
 | --- | --- | --- |
 | `0` | main menu / root UI | `game_state_set` (`FUN_004461c0(0)`), load step sets `game_state_id` (`DAT_00487270`) = `0` |
+| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI; runtime trace labels `state_11:#.#` |
 | `5` | pause (console/mod pause) | `mod_api_cl_enter_menu` (`FUN_0040e690`) sets `game_state_pending` (`DAT_00487274`) = `5` on `game_pause` |
 | `6` | perk selection | direct `game_state_set` (`FUN_004461c0(6)`) when perk prompt is accepted |
 | `7` | game over / high score entry | `game_over_screen_update` checks `game_state_id` (`DAT_00487270`) == `7` |
 | `8` | quest results | `quest_results_screen_update` checks `game_state_id` (`DAT_00487270`) == `8` |
 | `9` | gameplay | `gameplay_update_and_render` runs creature/projectile/player updates only when 9 |
+| `10` | quit transition | main-menu Quit callback sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` |
 | `0xc` | quest failed | `quest_failed_screen_update` checks `game_state_id` (`DAT_00487270`) == `0xc` |
+| `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe`; runtime labels `state_14:High scores - ...` |
+| `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits` |
 | `0x12` | Typ-o-Shooter gameplay | `survival_gameplay_update_and_render` (`FUN_004457c0`) updates when `game_state_id` (`DAT_00487270`) == `0x12` |
+| `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `sub_40e9a0` (mods menu); plugin flow queues `0x14` on exit/failure |
+| `0x15` | final quest end note | dispatch routes to `game_update_victory_screen()` when `game_state_id == 0x15` |
 | `0x16` | modal/plugin flow | `FUN_0040b630` drives a DLL-backed interface (`plugin_interface_ptr` (`DAT_004824d4`)) when `0x16` |
-| `0x14` | modal fallback / return from plugin | queued as transition target when the plugin is missing or ends in `FUN_0040b630` |
-| `10` | unknown (menu-related) | `ui_elements_update_and_render` sets `DAT_0047ea50` when 10 |
+| `0x1a` | credits secret flow | credits "Secret" button queues `0x1a`; `game_state_set(0x1a)` installs `credits_secret_alien_zookeeper_update` |
 
 ## Transition rules
 
@@ -53,4 +61,4 @@ known state ids. Names are inferred from call sites and screen behavior.
 ## Notes
 
 - `0x19` is used as an idle sentinel for `game_state_pending` (`DAT_00487274`), not as a real state id.
-- The exact meaning of state `10` still needs confirmation.
+- Remaining uncertain ids are `0x0d`, `0x13`, `0x17`, and `0x18` (tracked in `state-ids.md` with lower confidence).
