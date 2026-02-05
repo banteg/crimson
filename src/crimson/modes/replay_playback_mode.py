@@ -31,6 +31,10 @@ from ..sim.runners.common import build_damage_scale_by_type, status_from_snapsho
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+_PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
+_DEFAULT_SPEED_INDEX = 2
+_SKIP_SHORT_SECONDS = 5.0
+_SKIP_LONG_SECONDS = 30.0
 
 
 @dataclass(slots=True)
@@ -63,6 +67,8 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
+        self._paused = False
+        self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._survival: _SurvivalPlaybackState | None = None
         self._rush: _RushPlaybackState | None = None
@@ -80,6 +86,8 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
+        self._paused = False
+        self._speed_index = _DEFAULT_SPEED_INDEX
 
         events_by_tick: dict[int, list[object]] = {}
         for event in replay.events:
@@ -330,23 +338,55 @@ class ReplayPlaybackMode:
         if not any(player.health > 0.0 for player in world.players):
             self._finished = True
 
+    def _playback_speed(self) -> float:
+        return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
+
+    def _change_speed(self, delta: int) -> None:
+        idx = int(self._speed_index) + int(delta)
+        idx = max(0, min(idx, len(_PLAYBACK_SPEED_STEPS) - 1))
+        self._speed_index = idx
+
+    def _skip_forward_seconds(self, seconds: float) -> None:
+        replay = self._replay
+        if replay is None or self._finished:
+            return
+        ticks = int(round(float(seconds) * float(self._tick_rate)))
+        if ticks <= 0:
+            return
+        target = min(len(replay.inputs), int(self._tick_index) + int(ticks))
+        while self._tick_index < target and not self._finished:
+            self._tick_one()
+        # Avoid accidental overshoot from stale accumulated frame time after seek.
+        self._dt_accum = 0.0
+
     def update(self, dt: float) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
             return
-        if self._finished:
-            return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            self._paused = not bool(self._paused)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+            self._change_speed(-1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+            self._change_speed(1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ONE):
+            self._speed_index = _DEFAULT_SPEED_INDEX
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+            self._skip_forward_seconds(_SKIP_SHORT_SECONDS)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+            self._skip_forward_seconds(_SKIP_LONG_SECONDS)
 
-        dt = float(dt)
-        if dt < 0.0:
-            dt = 0.0
-        if dt > 0.1:
-            dt = 0.1
-        self._dt_accum += dt
+        if not self._finished and (not self._paused):
+            dt = float(dt)
+            if dt < 0.0:
+                dt = 0.0
+            if dt > 0.1:
+                dt = 0.1
+            self._dt_accum += dt * self._playback_speed()
 
-        while self._dt_accum + 1e-9 >= self._dt_frame and not self._finished:
-            self._tick_one()
-            self._dt_accum -= self._dt_frame
+            while self._dt_accum + 1e-9 >= self._dt_frame and not self._finished:
+                self._tick_one()
+                self._dt_accum -= self._dt_frame
 
         # `GameWorld.open()` schedules terrain generation, but our playback loop
         # steps `WorldState` directly (bypassing `GameWorld.update()`), so we
@@ -366,6 +406,11 @@ class ReplayPlaybackMode:
         replay = self._replay
         if replay is not None:
             total = len(replay.inputs)
-            rl.draw_text(f"{self._tick_index}/{total}", 18, 42, 18, rl.Color(220, 220, 220, 200))
+            elapsed_s = float(self._tick_index) / float(self._tick_rate)
+            total_s = float(total) / float(self._tick_rate)
+            rl.draw_text(f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s", 18, 42, 18, rl.Color(220, 220, 220, 200))
+        status = "PAUSED" if self._paused else "PLAYING"
+        rl.draw_text(f"{status}  {self._playback_speed():.2f}x", 18, 66, 18, rl.Color(220, 220, 220, 200))
+        rl.draw_text("[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s", 18, 90, 18, rl.Color(190, 190, 190, 200))
         if self._finished:
-            rl.draw_text("REPLAY ENDED (ESC)", 18, 66, 18, rl.Color(220, 220, 220, 200))
+            rl.draw_text("REPLAY ENDED (ESC)", 18, 114, 18, rl.Color(220, 220, 220, 200))
