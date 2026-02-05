@@ -681,8 +681,12 @@ class WorldRenderer:
             return
 
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
-        if texture is None or mapping is None:
-            rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))
+        if mapping is None:
+            return
+        if texture is None:
+            if life < 0.39:
+                return
+            rl.draw_circle(int(sx), int(sy), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5)))
             return
         grid, frame = mapping
 
