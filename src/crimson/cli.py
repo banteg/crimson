@@ -248,6 +248,81 @@ def cmd_replay_play(
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
+@replay_app.command("verify")
+def cmd_replay_verify(
+    replay_file: Path = typer.Argument(..., help="replay file path (.crdemo.gz)"),
+    checkpoints_file: Path | None = typer.Option(
+        None,
+        "--checkpoints",
+        help="checkpoint sidecar path (default: <replay>.checkpoints.json.gz)",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
+) -> None:
+    """Verify a replay by comparing headless checkpoints with a sidecar file."""
+    import hashlib
+
+    from .game_modes import GameMode
+    from .replay import load_replay
+    from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
+    from .sim.runners import run_rush_replay, run_survival_replay
+
+    replay_bytes = Path(replay_file).read_bytes()
+    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
+    replay = load_replay(replay_bytes)
+
+    if checkpoints_file is None:
+        checkpoints_file = default_checkpoints_path(replay_file)
+    checkpoints_path = Path(checkpoints_file)
+    if not checkpoints_path.is_file():
+        typer.echo(f"checkpoints file not found: {checkpoints_path}", err=True)
+        raise typer.Exit(code=1)
+
+    expected = load_checkpoints_file(checkpoints_path)
+    if expected.replay_sha256 and str(expected.replay_sha256) != str(replay_sha256):
+        typer.echo(
+            f"warning: checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})",
+            err=True,
+        )
+
+    checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
+    actual = []
+
+    mode = int(replay.header.game_mode_id)
+    if mode == int(GameMode.SURVIVAL):
+        result = run_survival_replay(
+            replay,
+            max_ticks=max_ticks,
+            checkpoints_out=actual,
+            checkpoint_ticks=checkpoint_ticks,
+        )
+    elif mode == int(GameMode.RUSH):
+        result = run_rush_replay(
+            replay,
+            max_ticks=max_ticks,
+            checkpoints_out=actual,
+            checkpoint_ticks=checkpoint_ticks,
+        )
+    else:
+        typer.echo(f"unsupported replay game_mode_id={mode}", err=True)
+        raise typer.Exit(code=1)
+
+    actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
+    for exp in expected.checkpoints:
+        act = actual_by_tick.get(int(exp.tick_index))
+        if act is None:
+            typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
+            raise typer.Exit(code=1)
+        if str(exp.state_hash) != str(act.state_hash):
+            typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
+            typer.echo(f"  expected: {exp}", err=True)
+            typer.echo(f"  actual:   {act}", err=True)
+            raise typer.Exit(code=1)
+
+    typer.echo(
+        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} score_xp={result.score_xp} kills={result.creature_kill_count}"
+    )
+
+
 @app.callback(invoke_without_command=True)
 def cmd_game(
     ctx: typer.Context,
