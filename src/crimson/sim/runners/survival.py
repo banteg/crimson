@@ -71,6 +71,15 @@ def _apply_tick_events(
                 if strict_events:
                     raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
+            # UI parity quirk: after closing the menu, draw/update may query choices once more
+            # during transition, consuming RNG and clearing `choices_dirty`.
+            perk_selection_current_choices(
+                state,
+                players,
+                perk_state,
+                game_mode=int(GameMode.SURVIVAL),
+                player_count=len(players),
+            )
             continue
         if isinstance(event, UnknownEvent):
             if strict_events:
