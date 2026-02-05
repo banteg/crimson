@@ -45,6 +45,7 @@ class ReplayCheckpoint:
     rng_marks: dict[str, int] = field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = field(default_factory=list)
     perk: "ReplayPerkSnapshot" = field(default_factory=lambda: ReplayPerkSnapshot())
+    events: "ReplayEventSummary" = field(default_factory=lambda: ReplayEventSummary())
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +63,15 @@ class ReplayPerkSnapshot:
     choices_dirty: bool = False
     choices: list[int] = field(default_factory=list)
     player_nonzero_counts: list[list[list[int]]] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayEventSummary:
+    # Legacy sidecars may omit this block; -1 marks "unknown/not recorded".
+    hit_count: int = 0
+    pickup_count: int = 0
+    sfx_count: int = 0
+    sfx_head: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +117,7 @@ def build_checkpoint(
     elapsed_ms: float,
     rng_marks: dict[str, int] | None = None,
     deaths: Sequence[object] | None = None,
+    events: object | None = None,
 ) -> ReplayCheckpoint:
     state = world.state
     players: list[PlayerState] = list(world.players)
@@ -169,6 +180,16 @@ def build_checkpoint(
         for key, value in rng_marks.items():
             marks[str(key)] = int(value)
 
+    hits = list(getattr(events, "hits", ()) or ())
+    pickups = list(getattr(events, "pickups", ()) or ())
+    sfx = list(getattr(events, "sfx", ()) or ())
+    event_summary = ReplayEventSummary(
+        hit_count=int(len(hits)),
+        pickup_count=int(len(pickups)),
+        sfx_count=int(len(sfx)),
+        sfx_head=[str(key) for key in sfx[:4]],
+    )
+
     # Hash a full-ish snapshot for faster comparisons than deep diffs.
     hash_obj = {
         "rng_state": int(state.rng.state),
@@ -226,6 +247,7 @@ def build_checkpoint(
         rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,
+        events=event_summary,
     )
 
 
@@ -333,6 +355,27 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                 player_nonzero_counts=player_nonzero_counts,
             )
 
+        events_in = item.get("events")
+        if events_in is None:
+            events = ReplayEventSummary(
+                hit_count=-1,
+                pickup_count=-1,
+                sfx_count=-1,
+                sfx_head=[],
+            )
+        else:
+            if not isinstance(events_in, dict):
+                raise ReplayCheckpointsError("checkpoint events must be an object")
+            raw_sfx_head = events_in.get("sfx_head") or []
+            if not isinstance(raw_sfx_head, list):
+                raise ReplayCheckpointsError("checkpoint events sfx_head must be a list")
+            events = ReplayEventSummary(
+                hit_count=int(events_in.get("hit_count", 0)),
+                pickup_count=int(events_in.get("pickup_count", 0)),
+                sfx_count=int(events_in.get("sfx_count", 0)),
+                sfx_head=[str(key) for key in raw_sfx_head],
+            )
+
         checkpoints.append(
             ReplayCheckpoint(
                 tick_index=int(item.get("tick_index", 0)),
@@ -348,6 +391,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                 rng_marks={str(k): int(v) for k, v in rng_marks_in.items()},
                 deaths=deaths,
                 perk=perk,
+                events=events,
             )
         )
 

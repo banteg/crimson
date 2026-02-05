@@ -151,8 +151,6 @@ def run_survival_replay(
         state = world.state
         state.game_mode = int(GameMode.SURVIVAL)
         state.demo_mode_active = False
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
 
         _apply_tick_events(
             events_by_tick.get(tick_index, []),
@@ -179,8 +177,14 @@ def run_survival_replay(
                 )
             )
 
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         rng_before_world_step = int(state.rng.state)
+        world_step_marks: dict[str, int] = {"gw_begin": int(rng_before_world_step)}
+        weapon_refresh_available(state)
+        world_step_marks["gw_after_weapon_refresh"] = int(state.rng.state)
+        perks_rebuild_available(state)
+        world_step_marks["gw_after_perks_rebuild"] = int(state.rng.state)
+        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
+        world_step_marks["gw_after_time_scale"] = int(state.rng.state)
         events = world.step(
             dt_sim,
             inputs=player_inputs,
@@ -192,6 +196,7 @@ def run_survival_replay(
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
             perk_progression_enabled=True,
+            rng_marks=world_step_marks,
         )
         rng_after_world_step = int(state.rng.state)
         # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
@@ -237,11 +242,13 @@ def run_survival_replay(
                     elapsed_ms=float(run.elapsed_ms),
                     rng_marks={
                         "before_world_step": int(rng_before_world_step),
+                        **world_step_marks,
                         "after_world_step": int(rng_after_world_step),
                         "after_stage_spawns": int(rng_after_stage_spawns),
                         "after_wave_spawns": int(rng_after_wave_spawns),
                     },
                     deaths=events.deaths,
+                    events=events,
                 )
             )
 

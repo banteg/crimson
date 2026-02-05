@@ -563,12 +563,14 @@ class SurvivalMode(BaseGameplayMode):
 
             self._survival.elapsed_ms += dt_tick * 1000.0
             rng_before_world_step = int(self._state.rng.state)
+            world_step_marks: dict[str, int] = {}
             self._world.update(
                 dt_tick,
                 inputs=inputs,
                 auto_pick_perks=False,
                 game_mode=int(GameMode.SURVIVAL),
                 perk_progression_enabled=True,
+                rng_marks_out=world_step_marks,
             )
             world_events = self._world.last_events
             rng_after_world_step = int(self._state.rng.state)
@@ -606,11 +608,13 @@ class SurvivalMode(BaseGameplayMode):
                     int(tick_index),
                     rng_marks={
                         "before_world_step": int(rng_before_world_step),
+                        **world_step_marks,
                         "after_world_step": int(rng_after_world_step),
                         "after_stage_spawns": int(rng_after_stage_spawns),
                         "after_wave_spawns": int(rng_after_wave_spawns),
                     },
                     deaths=world_events.deaths,
+                    events=world_events,
                 )
 
             if not any(player.health > 0.0 for player in self._world.players):

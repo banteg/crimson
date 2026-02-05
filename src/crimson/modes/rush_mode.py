@@ -334,12 +334,14 @@ class RushMode(BaseGameplayMode):
             else:
                 tick_index = None
             rng_before_world_step = int(self._state.rng.state)
+            world_step_marks: dict[str, int] = {}
             self._world.update(
                 dt_tick,
                 inputs=inputs,
                 auto_pick_perks=False,
                 game_mode=int(GameMode.RUSH),
                 perk_progression_enabled=False,
+                rng_marks_out=world_step_marks,
             )
             world_events = self._world.last_events
             rng_after_world_step = int(self._state.rng.state)
@@ -362,10 +364,12 @@ class RushMode(BaseGameplayMode):
                     int(tick_index),
                     rng_marks={
                         "before_world_step": int(rng_before_world_step),
+                        **world_step_marks,
                         "after_world_step": int(rng_after_world_step),
                         "after_rush_spawns": int(rng_after_rush_spawns),
                     },
                     deaths=world_events.deaths,
+                    events=world_events,
                 )
 
             if not any(player.health > 0.0 for player in self._world.players):

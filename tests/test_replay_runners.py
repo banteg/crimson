@@ -81,12 +81,29 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
-        assert ckpt.rng_marks.keys() == {
+        assert {
             "before_world_step",
+            "gw_begin",
+            "gw_after_weapon_refresh",
+            "gw_after_perks_rebuild",
+            "gw_after_time_scale",
             "after_world_step",
             "after_stage_spawns",
             "after_wave_spawns",
-        }
+        }.issubset(ckpt.rng_marks.keys())
+        assert {
+            "ws_begin",
+            "ws_after_particles_update",
+            "ws_after_sprite_effects",
+            "ws_after_projectiles",
+            "ws_after_bonus_update",
+            "ws_after_sfx_queue_merge",
+            "ws_after_player_damage_sfx",
+            "ws_after_sfx",
+        }.issubset(ckpt.rng_marks.keys())
+        assert isinstance(ckpt.events.hit_count, int)
+        assert isinstance(ckpt.events.pickup_count, int)
+        assert isinstance(ckpt.events.sfx_count, int)
         assert isinstance(ckpt.deaths, list)
 
 
@@ -145,9 +162,26 @@ def test_rush_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
-        assert ckpt.rng_marks.keys() == {
+        assert {
             "before_world_step",
+            "gw_begin",
+            "gw_after_weapon_refresh",
+            "gw_after_perks_rebuild",
+            "gw_after_time_scale",
             "after_world_step",
             "after_rush_spawns",
-        }
+        }.issubset(ckpt.rng_marks.keys())
+        assert {
+            "ws_begin",
+            "ws_after_particles_update",
+            "ws_after_sprite_effects",
+            "ws_after_projectiles",
+            "ws_after_bonus_update",
+            "ws_after_sfx_queue_merge",
+            "ws_after_player_damage_sfx",
+            "ws_after_sfx",
+        }.issubset(ckpt.rng_marks.keys())
+        assert isinstance(ckpt.events.hit_count, int)
+        assert isinstance(ckpt.events.pickup_count, int)
+        assert isinstance(ckpt.events.sfx_count, int)
         assert isinstance(ckpt.deaths, list)

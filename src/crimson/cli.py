@@ -319,6 +319,33 @@ def cmd_replay_verify(
 
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     first_rng_only_tick: int | None = None
+    rng_mark_order = (
+        "before_world_step",
+        "gw_begin",
+        "gw_after_weapon_refresh",
+        "gw_after_perks_rebuild",
+        "gw_after_time_scale",
+        "ws_begin",
+        "ws_after_perk_effects",
+        "ws_after_effects_update",
+        "ws_after_creatures",
+        "ws_after_projectiles",
+        "ws_after_secondary_projectiles",
+        "ws_after_particles_update",
+        "ws_after_sprite_effects",
+        "ws_after_particles",
+        "ws_after_player_update_p0",
+        "ws_after_player_update",
+        "ws_after_bonus_update",
+        "ws_after_progression",
+        "ws_after_sfx_queue_merge",
+        "ws_after_player_damage_sfx",
+        "ws_after_sfx",
+        "after_world_step",
+        "after_stage_spawns",
+        "after_wave_spawns",
+        "after_rush_spawns",
+    )
     for exp in expected.checkpoints:
         act = actual_by_tick.get(int(exp.tick_index))
         if act is None:
@@ -330,6 +357,9 @@ def cmd_replay_verify(
             for key in ("state_hash", "rng_state", "rng_marks"):
                 exp_no_rng.pop(key, None)
                 act_no_rng.pop(key, None)
+            # Legacy sidecars (without `events`) store unknown sentinel values.
+            if int(exp.events.hit_count) < 0:
+                exp_no_rng["events"] = act_no_rng.get("events")
             if exp_no_rng == act_no_rng:
                 if first_rng_only_tick is None:
                     first_rng_only_tick = int(exp.tick_index)
@@ -345,7 +375,7 @@ def cmd_replay_verify(
             mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
             mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
             if mark_mismatch:
-                first = mark_mismatch[0]
+                first = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0])
                 typer.echo(
                     f"  rng_mark[{first}] expected={exp.rng_marks.get(first)} actual={act.rng_marks.get(first)}",
                     err=True,
@@ -353,6 +383,13 @@ def cmd_replay_verify(
             typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
             if exp.deaths or act.deaths:
                 typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+            if int(exp.events.hit_count) >= 0:
+                typer.echo(
+                    "  events "
+                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                    err=True,
+                )
             if exp.perk != act.perk:
                 typer.echo(
                     "  perk snapshot differs "

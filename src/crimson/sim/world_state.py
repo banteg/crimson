@@ -187,11 +187,18 @@ class WorldState:
         auto_pick_perks: bool,
         game_mode: int,
         perk_progression_enabled: bool,
+        rng_marks: dict[str, int] | None = None,
     ) -> WorldEvents:
+        def _mark(name: str) -> None:
+            if rng_marks is None:
+                return
+            rng_marks[str(name)] = int(self.state.rng.state)
+
         dt_ctx = _WorldDtCtx(dt=float(dt), players=self.players)
         for step in _WORLD_DT_STEPS:
             step(dt_ctx)
         dt = float(dt_ctx.dt)
+        _mark("ws_begin")
 
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
@@ -207,9 +214,11 @@ class WorldState:
             player.aim_y = float(input_state.aim_y)
 
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
+        _mark("ws_after_perk_effects")
 
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
+        _mark("ws_after_effects_update")
 
         def _apply_projectile_damage_to_player(player_index: int, damage: float) -> None:
             idx = int(player_index)
@@ -227,6 +236,7 @@ class WorldState:
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
         )
+        _mark("ws_after_creatures")
 
         deaths = list(creature_result.deaths)
 
@@ -283,6 +293,7 @@ class WorldState:
             apply_player_damage=_apply_projectile_damage_to_player,
             apply_creature_damage=_apply_projectile_damage_to_creature,
         )
+        _mark("ws_after_projectiles")
         self.state.secondary_projectiles.update_pulse_gun(
             dt,
             self.creatures.entries,
@@ -291,6 +302,7 @@ class WorldState:
             fx_queue=fx_queue,
             detail_preset=int(detail_preset),
         )
+        _mark("ws_after_secondary_projectiles")
 
         for idx, player in enumerate(self.players):
             if idx >= len(prev_health):
@@ -347,7 +359,10 @@ class WorldState:
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
+        _mark("ws_after_particles_update")
         self.state.sprite_effects.update(dt)
+        _mark("ws_after_sprite_effects")
+        _mark("ws_after_particles")
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
@@ -360,6 +375,9 @@ class WorldState:
                 world_size=float(world_size),
                 players=self.players,
             )
+            if idx == 0:
+                _mark("ws_after_player_update_p0")
+        _mark("ws_after_player_update")
 
         if dt > 0.0:
             self._advance_creature_anim(dt)
@@ -410,6 +428,7 @@ class WorldState:
                         color_b=0.8,
                         color_a=1.0,
                     )
+        _mark("ws_after_bonus_update")
 
         if perk_progression_enabled:
             survival_progression_update(
@@ -420,11 +439,13 @@ class WorldState:
                 dt=dt,
                 creatures=self.creatures.entries,
             )
+        _mark("ws_after_progression")
 
         sfx = list(creature_result.sfx)
         if self.state.sfx_queue:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
+        _mark("ws_after_sfx_queue_merge")
         pain_sfx = ("sfx_trooper_inpain_01", "sfx_trooper_inpain_02", "sfx_trooper_inpain_03")
         death_sfx = ("sfx_trooper_die_01", "sfx_trooper_die_02")
         rand = self.state.rng.rand
@@ -442,6 +463,8 @@ class WorldState:
                 sfx.insert(0, death_sfx[int(rand()) & 1])
             else:
                 sfx.append(pain_sfx[int(rand()) % len(pain_sfx)])
+        _mark("ws_after_player_damage_sfx")
+        _mark("ws_after_sfx")
 
         return WorldEvents(hits=hits, deaths=tuple(deaths), pickups=pickups, sfx=sfx)
 

@@ -401,14 +401,23 @@ class GameWorld:
         auto_pick_perks: bool = False,
         game_mode: int = int(GameMode.SURVIVAL),
         perk_progression_enabled: bool = False,
+        rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
+        def _mark(name: str) -> None:
+            if rng_marks_out is None:
+                return
+            rng_marks_out[str(name)] = int(self.state.rng.state)
+
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
+        _mark("gw_begin")
         self.state.game_mode = int(game_mode)
         self.state.demo_mode_active = bool(self.demo_mode_active)
         weapon_refresh_available(self.state)
+        _mark("gw_after_weapon_refresh")
         perks_rebuild_available(self.state)
+        _mark("gw_after_perks_rebuild")
 
         if self.audio_router is not None:
             self.audio_router.audio = self.audio
@@ -425,6 +434,7 @@ class GameWorld:
             if timer < 1.0:
                 time_scale_factor = (1.0 - timer) * 0.7 + 0.3
             dt = float(dt) * float(time_scale_factor)
+        _mark("gw_after_time_scale")
 
         if dt > 0.0:
             self._elapsed_ms += float(dt) * 1000.0
@@ -452,6 +462,7 @@ class GameWorld:
             auto_pick_perks=auto_pick_perks,
             game_mode=game_mode,
             perk_progression_enabled=bool(perk_progression_enabled),
+            rng_marks=rng_marks_out,
         )
         self.last_events = events
 
