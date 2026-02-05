@@ -6,6 +6,7 @@ from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
 from ...gameplay import PlayerInput, perks_rebuild_available, weapon_assign_player, weapon_refresh_available
 from ...replay import Replay, unpack_input_flags, warn_on_game_version_mismatch
+from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -41,6 +42,8 @@ def run_rush_replay(
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
+    checkpoints_out: list[ReplayCheckpoint] | None = None,
+    checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -141,6 +144,15 @@ def run_rush_replay(
         )
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(spawns)
+
+        if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoints_out.append(
+                build_checkpoint(
+                    tick_index=int(tick_index),
+                    world=world,
+                    elapsed_ms=float(run.elapsed_ms),
+                )
+            )
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1

@@ -6,6 +6,7 @@ from ...creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_
 from ...game_modes import GameMode
 from ...gameplay import PlayerInput, perk_selection_pick, perks_rebuild_available, weapon_refresh_available
 from ...replay import PerkPickEvent, Replay, UnknownEvent, unpack_input_flags, warn_on_game_version_mismatch
+from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -63,6 +64,8 @@ def run_survival_replay(
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
+    checkpoints_out: list[ReplayCheckpoint] | None = None,
+    checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -179,6 +182,15 @@ def run_survival_replay(
         )
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(wave_spawns)
+
+        if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
+            checkpoints_out.append(
+                build_checkpoint(
+                    tick_index=int(tick_index),
+                    world=world,
+                    elapsed_ms=float(run.elapsed_ms),
+                )
+            )
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1
