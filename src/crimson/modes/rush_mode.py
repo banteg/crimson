@@ -29,6 +29,7 @@ from ..replay.checkpoints import (
     default_checkpoints_path,
     dump_checkpoints_file,
 )
+from ..sim.clock import FixedStepClock
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -74,6 +75,7 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
 
         self._ui_assets = None
+        self._sim_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -111,6 +113,7 @@ class RushMode(BaseGameplayMode):
         if self._ui_assets.missing:
             self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
+        self._sim_clock.reset()
         self._enforce_rush_loadout()
         status = self._state.status
         status_snapshot = ReplayStatusSnapshot(
@@ -121,7 +124,7 @@ class RushMode(BaseGameplayMode):
             ReplayHeader(
                 game_mode_id=int(GameMode.RUSH),
                 seed=int(self._state.rng.state),
-                tick_rate=60,
+                tick_rate=int(self._sim_clock.tick_rate),
                 difficulty_level=int(self._world.difficulty_level),
                 hardcore=bool(self._world.hardcore),
                 preserve_bugs=bool(self._world.preserve_bugs),
@@ -263,46 +266,68 @@ class RushMode(BaseGameplayMode):
             return
 
         any_alive = any(player.health > 0.0 for player in self._world.players)
-        dt_world = 0.0 if self._paused or (not any_alive) else dt_frame
+        sim_active = (not self._paused) and any_alive
 
-        self._rush.elapsed_ms += dt_world * 1000.0
-        if dt_world <= 0.0:
+        if not sim_active:
+            self._sim_clock.reset()
             if not any_alive:
                 self._enter_game_over()
             return
 
-        self._enforce_rush_loadout()
-        input_state = self._build_input()
-        inputs = [input_state for _ in self._world.players]
-        if self._replay_recorder is not None:
-            tick_index = self._replay_recorder.record_tick(inputs)
-        else:
-            tick_index = None
-        self._world.update(
-            dt_world,
-            inputs=inputs,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            perk_progression_enabled=False,
-        )
+        ticks_to_run = self._sim_clock.advance(dt_frame)
+        if ticks_to_run <= 0:
+            return
 
-        cooldown, spawns = tick_rush_mode_spawns(
-            self._rush.spawn_cooldown_ms,
-            dt_world * 1000.0,
-            self._state.rng,
-            player_count=len(self._world.players),
-            survival_elapsed_ms=int(self._rush.elapsed_ms),
-            terrain_width=float(self._world.world_size),
-            terrain_height=float(self._world.world_size),
-        )
-        self._rush.spawn_cooldown_ms = cooldown
-        self._creatures.spawn_inits(spawns)
+        dt_tick = float(self._sim_clock.dt_tick)
+        input_frame = self._build_input()
+        input_tick = input_frame
 
-        if tick_index is not None:
-            self._record_replay_checkpoint(int(tick_index))
+        for tick_offset in range(int(ticks_to_run)):
+            if tick_offset:
+                input_tick = PlayerInput(
+                    move_x=float(input_frame.move_x),
+                    move_y=float(input_frame.move_y),
+                    aim_x=float(input_frame.aim_x),
+                    aim_y=float(input_frame.aim_y),
+                    fire_down=bool(input_frame.fire_down),
+                    fire_pressed=False,
+                    reload_pressed=False,
+                )
 
-        if not any(player.health > 0.0 for player in self._world.players):
-            self._enter_game_over()
+            self._rush.elapsed_ms += dt_tick * 1000.0
+            self._enforce_rush_loadout()
+            inputs = [input_tick for _ in self._world.players]
+            recorder = self._replay_recorder
+            if recorder is not None:
+                tick_index = recorder.record_tick(inputs)
+            else:
+                tick_index = None
+            self._world.update(
+                dt_tick,
+                inputs=inputs,
+                auto_pick_perks=False,
+                game_mode=int(GameMode.RUSH),
+                perk_progression_enabled=False,
+            )
+
+            cooldown, spawns = tick_rush_mode_spawns(
+                self._rush.spawn_cooldown_ms,
+                dt_tick * 1000.0,
+                self._state.rng,
+                player_count=len(self._world.players),
+                survival_elapsed_ms=int(self._rush.elapsed_ms),
+                terrain_width=float(self._world.world_size),
+                terrain_height=float(self._world.world_size),
+            )
+            self._rush.spawn_cooldown_ms = cooldown
+            self._creatures.spawn_inits(spawns)
+
+            if tick_index is not None:
+                self._record_replay_checkpoint(int(tick_index))
+
+            if not any(player.health > 0.0 for player in self._world.players):
+                self._enter_game_over()
+                break
 
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
