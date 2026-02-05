@@ -131,9 +131,6 @@ class SurvivalMode(BaseGameplayMode):
         if recorder is None:
             return
         recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
-        # Force a checkpoint when perk picks happen; they are often the first
-        # place replays diverge, and sampling at 1 Hz would miss them.
-        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
 
     def _record_replay_checkpoint(self, tick_index: int, *, force: bool = False) -> None:
         recorder = self._replay_recorder
@@ -467,9 +464,13 @@ class SurvivalMode(BaseGameplayMode):
 
             if input_code_is_pressed(pick_key) and (not input_code_is_down(fire_key)):
                 self._perk_prompt_pulse = 1000.0
+                if self._replay_recorder is not None:
+                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 self._perk_menu.open_if_available(perk_ctx)
             elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
                 self._perk_prompt_pulse = 1000.0
+                if self._replay_recorder is not None:
+                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 self._perk_menu.open_if_available(perk_ctx)
 
         if not self._paused and not self._game_over_active:
