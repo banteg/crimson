@@ -94,5 +94,5 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
     assert panel_rect.x == -24.0
     assert panel_rect.y == 29.0
     assert panel_rect.width == 510.0
-    assert panel_rect.height == 254.0
+    assert panel_rect.height == 378.0
     assert shadow_enabled is False

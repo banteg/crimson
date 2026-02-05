@@ -42,9 +42,10 @@ GAME_OVER_PANEL_X = -45.0
 #   _DAT_0048cc60 = 0xc2340000 (-45.0)
 #   _DAT_0048cc64 = 0x42dc0000 (110.0)
 GAME_OVER_PANEL_Y = 110.0
-# Matches `ui_menuPanel` layout used in classic menus.
+# `DAT_0048cc48` is cloned from the 3-slice menu panel layout (`ui_menu_item_element._pad4+0xac`)
+# in `ui_menu_layout_init`; trace confirms a 510x378 bbox for both phase 0 and phase 1.
 GAME_OVER_PANEL_W = 510.0
-GAME_OVER_PANEL_H = 254.0
+GAME_OVER_PANEL_H = 378.0
 
 # Measured from ui_render_trace at 1024x768 (stable timeline):
 # panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
