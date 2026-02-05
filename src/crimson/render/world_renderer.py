@@ -681,8 +681,12 @@ class WorldRenderer:
             return
 
         mapping = KNOWN_PROJ_FRAMES.get(type_id)
-        if texture is None or mapping is None:
-            rl.draw_circle(int(sx), int(sy), max(1.0, 3.0 * scale), rl.Color(240, 220, 160, int(255 * alpha + 0.5)))
+        if mapping is None:
+            return
+        if texture is None:
+            if life < 0.39:
+                return
+            rl.draw_circle(int(sx), int(sy), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5)))
             return
         grid, frame = mapping
 
@@ -723,23 +727,35 @@ class WorldRenderer:
         type_id: int,
         alpha: int,
         scale: float,
+        angle: float,
     ) -> bool:
         if self.bullet_trail_texture is None:
             return False
         if alpha <= 0:
             return False
+
         dx = sx1 - sx0
         dy = sy1 - sy0
         dist = math.hypot(dx, dy)
-        if dist <= 1e-3:
-            return False
-        thickness = max(1.0, 2.1 * scale)
-        half = thickness * 0.5
-        inv = 1.0 / dist
-        nx = dx * inv
-        ny = dy * inv
-        px = -ny
-        py = nx
+
+        # Native uses `vel_x/vel_y` as the side offset basis and still emits the
+        # trail quad even when origin≈head (degenerate impact frames).
+        if type_id in (int(ProjectileTypeId.PISTOL), int(ProjectileTypeId.ASSAULT_RIFLE)):
+            side_mul = 1.2
+        elif type_id == int(ProjectileTypeId.GAUSS_GUN):
+            side_mul = 1.1
+        else:
+            side_mul = 0.7
+        half = 1.5 * side_mul * float(scale)
+
+        if dist > 1e-6:
+            inv = 1.0 / dist
+            px = -dy * inv
+            py = dx * inv
+        else:
+            px = math.cos(float(angle))
+            py = math.sin(float(angle))
+
         ox = px * half
         oy = py * half
         x0 = sx0 - ox
