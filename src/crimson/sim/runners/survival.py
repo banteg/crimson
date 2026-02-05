@@ -4,8 +4,14 @@ from dataclasses import dataclass
 
 from ...creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ...game_modes import GameMode
-from ...gameplay import PlayerInput, perk_selection_pick, perks_rebuild_available, weapon_refresh_available
-from ...replay import PerkPickEvent, Replay, UnknownEvent, unpack_input_flags, warn_on_game_version_mismatch
+from ...gameplay import (
+    PlayerInput,
+    perk_selection_current_choices,
+    perk_selection_pick,
+    perks_rebuild_available,
+    weapon_refresh_available,
+)
+from ...replay import PerkMenuOpenEvent, PerkPickEvent, Replay, UnknownEvent, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ..world_state import WorldState
 from .common import (
@@ -40,6 +46,15 @@ def _apply_tick_events(
     perk_state = state.perk_selection
 
     for event in events:
+        if isinstance(event, PerkMenuOpenEvent):
+            perk_selection_current_choices(
+                state,
+                players,
+                perk_state,
+                game_mode=int(GameMode.SURVIVAL),
+                player_count=len(players),
+            )
+            continue
         if isinstance(event, PerkPickEvent):
             picked = perk_selection_pick(
                 state,

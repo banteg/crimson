@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .types import (
+    PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
     ReplayEvent,
@@ -94,6 +95,13 @@ def _event_from_array(value: list[Any]) -> ReplayEvent:
             player_index=int(value[2]),
             choice_index=int(value[3]),
         )
+    if kind == "perk_menu_open":
+        if len(value) < 3:
+            raise ReplayCodecError(f"perk_menu_open must have [tick, kind, player]: {value!r}")
+        return PerkMenuOpenEvent(
+            tick_index=tick_index,
+            player_index=int(value[2]),
+        )
     return UnknownEvent(tick_index=tick_index, kind=kind, payload=list(value[2:]))
 
 
@@ -107,6 +115,14 @@ def _events_to_arrays(events: Iterable[ReplayEvent]) -> list[list[object]]:
                     "perk_pick",
                     int(event.player_index),
                     int(event.choice_index),
+                ]
+            )
+        elif isinstance(event, PerkMenuOpenEvent):
+            out.append(
+                [
+                    int(event.tick_index),
+                    "perk_menu_open",
+                    int(event.player_index),
                 ]
             )
         elif isinstance(event, UnknownEvent):

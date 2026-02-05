@@ -481,12 +481,16 @@ class SurvivalMode(BaseGameplayMode):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                self._perk_menu.open_if_available(perk_ctx)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened and self._replay_recorder is not None:
+                    self._replay_recorder.record_perk_menu_open(player_index=0)
             elif self._perk_prompt_hover and input_code_is_pressed(fire_key):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                self._perk_menu.open_if_available(perk_ctx)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened and self._replay_recorder is not None:
+                    self._replay_recorder.record_perk_menu_open(player_index=0)
 
         if not self._paused and not self._game_over_active:
             pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)

@@ -12,12 +12,21 @@ from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import (
     PlayerInput,
+    perk_selection_current_choices,
     perk_selection_pick,
     perks_rebuild_available,
     weapon_assign_player,
     weapon_refresh_available,
 )
-from ..replay import PerkPickEvent, Replay, UnknownEvent, load_replay_file, unpack_input_flags, warn_on_game_version_mismatch
+from ..replay import (
+    PerkMenuOpenEvent,
+    PerkPickEvent,
+    Replay,
+    UnknownEvent,
+    load_replay_file,
+    unpack_input_flags,
+    warn_on_game_version_mismatch,
+)
 from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot, time_scale_reflex_boost_bonus
 
 RUSH_WEAPON_ID = 2
@@ -135,6 +144,15 @@ class ReplayPlaybackMode:
         if replay is None or world is None:
             return
         for event in self._events_by_tick.get(int(tick_index), []):
+            if isinstance(event, PerkMenuOpenEvent):
+                perk_selection_current_choices(
+                    world.state,
+                    world.players,
+                    world.state.perk_selection,
+                    game_mode=int(replay.header.game_mode_id),
+                    player_count=len(world.players),
+                )
+                continue
             if isinstance(event, PerkPickEvent):
                 picked = perk_selection_pick(
                     world.state,

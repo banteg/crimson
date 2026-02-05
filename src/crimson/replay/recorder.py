@@ -4,7 +4,7 @@ import struct
 from typing import Sequence
 
 from ..gameplay import PlayerInput
-from .types import PerkPickEvent, Replay, ReplayEvent, ReplayHeader, pack_input_flags
+from .types import PerkMenuOpenEvent, PerkPickEvent, Replay, ReplayEvent, ReplayHeader, pack_input_flags
 
 _FORMAT_VERSION = 1
 
@@ -79,6 +79,21 @@ class ReplayRecorder:
                 tick_index=int(tick_index),
                 player_index=int(player_index),
                 choice_index=int(choice_index),
+            )
+        )
+
+    def record_perk_menu_open(
+        self,
+        *,
+        player_index: int,
+        tick_index: int | None = None,
+    ) -> None:
+        if tick_index is None:
+            tick_index = int(self._tick_index)
+        self._events.append(
+            PerkMenuOpenEvent(
+                tick_index=int(tick_index),
+                player_index=int(player_index),
             )
         )
 

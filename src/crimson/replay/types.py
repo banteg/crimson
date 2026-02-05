@@ -74,13 +74,19 @@ class PerkPickEvent:
 
 
 @dataclass(frozen=True, slots=True)
+class PerkMenuOpenEvent:
+    tick_index: int
+    player_index: int
+
+
+@dataclass(frozen=True, slots=True)
 class UnknownEvent:
     tick_index: int
     kind: str
     payload: list[object]
 
 
-ReplayEvent: TypeAlias = PerkPickEvent | UnknownEvent
+ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent | UnknownEvent
 
 
 @dataclass(slots=True)
