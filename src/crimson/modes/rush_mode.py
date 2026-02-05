@@ -247,7 +247,13 @@ class RushMode(BaseGameplayMode):
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
-        path = replay_dir / f"{stamp}_{digest}.crdemo.gz"
+        kills = int(self._creatures.kill_count)
+        base_name = f"rush_{stamp}_kills{kills}"
+        path = replay_dir / f"{base_name}.crdemo.gz"
+        counter = 1
+        while path.exists():
+            path = replay_dir / f"{base_name}_{counter}.crdemo.gz"
+            counter += 1
         path.write_bytes(data)
         checkpoints_path = default_checkpoints_path(path)
         dump_checkpoints_file(
