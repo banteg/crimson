@@ -38,7 +38,10 @@ from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .text_input import poll_text_input
 
 GAME_OVER_PANEL_X = -45.0
-GAME_OVER_PANEL_Y = 210.0
+# `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
+#   _DAT_0048cc60 = 0xc2340000 (-45.0)
+#   _DAT_0048cc64 = 0x42dc0000 (110.0)
+GAME_OVER_PANEL_Y = 110.0
 # Matches `ui_menuPanel` layout used in classic menus.
 GAME_OVER_PANEL_W = 510.0
 GAME_OVER_PANEL_H = 254.0
@@ -50,6 +53,12 @@ GAME_OVER_PANEL_OFFSET_Y = -81.0
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
+
+# `game_over_screen_update` (0x0040ffc0) computes banner/content X from:
+#   local_10 = quad0_x0 + pos_x + 180.0
+#   local_18 = offset_x + local_10 + 44.0 - 10.0
+# so banner/content anchor is +214 from the panel-left edge in steady state.
+GAME_OVER_BANNER_X_OFFSET = 214.0
 
 INPUT_BOX_W = 166.0  # `_DAT_0048259c = 0xa6` before `ui_text_input_update`
 INPUT_BOX_H = 18.0
@@ -316,7 +325,7 @@ class GameOverUi:
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
             _panel, panel_left, panel_top = self._panel_layout(screen_w=screen_w, scale=scale)
-            banner_x = panel_left + (GAME_OVER_PANEL_W * scale - TEXTURE_TOP_BANNER_W * scale) * 0.5
+            banner_x = panel_left + GAME_OVER_BANNER_X_OFFSET * scale
             banner_y = panel_top + 40.0 * scale
             base_x = banner_x + 8.0 * scale
             base_y = banner_y + 84.0 * scale
@@ -350,7 +359,7 @@ class GameOverUi:
             scale = ui_scale(screen_w, screen_h)
             origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
             _panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
-            banner_x = left + (GAME_OVER_PANEL_W * scale - TEXTURE_TOP_BANNER_W * scale) * 0.5
+            banner_x = left + GAME_OVER_BANNER_X_OFFSET * scale
             banner_y = top + 40.0 * scale
             score_y = banner_y + (64.0 if self.rank < TABLE_MAX else 62.0) * scale
             x = banner_x + 52.0 * scale
@@ -556,7 +565,7 @@ class GameOverUi:
         # Banner (Reaper / Well done)
         banner = self.assets.text_reaper if banner_kind == "reaper" else self.assets.text_well_done
         if banner is not None:
-            x = left + (panel.width - TEXTURE_TOP_BANNER_W * scale) * 0.5
+            x = left + GAME_OVER_BANNER_X_OFFSET * scale
             y = top + 40.0 * scale
             _draw_texture_centered(
                 banner,
@@ -567,7 +576,7 @@ class GameOverUi:
                 1.0,
             )
 
-        banner_x = left + (panel.width - TEXTURE_TOP_BANNER_W * scale) * 0.5
+        banner_x = left + GAME_OVER_BANNER_X_OFFSET * scale
         banner_y = top + 40.0 * scale
 
         if self.phase == 0:
