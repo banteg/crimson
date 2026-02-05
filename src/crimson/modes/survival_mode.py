@@ -144,6 +144,7 @@ class SurvivalMode(BaseGameplayMode):
         force: bool = False,
         rng_marks: dict[str, int] | None = None,
         deaths: Sequence[object] | None = None,
+        events: object | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
@@ -161,6 +162,7 @@ class SurvivalMode(BaseGameplayMode):
                 elapsed_ms=float(self._survival.elapsed_ms),
                 rng_marks=rng_marks,
                 deaths=deaths,
+                events=events,
             )
         )
         self._replay_checkpoints_last_tick = int(tick_index)
