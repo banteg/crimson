@@ -175,12 +175,12 @@ class ReplayPlaybackMode:
             )
         return inputs
 
-    def _tick_survival(self, *, tick_index: int, dt_frame: float, dt_sim: float) -> None:
+    def _tick_survival(self, *, tick_index: int, dt_frame: float) -> float:
         replay = self._replay
         world = self._world
         run = self._survival
         if replay is None or world is None or run is None:
-            return
+            return 0.0
 
         dt_frame_ms = float(dt_frame) * 1000.0
         run.elapsed_ms += float(dt_frame_ms)
@@ -193,6 +193,7 @@ class ReplayPlaybackMode:
 
         self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
 
+        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
         world.world_state.step(
             float(dt_sim),
@@ -231,12 +232,14 @@ class ReplayPlaybackMode:
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(wave_spawns)
 
-    def _tick_rush(self, *, tick_index: int, dt_frame: float, dt_sim: float) -> None:
+        return float(dt_sim)
+
+    def _tick_rush(self, *, tick_index: int, dt_frame: float) -> float:
         replay = self._replay
         world = self._world
         run = self._rush
         if replay is None or world is None or run is None:
-            return
+            return 0.0
 
         dt_frame_ms = float(dt_frame) * 1000.0
         run.elapsed_ms += float(dt_frame_ms)
@@ -249,6 +252,7 @@ class ReplayPlaybackMode:
 
         self._enforce_rush_loadout()
 
+        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
         world.world_state.step(
             float(dt_sim),
@@ -274,6 +278,7 @@ class ReplayPlaybackMode:
         )
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(spawns)
+        return float(dt_sim)
 
     def _tick_one(self) -> None:
         replay = self._replay
@@ -288,11 +293,10 @@ class ReplayPlaybackMode:
             return
 
         dt_frame = float(self._dt_frame)
-        dt_sim = time_scale_reflex_boost_bonus(world.state, dt_frame)
         if self._survival is not None:
-            self._tick_survival(tick_index=tick_index, dt_frame=dt_frame, dt_sim=dt_sim)
+            dt_sim = self._tick_survival(tick_index=tick_index, dt_frame=dt_frame)
         elif self._rush is not None:
-            self._tick_rush(tick_index=tick_index, dt_frame=dt_frame, dt_sim=dt_sim)
+            dt_sim = self._tick_rush(tick_index=tick_index, dt_frame=dt_frame)
         else:  # pragma: no cover
             self._finished = True
             return
