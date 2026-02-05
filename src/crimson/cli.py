@@ -211,13 +211,30 @@ def cmd_replay_play(
     width: int = typer.Option(1280, help="window width"),
     height: int = typer.Option(720, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
-    assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
+    base_dir: Path = typer.Option(
+        default_runtime_dir(),
+        "--base-dir",
+        "--runtime-dir",
+        help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+    ),
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir; missing .paq files are downloaded)",
+    ),
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import run_view
+    from grim.console import create_console
     from grim.view import ViewContext
 
+    from .assets_fetch import download_missing_paqs
     from .modes.replay_playback_mode import ReplayPlaybackMode
+
+    if assets_dir is None:
+        assets_dir = base_dir
+    base_dir.mkdir(parents=True, exist_ok=True)
+    console = create_console(base_dir, assets_dir=assets_dir)
+    download_missing_paqs(assets_dir, console)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
     view = ReplayPlaybackMode(ctx, replay_path=replay_file)
