@@ -1732,7 +1732,7 @@ def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, f
         counts = state.weapon_shots_fired[idx]
         if counts:
             start = 1 if len(counts) > 1 else 0
-            best = max(range(start, len(counts)), key=counts.__getitem__)
+            best = max(range(start, len(counts)), key=lambda i: int(counts[i]))
             if int(counts[best]) > 0:
                 return int(best)
     return int(fallback_weapon_id)

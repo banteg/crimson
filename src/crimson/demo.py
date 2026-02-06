@@ -60,6 +60,7 @@ class DemoState(Protocol):
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
     preserve_bugs: bool
+    quit_requested: bool
 
 
 def _weapon_name(weapon_id: int) -> str:

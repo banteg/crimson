@@ -6,7 +6,8 @@ import json
 import random
 import re
 from pathlib import Path
-from dataclasses import fields
+from dataclasses import fields, is_dataclass
+from typing import Any, cast
 
 import typer
 from PIL import Image
@@ -514,7 +515,10 @@ def _parse_vec2(text: str) -> Vec2:
 
 
 def _dc_to_dict(obj: object) -> dict[str, object]:
-    return {f.name: getattr(obj, f.name) for f in fields(obj)}
+    if not is_dataclass(obj):
+        raise TypeError(f"expected dataclass instance, got {type(obj).__name__}")
+    dc_obj = cast(Any, obj)
+    return {f.name: getattr(dc_obj, f.name) for f in fields(dc_obj)}
 
 
 @app.command("spawn-plan")
