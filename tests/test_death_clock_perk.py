@@ -11,8 +11,8 @@ from crimson.player_damage import player_take_damage
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:
     state = GameplayState()
-    owner = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=50.0)
-    other = PlayerState(index=1, pos=Vec2(0.0, 0.0), health=75.0)
+    owner = PlayerState(index=0, pos=Vec2(), health=50.0)
+    other = PlayerState(index=1, pos=Vec2(), health=75.0)
 
     owner.perk_counts[int(PerkId.REGENERATION)] = 2
     owner.perk_counts[int(PerkId.GREATER_REGENERATION)] = 1
@@ -32,7 +32,7 @@ def test_death_clock_clears_regeneration_and_restores_health() -> None:
 
 def test_death_clock_blocks_damage() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
     applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
@@ -43,7 +43,7 @@ def test_death_clock_blocks_damage() -> None:
 
 def test_death_clock_drains_health_over_time() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
     perks_update_effects(state, [player], 1.0)
@@ -53,7 +53,7 @@ def test_death_clock_drains_health_over_time() -> None:
 
 def test_death_clock_clamps_dead_health_to_zero() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=-1.0)
+    player = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
     perks_update_effects(state, [player], 0.1)

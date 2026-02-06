@@ -20,7 +20,7 @@ class _DummyCreature:
 
 def test_shots_fired_and_hit_increment() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, 1)
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)

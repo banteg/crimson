@@ -6,7 +6,7 @@ import pyray as rl
 
 from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 
 from ...debug import debug_enabled
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -412,10 +412,7 @@ class PlayGameMenuView(PanelMenuView):
         layout = self._player_count_widget_layout(pos, scale)
 
         mouse = rl.get_mouse_position()
-        hovered_header = (
-            layout.pos.x <= mouse.x <= layout.pos.x + layout.width
-            and layout.pos.y <= mouse.y <= layout.pos.y + layout.header_h
-        )
+        hovered_header = Rect.from_top_left(layout.pos, layout.width, layout.header_h).contains(mouse)
         if hovered_header and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             self._player_list_open = not self._player_list_open
             return True
@@ -424,10 +421,7 @@ class PlayGameMenuView(PanelMenuView):
             return False
 
         # Close if we click outside the dropdown + list.
-        list_hovered = (
-            layout.pos.x <= mouse.x <= layout.pos.x + layout.width
-            and layout.pos.y <= mouse.y <= layout.pos.y + layout.full_h
-        )
+        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(mouse)
         if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT) and not list_hovered:
             self._player_list_open = False
             return True
@@ -435,9 +429,7 @@ class PlayGameMenuView(PanelMenuView):
         for idx, label in enumerate(self._PLAYER_COUNT_LABELS):
             del label
             item_y = layout.rows_y0 + layout.row_h * float(idx)
-            item_hovered = (
-                layout.pos.x <= mouse.x <= layout.pos.x + layout.width and item_y <= mouse.y <= item_y + layout.row_h
-            )
+            item_hovered = Rect.from_top_left(Vec2(layout.pos.x, item_y), layout.width, layout.row_h).contains(mouse)
             if item_hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
                 config.data["player_count"] = idx + 1
                 self._dirty = True
@@ -527,10 +519,7 @@ class PlayGameMenuView(PanelMenuView):
 
         # Arrow icon (the ui_drop* assets are 16x16 icons, not the background).
         mouse = rl.get_mouse_position()
-        hovered_header = (
-            layout.pos.x <= mouse.x <= layout.pos.x + layout.width
-            and layout.pos.y <= mouse.y <= layout.pos.y + layout.header_h
-        )
+        hovered_header = Rect.from_top_left(layout.pos, layout.width, layout.header_h).contains(mouse)
         arrow_tex = drop_on if (self._player_list_open or hovered_header) else drop_off
         if self._player_list_open or hovered_header:
             line_h = max(1, int(1.0 * scale))
@@ -565,9 +554,7 @@ class PlayGameMenuView(PanelMenuView):
 
         for idx, item in enumerate(self._PLAYER_COUNT_LABELS):
             item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = (
-                layout.pos.x <= mouse.x <= layout.pos.x + layout.width and item_y <= mouse.y <= item_y + layout.row_h
-            )
+            hovered = Rect.from_top_left(Vec2(layout.pos.x, item_y), layout.width, layout.row_h).contains(mouse)
             alpha = 153  # 0x3f19999a
             if hovered:
                 alpha = 242  # 0x3f733333

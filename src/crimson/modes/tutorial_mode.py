@@ -181,7 +181,7 @@ class TutorialMode(BaseGameplayMode):
 
         screen_w = float(rl.get_screen_width())
         x = (screen_w - w) * 0.5
-        rect = rl.Rectangle(float(x), float(pos.y), float(w), float(h))
+        rect = rl.Rectangle(float(x), pos.y, float(w), float(h))
         return rect, lines, line_h
 
     def _update_prompt_buttons(self, *, dt_ms: float, mouse: rl.Vector2, click: bool) -> None:
@@ -460,8 +460,8 @@ class TutorialMode(BaseGameplayMode):
 
         text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
         color = rl.Color(255, 255, 255, text_alpha)
-        x = float(rect.x + self._ui_layout.panel_padding.x)
-        line_y = float(rect.y + self._ui_layout.panel_padding.y)
+        x = rect.x + self._ui_layout.panel_padding.x
+        line_y = rect.y + self._ui_layout.panel_padding.y
         for line in lines:
             self._draw_ui_text(line, Vec2(x, line_y), color, scale=1.0)
             line_y += line_h

@@ -11,7 +11,7 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
     state = GameplayState()
     state.bonus_spawn_guard = True
 
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=100)
+    player = PlayerState(index=0, pos=Vec2(), experience=100)
     player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
 
     pool = CreaturePool()

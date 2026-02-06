@@ -359,7 +359,7 @@ class ProjectileFxView:
 
         w = cell_w * float(scale)
         h = cell_h * float(scale)
-        dst = rl.Rectangle(float(pos.x), float(pos.y), w, h)
+        dst = rl.Rectangle(pos.x, pos.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * 57.29577951308232), tint)
 
@@ -510,7 +510,7 @@ class ProjectileFxView:
                 tint = rl.Color(255, 255, 255, alpha)
                 screen_pos = self._camera_world_to_screen(fx.pos)
                 dst_scale = fx.scale * (1.0 + (0.7 - clamp(life, 0.0, 0.7)) * 0.6)
-                dst = rl.Rectangle(float(screen_pos.x), float(screen_pos.y), src[2] * dst_scale, src[3] * dst_scale)
+                dst = rl.Rectangle(screen_pos.x, screen_pos.y, src[2] * dst_scale, src[3] * dst_scale)
                 origin = rl.Vector2(dst.width * 0.5, dst.height * 0.5)
                 rl.draw_texture_pro(
                     self._particles,

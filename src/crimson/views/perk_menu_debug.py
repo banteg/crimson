@@ -121,18 +121,17 @@ class PerkMenuDebugView:
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return Rect(
-                float(hinge_x + local_x),
-                float(hinge_y + local_y),
-                float(bar_w),
-                float(bar_h),
+            return Rect.from_top_left(
+                Vec2(hinge_x + local_x, hinge_y + local_y),
+                bar_w,
+                bar_h,
             )
 
         text_w = float(_ui_text_width(self._small, label, 1.0))
         text_h = 20.0
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
-        return Rect(x, y, text_w, text_h)
+        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def _draw_perk_prompt(self) -> None:
         if not self._show_prompt:

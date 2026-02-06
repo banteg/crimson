@@ -25,19 +25,6 @@ def test_vec2_normalized_returns_unit_vector_without_mutating_original() -> None
     assert math.isclose(vec.y, 4.0, abs_tol=1e-9)
 
 
-def test_vec2_normalized_returns_normalized_copy() -> None:
-    vec = Vec2(3.0, 4.0)
-
-    result = vec.normalized()
-
-    assert result is not vec
-    assert math.isclose(result.x, 0.6, abs_tol=1e-9)
-    assert math.isclose(result.y, 0.8, abs_tol=1e-9)
-    assert math.isclose(result.length(), 1.0, abs_tol=1e-9)
-    assert math.isclose(vec.x, 3.0, abs_tol=1e-9)
-    assert math.isclose(vec.y, 4.0, abs_tol=1e-9)
-
-
 def test_vec2_normalization_of_zero_vector_returns_zero() -> None:
     vec = Vec2()
 
@@ -141,6 +128,7 @@ def test_vec2_operator_helpers() -> None:
     assert b - a == Vec2(2.0, 2.0)
     assert a * 2.0 == Vec2(2.0, 4.0)
     assert 2.0 * a == Vec2(2.0, 4.0)
+    assert a / 2.0 == Vec2(0.5, 1.0)
 
 
 def test_vec2_component_helpers() -> None:
@@ -179,7 +167,12 @@ def test_vec2_to_rl() -> None:
 def test_rect_properties_and_helpers() -> None:
     rect = Rect(10.0, 20.0, 30.0, 40.0)
 
+    assert math.isclose(rect.left, 10.0, abs_tol=1e-9)
+    assert math.isclose(rect.top, 20.0, abs_tol=1e-9)
     assert rect.top_left == Vec2(10.0, 20.0)
+    assert rect.top_right == Vec2(40.0, 20.0)
+    assert rect.bottom_left == Vec2(10.0, 60.0)
+    assert rect.bottom_right == Vec2(40.0, 60.0)
     assert rect.size == Vec2(30.0, 40.0)
     assert math.isclose(rect.right, 40.0, abs_tol=1e-9)
     assert math.isclose(rect.bottom, 60.0, abs_tol=1e-9)
@@ -206,6 +199,10 @@ def test_rect_contains_edges() -> None:
 def test_rect_conversion_helpers() -> None:
     rect = Rect.from_pos_size(Vec2(1.0, 2.0), Vec2(3.0, 4.0))
     round_trip = Rect.from_xywh(rect.to_rl())
+    from_top_left = Rect.from_top_left(Vec2(1.0, 2.0), 3.0, 4.0)
+    from_center = Rect.from_center(Vec2(2.5, 4.0), 3.0, 4.0)
 
     assert rect == Rect(1.0, 2.0, 3.0, 4.0)
     assert round_trip == rect
+    assert from_top_left == rect
+    assert from_center == rect

@@ -16,11 +16,11 @@ def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
     entry = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.POINTS, state=state)
     assert entry is not None
 
-    base_player = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(100.0, 100.0))
+    base_player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     assert bonus_telekinetic_update(state, [base_player], dt=0.7) == []
     assert entry.picked is False
 
-    perk_player = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(100.0, 100.0))
+    perk_player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     perk_player.perk_counts[int(PerkId.TELEKINETIC)] = 1
     pickups = bonus_telekinetic_update(state, [perk_player], dt=0.7)
 
@@ -35,7 +35,7 @@ def test_telekinetic_nuke_origin_is_bonus_position() -> None:
     entry = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.NUKE, state=state)
     assert entry is not None
 
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(100.0, 100.0))
+    player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.TELEKINETIC)] = 1
 
     bonus_telekinetic_update(state, [player], dt=0.7, detail_preset=5)
@@ -52,7 +52,7 @@ def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:
     entry = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.SHOCK_CHAIN, state=state)
     assert entry is not None
 
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(100.0, 100.0))
+    player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.TELEKINETIC)] = 1
 
     pool = CreaturePool()

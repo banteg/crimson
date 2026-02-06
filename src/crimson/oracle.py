@@ -124,8 +124,8 @@ def export_projectile_state(proj: Any) -> dict[str, Any]:
     """Export projectile state to JSON-serializable dict."""
     return {
         "type_id": int(proj.type_id),
-        "x": round(float(proj.x), 4),
-        "y": round(float(proj.y), 4),
+        "x": round(proj.x, 4),
+        "y": round(proj.y, 4),
         "active": bool(proj.active),
     }
 

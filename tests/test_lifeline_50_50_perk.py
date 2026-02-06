@@ -17,7 +17,7 @@ class _FixedRng:
 
 def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slot() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
 
     creatures = [CreatureState() for _ in range(8)]
     for idx, creature in enumerate(creatures):

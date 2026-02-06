@@ -9,7 +9,7 @@ from crimson.player_damage import player_take_damage
 
 def test_player_take_damage_highlander_prevents_damage_most_of_the_time() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
     player.perk_counts[int(PerkId.UNSTOPPABLE)] = 1
 
@@ -21,7 +21,7 @@ def test_player_take_damage_highlander_prevents_damage_most_of_the_time() -> Non
 
 def test_player_take_damage_highlander_kills_1_in_10() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.HIGHLANDER)] = 1
     player.perk_counts[int(PerkId.UNSTOPPABLE)] = 1
 

@@ -79,20 +79,14 @@ def perk_menu_compute_layout(
     layout_w = screen_w / scale if scale else screen_w
     widescreen_shift_y = menu_widescreen_y_shift(layout_w)
     panel_pos = layout.panel_pos + Vec2(panel_slide_x, widescreen_shift_y)
-    panel = Rect(
-        origin.x + panel_pos.x * scale,
-        origin.y + panel_pos.y * scale,
-        layout.panel_size.x * scale,
-        layout.panel_size.y * scale,
-    )
+    panel = Rect.from_pos_size(origin + panel_pos * scale, layout.panel_size * scale)
     anchor_pos = Vec2(
         panel.x + MENU_PANEL_ANCHOR_X * scale,
         panel.y + MENU_PANEL_ANCHOR_Y * scale,
     )
 
-    title = Rect(
-        anchor_pos.x + MENU_TITLE_X * scale,
-        anchor_pos.y + MENU_TITLE_Y * scale,
+    title = Rect.from_top_left(
+        anchor_pos.offset(dx=MENU_TITLE_X * scale, dy=MENU_TITLE_Y * scale),
         MENU_TITLE_W * scale,
         MENU_TITLE_H * scale,
     )
@@ -110,7 +104,7 @@ def perk_menu_compute_layout(
 
     desc_pos = Vec2(
         anchor_pos.x + MENU_DESC_X * scale,
-        list_pos.y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale,
+        list_pos.y + choice_count * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale,
     )
     if choice_count > 5:
         desc_pos = desc_pos.offset(dy=-MENU_DESC_Y_EXTRA_TIGHTEN * scale)
@@ -119,22 +113,17 @@ def perk_menu_compute_layout(
     desc_right = panel.x + MENU_DESC_RIGHT_X * scale
     cancel_pos = anchor_pos.offset(dx=MENU_BUTTON_X * scale, dy=MENU_BUTTON_Y * scale)
     desc_size = Vec2(
-        max(0.0, float(desc_right - desc_pos.x)),
-        max(0.0, float(cancel_pos.y - 12.0 * scale - desc_pos.y)),
+        max(0.0, desc_right - desc_pos.x),
+        max(0.0, cancel_pos.y - 12.0 * scale - desc_pos.y),
     )
-    desc = Rect(
-        float(desc_pos.x),
-        float(desc_pos.y),
-        float(desc_size.x),
-        float(desc_size.y),
-    )
+    desc = Rect.from_pos_size(desc_pos, desc_size)
 
     return PerkMenuComputedLayout(
         panel=panel,
         title=title,
         sponsor_pos=sponsor_pos,
         list_pos=list_pos,
-        list_step_y=float(list_step_y * scale),
+        list_step_y=list_step_y * scale,
         desc=desc,
         cancel_pos=cancel_pos,
     )
@@ -158,13 +147,13 @@ def ui_element_slide_x(
     if start_ms <= end_ms or width <= 0.0:
         return 0.0
 
-    width = abs(float(width))
-    t = float(t_ms)
-    if t < float(end_ms):
+    width = abs(width)
+    t = t_ms
+    if t < end_ms:
         slide = width
-    elif t < float(start_ms):
-        elapsed = t - float(end_ms)
-        span = float(start_ms) - float(end_ms)
+    elif t < start_ms:
+        elapsed = t - end_ms
+        span = start_ms - end_ms
         p = elapsed / span if span > 1e-6 else 1.0
         slide = (1.0 - p) * width
     else:
@@ -225,8 +214,8 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
 
 def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:
     if font is None:
-        return float(rl.measure_text(text, int(20 * scale)))
-    return float(measure_small_text_width(font, text, scale))
+        return rl.measure_text(text, int(20 * scale))
+    return measure_small_text_width(font, text, scale)
 
 
 def draw_ui_text(
@@ -271,10 +260,10 @@ def draw_wrapped_ui_text_in_rect(
     scale: float,
     color: rl.Color,
 ) -> None:
-    lines = wrap_ui_text(font, text, max_width=float(rect.w), scale=scale)
-    line_h = float(font.cell_size * scale) if font is not None else float(20 * scale)
+    lines = wrap_ui_text(font, text, max_width=rect.w, scale=scale)
+    line_h = font.cell_size * scale if font is not None else 20 * scale
     pos = rect.top_left
-    max_y = float(rect.bottom)
+    max_y = rect.bottom
     for line in lines:
         if pos.y + line_h > max_y:
             break
@@ -290,7 +279,7 @@ MENU_ITEM_ALPHA_HOVER = 1.0
 def menu_item_hit_rect(font: SmallFontData | None, label: str, *, pos: Vec2, scale: float) -> Rect:
     width = _ui_text_width(font, label, scale)
     height = 16.0 * scale
-    return Rect(float(pos.x), float(pos.y), float(width), float(height))
+    return Rect.from_top_left(pos, width, height)
 
 
 def draw_menu_item(
@@ -308,7 +297,7 @@ def draw_menu_item(
     width = _ui_text_width(font, label, scale)
     line_y = pos.y + 13.0 * scale
     rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
-    return float(width)
+    return width
 
 
 class UiButtonTextures(Protocol):
@@ -345,7 +334,7 @@ def button_width(font: SmallFontData | None, label: str, *, scale: float, force_
 
 def button_hit_rect(*, pos: Vec2, width: float) -> Rect:
     # Mirrors ui_button_update: y is offset by +2, hit height is 0x1c (28).
-    return Rect(float(pos.x), float(pos.y + 2.0), float(width), float(28.0))
+    return Rect.from_top_left(pos.offset(dy=2.0), width, 28.0)
 
 
 def button_update(
@@ -363,10 +352,10 @@ def button_update(
         state.hovered = button_hit_rect(pos=pos, width=width).contains(mouse)
 
     delta = 6 if (state.enabled and state.hovered) else -4
-    state.hover_t = int(clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))
+    state.hover_t = int(clamp(state.hover_t + int(dt_ms) * delta, 0.0, 1000.0))
 
     if state.press_t > 0:
-        state.press_t = int(clamp(float(state.press_t - int(dt_ms) * 6), 0.0, 1000.0))
+        state.press_t = int(clamp(state.press_t - int(dt_ms) * 6, 0.0, 1000.0))
 
     state.activated = bool(state.enabled and state.hovered and click)
     if state.activated:
@@ -396,11 +385,11 @@ def button_draw(
         g = 0.5
         b = 0.7
         if state.press_t > 0:
-            click_t = float(state.press_t)
+            click_t = state.press_t
             g = min(1.0, 0.5 + click_t * 0.0005)
             r = g
             b = min(1.0, 0.7 + click_t * 0.0007)
-        a = float(state.hover_t) * 0.001 * state.alpha
+        a = state.hover_t * 0.001 * state.alpha
         hl = rl.Color(
             int(255 * r),
             int(255 * g),
@@ -417,8 +406,8 @@ def button_draw(
 
     plate_tint = rl.Color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
 
-    src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-    dst = rl.Rectangle(float(pos.x), float(pos.y), float(width), float(32.0 * scale))
+    src = rl.Rectangle(0.0, 0.0, texture.width, texture.height)
+    dst = rl.Rectangle(pos.x, pos.y, width, 32.0 * scale)
     rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
@@ -435,6 +424,6 @@ def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alph
     a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
     size = 32.0 * scale
-    src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-    dst = rl.Rectangle(float(mouse.x), float(mouse.y), size, size)
+    src = rl.Rectangle(0.0, 0.0, tex.width, tex.height)
+    dst = rl.Rectangle(mouse.x, mouse.y, size, size)
     rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)

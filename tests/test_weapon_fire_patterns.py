@@ -22,7 +22,7 @@ def _active_projectiles(state: GameplayState) -> list[object]:
 
 def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -52,7 +52,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     # Use a value where (rand & 0xff) and (rand % 200 - 100) differ in sign, so we
     # catch the decompile-accurate mask behavior.
     state = GameplayState(rng=_FixedRng(255))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -74,7 +74,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
 
 def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -87,7 +87,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
 
 def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -107,7 +107,7 @@ def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> No
 
 def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -127,7 +127,7 @@ def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
 
 def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 

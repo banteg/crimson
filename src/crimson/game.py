@@ -1646,8 +1646,8 @@ class EndNoteView:
             (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale,
         )
         panel = rl.Rectangle(
-            float(panel_top_left.x),
-            float(panel_top_left.y),
+            panel_top_left.x,
+            panel_top_left.y,
             float(END_NOTE_PANEL_W * scale),
             float(END_NOTE_PANEL_H * scale),
         )
@@ -1880,8 +1880,8 @@ class QuestFailedView:
         panel_tex = self._panel_tex
         if panel_tex is not None:
             panel = rl.Rectangle(
-                float(panel_top_left.x),
-                float(panel_top_left.y),
+                panel_top_left.x,
+                panel_top_left.y,
                 float(QUEST_FAILED_PANEL_W),
                 float(QUEST_FAILED_PANEL_H),
             )
@@ -1893,8 +1893,8 @@ class QuestFailedView:
             src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
             banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
             dst = rl.Rectangle(
-                float(banner_pos.x),
-                float(banner_pos.y),
+                banner_pos.x,
+                banner_pos.y,
                 float(QUEST_FAILED_BANNER_W),
                 float(QUEST_FAILED_BANNER_H),
             )
@@ -2793,7 +2793,7 @@ class HighScoresView:
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(float(pos.x), float(pos.y), icon_w * scale, icon_h * scale),
+            rl.Rectangle(pos.x, pos.y, icon_w * scale, icon_h * scale),
             rl.Vector2(0.0, 0.0),
             0.0,
             rl.WHITE,

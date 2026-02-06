@@ -88,8 +88,8 @@ class DemoTrialOverlayUi:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        mouse.x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        mouse.y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        mouse.x = clamp(mouse.x, 0.0, max(0.0, screen_w - 1.0))
+        mouse.y = clamp(mouse.y, 0.0, max(0.0, screen_h - 1.0))
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
@@ -129,10 +129,10 @@ class DemoTrialOverlayUi:
         lines = wrap_ui_text(font, text, max_width=float(width), scale=float(scale))
         line_h = (font.cell_size if font is not None else 16) * scale
         color = rl.Color(220, 220, 220, 255)
-        y_pos = float(pos.y)
+        y_pos = pos.y
         for line in lines:
             if font is not None:
-                draw_small_text(font, line, Vec2(float(pos.x), y_pos), float(scale), color)
+                draw_small_text(font, line, Vec2(pos.x, y_pos), float(scale), color)
             else:
                 rl.draw_text(line, int(pos.x), int(y_pos), int(20 * scale), color)
             y_pos += float(line_h)

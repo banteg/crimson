@@ -45,6 +45,9 @@ class Vec2:
     def __rmul__(self, scalar: float) -> Vec2:
         return self * scalar
 
+    def __truediv__(self, scalar: float) -> Vec2:
+        return Vec2(self.x / scalar, self.y / scalar)
+
     def mul_components(self, other: Vec2) -> Vec2:
         return Vec2(self.x * other.x, self.y * other.y)
 
@@ -65,7 +68,7 @@ class Vec2:
         magnitude = self.length()
         if magnitude <= epsilon:
             return Vec2(), 0.0
-        return self * (1.0 / magnitude), magnitude
+        return self / magnitude, magnitude
 
     def distance_to(self, other: Vec2) -> float:
         return (other - self).length()
@@ -84,7 +87,7 @@ class Vec2:
 
     @classmethod
     def from_xy(cls, value: SupportsXY) -> Vec2:
-        return cls(x=float(value.x), y=float(value.y))
+        return cls(x=value.x, y=value.y)
 
     @classmethod
     def from_heading(cls, heading: float) -> Vec2:
@@ -115,10 +118,10 @@ class Vec2:
 
     def to_dict(self, *, ndigits: int | None = None) -> dict[str, float]:
         if ndigits is None:
-            return {"x": float(self.x), "y": float(self.y)}
+            return {"x": self.x, "y": self.y}
         return {
-            "x": round(float(self.x), ndigits),
-            "y": round(float(self.y), ndigits),
+            "x": round(self.x, ndigits),
+            "y": round(self.y, ndigits),
         }
 
     def rotated(self, theta: float) -> Vec2:
@@ -159,19 +162,43 @@ class Rect:
     @classmethod
     def from_xywh(cls, value: SupportsRect) -> Rect:
         return cls(
-            x=float(value.x),
-            y=float(value.y),
+            x=value.x,
+            y=value.y,
             w=float(value.width),
             h=float(value.height),
         )
+
+    @classmethod
+    def from_top_left(cls, top_left: SupportsXY, width: float, height: float) -> Rect:
+        return cls(x=top_left.x, y=top_left.y, w=width, h=height)
 
     @classmethod
     def from_pos_size(cls, pos: Vec2, size: Vec2) -> Rect:
         return cls(x=pos.x, y=pos.y, w=size.x, h=size.y)
 
     @property
+    def left(self) -> float:
+        return self.x
+
+    @property
+    def top(self) -> float:
+        return self.y
+
+    @property
     def top_left(self) -> Vec2:
         return Vec2(self.x, self.y)
+
+    @property
+    def top_right(self) -> Vec2:
+        return Vec2(self.right, self.y)
+
+    @property
+    def bottom_left(self) -> Vec2:
+        return Vec2(self.x, self.bottom)
+
+    @property
+    def bottom_right(self) -> Vec2:
+        return Vec2(self.right, self.bottom)
 
     @property
     def size(self) -> Vec2:
@@ -197,6 +224,15 @@ class Rect:
     def center(self) -> Vec2:
         return Vec2(self.x + self.w * 0.5, self.y + self.h * 0.5)
 
+    @classmethod
+    def from_center(cls, center: SupportsXY, width: float, height: float) -> Rect:
+        return cls(
+            x=center.x - width * 0.5,
+            y=center.y - height * 0.5,
+            w=width,
+            h=height,
+        )
+
     def offset(self, *, dx: float = 0.0, dy: float = 0.0) -> Rect:
         return Rect(x=self.x + dx, y=self.y + dy, w=self.w, h=self.h)
 
@@ -209,8 +245,8 @@ class Rect:
         )
 
     def contains(self, point: SupportsXY) -> bool:
-        px = float(point.x)
-        py = float(point.y)
+        px = point.x
+        py = point.y
         return self.x <= px <= self.right and self.y <= py <= self.bottom
 
     def to_rl(self) -> rl.Rectangle:

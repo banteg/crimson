@@ -437,11 +437,10 @@ class QuestMode(BaseGameplayMode):
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return Rect(
-                float(hinge_x + local_x),
-                float(hinge_y + local_y),
-                float(bar_w),
-                float(bar_h),
+            return Rect.from_top_left(
+                Vec2(hinge_x + local_x, hinge_y + local_y),
+                bar_w,
+                bar_h,
             )
 
         margin = 16.0 * scale
@@ -449,7 +448,7 @@ class QuestMode(BaseGameplayMode):
         text_h = float(self._ui_line_height(scale))
         x = float(rl.get_screen_width()) - margin - text_w
         y = margin
-        return Rect(x, y, text_w, text_h)
+        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def _close_failed_run(self) -> None:
         if self._outcome is None:
@@ -816,6 +815,6 @@ class QuestMode(BaseGameplayMode):
         center_x = float(rl.get_screen_width()) * 0.5
         center_y = float(rl.get_screen_height()) * 0.5
         src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-        dst = rl.Rectangle(center_x - width * 0.5, center_y - height * 0.5, width, height)
+        dst = Rect.from_center(Vec2(center_x, center_y), width, height).to_rl()
         tint = rl.Color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
         rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)

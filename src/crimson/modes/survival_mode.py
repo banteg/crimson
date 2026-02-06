@@ -443,11 +443,10 @@ class SurvivalMode(BaseGameplayMode):
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
 
-            return Rect(
-                float(hinge_x + local_x),
-                float(hinge_y + local_y),
-                float(bar_w),
-                float(bar_h),
+            return Rect.from_top_left(
+                Vec2(hinge_x + local_x, hinge_y + local_y),
+                bar_w,
+                bar_h,
             )
 
         margin = 16.0 * scale
@@ -455,7 +454,7 @@ class SurvivalMode(BaseGameplayMode):
         text_h = float(self._ui_line_height(scale))
         x = float(rl.get_screen_width()) - margin - text_w
         y = margin
-        return Rect(x, y, text_w, text_h)
+        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)

@@ -13,7 +13,7 @@ from crimson.projectiles import ProjectilePool, ProjectileTypeId
 
 def test_ion_gun_master_increases_ion_damage() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.ION_GUN_MASTER)] = 1
 
     killed = creature_apply_damage(
@@ -35,7 +35,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
     def _step(*, perk_active: bool) -> float:
         pool = ProjectilePool(size=1)
         proj_idx = pool.spawn(
-            pos=Vec2(0.0, 0.0),
+            pos=Vec2(),
             angle=0.0,
             type_id=ProjectileTypeId.ION_RIFLE,
             owner_id=-100,
@@ -44,7 +44,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         pool.entries[proj_idx].life_timer = 0.39
 
         creature = CreatureState(active=True, hp=10.0, pos=Vec2(105.0, 0.0), size=50.0)
-        players = [PlayerState(index=0, pos=Vec2(0.0, 0.0))]
+        players = [PlayerState(index=0, pos=Vec2())]
         if perk_active:
             players[0].perk_counts[int(PerkId.ION_GUN_MASTER)] = 1
 

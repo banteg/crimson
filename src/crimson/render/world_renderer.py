@@ -286,7 +286,7 @@ class WorldRenderer:
         src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
         w = cell_w * float(scale)
         h = cell_h * float(scale)
-        dst = rl.Rectangle(float(pos.x), float(pos.y), w, h)
+        dst = rl.Rectangle(pos.x, pos.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
@@ -342,7 +342,7 @@ class WorldRenderer:
         table_src = rl.Rectangle(
             0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height)
         )
-        table_dst = rl.Rectangle(float(pos.x), float(pos.y), size, size)
+        table_dst = rl.Rectangle(pos.x, pos.y, size, size)
         rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
         seconds = int(ms) // 1000
@@ -352,7 +352,7 @@ class WorldRenderer:
             float(self.clock_pointer_texture.width),
             float(self.clock_pointer_texture.height),
         )
-        pointer_dst = rl.Rectangle(float(pos.x) + half, float(pos.y) + half, size, size)
+        pointer_dst = rl.Rectangle(pos.x + half, pos.y + half, size, size)
         origin = rl.Vector2(half, half)
         rotation_deg = float(seconds) * 6.0
         rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
@@ -457,7 +457,7 @@ class WorldRenderer:
                     aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                     if aura_alpha > 1e-3:
                         size = 100.0 * scale
-                        dst = rl.Rectangle(float(screen_pos.x), float(screen_pos.y), float(size), float(size))
+                        dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -558,7 +558,7 @@ class WorldRenderer:
                                 size = half * 2.0 * scale
                                 a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
                                 tint = rl.Color(91, 180, 255, a)
-                                dst = rl.Rectangle(float(center.x), float(center.y), float(size), float(size))
+                                dst = rl.Rectangle(center.x, center.y, float(size), float(size))
                                 origin = rl.Vector2(size * 0.5, size * 0.5)
                                 rotation_deg = float((t + t) * _RAD_TO_DEG)
 
@@ -566,7 +566,7 @@ class WorldRenderer:
                                 size2 = half * 2.0 * scale
                                 a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
                                 tint2 = rl.Color(91, 180, 255, a2)
-                                dst2 = rl.Rectangle(float(center.x), float(center.y), float(size2), float(size2))
+                                dst2 = rl.Rectangle(center.x, center.y, float(size2), float(size2))
                                 origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
                                 rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
@@ -1080,7 +1080,7 @@ class WorldRenderer:
             )
             tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
 
-            dst = rl.Rectangle(float(screen.x), float(screen.y), float(w), float(h))
+            dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
@@ -1402,7 +1402,7 @@ class WorldRenderer:
                         if progress > 0.0:
                             ms = int(progress * 60000.0)
                             self._draw_clock_gauge(
-                                pos=Vec2(float(int(aim_screen.x)), float(int(aim_screen.y))),
+                                pos=Vec2(int(aim_screen.x), int(aim_screen.y)),
                                 ms=ms,
                                 scale=scale,
                                 alpha=entity_alpha,

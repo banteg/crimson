@@ -707,7 +707,7 @@ class LightingDebugView:
             samples["light_xy_flip_y"] = sample(Vec2(light_pos.x, float(ih - 1) - light_pos.y))
             samples["center"] = sample(Vec2(float(iw) * 0.5, float(ih) * 0.5))
             samples["center_flip_y"] = sample(Vec2(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5))
-            samples["tl"] = sample(Vec2(0.0, 0.0))
+            samples["tl"] = sample(Vec2())
             samples["bl"] = sample(Vec2(0.0, float(ih - 1)))
 
             step_x = max(1, iw // 32)
@@ -772,7 +772,7 @@ class LightingDebugView:
             "sdf_ok": bool(sdf_ok),
             "screen_size": [int(rl.get_screen_width()), int(rl.get_screen_height())],
             "light_rt_size": [w, h],
-            "light_pos": [float(light_pos.x), float(light_pos.y)],
+            "light_pos": [light_pos.x, light_pos.y],
             "light_radius": float(self._light_radius),
             "light_source_radius": float(self._light_source_radius),
             "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
@@ -827,14 +827,14 @@ class LightingDebugView:
         if self._player is not None:
             player_screen = self._world.world_to_screen(self._player.pos)
             pr = occ_radius(float(self._player.size))
-            circles.append((float(player_screen.x), float(player_screen.y), float(pr)))
+            circles.append((player_screen.x, player_screen.y, float(pr)))
 
         for creature in self._world.creatures.entries:
             if not creature.active:
                 continue
             creature_screen = self._world.world_to_screen(creature.pos)
             cr = occ_radius(float(creature.size))
-            circles.append((float(creature_screen.x), float(creature_screen.y), float(cr)))
+            circles.append((creature_screen.x, creature_screen.y, float(cr)))
 
         if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
             circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
@@ -844,7 +844,7 @@ class LightingDebugView:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            buf = rl.ffi.new("float[2]", [float(value.x), float(value.y)])
+            buf = rl.ffi.new("float[2]", [value.x, value.y])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
 
         def set_vec4(name: str, value: tuple[float, float, float, float]) -> None:
@@ -899,8 +899,8 @@ class LightingDebugView:
         def cursor_light() -> tuple[float, float, float, float, float, float, float]:
             lt = self._light_tint
             return (
-                float(light_pos.x),
-                float(light_pos.y),
+                light_pos.x,
+                light_pos.y,
                 float(self._light_radius),
                 float(self._light_source_radius),
                 float(lt.r) / 255.0,
@@ -913,8 +913,8 @@ class LightingDebugView:
             fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
-                float(screen.x),
-                float(screen.y),
+                screen.x,
+                screen.y,
                 float(self._proj_light_range),
                 float(self._proj_light_source_radius),
                 float(pr.r) / 255.0 * fade,
@@ -933,8 +933,8 @@ class LightingDebugView:
                 c = fl.color
                 lights.append(
                     (
-                        float(screen.x),
-                        float(screen.y),
+                        screen.x,
+                        screen.y,
                         float(fl.range),
                         float(fl.source_radius),
                         float(c.r) / 255.0,
@@ -957,8 +957,8 @@ class LightingDebugView:
                     c = fl.color
                     lights.append(
                         (
-                            float(screen.x),
-                            float(screen.y),
+                            screen.x,
+                            screen.y,
                             float(fl.range),
                             float(fl.source_radius),
                             float(c.r) / 255.0,

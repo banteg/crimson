@@ -189,7 +189,7 @@ class SmallFontDebugView:
         rl.draw_text_ex(font, text, pos.to_rl(), float(font_size_px), float(spacing), color)
         try:
             size = rl.measure_text_ex(font, text, float(font_size_px), float(spacing))
-            width = float(size.x)
+            width = size.x
         except Exception:
             width = float(rl.measure_text(text, int(font_size_px)))
         line_y = pos.y + 13.0

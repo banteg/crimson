@@ -59,8 +59,8 @@ class AimDebugView:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         self._ui_mouse_pos = Vec2(
-            clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0)),
-            clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0)),
+            clamp(mouse.x, 0.0, max(0.0, screen_w - 1.0)),
+            clamp(mouse.y, 0.0, max(0.0, screen_h - 1.0)),
         )
 
     def _draw_cursor_glow(self, *, pos: Vec2) -> None:
@@ -132,7 +132,7 @@ class AimDebugView:
         self._world.close()
 
     def update(self, dt: float) -> None:
-        dt_frame = float(dt)
+        dt_frame = dt
         self._update_ui_mouse()
         self._handle_debug_input()
         self._cursor_pulse_time += dt_frame * 1.1
@@ -141,7 +141,7 @@ class AimDebugView:
         if self._player is not None:
             self._player.aim = aim
             if self._force_heat:
-                self._player.spread_heat = float(self._forced_heat)
+                self._player.spread_heat = self._forced_heat
 
         move = Vec2(
             float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
@@ -165,7 +165,7 @@ class AimDebugView:
         )
 
         if self._player is not None and self._force_heat:
-            self._player.spread_heat = float(self._forced_heat)
+            self._player.spread_heat = self._forced_heat
 
     def draw(self) -> None:
         if self._draw_world:
@@ -178,7 +178,7 @@ class AimDebugView:
         if self._draw_test_circle:
             cx = float(rl.get_screen_width()) * 0.5
             cy = float(rl.get_screen_height()) * 0.5
-            self._world._draw_aim_circle(center=Vec2(cx, cy), radius=float(self._test_circle_radius))
+            self._world._draw_aim_circle(center=Vec2(cx, cy), radius=self._test_circle_radius)
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:
@@ -190,7 +190,7 @@ class AimDebugView:
         if self._draw_expected_overlay and self._player is not None:
             aim_pos = self._player.aim
             dist = (aim_pos - self._player.pos).length()
-            radius = max(6.0, dist * float(self._player.spread_heat) * 0.5)
+            radius = max(6.0, dist * self._player.spread_heat * 0.5)
             camera, view_scale = self._world._world_params()
             scale = view_scale.avg_component()
             screen_radius = max(1.0, radius * scale)
@@ -221,22 +221,22 @@ class AimDebugView:
                     f"world=({mouse_world.x:.1f},{mouse_world.y:.1f}) -> "
                     f"screen=({mouse_back.x:.1f},{mouse_back.y:.1f})"
                 ),
-                f"player_aim_world=({float(aim_pos.x):.1f},{float(aim_pos.y):.1f})  "
+                f"player_aim_world=({aim_pos.x:.1f},{aim_pos.y:.1f})  "
                 f"player_aim_screen=({aim_screen.x:.1f},{aim_screen.y:.1f})",
-                f"player=({float(self._player.pos.x):.1f},{float(self._player.pos.y):.1f})  dist={dist:.1f}",
-                f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
+                f"player=({self._player.pos.x:.1f},{self._player.pos.y:.1f})  dist={dist:.1f}",
+                f"spread_heat={self._player.spread_heat:.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
                 f"cam=({camera.x:.2f},{camera.y:.2f})  scale=({view_scale.x:.3f},{view_scale.y:.3f})  demo_mode={self._world.demo_mode_active}",
                 f"bulletTrail={'yes' if self._world.bullet_trail_texture is not None else 'no'}  "
                 f"particles={'yes' if self._world.particles_texture is not None else 'no'}",
             ]
             x0 = 16.0
             y0 = 16.0
-            lh = float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
+            lh = ui_line_height(self._small, scale=UI_TEXT_SCALE)
             for idx, line in enumerate(lines):
                 draw_ui_text(
                     self._small,
                     line,
-                    Vec2(x0, y0 + lh * float(idx)),
+                    Vec2(x0, y0 + lh * idx),
                     scale=UI_TEXT_SCALE,
                     color=UI_TEXT_COLOR if idx < 6 else UI_HINT_COLOR,
                 )

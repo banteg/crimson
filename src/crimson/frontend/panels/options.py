@@ -268,7 +268,7 @@ class OptionsMenuView(PanelMenuView):
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             self._active_slider = slider_id
         if self._active_slider == slider_id and mouse_down:
-            relative = float(mouse.x) - pos.x
+            relative = mouse.x - pos.x
             idx = int(relative // rect_w) + 1
             if idx < slider.min_value:
                 idx = slider.min_value

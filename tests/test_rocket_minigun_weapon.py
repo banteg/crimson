@@ -17,7 +17,7 @@ class _FixedRng:
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 

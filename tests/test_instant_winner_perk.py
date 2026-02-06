@@ -8,8 +8,8 @@ from crimson.perks import PerkId
 
 def test_instant_winner_grants_xp_to_owner() -> None:
     state = GameplayState()
-    owner = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=123)
-    other = PlayerState(index=1, pos=Vec2(0.0, 0.0), experience=456)
+    owner = PlayerState(index=0, pos=Vec2(), experience=123)
+    other = PlayerState(index=1, pos=Vec2(), experience=456)
 
     perk_apply(state, [owner, other], PerkId.INSTANT_WINNER)
 

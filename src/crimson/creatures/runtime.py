@@ -599,7 +599,7 @@ class CreaturePool:
 
             if float(state.bonuses.freeze) > 0.0:
                 creature.move_scale = 0.0
-                creature.vel = Vec2(0.0, 0.0)
+                creature.vel = Vec2()
                 continue
 
             poison_killed = False
@@ -714,7 +714,7 @@ class CreaturePool:
             frozen_by_evil_eyes = idx == evil_target
             if frozen_by_evil_eyes:
                 creature.move_scale = 0.0
-                creature.vel = Vec2(0.0, 0.0)
+                creature.vel = Vec2()
             else:
                 creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 ai = creature_ai_update_target(
@@ -756,7 +756,7 @@ class CreaturePool:
 
                 if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
                     if creature.ai_mode == 7:
-                        creature.vel = Vec2(0.0, 0.0)
+                        creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                         creature.vel = Vec2.from_heading(creature.heading) * speed
@@ -771,7 +771,7 @@ class CreaturePool:
                     max_y = max(radius, float(world_height) - radius)
                     creature.pos = creature.pos.clamp_rect(radius, radius, max_x, max_y)
                     if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
-                        creature.vel = Vec2(0.0, 0.0)
+                        creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                         creature.vel = Vec2.from_heading(creature.heading) * speed
@@ -1016,7 +1016,7 @@ class CreaturePool:
                 creature.vel = Vec2.from_heading(creature.heading) * slide
                 creature.pos = (creature.pos - creature.vel).clamp_rect(0.0, 0.0, float(world_width), float(world_height))
             else:
-                creature.vel = Vec2(0.0, 0.0)
+                creature.vel = Vec2()
             return
 
         # hitbox_size just crossed <= 0: bake a persistent corpse decal into the ground.

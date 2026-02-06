@@ -8,7 +8,7 @@ from crimson.weapons import WeaponId
 
 def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
 
     weapon_assign_player(player, int(WeaponId.SHOTGUN), state=state)
 

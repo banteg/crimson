@@ -20,7 +20,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.move_speed = 2.0
     player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)

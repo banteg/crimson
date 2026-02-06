@@ -441,7 +441,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(float(pos.x), float(pos.y), icon_w * scale, icon_h * scale),
+            rl.Rectangle(pos.x, pos.y, icon_w * scale, icon_h * scale),
             rl.Vector2(0.0, 0.0),
             0.0,
             rl.WHITE,

@@ -385,7 +385,7 @@ class QuestResultsUi:
         panel_pos = Vec2(
             panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
         )
-        panel = Rect(panel_pos.x, panel_pos.y, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
+        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
 
     def update(

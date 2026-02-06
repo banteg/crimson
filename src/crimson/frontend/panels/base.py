@@ -241,7 +241,7 @@ class PanelMenuView:
             )
             + self._panel_offset * item_scale
         )
-        dst = rl.Rectangle(float(panel_top_left.x), float(panel_top_left.y), float(panel_w), float(panel_h))
+        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 

@@ -22,7 +22,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     dt = 0.2
     state = GameplayState(rng=_FixedRng(0))
 
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
     player.aim = Vec2(100.0, 200.0)
 

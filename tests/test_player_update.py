@@ -145,7 +145,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
     for weapon_id in rocket_weapon_ids:
         pool = ProjectilePool(size=64)
         state = GameplayState(projectiles=pool)
-        player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+        player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
         weapon_assign_player(player, weapon_id)
@@ -342,7 +342,7 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
 def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     far_y = math.sqrt(100.0 * 100.0 - 50.0 * 50.0)
     creatures = [
         _Creature(pos=Vec2(50.0, 0.0), hp=100.0),

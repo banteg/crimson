@@ -481,7 +481,7 @@ class GroundRenderer:
             scaled_size = Vec2(w, h).mul_components(view_scale)
             sw = scaled_size.x
             sh = scaled_size.y
-            dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
+            dst = rl.Rectangle(screen_pivot.x, screen_pivot.y, float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(
                 texture,
@@ -518,7 +518,7 @@ class GroundRenderer:
             scaled_size = Vec2(size, size).mul_components(view_scale)
             sw = scaled_size.x
             sh = scaled_size.y
-            dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
+            dst = rl.Rectangle(screen_pivot.x, screen_pivot.y, float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(bodyset_texture, src, dst, origin, rotation_deg, tint)
 

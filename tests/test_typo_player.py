@@ -7,7 +7,7 @@ from crimson.typo.player import TYPO_WEAPON_ID, build_typo_player_input, enforce
 
 
 def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, 1)
     player.shot_cooldown = 0.5
     player.spread_heat = 0.25
@@ -38,7 +38,7 @@ def test_build_typo_player_input_pulses_fire() -> None:
     assert input_state.reload_pressed is False
 
     input_state = build_typo_player_input(
-        aim=Vec2(0.0, 0.0),
+        aim=Vec2(),
         fire_requested=False,
         reload_requested=True,
     )

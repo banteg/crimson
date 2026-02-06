@@ -28,15 +28,15 @@ class _RendererStub:
 
 def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=0, pos=Vec2(0.0, 0.0), life_timer=1.0, angle=0.0)
+    proj = SimpleNamespace(type_id=0, pos=Vec2(), life_timer=1.0, angle=0.0)
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_index=0,
         texture=None,
         type_id=0,
-        pos=Vec2(0.0, 0.0),
-        screen_pos=Vec2(0.0, 0.0),
+        pos=Vec2(),
+        screen_pos=Vec2(),
         life=1.0,
         angle=0.0,
         scale=1.0,
@@ -47,15 +47,15 @@ def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
 
 def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=int(ProjectileTypeId.PLASMA_RIFLE), pos=Vec2(0.0, 0.0), life_timer=1.0, angle=0.0)
+    proj = SimpleNamespace(type_id=int(ProjectileTypeId.PLASMA_RIFLE), pos=Vec2(), life_timer=1.0, angle=0.0)
     ctx = ProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_index=0,
         texture=None,
         type_id=int(ProjectileTypeId.PLASMA_RIFLE),
-        pos=Vec2(0.0, 0.0),
-        screen_pos=Vec2(0.0, 0.0),
+        pos=Vec2(),
+        screen_pos=Vec2(),
         life=1.0,
         angle=0.0,
         scale=1.0,

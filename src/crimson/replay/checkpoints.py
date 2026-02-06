@@ -104,7 +104,7 @@ def resolve_checkpoint_sample_rate(default_rate: int) -> int:
 
 def _bonus_timer_ms(value: float) -> int:
     # Keep checkpoint values compact/stable: ms resolution is enough for divergence detection.
-    ms = int(round(float(value) * 1000.0))
+    ms = int(round(value * 1000.0))
     if ms < 0:
         return 0
     return ms
@@ -129,10 +129,10 @@ def build_checkpoint(
     for player in players:
         player_ckpts.append(
             ReplayPlayerCheckpoint(
-                pos=Vec2(round(float(player.pos.x), 4), round(float(player.pos.y), 4)),
-                health=round(float(player.health), 4),
+                pos=Vec2(round(player.pos.x, 4), round(player.pos.y, 4)),
+                health=round(player.health, 4),
                 weapon_id=int(player.weapon_id),
-                ammo=round(float(player.ammo), 4),
+                ammo=round(player.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),
             )
@@ -200,7 +200,7 @@ def build_checkpoint(
             {
                 "type_id": int(creature.type_id),
                 **creature.pos.to_dict(ndigits=4),
-                "hp": round(float(creature.hp), 4),
+                "hp": round(creature.hp, 4),
                 "active": bool(creature.active),
             }
             for creature in world.creatures.entries
@@ -210,7 +210,7 @@ def build_checkpoint(
             {
                 "bonus_id": int(bonus.bonus_id),
                 "pos": bonus.pos.to_dict(ndigits=4),
-                "time_left": round(float(bonus.time_left), 4),
+                "time_left": round(bonus.time_left, 4),
                 "picked": bool(bonus.picked),
                 "amount": int(bonus.amount),
             }
@@ -219,8 +219,8 @@ def build_checkpoint(
         "projectiles": [
             {
                 "type_id": int(proj.type_id),
-                "x": round(float(proj.pos.x), 4),
-                "y": round(float(proj.pos.y), 4),
+                "x": round(proj.pos.x, 4),
+                "y": round(proj.pos.y, 4),
                 "active": bool(proj.active),
             }
             for proj in state.projectiles.entries
@@ -235,7 +235,7 @@ def build_checkpoint(
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
-        elapsed_ms=int(round(float(elapsed_ms))),
+        elapsed_ms=int(round(elapsed_ms)),
         score_xp=int(score_xp),
         kills=int(kills),
         creature_count=int(creature_count),

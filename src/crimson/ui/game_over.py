@@ -129,7 +129,7 @@ def load_game_over_assets(assets_root: Path) -> GameOverAssets:
 
 def _draw_texture_centered(tex: rl.Texture, pos: Vec2, w: float, h: float, alpha: float) -> None:
     src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-    dst = rl.Rectangle(float(pos.x), float(pos.y), float(w), float(h))
+    dst = rl.Rectangle(pos.x, pos.y, float(w), float(h))
     tint = rl.Color(255, 255, 255, int(255 * max(0.0, min(1.0, alpha))))
     rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
@@ -238,7 +238,7 @@ class GameOverUi:
         panel_pos = Vec2(panel_pos.x, (GAME_OVER_PANEL_Y + widescreen_shift_y) * scale)
         panel_origin = Vec2(-(GAME_OVER_PANEL_OFFSET_X * scale), -(GAME_OVER_PANEL_OFFSET_Y * scale))
         top_left = panel_pos - panel_origin
-        panel = Rect(top_left.x, top_left.y, GAME_OVER_PANEL_W * scale, GAME_OVER_PANEL_H * scale)
+        panel = Rect.from_top_left(top_left, GAME_OVER_PANEL_W * scale, GAME_OVER_PANEL_H * scale)
         return _GameOverPanelLayout(panel=panel, top_left=top_left)
 
     def _begin_close_transition(self, action: str) -> None:
@@ -498,7 +498,7 @@ class GameOverUi:
         else:
             self._draw_small("Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
             time_rect_pos = col2_pos + Vec2(8.0 * scale, 16.0 * scale)
-            time_rect = Rect(time_rect_pos.x, time_rect_pos.y, 64.0 * scale, 29.0 * scale)
+            time_rect = Rect.from_top_left(time_rect_pos, 64.0 * scale, 29.0 * scale)
             hovering_time = time_rect.contains(mouse)
             self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
 
@@ -539,7 +539,7 @@ class GameOverUi:
         self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
         if show_weapon_row and hud_assets is not None and hud_assets.wicons is not None:
             weapon_pos = row_pos
-            weapon_rect = Rect(weapon_pos.x, weapon_pos.y, 64.0 * scale, 32.0 * scale)
+            weapon_rect = Rect.from_top_left(weapon_pos, 64.0 * scale, 32.0 * scale)
             hovering_weapon = weapon_rect.contains(mouse)
             self._hover_weapon = float(
                 max(0.0, min(1.0, self._hover_weapon + (dt_hover if hovering_weapon else -dt_hover)))
@@ -570,7 +570,7 @@ class GameOverUi:
             self._draw_small(hit_text, stats_pos.offset(dy=15.0 * scale), 1.0 * scale, label_color)
 
             hit_rect_pos = stats_pos.offset(dy=15.0 * scale)
-            hit_rect = Rect(hit_rect_pos.x, hit_rect_pos.y, 64.0 * scale, 17.0 * scale)
+            hit_rect = Rect.from_top_left(hit_rect_pos, 64.0 * scale, 17.0 * scale)
             hovering_hit = hit_rect.contains(mouse)
             self._hover_hit_ratio = float(
                 max(0.0, min(1.0, self._hover_hit_ratio + (dt_hover if hovering_hit else -dt_hover)))

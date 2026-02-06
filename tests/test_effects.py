@@ -32,17 +32,17 @@ def test_effect_src_rect_uses_grid_and_frame() -> None:
 def test_fx_queue_caps_count() -> None:
     q = FxQueue(capacity=4, max_count=3)
     rgba = (1.0, 1.0, 1.0, 1.0)
-    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert not q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert not q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.count == 3
 
 
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
-        top_left=Vec2(0.0, 0.0),
+        top_left=Vec2(),
         rgba=(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
@@ -54,7 +54,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
     q.clear()
     assert q.add(
-        top_left=Vec2(0.0, 0.0),
+        top_left=Vec2(),
         rgba=(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
@@ -88,7 +88,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     pool = ParticlePool(size=2, rand=lambda: 0)
 
     # Style 0 persists until intensity <= 0.0.
-    idx0 = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0)
+    idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
     p0 = pool.entries[idx0]
     p0.render_flag = False
     pool.update(1.0)
@@ -96,7 +96,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert math.isclose(p0.intensity, 0.1, abs_tol=1e-9)
 
     # Style 1 expires once intensity <= 0.8.
-    idx1 = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0)
+    idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
     p1 = pool.entries[idx1]
     p1.render_flag = False
     p1.style_id = 1
@@ -104,7 +104,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert not p1.active
 
     # Style 8 decays slowly and also uses the 0.8 cutoff.
-    idx2 = pool.spawn_particle_slow(pos=Vec2(0.0, 0.0), angle=0.0)
+    idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
     p2 = pool.entries[idx2]
     p2.render_flag = False
     pool.update(1.0)
@@ -124,13 +124,13 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     fx_queue = FxQueue(capacity=1, max_count=1)
     sprite_effects = SpriteEffectPool(size=1, rand=lambda: 0)
 
-    particle_id = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0, owner_id=-1)
+    particle_id = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner_id=-1)
     particle = pool.entries[particle_id]
 
     creature = CreatureState()
     creature.active = True
     creature.hp = 100.0
-    creature.pos = Vec2(0.0, 0.0)
+    creature.pos = Vec2()
     creature.size = 50.0
     creature.hitbox_size = 16.0
 

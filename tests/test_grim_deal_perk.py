@@ -8,8 +8,8 @@ from crimson.perks import PerkId
 
 def test_grim_deal_kills_owner_and_boosts_experience() -> None:
     state = GameplayState()
-    owner = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, experience=12345)
-    other = PlayerState(index=1, pos=Vec2(0.0, 0.0), health=100.0, experience=7)
+    owner = PlayerState(index=0, pos=Vec2(), health=100.0, experience=12345)
+    other = PlayerState(index=1, pos=Vec2(), health=100.0, experience=7)
 
     perk_apply(state, [owner, other], PerkId.GRIM_DEAL)
 

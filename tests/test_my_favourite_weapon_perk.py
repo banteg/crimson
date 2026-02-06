@@ -11,7 +11,7 @@ from crimson.projectiles import ProjectileTypeId
 
 def test_my_favourite_weapon_increases_clip_size() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=int(ProjectileTypeId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(), weapon_id=int(ProjectileTypeId.PISTOL))
     weapon_assign_player(player, int(player.weapon_id))
 
     base_clip = int(player.clip_size)

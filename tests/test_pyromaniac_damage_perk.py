@@ -21,7 +21,7 @@ class _CountRand:
 
 def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROMANIAC)] = 1
 
     rand = _CountRand()

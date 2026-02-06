@@ -14,21 +14,21 @@ from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 def test_apply_hardcore_spawn_table_adjustment() -> None:
     entries = [
         SpawnEntry(
-            pos=Vec2(0.0, 0.0),
+            pos=Vec2(),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=0,
             count=2,
         ),
         SpawnEntry(
-            pos=Vec2(0.0, 0.0),
+            pos=Vec2(),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=0,
             count=2,
         ),
         SpawnEntry(
-            pos=Vec2(0.0, 0.0),
+            pos=Vec2(),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
             trigger_ms=0,

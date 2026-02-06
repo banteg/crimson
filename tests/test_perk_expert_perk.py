@@ -8,7 +8,7 @@ from crimson.perks import PerkId
 
 
 def test_perk_expert_adds_one_choice() -> None:
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     assert perk_choice_count(player) == 5
 
     player.perk_counts[int(PerkId.PERK_EXPERT)] = 1

@@ -52,7 +52,7 @@ class PerkSelectionView:
         self._debug_overlay = False
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+        self._player = PlayerState(index=0, pos=Vec2())
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 
@@ -69,7 +69,7 @@ class PerkSelectionView:
     def _reset(self) -> None:
         self._state = GameplayState()
         self._state.rng.srand(0xBEEF)
-        self._player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+        self._player = PlayerState(index=0, pos=Vec2())
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 

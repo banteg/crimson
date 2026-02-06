@@ -11,8 +11,8 @@ def test_infernal_contract_grants_levels_and_sets_low_health() -> None:
     state = GameplayState()
     perk_state = PerkSelectionState()
 
-    owner = PlayerState(index=0, pos=Vec2(0.0, 0.0), level=5, health=100.0)
-    other = PlayerState(index=1, pos=Vec2(0.0, 0.0), level=1, health=100.0)
+    owner = PlayerState(index=0, pos=Vec2(), level=5, health=100.0)
+    other = PlayerState(index=1, pos=Vec2(), level=1, health=100.0)
 
     perk_apply(state, [owner, other], PerkId.INFERNAL_CONTRACT, perk_state=perk_state)
 

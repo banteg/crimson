@@ -338,10 +338,10 @@ class TypoShooterMode(BaseGameplayMode):
                 continue
 
             screen_pos = self._world.world_to_screen(creature.pos)
-            y = float(screen_pos.y) - 50.0
+            y = screen_pos.y - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
-            x = float(screen_pos.x) - text_w * 0.5
+            x = screen_pos.x - text_w * 0.5
 
             bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
             bg = rl.Color(0, 0, 0, int(255 * bg_alpha))

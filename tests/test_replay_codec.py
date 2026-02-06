@@ -44,7 +44,7 @@ def test_replay_codec_roundtrip() -> None:
     rec.record_perk_pick(player_index=0, choice_index=2, tick_index=1)
     rec.record_tick(
         [
-            PlayerInput(move=Vec2(0.0, 0.0), aim=Vec2(11.0, 21.0), fire_pressed=True),
+            PlayerInput(move=Vec2(), aim=Vec2(11.0, 21.0), fire_pressed=True),
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(100.0, 43.0)),
         ]
     )

@@ -1222,7 +1222,7 @@ class SecondaryProjectilePool:
         entry.owner_id = int(owner_id)
         entry.target_id = -1
         entry.target_hint_active = False
-        entry.target_hint = Vec2(0.0, 0.0)
+        entry.target_hint = Vec2()
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -1436,7 +1436,7 @@ class SecondaryProjectilePool:
                     hit_idx,
                     damage,
                     owner_id=int(entry.owner_id),
-                    impulse=entry.vel * (1.0 / float(dt)),
+                    impulse=entry.vel / float(dt),
                 )
 
                 det_scale = 0.5

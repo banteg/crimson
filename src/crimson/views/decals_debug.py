@@ -185,8 +185,8 @@ class DecalsDebugView:
             return self._camera, Vec2(1.0, 1.0), out_size
 
         # Mirror GameWorld camera behavior (ground.draw uses the same clamp rules).
-        cfg_w = float(ground.screen_width or out_size.x)
-        cfg_h = float(ground.screen_height or out_size.y)
+        cfg_w = ground.screen_width or out_size.x
+        cfg_h = ground.screen_height or out_size.y
         if cfg_w > WORLD_SIZE:
             cfg_w = WORLD_SIZE
         if cfg_h > WORLD_SIZE:
@@ -268,7 +268,7 @@ class DecalsDebugView:
         screen_pos = self._world_to_screen(world_pos)
         width = cell * float(scale) * float(size_scale)
         height = cell * float(scale) * float(size_scale)
-        dst = rl.Rectangle(float(screen_pos.x), float(screen_pos.y), float(width), float(height))
+        dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(width), float(height))
         origin = rl.Vector2(float(width) * 0.5, float(height) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, math.degrees(float(rotation_rad)), tint)
 

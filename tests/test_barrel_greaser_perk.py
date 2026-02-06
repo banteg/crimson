@@ -16,7 +16,7 @@ from crimson.weapons import WEAPON_BY_ID
 
 def test_barrel_greaser_increases_bullet_damage() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
     killed = creature_apply_damage(
@@ -39,14 +39,14 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].projectile_meta
     base_damage = float(meta if meta is not None else 45.0)
     pool.spawn(
-        pos=Vec2(0.0, 0.0),
+        pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
         base_damage=base_damage,
     )
 
-    players = [PlayerState(index=0, pos=Vec2(0.0, 0.0))]
+    players = [PlayerState(index=0, pos=Vec2())]
     if barrel_greaser_active:
         players[0].perk_counts[int(PerkId.BARREL_GREASER)] = 1
 

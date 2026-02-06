@@ -41,7 +41,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
     for weapon_id, expected_style, ammo_cost in cases:
         state = GameplayState(rng=_FixedRng(1))
-        player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+        player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
 
@@ -65,7 +65,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(0.0, 1.0)
     player.spread_heat = 0.0
 
@@ -97,7 +97,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
     # The third value is consumed by `spawn_particle` (spin).
     state = GameplayState(rng=_SequenceRng([128, 511, 0]))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.48
 
@@ -125,7 +125,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
 def test_particle_hits_damage_creatures() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
@@ -149,7 +149,7 @@ def test_particle_hits_damage_creatures() -> None:
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 

@@ -12,7 +12,7 @@ from crimson.perks import PerkId
 
 def test_doctor_increases_bullet_damage_by_20_percent() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.DOCTOR)] = 1
 
     killed = creature_apply_damage(
