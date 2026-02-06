@@ -3033,7 +3033,7 @@
     "program": "crimsonland.exe",
     "address": "0x004461c0",
     "name": "game_state_set",
-    "signature": "void game_state_set(int state_id)",
+    "signature": "void game_state_set(game_state_id_t state_id)",
     "comment": "resets UI state, updates game_state_prev/id, and seeds UI elements for the new state"
   },
   {

@@ -76,8 +76,10 @@ Use Frida to log whenever the overlay is actually rendered:
 - Optional: validate the log against the Python model:
   - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 
-## Modal/plugin flow (plugin_runtime_update_and_render)
+## Mods / plugin runtime (plugin_runtime_update_and_render)
 
-There is a modal flow keyed off state `game_state_id` (`DAT_00487270`) == `0x16` that appears to
-call into a plugin interface (`plugin_interface_ptr` (`DAT_004824d4`)). This likely represents a
-modal screen or external module. The exact UI and state name remain unknown.
+- State `0x14` is the mods browser/menu flow (launch list + fallback target).
+- State `0x16` is the active plugin runtime flow driven by `plugin_interface_ptr`
+  (`DAT_004824d4`).
+- `plugin_runtime_update_and_render` owns the frame dispatch for `0x16` and
+  routes back to `0x14` when the plugin exits or is unavailable.

@@ -738,6 +738,7 @@
       "address": "0x00480360",
       "comment": "Config: game mode/state selector (values 1/2/3/4/8 observed).",
       "name": "config_game_mode",
+      "type": "game_mode_id_t",
       "program": "crimsonland.exe"
     },
     {
@@ -1105,6 +1106,13 @@
       "comment": "Config: Graphics detail preset (1..5); applied by config_apply_detail_preset to config_fx_detail_flag0/1/2.",
       "name": "config_detail_preset",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004807bc",
+      "comment": "Config: mouse sensitivity scale (used for mouse and analog cursor deltas).",
+      "name": "config_mouse_sensitivity",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004807c0",
@@ -2518,18 +2526,21 @@
       "address": "0x0048726c",
       "comment": "Previous game state id set before transitions.",
       "name": "game_state_prev",
+      "type": "game_state_id_t",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00487270",
       "comment": "Current game state id checked by update/render loops.",
       "name": "game_state_id",
+      "type": "game_state_id_t",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00487274",
       "comment": "Pending transition target set before ui_elements_update_and_render switches state.",
       "name": "game_state_pending",
+      "type": "game_state_id_t",
       "program": "crimsonland.exe"
     },
     {

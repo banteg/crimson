@@ -3442,7 +3442,7 @@
   {
     "name": "game_state_set",
     "address": "004461c0",
-    "signature": "void game_state_set(int state_id)",
+    "signature": "void game_state_set(game_state_id_t state_id)",
     "external": false,
     "calls_total": 8,
     "calls": ["console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "highscore_load_table", "mods_any_available", "quest_start_selected", "ui_elements_reset_state"]

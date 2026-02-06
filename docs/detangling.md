@@ -411,10 +411,10 @@ Defaults are set in `config_load_presets`.
 | `DAT_00490bfc` | `0x12` (E) | aim rotate right (`player_aim_key_right`) | rotates `player_aim_heading` in aim scheme 1 |
 | `DAT_00490bf0` | `0x11` (W) | unused/reserved | copied from config, but no `is_key_*` callsites found |
 | `DAT_00490bf4` | `0x1f` (S) | unused/reserved | copied from config, but no `is_key_*` callsites found |
-| `DAT_00490f3c` | `0xc8` (Up) | alt move forward (`player_alt_move_key_forward`) | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f40` | `0xd0` (Down) | alt move backward (`player_alt_move_key_backward`) | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f44` | `0xcb` (Left) | alt turn left (`player_alt_turn_key_left`) | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f48` | `0xcd` (Right) | alt turn right (`player_alt_turn_key_right`) | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f3c` | `0xc8` (Up) | alt move forward (`player_alt_move_key_forward`) | used via `is_key_down` when `config_player_count == 1` |
+| `DAT_00490f40` | `0xd0` (Down) | alt move backward (`player_alt_move_key_backward`) | used via `is_key_down` when `config_player_count == 1` |
+| `DAT_00490f44` | `0xcb` (Left) | alt turn left (`player_alt_turn_key_left`) | used via `is_key_down` when `config_player_count == 1` |
+| `DAT_00490f48` | `0xcd` (Right) | alt turn right (`player_alt_turn_key_right`) | used via `is_key_down` when `config_player_count == 1` |
 | `DAT_00490f4c` | `0x9d` (RControl) | alt primary fire (`player_alt_fire_key`) | checked in `input_primary_is_down` |
 | `DAT_00490f50` | `0x11` (W) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f54` | `0x1f` (S) | unused/reserved | defaults set; no callsites yet |
@@ -1061,8 +1061,8 @@ Init timing note:
     `flags` @ `DAT_004c2c48`, `available` @ `DAT_004c2c4c`, `prereq` @ `DAT_004c2c50`.
 
   - Flag bits (inferred):
-    - `0x1` allows perks when `_DAT_00480360 == 3`.
-    - `0x2` allows perks when `_DAT_0048035c == 2` (two-player mode).
+    - `0x1` allows perks when `config_game_mode == GAME_MODE_QUEST`.
+    - `0x2` allows perks when `config_player_count == 2` (two-player mode).
     - `0x4` marks stackable perks (random selection accepts them even if already taken).
 
   - Prereq field is checked via `perk_count_get` and gates perks like Toxic Avenger (requires
@@ -1351,15 +1351,15 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
 ### Game mode selector (partial)
 
-- `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
+- `config_game_mode` (`DAT_00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](game-mode-map.md) for the observed
   values and evidence.
 
 - `FUN_00412960` -> `game_mode_label`
-  - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
+  - Evidence: returns a label string based on `config_game_mode` (Survival, Quests, Typ-o-Shooter, etc.).
 ### Survival mode (partial)
 
 - `FUN_00407cd0` -> `survival_update`
-  - Evidence: runs only when `_DAT_00480360 == 1`, advances scripted spawn stages, and calls
+  - Evidence: runs only when `config_game_mode == GAME_MODE_SURVIVAL`, advances scripted spawn stages, and calls
     `survival_spawn_creature` when the spawn timer elapses.
 
 - `FUN_00407510` -> `survival_spawn_creature`

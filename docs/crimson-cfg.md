@@ -20,7 +20,28 @@ Crimsonland executable. It is **not** the save/status file (that is `game.cfg`).
 
 ```c
 typedef struct crimson_cfg_t {
-    unsigned char reserved0[0x0a8];
+    unsigned char sound_disabled;
+    unsigned char music_disabled;
+    unsigned char highscore_date_mode;
+    unsigned char highscore_duplicate_mode;
+    unsigned char hud_indicator_toggle[2];
+    unsigned char reserved0_06[0x08];
+    unsigned char fx_detail_flag0;
+    unsigned char reserved0_0f;
+    unsigned char fx_detail_flag1;
+    unsigned char fx_detail_flag2;
+    unsigned char reserved0_12[2];
+    int player_count;
+    game_mode_id_t game_mode;
+    int player_mode_flags;
+    unsigned char reserved0_20[0x24];
+    int aim_scheme;
+    unsigned char reserved0_48[0x28];
+    float texture_scale;
+    char player_name_buf[12];
+    int name_slot_selected;
+    int name_slot_count;
+    int name_slot_order[8];
     char saved_names[8][27];
     char player_name[32];
     int player_name_length;
