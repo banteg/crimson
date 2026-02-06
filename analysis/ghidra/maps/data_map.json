@@ -2864,6 +2864,13 @@
       "type": "float"
     },
     {
+      "address": "0x0048f240",
+      "comment": "on_activate callback slot for ui_perk_prompt_element (set to ui_callback_noop in ui_menu_layout_init).",
+      "name": "ui_perk_prompt_on_activate",
+      "program": "crimsonland.exe",
+      "type": "_func_1 *"
+    },
+    {
       "address": "0x0048f248",
       "comment": "Perk prompt bounds min X (relative to perk_prompt_origin_x).",
       "name": "perk_prompt_bounds_min_x",

@@ -49,6 +49,8 @@ Additional adjacent globals now mapped:
   `ui_menu_layout_init`.
 - `ui_perk_prompt_element` (`0x0048f20c`) is the special perk prompt element
   rendered by `perk_prompt_update_and_render`.
+- `ui_perk_prompt_on_activate` (`0x0048f240`) is the prompt element callback
+  slot (seeded to `ui_callback_noop` during layout init).
 - `ui_perk_prompt_levelup_element` (`0x0048f330`) is a nested UI block loaded
   from `ui\ui_textLevelUp.jaz` and shaped during layout init.
 

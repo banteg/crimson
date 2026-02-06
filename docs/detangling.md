@@ -1083,6 +1083,8 @@ Init timing note:
 
   - `ui_perk_prompt_element` (`DAT_0048f20c`) is the prompt's root UI element; `perk_prompt_update_and_render`
     forces its active flag and renders it each frame while `ui_element_render` skips focus/click handling for it.
+  - `ui_perk_prompt_on_activate` (`DAT_0048f240`) is the prompt callback slot seeded to `ui_callback_noop`
+    during menu layout init.
 
   - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) anchor the prompt bounds for hover/click
     tests; `perk_prompt_bounds_min_*` (`DAT_0048f248`/`DAT_0048f24c`) and
@@ -1430,5 +1432,6 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 - Labeled adjacent UI globals:
   - `ui_menu_layout_init_latch` (`DAT_0048f164`) set to `1` at the end of `ui_menu_layout_init`.
   - `ui_perk_prompt_element` (`DAT_0048f20c`) typed as `ui_element_t`.
+  - `ui_perk_prompt_on_activate` (`DAT_0048f240`) typed as `_func_1 *` callback slot.
   - `ui_perk_prompt_levelup_element` (`DAT_0048f330`) typed as a nested `ui_element_t` block loaded from
     `ui\\ui_textLevelUp.jaz`.

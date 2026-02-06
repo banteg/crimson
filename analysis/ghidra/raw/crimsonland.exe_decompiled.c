@@ -39909,7 +39909,7 @@ void ui_menu_layout_init(void)
     } while (iVar11 < 0x70);
   }
   ui_element_init_defaults((ui_element_t *)&ui_perk_prompt_element);
-  _DAT_0048f240 = ui_callback_noop;
+  ui_perk_prompt_on_activate = ui_callback_noop;
   puVar7 = &ui_menu_item_element;
   pfVar9 = &perk_prompt_bounds_min_x;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
