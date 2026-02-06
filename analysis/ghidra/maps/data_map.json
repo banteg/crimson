@@ -492,6 +492,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478e58",
+      "comment": "Quest-select selected major stage (1..5).",
+      "name": "quest_select_stage_major",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478e64",
       "comment": "Controls-menu keybind target slot index (-1 when no bind capture is active).",
       "name": "controls_rebind_slot_index",
@@ -2271,6 +2278,13 @@
       "comment": "Global Double XP timer (bonus id 6).",
       "name": "bonus_double_xp_timer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048702c",
+      "comment": "Screen-fade ramp direction flag in the frame loop (0=fade out, nonzero=fade in).",
+      "name": "screen_fade_ramp_flag",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00487034",
@@ -6398,6 +6412,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004cccb8",
+      "comment": "Highscore screen one-shot init flags bitfield (guards static widget/color setup blocks).",
+      "name": "highscore_screen_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478c94",
       "comment": "Typ-o mode reset flag set on state 0x12 entry and consumed by typo_gameplay_update_and_render.",
       "name": "typo_mode_reset_flag",
@@ -6572,6 +6593,41 @@
       "address": "0x004d758c",
       "comment": "Typ-o spawn loop counter incremented when spawning named creatures.",
       "name": "typo_spawn_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d76a0",
+      "comment": "Quest-select menu one-shot init flags bitfield (guards static UI color/button setup blocks).",
+      "name": "quest_select_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7730",
+      "comment": "Play-game menu one-shot init flags bitfield (guards static widget setup blocks).",
+      "name": "play_game_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d77e8",
+      "comment": "Controls menu one-shot init flags bitfield (guards static widget setup blocks).",
+      "name": "controls_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d79a0",
+      "comment": "Options menu one-shot init flags bitfield (guards static widget setup blocks).",
+      "name": "options_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d79d8",
+      "comment": "Quest-select selected minor quest index (0..9), copied to _quest_stage_minor as +1.",
+      "name": "quest_select_stage_minor_index",
       "program": "crimsonland.exe",
       "type": "int"
     },

@@ -15,6 +15,13 @@ The screen lets the player:
 - toggle Hardcore after reaching stage 5 (unlock index >= 40)
 - optionally display per-quest completion stats with `F1`
 
+State globals recovered from `quest_select_menu_update`:
+
+- `quest_select_stage_major` (`0x00478e58`): current selected stage (1..5)
+- `quest_select_stage_minor_index` (`0x004d79d8`): current selected quest row (0..9)
+- `quest_select_menu_init_flags` (`0x004d76a0`): one-shot setup bitfield for static
+  menu widgets/colors
+
 ## Anchor coordinates (from `quest_select_menu_update`)
 
 The function builds its layout from two base sums:

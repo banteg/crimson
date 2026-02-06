@@ -2199,7 +2199,7 @@ int demo_mode_start(void)
   }
   iVar1 = demo_variant_index + 1;
   quest_spawn_timeline = 0;
-  DAT_0048702c = 0;
+  screen_fade_ramp_flag = '\0';
   demo_variant_index = iVar1 % 6;
   return iVar1 / 6;
 }
@@ -4562,7 +4562,7 @@ int game_update_victory_screen(void)
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
   }
   if (DAT_0048026d != '\0') {
     sfx_mute_all(music_track_extra_0);
@@ -7565,7 +7565,7 @@ LAB_0040c4b7:
      ((game_state_id == GAME_STATE_GAMEPLAY && (config_game_mode != GAME_MODE_TUTORIAL)))) {
     time_played_ms = time_played_ms + frame_dt_ms;
   }
-  if (DAT_0048702c == '\0') {
+  if (screen_fade_ramp_flag == '\0') {
     screen_fade_alpha = screen_fade_alpha - (frame_dt + frame_dt);
   }
   else {
@@ -37348,7 +37348,7 @@ LAB_0043fd26:
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
   }
   if (DAT_004d0ebd != '\0') {
     ui_transition_direction = '\0';
@@ -38311,8 +38311,8 @@ LAB_00442684:
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,fVar19 + 100.0,unaff_EDI,s_Player_00478c30);
   if (config_game_mode == GAME_MODE_QUEST) {
-    if ((DAT_004cccb8 & 1) == 0) {
-      DAT_004cccb8 = DAT_004cccb8 | 1;
+    if (((byte)highscore_screen_init_flags & 1) == 0) {
+      highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 1;
       DAT_004d0d98 = '\0';
       DAT_004d0d99 = 0;
       DAT_004d0d9a = 0;
@@ -38382,8 +38382,8 @@ LAB_00442684:
     piVar11 = piVar11 + 1;
   } while ((int)pcStack_80 < 0x4d0d78);
   fVar19 = fVar19 + 16.0;
-  if ((DAT_004cccb8 & 2) == 0) {
-    DAT_004cccb8 = DAT_004cccb8 | 2;
+  if (((byte)highscore_screen_init_flags & 2) == 0) {
+    highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 2;
     _DAT_004ccad8 = 0;
     _DAT_004ccadc = 0;
     crt_atexit(&DAT_004443a0);
@@ -38405,8 +38405,8 @@ LAB_00442684:
   cVar15 = '?';
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   fVar17 = fVar17 - 1.0;
-  if ((DAT_004cccb8 & 4) == 0) {
-    DAT_004cccb8 = DAT_004cccb8 | 4;
+  if (((byte)highscore_screen_init_flags & 4) == 0) {
+    highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 4;
     DAT_004d0f7e = 1;
     DAT_004d0f8d = 0;
     DAT_004d0f8c = 0;
@@ -38454,8 +38454,8 @@ LAB_00442e3b:
     crt_beginthread(highscore_sync_worker,0,(void *)0x0);
   }
   fVar17 = fVar17 + 33.0;
-  if ((DAT_004cccb8 & 8) == 0) {
-    DAT_004cccb8 = DAT_004cccb8 | 8;
+  if (((byte)highscore_screen_init_flags & 8) == 0) {
+    highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 8;
     DAT_004d0f0e = 1;
     DAT_004d0f1d = 0;
     DAT_004d0f1c = 0;
@@ -38492,13 +38492,13 @@ LAB_00442e3b:
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
   }
 LAB_0044300c:
   fStack_68 = (float)puVar16 - 32.0;
   fStack_64 = fVar17 + 32.0;
-  if ((DAT_004cccb8 & 0x10) == 0) {
-    DAT_004cccb8 = DAT_004cccb8 | 0x10;
+  if (((byte)highscore_screen_init_flags & 0x10) == 0) {
+    highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x10;
     DAT_004d0f96 = 1;
     DAT_004d0fa5 = 0;
     DAT_004d0fa4 = 0;
@@ -38563,8 +38563,8 @@ LAB_0044300c:
   }
   if (((online_sync_status == 6) || (online_sync_status == 0)) && (iVar12 == -1)) {
     fVar17 = (((float)pcStack_7c + 40.0 + 10.0) - 8.0) + 2.0;
-    if ((DAT_004cccb8 & 0x20) == 0) {
-      DAT_004cccb8 = DAT_004cccb8 | 0x20;
+    if (((byte)highscore_screen_init_flags & 0x20) == 0) {
+      highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x20;
       DAT_004d0e20 = 0;
       DAT_004d0e21 = 0;
       DAT_004d0e22 = 0;
@@ -38585,8 +38585,8 @@ LAB_0044300c:
     pcStack_48 = s_Best_of_week_00478b94;
     pcStack_44 = s_Best_of_day_00478b88;
     fStack_40 = 0.0;
-    if ((DAT_004cccb8 & 0x40) == 0) {
-      DAT_004cccb8 = DAT_004cccb8 | 0x40;
+    if (((byte)highscore_screen_init_flags & 0x40) == 0) {
+      highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x40;
       DAT_004d0d78 = 1;
       _DAT_004d0d90 = 0;
       DAT_004d0d8c = 0;
@@ -38640,8 +38640,8 @@ LAB_0044300c:
     }
     pcStack_80 = s_1_player_00478b34;
     pcStack_7c = s_2_players_00478b28;
-    if ((DAT_004cccb8 & 0x80) == 0) {
-      DAT_004cccb8 = DAT_004cccb8 | 0x80;
+    if (((byte)highscore_screen_init_flags & 0x80) == 0) {
+      highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x80;
       DAT_004d0fa8 = 1;
       _DAT_004d0fc0 = 0;
       DAT_004d0fbc = 0;
@@ -39014,7 +39014,7 @@ LAB_00443c2a:
       sfx_mute_all(music_track_crimson_theme_id);
       sfx_mute_all(music_track_shortie_monk_id);
       sfx_mute_all(music_track_extra_0);
-      DAT_0048702c = 1;
+      screen_fade_ramp_flag = '\x01';
     }
     else if (DAT_004d1214 == 3) {
       ui_transition_direction = '\0';
@@ -40604,7 +40604,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
   }
   else if (state_id == GAME_STATE_GAMEPLAY) {
     ui_element_slot_28.active = '\x01';
-    DAT_0048702c = 0;
+    screen_fade_ramp_flag = '\0';
     if (render_pass_mode == '\0') {
       highscore_return_latch = '\0';
       gameplay_reset_state();
@@ -40643,7 +40643,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
     _config_player_count = 1;
     typo_mode_reset_flag = '\x01';
     ui_element_slot_28.active = '\x01';
-    DAT_0048702c = 0;
+    screen_fade_ramp_flag = '\0';
     if (render_pass_mode == '\0') {
       highscore_return_latch = '\0';
       gameplay_reset_state();
@@ -41334,8 +41334,8 @@ void options_menu_update(void)
             (grim_interface_ptr,fVar8,fVar9 + 85.0,s_Graphics_detail__00478e98);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,fVar8,fVar9 + 105.0,s_Mouse_sensitivity__00478e84);
-  if ((DAT_004d79a0 & 1) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 1;
+  if (((byte)options_menu_init_flags & 1) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 1;
     DAT_004d77e0 = 0;
     DAT_004d77e1 = 0;
     DAT_004d77e2 = 0;
@@ -41346,8 +41346,8 @@ void options_menu_update(void)
   DAT_004d77e0 = config_full_version;
   ui_checkbox_update((float *)&stack0xffffffc0,&DAT_004d77e0);
   config_full_version = DAT_004d77e0;
-  if ((DAT_004d79a0 & 2) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 2;
+  if (((byte)options_menu_init_flags & 2) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 2;
     DAT_004d7804 = 1;
     DAT_004d7805 = 0;
     _DAT_004d77f8 = 0;
@@ -41359,8 +41359,8 @@ void options_menu_update(void)
   _DAT_004d77f8 = (int)lVar7;
   ui_segmented_slider_update((float *)&stack0xffffffd0,(int *)&DAT_004d77f8);
   _config_sfx_volume = (float)_DAT_004d77f8 * 0.1;
-  if ((DAT_004d79a0 & 4) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 4;
+  if (((byte)options_menu_init_flags & 4) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 4;
     DAT_004d75f4 = 1;
     DAT_004d75f5 = 0;
     _DAT_004d75e8 = 0;
@@ -41372,8 +41372,8 @@ void options_menu_update(void)
   _DAT_004d75e8 = (int)lVar7;
   ui_segmented_slider_update((float *)&stack0xffffffd0,(int *)&DAT_004d75e8);
   _config_music_volume = (float)_DAT_004d75e8 * 0.1;
-  if ((DAT_004d79a0 & 8) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 8;
+  if (((byte)options_menu_init_flags & 8) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 8;
     DAT_004d759c = 1;
     DAT_004d759d = 0;
     DAT_004d7590 = 0;
@@ -41393,8 +41393,8 @@ void options_menu_update(void)
     _config_detail_preset = 5;
   }
   config_apply_detail_preset();
-  if ((DAT_004d79a0 & 0x10) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 0x10;
+  if (((byte)options_menu_init_flags & 0x10) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 0x10;
     DAT_004d768c = 1;
     DAT_004d768d = 0;
     _DAT_004d7680 = 0;
@@ -41416,8 +41416,8 @@ void options_menu_update(void)
   else {
     config_mouse_sensitivity = 0.1;
   }
-  if ((DAT_004d79a0 & 0x20) == 0) {
-    DAT_004d79a0 = DAT_004d79a0 | 0x20;
+  if (((byte)options_menu_init_flags & 0x20) == 0) {
+    options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 0x20;
     DAT_004d798e = 1;
     DAT_004d799d = 0;
     DAT_004d799c = 0;
@@ -41522,7 +41522,7 @@ void quest_select_menu_update(void)
   int iVar3;
   int iVar4;
   int iVar5;
-  float unaff_EBX;
+  int unaff_EBX;
   int *piVar6;
   float fVar7;
   char cVar8;
@@ -41544,64 +41544,64 @@ void quest_select_menu_update(void)
   fStack_1c = fStack_c + 40.0;
   fStack_18 = (fStack_20 + (float)ui_element_slot_37._pad0._6_4_ + 64.0) - 145.0;
   fStack_14 = fStack_1c + 4.0;
-  if ((DAT_004d76a0 & 1) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 1;
+  if (((byte)quest_select_menu_init_flags & 1) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 1;
     _DAT_004d7628 = 0x3e8c8c8d;
     _DAT_004d762c = 0x3f34b4b5;
     _DAT_004d7630 = 0x3f70f0f1;
     _DAT_004d7634 = 0x3f19999a;
     crt_atexit(&DAT_00448b40);
   }
-  if ((DAT_004d76a0 & 2) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 2;
+  if (((byte)quest_select_menu_init_flags & 2) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 2;
     _DAT_004d76f0 = 0x3e8c8c8d;
     _DAT_004d76f4 = 0x3f34b4b5;
     _DAT_004d76f8 = 0x3f70f0f1;
     _DAT_004d76fc = 0x3f800000;
     crt_atexit(&DAT_00448b30);
   }
-  if ((DAT_004d76a0 & 4) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 4;
+  if (((byte)quest_select_menu_init_flags & 4) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 4;
     DAT_004d7888 = 0;
     _DAT_004d788c = 0x3efcfcfd;
     _DAT_004d7890 = 0x3f46c6c7;
     _DAT_004d7894 = 0x3f800000;
     crt_atexit(&DAT_00448b20);
   }
-  if ((DAT_004d76a0 & 8) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 8;
+  if (((byte)quest_select_menu_init_flags & 8) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 8;
     _DAT_004d7738 = 0;
     _DAT_004d773c = 0x3efcfcfd;
     _DAT_004d7740 = 0x3f46c6c7;
     _DAT_004d7744 = 0x3f000000;
     crt_atexit(&DAT_00448b10);
   }
-  if ((DAT_004d76a0 & 0x10) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 0x10;
+  if (((byte)quest_select_menu_init_flags & 0x10) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 0x10;
     _DAT_004d7720 = 0x3f333333;
     _DAT_004d7724 = 0x3f333333;
     _DAT_004d7728 = 0x3f333333;
     _DAT_004d772c = 0x3f333333;
     crt_atexit(&DAT_00448b00);
   }
-  if ((DAT_004d76a0 & 0x20) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 0x20;
+  if (((byte)quest_select_menu_init_flags & 0x20) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 0x20;
     _DAT_004d79a8 = 0x3f800000;
     _DAT_004d79ac = 0x3f800000;
     _DAT_004d79b0 = 0x3f800000;
     _DAT_004d79b4 = 0x3f800000;
     crt_atexit(&DAT_00448af0);
   }
-  if ((DAT_004d76a0 & 0x40) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 0x40;
+  if (((byte)quest_select_menu_init_flags & 0x40) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 0x40;
     _DAT_004d76e0 = 0x3f800000;
     _DAT_004d76e4 = 0x3f800000;
     _DAT_004d76e8 = 0x3f800000;
     _DAT_004d76ec = 0x3f4ccccd;
     crt_atexit(&DAT_00448ae0);
   }
-  if ((DAT_004d76a0 & 0x80) == 0) {
-    DAT_004d76a0 = DAT_004d76a0 | 0x80;
+  if (((byte)quest_select_menu_init_flags & 0x80) == 0) {
+    quest_select_menu_init_flags._0_1_ = (byte)quest_select_menu_init_flags | 0x80;
     _DAT_004d7690 = 0x3f46c6c7;
     _DAT_004d7694 = 0x3efcfcfd;
     _DAT_004d7698 = 0;
@@ -41657,7 +41657,7 @@ void quest_select_menu_update(void)
       fStack_20 = fVar7;
     }
     fStack_2c = 1.0;
-    if (DAT_00478e58 == fVar7) {
+    if ((float)quest_select_stage_major == fVar7) {
       (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004d79a8);
     }
     else {
@@ -41718,16 +41718,17 @@ void quest_select_menu_update(void)
     }
     else {
       iVar5 = CONCAT13(1,(int3)iVar5);
-      DAT_004d79d8 = iVar3;
+      quest_select_stage_minor_index = iVar3;
       (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004d76f0);
     }
     fVar2 = fStack_28;
-    iVar4 = iVar3 + -10 + (int)DAT_00478e58 * 10;
+    iVar4 = iVar3 + -10 + quest_select_stage_major * 10;
     if (config_hardcore == '\0') {
       if (iVar4 <= quest_unlock_index) goto LAB_00448631;
 LAB_0044853b:
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fStack_2c,fStack_28,s__d__d_0047381c,DAT_00478e58,iVar3 + 1);
+                (grim_interface_ptr,fStack_2c,fStack_28,s__d__d_0047381c,quest_select_stage_major,
+                 iVar3 + 1);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fStack_2c + 32.0,fVar2,&highscore_month_label_default);
     }
@@ -41735,18 +41736,19 @@ LAB_0044853b:
       if (quest_unlock_index_full < iVar4) goto LAB_0044853b;
 LAB_00448631:
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fStack_2c,fStack_28,s__d__d_0047381c,DAT_00478e58,iVar3 + 1);
+                (grim_interface_ptr,fStack_2c,fStack_28,s__d__d_0047381c,quest_select_stage_major,
+                 iVar3 + 1);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fStack_2c + 32.0,fVar2,&s_fmt_percent_s,
-                 (&quest_selected_meta)[iVar3 + -10 + (int)DAT_00478e58 * 10].name);
+                 (&quest_selected_meta)[iVar3 + -10 + quest_select_stage_major * 10].name);
       iVar4 = (*grim_interface_ptr->vtable->grim_measure_text_width)
-                        ((&quest_selected_meta)[iVar3 + -10 + (int)DAT_00478e58 * 10].name);
+                        ((&quest_selected_meta)[iVar3 + -10 + quest_select_stage_major * 10].name);
       fStack_24 = fStack_2c;
       fStack_20 = fStack_28 + 13.0;
       (*grim_interface_ptr->vtable->grim_draw_rect_outline)(&fStack_24,(float)(iVar4 + 0x20),1.0);
       cVar8 = (char)((uint)iVar5 >> 0x10);
       if (cVar8 != '\0') {
-        iVar1 = iVar3 + (int)DAT_00478e58 * 10;
+        iVar1 = iVar3 + quest_select_stage_major * 10;
         (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                   (grim_interface_ptr,(float)(iVar4 + 0x20) + fStack_2c + 12.0,fVar2,
                    s___d__d__00478f40,game_status_blob.quest_play_counts[iVar1 + 0x29],
@@ -41765,13 +41767,13 @@ LAB_00448631:
       fStack_28 = fStack_28 + 12.0;
       iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xcb);
       if (((char)iVar3 != '\0') &&
-         (DAT_00478e58 = (float)((int)DAT_00478e58 + -1), (int)DAT_00478e58 < 1)) {
-        DAT_00478e58 = 1.4013e-45;
+         (quest_select_stage_major = quest_select_stage_major + -1, quest_select_stage_major < 1)) {
+        quest_select_stage_major = 1;
       }
       iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xcd);
       if (((char)iVar3 != '\0') &&
-         (DAT_00478e58 = (float)((int)DAT_00478e58 + 1), 5 < (int)DAT_00478e58)) {
-        DAT_00478e58 = 7.00649e-45;
+         (quest_select_stage_major = quest_select_stage_major + 1, 5 < quest_select_stage_major)) {
+        quest_select_stage_major = 5;
       }
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -41797,51 +41799,51 @@ LAB_00448631:
         game_state_pending = GAME_STATE_PLAY_GAME_MENU;
         sfx_play(sfx_ui_buttonclick);
       }
-      if ((unaff_EBX != -NAN) && (iVar3 = input_primary_just_pressed(), (char)iVar3 != '\0')) {
-        DAT_00478e58 = unaff_EBX;
+      if ((unaff_EBX != -1) && (iVar3 = input_primary_just_pressed(), (char)iVar3 != '\0')) {
+        quest_select_stage_major = unaff_EBX;
       }
-      iVar3 = DAT_004d79d8;
-      DAT_004d79d8 = -10;
+      iVar3 = quest_select_stage_minor_index;
+      quest_select_stage_minor_index = -10;
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(2);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 0;
+        quest_select_stage_minor_index = 0;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(3);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 1;
+        quest_select_stage_minor_index = 1;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(4);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 2;
+        quest_select_stage_minor_index = 2;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(5);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 3;
+        quest_select_stage_minor_index = 3;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(6);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 4;
+        quest_select_stage_minor_index = 4;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(7);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 5;
+        quest_select_stage_minor_index = 5;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(8);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 6;
+        quest_select_stage_minor_index = 6;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(9);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 7;
+        quest_select_stage_minor_index = 7;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(10);
       if ((char)iVar5 != '\0') {
-        DAT_004d79d8 = 8;
+        quest_select_stage_minor_index = 8;
       }
       iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xb);
       if ((char)iVar5 == '\0') {
-        if (DAT_004d79d8 == -10) {
-          DAT_004d79d8 = iVar3;
+        if (quest_select_stage_minor_index == -10) {
+          quest_select_stage_minor_index = iVar3;
           iVar3 = input_primary_just_pressed();
           if ((char)iVar3 == '\0') {
             return;
@@ -41851,14 +41853,14 @@ LAB_00448631:
             return;
           }
         }
-        if (DAT_004d79d8 == 10) {
+        if (quest_select_stage_minor_index == 10) {
           return;
         }
       }
       else {
-        DAT_004d79d8 = 9;
+        quest_select_stage_minor_index = 9;
       }
-      iVar3 = DAT_004d79d8 + -10 + (int)DAT_00478e58 * 10;
+      iVar3 = quest_select_stage_minor_index + -10 + quest_select_stage_major * 10;
       if (config_hardcore == '\0') {
         if (quest_unlock_index < iVar3) {
           return;
@@ -41874,9 +41876,9 @@ LAB_00448631:
       sfx_mute_all(music_track_crimson_theme_id);
       sfx_mute_all(music_track_shortie_monk_id);
       sfx_mute_all(music_track_extra_0);
-      _quest_stage_minor = DAT_004d79d8 + 1;
-      _quest_stage_major = DAT_00478e58;
-      DAT_0048702c = 1;
+      _quest_stage_minor = quest_select_stage_minor_index + 1;
+      _quest_stage_major = quest_select_stage_major;
+      screen_fade_ramp_flag = '\x01';
       sfx_play(sfx_ui_buttonclick);
       return;
     }
@@ -41999,8 +42001,8 @@ void controls_menu_update(void)
   char *pcStack_4;
   
   iVar14 = 0;
-  if ((DAT_004d77e8 & 1) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 1;
+  if (((byte)controls_menu_init_flags & 1) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 1;
     DAT_004d770e = 1;
     DAT_004d771d = 0;
     DAT_004d771c = 0;
@@ -42013,8 +42015,8 @@ void controls_menu_update(void)
     crt_atexit(&DAT_0044ed70);
   }
   _DAT_004d7708 = s_Redefine_00479170;
-  if ((DAT_004d77e8 & 2) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 2;
+  if (((byte)controls_menu_init_flags & 2) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 2;
     DAT_004d75be = 1;
     DAT_004d75cd = 0;
     DAT_004d75cc = 0;
@@ -42027,8 +42029,8 @@ void controls_menu_update(void)
     crt_atexit(&DAT_0044ed60);
   }
   _DAT_004d75b8 = &DAT_00472e80;
-  if ((DAT_004d77e8 & 4) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 4;
+  if (((byte)controls_menu_init_flags & 4) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 4;
     DAT_004d7660 = 1;
     _DAT_004d7678 = 0;
     DAT_004d7674 = 0;
@@ -42038,8 +42040,8 @@ void controls_menu_update(void)
     _DAT_004d766c = (char **)0x0;
     crt_atexit(&DAT_0044ed50);
   }
-  if ((DAT_004d77e8 & 8) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 8;
+  if (((byte)controls_menu_init_flags & 8) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 8;
     DAT_004d76a8 = 1;
     _DAT_004d76c0 = 0;
     DAT_004d76bc = 0;
@@ -42049,8 +42051,8 @@ void controls_menu_update(void)
     _DAT_004d76b4 = (char **)0x0;
     crt_atexit(&DAT_0044ed40);
   }
-  if ((DAT_004d77e8 & 0x10) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 0x10;
+  if (((byte)controls_menu_init_flags & 0x10) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x10;
     DAT_004d7638 = 1;
     _DAT_004d7650 = 0;
     DAT_004d764c = 0;
@@ -42118,8 +42120,8 @@ void controls_menu_update(void)
             (grim_interface_ptr,unaff_ESI,unaff_EBP,s_Aiming_method__00479120);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,unaff_ESI,unaff_EBP + 42.0,s_Moving_method__00479110);
-  if ((DAT_004d77e8 & 0x20) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 0x20;
+  if (((byte)controls_menu_init_flags & 0x20) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x20;
     DAT_004d77f0 = 0;
     DAT_004d77f1 = 0;
     DAT_004d77f2 = 0;
@@ -42168,8 +42170,8 @@ void controls_menu_update(void)
   pIVar2 = grim_interface_ptr->vtable;
   iVar5 = (*pIVar2->grim_measure_text_width)(s_Configured_controls_004790e4);
   (*pIVar2->grim_draw_rect_outline)(&fStack_70,(float)iVar5,fVar19);
-  if ((DAT_004d77e8 & 0x40) == 0) {
-    DAT_004d77e8 = DAT_004d77e8 | 0x40;
+  if (((byte)controls_menu_init_flags & 0x40) == 0) {
+    controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x40;
     iVar5 = 0xf;
     puVar6 = &DAT_004d78a4;
     do {
@@ -47853,8 +47855,8 @@ void play_game_menu_update(void)
   float fVar7;
   float fVar8;
   
-  if ((DAT_004d7730 & 1) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 1;
+  if (((byte)play_game_menu_init_flags & 1) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 1;
     DAT_004d75fe = 1;
     DAT_004d760d = 0;
     DAT_004d760c = 0;
@@ -47867,8 +47869,8 @@ void play_game_menu_update(void)
     crt_atexit(&DAT_0044fa90);
   }
   _DAT_004d75f8 = s_Quests_00479280;
-  if ((DAT_004d7730 & 2) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 2;
+  if (((byte)play_game_menu_init_flags & 2) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 2;
     DAT_004d75a6 = 1;
     DAT_004d75b5 = 0;
     DAT_004d75b4 = 0;
@@ -47881,8 +47883,8 @@ void play_game_menu_update(void)
     crt_atexit(&DAT_0044fa80);
   }
   _DAT_004d75a0 = s_Rush_004720a0;
-  if ((DAT_004d7730 & 4) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 4;
+  if (((byte)play_game_menu_init_flags & 4) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 4;
     DAT_004d76ce = 1;
     DAT_004d76dd = 0;
     DAT_004d76dc = 0;
@@ -47895,8 +47897,8 @@ void play_game_menu_update(void)
     crt_atexit(&DAT_0044fa70);
   }
   _DAT_004d76c8 = s_Survival_004720ac;
-  if ((DAT_004d7730 & 8) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 8;
+  if (((byte)play_game_menu_init_flags & 8) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 8;
     DAT_004d7616 = 1;
     DAT_004d7625 = 0;
     DAT_004d7624 = 0;
@@ -47909,8 +47911,8 @@ void play_game_menu_update(void)
     crt_atexit(&DAT_0044fa60);
   }
   _DAT_004d7610 = s_Typ_o_Shooter_00472090;
-  if ((DAT_004d7730 & 0x10) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 0x10;
+  if (((byte)play_game_menu_init_flags & 0x10) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x10;
     DAT_004d7658 = 0;
     DAT_004d7659 = 0;
     DAT_004d765a = 0;
@@ -47918,8 +47920,8 @@ void play_game_menu_update(void)
     crt_atexit(&DAT_0044fa50);
   }
   _DAT_004d765c = s_Hardcore_00478c24;
-  if ((DAT_004d7730 & 0x20) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 0x20;
+  if (((byte)play_game_menu_init_flags & 0x20) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x20;
     DAT_004d75d6 = 1;
     DAT_004d75e5 = 0;
     DAT_004d75e4 = 0;
@@ -48042,8 +48044,8 @@ void play_game_menu_update(void)
       ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
     }
   }
-  if ((DAT_004d7730 & 0x40) == 0) {
-    DAT_004d7730 = DAT_004d7730 | 0x40;
+  if (((byte)play_game_menu_init_flags & 0x40) == 0) {
+    play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x40;
     DAT_004d79b8 = 1;
     _DAT_004d79d0 = 0;
     DAT_004d79cc = 0;
@@ -48116,7 +48118,7 @@ LAB_0044f676:
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
   }
   if (DAT_004d75fd != '\0') {
     ui_transition_direction = 0;
@@ -48127,7 +48129,7 @@ LAB_0044f676:
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
     config_game_mode = GAME_MODE_RUSH;
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
@@ -48137,7 +48139,7 @@ LAB_0044f676:
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
     config_game_mode = GAME_MODE_SURVIVAL;
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
@@ -48147,7 +48149,7 @@ LAB_0044f676:
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
     config_game_mode = GAME_MODE_TUTORIAL;
-    DAT_0048702c = 1;
+    screen_fade_ramp_flag = '\x01';
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
@@ -48342,7 +48344,7 @@ void ui_menu_layout_init(void)
   screen_fade_alpha = 0;
   _DAT_00487288 = (float)_config_screen_width * 0.0015625;
   _DAT_0048723c = 0;
-  DAT_0048702c = 0;
+  screen_fade_ramp_flag = '\0';
   _DAT_0048728c = (float)_config_screen_height * 0.0020833334;
   ppuVar13 = &ui_element_table_end;
   for (iVar10 = 0x29; iVar10 != 0; iVar10 = iVar10 + -1) {
