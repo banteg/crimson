@@ -20,7 +20,67 @@ partial.
 
 UI elements are referenced via a fixed table of pointers from
 `ui_element_table_end` (`0x0048f168`) through `ui_element_table_start`
-(`0x0048f20c`), for a total of **41 pointers** (`0xA4` bytes).
+(`0x0048f208`), for a total of **41 pointers** (`0xA4` bytes).
+
+In `data_map.json` this table is now labeled as typed slot pointers:
+
+- `ui_element_table_slot_01_main_menu_aux` (`0x0048f16c`)
+- `ui_element_table_slot_02_main_menu_primary` (`0x0048f170`)
+- `ui_element_table_slot_03_main_menu_play_game` (`0x0048f174`)
+- `ui_element_table_slot_04_main_menu_options` (`0x0048f178`)
+- `ui_element_table_slot_05_main_menu_statistics` (`0x0048f17c`)
+- `ui_element_table_slot_06_main_menu_footer_a` (`0x0048f180`)
+- `ui_element_table_slot_07_main_menu_footer_b` (`0x0048f184`)
+- `ui_element_table_slot_08..ui_element_table_slot_39` for the remaining
+  state-specific slots assigned in `ui_menu_layout_init`.
+
+The pointee storage blocks are also typed/labeled as `ui_element_t` globals
+(`ui_element_slot_*`), e.g.:
+
+- `ui_element_slot_03_main_menu_play_game` (`0x004878c0`)
+- `ui_element_slot_12_layout_a` (`0x004897b0`)
+- `ui_element_slot_18_layout_b` (`0x0048d590`)
+- `ui_element_slot_32_layout_c` (`0x00488e68`)
+- `ui_element_slot_40` (`0x0048ee50`)
+
+Additional adjacent globals now mapped:
+
+- `ui_menu_layout_init_latch` (`0x0048f164`) is set to `1` at the end of
+  `ui_menu_layout_init`.
+- `ui_perk_prompt_element` (`0x0048f20c`) is the special perk prompt element
+  rendered by `perk_prompt_update_and_render`.
+- `ui_perk_prompt_on_activate` (`0x0048f240`) is the prompt element callback
+  slot (seeded to `ui_callback_noop` during layout init).
+- `ui_perk_prompt_levelup_element` (`0x0048f330`) is a nested UI block loaded
+  from `ui\ui_textLevelUp.jaz` and shaped during layout init.
+
+Template-pool globals (seeded in `ui_menu_template_pool_init`) are also mapped:
+
+- `ui_template_pool_block_00..02` + `_mode` sentinels (`0x0048f808..0x0048fabc`)
+- `ui_sign_crimson_template` + `ui_sign_crimson_template_mode`
+  (`0x0048fac0` / `0x0048fba4`)
+- `ui_menu_item_subtemplate_block_01..06` + `_mode` sentinels
+  (`0x0048fd78..0x004902e4`)
+
+### `ui_menu_item` subtemplate carving (`0x0048fd78..`)
+
+`ui_menu_item_subtemplate_block_01..06` are now typed as
+`ui_menu_item_subtemplate_block_t`:
+
+- `slot_00..slot_07` are `0x1c` stride records.
+- Per-slot `x`/`y` are high confidence from copy/offset loops in
+  `ui_menu_assets_init`.
+- `+0xe0` is `texture_handle` (`ui_menu_item_subtemplate_block_*_texture_handle`).
+- `+0xe4` is `quad_mode` (`ui_menu_item_subtemplate_block_*_mode`).
+
+Observed transforms in `ui_menu_assets_init`:
+
+- `block_01` is seeded from the menu panel quad payload (`memcpy` `0xe8` bytes).
+- A stride `0x1c` loop subtracts `84.0` from every `slot_i.x` in `block_01`.
+- `slot_02.y`/`slot_03.y` in `block_01` are shifted by `-116.0`.
+- `slot_04.y..slot_07.y` in `block_01` are shifted by `+124.0`.
+- `block_02` is copied from `block_01`, then `slot_04.y..slot_07.y` are shifted by
+  `-100.0`.
 
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
@@ -62,7 +122,7 @@ Offsets below are relative to the UI element base pointer.
 | 0x204 | overlay_texture_handle | Overlay texture handle (`-1` disables). |
 | 0x2f4 | hover_enter_played | Gate for "hover enter" SFX. |
 | 0x2f8 | hover_amount | Hover lerp value, clamped 0..1000. |
-| 0x2fc | time_since_ready | Initialized to `0x100` in `FUN_0044faa0` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
+| 0x2fc | time_since_ready | Initialized to `0x100` in `ui_element_init_defaults` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
 | 0x300 | render_scale | Used to pick a special render state when zero. |
 | 0x304 | rot_m00 | Rotation matrix (cos). |
 | 0x308 | rot_m01 | Rotation matrix (-sin). |

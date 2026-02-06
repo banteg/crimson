@@ -193,7 +193,7 @@ Notes:
 ### Original
 
 - `perk_apply` (0x004055e0): sets `player_plaguebearer_active` (global-ish field on player0).
-- `creature_update_all` (0x00426220): infection flagging, ticking, spread (`FUN_00425d80`), and infection kill bookkeeping.
+- `creature_update_all` (0x00426220): infection flagging, ticking, spread (`plaguebearer_spread_infection`), and infection kill bookkeeping.
 
 ### Rewrite
 

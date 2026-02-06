@@ -22,6 +22,21 @@ Renders the post-mission summary and buttons:
 - Buttons: Play Next / Play Again / High scores / Main Menu.
 - Special case for the final quest: "Show End Note".
 
+Recovered staged-reveal globals:
+
+- `quest_results_final_time_ms` (`DAT_0048270c`) is computed as
+  `quest_spawn_timeline + perk_pending_count * -1000 - quest_results_health_bonus_ms`.
+- `quest_results_reveal_base_time_ms` (`DAT_00482710`) animates up to `quest_spawn_timeline`.
+- `quest_results_reveal_health_bonus_ms` (`DAT_00482714`) animates up to
+  `quest_results_health_bonus_ms` (displayed as a subtraction).
+- `quest_results_reveal_perk_bonus_s` (`DAT_00482718`) animates per-second bonus count from
+  `perk_pending_count`.
+- `quest_results_reveal_total_time_ms` (`DAT_00482720`) is the running total shown on the final line.
+- `quest_results_reveal_step_timer_ms` (`DAT_00482724`) drives reveal pacing (`700`, `40`, `150`,
+  `300`, `1000`, `50` ms windows).
+- `quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`
+  (`DAT_00482700` / `DAT_00482704`) gate the unlock text rows.
+
 ## Quest failed screen (quest_failed_screen_update)
 
 - Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
@@ -61,7 +76,7 @@ Use Frida to log whenever the overlay is actually rendered:
 - Optional: validate the log against the Python model:
   - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 
-## Modal/plugin flow (FUN_0040b630)
+## Modal/plugin flow (plugin_runtime_update_and_render)
 
 There is a modal flow keyed off state `game_state_id` (`DAT_00487270`) == `0x16` that appears to
 call into a plugin interface (`plugin_interface_ptr` (`DAT_004824d4`)). This likely represents a

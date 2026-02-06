@@ -3,6 +3,7 @@ Interesting Functions and Patterns
 
 [DES related]
   console_destroy @ 004016e0
+  ui_template_triplet_reset_and_seed_modes @ 00417ab0
   highscore_compare_survival_score_desc @ 0043aeb0
   highscore_compare_rush_field32_desc @ 0043aed0
   sfx_update_mute_fades @ 0043d5b0
@@ -56,6 +57,7 @@ Interesting Functions and Patterns
 [READ related]
   vorbis_mem_read @ 0041dce0
   vorbis_read_pcm16 @ 0041df00
+  plaguebearer_spread_infection @ 00425d80
   reg_read_dword_default @ 0042a980
   highscore_read_record @ 0043ab10
   buffer_reader_init @ 0043b850
@@ -154,11 +156,13 @@ Interesting Functions and Patterns
   crt_sprintf @ 004616e7
 
 [LOG related]
+  console_register_clear_log_atexit @ 00401180
   console_clear_log @ 004011a0
   console_log_node_free @ 004011f0
   console_flush_log @ 00402860
   tutorial_prompt_dialog @ 00408530
   mod_api_inp_get_analog @ 0040e620
+  input_detect_active_analog_axis @ 00448b50
 
 [PRINT related]
   console_printf @ 00401870

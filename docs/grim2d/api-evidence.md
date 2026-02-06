@@ -843,8 +843,8 @@ grim.dll body:
 
 - Ghidra signature: `int grim_get_joystick_pov(int index)`
 - Call sites: 2 (unique funcs: 2)
-- Sample calls: FUN_0041e8d0:L13164; FUN_0041e8f0:L13177
-- First callsite: FUN_0041e8d0 (line 15301)
+- Sample calls: input_aim_pov_left_active; input_aim_pov_right_active
+- First callsite: input_aim_pov_left_active
 
 
 ```c

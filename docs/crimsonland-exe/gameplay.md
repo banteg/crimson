@@ -51,9 +51,37 @@ Global bonus timers used by `player_update` and the main loop:
 | `bonus_freeze_timer` | Freeze timer | Bonus id 11 |
 | `time_scale_active` / `time_scale_factor` | time-scale active + factor | driven by Reflex Boost |
 
+### Recovered gameplay helper globals
+
+- `player_alt_weapon_swap_cooldown_ms` (`DAT_0048719c`)
+  - Reload-key debounce for Alternate Weapon swapping (`200ms` lockout per swap).
+- `perk_jinxed_proc_timer_s` (`_DAT_004aaf1c`)
+  - Jinxed perk proc timer reseeded in `perks_update_effects`.
+- `perk_man_bomb_trigger_interval_s` / `perk_fire_cough_trigger_interval_s` /
+  `perk_hot_tempered_trigger_interval_s` (`_DAT_00473310/14/18`)
+  - Trigger thresholds used against `player_man_bomb_timer`, `player_fire_cough_timer`,
+    and `player_hot_tempered_timer`.
+- `survival_reward_weapon_guard_id` (`DAT_00486fb8`)
+  - Guard id used by Survival handout logic (`0x18`/`0x19`) and checked during world render to
+    revoke temporary handout weapons.
+- `quest_spawn_stall_timer_ms` (`DAT_004c3654`)
+  - Quest fallback timer in `quest_spawn_timeline_update` when creatures remain active.
+- `perk_lean_mean_exp_tick_timer_s` (`_DAT_004808a4`)
+  - Lean Mean Exp Machine cadence timer; `perks_update_effects` resets it to `0.25s` on each tick.
+- `perk_doctor_target_creature_id` (`DAT_00487268`)
+  - Cached Doctor target creature id for the HUD target-health overlay (`-1` when inactive).
+- `quest_stage_banner_timer_ms` (`DAT_00487244`)
+  - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
+- `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`DAT_00480850` / `DAT_00480898`)
+  - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
+- `pause_keybind_help_alpha_ms` (`DAT_00487284`)
+  - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
+- `time_played_ms` (`DAT_0048718c`)
+  - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
+
 ### Bonus HUD slots (active bonus list)
 
-`bonus_apply` registers timed bonuses in the HUD list via `FUN_0041a810`, and
+`bonus_apply` registers timed bonuses in the HUD list via `bonus_hud_slot_activate`, and
 `bonus_hud_slot_update_and_render` renders up to 16 active slots using the following fields:
 
 - `bonus_hud_slot_active` — per-slot active flag (stride `0x20` bytes).
@@ -62,6 +90,19 @@ Global bonus timers used by `player_update` and the main loop:
 - `bonus_hud_slot_alt_timer_ptr` — optional pointer to the player‑2 timer.
 - `bonus_hud_slot_label` — string label for the bonus.
 - `bonus_hud_slot_icon_id` — icon id used to select a frame from `bonuses.png`.
+
+Recovered bonus label/icon globals used by `bonus_apply`:
+
+- `bonus_label_reflex_boost` / `bonus_icon_reflex_boost`
+- `bonus_label_weapon_power_up` / `bonus_icon_weapon_power_up`
+- `bonus_label_speed` / `bonus_icon_speed`
+- `bonus_label_freeze` / `bonus_icon_freeze`
+- `bonus_label_shield` / `bonus_icon_shield`
+- `bonus_label_fire_bullets` / `bonus_icon_fire_bullets`
+- `bonus_label_energizer` / `bonus_icon_energizer`
+- `bonus_label_double_experience` / `bonus_icon_double_experience`
+- `bonus_label_points` plus `bonus_label_format_buffer` are used by
+  `bonus_label_for_entry` for dynamic “weapon” / “points” label formatting.
 
 ### Perk-triggered projectile spawns (player_update)
 
@@ -208,6 +249,6 @@ Mode-specific updates are dispatched from the main frame loop:
 - Survival: `survival_update` (`FUN_00407cd0`)
 - Rush: `rush_mode_update`
 - Quests: `quest_mode_update`
-- Typ-o-Shooter: separate loop (`survival_gameplay_update_and_render`, `FUN_004457c0`, state `0x12`)
+- Typ-o-Shooter: separate loop (`typo_gameplay_update_and_render`, `FUN_004457c0`, state `0x12`)
 
 See [Game mode map](../game-mode-map.md) for mode ids.

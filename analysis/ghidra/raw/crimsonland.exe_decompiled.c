@@ -67,21 +67,21 @@ int console_input_poll(void)
 
 
 
-/* FUN_004010f0 @ 004010f0 */
+/* invoke_callback_n @ 004010f0 */
 
-/* [binja] int32_t __stdcall sub_4010f0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4) */
+/* invokes callback `count` times; decompile currently shows arg1/arg2 unused in this helper */
 
-int FUN_004010f0(int arg1,int arg2,int arg3,int arg4)
+int invoke_callback_n(void *arg1,int arg2,int count,int callback)
 
 {
   int iVar1;
   
-  iVar1 = arg3 + -1;
+  iVar1 = count + -1;
   if (-1 < iVar1) {
     do {
-      iVar1 = (*(code *)arg4)();
-      arg3 = arg3 + -1;
-    } while (arg3 != 0);
+      iVar1 = (*(code *)callback)();
+      count = count + -1;
+    } while (count != 0);
   }
   return iVar1;
 }
@@ -130,11 +130,11 @@ int console_global_init(void)
 
 
 
-/* FUN_00401180 @ 00401180 */
+/* console_register_clear_log_atexit @ 00401180 */
 
-/* [binja] int32_t sub_401180() */
+/* registers console_clear_log via crt_atexit for process shutdown cleanup */
 
-int FUN_00401180(void)
+int console_register_clear_log_atexit(void)
 
 {
   int iVar1;
@@ -2295,16 +2295,15 @@ int demo_mode_start(void)
 
 
 
-/* FUN_00403430 @ 00403430 */
+/* ui_mouse_inside_rect_with_padding @ 00403430 */
 
-/* [binja] int32_t sub_403430(float* arg1, int32_t arg2, int32_t arg3) */
+/* returns 1 when the mouse is inside an expanded rect (x-10,y-2..x+w,y+h) and capture is clear */
 
-int __cdecl FUN_00403430(float *arg1,int arg2,int arg3)
+int __cdecl ui_mouse_inside_rect_with_padding(float *xy,int h,int w)
 
 {
-  if ((((*arg1 - 10.0 < ui_mouse_x) && (arg1[1] - 2.0 < ui_mouse_y)) &&
-      (ui_mouse_x < (float)arg3 + *arg1)) &&
-     ((ui_mouse_y < (float)arg2 + arg1[1] && (ui_mouse_blocked == '\0')))) {
+  if ((((*xy - 10.0 < ui_mouse_x) && (xy[1] - 2.0 < ui_mouse_y)) && (ui_mouse_x < (float)w + *xy))
+     && ((ui_mouse_y < (float)h + xy[1] && (ui_mouse_blocked == '\0')))) {
     return 1;
   }
   return 0;
@@ -2368,36 +2367,36 @@ void perk_prompt_update_and_render(void)
   
   if ((demo_mode_active == '\0') && (config_blob.reserved0._24_4_ != 2)) {
     if ((perk_pending_count < 1) || (game_state_id != 9)) {
-      perk_prompt_timer = perk_prompt_timer - frame_dt_ms;
-      if (perk_prompt_timer < 0) {
-        perk_prompt_timer = 0;
+      _perk_prompt_timer = _perk_prompt_timer - frame_dt_ms;
+      if (_perk_prompt_timer < 0) {
+        _perk_prompt_timer = 0;
       }
     }
     else {
-      perk_prompt_timer = perk_prompt_timer + frame_dt_ms;
-      if (200 < perk_prompt_timer) {
-        perk_prompt_timer = 200;
+      _perk_prompt_timer = _perk_prompt_timer + frame_dt_ms;
+      if (200 < _perk_prompt_timer) {
+        _perk_prompt_timer = 200;
       }
     }
-    if ((config_blob.full_version != '\0') && (0 < perk_prompt_timer)) {
-      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)perk_prompt_timer * 0.005);
+    if ((config_blob.full_version != '\0') && (0 < _perk_prompt_timer)) {
+      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)_perk_prompt_timer * 0.005);
       pcVar2 = input_key_name(config_blob.key_pick_perk);
       crt_sprintf(acStack_80,s_Press__s_to_pick_a_perk_00471488,pcVar2);
-      y = _perk_prompt_origin_y + 8.0;
+      y = perk_prompt_origin_y + 8.0;
       pIVar1 = grim_interface_ptr->vtable;
       pcVar2 = acStack_80;
       iVar3 = (*pIVar1->grim_measure_text_width)(acStack_80);
       (*pIVar1->grim_draw_text_small)((float)((config_blob.screen_width - iVar3) + -0x10),y,pcVar2);
     }
-    DAT_0048f20c = 1;
-    fVar4 = ((float10)1.0 - (float10)perk_prompt_timer * (float10)0.005) * (float10)-1.5707964;
+    ui_perk_prompt_element = 1;
+    fVar4 = ((float10)1.0 - (float10)_perk_prompt_timer * (float10)0.005) * (float10)-1.5707964;
     fVar5 = (float10)fcos(fVar4);
     _perk_prompt_transform_cos = (float)fVar5;
     fVar4 = (float10)fsin((float10)(float)fVar4);
     _perk_prompt_transform_sin_neg = (float)-fVar4;
     _perk_prompt_transform_sin = (float)fVar4;
     _perk_prompt_transform_cos_2 = (float)fVar5;
-    ui_element_render((ui_element_t *)&DAT_0048f20c);
+    ui_element_render((ui_element_t *)&ui_perk_prompt_element);
   }
   return;
 }
@@ -3668,7 +3667,7 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
   char acStack_98 [152];
   
   local_104 = alpha * 0.8;
-  DAT_00480850 = 1;
+  demo_trial_overlay_active = 1;
   local_110 = 0;
   local_10c = 0;
   local_108 = 0;
@@ -3690,7 +3689,7 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   fVar7 = *xy + 26.0;
   fVar2 = xy[1] + 80.0;
-  iVar3 = FUN_0041df50();
+  iVar3 = demo_trial_time_limit_ms();
   iVar3 = iVar3 - game_status_blob.game_sequence_id;
   if (0 < demo_trial_elapsed_ms) {
     iVar3 = 300000 - demo_trial_elapsed_ms;
@@ -4146,7 +4145,9 @@ void gameplay_render_world(void)
   int player_index;
   int *piVar1;
   
-  ui_transition_alpha = (float)ui_elements_timeline / (float)(DAT_0048eb48 - DAT_0048eb4c);
+  ui_transition_alpha =
+       (float)ui_elements_timeline /
+       (float)(int)(ui_element_slot_28._pad0._14_4_ - ui_element_slot_28._pad0._18_4_);
   if (quest_unlock_index_full < 0x28) {
     if (player_state_table.weapon_id == 0x1d) {
       weapon_assign_player(0,1);
@@ -4158,10 +4159,10 @@ void gameplay_render_world(void)
   player_index = 0;
   piVar1 = &player_state_table.weapon_id;
   do {
-    if ((*piVar1 == 0x19) && (DAT_00486fb8 != 0x19)) {
+    if ((*piVar1 == 0x19) && (survival_reward_weapon_guard_id != 0x19)) {
       weapon_assign_player(player_index,1);
     }
-    if ((*piVar1 == 0x18) && (DAT_00486fb8 != 0x18)) {
+    if ((*piVar1 == 0x18) && (survival_reward_weapon_guard_id != 0x18)) {
       weapon_assign_player(player_index,1);
     }
     piVar1 = piVar1 + 0xd8;
@@ -4190,7 +4191,9 @@ LAB_00405a7f:
 LAB_00405a89:
     if ((game_state_id != 5) || (game_state_pending != 0)) goto LAB_00405ab3;
   }
-  ui_transition_alpha = (float)ui_elements_timeline / (float)(DAT_0048eb48 - DAT_0048eb4c);
+  ui_transition_alpha =
+       (float)ui_elements_timeline /
+       (float)(int)(ui_element_slot_28._pad0._14_4_ - ui_element_slot_28._pad0._18_4_);
 LAB_00405ab3:
   if (ui_transition_alpha <= 1.0) {
     if (ui_transition_alpha < 0.0) {
@@ -4260,18 +4263,19 @@ void perk_selection_screen_update(void)
   
   gameplay_render_world();
   ui_elements_update_and_render();
-  local_4 = _DAT_0048c634 + DAT_0048c658;
+  local_4 = ui_element_slot_27.pos_y + ui_element_slot_27.quad0[1];
   local_20 = 19.0;
   uStack_28 = (float)(uint)(uint3)uStack_28;
   local_24 = 5;
   local_14 = local_4 + 40.0;
-  local_18 = _DAT_0048c620 + DAT_0048c654 + _DAT_0048c630 + 180.0 + 44.0;
+  local_18 = (float)ui_element_slot_27._pad0._6_4_ +
+             ui_element_slot_27.quad0[0] + ui_element_slot_27.pos_x + 180.0 + 44.0;
   local_10 = local_18;
   local_c = local_14;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   w = 0x20;
   y = 0x80;
-  iVar2 = DAT_0048f800;
+  iVar2 = ui_text_pick_perk_texture;
   lVar4 = __ftol();
   x = (int)lVar4;
   lVar4 = __ftol();
@@ -4465,7 +4469,7 @@ void ui_draw_clock_gauge(void)
   (*grim_interface_ptr->vtable->grim_draw_quad)((float)iStack_10,(float)unaff_EDI,32.0,32.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_set_rotation)((float)(iVar1 / 1000) * 0.10471976);
   (*grim_interface_ptr->vtable->grim_draw_quad)((float)iStack_10,(float)unaff_EDI,32.0,32.0);
@@ -4653,7 +4657,7 @@ int game_update_victory_screen(void)
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = 0;
     game_state_pending = 0;
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
   }
   ui_cursor_render();
   return extraout_EAX;
@@ -4715,9 +4719,9 @@ void perks_update_effects(void)
       iVar2 = iVar2 + -1;
     } while (iVar2 != 0);
   }
-  _DAT_004808a4 = _DAT_004808a4 - frame_dt;
-  if (_DAT_004808a4 < 0.0) {
-    _DAT_004808a4 = 0.25;
+  perk_lean_mean_exp_tick_timer_s = perk_lean_mean_exp_tick_timer_s - frame_dt;
+  if (perk_lean_mean_exp_tick_timer_s < 0.0) {
+    perk_lean_mean_exp_tick_timer_s = 0.25;
     if (0 < player_state_table.perk_counts[perk_id_lean_mean_exp_machine]) {
       player_state_table.experience =
            player_state_table.experience +
@@ -4761,7 +4765,7 @@ void perks_update_effects(void)
       render_overlay_player_index = render_overlay_player_index + 1;
     } while (render_overlay_player_index < (int)config_blob.reserved0._20_4_);
   }
-  DAT_00487268 = -1;
+  perk_doctor_target_creature_id = -1;
   if (((0 < player_state_table.perk_counts[perk_id_doctor]) ||
       (0 < player_state_table.perk_counts[perk_id_pyrokinetic])) ||
      (0 < player_state_table.perk_counts[perk_id_evil_eyes])) {
@@ -4770,7 +4774,7 @@ void perks_update_effects(void)
     if (iVar2 != -1) {
       iVar4 = perk_count_get(perk_id_doctor);
       if (iVar4 != 0) {
-        DAT_00487268 = iVar2;
+        perk_doctor_target_creature_id = iVar2;
       }
       iVar4 = perk_count_get(perk_id_pyrokinetic);
       if (iVar4 != 0) {
@@ -4822,8 +4826,9 @@ void perks_update_effects(void)
   if (iVar2 == 0) {
     player_state_table.evil_eyes_target_creature = -1;
   }
-  if (((_DAT_004aaf1c < 0.0) || (_DAT_004aaf1c = _DAT_004aaf1c - frame_dt, _DAT_004aaf1c < 0.0)) &&
-     (0 < player_state_table.perk_counts[perk_id_jinxed])) {
+  if (((perk_jinxed_proc_timer_s < 0.0) ||
+      (perk_jinxed_proc_timer_s = perk_jinxed_proc_timer_s - frame_dt,
+      perk_jinxed_proc_timer_s < 0.0)) && (0 < player_state_table.perk_counts[perk_id_jinxed])) {
     iVar2 = crt_rand();
     if (iVar2 % 10 == 3) {
       player_state_table.health = player_state_table.health - 5.0;
@@ -4831,7 +4836,7 @@ void perks_update_effects(void)
       fx_queue_add_random(&player_state_table.pos_x);
     }
     iVar2 = crt_rand();
-    _DAT_004aaf1c = (float)(iVar2 % 0x14) * 0.1 + _DAT_004aaf1c + 2.0;
+    perk_jinxed_proc_timer_s = (float)(iVar2 % 0x14) * 0.1 + perk_jinxed_proc_timer_s + 2.0;
     if (_bonus_freeze_timer <= 0.0) {
       iVar2 = crt_rand();
       render_overlay_player_index = 0;
@@ -4879,7 +4884,7 @@ LAB_00407104:
     iVar2 = quest_spawn_table_empty();
     if ((char)iVar2 == '\0') goto LAB_00407104;
   }
-  DAT_00487244 = DAT_00487244 + frame_dt_ms;
+  quest_stage_banner_timer_ms = quest_stage_banner_timer_ms + frame_dt_ms;
 LAB_00407129:
   quest_spawn_timeline_update();
   if (demo_mode_active == '\0') {
@@ -4934,6 +4939,7 @@ LAB_00407129:
 
 /* rush_mode_update @ 004072b0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* rush mode update: spawns edge waves and handles demo exit */
 
 void rush_mode_update(void)
@@ -4988,16 +4994,16 @@ void rush_mode_update(void)
       else {
         local_8 = 0.0;
       }
-      local_20 = (float)terrain_texture_width + 64.0;
+      local_20 = (float)_terrain_texture_width + 64.0;
       fVar2 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                             (float10)0.001);
-      local_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
+      local_1c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_20,&local_10,2);
       local_18 = -64.0;
       fVar2 = (float10)fsin((float10)(int)highscore_active_record.survival_elapsed_ms *
                             (float10)0.001);
       (&creature_pool)[iVar1].ai_mode = 8;
-      local_14 = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
+      local_14 = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_18,&local_10,3);
       (&creature_pool)[iVar1].ai_mode = 8;
       (&creature_pool)[iVar1].flags = (&creature_pool)[iVar1].flags | 0x80;
@@ -5269,6 +5275,7 @@ LAB_00407611:
 
 /* survival_update @ 00407cd0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* main survival mode update: timers, scripted spawns, and enemy wave spawning */
 
 void survival_update(void)
@@ -5318,7 +5325,7 @@ void survival_update(void)
        (survival_reward_handout_enabled != '\0')) {
       if (player_state_table.weapon_id == 1) {
         weapon_assign_player(0,0x18);
-        DAT_00486fb8 = 0x18;
+        survival_reward_weapon_guard_id = 0x18;
       }
       survival_reward_handout_enabled = '\0';
       survival_reward_damage_seen = '\x01';
@@ -5334,7 +5341,7 @@ void survival_update(void)
              (player_state_table.pos_y - local_44) * (player_state_table.pos_y - local_44)) < 16.0
         && (player_state_table.health < 15.0)))) {
       weapon_assign_player(0,0x19);
-      DAT_00486fb8 = 0x19;
+      survival_reward_weapon_guard_id = 0x19;
       survival_reward_fire_seen = '\x01';
       survival_reward_handout_enabled = '\0';
     }
@@ -5486,8 +5493,8 @@ joined_r0x004082fb:
     iVar5 = iVar5 + uVar6 * 2;
     do {
       uVar2 = crt_rand();
-      iVar3 = terrain_texture_height;
-      iVar4 = terrain_texture_width;
+      iVar3 = _terrain_texture_height;
+      iVar4 = _terrain_texture_width;
       switch(uVar2 & 3) {
       case 0:
         iVar3 = crt_rand();
@@ -5501,7 +5508,7 @@ joined_r0x004082fb:
         local_48 = (float)(iVar3 % iVar4);
         pfVar7 = &local_38;
         local_38 = (float)(int)local_48;
-        local_34 = (float)terrain_texture_height + 40.0;
+        local_34 = (float)_terrain_texture_height + 40.0;
         break;
       case 2:
         iVar4 = crt_rand();
@@ -5515,7 +5522,7 @@ joined_r0x004082fb:
         local_48 = (float)(iVar4 % iVar3);
         pfVar7 = &local_28;
         local_24 = (float)(int)local_48;
-        local_28 = (float)terrain_texture_width + 40.0;
+        local_28 = (float)_terrain_texture_width + 40.0;
         break;
       default:
         goto switchD_00408344_default;
@@ -5530,8 +5537,8 @@ switchD_00408344_default:
   }
   survival_spawn_cooldown = survival_spawn_cooldown + iVar5;
   uVar6 = crt_rand();
-  iVar4 = terrain_texture_height;
-  iVar5 = terrain_texture_width;
+  iVar4 = _terrain_texture_height;
+  iVar5 = _terrain_texture_width;
   switch(uVar6 & 3) {
   case 0:
     iVar4 = crt_rand();
@@ -5545,7 +5552,7 @@ switchD_00408344_default:
     local_48 = (float)(iVar4 % iVar5);
     pfVar7 = &local_18;
     local_18 = (float)(int)local_48;
-    local_14 = (float)terrain_texture_height + 40.0;
+    local_14 = (float)_terrain_texture_height + 40.0;
     break;
   case 2:
     iVar5 = crt_rand();
@@ -5559,7 +5566,7 @@ switchD_00408344_default:
     local_48 = (float)(iVar5 % iVar4);
     pfVar7 = &local_8;
     local_4 = (float)(int)local_48;
-    local_8 = (float)terrain_texture_width + 40.0;
+    local_8 = (float)_terrain_texture_width + 40.0;
     break;
   default:
     goto joined_r0x004082fb;
@@ -5675,7 +5682,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     fStack_24 = 10.0;
     ui_button_update(&fStack_24,&ui_button_table_c);
     if (ui_button_table_c.activated != '\0') {
-      ui_sign_crimson_update_disabled = 0;
+      ui_sign_crimson._pad0[0] = '\0';
       game_state_pending = 1;
       render_pass_mode = 0;
       ui_transition_direction = 0;
@@ -5694,7 +5701,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     afStack_20[0] = 90.0;
     ui_button_update(&fStack_24,&ui_button_table_b);
     if (ui_button_table_c.activated != '\0') {
-      ui_sign_crimson_update_disabled = 0;
+      ui_sign_crimson._pad0[0] = '\0';
       game_state_pending = 1;
       render_pass_mode = 0;
       ui_transition_direction = 0;
@@ -6210,13 +6217,13 @@ LAB_004097e4:
   if (-1.0 < _camera_offset_y) {
     _camera_offset_y = -1.0;
   }
-  if (_camera_offset_x < (float)(config_blob.screen_width - terrain_texture_width)) {
-    _camera_offset_x = (float)(config_blob.screen_width - terrain_texture_width);
+  if (_camera_offset_x < (float)(config_blob.screen_width - _terrain_texture_width)) {
+    _camera_offset_x = (float)(config_blob.screen_width - _terrain_texture_width);
   }
-  if ((float)(config_blob.screen_height - terrain_texture_height) <= _camera_offset_y) {
+  if ((float)(config_blob.screen_height - _terrain_texture_height) <= _camera_offset_y) {
     return;
   }
-  _camera_offset_y = (float)(config_blob.screen_height - terrain_texture_height);
+  _camera_offset_y = (float)(config_blob.screen_height - _terrain_texture_height);
   return;
 }
 
@@ -6263,7 +6270,9 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_REFLEX_BOOST) {
     if (_bonus_reflex_boost_timer <= 0.0) {
-      FUN_0041a810(DAT_00485484,DAT_0048548c,&bonus_reflex_boost_timer,0);
+      bonus_hud_slot_activate
+                (bonus_label_reflex_boost,bonus_icon_reflex_boost,(float *)&bonus_reflex_boost_timer
+                 ,(float *)0x0);
     }
     _bonus_reflex_boost_timer =
          (float)(bonus_entry->time).amount * local_10[0] + _bonus_reflex_boost_timer;
@@ -6301,7 +6310,9 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_WEAPON_POWER_UP) {
     if (_bonus_weapon_power_up_timer <= 0.0) {
-      FUN_0041a810(DAT_00485420,DAT_00485428,&bonus_weapon_power_up_timer,0);
+      bonus_hud_slot_activate
+                (bonus_label_weapon_power_up,bonus_icon_weapon_power_up,
+                 (float *)&bonus_weapon_power_up_timer,(float *)0x0);
     }
     _bonus_weapon_power_up_timer =
          (float)(bonus_entry->time).amount * local_10[0] + _bonus_weapon_power_up_timer;
@@ -6312,7 +6323,9 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_SPEED) {
     if ((player_state_table.speed_bonus_timer <= 0.0) && (player2_speed_bonus_timer <= 0.0)) {
-      FUN_0041a810(DAT_004854d4,DAT_004854dc,0x490bc4,&player2_speed_bonus_timer);
+      bonus_hud_slot_activate
+                (bonus_label_speed,bonus_icon_speed,&player_state_table.speed_bonus_timer,
+                 &player2_speed_bonus_timer);
     }
     (&player_state_table)[player_index].speed_bonus_timer =
          (float)(bonus_entry->time).amount * local_10[0] +
@@ -6320,7 +6333,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_FREEZE) {
     if (_bonus_freeze_timer <= 0.0) {
-      FUN_0041a810(DAT_004854ac,DAT_004854b4,&bonus_freeze_timer,0);
+      bonus_hud_slot_activate
+                (bonus_label_freeze,bonus_icon_freeze,(float *)&bonus_freeze_timer,(float *)0x0);
     }
     pfVar8 = &creature_pool.pos_x;
     _bonus_freeze_timer = (float)(bonus_entry->time).amount * local_10[0] + _bonus_freeze_timer;
@@ -6363,7 +6377,9 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_SHIELD) {
     if ((player_state_table.shield_timer <= 0.0) && (player2_shield_timer <= 0.0)) {
-      FUN_0041a810(DAT_00485498,DAT_004854a0,0x490bc8,&player2_shield_timer);
+      bonus_hud_slot_activate
+                (bonus_label_shield,bonus_icon_shield,&player_state_table.shield_timer,
+                 &player2_shield_timer);
     }
     (&player_state_table)[player_index].shield_timer =
          (float)(bonus_entry->time).amount * local_10[0] +
@@ -6408,7 +6424,9 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_FIRE_BULLETS) {
     if ((player_state_table.fire_bullets_timer <= 0.0) && (player2_fire_bullets_timer <= 0.0)) {
-      FUN_0041a810(DAT_004854e8,DAT_004854f0,0x490bcc,&player2_fire_bullets_timer);
+      bonus_hud_slot_activate
+                (bonus_label_fire_bullets,bonus_icon_fire_bullets,
+                 &player_state_table.fire_bullets_timer,&player2_fire_bullets_timer);
     }
     (&player_state_table)[player_index].fire_bullets_timer =
          local_10[0] * 5.0 + (&player_state_table)[player_index].fire_bullets_timer;
@@ -6419,13 +6437,17 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_ENERGIZER) {
     if (_bonus_energizer_timer <= 0.0) {
-      FUN_0041a810(DAT_004853f8,DAT_00485400,&bonus_energizer_timer,0);
+      bonus_hud_slot_activate
+                (bonus_label_energizer,bonus_icon_energizer,(float *)&bonus_energizer_timer,
+                 (float *)0x0);
     }
     _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
   }
   else if (bVar2 == BONUS_ID_DOUBLE_EXPERIENCE) {
     if (_bonus_double_xp_timer <= 0.0) {
-      FUN_0041a810(DAT_00485448,DAT_00485450,&bonus_double_xp_timer,0);
+      bonus_hud_slot_activate
+                (bonus_label_double_experience,bonus_icon_double_experience,
+                 (float *)&bonus_double_xp_timer,(float *)0x0);
     }
     _bonus_double_xp_timer = local_10[0] * 6.0 + _bonus_double_xp_timer;
   }
@@ -6690,7 +6712,7 @@ void ui_render_aim_indicators(void)
            (config_blob.reserved0[render_overlay_player_index + 4] != '\0')) {
           (*grim_interface_ptr->vtable->grim_set_rotation)
                     ((&player_state_table)[render_overlay_player_index].heading);
-          (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7d8,0);
+          (*grim_interface_ptr->vtable->grim_bind_texture)(world_arrow_marker_texture,0);
           (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
           if (config_blob.reserved0._20_4_ == 2) {
             if (render_overlay_player_index == 0) {
@@ -6934,20 +6956,20 @@ LAB_0040ad8e:
     else {
       iVar2 = frame_dt_ms * 3;
     }
-    perk_prompt_pulse = perk_prompt_pulse + iVar2 * 2;
-    if (perk_prompt_pulse < 0) {
-      perk_prompt_pulse = 0;
+    _perk_prompt_pulse = _perk_prompt_pulse + iVar2 * 2;
+    if (_perk_prompt_pulse < 0) {
+      _perk_prompt_pulse = 0;
     }
-    else if (1000 < perk_prompt_pulse) {
-      perk_prompt_pulse = 1000;
+    else if (1000 < _perk_prompt_pulse) {
+      _perk_prompt_pulse = 1000;
     }
   }
   if (((((demo_mode_active == '\0') && (game_paused_flag == '\0')) && (mouse_button_down == '\0'))
       && ((config_blob.reserved0._24_4_ != 2 && (0 < perk_pending_count)))) &&
      ((0.0 < player_state_table.health ||
       ((config_blob.reserved0._20_4_ == 2 && (0.0 < player2_health)))))) {
-    local_8 = ui_mouse_x - _perk_prompt_origin_x;
-    fStack_4 = ui_mouse_y - _perk_prompt_origin_y;
+    local_8 = ui_mouse_x - perk_prompt_origin_x;
+    fStack_4 = ui_mouse_y - perk_prompt_origin_y;
     if (game_state_pending != 6) {
       iVar2 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_pick_perk);
       if ((((char)iVar2 == '\0') &&
@@ -6955,7 +6977,7 @@ LAB_0040ad8e:
          && (iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x4e), (char)iVar2 == '\0')
          ) {
         if (((local_8 <= perk_prompt_bounds_min_x) || (fStack_4 <= perk_prompt_bounds_min_y)) ||
-           ((_perk_prompt_bounds_max_x <= local_8 || (_perk_prompt_bounds_max_y <= fStack_4)))) {
+           ((perk_prompt_bounds_max_x <= local_8 || (perk_prompt_bounds_max_y <= fStack_4)))) {
           perk_prompt_hover_active = '\0';
         }
         else {
@@ -6965,7 +6987,7 @@ LAB_0040ad8e:
         }
       }
       else {
-        perk_prompt_pulse = 1000;
+        _perk_prompt_pulse = 1000;
 joined_r0x0040b1bc:
         if (perk_choices_dirty != '\0') {
           perks_generate_choices();
@@ -7019,22 +7041,22 @@ LAB_0040b2b2:
         goto LAB_0040b3bd;
       }
 LAB_0040b35f:
-      DAT_00480898 = DAT_00480898 + frame_dt_ms;
+      demo_trial_overlay_alpha_ms = demo_trial_overlay_alpha_ms + frame_dt_ms;
       local_8 = (float)config_blob.screen_width * 0.5 - 256.0;
       fStack_4 = (float)config_blob.screen_height * 0.5 - 128.0;
       demo_trial_overlay_render(&local_8,1.0);
-      DAT_00480850 = 1;
+      demo_trial_overlay_active = 1;
     }
     else {
 LAB_0040b3bd:
-      DAT_00480898 = DAT_00480898 - frame_dt_ms;
-      DAT_00480850 = 0;
+      demo_trial_overlay_alpha_ms = demo_trial_overlay_alpha_ms - frame_dt_ms;
+      demo_trial_overlay_active = 0;
     }
-    if (DAT_00480898 < 0) {
-      DAT_00480898 = 0;
+    if (demo_trial_overlay_alpha_ms < 0) {
+      demo_trial_overlay_alpha_ms = 0;
     }
-    else if (1000 < DAT_00480898) {
-      DAT_00480898 = 1000;
+    else if (1000 < demo_trial_overlay_alpha_ms) {
+      demo_trial_overlay_alpha_ms = 1000;
     }
   }
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x3b);
@@ -7057,26 +7079,26 @@ LAB_0040b3bd:
 LAB_0040b494:
     game_paused_flag = '\0';
 LAB_0040b49a:
-    DAT_00487284 = DAT_00487284 + frame_dt_ms * -4;
+    pause_keybind_help_alpha_ms = pause_keybind_help_alpha_ms + frame_dt_ms * -4;
   }
   else {
 LAB_0040b4bc:
     if (game_paused_flag == '\0') goto LAB_0040b49a;
-    DAT_00487284 = DAT_00487284 + frame_dt_ms * 2;
+    pause_keybind_help_alpha_ms = pause_keybind_help_alpha_ms + frame_dt_ms * 2;
   }
-  if (DAT_00487284 < 0) {
-    DAT_00487284 = 0;
+  if (pause_keybind_help_alpha_ms < 0) {
+    pause_keybind_help_alpha_ms = 0;
   }
   else {
-    if (DAT_00487284 < 0x3e9) {
-      if (DAT_00487284 < 1) goto LAB_0040b52d;
+    if (pause_keybind_help_alpha_ms < 0x3e9) {
+      if (pause_keybind_help_alpha_ms < 1) goto LAB_0040b52d;
     }
     else {
-      DAT_00487284 = 1000;
+      pause_keybind_help_alpha_ms = 1000;
     }
     local_8 = (float)config_blob.screen_width * 0.5 - 256.0;
     fStack_4 = (float)config_blob.screen_height * 0.5 - 128.0;
-    ui_render_keybind_help(&local_8,(float)DAT_00487284 * 0.001);
+    ui_render_keybind_help(&local_8,(float)pause_keybind_help_alpha_ms * 0.001);
   }
 LAB_0040b52d:
   iVar2 = game_is_full_version();
@@ -7112,11 +7134,11 @@ LAB_0040b5b4:
 
 
 
-/* FUN_0040b5d0 @ 0040b5d0 */
+/* plugin_runtime_clear_pools @ 0040b5d0 */
 
-/* [binja] int32_t* sub_40b5d0() */
+/* clears bonus/creature/projectile/player runtime pools before entering plugin gameplay */
 
-int * FUN_0040b5d0(void)
+void plugin_runtime_clear_pools(void)
 
 {
   bonus_entry_t *pbVar1;
@@ -7145,14 +7167,16 @@ int * FUN_0040b5d0(void)
     *pfVar3 = -1.0;
     pfVar3 = pfVar3 + 0xd8;
   } while ((int)pfVar3 < 0x490f94);
-  return (int *)pfVar3;
+  return;
 }
 
 
 
-/* FUN_0040b630 @ 0040b630 */
+/* plugin_runtime_update_and_render @ 0040b630 */
 
-void FUN_0040b630(void)
+/* state 0x16 plugin frame loop: init/frame/shutdown callbacks, UI transitions, and cursor draw */
+
+void plugin_runtime_update_and_render(void)
 
 {
   uchar uVar1;
@@ -7170,7 +7194,7 @@ void FUN_0040b630(void)
     DAT_00471304 = '\0';
     DAT_004824d1 = '\0';
     sfx_mute_all(music_track_extra_0);
-    FUN_0040b5d0();
+    plugin_runtime_clear_pools();
     (*plugin_interface_ptr->vtable->Init)(unaff_EBX);
     (plugin_interface_ptr->parms).fields.onPause = '\0';
   }
@@ -7524,16 +7548,22 @@ void console_hotkey_update(void)
   }
   iVar2 = game_is_full_version();
   if ((char)iVar2 != '\0') {
-    _DAT_0048823c = &LAB_00447350;
+    ui_element_slot_02_main_menu_primary.on_activate = (_func_1 *)&LAB_00447350;
     shareware_offer_seen_latch = '\0';
   }
   if ((DAT_00486faa == '\0') && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
-    DAT_004875c4 = DAT_004875c4 + 60.0;
-    DAT_004875b8 = DAT_00488218;
-    DAT_004875bc = DAT_0048821c;
+    ui_element_slot_01_main_menu_aux.pos_y = ui_element_slot_01_main_menu_aux.pos_y + 60.0;
+    ui_element_slot_01_main_menu_aux._pad0[0xe] = ui_element_slot_02_main_menu_primary._pad0[0xe];
+    ui_element_slot_01_main_menu_aux._pad0[0xf] = ui_element_slot_02_main_menu_primary._pad0[0xf];
+    ui_element_slot_01_main_menu_aux._pad0[0x10] = ui_element_slot_02_main_menu_primary._pad0[0x10];
+    ui_element_slot_01_main_menu_aux._pad0[0x11] = ui_element_slot_02_main_menu_primary._pad0[0x11];
+    ui_element_slot_01_main_menu_aux._pad0[0x12] = ui_element_slot_02_main_menu_primary._pad0[0x12];
+    ui_element_slot_01_main_menu_aux._pad0[0x13] = ui_element_slot_02_main_menu_primary._pad0[0x13];
+    ui_element_slot_01_main_menu_aux._pad0[0x14] = ui_element_slot_02_main_menu_primary._pad0[0x14];
+    ui_element_slot_01_main_menu_aux._pad0[0x15] = ui_element_slot_02_main_menu_primary._pad0[0x15];
     DAT_00486faa = '\x01';
-    DAT_00488208 = 0;
-    _DAT_004875c0 = _DAT_004875c0 - 20.0;
+    ui_element_slot_02_main_menu_primary.active = '\0';
+    ui_element_slot_01_main_menu_aux.pos_x = ui_element_slot_01_main_menu_aux.pos_x - 20.0;
   }
   if ((audio_suspend_flag == '\0') &&
      (pcVar3 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(auStack_10,0x57),
@@ -7589,7 +7619,7 @@ void console_hotkey_update(void)
     } while (fp != (FILE *)0x0);
     (*grim_interface_ptr->vtable->grim_check_device)();
   }
-  if ((demo_mode_active == '\0') && (DAT_00480850 == '\0')) {
+  if ((demo_mode_active == '\0') && (demo_trial_overlay_active == '\0')) {
     game_status_blob.game_sequence_id = game_sequence_get();
     iVar2 = game_state_id;
     if ((console_open_flag == '\0') && ((render_pass_mode != '\0' && (game_state_id == 9)))) {
@@ -7618,7 +7648,7 @@ LAB_0040c4b7:
   frame_dt_ms = (int)lVar8;
   if (((console_open_flag == '\0') && (render_pass_mode != '\0')) &&
      ((game_state_id == 9 && (config_blob.reserved0._24_4_ != 8)))) {
-    DAT_0048718c = DAT_0048718c + frame_dt_ms;
+    time_played_ms = time_played_ms + frame_dt_ms;
   }
   if (DAT_0048702c == '\0') {
     screen_fade_alpha = screen_fade_alpha - (frame_dt + frame_dt);
@@ -7702,7 +7732,7 @@ LAB_0040c71b:
     ui_mouse_y = (float)(config_blob.screen_height + -1);
   }
   if ((game_state_id == 0x16) || (DAT_004824d1 != '\0')) {
-    FUN_0040b630();
+    plugin_runtime_update_and_render();
   }
   else if (game_state_id == 9) {
     if (demo_purchase_screen_active == '\0') {
@@ -7737,7 +7767,7 @@ LAB_0040c8a0:
       quest_failed_screen_update();
     }
     else if (game_state_id == 0x12) {
-      survival_gameplay_update_and_render();
+      typo_gameplay_update_and_render();
     }
     else if (game_state_id == 0x15) {
       game_update_victory_screen();
@@ -7817,7 +7847,7 @@ LAB_0040c8a0:
   iVar2 = game_is_full_version();
   if ((char)iVar2 == '\0') {
     if (demo_mode_active == '\0') {
-      FUN_0041df50();
+      demo_trial_time_limit_ms();
       (*grim_interface_ptr->vtable->grim_draw_rect_filled)
                 ((float *)&stack0xffffffac,(float)config_blob.screen_width,8.0);
       (*grim_interface_ptr->vtable->grim_draw_rect_filled)
@@ -8183,10 +8213,11 @@ void credits_screen_update(void)
     _DAT_00481190 = 0;
     crt_atexit(&DAT_0040df50);
   }
-  fStack_4 = _DAT_00489dfc + DAT_00489e20;
+  fStack_4 = ui_element_slot_09.pos_y + ui_element_slot_09.quad0[1];
   _credits_secret_button = menu_label_secret;
   fStack_c = fStack_4 + 40.0 + 10.0;
-  fStack_10 = ((DAT_00489e1c + _DAT_00489df8 + 300.0 + _DAT_00489de8 + 48.0) - 110.0) - 40.0;
+  fStack_10 = ((ui_element_slot_09.quad0[0] + ui_element_slot_09.pos_x + 300.0 +
+                (float)ui_element_slot_09._pad0._6_4_ + 48.0) - 110.0) - 40.0;
   if (ui_screen_phase == 0) {
     ui_screen_phase = 1;
     credits_build_lines();
@@ -8345,18 +8376,18 @@ LAB_0040d970:
   if (credits_back_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 4;
-    FUN_00446140();
+    ui_callback_noop();
   }
   if (credits_secret_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 0x1a;
-    FUN_00446140();
+    ui_callback_noop();
   }
   iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(1);
   if ((char)iVar3 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 4;
-    FUN_00446140();
+    ui_callback_noop();
   }
   return;
 }
@@ -9339,7 +9370,7 @@ LAB_0040f6cc:
     iVar11 = iVar11 + 1;
   } while (iVar3 < 0x24);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_004827b0,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[2].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   fVar15 = 0.0;
   fVar14 = 0.0;
@@ -9511,22 +9542,22 @@ LAB_0040fae2:
 
 
 
-/* FUN_0040ff50 @ 0040ff50 */
+/* time_format_mm_ss @ 0040ff50 */
 
-/* [binja] int32_t sub_40ff50(int32_t arg1) */
+/* formats total seconds as m:ss into a static buffer and returns it */
 
-int __cdecl FUN_0040ff50(int arg1)
+char * __cdecl time_format_mm_ss(int total_seconds)
 
 {
   int iVar1;
   
-  iVar1 = arg1 % 0x3c;
+  iVar1 = total_seconds % 0x3c;
   if (iVar1 < 10) {
-    crt_sprintf(&DAT_00482624,s__d_0_d_00473150,arg1 / 0x3c,iVar1);
-    return 0x482624;
+    crt_sprintf(&time_format_mm_ss_buffer,s__d_0_d_00473150,total_seconds / 0x3c,iVar1);
+    return &time_format_mm_ss_buffer;
   }
-  crt_sprintf(&DAT_00482624,s__d__d_00473148,arg1 / 0x3c,iVar1);
-  return 0x482624;
+  crt_sprintf(&time_format_mm_ss_buffer,s__d__d_00473148,total_seconds / 0x3c,iVar1);
+  return &time_format_mm_ss_buffer;
 }
 
 
@@ -9595,13 +9626,13 @@ void game_over_screen_update(void)
   gameplay_render_world();
   ui_elements_update_and_render();
   perk_prompt_update_and_render();
-  local_4 = _DAT_0048cc64 + DAT_0048cc88;
-  local_10 = DAT_0048cc84 + _DAT_0048cc60 + 180.0;
+  local_4 = ui_element_slot_30.pos_y + ui_element_slot_30.quad0[1];
+  local_10 = ui_element_slot_30.quad0[0] + ui_element_slot_30.pos_x + 180.0;
   fVar2 = local_4 + 40.0;
   w = 0x40;
-  local_18 = (_DAT_0048cc50 + local_10 + 44.0) - 10.0;
+  local_18 = ((float)ui_element_slot_30._pad0._6_4_ + local_10 + 44.0) - 10.0;
   y = 0x100;
-  iVar3 = DAT_0048f7f8;
+  iVar3 = ui_text_reaper_texture;
   local_14 = fVar2;
   local_c = fVar2;
   local_8 = local_18;
@@ -9841,7 +9872,7 @@ LAB_004103c2:
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
   }
 LAB_00410782:
   ui_cursor_render();
@@ -9881,13 +9912,13 @@ void quest_failed_screen_update(void)
   gameplay_render_world();
   ui_elements_update_and_render();
   perk_prompt_update_and_render();
-  local_4 = _DAT_0048dbdc + DAT_0048dc00;
-  local_10 = DAT_0048dbfc + _DAT_0048dbd8 + 180.0;
+  local_4 = ui_element_slot_35.pos_y + ui_element_slot_35.quad0[1];
+  local_10 = ui_element_slot_35.quad0[0] + ui_element_slot_35.pos_x + 180.0;
   fVar1 = local_4 + 40.0;
   w = 0x40;
-  local_18 = (_DAT_0048dbc8 + local_10 + 44.0) - 10.0;
+  local_18 = ((float)ui_element_slot_35._pad0._6_4_ + local_10 + 44.0) - 10.0;
   y = 0x100;
-  iVar2 = DAT_0048f7f8;
+  iVar2 = ui_text_reaper_texture;
   local_14 = fVar1;
   local_c = fVar1;
   local_8 = local_18;
@@ -10001,7 +10032,7 @@ void quest_failed_screen_update(void)
     quest_fail_retry_count = 0;
     ui_transition_direction = '\0';
     game_state_pending = 0xb;
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
@@ -10015,7 +10046,7 @@ void quest_failed_screen_update(void)
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
   }
 LAB_00410cc1:
   ui_cursor_render();
@@ -10086,13 +10117,13 @@ void quest_results_screen_update(void)
     _DAT_004826f4 = 0x60;
     crt_atexit(&DAT_00412060);
   }
-  local_4 = _DAT_0048dbdc + DAT_0048dc00;
+  local_4 = ui_element_slot_35.pos_y + ui_element_slot_35.quad0[1];
   w = 0x40;
   y = 0x100;
-  local_18 = DAT_0048dbfc + _DAT_0048dbd8 + 180.0;
+  local_18 = ui_element_slot_35.quad0[0] + ui_element_slot_35.pos_x + 180.0;
   local_14 = local_4 + 40.0;
-  local_10 = local_18 + _DAT_0048dbc8 + 40.0;
-  iVar4 = DAT_0048f804;
+  local_10 = local_18 + (float)ui_element_slot_35._pad0._6_4_ + 40.0;
+  iVar4 = ui_text_well_done_texture;
   local_c = local_14;
   lVar14 = __ftol();
   iVar8 = (int)lVar14;
@@ -10110,77 +10141,77 @@ void quest_results_screen_update(void)
   else {
     if (ui_screen_phase == -2) {
       iVar4 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
-      DAT_00482700 = (&quest_selected_meta)[iVar4].unlock_weapon_id;
-      DAT_00482704 = (&quest_selected_meta)[iVar4].unlock_perk_id;
+      quest_results_unlock_weapon_id = (&quest_selected_meta)[iVar4].unlock_weapon_id;
+      quest_results_unlock_perk_id = (&quest_selected_meta)[iVar4].unlock_perk_id;
       lVar14 = __ftol();
       local_18 = (float)lVar14;
       player_state_table.health = (float)(int)local_18;
       lVar14 = __ftol();
       iVar4 = (int)lVar14;
       if (config_blob.reserved0._20_4_ == 2) {
-        DAT_00482600 = iVar4;
+        quest_results_health_bonus_ms = iVar4;
         lVar14 = __ftol();
         iVar4 = iVar4 + (int)lVar14;
       }
-      DAT_0048270c = (quest_spawn_timeline + perk_pending_count * -1000) - iVar4;
-      highscore_active_record.survival_elapsed_ms = DAT_0048270c;
-      if (DAT_0048270c == 0) {
+      quest_results_final_time_ms = (quest_spawn_timeline + perk_pending_count * -1000) - iVar4;
+      highscore_active_record.survival_elapsed_ms = quest_results_final_time_ms;
+      if (quest_results_final_time_ms == 0) {
         highscore_active_record.survival_elapsed_ms = 1;
       }
       quest_results_anim_timer = 0;
-      DAT_00482600 = iVar4;
+      quest_results_health_bonus_ms = iVar4;
       highscore_record_init();
-      DAT_00482724 = 700;
+      quest_results_reveal_step_timer_ms = 700;
       ui_screen_phase = ui_screen_phase + 1;
-      DAT_00482710 = 0;
-      DAT_00482714 = 0;
-      DAT_00482718 = 0;
+      quest_results_reveal_base_time_ms = 0;
+      quest_results_reveal_health_bonus_ms = 0;
+      quest_results_reveal_perk_bonus_s = 0;
       quest_results_step = 0;
-      DAT_00482720 = 0;
+      quest_results_reveal_total_time_ms = 0;
     }
     if (ui_screen_phase == -1) {
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
       local_c = local_c + 40.0;
-      DAT_00482724 = DAT_00482724 - frame_dt_ms;
-      if (DAT_00482724 < 1) {
+      quest_results_reveal_step_timer_ms = quest_results_reveal_step_timer_ms - frame_dt_ms;
+      if (quest_results_reveal_step_timer_ms < 1) {
         if (quest_results_step < 3) {
           if (quest_results_step == 0) {
-            DAT_00482710 = DAT_00482710 + 2000;
-            DAT_00482724 = 0x28;
+            quest_results_reveal_base_time_ms = quest_results_reveal_base_time_ms + 2000;
+            quest_results_reveal_step_timer_ms = 0x28;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482710;
-            if (quest_spawn_timeline <= (int)DAT_00482710) {
+            quest_results_reveal_total_time_ms = quest_results_reveal_base_time_ms;
+            if (quest_spawn_timeline <= quest_results_reveal_base_time_ms) {
               quest_results_step = quest_results_step + 1;
-              DAT_00482710 = quest_spawn_timeline;
-              DAT_00482720 = DAT_00482710;
+              quest_results_reveal_base_time_ms = quest_spawn_timeline;
+              quest_results_reveal_total_time_ms = quest_results_reveal_base_time_ms;
             }
           }
           else if (quest_results_step == 1) {
-            DAT_00482714 = DAT_00482714 + 1000;
-            DAT_00482724 = 0x96;
+            quest_results_reveal_health_bonus_ms = quest_results_reveal_health_bonus_ms + 1000;
+            quest_results_reveal_step_timer_ms = 0x96;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 - 1000;
-            if (DAT_00482600 <= DAT_00482714) {
-              DAT_00482714 = DAT_00482600;
+            quest_results_reveal_total_time_ms = quest_results_reveal_total_time_ms + -1000;
+            if (quest_results_health_bonus_ms <= quest_results_reveal_health_bonus_ms) {
+              quest_results_reveal_health_bonus_ms = quest_results_health_bonus_ms;
               quest_results_step = quest_results_step + 1;
             }
           }
           else if (quest_results_step == 2) {
-            DAT_00482718 = DAT_00482718 + 1;
-            DAT_00482724 = 300;
+            quest_results_reveal_perk_bonus_s = quest_results_reveal_perk_bonus_s + 1;
+            quest_results_reveal_step_timer_ms = 300;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 - 1000;
-            if (perk_pending_count <= DAT_00482718) {
-              DAT_00482718 = perk_pending_count;
+            quest_results_reveal_total_time_ms = quest_results_reveal_total_time_ms + -1000;
+            if (perk_pending_count <= quest_results_reveal_perk_bonus_s) {
+              quest_results_reveal_perk_bonus_s = perk_pending_count;
               quest_results_step = quest_results_step + 1;
-              DAT_00482724 = 1000;
-              highscore_active_record.survival_elapsed_ms = DAT_0048270c;
-              DAT_00482720 = DAT_0048270c;
+              quest_results_reveal_step_timer_ms = 1000;
+              highscore_active_record.survival_elapsed_ms = quest_results_final_time_ms;
+              quest_results_reveal_total_time_ms = quest_results_final_time_ms;
             }
           }
         }
         else if (quest_results_step == 3) {
-          DAT_00482724 = 0x32;
+          quest_results_reveal_step_timer_ms = 0x32;
           quest_results_anim_timer = quest_results_anim_timer + 1;
         }
       }
@@ -10205,9 +10236,9 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Base_Time__004732f4);
       pIVar2 = grim_interface_ptr->vtable;
-      iVar4 = FUN_0040ff50((int)DAT_00482710 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_base_time_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
-                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,iVar4);
+                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
       if (quest_results_step == 1) {
         (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar3);
@@ -10221,9 +10252,9 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Life_Bonus__004732e8);
       pIVar2 = grim_interface_ptr->vtable;
-      iVar4 = FUN_0040ff50(DAT_00482714 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_health_bonus_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
-                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,iVar4);
+                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
       if (quest_results_step == 2) {
         (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar3);
@@ -10237,9 +10268,9 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Unpicked_Perk_Bonus__004732d0);
       pIVar2 = grim_interface_ptr->vtable;
-      iVar4 = FUN_0040ff50(DAT_00482718);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_perk_bonus_s);
       (*pIVar2->grim_draw_text_small_fmt)
-                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,iVar4);
+                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar3);
       local_18 = local_10 - 4.0;
@@ -10249,9 +10280,9 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Final_Time__004732c4);
       pIVar2 = grim_interface_ptr->vtable;
-      iVar4 = FUN_0040ff50((int)DAT_00482720 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_total_time_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
-                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,iVar4);
+                (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
       (*grim_interface_ptr->vtable->grim_flush_input)();
       (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
@@ -10439,7 +10470,7 @@ LAB_00411906:
   local_4 = local_c + 16.0;
   ui_text_input_render(&local_8,6.652423e-39,a);
   local_c = local_c + 78.0 + 6.0;
-  if (DAT_00482700 != 0) {
+  if (quest_results_unlock_weapon_id != 0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,local_10,local_c + 1.0,s_Weapon_unlocked__00473294);
@@ -10453,7 +10484,7 @@ LAB_00411906:
     ;
     local_c = local_c + 16.0;
   }
-  if (DAT_00482704 != perk_id_antiperk) {
+  if (quest_results_unlock_perk_id != perk_id_antiperk) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,local_10,local_c + 1.0,s_Perk_unlocked__00473284);
@@ -10582,7 +10613,7 @@ LAB_00411906:
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
   }
 LAB_00412007:
   perk_prompt_update_and_render();
@@ -10592,12 +10623,13 @@ LAB_00412007:
 
 
 
-/* FUN_004120b0 @ 004120b0 */
+/* gameplay_run_state_init @ 004120b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_4120b0() */
+/* initializes highscore_active_record defaults and resets run/quest runtime counters before
+   gameplay */
 
-int FUN_004120b0(void)
+int gameplay_run_state_init(void)
 
 {
   char cVar1;
@@ -10656,7 +10688,7 @@ int FUN_004120b0(void)
   DAT_00486faa = 0;
   quest_unlock_index = 0;
   creature_active_count = 0;
-  DAT_0048718c = 0;
+  time_played_ms = 0;
   quest_transition_timer_ms = -1;
   _quest_stage_major = 1;
   _quest_stage_minor = 1;
@@ -10680,11 +10712,11 @@ int quest_meta_init(void)
 
 
 
-/* FUN_004121f0 @ 004121f0 */
+/* quest_meta_register_atexit @ 004121f0 */
 
-/* [binja] int32_t sub_4121f0() */
+/* registers quest meta table destructor callback with crt_atexit */
 
-int FUN_004121f0(void)
+int quest_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -10761,51 +10793,44 @@ int highscore_init_sentinels(void)
 
 
 
-/* FUN_004123d0 @ 004123d0 */
+/* bonus_meta_table_init @ 004123d0 */
 
-/* [binja] int32_t sub_4123d0() */
+/* constructs bonus_meta_table entries (0x0f records, stride 0x14) */
 
-int FUN_004123d0(void)
+int bonus_meta_table_init(void)
 
 {
   int extraout_EAX;
   
-  crt_ehvec_ctor(&bonus_meta_table,0x14,0xf,&LAB_004123f0,FUN_00412410);
+  crt_ehvec_ctor(&bonus_meta_table,0x14,0xf,&LAB_004123f0,bonus_meta_entry_release);
   return extraout_EAX;
 }
 
 
 
-/* FUN_00412410 @ 00412410 */
+/* bonus_meta_entry_release @ 00412410 */
 
-/* [binja] void* __fastcall sub_412410(int32_t* arg1) */
+/* frees heap-owned text pointers in one bonus_meta_table entry */
 
-void * __fastcall FUN_00412410(int *arg1)
+void __fastcall bonus_meta_entry_release(int *entry)
 
 {
-  void *extraout_EAX;
-  void *extraout_EAX_00;
-  void *pvVar1;
-  
-  pvVar1 = (void *)0x0;
-  if ((void *)*arg1 != (void *)0x0) {
-    crt_free((void *)*arg1);
-    pvVar1 = extraout_EAX;
+  if ((void *)*entry != (void *)0x0) {
+    crt_free((void *)*entry);
   }
-  if ((void *)arg1[1] != (void *)0x0) {
-    crt_free((void *)arg1[1]);
-    pvVar1 = extraout_EAX_00;
+  if ((void *)entry[1] != (void *)0x0) {
+    crt_free((void *)entry[1]);
   }
-  return pvVar1;
+  return;
 }
 
 
 
-/* FUN_00412440 @ 00412440 */
+/* bonus_meta_register_atexit @ 00412440 */
 
-/* [binja] int32_t sub_412440() */
+/* registers bonus meta table destructor callback with crt_atexit */
 
-int FUN_00412440(void)
+int bonus_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -10937,7 +10962,7 @@ void bonus_metadata_init(void)
   void *this_11;
   void *this_12;
   
-  DAT_004853e4 = strdup_malloc(s_Points_00473604);
+  bonus_label_points = strdup_malloc(s_Points_00473604);
   _DAT_004853e8 = wrap_text_to_width_alloc(this,s_You_gain_some_experience_points__004735e0,0x100);
   _DAT_004853ec = 0xc;
   _DAT_004853f4 = 500;
@@ -10950,10 +10975,10 @@ void bonus_metadata_init(void)
   _DAT_00485438 =
        wrap_text_to_width_alloc(this_01,s_An_amazing_explosion_of_ATOMIC_p_00473590,0x100);
   _DAT_0048543c = 1;
-  DAT_00485448 = strdup_malloc(s_Double_Experience_0047357c);
+  bonus_label_double_experience = strdup_malloc(s_Double_Experience_0047357c);
   _DAT_0048544c =
        wrap_text_to_width_alloc(this_02,s_Every_experience_point_you_get_i_00473534,0x100);
-  DAT_00485450 = 4;
+  bonus_icon_double_experience = 4;
   _DAT_00485470 = strdup_malloc(s_Fireblast_00473528);
   _DAT_00485474 = wrap_text_to_width_alloc(this_03,s_Fireballs_all_over_the_place__00473508,0x100);
   _DAT_00485478 = 2;
@@ -10961,39 +10986,39 @@ void bonus_metadata_init(void)
   _DAT_00485460 =
        wrap_text_to_width_alloc(this_04,s_Chain_of_shocks_shock_the_crowd__004734d8,0x100);
   _DAT_00485464 = 3;
-  DAT_00485484 = strdup_malloc(s_Reflex_Boost_004734c8);
+  bonus_label_reflex_boost = strdup_malloc(s_Reflex_Boost_004734c8);
   _DAT_00485488 =
        wrap_text_to_width_alloc(this_05,s_You_get_more_time_to_react_as_th_00473494,0x100);
-  DAT_0048548c = 5;
+  bonus_icon_reflex_boost = 5;
   _DAT_00485494 = 3;
-  DAT_00485498 = strdup_malloc(s_Shield_0047348c);
+  bonus_label_shield = strdup_malloc(s_Shield_0047348c);
   _DAT_0048549c =
        wrap_text_to_width_alloc(this_06,s_Force_field_protects_you_for_a_w_00473464,0x100);
-  DAT_004854a0 = 6;
+  bonus_icon_shield = 6;
   _DAT_004854a8 = 7;
-  DAT_004854ac = strdup_malloc(s_Freeze_0047345c);
+  bonus_label_freeze = strdup_malloc(s_Freeze_0047345c);
   _DAT_004854b0 = wrap_text_to_width_alloc(this_07,s_Monsters_are_frozen__00473444,0x100);
-  DAT_004854b4 = 8;
+  bonus_icon_freeze = 8;
   _DAT_004854bc = 5;
-  DAT_004854d4 = strdup_malloc(s_Speed_0047343c);
+  bonus_label_speed = strdup_malloc(s_Speed_0047343c);
   _DAT_004854d8 =
        wrap_text_to_width_alloc(this_08,s_Your_movement_speed_increases_fo_00473410,0x100);
-  DAT_004854dc = 9;
+  bonus_icon_speed = 9;
   _DAT_004854e4 = 8;
-  DAT_004853f8 = strdup_malloc(s_Energizer_00473404);
+  bonus_label_energizer = strdup_malloc(s_Energizer_00473404);
   _DAT_004853fc =
        wrap_text_to_width_alloc(this_09,s_Suddenly_monsters_run_away_from_y_004733c8,0x100);
-  DAT_00485400 = 10;
+  bonus_icon_energizer = 10;
   _DAT_00485408 = 8;
-  DAT_00485420 = strdup_malloc(s_Weapon_Power_Up_004733b8);
+  bonus_label_weapon_power_up = strdup_malloc(s_Weapon_Power_Up_004733b8);
   _DAT_00485424 =
        wrap_text_to_width_alloc(this_10,s_Your_firerate_and_load_time_incr_0047337c,0x100);
-  DAT_00485428 = 7;
+  bonus_icon_weapon_power_up = 7;
   _DAT_00485430 = 10;
-  DAT_004854e8 = strdup_malloc(s_Fire_Bullets_0047336c);
+  bonus_label_fire_bullets = strdup_malloc(s_Fire_Bullets_0047336c);
   _DAT_004854ec =
        wrap_text_to_width_alloc(this_11,s_For_few_seconds____make_them_cou_00473348,0x100);
-  DAT_004854f0 = 0xb;
+  bonus_icon_fire_bullets = 0xb;
   _DAT_004854f8 = 4;
   _DAT_004854c0 = strdup_malloc(s_MediKit_00473340);
   _DAT_004854c4 =
@@ -11328,7 +11353,7 @@ void gameplay_reset_state(void)
   } while ((int)pbVar2 < 0x48f78c);
   quest_spawn_timeline = 0;
   shock_chain_links_left = 0;
-  DAT_00486fb8 = 1;
+  survival_reward_weapon_guard_id = 1;
   creature_spawned_count = 0;
   survival_recent_death_count = 0;
   survival_reward_damage_seen = 0;
@@ -11344,72 +11369,77 @@ void gameplay_reset_state(void)
   camera_shake_pulses = 0;
   bonus_reset_availability();
   _DAT_00482940 = 6;
-  creature_type_table.texture_handle =
+  creature_type_table[0].texture_handle =
        (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_zombie_0047375c);
-  creature_type_table.sfx_bank_b[0] = sfx_zombie_attack_01;
-  creature_type_table.sfx_bank_b[1] = sfx_zombie_attack_02;
-  creature_type_table.sfx_bank_a[0] = sfx_zombie_die_01;
-  creature_type_table.sfx_bank_a[1] = sfx_zombie_die_02;
-  creature_type_table.field_0x20 = 1.0;
-  creature_type_table.anim_rate = 1.2;
-  creature_type_table.sfx_bank_a[2] = sfx_zombie_die_03;
-  creature_type_table.sfx_bank_a[3] = sfx_zombie_die_04;
-  creature_type_table.base_frame = 0x20;
-  creature_type_table.corpse_frame = 0;
-  _DAT_0048276c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_lizard_00473754);
-  _DAT_00482784 = sfx_lizard_attack_02;
-  _DAT_00482780 = sfx_lizard_attack_01;
-  _DAT_00482770 = sfx_lizard_die_01;
-  _DAT_00482778 = sfx_lizard_die_03;
-  _DAT_0048278c = 0x3f800000;
-  _DAT_004827a0 = 0x3fcccccd;
-  _DAT_00482774 = sfx_lizard_die_02;
-  _DAT_0048277c = sfx_lizard_die_04;
-  _DAT_004827ac = 1;
-  _DAT_004827a4 = 0x10;
-  _DAT_004827a8 = 3;
-  _DAT_004827f4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp1_00473748);
-  _DAT_00482808 = sfx_spider_attack_01;
-  _DAT_0048280c = sfx_spider_attack_02;
-  _DAT_00482814 = 0x3f800000;
-  _DAT_00482828 = 0x3fc00000;
-  _DAT_004827f8 = sfx_spider_die_01;
-  _DAT_004827fc = sfx_spider_die_02;
-  _DAT_00482800 = sfx_spider_die_03;
-  _DAT_00482804 = sfx_spider_die_04;
-  _DAT_00482834 = 1;
-  _DAT_0048282c = 0x10;
-  _DAT_00482830 = 1;
-  _DAT_00482838 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp2_0047373c);
-  _DAT_00482850 = sfx_spider_attack_02;
-  _DAT_0048284c = sfx_spider_attack_01;
-  _DAT_0048283c = sfx_spider_die_01;
-  _DAT_00482844 = sfx_spider_die_03;
-  _DAT_00482858 = 0x3f800000;
-  _DAT_0048286c = 0x3fc00000;
-  _DAT_00482840 = sfx_spider_die_02;
-  _DAT_00482848 = sfx_spider_die_04;
-  _DAT_00482878 = 1;
-  _DAT_00482870 = 0x10;
-  _DAT_00482874 = 2;
-  DAT_004827b0 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_alien_00473734);
-  _DAT_004827c4 = sfx_alien_attack_01;
-  _DAT_004827c8 = sfx_alien_attack_02;
-  _DAT_004827b4 = sfx_alien_die_01;
-  _DAT_004827b8 = sfx_alien_die_02;
-  _DAT_004827bc = sfx_alien_die_03;
-  _DAT_004827c0 = sfx_alien_die_04;
-  _DAT_00482880 = sfx_trooper_die_01;
-  _DAT_004827d0 = 0x3f800000;
-  _DAT_004827e4 = 0x3faccccd;
-  _DAT_004827f0 = 0;
-  _DAT_004827e8 = 0x20;
-  _DAT_004827ec = 4;
-  _DAT_00482884 = sfx_trooper_die_02;
-  _DAT_00482888 = sfx_trooper_die_03;
-  _DAT_004828b8 = 7;
-  DAT_0048287c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_trooper_0047372c);
-  _camera_offset_x = (float)terrain_texture_width * 0.5;
+  creature_type_table[0].sfx_bank_b[0] = sfx_zombie_attack_01;
+  creature_type_table[0].sfx_bank_b[1] = sfx_zombie_attack_02;
+  creature_type_table[0].sfx_bank_a[0] = sfx_zombie_die_01;
+  creature_type_table[0].sfx_bank_a[1] = sfx_zombie_die_02;
+  creature_type_table[0].field_0x20 = 1.0;
+  creature_type_table[0].anim_rate = 1.2;
+  creature_type_table[0].sfx_bank_a[2] = sfx_zombie_die_03;
+  creature_type_table[0].sfx_bank_a[3] = sfx_zombie_die_04;
+  creature_type_table[0].base_frame = 0x20;
+  creature_type_table[0].corpse_frame = 0;
+  creature_type_table[1].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_lizard_00473754);
+  creature_type_table[1].sfx_bank_b[1] = sfx_lizard_attack_02;
+  creature_type_table[1].sfx_bank_b[0] = sfx_lizard_attack_01;
+  creature_type_table[1].sfx_bank_a[0] = sfx_lizard_die_01;
+  creature_type_table[1].sfx_bank_a[2] = sfx_lizard_die_03;
+  creature_type_table[1].field_0x20 = 1.0;
+  creature_type_table[1].anim_rate = 1.6;
+  creature_type_table[1].sfx_bank_a[1] = sfx_lizard_die_02;
+  creature_type_table[1].sfx_bank_a[3] = sfx_lizard_die_04;
+  creature_type_table[1].anim_flags = 1;
+  creature_type_table[1].base_frame = 0x10;
+  creature_type_table[1].corpse_frame = 3;
+  creature_type_table[3].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp1_00473748);
+  creature_type_table[3].sfx_bank_b[0] = sfx_spider_attack_01;
+  creature_type_table[3].sfx_bank_b[1] = sfx_spider_attack_02;
+  creature_type_table[3].field_0x20 = 1.0;
+  creature_type_table[3].anim_rate = 1.5;
+  creature_type_table[3].sfx_bank_a[0] = sfx_spider_die_01;
+  creature_type_table[3].sfx_bank_a[1] = sfx_spider_die_02;
+  creature_type_table[3].sfx_bank_a[2] = sfx_spider_die_03;
+  creature_type_table[3].sfx_bank_a[3] = sfx_spider_die_04;
+  creature_type_table[3].anim_flags = 1;
+  creature_type_table[3].base_frame = 0x10;
+  creature_type_table[3].corpse_frame = 1;
+  creature_type_table[4].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp2_0047373c);
+  creature_type_table[4].sfx_bank_b[1] = sfx_spider_attack_02;
+  creature_type_table[4].sfx_bank_b[0] = sfx_spider_attack_01;
+  creature_type_table[4].sfx_bank_a[0] = sfx_spider_die_01;
+  creature_type_table[4].sfx_bank_a[2] = sfx_spider_die_03;
+  creature_type_table[4].field_0x20 = 1.0;
+  creature_type_table[4].anim_rate = 1.5;
+  creature_type_table[4].sfx_bank_a[1] = sfx_spider_die_02;
+  creature_type_table[4].sfx_bank_a[3] = sfx_spider_die_04;
+  creature_type_table[4].anim_flags = 1;
+  creature_type_table[4].base_frame = 0x10;
+  creature_type_table[4].corpse_frame = 2;
+  creature_type_table[2].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_alien_00473734);
+  creature_type_table[2].sfx_bank_b[0] = sfx_alien_attack_01;
+  creature_type_table[2].sfx_bank_b[1] = sfx_alien_attack_02;
+  creature_type_table[2].sfx_bank_a[0] = sfx_alien_die_01;
+  creature_type_table[2].sfx_bank_a[1] = sfx_alien_die_02;
+  creature_type_table[2].sfx_bank_a[2] = sfx_alien_die_03;
+  creature_type_table[2].sfx_bank_a[3] = sfx_alien_die_04;
+  creature_type_table[5].sfx_bank_a[0] = sfx_trooper_die_01;
+  creature_type_table[2].field_0x20 = 1.0;
+  creature_type_table[2].anim_rate = 1.35;
+  creature_type_table[2].anim_flags = 0;
+  creature_type_table[2].base_frame = 0x20;
+  creature_type_table[2].corpse_frame = 4;
+  creature_type_table[5].sfx_bank_a[1] = sfx_trooper_die_02;
+  creature_type_table[5].sfx_bank_a[2] = sfx_trooper_die_03;
+  creature_type_table[5].corpse_frame = 7;
+  creature_type_table[5].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_trooper_0047372c);
+  _camera_offset_x = (float)_terrain_texture_width * 0.5;
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
   puVar14 = &weapon_usage_time;
@@ -11417,7 +11447,7 @@ void gameplay_reset_state(void)
     *puVar14 = 0;
     puVar14 = puVar14 + 1;
   }
-  _camera_offset_y = (float)terrain_texture_height * 0.5;
+  _camera_offset_y = (float)_terrain_texture_height * 0.5;
   weapon_table_init();
   weapon_refresh_available();
   perks_rebuild_available();
@@ -11431,7 +11461,7 @@ void gameplay_reset_state(void)
   _bonus_weapon_power_up_timer = 0;
   _bonus_energizer_timer = 0;
   plaguebearer_infection_count = 0;
-  DAT_00487268 = 0xffffffff;
+  perk_doctor_target_creature_id = -1;
   highscore_active_record.full_version_marker = '\0';
   highscore_active_record.survival_elapsed_ms = 0;
   highscore_active_record.score_xp = 0;
@@ -11451,9 +11481,9 @@ void gameplay_reset_state(void)
   highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
-  _DAT_004aaf1c = 0;
+  perk_jinxed_proc_timer_s = 0.0;
   _DAT_004aaf2c = 0xbf800000;
-  perk_prompt_timer = 0;
+  _perk_prompt_timer = 0;
   projectile_reset_pools();
   player_reset_all();
   player_aux_timer = 0;
@@ -11575,11 +11605,11 @@ void player_start_reload(void)
 
 
 
-/* FUN_00413540 @ 00413540 */
+/* player_heading_approach_target @ 00413540 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* wraps heading to [0,2pi], turns toward target_heading, and returns shortest angular distance */
 
-void __cdecl FUN_00413540(float param_1)
+float __cdecl player_heading_approach_target(float target_heading)
 
 {
   float fVar1;
@@ -11598,14 +11628,14 @@ void __cdecl FUN_00413540(float param_1)
     fVar1 = (&player_state_table)[iVar2].heading - 6.2831855;
     (&player_state_table)[iVar2].heading = fVar1;
   }
-  fVar3 = ABS(param_1 - (&player_state_table)[iVar2].heading);
+  fVar3 = ABS(target_heading - (&player_state_table)[iVar2].heading);
   fVar1 = (&player_state_table)[iVar2].heading;
-  if ((&player_state_table)[iVar2].heading < param_1) {
-    fVar1 = param_1;
+  if ((&player_state_table)[iVar2].heading < target_heading) {
+    fVar1 = target_heading;
   }
   fVar4 = (&player_state_table)[iVar2].heading;
-  if (param_1 < (&player_state_table)[iVar2].heading) {
-    fVar4 = param_1;
+  if (target_heading < (&player_state_table)[iVar2].heading) {
+    fVar4 = target_heading;
   }
   fVar4 = ABS((6.2831855 - fVar1) + fVar4);
   fVar1 = fVar4;
@@ -11613,19 +11643,20 @@ void __cdecl FUN_00413540(float param_1)
     fVar1 = fVar3;
   }
   if (fVar3 <= fVar4) {
-    if ((&player_state_table)[iVar2].heading < param_1) {
-      _DAT_00487198 = frame_dt * fVar1 * 5.0;
+    if ((&player_state_table)[iVar2].heading < target_heading) {
+      player_heading_turn_delta = frame_dt * fVar1 * 5.0;
       goto LAB_00413686;
     }
   }
-  else if (param_1 < (&player_state_table)[iVar2].heading) {
-    _DAT_00487198 = frame_dt * fVar1 * 5.0;
+  else if (target_heading < (&player_state_table)[iVar2].heading) {
+    player_heading_turn_delta = frame_dt * fVar1 * 5.0;
     goto LAB_00413686;
   }
-  _DAT_00487198 = frame_dt * fVar1 * -5.0;
+  player_heading_turn_delta = frame_dt * fVar1 * -5.0;
 LAB_00413686:
-  (&player_state_table)[iVar2].heading = _DAT_00487198 + (&player_state_table)[iVar2].heading;
-  return;
+  (&player_state_table)[iVar2].heading =
+       player_heading_turn_delta + (&player_state_table)[iVar2].heading;
+  return fVar1;
 }
 
 
@@ -11651,18 +11682,18 @@ void player_update(void)
   int iVar11;
   float *pfVar12;
   creature_t *pcVar13;
-  float fVar14;
   float *unaff_EBP;
-  float fVar15;
-  int iVar16;
-  float *pfVar17;
+  float fVar14;
+  int iVar15;
+  float *pfVar16;
+  float10 fVar17;
   float10 fVar18;
-  float10 fVar19;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
   float10 extraout_ST0_01;
   float10 extraout_ST0_02;
-  longlong lVar20;
+  longlong lVar19;
+  float fVar20;
   float *player_index;
   projectile_type_id_t pVar21;
   float *delta;
@@ -11689,7 +11720,7 @@ void player_update(void)
   (&player_aim_screen_x)[render_overlay_player_index * 2] = ui_mouse_x;
   (&player_aim_screen_y)[iVar7 * 2] = ui_mouse_y;
   local_28 = (&player_state_table)[iVar7].pos_x;
-  pfVar17 = &(&player_state_table)[iVar7].pos_x;
+  pfVar16 = &(&player_state_table)[iVar7].pos_x;
   local_24 = (&player_state_table)[iVar7].pos_y;
   if ((&player_state_table)[iVar7].health <= 0.0) {
     (&player_state_table)[iVar7].death_timer =
@@ -11702,35 +11733,35 @@ void player_update(void)
   }
   if ((((&player_state_table)[iVar7].low_health_timer != 100.0) &&
       ((&player_state_table)[iVar7].health < 20.0)) &&
-     (fVar15 = (&player_state_table)[iVar7].low_health_timer - frame_dt,
-     (&player_state_table)[iVar7].low_health_timer = fVar15, fVar15 < 0.0)) {
-    fVar18 = (float10)fcos(((float10)(&player_state_table)[iVar7].aim_heading + (float10)1.5707964)
+     (fVar14 = (&player_state_table)[iVar7].low_health_timer - frame_dt,
+     (&player_state_table)[iVar7].low_health_timer = fVar14, fVar14 < 0.0)) {
+    fVar17 = (float10)fcos(((float10)(&player_state_table)[iVar7].aim_heading + (float10)1.5707964)
                            - (float10)0.5);
-    fVar19 = (float10)fsin(((float10)(&player_state_table)[iVar7].aim_heading + (float10)1.5707964)
+    fVar18 = (float10)fsin(((float10)(&player_state_table)[iVar7].aim_heading + (float10)1.5707964)
                            - (float10)0.5);
-    fVar15 = (&player_state_table)[iVar7].aim_heading;
-    local_18 = (float)(fVar18 * (float10)-6.0 + (float10)*pfVar17);
-    local_14 = (float)(fVar19 * (float10)-6.0) + (&player_state_table)[iVar7].pos_y;
-    effect_spawn_blood_splatter(&local_18,fVar15,0.0);
-    effect_spawn_blood_splatter(&local_18,fVar15,0.0);
-    effect_spawn_blood_splatter(&local_18,fVar15,0.0);
+    fVar14 = (&player_state_table)[iVar7].aim_heading;
+    local_18 = (float)(fVar17 * (float10)-6.0 + (float10)*pfVar16);
+    local_14 = (float)(fVar18 * (float10)-6.0) + (&player_state_table)[iVar7].pos_y;
+    effect_spawn_blood_splatter(&local_18,fVar14,0.0);
+    effect_spawn_blood_splatter(&local_18,fVar14,0.0);
+    effect_spawn_blood_splatter(&local_18,fVar14,0.0);
     uVar9 = crt_rand();
     sfx_play_panned((float)((uVar9 & 1) + sfx_bloodspill_01));
     (&player_state_table)[iVar7].low_health_timer = 1.0;
   }
   pfVar1 = &(&player_state_table)[iVar7].muzzle_flash_alpha;
-  fVar15 = *pfVar1 - (frame_dt + frame_dt);
-  *pfVar1 = fVar15;
-  if (fVar15 < 0.0) {
+  fVar14 = *pfVar1 - (frame_dt + frame_dt);
+  *pfVar1 = fVar14;
+  if (fVar14 < 0.0) {
     *pfVar1 = 0.0;
   }
   if (_bonus_weapon_power_up_timer <= 0.0) {
-    fVar15 = (&player_state_table)[iVar7].shot_cooldown - frame_dt;
+    fVar14 = (&player_state_table)[iVar7].shot_cooldown - frame_dt;
   }
   else {
-    fVar15 = (&player_state_table)[iVar7].shot_cooldown - frame_dt * 1.5;
+    fVar14 = (&player_state_table)[iVar7].shot_cooldown - frame_dt * 1.5;
   }
-  (&player_state_table)[iVar7].shot_cooldown = fVar15;
+  (&player_state_table)[iVar7].shot_cooldown = fVar14;
   if ((&player_state_table)[iVar7].shot_cooldown < 0.0) {
     (&player_state_table)[iVar7].shot_cooldown = 0.0;
   }
@@ -11739,9 +11770,9 @@ void player_update(void)
     (&player_state_table)[iVar7].man_bomb_timer = 0.0;
   }
   else {
-    fVar15 = frame_dt + (&player_state_table)[iVar7].man_bomb_timer;
-    (&player_state_table)[iVar7].man_bomb_timer = fVar15;
-    if (_DAT_00473310 < fVar15) {
+    fVar14 = frame_dt + (&player_state_table)[iVar7].man_bomb_timer;
+    (&player_state_table)[iVar7].man_bomb_timer = fVar14;
+    if (_perk_man_bomb_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         iVar10 = -100;
       }
@@ -11750,7 +11781,7 @@ void player_update(void)
       }
       local_38 = 0.0;
       do {
-        iVar16 = iVar10;
+        iVar15 = iVar10;
         if (((uint)local_38 & 1) == 0) {
           pVar21 = PROJECTILE_TYPE_ION_MINIGUN;
           iVar11 = crt_rand();
@@ -11759,14 +11790,14 @@ void player_update(void)
           pVar21 = PROJECTILE_TYPE_ION_RIFLE;
           iVar11 = crt_rand();
         }
-        projectile_spawn(pfVar17,((float)(int)local_38 * 0.7853982 + (float)(iVar11 % 0x32) * 0.01)
-                                 - 0.25,pVar21,iVar16);
+        projectile_spawn(pfVar16,((float)(int)local_38 * 0.7853982 + (float)(iVar11 % 0x32) * 0.01)
+                                 - 0.25,pVar21,iVar15);
         local_38 = (float)((int)local_38 + 1);
       } while ((int)local_38 < 8);
       sfx_play_panned(sfx_explosion_small);
       (&player_state_table)[iVar7].man_bomb_timer =
-           (&player_state_table)[iVar7].man_bomb_timer - _DAT_00473310;
-      _DAT_00473310 = 4.0;
+           (&player_state_table)[iVar7].man_bomb_timer - _perk_man_bomb_trigger_interval_s;
+      _perk_man_bomb_trigger_interval_s = 4.0;
     }
   }
   iVar10 = perk_count_get(perk_id_living_fortress);
@@ -11774,9 +11805,9 @@ void player_update(void)
     (&player_state_table)[iVar7].living_fortress_timer = 0.0;
   }
   else {
-    fVar15 = frame_dt + (&player_state_table)[iVar7].living_fortress_timer;
-    (&player_state_table)[iVar7].living_fortress_timer = fVar15;
-    if (30.0 < fVar15) {
+    fVar14 = frame_dt + (&player_state_table)[iVar7].living_fortress_timer;
+    (&player_state_table)[iVar7].living_fortress_timer = fVar14;
+    if (30.0 < fVar14) {
       (&player_state_table)[iVar7].living_fortress_timer = 30.0;
     }
   }
@@ -11785,9 +11816,9 @@ void player_update(void)
     (&player_state_table)[iVar7].fire_cough_timer = 0.0;
   }
   else {
-    fVar15 = frame_dt + (&player_state_table)[iVar7].fire_cough_timer;
-    (&player_state_table)[iVar7].fire_cough_timer = fVar15;
-    if (_DAT_00473314 < fVar15) {
+    fVar14 = frame_dt + (&player_state_table)[iVar7].fire_cough_timer;
+    (&player_state_table)[iVar7].fire_cough_timer = fVar14;
+    if (_perk_fire_cough_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         local_40 = -NAN;
       }
@@ -11797,54 +11828,54 @@ void player_update(void)
       sfx_play_panned(DAT_004d9050);
       sfx_play_panned(DAT_004d7fd8);
       iVar10 = render_overlay_player_index;
-      fVar15 = (&player_state_table)[iVar7].aim_heading;
-      fVar18 = ((float10)fVar15 - (float10)1.5707964) - (float10)0.150915;
-      fVar19 = (float10)fcos(fVar18);
+      fVar14 = (&player_state_table)[iVar7].aim_heading;
+      fVar17 = ((float10)fVar14 - (float10)1.5707964) - (float10)0.150915;
+      fVar18 = (float10)fcos(fVar17);
       local_1c = (&player_state_table)[render_overlay_player_index].aim_y;
       local_20 = (&player_state_table)[render_overlay_player_index].aim_x;
       ppVar6 = &player_state_table + render_overlay_player_index;
-      local_18 = (float)(fVar19 * (float10)16.0);
-      fVar18 = (float10)fsin(fVar18);
-      local_14 = (float)(fVar18 * (float10)16.0);
+      local_18 = (float)(fVar18 * (float10)16.0);
+      fVar17 = (float10)fsin(fVar17);
+      local_14 = (float)(fVar17 * (float10)16.0);
       local_c = local_1c - (&player_state_table)[render_overlay_player_index].pos_y;
       local_10 = local_20 - ppVar6->pos_x;
       local_30[0] = vec2_length(&local_10);
       local_30[0] = local_30[0] * 0.5;
       uVar9 = crt_rand();
-      fVar14 = (float)(uVar9 & 0x1ff) * 0.012271847;
+      fVar20 = (float)(uVar9 & 0x1ff) * 0.012271847;
       uVar9 = crt_rand();
       local_44 = (float)(uVar9 & 0x1ff);
-      fVar18 = (float10)local_30[0] * (float10)(&player_state_table)[iVar10].spread_heat *
+      fVar17 = (float10)local_30[0] * (float10)(&player_state_table)[iVar10].spread_heat *
                (float10)(int)local_44 * (float10)0.001953125;
-      fVar19 = (float10)fcos((float10)fVar14);
-      local_20 = (float)(fVar19 * fVar18 + (float10)local_20);
-      fVar19 = (float10)fsin((float10)fVar14);
-      local_1c = (float)(fVar19 * fVar18 + (float10)local_1c);
+      fVar18 = (float10)fcos((float10)fVar20);
+      local_20 = (float)(fVar18 * fVar17 + (float10)local_20);
+      fVar18 = (float10)fsin((float10)fVar20);
+      local_1c = (float)(fVar18 * fVar17 + (float10)local_1c);
       pfVar12 = vec2_sub(&ppVar6->pos_x,local_30,&local_20,unaff_EBP);
-      fVar18 = (float10)fpatan((float10)pfVar12[1],(float10)*pfVar12);
-      local_30[0] = (float)(fVar18 - (float10)1.5707964);
+      fVar17 = (float10)fpatan((float10)pfVar12[1],(float10)*pfVar12);
+      local_30[0] = (float)(fVar17 - (float10)1.5707964);
       local_c = local_14 + (&player_state_table)[iVar7].pos_y;
-      local_10 = local_18 + *pfVar17;
+      local_10 = local_18 + *pfVar16;
       projectile_spawn(&local_10,local_30[0],PROJECTILE_TYPE_FIRE_BULLETS,(int)local_40);
-      fVar18 = (float10)fcos((float10)fVar15);
-      local_10 = (float)(fVar18 * (float10)25.0);
-      fVar18 = (float10)fsin((float10)fVar15);
-      local_c = (float)(fVar18 * (float10)25.0);
+      fVar17 = (float10)fcos((float10)fVar14);
+      local_10 = (float)(fVar17 * (float10)25.0);
+      fVar17 = (float10)fsin((float10)fVar14);
+      local_c = (float)(fVar17 * (float10)25.0);
       local_14 = local_14 + (&player_state_table)[iVar7].pos_y;
-      local_18 = local_18 + *pfVar17;
+      local_18 = local_18 + *pfVar16;
       iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
       (&sprite_effect_pool)[iVar10].color_r = 0.5;
       (&sprite_effect_pool)[iVar10].color_g = 0.5;
       (&sprite_effect_pool)[iVar10].color_b = 0.5;
       (&sprite_effect_pool)[iVar10].color_a = 0.413;
       (&player_state_table)[iVar7].fire_cough_timer =
-           (&player_state_table)[iVar7].fire_cough_timer - _DAT_00473314;
+           (&player_state_table)[iVar7].fire_cough_timer - _perk_fire_cough_trigger_interval_s;
       uVar9 = crt_rand();
       local_30[0] = (float)(uVar9 & 0x80000003);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffffc) + 1);
       }
-      _DAT_00473314 = (float)(int)local_30[0] + 2.0;
+      _perk_fire_cough_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
   iVar10 = perk_count_get(perk_id_hot_tempered);
@@ -11852,9 +11883,9 @@ void player_update(void)
     (&player_state_table)[iVar7].hot_tempered_timer = 0.0;
   }
   else {
-    fVar15 = frame_dt + (&player_state_table)[iVar7].hot_tempered_timer;
-    (&player_state_table)[iVar7].hot_tempered_timer = fVar15;
-    if (_DAT_00473318 < fVar15) {
+    fVar14 = frame_dt + (&player_state_table)[iVar7].hot_tempered_timer;
+    (&player_state_table)[iVar7].hot_tempered_timer = fVar14;
+    if (_perk_hot_tempered_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         iVar10 = -100;
       }
@@ -11869,18 +11900,18 @@ void player_update(void)
         else {
           pVar21 = PROJECTILE_TYPE_PLASMA_RIFLE;
         }
-        projectile_spawn(pfVar17,(float)(int)local_38 * 0.7853982,pVar21,iVar10);
+        projectile_spawn(pfVar16,(float)(int)local_38 * 0.7853982,pVar21,iVar10);
         local_38 = (float)((int)local_38 + 1);
       } while ((int)local_38 < 8);
       sfx_play_panned(sfx_explosion_small);
       (&player_state_table)[iVar7].hot_tempered_timer =
-           (&player_state_table)[iVar7].hot_tempered_timer - _DAT_00473318;
+           (&player_state_table)[iVar7].hot_tempered_timer - _perk_hot_tempered_trigger_interval_s;
       uVar9 = crt_rand();
       local_30[0] = (float)(uVar9 & 0x80000007);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffff8) + 1);
       }
-      _DAT_00473318 = (float)(int)local_30[0] + 2.0;
+      _perk_hot_tempered_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
   if (_DAT_004aaf34 <= 0.0) {
@@ -11895,7 +11926,7 @@ void player_update(void)
       _DAT_00473a40 = 0.3;
     }
   }
-  fVar15 = (&player_state_table)[iVar7].speed_multiplier;
+  fVar14 = (&player_state_table)[iVar7].speed_multiplier;
   local_18 = 0.0;
   local_14 = 0.0;
   (&player_state_table)[iVar7].move_dx = 0.0;
@@ -11903,7 +11934,7 @@ void player_update(void)
   if (time_scale_active != '\0') {
     frame_dt = (0.6 / _time_scale_factor) * frame_dt;
   }
-  pfVar12 = pfVar17;
+  pfVar12 = pfVar16;
   if (((demo_mode_active == '\0') &&
       (*(int *)(config_blob.reserved0 + render_overlay_player_index * 4 + 0x1c) != 5)) &&
      (*(int *)(config_blob.reserved0 + render_overlay_player_index * 4 + 0x44) != 5)) {
@@ -11922,43 +11953,43 @@ LAB_00413f2d:
       }
       if ((&player_state_table)[iVar7].move_target_x == -1.0) {
 LAB_0041412c:
-        fVar14 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (fVar14 < 0.0) {
+        fVar20 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
+        (&player_state_table)[iVar7].move_speed = fVar20;
+        if (fVar20 < 0.0) {
           (&player_state_table)[iVar7].move_speed = 0.0;
         }
         delta = &local_10;
-        fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
-        fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
         local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
         player_index = (float *)render_overlay_player_index;
         goto LAB_00414f1c;
       }
-      fVar18 = (float10)(&player_state_table)[iVar7].pos_y -
+      fVar17 = (float10)(&player_state_table)[iVar7].pos_y -
                (float10)(&player_state_table)[iVar7].move_target_y;
-      fVar19 = (float10)*pfVar17 - (float10)(&player_state_table)[iVar7].move_target_x;
-      if (SQRT(fVar18 * fVar18 + fVar19 * fVar19) <= (float10)20.0) goto LAB_0041412c;
-      fVar18 = (float10)fpatan(fVar18,fVar19);
-      fVar18 = fVar18 - (float10)1.5707964;
-      if (fVar18 < (float10)0.0) {
+      fVar18 = (float10)*pfVar16 - (float10)(&player_state_table)[iVar7].move_target_x;
+      if (SQRT(fVar17 * fVar17 + fVar18 * fVar18) <= (float10)20.0) goto LAB_0041412c;
+      fVar17 = (float10)fpatan(fVar17,fVar18);
+      fVar17 = fVar17 - (float10)1.5707964;
+      if (fVar17 < (float10)0.0) {
         do {
-          fVar18 = fVar18 + (float10)6.2831855;
-        } while (fVar18 < (float10)0.0);
+          fVar17 = fVar17 + (float10)6.2831855;
+        } while (fVar17 < (float10)0.0);
       }
-      local_38 = (float)fVar18;
-      if (fVar18 == (float10)-1.0) goto LAB_0041412c;
-      fVar18 = (float10)FUN_00413540(local_38);
+      local_38 = (float)fVar17;
+      if (fVar17 == (float10)-1.0) goto LAB_0041412c;
+      fVar20 = player_heading_approach_target(local_38);
       if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-        fVar14 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (2.0 < fVar14) {
+        fVar2 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+        (&player_state_table)[iVar7].move_speed = fVar2;
+        if (2.0 < fVar2) {
           (&player_state_table)[iVar7].move_speed = 2.0;
         }
       }
@@ -11967,9 +11998,9 @@ LAB_0041412c:
           (&player_state_table)[iVar7].move_speed =
                frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
         }
-        fVar14 = frame_dt + (&player_state_table)[iVar7].move_speed;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (2.8 < fVar14) {
+        fVar2 = frame_dt + (&player_state_table)[iVar7].move_speed;
+        (&player_state_table)[iVar7].move_speed = fVar2;
+        if (2.8 < fVar2) {
           (&player_state_table)[iVar7].move_speed = 2.8;
         }
       }
@@ -11977,16 +12008,14 @@ LAB_0041412c:
          (0.8 < (&player_state_table)[iVar7].move_speed)) {
         (&player_state_table)[iVar7].move_speed = 0.8;
       }
-      fVar19 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+      fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dx =
-           (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                   (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                  (float10)7.957747);
-      fVar19 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                   (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
+      fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dy =
-           (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                   (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                  (float10)7.957747);
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                   (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
       local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
       local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
       goto LAB_00414f13;
@@ -11994,50 +12023,50 @@ LAB_0041412c:
     if (iVar10 == 3) {
       (*grim_interface_ptr->vtable->grim_get_config_float)
                 ((&player_state_table)[iVar7].input.axis_move_y);
-      fVar14 = (float)-extraout_ST0;
+      fVar20 = (float)-extraout_ST0;
       (*grim_interface_ptr->vtable->grim_get_config_float)
                 ((&player_state_table)[iVar7].input.axis_move_x);
       local_20 = (float)-extraout_ST0_00;
-      local_1c = fVar14;
-      if (SQRT(fVar14 * fVar14 + local_20 * local_20) <= 0.2) {
+      local_1c = fVar20;
+      if (SQRT(fVar20 * fVar20 + local_20 * local_20) <= 0.2) {
 LAB_00414390:
-        fVar14 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (fVar14 < 0.0) {
+        fVar20 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
+        (&player_state_table)[iVar7].move_speed = fVar20;
+        if (fVar20 < 0.0) {
           (&player_state_table)[iVar7].move_speed = 0.0;
         }
         delta = &local_10;
-        fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
-        fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
         local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
         player_index = (float *)render_overlay_player_index;
-        pfVar12 = pfVar17;
+        pfVar12 = pfVar16;
       }
       else {
         delta = &local_20;
         pfVar12 = &local_20;
         thunk_FUN_00452f1d();
-        fVar18 = (float10)fpatan((float10)local_24,(float10)local_28);
-        fVar18 = fVar18 - (float10)1.5707964;
-        if (fVar18 < (float10)0.0) {
+        fVar17 = (float10)fpatan((float10)local_24,(float10)local_28);
+        fVar17 = fVar17 - (float10)1.5707964;
+        if (fVar17 < (float10)0.0) {
           do {
-            fVar18 = fVar18 + (float10)6.2831855;
-          } while (fVar18 < (float10)0.0);
+            fVar17 = fVar17 + (float10)6.2831855;
+          } while (fVar17 < (float10)0.0);
         }
-        local_40 = (float)fVar18;
-        if (fVar18 == (float10)-1.0) goto LAB_00414390;
-        fVar18 = (float10)FUN_00413540(local_40);
+        local_40 = (float)fVar17;
+        if (fVar17 == (float10)-1.0) goto LAB_00414390;
+        fVar14 = player_heading_approach_target(local_40);
         if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-          fVar15 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar15;
-          if (2.0 < fVar15) {
+          fVar20 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar20;
+          if (2.0 < fVar20) {
             (&player_state_table)[iVar7].move_speed = 2.0;
           }
         }
@@ -12046,9 +12075,9 @@ LAB_00414390:
             (&player_state_table)[iVar7].move_speed =
                  frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
           }
-          fVar15 = frame_dt + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar15;
-          if (2.8 < fVar15) {
+          fVar20 = frame_dt + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar20;
+          if (2.8 < fVar20) {
             (&player_state_table)[iVar7].move_speed = 2.8;
           }
         }
@@ -12056,14 +12085,14 @@ LAB_00414390:
            (0.8 < (&player_state_table)[iVar7].move_speed)) {
           (&player_state_table)[iVar7].move_speed = 0.8;
         }
-        local_40 = (float)((float10)3.1415927 - fVar18);
-        fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        local_40 = 3.1415927 - fVar14;
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)local_40 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)local_40 *
                      (float10)local_44 * (float10)7.957747);
-        fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)local_40 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)local_40 *
                      (float10)local_44 * (float10)7.957747);
         local_14 = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_18 = frame_dt * (&player_state_table)[iVar7].move_dx;
@@ -12092,11 +12121,11 @@ LAB_00414390:
                            ((&player_state_table)[iVar7].input.turn_key_right);
         if ((char)iVar10 != '\0') {
 LAB_004144dc:
-          fVar14 = frame_dt * 10.0 + (&player_state_table)[iVar7].turn_speed;
-          (&player_state_table)[iVar7].turn_speed = fVar14;
+          fVar20 = frame_dt * 10.0 + (&player_state_table)[iVar7].turn_speed;
+          (&player_state_table)[iVar7].turn_speed = fVar20;
           (&player_state_table)[iVar7].heading =
-               fVar14 * frame_dt * 0.5 + (&player_state_table)[iVar7].heading;
-          fVar14 = frame_dt * (&player_state_table)[iVar7].turn_speed * 0.5 +
+               fVar20 * frame_dt * 0.5 + (&player_state_table)[iVar7].heading;
+          fVar20 = frame_dt * (&player_state_table)[iVar7].turn_speed * 0.5 +
                    (&player_state_table)[iVar7].aim_heading;
           goto LAB_00414562;
         }
@@ -12109,14 +12138,14 @@ LAB_004144dc:
       }
       else {
 LAB_00414520:
-        fVar14 = frame_dt * 10.0 + (&player_state_table)[iVar7].turn_speed;
-        (&player_state_table)[iVar7].turn_speed = fVar14;
+        fVar20 = frame_dt * 10.0 + (&player_state_table)[iVar7].turn_speed;
+        (&player_state_table)[iVar7].turn_speed = fVar20;
         (&player_state_table)[iVar7].heading =
-             (&player_state_table)[iVar7].heading - fVar14 * frame_dt * 0.5;
-        fVar14 = (&player_state_table)[iVar7].aim_heading -
+             (&player_state_table)[iVar7].heading - fVar20 * frame_dt * 0.5;
+        fVar20 = (&player_state_table)[iVar7].aim_heading -
                  frame_dt * (&player_state_table)[iVar7].turn_speed * 0.5;
 LAB_00414562:
-        (&player_state_table)[iVar7].aim_heading = fVar14;
+        (&player_state_table)[iVar7].aim_heading = fVar20;
         bVar4 = true;
       }
       local_38 = 1.0;
@@ -12141,20 +12170,20 @@ LAB_00414562:
           if (!bVar4) {
             (&player_state_table)[iVar7].turn_speed = 1.0;
           }
-          fVar14 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
-          (&player_state_table)[iVar7].move_speed = fVar14;
-          if (fVar14 < 0.0) {
+          fVar20 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
+          (&player_state_table)[iVar7].move_speed = fVar20;
+          if (fVar20 < 0.0) {
             (&player_state_table)[iVar7].move_speed = 0.0;
           }
-          fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
+          fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
           ;
           (&player_state_table)[iVar7].move_dx =
-               (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+               (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                       (float10)25.0);
-          fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
+          fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
           ;
           (&player_state_table)[iVar7].move_dy =
-               (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+               (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                       (float10)25.0);
           local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
           local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
@@ -12162,9 +12191,9 @@ LAB_00414562:
         else {
 LAB_0041467b:
           if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-            fVar14 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-            (&player_state_table)[iVar7].move_speed = fVar14;
-            if (2.0 < fVar14) {
+            fVar20 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+            (&player_state_table)[iVar7].move_speed = fVar20;
+            if (2.0 < fVar20) {
               (&player_state_table)[iVar7].move_speed = 2.0;
             }
           }
@@ -12173,22 +12202,22 @@ LAB_0041467b:
               (&player_state_table)[iVar7].move_speed =
                    frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
             }
-            fVar14 = frame_dt + (&player_state_table)[iVar7].move_speed;
-            (&player_state_table)[iVar7].move_speed = fVar14;
-            if (2.8 < fVar14) {
+            fVar20 = frame_dt + (&player_state_table)[iVar7].move_speed;
+            (&player_state_table)[iVar7].move_speed = fVar20;
+            if (2.8 < fVar20) {
               (&player_state_table)[iVar7].move_speed = 2.8;
             }
           }
           local_38 = -1.0;
-          fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
+          fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
           ;
           (&player_state_table)[iVar7].move_dx =
-               (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+               (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                       (float10)-25.0);
-          fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
+          fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964)
           ;
           (&player_state_table)[iVar7].move_dy =
-               (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+               (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                       (float10)-25.0);
           local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
           local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
@@ -12197,9 +12226,9 @@ LAB_0041467b:
       else {
 LAB_00414750:
         if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-          fVar14 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar14;
-          if (2.0 < fVar14) {
+          fVar20 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar20;
+          if (2.0 < fVar20) {
             (&player_state_table)[iVar7].move_speed = 2.0;
           }
         }
@@ -12208,9 +12237,9 @@ LAB_00414750:
             (&player_state_table)[iVar7].move_speed =
                  frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
           }
-          fVar14 = frame_dt + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar14;
-          if (2.8 < fVar14) {
+          fVar20 = frame_dt + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar20;
+          if (2.8 < fVar20) {
             (&player_state_table)[iVar7].move_speed = 2.8;
           }
         }
@@ -12218,19 +12247,19 @@ LAB_00414750:
            (0.8 < (&player_state_table)[iVar7].move_speed)) {
           (&player_state_table)[iVar7].move_speed = 0.8;
         }
-        fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
-        fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
         local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
       }
-      player_apply_move_with_spawn_avoidance(render_overlay_player_index,pfVar17,&local_10);
-      fVar15 = local_38 * (&player_state_table)[iVar7].move_speed * frame_dt;
+      player_apply_move_with_spawn_avoidance(render_overlay_player_index,pfVar16,&local_10);
+      fVar14 = local_38 * (&player_state_table)[iVar7].move_speed * frame_dt;
       goto LAB_00414f2d;
     }
     if (iVar10 == 2) {
@@ -12286,18 +12315,18 @@ LAB_00414750:
           (iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(player_alt_move_key_backward),
           (char)iVar10 == '\0')))) {
         if (local_40 != -1.0) goto LAB_00414aab;
-        fVar14 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (fVar14 < 0.0) {
+        fVar20 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
+        (&player_state_table)[iVar7].move_speed = fVar20;
+        if (fVar20 < 0.0) {
           (&player_state_table)[iVar7].move_speed = 0.0;
         }
-        fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
-        fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                     (float10)25.0);
         local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
@@ -12325,13 +12354,13 @@ LAB_00414750:
           local_40 = 3.926991;
         }
 LAB_00414aab:
-        fVar18 = (float10)FUN_00413540(local_40);
+        fVar20 = player_heading_approach_target(local_40);
         (&player_state_table)[iVar7].aim_heading =
-             _DAT_00487198 + (&player_state_table)[iVar7].aim_heading;
+             player_heading_turn_delta + (&player_state_table)[iVar7].aim_heading;
         if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-          fVar14 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar14;
-          if (2.0 < fVar14) {
+          fVar2 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar2;
+          if (2.0 < fVar2) {
             (&player_state_table)[iVar7].move_speed = 2.0;
           }
         }
@@ -12340,9 +12369,9 @@ LAB_00414aab:
             (&player_state_table)[iVar7].move_speed =
                  frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
           }
-          fVar14 = frame_dt + (&player_state_table)[iVar7].move_speed;
-          (&player_state_table)[iVar7].move_speed = fVar14;
-          if (2.8 < fVar14) {
+          fVar2 = frame_dt + (&player_state_table)[iVar7].move_speed;
+          (&player_state_table)[iVar7].move_speed = fVar2;
+          if (2.8 < fVar2) {
             (&player_state_table)[iVar7].move_speed = 2.8;
           }
         }
@@ -12350,20 +12379,18 @@ LAB_00414aab:
            (0.8 < (&player_state_table)[iVar7].move_speed)) {
           (&player_state_table)[iVar7].move_speed = 0.8;
         }
-        fVar19 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+        fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dx =
-             (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                     (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                    (float10)7.957747);
-        fVar19 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                     (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
+        fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
         (&player_state_table)[iVar7].move_dy =
-             (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                     (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                    (float10)7.957747);
+             (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                     (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
         local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
         local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
       }
-      player_apply_move_with_spawn_avoidance(render_overlay_player_index,pfVar17,&local_10);
+      player_apply_move_with_spawn_avoidance(render_overlay_player_index,pfVar16,&local_10);
       (&player_state_table)[iVar7].move_phase =
            frame_dt * (&player_state_table)[iVar7].move_speed * 19.0 +
            (&player_state_table)[iVar7].move_phase;
@@ -12375,22 +12402,22 @@ LAB_00414aab:
     }
     iVar10 = (&player_state_table)[iVar7].auto_target;
     if (((&creature_pool)[iVar10].active == '\0') || ((&creature_pool)[iVar10].health <= 0.0)) {
-      fVar14 = 100000.0;
+      fVar20 = 100000.0;
     }
     else {
-      fVar14 = (&player_state_table)[iVar7].pos_y - (&creature_pool)[iVar10].pos_y;
-      fVar2 = *pfVar17 - (&creature_pool)[iVar10].pos_x;
-      fVar14 = SQRT(fVar14 * fVar14 + fVar2 * fVar2);
+      fVar20 = (&player_state_table)[iVar7].pos_y - (&creature_pool)[iVar10].pos_y;
+      fVar2 = *pfVar16 - (&creature_pool)[iVar10].pos_x;
+      fVar20 = SQRT(fVar20 * fVar20 + fVar2 * fVar2);
     }
     iVar10 = 0;
     pcVar13 = &creature_pool;
     do {
       if (((pcVar13->active != '\0') && (0.0 < pcVar13->health)) &&
          (fVar3 = (&player_state_table)[iVar7].pos_y - pcVar13->pos_y,
-         fVar2 = *pfVar17 - pcVar13->pos_x, local_30[0] = SQRT(fVar3 * fVar3 + fVar2 * fVar2),
-         local_30[0] < fVar14 - 64.0)) {
+         fVar2 = *pfVar16 - pcVar13->pos_x, local_30[0] = SQRT(fVar3 * fVar3 + fVar2 * fVar2),
+         local_30[0] < fVar20 - 64.0)) {
         (&player_state_table)[iVar7].auto_target = iVar10;
-        fVar14 = local_30[0];
+        fVar20 = local_30[0];
       }
       pcVar13 = pcVar13 + 1;
       iVar10 = iVar10 + 1;
@@ -12399,39 +12426,39 @@ LAB_00414aab:
 LAB_00414c7f:
     if (((&player_state_table)[iVar7].auto_target < 0) ||
        ((&creature_pool)[(&player_state_table)[iVar7].auto_target].health <= 0.0)) {
-      fVar18 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y - (float10)512.0,
-                               (float10)*pfVar17 - (float10)512.0);
-      fVar18 = fVar18 + (float10)3.1415927;
+      fVar17 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y - (float10)512.0,
+                               (float10)*pfVar16 - (float10)512.0);
+      fVar17 = fVar17 + (float10)3.1415927;
     }
     else {
-      fVar14 = (&player_state_table)[iVar7].pos_y - 512.0;
-      if (SQRT(fVar14 * fVar14 + (*pfVar17 - 512.0) * (*pfVar17 - 512.0)) <= 300.0) {
+      fVar20 = (&player_state_table)[iVar7].pos_y - 512.0;
+      if (SQRT(fVar20 * fVar20 + (*pfVar16 - 512.0) * (*pfVar16 - 512.0)) <= 300.0) {
         local_14 = (&player_state_table)[iVar7].pos_y -
                    (&creature_pool)[(&player_state_table)[iVar7].auto_target].pos_y;
-        local_18 = *pfVar17 - (&creature_pool)[(&player_state_table)[iVar7].auto_target].pos_x;
+        local_18 = *pfVar16 - (&creature_pool)[(&player_state_table)[iVar7].auto_target].pos_x;
       }
       else {
         local_14 = (&player_state_table)[iVar7].pos_y - 512.0;
-        local_18 = *pfVar17 - 512.0;
+        local_18 = *pfVar16 - 512.0;
       }
-      fVar18 = (float10)fpatan((float10)local_14,(float10)local_18);
-      fVar18 = fVar18 - (float10)1.5707964;
+      fVar17 = (float10)fpatan((float10)local_14,(float10)local_18);
+      fVar17 = fVar17 - (float10)1.5707964;
       local_20 = local_18;
       local_1c = local_14;
     }
-    if (fVar18 == (float10)-1.0) {
-      fVar14 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
-      (&player_state_table)[iVar7].move_speed = fVar14;
-      if (fVar14 < 0.0) {
+    if (fVar17 == (float10)-1.0) {
+      fVar20 = (&player_state_table)[iVar7].move_speed - frame_dt * 15.0;
+      (&player_state_table)[iVar7].move_speed = fVar20;
+      if (fVar20 < 0.0) {
         (&player_state_table)[iVar7].move_speed = 0.0;
       }
-      fVar18 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+      fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dx =
-           (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                   (float10)25.0);
-      fVar18 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+      fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dy =
-           (float)(fVar18 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar15 *
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed * (float10)fVar14 *
                   (float10)25.0);
       local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
       local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
@@ -12440,11 +12467,11 @@ LAB_00414f13:
       player_index = (float *)render_overlay_player_index;
     }
     else {
-      fVar18 = (float10)FUN_00413540((float)fVar18);
+      fVar20 = player_heading_approach_target((float)fVar17);
       if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
-        fVar14 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (2.0 < fVar14) {
+        fVar2 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
+        (&player_state_table)[iVar7].move_speed = fVar2;
+        if (2.0 < fVar2) {
           (&player_state_table)[iVar7].move_speed = 2.0;
         }
       }
@@ -12453,9 +12480,9 @@ LAB_00414f13:
           (&player_state_table)[iVar7].move_speed =
                frame_dt * 4.0 + (&player_state_table)[iVar7].move_speed;
         }
-        fVar14 = frame_dt + (&player_state_table)[iVar7].move_speed;
-        (&player_state_table)[iVar7].move_speed = fVar14;
-        if (2.8 < fVar14) {
+        fVar2 = frame_dt + (&player_state_table)[iVar7].move_speed;
+        (&player_state_table)[iVar7].move_speed = fVar2;
+        if (2.8 < fVar2) {
           (&player_state_table)[iVar7].move_speed = 2.8;
         }
       }
@@ -12464,42 +12491,40 @@ LAB_00414f13:
         (&player_state_table)[iVar7].move_speed = 0.8;
       }
       delta = &local_10;
-      fVar19 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+      fVar17 = (float10)fcos((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dx =
-           (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                   (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                  (float10)7.957747);
-      fVar19 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                   (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
+      fVar17 = (float10)fsin((float10)(&player_state_table)[iVar7].heading - (float10)1.5707964);
       (&player_state_table)[iVar7].move_dy =
-           (float)(fVar19 * (float10)(&player_state_table)[iVar7].move_speed *
-                   (float10)(float)((float10)3.1415927 - fVar18) * (float10)fVar15 *
-                  (float10)7.957747);
+           (float)(fVar17 * (float10)(&player_state_table)[iVar7].move_speed *
+                   (float10)(3.1415927 - fVar20) * (float10)fVar14 * (float10)7.957747);
       local_c = frame_dt * (&player_state_table)[iVar7].move_dy;
       local_10 = frame_dt * (&player_state_table)[iVar7].move_dx;
       player_index = (float *)render_overlay_player_index;
     }
 LAB_00414f1c:
     player_apply_move_with_spawn_avoidance((int)player_index,pfVar12,delta);
-    fVar15 = frame_dt * (&player_state_table)[iVar7].move_speed;
+    fVar14 = frame_dt * (&player_state_table)[iVar7].move_speed;
 LAB_00414f2d:
     (&player_state_table)[iVar7].move_phase =
-         fVar15 * 19.0 + (&player_state_table)[iVar7].move_phase;
+         fVar14 * 19.0 + (&player_state_table)[iVar7].move_phase;
   }
   if (time_scale_active != '\0') {
     frame_dt = _time_scale_factor * frame_dt * 1.6666666;
   }
   iVar10 = perk_count_get(perk_id_sharpshooter);
   if (iVar10 == 0) {
-    fVar15 = (&player_state_table)[iVar7].spread_heat - frame_dt * 0.4;
-    (&player_state_table)[iVar7].spread_heat = fVar15;
-    if (fVar15 < 0.01) {
+    fVar14 = (&player_state_table)[iVar7].spread_heat - frame_dt * 0.4;
+    (&player_state_table)[iVar7].spread_heat = fVar14;
+    if (fVar14 < 0.01) {
       (&player_state_table)[iVar7].spread_heat = 0.01;
     }
   }
   else {
-    fVar15 = (&player_state_table)[iVar7].spread_heat - (frame_dt + frame_dt);
-    (&player_state_table)[iVar7].spread_heat = fVar15;
-    if (fVar15 < 0.25) {
+    fVar14 = (&player_state_table)[iVar7].spread_heat - (frame_dt + frame_dt);
+    (&player_state_table)[iVar7].spread_heat = fVar14;
+    if (fVar14 < 0.25) {
       (&player_state_table)[iVar7].spread_heat = 0.25;
     }
     (&player_state_table)[iVar7].spread_heat = 0.02;
@@ -12507,8 +12532,8 @@ LAB_00414f2d:
   iVar10 = perk_count_get(perk_id_anxious_loader);
   if ((((iVar10 != 0) && (iVar10 = input_primary_just_pressed(), (char)iVar10 != '\0')) &&
       (0.0 < (&player_state_table)[iVar7].reload_timer)) &&
-     (fVar15 = (&player_state_table)[iVar7].reload_timer - 0.05,
-     (&player_state_table)[iVar7].reload_timer = fVar15, fVar15 <= 0.0)) {
+     (fVar14 = (&player_state_table)[iVar7].reload_timer - 0.05,
+     (&player_state_table)[iVar7].reload_timer = fVar14, fVar14 <= 0.0)) {
     (&player_state_table)[iVar7].reload_timer = frame_dt * 0.8;
   }
   if (((&player_state_table)[iVar7].reload_timer - frame_dt < 0.0) &&
@@ -12516,7 +12541,7 @@ LAB_00414f2d:
     (&player_state_table)[iVar7].ammo = (&player_state_table)[iVar7].clip_size;
   }
   local_38 = 1.0;
-  if ((*pfVar17 == local_28) && ((&player_state_table)[iVar7].pos_y == local_24)) {
+  if ((*pfVar16 == local_28) && ((&player_state_table)[iVar7].pos_y == local_24)) {
     iVar10 = perk_count_get(perk_id_stationary_reloader);
     if (iVar10 != 0) {
       local_38 = 3.0;
@@ -12528,15 +12553,15 @@ LAB_00414f2d:
   }
   iVar10 = perk_count_get(perk_id_angry_reloader);
   if (((iVar10 == 0) || ((&player_state_table)[iVar7].reload_timer_max <= 0.5)) ||
-     (fVar15 = (&player_state_table)[iVar7].reload_timer_max * 0.5,
-     (&player_state_table)[iVar7].reload_timer <= fVar15)) {
+     (fVar14 = (&player_state_table)[iVar7].reload_timer_max * 0.5,
+     (&player_state_table)[iVar7].reload_timer <= fVar14)) {
     (&player_state_table)[iVar7].reload_timer =
          (&player_state_table)[iVar7].reload_timer - local_38 * frame_dt;
   }
   else {
-    fVar14 = (&player_state_table)[iVar7].reload_timer - local_38 * frame_dt;
-    (&player_state_table)[iVar7].reload_timer = fVar14;
-    if (fVar14 <= fVar15) {
+    fVar20 = (&player_state_table)[iVar7].reload_timer - local_38 * frame_dt;
+    (&player_state_table)[iVar7].reload_timer = fVar20;
+    if (fVar20 <= fVar14) {
       bonus_spawn_guard = 1;
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         local_38 = -NAN;
@@ -12544,17 +12569,17 @@ LAB_00414f2d:
       else {
         local_38 = (float)(-1 - render_overlay_player_index);
       }
-      lVar20 = __ftol();
-      fVar15 = (float)(7 - (int)lVar20);
+      lVar19 = __ftol();
+      fVar14 = (float)(7 - (int)lVar19);
       local_3c = 0.0;
-      local_30[0] = fVar15;
-      if (0 < (int)fVar15) {
-        local_30[0] = 6.2831855 / (float)(int)fVar15;
+      local_30[0] = fVar14;
+      if (0 < (int)fVar14) {
+        local_30[0] = 6.2831855 / (float)(int)fVar14;
         do {
-          projectile_spawn(pfVar17,(float)(int)local_3c * local_30[0] + 0.1,
+          projectile_spawn(pfVar16,(float)(int)local_3c * local_30[0] + 0.1,
                            PROJECTILE_TYPE_PLASMA_MINIGUN,(int)local_38);
           local_3c = (float)((int)local_3c + 1);
-        } while ((int)local_3c < (int)fVar15);
+        } while ((int)local_3c < (int)fVar14);
       }
       bonus_spawn_guard = 0;
       sfx_play_panned(sfx_explosion_small);
@@ -12584,20 +12609,20 @@ LAB_00414f2d:
     else {
       if (iVar10 != 4) {
         if (iVar10 == 3) {
-          fVar18 = (float10)(float)(&player_aim_screen_y)[render_overlay_player_index * 2] -
+          fVar17 = (float10)(float)(&player_aim_screen_y)[render_overlay_player_index * 2] -
                    (float10)200.0;
           local_20 = (float)(&player_aim_screen_x)[render_overlay_player_index * 2] - 200.0;
-          local_1c = (float)fVar18;
-          if ((local_20 != 0.0) || (fVar18 != (float10)0.0)) {
-            fVar18 = (float10)fpatan(fVar18,(float10)local_20);
-            (&player_state_table)[iVar7].aim_heading = (float)(fVar18 + (float10)1.5707964);
-            fVar18 = (fVar18 + (float10)1.5707964) - (float10)1.5707964;
-            local_30[0] = (float)fVar18;
-            fVar18 = (float10)fcos(fVar18);
-            fVar19 = (float10)fsin((float10)local_30[0]);
-            local_c = (float)fVar19;
+          local_1c = (float)fVar17;
+          if ((local_20 != 0.0) || (fVar17 != (float10)0.0)) {
+            fVar17 = (float10)fpatan(fVar17,(float10)local_20);
+            (&player_state_table)[iVar7].aim_heading = (float)(fVar17 + (float10)1.5707964);
+            fVar17 = (fVar17 + (float10)1.5707964) - (float10)1.5707964;
+            local_30[0] = (float)fVar17;
+            fVar17 = (float10)fcos(fVar17);
+            fVar18 = (float10)fsin((float10)local_30[0]);
+            local_c = (float)fVar18;
             local_14 = local_c * 60.0 + (&player_state_table)[iVar7].pos_y;
-            local_18 = (float)(fVar18 * (float10)60.0 + (float10)*pfVar17);
+            local_18 = (float)(fVar17 * (float10)60.0 + (float10)*pfVar16);
             (&player_state_table)[iVar7].aim_x = local_18;
             (&player_state_table)[iVar7].aim_y = local_14;
           }
@@ -12626,35 +12651,35 @@ LAB_00414f2d:
               (&player_state_table)[iVar7].aim_heading =
                    (&player_state_table)[iVar7].aim_heading - frame_dt * 3.0;
             }
-            fVar18 = (float10)(&player_state_table)[iVar7].aim_heading - (float10)1.5707964;
-            local_30[0] = (float)fVar18;
-            fVar18 = (float10)fcos(fVar18);
-            fVar19 = (float10)fsin((float10)local_30[0]);
-            local_c = (float)fVar19;
+            fVar17 = (float10)(&player_state_table)[iVar7].aim_heading - (float10)1.5707964;
+            local_30[0] = (float)fVar17;
+            fVar17 = (float10)fcos(fVar17);
+            fVar18 = (float10)fsin((float10)local_30[0]);
+            local_c = (float)fVar18;
             local_14 = local_c * 60.0 + (&player_state_table)[iVar7].pos_y;
-            local_18 = (float)(fVar18 * (float10)60.0 + (float10)*pfVar17);
+            local_18 = (float)(fVar17 * (float10)60.0 + (float10)*pfVar16);
             (&player_state_table)[iVar7].aim_x = local_18;
             (&player_state_table)[iVar7].aim_y = local_14;
           }
         }
         else {
-          bVar8 = FUN_0041e8d0();
+          bVar8 = input_aim_pov_left_active();
           if (bVar8) {
             (&player_state_table)[iVar7].aim_heading =
                  (&player_state_table)[iVar7].aim_heading - frame_dt * 4.0;
           }
-          bVar8 = FUN_0041e8f0();
+          bVar8 = input_aim_pov_right_active();
           if (bVar8) {
             (&player_state_table)[iVar7].aim_heading =
                  frame_dt * 4.0 + (&player_state_table)[iVar7].aim_heading;
           }
-          fVar18 = (float10)(&player_state_table)[iVar7].aim_heading - (float10)1.5707964;
-          local_30[0] = (float)fVar18;
-          fVar18 = (float10)fcos(fVar18);
-          fVar19 = (float10)fsin((float10)local_30[0]);
-          local_c = (float)fVar19;
+          fVar17 = (float10)(&player_state_table)[iVar7].aim_heading - (float10)1.5707964;
+          local_30[0] = (float)fVar17;
+          fVar17 = (float10)fcos(fVar17);
+          fVar18 = (float10)fsin((float10)local_30[0]);
+          local_c = (float)fVar18;
           local_14 = local_c * 60.0 + (&player_state_table)[iVar7].pos_y;
-          local_18 = (float)(fVar18 * (float10)60.0 + (float10)*pfVar17);
+          local_18 = (float)(fVar17 * (float10)60.0 + (float10)*pfVar16);
           (&player_state_table)[iVar7].aim_x = local_18;
           (&player_state_table)[iVar7].aim_y = local_14;
         }
@@ -12667,49 +12692,49 @@ LAB_00414f2d:
       local_20 = (float)extraout_ST0_02;
       local_1c = (float)extraout_ST0_01;
       thunk_FUN_00452f1d();
-      fVar15 = local_40 * *(float *)((int)cv_padAimDistMul + 0xc) + 42.0;
-      local_18 = fVar15 * local_28;
-      local_1c = fVar15 * local_24 + (&player_state_table)[iVar7].pos_y;
-      local_20 = local_18 + *pfVar17;
+      fVar14 = local_40 * *(float *)((int)cv_padAimDistMul + 0xc) + 42.0;
+      local_18 = fVar14 * local_28;
+      local_1c = fVar14 * local_24 + (&player_state_table)[iVar7].pos_y;
+      local_20 = local_18 + *pfVar16;
       (&player_state_table)[iVar7].aim_x = local_20;
       (&player_state_table)[iVar7].aim_y = local_1c;
     }
-    fVar18 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y -
+    fVar17 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y -
                              (float10)(&player_state_table)[iVar7].aim_y,
-                             (float10)*pfVar17 - (float10)(&player_state_table)[iVar7].aim_x);
-    (&player_state_table)[iVar7].aim_heading = (float)(fVar18 - (float10)1.5707964);
+                             (float10)*pfVar16 - (float10)(&player_state_table)[iVar7].aim_x);
+    (&player_state_table)[iVar7].aim_heading = (float)(fVar17 - (float10)1.5707964);
   }
   else {
     pfVar12 = &(&player_state_table)[iVar7].aim_x;
     local_1c = (&creature_pool)[(&player_state_table)[iVar7].auto_target].pos_y -
                (&player_state_table)[iVar7].aim_y;
     local_20 = (&creature_pool)[(&player_state_table)[iVar7].auto_target].pos_x - *pfVar12;
-    fVar15 = SQRT(local_1c * local_1c + local_20 * local_20);
-    if (4.0 <= fVar15) {
+    fVar14 = SQRT(local_1c * local_1c + local_20 * local_20);
+    if (4.0 <= fVar14) {
       thunk_FUN_00452f1d();
-      fVar14 = local_40 * 6.0 * frame_dt;
-      local_18 = local_28 * fVar14;
+      fVar20 = local_40 * 6.0 * frame_dt;
+      local_18 = local_28 * fVar20;
       *pfVar12 = local_18 + *pfVar12;
-      (&player_state_table)[iVar7].aim_y = fVar14 * local_24 + (&player_state_table)[iVar7].aim_y;
+      (&player_state_table)[iVar7].aim_y = fVar20 * local_24 + (&player_state_table)[iVar7].aim_y;
     }
     else {
       iVar10 = (&player_state_table)[iVar7].auto_target;
       *pfVar12 = (&creature_pool)[iVar10].pos_x;
       (&player_state_table)[iVar7].aim_y = (&creature_pool)[iVar10].pos_y;
     }
-    if ((fVar15 < 128.0) &&
+    if ((fVar14 < 128.0) &&
        (0.0 < (&creature_pool)[(&player_state_table)[iVar7].auto_target].health)) {
       bVar4 = true;
     }
   }
 LAB_0041572e:
-  fVar18 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y -
+  fVar17 = (float10)fpatan((float10)(&player_state_table)[iVar7].pos_y -
                            (float10)(&player_state_table)[iVar7].aim_y,
-                           (float10)*pfVar17 - (float10)(&player_state_table)[iVar7].aim_x);
+                           (float10)*pfVar16 - (float10)(&player_state_table)[iVar7].aim_x);
   pfVar12 = &(&player_state_table)[iVar7].shot_cooldown;
   bVar8 = false;
   bVar5 = false;
-  (&player_state_table)[iVar7].aim_heading = (float)(fVar18 - (float10)1.5707964);
+  (&player_state_table)[iVar7].aim_heading = (float)(fVar17 - (float10)1.5707964);
   if ((*pfVar12 <= 0.0) && ((&player_state_table)[iVar7].reload_timer == 0.0)) {
     bVar8 = true;
     *(undefined1 *)&(&player_state_table)[iVar7].reload_active = 0;
@@ -12721,7 +12746,9 @@ LAB_0041572e:
   }
   iVar10 = perk_count_get(perk_id_alternate_weapon);
   if (iVar10 != 0) {
-    if (((DAT_0048719c < 1) || (DAT_0048719c = DAT_0048719c - frame_dt_ms, DAT_0048719c < 1)) &&
+    if (((player_alt_weapon_swap_cooldown_ms < 1) ||
+        (player_alt_weapon_swap_cooldown_ms = player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
+        player_alt_weapon_swap_cooldown_ms < 1)) &&
        (iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_reload),
        (char)iVar10 != '\0')) {
       iVar10 = (&player_state_table)[iVar7].alt_weapon_id;
@@ -12737,29 +12764,29 @@ LAB_0041572e:
       iVar10 = (&player_state_table)[iVar7].alt_ammo;
       (&player_state_table)[iVar7].alt_ammo = (&player_state_table)[iVar7].ammo;
       (&player_state_table)[iVar7].ammo = iVar10;
-      fVar15 = (&player_state_table)[iVar7].alt_reload_timer;
+      fVar14 = (&player_state_table)[iVar7].alt_reload_timer;
       (&player_state_table)[iVar7].alt_reload_timer = (&player_state_table)[iVar7].reload_timer;
-      (&player_state_table)[iVar7].reload_timer = fVar15;
-      fVar15 = (&player_state_table)[iVar7].alt_shot_cooldown;
+      (&player_state_table)[iVar7].reload_timer = fVar14;
+      fVar14 = (&player_state_table)[iVar7].alt_shot_cooldown;
       (&player_state_table)[iVar7].alt_shot_cooldown = *pfVar12;
-      *pfVar12 = fVar15;
-      fVar15 = (&player_state_table)[iVar7].alt_reload_timer_max;
+      *pfVar12 = fVar14;
+      fVar14 = (&player_state_table)[iVar7].alt_reload_timer_max;
       (&player_state_table)[iVar7].alt_reload_timer_max =
            (&player_state_table)[iVar7].reload_timer_max;
-      (&player_state_table)[iVar7].reload_timer_max = fVar15;
+      (&player_state_table)[iVar7].reload_timer_max = fVar14;
       sfx_play_panned((float)(&weapon_table)[(&player_state_table)[iVar7].weapon_id].reload_sfx_id);
       *pfVar12 = *pfVar12 + 0.1;
-      DAT_0048719c = 200;
+      player_alt_weapon_swap_cooldown_ms = 200;
     }
     else {
       iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_reload);
       if ((char)iVar10 == '\0') {
-        DAT_0048719c = 0;
+        player_alt_weapon_swap_cooldown_ms = 0;
       }
     }
   }
   if ((!bVar8) && (!bVar5)) goto LAB_0041753e;
-  fVar15 = (&player_state_table)[iVar7].aim_heading;
+  fVar14 = (&player_state_table)[iVar7].aim_heading;
   iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)
                      ((&player_state_table)[iVar7].input.fire_key);
   if (((char)iVar10 == '\0') && (!bVar4)) goto LAB_0041753e;
@@ -12770,36 +12797,36 @@ LAB_0041572e:
       iVar10 = perk_count_get(perk_id_ammunition_within);
       if (iVar10 != 0) {
         if ((&weapon_ammo_class)[(&player_state_table)[iVar7].weapon_id * 0x1f] == 1) {
-          fVar14 = 0.15;
+          fVar20 = 0.15;
         }
         else {
-          fVar14 = 1.0;
+          fVar20 = 1.0;
         }
-        player_take_damage(render_overlay_player_index,fVar14);
+        player_take_damage(render_overlay_player_index,fVar20);
       }
     }
     else if ((&weapon_ammo_class)[(&player_state_table)[iVar7].weapon_id * 0x1f] == 1) {
-      lVar20 = __ftol();
-      (&player_state_table)[iVar7].experience = (int)lVar20;
+      lVar19 = __ftol();
+      (&player_state_table)[iVar7].experience = (int)lVar19;
     }
     else {
-      lVar20 = __ftol();
-      (&player_state_table)[iVar7].experience = (int)lVar20;
+      lVar19 = __ftol();
+      (&player_state_table)[iVar7].experience = (int)lVar19;
     }
     if ((&player_state_table)[iVar7].experience < 0) {
       (&player_state_table)[iVar7].experience = 0;
     }
   }
-  fVar14 = (float)((float10)fVar15 - (float10)1.5707964);
-  fVar18 = ((float10)fVar15 - (float10)1.5707964) - (float10)0.150915;
-  fVar19 = (float10)fcos(fVar18);
-  local_20 = (float)(fVar19 * (float10)16.0);
-  fVar18 = (float10)fsin(fVar18);
-  local_1c = (float)(fVar18 * (float10)16.0);
+  fVar20 = (float)((float10)fVar14 - (float10)1.5707964);
+  fVar17 = ((float10)fVar14 - (float10)1.5707964) - (float10)0.150915;
+  fVar18 = (float10)fcos(fVar17);
+  local_20 = (float)(fVar18 * (float10)16.0);
+  fVar17 = (float10)fsin(fVar17);
+  local_1c = (float)(fVar17 * (float10)16.0);
   if (((&weapon_table)[(&player_state_table)[iVar7].weapon_id].flags & 1) != 0) {
     uVar9 = crt_rand();
     local_30[0] = (float)(uVar9 & 0x3f);
-    fVar2 = (float)(int)local_30[0] * 0.01 + fVar15;
+    fVar2 = (float)(int)local_30[0] * 0.01 + fVar14;
     uVar9 = crt_rand();
     local_30[0] = (float)(uVar9 & 0x3f);
     local_10 = 1.0;
@@ -12808,16 +12835,16 @@ LAB_0041572e:
     uStack_4 = 0x3f19999a;
     _effect_template_color_r = 0x3f800000;
     _effect_template_flags = 0x1c5;
-    fVar18 = (float10)(int)local_30[0] * (float10)0.022727273 + (float10)1.0;
-    fVar19 = (float10)fcos((float10)fVar2);
+    fVar17 = (float10)(int)local_30[0] * (float10)0.022727273 + (float10)1.0;
+    fVar18 = (float10)fcos((float10)fVar2);
     _effect_template_color_g = 0x3f800000;
     _effect_template_color_b = 0x3f800000;
     _effect_template_color_a = 0x3f19999a;
     _effect_template_lifetime = 0x3e19999a;
     _effect_template_age = 0;
-    local_18 = (float)(fVar19 * fVar18);
-    fVar19 = (float10)fsin((float10)fVar2);
-    local_14 = (float)(fVar19 * fVar18);
+    local_18 = (float)(fVar18 * fVar17);
+    fVar18 = (float10)fsin((float10)fVar2);
+    local_14 = (float)(fVar18 * fVar17);
     uVar9 = crt_rand();
     _effect_template_half_height = 0x40000000;
     local_30[0] = (float)((uVar9 & 0x3f) - 0x20);
@@ -12830,7 +12857,7 @@ LAB_0041572e:
     local_30[0] = (float)(iVar10 % 0x14);
     _effect_template_rotation_step = ((float)(int)local_30[0] * 0.1 - 1.0) * 14.0;
     local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-    local_10 = local_20 + *pfVar17;
+    local_10 = local_20 + *pfVar16;
     effect_spawn(0x12,&local_10);
   }
   if (1.0 < *pfVar1) {
@@ -12839,10 +12866,10 @@ LAB_0041572e:
   iVar10 = render_overlay_player_index;
   local_38 = 1.0;
   if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
-    iVar16 = -100;
+    iVar15 = -100;
   }
   else {
-    iVar16 = -1 - render_overlay_player_index;
+    iVar15 = -1 - render_overlay_player_index;
   }
   local_14 = (&player_state_table)[render_overlay_player_index].aim_y;
   local_18 = (&player_state_table)[render_overlay_player_index].aim_x;
@@ -12855,15 +12882,15 @@ LAB_0041572e:
   fVar2 = (float)(int)local_30[0];
   uVar9 = crt_rand();
   local_30[0] = (float)(uVar9 & 0x1ff);
-  fVar18 = (float10)local_28 * (float10)(&player_state_table)[iVar10].spread_heat *
+  fVar17 = (float10)local_28 * (float10)(&player_state_table)[iVar10].spread_heat *
            (float10)(int)local_30[0] * (float10)0.001953125;
-  fVar19 = (float10)fcos((float10)(fVar2 * 0.012271847));
-  local_18 = (float)(fVar19 * fVar18 + (float10)local_18);
-  fVar19 = (float10)fsin((float10)(fVar2 * 0.012271847));
-  fVar18 = (float10)fpatan((float10)(&player_state_table)[iVar10].pos_y -
-                           (fVar19 * fVar18 + (float10)local_14),
+  fVar18 = (float10)fcos((float10)(fVar2 * 0.012271847));
+  local_18 = (float)(fVar18 * fVar17 + (float10)local_18);
+  fVar18 = (float10)fsin((float10)(fVar2 * 0.012271847));
+  fVar17 = (float10)fpatan((float10)(&player_state_table)[iVar10].pos_y -
+                           (fVar18 * fVar17 + (float10)local_14),
                            (float10)(&player_state_table)[iVar10].pos_x - (float10)local_18);
-  fVar2 = (float)(fVar18 - (float10)1.5707964);
+  fVar2 = (float)(fVar17 - (float10)1.5707964);
   iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(0x22);
   if ((char)iVar10 != '\0') {
     (&player_state_table)[iVar7].fire_bullets_timer = 10.0;
@@ -12879,24 +12906,24 @@ LAB_0041572e:
     iVar10 = (&player_state_table)[iVar7].weapon_id;
     if (iVar10 == 0x18) {
       local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-      local_10 = local_20 + *pfVar17;
-      projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SHRINKIFIER,iVar16);
-      fVar18 = (float10)fcos((float10)fVar15);
-      local_10 = (float)(fVar18 * (float10)25.0);
-      fVar19 = (float10)fsin((float10)fVar15);
-      local_c = (float)(fVar19 * (float10)25.0);
+      local_10 = local_20 + *pfVar16;
+      projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SHRINKIFIER,iVar15);
+      fVar17 = (float10)fcos((float10)fVar14);
+      local_10 = (float)(fVar17 * (float10)25.0);
+      fVar18 = (float10)fsin((float10)fVar14);
+      local_c = (float)(fVar18 * (float10)25.0);
       local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-      local_18 = local_20 + *pfVar17;
+      local_18 = local_20 + *pfVar16;
       iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
       (&sprite_effect_pool)[iVar10].color_r = 0.5;
       (&sprite_effect_pool)[iVar10].color_g = 0.5;
       (&sprite_effect_pool)[iVar10].color_b = 0.5;
       (&sprite_effect_pool)[iVar10].color_a = 0.23;
       local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-      local_18 = local_20 + *pfVar17;
+      local_18 = local_20 + *pfVar16;
 LAB_0041600e:
-      local_3c = (float)fVar19;
-      local_40 = (float)fVar18;
+      local_3c = (float)fVar18;
+      local_40 = (float)fVar17;
       local_c = local_3c * 15.0;
       local_10 = local_40 * 15.0;
       iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
@@ -12908,64 +12935,64 @@ LAB_0041600e:
     else {
       if (iVar10 == 1) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PISTOL,iVar16);
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PISTOL,iVar15);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.23;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         goto LAB_0041600e;
       }
       if (iVar10 == 2) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.23;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.213;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ASSAULT_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ASSAULT_RIFLE,iVar15);
       }
       else if (iVar10 == 3) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.25;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 1.68156e-44;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
@@ -12975,8 +13002,8 @@ LAB_0041600e:
         do {
           pVar21 = PROJECTILE_TYPE_SHOTGUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0013 + fVar2,pVar21,iVar10);
@@ -12987,12 +13014,12 @@ LAB_0041600e:
         } while (local_3c != 0.0);
       }
       else if (iVar10 == 0x14) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)15.0);
-        fVar18 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar18 * (float10)15.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)15.0);
+        fVar17 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar17 * (float10)15.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 5.60519e-45;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
@@ -13002,8 +13029,8 @@ LAB_0041600e:
         do {
           pVar21 = PROJECTILE_TYPE_SHOTGUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0013 + fVar2,pVar21,iVar10);
@@ -13014,21 +13041,21 @@ LAB_0041600e:
         } while (local_3c != 0.0);
       }
       else if (iVar10 == 4) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.26;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 1.68156e-44;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
@@ -13038,8 +13065,8 @@ LAB_0041600e:
         do {
           pVar21 = PROJECTILE_TYPE_SHOTGUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.004 + fVar2,pVar21,iVar10);
@@ -13051,14 +13078,14 @@ LAB_0041600e:
       }
       else if (iVar10 == 8) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        fx_spawn_particle(&local_10,fVar14,&(&player_state_table)[iVar7].move_dx,1.0);
+        local_10 = local_20 + *pfVar16;
+        fx_spawn_particle(&local_10,fVar20,&(&player_state_table)[iVar7].move_dx,1.0);
         local_38 = 0.1;
       }
       else if (iVar10 == 0x10) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        iVar10 = fx_spawn_particle(&local_10,fVar14,&(&player_state_table)[iVar7].move_dx,1.0);
+        local_10 = local_20 + *pfVar16;
+        iVar10 = fx_spawn_particle(&local_10,fVar20,&(&player_state_table)[iVar7].move_dx,1.0);
         if (iVar10 != -1) {
           *(undefined1 *)&(&particle_pool)[iVar10].style_id = 2;
         }
@@ -13066,102 +13093,102 @@ LAB_0041600e:
       }
       else if (iVar10 == 0xf) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        iVar10 = fx_spawn_particle(&local_10,fVar14,&(&player_state_table)[iVar7].move_dx,1.0);
+        local_10 = local_20 + *pfVar16;
+        iVar10 = fx_spawn_particle(&local_10,fVar20,&(&player_state_table)[iVar7].move_dx,1.0);
         if (iVar10 != -1) {
           *(undefined1 *)&(&particle_pool)[iVar10].style_id = 1;
         }
         local_38 = 0.05;
       }
       else if (iVar10 == 5) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.23;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.213;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SUBMACHINE_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SUBMACHINE_GUN,iVar15);
       }
       else if (iVar10 == 9) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_RIFLE,iVar15);
       }
       else if (iVar10 == 10) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2 - 0.31415927,PROJECTILE_TYPE_PLASMA_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2 - 0.31415927,PROJECTILE_TYPE_PLASMA_RIFLE,iVar15);
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2 - 0.5235988,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2 - 0.5235988,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar15);
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_RIFLE,iVar15);
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2 + 0.5235988,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2 + 0.5235988,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar15);
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2 + 0.31415927,PROJECTILE_TYPE_PLASMA_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2 + 0.31415927,PROJECTILE_TYPE_PLASMA_RIFLE,iVar15);
       }
       else if (iVar10 == 0x13) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PULSE_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PULSE_GUN,iVar15);
       }
       else if (iVar10 == 0x19) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_BLADE_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_BLADE_GUN,iVar15);
       }
       else if (iVar10 == 0x1d) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SPLITTER_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_SPLITTER_GUN,iVar15);
       }
       else if (iVar10 == 0x15) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_RIFLE,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_RIFLE,iVar15);
       }
       else if (iVar10 == 0x16) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_MINIGUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_MINIGUN,iVar15);
       }
       else if (iVar10 == 0x17) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_CANNON,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_ION_CANNON,iVar15);
       }
       else if (iVar10 == 0x1c) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_CANNON,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_CANNON,iVar15);
       }
       else if (iVar10 == 0x1f) {
         local_3c = 1.12104e-44;
         do {
           pVar21 = PROJECTILE_TYPE_ION_MINIGUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0026 + fVar2,pVar21,iVar10);
@@ -13173,25 +13200,25 @@ LAB_0041600e:
       }
       else if (iVar10 == 0xb) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLASMA_MINIGUN,iVar15);
       }
       else if (iVar10 == 0x1e) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.33;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 8.40779e-45;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
@@ -13201,8 +13228,8 @@ LAB_0041600e:
         do {
           pVar21 = PROJECTILE_TYPE_GAUSS_GUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.002 + fVar2,pVar21,iVar10);
@@ -13213,145 +13240,145 @@ LAB_0041600e:
         } while (local_3c != 0.0);
       }
       else if (iVar10 == 6) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.33;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.263;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_GAUSS_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_GAUSS_GUN,iVar15);
       }
       else if (iVar10 == 0xc) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.34;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.283;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
+        local_10 = local_20 + *pfVar16;
         fx_spawn_secondary_projectile(&local_10,fVar2,SECONDARY_PROJECTILE_TYPE_ROCKET);
       }
       else if (iVar10 == 0x11) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.34;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.283;
-        fVar15 = (float)(&player_state_table)[iVar7].ammo * 1.0471976;
-        fVar14 = 0.0;
-        local_3c = (fVar2 - 3.1415927) - fVar15 * (float)(&player_state_table)[iVar7].ammo * 0.5;
+        fVar14 = (float)(&player_state_table)[iVar7].ammo * 1.0471976;
+        fVar20 = 0.0;
+        local_3c = (fVar2 - 3.1415927) - fVar14 * (float)(&player_state_table)[iVar7].ammo * 0.5;
         if (0.0 < (float)(&player_state_table)[iVar7].ammo) {
           do {
             local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-            local_10 = local_20 + *pfVar17;
+            local_10 = local_20 + *pfVar16;
             fx_spawn_secondary_projectile
                       (&local_10,local_3c,SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
-            local_3c = local_3c + fVar15;
-            fVar14 = (float)((int)fVar14 + 1);
-            local_28 = fVar14;
-          } while ((float)(int)fVar14 < (float)(&player_state_table)[iVar7].ammo);
+            local_3c = local_3c + fVar14;
+            fVar20 = (float)((int)fVar20 + 1);
+            local_28 = fVar20;
+          } while ((float)(int)fVar20 < (float)(&player_state_table)[iVar7].ammo);
         }
         local_38 = (float)(&player_state_table)[iVar7].ammo;
       }
       else if (iVar10 == 0x12) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar18 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar18 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar17 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar17 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.34;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
+        local_10 = local_20 + *pfVar16;
         fx_spawn_secondary_projectile(&local_10,fVar2,SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
       }
       else if (iVar10 == 0xd) {
-        fVar18 = (float10)fcos((float10)fVar15);
-        local_10 = (float)(fVar18 * (float10)25.0);
-        fVar19 = (float10)fsin((float10)fVar15);
-        local_c = (float)(fVar19 * (float10)25.0);
+        fVar17 = (float10)fcos((float10)fVar14);
+        local_10 = (float)(fVar17 * (float10)25.0);
+        fVar18 = (float10)fsin((float10)fVar14);
+        local_c = (float)(fVar18 * (float10)25.0);
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        local_10 = (float)fVar18 * 15.0;
-        local_c = (float)fVar19 * 15.0;
+        local_10 = (float)fVar17 * 15.0;
+        local_c = (float)fVar18 * 15.0;
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.31;
         local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_18 = local_20 + *pfVar17;
+        local_18 = local_20 + *pfVar16;
         iVar10 = fx_spawn_sprite(&local_18,&local_10,2.0);
         (&sprite_effect_pool)[iVar10].color_r = 0.5;
         (&sprite_effect_pool)[iVar10].color_g = 0.5;
         (&sprite_effect_pool)[iVar10].color_b = 0.5;
         (&sprite_effect_pool)[iVar10].color_a = 0.243;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
+        local_10 = local_20 + *pfVar16;
         fx_spawn_secondary_projectile(&local_10,fVar2,SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
       }
       else if (iVar10 == 7) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PISTOL,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PISTOL,iVar15);
       }
       else if (iVar10 == 0xe) {
         local_3c = 1.96182e-44;
         do {
           pVar21 = PROJECTILE_TYPE_PLASMA_MINIGUN;
           local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-          local_10 = local_20 + *pfVar17;
-          iVar10 = iVar16;
+          local_10 = local_20 + *pfVar16;
+          iVar10 = iVar15;
           uVar9 = crt_rand();
           local_28 = (float)((uVar9 & 0xff) - 0x80);
           iVar10 = projectile_spawn(&local_10,(float)(int)local_28 * 0.002 + fVar2,pVar21,iVar10);
@@ -13363,17 +13390,17 @@ LAB_0041600e:
       }
       else if (iVar10 == 0x29) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLAGUE_SPREADER,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_PLAGUE_SPREADER,iVar15);
       }
       else if (iVar10 == 0x2b) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_RAINBOW_GUN,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,fVar2,PROJECTILE_TYPE_RAINBOW_GUN,iVar15);
       }
       else if (iVar10 == 0x2a) {
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
+        local_10 = local_20 + *pfVar16;
         fx_spawn_particle_slow(&local_10,fVar2 - 1.5707964);
         local_38 = 0.15;
       }
@@ -13394,37 +13421,37 @@ LAB_0041600e:
     sfx_play_panned(DAT_004d7fd8);
     if ((&weapon_table)[(&player_state_table)[iVar7].weapon_id].pellet_count == 1) {
       (&player_state_table)[iVar7].shot_cooldown = DAT_004d9040;
-      fVar14 = _DAT_004d9048;
+      fVar20 = _DAT_004d9048;
     }
     else {
       (&player_state_table)[iVar7].shot_cooldown =
            (&weapon_table)[(&player_state_table)[iVar7].weapon_id].shot_cooldown;
-      fVar14 = (&weapon_table)[(&player_state_table)[iVar7].weapon_id].spread_heat;
+      fVar20 = (&weapon_table)[(&player_state_table)[iVar7].weapon_id].spread_heat;
     }
     iVar10 = 0;
-    *pfVar1 = fVar14 + *pfVar1;
+    *pfVar1 = fVar20 + *pfVar1;
     if (0 < (&weapon_table)[(&player_state_table)[iVar7].weapon_id].pellet_count) {
       do {
         iVar11 = crt_rand();
         local_28 = (float)(iVar11 % 200 + -100) * 0.0015 + fVar2;
         local_c = local_1c + (&player_state_table)[iVar7].pos_y;
-        local_10 = local_20 + *pfVar17;
-        projectile_spawn(&local_10,local_28,PROJECTILE_TYPE_FIRE_BULLETS,iVar16);
+        local_10 = local_20 + *pfVar16;
+        projectile_spawn(&local_10,local_28,PROJECTILE_TYPE_FIRE_BULLETS,iVar15);
         iVar10 = iVar10 + 1;
       } while (iVar10 < (&weapon_table)[(&player_state_table)[iVar7].weapon_id].pellet_count);
     }
-    fVar18 = (float10)fcos((float10)fVar15);
-    local_10 = (float)(fVar18 * (float10)25.0);
-    fVar18 = (float10)fsin((float10)fVar15);
-    local_c = (float)(fVar18 * (float10)25.0);
+    fVar17 = (float10)fcos((float10)fVar14);
+    local_10 = (float)(fVar17 * (float10)25.0);
+    fVar17 = (float10)fsin((float10)fVar14);
+    local_c = (float)(fVar17 * (float10)25.0);
     local_14 = local_1c + (&player_state_table)[iVar7].pos_y;
-    local_18 = local_20 + *pfVar17;
-    iVar16 = fx_spawn_sprite(&local_18,&local_10,1.0);
+    local_18 = local_20 + *pfVar16;
+    iVar15 = fx_spawn_sprite(&local_18,&local_10,1.0);
     iVar10 = perk_id_sharpshooter;
-    (&sprite_effect_pool)[iVar16].color_r = 0.5;
-    (&sprite_effect_pool)[iVar16].color_g = 0.5;
-    (&sprite_effect_pool)[iVar16].color_b = 0.5;
-    (&sprite_effect_pool)[iVar16].color_a = 0.413;
+    (&sprite_effect_pool)[iVar15].color_r = 0.5;
+    (&sprite_effect_pool)[iVar15].color_g = 0.5;
+    (&sprite_effect_pool)[iVar15].color_b = 0.5;
+    (&sprite_effect_pool)[iVar15].color_a = 0.413;
     iVar10 = perk_count_get(iVar10);
     if (iVar10 == 0) {
       (&player_state_table)[iVar7].spread_heat =
@@ -13444,33 +13471,33 @@ LAB_0041600e:
     player_start_reload();
   }
 LAB_0041753e:
-  fVar15 = (&player_state_table)[iVar7].move_phase;
-  while (14.0 < fVar15) {
-    fVar15 = (&player_state_table)[iVar7].move_phase - 14.0;
-    (&player_state_table)[iVar7].move_phase = fVar15;
+  fVar14 = (&player_state_table)[iVar7].move_phase;
+  while (14.0 < fVar14) {
+    fVar14 = (&player_state_table)[iVar7].move_phase - 14.0;
+    (&player_state_table)[iVar7].move_phase = fVar14;
   }
-  fVar15 = (&player_state_table)[iVar7].move_phase;
-  while (fVar15 < 0.0) {
-    fVar15 = (&player_state_table)[iVar7].move_phase + 14.0;
-    (&player_state_table)[iVar7].move_phase = fVar15;
+  fVar14 = (&player_state_table)[iVar7].move_phase;
+  while (fVar14 < 0.0) {
+    fVar14 = (&player_state_table)[iVar7].move_phase + 14.0;
+    (&player_state_table)[iVar7].move_phase = fVar14;
   }
   if (0.0 < (&player_state_table)[iVar7].speed_bonus_timer) {
     (&player_state_table)[iVar7].speed_multiplier =
          (&player_state_table)[iVar7].speed_multiplier - 1.0;
   }
-  fVar15 = (&player_state_table)[iVar7].size * 0.5;
-  if (*pfVar17 < fVar15) {
-    *pfVar17 = fVar15;
+  fVar14 = (&player_state_table)[iVar7].size * 0.5;
+  if (*pfVar16 < fVar14) {
+    *pfVar16 = fVar14;
   }
-  if ((float)terrain_texture_width - fVar15 < *pfVar17) {
-    *pfVar17 = (float)terrain_texture_width - fVar15;
+  if ((float)_terrain_texture_width - fVar14 < *pfVar16) {
+    *pfVar16 = (float)_terrain_texture_width - fVar14;
   }
-  pfVar17 = &(&player_state_table)[iVar7].pos_y;
-  if ((&player_state_table)[iVar7].pos_y < fVar15) {
-    *pfVar17 = fVar15;
+  pfVar16 = &(&player_state_table)[iVar7].pos_y;
+  if ((&player_state_table)[iVar7].pos_y < fVar14) {
+    *pfVar16 = fVar14;
   }
-  if ((float)terrain_texture_height - fVar15 < *pfVar17) {
-    *pfVar17 = (float)terrain_texture_height - fVar15;
+  if ((float)_terrain_texture_height - fVar14 < *pfVar16) {
+    *pfVar16 = (float)_terrain_texture_height - fVar14;
   }
   if (0.8 < *pfVar1) {
     *pfVar1 = 0.8;
@@ -13511,151 +13538,125 @@ float __cdecl vec2_length(float *v)
 
 
 
-/* FUN_00417690 @ 00417690 */
+/* ui_menu_template_pool_init @ 00417690 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_417690() */
+/* initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by
+   ui_menu_layout_init */
 
-int FUN_00417690(void)
+int ui_menu_template_pool_init(void)
 
 {
   undefined *puVar1;
-  undefined4 *puVar2;
-  ui_element_t *puVar3;
-  int iVar4;
-  int iVar5;
+  int iVar2;
   
-  puVar1 = &DAT_0048f808;
-  iVar4 = 8;
+  puVar1 = &ui_template_pool_block_00;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  puVar1 = &DAT_0048f8f0;
-  _DAT_0048f8ec = 4;
-  iVar4 = 8;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  puVar1 = &ui_template_pool_block_01;
+  ui_template_pool_block_00_mode = 4;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  _DAT_0048f9d4 = 4;
-  puVar1 = &DAT_0048f9d8;
-  iVar4 = 8;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  ui_template_pool_block_01_mode = 4;
+  puVar1 = &ui_template_pool_block_02;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  _DAT_0048fabc = 4;
-  puVar2 = &DAT_0048fac0;
-  iVar4 = 8;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  ui_template_pool_block_02_mode = 4;
+  puVar1 = &ui_sign_crimson_template;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar2);
-    puVar2 = puVar2 + 7;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  _DAT_0048fba4 = 4;
-  puVar3 = &ui_menu_item_element;
-  iVar4 = 8;
+    ui_template_slot_ctor_noop(puVar1);
+    puVar1 = puVar1 + 0x1c;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  ui_sign_crimson_template_mode = 4;
+  puVar1 = &ui_menu_item_element;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar3);
-    puVar3 = (ui_element_t *)&puVar3->pos_y;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  ui_menu_item_element._pad3[0] = '\x04';
-  ui_menu_item_element._pad3[1] = '\0';
-  ui_menu_item_element._pad3[2] = '\0';
-  ui_menu_item_element._pad3[3] = '\0';
-  iVar4 = 0x48fc90;
-  iVar5 = 8;
+    ui_template_slot_ctor_noop(puVar1);
+    puVar1 = puVar1 + 0x1c;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  _DAT_0048fc8c = 4;
+  puVar1 = &DAT_0048fc90;
+  iVar2 = 8;
   do {
-    FUN_00417a90(iVar4);
-    iVar4 = iVar4 + 0x1c;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
-  ui_menu_item_element._pad4[0xa8] = '\x04';
-  ui_menu_item_element._pad4[0xa9] = '\0';
-  ui_menu_item_element._pad4[0xaa] = '\0';
-  ui_menu_item_element._pad4[0xab] = '\0';
-  FUN_004010f0(0x48fd78,0x1c,8,0x417a90);
-  ui_menu_item_element._pad5[0xac] = '\x04';
-  ui_menu_item_element._pad5[0xad] = '\0';
-  ui_menu_item_element._pad5[0xae] = '\0';
-  ui_menu_item_element._pad5[0xaf] = '\0';
-  FUN_004010f0(0x48fe60,0x1c,8,0x417a90);
-  _DAT_0048ff44 = 4;
-  FUN_004010f0(0x48ff48,0x1c,8,0x417a90);
-  _DAT_0049002c = 4;
-  FUN_004010f0(0x490030,0x1c,8,0x417a90);
-  _DAT_00490114 = 4;
-  FUN_004010f0(0x490118,0x1c,8,0x417a90);
-  _DAT_004901fc = 4;
-  iVar4 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
-  _DAT_004902e4 = 4;
-  return iVar4;
+    ui_template_slot_ctor_noop(puVar1);
+    puVar1 = puVar1 + 0x1c;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  _DAT_0048fd74 = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_01,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_01.quad_mode = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_02,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_02.quad_mode = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_03,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_03.quad_mode = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_04,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_04.quad_mode = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_05,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_05.quad_mode = 4;
+  iVar2 = invoke_callback_n(&ui_menu_item_subtemplate_block_06,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_06.quad_mode = 4;
+  return iVar2;
 }
 
 
 
-/* FUN_00417a90 @ 00417a90 */
+/* ui_template_slot_ctor_noop @ 00417a90 */
 
-undefined4 __fastcall FUN_00417a90(undefined4 param_1)
+/* identity/no-op slot constructor callback used while building ui menu template pools */
+
+void * __fastcall ui_template_slot_ctor_noop(void *slot)
 
 {
-  return param_1;
+  return slot;
 }
 
 
 
-/* FUN_00417aa0 @ 00417aa0 */
+/* ui_template_block_set_mode4 @ 00417aa0 */
 
-/* [binja] void* __fastcall sub_417aa0(void* arg1) */
+/* sets template block mode sentinel at offset +0xe4 to 4 */
 
-void * __fastcall FUN_00417aa0(void *arg1)
+void * __fastcall ui_template_block_set_mode4(void *block)
 
 {
-  *(undefined4 *)((int)arg1 + 0xe4) = 4;
-  return arg1;
+  *(undefined4 *)((int)block + 0xe4) = 4;
+  return block;
 }
 
 
 
-/* FUN_00417ab0 @ 00417ab0 */
+/* ui_template_triplet_reset_and_seed_modes @ 00417ab0 */
 
-/* [binja] char* __fastcall sub_417ab0(char* arg1) */
+/* resets head flags and seeds three template sub-block mode sentinels (+0x120/+0x208/+0x2f0) to 4
+    */
 
-char * __fastcall FUN_00417ab0(char *arg1)
+void * __fastcall ui_template_triplet_reset_and_seed_modes(void *block)
 
 {
-  arg1[0x120] = '\x04';
-  arg1[0x121] = '\0';
-  arg1[0x122] = '\0';
-  arg1[0x123] = '\0';
-  arg1[0x208] = '\x04';
-  arg1[0x209] = '\0';
-  arg1[0x20a] = '\0';
-  arg1[0x20b] = '\0';
-  arg1[0x2f0] = '\x04';
-  arg1[0x2f1] = '\0';
-  arg1[0x2f2] = '\0';
-  arg1[0x2f3] = '\0';
-  arg1[0x2f8] = '\0';
-  arg1[0x2f9] = '\0';
-  arg1[0x2fa] = '\0';
-  arg1[0x2fb] = '\0';
-  arg1[0x314] = '\0';
-  arg1[0x38] = '\0';
-  arg1[0x39] = '\0';
-  arg1[0x3a] = '\0';
-  arg1[0x3b] = '\0';
-  arg1[0x34] = '\0';
-  arg1[0x35] = '\0';
-  arg1[0x36] = '\0';
-  arg1[0x37] = '\0';
-  *arg1 = '\0';
-  return arg1;
+  *(undefined4 *)((int)block + 0x120) = 4;
+  *(undefined4 *)((int)block + 0x208) = 4;
+  *(undefined4 *)((int)block + 0x2f0) = 4;
+  *(undefined4 *)((int)block + 0x2f8) = 0;
+  *(undefined1 *)((int)block + 0x314) = 0;
+  *(undefined4 *)((int)block + 0x38) = 0;
+  *(undefined4 *)((int)block + 0x34) = 0;
+  *(undefined1 *)block = 0;
+  return block;
 }
 
 
@@ -13717,71 +13718,71 @@ void __cdecl terrain_generate(void *desc)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_target)((int)terrain_render_target);
+    (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x10)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x10) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 800;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 800;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 800;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 800;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x14)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x14) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 0x23;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 0x23;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x18)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x18) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 0xf;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 0xf;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
@@ -13797,7 +13798,8 @@ void __cdecl terrain_generate(void *desc)
     (*grim_interface_ptr->vtable->grim_set_render_target)(-1);
     return;
   }
-  terrain_render_target = (float)(&terrain_texture_handles)[*(int *)((int)desc + 0x10)];
+  _terrain_render_target =
+       *(undefined4 *)(&terrain_texture_handles + *(int *)((int)desc + 0x10) * 4);
   return;
 }
 
@@ -13812,10 +13814,10 @@ void terrain_generate_random(void)
 
 {
   IGrim2D_vtbl *pIVar1;
-  float handle;
   int iVar2;
   int iVar3;
-  float fVar4;
+  int iVar4;
+  float fVar5;
   float fStack_64;
   float fStack_60;
   int iStack_54;
@@ -13826,8 +13828,8 @@ void terrain_generate_random(void)
   _DAT_0048f540 = crt_rand();
   _DAT_0048f540 = _DAT_0048f540 % 7;
   crt_rand();
-  handle = DAT_0048f54c;
-  fVar4 = terrain_texture_handles;
+  iVar4 = terrain_texture_layer_1;
+  iVar3 = _terrain_texture_handles;
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
@@ -13856,69 +13858,69 @@ void terrain_generate_random(void)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
+    (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)fVar4,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(iVar3,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 800;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
+    iVar2 = 0;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 800;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 800;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar2 = iVar2 + 1;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 800;
+      } while (iVar2 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)handle,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(iVar4,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
+    iVar4 = 0;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 0x23;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar4 = iVar4 + 1;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 0x23;
+      } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)(iStack_54,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
+    iVar4 = 0;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 0xf;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar4 = iVar4 + 1;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 0xf;
+      } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     _camera_offset_x = 0;
@@ -13963,7 +13965,7 @@ void terrain_render(void)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
   if (terrain_texture_failed != '\0') {
-    (*grim_interface_ptr->vtable->grim_bind_texture)(terrain_render_target,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(_terrain_render_target,0);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x12,in_stack_ffffffc4 & 0xffffff00);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -13971,10 +13973,10 @@ void terrain_render(void)
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     iVar4 = 0;
-    iVar1 = (int)(terrain_texture_height + (terrain_texture_height >> 0x1f & 0xffU)) >> 8;
+    iVar1 = (int)(_terrain_texture_height + (_terrain_texture_height >> 0x1f & 0xffU)) >> 8;
     if (iVar1 != -1 && -1 < iVar1 + 1) {
       iVar5 = 0;
-      iVar1 = terrain_texture_width;
+      iVar1 = _terrain_texture_width;
       do {
         iVar3 = 0;
         iVar2 = (int)(iVar1 + (iVar1 >> 0x1f & 0xffU)) >> 8;
@@ -13986,14 +13988,14 @@ void terrain_render(void)
                       ((float)iVar2 + _camera_offset_x,fVar6 + _camera_offset_y,256.0,256.0);
             iVar2 = iVar2 + 0x100;
             iVar3 = iVar3 + 1;
-            iVar1 = terrain_texture_width;
-          } while (iVar3 < ((int)(terrain_texture_width + (terrain_texture_width >> 0x1f & 0xffU))
+            iVar1 = _terrain_texture_width;
+          } while (iVar3 < ((int)(_terrain_texture_width + (_terrain_texture_width >> 0x1f & 0xffU))
                            >> 8) + 1);
         }
         iVar4 = iVar4 + 1;
         iVar5 = iVar5 + 0x100;
-      } while (iVar4 < ((int)(terrain_texture_height + (terrain_texture_height >> 0x1f & 0xffU)) >>
-                       8) + 1);
+      } while (iVar4 < ((int)(_terrain_texture_height + (_terrain_texture_height >> 0x1f & 0xffU))
+                       >> 8) + 1);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
@@ -14001,14 +14003,14 @@ void terrain_render(void)
               (0x12,CONCAT31((int3)((uint)in_stack_ffffff9c >> 8),1));
     return;
   }
-  (*grim_interface_ptr->vtable->grim_bind_texture)(terrain_render_target,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(_terrain_render_target,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  fVar6 = -(_camera_offset_x / (float)terrain_texture_width);
-  v0 = -(_camera_offset_y / (float)terrain_texture_height);
+  fVar6 = -(_camera_offset_x / (float)_terrain_texture_width);
+  v0 = -(_camera_offset_y / (float)_terrain_texture_height);
   (*grim_interface_ptr->vtable->grim_set_uv)
-            (fVar6,v0,(float)config_blob.screen_width / (float)terrain_texture_width + fVar6,
-             (float)config_blob.screen_height / (float)terrain_texture_height + v0);
+            (fVar6,v0,(float)config_blob.screen_width / (float)_terrain_texture_width + fVar6,
+             (float)config_blob.screen_height / (float)_terrain_texture_height + v0);
   (*grim_interface_ptr->vtable->grim_draw_fullscreen_quad)(0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   return;
@@ -14039,8 +14041,7 @@ void __cdecl creature_render_type(int type_id)
   float fStack_24;
   float fStack_20;
   
-  (*grim_interface_ptr->vtable->grim_bind_texture)((&creature_type_table)[type_id].texture_handle,0)
-  ;
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[type_id].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   fVar5 = (float)type_id;
   if ((config_blob.reserved0[0xe] != '\0') &&
@@ -14060,7 +14061,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -14069,7 +14070,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = *pfVar6 * 0.5 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14090,7 +14091,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((*pfVar6 < 0.0) && (fStack_2c = *pfVar6 * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
           }
@@ -14124,7 +14125,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *(float *)(iVar2 + -0x84)) {
             lVar7 = __ftol();
             frame = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < frame)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < frame)) {
               frame = 0x1f - frame;
             }
           }
@@ -14133,7 +14134,7 @@ void __cdecl creature_render_type(int type_id)
             frame = (int)lVar7;
           }
           else {
-            frame = (&creature_type_table)[type_id].base_frame + 0xf;
+            frame = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14154,7 +14155,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((*(float *)(iVar2 + -0x84) < 0.0) &&
              (fStack_2c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
@@ -14202,7 +14203,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= pfVar6[-6]) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -14211,7 +14212,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = pfVar6[-6] * 0.1 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14232,7 +14233,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((pfVar6[-6] < 0.0) && (fStack_2c = pfVar6[-6] * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
           }
@@ -14265,7 +14266,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
             if (((uint)fVar5 & 0x10) != 0) {
@@ -14277,7 +14278,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
           }
           pIVar4 = grim_interface_ptr->vtable;
         }
@@ -14291,7 +14292,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           pIVar4 = grim_interface_ptr->vtable;
-          iVar2 = (&creature_type_table)[type_id].base_frame + 0x10 + uVar3;
+          iVar2 = creature_type_table[type_id].base_frame + 0x10 + uVar3;
         }
         (*pIVar4->grim_set_atlas_frame)(8,iVar2);
         (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&stack0xffffffb4);
@@ -14551,107 +14552,95 @@ void __cdecl ui_element_load(ui_element_t *element,char *jaz_path)
 
 /* ui_menu_assets_init @ 00419dd0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* loads menu UI elements and seeds layout copies */
 
 void ui_menu_assets_init(void)
 
 {
-  uchar *puVar1;
+  ui_menu_item_subtemplate_block_t *puVar1;
   int iVar2;
-  uchar *puVar3;
+  float *pfVar3;
+  ui_menu_item_subtemplate_slot_t *puVar4;
+  ui_menu_item_subtemplate_slot_t *puVar5;
+  ui_menu_item_subtemplate_block_t *puVar6;
   float local_8 [2];
   
-  ui_element_load((ui_element_t *)&DAT_0048fac0,s_ui_ui_signCrimson_jaz_004737f4);
+  ui_element_load((ui_element_t *)&ui_sign_crimson_template,s_ui_ui_signCrimson_jaz_004737f4);
   local_8[0] = -577.44;
   local_8[1] = -62.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048fac0,573.44,143.36,local_8);
-  ui_element_load(&ui_menu_item_element,s_ui_ui_menuItem_jaz_004737e0);
+  ui_element_set_rect((ui_element_t *)&ui_sign_crimson_template,573.44,143.36,local_8);
+  ui_element_load((ui_element_t *)&ui_menu_item_element,s_ui_ui_menuItem_jaz_004737e0);
   local_8[0] = -72.0;
   local_8[1] = -60.0;
-  ui_element_set_rect(&ui_menu_item_element,512.0,64.0,local_8);
-  ui_element_load((ui_element_t *)(ui_menu_item_element._pad3 + 4),s_ui_ui_menuPanel_jaz_004737cc);
+  ui_element_set_rect((ui_element_t *)&ui_menu_item_element,512.0,64.0,local_8);
+  ui_element_load((ui_element_t *)&DAT_0048fc90,s_ui_ui_menuPanel_jaz_004737cc);
   local_8[0] = 20.0;
   local_8[1] = -82.0;
-  ui_element_set_rect((ui_element_t *)(ui_menu_item_element._pad3 + 4),512.0,256.0,local_8);
-  puVar1 = ui_menu_item_element._pad3;
-  puVar3 = ui_menu_item_element._pad4 + 0xac;
-  for (iVar2 = 0x3a; puVar1 = puVar1 + 4, iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5[0xac] = '\b';
-  ui_menu_item_element._pad5[0xad] = '\0';
-  ui_menu_item_element._pad5[0xae] = '\0';
-  ui_menu_item_element._pad5[0xaf] = '\0';
-  puVar1 = ui_menu_item_element._pad5 + 0x1c;
-  puVar3 = ui_menu_item_element._pad5 + 0x8c;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  puVar1 = ui_menu_item_element._pad5;
-  puVar3 = ui_menu_item_element._pad5 + 0x70;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5._4_4_ = (float)ui_menu_item_element._pad5._4_4_ - 116.0;
-  ui_menu_item_element._pad5._32_4_ = (float)ui_menu_item_element._pad5._32_4_ - 116.0;
-  ui_menu_item_element._pad5[0x18] = '\0';
-  ui_menu_item_element._pad5[0x19] = '\0';
-  ui_menu_item_element._pad5[0x1a] = '\x02';
-  ui_menu_item_element._pad5[0x1b] = '?';
-  ui_menu_item_element._pad5[0x34] = '\0';
-  ui_menu_item_element._pad5[0x35] = '\0';
-  ui_menu_item_element._pad5[0x36] = '\x02';
-  ui_menu_item_element._pad5[0x37] = '?';
-  puVar1 = ui_menu_item_element._pad5 + 0x1c;
-  puVar3 = ui_menu_item_element._pad5 + 0x38;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  puVar1 = ui_menu_item_element._pad5;
-  puVar3 = ui_menu_item_element._pad5 + 0x54;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5._60_4_ = (float)ui_menu_item_element._pad5._60_4_ + 124.0;
-  ui_menu_item_element._pad5._88_4_ = (float)ui_menu_item_element._pad5._88_4_ + 124.0;
-  ui_menu_item_element._pad5._116_4_ = (float)ui_menu_item_element._pad5._116_4_ + 124.0;
-  ui_menu_item_element._pad5[0x50] = '\0';
-  ui_menu_item_element._pad5[0x51] = '\0';
-  ui_menu_item_element._pad5[0x52] = '\x16';
-  ui_menu_item_element._pad5[0x53] = '?';
-  ui_menu_item_element._pad5[0x6c] = '\0';
-  ui_menu_item_element._pad5[0x6d] = '\0';
-  ui_menu_item_element._pad5[0x6e] = '\x16';
-  ui_menu_item_element._pad5[0x6f] = '?';
-  ui_menu_item_element._pad5._144_4_ = (float)ui_menu_item_element._pad5._144_4_ + 124.0;
-  puVar1 = ui_menu_item_element._pad4 + 0xac;
-  do {
-    *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4);
-    puVar3 = puVar1 + 0x1c;
-    *(float *)puVar1 = *(float *)puVar1 - 84.0;
-    puVar1 = puVar3;
-  } while ((int)puVar3 < 0x48fe58);
-  puVar1 = ui_menu_item_element._pad4 + 0xac;
-  puVar3 = ui_menu_item_element._pad5 + 0xb0;
+  ui_element_set_rect((ui_element_t *)&DAT_0048fc90,512.0,256.0,local_8);
+  pfVar3 = (float *)&DAT_0048fc90;
+  puVar1 = &ui_menu_item_subtemplate_block_01;
   for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
+    (puVar1->slot_00).x = *pfVar3;
+    pfVar3 = pfVar3 + 1;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)&(puVar1->slot_00).y;
   }
-  _DAT_0048fed4 = (float)ui_menu_item_element._pad5._60_4_ - 100.0;
-  _DAT_0048fef0 = _DAT_0048fef0 - 100.0;
-  _DAT_0048ff0c = _DAT_0048ff0c - 100.0;
-  _DAT_0048ff28 = _DAT_0048ff28 - 100.0;
+  ui_menu_item_subtemplate_block_01.quad_mode = 8;
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_03;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_07;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_02;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_06;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  ui_menu_item_subtemplate_block_01.slot_02.y = ui_menu_item_subtemplate_block_01.slot_02.y - 116.0;
+  ui_menu_item_subtemplate_block_01.slot_03.y = ui_menu_item_subtemplate_block_01.slot_03.y - 116.0;
+  ui_menu_item_subtemplate_block_01.slot_02.field_0x18 = 0.5078125;
+  ui_menu_item_subtemplate_block_01.slot_03.field_0x18 = 0.5078125;
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_03;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_04;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_02;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_05;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  ui_menu_item_subtemplate_block_01.slot_04.y = ui_menu_item_subtemplate_block_01.slot_04.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_05.y = ui_menu_item_subtemplate_block_01.slot_05.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_06.y = ui_menu_item_subtemplate_block_01.slot_06.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_04.field_0x18 = 0.5859375;
+  ui_menu_item_subtemplate_block_01.slot_05.field_0x18 = 0.5859375;
+  ui_menu_item_subtemplate_block_01.slot_07.y = ui_menu_item_subtemplate_block_01.slot_07.y + 124.0;
+  puVar1 = &ui_menu_item_subtemplate_block_01;
+  do {
+    (puVar1->slot_00).y = (puVar1->slot_00).y;
+    puVar4 = &puVar1->slot_01;
+    (puVar1->slot_00).x = (puVar1->slot_00).x - 84.0;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)puVar4;
+  } while ((int)puVar4 < 0x48fe58);
+  puVar1 = &ui_menu_item_subtemplate_block_01;
+  puVar6 = &ui_menu_item_subtemplate_block_02;
+  for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
+    (puVar6->slot_00).x = (puVar1->slot_00).x;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)&(puVar1->slot_00).y;
+    puVar6 = (ui_menu_item_subtemplate_block_t *)&(puVar6->slot_00).y;
+  }
+  ui_menu_item_subtemplate_block_02.slot_04.y = ui_menu_item_subtemplate_block_01.slot_04.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_05.y = ui_menu_item_subtemplate_block_02.slot_05.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_06.y = ui_menu_item_subtemplate_block_02.slot_06.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_07.y = ui_menu_item_subtemplate_block_02.slot_07.y - 100.0;
   ui_menu_layout_init();
   return;
 }
@@ -14689,7 +14678,7 @@ void ui_cursor_render(void)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f798,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_cursor_texture,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -14730,7 +14719,7 @@ void ui_render_aim_enhancement(void)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f79c,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_aim_texture,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)
             (1.0,1.0,1.0,*(float *)((int)cv_aimEnhancementFade + 0xc));
@@ -14744,7 +14733,6 @@ void ui_render_aim_enhancement(void)
 
 /* ui_elements_update_and_render @ 0041a530 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* advances UI timeline, handles transitions, updates + renders all UI elements */
 
 void ui_elements_update_and_render(void)
@@ -14778,12 +14766,12 @@ void ui_elements_update_and_render(void)
       config_load_presets();
     }
     fVar3 = (float10)fcos((float10)0.0);
-    ui_sign_crimson_update_disabled = 1;
-    _DAT_00487594 = (float)fVar3;
+    ui_sign_crimson._pad0[0] = '\x01';
+    ui_sign_crimson.rot_m00 = (float)fVar3;
     fVar4 = (float10)fsin((float10)0.0);
-    _DAT_00487598 = (float)-fVar4;
-    _DAT_0048759c = (float)fVar4;
-    _DAT_004875a0 = (float)fVar3;
+    ui_sign_crimson.rot_m01 = (float)-fVar4;
+    ui_sign_crimson.rot_m10 = (float)fVar4;
+    ui_sign_crimson.rot_m11 = (float)fVar3;
     ui_elements_timeline = ui_elements_max_timeline();
   }
   if (game_state_id != 9) {
@@ -14834,9 +14822,11 @@ void __cdecl ui_draw_progress_bar(float *xy,float width,float ratio,float *rgba)
 
 
 
-/* FUN_0041a810 @ 0041a810 */
+/* bonus_hud_slot_activate @ 0041a810 */
 
-void __cdecl FUN_0041a810(char *param_1,int param_2,float *param_3,float *param_4)
+/* allocates a free bonus HUD slot and binds timer pointers + icon/label metadata */
+
+void __cdecl bonus_hud_slot_activate(char *label,int icon_id,float *timer_ptr,float *alt_timer_ptr)
 
 {
   undefined4 uVar1;
@@ -14850,13 +14840,13 @@ void __cdecl FUN_0041a810(char *param_1,int param_2,float *param_3,float *param_
   pbVar4 = bonus_hud_slot_table;
   do {
     if (pbVar4->active == '\0') {
-      bonus_hud_slot_table[iVar2].slide.timer_ptr = param_3;
-      bonus_hud_slot_table[iVar2].slide.icon_id = param_2;
+      bonus_hud_slot_table[iVar2].slide.timer_ptr = timer_ptr;
+      bonus_hud_slot_table[iVar2].slide.icon_id = icon_id;
       uVar1 = config_blob.reserved0._20_4_;
-      bonus_hud_slot_table[iVar2].slide.alt_timer_ptr = param_4;
+      bonus_hud_slot_table[iVar2].slide.alt_timer_ptr = alt_timer_ptr;
       bonus_hud_slot_table[iVar2].active = '\x01';
       bonus_hud_slot_table[iVar2].slide.slide_x = -184.0;
-      bonus_hud_slot_table[iVar2].slide.label = param_1;
+      bonus_hud_slot_table[iVar2].slide.label = label;
       if ((int)uVar1 < 2) {
         bonus_hud_slot_table[iVar2].slide.alt_timer_ptr = (float *)0x0;
       }
@@ -14939,7 +14929,7 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
       return;
     }
     if (*(float *)((int)cv_uiSmallIndicators + 0xc) == 0.0) {
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
       (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_0000000c * 0.7);
@@ -14949,7 +14939,7 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
       (*grim_interface_ptr->vtable->grim_end_batch)();
     }
     else {
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
       (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_0000000c * 0.7);
@@ -15191,7 +15181,7 @@ void ui_render_hud(void)
   }
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   if (DAT_004871b0 != '\0') {
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048f7c0,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_life_indicator_texture,0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     if (config_blob.reserved0._20_4_ == 1) {
       fVar14 = 16.0;
@@ -15309,7 +15299,7 @@ void ui_render_hud(void)
   value = 0x4e;
   if (DAT_004871b3 != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
@@ -15331,7 +15321,7 @@ void ui_render_hud(void)
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_ffffff8c * 0.9);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_rotation)
@@ -15377,8 +15367,8 @@ void ui_render_hud(void)
                    (float)(creature_spawned_count + iVar2);
     ui_draw_progress_bar((float *)&stack0xffffffbc,70.0,DAT_004902f8,(float *)&DAT_004871a0);
     iVar2 = 0x9e;
-    if (DAT_00487244 < 500) {
-      fVar15 = (float)(DAT_00487244 * 2) * 0.001;
+    if (quest_stage_banner_timer_ms < 500) {
+      fVar15 = (float)(quest_stage_banner_timer_ms * 2) * 0.001;
 LAB_0041bde3:
       if (1.0 < fVar15) {
 LAB_0041bdf8:
@@ -15386,9 +15376,9 @@ LAB_0041bdf8:
       }
     }
     else {
-      if (DAT_00487244 < 0x5dc) goto LAB_0041bdf8;
-      if (DAT_00487244 < 2000) {
-        fVar15 = 1.0 - (float)(DAT_00487244 * 2 + -3000) * 0.001;
+      if (quest_stage_banner_timer_ms < 0x5dc) goto LAB_0041bdf8;
+      if (quest_stage_banner_timer_ms < 2000) {
+        fVar15 = 1.0 - (float)(quest_stage_banner_timer_ms * 2 + -3000) * 0.001;
         goto LAB_0041bde3;
       }
       fVar15 = 0.0;
@@ -15442,7 +15432,7 @@ LAB_0041bdf8:
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
       fVar21 = (float)quest_transition_timer_ms * 0.0004 * 0.13 + 0.95;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)puVar12 * in_stack_ffffff8c);
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7a0,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_text_level_complete_texture,0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_draw_quad)
                 ((float)(config_blob.screen_width / 2) - fVar21 * 128.0,
@@ -15464,7 +15454,7 @@ LAB_0041bdf8:
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar21);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_rotation)
@@ -15480,7 +15470,7 @@ LAB_0041bdf8:
                (int)highscore_active_record.survival_elapsed_ms / 1000);
   }
   if (DAT_004871b2 == '\0') goto LAB_0041c783;
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
@@ -15577,7 +15567,7 @@ LAB_0041c783:
         }
         fVar21 = fVar21 * in_stack_ffffff8c;
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar21 * 0.8);
-        (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+        (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
         (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
         (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -15630,13 +15620,15 @@ void hud_update_and_render(void)
   undefined4 local_8;
   undefined4 local_4;
   
-  fVar1 = (float)ui_elements_timeline / (float)(DAT_0048eb48 - DAT_0048eb4c);
+  fVar1 = (float)ui_elements_timeline /
+          (float)(int)(ui_element_slot_28._pad0._14_4_ - ui_element_slot_28._pad0._18_4_);
   if ((1.0 < fVar1) || (fVar1 == 1.0)) {
     DAT_00487241 = 0;
   }
-  if (DAT_00487268 != -1) {
-    local_14 = _camera_offset_y + (&creature_pool)[DAT_00487268].pos_y;
-    local_28 = (&creature_pool)[DAT_00487268].health / (&creature_pool)[DAT_00487268].max_health;
+  if (perk_doctor_target_creature_id != -1) {
+    local_14 = _camera_offset_y + (&creature_pool)[perk_doctor_target_creature_id].pos_y;
+    local_28 = (&creature_pool)[perk_doctor_target_creature_id].health /
+               (&creature_pool)[perk_doctor_target_creature_id].max_health;
     if (local_28 <= 1.0) {
       if (local_28 < 0.0) {
         local_28 = 0.0;
@@ -15649,7 +15641,7 @@ void hud_update_and_render(void)
     local_10 = (1.0 - local_28) * 0.9 + 0.1;
     local_4 = 0x3f333333;
     local_c = local_28 * 0.9 + 0.1;
-    local_20 = (_camera_offset_x + (&creature_pool)[DAT_00487268].pos_x) - 32.0;
+    local_20 = (_camera_offset_x + (&creature_pool)[perk_doctor_target_creature_id].pos_x) - 32.0;
     local_1c = local_14 + 32.0;
     ui_draw_progress_bar(&local_20,64.0,local_28,&local_10);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -15756,114 +15748,127 @@ int __cdecl dx_get_version(int *version,char *out,int out_len)
 
 /* FUN_0041cdb0 @ 0041cdb0 */
 
-/* WARNING: Removing unreachable block (ram,0x0041ce9f) */
-/* WARNING: Removing unreachable block (ram,0x0041cea7) */
-/* WARNING: Removing unreachable block (ram,0x0041cead) */
-/* WARNING: Removing unreachable block (ram,0x0041cf52) */
-/* WARNING: Removing unreachable block (ram,0x0041cf5a) */
-/* WARNING: Enum "tagCALLCONV": Some values do not have unique names */
+/* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 int FUN_0041cdb0(void)
 
 {
-  HRESULT HVar1;
+  bool bVar1;
   HRESULT HVar2;
-  int iVar3;
-  char cVar4;
+  HRESULT HVar3;
+  int iVar4;
   int *unaff_EDI;
-  undefined4 uStack_74;
-  int *piVar5;
+  char cStack_84;
+  char cStack_83;
+  char cStack_82;
+  undefined4 uStack_80;
+  int **ppiVar5;
+  undefined4 uStack_70;
   wchar_t *pwStack_64;
-  wchar_t *pwStack_60;
-  undefined2 uVar6;
-  undefined4 uVar7;
-  undefined4 lpWideCharStr;
-  undefined2 uVar8;
-  undefined4 local_3c;
-  undefined4 uStack_38;
-  _union_2156 local_34;
-  undefined4 *puStack_24;
+  int **ppiStack_60;
+  int ***lpWideCharStr;
+  int *piVar6;
+  short sVar7;
+  int *piVar8;
+  int **ppiVar9;
+  int *local_3c;
+  int *piStack_38;
+  int **local_34 [2];
+  int *piStack_2c;
+  undefined4 *puStack_20;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
   undefined4 local_4;
   
-  HVar1 = CoInitialize((LPVOID)0x0);
-  local_34._0_4_ = (wchar_t *)0x0;
-  local_3c = (uint)(-1 < HVar1) << 0x18;
-  HVar2 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,
-                           (LPVOID *)&local_34);
-  if (HVar2 < 0) {
-    cVar4 = '\0';
+  bVar1 = false;
+  HVar2 = CoInitialize((LPVOID)0x0);
+  local_34[0] = (int **)0x0;
+  local_3c = (int *)((uint)(-1 < HVar2) << 0x18);
+  HVar3 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,local_34);
+  if (HVar3 < 0) {
+    cStack_84 = '\0';
   }
   else {
     local_10 = 0x10;
     local_c = 0x6f;
     local_8 = 0;
     local_4 = 0;
-    uVar7 = local_34._0_4_;
-    iVar3 = (**(code **)(*(int *)local_34._0_4_ + 0xc))();
-    if (-1 < iVar3) {
-      uStack_38 = (int *)0x0;
-      iVar3 = (**(code **)(*(int *)local_3c + 0x10))();
-      if (-1 < iVar3) {
-        lpWideCharStr = &stack0xffffffc0;
-        iVar3 = (**(code **)(iRam00000000 + 0x14))();
-        if (iVar3 < 0) {
-          cVar4 = (char)lpWideCharStr;
-          pwStack_60 = (wchar_t *)0x41cf96;
+    ppiVar9 = local_34[0];
+    iVar4 = (*(code *)(*local_34[0])[3])();
+    if (-1 < iVar4) {
+      piStack_38 = (int *)0x0;
+      iVar4 = (**(code **)(*local_3c + 0x10))();
+      if (-1 < iVar4) {
+        piVar8 = (int *)&stack0xffffffc0;
+        sVar7 = 0x392c;
+        piVar6 = piStack_38;
+        iVar4 = (**(code **)(*piStack_38 + 0x14))();
+        if (iVar4 < 0) {
+          cStack_84 = (char)piVar8;
+          ppiStack_60 = (int **)0x41cf96;
           (**(code **)(*unaff_EDI + 8))();
-          pwStack_60 = (wchar_t *)uVar7;
+          ppiStack_60 = ppiVar9;
           pwStack_64 = (wchar_t *)0x41cfa0;
-          (**(code **)(*(int *)pwStack_60 + 8))();
+          (*(code *)(*ppiStack_60)[2])();
         }
         else {
-          pwStack_60 = (wchar_t *)0x41ce7f;
-          pwStack_64 = (wchar_t *)uVar7;
-          VariantInit((VARIANTARG *)&local_34.field0);
-          pwStack_60 = u_dwDirectXVersionMajor_00473900;
-          uVar7 = pwStack_64;
-          (**(code **)(*(int *)pwStack_64 + 0x20))();
-          uVar8 = (undefined2)uVar7;
-          VariantClear((VARIANTARG *)&stack0xffffffc0);
-          piVar5 = (int *)&stack0xffffffc0;
-          uVar7 = uStack_38;
-          iVar3 = (**(code **)(*(int *)uStack_38 + 0x20))();
-          uVar6 = (undefined2)uVar7;
-          if (((-1 < iVar3) && (uVar8 == 0x13)) && (puStack_24 != (undefined4 *)0x0)) {
-            *puStack_24 = unaff_EDI;
-          }
-          VariantClear((VARIANTARG *)&stack0xffffffb4);
-          iVar3 = (**(code **)(*(int *)pwStack_64 + 0x20))
-                            (pwStack_64,u_szDirectXVersionLetter_004738a4,&stack0xffffffb4);
-          uStack_74 = uStack_38;
-          if (((-1 < iVar3) && (uVar6 == 8)) && ((LPCWCH)lpWideCharStr != (LPCWCH)0x0)) {
-            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&pwStack_64,10,(LPCCH)0x0,
-                                (LPBOOL)0x0);
-            if ((undefined1 *)local_34._8_4_ != (undefined1 *)0x0) {
-              *(undefined1 *)local_34._8_4_ = pwStack_64._0_1_;
+          lpWideCharStr = local_34;
+          ppiStack_60 = (int **)0x41ce7f;
+          Ordinal_8();
+          ppiStack_60 = &piStack_38;
+          pwStack_64 = u_dwDirectXVersionMajor_00473900;
+          iVar4 = (**(code **)(*piVar8 + 0x20))();
+          if ((-1 < iVar4) && ((short)unaff_EDI == 0x13)) {
+            if (puStack_20 != (undefined4 *)0x0) {
+              *puStack_20 = local_3c;
             }
-            uStack_74._3_1_ = (undefined1)((uint)uStack_38 >> 0x18);
-            uStack_74._0_3_ = CONCAT12(1,(short)uStack_38);
+            bVar1 = true;
           }
-          VariantClear((VARIANTARG *)&stack0xffffffa8);
-          cVar4 = (char)uStack_74;
-          (**(code **)(u_dwDirectXVersionMinor_004738d4._0_4_ + 8))
-                    (u_dwDirectXVersionMinor_004738d4);
-          (**(code **)(*piVar5 + 8))(piVar5);
-          (**(code **)(*(int *)uStack_74 + 8))(uStack_74);
+          uStack_70 = (int *)&stack0xffffffbc;
+          Ordinal_9();
+          ppiVar5 = ppiStack_60;
+          iVar4 = (*(code *)(*ppiStack_60)[8])
+                            (ppiStack_60,u_dwDirectXVersionMinor_004738d4,&stack0xffffffb8);
+          if ((-1 < iVar4) && (sVar7 == 0x13)) {
+            if (piStack_2c != (int *)0x0) {
+              *piStack_2c = (int)ppiVar9;
+            }
+            uStack_70._0_2_ = CONCAT11(1,(CHAR)uStack_70);
+          }
+          Ordinal_9();
+          iVar4 = (**(code **)(*uStack_70 + 0x20))(uStack_70,u_szDirectXVersionLetter_004738a4);
+          uStack_80 = (int *)&stack0xffffffac;
+          if (((-1 < iVar4) && ((short)pwStack_64 == 8)) && (lpWideCharStr != (int ***)0x0)) {
+            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&uStack_70,10,(LPCCH)0x0,
+                                (LPBOOL)0x0);
+            if (piStack_38 != (int *)0x0) {
+              *(CHAR *)piStack_38 = (CHAR)uStack_70;
+            }
+            uStack_80._3_1_ = (undefined1)((uint)&stack0xffffffac >> 0x18);
+            uStack_80._0_3_ = CONCAT12(1,(short)&stack0xffffffac);
+          }
+          Ordinal_9(&pwStack_64);
+          if (((!bVar1) || (cStack_83 = (char)((uint)&stack0xffffffa8 >> 8), cStack_83 == '\0')) ||
+             (cStack_82 = (char)((uint)&stack0xffffffa8 >> 0x10), cStack_84 = '\x01',
+             cStack_82 == '\0')) {
+            cStack_84 = (char)&stack0xffffffa8;
+          }
+          (**(code **)(*uStack_80 + 8))(uStack_80);
+          (*(code *)(*ppiVar5)[2])(ppiVar5);
+          (*(code *)piVar6[2])(&stack0xffffffa8);
         }
         goto LAB_0041cfb6;
       }
     }
-    cVar4 = (char)unaff_EDI;
-    (**(code **)(*(int *)local_3c + 8))();
+    cStack_84 = (char)unaff_EDI;
+    (**(code **)(*local_3c + 8))();
   }
 LAB_0041cfb6:
-  if (-1 < HVar1) {
+  if (-1 < HVar2) {
     CoUninitialize();
   }
-  return (-(uint)(cVar4 != '\0') & 0x7fffbffb) + 0x80004005;
+  return (-(uint)(cStack_84 != '\0') & 0x7fffbffb) + 0x80004005;
 }
 
 
@@ -17111,9 +17116,11 @@ int game_is_full_version(void)
 
 
 
-/* FUN_0041df50 @ 0041df50 */
+/* demo_trial_time_limit_ms @ 0041df50 */
 
-undefined4 FUN_0041df50(void)
+/* returns the fixed demo trial duration in milliseconds (2400000 / 40 minutes) */
+
+int demo_trial_time_limit_ms(void)
 
 {
   return 2400000;
@@ -17133,16 +17140,16 @@ int game_sequence_get(void)
 
 
 
-/* FUN_0041e270 @ 0041e270 */
+/* vec2_add @ 0041e270 */
 
-/* [binja] int32_t sub_41e270(float* arg1, float* arg2) */
+/* adds delta xy into dst */
 
-int __cdecl FUN_0041e270(float *arg1,float *arg2)
+void __cdecl vec2_add(float *dst,float *delta)
 
 {
-  *arg1 = *arg1 + *arg2;
-  arg1[1] = arg2[1] + arg1[1];
-  return 0;
+  *dst = *dst + *delta;
+  dst[1] = delta[1] + dst[1];
+  return;
 }
 
 
@@ -17263,9 +17270,11 @@ int __cdecl fx_queue_add(int effect_id,float *pos,float w,float h,float rotation
 
 
 
-/* FUN_0041e8d0 @ 0041e8d0 */
+/* input_aim_pov_left_active @ 0041e8d0 */
 
-bool FUN_0041e8d0(void)
+/* returns true when joystick POV matches the configured aim-left direction */
+
+bool input_aim_pov_left_active(void)
 
 {
   int iVar1;
@@ -17276,9 +17285,11 @@ bool FUN_0041e8d0(void)
 
 
 
-/* FUN_0041e8f0 @ 0041e8f0 */
+/* input_aim_pov_right_active @ 0041e8f0 */
 
-bool FUN_0041e8f0(void)
+/* returns true when joystick POV matches the configured aim-right direction */
+
+bool input_aim_pov_right_active(void)
 
 {
   int iVar1;
@@ -18019,11 +18030,11 @@ bonus_entry_t * __cdecl bonus_spawn_at(float *pos,bonus_id_t bonus_id,int durati
   if (pos[1] < 32.0) {
     pos[1] = 32.0;
   }
-  if ((float)(terrain_texture_width + -0x20) < *pos) {
-    *pos = (float)(terrain_texture_width + -0x20);
+  if ((float)(_terrain_texture_width + -0x20) < *pos) {
+    *pos = (float)(_terrain_texture_width + -0x20);
   }
-  if ((float)(terrain_texture_height + -0x20) < pos[1]) {
-    pos[1] = (float)(terrain_texture_height + -0x20);
+  if ((float)(_terrain_texture_height + -0x20) < pos[1]) {
+    pos[1] = (float)(_terrain_texture_height + -0x20);
   }
   if (config_blob.reserved0._24_4_ != 2) {
     pbVar1 = bonus_alloc_slot();
@@ -18075,6 +18086,7 @@ bonus_entry_t * __cdecl bonus_spawn_at(float *pos,bonus_id_t bonus_id,int durati
 
 /* bonus_spawn_at_pos @ 0041f790 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* allocates a bonus slot near pos, enforces spacing/edges, picks bonus type + amount */
 
 bonus_entry_t * __cdecl bonus_spawn_at_pos(float *pos)
@@ -18087,8 +18099,8 @@ bonus_entry_t * __cdecl bonus_spawn_at_pos(float *pos)
   int iVar5;
   bonus_entry_t *pbVar6;
   
-  if ((((*pos < 32.0) || ((float)(terrain_texture_width + -0x20) < *pos)) || (pos[1] < 32.0)) ||
-     (((float)(terrain_texture_height + -0x20) < pos[1] || (config_blob.reserved0._24_4_ == 2)))) {
+  if ((((*pos < 32.0) || ((float)(_terrain_texture_width + -0x20) < *pos)) || (pos[1] < 32.0)) ||
+     (((float)(_terrain_texture_height + -0x20) < pos[1] || (config_blob.reserved0._24_4_ == 2)))) {
     return &bonus_pool_sentinel;
   }
   pbVar3 = bonus_alloc_slot();
@@ -18334,10 +18346,10 @@ void * player_reset_all(void)
   render_overlay_player_index = 0;
   do {
     uVar5 = render_overlay_player_index;
-    fVar1 = (float)terrain_texture_width;
+    fVar1 = (float)_terrain_texture_width;
     _DAT_004aaf30 = 0;
     iVar6 = render_overlay_player_index * 0x360;
-    fVar2 = (float)terrain_texture_height;
+    fVar2 = (float)_terrain_texture_height;
     (&player_state_table)[render_overlay_player_index].speed_bonus_timer = 0.0;
     (&player_state_table)[uVar5].shield_timer = 0.0;
     (&player_state_table)[uVar5].state_aux = 0;
@@ -18978,8 +18990,8 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
         }
-        sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[creature_id].type_id].
-                               sfx_bank_a[uVar3]);
+        sfx_play_panned((float)creature_type_table[(&creature_pool)[creature_id].type_id].sfx_bank_a
+                               [uVar3]);
       }
       else {
         _effect_template_color_r = 0x3f4ccccd;
@@ -19113,8 +19125,8 @@ void projectile_update(void)
         pfVar13 = &projectile_pool[local_e8].pos_x;
         if ((((projectile_pool[local_e8].pos_x < -64.0) ||
              (projectile_pool[local_e8].pos.pos_y < -64.0)) ||
-            ((float)(terrain_texture_width + 0x40) < *pfVar13)) ||
-           ((float)(terrain_texture_height + 0x40) < projectile_pool[local_e8].pos.pos_y)) {
+            ((float)(_terrain_texture_width + 0x40) < *pfVar13)) ||
+           ((float)(_terrain_texture_height + 0x40) < projectile_pool[local_e8].pos.pos_y)) {
 LAB_004219ef:
           fVar11 = projectile_pool[local_e8].pos.tail.vy.life_timer - frame_dt;
 LAB_004219f8:
@@ -19145,7 +19157,7 @@ LAB_004219f8:
                          projectile_pool[local_e8].pos.tail.vy.speed_scale * 3.0 + local_c8;
               if ((4.0 <= SQRT(local_c8 * local_c8 + local_cc * local_cc)) ||
                  ((int)local_dc <= (int)local_c4 + 3)) {
-                FUN_0041e270(pfVar13,&local_cc);
+                vec2_add(pfVar13,&local_cc);
                 iVar7 = creature_find_in_radius
                                   (pfVar13,projectile_pool[local_e8].pos.tail.vy.hit_radius,0);
                 if ((iVar7 == -1) || (iVar7 == projectile_pool[local_e8].pos.tail.vy.owner_id)) {
@@ -19182,7 +19194,7 @@ LAB_004219f8:
                     } while (iVar12 != 0);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_SPLITTER_GUN) {
-                    FUN_0042f3f0(pfVar13,26.0,3);
+                    effect_spawn_splitter_hit_burst(pfVar13,26.0,3);
                     projectile_spawn(pfVar13,projectile_pool[local_e8].angle - 1.0471976,
                                      PROJECTILE_TYPE_SPLITTER_GUN,iVar7);
                     projectile_spawn(pfVar13,projectile_pool[local_e8].angle + 1.0471976,
@@ -19283,8 +19295,8 @@ LAB_004219f8:
                   pVar4 = projectile_pool[local_e8].pos.tail.vy.type_id;
                   fVar23 = (&weapon_table)[pVar4].damage_scale;
                   if (pVar4 == PROJECTILE_TYPE_ION_MINIGUN) {
-                    FUN_0042f270(pfVar13,1.5,0.1);
-                    FUN_0042f540((int)pfVar13,0.8);
+                    effect_spawn_ion_hit_core(pfVar13,1.5,0.1);
+                    effect_spawn_ion_hit_sparks(pfVar13,0.8);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_ION_RIFLE) {
                     if ((0 < shock_chain_links_left) && (local_e8 == shock_chain_projectile_id)) {
@@ -19301,12 +19313,12 @@ LAB_004219f8:
                                             PROJECTILE_TYPE_ION_RIFLE,iVar7);
                       bonus_spawn_guard = 0;
                     }
-                    FUN_0042f270(pfVar13,1.2,0.4);
-                    FUN_0042f540((int)pfVar13,1.2);
+                    effect_spawn_ion_hit_core(pfVar13,1.2,0.4);
+                    effect_spawn_ion_hit_sparks(pfVar13,1.2);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_ION_CANNON) {
-                    FUN_0042f270(pfVar13,1.0,1.0);
-                    FUN_0042f540((int)pfVar13,2.2);
+                    effect_spawn_ion_hit_core(pfVar13,1.0,1.0);
+                    effect_spawn_ion_hit_sparks(pfVar13,2.2);
                     sfx_play_panned(sfx_shockwave);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -19326,11 +19338,11 @@ LAB_004219f8:
                     bonus_spawn_guard = 0;
                     sfx_play_panned(sfx_explosion_medium);
                     sfx_play_panned(sfx_shockwave);
-                    FUN_0042f330(pfVar13,1.5,0x3f800000);
-                    FUN_0042f330(pfVar13,1.0,0x3f800000);
+                    effect_spawn_plasma_hit_core(pfVar13,1.5,1.0);
+                    effect_spawn_plasma_hit_core(pfVar13,1.0,1.0);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_SHRINKIFIER) {
-                    FUN_0042f080(pfVar13);
+                    effect_spawn_shrinkifier_hit(pfVar13);
                     fVar6 = (&creature_pool)[iVar7].size * 0.65;
                     projectile_pool[local_e8].pos.tail.vy.life_timer = 0.25;
                     (&creature_pool)[iVar7].size = fVar6;
@@ -19558,7 +19570,7 @@ LAB_004219f8:
         local_a0 = frame_dt * *(float *)((int)(psVar14 + -1) + 0x10);
         pfVar13 = (float *)((int)(psVar14 + -1) + 8);
         local_9c = frame_dt * psVar14->vel_y;
-        FUN_0041e270(pfVar13,&local_a0);
+        vec2_add(pfVar13,&local_a0);
         sVar5 = psVar14->type_id;
         if (sVar5 == SECONDARY_PROJECTILE_TYPE_ROCKET) {
           if (SQRT(*(float *)((int)(psVar14 + -1) + 0x10) * *(float *)((int)(psVar14 + -1) + 0x10) +
@@ -19848,7 +19860,7 @@ LAB_00421d65:
           local_b8 = fVar11 * pfVar13[5];
           local_b4 = frame_dt * *pfVar13 * pfVar13[5];
           local_68 = fVar11;
-          FUN_0041e270(pfVar13 + -3,&local_b8);
+          vec2_add(pfVar13 + -3,&local_b8);
         }
       }
       else {
@@ -19870,7 +19882,7 @@ LAB_004226a3:
           local_a0 = fStack_38 * pfVar13[5];
           local_9c = frame_dt * *pfVar13 * 2.5 * pfVar13[5];
           fStack_18 = fVar11;
-          FUN_0041e270(pfVar13 + -3,&local_a0);
+          vec2_add(pfVar13 + -3,&local_a0);
         }
       }
       cVar3 = SUB41(pfVar13[8],0);
@@ -20052,8 +20064,8 @@ LAB_00422821:
         if ((SUB41(pfVar13[8],0) == '\b') && (pfVar13[9] != -NAN)) {
           if ((&creature_pool)[(int)pfVar13[9]].active != '\0') {
             iVar7 = crt_rand();
-            sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[(int)pfVar13[9]].type_id]
-                                   .sfx_bank_a[iVar7 % 3]);
+            sfx_play_panned((float)creature_type_table[(&creature_pool)[(int)pfVar13[9]].type_id].
+                                   sfx_bank_a[iVar7 % 3]);
           }
           creature_handle_death((int)pfVar13[9],false);
         }
@@ -21050,9 +21062,11 @@ LAB_00425d30:
 
 
 
-/* FUN_00425d80 @ 00425d80 */
+/* plaguebearer_spread_infection @ 00425d80 */
 
-int __cdecl FUN_00425d80(int param_1)
+/* propagates collision_flag infection between nearby creatures (radius 45, hp < 150) */
+
+int __cdecl plaguebearer_spread_infection(int creature_id)
 
 {
   float fVar1;
@@ -21064,14 +21078,14 @@ int __cdecl FUN_00425d80(int param_1)
   pcVar3 = &creature_pool;
   do {
     if (pcVar3->active != '\0') {
-      fVar1 = pcVar3->pos_x - (&creature_pool)[param_1].pos_x;
-      fVar2 = pcVar3->pos_y - (&creature_pool)[param_1].pos_y;
+      fVar1 = pcVar3->pos_x - (&creature_pool)[creature_id].pos_x;
+      fVar2 = pcVar3->pos_y - (&creature_pool)[creature_id].pos_y;
       if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) < 45.0) {
         if (((&creature_pool)[iVar4].collision_flag != '\0') &&
-           ((&creature_pool)[param_1].health < 150.0)) {
-          (&creature_pool)[param_1].collision_flag = '\x01';
+           ((&creature_pool)[creature_id].health < 150.0)) {
+          (&creature_pool)[creature_id].collision_flag = '\x01';
         }
-        if (((&creature_pool)[param_1].collision_flag != '\0') &&
+        if (((&creature_pool)[creature_id].collision_flag != '\0') &&
            ((&creature_pool)[iVar4].health < 150.0)) {
           (&creature_pool)[iVar4].collision_flag = '\x01';
         }
@@ -21373,7 +21387,7 @@ LAB_0042634c:
                 if ((int)uVar8 < 0) {
                   uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                 }
-                sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                sfx_play_panned((float)creature_type_table[(&creature_pool)[local_7c].type_id].
                                        sfx_bank_b[uVar8]);
               }
               fx_queue_add_random(pfVar16);
@@ -21617,13 +21631,13 @@ LAB_00426ac8:
             }
             iVar7 = perk_count_get(perk_id_plaguebearer);
             if ((iVar7 != 0) && (plaguebearer_infection_count < 0x3c)) {
-              FUN_00425d80(local_7c);
+              plaguebearer_spread_infection(local_7c);
             }
             fVar17 = 30.0 / (&creature_pool)[local_7c].size;
             if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
                (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
               if ((&creature_pool)[local_7c].ai_mode != 7) {
-                fVar17 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
+                fVar17 = creature_type_table[(&creature_pool)[local_7c].type_id].anim_rate *
                          (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 25.0
                          + (&creature_pool)[local_7c].anim_phase;
                 (&creature_pool)[local_7c].anim_phase = fVar17;
@@ -21634,7 +21648,7 @@ LAB_00426ac8:
               }
             }
             else {
-              fVar17 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
+              fVar17 = creature_type_table[(&creature_pool)[local_7c].type_id].anim_rate *
                        (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 22.0 +
                        (&creature_pool)[local_7c].anim_phase;
               (&creature_pool)[local_7c].anim_phase = fVar17;
@@ -21722,7 +21736,7 @@ LAB_00426ac8:
                   if ((int)uVar8 < 0) {
                     uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                   }
-                  sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                  sfx_play_panned((float)creature_type_table[(&creature_pool)[local_7c].type_id].
                                          sfx_bank_b[uVar8]);
                   iVar7 = perk_count_get(perk_id_mr_melee);
                   if (iVar7 != 0) {
@@ -21969,7 +21983,7 @@ void fx_queue_render(void)
   fVar5 = 1.0 / (float)config_blob.reserved0._112_4_;
   if (terrain_texture_failed == '\0') {
     if ((fx_queue_rotated != 0) || (fx_queue_count != 0)) {
-      (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
+      (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       if (0 < fx_queue_count) {
         (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -22001,7 +22015,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+            iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             render_scratch_f0 = (&effect_uv4)[iVar1].u;
             render_scratch_f1 = (&effect_uv4)[iVar1].v;
             render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22033,7 +22047,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+            iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             render_scratch_f0 = (&effect_uv4)[iVar1].u;
             render_scratch_f1 = (&effect_uv4)[iVar1].v;
             render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22069,7 +22083,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+        iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         render_scratch_f0 = (&effect_uv4)[iVar1].u;
         render_scratch_f1 = (&effect_uv4)[iVar1].v;
         render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22100,7 +22114,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+        iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         render_scratch_f0 = (&effect_uv4)[iVar1].u;
         render_scratch_f1 = (&effect_uv4)[iVar1].v;
         render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22164,11 +22178,11 @@ int creature_alloc_slot(void)
 
 
 
-/* FUN_004281e0 @ 004281e0 */
+/* creature_reset_all @ 004281e0 */
 
-/* [binja] void* sub_4281e0() */
+/* clears active creatures and detaches occupied creature_spawn_slot owners */
 
-void * FUN_004281e0(void)
+void creature_reset_all(void)
 
 {
   int *piVar1;
@@ -22181,7 +22195,7 @@ void * FUN_004281e0(void)
     }
     piVar1 = piVar1 + 0x26;
   } while ((int)piVar1 < 0x4aa3c4);
-  return piVar1;
+  return;
 }
 
 
@@ -22313,7 +22327,7 @@ void player_render_overlays(void)
                100.0,100.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048287c,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[5].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
   fVar14 = 8.40779e-45;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
@@ -22366,7 +22380,7 @@ void player_render_overlays(void)
     (*grim_interface_ptr->vtable->grim_draw_quad)
               (render_scratch_f0 + 1.0,render_scratch_f1 + 1.0,fVar12,fVar12);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048287c,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[5].texture_handle,0);
     fStack_7c = 6.111067e-39;
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
     fVar13 = 8.40779e-45;
@@ -22473,7 +22487,7 @@ void player_render_overlays(void)
       fcos(fVar6);
       fsin(fVar6);
       fVar14 = 6.113207e-39;
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7e0,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(muzzle_flash_texture,0);
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,2);
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -22627,12 +22641,13 @@ char * __cdecl bonus_label_for_entry(bonus_entry_t *bonus_entry)
   bVar1 = bonus_entry->bonus_id;
   if (bVar1 == BONUS_ID_WEAPON) {
     pcVar2 = weapon_table_entry((bonus_entry->time).amount);
-    crt_sprintf(&DAT_0049679c,&s_fmt_percent_s,pcVar2);
-    return &DAT_0049679c;
+    crt_sprintf(&bonus_label_format_buffer,&s_fmt_percent_s,pcVar2);
+    return &bonus_label_format_buffer;
   }
   if (bVar1 == BONUS_ID_POINTS) {
-    crt_sprintf(&DAT_0049679c,s__s___d_00473e8c,DAT_004853e4,(bonus_entry->time).amount);
-    return &DAT_0049679c;
+    crt_sprintf(&bonus_label_format_buffer,s__s___d_00473e8c,bonus_label_points,
+                (bonus_entry->time).amount);
+    return &bonus_label_format_buffer;
   }
   return (&bonus_meta_table)[bVar1].label;
 }
@@ -23283,6 +23298,7 @@ int __cdecl reg_write_dword(HKEY key,char *name,uint value)
 
 /* init_audio_and_terrain @ 0042a9f0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* sound init + terrain texture setup */
 
 void init_audio_and_terrain(void)
@@ -23312,8 +23328,8 @@ void init_audio_and_terrain(void)
     console_printf(&console_log_queue,s____no_sounds_selected_004740cc);
   }
   console_printf(&console_log_queue,&DAT_004711c0);
-  terrain_texture_width = 0x400;
-  terrain_texture_height = 0x400;
+  _terrain_texture_width = 0x400;
+  _terrain_texture_height = 0x400;
   if (0.5 <= (float)config_blob.reserved0._112_4_) {
     if (4.0 < (float)config_blob.reserved0._112_4_) {
       config_blob.reserved0[0x70] = '\0';
@@ -23401,7 +23417,7 @@ int load_textures_step(void)
     in_EDX = extraout_EDX;
   }
   if (startup_texture_load_stage == 1) {
-    DAT_0048f7d8 = texture_get_or_load(s_arrow_00474554,s_load_arrow_tga_0047455c);
+    world_arrow_marker_texture = texture_get_or_load(s_arrow_00474554,s_load_arrow_tga_0047455c);
     texture_get_or_load(s_bullet_i_00474534,s_load_bullet16_tga_00474540);
     bullet_trail_texture =
          texture_get_or_load(s_bulletTrail_00474510,s_load_bulletTrail_tga_0047451c);
@@ -23435,62 +23451,64 @@ int load_textures_step(void)
   }
   if (startup_texture_load_stage == 4) {
     pcVar1 = s_ui_ui_indLife_jaz_004743b0;
-    DAT_0048f7c0 = texture_get_or_load_alt(s_ui_ui_indLife_jaz_004743b0,unaff_retaddr);
+    ui_hud_life_indicator_texture =
+         texture_get_or_load_alt(s_ui_ui_indLife_jaz_004743b0,unaff_retaddr);
     pcVar2 = s_ui_ui_indPanel_jaz_0047439c;
-    DAT_0048f7c4 = texture_get_or_load_alt(s_ui_ui_indPanel_jaz_0047439c,pcVar1);
+    ui_hud_panel_texture = texture_get_or_load_alt(s_ui_ui_indPanel_jaz_0047439c,pcVar1);
     pcVar1 = s_ui_ui_arrow_jaz_0047438c;
-    DAT_0048f7bc = texture_get_or_load_alt(s_ui_ui_arrow_jaz_0047438c,pcVar2);
+    ui_hud_arrow_texture = texture_get_or_load_alt(s_ui_ui_arrow_jaz_0047438c,pcVar2);
     pcVar2 = s_ui_ui_cursor_jaz_00474378;
-    DAT_0048f798 = texture_get_or_load_alt(s_ui_ui_cursor_jaz_00474378,pcVar1);
-    DAT_0048f79c = texture_get_or_load_alt(s_ui_ui_aim_jaz_00474368,pcVar2);
+    ui_cursor_texture = texture_get_or_load_alt(s_ui_ui_cursor_jaz_00474378,pcVar1);
+    ui_aim_texture = texture_get_or_load_alt(s_ui_ui_aim_jaz_00474368,pcVar2);
     in_EDX = extraout_EDX_03;
   }
   if (startup_texture_load_stage == 5) {
     if (terrain_texture_failed == '\0') {
       pcVar2 = s_ter_ter_q1_base_jaz_00474354;
-      terrain_texture_handles =
+      _terrain_texture_handles =
            texture_get_or_load_alt(s_ter_ter_q1_base_jaz_00474354,unaff_retaddr);
       pcVar1 = s_ter_ter_q1_tex1_jaz_00474340;
-      DAT_0048f54c = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
+      terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
       pcVar2 = s_ter_ter_q2_base_jaz_0047432c;
-      _DAT_0048f550 = texture_get_or_load_alt(s_ter_ter_q2_base_jaz_0047432c,pcVar1);
+      terrain_texture_layer_2 = texture_get_or_load_alt(s_ter_ter_q2_base_jaz_0047432c,pcVar1);
       pcVar1 = s_ter_ter_q2_tex1_jaz_00474318;
-      _DAT_0048f554 = texture_get_or_load_alt(s_ter_ter_q2_tex1_jaz_00474318,pcVar2);
+      terrain_texture_layer_3 = texture_get_or_load_alt(s_ter_ter_q2_tex1_jaz_00474318,pcVar2);
       pcVar2 = s_ter_ter_q3_base_jaz_00474304;
-      _DAT_0048f558 = texture_get_or_load_alt(s_ter_ter_q3_base_jaz_00474304,pcVar1);
+      terrain_texture_layer_4 = texture_get_or_load_alt(s_ter_ter_q3_base_jaz_00474304,pcVar1);
       pcVar1 = s_ter_ter_q3_tex1_jaz_004742f0;
-      _DAT_0048f55c = texture_get_or_load_alt(s_ter_ter_q3_tex1_jaz_004742f0,pcVar2);
+      terrain_texture_layer_5 = texture_get_or_load_alt(s_ter_ter_q3_tex1_jaz_004742f0,pcVar2);
       pcVar2 = s_ter_ter_q4_base_jaz_004742dc;
-      _DAT_0048f560 = texture_get_or_load_alt(s_ter_ter_q4_base_jaz_004742dc,pcVar1);
-      _DAT_0048f564 = texture_get_or_load_alt(s_ter_ter_q4_tex1_jaz_004742c8,pcVar2);
+      terrain_texture_layer_6 = texture_get_or_load_alt(s_ter_ter_q4_base_jaz_004742dc,pcVar1);
+      terrain_texture_layer_7 = texture_get_or_load_alt(s_ter_ter_q4_tex1_jaz_004742c8,pcVar2);
       in_EDX = extraout_EDX_04;
     }
     else {
       pcVar2 = s_ter_fb_q1_jaz_004742b8;
-      terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
+      _terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
       pcVar1 = s_ter_fb_q2_jaz_004742a8;
-      DAT_0048f54c = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
+      terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
       pcVar2 = s_ter_fb_q3_jaz_00474298;
-      _DAT_0048f550 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
-      _DAT_0048f554 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
-      terrain_render_target = terrain_texture_handles;
+      terrain_texture_layer_2 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
+      terrain_texture_layer_3 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
+      _terrain_render_target = _terrain_texture_handles;
       in_EDX = extraout_EDX_05;
     }
   }
   if (startup_texture_load_stage == 6) {
     pcVar1 = s_ui_ui_textLevComp_jaz_00474270;
-    DAT_0048f7a0 = texture_get_or_load_alt(s_ui_ui_textLevComp_jaz_00474270,unaff_retaddr);
+    ui_text_level_complete_texture =
+         texture_get_or_load_alt(s_ui_ui_textLevComp_jaz_00474270,unaff_retaddr);
     pcVar2 = s_ui_ui_textQuest_jaz_0047425c;
-    DAT_0048f7a4 = texture_get_or_load_alt(s_ui_ui_textQuest_jaz_0047425c,pcVar1);
+    ui_text_quest_texture = texture_get_or_load_alt(s_ui_ui_textQuest_jaz_0047425c,pcVar1);
     pcVar1 = s_ui_ui_num1_jaz_0047424c;
-    DAT_0048f7a8 = texture_get_or_load_alt(s_ui_ui_num1_jaz_0047424c,pcVar2);
+    ui_digit_1_texture = texture_get_or_load_alt(s_ui_ui_num1_jaz_0047424c,pcVar2);
     pcVar2 = s_ui_ui_num2_jaz_0047423c;
-    DAT_0048f7ac = texture_get_or_load_alt(s_ui_ui_num2_jaz_0047423c,pcVar1);
+    ui_digit_2_texture = texture_get_or_load_alt(s_ui_ui_num2_jaz_0047423c,pcVar1);
     pcVar1 = s_ui_ui_num3_jaz_0047422c;
-    _DAT_0048f7b0 = texture_get_or_load_alt(s_ui_ui_num3_jaz_0047422c,pcVar2);
+    ui_digit_3_texture = texture_get_or_load_alt(s_ui_ui_num3_jaz_0047422c,pcVar2);
     pcVar2 = s_ui_ui_num4_jaz_0047421c;
-    DAT_0048f7b4 = texture_get_or_load_alt(s_ui_ui_num4_jaz_0047421c,pcVar1);
-    _DAT_0048f7b8 = texture_get_or_load_alt(s_ui_ui_num5_jaz_0047420c,pcVar2);
+    ui_digit_4_texture = texture_get_or_load_alt(s_ui_ui_num4_jaz_0047421c,pcVar1);
+    ui_digit_5_texture = texture_get_or_load_alt(s_ui_ui_num5_jaz_0047420c,pcVar2);
     in_EDX = extraout_EDX_06;
   }
   if (startup_texture_load_stage == 7) {
@@ -23500,29 +23518,29 @@ int load_textures_step(void)
     texture_get_or_load(s_iHeart_0047388c,s_ui_ui_lifeHeart_jaz_004741c4);
     pcVar2 = s_ui_ui_clockTable_jaz_004741ac;
     ui_clock_table_texture = texture_get_or_load_alt(s_ui_ui_clockTable_jaz_004741ac,pcVar1);
-    DAT_0048f7cc = texture_get_or_load_alt(s_ui_ui_clockPointer_jaz_00474194,pcVar2);
+    ui_clock_pointer_texture = texture_get_or_load_alt(s_ui_ui_clockPointer_jaz_00474194,pcVar2);
     in_EDX = extraout_EDX_07;
   }
-  _iVar3 = CONCAT44(in_EDX,terrain_render_target);
+  _iVar3 = CONCAT44(in_EDX,_terrain_render_target);
   if (startup_texture_load_stage == 8) {
-    DAT_0048f7e0 = texture_get_or_load_alt(s_game_muzzleFlash_jaz_0047417c,unaff_retaddr);
+    muzzle_flash_texture = texture_get_or_load_alt(s_game_muzzleFlash_jaz_0047417c,unaff_retaddr);
     texture_get_or_load(s_ui_dropOn_00474158,s_ui_ui_dropDownOn_jaz_00474164);
     texture_get_or_load(s_ui_dropOff_00474134,s_ui_ui_dropDownOff_jaz_00474140);
-    _iVar3 = CONCAT44(extraout_EDX_08,terrain_render_target);
+    _iVar3 = CONCAT44(extraout_EDX_08,_terrain_render_target);
     if (terrain_texture_failed == '\0') {
       _iVar3 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ground_004740c4);
     }
   }
-  terrain_render_target = (int)_iVar3;
+  _terrain_render_target = (int)_iVar3;
   if (startup_texture_load_stage == 9) {
     game_state_id = 0;
     DAT_0049bb30 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_bullet_i_00474534);
     _iVar4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_aim64_0047412c);
-    _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),terrain_render_target);
+    _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),_terrain_render_target);
     _DAT_00496698 = (int)_iVar4;
     DAT_004aaf86 = 1;
   }
-  terrain_render_target = (int)_iVar3;
+  _terrain_render_target = (int)_iVar3;
   startup_texture_load_stage = startup_texture_load_stage + 1;
   DAT_00473a5c = 0xb;
   console_flush_log(&console_log_queue,(char *)((ulonglong)_iVar3 >> 0x20));
@@ -23587,7 +23605,7 @@ LAB_0042b17a:
   ;
   if (LVar1 == 0) {
     reg_read_dword_default((HKEY)key,s_timePlayed_004745f8,(uint *)&stack0xffffffa4,0);
-    DAT_0048718c = in_stack_ffffffa4;
+    time_played_ms = in_stack_ffffffa4;
     RegCloseKey(key);
   }
   return;
@@ -24391,7 +24409,7 @@ int crimsonland_main(void)
                            ,0,0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&stack0xfffffab0,
                            (LPDWORD)0x0);
   if (LVar11 == 0) {
-    reg_write_dword((HKEY)key,s_timePlayed_004745f8,DAT_0048718c);
+    reg_write_dword((HKEY)key,s_timePlayed_004745f8,time_played_ms);
     RegCloseKey(key);
   }
   else {
@@ -25030,12 +25048,13 @@ void __cdecl effect_spawn_burst(float *pos,int count)
 
 
 
-/* FUN_0042f080 @ 0042f080 */
+/* effect_spawn_shrinkifier_hit @ 0042f080 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f080(float* arg1) */
+/* spawns shrinkifier impact effects: one core pulse (effect id 1) plus detail-scaled debris (effect
+   id 0) */
 
-void * __cdecl FUN_0042f080(float *arg1)
+void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
 
 {
   uint uVar1;
@@ -25056,7 +25075,7 @@ void * __cdecl FUN_0042f080(float *arg1)
   effect_template_vel_x = 0.0;
   effect_template_vel_y = 0.0;
   _effect_template_scale_step = -4.0;
-  effect_spawn(1,arg1);
+  effect_spawn(1,pos);
   _effect_template_color_b = 0x3f800000;
   _effect_template_color_r = 0x3ecccccd;
   _effect_template_flags = 0x1d;
@@ -25080,26 +25099,26 @@ void * __cdecl FUN_0042f080(float *arg1)
     effect_template_vel_y = (float)(int)((uVar1 & 0x7f) - 0x40) * 1.4;
     iVar2 = crt_rand();
     _effect_template_scale_step = (float)(iVar2 % 100) * 0.01 + 0.1;
-    pvVar3 = effect_spawn(0,arg1);
+    pvVar3 = effect_spawn(0,pos);
   }
   return pvVar3;
 }
 
 
 
-/* FUN_0042f270 @ 0042f270 */
+/* effect_spawn_ion_hit_core @ 0042f270 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f270(float* arg1, float arg2, float arg3) */
+/* spawns the ion hit core pulse (effect id 1); used by ion minigun/rifle/cannon impacts */
 
-void * __cdecl FUN_0042f270(float *arg1,float arg2,float arg3)
+void * __cdecl effect_spawn_ion_hit_core(float *pos,float scale_step,float lifetime)
 
 {
   void *pvVar1;
   
-  _effect_template_lifetime = arg3 * 0.8;
+  _effect_template_lifetime = lifetime * 0.8;
   _effect_template_color_g = 0x3f19999a;
-  _effect_template_scale_step = arg2 * 45.0;
+  _effect_template_scale_step = scale_step * 45.0;
   _effect_template_color_r = 0x3f19999a;
   _effect_template_flags = 0x19;
   _effect_template_color_b = 0x3f666666;
@@ -25110,47 +25129,48 @@ void * __cdecl FUN_0042f270(float *arg1,float arg2,float arg3)
   _effect_template_rotation = 0;
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
-  pvVar1 = effect_spawn(1,arg1);
+  pvVar1 = effect_spawn(1,pos);
   return pvVar1;
 }
 
 
 
-/* FUN_0042f330 @ 0042f330 */
+/* effect_spawn_plasma_hit_core @ 0042f330 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f330(float* arg1, float arg2, int32_t arg3) */
+/* spawns the plasma cannon hit core pulse (effect id 1) with custom lifetime/age */
 
-void * __cdecl FUN_0042f330(float *arg1,float arg2,int arg3)
+void * __cdecl effect_spawn_plasma_hit_core(float *pos,float scale_step,float lifetime)
 
 {
   void *pvVar1;
   
-  _effect_template_scale_step = arg2 * 45.0;
+  _effect_template_scale_step = scale_step * 45.0;
   _effect_template_color_b = 0x3e99999a;
   _effect_template_color_r = 0x3f666666;
   _effect_template_color_g = 0x3f19999a;
   _effect_template_flags = 0x19;
   _effect_template_color_a = 0x3f800000;
   _effect_template_age = 0x3dcccccd;
-  _effect_template_lifetime = arg3;
+  _effect_template_lifetime = lifetime;
   _effect_template_half_width = 0x40800000;
   _effect_template_half_height = 0x40800000;
   _effect_template_rotation = 0;
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
-  pvVar1 = effect_spawn(1,arg1);
+  pvVar1 = effect_spawn(1,pos);
   return pvVar1;
 }
 
 
 
-/* FUN_0042f3f0 @ 0042f3f0 */
+/* effect_spawn_splitter_hit_burst @ 0042f3f0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f3f0(float* arg1, float arg2, int32_t arg3) */
+/* spawns a radial burst of effect id 0 particles around the hit point; used by splitter gun impacts
+    */
 
-void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
+void * __cdecl effect_spawn_splitter_hit_burst(float *pos,float radius,int count)
 
 {
   float fVar1;
@@ -25181,7 +25201,7 @@ void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
   _effect_template_scale_step = 0x425c0000;
-  if (0 < arg3) {
+  if (0 < count) {
     lVar7 = __ftol();
     do {
       uVar2 = crt_rand();
@@ -25189,27 +25209,27 @@ void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
       iVar3 = crt_rand();
       fVar5 = (float10)(iVar3 % (int)lVar7);
       fVar6 = (float10)fcos((float10)fVar1);
-      local_10 = (float)(fVar6 * fVar5 + (float10)*arg1);
+      local_10 = (float)(fVar6 * fVar5 + (float10)*pos);
       fVar6 = (float10)fsin((float10)fVar1);
-      local_c = (float)(fVar6 * fVar5 + (float10)arg1[1]);
+      local_c = (float)(fVar6 * fVar5 + (float10)pos[1]);
       uVar2 = crt_rand();
       _effect_template_age = (float)(int)-(uVar2 & 0xff) * 0.0012;
       _effect_template_lifetime = 0.1 - _effect_template_age;
       pvVar4 = effect_spawn(0,&local_10);
-      arg3 = arg3 + -1;
-    } while (arg3 != 0);
+      count = count + -1;
+    } while (count != 0);
   }
   return pvVar4;
 }
 
 
 
-/* FUN_0042f540 @ 0042f540 */
+/* effect_spawn_ion_hit_sparks @ 0042f540 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_42f540(int32_t arg1, float arg2) */
+/* spawns detail-scaled ion impact sparks (effect id 0) around the hit position */
 
-int __cdecl FUN_0042f540(int arg1,float arg2)
+void * __cdecl effect_spawn_ion_hit_sparks(float *pos,float scale)
 
 {
   float fVar1;
@@ -25219,7 +25239,7 @@ int __cdecl FUN_0042f540(int arg1,float arg2)
   void *pvVar5;
   longlong lVar6;
   
-  fVar1 = arg2 * 0.8;
+  fVar1 = scale * 0.8;
   _effect_template_color_r = 0x3ecccccd;
   _effect_template_lifetime = fVar1 * 0.7;
   _effect_template_color_a = 0x3f000000;
@@ -25248,11 +25268,11 @@ int __cdecl FUN_0042f540(int arg1,float arg2)
       effect_template_vel_y = (float)(int)((uVar3 & 0x7f) - 0x40) * fVar1 * 1.4;
       iVar4 = crt_rand();
       _effect_template_scale_step = ((float)(iVar4 % 100) * 0.01 + 0.1) * fVar1;
-      pvVar2 = effect_spawn(0,(float *)arg1);
+      pvVar2 = effect_spawn(0,pos);
       pvVar5 = (void *)((int)pvVar5 + -1);
     } while (pvVar5 != (void *)0x0);
   }
-  return (int)pvVar2;
+  return pvVar2;
 }
 
 
@@ -25355,26 +25375,26 @@ void __cdecl effect_spawn_explosion_burst(float *pos,float scale)
 
 
 
-/* FUN_0042faa0 @ 0042faa0 */
+/* perk_meta_table_init @ 0042faa0 */
 
-/* [binja] int32_t sub_42faa0() */
+/* constructs perk_meta_table entries (0x80 records, stride 0x14) */
 
-int FUN_0042faa0(void)
+int perk_meta_table_init(void)
 
 {
   int extraout_EAX;
   
-  crt_ehvec_ctor(&perk_meta_table,0x14,0x80,&LAB_0042fac0,FUN_00412410);
+  crt_ehvec_ctor(&perk_meta_table,0x14,0x80,&LAB_0042fac0,bonus_meta_entry_release);
   return extraout_EAX;
 }
 
 
 
-/* FUN_0042fae0 @ 0042fae0 */
+/* perk_meta_register_atexit @ 0042fae0 */
 
-/* [binja] int32_t sub_42fae0() */
+/* registers perk meta table destructor callback with crt_atexit */
 
-int FUN_0042fae0(void)
+int perk_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -25437,7 +25457,7 @@ int perk_select_random(void)
   iVar3 = 1;
   do {
     iVar1 = crt_rand();
-    iVar1 = iVar1 % DAT_004c2c38 + 1;
+    iVar1 = iVar1 % perk_id_max + 1;
     if ((char)(&perk_meta_table)[iVar1].available != '\0') {
       iVar2 = perk_can_offer(iVar1);
       if ((char)iVar2 != '\0') {
@@ -25466,7 +25486,7 @@ void perks_rebuild_available(void)
   int iVar5;
   int iVar6;
   
-  iVar5 = DAT_004c2c38 + 1;
+  iVar5 = perk_id_max + 1;
   if (0 < iVar5) {
     piVar3 = &perk_meta_table.available;
     do {
@@ -25982,7 +26002,7 @@ void __fastcall perks_init_database(void)
   _DAT_004c30b4 = wrap_text_to_width_alloc(this_x00112,s_Lifeline_50_50_00475724,0x100);
   _DAT_004c30b8 =
        wrap_text_to_width_alloc(this_x00113,s_The_computer_removes_half_of_the_004756cc,0x100);
-  DAT_004c2c38 = 0x39;
+  perk_id_max = 0x39;
   DAT_004c2b8c = 0x3a;
   perks_rebuild_available();
   return;
@@ -26065,6 +26085,7 @@ int creature_spawn_slot_alloc(void)
 
 /* creature_spawn_template @ 00430af0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* spawns creature(s) from template id; heading -100 uses a random heading */
 
 void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
@@ -27692,7 +27713,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
         goto LAB_00431094;
       }
       (&creature_pool)[iVar6].type_id = 2;
-      iVar7 = terrain_texture_height / 2;
+      iVar7 = _terrain_texture_height / 2;
       (&creature_pool)[iVar6].ai_mode = 2;
       (&creature_pool)[iVar6].pos_x = -10.0;
       fVar11 = (float10)fcos((float10)0.0);
@@ -27758,8 +27779,8 @@ LAB_00431094:
   console_printf(&console_log_queue,s_Unhandled_creatureType__00477758);
 LAB_004310b8:
   if ((((demo_mode_active == '\0') && (0.0 < pcVar10->pos_x)) &&
-      (pcVar10->pos_x < (float)terrain_texture_width)) &&
-     ((0.0 < pcVar10->pos_y && (pcVar10->pos_y < (float)terrain_texture_height)))) {
+      (pcVar10->pos_x < (float)_terrain_texture_width)) &&
+     ((0.0 < pcVar10->pos_y && (pcVar10->pos_y < (float)_terrain_texture_height)))) {
     effect_spawn_burst(&pcVar10->pos_x,8);
   }
   pcVar10->max_health = pcVar10->health;
@@ -27870,6 +27891,7 @@ int quest_spawn_table_empty(void)
 /* quest_spawn_timeline_update @ 00434250 */
 
 /* WARNING: Type propagation algorithm not settling */
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* updates quest spawn entries based on the quest timer */
 
 void quest_spawn_timeline_update(void)
@@ -27887,10 +27909,10 @@ void quest_spawn_timeline_update(void)
   float local_4;
   
   if (creatures_any_active_flag == '\0') {
-    DAT_004c3654 = 0;
+    quest_spawn_stall_timer_ms = 0;
   }
   else {
-    DAT_004c3654 = DAT_004c3654 + frame_dt_ms;
+    quest_spawn_stall_timer_ms = quest_spawn_stall_timer_ms + frame_dt_ms;
   }
   iVar3 = 0;
   if (0 < quest_spawn_count) {
@@ -27898,7 +27920,7 @@ void quest_spawn_timeline_update(void)
     do {
       if ((0 < piVar1[1]) &&
          ((*piVar1 < quest_spawn_timeline ||
-          (((creatures_any_active_flag != '\0' && (3000 < DAT_004c3654)) &&
+          (((creatures_any_active_flag != '\0' && (3000 < quest_spawn_stall_timer_ms)) &&
            (0x6a4 < quest_spawn_timeline)))))) {
         pqVar4 = &quest_spawn_table + iVar3;
         iVar5 = quest_spawn_count;
@@ -27909,7 +27931,7 @@ void quest_spawn_timeline_update(void)
           if (0 < (pqVar4->pos_y_block).heading_block.count) {
             local_1c = 0;
             do {
-              if ((pqVar4->pos_x < 0.0) || ((float)terrain_texture_width < pqVar4->pos_x)) {
+              if ((pqVar4->pos_x < 0.0) || ((float)_terrain_texture_width < pqVar4->pos_x)) {
                 local_14 = (float)local_1c;
                 if ((uVar2 & 1) != 0) {
                   local_14 = -local_14;
@@ -27976,6 +27998,7 @@ void __cdecl quest_database_advance_slot(int *tier,int *index)
 
 /* quest_build_fallback @ 004343e0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* fills a default quest spawn table when no quest builder is present */
 
 void __cdecl quest_build_fallback(quest_spawn_entry_t *entries,int *count)
@@ -27984,13 +28007,13 @@ void __cdecl quest_build_fallback(quest_spawn_entry_t *entries,int *count)
   float fVar1;
   
   console_printf(&console_log_queue,s___Generating_a_fallback_quest__00477782 + 2);
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x40;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 10;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = -50.0;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
   entries[1].pos_y_block.heading_block.template_id = 0x40;
@@ -28168,6 +28191,7 @@ void quest_build_nagolipoli(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_monster_blues @ 00434860 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 8 (Monster Blues) */
 
@@ -28181,13 +28205,13 @@ void quest_build_monster_blues(quest_spawn_entry_t *entries,int *count)
   uint uVar5;
   int iVar6;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 4;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 10;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = 1074.0;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
   entries[1].pos_y_block.heading_block.template_id = 6;
@@ -28382,6 +28406,7 @@ void quest_build_army_of_three(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_knee_deep_in_the_dead @ 00434f00 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 5 (Knee-deep in the Dead) */
 
@@ -28399,7 +28424,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
   int iVar9;
   bool bVar10;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x43;
@@ -28418,7 +28443,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     pqVar2 = pqVar4;
     iVar9 = iVar8;
     if (bVar10) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar9 = iVar8 + 1;
       pqVar2 = pqVar4 + 1;
@@ -28427,7 +28452,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
       (pqVar4->pos_y_block).heading_block.trigger_time_ms = iVar5 + -2;
       (pqVar4->pos_y_block).heading_block.count = 1;
     }
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     pqVar2->pos_x = -50.0;
     (pqVar2->pos_y_block).pos_y = fVar1 * 0.5;
     (pqVar2->pos_y_block).heading_block.template_id = 0x41;
@@ -28436,7 +28461,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     iVar8 = iVar9 + 1;
     pqVar4 = pqVar2 + 1;
     if (0x30d4 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar8 = iVar9 + 2;
       pqVar4 = pqVar2 + 2;
@@ -28447,7 +28472,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar2 = pqVar4;
     if (0x5fb4 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar2 = pqVar4 + 1;
@@ -28458,7 +28483,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar3 = pqVar2;
     if (0x8e94 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar2->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar3 = pqVar2 + 1;
@@ -28469,7 +28494,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar4 = pqVar3;
     if (0xbd74 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar3->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar4 = pqVar3 + 1;
@@ -28489,6 +28514,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_gang_wars @ 00435120 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 4 (The Gang Wars) */
 
@@ -28500,13 +28526,13 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   int iVar3;
   int iVar4;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -150.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x12;
   (entries->pos_y_block).heading_block.trigger_time_ms = 100;
   (entries->pos_y_block).heading_block.count = 1;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = 1174.0;
   iVar4 = 10;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
@@ -28516,7 +28542,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0x157c;
   piVar2 = &entries[2].pos_y_block.heading_block.trigger_time_ms;
   do {
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     piVar2[-4] = 0x4492c000;
     piVar2[-3] = (int)(fVar1 * 0.5);
     piVar2[-1] = 0x12;
@@ -28534,7 +28560,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0xe86c;
   piVar2 = &entries[0xd].pos_y_block.heading_block.trigger_time_ms;
   do {
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     piVar2[-4] = -0x3cea0000;
     piVar2[-3] = (int)(fVar1 * 0.5);
     piVar2[-1] = 0x12;
@@ -28556,6 +28582,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_fortress @ 004352d0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 3 (The Fortress) */
 
@@ -28570,7 +28597,7 @@ void quest_build_the_fortress(quest_spawn_entry_t *entries,int *count)
   int iVar6;
   
   pqVar2 = entries;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   entries = (quest_spawn_entry_t *)0x200;
   (pqVar2->pos_y_block).pos_y = fVar1 * 0.5;
@@ -28624,6 +28651,7 @@ void quest_build_the_fortress(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_cross_fire @ 00435480 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 6 (Cross Fire) */
 
@@ -28632,7 +28660,7 @@ void quest_build_cross_fire(quest_spawn_entry_t *entries,int *count)
 {
   float fVar1;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = 1074.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x40;
@@ -28676,6 +28704,7 @@ void quest_build_cross_fire(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_beating @ 00435610 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 1 (The Beating) */
 
@@ -28699,8 +28728,8 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 1;
   iVar5 = 10000;
-  iVar2 = terrain_texture_height / 2;
-  entries[1].pos_x = (float)(terrain_texture_width + 0x20);
+  iVar2 = _terrain_texture_height / 2;
+  entries[1].pos_x = (float)(_terrain_texture_width + 0x20);
   iVar9 = 0x40;
   iVar8 = 8;
   entries[1].pos_y_block.pos_y = (float)iVar2;
@@ -28709,9 +28738,9 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   entries[1].pos_y_block.heading_block.count = 3;
   piVar4 = &entries[2].pos_y_block.heading_block.trigger_time_ms;
   do {
-    iVar2 = iVar9 + terrain_texture_width;
+    iVar2 = iVar9 + _terrain_texture_width;
     iVar9 = iVar9 + 0x20;
-    iVar3 = terrain_texture_height / 2;
+    iVar3 = _terrain_texture_height / 2;
     piVar4[-4] = (int)(float)iVar2;
     piVar4[-3] = (int)(float)iVar3;
     piVar4[-1] = 0x25;
@@ -28721,7 +28750,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
     iVar8 = iVar8 + -1;
     piVar4 = piVar4 + 6;
   } while (iVar8 != 0);
-  iVar2 = terrain_texture_height / 2;
+  iVar2 = _terrain_texture_height / 2;
   entries[10].pos_x = -32.0;
   iVar5 = 20000;
   pqVar7 = entries + 0xb;
@@ -28733,7 +28762,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   piVar4 = &(pqVar7->pos_y_block).heading_block.trigger_time_ms;
   do {
     piVar6 = &entries[-2].pos_y_block.heading_block.trigger_time_ms;
-    iVar2 = terrain_texture_height / 2;
+    iVar2 = _terrain_texture_height / 2;
     piVar4[-4] = (int)(float)(int)entries;
     piVar4[-3] = (int)(float)iVar2;
     piVar4[-1] = 0x25;
@@ -28748,7 +28777,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   piVar4 = &pqVar1[0x13].pos_y_block.heading_block.trigger_time_ms;
   do {
     pqVar7 = (quest_spawn_entry_t *)((int)&entries[-2].pos_y_block.pos_y + 2);
-    piVar4[-4] = (int)(float)(terrain_texture_width / 2);
+    piVar4[-4] = (int)(float)(_terrain_texture_width / 2);
     piVar4[-3] = (int)(float)(int)entries;
     piVar4[-1] = 0xf;
     *piVar4 = iVar2;
@@ -28761,9 +28790,9 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   iVar5 = 40000;
   piVar4 = &pqVar1[0x19].pos_y_block.heading_block.trigger_time_ms;
   do {
-    iVar8 = iVar2 + 0x2c + terrain_texture_width;
+    iVar8 = iVar2 + 0x2c + _terrain_texture_width;
     iVar2 = iVar2 + 0x20;
-    piVar4[-4] = (int)(float)(terrain_texture_width / 2);
+    piVar4[-4] = (int)(float)(_terrain_texture_width / 2);
     piVar4[-3] = (int)(float)iVar8;
     piVar4[-1] = 0x12;
     *piVar4 = iVar5;
@@ -28843,6 +28872,7 @@ void quest_build_the_spanking_of_the_dead(quest_spawn_entry_t *entries,int *coun
 
 /* quest_build_hidden_evil @ 00435a30 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 4 (Hidden Evil) */
 
@@ -28851,32 +28881,32 @@ void quest_build_hidden_evil(quest_spawn_entry_t *entries,int *count)
 {
   int iVar1;
   
-  iVar1 = terrain_texture_height + 0x40;
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).pos_y = (float)iVar1;
   (entries->pos_y_block).heading_block.template_id = 0x21;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 0x32;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[1].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[1].pos_x = (float)(_terrain_texture_width / 2);
   entries[1].pos_y_block.pos_y = (float)iVar1;
   entries[1].pos_y_block.heading_block.template_id = 0x22;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 15000;
   entries[1].pos_y_block.heading_block.count = 0x1e;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[2].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[2].pos_x = (float)(_terrain_texture_width / 2);
   entries[2].pos_y_block.pos_y = (float)iVar1;
   entries[2].pos_y_block.heading_block.template_id = 0x23;
   entries[2].pos_y_block.heading_block.trigger_time_ms = 25000;
   entries[2].pos_y_block.heading_block.count = 0x14;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[3].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[3].pos_x = (float)(_terrain_texture_width / 2);
   entries[3].pos_y_block.pos_y = (float)iVar1;
   entries[3].pos_y_block.heading_block.template_id = 0x23;
   entries[3].pos_y_block.heading_block.trigger_time_ms = 30000;
   entries[3].pos_y_block.heading_block.count = 0x1e;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[4].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[4].pos_x = (float)(_terrain_texture_width / 2);
   entries[4].pos_y_block.pos_y = (float)iVar1;
   entries[4].pos_y_block.heading_block.template_id = 0x22;
   entries[4].pos_y_block.heading_block.trigger_time_ms = 35000;
@@ -28889,6 +28919,7 @@ void quest_build_hidden_evil(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_land_hostile @ 00435bd0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 1 (Land Hostile) */
 
@@ -28897,8 +28928,8 @@ void quest_build_land_hostile(quest_spawn_entry_t *entries,int *count)
 {
   int iVar1;
   
-  iVar1 = terrain_texture_height + 0x40;
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).pos_y = (float)iVar1;
   (entries->pos_y_block).heading_block.template_id = 0x26;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
@@ -28926,6 +28957,7 @@ void quest_build_land_hostile(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_minor_alien_breach @ 00435cc0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 2 (Minor Alien Breach) */
 
@@ -28953,8 +28985,8 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
   iVar4 = 2;
   pqVar3 = entries + 2;
   do {
-    iVar1 = terrain_texture_height / 2;
-    pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
+    iVar1 = _terrain_texture_height / 2;
+    pqVar3->pos_x = (float)(_terrain_texture_width + 0x40);
     (pqVar3->pos_y_block).pos_y = (float)iVar1;
     (pqVar3->pos_y_block).heading_block.template_id = 0x26;
     iVar5 = (iVar4 * 5 + -10) * 0x2d0;
@@ -28963,8 +28995,8 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
     pqVar2 = pqVar3 + 1;
     iVar1 = iVar6 + 1;
     if (6 < iVar4) {
-      iVar1 = terrain_texture_height / 2;
-      pqVar3[1].pos_x = (float)(terrain_texture_width + 0x40);
+      iVar1 = _terrain_texture_height / 2;
+      pqVar3[1].pos_x = (float)(_terrain_texture_width + 0x40);
       pqVar3[1].pos_y_block.pos_y = (float)(iVar1 + -0x100);
       pqVar3[1].pos_y_block.heading_block.template_id = 0x26;
       pqVar3[1].pos_y_block.heading_block.trigger_time_ms = iVar5;
@@ -28975,16 +29007,16 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
     iVar6 = iVar1;
     pqVar3 = pqVar2;
     if (iVar4 == 0xd) {
-      iVar1 = terrain_texture_height + 0x40;
+      iVar1 = _terrain_texture_height + 0x40;
       iVar6 = iVar6 + 1;
-      pqVar3->pos_x = (float)(terrain_texture_width / 2);
+      pqVar3->pos_x = (float)(_terrain_texture_width / 2);
       (pqVar3->pos_y_block).pos_y = (float)iVar1;
       (pqVar3->pos_y_block).heading_block.template_id = 0x29;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = 0x9ab0;
       (pqVar3->pos_y_block).heading_block.count = 1;
       pqVar2 = pqVar3 + 1;
 LAB_00435e39:
-      iVar1 = terrain_texture_height / 2;
+      iVar1 = _terrain_texture_height / 2;
       pqVar2->pos_x = -64.0;
       iVar6 = iVar6 + 1;
       pqVar3 = pqVar2 + 1;
@@ -29119,6 +29151,7 @@ void quest_build_zombie_masters(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_8_legged_terror @ 00436120 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 10 (8-legged Terror) */
 
@@ -29129,10 +29162,10 @@ void quest_build_8_legged_terror(quest_spawn_entry_t *entries,int *count)
   int iVar2;
   int iVar3;
   
-  entries->pos_x = (float)(terrain_texture_width + -0x100);
+  entries->pos_x = (float)(_terrain_texture_width + -0x100);
   iVar3 = 1;
   pqVar1 = entries + 1;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x3a;
   (entries->pos_y_block).heading_block.trigger_time_ms = 1000;
   (entries->pos_y_block).heading_block.count = 1;
@@ -29170,6 +29203,7 @@ void quest_build_8_legged_terror(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_ghost_patrols @ 00436200 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 9 (Ghost Patrols) */
 
@@ -29183,8 +29217,8 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
   bool bVar5;
   
   iVar2 = 0x9c4;
-  entries->pos_x = (float)(terrain_texture_width + 0x80);
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  entries->pos_x = (float)(_terrain_texture_width + 0x80);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = 2;
@@ -29204,7 +29238,7 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
       piVar3[-3] = 0x44900000;
     }
     uVar1 = uVar4 + 1;
-    piVar3[-2] = (int)(float)(terrain_texture_width / 2);
+    piVar3[-2] = (int)(float)(_terrain_texture_width / 2);
     *piVar3 = 0x19;
     piVar3[1] = iVar2;
     piVar3[2] = 1;
@@ -29212,12 +29246,12 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
     piVar3 = piVar3 + 6;
   } while (iVar2 < 0x7ef4);
   entries[0xd].pos_x = -264.0;
-  entries[0xd].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[0xd].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[0xd].pos_y_block.heading_block.template_id = 0x2b;
   entries[0xd].pos_y_block.heading_block.trigger_time_ms = uVar1 * 0x9c4 + -0x9c4;
   entries[0xd].pos_y_block.heading_block.count = 1;
   entries[0xe].pos_x = -128.0;
-  entries[0xe].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[0xe].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[0xe].pos_y_block.heading_block.template_id = 0x18;
   entries[0xe].pos_y_block.heading_block.trigger_time_ms = (uVar4 + 0x10 + uVar1 * 4) * 500;
   entries[0xe].pos_y_block.heading_block.count = 1;
@@ -29229,6 +29263,7 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_random_factor @ 00436350 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 1 Quest 6 (The Random Factor) */
 
 void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *count)
@@ -29244,15 +29279,15 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
   iVar3 = 0;
   do {
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1d;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = config_blob.reserved0._20_4_ * 2 + 4;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1d;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5 + 200;
     (pqVar1->pos_y_block).heading_block.count = 6;
@@ -29260,7 +29295,7 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
     if (iVar2 % 5 == 3) {
       pqVar1 = entries + iVar4;
       iVar4 = iVar3 + 3;
-      pqVar1->pos_x = (float)(terrain_texture_width / 2);
+      pqVar1->pos_x = (float)(_terrain_texture_width / 2);
       (pqVar1->pos_y_block).pos_y = 1088.0;
       (pqVar1->pos_y_block).heading_block.template_id = 0x29;
       (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
@@ -29277,6 +29312,7 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
 
 /* quest_build_spider_wave_syndrome @ 00436440 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 1 Quest 7 (Spider Wave Syndrome) */
 
 void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *count)
@@ -29292,7 +29328,7 @@ void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *
     pqVar1 = entries + iVar2;
     pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 1;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x40;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     iVar3 = iVar3 + 0x157c;
@@ -29306,14 +29342,15 @@ void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *
 
 /* quest_build_nesting_grounds @ 004364a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 9 (Nesting Grounds) */
 
 void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
 
 {
-  entries->pos_x = (float)(terrain_texture_width / 2);
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_height + 0x40);
+  entries->pos_x = (float)(_terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_height + 0x40);
   (entries->pos_y_block).heading_block.template_id = 0x1d;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = config_blob.reserved0._20_4_ * 2 + 6;
@@ -29332,13 +29369,13 @@ void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
   entries[3].pos_y_block.heading_block.template_id = 9;
   entries[3].pos_y_block.heading_block.trigger_time_ms = 18000;
   entries[3].pos_y_block.heading_block.count = 1;
-  entries[4].pos_x = (float)(terrain_texture_width / 2);
-  entries[4].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[4].pos_x = (float)(_terrain_texture_width / 2);
+  entries[4].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[4].pos_y_block.heading_block.template_id = 0x1d;
   entries[4].pos_y_block.heading_block.trigger_time_ms = 25000;
   entries[4].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 6;
-  entries[5].pos_x = (float)(terrain_texture_width / 2);
-  entries[5].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[5].pos_x = (float)(_terrain_texture_width / 2);
+  entries[5].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[5].pos_y_block.heading_block.template_id = 0x1d;
   entries[5].pos_y_block.heading_block.trigger_time_ms = 39000;
   entries[5].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 3 + 3;
@@ -29362,13 +29399,13 @@ void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
   entries[9].pos_y_block.heading_block.template_id = 8;
   entries[9].pos_y_block.heading_block.trigger_time_ms = 0xac44;
   entries[9].pos_y_block.heading_block.count = 1;
-  entries[10].pos_x = (float)(terrain_texture_width / 2);
-  entries[10].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[10].pos_x = (float)(_terrain_texture_width / 2);
+  entries[10].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[10].pos_y_block.heading_block.template_id = 0x1e;
   entries[10].pos_y_block.heading_block.trigger_time_ms = 50000;
   entries[10].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 5;
-  entries[0xb].pos_x = (float)(terrain_texture_width / 2);
-  entries[0xb].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[0xb].pos_x = (float)(_terrain_texture_width / 2);
+  entries[0xb].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[0xb].pos_y_block.heading_block.template_id = 0x1f;
   entries[0xb].pos_y_block.heading_block.trigger_time_ms = 55000;
   entries[0xb].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 2;
@@ -29492,6 +29529,7 @@ void quest_build_arachnoid_farm(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_gauntlet @ 004369a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 7 (Gauntlet) */
 
@@ -29541,23 +29579,23 @@ void quest_build_gauntlet(quest_spawn_entry_t *entries,int *count)
     pqVar4 = entries + iVar6;
     iVar7 = 2;
     do {
-      pqVar4->pos_x = (float)(terrain_texture_width + 0x40);
-      (pqVar4->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      pqVar4->pos_x = (float)(_terrain_texture_width + 0x40);
+      (pqVar4->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar4->pos_y_block).heading_block.template_id = 0x41;
       (pqVar4->pos_y_block).heading_block.trigger_time_ms = iVar5;
       (pqVar4->pos_y_block).heading_block.count = iVar7;
       pqVar4[1].pos_x = -64.0;
-      pqVar4[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+      pqVar4[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
       pqVar4[1].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[1].pos_y_block.heading_block.trigger_time_ms = iVar5;
       pqVar4[1].pos_y_block.heading_block.count = iVar7;
-      pqVar4[2].pos_x = (float)(terrain_texture_width / 2);
-      pqVar4[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+      pqVar4[2].pos_x = (float)(_terrain_texture_width / 2);
+      pqVar4[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
       pqVar4[2].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[2].pos_y_block.heading_block.trigger_time_ms = iVar5;
       pqVar4[2].pos_y_block.heading_block.count = iVar7;
       iVar6 = iVar6 + 4;
-      pqVar4[3].pos_x = (float)(terrain_texture_width / 2);
+      pqVar4[3].pos_x = (float)(_terrain_texture_width / 2);
       pqVar4[3].pos_y_block.pos_y = -64.0;
       pqVar4[3].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[3].pos_y_block.heading_block.trigger_time_ms = iVar5;
@@ -29739,6 +29777,7 @@ void quest_build_spider_spawns(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_two_fronts @ 00436ee0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 4 (Two Fronts) */
 
@@ -29753,13 +29792,13 @@ void quest_build_two_fronts(quest_spawn_entry_t *entries,int *count)
   iVar2 = 0;
   iVar3 = 0;
   do {
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x1a;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar3 * 2000 + 1000;
     (entries->pos_y_block).heading_block.count = 1;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x1b;
     entries[1].pos_y_block.heading_block.trigger_time_ms = (iVar3 * 5 + 5) * 400;
     entries[1].pos_y_block.heading_block.count = 1;
@@ -29973,6 +30012,7 @@ void quest_build_spideroids(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_evil_zombies_at_large @ 004374a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 6 (Evil Zombies At Large) */
 
@@ -29988,23 +30028,23 @@ void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries,int *count)
   iVar4 = 0x5dc;
   iVar3 = 4;
   do {
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x41;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (entries->pos_y_block).heading_block.count = iVar3;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x41;
     entries[1].pos_y_block.heading_block.trigger_time_ms = iVar4;
     entries[1].pos_y_block.heading_block.count = iVar3;
-    entries[2].pos_x = (float)(terrain_texture_width / 2);
-    entries[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].pos_x = (float)(_terrain_texture_width / 2);
+    entries[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
     entries[2].pos_y_block.heading_block.template_id = 0x41;
     entries[2].pos_y_block.heading_block.trigger_time_ms = iVar4;
     entries[2].pos_y_block.heading_block.count = iVar3;
     iVar2 = iVar2 + 4;
-    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_x = (float)(_terrain_texture_width / 2);
     entries[3].pos_y_block.pos_y = -64.0;
     entries[3].pos_y_block.heading_block.template_id = 0x41;
     entries[3].pos_y_block.heading_block.trigger_time_ms = iVar4;
@@ -30022,6 +30062,7 @@ void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_everred_pastures @ 004375a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 1 (Everred Pastures) */
 
@@ -30039,38 +30080,38 @@ void quest_build_everred_pastures(quest_spawn_entry_t *entries,int *count)
   iVar6 = 0;
   do {
     iVar1 = iVar6 + 1;
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
     pqVar3 = entries + 4;
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x32;
     iVar2 = iVar6 * 13000 + 0x5dc;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar2;
     (entries->pos_y_block).heading_block.count = iVar1;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x33;
     entries[1].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[1].pos_y_block.heading_block.count = iVar1;
-    entries[2].pos_x = (float)(terrain_texture_width / 2);
-    entries[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].pos_x = (float)(_terrain_texture_width / 2);
+    entries[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
     entries[2].pos_y_block.heading_block.template_id = 0x34;
     entries[2].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[2].pos_y_block.heading_block.count = iVar1;
     iVar5 = iVar4 + 4;
-    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_x = (float)(_terrain_texture_width / 2);
     entries[3].pos_y_block.pos_y = -64.0;
     entries[3].pos_y_block.heading_block.template_id = 0x35;
     entries[3].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[3].pos_y_block.heading_block.count = iVar1;
     if (iVar6 == 3) {
-      entries[4].pos_x = (float)(terrain_texture_width / 2);
+      entries[4].pos_x = (float)(_terrain_texture_width / 2);
       entries[4].pos_y_block.pos_y = -64.0;
       entries[4].pos_y_block.heading_block.template_id = 0x1b;
       entries[4].pos_y_block.heading_block.trigger_time_ms = 0x9e34;
       entries[4].pos_y_block.heading_block.count = 8;
       iVar5 = iVar4 + 6;
       pqVar3 = entries + 6;
-      entries[5].pos_x = (float)(terrain_texture_width / 2);
+      entries[5].pos_x = (float)(_terrain_texture_width / 2);
       entries[5].pos_y_block.pos_y = 1088.0;
       entries[5].pos_y_block.heading_block.template_id = 0x1b;
       entries[5].pos_y_block.heading_block.trigger_time_ms = 0x9e34;
@@ -30375,6 +30416,7 @@ void quest_build_land_of_lizards(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_lizquidation @ 00437c70 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 6 (The Lizquidation) */
 
@@ -30392,23 +30434,23 @@ void quest_build_the_lizquidation(quest_spawn_entry_t *entries,int *count)
   do {
     iVar1 = iVar5 * 8000 + 0x5dc;
     pqVar2 = entries + iVar3;
-    pqVar2->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar2->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar1;
     (pqVar2->pos_y_block).heading_block.count = iVar5 + 6;
     pqVar2 = entries + iVar3 + 1;
     pqVar2->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar1;
     (pqVar2->pos_y_block).heading_block.count = iVar5 + 6;
     if (iVar5 == 4) {
       pqVar2 = entries + iVar4;
-      pqVar2->pos_x = (float)(terrain_texture_width + 0x80);
+      pqVar2->pos_x = (float)(_terrain_texture_width + 0x80);
       iVar4 = iVar3 + 3;
-      (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar2->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar2->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
       (pqVar2->pos_y_block).heading_block.count = 2;
@@ -30424,6 +30466,7 @@ void quest_build_the_lizquidation(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_zombie_time @ 00437d70 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 4 Quest 2 (Zombie Time) */
 
 void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
@@ -30437,15 +30480,15 @@ void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0x5dc;
   do {
     pqVar1 = entries + iVar2;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     (pqVar1->pos_y_block).heading_block.count = 8;
     pqVar1 = entries + iVar2 + 1;
     pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 2;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     iVar3 = iVar3 + 8000;
@@ -30459,6 +30502,7 @@ void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_frontline_assault @ 00437e10 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 4 (Frontline Assault) */
 
@@ -30476,7 +30520,7 @@ void quest_build_frontline_assault(quest_spawn_entry_t *entries,int *count)
   iVar6 = 0x9c4;
   iVar4 = 2;
   do {
-    entries->pos_x = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).pos_y = 1088.0;
     if (iVar4 < 5) {
       (entries->pos_y_block).heading_block.template_id = 0x26;
@@ -30541,6 +30585,7 @@ void quest_build_frontline_assault(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_collaboration @ 00437f30 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 4 (The Collaboration) */
 
@@ -30560,21 +30605,21 @@ void quest_build_the_collaboration(quest_spawn_entry_t *entries,int *count)
     lVar6 = __ftol();
     iVar2 = (int)lVar6;
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1a;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
     pqVar1 = entries + iVar3 + 1;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-    pqVar1->pos_x = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+    pqVar1->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1b;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
     pqVar1 = entries + iVar3 + 2;
     pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 3;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1c;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
@@ -30595,6 +30640,7 @@ void quest_build_the_collaboration(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_blighting @ 00438050 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 1 (The Blighting) */
 
@@ -30610,14 +30656,14 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
   int iVar7;
   uint uStack_8;
   
-  entries->pos_x = (float)(terrain_texture_width + 0x80);
+  entries->pos_x = (float)(_terrain_texture_width + 0x80);
   iVar5 = 0x1a;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = 2;
   entries[1].pos_x = -128.0;
-  entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[1].pos_y_block.heading_block.template_id = 0x2b;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 0x5dc;
   entries[1].pos_y_block.heading_block.count = 2;
@@ -30654,7 +30700,7 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
       pqVar3->pos_x = -128.0;
       iVar7 = iVar7 + 1;
       pqVar2 = pqVar3 + 1;
-      (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar3->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = iVar6;
       (pqVar3->pos_y_block).heading_block.count = 4;
@@ -30663,7 +30709,7 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
       pqVar2->pos_x = 1152.0;
       iVar7 = iVar7 + 1;
       pqVar3 = pqVar2 + 1;
-      (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar2->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar6;
       (pqVar2->pos_y_block).heading_block.count = 4;
@@ -30676,8 +30722,8 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
     }
     iVar4 = (int)uStack_8 % 5;
     if (iVar4 == 0) {
-      pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
-      (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      pqVar3->pos_x = (float)(_terrain_texture_width + 0x40);
+      (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
 LAB_00438283:
       (pqVar3->pos_y_block).heading_block.template_id = iVar5;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = iVar6;
@@ -30689,13 +30735,13 @@ LAB_00438283:
     else {
       if (iVar4 == 1) {
         pqVar3->pos_x = -64.0;
-        (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+        (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 2) {
-        (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
+        (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
 LAB_00438281:
-        pqVar3->pos_x = (float)(terrain_texture_width / 2);
+        pqVar3->pos_x = (float)(_terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 3) {
@@ -30716,6 +30762,7 @@ LAB_00438281:
 
 /* quest_build_the_annihilation @ 004382c0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 9 (The Annihilation) */
 
@@ -30733,7 +30780,7 @@ void quest_build_the_annihilation(quest_spawn_entry_t *entries,int *count)
   uVar3 = 0;
   iVar5 = 0;
   piVar1 = &entries[1].pos_y_block.heading_block.template_id;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 2;
@@ -30781,6 +30828,7 @@ void quest_build_the_annihilation(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_massacre @ 004383e0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 5 (The Massacre) */
 
@@ -30800,11 +30848,11 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
   iVar4 = 0;
   do {
     pqVar1 = entries + 1;
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
     iVar5 = iVar4 + 1;
     uVar3 = uVar2 & 0x80000001;
     bVar7 = uVar3 == 0;
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x41;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar6;
     (entries->pos_y_block).heading_block.count = uVar2 + 3;
@@ -30812,10 +30860,10 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
       bVar7 = (uVar3 - 1 | 0xfffffffe) == 0xffffffff;
     }
     if (bVar7) {
-      pqVar1->pos_x = (float)(terrain_texture_width + 0x80);
+      pqVar1->pos_x = (float)(_terrain_texture_width + 0x80);
       iVar5 = iVar4 + 2;
       pqVar1 = entries + 2;
-      entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+      entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
       entries[1].pos_y_block.heading_block.template_id = 0x2b;
       entries[1].pos_y_block.heading_block.trigger_time_ms = iVar6;
       entries[1].pos_y_block.heading_block.count = uVar2 + 1;
@@ -30833,6 +30881,7 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_killing @ 004384a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 3 (The Killing) */
 
@@ -30868,9 +30917,9 @@ void quest_build_the_killing(quest_spawn_entry_t *entries,int *count)
     iVar1 = iStack_4 % 5;
     pqVar4 = pqVar5;
     if (iVar1 == 0) {
-      pqVar5->pos_x = (float)(terrain_texture_width + 0x40);
+      pqVar5->pos_x = (float)(_terrain_texture_width + 0x40);
 LAB_00438544:
-      entries = (quest_spawn_entry_t *)(terrain_texture_width / 2);
+      entries = (quest_spawn_entry_t *)(_terrain_texture_width / 2);
       (pqVar5->pos_y_block).pos_y = (float)(int)entries;
       (pqVar5->pos_y_block).heading_block.template_id = iVar3;
       (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
@@ -30886,8 +30935,8 @@ LAB_004386cc:
         goto LAB_00438544;
       }
       if (iVar1 == 2) {
-        (pqVar5->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        (pqVar5->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+        pqVar5->pos_x = (float)(_terrain_texture_width / 2);
         (pqVar5->pos_y_block).heading_block.template_id = iVar3;
         (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
         (pqVar5->pos_y_block).heading_block.count = 0xc;
@@ -30895,7 +30944,7 @@ LAB_004386cc:
       }
       if (iVar1 == 3) {
         (pqVar5->pos_y_block).pos_y = -64.0;
-        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        pqVar5->pos_x = (float)(_terrain_texture_width / 2);
         (pqVar5->pos_y_block).heading_block.template_id = iVar3;
         (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
         (pqVar5->pos_y_block).heading_block.count = 0xc;
@@ -30941,6 +30990,7 @@ LAB_004386cc:
 
 /* quest_build_lizard_zombie_pact @ 00438700 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 3 (Lizard Zombie Pact) */
 
@@ -30959,14 +31009,14 @@ void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0;
   do {
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = 6;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = 6;
@@ -30999,6 +31049,7 @@ void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_lizard_raze @ 00438840 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 3 Quest 8 (Lizard Raze) */
 
 void __cdecl quest_build_lizard_raze(quest_spawn_entry_t *entries,int *count)
@@ -31014,14 +31065,14 @@ void __cdecl quest_build_lizard_raze(quest_spawn_entry_t *entries,int *count)
   do {
     iVar3 = iVar2;
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar1->pos_y_block).heading_block.count = 6;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar4;
     iVar4 = iVar4 + 6000;
@@ -31406,6 +31457,7 @@ void quest_build_the_end_of_all(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_spiders_inc @ 004390d0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 7 (Spiders Inc.) */
 
@@ -31419,20 +31471,20 @@ void quest_build_spiders_inc(quest_spawn_entry_t *entries,int *count)
   int iVar5;
   
   pqVar3 = entries;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x38;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 1;
-  entries[1].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
-  entries[1].pos_x = (float)(terrain_texture_width / 2 + 0x40);
+  entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
+  entries[1].pos_x = (float)(_terrain_texture_width / 2 + 0x40);
   entries[1].pos_y_block.heading_block.template_id = 0x38;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 500;
   entries[1].pos_y_block.heading_block.count = 1;
   entries[2].pos_y_block.pos_y = -64.0;
   iVar4 = 17000;
   entries = (quest_spawn_entry_t *)0x0;
-  pqVar3[2].pos_x = (float)(terrain_texture_width / 2);
+  pqVar3[2].pos_x = (float)(_terrain_texture_width / 2);
   pqVar3[2].pos_y_block.heading_block.template_id = 0x40;
   pqVar3[2].pos_y_block.heading_block.trigger_time_ms = 500;
   pqVar3[2].pos_y_block.heading_block.count = 4;
@@ -31440,15 +31492,15 @@ void quest_build_spiders_inc(quest_spawn_entry_t *entries,int *count)
   do {
     iVar1 = (int)entries / 2 + 3;
     pqVar2 = pqVar3 + iVar5;
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+    pqVar2->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x38;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar2->pos_y_block).heading_block.count = iVar1;
     pqVar2 = pqVar3 + iVar5 + 1;
     (pqVar2->pos_y_block).pos_y = -64.0;
     iVar5 = iVar5 + 2;
-    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    pqVar2->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x38;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar2->pos_y_block).heading_block.count = iVar1;
@@ -31943,10 +31995,10 @@ void __cdecl quest_start_selected(int tier,int index)
   int iVar5;
   int iVar6;
   
-  FUN_004281e0();
+  creature_reset_all();
   quest_spawn_count = 0;
   quest_spawn_timeline = 0;
-  DAT_00487244 = 0;
+  quest_stage_banner_timer_ms = 0;
   fx_queue_rotated = 0;
   fx_queue_count = 0;
   highscore_active_record.full_version_marker = '\0';
@@ -31967,8 +32019,8 @@ void __cdecl quest_start_selected(int tier,int index)
   uVar1 = crt_rand();
   highscore_active_record.reserved0._0_4_ = uVar1 & 0xfee050f;
   projectile_reset_pools();
-  player_state_table.pos_x = (float)terrain_texture_width * 0.5;
-  player_state_table.pos_y = (float)terrain_texture_height * 0.5;
+  player_state_table.pos_x = (float)_terrain_texture_width * 0.5;
+  player_state_table.pos_y = (float)_terrain_texture_height * 0.5;
   iVar4 = index + -0xb + tier * 10;
   terrain_generate(&quest_selected_meta + iVar4);
   weapon_assign_player(0,(&quest_selected_meta)[iVar4].start_weapon_id);
@@ -32035,9 +32087,11 @@ int __cdecl highscore_date_checksum(int year,int month,int day)
 
 
 
-/* FUN_0043aa60 @ 0043aa60 */
+/* highscore_submit_full_version_guard @ 0043aa60 */
 
-undefined4 FUN_0043aa60(void)
+/* logs illegal-score warning in demo mode; submit path checks this before packing records */
+
+int highscore_submit_full_version_guard(void)
 
 {
   int iVar1;
@@ -32053,54 +32107,58 @@ undefined4 FUN_0043aa60(void)
 
 
 
-/* FUN_0043aa90 @ 0043aa90 */
+/* highscore_record_pack_for_submit @ 0043aa90 */
 
-/* [binja] void* sub_43aa90(void* arg1, void* arg2) */
+/* copies a high score record into submit layout and clears bytes 0x3c..0x3f */
 
-void * __cdecl FUN_0043aa90(void *arg1,void *arg2)
+highscore_record_t * __cdecl
+highscore_record_pack_for_submit(highscore_record_t *src,highscore_record_t *dst)
 
 {
-  char cVar1;
+  uint uVar1;
   uint uVar2;
-  uint uVar3;
-  char *pcVar4;
-  char *pcVar5;
+  char *pcVar3;
+  highscore_record_t *phVar4;
+  highscore_record_t *phVar5;
   
-  uVar2 = 0xffffffff;
-  pcVar4 = arg1;
+  uVar1 = 0xffffffff;
+  phVar5 = src;
   do {
-    pcVar5 = pcVar4;
-    if (uVar2 == 0) break;
-    uVar2 = uVar2 - 1;
-    pcVar5 = pcVar4 + 1;
-    cVar1 = *pcVar4;
-    pcVar4 = pcVar5;
-  } while (cVar1 != '\0');
-  uVar2 = ~uVar2;
-  pcVar4 = pcVar5 + -uVar2;
-  pcVar5 = arg2;
-  for (uVar3 = uVar2 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
-    *(undefined4 *)pcVar5 = *(undefined4 *)pcVar4;
-    pcVar4 = pcVar4 + 4;
-    pcVar5 = pcVar5 + 4;
+    phVar4 = phVar5;
+    if (uVar1 == 0) break;
+    uVar1 = uVar1 - 1;
+    phVar4 = (highscore_record_t *)(phVar5->player_name + 1);
+    pcVar3 = phVar5->player_name;
+    phVar5 = phVar4;
+  } while (*pcVar3 != '\0');
+  uVar1 = ~uVar1;
+  pcVar3 = (char *)((int)phVar4 - uVar1);
+  phVar5 = dst;
+  for (uVar2 = uVar1 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+    *(undefined4 *)phVar5->player_name = *(undefined4 *)pcVar3;
+    pcVar3 = pcVar3 + 4;
+    phVar5 = (highscore_record_t *)(phVar5->player_name + 4);
   }
-  for (uVar2 = uVar2 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
-    *pcVar5 = *pcVar4;
-    pcVar4 = pcVar4 + 1;
-    pcVar5 = pcVar5 + 1;
+  for (uVar1 = uVar1 & 3; uVar1 != 0; uVar1 = uVar1 - 1) {
+    phVar5->player_name[0] = *pcVar3;
+    pcVar3 = pcVar3 + 1;
+    phVar5 = (highscore_record_t *)(phVar5->player_name + 1);
   }
-  *(undefined4 *)((int)arg2 + 0x20) = *(undefined4 *)((int)arg1 + 0x20);
-  *(undefined4 *)((int)arg2 + 0x24) = *(undefined4 *)((int)arg1 + 0x24);
-  *(undefined1 *)((int)arg2 + 0x28) = *(undefined1 *)((int)arg1 + 0x28);
-  *(undefined1 *)((int)arg2 + 0x29) = *(undefined1 *)((int)arg1 + 0x29);
-  *(undefined1 *)((int)arg2 + 0x2a) = *(undefined1 *)((int)arg1 + 0x2a);
-  *(undefined1 *)((int)arg2 + 0x2b) = *(undefined1 *)((int)arg1 + 0x2b);
-  *(undefined4 *)((int)arg2 + 0x2c) = *(undefined4 *)((int)arg1 + 0x2c);
-  *(undefined4 *)((int)arg2 + 0x34) = *(undefined4 *)((int)arg1 + 0x34);
-  *(undefined4 *)((int)arg2 + 0x30) = *(undefined4 *)((int)arg1 + 0x30);
-  *(undefined4 *)((int)arg2 + 0x38) = *(undefined4 *)((int)arg1 + 0x38);
-  *(undefined4 *)((int)arg2 + 0x3c) = 0;
-  return arg2;
+  dst->survival_elapsed_ms = src->survival_elapsed_ms;
+  dst->score_xp = src->score_xp;
+  dst->game_mode_id = src->game_mode_id;
+  dst->quest_stage_major = src->quest_stage_major;
+  dst->quest_stage_minor = src->quest_stage_minor;
+  dst->most_used_weapon_id = src->most_used_weapon_id;
+  dst->shots_fired = src->shots_fired;
+  dst->creature_kill_count = src->creature_kill_count;
+  dst->shots_hit = src->shots_hit;
+  *(undefined4 *)dst->reserved0 = *(undefined4 *)src->reserved0;
+  dst->reserved0[4] = '\0';
+  dst->reserved0[5] = '\0';
+  dst->reserved0[6] = '\0';
+  dst->reserved0[7] = '\0';
+  return dst;
 }
 
 
@@ -32996,7 +33054,7 @@ LAB_0043b67f:
     (&DAT_004c36dd)[uVar2] = 0;
   }
   if (config_blob.reserved0._128_4_ != 0) {
-    crt_sprintf(&DAT_004c365c,&DAT_00477bf4,&DAT_004c36dc,
+    crt_sprintf(&DAT_004c365c,&s_fmt_typo_target_name_2_parts,&DAT_004c36dc,
                 config_blob.reserved0._128_4_ * 0x1b + 0x4803f0);
     console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&DAT_004c365c);
     return &DAT_004c365c;
@@ -33051,32 +33109,33 @@ void highscore_record_init(void)
 
 
 
-/* FUN_0043b810 @ 0043b810 */
+/* sfx_entry_reset_runtime_state @ 0043b810 */
 
-/* [binja] void* __fastcall sub_43b810(void* arg1) */
+/* clears per-voice/runtime playback state fields in an sfx entry (stream offsets, dsound voice
+   pointers, and default gain) */
 
-void * __fastcall FUN_0043b810(void *arg1)
+void * __fastcall sfx_entry_reset_runtime_state(void *entry)
 
 {
   undefined4 *puVar1;
   int iVar2;
   
   iVar2 = 0x10;
-  *(undefined4 *)((int)arg1 + 0x80) = 0;
-  *(undefined4 *)((int)arg1 + 0x7c) = 0;
-  *(undefined4 *)((int)arg1 + 0x78) = 0;
-  *(undefined4 *)((int)arg1 + 0x74) = 0;
-  *(undefined4 *)((int)arg1 + 0x14) = 0;
-  *(undefined4 *)((int)arg1 + 0x18) = 0;
-  *(undefined4 *)((int)arg1 + 0x1c) = 0;
-  *(undefined4 *)((int)arg1 + 0x20) = 0xbf800000;
-  puVar1 = (undefined4 *)((int)arg1 + 0x60);
+  *(undefined4 *)((int)entry + 0x80) = 0;
+  *(undefined4 *)((int)entry + 0x7c) = 0;
+  *(undefined4 *)((int)entry + 0x78) = 0;
+  *(undefined4 *)((int)entry + 0x74) = 0;
+  *(undefined4 *)((int)entry + 0x14) = 0;
+  *(undefined4 *)((int)entry + 0x18) = 0;
+  *(undefined4 *)((int)entry + 0x1c) = 0;
+  *(undefined4 *)((int)entry + 0x20) = 0xbf800000;
+  puVar1 = (undefined4 *)((int)entry + 0x60);
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + -1;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  return arg1;
+  return entry;
 }
 
 
@@ -33329,7 +33388,7 @@ void resource_close(void)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* initializes DirectSound and the primary buffer */
 
-int __cdecl dsound_init(void *hwnd,uint coop_level)
+int dsound_init(void *hwnd,uint coop_level)
 
 {
   uint uVar1;
@@ -33337,41 +33396,59 @@ int __cdecl dsound_init(void *hwnd,uint coop_level)
   int iVar3;
   undefined4 *puVar4;
   int *piVar5;
+  undefined4 uStack_60;
   undefined4 uStack_54;
-  undefined4 auStack_30 [4];
-  undefined4 uStack_20;
-  short sStack_10;
-  ushort uStack_8;
+  uint uStack_50;
+  undefined4 uStack_4c;
+  int **ppiStack_48;
+  int *piStack_44;
+  undefined4 auStack_3c [4];
+  undefined4 uStack_2c;
+  short sStack_1c;
+  ushort uStack_14;
+  undefined4 uStack_8;
+  uint uStack_4;
   
   if (dsound_iface != (int *)0x0) {
+    piStack_44 = dsound_iface;
+    ppiStack_48 = (int **)0x43bb05;
     (**(code **)(*dsound_iface + 8))();
   }
+  piStack_44 = (int *)0x0;
+  ppiStack_48 = &dsound_iface;
+  uStack_4c = 0;
   dsound_iface = (int *)0x0;
-  uVar1 = DirectSoundCreate8((LPCGUID)0x0,(LPDIRECTSOUND8 *)&dsound_iface,(LPUNKNOWN)0x0);
+  uStack_50 = 0x43bb17;
+  uVar1 = Ordinal_11();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
+  uStack_50 = uStack_4;
+  uStack_54 = uStack_8;
   uVar1 = (**(code **)(*dsound_iface + 0x18))();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  puVar4 = auStack_30;
+  puVar4 = auStack_3c;
   for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar4 = 0;
     puVar4 = puVar4 + 1;
   }
+  uStack_60 = 0;
   uStack_54 = 0;
-  auStack_30[0] = 0x24;
-  auStack_30[1] = 1;
-  auStack_30[2] = 0;
-  uStack_20 = 0;
-  uVar1 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,auStack_30);
+  auStack_3c[0] = 0x24;
+  auStack_3c[1] = 1;
+  auStack_3c[2] = 0;
+  uStack_2c = 0;
+  uVar1 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,auStack_3c);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_54 = CONCAT22(sStack_10,1);
-  piVar5 = &uStack_54;
-  uVar1 = (**(code **)(CONCAT22(uStack_8,(uStack_8 >> 3) * sStack_10) + 0x38))(&stack0xffffffb8);
+  uStack_60 = CONCAT22(sStack_1c,1);
+  uStack_54 = CONCAT22(uStack_14,(uStack_14 >> 3) * sStack_1c);
+  uStack_50 = uStack_50 & 0xffff0000;
+  piVar5 = &uStack_60;
+  uVar1 = (**(code **)(uStack_54 + 0x38))(&uStack_54);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
@@ -35029,15 +35106,16 @@ void __cdecl ui_focus_draw(float *xy)
 
 
 
-/* FUN_0043d9b0 @ 0043d9b0 */
+/* ui_segmented_slider_update @ 0043d9b0 */
 
-/* [binja] int32_t sub_43d9b0(int32_t* arg1, int32_t arg2) */
+/* updates a segmented slider widget (focus/mouse/keys), clamps value to [min..max], and renders
+   off/on segments */
 
-int __cdecl FUN_0043d9b0(int *arg1,int arg2)
+int __cdecl ui_segmented_slider_update(float *xy,int *state)
 
 {
   float y;
-  int iVar1;
+  int *piVar1;
   int iVar2;
   int iVar3;
   bool bVar4;
@@ -35046,83 +35124,84 @@ int __cdecl FUN_0043d9b0(int *arg1,int arg2)
   float local_c;
   float local_8;
   
-  iVar1 = arg2;
-  iVar2 = ui_focus_update(arg2);
-  local_8 = (float)*arg1;
-  local_10 = (float)*arg1 - 3.0;
-  y = (float)arg1[1];
-  local_c = (float)arg1[1] - 1.0;
+  piVar1 = state;
+  iVar2 = ui_focus_update((int)state);
+  local_8 = *xy;
+  local_10 = *xy - 3.0;
+  y = xy[1];
+  local_c = xy[1] - 1.0;
   lVar5 = __ftol();
   iVar3 = ui_mouse_inside_rect(&local_10,0x12,(int)lVar5);
   bVar4 = (char)iVar3 != '\0';
   if (bVar4) {
-    ui_focus_set(arg2,'\0');
+    ui_focus_set((int)state,'\0');
   }
   if ((char)iVar2 != '\0') {
-    local_10 = (float)*arg1 - 16.0;
-    local_c = (float)arg1[1];
+    local_10 = *xy - 16.0;
+    local_c = xy[1];
     ui_focus_draw(&local_10);
-    if (*(char *)(arg2 + 0xc) != '\0') {
+    if ((char)state[3] != '\0') {
       iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xcd);
       if ((char)iVar2 != '\0') {
-        iVar2 = *(int *)arg2;
-        *(int *)arg2 = iVar2 + 1;
-        if (*(int *)(arg2 + 4) < iVar2 + 1) {
-          *(int *)arg2 = *(int *)(arg2 + 4);
+        iVar2 = *state;
+        *state = iVar2 + 1;
+        if (state[1] < iVar2 + 1) {
+          *state = state[1];
         }
       }
       iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xcb);
-      if (((char)iVar2 != '\0') && (iVar2 = *(int *)arg2, *(int *)arg2 = iVar2 + -1, iVar2 + -1 < 0)
-         ) {
-        *(undefined4 *)arg2 = 0;
+      if (((char)iVar2 != '\0') && (iVar2 = *state, *state = iVar2 + -1, iVar2 + -1 < 0)) {
+        *state = 0;
       }
     }
   }
   if (bVar4) {
     iVar2 = input_primary_is_down();
-    if (((char)iVar2 != '\0') && (*(char *)(arg2 + 0xc) != '\0')) {
+    if (((char)iVar2 != '\0') && ((char)state[3] != '\0')) {
       lVar5 = __ftol();
-      *(int *)arg2 = (int)lVar5;
-      if ((int)lVar5 < *(int *)(arg2 + 8)) {
-        *(int *)arg2 = *(int *)(arg2 + 8);
+      *state = (int)lVar5;
+      if ((int)lVar5 < state[2]) {
+        *state = state[2];
       }
-      if (*(int *)(arg2 + 4) < *(int *)arg2) {
-        *(int *)arg2 = *(int *)(arg2 + 4);
+      if (state[1] < *state) {
+        *state = state[1];
       }
     }
   }
-  if (DAT_00478668 == -1) {
-    DAT_00478668 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_rectOn_004743f4);
+  if (ui_segmented_slider_tex_on == -1) {
+    ui_segmented_slider_tex_on =
+         (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_rectOn_004743f4);
   }
-  if (DAT_0047866c == -1) {
-    DAT_0047866c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_rectOff_00474414);
+  if (ui_segmented_slider_tex_off == -1) {
+    ui_segmented_slider_tex_off =
+         (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_rectOff_00474414);
   }
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0047866c,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_segmented_slider_tex_off,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.5);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   iVar2 = 0;
-  if (0 < *(int *)(arg2 + 4)) {
-    arg2 = 0;
+  if (0 < state[1]) {
+    state = (int *)0x0;
     do {
-      (*grim_interface_ptr->vtable->grim_draw_quad)((float)arg2 + local_8,y,8.0,16.0);
+      (*grim_interface_ptr->vtable->grim_draw_quad)((float)(int)state + local_8,y,8.0,16.0);
       iVar2 = iVar2 + 1;
-      arg2 = arg2 + 8;
-    } while (iVar2 < *(int *)(iVar1 + 4));
+      state = state + 2;
+    } while (iVar2 < piVar1[1]);
   }
   iVar2 = (*grim_interface_ptr->vtable->grim_end_batch)();
-  if (0 < *(int *)iVar1) {
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_00478668,0);
+  if (0 < *piVar1) {
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_segmented_slider_tex_on,0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
     iVar2 = 0;
-    if (0 < *(int *)iVar1) {
-      arg2 = 0;
+    if (0 < *piVar1) {
+      state = (int *)0x0;
       do {
-        (*grim_interface_ptr->vtable->grim_draw_quad)((float)arg2 + local_8,y,8.0,16.0);
+        (*grim_interface_ptr->vtable->grim_draw_quad)((float)(int)state + local_8,y,8.0,16.0);
         iVar2 = iVar2 + 1;
-        arg2 = arg2 + 8;
-      } while (iVar2 < *(int *)iVar1);
+        state = state + 2;
+      } while (iVar2 < *piVar1);
     }
     iVar2 = (*grim_interface_ptr->vtable->grim_end_batch)();
   }
@@ -35968,7 +36047,7 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   iVar4 = -2;
   if (*list != '\0') {
     lVar7 = __ftol();
-    iVar1 = FUN_00403430(xy_00,0xe,(int)lVar7);
+    iVar1 = ui_mouse_inside_rect_with_padding(xy_00,0xe,(int)lVar7);
     if ((char)iVar1 != '\0') {
       iVar4 = -1;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.95);
@@ -35991,7 +36070,7 @@ LAB_0043f3aa:
     iVar6 = 0;
     do {
       iVar2 = iVar6;
-      iVar3 = FUN_00403430((float *)&stack0xffffffbc,0xe,iVar1);
+      iVar3 = ui_mouse_inside_rect_with_padding((float *)&stack0xffffffbc,0xe,iVar1);
       if ((char)iVar3 == '\0') {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
       }
@@ -36020,9 +36099,11 @@ LAB_0043f3aa:
 
 
 
-/* FUN_004411c0 @ 004411c0 */
+/* highscore_card_draw_horizontal_divider @ 004411c0 */
 
-void FUN_004411c0(void)
+/* draws a horizontal divider line on the highscore scorecard and advances y cursor by 4 */
+
+void highscore_card_draw_horizontal_divider(float *xy)
 
 {
   float *unaff_retaddr;
@@ -36037,9 +36118,11 @@ void FUN_004411c0(void)
 
 
 
-/* FUN_00441220 @ 00441220 */
+/* highscore_card_draw_vertical_divider @ 00441220 */
 
-void FUN_00441220(void)
+/* draws a vertical divider line on the highscore scorecard */
+
+void highscore_card_draw_vertical_divider(float *xy)
 
 {
   float *unaff_retaddr;
@@ -36053,55 +36136,57 @@ void FUN_00441220(void)
 
 
 
-/* FUN_00441270 @ 00441270 */
+/* highscore_format_date_label @ 00441270 */
 
-undefined * __cdecl FUN_00441270(undefined4 param_1,undefined4 param_2)
+/* formats high-score day/month text into DAT_004d0e38 using month-name strings */
+
+char * __cdecl highscore_format_date_label(int day,int month_index)
 
 {
   undefined *puVar1;
   
-  switch(param_2) {
+  switch(month_index) {
   case 1:
-    puVar1 = &DAT_004788b4;
+    puVar1 = &highscore_month_label_jan;
     break;
   case 2:
-    puVar1 = &DAT_004788b0;
+    puVar1 = &highscore_month_label_feb;
     break;
   case 3:
-    puVar1 = &DAT_004788ac;
+    puVar1 = &highscore_month_label_mar;
     break;
   case 4:
-    puVar1 = &DAT_004788a8;
+    puVar1 = &highscore_month_label_apr;
     break;
   case 5:
-    puVar1 = &DAT_004788a4;
+    puVar1 = &highscore_month_label_may;
     break;
   case 6:
-    puVar1 = &DAT_004788a0;
+    puVar1 = &highscore_month_label_jun;
     break;
   case 7:
-    puVar1 = &DAT_0047889c;
+    puVar1 = &highscore_month_label_jul;
     break;
   case 8:
-    puVar1 = &DAT_00478898;
+    puVar1 = &highscore_month_label_aug;
     break;
   case 9:
-    puVar1 = &DAT_00478894;
+    puVar1 = &highscore_month_label_sep;
     break;
   case 10:
-    puVar1 = &DAT_00478890;
+    puVar1 = &highscore_month_label_oct;
     break;
   case 0xb:
-    puVar1 = &DAT_0047888c;
+    puVar1 = &highscore_month_label_nov;
     break;
   case 0xc:
-    puVar1 = &DAT_00478888;
+    puVar1 = &highscore_month_label_dec;
     break;
   default:
-    puVar1 = &DAT_00478884;
+    puVar1 = &highscore_month_label_default;
   }
-  crt_sprintf(&DAT_004d0e38,s__d___s__d_00478878,param_1,puVar1);
-  return &DAT_004d0e38;
+  crt_sprintf(&highscore_date_label_buffer,s_fmt_highscore_date_label,day,puVar1);
+  return &highscore_date_label_buffer;
 }
 
 
@@ -36125,7 +36210,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   int in_stack_00000010;
   float fVar7;
   float fVar8;
-  float h;
+  float fVar9;
   float fStack_10;
   float fStack_c;
   float fStack_8;
@@ -36144,18 +36229,18 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
     (*grim_interface_ptr->vtable->grim_draw_text_small)(fStack_10,fStack_c,(char *)y);
     (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccca8);
-    fStack_4 = fStack_c + 13.0;
     fStack_8 = fStack_10;
+    fStack_4 = fStack_c + 13.0;
     (*grim_interface_ptr->vtable->grim_draw_rect_outline)(&fStack_8,(float)iVar3,1.0);
     if ((*(byte *)((int)y + 0x44) & 2) == 0) {
       if ((*(byte *)((int)y + 0x44) & 1) == 0) {
         (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
-        pcVar4 = s_Local_score_00478974;
+        pcVar4 = s_highscore_label_local_score;
         pIVar5 = grim_interface_ptr->vtable;
       }
       else {
         (*grim_interface_ptr->vtable->grim_set_color)(0.7,1.0,0.7,alpha * 0.8);
-        pcVar4 = s_Score_from_the_Internet_00478980;
+        pcVar4 = s_highscore_label_internet_score;
         pIVar5 = grim_interface_ptr->vtable;
       }
       (*pIVar5->grim_draw_text_small_fmt)(grim_interface_ptr,fStack_10,fStack_c + 14.0,pcVar4);
@@ -36164,39 +36249,44 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
       (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fStack_10,fStack_c + 14.0,
-                 s_Internet_score_of_local_origin_004789a0);
+                 s_highscore_label_internet_local_origin);
       (*grim_interface_ptr->vtable->grim_set_color)(0.5,0.5,0.5,alpha * 0.5);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fStack_10 + 94.0,fStack_c - 12.0,s_uni__d_00478998);
+                (grim_interface_ptr,fStack_10 + 94.0,fStack_c - 12.0,s_fmt_highscore_universe_tag);
       (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
     }
+    fStack_c = fStack_c + 15.0;
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,alpha * 0.8);
     pIVar5 = grim_interface_ptr->vtable;
-    pcVar4 = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
-    fVar7 = fStack_c + 15.0 + 13.0;
+    pcVar4 = highscore_format_date_label
+                       ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
+    fVar7 = fStack_c + 13.0;
     pIVar1 = grim_interface_ptr->vtable;
-    text = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
+    fVar8 = fStack_10 + 192.0;
+    text = highscore_format_date_label
+                     ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     iVar3 = (*pIVar1->grim_measure_text_width)(text);
-    (*pIVar5->grim_draw_text_small)
-              ((((fStack_10 + 192.0) - 32.0) - 8.0) - (float)(iVar3 / 2),fVar7,pcVar4);
+    (*pIVar5->grim_draw_text_small)(((fVar8 - 32.0) - 8.0) - (float)(iVar3 / 2),fVar7,pcVar4);
+    fStack_c = fStack_c + 13.0;
     fStack_10 = *(float *)input_state + 16.0;
-    FUN_004411c0();
-    fStack_c = fStack_c + 15.0 + 13.0 + 14.0;
+    highscore_card_draw_horizontal_divider(&fStack_10);
+    fStack_c = fStack_c + 14.0;
   }
   fVar7 = alpha * 0.8;
   (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
+  fVar8 = fStack_10 + 32.0;
   pIVar5 = grim_interface_ptr->vtable;
-  pcVar4 = s_Score_0047896c;
-  fVar8 = fStack_c;
-  iVar3 = (*pIVar5->grim_measure_text_width)(s_Score_0047896c);
-  (*pIVar5->grim_draw_text_small)((fStack_10 + 32.0) - (float)(iVar3 / 2),fVar8,pcVar4);
+  pcVar4 = s_highscore_label_score;
+  fVar9 = fStack_c;
+  iVar3 = (*pIVar5->grim_measure_text_width)(s_highscore_label_score);
+  (*pIVar5->grim_draw_text_small)(fVar8 - (float)(iVar3 / 2),fVar9,pcVar4);
   if (*(char *)((int)y + 0x28) == '\x02') {
-    crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960,(double)((float)*(int *)((int)y + 0x20) * 0.001))
-    ;
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+                (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else if (*(char *)((int)y + 0x28) == '\x03') {
-    crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960,(double)((float)*(int *)((int)y + 0x20) * 0.001))
-    ;
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+                (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else {
     crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
@@ -36207,17 +36297,17 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
             ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&DAT_004d0da0);
   if (game_state_id != 0xc) {
     format_ordinal(in_stack_00000010);
-    crt_sprintf(&DAT_004d0da0,s_Rank___s_00478954);
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_rank);
     iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 30.0,&DAT_004d0da0);
   }
   fStack_10 = fStack_10 + 96.0;
-  FUN_00441220();
+  highscore_card_draw_vertical_divider(&fStack_10);
   if (*(char *)((int)y + 0x28) == '\x03') {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10,fStack_c,s_Experience_00478948);
+              (grim_interface_ptr,fStack_10,fStack_c,s_highscore_label_experience);
     crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
     iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
@@ -36227,7 +36317,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   }
   else {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10 + 6.0,fStack_c,s_Game_time_0047893c);
+              (grim_interface_ptr,fStack_10 + 6.0,fStack_c,s_highscore_label_game_time);
     __ftol();
     __ftol();
     ui_draw_clock_gauge();
@@ -36257,20 +36347,21 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     ui_stats_hover_hit_ratio = 0.0;
   }
   else {
-    FUN_004411c0();
+    highscore_card_draw_horizontal_divider(&fStack_10);
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_weapon_icons_texture,0);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_sub_rect)
               (8,2,1,(&weapon_table)[*(byte *)((int)y + 0x2b)].hud_icon_id << 1);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
-    h = 32.0;
+    fVar9 = 32.0;
     pIVar5 = grim_interface_ptr->vtable;
     fVar8 = 64.0;
     lVar6 = __ftol();
-    fVar7 = (float)(int)lVar6;
+    fStack_c = (float)lVar6;
+    fVar7 = (float)(int)fStack_c;
     lVar6 = __ftol();
     fStack_c = (float)lVar6;
-    (*pIVar5->grim_draw_quad)((float)(int)fStack_c,fVar7,fVar8,h);
+    (*pIVar5->grim_draw_quad)((float)(int)fStack_c,fVar7,fVar8,fVar9);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     if ((((ui_mouse_x <= fStack_10) || (fStack_10 + 64.0 <= ui_mouse_x)) || (ui_mouse_y <= fStack_c)
@@ -36290,12 +36381,12 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               (fVar7 + fStack_10,fStack_c + 32.0,(&weapon_table)[*(byte *)((int)y + 0x2b)].name);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10 + 110.0,fStack_c + 1.0,s_Frags___d_00478930);
+              (grim_interface_ptr,fStack_10 + 110.0,fStack_c + 1.0,s_fmt_highscore_frags);
     self = grim_interface_ptr;
     pIVar5 = grim_interface_ptr->vtable;
     __ftol();
     (*pIVar5->grim_draw_text_small_fmt)
-              (self,fStack_10 + 110.0,(fStack_c + 16.0) - 1.0,s_Hit______d___00478920);
+              (self,fStack_10 + 110.0,(fStack_c + 16.0) - 1.0,s_fmt_highscore_hit_percent);
     if (((ui_mouse_x <= fStack_10 + 110.0) || (fStack_10 + 174.0 <= ui_mouse_x)) ||
        ((ui_mouse_y <= (fStack_c + 16.0) - 1.0 || (fStack_c + 32.0 <= ui_mouse_y)))) {
       ui_stats_hover_hit_ratio = ui_stats_hover_hit_ratio - (frame_dt + frame_dt);
@@ -36306,7 +36397,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     fStack_c = fStack_c + 48.0;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
-  FUN_004411c0();
+  highscore_card_draw_horizontal_divider(&fStack_10);
   if (ui_stats_hover_weapon <= 1.0) {
     if (ui_stats_hover_weapon < 0.0) {
       ui_stats_hover_weapon = 0.0;
@@ -36337,19 +36428,19 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
       fVar2 = (ui_stats_hover_weapon - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 - 20.0,fStack_c,s_Most_used_weapon_during_the_game_004788fc);
+                (fStack_10 - 20.0,fStack_c,s_highscore_tooltip_weapon_usage);
     }
     if (0.5 < ui_stats_hover_time) {
       fVar2 = (ui_stats_hover_time - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 + 12.0,fStack_c,s_The_time_the_game_lasted_004788e0);
+                (fStack_10 + 12.0,fStack_c,s_highscore_tooltip_game_time);
     }
     if (0.5 < ui_stats_hover_hit_ratio) {
       fVar2 = (ui_stats_hover_hit_ratio - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 - 22.0,fStack_c,s_The___of_shot_bullets_hit_the_ta_004788b8);
+                (fStack_10 - 22.0,fStack_c,s_highscore_tooltip_hit_ratio);
     }
   }
   return;
@@ -36857,14 +36948,14 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
     if ((&player_state_table)[iVar5].pos_x < fVar2) {
       (&player_state_table)[iVar5].pos_x = fVar2;
     }
-    if ((float)terrain_texture_width - fVar2 < (&player_state_table)[iVar5].pos_x) {
-      (&player_state_table)[iVar5].pos_x = (float)terrain_texture_width - fVar2;
+    if ((float)_terrain_texture_width - fVar2 < (&player_state_table)[iVar5].pos_x) {
+      (&player_state_table)[iVar5].pos_x = (float)_terrain_texture_width - fVar2;
     }
     if ((&player_state_table)[iVar5].pos_y < fVar2) {
       (&player_state_table)[iVar5].pos_y = fVar2;
     }
-    if ((float)terrain_texture_height - fVar2 < (&player_state_table)[iVar5].pos_y) {
-      (&player_state_table)[iVar5].pos_y = (float)terrain_texture_height - fVar2;
+    if ((float)_terrain_texture_height - fVar2 < (&player_state_table)[iVar5].pos_y) {
+      (&player_state_table)[iVar5].pos_y = (float)_terrain_texture_height - fVar2;
     }
     if (0.8 < (&player_state_table)[iVar5].muzzle_flash_alpha) {
       (&player_state_table)[iVar5].muzzle_flash_alpha = 0.8;
@@ -36875,16 +36966,18 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
 
 
 
-/* FUN_00444f70 @ 00444f70 */
+/* typo_word_pick_fragment @ 00444f70 */
 
-char * __cdecl FUN_00444f70(char param_1)
+/* returns a random word fragment used by Typ-o-Shooter target name generation */
+
+char * __cdecl typo_word_pick_fragment(char include_extended_pool)
 
 {
   int iVar1;
   int iVar2;
   
   iVar2 = 0x34;
-  if (param_1 == '\0') {
+  if (include_extended_pool == '\0') {
     iVar2 = 0x33;
   }
   iVar1 = crt_rand();
@@ -36998,11 +37091,12 @@ char * __cdecl FUN_00444f70(char param_1)
 
 
 
-/* FUN_004451b0 @ 004451b0 */
+/* typo_word_pick_highscore_name @ 004451b0 */
 
-/* [binja] void* sub_4451b0() */
+/* builds a cache of unique alphabetic highscore names and returns one for Typ-o-Shooter target
+   naming */
 
-void * FUN_004451b0(void)
+char * typo_word_pick_highscore_name(void)
 
 {
   byte bVar1;
@@ -37026,14 +37120,14 @@ void * FUN_004451b0(void)
   undefined4 *local_8;
   int local_4;
   
-  if (DAT_004d7580 == '\0') {
+  if (typo_word_highscore_cache_ready == '\0') {
     highscore_load_table();
     iVar9 = 0;
     phVar10 = &highscore_table;
     local_4 = 0;
-    local_8 = (undefined4 *)&DAT_004d1228;
+    local_8 = (undefined4 *)&typo_word_highscore_cache;
     do {
-      pbVar12 = &DAT_004d1228;
+      pbVar12 = &typo_word_highscore_cache;
       iVar8 = 0;
       phVar3 = phVar10;
       pbVar13 = pbVar12;
@@ -37108,32 +37202,32 @@ LAB_00445213:
         puVar11 = (undefined4 *)((int)puVar11 + 1);
         puVar15 = (undefined4 *)((int)puVar15 + 1);
       }
-      console_printf(&console_log_queue,s__d__unique___s_00478e14,local_4,phVar10);
+      console_printf(&console_log_queue,s_fmt_typo_unique_word_log,local_4,phVar10);
       iVar9 = local_4;
       local_8 = local_8 + 8;
 LAB_004452a7:
       phVar10 = phVar10 + 1;
     } while ((int)phVar10 < 0x484730);
-    DAT_004d7580 = '\x01';
-    DAT_004d7584 = iVar9;
+    typo_word_highscore_cache_ready = '\x01';
+    typo_word_highscore_cache_count = iVar9;
     if (iVar9 == 0) {
-      crt_sprintf(&DAT_004d1228,s_quickbrownfox_00478e04);
+      crt_sprintf(&typo_word_highscore_cache,s_typo_fallback_word);
     }
   }
-  if (DAT_004d7584 < 1) {
-    return &DAT_004d1228;
+  if (typo_word_highscore_cache_count < 1) {
+    return &typo_word_highscore_cache;
   }
   iVar9 = crt_rand();
-  return &DAT_004d1228 + (iVar9 % DAT_004d7584) * 0x20;
+  return &typo_word_highscore_cache + (iVar9 % typo_word_highscore_cache_count) * 0x20;
 }
 
 
 
-/* creature_is_name_unique @ 00445310 */
+/* typo_target_name_is_unique @ 00445310 */
 
-/* [binja] int32_t sub_445310(char* arg1, int32_t arg2) */
+/* returns non-zero when the proposed Typ-o target name is unique among active creatures */
 
-int __cdecl creature_is_name_unique(char *arg1,int arg2)
+int __cdecl typo_target_name_is_unique(char *name,int creature_id)
 
 {
   byte bVar1;
@@ -37146,10 +37240,11 @@ int __cdecl creature_is_name_unique(char *arg1,int arg2)
   bool bVar7;
   
   iVar3 = 0;
-  pbVar4 = &DAT_004d152c;
+  pbVar4 = &typo_target_name_table;
   pcVar6 = &creature_pool;
   do {
-    if ((pcVar6->active != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)arg1, iVar3 != arg2)) {
+    if ((pcVar6->active != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)name, iVar3 != creature_id))
+    {
       do {
         bVar1 = *pbVar2;
         bVar7 = bVar1 < *pbVar5;
@@ -37182,11 +37277,11 @@ LAB_0044535a:
 
 
 
-/* creature_name_assign_random @ 00445380 */
+/* typo_target_name_assign_random @ 00445380 */
 
-/* builds a randomized creature name string into DAT_004d152c for debug overlays */
+/* builds a randomized Typ-o target name for a creature slot */
 
-void __cdecl creature_name_assign_random(int creature_id)
+void __cdecl typo_target_name_assign_random(int creature_id)
 
 {
   char cVar1;
@@ -37213,30 +37308,30 @@ LAB_0044544d:
             (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
            (((int)highscore_active_record.score_xp < 0x15 ||
             (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
-          dst = &DAT_004d152c + creature_id * 0x40;
-          pcVar4 = FUN_00444f70('\0');
+          dst = &typo_target_name_table + creature_id * 0x40;
+          pcVar4 = typo_word_pick_fragment('\0');
           crt_sprintf(dst,&s_fmt_percent_s,pcVar4);
         }
         else {
-          dst = &DAT_004d152c + creature_id * 0x40;
-          pcVar4 = FUN_00444f70('\0');
-          pcVar5 = FUN_00444f70('\x01');
-          crt_sprintf(dst,&DAT_00477bf4,pcVar5,pcVar4);
+          dst = &typo_target_name_table + creature_id * 0x40;
+          pcVar4 = typo_word_pick_fragment('\0');
+          pcVar5 = typo_word_pick_fragment('\x01');
+          crt_sprintf(dst,&s_fmt_typo_target_name_2_parts,pcVar5,pcVar4);
         }
       }
       else {
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_00444f70('\0');
-        pcVar5 = FUN_00444f70('\0');
-        pcVar6 = FUN_00444f70('\x01');
-        crt_sprintf(dst,s__s_s_s_00478e24,pcVar6,pcVar5,pcVar4);
+        dst = &typo_target_name_table + creature_id * 0x40;
+        pcVar4 = typo_word_pick_fragment('\0');
+        pcVar5 = typo_word_pick_fragment('\0');
+        pcVar6 = typo_word_pick_fragment('\x01');
+        crt_sprintf(dst,s_fmt_typo_target_name_3_parts,pcVar6,pcVar5,pcVar4);
       }
     }
     else {
       iVar3 = crt_rand();
       if (iVar3 % 100 < 10) {
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_004451b0();
+        dst = &typo_target_name_table + creature_id * 0x40;
+        pcVar4 = typo_word_pick_highscore_name();
         uVar8 = 0xffffffff;
         do {
           pcVar5 = pcVar4;
@@ -37263,15 +37358,15 @@ LAB_0044544d:
       else {
         if (((int)highscore_active_record.score_xp < 0x79) ||
            (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) goto LAB_0044544d;
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_00444f70('\0');
-        pcVar5 = FUN_00444f70('\0');
-        pcVar6 = FUN_00444f70('\0');
-        pcVar7 = FUN_00444f70('\x01');
-        crt_sprintf(dst,s__s_s_s_s_00478e2c,pcVar7,pcVar6,pcVar5,pcVar4);
+        dst = &typo_target_name_table + creature_id * 0x40;
+        pcVar4 = typo_word_pick_fragment('\0');
+        pcVar5 = typo_word_pick_fragment('\0');
+        pcVar6 = typo_word_pick_fragment('\0');
+        pcVar7 = typo_word_pick_fragment('\x01');
+        crt_sprintf(dst,s_fmt_typo_target_name_4_parts,pcVar7,pcVar6,pcVar5,pcVar4);
       }
     }
-    iVar3 = creature_is_name_unique(dst,creature_id);
+    iVar3 = typo_target_name_is_unique(dst,creature_id);
     if ((char)iVar3 != '\0') {
       uVar8 = 0xffffffff;
       do {
@@ -37289,11 +37384,11 @@ LAB_0044544d:
 
 
 
-/* creature_find_by_name @ 00445590 */
+/* typo_target_find_by_name @ 00445590 */
 
-/* returns the first creature index whose name matches DAT_004d152c, or -1 */
+/* returns the first active creature whose Typ-o target name matches input, or -1 */
 
-int __cdecl creature_find_by_name(char *name)
+int __cdecl typo_target_find_by_name(char *name)
 
 {
   byte bVar1;
@@ -37306,7 +37401,7 @@ int __cdecl creature_find_by_name(char *name)
   bool bVar8;
   
   iVar2 = 0;
-  pbVar5 = &DAT_004d152c;
+  pbVar5 = &typo_target_name_table;
   pcVar7 = &creature_pool;
   do {
     pbVar3 = pbVar5;
@@ -37344,12 +37439,12 @@ LAB_004455d4:
 
 
 
-/* creature_name_draw_labels @ 00445600 */
+/* typo_target_name_draw_labels @ 00445600 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* debug overlay: draws creature name labels over world positions */
+/* draws Typ-o target names above active creatures */
 
-void creature_name_draw_labels(void)
+void typo_target_name_draw_labels(void)
 
 {
   float fVar1;
@@ -37362,7 +37457,7 @@ void creature_name_draw_labels(void)
   a = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
-  text = &DAT_004d152c;
+  text = &typo_target_name_table;
   pfVar3 = &creature_pool.hitbox_size;
   do {
     if (((creature_t *)(pfVar3 + -4))->active != '\0') {
@@ -37382,13 +37477,12 @@ void creature_name_draw_labels(void)
 
 
 
-/* survival_gameplay_update_and_render @ 004457c0 */
+/* typo_gameplay_update_and_render @ 004457c0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* survival mode frame loop: effects, spawns, death handling, world render, HUD, and debug name
-   input */
+/* Typ-o-Shooter gameplay loop: typed-name input, target matching, spawns, world render, and HUD */
 
-void survival_gameplay_update_and_render(void)
+void typo_gameplay_update_and_render(void)
 
 {
   undefined1 *puVar1;
@@ -37419,29 +37513,29 @@ void survival_gameplay_update_and_render(void)
   
   local_30 = (float)((uint)local_30 & 0xffffff00);
   local_28 = (float)((uint)local_28 & 0xffffff00);
-  if ((DAT_004d1528 & 1) == 0) {
-    _DAT_004d7570 = player_state_table.pos_x + 128.0;
-    DAT_004d1528 = DAT_004d1528 | 1;
-    _DAT_004d7574 = player_state_table.pos_y;
+  if ((typo_runtime_init_flag & 1U) == 0) {
+    typo_target_world_x = player_state_table.pos_x + 128.0;
+    typo_runtime_init_flag = typo_runtime_init_flag | 1;
+    typo_target_world_y = player_state_table.pos_y;
     crt_atexit(&DAT_00445ff0);
   }
   pIVar4 = grim_interface_ptr;
-  if (DAT_00478c94 != '\0') {
-    DAT_004d7588 = 0;
-    DAT_004d14a8 = 0;
-    DAT_00478c94 = '\0';
+  if (typo_mode_reset_flag != '\0') {
+    typo_input_length = 0;
+    typo_input_buffer = 0;
+    typo_mode_reset_flag = '\0';
   }
   local_14 = (float)config_blob.screen_height - 128.0;
-  (&DAT_004d14a9)[DAT_004d7588] = 0;
+  (&DAT_004d14a9)[typo_input_length] = 0;
   iVar5 = (*pIVar4->vtable->grim_is_key_down)(0x1c);
-  if (((char)iVar5 != '\0') && (0 < DAT_004d7588)) {
+  if (((char)iVar5 != '\0') && (0 < typo_input_length)) {
     sfx_play(sfx_ui_typeenter);
-    DAT_004d7578 = DAT_004d7578 + 1;
-    (&DAT_004d14a8)[DAT_004d7588] = 0;
-    iVar5 = creature_find_by_name(&DAT_004d14a8);
+    typo_submit_count = typo_submit_count + 1;
+    (&typo_input_buffer)[typo_input_length] = 0;
+    iVar5 = typo_target_find_by_name(&typo_input_buffer);
     if (iVar5 == -1) {
-      pbVar8 = &DAT_004d14a8;
-      pcVar12 = s_reload_00478e38;
+      pbVar8 = &typo_input_buffer;
+      pcVar12 = s_typo_command_reload;
       do {
         bVar2 = *pcVar12;
         bVar9 = bVar2 < *pbVar8;
@@ -37465,12 +37559,12 @@ LAB_00445905:
     }
     else {
       local_30 = (float)CONCAT31(local_30._1_3_,1);
-      _DAT_004d7570 = (&creature_pool)[iVar5].pos_x;
-      _DAT_004d7574 = (&creature_pool)[iVar5].pos_y;
-      DAT_004d757c = DAT_004d757c + 1;
+      typo_target_world_x = (&creature_pool)[iVar5].pos_x;
+      typo_target_world_y = (&creature_pool)[iVar5].pos_y;
+      typo_match_count = typo_match_count + 1;
     }
-    DAT_004d7588 = 0;
-    DAT_004d14a8 = 0;
+    typo_input_length = 0;
+    typo_input_buffer = 0;
   }
   iVar5 = console_input_poll();
   if ((iVar5 != 0) && (iVar5 != 0xd)) {
@@ -37481,21 +37575,21 @@ LAB_00445905:
         uVar6 = (uVar6 - 1 | 0xfffffffe) + 1;
       }
       sfx_play(uVar6 + _sfx_ui_typeclick_01);
-      if (DAT_004d7588 < 1) {
-        DAT_004d14a8 = 0;
+      if (typo_input_length < 1) {
+        typo_input_buffer = 0;
       }
       else {
-        puVar1 = &DAT_004d14a7 + DAT_004d7588;
-        DAT_004d7588 = DAT_004d7588 + -1;
+        puVar1 = &DAT_004d14a7 + typo_input_length;
+        typo_input_length = typo_input_length + -1;
         *puVar1 = 0;
       }
     }
     else {
-      if (DAT_004d7588 < 0x11) {
-        (&DAT_004d14a8)[DAT_004d7588] = (char)iVar5;
-        DAT_004d7588 = DAT_004d7588 + 1;
+      if (typo_input_length < 0x11) {
+        (&typo_input_buffer)[typo_input_length] = (char)iVar5;
+        typo_input_length = typo_input_length + 1;
       }
-      (&DAT_004d14a8)[DAT_004d7588] = 0;
+      (&typo_input_buffer)[typo_input_length] = 0;
       uVar6 = crt_rand();
       uVar6 = uVar6 & 0x80000001;
       if ((int)uVar6 < 0) {
@@ -37568,19 +37662,19 @@ LAB_00445905:
     else {
       fStack_8 = 0.0;
     }
-    DAT_004d758c = DAT_004d758c + 1;
-    local_30 = (float)terrain_texture_width + 64.0;
+    typo_spawn_counter = typo_spawn_counter + 1;
+    local_30 = (float)_terrain_texture_width + 64.0;
     fVar10 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                            (float10)0.001);
-    fStack_2c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
+    fStack_2c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&local_30,&fStack_10,4);
-    creature_name_assign_random(iVar5);
+    typo_target_name_assign_random(iVar5);
     fStack_20 = -64.0;
     fVar10 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                            (float10)0.001);
-    fStack_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
+    fStack_1c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&fStack_20,&fStack_10,2);
-    creature_name_assign_random(iVar5);
+    typo_target_name_assign_random(iVar5);
   }
   highscore_active_record.score_xp = player_state_table.experience;
   if (console_open_flag == '\0') {
@@ -37594,7 +37688,7 @@ LAB_00445905:
   }
   camera_update();
   gameplay_render_world();
-  creature_name_draw_labels();
+  typo_target_name_draw_labels();
   pbVar7 = bonus_pool;
   do {
     pbVar7->bonus_id = BONUS_ID_NONE;
@@ -37623,7 +37717,7 @@ LAB_00445905:
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   fVar13 = 2.94273e-44;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
@@ -37634,7 +37728,7 @@ LAB_00445905:
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   fVar13 = fVar13 + 1.0;
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,6.0,fVar13,&DAT_004712bc,&DAT_004d14a8);
+            (grim_interface_ptr,6.0,fVar13,&DAT_004712bc,&typo_input_buffer);
   a = 1.0;
   fVar10 = (float10)fsin((float10)game_time_s * (float10)4.0);
   if ((float10)0.0 < fVar10) {
@@ -37643,10 +37737,10 @@ LAB_00445905:
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
   pcVar12 = &DAT_004712b8;
   pIVar3 = grim_interface_ptr->vtable;
-  iVar5 = (*pIVar3->grim_measure_text_width)(&DAT_004d14a8);
+  iVar5 = (*pIVar3->grim_measure_text_width)(&typo_input_buffer);
   (*pIVar3->grim_draw_text_small_fmt)(grim_interface_ptr,(float)iVar5 + 14.0,fVar13,pcVar12);
-  highscore_active_record.shots_hit = DAT_004d757c;
-  highscore_active_record.shots_fired = DAT_004d7578;
+  highscore_active_record.shots_hit = typo_match_count;
+  highscore_active_record.shots_fired = typo_submit_count;
   ui_elements_update_and_render();
   return;
 }
@@ -37757,9 +37851,11 @@ int input_primary_is_down(void)
 
 
 
-/* FUN_00446140 @ 00446140 */
+/* ui_callback_noop @ 00446140 */
 
-void FUN_00446140(void)
+/* empty UI callback used as a placeholder in multiple menu/state flows */
+
+void ui_callback_noop(void)
 
 {
   return;
@@ -37867,20 +37963,20 @@ void __cdecl game_state_set(int state_id)
   if (state_id == 0) {
     highscore_return_latch = '\0';
     render_pass_mode = '\0';
-    ui_sign_crimson = 1;
+    ui_sign_crimson.active = '\x01';
     iVar3 = game_is_full_version();
     if ((char)iVar3 != '\0') {
       bVar2 = mods_any_available();
       if (bVar2) {
-        DAT_00488208 = 1;
+        ui_element_slot_02_main_menu_primary.active = '\x01';
       }
     }
     iVar3 = game_is_full_version();
     if ((char)iVar3 == '\0') {
-      DAT_00488208 = 1;
+      ui_element_slot_02_main_menu_primary.active = '\x01';
     }
     else {
-      _DAT_0048823c = &LAB_00447350;
+      ui_element_slot_02_main_menu_primary.on_activate = (_func_1 *)&LAB_00447350;
     }
     state_id = 0;
     iVar3 = 2;
@@ -37896,7 +37992,7 @@ void __cdecl game_state_set(int state_id)
         if (iVar3 == 6) {
           state_id = 6;
         }
-        (&ui_element_table_end)[iVar3]->counter_id = DAT_0048f7f4;
+        (&ui_element_table_end)[iVar3]->counter_id = ui_item_texts_texture;
         puVar6 = (&ui_element_table_end)[iVar3];
         puVar6->_pad4[0x14] = '\0';
         puVar6->_pad4[0x15] = '\0';
@@ -37923,7 +38019,7 @@ void __cdecl game_state_set(int state_id)
         puVar6->_pad4[0x6b] = '\0';
       }
       else {
-        (&ui_element_table_end)[iVar3]->counter_id = DAT_0048f7f4;
+        (&ui_element_table_end)[iVar3]->counter_id = ui_item_texts_texture;
         puVar6 = (&ui_element_table_end)[iVar3];
         puVar6->_pad4[0x14] = '\0';
         puVar6->_pad4[0x15] = '\0';
@@ -37965,24 +38061,24 @@ void __cdecl game_state_set(int state_id)
     } while (iVar3 < 8);
     iVar3 = game_is_full_version();
     if ((char)iVar3 == '\0') {
-      DAT_00488208 = 1;
+      ui_element_slot_02_main_menu_primary.active = '\x01';
     }
-    DAT_004878c0 = 1;
-    DAT_00487bd8 = 1;
-    DAT_00487ef0 = 1;
-    DAT_00488520 = 1;
+    ui_element_slot_03_main_menu_play_game.active = '\x01';
+    ui_element_slot_04_main_menu_options.active = '\x01';
+    ui_element_slot_05_main_menu_statistics.active = '\x01';
+    ui_element_slot_footer_variant_a.active = '\x01';
     pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(auStack_10,100);
     if (*pcVar5 == '\0') {
-      DAT_00488520 = 0;
+      ui_element_slot_footer_variant_a.active = '\0';
     }
-    DAT_00488838 = 1;
+    ui_element_slot_footer_variant_b.active = '\x01';
   }
   else if (state_id == 0x16) {
     render_pass_mode = '\0';
-    ui_sign_crimson_update_disabled = 0;
+    ui_sign_crimson._pad0[0] = '\0';
   }
   else if (state_id == 9) {
-    DAT_0048eb38 = 1;
+    ui_element_slot_28.active = '\x01';
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
       highscore_return_latch = '\0';
@@ -38023,8 +38119,8 @@ void __cdecl game_state_set(int state_id)
     config_blob.reserved0[0x15] = '\0';
     config_blob.reserved0[0x16] = '\0';
     config_blob.reserved0[0x17] = '\0';
-    DAT_00478c94 = 1;
-    DAT_0048eb38 = 1;
+    typo_mode_reset_flag = '\x01';
+    ui_element_slot_28.active = '\x01';
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
       highscore_return_latch = '\0';
@@ -38034,117 +38130,122 @@ void __cdecl game_state_set(int state_id)
     }
   }
   else if (state_id == 1) {
-    ui_sign_crimson = 1;
-    DAT_00489498 = 1;
-    DAT_004897b0 = 1;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_11.active = '\x01';
+    ui_element_slot_12_layout_a.active = '\x01';
   }
   else if (state_id == 2) {
     if (DAT_004824d1 == '\0') {
-      ui_sign_crimson = 1;
+      ui_sign_crimson.active = '\x01';
     }
-    DAT_00488b50 = 1;
-    _DAT_0048cf78 = 0xc2680000;
-    DAT_00488e68 = 1;
+    ui_element_slot_31.active = '\x01';
+    ui_element_slot_13.pos_x = -58.0;
+    ui_element_slot_32_layout_c.active = '\x01';
     ui_screen_phase = 0;
-    _DAT_0048cf7c = (((float)config_blob.screen_width * 0.0015625 * 150.0 + 10.0) - 150.0) + 135.0;
+    ui_element_slot_13.pos_y =
+         (((float)config_blob.screen_width * 0.0015625 * 150.0 + 10.0) - 150.0) + 135.0;
   }
   else if (state_id == 4) {
     highscore_return_latch = '\0';
-    ui_sign_crimson = 1;
-    DAT_0048e820 = 1;
-    _DAT_0048e858 = &LAB_0043f550;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_39.active = '\x01';
+    ui_element_slot_39._pad2 = (uchar  [4])&LAB_0043f550;
   }
   else if (state_id == 0xd) {
-    _DAT_00489e18 = FUN_00446140;
+    ui_element_slot_09._pad2 = (uchar  [4])ui_callback_noop;
 LAB_00446764:
-    DAT_00489de0._0_1_ = 1;
-    ui_sign_crimson = 1;
+    ui_element_slot_09.active = '\x01';
+    ui_sign_crimson.active = '\x01';
     highscore_load_table();
   }
   else if (state_id == 3) {
-    ui_sign_crimson = 1;
-    _DAT_0048cf78 = 0xc3340000;
-    DAT_0048d278 = 1;
-    DAT_0048d590 = 1;
-    DAT_0048ee50._0_1_ = 1;
-    _DAT_0048cf7c = ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + 139.0;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_13.pos_x = -180.0;
+    ui_element_slot_14.active = '\x01';
+    ui_element_slot_18_layout_b.active = '\x01';
+    ui_element_slot_40.active = '\x01';
+    ui_element_slot_13.pos_y = ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + 139.0
+    ;
   }
   else if (state_id == 0xe) {
-    DAT_0048a0f8 = 1;
-    _DAT_00489e18 = (code *)&LAB_004423d0;
+    ui_element_slot_33.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])&LAB_004423d0;
     goto LAB_00446764;
   }
-  _DAT_0048a130 = 0;
+  ui_element_slot_33._pad2[0] = '\0';
+  ui_element_slot_33._pad2[1] = '\0';
+  ui_element_slot_33._pad2[2] = '\0';
+  ui_element_slot_33._pad2[3] = '\0';
   if (iVar1 == 0x13) {
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
   }
   else if (iVar1 == 0x1a) {
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
-    _DAT_00489e18 = credits_secret_alien_zookeeper_update;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])credits_secret_alien_zookeeper_update;
   }
   else if (iVar1 == 0x14) {
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
-    _DAT_00489e18 = (code *)&LAB_0040e9a0;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])&LAB_0040e9a0;
   }
   else if (iVar1 == 0xf) {
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
-    DAT_0048a0f8 = 1;
-    _DAT_00489e18 = (code *)&LAB_00440110;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
+    ui_element_slot_33.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])&LAB_00440110;
   }
   else if (iVar1 == 0x10) {
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
-    DAT_0048a0f8 = 1;
-    _DAT_00489e18 = (code *)&LAB_00440960;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
+    ui_element_slot_33.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])&LAB_00440960;
   }
   else if (iVar1 == 0x11) {
     ui_screen_phase = 0;
-    ui_sign_crimson = 1;
-    DAT_00489de0._0_1_ = 1;
-    _DAT_00489e18 = credits_screen_update;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_09.active = '\x01';
+    ui_element_slot_09._pad2 = (uchar  [4])credits_screen_update;
   }
   else if (iVar1 == 0xb) {
-    ui_sign_crimson = 1;
-    DAT_0048e1f0 = 1;
+    ui_sign_crimson.active = '\x01';
+    ui_element_slot_37.active = '\x01';
   }
   else if (iVar1 == 5) {
     if (DAT_004824d1 == '\0') {
-      ui_sign_crimson = 1;
+      ui_sign_crimson.active = '\x01';
     }
-    ui_sign_crimson_update_disabled = 0;
-    DAT_0048b9b8 = 1;
-    DAT_0048bcd0 = 1;
-    DAT_0048bfe8 = 1;
+    ui_sign_crimson._pad0[0] = '\0';
+    ui_element_slot_23.active = '\x01';
+    ui_element_slot_24.active = '\x01';
+    ui_element_slot_25.active = '\x01';
   }
   else if (iVar1 == 6) {
-    DAT_0048c618 = 1;
+    ui_element_slot_27.active = '\x01';
   }
   else if (iVar1 == 8) {
-    DAT_0048dbc0 = 1;
+    ui_element_slot_35.active = '\x01';
     game_save_status();
     ui_screen_phase = -2;
   }
   else {
     if (iVar1 == 0x15) {
-      DAT_0048dbc0 = 1;
+      ui_element_slot_35.active = '\x01';
     }
     else if (iVar1 == 0xc) {
-      DAT_0048dbc0 = 1;
+      ui_element_slot_35.active = '\x01';
     }
     else {
       if (iVar1 != 7) goto LAB_004468da;
-      DAT_0048cc48 = 1;
+      ui_element_slot_30.active = '\x01';
       _DAT_00487260 = 0;
     }
     ui_screen_phase = -1;
   }
 LAB_004468da:
   if (highscore_return_latch != '\0') {
-    ui_sign_crimson = 0;
+    ui_sign_crimson.active = '\0';
   }
   ui_elements_timeline = 0;
   ui_transition_direction = 1;
@@ -38318,7 +38419,8 @@ void __cdecl ui_element_render(ui_element_t *element)
   if ((element->render_scale == 0.0) && (*(float *)((int)cv_uiPointFilterPanels + 0xc) != 0.0)) {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
-  if ((element->on_activate != (_func_1 *)0x0) && (element != (ui_element_t *)&DAT_0048f20c)) {
+  if ((element->on_activate != (_func_1 *)0x0) &&
+     (element != (ui_element_t *)&ui_perk_prompt_element)) {
     iVar3 = ui_focus_update((int)element);
     cVar5 = (char)iVar3;
     if (((cVar5 != '\0') &&
@@ -38477,18 +38579,16 @@ void ui_menu_main_click_options(void)
 
 
 
-/* FUN_004473e0 @ 004473e0 */
+/* ui_menu_main_click_controls @ 004473e0 */
 
-/* [binja] int32_t sub_4473e0() */
+/* main menu CONTROLS click callback (sets ui_transition_direction=0 and game_state_pending=3) */
 
-int FUN_004473e0(void)
+void ui_menu_main_click_controls(void)
 
 {
-  int in_EAX;
-  
   ui_transition_direction = 0;
   game_state_pending = 3;
-  return in_EAX;
+  return;
 }
 
 
@@ -38508,11 +38608,12 @@ void ui_menu_main_click_play_game(void)
 
 
 
-/* FUN_00447420 @ 00447420 */
+/* ui_menu_click_back_contextual @ 00447420 */
 
-/* [binja] int32_t sub_447420() */
+/* menu BACK callback: sets transition and routes to state 0 (main menu) or state 5 (in-game menu
+   context) */
 
-int FUN_00447420(void)
+int ui_menu_click_back_contextual(void)
 
 {
   undefined4 in_EAX;
@@ -38538,7 +38639,7 @@ void ui_menu_main_click_quit(void)
 
 {
   game_state_pending = 10;
-  ui_sign_crimson_update_disabled = 0;
+  ui_sign_crimson._pad0[0] = '\0';
   ui_transition_direction = 0;
   sfx_mute_all(music_track_crimson_theme_id);
   sfx_mute_all(music_track_extra_0);
@@ -38575,28 +38676,29 @@ void config_apply_detail_preset(void)
 
 
 
-/* FUN_00447c90 @ 00447c90 */
+/* input_configure_for_label @ 00447c90 */
 
-/* [binja] int32_t sub_447c90(int32_t arg1) */
+/* maps configure-for ids to labels (Mouse/Keyboard/Joystick/Mouse relative/Dual Action
+   Pad/Computer) */
 
-int __cdecl FUN_00447c90(int arg1)
+char * __cdecl input_configure_for_label(int config_id)
 
 {
-  switch(arg1) {
+  switch(config_id) {
   case 0:
-    return 0x478f10;
+    return input_configure_label_mouse;
   case 1:
-    return 0x478ef4;
+    return input_configure_label_keyboard;
   case 2:
-    return 0x478ee8;
+    return input_configure_label_joystick;
   case 3:
-    return 0x478f00;
+    return input_configure_label_mouse_relative;
   case 4:
-    return 0x478ed8;
+    return input_configure_label_dual_action_pad;
   case 5:
-    return 0x478ecc;
+    return input_configure_label_computer;
   default:
-    return 0x4714a0;
+    return s_Unknown_004714a0;
   }
 }
 
@@ -38615,11 +38717,11 @@ char * __cdecl input_scheme_label(int scheme)
   case 2:
     return s_Static_00478f2c;
   case 3:
-    return s_Dual_Action_Pad_00478ed8;
+    return input_configure_label_dual_action_pad;
   case 4:
     return s_Mouse_point_click_00478f18;
   case 5:
-    return s_Computer_00478ecc;
+    return input_configure_label_computer;
   default:
     return s_Unknown_004714a0;
   }
@@ -38627,9 +38729,11 @@ char * __cdecl input_scheme_label(int scheme)
 
 
 
-/* FUN_00448b50 @ 00448b50 */
+/* input_detect_active_analog_axis @ 00448b50 */
 
-undefined4 __fastcall FUN_00448b50(undefined4 param_1)
+/* polls configured analog axis ids and returns the first axis code with abs(value) > 0.5, else 0 */
+
+int __fastcall input_detect_active_analog_axis(void)
 
 {
   float10 extraout_ST0;
@@ -38669,103 +38773,88 @@ undefined4 __fastcall FUN_00448b50(undefined4 param_1)
 
 
 
-/* FUN_0044ecf0 @ 0044ecf0 */
+/* vec2_add_out @ 0044ecf0 */
 
-/* [binja] float* __thiscall sub_44ecf0(float* arg1, float* arg2, float* arg3) */
+/* writes this + lhs into dst and returns dst */
 
-float * __thiscall FUN_0044ecf0(void *this,float *arg1,float *arg2,float *arg3)
+float * __thiscall vec2_add_out(void *this,float *dst,float *lhs)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = arg2[1];
+  fVar1 = lhs[1];
   fVar2 = *(float *)((int)this + 4);
-  *arg1 = *arg2 + *(float *)this;
-  arg1[1] = fVar1 + fVar2;
-  return arg1;
+  *dst = *lhs + *(float *)this;
+  dst[1] = fVar1 + fVar2;
+  return dst;
 }
 
 
 
-/* FUN_0044faa0 @ 0044faa0 */
+/* ui_element_init_defaults @ 0044faa0 */
 
-/* [binja] char* sub_44faa0(char* arg1) */
+/* resets one ui_element_t record to default counters, animation values, and flags */
 
-char * __cdecl FUN_0044faa0(char *arg1)
+ui_element_t * __cdecl ui_element_init_defaults(ui_element_t *element)
 
 {
   char cVar1;
   undefined3 extraout_var;
   
-  if (arg1 == (char *)0x0) {
+  if (element == (ui_element_t *)0x0) {
     cVar1 = console_printf(&console_log_queue,s_____Elem____NULL__0047928c);
-    return (char *)CONCAT31(extraout_var,cVar1);
+    return (ui_element_t *)CONCAT31(extraout_var,cVar1);
   }
-  arg1[0x11c] = -1;
-  arg1[0x11d] = -1;
-  arg1[0x11e] = -1;
-  arg1[0x11f] = -1;
-  arg1[0x204] = -1;
-  arg1[0x205] = -1;
-  arg1[0x206] = -1;
-  arg1[0x207] = -1;
-  arg1[0x2ec] = -1;
-  arg1[0x2ed] = -1;
-  arg1[0x2ee] = -1;
-  arg1[0x2ef] = -1;
-  arg1[0x20] = '\0';
-  arg1[0x21] = '\0';
-  arg1[0x22] = 'i';
-  arg1[0x23] = 'C';
-  arg1[0x24] = '\0';
-  arg1[0x25] = '\0';
-  arg1[0x26] = -0x20;
-  arg1[0x27] = 'A';
-  arg1[0x28] = '\0';
-  arg1[0x29] = -0x80;
-  arg1[0x2a] = -0x29;
-  arg1[0x2b] = 'C';
-  arg1[0x2fc] = '\0';
-  arg1[0x2fd] = '\x01';
-  arg1[0x2fe] = '\0';
-  arg1[0x2ff] = '\0';
-  arg1[0x34] = '\0';
-  arg1[0x35] = '\0';
-  arg1[0x36] = '\0';
-  arg1[0x37] = '\0';
-  arg1[0x38] = '\0';
-  arg1[0x39] = '\0';
-  arg1[0x3a] = '\0';
-  arg1[0x3b] = '\0';
-  arg1[0x2c] = '\0';
-  arg1[0x2d] = '\0';
-  arg1[0x2e] = -0x78;
-  arg1[0x2f] = 'B';
-  arg1[0x300] = '\0';
-  arg1[0x301] = '\0';
-  arg1[0x302] = '\0';
-  arg1[0x303] = '\0';
-  *arg1 = '\0';
-  arg1[0x30] = '9';
-  arg1[0x31] = '\0';
-  arg1[0x32] = '\0';
-  arg1[0x33] = '\0';
-  arg1[0x2f4] = '\0';
-  arg1[0x10] = ',';
-  arg1[0x11] = '\x01';
-  arg1[0x12] = '\0';
-  arg1[0x13] = '\0';
-  arg1[0x14] = '\0';
-  arg1[0x15] = '\0';
-  arg1[0x16] = '\0';
-  arg1[0x17] = '\0';
-  arg1[2] = '\0';
-  arg1[4] = '\0';
-  arg1[5] = '\0';
-  arg1[6] = '\0';
-  arg1[7] = '\0';
-  return arg1;
+  element->texture_handle = -1;
+  element->counter_id = -1;
+  element->_pad5[0xe4] = 0xff;
+  element->_pad5[0xe5] = 0xff;
+  element->_pad5[0xe6] = 0xff;
+  element->_pad5[0xe7] = 0xff;
+  element->_pad1[0] = '\0';
+  element->_pad1[1] = '\0';
+  element->_pad1[2] = 'i';
+  element->_pad1[3] = 'C';
+  element->_pad1[4] = '\0';
+  element->_pad1[5] = '\0';
+  element->_pad1[6] = 0xe0;
+  element->_pad1[7] = 'A';
+  element->_pad1[8] = '\0';
+  element->_pad1[9] = 0x80;
+  element->_pad1[10] = 0xd7;
+  element->_pad1[0xb] = 'C';
+  element->counter_timer = 0x100;
+  element->on_activate = (_func_1 *)0x0;
+  element->_pad2[0] = '\0';
+  element->_pad2[1] = '\0';
+  element->_pad2[2] = '\0';
+  element->_pad2[3] = '\0';
+  element->_pad1[0xc] = '\0';
+  element->_pad1[0xd] = '\0';
+  element->_pad1[0xe] = 0x88;
+  element->_pad1[0xf] = 'B';
+  element->render_scale = 0.0;
+  element->active = '\0';
+  element->_pad1[0x10] = '9';
+  element->_pad1[0x11] = '\0';
+  element->_pad1[0x12] = '\0';
+  element->_pad1[0x13] = '\0';
+  element->_pad5[0xec] = '\0';
+  element->_pad0[0xe] = ',';
+  element->_pad0[0xf] = '\x01';
+  element->_pad0[0x10] = '\0';
+  element->_pad0[0x11] = '\0';
+  element->_pad0[0x12] = '\0';
+  element->_pad0[0x13] = '\0';
+  element->_pad0[0x14] = '\0';
+  element->_pad0[0x15] = '\0';
+  element->_pad0[0] = '\0';
+  element->_pad0[2] = '\0';
+  element->_pad0[3] = '\0';
+  element->_pad0[4] = '\0';
+  element->_pad0[5] = '\0';
+  return element;
 }
 
 
@@ -38784,7 +38873,8 @@ float __cdecl ui_element_layout_calc(float arg1)
   int iVar5;
   float10 in_ST0;
   
-  if (((undefined *)arg1 != &DAT_0048c300) && ((undefined *)arg1 != &DAT_0048c618)) {
+  if (((ui_element_t *)arg1 != &ui_element_slot_26) && ((ui_element_t *)arg1 != &ui_element_slot_27)
+     ) {
     *(float *)((int)arg1 + 0x20) =
          *(float *)((int)arg1 + 0x3c) + *(float *)((int)arg1 + 0x18) + *(float *)((int)arg1 + 0x20);
     *(float *)((int)arg1 + 0x24) =
@@ -38827,22 +38917,26 @@ float __cdecl ui_element_layout_calc(float arg1)
 void ui_menu_layout_init(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  ui_element_t *puVar3;
-  int *piVar4;
-  float *pfVar5;
-  float *pfVar6;
-  int iVar7;
-  int iVar8;
-  float fVar9;
+  int iVar1;
+  uchar uVar2;
+  uchar uVar3;
+  uchar uVar4;
+  char *pcVar5;
+  int iVar6;
+  ui_element_t *puVar7;
+  uchar *puVar8;
+  float *pfVar9;
+  int iVar10;
+  int iVar11;
+  float fVar12;
   char *unaff_EBX;
-  ui_element_t **ppuVar10;
-  uchar *puVar11;
-  undefined4 *puVar12;
-  undefined4 *puVar13;
-  char *pcVar14;
-  int iVar15;
+  ui_element_t **ppuVar13;
+  ui_menu_item_subtemplate_block_t *puVar14;
+  uchar *puVar15;
+  float *pfVar16;
+  ui_element_t *puVar17;
+  char *pcVar18;
+  int iVar19;
   float fStack_30;
   float fStack_2c;
   float afStack_28 [2];
@@ -38853,893 +38947,1037 @@ void ui_menu_layout_init(void)
   _DAT_0048723c = 0;
   DAT_0048702c = 0;
   _DAT_0048728c = (float)config_blob.screen_height * 0.0020833334;
-  ppuVar10 = &ui_element_table_end;
-  for (iVar7 = 0x29; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *ppuVar10 = (ui_element_t *)0x0;
-    ppuVar10 = ppuVar10 + 1;
+  ppuVar13 = &ui_element_table_end;
+  for (iVar10 = 0x29; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *ppuVar13 = (ui_element_t *)0x0;
+    ppuVar13 = ppuVar13 + 1;
   }
-  ui_element_table_end = (ui_element_t *)&ui_sign_crimson;
-  DAT_0048f16c = &DAT_004875a8;
-  DAT_0048f170 = &DAT_00488208;
-  _DAT_0048f174 = &DAT_004878c0;
-  _DAT_0048f178 = &DAT_00487bd8;
-  _DAT_0048f17c = &DAT_00487ef0;
-  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-  if (*pcVar1 == '\0') {
-    _DAT_0048f184 = &DAT_00488520;
-    _DAT_0048f180 = &DAT_00488838;
+  ui_element_table_end = &ui_sign_crimson;
+  ui_element_table_slot_01_main_menu_aux = &ui_element_slot_01_main_menu_aux;
+  ui_element_table_slot_02_main_menu_primary = &ui_element_slot_02_main_menu_primary;
+  ui_element_table_slot_03_main_menu_play_game = &ui_element_slot_03_main_menu_play_game;
+  ui_element_table_slot_04_main_menu_options = &ui_element_slot_04_main_menu_options;
+  ui_element_table_slot_05_main_menu_statistics = &ui_element_slot_05_main_menu_statistics;
+  pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+  if (*pcVar5 == '\0') {
+    ui_element_table_slot_07_main_menu_footer_b = &ui_element_slot_footer_variant_a;
+    ui_element_table_slot_06_main_menu_footer_a = &ui_element_slot_footer_variant_b;
   }
   else {
-    _DAT_0048f180 = &DAT_00488520;
-    _DAT_0048f184 = &DAT_00488838;
+    ui_element_table_slot_06_main_menu_footer_a = &ui_element_slot_footer_variant_a;
+    ui_element_table_slot_07_main_menu_footer_b = &ui_element_slot_footer_variant_b;
   }
-  _DAT_0048f1e4 = &DAT_00488b50;
-  ui_menu_layout_c = &DAT_00488e68;
-  _DAT_0048f190 = &DAT_00489180;
-  _DAT_0048f194 = &DAT_00489498;
-  ui_menu_layout_a = &DAT_004897b0;
-  _DAT_0048f1a4 = &DAT_0048a410;
-  _DAT_0048f1a8 = &DAT_0048a728;
-  _DAT_0048f1ac = &DAT_0048aa40;
-  _DAT_0048f1b4 = &DAT_0048ad58;
-  _DAT_0048f1b8 = &DAT_0048b070;
-  _DAT_0048f1bc = &DAT_0048b388;
-  DAT_0048f1c0 = &DAT_0048b6a0;
-  DAT_0048f1c4 = &DAT_0048b9b8;
-  _DAT_0048f1c8 = &DAT_0048bcd0;
-  _DAT_0048f1cc = &DAT_0048bfe8;
-  _DAT_0048f1d0 = &DAT_0048c300;
-  _DAT_0048f1d4 = &DAT_0048c618;
-  _DAT_0048f1d8 = &DAT_0048eb38;
-  _DAT_0048f1dc = &DAT_0048c930;
-  _DAT_0048f1e0 = &DAT_0048cc48;
-  _DAT_0048f19c = &DAT_0048cf60;
-  _DAT_0048f1a0 = &DAT_0048d278;
-  ui_menu_layout_b = &DAT_0048d590;
-  _DAT_0048f188 = &DAT_00489ac8;
-  _DAT_0048f18c = &DAT_00489de0;
-  _DAT_0048f1ec = &DAT_0048a0f8;
-  _DAT_0048f1f0 = &DAT_0048d8a8;
-  _DAT_0048f1f4 = &DAT_0048dbc0;
-  _DAT_0048f1f8 = &DAT_0048ded8;
-  _DAT_0048f1fc = &DAT_0048e1f0;
-  _DAT_0048f200 = &DAT_0048e508;
-  DAT_0048f204 = &DAT_0048e820;
-  ui_element_table_start = (ui_element_t *)&DAT_0048ee50;
-  ppuVar10 = &ui_element_table_end;
+  ui_element_table_slot_31 = &ui_element_slot_31;
+  ui_menu_layout_c = &ui_element_slot_32_layout_c;
+  ui_element_table_slot_10 = &ui_element_slot_10;
+  ui_element_table_slot_11 = &ui_element_slot_11;
+  ui_menu_layout_a = &ui_element_slot_12_layout_a;
+  ui_element_table_slot_15 = &ui_element_slot_15;
+  ui_element_table_slot_16 = &ui_element_slot_16;
+  ui_element_table_slot_17 = &ui_element_slot_17;
+  ui_element_table_slot_19 = &ui_element_slot_19;
+  ui_element_table_slot_20 = &ui_element_slot_20;
+  ui_element_table_slot_21 = &ui_element_slot_21;
+  ui_element_table_slot_22 = &ui_element_slot_22;
+  ui_element_table_slot_23 = &ui_element_slot_23;
+  ui_element_table_slot_24 = &ui_element_slot_24;
+  ui_element_table_slot_25 = &ui_element_slot_25;
+  ui_element_table_slot_26 = &ui_element_slot_26;
+  ui_element_table_slot_27 = &ui_element_slot_27;
+  ui_element_table_slot_28 = &ui_element_slot_28;
+  ui_element_table_slot_29 = &ui_element_slot_29;
+  ui_element_table_slot_30 = &ui_element_slot_30;
+  ui_element_table_slot_13 = &ui_element_slot_13;
+  ui_element_table_slot_14 = &ui_element_slot_14;
+  ui_menu_layout_b = &ui_element_slot_18_layout_b;
+  ui_element_table_slot_08 = &ui_element_slot_08;
+  ui_element_table_slot_09 = &ui_element_slot_09;
+  ui_element_table_slot_33 = &ui_element_slot_33;
+  ui_element_table_slot_34 = &ui_element_slot_34;
+  ui_element_table_slot_35 = &ui_element_slot_35;
+  ui_element_table_slot_36 = &ui_element_slot_36;
+  ui_element_table_slot_37 = &ui_element_slot_37;
+  ui_element_table_slot_38 = &ui_element_slot_38;
+  ui_element_table_slot_39 = &ui_element_slot_39;
+  ui_element_table_start = &ui_element_slot_40;
+  ppuVar13 = &ui_element_table_end;
   do {
-    FUN_0044faa0((char *)*ppuVar10);
-    iVar7 = config_blob.screen_width;
-    ppuVar10 = ppuVar10 + 1;
-  } while ((int)ppuVar10 < 0x48f20c);
-  puVar12 = &DAT_0048fac0;
-  puVar13 = &DAT_004872cc;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+    ui_element_init_defaults(*ppuVar13);
+    iVar10 = config_blob.screen_width;
+    ppuVar13 = ppuVar13 + 1;
+  } while ((int)ppuVar13 < 0x48f20c);
+  pfVar9 = (float *)&ui_sign_crimson_template;
+  pfVar16 = ui_sign_crimson.quad0;
+  for (iVar11 = 0x3a; iVar11 != 0; iVar11 = iVar11 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_004872a8 = (float)(iVar7 + 4);
-  _DAT_004872ac = 0x428c0000;
-  if (iVar7 < 0x281) {
-    _DAT_004872ac = 0x42700000;
+  ui_sign_crimson.pos_x = (float)(iVar10 + 4);
+  ui_sign_crimson.pos_y = 70.0;
+  if (iVar10 < 0x281) {
+    ui_sign_crimson.pos_y = 60.0;
   }
-  pcVar14 = s_ui_ui_itemTexts_jaz_00479318;
-  DAT_0048f7f4 = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
-  pcVar1 = s_ui_ui_textReaper_jaz_00479300;
-  DAT_0048f7f8 = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
-  pcVar14 = s_ui_ui_textControls_jaz_004792e8;
-  DAT_0048f7fc = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar1);
-  pcVar1 = s_ui_ui_textPickAPerk_jaz_004792d0;
-  DAT_0048f800 = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
-  DAT_0048f804 = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar1);
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_00488244;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  pcVar18 = s_ui_ui_itemTexts_jaz_00479318;
+  ui_item_texts_texture = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
+  pcVar5 = s_ui_ui_textReaper_jaz_00479300;
+  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar18);
+  pcVar18 = s_ui_ui_textControls_jaz_004792e8;
+  ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar5);
+  pcVar5 = s_ui_ui_textPickAPerk_jaz_004792d0;
+  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar18);
+  ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar5);
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_02_main_menu_primary.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  DAT_00488220 = 0xc2700000;
-  DAT_00488224 = 0x43520000;
+  ui_element_slot_02_main_menu_primary.pos_x = -60.0;
+  ui_element_slot_02_main_menu_primary.pos_y = 210.0;
   afStack_28[0] = 270.0;
   afStack_28[1] = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048832c,124.0,30.0,afStack_28);
-  _DAT_00488238 = 0x30;
-  _DAT_0048823c = &LAB_0044fc70;
-  iVar7 = game_is_full_version();
-  if ((char)iVar7 != '\0') {
-    _DAT_0048823c = &LAB_00447350;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_02_main_menu_primary._pad4,124.0,30.0,
+                      afStack_28);
+  ui_element_slot_02_main_menu_primary._pad1[0x10] = '0';
+  ui_element_slot_02_main_menu_primary._pad1[0x11] = '\0';
+  ui_element_slot_02_main_menu_primary._pad1[0x12] = '\0';
+  ui_element_slot_02_main_menu_primary._pad1[0x13] = '\0';
+  ui_element_slot_02_main_menu_primary.on_activate = (_func_1 *)&LAB_0044fc70;
+  iVar10 = game_is_full_version();
+  if ((char)iVar10 != '\0') {
+    ui_element_slot_02_main_menu_primary.on_activate = (_func_1 *)&LAB_00447350;
   }
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_004878fc;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_03_main_menu_play_game.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_004878d8 = 0xc2700000;
-  _DAT_004878dc = 0x43870000;
+  ui_element_slot_03_main_menu_play_game.pos_x = -60.0;
+  ui_element_slot_03_main_menu_play_game.pos_y = 270.0;
   afStack_28[0] = 270.0;
   afStack_28[1] = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_004879e4,124.0,30.0,afStack_28);
-  _DAT_004878f4 = ui_menu_main_click_play_game;
-  _DAT_004878f0 = 0x19;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_03_main_menu_play_game._pad4,124.0,30.0,
+                      afStack_28);
+  ui_element_slot_03_main_menu_play_game.on_activate = ui_menu_main_click_play_game;
+  ui_element_slot_03_main_menu_play_game._pad1[0x10] = '\x19';
+  ui_element_slot_03_main_menu_play_game._pad1[0x11] = '\0';
+  ui_element_slot_03_main_menu_play_game._pad1[0x12] = '\0';
+  ui_element_slot_03_main_menu_play_game._pad1[0x13] = '\0';
   afStack_28[0] = 270.0;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_00487c14;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_04_main_menu_options.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_00487bf0 = 0xc2700000;
-  _DAT_00487bf4 = 0x43a50000;
+  ui_element_slot_04_main_menu_options.pos_x = -60.0;
+  ui_element_slot_04_main_menu_options.pos_y = 330.0;
   afStack_28[1] = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_00487cfc,124.0,30.0,afStack_28);
-  _DAT_00487c0c = ui_menu_main_click_options;
-  _DAT_00487c08 = 0x18;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_04_main_menu_options._pad4,124.0,30.0,
+                      afStack_28);
+  ui_element_slot_04_main_menu_options.on_activate = ui_menu_main_click_options;
+  ui_element_slot_04_main_menu_options._pad1[0x10] = '\x18';
+  ui_element_slot_04_main_menu_options._pad1[0x11] = '\0';
+  ui_element_slot_04_main_menu_options._pad1[0x12] = '\0';
+  ui_element_slot_04_main_menu_options._pad1[0x13] = '\0';
   afStack_28[0] = 270.0;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_00487f2c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_05_main_menu_statistics.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_00487f08 = 0xc2700000;
-  _DAT_00487f0c = 0x43c30000;
+  ui_element_slot_05_main_menu_statistics.pos_x = -60.0;
+  ui_element_slot_05_main_menu_statistics.pos_y = 390.0;
   afStack_28[1] = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_00488014,124.0,30.0,afStack_28);
-  _DAT_00487f24 = &LAB_00447390;
-  _DAT_00487f20 = 0x1f;
-  iVar7 = 5;
-  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
-  if (*pcVar1 != '\0') {
-    puVar3 = &ui_menu_item_element;
-    puVar12 = &DAT_0048855c;
-    for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *puVar12 = *(undefined4 *)puVar3;
-      puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-      puVar12 = puVar12 + 1;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_05_main_menu_statistics._pad4,124.0,30.0,
+                      afStack_28);
+  ui_element_slot_05_main_menu_statistics.on_activate = (_func_1 *)&LAB_00447390;
+  ui_element_slot_05_main_menu_statistics._pad1[0x10] = '\x1f';
+  ui_element_slot_05_main_menu_statistics._pad1[0x11] = '\0';
+  ui_element_slot_05_main_menu_statistics._pad1[0x12] = '\0';
+  ui_element_slot_05_main_menu_statistics._pad1[0x13] = '\0';
+  iVar10 = 5;
+  pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
+  if (*pcVar5 != '\0') {
+    pfVar9 = (float *)&ui_menu_item_element;
+    pfVar16 = ui_element_slot_footer_variant_a.quad0;
+    for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+      *pfVar16 = *pfVar9;
+      pfVar9 = pfVar9 + 1;
+      pfVar16 = pfVar16 + 1;
     }
-    _DAT_00488538 = 0xc2700000;
-    _DAT_0048853c = 0x43e10000;
+    ui_element_slot_footer_variant_a.pos_x = -60.0;
+    ui_element_slot_footer_variant_a.pos_y = 450.0;
     fStack_30 = 270.0;
     fStack_2c = -38.0;
-    ui_element_set_rect((ui_element_t *)&DAT_00488644,124.0,30.0,&fStack_30);
-    _DAT_00488550 = 0x30;
-    _DAT_00488554 = &LAB_0044fca0;
-    iVar7 = 6;
+    ui_element_set_rect((ui_element_t *)ui_element_slot_footer_variant_a._pad4,124.0,30.0,&fStack_30
+                       );
+    ui_element_slot_footer_variant_a._pad1[0x10] = '0';
+    ui_element_slot_footer_variant_a._pad1[0x11] = '\0';
+    ui_element_slot_footer_variant_a._pad1[0x12] = '\0';
+    ui_element_slot_footer_variant_a._pad1[0x13] = '\0';
+    ui_element_slot_footer_variant_a.on_activate = (_func_1 *)&LAB_0044fca0;
+    iVar10 = 6;
   }
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_00488874;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_footer_variant_b.quad0;
+  for (iVar11 = 0x3a; iVar11 != 0; iVar11 = iVar11 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   fStack_30 = 270.0;
-  _DAT_00488850 = 0xc2700000;
-  _DAT_00488854 = (float)(iVar7 * 0x3c + 0x96);
+  ui_element_slot_footer_variant_b.pos_x = -60.0;
+  ui_element_slot_footer_variant_b.pos_y = (float)(iVar10 * 0x3c + 0x96);
   fStack_2c = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048895c,124.0,30.0,&fStack_30);
-  _DAT_0048886c = ui_menu_main_click_quit;
-  _DAT_00488868 = 0x10;
-  iVar8 = 2;
-  iVar7 = 0;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_footer_variant_b._pad4,124.0,30.0,&fStack_30);
+  ui_element_slot_footer_variant_b.on_activate = ui_menu_main_click_quit;
+  ui_element_slot_footer_variant_b._pad1[0x10] = '\x10';
+  ui_element_slot_footer_variant_b._pad1[0x11] = '\0';
+  ui_element_slot_footer_variant_b._pad1[0x12] = '\0';
+  ui_element_slot_footer_variant_b._pad1[0x13] = '\0';
+  iVar11 = 2;
+  iVar10 = 0;
   do {
-    iVar15 = iVar7;
-    if ((iVar8 == 2) && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
-      iVar7 = 4;
-      iVar15 = 4;
+    iVar19 = iVar10;
+    if ((iVar11 == 2) && (iVar6 = game_is_full_version(), (char)iVar6 != '\0')) {
+      iVar10 = 4;
+      iVar19 = 4;
     }
-    pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-    if (*pcVar1 == '\0') {
-      if (iVar8 == 6) {
-        iVar7 = 6;
-        iVar15 = 6;
+    pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+    if (*pcVar5 == '\0') {
+      if (iVar11 == 6) {
+        iVar10 = 6;
+        iVar19 = 6;
       }
-      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x14] = '\0';
-      puVar3->_pad4[0x15] = '\0';
-      puVar3->_pad4[0x16] = '\0';
-      puVar3->_pad4[0x17] = '\0';
-      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x30] = '\0';
-      puVar3->_pad4[0x31] = '\0';
-      puVar3->_pad4[0x32] = 0x80;
-      puVar3->_pad4[0x33] = '?';
-      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x4c] = '\0';
-      puVar3->_pad4[0x4d] = '\0';
-      puVar3->_pad4[0x4e] = 0x80;
-      puVar3->_pad4[0x4f] = '?';
-      fVar9 = (float)(iVar7 + 1) * 0.125;
-      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x68] = '\0';
-      puVar3->_pad4[0x69] = '\0';
-      puVar3->_pad4[0x6a] = '\0';
-      puVar3->_pad4[0x6b] = '\0';
+      (&ui_element_table_end)[iVar11]->counter_id = ui_item_texts_texture;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x14] = '\0';
+      puVar7->_pad4[0x15] = '\0';
+      puVar7->_pad4[0x16] = '\0';
+      puVar7->_pad4[0x17] = '\0';
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x30] = '\0';
+      puVar7->_pad4[0x31] = '\0';
+      puVar7->_pad4[0x32] = 0x80;
+      puVar7->_pad4[0x33] = '?';
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x4c] = '\0';
+      puVar7->_pad4[0x4d] = '\0';
+      puVar7->_pad4[0x4e] = 0x80;
+      puVar7->_pad4[0x4f] = '?';
+      fVar12 = (float)(iVar10 + 1) * 0.125;
+      *(float *)(puVar7->_pad4 + 0x50) = fVar12;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x68] = '\0';
+      puVar7->_pad4[0x69] = '\0';
+      puVar7->_pad4[0x6a] = '\0';
+      puVar7->_pad4[0x6b] = '\0';
     }
     else {
-      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x14] = '\0';
-      puVar3->_pad4[0x15] = '\0';
-      puVar3->_pad4[0x16] = '\0';
-      puVar3->_pad4[0x17] = '\0';
+      (&ui_element_table_end)[iVar11]->counter_id = ui_item_texts_texture;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x14] = '\0';
+      puVar7->_pad4[0x15] = '\0';
+      puVar7->_pad4[0x16] = '\0';
+      puVar7->_pad4[0x17] = '\0';
       fStack_30 = 0.0;
-      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x30] = '\0';
-      puVar3->_pad4[0x31] = '\0';
-      puVar3->_pad4[0x32] = 0x80;
-      puVar3->_pad4[0x33] = '?';
-      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x4c] = '\0';
-      puVar3->_pad4[0x4d] = '\0';
-      puVar3->_pad4[0x4e] = 0x80;
-      puVar3->_pad4[0x4f] = '?';
-      fVar9 = (float)(iVar7 + 1) * 0.125;
-      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x68] = '\0';
-      puVar3->_pad4[0x69] = '\0';
-      puVar3->_pad4[0x6a] = '\0';
-      puVar3->_pad4[0x6b] = '\0';
-      fStack_2c = fVar9;
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x30] = '\0';
+      puVar7->_pad4[0x31] = '\0';
+      puVar7->_pad4[0x32] = 0x80;
+      puVar7->_pad4[0x33] = '?';
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x4c] = '\0';
+      puVar7->_pad4[0x4d] = '\0';
+      puVar7->_pad4[0x4e] = 0x80;
+      puVar7->_pad4[0x4f] = '?';
+      fVar12 = (float)(iVar10 + 1) * 0.125;
+      *(float *)(puVar7->_pad4 + 0x50) = fVar12;
+      puVar7 = (&ui_element_table_end)[iVar11];
+      puVar7->_pad4[0x68] = '\0';
+      puVar7->_pad4[0x69] = '\0';
+      puVar7->_pad4[0x6a] = '\0';
+      puVar7->_pad4[0x6b] = '\0';
+      fStack_2c = fVar12;
     }
-    *(float *)(puVar3->_pad4 + 0x6c) = fVar9;
-    if ((iVar8 == 2) && (iVar15 = game_is_full_version(), (char)iVar15 != '\0')) {
-      iVar7 = 0;
+    *(float *)(puVar7->_pad4 + 0x6c) = fVar12;
+    if ((iVar11 == 2) && (iVar19 = game_is_full_version(), (char)iVar19 != '\0')) {
+      iVar10 = 0;
     }
-    iVar15 = iVar7 + 1;
-    if (iVar15 == 4) {
-      iVar15 = iVar7 + 2;
+    iVar19 = iVar10 + 1;
+    if (iVar19 == 4) {
+      iVar19 = iVar10 + 2;
     }
-    iVar8 = iVar8 + 1;
-    iVar7 = iVar15;
-  } while (iVar8 < 8);
+    iVar11 = iVar11 + 1;
+    iVar10 = iVar19;
+  } while (iVar11 < 8);
   if (config_blob.screen_width < 0x281) {
-    iVar7 = 0;
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)((int)ui_element_table_end->quad0 + iVar7);
-      *pfVar6 = *(float *)((int)ui_element_table_end->quad0 + iVar7) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      puVar11 = ui_element_table_end->_pad5 + iVar7 + 4;
-      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) * 0.8;
-      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
-      puVar11 = ui_element_table_end->_pad4 + iVar7;
-      iVar8 = iVar7 + 0x1c;
-      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad4 + iVar7) * 0.8;
-      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
-      *(float *)((int)ui_element_table_end->quad0 + iVar7) =
-           *(float *)((int)ui_element_table_end->quad0 + iVar7) + 10.0;
-      *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) =
-           *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) + 10.0;
-      *(float *)(ui_element_table_end->_pad4 + iVar7) =
-           *(float *)(ui_element_table_end->_pad4 + iVar7) + 10.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x40) = *(float *)(DAT_0048f16c + iVar7 + 0x40) - 14.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x210) = *(float *)(DAT_0048f16c + iVar7 + 0x210) - 14.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x128) = *(float *)(DAT_0048f16c + iVar7 + 0x128) - 14.0;
-      iVar7 = iVar8;
-    } while (iVar8 < 0x70);
+      pfVar9 = (float *)((int)ui_element_table_end->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_element_table_end->quad0 + iVar10) * 0.8;
+      pfVar9[1] = pfVar9[1] * 0.8;
+      puVar8 = ui_element_table_end->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      puVar8 = ui_element_table_end->_pad4 + iVar10;
+      iVar11 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_element_table_end->_pad4 + iVar10) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      *(float *)((int)ui_element_table_end->quad0 + iVar10) =
+           *(float *)((int)ui_element_table_end->quad0 + iVar10) + 10.0;
+      *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) =
+           *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) + 10.0;
+      *(float *)(ui_element_table_end->_pad4 + iVar10) =
+           *(float *)(ui_element_table_end->_pad4 + iVar10) + 10.0;
+      *(float *)((int)ui_element_table_slot_01_main_menu_aux->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_element_table_slot_01_main_menu_aux->quad0 + iVar10 + 4) - 14.0;
+      *(float *)(ui_element_table_slot_01_main_menu_aux->_pad5 + iVar10 + 8) =
+           *(float *)(ui_element_table_slot_01_main_menu_aux->_pad5 + iVar10 + 8) - 14.0;
+      *(float *)(ui_element_table_slot_01_main_menu_aux->_pad4 + iVar10 + 4) =
+           *(float *)(ui_element_table_slot_01_main_menu_aux->_pad4 + iVar10 + 4) - 14.0;
+      iVar10 = iVar11;
+    } while (iVar11 < 0x70);
   }
   else if ((800 < config_blob.screen_width) && (config_blob.screen_width < 0x401)) {
-    iVar7 = 0;
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)((int)ui_element_table_end->quad0 + iVar7);
-      *pfVar6 = *(float *)((int)ui_element_table_end->quad0 + iVar7) * 1.2;
-      pfVar6[1] = pfVar6[1] * 1.2;
-      puVar11 = ui_element_table_end->_pad5 + iVar7 + 4;
-      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) * 1.2;
-      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 1.2;
-      puVar11 = ui_element_table_end->_pad4 + iVar7;
-      iVar8 = iVar7 + 0x1c;
-      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad4 + iVar7) * 1.2;
-      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 1.2;
-      *(float *)((int)ui_element_table_end->quad0 + iVar7) =
-           *(float *)((int)ui_element_table_end->quad0 + iVar7) + 10.0;
-      *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) =
-           *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) + 10.0;
-      *(float *)(ui_element_table_end->_pad4 + iVar7) =
-           *(float *)(ui_element_table_end->_pad4 + iVar7) + 10.0;
-      iVar7 = iVar8;
-    } while (iVar8 < 0x70);
+      pfVar9 = (float *)((int)ui_element_table_end->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_element_table_end->quad0 + iVar10) * 1.2;
+      pfVar9[1] = pfVar9[1] * 1.2;
+      puVar8 = ui_element_table_end->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) * 1.2;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 1.2;
+      puVar8 = ui_element_table_end->_pad4 + iVar10;
+      iVar11 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_element_table_end->_pad4 + iVar10) * 1.2;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 1.2;
+      *(float *)((int)ui_element_table_end->quad0 + iVar10) =
+           *(float *)((int)ui_element_table_end->quad0 + iVar10) + 10.0;
+      *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) =
+           *(float *)(ui_element_table_end->_pad5 + iVar10 + 4) + 10.0;
+      *(float *)(ui_element_table_end->_pad4 + iVar10) =
+           *(float *)(ui_element_table_end->_pad4 + iVar10) + 10.0;
+      iVar10 = iVar11;
+    } while (iVar11 < 0x70);
   }
-  iVar8 = 100;
-  piVar4 = (int *)&DAT_0048f16c;
-  iVar7 = -0x14;
+  iVar11 = 100;
+  ppuVar13 = &ui_element_table_slot_01_main_menu_aux;
+  iVar10 = -0x14;
   do {
-    *(int *)(*piVar4 + 0x14) = *(int *)(*piVar4 + 0x14) + iVar8;
-    *(int *)(*piVar4 + 0x10) = *(int *)(*piVar4 + 0x10) + iVar8;
-    if (0 < iVar7) {
-      *(float *)(*piVar4 + 0x18) = *(float *)(*piVar4 + 0x18) - (float)iVar7;
+    *(int *)((*ppuVar13)->_pad0 + 0x12) = *(int *)((*ppuVar13)->_pad0 + 0x12) + iVar11;
+    *(int *)((*ppuVar13)->_pad0 + 0xe) = *(int *)((*ppuVar13)->_pad0 + 0xe) + iVar11;
+    if (0 < iVar10) {
+      (*ppuVar13)->pos_x = (*ppuVar13)->pos_x - (float)iVar10;
     }
-    iVar7 = iVar7 + 0x14;
-    iVar8 = iVar8 + 100;
-    piVar4 = piVar4 + 1;
-  } while (iVar7 < 0x65);
-  iVar7 = game_is_full_version();
-  if ((char)iVar7 != '\0') {
+    iVar10 = iVar10 + 0x14;
+    iVar11 = iVar11 + 100;
+    ppuVar13 = ppuVar13 + 1;
+  } while (iVar10 < 0x65);
+  iVar10 = game_is_full_version();
+  if ((char)iVar10 != '\0') {
     DAT_00486faa = 1;
   }
-  puVar11 = ui_menu_item_element._pad3;
-  puVar12 = &DAT_00488b8c;
-  for (iVar7 = 0x3a; puVar11 = puVar11 + 4, iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar12 = puVar12 + 1;
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_31.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_00488b78 = _DAT_00488b70 + 280.0;
-  _DAT_00488b7c = _DAT_00488b74 + 180.0;
-  _DAT_00488b68 = 0xc2340000;
-  _DAT_00488b6c = 0x43520000;
-  _DAT_00488b84 = 0;
-  _DAT_00488b88 = &LAB_004475d0;
-  _DAT_00488b54 = 1;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_00488ea4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_slot_31._pad1._8_4_ = (float)ui_element_slot_31._pad1._0_4_ + 280.0;
+  ui_element_slot_31._pad1._12_4_ = (float)ui_element_slot_31._pad1._4_4_ + 180.0;
+  ui_element_slot_31.pos_x = -45.0;
+  ui_element_slot_31.pos_y = 210.0;
+  ui_element_slot_31.on_activate = (_func_1 *)0x0;
+  ui_element_slot_31._pad2 = (uchar  [4])&LAB_004475d0;
+  ui_element_slot_31._pad0[2] = '\x01';
+  ui_element_slot_31._pad0[3] = '\0';
+  ui_element_slot_31._pad0[4] = '\0';
+  ui_element_slot_31._pad0[5] = '\0';
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_32_layout_c.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_00488e80 = 0xc25c0000;
-  _DAT_00488e84 = 0x43d70000;
+  ui_element_slot_32_layout_c.pos_x = -55.0;
+  ui_element_slot_32_layout_c.pos_y = 430.0;
   fStack_30 = 270.0;
   fStack_2c = -38.0;
-  ui_element_set_rect((ui_element_t *)&DAT_00488f8c,124.0,30.0,&fStack_30);
-  _DAT_0048906c = DAT_0048f7f4;
-  _DAT_00488fa0 = 0;
-  _DAT_00488fa4 = 0x3f600000;
-  _DAT_00488fc0 = 0x3f600000;
-  _DAT_00488fbc = 0x3f800000;
-  _DAT_00488fd8 = 0x3f800000;
-  _DAT_00488ff4 = 0;
-  _DAT_00488fdc = 0x3f800000;
-  _DAT_00488ff8 = 0x3f800000;
-  _DAT_00488e9c = FUN_00447420;
-  _DAT_00488e6c = 1;
-  _DAT_00488e98 = 0x30;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_0048b9f4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_set_rect((ui_element_t *)ui_element_slot_32_layout_c._pad4,124.0,30.0,&fStack_30);
+  ui_element_slot_32_layout_c.counter_id = ui_item_texts_texture;
+  ui_element_slot_32_layout_c._pad4[0x14] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x15] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x16] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x17] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x18] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x19] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x1a] = '`';
+  ui_element_slot_32_layout_c._pad4[0x1b] = '?';
+  ui_element_slot_32_layout_c._pad4[0x34] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x35] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x36] = '`';
+  ui_element_slot_32_layout_c._pad4[0x37] = '?';
+  ui_element_slot_32_layout_c._pad4[0x30] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x31] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x32] = 0x80;
+  ui_element_slot_32_layout_c._pad4[0x33] = '?';
+  ui_element_slot_32_layout_c._pad4[0x4c] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x4d] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x4e] = 0x80;
+  ui_element_slot_32_layout_c._pad4[0x4f] = '?';
+  ui_element_slot_32_layout_c._pad4[0x68] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x69] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x6a] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x6b] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x50] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x51] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x52] = 0x80;
+  ui_element_slot_32_layout_c._pad4[0x53] = '?';
+  ui_element_slot_32_layout_c._pad4[0x6c] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x6d] = '\0';
+  ui_element_slot_32_layout_c._pad4[0x6e] = 0x80;
+  ui_element_slot_32_layout_c._pad4[0x6f] = '?';
+  ui_element_slot_32_layout_c.on_activate = ui_menu_click_back_contextual;
+  ui_element_slot_32_layout_c._pad0[2] = '\x01';
+  ui_element_slot_32_layout_c._pad0[3] = '\0';
+  ui_element_slot_32_layout_c._pad0[4] = '\0';
+  ui_element_slot_32_layout_c._pad0[5] = '\0';
+  ui_element_slot_32_layout_c._pad1[0x10] = '0';
+  ui_element_slot_32_layout_c._pad1[0x11] = '\0';
+  ui_element_slot_32_layout_c._pad1[0x12] = '\0';
+  ui_element_slot_32_layout_c._pad1[0x13] = '\0';
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_23.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048b9d0 = 0xc2700000;
-  _DAT_0048b9d4 = 0x43520000;
-  puVar12 = &DAT_00487cfc;
-  puVar13 = &DAT_0048badc;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+  ui_element_slot_23.pos_x = -60.0;
+  ui_element_slot_23.pos_y = 210.0;
+  puVar8 = ui_element_slot_04_main_menu_options._pad4;
+  puVar15 = ui_element_slot_23._pad4;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *(undefined4 *)puVar15 = *(undefined4 *)puVar8;
+    puVar8 = puVar8 + 4;
+    puVar15 = puVar15 + 4;
   }
-  DAT_0048b9c8 = DAT_0048b9c8 + 100;
-  DAT_0048b9cc = DAT_0048b9cc + 100;
-  _DAT_0048b9ec = ui_menu_main_click_options;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_0048bd0c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_slot_23._pad0._14_4_ = ui_element_slot_23._pad0._14_4_ + 100;
+  ui_element_slot_23._pad0._18_4_ = ui_element_slot_23._pad0._18_4_ + 100;
+  ui_element_slot_23.on_activate = ui_menu_main_click_options;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_24.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048bce8 = 0xc2a00000;
-  _DAT_0048bcec = 0x43870000;
-  puVar12 = &DAT_0048895c;
-  puVar13 = &DAT_0048bdf4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+  ui_element_slot_24.pos_x = -80.0;
+  ui_element_slot_24.pos_y = 270.0;
+  puVar8 = ui_element_slot_footer_variant_b._pad4;
+  puVar15 = ui_element_slot_24._pad4;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *(undefined4 *)puVar15 = *(undefined4 *)puVar8;
+    puVar8 = puVar8 + 4;
+    puVar15 = puVar15 + 4;
   }
-  _DAT_0048bd04 = &LAB_004474e0;
-  DAT_0048bce0 = DAT_0048bce0 + 200;
-  DAT_0048bce4 = DAT_0048bce4 + 200;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_0048c024;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_slot_24.on_activate = (_func_1 *)&LAB_004474e0;
+  ui_element_slot_24._pad0._14_4_ = ui_element_slot_24._pad0._14_4_ + 200;
+  ui_element_slot_24._pad0._18_4_ = ui_element_slot_24._pad0._18_4_ + 200;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_25.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048c000 = 0xc2c80000;
-  _DAT_0048c004 = 0x43a50000;
-  puVar12 = &DAT_00488f8c;
-  puVar13 = &DAT_0048c10c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+  ui_element_slot_25.pos_x = -100.0;
+  ui_element_slot_25.pos_y = 330.0;
+  puVar8 = ui_element_slot_32_layout_c._pad4;
+  puVar15 = ui_element_slot_25._pad4;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *(undefined4 *)puVar15 = *(undefined4 *)puVar8;
+    puVar8 = puVar8 + 4;
+    puVar15 = puVar15 + 4;
   }
-  DAT_0048bff8 = DAT_0048bff8 + 300;
-  DAT_0048bffc = DAT_0048bffc + 300;
-  _DAT_0048c318 = 0xc32f0000;
-  _DAT_0048c31c = 0x42340000;
-  _DAT_0048c01c = &LAB_00447490;
-  _DAT_0048c018 = 0x30;
-  _DAT_0048c304 = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_0048c654;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_25._pad0._14_4_ = ui_element_slot_25._pad0._14_4_ + 300;
+  ui_element_slot_25._pad0._18_4_ = ui_element_slot_25._pad0._18_4_ + 300;
+  ui_element_slot_26.pos_x = -175.0;
+  ui_element_slot_26.pos_y = 45.0;
+  ui_element_slot_25.on_activate = (_func_1 *)&LAB_00447490;
+  ui_element_slot_25._pad1[0x10] = '0';
+  ui_element_slot_25._pad1[0x11] = '\0';
+  ui_element_slot_25._pad1[0x12] = '\0';
+  ui_element_slot_25._pad1[0x13] = '\0';
+  ui_element_slot_26._pad0[2] = '\x01';
+  ui_element_slot_26._pad0[3] = '\0';
+  ui_element_slot_26._pad0[4] = '\0';
+  ui_element_slot_26._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_27.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_0048c630 = 0xc2340000;
-  DAT_0048c628 = DAT_0048c628 + 100;
-  _DAT_0048c634 = 0x42dc0000;
-  DAT_0048c62c = DAT_0048c62c + 100;
-  _DAT_0048919c = 0x43110000;
-  _DAT_0048c61c = 1;
-  _DAT_00489198 = 0xc2700000;
-  _DAT_00489184 = 1;
-  puVar11 = ui_menu_item_element._pad5 + 0xb0;
-  puVar12 = &DAT_004894d4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_27.pos_x = -45.0;
+  ui_element_slot_27._pad0._14_4_ = ui_element_slot_27._pad0._14_4_ + 100;
+  ui_element_slot_27.pos_y = 110.0;
+  ui_element_slot_27._pad0._18_4_ = ui_element_slot_27._pad0._18_4_ + 100;
+  ui_element_slot_10.pos_y = 145.0;
+  ui_element_slot_27._pad0[2] = '\x01';
+  ui_element_slot_27._pad0[3] = '\0';
+  ui_element_slot_27._pad0[4] = '\0';
+  ui_element_slot_27._pad0[5] = '\0';
+  ui_element_slot_10.pos_x = -60.0;
+  ui_element_slot_10._pad0[2] = '\x01';
+  ui_element_slot_10._pad0[3] = '\0';
+  ui_element_slot_10._pad0[4] = '\0';
+  ui_element_slot_10._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_02;
+  pfVar9 = ui_element_slot_11.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_004894b0 = 0xc2340000;
-  _DAT_004894b4 = 0x43520000;
-  pfVar6 = (float *)&DAT_004895bc;
+  ui_element_slot_11.pos_x = -45.0;
+  ui_element_slot_11.pos_y = 210.0;
+  puVar8 = ui_element_slot_11._pad4;
   do {
-    pfVar5 = pfVar6 + 7;
-    *pfVar6 = *pfVar6 + 10.0;
-    pfVar6[1] = pfVar6[1] + 10.0;
-    pfVar6 = pfVar5;
-  } while ((int)pfVar5 < 0x48962c);
-  _DAT_004894d0 = &LAB_0044ed80;
-  _DAT_0048949c = 1;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_004897ec;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+    puVar15 = puVar8 + 0x1c;
+    *(float *)puVar8 = *(float *)puVar8 + 10.0;
+    *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) + 10.0;
+    puVar8 = puVar15;
+  } while ((int)puVar15 < 0x48962c);
+  ui_element_slot_11._pad2 = (uchar  [4])&LAB_0044ed80;
+  ui_element_slot_11._pad0[2] = '\x01';
+  ui_element_slot_11._pad0[3] = '\0';
+  ui_element_slot_11._pad0[4] = '\0';
+  ui_element_slot_11._pad0[5] = '\0';
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_12_layout_a.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_004897cc = 0x43e70000;
-  _DAT_004897c8 = 0xc25c0000;
-  puVar12 = &DAT_00488f8c;
-  puVar13 = &DAT_004898d4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+  ui_element_slot_12_layout_a.pos_y = 462.0;
+  ui_element_slot_12_layout_a.pos_x = -55.0;
+  puVar8 = ui_element_slot_32_layout_c._pad4;
+  puVar15 = ui_element_slot_12_layout_a._pad4;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *(undefined4 *)puVar15 = *(undefined4 *)puVar8;
+    puVar8 = puVar8 + 4;
+    puVar15 = puVar15 + 4;
   }
-  _DAT_004897e4 = FUN_00447420;
-  _DAT_0048c948 = 0xc32f0000;
-  _DAT_004897b4 = 1;
-  _DAT_004897e0 = 0x30;
-  _DAT_0048c94c = 0x42340000;
-  _DAT_0048c934 = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_0048cc84;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_12_layout_a.on_activate = ui_menu_click_back_contextual;
+  ui_element_slot_29.pos_x = -175.0;
+  ui_element_slot_12_layout_a._pad0[2] = '\x01';
+  ui_element_slot_12_layout_a._pad0[3] = '\0';
+  ui_element_slot_12_layout_a._pad0[4] = '\0';
+  ui_element_slot_12_layout_a._pad0[5] = '\0';
+  ui_element_slot_12_layout_a._pad1[0x10] = '0';
+  ui_element_slot_12_layout_a._pad1[0x11] = '\0';
+  ui_element_slot_12_layout_a._pad1[0x12] = '\0';
+  ui_element_slot_12_layout_a._pad1[0x13] = '\0';
+  ui_element_slot_29.pos_y = 45.0;
+  ui_element_slot_29._pad0[2] = '\x01';
+  ui_element_slot_29._pad0[3] = '\0';
+  ui_element_slot_29._pad0[4] = '\0';
+  ui_element_slot_29._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_30.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_0048cc64 = 0x42dc0000;
-  _DAT_0048cc60 = 0xc2340000;
-  DAT_0048cc5c = DAT_0048cc5c + 100;
-  DAT_0048cc58 = DAT_0048cc58 + 100;
-  _DAT_0048cf78 = 0xc3340000;
-  _DAT_0048cf7c = 0x43070000;
-  puVar11 = ui_menu_item_element._pad3;
-  _DAT_0048cc4c = 1;
-  _DAT_0048cf64 = 1;
-  puVar12 = &DAT_0048d2b4;
-  for (iVar7 = 0x3a; iVar8 = config_blob.screen_width, puVar11 = puVar11 + 4, iVar7 != 0;
-      iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_30.pos_y = 110.0;
+  ui_element_slot_30.pos_x = -45.0;
+  ui_element_slot_30._pad0._18_4_ = ui_element_slot_30._pad0._18_4_ + 100;
+  ui_element_slot_30._pad0._14_4_ = ui_element_slot_30._pad0._14_4_ + 100;
+  ui_element_slot_13.pos_x = -180.0;
+  ui_element_slot_13.pos_y = 135.0;
+  ui_element_slot_30._pad0[2] = '\x01';
+  ui_element_slot_30._pad0[3] = '\0';
+  ui_element_slot_30._pad0[4] = '\0';
+  ui_element_slot_30._pad0[5] = '\0';
+  ui_element_slot_13._pad0[2] = '\x01';
+  ui_element_slot_13._pad0[3] = '\0';
+  ui_element_slot_13._pad0[4] = '\0';
+  ui_element_slot_13._pad0[5] = '\0';
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_14.quad0;
+  for (iVar10 = 0x3a; iVar11 = config_blob.screen_width, iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048d290 = 0xc3250000;
+  ui_element_slot_14.pos_x = -165.0;
   if (config_blob.screen_width < 0x281) {
-    _DAT_0048d290 = 0xc3370000;
+    ui_element_slot_14.pos_x = -183.0;
   }
-  DAT_0048d294 = 0x43480000;
-  _DAT_0048d2b0 = &LAB_00448cd0;
-  _DAT_0048d27c = 1;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &DAT_0048d5cc;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_slot_14.pos_y = 200.0;
+  ui_element_slot_14._pad2 = (uchar  [4])&LAB_00448cd0;
+  ui_element_slot_14._pad0[2] = '\x01';
+  ui_element_slot_14._pad0[3] = '\0';
+  ui_element_slot_14._pad0[4] = '\0';
+  ui_element_slot_14._pad0[5] = '\0';
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_18_layout_b.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048d5a8 = 0xc31b0000;
-  _DAT_0048d5ac = 0x43d20000;
-  puVar12 = &DAT_00488f8c;
-  puVar13 = &DAT_0048d6b4;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+  ui_element_slot_18_layout_b.pos_x = -155.0;
+  ui_element_slot_18_layout_b.pos_y = 420.0;
+  puVar8 = ui_element_slot_32_layout_c._pad4;
+  puVar15 = ui_element_slot_18_layout_b._pad4;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *(undefined4 *)puVar15 = *(undefined4 *)puVar8;
+    puVar8 = puVar8 + 4;
+    puVar15 = puVar15 + 4;
   }
-  _DAT_0048d8c0 = 0xc32f0000;
-  _DAT_0048d8c4 = 0x42340000;
-  _DAT_0048d5c4 = ui_menu_main_click_options;
-  _DAT_0048d594 = 0;
-  _DAT_0048d5c0 = 0x30;
-  _DAT_0048d8ac = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_0048dbfc;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_34.pos_x = -175.0;
+  ui_element_slot_34.pos_y = 45.0;
+  ui_element_slot_18_layout_b.on_activate = ui_menu_main_click_options;
+  ui_element_slot_18_layout_b._pad0[2] = '\0';
+  ui_element_slot_18_layout_b._pad0[3] = '\0';
+  ui_element_slot_18_layout_b._pad0[4] = '\0';
+  ui_element_slot_18_layout_b._pad0[5] = '\0';
+  ui_element_slot_18_layout_b._pad1[0x10] = '0';
+  ui_element_slot_18_layout_b._pad1[0x11] = '\0';
+  ui_element_slot_18_layout_b._pad1[0x12] = '\0';
+  ui_element_slot_18_layout_b._pad1[0x13] = '\0';
+  ui_element_slot_34._pad0[2] = '\x01';
+  ui_element_slot_34._pad0[3] = '\0';
+  ui_element_slot_34._pad0[4] = '\0';
+  ui_element_slot_34._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_35.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_0048dbd8 = 0xc2340000;
-  DAT_0048dbd0 = DAT_0048dbd0 + 100;
-  _DAT_0048dbdc = 0x42dc0000;
-  DAT_0048dbd4 = DAT_0048dbd4 + 100;
-  _DAT_0048def4 = 0x42f40000;
-  _DAT_0048dbc4 = 1;
-  _DAT_0048def0 = 0xc3070000;
-  _DAT_0048dedc = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_0048e22c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_35.pos_x = -45.0;
+  ui_element_slot_35._pad0._14_4_ = ui_element_slot_35._pad0._14_4_ + 100;
+  ui_element_slot_35.pos_y = 110.0;
+  ui_element_slot_35._pad0._18_4_ = ui_element_slot_35._pad0._18_4_ + 100;
+  ui_element_slot_36.pos_y = 122.0;
+  ui_element_slot_35._pad0[2] = '\x01';
+  ui_element_slot_35._pad0[3] = '\0';
+  ui_element_slot_35._pad0[4] = '\0';
+  ui_element_slot_35._pad0[5] = '\0';
+  ui_element_slot_36.pos_x = -135.0;
+  ui_element_slot_36._pad0[2] = '\x01';
+  ui_element_slot_36._pad0[3] = '\0';
+  ui_element_slot_36._pad0[4] = '\0';
+  ui_element_slot_36._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_37.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_0048e20c = 0x43390000;
-  _DAT_0048e208 = 0xc0a00000;
-  _DAT_0048e524 = 0x42f40000;
-  _DAT_0048e228 = &LAB_00447d40;
-  _DAT_0048e1f4 = 1;
-  _DAT_0048e520 = 0xc3070000;
-  _DAT_0048e50c = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_0048e85c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_37.pos_y = 185.0;
+  ui_element_slot_37.pos_x = -5.0;
+  ui_element_slot_38.pos_y = 122.0;
+  ui_element_slot_37._pad2 = (uchar  [4])&LAB_00447d40;
+  ui_element_slot_37._pad0[2] = '\x01';
+  ui_element_slot_37._pad0[3] = '\0';
+  ui_element_slot_37._pad0[4] = '\0';
+  ui_element_slot_37._pad0[5] = '\0';
+  ui_element_slot_38.pos_x = -135.0;
+  ui_element_slot_38._pad0[2] = '\x01';
+  ui_element_slot_38._pad0[3] = '\0';
+  ui_element_slot_38._pad0[4] = '\0';
+  ui_element_slot_38._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_39.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
-  _DAT_0048e83c = 0x43390000;
-  _DAT_0048e838 = 0xc0a00000;
-  _DAT_0048e824 = 1;
-  puVar11 = ui_menu_item_element._pad3;
-  _DAT_0048a110 = (float)(iVar8 + -0x15e);
-  puVar12 = &DAT_0048a134;
-  for (iVar7 = 0x3a; puVar11 = puVar11 + 4, iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_39.pos_y = 185.0;
+  ui_element_slot_39.pos_x = -5.0;
+  ui_element_slot_39._pad0[2] = '\x01';
+  ui_element_slot_39._pad0[3] = '\0';
+  ui_element_slot_39._pad0[4] = '\0';
+  ui_element_slot_39._pad0[5] = '\0';
+  fVar12 = (float)(iVar11 + -0x15e);
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_33.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
-  _DAT_0048a114 = 0x43480000;
-  if (iVar8 < 0x321) {
-    if (iVar8 < 0x281) {
-      _DAT_0048a110 = _DAT_0048a110 + 10.0;
+  ui_element_slot_33.pos_y = 200.0;
+  if (iVar11 < 0x321) {
+    if (iVar11 < 0x281) {
+      ui_element_slot_33.pos_x = fVar12 + 10.0;
     }
     else {
-      _DAT_0048a110 = _DAT_0048a110 - 30.0;
+      ui_element_slot_33.pos_x = fVar12 - 30.0;
     }
   }
   else {
-    _DAT_0048a110 = _DAT_0048a110 - 65.0;
+    ui_element_slot_33.pos_x = fVar12 - 65.0;
   }
-  _DAT_0048a0fc = 1;
+  ui_element_slot_33._pad0[2] = '\x01';
+  ui_element_slot_33._pad0[3] = '\0';
+  ui_element_slot_33._pad0[4] = '\0';
+  ui_element_slot_33._pad0[5] = '\0';
   DAT_0048a40c = 1;
-  _DAT_00489ae4 = 0x42f40000;
-  _DAT_00489ae0 = 0xc3250000;
-  if (iVar8 < 0x281) {
-    _DAT_00489ae0 = 0xc3570000;
+  ui_element_slot_08.pos_y = 122.0;
+  ui_element_slot_08.pos_x = -165.0;
+  if (iVar11 < 0x281) {
+    ui_element_slot_08.pos_x = -215.0;
   }
-  _DAT_00489acc = 1;
-  puVar11 = ui_menu_item_element._pad4 + 0xac;
-  puVar12 = &DAT_00489e1c;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar11;
-    puVar11 = puVar11 + 4;
-    puVar12 = puVar12 + 1;
+  ui_element_slot_08._pad0[2] = '\x01';
+  ui_element_slot_08._pad0[3] = '\0';
+  ui_element_slot_08._pad0[4] = '\0';
+  ui_element_slot_08._pad0[5] = '\0';
+  puVar14 = &ui_menu_item_subtemplate_block_01;
+  pfVar9 = ui_element_slot_09.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
+    pfVar9 = pfVar9 + 1;
   }
   fStack_30 = -60.0;
   fStack_2c = 185.0;
-  _DAT_00489dfc = 0x43390000;
-  _DAT_00489df8 = 0xc20c0000;
-  if (iVar8 < 0x281) {
-    _DAT_00489df8 = 0xc2aa0000;
+  ui_element_slot_09.pos_y = 185.0;
+  ui_element_slot_09.pos_x = -35.0;
+  if (iVar11 < 0x281) {
+    ui_element_slot_09.pos_x = -85.0;
   }
-  DAT_00489de4 = 1;
-  DAT_0048eb48 = 500;
-  piVar4 = (int *)&DAT_0048f16c;
-  iVar7 = -0xb;
+  ui_element_slot_09._pad0[2] = '\x01';
+  ui_element_slot_09._pad0[3] = '\0';
+  ui_element_slot_09._pad0[4] = '\0';
+  ui_element_slot_09._pad0[5] = '\0';
+  ui_element_slot_28._pad0[0xe] = 0xf4;
+  ui_element_slot_28._pad0[0xf] = '\x01';
+  ui_element_slot_28._pad0[0x10] = '\0';
+  ui_element_slot_28._pad0[0x11] = '\0';
+  ppuVar13 = &ui_element_table_slot_01_main_menu_aux;
+  iVar10 = -0xb;
   do {
-    if (iVar8 < 0x281) {
-      fVar9 = (float)iVar7;
-      iVar15 = 0;
+    if (iVar11 < 0x281) {
+      fVar12 = (float)iVar10;
+      iVar19 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar15) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar15) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar15) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        *(float *)(*piVar4 + 0x40 + iVar15) = *(float *)(*piVar4 + 0x40 + iVar15) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar15) = *(float *)(*piVar4 + 0x210 + iVar15) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar15);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar15);
-        iVar15 = iVar15 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
-        iVar8 = config_blob.screen_width;
-      } while (iVar15 < 0x70);
+        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar19);
+        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar19) * 0.9;
+        pfVar9[1] = pfVar9[1] * 0.9;
+        puVar8 = (*ppuVar13)->_pad5 + iVar19 + 4;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar19 + 4) * 0.9;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+        puVar8 = (*ppuVar13)->_pad4 + iVar19;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar19) * 0.9;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+        *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) =
+             *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) - fVar12;
+        *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) =
+             *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) - fVar12;
+        iVar11 = iVar19 + 4;
+        iVar6 = iVar19 + 4;
+        iVar19 = iVar19 + 0x1c;
+        *(float *)((*ppuVar13)->_pad4 + iVar6) = *(float *)((*ppuVar13)->_pad4 + iVar11) - fVar12;
+        iVar11 = config_blob.screen_width;
+      } while (iVar19 < 0x70);
     }
-    iVar7 = iVar7 + 0xb;
-    piVar4 = piVar4 + 1;
-  } while (iVar7 < 0x38);
-  piVar4 = (int *)&DAT_0048f1c0;
-  iVar7 = -5;
-  iVar15 = -0xb;
+    iVar10 = iVar10 + 0xb;
+    ppuVar13 = ppuVar13 + 1;
+  } while (iVar10 < 0x38);
+  ppuVar13 = &ui_element_table_slot_22;
+  iVar10 = -5;
+  iVar19 = -0xb;
   do {
-    if (iVar8 < 0x281) {
-      fVar9 = (float)iVar15;
-      iVar2 = 0;
+    if (iVar11 < 0x281) {
+      fVar12 = (float)iVar19;
+      iVar6 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.8;
-        pfVar6[1] = pfVar6[1] * 0.8;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.8;
-        pfVar6[1] = pfVar6[1] * 0.8;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.8;
-        pfVar6[1] = pfVar6[1] * 0.8;
-        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
-        iVar2 = iVar2 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
-        iVar8 = config_blob.screen_width;
-      } while (iVar2 < 0x70);
+        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar6);
+        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar6) * 0.8;
+        pfVar9[1] = pfVar9[1] * 0.8;
+        puVar8 = (*ppuVar13)->_pad5 + iVar6 + 4;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar6 + 4) * 0.8;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+        puVar8 = (*ppuVar13)->_pad4 + iVar6;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar6) * 0.8;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+        *(float *)((int)(*ppuVar13)->quad0 + iVar6 + 4) =
+             *(float *)((int)(*ppuVar13)->quad0 + iVar6 + 4) - fVar12;
+        *(float *)((*ppuVar13)->_pad5 + iVar6 + 8) =
+             *(float *)((*ppuVar13)->_pad5 + iVar6 + 8) - fVar12;
+        iVar11 = iVar6 + 4;
+        iVar1 = iVar6 + 4;
+        iVar6 = iVar6 + 0x1c;
+        *(float *)((*ppuVar13)->_pad4 + iVar1) = *(float *)((*ppuVar13)->_pad4 + iVar11) - fVar12;
+        iVar11 = config_blob.screen_width;
+      } while (iVar6 < 0x70);
     }
-    else if (iVar8 < 0x321) {
-      fVar9 = (float)iVar7;
-      iVar2 = 0;
+    else if (iVar11 < 0x321) {
+      fVar12 = (float)iVar10;
+      iVar6 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
-        iVar2 = iVar2 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
-        iVar8 = config_blob.screen_width;
-      } while (iVar2 < 0x70);
+        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar6);
+        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar6) * 0.9;
+        pfVar9[1] = pfVar9[1] * 0.9;
+        puVar8 = (*ppuVar13)->_pad5 + iVar6 + 4;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar6 + 4) * 0.9;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+        puVar8 = (*ppuVar13)->_pad4 + iVar6;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar6) * 0.9;
+        *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+        *(float *)((int)(*ppuVar13)->quad0 + iVar6 + 4) =
+             *(float *)((int)(*ppuVar13)->quad0 + iVar6 + 4) - fVar12;
+        *(float *)((*ppuVar13)->_pad5 + iVar6 + 8) =
+             *(float *)((*ppuVar13)->_pad5 + iVar6 + 8) - fVar12;
+        iVar11 = iVar6 + 4;
+        iVar1 = iVar6 + 4;
+        iVar6 = iVar6 + 0x1c;
+        *(float *)((*ppuVar13)->_pad4 + iVar1) = *(float *)((*ppuVar13)->_pad4 + iVar11) - fVar12;
+        iVar11 = config_blob.screen_width;
+      } while (iVar6 < 0x70);
     }
-    iVar15 = iVar15 + 0xb;
-    iVar7 = iVar7 + 5;
-    piVar4 = piVar4 + 1;
-  } while (iVar15 < 0x17);
-  if (iVar8 < 0x281) {
-    iVar7 = 0;
+    iVar19 = iVar19 + 0xb;
+    iVar10 = iVar10 + 5;
+    ppuVar13 = ppuVar13 + 1;
+  } while (iVar19 < 0x17);
+  if (iVar11 < 0x281) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
-      iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 11.0;
-      iVar7 = iVar15;
-      iVar8 = config_blob.screen_width;
-    } while (iVar15 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_c->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_c->quad0 + iVar10) * 0.8;
+      pfVar9[1] = pfVar9[1] * 0.8;
+      puVar8 = ui_menu_layout_c->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      puVar8 = ui_menu_layout_c->_pad4 + iVar10;
+      iVar19 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) - 11.0;
+      *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 11.0;
+      *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 11.0;
+      iVar10 = iVar19;
+      iVar11 = config_blob.screen_width;
+    } while (iVar19 < 0x70);
   }
-  else if (iVar8 < 0x321) {
-    iVar7 = 0;
+  else if (iVar11 < 0x321) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
-      iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 3.0;
-      iVar7 = iVar15;
-      iVar8 = config_blob.screen_width;
-    } while (iVar15 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_c->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_c->quad0 + iVar10) * 0.9;
+      pfVar9[1] = pfVar9[1] * 0.9;
+      puVar8 = ui_menu_layout_c->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      puVar8 = ui_menu_layout_c->_pad4 + iVar10;
+      iVar19 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) - 3.0;
+      *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 3.0;
+      *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 3.0;
+      iVar10 = iVar19;
+      iVar11 = config_blob.screen_width;
+    } while (iVar19 < 0x70);
   }
-  if (iVar8 < 0x281) {
-    iVar7 = 0;
+  if (iVar11 < 0x281) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
-      iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 11.0;
-      iVar7 = iVar15;
-      iVar8 = config_blob.screen_width;
-    } while (iVar15 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_a->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_a->quad0 + iVar10) * 0.8;
+      pfVar9[1] = pfVar9[1] * 0.8;
+      puVar8 = ui_menu_layout_a->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      puVar8 = ui_menu_layout_a->_pad4 + iVar10;
+      iVar19 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) - 11.0;
+      *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 11.0;
+      *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 11.0;
+      iVar10 = iVar19;
+      iVar11 = config_blob.screen_width;
+    } while (iVar19 < 0x70);
   }
-  else if (iVar8 < 0x321) {
-    iVar7 = 0;
+  else if (iVar11 < 0x321) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
-      iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 3.0;
-      iVar7 = iVar15;
-      iVar8 = config_blob.screen_width;
-    } while (iVar15 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_a->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_a->quad0 + iVar10) * 0.9;
+      pfVar9[1] = pfVar9[1] * 0.9;
+      puVar8 = ui_menu_layout_a->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      puVar8 = ui_menu_layout_a->_pad4 + iVar10;
+      iVar19 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) - 3.0;
+      *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 3.0;
+      *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 3.0;
+      iVar10 = iVar19;
+      iVar11 = config_blob.screen_width;
+    } while (iVar19 < 0x70);
   }
-  if (iVar8 < 0x281) {
-    iVar7 = 0;
+  if (iVar11 < 0x281) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
-      iVar8 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 11.0;
-      iVar7 = iVar8;
-    } while (iVar8 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_b->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_b->quad0 + iVar10) * 0.8;
+      pfVar9[1] = pfVar9[1] * 0.8;
+      puVar8 = ui_menu_layout_b->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 4) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      puVar8 = ui_menu_layout_b->_pad4 + iVar10;
+      iVar11 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_b->_pad4 + iVar10) * 0.8;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_b->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_b->quad0 + iVar10 + 4) - 11.0;
+      *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 8) - 11.0;
+      *(float *)(ui_menu_layout_b->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_b->_pad4 + iVar10 + 4) - 11.0;
+      iVar10 = iVar11;
+    } while (iVar11 < 0x70);
   }
-  else if (iVar8 < 0x321) {
-    iVar7 = 0;
+  else if (iVar11 < 0x321) {
+    iVar10 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
-      iVar8 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 3.0;
-      iVar7 = iVar8;
-    } while (iVar8 < 0x70);
+      pfVar9 = (float *)((int)ui_menu_layout_b->quad0 + iVar10);
+      *pfVar9 = *(float *)((int)ui_menu_layout_b->quad0 + iVar10) * 0.9;
+      pfVar9[1] = pfVar9[1] * 0.9;
+      puVar8 = ui_menu_layout_b->_pad5 + iVar10 + 4;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 4) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      puVar8 = ui_menu_layout_b->_pad4 + iVar10;
+      iVar11 = iVar10 + 0x1c;
+      *(float *)puVar8 = *(float *)(ui_menu_layout_b->_pad4 + iVar10) * 0.9;
+      *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_b->quad0 + iVar10 + 4) =
+           *(float *)((int)ui_menu_layout_b->quad0 + iVar10 + 4) - 3.0;
+      *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 8) =
+           *(float *)(ui_menu_layout_b->_pad5 + iVar10 + 8) - 3.0;
+      *(float *)(ui_menu_layout_b->_pad4 + iVar10 + 4) =
+           *(float *)(ui_menu_layout_b->_pad4 + iVar10 + 4) - 3.0;
+      iVar10 = iVar11;
+    } while (iVar11 < 0x70);
   }
-  FUN_0044faa0(&DAT_0048f20c);
-  _DAT_0048f240 = FUN_00446140;
-  puVar3 = &ui_menu_item_element;
-  puVar12 = &perk_prompt_bounds_min_x;
-  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
-    puVar12 = puVar12 + 1;
+  ui_element_init_defaults((ui_element_t *)&ui_perk_prompt_element);
+  ui_perk_prompt_on_activate = ui_callback_noop;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = &perk_prompt_bounds_min_x;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
+    pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   _DAT_0048f25c = 0x3f800000;
   _DAT_0048f278 = 0;
   _DAT_0048f2b0 = 0x3f800000;
   _DAT_0048f294 = 0;
-  ui_element_load((ui_element_t *)&DAT_0048f330,s_ui_ui_textLevelUp_jaz_004792a0);
+  ui_element_load((ui_element_t *)&ui_perk_prompt_levelup_element,s_ui_ui_textLevelUp_jaz_004792a0);
   fStack_30 = -230.0;
   fStack_2c = -27.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048f330,75.0,25.0,&fStack_30);
-  pfVar6 = (float *)&DAT_0048f334;
+  ui_element_set_rect((ui_element_t *)&ui_perk_prompt_levelup_element,75.0,25.0,&fStack_30);
+  pfVar9 = (float *)&DAT_0048f334;
   do {
-    pfVar5 = pfVar6 + 7;
-    pfVar6[-0x3b] = pfVar6[-0x3b] - 300.0;
-    pfVar6[-0x3b] = pfVar6[-0x3b] * 0.75;
-    pfVar6[-0x3a] = pfVar6[-0x3a] * 0.75;
-    pfVar6[-1] = pfVar6[-1] * 0.85;
-    *pfVar6 = *pfVar6 * 0.85;
-    pfVar6[-1] = pfVar6[-1] - 46.0;
-    *pfVar6 = *pfVar6 - 4.0;
-    pfVar6 = pfVar5;
-  } while ((int)pfVar5 < 0x48f3a4);
+    pfVar16 = pfVar9 + 7;
+    pfVar9[-0x3b] = pfVar9[-0x3b] - 300.0;
+    pfVar9[-0x3b] = pfVar9[-0x3b] * 0.75;
+    pfVar9[-0x3a] = pfVar9[-0x3a] * 0.75;
+    pfVar9[-1] = pfVar9[-1] * 0.85;
+    *pfVar9 = *pfVar9 * 0.85;
+    pfVar9[-1] = pfVar9[-1] - 46.0;
+    *pfVar9 = *pfVar9 - 4.0;
+    pfVar9 = pfVar16;
+  } while ((int)pfVar16 < 0x48f3a4);
   if (config_blob.screen_width == 0x280) {
     fStack_30 = 690.0;
     fStack_2c = 80.0;
-    _perk_prompt_origin_y = 0x42a00000;
+    perk_prompt_origin_y = 80.0;
   }
   else {
     fStack_2c = 40.0;
     fStack_30 = (float)(config_blob.screen_width + 0x32);
-    _perk_prompt_origin_y = 0x42200000;
+    perk_prompt_origin_y = 40.0;
   }
-  piVar4 = (int *)&DAT_0048f16c;
-  _perk_prompt_origin_x = fStack_30;
+  ppuVar13 = &ui_element_table_slot_01_main_menu_aux;
+  perk_prompt_origin_x = fStack_30;
   do {
-    iVar7 = *piVar4;
-    piVar4 = piVar4 + 1;
-    *(float *)(iVar7 + 0x1c) =
-         ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + *(float *)(iVar7 + 0x1c);
-    iVar7 = config_blob.screen_width;
-  } while ((int)piVar4 < 0x48f20c);
-  _DAT_0048ee68 = (float)(config_blob.screen_width + -0x15e);
-  puVar12 = &DAT_00489de0;
-  puVar13 = &DAT_0048ee50;
-  for (iVar8 = 0xc6; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
+    puVar7 = *ppuVar13;
+    ppuVar13 = ppuVar13 + 1;
+    puVar7->pos_y = ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + puVar7->pos_y;
+    iVar10 = config_blob.screen_width;
+  } while ((int)ppuVar13 < 0x48f20c);
+  ui_element_slot_40.pos_x = (float)(config_blob.screen_width + -0x15e);
+  puVar7 = &ui_element_slot_09;
+  puVar17 = &ui_element_slot_40;
+  for (iVar11 = 0xc6; iVar11 != 0; iVar11 = iVar11 + -1) {
+    uVar2 = puVar7->enabled;
+    uVar3 = puVar7->_pad0[0];
+    uVar4 = puVar7->_pad0[1];
+    puVar17->active = puVar7->active;
+    puVar17->enabled = uVar2;
+    puVar17->_pad0[0] = uVar3;
+    puVar17->_pad0[1] = uVar4;
+    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    puVar17 = (ui_element_t *)(puVar17->_pad0 + 2);
   }
-  _DAT_0048ee6c = 0x43480000;
-  if (iVar7 < 0x281) {
-    _DAT_0048ee68 = _DAT_0048ee68 + 80.0;
-    _DAT_0048ee6c = 0x433a0000;
+  ui_element_slot_40.pos_y = 200.0;
+  if (iVar10 < 0x281) {
+    ui_element_slot_40.pos_x = ui_element_slot_40.pos_x + 80.0;
+    ui_element_slot_40.pos_y = 186.0;
   }
-  DAT_0048ee54 = 1;
-  DAT_0048f164 = 1;
-  ppuVar10 = &ui_element_table_end;
+  ui_element_slot_40._pad0[2] = '\x01';
+  ui_element_slot_40._pad0[3] = '\0';
+  ui_element_slot_40._pad0[4] = '\0';
+  ui_element_slot_40._pad0[5] = '\0';
+  ui_menu_layout_init_latch = '\x01';
+  ppuVar13 = &ui_element_table_end;
   do {
-    ui_element_layout_calc((float)*ppuVar10);
-    ppuVar10 = ppuVar10 + 1;
-  } while ((int)ppuVar10 < 0x48f20c);
+    ui_element_layout_calc((float)*ppuVar13);
+    ppuVar13 = ppuVar13 + 1;
+  } while ((int)ppuVar13 < 0x48f20c);
   return;
 }
 

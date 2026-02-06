@@ -137,6 +137,10 @@ grim.dll_functions.json
 
 ### Gameplay session reset (high confidence)
 
+- `FUN_004120b0` -> `gameplay_run_state_init`
+  - Evidence: initializes `highscore_active_record` to default/sentinel values and resets run-scoped
+    globals (quest stage/counters, demo flag, spawn stage) before gameplay/session flows.
+
 - `FUN_00412dc0` -> `gameplay_reset_state`
   - Evidence: clears HUD/bonus slots, resets spawn/timer globals, seeds creature type textures/SFX, refreshes
     weapon/perk availability, and zeroes run/high-score counters; invoked when demo mode starts and on state
@@ -148,6 +152,98 @@ grim.dll_functions.json
   - Evidence: forces the demo game state, sets `demo_mode_active`, calls `gameplay_reset_state`, selects one of
     several demo setups, and advances the demo cycle index.
 
+### Demo trial timing (high confidence)
+
+- `FUN_0041df50` -> `demo_trial_time_limit_ms`
+  - Evidence: returns constant `2400000` (40 minutes) and is used by
+    `demo_trial_overlay_render` for remaining-time math.
+
+### Gameplay helpers (high confidence)
+
+- `FUN_0040ff50` -> `time_format_mm_ss`
+  - Evidence: formats `total_seconds` as `m:ss` into static buffer `time_format_mm_ss_buffer`;
+    callsites feed Base/Life/Perk/Final time rows in quest/game-over result panels.
+
+- `FUN_00413540` -> `player_heading_approach_target` (signature fix: `float` return)
+  - Evidence: normalizes heading wrap, turns toward target by `frame_dt * shortest_delta * 5`,
+    and callers use returned shortest angular distance to scale movement while turning.
+
+- `FUN_0041a810` -> `bonus_hud_slot_activate`
+  - Evidence: allocates a free entry in the 16-slot `bonus_hud_slot_table`, wiring label/icon
+    and timer pointers; called from timed-bonus branches in `bonus_apply`.
+
+- `FUN_00425d80` -> `plaguebearer_spread_infection`
+  - Evidence: only called in the Plaguebearer path of `creature_update_all`; checks nearby
+    creatures (`<45` units) and propagates `collision_flag` for targets under `150` HP.
+
+- `FUN_004281e0` -> `creature_reset_all` (signature fix: `void`)
+  - Evidence: called at quest start before spawn setup; clears active creature slots and
+    detaches any occupied `creature_spawn_slot_table[].owner` links.
+
+### Menu/plugin/highscore helpers (high confidence)
+
+- `FUN_0040b630` -> `plugin_runtime_update_and_render`
+  - Evidence: dispatch uses it for `game_state_id == 0x16`; runs plugin `Init/Frame/Shutdown`,
+    manages fallback to state `0x14`, and controls cursor/UI transition behavior.
+
+- `FUN_0040b5d0` -> `plugin_runtime_clear_pools`
+  - Evidence: called from plugin init path; clears bonus/creature/projectile/player active slots
+    before entering plugin runtime.
+
+- `FUN_00403430` -> `ui_mouse_inside_rect_with_padding`
+  - Evidence: list/dropdown widgets use it for hit-tests with relaxed left/top bounds (`x-10`, `y-2`).
+
+- `FUN_0043aa90` -> `highscore_record_pack_for_submit`
+  - Evidence: online submit path copies `highscore_record_t` metadata into 0x40-byte upload records and
+    clears bytes `0x3c..0x3f`.
+
+- `FUN_0043aa60` -> `highscore_submit_full_version_guard`
+  - Evidence: online submit selection path uses it as an illegal-score/full-version guard; emits the
+    "potential illegal score" log when blocked.
+
+- `FUN_00441270` -> `highscore_format_date_label`
+  - Evidence: text input render uses it to format day/month label text in `highscore_date_label_buffer`
+    via `s_fmt_highscore_date_label`.
+
+- `FUN_004411c0` / `FUN_00441220` -> `highscore_card_draw_horizontal_divider` /
+  `highscore_card_draw_vertical_divider`
+  - Evidence: both are small scorecard-only render helpers used by `ui_text_input_render`; they draw
+    1px divider lines with the shared card tint (`DAT_004ccca8..0xb4`) and update the local layout cursor.
+
+- `FUN_00448b50` -> `input_detect_active_analog_axis`
+  - Evidence: polls `grim_get_config_float` on analog axis keycodes (`0x13f`, `0x140`, `0x141`,
+    `0x153`, `0x154`, `0x155`) and returns the first moved axis id; used by control-config assignment flow.
+
+- `FUN_00447420` -> `ui_menu_click_back_contextual`
+  - Evidence: callback always starts a UI transition and routes `game_state_pending` to state `0`
+    (main menu) unless in the in-game menu context (`render_pass_mode`/`DAT_004824d1`), where it routes to state `5`.
+
+- `FUN_0043d9b0` -> `ui_segmented_slider_update`
+  - Evidence: widget updates focus/hover/drag and arrow-key input, clamps current value against
+    `[min,max]`, and renders 8x16 on/off segment strips using cached `ui_rectOn/ui_rectOff` handles.
+
+- `FUN_00447c90` -> `input_configure_for_label`
+  - Evidence: returns the configure-for label set (`Mouse/Keyboard/Joystick/Mouse relative/Dual Action Pad/Computer`).
+
+- `FUN_0044faa0` -> `ui_element_init_defaults`
+  - Evidence: menu layout init applies it across `ui_element_table_end` entries and a standalone prompt
+    element to seed default UI element runtime state.
+
+- `FUN_004123d0` / `FUN_0042faa0` -> `bonus_meta_table_init` / `perk_meta_table_init`
+  - Evidence: both are `crt_ehvec_ctor` table constructors with matching `crt_atexit` registration helpers.
+
+- `FUN_0041e8d0` / `FUN_0041e8f0` -> `input_aim_pov_left_active` / `input_aim_pov_right_active`
+  - Evidence: `player_update` uses them in POV-aim mode to decrement/increment `aim_heading`.
+
+- `FUN_00446140` -> `ui_callback_noop`
+  - Evidence: function body is empty; credits/high-score/menu paths call/install it as a placeholder callback.
+
+### Typ-o gameplay loop (high confidence)
+
+- `FUN_004457c0` -> `typo_gameplay_update_and_render`
+  - Evidence: dispatch runs it for `game_state_id == 0x12`; routine handles typed-name input
+    (`typo_input_buffer`), matches against Typ-o target names, then renders world/HUD.
+
 ### UI text input (high confidence)
 
 - `FUN_0043ecf0` -> `ui_text_input_update`
@@ -157,6 +253,22 @@ grim.dll_functions.json
 - `FUN_004413a0` -> `ui_text_input_render`
   - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
     entry paths and other text input flows.
+
+### Typ-o name generation (high confidence)
+
+- `FUN_00444f70` -> `typo_word_pick_fragment`
+  - Evidence: returns a random word fragment from a static table; `typo_target_name_assign_random`
+    composes one to four fragments into a Typ-o target name.
+
+- `FUN_004451b0` -> `typo_word_pick_highscore_name`
+  - Evidence: lazily builds a cache of unique alphabetic names from `highscore_table` and
+    returns a random cached entry for Typ-o target naming variants.
+
+- `FUN_00445310` / `FUN_00445380` / `FUN_00445590` / `FUN_00445600` ->
+  `typo_target_name_is_unique` / `typo_target_name_assign_random` / `typo_target_find_by_name` /
+  `typo_target_name_draw_labels`
+  - Evidence: all four helpers are only used by Typ-o gameplay and read/write
+    `typo_target_name_table`; they implement target-name generation, lookup, and in-world label rendering.
 
 ### Audio resource packs + loaders (high confidence)
 
@@ -373,8 +485,8 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x1a4` | `DAT_004804ec` | `u32` | `100` | Seeded in config_sync_from_grim (`FUN_0041ec60`); no xrefs yet. |
 | `0x1a8` | `DAT_004804f0` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x1ac` | `DAT_004804f4` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8f0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
-| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8d0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `input_aim_pov_right_active`; used by `player_update` when control mode reads POV aim. |
+| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `input_aim_pov_left_active`; used by `player_update` when control mode reads POV aim. |
 | `0x1b8` | `DAT_00480500` | `u32` | `32` | Likely display color depth (bits‑per‑pixel); set alongside width/height via config id `0x2b` (inference from defaults and file). |
 | `0x1bc` | `DAT_00480504` | `u32` | `800` | Screen width. |
 | `0x1c0` | `DAT_00480508` | `u32` | `600` | Screen height. |
@@ -443,7 +555,7 @@ Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`
 
 Grim misc getter (vtable `+0xa4` → grim_get_joystick_pov (`FUN_100075b0`)):
 
-- Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
+- Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`input_aim_pov_left_active` / `input_aim_pov_right_active`).
 ### High score record (0x48 bytes) — name 0x00..0x1f
 
 The record begins with the player name (copied from config on load and compared
@@ -470,7 +582,7 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 | `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
 
 Bytes `0x38..0x3f` are currently unknown. The online submit path zeroes `0x3c..0x3f`
-in the 0x40-byte record copies (`FUN_0043aa90`), suggesting those bytes are not
+in the 0x40-byte record copies (`highscore_record_pack_for_submit`), suggesting those bytes are not
 required for leaderboard uploads.
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
 
@@ -511,7 +623,7 @@ High score validation (`highscore_load_table`):
   - Evidence: increments after every 10 minor stages (`if 10 < quest_stage_minor` then
     `quest_stage_major++`, `quest_stage_minor -= 10`) during quest summary flow.
 
-- Initialized to `1` in `FUN_004120b0` alongside high‑score state reset.
+- Initialized to `1` in `gameplay_run_state_init` (`FUN_004120b0`) alongside high‑score state reset.
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
 - Incremented on quest results screen when the player chooses “Play Next”.
@@ -910,6 +1022,26 @@ Init timing note:
 - `FUN_0042ee00` -> `effect_spawn_freeze_shatter`
   - Evidence: spawns four `effect_id 0xe` bursts at 90° offsets plus extra `effect_spawn_freeze_shard`
     calls.
+
+- `FUN_0042f080` -> `effect_spawn_shrinkifier_hit`
+  - Evidence: called from `projectile_update` on `PROJECTILE_TYPE_SHRINKIFIER`; spawns one
+    `effect_id 1` pulse plus detail-scaled `effect_id 0` debris.
+
+- `FUN_0042f270` -> `effect_spawn_ion_hit_core`
+  - Evidence: called on Ion projectile impacts (`PROJECTILE_TYPE_ION_MINIGUN/_RIFLE/_CANNON`);
+    writes core pulse template fields and spawns `effect_id 1`.
+
+- `FUN_0042f540` -> `effect_spawn_ion_hit_sparks`
+  - Evidence: paired with `effect_spawn_ion_hit_core` on Ion impacts; emits detail-scaled
+    `effect_id 0` spark particles around the hit point.
+
+- `FUN_0042f330` -> `effect_spawn_plasma_hit_core`
+  - Evidence: called on `PROJECTILE_TYPE_PLASMA_CANNON` impacts; emits two core pulses
+    (`scale_step` 1.5 then 1.0) with explicit lifetime.
+
+- `FUN_0042f3f0` -> `effect_spawn_splitter_hit_burst`
+  - Evidence: called on `PROJECTILE_TYPE_SPLITTER_GUN` impacts before spawning split child
+    projectiles; emits radial burst particles in a configurable radius/count.
 ### Perk database + selection (medium confidence)
 
 - `FUN_0042fd90` -> `perks_init_database`
@@ -948,6 +1080,11 @@ Init timing note:
 - Perk prompt UI gates (high confidence):
   - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 while perks are pending and feeds the
     prompt alpha plus the transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
+
+  - `ui_perk_prompt_element` (`DAT_0048f20c`) is the prompt's root UI element; `perk_prompt_update_and_render`
+    forces its active flag and renders it each frame while `ui_element_render` skips focus/click handling for it.
+  - `ui_perk_prompt_on_activate` (`DAT_0048f240`) is the prompt callback slot seeded to `ui_callback_noop`
+    during menu layout init.
 
   - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) anchor the prompt bounds for hover/click
     tests; `perk_prompt_bounds_min_*` (`DAT_0048f248`/`DAT_0048f24c`) and
@@ -1117,6 +1254,13 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
 See [Creature pool struct](creatures/struct.md) for the expanded field map and cross-links.
+
+- Creature-type table carving updates:
+  - `creature_type_table` is now typed as `creature_type_table_t` (6 entries, stride `0x44`).
+  - Entry bases are labeled as `creature_type_lizard`, `creature_type_alien`,
+    `creature_type_spider_sp1`, `creature_type_spider_sp2`, and `creature_type_trooper`.
+  - Evidence: contiguous `gameplay_reset_state` writes at `+0x44` steps from `0x00482728`.
+
 ### Projectile pool (partial)
 
 - `FUN_00420440` -> `projectile_spawn`
@@ -1241,3 +1385,147 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
     `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `crt_ci_pow()`.
+
+### Gameplay timer/guard globals (high confidence)
+
+- Labeled `player_alt_weapon_swap_cooldown_ms` (`DAT_0048719c`):
+  - Evidence: `player_update` decrements it by `frame_dt_ms`, sets it to `200` after a successful
+    alternate-weapon swap, and clears it when reload key is released.
+
+- Labeled `perk_jinxed_proc_timer_s` (`_DAT_004aaf1c`):
+  - Evidence: `perks_update_effects` decrements it each frame and, when elapsed, applies the
+    Jinxed self-damage roll then reseeds it to `2.0 + rand(0..1.9)`.
+
+- Labeled `survival_reward_weapon_guard_id` (`DAT_00486fb8`):
+  - Evidence: `survival_update` writes `0x18`/`0x19` on Survival handouts, and
+    `gameplay_render_world` uses it to revoke temporary reward weapons when the guard mismatches.
+
+- Labeled `quest_spawn_stall_timer_ms` (`DAT_004c3654`):
+  - Evidence: `quest_spawn_timeline_update` increments it while creatures are active and allows a
+    fallback trigger after `3000ms` to avoid stalled spawn progression.
+
+- Labeled `perk_lean_mean_exp_tick_timer_s` (`_DAT_004808a4`):
+  - Evidence: `perks_update_effects` decrements it by `frame_dt`, and on expiry it resets to `0.25`
+    and applies Lean Mean Exp Machine XP ticks.
+
+- Labeled `perk_doctor_target_creature_id` (`DAT_00487268`):
+  - Evidence: set from `creature_find_in_radius` while Doctor is active; `ui_render_aim_indicators`
+    reads it to draw the target-health HUD overlay (`-1` means inactive).
+
+- Labeled `quest_stage_banner_timer_ms` (`DAT_00487244`):
+  - Evidence: reset in `quest_start_selected`, incremented in `quest_mode_update`, and consumed by
+    quest HUD render for staged title-card fade in/out windows (`0..2000ms`).
+
+- Labeled demo/keybind overlay timers:
+  - `demo_trial_overlay_active` (`DAT_00480850`) and
+    `demo_trial_overlay_alpha_ms` (`DAT_00480898`)
+  - `pause_keybind_help_alpha_ms` (`DAT_00487284`)
+  - Evidence: gameplay render path toggles/ramps these values (all clamped to `0..1000`) before
+    calling `demo_trial_overlay_render` / `ui_render_keybind_help`.
+
+- Labeled `time_played_ms` (`DAT_0048718c`):
+  - Evidence: loaded from registry key `timePlayed` at startup, incremented during active gameplay
+    frames, and written back on shutdown.
+
+- Labeled quest-results staged reveal globals:
+  - `quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`
+    (`DAT_00482700` / `DAT_00482704`)
+  - `quest_results_final_time_ms` (`DAT_0048270c`)
+  - `quest_results_reveal_base_time_ms` (`DAT_00482710`)
+  - `quest_results_reveal_health_bonus_ms` (`DAT_00482714`)
+  - `quest_results_reveal_perk_bonus_s` (`DAT_00482718`)
+  - `quest_results_reveal_total_time_ms` (`DAT_00482720`)
+  - `quest_results_reveal_step_timer_ms` (`DAT_00482724`)
+  - `quest_results_health_bonus_ms` (`DAT_00482600`)
+  - Evidence: `quest_results_screen_update` seeds these from quest metadata/timers and animates the
+    Base Time / Health Bonus / Unpicked Perk Bonus rows in discrete timed steps.
+
+- Labeled `perk_id_max` (`DAT_004c2c38`):
+  - Evidence: initialized to `0x39` in `perks_init_database` and used as the upper bound (+1) in
+    `perk_select_random` / `perks_rebuild_available`.
+
+- Labeled bonus metadata aliases used by `bonus_apply` HUD slot wiring:
+  - Label/icon pairs: `bonus_label_reflex_boost`/`bonus_icon_reflex_boost`,
+    `bonus_label_weapon_power_up`/`bonus_icon_weapon_power_up`,
+    `bonus_label_speed`/`bonus_icon_speed`,
+    `bonus_label_freeze`/`bonus_icon_freeze`,
+    `bonus_label_shield`/`bonus_icon_shield`,
+    `bonus_label_fire_bullets`/`bonus_icon_fire_bullets`,
+    `bonus_label_energizer`/`bonus_icon_energizer`,
+    `bonus_label_double_experience`/`bonus_icon_double_experience`.
+  - `bonus_label_points` and `bonus_label_format_buffer` now cover the formatted
+    `bonus_label_for_entry` text path.
+
+- Labeled perk trigger interval globals:
+  - `perk_man_bomb_trigger_interval_s` (`_DAT_00473310`)
+  - `perk_fire_cough_trigger_interval_s` (`_DAT_00473314`)
+  - `perk_hot_tempered_trigger_interval_s` (`_DAT_00473318`)
+  - Evidence: all three act as threshold/reseed intervals against their respective per-player perk timers.
+
+### UI template/audio init helpers (high confidence)
+
+- `FUN_00417690` -> `ui_menu_template_pool_init`
+  - Evidence: pre-initializes contiguous UI template blocks (`0x0048f808..0x004902e4`) and
+    seeds each block's mode sentinel (`= 4`) before `ui_menu_layout_init` copies from those templates.
+  - Mapping updates: `ui_template_pool_block_00..02`, `ui_sign_crimson_template`,
+    and `ui_menu_item_subtemplate_block_01..06` (+ corresponding `_mode` sentinels).
+  - Field-level carve: `ui_menu_item_subtemplate_block_01..06` now use
+    `ui_menu_item_subtemplate_block_t` (`8 * 0x1c` slots + `texture_handle` + `quad_mode`),
+    with explicit `*_texture_handle` labels at `+0xe0` and a recovered
+    `ui_menu_item_subtemplate_block_01_mode` label at `0x0048fe5c`.
+  - Offset-loop evidence (`ui_menu_assets_init`):
+    - `slot_i.x -= 84.0` over all 8 slots in block 01 (`0x0048fd78 + i*0x1c`).
+    - `slot_02.y/slot_03.y -= 116.0`, `slot_04.y..slot_07.y += 124.0` in block 01.
+    - block 02 (`0x0048fe60`) is cloned from block 01 and then `slot_04.y..slot_07.y -= 100.0`
+      (`0x0048fed4`, `0x0048fef0`, `0x0048ff0c`, `0x0048ff28`).
+
+- `FUN_00417a90` -> `ui_template_slot_ctor_noop`
+  - Evidence: identity callback used repeatedly by `ui_menu_template_pool_init` while iterating slot arrays.
+
+- `FUN_004010f0` -> `invoke_callback_n`
+  - Evidence: helper repeatedly invokes a callback pointer `count` times; used by `ui_menu_template_pool_init`
+    for late template-slot batches.
+
+- `FUN_00417aa0` -> `ui_template_block_set_mode4`
+  - Evidence: writes mode sentinel value `4` at `block+0xe4`.
+
+- `FUN_00417ab0` -> `ui_template_triplet_reset_and_seed_modes`
+  - Evidence: zeroes head flags and seeds three mode sentinel dwords at `+0x120`, `+0x208`, and `+0x2f0`.
+
+- `FUN_00401180` -> `console_register_clear_log_atexit`
+  - Evidence: single-purpose `crt_atexit` wrapper that registers the local cleanup thunk at `LAB_00401190`.
+
+- `FUN_0043b810` -> `sfx_entry_reset_runtime_state`
+  - Evidence: clears runtime fields in the `sfx_entry_*` layout (`+0x74/+0x78/+0x7c/+0x80` stream offsets,
+    voice pointer slab at `+0x24..+0x60`, and default scalar at `+0x20`), matching the same fields used by
+    `sfx_entry_seek`, `sfx_release_entry`, and `music_stream_update`.
+
+### HUD/menu texture handle globals (high confidence)
+
+- Labeled `DAT_0048f798..DAT_0048f804` as UI/HUD texture handles loaded by `load_textures_step` and reused by
+  `ui_menu_layout_init`/HUD render paths.
+  - Examples: `ui_cursor_texture`, `ui_aim_texture`, `ui_hud_panel_texture`, `ui_clock_pointer_texture`,
+    `ui_item_texts_texture`, `ui_text_pick_perk_texture`.
+  - Evidence: direct `texture_get_or_load(_alt)` assignments in `load_textures_step` plus `grim_bind_texture`
+    callsites in overlay/menu rendering.
+
+- Labeled terrain stage-5 texture slots `DAT_0048f54c..DAT_0048f564` as `terrain_texture_layer_1..7`.
+  - Evidence: fixed assignment order in `load_textures_step` (quest base/detail sheets, or fallback set when
+    `terrain_texture_failed != 0`) and indexed consumption via `terrain_texture_handles[...]` in terrain render paths.
+
+### UI element pointer-table slots (high confidence)
+
+- Labeled `DAT_0048f16c..DAT_0048f204` as typed `ui_element_t *` table slots
+  (`ui_element_table_slot_*`) to remove raw pointer-soup globals around `ui_menu_layout_init`.
+  - Evidence: the contiguous 41-entry pointer table seeded in `ui_menu_layout_init` and iterated in reverse by
+    `ui_elements_update_and_render` (`0x0048f168 .. 0x0048f208`).
+- Corrected `ui_menu_layout_a` / `ui_menu_layout_b` / `ui_menu_layout_c` type from `char *` to `ui_element_t *`
+  (they are table slot anchors used for per-element quad/offset scaling).
+- Labeled and typed backing storage blocks for those slots (`0x004875a8..0x0048ee50`) as `ui_element_slot_*`
+  (`ui_element_t`), so table assignments no longer point to anonymous `DAT_*` elements.
+- Labeled adjacent UI globals:
+  - `ui_menu_layout_init_latch` (`DAT_0048f164`) set to `1` at the end of `ui_menu_layout_init`.
+  - `ui_perk_prompt_element` (`DAT_0048f20c`) typed as `ui_element_t`.
+  - `ui_perk_prompt_on_activate` (`DAT_0048f240`) typed as `_func_1 *` callback slot.
+  - `ui_perk_prompt_levelup_element` (`DAT_0048f330`) typed as a nested `ui_element_t` block loaded from
+    `ui\\ui_textLevelUp.jaz`.

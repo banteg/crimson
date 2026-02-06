@@ -128,6 +128,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00473310",
+      "comment": "Perk Man Bomb trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_man_bomb_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00473314",
+      "comment": "Perk Fire Cough trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_fire_cough_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00473318",
+      "comment": "Perk Hot Tempered trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_hot_tempered_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047365c",
       "comment": "Filename for the status blob (game.cfg).",
       "name": "game_status_filename",
@@ -237,15 +255,269 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00477bf4",
+      "comment": "Typ-o target name format used for two-part fragment names (\"%s%s\").",
+      "name": "s_fmt_typo_target_name_2_parts",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00477d28",
       "comment": "SFX playback rate scale (set during sfx_play; affected by Reflex Boost).",
       "name": "sfx_rate_scale",
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478668",
+      "comment": "Texture handle cache for ui_segmented_slider_update filled segments (ui_rectOn).",
+      "name": "ui_segmented_slider_tex_on",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0047866c",
+      "comment": "Texture handle cache for ui_segmented_slider_update empty segments (ui_rectOff).",
+      "name": "ui_segmented_slider_tex_off",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00478878",
+      "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
+      "name": "s_fmt_highscore_date_label",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478884",
+      "comment": "Fallback month label used by highscore_format_date_label for out-of-range month values.",
+      "name": "highscore_month_label_default",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478888",
+      "comment": "Month label used by highscore_format_date_label for month 12.",
+      "name": "highscore_month_label_dec",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047888c",
+      "comment": "Month label used by highscore_format_date_label for month 11.",
+      "name": "highscore_month_label_nov",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478890",
+      "comment": "Month label used by highscore_format_date_label for month 10.",
+      "name": "highscore_month_label_oct",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478894",
+      "comment": "Month label used by highscore_format_date_label for month 9.",
+      "name": "highscore_month_label_sep",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478898",
+      "comment": "Month label used by highscore_format_date_label for month 8.",
+      "name": "highscore_month_label_aug",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047889c",
+      "comment": "Month label used by highscore_format_date_label for month 7.",
+      "name": "highscore_month_label_jul",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a0",
+      "comment": "Month label used by highscore_format_date_label for month 6.",
+      "name": "highscore_month_label_jun",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a4",
+      "comment": "Month label used by highscore_format_date_label for month 5.",
+      "name": "highscore_month_label_may",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a8",
+      "comment": "Month label used by highscore_format_date_label for month 4.",
+      "name": "highscore_month_label_apr",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788ac",
+      "comment": "Month label used by highscore_format_date_label for month 3.",
+      "name": "highscore_month_label_mar",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b0",
+      "comment": "Month label used by highscore_format_date_label for month 2.",
+      "name": "highscore_month_label_feb",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b4",
+      "comment": "Month label used by highscore_format_date_label for month 1.",
+      "name": "highscore_month_label_jan",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b8",
+      "comment": "High-score tooltip text for shot hit percentage.",
+      "name": "s_highscore_tooltip_hit_ratio",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788e0",
+      "comment": "High-score tooltip text for total run time.",
+      "name": "s_highscore_tooltip_game_time",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788fc",
+      "comment": "High-score tooltip text for most used weapon.",
+      "name": "s_highscore_tooltip_weapon_usage",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478920",
+      "comment": "Format string for high-score hit percent label (\"Hit %%: %d%%\").",
+      "name": "s_fmt_highscore_hit_percent",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478930",
+      "comment": "Format string for high-score frags label (\"Frags: %d\").",
+      "name": "s_fmt_highscore_frags",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047893c",
+      "comment": "High-score label text: \"Game time\".",
+      "name": "s_highscore_label_game_time",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478948",
+      "comment": "High-score label text: \"Experience\".",
+      "name": "s_highscore_label_experience",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478954",
+      "comment": "Format string for high-score rank label (\"Rank: %s\").",
+      "name": "s_fmt_highscore_rank",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478960",
+      "comment": "Format string for high-score elapsed seconds label (\"%.2f secs\").",
+      "name": "s_fmt_highscore_seconds",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047896c",
+      "comment": "High-score label text: \"Score\".",
+      "name": "s_highscore_label_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478974",
+      "comment": "High-score label text: \"Local score\".",
+      "name": "s_highscore_label_local_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478980",
+      "comment": "High-score label text: \"Score from the Internet\".",
+      "name": "s_highscore_label_internet_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478998",
+      "comment": "Format string used to show internet source tag (\"uni#%d\").",
+      "name": "s_fmt_highscore_universe_tag",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004789a0",
+      "comment": "High-score label text: \"Internet score of local origin\".",
+      "name": "s_highscore_label_internet_local_origin",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e04",
+      "comment": "Typ-o fallback source word used when no highscore names are accepted (\"quickbrownfox\").",
+      "name": "s_typo_fallback_word",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e14",
+      "comment": "Console format used when caching unique Typ-o highscore words (\"%d. unique: %s\\n\").",
+      "name": "s_fmt_typo_unique_word_log",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e24",
+      "comment": "Typ-o target name format used for three-part fragment names (\"%s%s%s\").",
+      "name": "s_fmt_typo_target_name_3_parts",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e2c",
+      "comment": "Typ-o target name format used for four-part fragment names (\"%s%s%s%s\").",
+      "name": "s_fmt_typo_target_name_4_parts",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e38",
+      "comment": "Typ-o typed command that triggers manual reload behavior (\"reload\").",
+      "name": "s_typo_command_reload",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00478e50",
       "comment": "Primary input edge latch used by input_primary_just_pressed.",
       "name": "input_primary_latch",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ecc",
+      "comment": "Configure-for label: \"Computer\".",
+      "name": "input_configure_label_computer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ed8",
+      "comment": "Configure-for label: \"Dual Action Pad\".",
+      "name": "input_configure_label_dual_action_pad",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ee8",
+      "comment": "Configure-for label: \"Joystick\".",
+      "name": "input_configure_label_joystick",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ef4",
+      "comment": "Configure-for label: \"Keyboard\".",
+      "name": "input_configure_label_keyboard",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478f00",
+      "comment": "Configure-for label: \"Mouse relative\".",
+      "name": "input_configure_label_mouse_relative",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478f10",
+      "comment": "Configure-for label: \"Mouse\".",
+      "name": "input_configure_label_mouse",
       "program": "crimsonland.exe"
     },
     {
@@ -907,6 +1179,12 @@
       "type": "int"
     },
     {
+      "address": "0x00480850",
+      "comment": "Demo trial overlay active latch set while the shareware warning panel is visible.",
+      "name": "demo_trial_overlay_active",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00480851",
       "comment": "Shareware/demo latch used to prevent repeated quit-redirect behavior; also set when opening the purchase URL.",
       "name": "shareware_offer_seen_latch",
@@ -1016,10 +1294,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480898",
+      "comment": "Demo trial overlay fade accumulator in milliseconds (clamped 0..1000).",
+      "name": "demo_trial_overlay_alpha_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048089c",
       "comment": "Currently highlighted perk in the perk selection menu. Index into perk_choice_ids; -1 when no selection.",
       "name": "perk_selection_index",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004808a4",
+      "comment": "Lean Mean Exp Machine perk tick timer in seconds (repeats every 0.25s).",
+      "name": "perk_lean_mean_exp_tick_timer_s",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004808a8",
@@ -1221,9 +1513,64 @@
       "type": "int"
     },
     {
+      "address": "0x00482600",
+      "comment": "Quest results health bonus converted to milliseconds for final-time subtraction.",
+      "name": "quest_results_health_bonus_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482624",
+      "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
+      "name": "time_format_mm_ss_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482700",
+      "comment": "Quest results: weapon unlock id for the completed quest.",
+      "name": "quest_results_unlock_weapon_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482704",
+      "comment": "Quest results: perk unlock id for the completed quest.",
+      "name": "quest_results_unlock_perk_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00482708",
       "comment": "Quest results screen animation timer/counter used for fade effects.",
       "name": "quest_results_anim_timer",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048270c",
+      "comment": "Quest results final computed time in milliseconds (base + perk bonus - health bonus).",
+      "name": "quest_results_final_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482710",
+      "comment": "Quest results staged reveal counter for base time (milliseconds).",
+      "name": "quest_results_reveal_base_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482714",
+      "comment": "Quest results staged reveal counter for health bonus (milliseconds).",
+      "name": "quest_results_reveal_health_bonus_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482718",
+      "comment": "Quest results staged reveal counter for unpicked-perk bonus in seconds.",
+      "name": "quest_results_reveal_perk_bonus_s",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -1235,11 +1582,25 @@
       "type": "int"
     },
     {
+      "address": "0x00482720",
+      "comment": "Quest results staged reveal counter for running total time (milliseconds).",
+      "name": "quest_results_reveal_total_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482724",
+      "comment": "Quest results staged reveal step timer in milliseconds.",
+      "name": "quest_results_reveal_step_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00482728",
-      "comment": "Creature type table (stride 0x44 bytes).",
+      "comment": "Creature type table (6 entries, stride 0x44 bytes: zombie/lizard/alien/spider_sp1/spider_sp2/trooper).",
       "name": "creature_type_table",
       "program": "crimsonland.exe",
-      "type": "creature_type_t"
+      "type": "creature_type_table_t"
     },
     {
       "address": "0x0048272c",
@@ -1299,6 +1660,36 @@
       "address": "0x00482768",
       "comment": "Creature type animation flags (creature_type_table + 0x40).",
       "name": "creature_type_anim_flags",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048276c",
+      "comment": "Creature type entry #1 (lizard).",
+      "name": "creature_type_lizard",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004827b0",
+      "comment": "Creature type entry #2 (alien).",
+      "name": "creature_type_alien",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004827f4",
+      "comment": "Creature type entry #3 (spider_sp1).",
+      "name": "creature_type_spider_sp1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482838",
+      "comment": "Creature type entry #4 (spider_sp2).",
+      "name": "creature_type_spider_sp2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048287c",
+      "comment": "Creature type entry #5 (trooper).",
+      "name": "creature_type_trooper",
       "program": "crimsonland.exe"
     },
     {
@@ -1506,6 +1897,116 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004853e4",
+      "comment": "Bonus label string for Points (bonus id 1).",
+      "name": "bonus_label_points",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004853f8",
+      "comment": "Bonus label string for Energizer (bonus id 12).",
+      "name": "bonus_label_energizer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485400",
+      "comment": "Bonus icon id for Energizer (bonus id 12).",
+      "name": "bonus_icon_energizer",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485420",
+      "comment": "Bonus label string for Weapon Power Up (bonus id 4).",
+      "name": "bonus_label_weapon_power_up",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485428",
+      "comment": "Bonus icon id for Weapon Power Up (bonus id 4).",
+      "name": "bonus_icon_weapon_power_up",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485448",
+      "comment": "Bonus label string for Double Experience (bonus id 6).",
+      "name": "bonus_label_double_experience",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485450",
+      "comment": "Bonus icon id for Double Experience (bonus id 6).",
+      "name": "bonus_icon_double_experience",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485484",
+      "comment": "Bonus label string for Reflex Boost (bonus id 9).",
+      "name": "bonus_label_reflex_boost",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048548c",
+      "comment": "Bonus icon id for Reflex Boost (bonus id 9).",
+      "name": "bonus_icon_reflex_boost",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485498",
+      "comment": "Bonus label string for Shield (bonus id 10).",
+      "name": "bonus_label_shield",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854a0",
+      "comment": "Bonus icon id for Shield (bonus id 10).",
+      "name": "bonus_icon_shield",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854ac",
+      "comment": "Bonus label string for Freeze (bonus id 11).",
+      "name": "bonus_label_freeze",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854b4",
+      "comment": "Bonus icon id for Freeze (bonus id 11).",
+      "name": "bonus_icon_freeze",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854d4",
+      "comment": "Bonus label string for Speed (bonus id 13).",
+      "name": "bonus_label_speed",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854dc",
+      "comment": "Bonus icon id for Speed (bonus id 13).",
+      "name": "bonus_icon_speed",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854e8",
+      "comment": "Bonus label string for Fire Bullets (bonus id 14).",
+      "name": "bonus_label_fire_bullets",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854f0",
+      "comment": "Bonus icon id for Fire Bullets (bonus id 14).",
+      "name": "bonus_icon_fire_bullets",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00485540",
       "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16).",
       "name": "game_status_blob",
@@ -1554,6 +2055,13 @@
       "comment": "Total creatures spawned (incremented in creature_alloc_slot).",
       "name": "creature_spawned_count",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00486fb8",
+      "comment": "Survival reward weapon guard id (set to 0x18/0x19 by survival_update handouts; used by gameplay_render_world to revert temporary reward weapons).",
+      "name": "survival_reward_weapon_guard_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fbc",
@@ -1850,6 +2358,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048718c",
+      "comment": "Persisted registry time-played counter in milliseconds (\"timePlayed\").",
+      "name": "time_played_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487190",
       "comment": "Survival scripted spawn stage index.",
       "name": "survival_spawn_stage",
@@ -1859,6 +2374,20 @@
       "address": "0x00487194",
       "comment": "Quest failed screen retry counter (increments on \"Play Again\"; selects variant message text).",
       "name": "quest_fail_retry_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487198",
+      "comment": "Per-frame heading turn delta produced by player_heading_approach_target before applying to player heading/aim heading.",
+      "name": "player_heading_turn_delta",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048719c",
+      "comment": "Alternate-weapon swap debounce timer in milliseconds (reload-key hold gate in player_update).",
+      "name": "player_alt_weapon_swap_cooldown_ms",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -1948,6 +2477,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487244",
+      "comment": "Quest stage banner timer in milliseconds (used for fade-in/out of the stage title card).",
+      "name": "quest_stage_banner_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487248",
       "comment": "UI elements timeline accumulator.",
       "name": "ui_elements_timeline",
@@ -1970,6 +2506,13 @@
       "comment": "Fullscreen fade alpha used by grim_draw_fullscreen_color.",
       "name": "screen_fade_alpha",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487268",
+      "comment": "Doctor perk target creature id for HUD overlay; -1 when no target.",
+      "name": "perk_doctor_target_creature_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048726c",
@@ -1996,10 +2539,18 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487284",
+      "comment": "Pause keybind-help overlay alpha accumulator in milliseconds (clamped 0..1000).",
+      "name": "pause_keybind_help_alpha_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487290",
       "comment": "Main menu logo sign UI element (ui_signCrimson).",
       "name": "ui_sign_crimson",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x00487292",
@@ -2008,75 +2559,641 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004875a8",
+      "comment": "UI element storage backing pointer-table slot 1 (main menu auxiliary slot).",
+      "name": "ui_element_slot_01_main_menu_aux",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x004878c0",
+      "comment": "UI element storage backing pointer-table slot 3 (main-menu PLAY GAME entry).",
+      "name": "ui_element_slot_03_main_menu_play_game",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00487bd8",
+      "comment": "UI element storage backing pointer-table slot 4 (main-menu OPTIONS entry).",
+      "name": "ui_element_slot_04_main_menu_options",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00487ef0",
+      "comment": "UI element storage backing pointer-table slot 5 (main-menu STATISTICS entry).",
+      "name": "ui_element_slot_05_main_menu_statistics",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488208",
+      "comment": "UI element storage backing pointer-table slot 2 (main-menu primary top entry: MODS/BUY NOW).",
+      "name": "ui_element_slot_02_main_menu_primary",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488520",
+      "comment": "UI element storage for main-menu footer variant A (swapped between slots 6/7 via config var 100).",
+      "name": "ui_element_slot_footer_variant_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488838",
+      "comment": "UI element storage for main-menu footer variant B (complementary slot to ui_element_slot_footer_variant_a).",
+      "name": "ui_element_slot_footer_variant_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488b50",
+      "comment": "UI element storage backing pointer-table slot 31.",
+      "name": "ui_element_slot_31",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488e68",
+      "comment": "UI element storage backing pointer-table slot 32 (layout group C root).",
+      "name": "ui_element_slot_32_layout_c",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489180",
+      "comment": "UI element storage backing pointer-table slot 10.",
+      "name": "ui_element_slot_10",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489498",
+      "comment": "UI element storage backing pointer-table slot 11.",
+      "name": "ui_element_slot_11",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x004897b0",
+      "comment": "UI element storage backing pointer-table slot 12 (layout group A root).",
+      "name": "ui_element_slot_12_layout_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489ac8",
+      "comment": "UI element storage backing pointer-table slot 8.",
+      "name": "ui_element_slot_08",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489de0",
+      "comment": "UI element storage backing pointer-table slot 9.",
+      "name": "ui_element_slot_09",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a0f8",
+      "comment": "UI element storage backing pointer-table slot 33.",
+      "name": "ui_element_slot_33",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a410",
+      "comment": "UI element storage backing pointer-table slot 15.",
+      "name": "ui_element_slot_15",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a728",
+      "comment": "UI element storage backing pointer-table slot 16.",
+      "name": "ui_element_slot_16",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048aa40",
+      "comment": "UI element storage backing pointer-table slot 17.",
+      "name": "ui_element_slot_17",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ad58",
+      "comment": "UI element storage backing pointer-table slot 19.",
+      "name": "ui_element_slot_19",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b070",
+      "comment": "UI element storage backing pointer-table slot 20.",
+      "name": "ui_element_slot_20",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b388",
+      "comment": "UI element storage backing pointer-table slot 21.",
+      "name": "ui_element_slot_21",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b6a0",
+      "comment": "UI element storage backing pointer-table slot 22.",
+      "name": "ui_element_slot_22",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b9b8",
+      "comment": "UI element storage backing pointer-table slot 23.",
+      "name": "ui_element_slot_23",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048bcd0",
+      "comment": "UI element storage backing pointer-table slot 24.",
+      "name": "ui_element_slot_24",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048bfe8",
+      "comment": "UI element storage backing pointer-table slot 25.",
+      "name": "ui_element_slot_25",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c300",
+      "comment": "UI element storage backing pointer-table slot 26.",
+      "name": "ui_element_slot_26",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c618",
+      "comment": "UI element storage backing pointer-table slot 27.",
+      "name": "ui_element_slot_27",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c930",
+      "comment": "UI element storage backing pointer-table slot 29.",
+      "name": "ui_element_slot_29",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048cc48",
+      "comment": "UI element storage backing pointer-table slot 30.",
+      "name": "ui_element_slot_30",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048cf60",
+      "comment": "UI element storage backing pointer-table slot 13.",
+      "name": "ui_element_slot_13",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d278",
+      "comment": "UI element storage backing pointer-table slot 14.",
+      "name": "ui_element_slot_14",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d590",
+      "comment": "UI element storage backing pointer-table slot 18 (layout group B root).",
+      "name": "ui_element_slot_18_layout_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d8a8",
+      "comment": "UI element storage backing pointer-table slot 34.",
+      "name": "ui_element_slot_34",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048dbc0",
+      "comment": "UI element storage backing pointer-table slot 35.",
+      "name": "ui_element_slot_35",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ded8",
+      "comment": "UI element storage backing pointer-table slot 36.",
+      "name": "ui_element_slot_36",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e1f0",
+      "comment": "UI element storage backing pointer-table slot 37.",
+      "name": "ui_element_slot_37",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e508",
+      "comment": "UI element storage backing pointer-table slot 38.",
+      "name": "ui_element_slot_38",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e820",
+      "comment": "UI element storage backing pointer-table slot 39.",
+      "name": "ui_element_slot_39",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048eb38",
+      "comment": "UI element storage backing pointer-table slot 28.",
+      "name": "ui_element_slot_28",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ee50",
+      "comment": "UI element storage backing pointer-table slot 40 (start/high anchor).",
+      "name": "ui_element_slot_40",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048f164",
+      "comment": "Set to 1 at the end of ui_menu_layout_init (layout-init latch; no consumer mapped yet).",
+      "name": "ui_menu_layout_init_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x0048f168",
-      "comment": "UI element table end pointer (iterated by ui_elements_update_and_render).",
+      "comment": "UI element pointer table slot 0 (logo sign root); also the low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
       "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f16c",
+      "comment": "UI element pointer table slot 1 (main-menu auxiliary slot).",
+      "name": "ui_element_table_slot_01_main_menu_aux",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f170",
+      "comment": "UI element pointer table slot 2 (main-menu primary top entry: MODS/BUY NOW depending on build).",
+      "name": "ui_element_table_slot_02_main_menu_primary",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f174",
+      "comment": "UI element pointer table slot 3 (main-menu PLAY GAME entry).",
+      "name": "ui_element_table_slot_03_main_menu_play_game",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f178",
+      "comment": "UI element pointer table slot 4 (main-menu OPTIONS entry).",
+      "name": "ui_element_table_slot_04_main_menu_options",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f17c",
+      "comment": "UI element pointer table slot 5 (main-menu STATISTICS entry).",
+      "name": "ui_element_table_slot_05_main_menu_statistics",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f180",
+      "comment": "UI element pointer table slot 6 (main-menu footer entry A; OTHER GAMES/QUIT based on config var 100).",
+      "name": "ui_element_table_slot_06_main_menu_footer_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f184",
+      "comment": "UI element pointer table slot 7 (main-menu footer entry B; complementary OTHER GAMES/QUIT slot).",
+      "name": "ui_element_table_slot_07_main_menu_footer_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f188",
+      "comment": "UI element pointer table slot 8 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_08",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f18c",
+      "comment": "UI element pointer table slot 9 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_09",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f190",
+      "comment": "UI element pointer table slot 10 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_10",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f194",
+      "comment": "UI element pointer table slot 11 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_11",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
       "address": "0x0048f198",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 12 (layout group A base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_a",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f19c",
+      "comment": "UI element pointer table slot 13 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_13",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a0",
+      "comment": "UI element pointer table slot 14 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_14",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a4",
+      "comment": "UI element pointer table slot 15 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_15",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a8",
+      "comment": "UI element pointer table slot 16 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_16",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1ac",
+      "comment": "UI element pointer table slot 17 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_17",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f1b0",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 18 (layout group B base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_b",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1b4",
+      "comment": "UI element pointer table slot 19 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_19",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1b8",
+      "comment": "UI element pointer table slot 20 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_20",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1bc",
+      "comment": "UI element pointer table slot 21 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_21",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c0",
+      "comment": "UI element pointer table slot 22 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_22",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c4",
+      "comment": "UI element pointer table slot 23 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_23",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c8",
+      "comment": "UI element pointer table slot 24 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_24",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1cc",
+      "comment": "UI element pointer table slot 25 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_25",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d0",
+      "comment": "UI element pointer table slot 26 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_26",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d4",
+      "comment": "UI element pointer table slot 27 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_27",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d8",
+      "comment": "UI element pointer table slot 28 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_28",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1dc",
+      "comment": "UI element pointer table slot 29 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_29",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1e0",
+      "comment": "UI element pointer table slot 30 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_30",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1e4",
+      "comment": "UI element pointer table slot 31 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_31",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f1e8",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 32 (layout group C base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_c",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1ec",
+      "comment": "UI element pointer table slot 33 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_33",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f0",
+      "comment": "UI element pointer table slot 34 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_34",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f4",
+      "comment": "UI element pointer table slot 35 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_35",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f8",
+      "comment": "UI element pointer table slot 36 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_36",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1fc",
+      "comment": "UI element pointer table slot 37 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_37",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f200",
+      "comment": "UI element pointer table slot 38 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_38",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f204",
+      "comment": "UI element pointer table slot 39 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_39",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f208",
-      "comment": "UI element table start pointer (iterated by ui_elements_update_and_render).",
+      "comment": "UI element pointer table slot 40 (high/start anchor iterated by ui_elements_update_and_render).",
       "name": "ui_element_table_start",
       "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f20c",
+      "comment": "Perk prompt root UI element rendered by perk_prompt_update_and_render (special-cased in ui_element_render focus handling).",
+      "name": "ui_perk_prompt_element",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
       "address": "0x0048f224",
       "comment": "Perk prompt origin X used to compute hover/click bounds (ui_mouse_x - origin_x).",
       "name": "perk_prompt_origin_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f228",
       "comment": "Perk prompt origin Y used to compute hover/click bounds (ui_mouse_y - origin_y).",
       "name": "perk_prompt_origin_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048f240",
+      "comment": "on_activate callback slot for ui_perk_prompt_element (set to ui_callback_noop in ui_menu_layout_init).",
+      "name": "ui_perk_prompt_on_activate",
+      "program": "crimsonland.exe",
+      "type": "_func_1 *"
     },
     {
       "address": "0x0048f248",
       "comment": "Perk prompt bounds min X (relative to perk_prompt_origin_x).",
       "name": "perk_prompt_bounds_min_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f24c",
       "comment": "Perk prompt bounds min Y (relative to perk_prompt_origin_y).",
       "name": "perk_prompt_bounds_min_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f280",
       "comment": "Perk prompt bounds max X (relative to perk_prompt_origin_x).",
       "name": "perk_prompt_bounds_max_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f284",
       "comment": "Perk prompt bounds max Y (relative to perk_prompt_origin_y).",
       "name": "perk_prompt_bounds_max_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048f330",
+      "comment": "Perk prompt nested UI block loaded from ui_textLevelUp.jaz and resized in ui_menu_layout_init.",
+      "name": "ui_perk_prompt_levelup_element",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x0048f500",
@@ -2145,6 +3262,55 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f54c",
+      "comment": "Terrain texture slot 1 loaded in load_textures_step stage 5 (q1_tex1 or fallback q2).",
+      "name": "terrain_texture_layer_1",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f550",
+      "comment": "Terrain texture slot 2 loaded in load_textures_step stage 5 (q2_base or fallback q3).",
+      "name": "terrain_texture_layer_2",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f554",
+      "comment": "Terrain texture slot 3 loaded in load_textures_step stage 5 (q2_tex1 or fallback q4).",
+      "name": "terrain_texture_layer_3",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f558",
+      "comment": "Terrain texture slot 4 loaded in load_textures_step stage 5 (q3_base).",
+      "name": "terrain_texture_layer_4",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f55c",
+      "comment": "Terrain texture slot 5 loaded in load_textures_step stage 5 (q3_tex1).",
+      "name": "terrain_texture_layer_5",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f560",
+      "comment": "Terrain texture slot 6 loaded in load_textures_step stage 5 (q4_base).",
+      "name": "terrain_texture_layer_6",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f564",
+      "comment": "Terrain texture slot 7 loaded in load_textures_step stage 5 (q4_tex1).",
+      "name": "terrain_texture_layer_7",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f588",
       "comment": "Bonus HUD slot table (0x10 entries, stride 0x20 bytes).",
       "name": "bonus_hud_slot_table",
@@ -2182,10 +3348,101 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f798",
+      "comment": "Texture handle for ui_cursor.jaz (loaded in load_textures_step stage 4).",
+      "name": "ui_cursor_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f79c",
+      "comment": "Texture handle for ui_aim.jaz reticle (loaded in load_textures_step stage 4).",
+      "name": "ui_aim_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a0",
+      "comment": "Texture handle for ui_textLevComp.jaz (quest complete HUD heading).",
+      "name": "ui_text_level_complete_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a4",
+      "comment": "Texture handle for ui_textQuest.jaz (quest HUD heading).",
+      "name": "ui_text_quest_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a8",
+      "comment": "Texture handle for ui_num1.jaz (quest HUD digit texture).",
+      "name": "ui_digit_1_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7ac",
+      "comment": "Texture handle for ui_num2.jaz (quest HUD digit texture).",
+      "name": "ui_digit_2_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b0",
+      "comment": "Texture handle for ui_num3.jaz (quest HUD digit texture).",
+      "name": "ui_digit_3_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b4",
+      "comment": "Texture handle for ui_num4.jaz (quest HUD digit texture).",
+      "name": "ui_digit_4_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b8",
+      "comment": "Texture handle for ui_num5.jaz (quest HUD digit texture).",
+      "name": "ui_digit_5_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7bc",
+      "comment": "Texture handle for ui_arrow.jaz (HUD arrow marker).",
+      "name": "ui_hud_arrow_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7c0",
+      "comment": "Texture handle for ui_indLife.jaz (HUD life bar fill).",
+      "name": "ui_hud_life_indicator_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7c4",
+      "comment": "Texture handle for ui_indPanel.jaz (HUD panel/frame quads).",
+      "name": "ui_hud_panel_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f7c8",
       "comment": "Texture handle for ui_clockTable.jaz.",
       "name": "ui_clock_table_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f7cc",
+      "comment": "Texture handle for ui_clockPointer.jaz (HUD timer hand).",
+      "name": "ui_clock_pointer_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f7d4",
@@ -2194,10 +3451,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f7d8",
+      "comment": "Texture handle for arrow.tga world marker used in player overlay render.",
+      "name": "world_arrow_marker_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f7dc",
       "comment": "Texture handle for bodyset atlas (fx_queue_render / corpse frame atlas).",
       "name": "bodyset_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f7e0",
+      "comment": "Texture handle for game_muzzleFlash.jaz used by muzzle flash effects.",
+      "name": "muzzle_flash_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f7e4",
@@ -2224,11 +3495,213 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f7f4",
+      "comment": "Texture handle for ui_itemTexts.jaz used by menu item counters/labels.",
+      "name": "ui_item_texts_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7f8",
+      "comment": "Texture handle for ui_textReaper.jaz used by menu layouts.",
+      "name": "ui_text_reaper_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7fc",
+      "comment": "Texture handle for ui_textControls.jaz used by menu layouts.",
+      "name": "ui_text_controls_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f800",
+      "comment": "Texture handle for ui_textPickAPerk.jaz used by perk selection screen text.",
+      "name": "ui_text_pick_perk_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f804",
+      "comment": "Texture handle for ui_textWellDone.jaz used by level completion text.",
+      "name": "ui_text_well_done_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f808",
+      "comment": "UI template pool block 0 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_00",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f8ec",
+      "comment": "Mode sentinel for ui_template_pool_block_00 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_00_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f8f0",
+      "comment": "UI template pool block 1 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_01",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f9d4",
+      "comment": "Mode sentinel for ui_template_pool_block_01 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_01_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f9d8",
+      "comment": "UI template pool block 2 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_02",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fabc",
+      "comment": "Mode sentinel for ui_template_pool_block_02 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_02_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048fac0",
+      "comment": "Crimson logo UI template loaded/shaped in ui_menu_assets_init then copied into ui_sign_crimson during layout init.",
+      "name": "ui_sign_crimson_template",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048fba4",
+      "comment": "Mode sentinel for ui_sign_crimson_template (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_sign_crimson_template_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048fba8",
       "comment": "Menu UI element template loaded from ui_menuItem.jaz (used by ui_menu_assets_init).",
       "name": "ui_menu_item_element",
       "program": "crimsonland.exe",
       "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048fd78",
+      "comment": "Menu item sub-template block 1 carved as 8 slots (stride 0x1c) + texture_handle(+0xe0) + quad_mode(+0xe4); seeded by ui_menu_template_pool_init and reshaped in ui_menu_assets_init.",
+      "name": "ui_menu_item_subtemplate_block_01",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x0048fe58",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_01 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_01_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fe5c",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_01 (+0xe4 from block base); set to 8 in ui_menu_assets_init.",
+      "name": "ui_menu_item_subtemplate_block_01_mode",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fe60",
+      "comment": "Menu item sub-template block 2 carved as 8 slots (stride 0x1c) + texture_handle(+0xe0) + quad_mode(+0xe4); copied from block 1 then Y-adjusted in ui_menu_assets_init.",
+      "name": "ui_menu_item_subtemplate_block_02",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x0048ff40",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_02 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_02_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048ff44",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_02 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_02_mode",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048ff48",
+      "comment": "Menu item sub-template block 3 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_03",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x00490028",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_03 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_03_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0049002c",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_03 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_03_mode",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490030",
+      "comment": "Menu item sub-template block 4 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_04",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x00490110",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_04 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_04_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490114",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_04 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_04_mode",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490118",
+      "comment": "Menu item sub-template block 5 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_05",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x004901f8",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_05 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_05_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004901fc",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_05 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_05_mode",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490200",
+      "comment": "Menu item sub-template block 6 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_06",
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_subtemplate_block_t"
+    },
+    {
+      "address": "0x004902e0",
+      "comment": "Texture handle dword for ui_menu_item_subtemplate_block_06 (+0xe0 from block base).",
+      "name": "ui_menu_item_subtemplate_block_06_texture_handle",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004902e4",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_06 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_06_mode",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490300",
@@ -3168,6 +4641,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0049679c",
+      "comment": "Scratch text buffer used by bonus_label_for_entry for formatted bonus labels.",
+      "name": "bonus_label_format_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00496820",
       "comment": "Sprite effect pool base (stride 0x2c)",
       "name": "sprite_effect_pool",
@@ -3523,6 +5002,13 @@
       "comment": "FX queue length (fx_queue entry count, capped at 0x7f).",
       "name": "fx_queue_count",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aaf1c",
+      "comment": "Perk Jinxed self-damage proc timer (seconds); decremented each frame and reseeded with randomized interval in perks_update_effects.",
+      "name": "perk_jinxed_proc_timer_s",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004aaf3c",
@@ -4122,6 +5608,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004c2c38",
+      "comment": "Highest defined perk id (used as +1 bound in perk randomization/availability loops).",
+      "name": "perk_id_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004c2c40",
       "comment": "Perk metadata table (stride 0x14 bytes per perk).",
       "name": "perk_meta_table",
@@ -4158,6 +5651,13 @@
       "name": "quest_meta_cursor",
       "program": "crimsonland.exe",
       "type": "quest_meta_t *"
+    },
+    {
+      "address": "0x004c3654",
+      "comment": "Quest spawn stall timer in milliseconds (advances while creatures remain active; used by quest_spawn_timeline_update fail-safe trigger).",
+      "name": "quest_spawn_stall_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3658",
@@ -4768,6 +6268,19 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478c94",
+      "comment": "Typ-o mode reset flag set on state 0x12 entry and consumed by typo_gameplay_update_and_render.",
+      "name": "typo_mode_reset_flag",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d0e38",
+      "comment": "Static text buffer written by highscore_format_date_label.",
+      "name": "highscore_date_label_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004d11e0",
       "comment": "UI focus candidate count used by ui_focus_update.",
       "name": "ui_focus_count",
@@ -4815,6 +6328,87 @@
       "name": "ui_stats_hover_hit_ratio",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004d1228",
+      "comment": "Cache of unique highscore-derived words used by typo_word_pick_highscore_name (32-byte strings).",
+      "name": "typo_word_highscore_cache",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d14a8",
+      "comment": "Current Typ-o typed input buffer (NUL-terminated, max 0x11 chars).",
+      "name": "typo_input_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d1528",
+      "comment": "Typ-o runtime init guard for one-time setup inside typo_gameplay_update_and_render.",
+      "name": "typo_runtime_init_flag",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d152c",
+      "comment": "Per-creature Typ-o target-name table (0x40-byte strings indexed by creature id).",
+      "name": "typo_target_name_table",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d7570",
+      "comment": "Typ-o camera/marker target world X (set to player start, then to matched creature).",
+      "name": "typo_target_world_x",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d7574",
+      "comment": "Typ-o camera/marker target world Y (set to player start, then to matched creature).",
+      "name": "typo_target_world_y",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d7578",
+      "comment": "Typ-o submit counter (incremented on Enter; copied to highscore_record.shots_fired).",
+      "name": "typo_submit_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d757c",
+      "comment": "Typ-o successful match counter (copied to highscore_record.shots_hit).",
+      "name": "typo_match_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7580",
+      "comment": "Flag: typo_word_highscore_cache has been initialized.",
+      "name": "typo_word_highscore_cache_ready",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7584",
+      "comment": "Count of valid entries in typo_word_highscore_cache.",
+      "name": "typo_word_highscore_cache_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7588",
+      "comment": "Typ-o input length (bytes used in typo_input_buffer).",
+      "name": "typo_input_length",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d758c",
+      "comment": "Typ-o spawn loop counter incremented when spawning named creatures.",
+      "name": "typo_spawn_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7a28",

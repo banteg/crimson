@@ -23,6 +23,7 @@ just frida-sync-share
 - `scripts/frida/screen_fade_trace.js`
 - `scripts/frida/perk_prompt_trace.js`
 - `scripts/frida/ui_render_trace.js`
+- `scripts/frida/gameplay_state_capture.js`
 - `scripts/frida/creature_anim_trace.js`
 - `scripts/frida/creature_render_trace.js`
 - `scripts/frida/fx_queue_render_trace.js`
@@ -55,6 +56,13 @@ UI render trace (menus/panels/widgets, JSONL to `ui_render_trace.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\ui_render_trace.js
+```
+
+Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL to
+`gameplay_state_capture.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
 The UI render trace auto-inserts `auto_mark` events when it detects a screen/panel change.
@@ -107,6 +115,7 @@ Store raw logs under `analysis/frida/raw/`:
 mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
+cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```

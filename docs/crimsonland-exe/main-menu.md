@@ -327,7 +327,7 @@ The element renderer draws, in order:
    - if `counter_timer` is in `0..0xFF`, it overrides the glow alpha:
      - `alpha_glow = 0xFF - counter_timer/2`
 
-Note: `counter_timer` is initialized to `0x100` in `FUN_0044faa0` and (as far as we
+Note: `counter_timer` is initialized to `0x100` in `ui_element_init_defaults` and (as far as we
 can tell) only increments in `ui_element_update`, so this short alpha override
 may never trigger for main-menu items unless something else resets the timer.
 

@@ -155,6 +155,8 @@ typedef struct creature_type_t {
     int anim_flags;
 } creature_type_t;
 
+typedef creature_type_t creature_type_table_t[6];
+
 // Canonical projectile template ids used by `projectile_t.type_id`.
 //
 // Many weapons share a projectile template id (e.g. shotgun variants). We keep
@@ -426,6 +428,33 @@ typedef struct ui_element_t {
     float rot_m10;
     float rot_m11;
 } ui_element_t;
+
+// 0x1c-stride record copied/transformed in ui_menu_assets_init when building
+// ui_menu_item_subtemplate_block_01..06.
+typedef struct ui_menu_item_subtemplate_slot_t {
+    float x;
+    float y;
+    float field_0x08;
+    float field_0x0c;
+    float field_0x10;
+    float field_0x14;
+    float field_0x18;
+} ui_menu_item_subtemplate_slot_t;
+
+// 0xe8-byte menu item subtemplate payload:
+// 8 slots (8 * 0x1c = 0xe0) + texture handle (+0xe0) + quad mode (+0xe4).
+typedef struct ui_menu_item_subtemplate_block_t {
+    ui_menu_item_subtemplate_slot_t slot_00;
+    ui_menu_item_subtemplate_slot_t slot_01;
+    ui_menu_item_subtemplate_slot_t slot_02;
+    ui_menu_item_subtemplate_slot_t slot_03;
+    ui_menu_item_subtemplate_slot_t slot_04;
+    ui_menu_item_subtemplate_slot_t slot_05;
+    ui_menu_item_subtemplate_slot_t slot_06;
+    ui_menu_item_subtemplate_slot_t slot_07;
+    int texture_handle;
+    int quad_mode;
+} ui_menu_item_subtemplate_block_t;
 
 typedef struct ui_button_t {
     char *label;

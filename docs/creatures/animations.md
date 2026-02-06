@@ -63,6 +63,15 @@ The `creature_flags` bitfield is consulted in `creature_update_all` and related 
 
 Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
 
+`data_map` now labels the entry bases:
+
+- `creature_type_table[0]` (`zombie`) at `0x00482728`
+- `creature_type_lizard` at `0x0048276c`
+- `creature_type_alien` at `0x004827b0`
+- `creature_type_spider_sp1` at `0x004827f4`
+- `creature_type_spider_sp2` at `0x00482838`
+- `creature_type_trooper` at `0x0048287c`
+
 Field map (partial):
 
 | Offset | Field | Evidence |
