@@ -1413,3 +1413,12 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 - Labeled terrain stage-5 texture slots `DAT_0048f54c..DAT_0048f564` as `terrain_texture_layer_1..7`.
   - Evidence: fixed assignment order in `load_textures_step` (quest base/detail sheets, or fallback set when
     `terrain_texture_failed != 0`) and indexed consumption via `terrain_texture_handles[...]` in terrain render paths.
+
+### UI element pointer-table slots (high confidence)
+
+- Labeled `DAT_0048f16c..DAT_0048f204` as typed `ui_element_t *` table slots
+  (`ui_element_table_slot_*`) to remove raw pointer-soup globals around `ui_menu_layout_init`.
+  - Evidence: the contiguous 41-entry pointer table seeded in `ui_menu_layout_init` and iterated in reverse by
+    `ui_elements_update_and_render` (`0x0048f168 .. 0x0048f208`).
+- Corrected `ui_menu_layout_a` / `ui_menu_layout_b` / `ui_menu_layout_c` type from `char *` to `ui_element_t *`
+  (they are table slot anchors used for per-element quad/offset scaling).

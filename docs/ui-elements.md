@@ -22,6 +22,18 @@ UI elements are referenced via a fixed table of pointers from
 `ui_element_table_end` (`0x0048f168`) through `ui_element_table_start`
 (`0x0048f20c`), for a total of **41 pointers** (`0xA4` bytes).
 
+In `data_map.json` this table is now labeled as typed slot pointers:
+
+- `ui_element_table_slot_01_main_menu_aux` (`0x0048f16c`)
+- `ui_element_table_slot_02_main_menu_primary` (`0x0048f170`)
+- `ui_element_table_slot_03_main_menu_play_game` (`0x0048f174`)
+- `ui_element_table_slot_04_main_menu_options` (`0x0048f178`)
+- `ui_element_table_slot_05_main_menu_statistics` (`0x0048f17c`)
+- `ui_element_table_slot_06_main_menu_footer_a` (`0x0048f180`)
+- `ui_element_table_slot_07_main_menu_footer_b` (`0x0048f184`)
+- `ui_element_table_slot_08..ui_element_table_slot_39` for the remaining
+  state-specific slots assigned in `ui_menu_layout_init`.
+
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.

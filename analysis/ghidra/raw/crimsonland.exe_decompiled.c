@@ -38870,10 +38870,10 @@ float __cdecl ui_element_layout_calc(float arg1)
 void ui_menu_layout_init(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  ui_element_t *puVar3;
-  int *piVar4;
+  int iVar1;
+  char *pcVar2;
+  int iVar3;
+  ui_element_t *puVar4;
   float *pfVar5;
   float *pfVar6;
   int iVar7;
@@ -38902,52 +38902,52 @@ void ui_menu_layout_init(void)
     ppuVar10 = ppuVar10 + 1;
   }
   ui_element_table_end = (ui_element_t *)&ui_sign_crimson;
-  DAT_0048f16c = &DAT_004875a8;
-  DAT_0048f170 = &DAT_00488208;
-  _DAT_0048f174 = &DAT_004878c0;
-  _DAT_0048f178 = &DAT_00487bd8;
-  _DAT_0048f17c = &DAT_00487ef0;
-  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-  if (*pcVar1 == '\0') {
-    _DAT_0048f184 = &DAT_00488520;
-    _DAT_0048f180 = &DAT_00488838;
+  ui_element_table_slot_01_main_menu_aux = (ui_element_t *)&DAT_004875a8;
+  ui_element_table_slot_02_main_menu_primary = (ui_element_t *)&DAT_00488208;
+  ui_element_table_slot_03_main_menu_play_game = (ui_element_t *)&DAT_004878c0;
+  ui_element_table_slot_04_main_menu_options = (ui_element_t *)&DAT_00487bd8;
+  ui_element_table_slot_05_main_menu_statistics = (ui_element_t *)&DAT_00487ef0;
+  pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+  if (*pcVar2 == '\0') {
+    ui_element_table_slot_07_main_menu_footer_b = (ui_element_t *)&DAT_00488520;
+    ui_element_table_slot_06_main_menu_footer_a = (ui_element_t *)&DAT_00488838;
   }
   else {
-    _DAT_0048f180 = &DAT_00488520;
-    _DAT_0048f184 = &DAT_00488838;
+    ui_element_table_slot_06_main_menu_footer_a = (ui_element_t *)&DAT_00488520;
+    ui_element_table_slot_07_main_menu_footer_b = (ui_element_t *)&DAT_00488838;
   }
-  _DAT_0048f1e4 = &DAT_00488b50;
-  ui_menu_layout_c = &DAT_00488e68;
-  _DAT_0048f190 = &DAT_00489180;
-  _DAT_0048f194 = &DAT_00489498;
-  ui_menu_layout_a = &DAT_004897b0;
-  _DAT_0048f1a4 = &DAT_0048a410;
-  _DAT_0048f1a8 = &DAT_0048a728;
-  _DAT_0048f1ac = &DAT_0048aa40;
-  _DAT_0048f1b4 = &DAT_0048ad58;
-  _DAT_0048f1b8 = &DAT_0048b070;
-  _DAT_0048f1bc = &DAT_0048b388;
-  DAT_0048f1c0 = &DAT_0048b6a0;
-  DAT_0048f1c4 = &DAT_0048b9b8;
-  _DAT_0048f1c8 = &DAT_0048bcd0;
-  _DAT_0048f1cc = &DAT_0048bfe8;
-  _DAT_0048f1d0 = &DAT_0048c300;
-  _DAT_0048f1d4 = &DAT_0048c618;
-  _DAT_0048f1d8 = &DAT_0048eb38;
-  _DAT_0048f1dc = &DAT_0048c930;
-  _DAT_0048f1e0 = &DAT_0048cc48;
-  _DAT_0048f19c = &DAT_0048cf60;
-  _DAT_0048f1a0 = &DAT_0048d278;
-  ui_menu_layout_b = &DAT_0048d590;
-  _DAT_0048f188 = &DAT_00489ac8;
-  _DAT_0048f18c = &DAT_00489de0;
-  _DAT_0048f1ec = &DAT_0048a0f8;
-  _DAT_0048f1f0 = &DAT_0048d8a8;
-  _DAT_0048f1f4 = &DAT_0048dbc0;
-  _DAT_0048f1f8 = &DAT_0048ded8;
-  _DAT_0048f1fc = &DAT_0048e1f0;
-  _DAT_0048f200 = &DAT_0048e508;
-  DAT_0048f204 = &DAT_0048e820;
+  ui_element_table_slot_31 = (ui_element_t *)&DAT_00488b50;
+  ui_menu_layout_c = (ui_element_t *)&DAT_00488e68;
+  ui_element_table_slot_10 = (ui_element_t *)&DAT_00489180;
+  ui_element_table_slot_11 = (ui_element_t *)&DAT_00489498;
+  ui_menu_layout_a = (ui_element_t *)&DAT_004897b0;
+  ui_element_table_slot_15 = (ui_element_t *)&DAT_0048a410;
+  ui_element_table_slot_16 = (ui_element_t *)&DAT_0048a728;
+  ui_element_table_slot_17 = (ui_element_t *)&DAT_0048aa40;
+  ui_element_table_slot_19 = (ui_element_t *)&DAT_0048ad58;
+  ui_element_table_slot_20 = (ui_element_t *)&DAT_0048b070;
+  ui_element_table_slot_21 = (ui_element_t *)&DAT_0048b388;
+  ui_element_table_slot_22 = (ui_element_t *)&DAT_0048b6a0;
+  ui_element_table_slot_23 = (ui_element_t *)&DAT_0048b9b8;
+  ui_element_table_slot_24 = (ui_element_t *)&DAT_0048bcd0;
+  ui_element_table_slot_25 = (ui_element_t *)&DAT_0048bfe8;
+  ui_element_table_slot_26 = (ui_element_t *)&DAT_0048c300;
+  ui_element_table_slot_27 = (ui_element_t *)&DAT_0048c618;
+  ui_element_table_slot_28 = (ui_element_t *)&DAT_0048eb38;
+  ui_element_table_slot_29 = (ui_element_t *)&DAT_0048c930;
+  ui_element_table_slot_30 = (ui_element_t *)&DAT_0048cc48;
+  ui_element_table_slot_13 = (ui_element_t *)&DAT_0048cf60;
+  ui_element_table_slot_14 = (ui_element_t *)&DAT_0048d278;
+  ui_menu_layout_b = (ui_element_t *)&DAT_0048d590;
+  ui_element_table_slot_08 = (ui_element_t *)&DAT_00489ac8;
+  ui_element_table_slot_09 = (ui_element_t *)&DAT_00489de0;
+  ui_element_table_slot_33 = (ui_element_t *)&DAT_0048a0f8;
+  ui_element_table_slot_34 = (ui_element_t *)&DAT_0048d8a8;
+  ui_element_table_slot_35 = (ui_element_t *)&DAT_0048dbc0;
+  ui_element_table_slot_36 = (ui_element_t *)&DAT_0048ded8;
+  ui_element_table_slot_37 = (ui_element_t *)&DAT_0048e1f0;
+  ui_element_table_slot_38 = (ui_element_t *)&DAT_0048e508;
+  ui_element_table_slot_39 = (ui_element_t *)&DAT_0048e820;
   ui_element_table_start = (ui_element_t *)&DAT_0048ee50;
   ppuVar10 = &ui_element_table_end;
   do {
@@ -38969,18 +38969,18 @@ void ui_menu_layout_init(void)
   }
   pcVar14 = s_ui_ui_itemTexts_jaz_00479318;
   ui_item_texts_texture = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
-  pcVar1 = s_ui_ui_textReaper_jaz_00479300;
+  pcVar2 = s_ui_ui_textReaper_jaz_00479300;
   ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
   pcVar14 = s_ui_ui_textControls_jaz_004792e8;
-  ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar1);
-  pcVar1 = s_ui_ui_textPickAPerk_jaz_004792d0;
+  ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar2);
+  pcVar2 = s_ui_ui_textPickAPerk_jaz_004792d0;
   ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
-  ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar1);
-  puVar3 = &ui_menu_item_element;
+  ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar2);
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_00488244;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   DAT_00488220 = 0xc2700000;
@@ -38994,11 +38994,11 @@ void ui_menu_layout_init(void)
   if ((char)iVar7 != '\0') {
     _DAT_0048823c = &LAB_00447350;
   }
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_004878fc;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_004878d8 = 0xc2700000;
@@ -39009,11 +39009,11 @@ void ui_menu_layout_init(void)
   _DAT_004878f4 = ui_menu_main_click_play_game;
   _DAT_004878f0 = 0x19;
   afStack_28[0] = 270.0;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_00487c14;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_00487bf0 = 0xc2700000;
@@ -39023,11 +39023,11 @@ void ui_menu_layout_init(void)
   _DAT_00487c0c = ui_menu_main_click_options;
   _DAT_00487c08 = 0x18;
   afStack_28[0] = 270.0;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_00487f2c;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_00487f08 = 0xc2700000;
@@ -39037,13 +39037,13 @@ void ui_menu_layout_init(void)
   _DAT_00487f24 = &LAB_00447390;
   _DAT_00487f20 = 0x1f;
   iVar7 = 5;
-  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
-  if (*pcVar1 != '\0') {
-    puVar3 = &ui_menu_item_element;
+  pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
+  if (*pcVar2 != '\0') {
+    puVar4 = &ui_menu_item_element;
     puVar12 = &DAT_0048855c;
     for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *puVar12 = *(undefined4 *)puVar3;
-      puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+      *puVar12 = *(undefined4 *)puVar4;
+      puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
       puVar12 = puVar12 + 1;
     }
     _DAT_00488538 = 0xc2700000;
@@ -39055,11 +39055,11 @@ void ui_menu_layout_init(void)
     _DAT_00488554 = &LAB_0044fca0;
     iVar7 = 6;
   }
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_00488874;
   for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   fStack_30 = 270.0;
@@ -39073,72 +39073,72 @@ void ui_menu_layout_init(void)
   iVar7 = 0;
   do {
     iVar15 = iVar7;
-    if ((iVar8 == 2) && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
+    if ((iVar8 == 2) && (iVar3 = game_is_full_version(), (char)iVar3 != '\0')) {
       iVar7 = 4;
       iVar15 = 4;
     }
-    pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-    if (*pcVar1 == '\0') {
+    pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+    if (*pcVar2 == '\0') {
       if (iVar8 == 6) {
         iVar7 = 6;
         iVar15 = 6;
       }
       (&ui_element_table_end)[iVar8]->counter_id = ui_item_texts_texture;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x14] = '\0';
-      puVar3->_pad4[0x15] = '\0';
-      puVar3->_pad4[0x16] = '\0';
-      puVar3->_pad4[0x17] = '\0';
-      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x30] = '\0';
-      puVar3->_pad4[0x31] = '\0';
-      puVar3->_pad4[0x32] = 0x80;
-      puVar3->_pad4[0x33] = '?';
-      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x4c] = '\0';
-      puVar3->_pad4[0x4d] = '\0';
-      puVar3->_pad4[0x4e] = 0x80;
-      puVar3->_pad4[0x4f] = '?';
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x14] = '\0';
+      puVar4->_pad4[0x15] = '\0';
+      puVar4->_pad4[0x16] = '\0';
+      puVar4->_pad4[0x17] = '\0';
+      *(float *)(puVar4->_pad4 + 0x18) = (float)iVar15 * 0.125;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x30] = '\0';
+      puVar4->_pad4[0x31] = '\0';
+      puVar4->_pad4[0x32] = 0x80;
+      puVar4->_pad4[0x33] = '?';
+      *(float *)(puVar4->_pad4 + 0x34) = (float)iVar15 * 0.125;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x4c] = '\0';
+      puVar4->_pad4[0x4d] = '\0';
+      puVar4->_pad4[0x4e] = 0x80;
+      puVar4->_pad4[0x4f] = '?';
       fVar9 = (float)(iVar7 + 1) * 0.125;
-      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x68] = '\0';
-      puVar3->_pad4[0x69] = '\0';
-      puVar3->_pad4[0x6a] = '\0';
-      puVar3->_pad4[0x6b] = '\0';
+      *(float *)(puVar4->_pad4 + 0x50) = fVar9;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x68] = '\0';
+      puVar4->_pad4[0x69] = '\0';
+      puVar4->_pad4[0x6a] = '\0';
+      puVar4->_pad4[0x6b] = '\0';
     }
     else {
       (&ui_element_table_end)[iVar8]->counter_id = ui_item_texts_texture;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x14] = '\0';
-      puVar3->_pad4[0x15] = '\0';
-      puVar3->_pad4[0x16] = '\0';
-      puVar3->_pad4[0x17] = '\0';
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x14] = '\0';
+      puVar4->_pad4[0x15] = '\0';
+      puVar4->_pad4[0x16] = '\0';
+      puVar4->_pad4[0x17] = '\0';
       fStack_30 = 0.0;
-      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x30] = '\0';
-      puVar3->_pad4[0x31] = '\0';
-      puVar3->_pad4[0x32] = 0x80;
-      puVar3->_pad4[0x33] = '?';
-      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x4c] = '\0';
-      puVar3->_pad4[0x4d] = '\0';
-      puVar3->_pad4[0x4e] = 0x80;
-      puVar3->_pad4[0x4f] = '?';
+      *(float *)(puVar4->_pad4 + 0x18) = (float)iVar15 * 0.125;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x30] = '\0';
+      puVar4->_pad4[0x31] = '\0';
+      puVar4->_pad4[0x32] = 0x80;
+      puVar4->_pad4[0x33] = '?';
+      *(float *)(puVar4->_pad4 + 0x34) = (float)iVar15 * 0.125;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x4c] = '\0';
+      puVar4->_pad4[0x4d] = '\0';
+      puVar4->_pad4[0x4e] = 0x80;
+      puVar4->_pad4[0x4f] = '?';
       fVar9 = (float)(iVar7 + 1) * 0.125;
-      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
-      puVar3 = (&ui_element_table_end)[iVar8];
-      puVar3->_pad4[0x68] = '\0';
-      puVar3->_pad4[0x69] = '\0';
-      puVar3->_pad4[0x6a] = '\0';
-      puVar3->_pad4[0x6b] = '\0';
+      *(float *)(puVar4->_pad4 + 0x50) = fVar9;
+      puVar4 = (&ui_element_table_end)[iVar8];
+      puVar4->_pad4[0x68] = '\0';
+      puVar4->_pad4[0x69] = '\0';
+      puVar4->_pad4[0x6a] = '\0';
+      puVar4->_pad4[0x6b] = '\0';
       fStack_2c = fVar9;
     }
-    *(float *)(puVar3->_pad4 + 0x6c) = fVar9;
+    *(float *)(puVar4->_pad4 + 0x6c) = fVar9;
     if ((iVar8 == 2) && (iVar15 = game_is_full_version(), (char)iVar15 != '\0')) {
       iVar7 = 0;
     }
@@ -39168,9 +39168,12 @@ void ui_menu_layout_init(void)
            *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) + 10.0;
       *(float *)(ui_element_table_end->_pad4 + iVar7) =
            *(float *)(ui_element_table_end->_pad4 + iVar7) + 10.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x40) = *(float *)(DAT_0048f16c + iVar7 + 0x40) - 14.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x210) = *(float *)(DAT_0048f16c + iVar7 + 0x210) - 14.0;
-      *(float *)(DAT_0048f16c + iVar7 + 0x128) = *(float *)(DAT_0048f16c + iVar7 + 0x128) - 14.0;
+      *(float *)((int)ui_element_table_slot_01_main_menu_aux->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_element_table_slot_01_main_menu_aux->quad0 + iVar7 + 4) - 14.0;
+      *(float *)(ui_element_table_slot_01_main_menu_aux->_pad5 + iVar7 + 8) =
+           *(float *)(ui_element_table_slot_01_main_menu_aux->_pad5 + iVar7 + 8) - 14.0;
+      *(float *)(ui_element_table_slot_01_main_menu_aux->_pad4 + iVar7 + 4) =
+           *(float *)(ui_element_table_slot_01_main_menu_aux->_pad4 + iVar7 + 4) - 14.0;
       iVar7 = iVar8;
     } while (iVar8 < 0x70);
   }
@@ -39197,17 +39200,17 @@ void ui_menu_layout_init(void)
     } while (iVar8 < 0x70);
   }
   iVar8 = 100;
-  piVar4 = (int *)&DAT_0048f16c;
+  ppuVar10 = &ui_element_table_slot_01_main_menu_aux;
   iVar7 = -0x14;
   do {
-    *(int *)(*piVar4 + 0x14) = *(int *)(*piVar4 + 0x14) + iVar8;
-    *(int *)(*piVar4 + 0x10) = *(int *)(*piVar4 + 0x10) + iVar8;
+    *(int *)((*ppuVar10)->_pad0 + 0x12) = *(int *)((*ppuVar10)->_pad0 + 0x12) + iVar8;
+    *(int *)((*ppuVar10)->_pad0 + 0xe) = *(int *)((*ppuVar10)->_pad0 + 0xe) + iVar8;
     if (0 < iVar7) {
-      *(float *)(*piVar4 + 0x18) = *(float *)(*piVar4 + 0x18) - (float)iVar7;
+      (*ppuVar10)->pos_x = (*ppuVar10)->pos_x - (float)iVar7;
     }
     iVar7 = iVar7 + 0x14;
     iVar8 = iVar8 + 100;
-    piVar4 = piVar4 + 1;
+    ppuVar10 = ppuVar10 + 1;
   } while (iVar7 < 0x65);
   iVar7 = game_is_full_version();
   if ((char)iVar7 != '\0') {
@@ -39226,11 +39229,11 @@ void ui_menu_layout_init(void)
   _DAT_00488b84 = 0;
   _DAT_00488b88 = &LAB_004475d0;
   _DAT_00488b54 = 1;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_00488ea4;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_00488e80 = 0xc25c0000;
@@ -39250,11 +39253,11 @@ void ui_menu_layout_init(void)
   _DAT_00488e9c = ui_menu_click_back_contextual;
   _DAT_00488e6c = 1;
   _DAT_00488e98 = 0x30;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_0048b9f4;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_0048b9d0 = 0xc2700000;
@@ -39269,11 +39272,11 @@ void ui_menu_layout_init(void)
   DAT_0048b9c8 = DAT_0048b9c8 + 100;
   DAT_0048b9cc = DAT_0048b9cc + 100;
   _DAT_0048b9ec = ui_menu_main_click_options;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_0048bd0c;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_0048bce8 = 0xc2a00000;
@@ -39288,11 +39291,11 @@ void ui_menu_layout_init(void)
   _DAT_0048bd04 = &LAB_004474e0;
   DAT_0048bce0 = DAT_0048bce0 + 200;
   DAT_0048bce4 = DAT_0048bce4 + 200;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_0048c024;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_0048c000 = 0xc2c80000;
@@ -39344,11 +39347,11 @@ void ui_menu_layout_init(void)
   } while ((int)pfVar5 < 0x48962c);
   _DAT_004894d0 = &LAB_0044ed80;
   _DAT_0048949c = 1;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_004897ec;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_004897cc = 0x43e70000;
@@ -39395,11 +39398,11 @@ void ui_menu_layout_init(void)
   DAT_0048d294 = 0x43480000;
   _DAT_0048d2b0 = &LAB_00448cd0;
   _DAT_0048d27c = 1;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &DAT_0048d5cc;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_0048d5a8 = 0xc31b0000;
@@ -39499,105 +39502,111 @@ void ui_menu_layout_init(void)
   }
   DAT_00489de4 = 1;
   DAT_0048eb48 = 500;
-  piVar4 = (int *)&DAT_0048f16c;
+  ppuVar10 = &ui_element_table_slot_01_main_menu_aux;
   iVar7 = -0xb;
   do {
     if (iVar8 < 0x281) {
       fVar9 = (float)iVar7;
       iVar15 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar15) * 0.9;
+        pfVar6 = (float *)((int)(*ppuVar10)->quad0 + iVar15);
+        *pfVar6 = *(float *)((int)(*ppuVar10)->quad0 + iVar15) * 0.9;
         pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar15) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar15);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar15) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        *(float *)(*piVar4 + 0x40 + iVar15) = *(float *)(*piVar4 + 0x40 + iVar15) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar15) = *(float *)(*piVar4 + 0x210 + iVar15) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar15);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar15);
+        puVar11 = (*ppuVar10)->_pad5 + iVar15 + 4;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad5 + iVar15 + 4) * 0.9;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+        puVar11 = (*ppuVar10)->_pad4 + iVar15;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad4 + iVar15) * 0.9;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+        *(float *)((int)(*ppuVar10)->quad0 + iVar15 + 4) =
+             *(float *)((int)(*ppuVar10)->quad0 + iVar15 + 4) - fVar9;
+        *(float *)((*ppuVar10)->_pad5 + iVar15 + 8) =
+             *(float *)((*ppuVar10)->_pad5 + iVar15 + 8) - fVar9;
+        iVar8 = iVar15 + 4;
+        iVar3 = iVar15 + 4;
         iVar15 = iVar15 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
+        *(float *)((*ppuVar10)->_pad4 + iVar3) = *(float *)((*ppuVar10)->_pad4 + iVar8) - fVar9;
         iVar8 = config_blob.screen_width;
       } while (iVar15 < 0x70);
     }
     iVar7 = iVar7 + 0xb;
-    piVar4 = piVar4 + 1;
+    ppuVar10 = ppuVar10 + 1;
   } while (iVar7 < 0x38);
-  piVar4 = (int *)&DAT_0048f1c0;
+  ppuVar10 = &ui_element_table_slot_22;
   iVar7 = -5;
   iVar15 = -0xb;
   do {
     if (iVar8 < 0x281) {
       fVar9 = (float)iVar15;
-      iVar2 = 0;
+      iVar3 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.8;
+        pfVar6 = (float *)((int)(*ppuVar10)->quad0 + iVar3);
+        *pfVar6 = *(float *)((int)(*ppuVar10)->quad0 + iVar3) * 0.8;
         pfVar6[1] = pfVar6[1] * 0.8;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.8;
-        pfVar6[1] = pfVar6[1] * 0.8;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.8;
-        pfVar6[1] = pfVar6[1] * 0.8;
-        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
-        iVar2 = iVar2 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
+        puVar11 = (*ppuVar10)->_pad5 + iVar3 + 4;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad5 + iVar3 + 4) * 0.8;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+        puVar11 = (*ppuVar10)->_pad4 + iVar3;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad4 + iVar3) * 0.8;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+        *(float *)((int)(*ppuVar10)->quad0 + iVar3 + 4) =
+             *(float *)((int)(*ppuVar10)->quad0 + iVar3 + 4) - fVar9;
+        *(float *)((*ppuVar10)->_pad5 + iVar3 + 8) =
+             *(float *)((*ppuVar10)->_pad5 + iVar3 + 8) - fVar9;
+        iVar8 = iVar3 + 4;
+        iVar1 = iVar3 + 4;
+        iVar3 = iVar3 + 0x1c;
+        *(float *)((*ppuVar10)->_pad4 + iVar1) = *(float *)((*ppuVar10)->_pad4 + iVar8) - fVar9;
         iVar8 = config_blob.screen_width;
-      } while (iVar2 < 0x70);
+      } while (iVar3 < 0x70);
     }
     else if (iVar8 < 0x321) {
       fVar9 = (float)iVar7;
-      iVar2 = 0;
+      iVar3 = 0;
       do {
-        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.9;
+        pfVar6 = (float *)((int)(*ppuVar10)->quad0 + iVar3);
+        *pfVar6 = *(float *)((int)(*ppuVar10)->quad0 + iVar3) * 0.9;
         pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
-        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.9;
-        pfVar6[1] = pfVar6[1] * 0.9;
-        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
-        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
-        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
-        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
-        iVar2 = iVar2 + 0x1c;
-        *pfVar5 = *pfVar6 - fVar9;
+        puVar11 = (*ppuVar10)->_pad5 + iVar3 + 4;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad5 + iVar3 + 4) * 0.9;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+        puVar11 = (*ppuVar10)->_pad4 + iVar3;
+        *(float *)puVar11 = *(float *)((*ppuVar10)->_pad4 + iVar3) * 0.9;
+        *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+        *(float *)((int)(*ppuVar10)->quad0 + iVar3 + 4) =
+             *(float *)((int)(*ppuVar10)->quad0 + iVar3 + 4) - fVar9;
+        *(float *)((*ppuVar10)->_pad5 + iVar3 + 8) =
+             *(float *)((*ppuVar10)->_pad5 + iVar3 + 8) - fVar9;
+        iVar8 = iVar3 + 4;
+        iVar1 = iVar3 + 4;
+        iVar3 = iVar3 + 0x1c;
+        *(float *)((*ppuVar10)->_pad4 + iVar1) = *(float *)((*ppuVar10)->_pad4 + iVar8) - fVar9;
         iVar8 = config_blob.screen_width;
-      } while (iVar2 < 0x70);
+      } while (iVar3 < 0x70);
     }
     iVar15 = iVar15 + 0xb;
     iVar7 = iVar7 + 5;
-    piVar4 = piVar4 + 1;
+    ppuVar10 = ppuVar10 + 1;
   } while (iVar15 < 0x17);
   if (iVar8 < 0x281) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.8;
+      pfVar6 = (float *)((int)ui_menu_layout_c->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_c->quad0 + iVar7) * 0.8;
       pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_c->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 4) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      puVar11 = ui_menu_layout_c->_pad4 + iVar7;
       iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 11.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_c->_pad4 + iVar7) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_c->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_c->quad0 + iVar7 + 4) - 11.0;
+      *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 8) - 11.0;
+      *(float *)(ui_menu_layout_c->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_c->_pad4 + iVar7 + 4) - 11.0;
       iVar7 = iVar15;
       iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
@@ -39605,22 +39614,22 @@ void ui_menu_layout_init(void)
   else if (iVar8 < 0x321) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.9;
+      pfVar6 = (float *)((int)ui_menu_layout_c->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_c->quad0 + iVar7) * 0.9;
       pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_c->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 4) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      puVar11 = ui_menu_layout_c->_pad4 + iVar7;
       iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 3.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_c->_pad4 + iVar7) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_c->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_c->quad0 + iVar7 + 4) - 3.0;
+      *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_c->_pad5 + iVar7 + 8) - 3.0;
+      *(float *)(ui_menu_layout_c->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_c->_pad4 + iVar7 + 4) - 3.0;
       iVar7 = iVar15;
       iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
@@ -39628,22 +39637,22 @@ void ui_menu_layout_init(void)
   if (iVar8 < 0x281) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.8;
+      pfVar6 = (float *)((int)ui_menu_layout_a->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_a->quad0 + iVar7) * 0.8;
       pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_a->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 4) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      puVar11 = ui_menu_layout_a->_pad4 + iVar7;
       iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 11.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_a->_pad4 + iVar7) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_a->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_a->quad0 + iVar7 + 4) - 11.0;
+      *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 8) - 11.0;
+      *(float *)(ui_menu_layout_a->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_a->_pad4 + iVar7 + 4) - 11.0;
       iVar7 = iVar15;
       iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
@@ -39651,22 +39660,22 @@ void ui_menu_layout_init(void)
   else if (iVar8 < 0x321) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.9;
+      pfVar6 = (float *)((int)ui_menu_layout_a->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_a->quad0 + iVar7) * 0.9;
       pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_a->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 4) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      puVar11 = ui_menu_layout_a->_pad4 + iVar7;
       iVar15 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 3.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_a->_pad4 + iVar7) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_a->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_a->quad0 + iVar7 + 4) - 3.0;
+      *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_a->_pad5 + iVar7 + 8) - 3.0;
+      *(float *)(ui_menu_layout_a->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_a->_pad4 + iVar7 + 4) - 3.0;
       iVar7 = iVar15;
       iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
@@ -39674,54 +39683,54 @@ void ui_menu_layout_init(void)
   if (iVar8 < 0x281) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.8;
+      pfVar6 = (float *)((int)ui_menu_layout_b->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_b->quad0 + iVar7) * 0.8;
       pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_b->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 4) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      puVar11 = ui_menu_layout_b->_pad4 + iVar7;
       iVar8 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.8;
-      pfVar6[1] = pfVar6[1] * 0.8;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 11.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_b->_pad4 + iVar7) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      *(float *)((int)ui_menu_layout_b->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_b->quad0 + iVar7 + 4) - 11.0;
+      *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 8) - 11.0;
+      *(float *)(ui_menu_layout_b->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_b->_pad4 + iVar7 + 4) - 11.0;
       iVar7 = iVar8;
     } while (iVar8 < 0x70);
   }
   else if (iVar8 < 0x321) {
     iVar7 = 0;
     do {
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.9;
+      pfVar6 = (float *)((int)ui_menu_layout_b->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_menu_layout_b->quad0 + iVar7) * 0.9;
       pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
+      puVar11 = ui_menu_layout_b->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 4) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      puVar11 = ui_menu_layout_b->_pad4 + iVar7;
       iVar8 = iVar7 + 0x1c;
-      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.9;
-      pfVar6[1] = pfVar6[1] * 0.9;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 3.0;
+      *(float *)puVar11 = *(float *)(ui_menu_layout_b->_pad4 + iVar7) * 0.9;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.9;
+      *(float *)((int)ui_menu_layout_b->quad0 + iVar7 + 4) =
+           *(float *)((int)ui_menu_layout_b->quad0 + iVar7 + 4) - 3.0;
+      *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 8) =
+           *(float *)(ui_menu_layout_b->_pad5 + iVar7 + 8) - 3.0;
+      *(float *)(ui_menu_layout_b->_pad4 + iVar7 + 4) =
+           *(float *)(ui_menu_layout_b->_pad4 + iVar7 + 4) - 3.0;
       iVar7 = iVar8;
     } while (iVar8 < 0x70);
   }
   ui_element_init_defaults((ui_element_t *)&DAT_0048f20c);
   _DAT_0048f240 = ui_callback_noop;
-  puVar3 = &ui_menu_item_element;
+  puVar4 = &ui_menu_item_element;
   puVar12 = &perk_prompt_bounds_min_x;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *puVar12 = *(undefined4 *)puVar3;
-    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    *puVar12 = *(undefined4 *)puVar4;
+    puVar4 = (ui_element_t *)(puVar4->_pad0 + 2);
     puVar12 = puVar12 + 1;
   }
   _DAT_0048f25c = 0x3f800000;
@@ -39754,15 +39763,14 @@ void ui_menu_layout_init(void)
     fStack_30 = (float)(config_blob.screen_width + 0x32);
     _perk_prompt_origin_y = 0x42200000;
   }
-  piVar4 = (int *)&DAT_0048f16c;
+  ppuVar10 = &ui_element_table_slot_01_main_menu_aux;
   _perk_prompt_origin_x = fStack_30;
   do {
-    iVar7 = *piVar4;
-    piVar4 = piVar4 + 1;
-    *(float *)(iVar7 + 0x1c) =
-         ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + *(float *)(iVar7 + 0x1c);
+    puVar4 = *ppuVar10;
+    ppuVar10 = ppuVar10 + 1;
+    puVar4->pos_y = ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + puVar4->pos_y;
     iVar7 = config_blob.screen_width;
-  } while ((int)piVar4 < 0x48f20c);
+  } while ((int)ppuVar10 < 0x48f20c);
   _DAT_0048ee68 = (float)(config_blob.screen_width + -0x15e);
   puVar12 = &DAT_00489de0;
   puVar13 = &DAT_0048ee50;

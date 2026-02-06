@@ -2269,35 +2269,287 @@
     },
     {
       "address": "0x0048f168",
-      "comment": "UI element table end pointer (iterated by ui_elements_update_and_render).",
+      "comment": "UI element pointer table slot 0 (logo sign root); also the low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
       "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f16c",
+      "comment": "UI element pointer table slot 1 (main-menu auxiliary slot).",
+      "name": "ui_element_table_slot_01_main_menu_aux",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f170",
+      "comment": "UI element pointer table slot 2 (main-menu primary top entry: MODS/BUY NOW depending on build).",
+      "name": "ui_element_table_slot_02_main_menu_primary",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f174",
+      "comment": "UI element pointer table slot 3 (main-menu PLAY GAME entry).",
+      "name": "ui_element_table_slot_03_main_menu_play_game",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f178",
+      "comment": "UI element pointer table slot 4 (main-menu OPTIONS entry).",
+      "name": "ui_element_table_slot_04_main_menu_options",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f17c",
+      "comment": "UI element pointer table slot 5 (main-menu STATISTICS entry).",
+      "name": "ui_element_table_slot_05_main_menu_statistics",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f180",
+      "comment": "UI element pointer table slot 6 (main-menu footer entry A; OTHER GAMES/QUIT based on config var 100).",
+      "name": "ui_element_table_slot_06_main_menu_footer_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f184",
+      "comment": "UI element pointer table slot 7 (main-menu footer entry B; complementary OTHER GAMES/QUIT slot).",
+      "name": "ui_element_table_slot_07_main_menu_footer_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f188",
+      "comment": "UI element pointer table slot 8 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_08",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f18c",
+      "comment": "UI element pointer table slot 9 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_09",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f190",
+      "comment": "UI element pointer table slot 10 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_10",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f194",
+      "comment": "UI element pointer table slot 11 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_11",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
       "address": "0x0048f198",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 12 (layout group A base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_a",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f19c",
+      "comment": "UI element pointer table slot 13 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_13",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a0",
+      "comment": "UI element pointer table slot 14 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_14",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a4",
+      "comment": "UI element pointer table slot 15 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_15",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1a8",
+      "comment": "UI element pointer table slot 16 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_16",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1ac",
+      "comment": "UI element pointer table slot 17 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_17",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f1b0",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 18 (layout group B base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_b",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1b4",
+      "comment": "UI element pointer table slot 19 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_19",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1b8",
+      "comment": "UI element pointer table slot 20 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_20",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1bc",
+      "comment": "UI element pointer table slot 21 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_21",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c0",
+      "comment": "UI element pointer table slot 22 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_22",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c4",
+      "comment": "UI element pointer table slot 23 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_23",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1c8",
+      "comment": "UI element pointer table slot 24 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_24",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1cc",
+      "comment": "UI element pointer table slot 25 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_25",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d0",
+      "comment": "UI element pointer table slot 26 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_26",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d4",
+      "comment": "UI element pointer table slot 27 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_27",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1d8",
+      "comment": "UI element pointer table slot 28 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_28",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1dc",
+      "comment": "UI element pointer table slot 29 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_29",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1e0",
+      "comment": "UI element pointer table slot 30 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_30",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1e4",
+      "comment": "UI element pointer table slot 31 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_31",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f1e8",
-      "comment": "Menu layout data base pointer used by ui_menu_layout_init for screen-size scaling.",
+      "comment": "UI element pointer table slot 32 (layout group C base used by ui_menu_layout_init scaling loops).",
       "name": "ui_menu_layout_c",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1ec",
+      "comment": "UI element pointer table slot 33 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_33",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f0",
+      "comment": "UI element pointer table slot 34 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_34",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f4",
+      "comment": "UI element pointer table slot 35 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_35",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1f8",
+      "comment": "UI element pointer table slot 36 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_36",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f1fc",
+      "comment": "UI element pointer table slot 37 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_37",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f200",
+      "comment": "UI element pointer table slot 38 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_38",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
+      "address": "0x0048f204",
+      "comment": "UI element pointer table slot 39 assigned in ui_menu_layout_init.",
+      "name": "ui_element_table_slot_39",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x0048f208",
-      "comment": "UI element table start pointer (iterated by ui_elements_update_and_render).",
+      "comment": "UI element pointer table slot 40 (high/start anchor iterated by ui_elements_update_and_render).",
       "name": "ui_element_table_start",
       "type": "ui_element_t *",
       "program": "crimsonland.exe"
