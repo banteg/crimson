@@ -58,6 +58,25 @@ selection to confirm the exact fade-in timing/curve.
 Perk prompt origin/bounds can be captured with `scripts/frida/perk_prompt_trace.js` (see `analysis/ghidra/maps/data_map.json`
 for the underlying globals).
 
+### Runtime capture request (next large run)
+
+For deeper carving of `ui_menu_item_element` subtemplate blocks
+(`0x0048fd78..0x004902ff`), capture:
+
+- One memory snapshot immediately after `ui_menu_assets_init` (`0x00419dd0`)
+  returns.
+- One memory snapshot immediately after `ui_menu_layout_init` (`0x0044fcb0`)
+  returns.
+- Per-frame deltas for `0x0048fd78..0x004902ff` while visiting these states:
+  main menu (`0`), options, statistics, perk selection (`6`), and in-game HUD (`9`).
+- Write-trace events (address + value + EIP) for this range, especially writes to
+  offsets repeating with stride `0x1c` (8-slot blocks).
+- A trace of `ui_element_render` input pointers for frames where these blocks are
+  visible, so we can map block/slot identity to rendered widget role.
+
+Goal: promote block-local `_pad*` fields to named slot fields (position,
+mode/timeline, UV/color tuples) with confidence across menu variants.
+
 ## UI element render (ui_element_render / FUN_00446c40)
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
