@@ -14,6 +14,7 @@ from dataclasses import dataclass, replace
 import math
 from typing import Callable, Protocol, Sequence
 
+from grim.geom import Vec2
 from grim.math import clamp, distance_sq
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
@@ -845,8 +846,7 @@ class CreaturePool:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = int(ProjectileTypeId.PLASMA_RIFLE)
                         state.projectiles.spawn(
-                            pos_x=creature.x,
-                            pos_y=creature.y,
+                            pos=Vec2(creature.x, creature.y),
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner_id=idx,
@@ -859,8 +859,7 @@ class CreaturePool:
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
                         projectile_type = int(creature.orbit_radius)
                         state.projectiles.spawn(
-                            pos_x=creature.x,
-                            pos_y=creature.y,
+                            pos=Vec2(creature.x, creature.y),
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=idx,

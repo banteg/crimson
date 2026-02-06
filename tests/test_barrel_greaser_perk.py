@@ -40,8 +40,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].projectile_meta
     base_damage = float(meta if meta is not None else 45.0)
     pool.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,

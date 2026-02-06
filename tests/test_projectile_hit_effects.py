@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.creatures.runtime import CreatureState
@@ -13,8 +15,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     runtime_state = GameplayState()
 
     pool.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         angle=0.0,
         type_id=ProjectileTypeId.PLASMA_CANNON,
         owner_id=-100,
@@ -46,8 +47,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     runtime_state = GameplayState()
 
     pool.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         angle=0.0,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=-100,

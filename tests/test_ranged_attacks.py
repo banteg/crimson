@@ -112,8 +112,7 @@ def test_ranged_projectile_can_damage_player() -> None:
     player = PlayerState(index=0, pos=Vec2(4.0, 0.0))
 
     state.projectiles.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         angle=math.pi / 2.0,
         type_id=9,
         owner_id=0,
@@ -156,8 +155,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     target.y = 0.0
 
     state.projectiles.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         angle=math.pi / 2.0,
         type_id=9,
         owner_id=0,

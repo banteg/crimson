@@ -245,8 +245,7 @@ class ProjectileFxView:
         meta = self._projectile_meta_for(type_id)
         self._spawn_effect(effect_id=int(EffectId.CASING), x=self._origin_x, y=self._origin_y, scale=0.55, duration=0.18)
         self._state.projectiles.spawn(
-            pos_x=self._origin_x,
-            pos_y=self._origin_y,
+            pos=Vec2(self._origin_x, self._origin_y),
             angle=float(angle),
             type_id=int(type_id),
             owner_id=int(owner_id),
@@ -262,8 +261,7 @@ class ProjectileFxView:
         for _ in range(pellet_count):
             jitter = (float(self._state.rng.rand() % 200) - 100.0) * 0.0015
             self._state.projectiles.spawn(
-                pos_x=self._origin_x,
-                pos_y=self._origin_y,
+                pos=Vec2(self._origin_x, self._origin_y),
                 angle=float(angle + jitter),
                 type_id=ProjectileTypeId.FIRE_BULLETS,
                 owner_id=-1,

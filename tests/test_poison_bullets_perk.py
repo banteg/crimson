@@ -43,8 +43,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     creature.max_hp = 1000.0
 
     world.state.projectiles.spawn(
-        pos_x=creature.x,
-        pos_y=creature.y,
+        pos=Vec2(creature.x, creature.y),
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-100,
@@ -90,8 +89,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     creature.max_hp = 1000.0
 
     world.state.projectiles.spawn(
-        pos_x=creature.x,
-        pos_y=creature.y,
+        pos=Vec2(creature.x, creature.y),
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-100,

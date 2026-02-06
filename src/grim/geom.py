@@ -47,6 +47,12 @@ class Vec2:
         self.y *= inv_magnitude
         return self
 
+    def normalized_with_length(self, *, epsilon: float = 1e-6) -> tuple[Vec2, float]:
+        magnitude = self.length()
+        if magnitude <= epsilon:
+            return Vec2(), 0.0
+        return self * (1.0 / magnitude), magnitude
+
     @classmethod
     def from_angle(cls, theta: float) -> Vec2:
         return cls(x=math.cos(theta), y=math.sin(theta))

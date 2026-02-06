@@ -32,8 +32,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     creature.reward_value = 10.0
 
     world.state.projectiles.spawn(
-        pos_x=float(creature.x),
-        pos_y=float(creature.y),
+        pos=Vec2(float(creature.x), float(creature.y)),
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-1,

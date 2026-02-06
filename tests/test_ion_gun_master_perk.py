@@ -36,8 +36,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
     def _step(*, perk_active: bool) -> float:
         pool = ProjectilePool(size=1)
         proj_idx = pool.spawn(
-            pos_x=0.0,
-            pos_y=0.0,
+            pos=Vec2(0.0, 0.0),
             angle=0.0,
             type_id=ProjectileTypeId.ION_RIFLE,
             owner_id=-100,

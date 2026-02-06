@@ -12,7 +12,8 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.math import clamp, distance_sq
+from grim.geom import Vec2
+from grim.math import clamp
 
 from grim.rand import Crand
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
@@ -66,14 +67,6 @@ def _weapon_name(weapon_id: int) -> str:
         if weapon.weapon_id == weapon_id:
             return weapon.name or f"weapon_{weapon_id}"
     return f"weapon_{weapon_id}"
-
-
-def _normalize(dx: float, dy: float) -> tuple[float, float, float]:
-    d = math.hypot(dx, dy)
-    if d <= 1e-6:
-        return 0.0, 0.0, 0.0
-    inv = 1.0 / d
-    return dx * inv, dy * inv, d
 
 
 class DemoView:
@@ -466,18 +459,18 @@ class DemoView:
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
 
-    def _setup_world_players(self, specs: list[tuple[float, float, int]]) -> None:
+    def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self._state.rng.getrandbits(32))
         self._world.reset(seed=seed, player_count=len(specs))
-        for idx, (x, y, weapon_id) in enumerate(specs):
+        for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._world.players):
                 continue
             player = self._world.players[idx]
-            player.pos.x = float(x)
-            player.pos.y = float(y)
+            player.pos.x = float(pos.x)
+            player.pos.y = float(pos.y)
             # Keep aim anchored to the spawn position so demo aim starts stable.
-            player.aim_x = float(x)
-            player.aim_y = float(y)
+            player.aim_x = float(pos.x)
+            player.aim_y = float(pos.y)
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
@@ -532,19 +525,19 @@ class DemoView:
             overlay_path=overlay_path,
         )
 
-    def _wrap_pos(self, x: float, y: float) -> tuple[float, float]:
-        return (x % WORLD_SIZE, y % WORLD_SIZE)
+    def _wrap_pos(self, pos: Vec2) -> Vec2:
+        return Vec2(pos.x % WORLD_SIZE, pos.y % WORLD_SIZE)
 
     def _crand_mod(self, mod: int) -> int:
         if mod <= 0:
             return 0
         return int(self._crand.rand() % mod)
 
-    def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
-        x, y = self._wrap_pos(x, y)
+    def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
+        pos = self._wrap_pos(pos)
         self._world.creatures.spawn_template(
             int(spawn_id),
-            (x, y),
+            (pos.x, pos.y),
             float(heading),
             self._spawn_rng,
             rand=self._spawn_rng.rand,
@@ -556,16 +549,16 @@ class DemoView:
         weapon_id = 11
         self._setup_world_players(
             [
-                (448.0, 384.0, weapon_id),
-                (546.0, 654.0, weapon_id),
+                (Vec2(448.0, 384.0), weapon_id),
+                (Vec2(546.0, 654.0), weapon_id),
             ]
         )
         y = 256
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(0x38, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x38, float(col * 64 + 798), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 80
             i += 1
 
@@ -575,33 +568,33 @@ class DemoView:
         weapon_id = 5
         self._setup_world_players(
             [
-                (490.0, 448.0, weapon_id),
-                (480.0, 576.0, weapon_id),
+                (Vec2(490.0, 448.0), weapon_id),
+                (Vec2(480.0, 576.0), weapon_id),
             ]
         )
         self._world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x34, x, y, heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
                 x2 = float(self._crand_mod(30) + 32)
                 y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x35, x2, y2, heading=RANDOM_HEADING_SENTINEL)
+                self._spawn(0x35, Vec2(x2, y2), heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
         # demo_setup_variant_2 uses weapon_id=0x15.
         weapon_id = 21
-        self._setup_world_players([(512.0, 512.0, weapon_id)])
+        self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         y = 128
         i = 0
         while y < 848:
             col = i % 2
-            self._spawn(0x41, float(col * 64 + 32), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float(col * 64 - 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float((col + 12) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float(col * 64 + 32), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float(col * 64 - 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 60
             i += 1
 
@@ -609,15 +602,15 @@ class DemoView:
         self._demo_time_limit_ms = 4000
         # demo_setup_variant_3 uses weapon_id=0x12.
         weapon_id = 18
-        self._setup_world_players([(512.0, 512.0, weapon_id)])
+        self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x24, x, y, heading=0.0)
+            self._spawn(0x24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
                 x2 = float(self._crand_mod(30) + 32)
                 y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x25, x2, y2, heading=0.0)
+                self._spawn(0x25, Vec2(x2, y2), heading=0.0)
 
     def _draw_overlay(self) -> None:
         if getattr(self._state, "demo_enabled", False):
@@ -699,8 +692,7 @@ class DemoView:
         creatures = self._world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
-        center_x = float(self._world.world_size) * 0.5
-        center_y = float(self._world.world_size) * 0.5
+        center = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
 
         dt = float(dt)
 
@@ -725,61 +717,51 @@ class DemoView:
                     target = candidate
 
             # Aim: ease the aim point toward the target.
-            aim_x = float(player.aim_x)
-            aim_y = float(player.aim_y)
+            aim = Vec2(float(player.aim_x), float(player.aim_y))
             auto_fire = False
             if target is not None:
-                aim_dx = float(target.x) - aim_x
-                aim_dy = float(target.y) - aim_y
-                aim_dir_x, aim_dir_y, aim_dist = _normalize(aim_dx, aim_dy)
+                target_pos = Vec2(float(target.x), float(target.y))
+                aim_dir, aim_dist = (target_pos - aim).normalized_with_length()
                 if aim_dist >= 4.0:
                     step = aim_dist * 6.0 * dt
-                    aim_x += aim_dir_x * step
-                    aim_y += aim_dir_y * step
+                    aim += aim_dir * step
                 else:
-                    aim_x = float(target.x)
-                    aim_y = float(target.y)
+                    aim = target_pos
                 auto_fire = aim_dist < 128.0
             else:
-                ax, ay, amag = _normalize(float(player.pos.x) - center_x, float(player.pos.y) - center_y)
+                away_from_center, amag = (player.pos - center).normalized_with_length()
                 if amag <= 1e-6:
-                    ax, ay = 0.0, -1.0
-                aim_x = float(player.pos.x) + ax * 60.0
-                aim_y = float(player.pos.y) + ay * 60.0
+                    away_from_center = Vec2(0.0, -1.0)
+                aim = player.pos + away_from_center * 60.0
 
             # Movement:
             # - orbit center if no target
             # - chase target when near center
             # - return to center when too far
             if target is None:
-                move_dx = -(float(player.pos.y) - center_y)
-                move_dy = float(player.pos.x) - center_x
+                move_delta = Vec2(-(float(player.pos.y) - center.y), float(player.pos.x) - center.x)
             else:
-                center_dist = math.hypot(float(player.pos.x) - center_x, float(player.pos.y) - center_y)
+                center_dist = (player.pos - center).length()
                 if center_dist <= 300.0:
-                    move_dx = float(target.x) - float(player.pos.x)
-                    move_dy = float(target.y) - float(player.pos.y)
+                    move_delta = Vec2(float(target.x), float(target.y)) - player.pos
                 else:
-                    move_dx = center_x - float(player.pos.x)
-                    move_dy = center_y - float(player.pos.y)
+                    move_delta = center - player.pos
 
-            desired_x, desired_y, desired_mag = _normalize(move_dx, move_dy)
+            desired_dir, desired_mag = move_delta.normalized_with_length()
             if desired_mag <= 1e-6:
-                move_x = 0.0
-                move_y = 0.0
+                move = Vec2()
             else:
-                desired_heading = math.atan2(desired_y, desired_x) + math.pi / 2.0
+                desired_heading = desired_dir.to_heading()
                 smoothed_heading, angle_diff = _turn_towards_heading(float(player.heading), desired_heading)
                 move_mag = max(0.001, (math.pi - angle_diff) / math.pi)
-                move_x = math.cos(smoothed_heading - math.pi / 2.0) * move_mag
-                move_y = math.sin(smoothed_heading - math.pi / 2.0) * move_mag
+                move = Vec2.from_heading(smoothed_heading) * move_mag
 
             inputs.append(
                 PlayerInput(
-                    move_x=move_x,
-                    move_y=move_y,
-                    aim_x=aim_x,
-                    aim_y=aim_y,
+                    move_x=move.x,
+                    move_y=move.y,
+                    aim_x=aim.x,
+                    aim_y=aim.y,
                     fire_down=auto_fire,
                     fire_pressed=auto_fire,
                     reload_pressed=False,
@@ -788,20 +770,20 @@ class DemoView:
 
         return inputs
 
-    def _nearest_world_creature_index(self, x: float, y: float) -> int | None:
+    def _nearest_world_creature_index(self, pos: Vec2) -> int | None:
         best_idx = None
         best_dist = 0.0
         for idx, creature in enumerate(self._world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
-            d = distance_sq(x, y, creature.x, creature.y)
+            d = Vec2.distance_sq(pos, Vec2(creature.x, creature.y))
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
         return best_idx
 
     def _select_demo_target(self, player_index: int, player: PlayerState, creatures: list) -> int | None:
-        candidate = self._nearest_world_creature_index(player.pos.x, player.pos.y)
+        candidate = self._nearest_world_creature_index(player.pos)
         current = self._demo_targets[player_index] if player_index < len(self._demo_targets) else None
         if current is None:
             self._demo_targets[player_index] = candidate
@@ -818,8 +800,8 @@ class DemoView:
         cand_creature = creatures[candidate]
         if not cand_creature.active or cand_creature.hp <= 0.0:
             return current
-        cur_d = math.hypot(current_creature.x - player.pos.x, current_creature.y - player.pos.y)
-        cand_d = math.hypot(cand_creature.x - player.pos.x, cand_creature.y - player.pos.y)
+        cur_d = (Vec2(current_creature.x, current_creature.y) - player.pos).length()
+        cand_d = (Vec2(cand_creature.x, cand_creature.y) - player.pos).length()
         if cand_d + 64.0 < cur_d:
             self._demo_targets[player_index] = candidate
             return candidate

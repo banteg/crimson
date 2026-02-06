@@ -148,8 +148,7 @@ class SecondaryProjectile:
     trail_timer: float = 0.0
     target_id: int = -1
     target_hint_active: bool = False
-    target_hint_x: float = 0.0
-    target_hint_y: float = 0.0
+    target_hint: Vec2 = field(default_factory=Vec2)
 
 
 def _hit_radius_for(creature: Damageable) -> float:
@@ -200,8 +199,7 @@ def _spawn_ion_hit_effects(
     sfx_queue: object | None,
     *,
     type_id: int,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
 ) -> None:
@@ -233,8 +231,8 @@ def _spawn_ion_hit_effects(
     # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
     effects.spawn(
         effect_id=int(EffectId.RING),
-        pos_x=float(pos_x),
-        pos_y=float(pos_y),
+        pos_x=float(pos.x),
+        pos_y=float(pos.y),
         vel_x=0.0,
         vel_y=0.0,
         rotation=0.0,
@@ -268,8 +266,8 @@ def _spawn_ion_hit_effects(
         scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
+            pos_x=float(pos.x),
+            pos_y=float(pos.y),
             vel_x=vel_x,
             vel_y=vel_y,
             rotation=rotation,
@@ -293,8 +291,7 @@ def _spawn_plasma_cannon_hit_effects(
     effects: object | None,
     sfx_queue: object | None,
     *,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     detail_preset: int,
 ) -> None:
     """Port of `projectile_update` Plasma Cannon hit extras.
@@ -318,8 +315,8 @@ def _spawn_plasma_cannon_hit_effects(
     def _spawn_ring(*, scale: float) -> None:
         effects.spawn(
             effect_id=int(EffectId.RING),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
+            pos_x=float(pos.x),
+            pos_y=float(pos.y),
             vel_x=0.0,
             vel_y=0.0,
             rotation=0.0,
@@ -345,8 +342,7 @@ def _spawn_plasma_cannon_hit_effects(
 def _spawn_splitter_hit_effects(
     effects: object | None,
     *,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
 ) -> None:
@@ -365,8 +361,8 @@ def _spawn_splitter_hit_effects(
         offset = Vec2.from_angle(angle) * radius
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos_x) + offset.x,
-            pos_y=float(pos_y) + offset.y,
+            pos_x=float(pos.x) + offset.x,
+            pos_y=float(pos.y) + offset.y,
             vel_x=0.0,
             vel_y=0.0,
             rotation=0.0,
@@ -527,14 +523,12 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
 def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int) -> None:
     _spawn_splitter_hit_effects(
         ctx.effects,
-        pos_x=float(proj.pos.x),
-        pos_y=float(proj.pos.y),
+        pos=proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
     ctx.pool.spawn(
-        pos_x=proj.pos.x,
-        pos_y=proj.pos.y,
+        pos=proj.pos,
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
@@ -542,8 +536,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         hits_players=proj.hits_players,
     )
     ctx.pool.spawn(
-        pos_x=proj.pos.x,
-        pos_y=proj.pos.y,
+        pos=proj.pos,
         angle=proj.angle + 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
@@ -557,8 +550,7 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
         ctx.effects,
         ctx.sfx_queue,
         type_id=int(hit.proj.type_id),
-        pos_x=float(hit.proj.pos.x),
-        pos_y=float(hit.proj.pos.y),
+        pos=hit.proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
@@ -603,8 +595,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             runtime_state.bonus_spawn_guard = True
             try:
                 proj_id = ctx.pool.spawn(
-                    pos_x=origin_x,
-                    pos_y=origin_y,
+                    pos=Vec2(origin_x, origin_y),
                     angle=angle,
                     type_id=int(hit.proj.type_id),
                     owner_id=hit_creature,
@@ -634,8 +625,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
             ring_angle = float(ring_idx) * (math.pi / 6.0)
             ring_offset = Vec2.from_angle(ring_angle) * ring_radius
             ctx.pool.spawn(
-                pos_x=hit.proj.pos.x + ring_offset.x,
-                pos_y=hit.proj.pos.y + ring_offset.y,
+                pos=hit.proj.pos + ring_offset,
                 angle=ring_angle,
                 type_id=ProjectileTypeId.PLASMA_RIFLE,
                 owner_id=-100,
@@ -648,8 +638,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
         ctx.sfx_queue,
-        pos_x=float(hit.proj.pos.x),
-        pos_y=float(hit.proj.pos.y),
+        pos=hit.proj.pos,
         detail_preset=ctx.detail_preset,
     )
 
@@ -726,8 +715,7 @@ class ProjectilePool:
     def spawn(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         angle: float,
         type_id: int,
         owner_id: int,
@@ -745,10 +733,10 @@ class ProjectilePool:
 
         entry.active = True
         entry.angle = angle
-        entry.pos.x = pos_x
-        entry.pos.y = pos_y
-        entry.origin.x = pos_x
-        entry.origin.y = pos_y
+        entry.pos.x = pos.x
+        entry.pos.y = pos.y
+        entry.origin.x = pos.x
+        entry.origin.y = pos.y
         velocity = Vec2.from_angle(angle) * 1.5
         entry.vel_x = velocity.x
         entry.vel_y = velocity.y
@@ -1239,14 +1227,12 @@ class SecondaryProjectilePool:
     def spawn(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         angle: float,
         type_id: int,
         owner_id: int = -100,
         time_to_live: float = 2.0,
-        target_hint_x: float | None = None,
-        target_hint_y: float | None = None,
+        target_hint: Vec2 | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -1260,13 +1246,13 @@ class SecondaryProjectilePool:
         entry.active = True
         entry.angle = float(angle)
         entry.type_id = int(type_id)
-        entry.pos.x = float(pos_x)
-        entry.pos.y = float(pos_y)
+        entry.pos.x = float(pos.x)
+        entry.pos.y = float(pos.y)
         entry.owner_id = int(owner_id)
         entry.target_id = -1
         entry.target_hint_active = False
-        entry.target_hint_x = 0.0
-        entry.target_hint_y = 0.0
+        entry.target_hint.x = 0.0
+        entry.target_hint.y = 0.0
         entry.trail_timer = 0.0
 
         if entry.type_id == SecondaryProjectileTypeId.DETONATION:
@@ -1286,10 +1272,10 @@ class SecondaryProjectilePool:
         entry.vel_y = vy
         entry.speed = float(time_to_live)
 
-        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint_x is not None and target_hint_y is not None:
+        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
             entry.target_hint_active = True
-            entry.target_hint_x = float(target_hint_x)
-            entry.target_hint_y = float(target_hint_y)
+            entry.target_hint.x = float(target_hint.x)
+            entry.target_hint.y = float(target_hint.y)
 
         return index
 
@@ -1427,8 +1413,8 @@ class SecondaryProjectilePool:
                     search_y = float(entry.pos.y)
                     if entry.target_hint_active:
                         entry.target_hint_active = False
-                        search_x = float(entry.target_hint_x)
-                        search_y = float(entry.target_hint_y)
+                        search_x = float(entry.target_hint.x)
+                        search_y = float(entry.target_hint.y)
                     best_idx = -1
                     best_dist = 0.0
                     for idx, creature in enumerate(creatures):
