@@ -52,6 +52,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.y = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
     creature.ai_mode = 2
+    creature.move_speed = 0.0
     creature.contact_damage = 0.0
 
     result = pool.update(0.001, state=state, players=[player])
