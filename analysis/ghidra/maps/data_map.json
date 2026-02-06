@@ -2405,6 +2405,55 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f54c",
+      "comment": "Terrain texture slot 1 loaded in load_textures_step stage 5 (q1_tex1 or fallback q2).",
+      "name": "terrain_texture_layer_1",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f550",
+      "comment": "Terrain texture slot 2 loaded in load_textures_step stage 5 (q2_base or fallback q3).",
+      "name": "terrain_texture_layer_2",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f554",
+      "comment": "Terrain texture slot 3 loaded in load_textures_step stage 5 (q2_tex1 or fallback q4).",
+      "name": "terrain_texture_layer_3",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f558",
+      "comment": "Terrain texture slot 4 loaded in load_textures_step stage 5 (q3_base).",
+      "name": "terrain_texture_layer_4",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f55c",
+      "comment": "Terrain texture slot 5 loaded in load_textures_step stage 5 (q3_tex1).",
+      "name": "terrain_texture_layer_5",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f560",
+      "comment": "Terrain texture slot 6 loaded in load_textures_step stage 5 (q4_base).",
+      "name": "terrain_texture_layer_6",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f564",
+      "comment": "Terrain texture slot 7 loaded in load_textures_step stage 5 (q4_tex1).",
+      "name": "terrain_texture_layer_7",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f588",
       "comment": "Bonus HUD slot table (0x10 entries, stride 0x20 bytes).",
       "name": "bonus_hud_slot_table",

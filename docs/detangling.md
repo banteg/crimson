@@ -1399,3 +1399,7 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
     `ui_item_texts_texture`, `ui_text_pick_perk_texture`.
   - Evidence: direct `texture_get_or_load(_alt)` assignments in `load_textures_step` plus `grim_bind_texture`
     callsites in overlay/menu rendering.
+
+- Labeled terrain stage-5 texture slots `DAT_0048f54c..DAT_0048f564` as `terrain_texture_layer_1..7`.
+  - Evidence: fixed assignment order in `load_textures_step` (quest base/detail sheets, or fallback set when
+    `terrain_texture_failed != 0`) and indexed consumption via `terrain_texture_handles[...]` in terrain render paths.

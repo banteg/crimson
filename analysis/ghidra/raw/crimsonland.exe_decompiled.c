@@ -13814,10 +13814,10 @@ void terrain_generate_random(void)
 
 {
   IGrim2D_vtbl *pIVar1;
-  float handle;
   int iVar2;
   int iVar3;
-  float fVar4;
+  int iVar4;
+  float fVar5;
   float fStack_64;
   float fStack_60;
   int iStack_54;
@@ -13828,8 +13828,8 @@ void terrain_generate_random(void)
   _DAT_0048f540 = crt_rand();
   _DAT_0048f540 = _DAT_0048f540 % 7;
   crt_rand();
-  handle = DAT_0048f54c;
-  fVar4 = terrain_texture_handles;
+  iVar3 = terrain_texture_layer_1;
+  fVar5 = terrain_texture_handles;
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
@@ -13860,10 +13860,10 @@ void terrain_generate_random(void)
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)fVar4,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)((int)fVar5,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
+    iVar4 = 0;
     iVar2 = terrain_texture_height * terrain_texture_width * 800;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
@@ -13871,56 +13871,56 @@ void terrain_generate_random(void)
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar5 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
         fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
+        iVar4 = iVar4 + 1;
         iVar2 = terrain_texture_height * terrain_texture_width * 800;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+      } while (iVar4 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)handle,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(iVar3,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
+    iVar2 = 0;
+    iVar3 = terrain_texture_height * terrain_texture_width * 0x23;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar2 = iVar2 + 1;
+        iVar3 = terrain_texture_height * terrain_texture_width * 0x23;
+      } while (iVar2 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)(iStack_54,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
+    iVar2 = 0;
+    iVar3 = terrain_texture_height * terrain_texture_width * 0xf;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar4 * 6.016324e-39;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
-      } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar2 = iVar2 + 1;
+        iVar3 = terrain_texture_height * terrain_texture_width * 0xf;
+      } while (iVar2 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     _camera_offset_x = 0;
@@ -23477,28 +23477,28 @@ int load_textures_step(void)
       terrain_texture_handles =
            texture_get_or_load_alt(s_ter_ter_q1_base_jaz_00474354,unaff_retaddr);
       pcVar1 = s_ter_ter_q1_tex1_jaz_00474340;
-      DAT_0048f54c = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
+      terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
       pcVar2 = s_ter_ter_q2_base_jaz_0047432c;
-      _DAT_0048f550 = texture_get_or_load_alt(s_ter_ter_q2_base_jaz_0047432c,pcVar1);
+      terrain_texture_layer_2 = texture_get_or_load_alt(s_ter_ter_q2_base_jaz_0047432c,pcVar1);
       pcVar1 = s_ter_ter_q2_tex1_jaz_00474318;
-      _DAT_0048f554 = texture_get_or_load_alt(s_ter_ter_q2_tex1_jaz_00474318,pcVar2);
+      terrain_texture_layer_3 = texture_get_or_load_alt(s_ter_ter_q2_tex1_jaz_00474318,pcVar2);
       pcVar2 = s_ter_ter_q3_base_jaz_00474304;
-      _DAT_0048f558 = texture_get_or_load_alt(s_ter_ter_q3_base_jaz_00474304,pcVar1);
+      terrain_texture_layer_4 = texture_get_or_load_alt(s_ter_ter_q3_base_jaz_00474304,pcVar1);
       pcVar1 = s_ter_ter_q3_tex1_jaz_004742f0;
-      _DAT_0048f55c = texture_get_or_load_alt(s_ter_ter_q3_tex1_jaz_004742f0,pcVar2);
+      terrain_texture_layer_5 = texture_get_or_load_alt(s_ter_ter_q3_tex1_jaz_004742f0,pcVar2);
       pcVar2 = s_ter_ter_q4_base_jaz_004742dc;
-      _DAT_0048f560 = texture_get_or_load_alt(s_ter_ter_q4_base_jaz_004742dc,pcVar1);
-      _DAT_0048f564 = texture_get_or_load_alt(s_ter_ter_q4_tex1_jaz_004742c8,pcVar2);
+      terrain_texture_layer_6 = texture_get_or_load_alt(s_ter_ter_q4_base_jaz_004742dc,pcVar1);
+      terrain_texture_layer_7 = texture_get_or_load_alt(s_ter_ter_q4_tex1_jaz_004742c8,pcVar2);
       in_EDX = extraout_EDX_04;
     }
     else {
       pcVar2 = s_ter_fb_q1_jaz_004742b8;
       terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
       pcVar1 = s_ter_fb_q2_jaz_004742a8;
-      DAT_0048f54c = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
+      terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
       pcVar2 = s_ter_fb_q3_jaz_00474298;
-      _DAT_0048f550 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
-      _DAT_0048f554 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
+      terrain_texture_layer_2 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
+      terrain_texture_layer_3 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
       terrain_render_target = terrain_texture_handles;
       in_EDX = extraout_EDX_05;
     }
