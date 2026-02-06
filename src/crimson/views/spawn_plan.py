@@ -311,8 +311,8 @@ class SpawnPlanView:
             child_screen = self._world_to_screen(c.pos)
             parent_screen = self._world_to_screen(p.pos)
             rl.draw_line_ex(
-                child_screen.to_vector2(rl.Vector2),
-                parent_screen.to_vector2(rl.Vector2),
+                child_screen.to_rl(),
+                parent_screen.to_rl(),
                 2.0,
                 LINK_COLOR,
             )
@@ -324,8 +324,8 @@ class SpawnPlanView:
             origin_screen = self._world_to_screen(c.pos)
             target_screen = self._world_to_screen(c.pos + c.target_offset)
             rl.draw_line_ex(
-                origin_screen.to_vector2(rl.Vector2),
-                target_screen.to_vector2(rl.Vector2),
+                origin_screen.to_rl(),
+                target_screen.to_rl(),
                 2.0,
                 OFFSET_COLOR,
             )

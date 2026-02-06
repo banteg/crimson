@@ -1,17 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 
 from grim.geom import Rect, Vec2
-
-
-@dataclass(slots=True)
-class _RectLike:
-    x: float
-    y: float
-    width: float
-    height: float
 
 
 def test_vec2_length_and_length_sq() -> None:
@@ -174,12 +165,15 @@ def test_vec2_offset_helper() -> None:
     assert vec.offset(dx=5.0, dy=-1.5) == Vec2(8.0, -3.5)
 
 
-def test_vec2_to_vector2_uses_constructor() -> None:
+def test_vec2_to_rl() -> None:
     vec = Vec2(1.25, -4.5)
 
-    result = vec.to_vector2(lambda x, y: {"x": x, "y": y})
+    result = vec.to_rl()
 
-    assert result == {"x": 1.25, "y": -4.5}
+    assert hasattr(result, "x")
+    assert hasattr(result, "y")
+    assert math.isclose(float(result.x), 1.25, abs_tol=1e-9)
+    assert math.isclose(float(result.y), -4.5, abs_tol=1e-9)
 
 
 def test_rect_properties_and_helpers() -> None:
@@ -211,7 +205,7 @@ def test_rect_contains_edges() -> None:
 
 def test_rect_conversion_helpers() -> None:
     rect = Rect.from_pos_size(Vec2(1.0, 2.0), Vec2(3.0, 4.0))
-    round_trip = Rect.from_xywh(rect.to_rectangle(_RectLike))
+    round_trip = Rect.from_xywh(rect.to_rl())
 
     assert rect == Rect(1.0, 2.0, 3.0, 4.0)
     assert round_trip == rect

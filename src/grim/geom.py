@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Callable, Protocol, TypeVar
+from typing import TYPE_CHECKING, Protocol
 
 from .math import clamp
 
-TVector2 = TypeVar("TVector2")
-TRectangle = TypeVar("TRectangle")
+if TYPE_CHECKING:
+    import pyray as rl
 
 
 class SupportsXY(Protocol):
@@ -108,10 +108,10 @@ class Vec2:
     def perp_right(self) -> Vec2:
         return Vec2(self.y, -self.x)
 
-    def to_vector2(self, constructor: Callable[[float, float], TVector2]) -> TVector2:
-        """Build a target vector type (for example `pyray.Vector2`) from this Vec2."""
+    def to_rl(self) -> rl.Vector2:
+        import pyray as rl
 
-        return constructor(self.x, self.y)
+        return rl.Vector2(self.x, self.y)
 
     def to_dict(self, *, ndigits: int | None = None) -> dict[str, float]:
         if ndigits is None:
@@ -213,7 +213,7 @@ class Rect:
         py = float(point.y)
         return self.x <= px <= self.right and self.y <= py <= self.bottom
 
-    def to_rectangle(
-        self, constructor: Callable[[float, float, float, float], TRectangle]
-    ) -> TRectangle:
-        return constructor(self.x, self.y, self.w, self.h)
+    def to_rl(self) -> rl.Rectangle:
+        import pyray as rl
+
+        return rl.Rectangle(self.x, self.y, self.w, self.h)

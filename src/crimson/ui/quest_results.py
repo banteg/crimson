@@ -637,7 +637,7 @@ class QuestResultsUi:
             fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
             draw_classic_menu_panel(
                 self.assets.menu_panel,
-                dst=panel.to_rectangle(rl.Rectangle),
+                dst=panel.to_rl(),
                 tint=rl.WHITE,
                 shadow=fx_detail,
             )

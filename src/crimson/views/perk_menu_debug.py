@@ -309,7 +309,7 @@ class PerkMenuDebugView:
 
         self._draw_perk_prompt()
         if self._show_prompt_rect and self._prompt_rect is not None:
-            rl.draw_rectangle_lines_ex(self._prompt_rect.to_rectangle(rl.Rectangle), 1.0, rl.Color(255, 0, 255, 255))
+            rl.draw_rectangle_lines_ex(self._prompt_rect.to_rl(), 1.0, rl.Color(255, 0, 255, 255))
 
         if self._show_menu and self._assets is not None:
             choices = self._choices()
@@ -330,7 +330,7 @@ class PerkMenuDebugView:
                 )
 
                 if self._assets.menu_panel is not None:
-                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rectangle(rl.Rectangle))
+                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rl())
 
                 if self._assets.title_pick_perk is not None:
                     tex = self._assets.title_pick_perk
@@ -338,7 +338,7 @@ class PerkMenuDebugView:
                     rl.draw_texture_pro(
                         tex,
                         src,
-                        computed.title.to_rectangle(rl.Rectangle),
+                        computed.title.to_rl(),
                         rl.Vector2(0.0, 0.0),
                         0.0,
                         rl.WHITE,

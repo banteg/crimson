@@ -186,7 +186,7 @@ class SmallFontDebugView:
     ) -> None:
         r, g, b = MENU_ITEM_RGB
         color = rl.Color(int(r), int(g), int(b), int(255 * MENU_ITEM_ALPHA_IDLE))
-        rl.draw_text_ex(font, text, pos.to_vector2(rl.Vector2), float(font_size_px), float(spacing), color)
+        rl.draw_text_ex(font, text, pos.to_rl(), float(font_size_px), float(spacing), color)
         try:
             size = rl.measure_text_ex(font, text, float(font_size_px), float(spacing))
             width = float(size.x)

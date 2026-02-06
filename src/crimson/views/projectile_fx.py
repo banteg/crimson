@@ -489,8 +489,8 @@ class ProjectileFxView:
             beam_start = self._camera_world_to_screen(beam.start)
             beam_end = self._camera_world_to_screen(beam.end)
             rl.draw_line_ex(
-                beam_start.to_vector2(rl.Vector2),
-                beam_end.to_vector2(rl.Vector2),
+                beam_start.to_rl(),
+                beam_end.to_rl(),
                 2.0,
                 rl.Color(150, 220, 255, alpha),
             )

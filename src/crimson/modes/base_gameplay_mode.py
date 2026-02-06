@@ -192,7 +192,7 @@ class BaseGameplayMode:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _ui_mouse_pos(self) -> rl.Vector2:
-        return self._ui_mouse.to_vector2(rl.Vector2)
+        return self._ui_mouse.to_rl()
 
     def _update_ui_mouse(self) -> None:
         mouse = rl.get_mouse_position()

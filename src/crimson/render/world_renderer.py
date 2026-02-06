@@ -318,7 +318,7 @@ class WorldRenderer:
         # primitives that still use triangles internally, but allow higher
         # segment counts for a smoother result when scaled.
         seg_count = max(self._grim2d_circle_segments_filled(radius), 64, int(radius))
-        center_rl = center.to_vector2(rl.Vector2)
+        center_rl = center.to_rl()
         rl.draw_circle_sector(center_rl, float(radius), 0.0, 360.0, int(seg_count), fill)
 
         seg_count = max(self._grim2d_circle_segments_outline(radius), int(seg_count))

@@ -302,7 +302,7 @@ class PerkSelectionView:
 
         panel_tex = self._ui_assets.menu_panel
         if panel_tex is not None:
-            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rectangle(rl.Rectangle))
+            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl())
 
         title_tex = self._ui_assets.title_pick_perk
         if title_tex is not None:
@@ -310,7 +310,7 @@ class PerkSelectionView:
             rl.draw_texture_pro(
                 title_tex,
                 src,
-                computed.title.to_rectangle(rl.Rectangle),
+                computed.title.to_rl(),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 rl.WHITE,

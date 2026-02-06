@@ -293,7 +293,7 @@ class PerkMenuController:
 
         panel_tex = ctx.assets.menu_panel
         if panel_tex is not None:
-            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rectangle(rl.Rectangle), shadow=bool(ctx.fx_detail))
+            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.fx_detail))
 
         title_tex = ctx.assets.title_pick_perk
         if title_tex is not None:
@@ -301,7 +301,7 @@ class PerkMenuController:
             rl.draw_texture_pro(
                 title_tex,
                 src,
-                computed.title.to_rectangle(rl.Rectangle),
+                computed.title.to_rl(),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 rl.WHITE,
