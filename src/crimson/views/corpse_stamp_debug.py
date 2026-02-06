@@ -123,7 +123,7 @@ class CorpseStampDebugView:
         rl.clear_background(BG)
         rl.end_texture_mode()
         # GroundRenderer treats this as an internal invariant; set it for debug fills.
-        ground._render_target_ready = True  # type: ignore[attr-defined]
+        ground._render_target_ready = True
 
     def _bake_shadow_only(self) -> None:
         ground = self._ground
@@ -145,7 +145,7 @@ class CorpseStampDebugView:
         rl.end_texture_mode()
 
         ground._set_texture_filters((bodyset,), point=False)
-        ground._render_target_ready = True  # type: ignore[attr-defined]
+        ground._render_target_ready = True
 
     def _bake_color_only(self) -> None:
         ground = self._ground
