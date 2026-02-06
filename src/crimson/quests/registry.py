@@ -19,6 +19,9 @@ def register_quest(
     terrain_ids: tuple[int, int, int] | None = None,
     builder_address: int | None = None,
 ) -> Callable[[QuestBuilder], QuestBuilder]:
+    def _builder_name(builder_fn: QuestBuilder) -> str:
+        return str(getattr(builder_fn, "__name__", type(builder_fn).__name__))
+
     def decorator(builder: QuestBuilder) -> QuestBuilder:
         quest = QuestDefinition(
             level=level,
@@ -34,7 +37,9 @@ def register_quest(
         )
         existing = _QUESTS.get(quest.level)
         if existing is not None:
-            raise ValueError(f"duplicate quest level {quest.level}: {existing.builder.__name__} vs {builder.__name__}")
+            raise ValueError(
+                f"duplicate quest level {quest.level}: {_builder_name(existing.builder)} vs {_builder_name(builder)}"
+            )
         _QUESTS[quest.level] = quest
         return builder
 

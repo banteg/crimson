@@ -406,7 +406,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry | None] = [None] * 26
 
-    def set_entry(idx: int, pos: Vec2, spawn_id: int, trigger: int, count: int) -> None:
+    def set_entry(idx: int, pos: Vec2, spawn_id: SpawnId, trigger: int, count: int) -> None:
         if idx < 0 or idx >= len(entries):
             return
         entries[idx] = spawn(pos, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
