@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import random
 
 import pyray as rl
@@ -40,9 +40,8 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 @dataclass(slots=True)
 class _TutorialUiLayout:
-    panel_y: float = 64.0
-    panel_pad_x: float = 20.0
-    panel_pad_y: float = 8.0
+    panel_pos: Vec2 = field(default_factory=lambda: Vec2(0.0, 64.0))
+    panel_padding: Vec2 = field(default_factory=lambda: Vec2(20.0, 8.0))
 
 
 class TutorialMode(BaseGameplayMode):
@@ -175,8 +174,8 @@ class TutorialMode(BaseGameplayMode):
         for line in lines:
             max_w = max(max_w, float(self._ui_text_width(line, scale)))
 
-        pad_x = self._ui_layout.panel_pad_x * scale
-        pad_y = self._ui_layout.panel_pad_y * scale
+        pad_x = self._ui_layout.panel_padding.x * scale
+        pad_y = self._ui_layout.panel_padding.y * scale
         w = max_w + pad_x * 2.0
         h = float(len(lines)) * line_h + pad_y * 2.0
 
@@ -204,7 +203,7 @@ class TutorialMode(BaseGameplayMode):
         if stage == 8:
             rect, _lines, _line_h = self._prompt_panel_rect(
                 self._tutorial_actions.prompt_text,
-                pos=Vec2(0.0, self._ui_layout.panel_y),
+                pos=self._ui_layout.panel_pos,
                 scale=1.0,
             )
             gap = 18.0
@@ -392,11 +391,14 @@ class TutorialMode(BaseGameplayMode):
             self._draw_prompt_panel(
                 actions.prompt_text,
                 alpha=float(actions.prompt_alpha),
-                pos=Vec2(0.0, self._ui_layout.panel_y),
+                pos=self._ui_layout.panel_pos,
             )
         if actions.hint_text and actions.hint_alpha > 1e-3:
-            y = self._ui_layout.panel_y + 84.0
-            self._draw_prompt_panel(actions.hint_text, alpha=float(actions.hint_alpha), pos=Vec2(0.0, y))
+            self._draw_prompt_panel(
+                actions.hint_text,
+                alpha=float(actions.hint_alpha),
+                pos=self._ui_layout.panel_pos + Vec2(0.0, 84.0),
+            )
 
         if self._ui_assets is None:
             return
@@ -405,7 +407,7 @@ class TutorialMode(BaseGameplayMode):
         if stage == 8:
             rect, _lines, _line_h = self._prompt_panel_rect(
                 actions.prompt_text,
-                pos=Vec2(0.0, self._ui_layout.panel_y),
+                pos=self._ui_layout.panel_pos,
                 scale=1.0,
             )
             gap = 18.0
@@ -447,8 +449,8 @@ class TutorialMode(BaseGameplayMode):
 
         text_alpha = int(255 * clamp(alpha * 0.9, 0.0, 1.0))
         color = rl.Color(255, 255, 255, text_alpha)
-        x = float(rect.x + self._ui_layout.panel_pad_x)
-        line_y = float(rect.y + self._ui_layout.panel_pad_y)
+        x = float(rect.x + self._ui_layout.panel_padding.x)
+        line_y = float(rect.y + self._ui_layout.panel_padding.y)
         for line in lines:
             self._draw_ui_text(line, Vec2(x, line_y), color, scale=1.0)
             line_y += line_h

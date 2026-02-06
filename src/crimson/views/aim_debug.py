@@ -40,8 +40,7 @@ class AimDebugView:
 
         self.close_requested = False
 
-        self._ui_mouse_x = 0.0
-        self._ui_mouse_y = 0.0
+        self._ui_mouse_pos = Vec2()
         self._cursor_pulse_time = 0.0
 
         self._simulate = False
@@ -59,8 +58,10 @@ class AimDebugView:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse_pos = Vec2(
+            clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0)),
+            clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0)),
+        )
 
     def _draw_cursor_glow(self, *, pos: Vec2) -> None:
         draw_cursor_glow(self._world.particles_texture, pos=pos)
@@ -121,8 +122,7 @@ class AimDebugView:
         self._player = self._world.players[0] if self._world.players else None
         self._world.open()
         self._world.update_camera(0.0)
-        self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
-        self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        self._ui_mouse_pos = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
 
     def close(self) -> None:
@@ -137,7 +137,7 @@ class AimDebugView:
         self._handle_debug_input()
         self._cursor_pulse_time += dt_frame * 1.1
 
-        aim = self._world.screen_to_world(Vec2(self._ui_mouse_x, self._ui_mouse_y))
+        aim = self._world.screen_to_world(self._ui_mouse_pos)
         if self._player is not None:
             self._player.aim = aim
             if self._force_heat:
@@ -173,8 +173,7 @@ class AimDebugView:
         else:
             rl.clear_background(rl.Color(10, 10, 12, 255))
 
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_screen = self._ui_mouse_pos
 
         if self._draw_test_circle:
             cx = float(rl.get_screen_width()) * 0.5
@@ -183,9 +182,9 @@ class AimDebugView:
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:
-            self._draw_cursor_glow(pos=Vec2(mouse_x, mouse_y))
+            self._draw_cursor_glow(pos=mouse_screen)
 
-        mouse_world = self._world.screen_to_world(Vec2(mouse_x, mouse_y))
+        mouse_world = self._world.screen_to_world(mouse_screen)
         mouse_back = self._world.world_to_screen(mouse_world)
 
         if self._draw_expected_overlay and self._player is not None:
@@ -204,8 +203,8 @@ class AimDebugView:
                 rl.Color(80, 220, 120, 240),
             )
             rl.draw_line(
-                int(mouse_x),
-                int(mouse_y),
+                int(mouse_screen.x),
+                int(mouse_screen.y),
                 int(aim_screen.x),
                 int(aim_screen.y),
                 rl.Color(80, 220, 120, 200),
@@ -218,7 +217,7 @@ class AimDebugView:
                 f"H force_heat={self._force_heat}  forced_heat={self._forced_heat:.2f}  [ ] adjust",
                 f"test_circle_radius={self._test_circle_radius:.0f}  -/+ adjust",
                 (
-                    f"mouse=({mouse_x:.1f},{mouse_y:.1f}) -> "
+                    f"mouse=({mouse_screen.x:.1f},{mouse_screen.y:.1f}) -> "
                     f"world=({mouse_world.x:.1f},{mouse_world.y:.1f}) -> "
                     f"screen=({mouse_back.x:.1f},{mouse_back.y:.1f})"
                 ),

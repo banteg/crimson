@@ -118,16 +118,18 @@ class ProjectileRenderDebugView:
         end_x = (-camera.x) + screen_size.x
         x = start_x
         while x <= end_x:
-            sx = int((x + camera.x) * view_scale.x)
-            rl.draw_line(sx, 0, sx, int(out_h), GRID_COLOR)
+            line_start = Vec2((x + camera.x) * view_scale.x, 0.0)
+            line_end = Vec2(line_start.x, out_h)
+            rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             x += step
 
         start_y = math.floor((-camera.y) / step) * step
         end_y = (-camera.y) + screen_size.y
         y = start_y
         while y <= end_y:
-            sy = int((y + camera.y) * view_scale.y)
-            rl.draw_line(0, sy, int(out_w), sy, GRID_COLOR)
+            line_start = Vec2(0.0, (y + camera.y) * view_scale.y)
+            line_end = Vec2(out_w, line_start.y)
+            rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             y += step
 
     def _handle_debug_input(self) -> None:

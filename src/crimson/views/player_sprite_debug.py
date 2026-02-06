@@ -188,14 +188,24 @@ class PlayerSpriteDebugView:
             grid_minor = rl.Color(40, 50, 65, 140)
             for i in range(0, int(WORLD_SIZE) + 1, int(GRID_STEP)):
                 color = grid_major if i % 256 == 0 else grid_minor
-                sx = float(i) + camera.x
-                sy0 = camera.y
-                sy1 = WORLD_SIZE + camera.y
-                rl.draw_line(int(sx), int(sy0), int(sx), int(sy1), color)
-                sy = float(i) + camera.y
-                sx0 = camera.x
-                sx1 = WORLD_SIZE + camera.x
-                rl.draw_line(int(sx0), int(sy), int(sx1), int(sy), color)
+                vertical_start = Vec2(float(i) + camera.x, camera.y)
+                vertical_end = Vec2(vertical_start.x, WORLD_SIZE + camera.y)
+                rl.draw_line(
+                    int(vertical_start.x),
+                    int(vertical_start.y),
+                    int(vertical_end.x),
+                    int(vertical_end.y),
+                    color,
+                )
+                horizontal_start = Vec2(camera.x, float(i) + camera.y)
+                horizontal_end = Vec2(WORLD_SIZE + camera.x, horizontal_start.y)
+                rl.draw_line(
+                    int(horizontal_start.x),
+                    int(horizontal_start.y),
+                    int(horizontal_end.x),
+                    int(horizontal_end.y),
+                    color,
+                )
 
         player_screen = self._player_pos + camera
         px = player_screen.x

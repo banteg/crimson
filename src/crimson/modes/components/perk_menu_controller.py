@@ -174,7 +174,7 @@ class PerkMenuController:
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_w)
+        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -193,9 +193,8 @@ class PerkMenuController:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(ctx.font, label, pos=Vec2(item_x, item_y), scale=scale)
+            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             if rl.check_collision_point_rec(ctx.mouse, rect):
                 self._selected_index = idx
                 if click:
@@ -225,11 +224,9 @@ class PerkMenuController:
             scale=scale,
             force_wide=self._cancel_button.force_wide,
         )
-        cancel_x = computed.cancel_x
-        cancel_y = computed.cancel_y
         if button_update(
             self._cancel_button,
-            pos=Vec2(cancel_x, cancel_y),
+            pos=computed.cancel_pos,
             width=cancel_w,
             dt_ms=float(dt_ui_ms),
             mouse=ctx.mouse,
@@ -280,7 +277,7 @@ class PerkMenuController:
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
         origin = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_w)
+        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         master_owned = int(ctx.player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(ctx.player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
@@ -310,17 +307,14 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(
-                ctx.font, sponsor, Vec2(computed.sponsor_x, computed.sponsor_y), scale=scale, color=UI_SPONSOR_COLOR
-            )
+            draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(ctx.font, label, pos=Vec2(item_x, item_y), scale=scale)
+            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             hovered = rl.check_collision_point_rec(ctx.mouse, rect) or (idx == self._selected_index)
-            draw_menu_item(ctx.font, label, pos=Vec2(item_x, item_y), scale=scale, hovered=hovered)
+            draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
@@ -345,7 +339,7 @@ class PerkMenuController:
             ctx.assets,
             ctx.font,
             self._cancel_button,
-            pos=Vec2(computed.cancel_x, computed.cancel_y),
+            pos=computed.cancel_pos,
             width=cancel_w,
             scale=scale,
         )

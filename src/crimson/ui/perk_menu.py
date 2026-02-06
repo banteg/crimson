@@ -50,24 +50,19 @@ class PerkMenuLayout:
     # Capture (1024x768) shows the perk menu panel uses the 3-slice variant:
     #   open bbox (-108,119) -> (402,497)
     # which corresponds to ui_element pos (-45,110) + geom (-63,-81) and size 510x378.
-    panel_x: float = -108.0
-    panel_y: float = 29.0
-    panel_w: float = 510.0
-    panel_h: float = 378.0
+    panel_pos: Vec2 = field(default_factory=lambda: Vec2(-108.0, 29.0))
+    panel_size: Vec2 = field(default_factory=lambda: Vec2(510.0, 378.0))
 
 
 @dataclass(slots=True)
 class PerkMenuComputedLayout:
     panel: rl.Rectangle
     title: rl.Rectangle
-    sponsor_x: float
-    sponsor_y: float
-    list_x: float
-    list_y: float
+    sponsor_pos: Vec2
+    list_pos: Vec2
     list_step_y: float
     desc: rl.Rectangle
-    cancel_x: float
-    cancel_y: float
+    cancel_pos: Vec2
 
 
 def perk_menu_compute_layout(
@@ -83,13 +78,12 @@ def perk_menu_compute_layout(
 ) -> PerkMenuComputedLayout:
     layout_w = screen_w / scale if scale else screen_w
     widescreen_shift_y = menu_widescreen_y_shift(layout_w)
-    panel_x = layout.panel_x + panel_slide_x
-    panel_y = layout.panel_y + widescreen_shift_y
+    panel_pos = layout.panel_pos + Vec2(panel_slide_x, widescreen_shift_y)
     panel = rl.Rectangle(
-        origin.x + panel_x * scale,
-        origin.y + panel_y * scale,
-        layout.panel_w * scale,
-        layout.panel_h * scale,
+        origin.x + panel_pos.x * scale,
+        origin.y + panel_pos.y * scale,
+        layout.panel_size.x * scale,
+        layout.panel_size.y * scale,
     )
     anchor_x = panel.x + MENU_PANEL_ANCHOR_X * scale
     anchor_y = panel.y + MENU_PANEL_ANCHOR_Y * scale
@@ -101,37 +95,37 @@ def perk_menu_compute_layout(
         MENU_TITLE_H * scale,
     )
 
-    sponsor_x = anchor_x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale
-    sponsor_y = anchor_y + MENU_SPONSOR_Y * scale
+    sponsor_pos = Vec2(
+        anchor_x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale,
+        anchor_y + MENU_SPONSOR_Y * scale,
+    )
 
     list_step_y = MENU_LIST_STEP_EXPERT if expert_owned else MENU_LIST_STEP_NORMAL
-    list_x = anchor_x
-    list_y = anchor_y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale
+    list_pos = Vec2(
+        anchor_x,
+        anchor_y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale,
+    )
 
     desc_x = anchor_x + MENU_DESC_X * scale
-    desc_y = list_y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale
+    desc_y = list_pos.y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale
     if choice_count > 5:
         desc_y -= MENU_DESC_Y_EXTRA_TIGHTEN * scale
 
     # Keep the description within the monitor screen area and above the button.
     desc_right = panel.x + MENU_DESC_RIGHT_X * scale
-    cancel_x = anchor_x + MENU_BUTTON_X * scale
-    cancel_y = anchor_y + MENU_BUTTON_Y * scale
+    cancel_pos = Vec2(anchor_x + MENU_BUTTON_X * scale, anchor_y + MENU_BUTTON_Y * scale)
     desc_w = max(0.0, float(desc_right - desc_x))
-    desc_h = max(0.0, float(cancel_y - 12.0 * scale - desc_y))
+    desc_h = max(0.0, float(cancel_pos.y - 12.0 * scale - desc_y))
     desc = rl.Rectangle(float(desc_x), float(desc_y), float(desc_w), float(desc_h))
 
     return PerkMenuComputedLayout(
         panel=panel,
         title=title,
-        sponsor_x=float(sponsor_x),
-        sponsor_y=float(sponsor_y),
-        list_x=float(list_x),
-        list_y=float(list_y),
+        sponsor_pos=sponsor_pos,
+        list_pos=list_pos,
         list_step_y=float(list_step_y * scale),
         desc=desc,
-        cancel_x=float(cancel_x),
-        cancel_y=float(cancel_y),
+        cancel_pos=cancel_pos,
     )
 
 

@@ -97,10 +97,11 @@ class CreditsView:
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
-    def _panel_top_left(self, *, scale: float) -> tuple[float, float]:
-        x0 = CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale
-        y0 = CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale
-        return float(x0), float(y0)
+    def _panel_top_left(self, *, scale: float) -> Vec2:
+        return Vec2(
+            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
+            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+        )
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -120,7 +121,7 @@ class CreditsView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
+        panel_top_left = self._panel_top_left(scale=scale)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
@@ -129,7 +130,7 @@ class CreditsView:
         w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            pos=Vec2(panel_x0 + _BACK_BUTTON_X * scale, panel_y0 + _BACK_BUTTON_Y * scale),
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
             width=w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -153,8 +154,8 @@ class CreditsView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
-        dst = rl.Rectangle(panel_x0, panel_y0, MENU_PANEL_WIDTH * scale, CREDITS_PANEL_HEIGHT * scale)
+        panel_top_left = self._panel_top_left(scale=scale)
+        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, MENU_PANEL_WIDTH * scale, CREDITS_PANEL_HEIGHT * scale)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
@@ -162,7 +163,7 @@ class CreditsView:
         draw_small_text(
             font,
             "credits",
-            Vec2(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale),
+            panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale),
             1.0 * scale,
             rl.Color(255, 255, 255, 255),
         )
@@ -174,7 +175,7 @@ class CreditsView:
                 textures,
                 font,
                 self._back_button,
-                pos=Vec2(panel_x0 + _BACK_BUTTON_X * scale, panel_y0 + _BACK_BUTTON_Y * scale),
+                pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
                 width=back_w,
                 scale=scale,
             )
@@ -189,8 +190,10 @@ class CreditsView:
         sign = assets.sign
         screen_w = float(self._state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * sign_scale
         sign_h = MENU_SIGN_HEIGHT * sign_scale
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
@@ -201,14 +204,14 @@ class CreditsView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,

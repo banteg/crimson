@@ -33,11 +33,9 @@ QUEST_NUMBER_Y_MULTIPLIER = 7.36
 
 @dataclass(frozen=True, slots=True)
 class QuestTitleOverlayLayout:
-    title_x: float
-    title_y: float
+    title_pos: Vec2
     title_scale: float
-    number_x: float
-    number_y: float
+    number_pos: Vec2
     number_scale: float
 
 
@@ -64,23 +62,20 @@ def layout_quest_title_overlay(
     # The game uses integer division for screen center (width/2, height/2) before converting to float.
     center_x = float(int(screen_width) // 2)
     center_y = float(int(screen_height) // 2)
-    title_x = center_x - (title_width / 2.0)
-    title_y = center_y - QUEST_TITLE_Y_OFFSET
+    title_pos = Vec2(center_x - (title_width / 2.0), center_y - QUEST_TITLE_Y_OFFSET)
 
     number_x = (
-        title_x
+        title_pos.x
         - (len(number) * number_scale * QUEST_NUMBER_HALF_ADVANCE)
         - (number_scale * QUEST_NUMBER_BASE_GAP)
         - QUEST_NUMBER_FIXED_OFFSET
     )
-    number_y = title_y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
+    number_y = title_pos.y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
 
     return QuestTitleOverlayLayout(
-        title_x=title_x,
-        title_y=title_y,
+        title_pos=title_pos,
         title_scale=title_scale,
-        number_x=number_x,
-        number_y=number_y,
+        number_pos=Vec2(number_x, number_y),
         number_scale=number_scale,
     )
 
@@ -98,10 +93,11 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alp
     title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
     number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO * alpha))
 
-    draw_grim_mono_text(font, title, Vec2(layout.title_x, layout.title_y), layout.title_scale, title_color)
+    draw_grim_mono_text(font, title, layout.title_pos, layout.title_scale, title_color)
     draw_grim_mono_text(
         font,
         number,
-        Vec2(layout.number_x, layout.number_y), layout.number_scale,
+        layout.number_pos,
+        layout.number_scale,
         number_color,
     )

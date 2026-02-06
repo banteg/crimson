@@ -208,9 +208,8 @@ class PerkSelectionView:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
+            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             if rl.check_collision_point_rec(mouse, rect):
                 self._perk_menu_selected = idx
                 if click:
@@ -229,12 +228,9 @@ class PerkSelectionView:
         cancel_w = button_width(
             self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
         )
-        cancel_x = computed.cancel_x
-        button_y = computed.cancel_y
-
         cancel_clicked = button_update(
             self._cancel_button,
-            pos=Vec2(cancel_x, button_y),
+            pos=computed.cancel_pos,
             width=cancel_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -322,7 +318,7 @@ class PerkSelectionView:
             draw_ui_text(
                 self._small,
                 sponsor,
-                Vec2(computed.sponsor_x, computed.sponsor_y),
+                computed.sponsor_pos,
                 scale=scale,
                 color=UI_SPONSOR_COLOR,
             )
@@ -330,11 +326,10 @@ class PerkSelectionView:
         mouse = rl.get_mouse_position()
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
+            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
-            draw_menu_item(self._small, label, pos=Vec2(item_x, item_y), scale=scale, hovered=hovered)
+            draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]
         desc = perk_display_description(int(selected))
@@ -355,10 +350,13 @@ class PerkSelectionView:
         cancel_w = button_width(
             self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
         )
-        cancel_x = computed.cancel_x
-        button_y = computed.cancel_y
         button_draw(
-            self._ui_assets, self._small, self._cancel_button, pos=Vec2(cancel_x, button_y), width=cancel_w, scale=scale
+            self._ui_assets,
+            self._small,
+            self._cancel_button,
+            pos=computed.cancel_pos,
+            width=cancel_w,
+            scale=scale,
         )
 
         cursor_draw(self._ui_assets, mouse=mouse, scale=scale)

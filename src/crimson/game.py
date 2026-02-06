@@ -264,6 +264,14 @@ QUEST_BACK_BUTTON_X_OFFSET = 138.0
 QUEST_BACK_BUTTON_Y_OFFSET = 212.0
 QUEST_PANEL_HEIGHT = 378.0
 
+
+@dataclass(frozen=True, slots=True)
+class _QuestMenuLayout:
+    title_pos: Vec2
+    icons_start_pos: Vec2
+    list_pos: Vec2
+
+
 # game_update_victory_screen (0x00406350): used as the "end note" screen after the final quest.
 END_NOTE_PANEL_POS_X = -45.0
 END_NOTE_PANEL_POS_Y = 110.0
@@ -436,8 +444,10 @@ class QuestsMenuView:
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_x = layout["list_x"] + QUEST_BACK_BUTTON_X_OFFSET
-            back_y = self._rows_y0(layout) + QUEST_BACK_BUTTON_Y_OFFSET
+            back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
+                QUEST_BACK_BUTTON_X_OFFSET,
+                QUEST_BACK_BUTTON_Y_OFFSET,
+            )
             dt_ms = min(float(dt), 0.1) * 1000.0
             font = self._ensure_small_font()
             back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
@@ -445,7 +455,7 @@ class QuestsMenuView:
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
             if button_update(
                 self._back_button,
-                pos=Vec2(float(back_x), float(back_y)),
+                pos=back_pos,
                 width=float(back_w),
                 dt_ms=float(dt_ms),
                 mouse=mouse,
@@ -494,32 +504,26 @@ class QuestsMenuView:
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self._state)
 
-    def _layout(self) -> dict[str, float]:
+    def _layout(self) -> _QuestMenuLayout:
         # `sub_447d40` base sums:
         #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
         #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
         x_sum = QUEST_MENU_BASE_X + QUEST_MENU_PANEL_OFFSET_X
         y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
 
-        title_x = x_sum + QUEST_TITLE_X_OFFSET
-        title_y = y_sum + QUEST_TITLE_Y_OFFSET
-        icons_x0 = title_x + QUEST_STAGE_ICON_X_OFFSET
-        icons_y = title_y + QUEST_STAGE_ICON_Y_OFFSET
-        last_icon_x = icons_x0 + QUEST_STAGE_ICON_STEP * 4.0
-        list_x = last_icon_x - 208.0 + 16.0
-        list_y0 = title_y + QUEST_LIST_Y_OFFSET
-        return {
-            "title_x": title_x,
-            "title_y": title_y,
-            "icons_x0": icons_x0,
-            "icons_y": icons_y,
-            "list_x": list_x,
-            "list_y0": list_y0,
-        }
+        title_pos = Vec2(x_sum + QUEST_TITLE_X_OFFSET, y_sum + QUEST_TITLE_Y_OFFSET)
+        icons_start_pos = title_pos + Vec2(QUEST_STAGE_ICON_X_OFFSET, QUEST_STAGE_ICON_Y_OFFSET)
+        last_icon_x = icons_start_pos.x + QUEST_STAGE_ICON_STEP * 4.0
+        list_pos = Vec2(last_icon_x - 208.0 + 16.0, title_pos.y + QUEST_LIST_Y_OFFSET)
+        return _QuestMenuLayout(
+            title_pos=title_pos,
+            icons_start_pos=icons_start_pos,
+            list_pos=list_pos,
+        )
 
-    def _hovered_stage(self, layout: dict[str, float]) -> int | None:
-        title_y = layout["title_y"]
-        x0 = layout["icons_x0"]
+    def _hovered_stage(self, layout: _QuestMenuLayout) -> int | None:
+        title_y = layout.title_pos.y
+        x0 = layout.icons_start_pos.x
         mouse = rl.get_mouse_position()
         for stage in range(1, 6):
             x = x0 + float(stage - 1) * QUEST_STAGE_ICON_STEP
@@ -528,7 +532,7 @@ class QuestsMenuView:
                 return stage
         return None
 
-    def _hardcore_checkbox_clicked(self, layout: dict[str, float]) -> bool:
+    def _hardcore_checkbox_clicked(self, layout: _QuestMenuLayout) -> bool:
         status = self._state.status
         if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
             return False
@@ -544,13 +548,12 @@ class QuestsMenuView:
         label = "Hardcore"
         label_w = measure_small_text_width(font, label, text_scale)
 
-        x = layout["list_x"] + QUEST_HARDCORE_CHECKBOX_X_OFFSET
-        y = layout["list_y0"] + QUEST_HARDCORE_CHECKBOX_Y_OFFSET
+        check_pos = layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
         rect_w = float(check_on.width) + 6.0 + label_w
         rect_h = max(float(check_on.height), font.cell_size * text_scale)
 
         mouse = rl.get_mouse_position()
-        hovered = x <= mouse.x <= x + rect_w and y <= mouse.y <= y + rect_h
+        hovered = check_pos.x <= mouse.x <= check_pos.x + rect_w and check_pos.y <= mouse.y <= check_pos.y + rect_h
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             config.data["hardcore_flag"] = 0 if hardcore else 1
             self._dirty = True
@@ -578,16 +581,16 @@ class QuestsMenuView:
                 return row
         return None
 
-    def _rows_y0(self, layout: dict[str, float]) -> float:
+    def _rows_y0(self, layout: _QuestMenuLayout) -> float:
         # `sub_447d40` adds +10 to the list Y after rendering the Hardcore checkbox.
         status = self._state.status
-        y0 = layout["list_y0"]
+        y0 = layout.list_pos.y
         if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
             y0 += QUEST_HARDCORE_LIST_Y_SHIFT
         return y0
 
-    def _hovered_row(self, layout: dict[str, float]) -> int | None:
-        list_x = layout["list_x"]
+    def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
+        list_x = layout.list_pos.x
         y0 = self._rows_y0(layout)
         mouse = rl.get_mouse_position()
         for row in range(10):
@@ -695,11 +698,9 @@ class QuestsMenuView:
 
     def _draw_contents(self) -> None:
         layout = self._layout()
-        title_x = layout["title_x"]
-        title_y = layout["title_y"]
-        icons_x0 = layout["icons_x0"]
-        icons_y = layout["icons_y"]
-        list_x = layout["list_x"]
+        title_pos = layout.title_pos
+        icons_start_pos = layout.icons_start_pos
+        list_pos = layout.list_pos
 
         stage = int(self._stage)
         if stage < 1:
@@ -717,7 +718,7 @@ class QuestsMenuView:
             rl.draw_texture_pro(
                 title_tex,
                 rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
-                rl.Rectangle(title_x, title_y, QUEST_TITLE_W, QUEST_TITLE_H),
+                rl.Rectangle(title_pos.x, title_pos.y, QUEST_TITLE_W, QUEST_TITLE_H),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 rl.Color(179, 179, 179, 179),
@@ -731,7 +732,7 @@ class QuestsMenuView:
             icon = self._stage_icons.get(idx)
             if icon is None:
                 continue
-            x = icons_x0 + float(idx - 1) * QUEST_STAGE_ICON_STEP
+            x = icons_start_pos.x + float(idx - 1) * QUEST_STAGE_ICON_STEP
             local_scale = 1.0 if idx == stage else QUEST_STAGE_ICON_SCALE_UNSELECTED
             size = QUEST_STAGE_ICON_SIZE * local_scale
             tint = base_tint
@@ -742,7 +743,7 @@ class QuestsMenuView:
             rl.draw_texture_pro(
                 icon,
                 rl.Rectangle(0.0, 0.0, float(icon.width), float(icon.height)),
-                rl.Rectangle(x, icons_y, size, size),
+                rl.Rectangle(x, icons_start_pos.y, size, size),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 tint,
@@ -762,17 +763,22 @@ class QuestsMenuView:
             check_off = self._check_off
             if check_on is not None and check_off is not None:
                 check_tex = check_on if hardcore_flag else check_off
-                x = list_x + QUEST_HARDCORE_CHECKBOX_X_OFFSET
-                y = layout["list_y0"] + QUEST_HARDCORE_CHECKBOX_Y_OFFSET
+                check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
                 rl.draw_texture_pro(
                     check_tex,
                     rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-                    rl.Rectangle(x, y, float(check_tex.width), float(check_tex.height)),
+                    rl.Rectangle(check_pos.x, check_pos.y, float(check_tex.width), float(check_tex.height)),
                     rl.Vector2(0.0, 0.0),
                     0.0,
                     rl.WHITE,
                 )
-                draw_small_text(font, "Hardcore", Vec2(x + float(check_tex.width) + 6.0, y + 1.0), 1.0, base_color)
+                draw_small_text(
+                    font,
+                    "Hardcore",
+                    check_pos + Vec2(float(check_tex.width) + 6.0, 1.0),
+                    1.0,
+                    base_color,
+                )
 
         # Quest list (10 rows).
         for row in range(10):
@@ -780,42 +786,41 @@ class QuestsMenuView:
             unlocked = self._quest_unlocked(stage, row)
             color = hover_color if hovered_row == row else base_color
 
-            draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_x, y), 1.0, color)
+            draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_pos.x, y), 1.0, color)
 
             if unlocked:
                 title = self._quest_title(stage, row)
             else:
                 title = "???"
-            draw_small_text(font, title, Vec2(list_x + QUEST_LIST_NAME_X_OFFSET, y), 1.0, color)
+            draw_small_text(font, title, Vec2(list_pos.x + QUEST_LIST_NAME_X_OFFSET, y), 1.0, color)
             title_w = measure_small_text_width(font, title, 1.0) if unlocked else 0.0
             if unlocked:
                 line_y = y + 13.0
-                rl.draw_line(int(list_x), int(line_y), int(list_x + title_w + 32.0), int(line_y), color)
+                rl.draw_line(int(list_pos.x), int(line_y), int(list_pos.x + title_w + 32.0), int(line_y), color)
 
             if show_counts and unlocked:
                 counts = self._quest_counts(stage=stage, row=row)
                 if counts is not None:
                     completed, games = counts
-                    counts_x = list_x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
+                    counts_x = list_pos.x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
                     draw_small_text(font, f"({completed}/{games})", Vec2(counts_x, y), 1.0, color)
 
         if show_counts:
             # Header is drawn below the list, aligned with the count column.
-            header_x = list_x + 96.0
+            header_x = list_pos.x + 96.0
             header_y = y0 + QUEST_LIST_ROW_STEP * 10.0 - 2.0
             draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), 1.0, base_color)
 
         # Back button.
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            back_x = list_x + QUEST_BACK_BUTTON_X_OFFSET
-            back_y = y0 + QUEST_BACK_BUTTON_Y_OFFSET
+            back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
             back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
                 self._back_button,
-                pos=Vec2(float(back_x), float(back_y)),
+                pos=back_pos,
                 width=float(back_w),
                 scale=1.0,
             )
@@ -826,8 +831,10 @@ class QuestsMenuView:
             return
         screen_w = float(self._state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * scale
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
@@ -849,14 +856,14 @@ class QuestsMenuView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,
@@ -2298,22 +2305,18 @@ class HighScoresView:
         left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
         right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
         right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
-        left_x0 = left_top_left.x
-        left_y0 = left_top_left.y
-        right_x0 = right_top_left.x
-        right_y0 = right_top_left.y
-        left_x0 += float(left_slide_x)
-        right_x0 += float(right_slide_x)
+        left_panel_top_left = left_top_left + Vec2(float(left_slide_x), 0.0)
+        right_panel_top_left = right_top_left + Vec2(float(right_slide_x), 0.0)
 
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(left_x0, left_y0, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(right_x0, right_y0, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
             flip_x=True,
@@ -2328,13 +2331,24 @@ class HighScoresView:
         if int(mode_id) == 1:
             # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
             title_x = 266.0
-        title_draw_x = left_x0 + title_x * scale
-        draw_small_text(font, title, Vec2(title_draw_x, left_y0 + 41.0 * scale), 1.0 * scale, rl.Color(255, 255, 255, 255))
-        ul_x = title_draw_x
-        ul_y = left_y0 + HS_TITLE_UNDERLINE_Y * scale
+        title_draw_pos = left_panel_top_left + Vec2(title_x * scale, 41.0 * scale)
+        draw_small_text(
+            font,
+            title,
+            title_draw_pos,
+            1.0 * scale,
+            rl.Color(255, 255, 255, 255),
+        )
         ul_w = measure_small_text_width(font, title, 1.0 * scale)
         ul_h = max(1, int(round(1.0 * scale)))
-        rl.draw_rectangle(int(round(ul_x)), int(round(ul_y)), int(round(ul_w)), ul_h, rl.Color(255, 255, 255, int(255 * 0.7)))
+        ul_pos = left_panel_top_left + Vec2(title_x * scale, HS_TITLE_UNDERLINE_Y * scale)
+        rl.draw_rectangle(
+            int(round(ul_pos.x)),
+            int(round(ul_pos.y)),
+            int(round(ul_w)),
+            ul_h,
+            rl.Color(255, 255, 255, int(255 * 0.7)),
+        )
         if int(mode_id) == 3:
             hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
             if hardcore:
@@ -2342,25 +2356,37 @@ class HighScoresView:
             else:
                 quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
             quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
-            draw_small_text(font, quest_label, Vec2(left_x0 + 236.0 * scale, left_y0 + 63.0 * scale), 1.0 * scale, quest_color)
+            draw_small_text(
+                font,
+                quest_label,
+                left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale),
+                1.0 * scale,
+                quest_color,
+            )
             arrow = self._arrow_tex
             if arrow is not None:
                 dst_w = float(arrow.width) * scale
                 dst_h = float(arrow.height) * scale
                 # state_14 draws ui_arrow.jaz flipped (uv 1..0) to point left.
                 src = rl.Rectangle(float(arrow.width), 0.0, -float(arrow.width), float(arrow.height))
-                dst = rl.Rectangle(left_x0 + HS_QUEST_ARROW_X * scale, left_y0 + HS_QUEST_ARROW_Y * scale, dst_w, dst_h)
+                arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+                dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         header_color = rl.Color(255, 255, 255, int(255 * 0.85))
-        row_y0 = left_y0 + 84.0 * scale
-        draw_small_text(font, "Rank", Vec2(left_x0 + 211.0 * scale, row_y0), 1.0 * scale, header_color)
-        draw_small_text(font, "Score", Vec2(left_x0 + 246.0 * scale, row_y0), 1.0 * scale, header_color)
-        draw_small_text(font, "Player", Vec2(left_x0 + 302.0 * scale, row_y0), 1.0 * scale, header_color)
+        draw_small_text(
+            font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), 1.0 * scale, header_color
+        )
+        draw_small_text(
+            font, "Score", left_panel_top_left + Vec2(246.0 * scale, 84.0 * scale), 1.0 * scale, header_color
+        )
+        draw_small_text(
+            font, "Player", left_panel_top_left + Vec2(302.0 * scale, 84.0 * scale), 1.0 * scale, header_color
+        )
 
         # Score list viewport frame (white 1px border + black interior).
-        frame_x = left_x0 + HS_SCORE_FRAME_X * scale
-        frame_y = left_y0 + HS_SCORE_FRAME_Y * scale
+        frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
+        frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
         frame_w = HS_SCORE_FRAME_W * scale
         frame_h = HS_SCORE_FRAME_H * scale
         rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
@@ -2376,13 +2402,13 @@ class HighScoresView:
         rows = 10
         start = max(0, int(self._scroll_index))
         end = min(len(self._records), start + rows)
-        y = left_y0 + 103.0 * scale
+        y = left_panel_top_left.y + 103.0 * scale
 
         if start >= end:
             draw_small_text(
                 font,
                 "No scores yet.",
-                Vec2(left_x0 + 211.0 * scale, y + 8.0 * scale),
+                Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale),
                 1.0 * scale,
                 rl.Color(190, 190, 200, 255),
             )
@@ -2405,15 +2431,15 @@ class HighScoresView:
                 if highlight_rank is not None and int(highlight_rank) == idx:
                     color = rl.Color(255, 255, 255, 255)
 
-                draw_small_text(font, f"{idx + 1}", Vec2(left_x0 + 216.0 * scale, y), 1.0 * scale, color)
-                draw_small_text(font, value, Vec2(left_x0 + 246.0 * scale, y), 1.0 * scale, color)
-                draw_small_text(font, name, Vec2(left_x0 + 304.0 * scale, y), 1.0 * scale, color)
+                draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), 1.0 * scale, color)
+                draw_small_text(font, value, Vec2(left_panel_top_left.x + 246.0 * scale, y), 1.0 * scale, color)
+                draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), 1.0 * scale, color)
                 y += row_step
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            button_x = left_x0 + HS_BUTTON_X * scale
-            button_y0 = left_y0 + HS_BUTTON_Y0 * scale
+            button_x = left_panel_top_left.x + HS_BUTTON_X * scale
+            button_y0 = left_panel_top_left.y + HS_BUTTON_Y0 * scale
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             button_draw(textures, font, self._update_button, pos=Vec2(button_x, button_y0), width=w, scale=scale)
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
@@ -2430,14 +2456,14 @@ class HighScoresView:
                 textures,
                 font,
                 self._back_button,
-                pos=Vec2(left_x0 + HS_BACK_BUTTON_X * scale, left_y0 + HS_BACK_BUTTON_Y * scale),
+                pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
                 width=w,
                 scale=scale,
             )
 
         self._draw_right_panel(
             font=font,
-            right_top_left=Vec2(right_x0, right_y0),
+            right_top_left=right_panel_top_left,
             scale=scale,
             mode_id=mode_id,
             highlight_rank=highlight_rank,
@@ -2465,8 +2491,6 @@ class HighScoresView:
         )
 
     def _draw_right_panel_quest_options(self, *, font: SmallFontData, right_top_left: Vec2, scale: float) -> None:
-        right_x0 = right_top_left.x
-        right_y0 = right_top_left.y
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -2478,7 +2502,10 @@ class HighScoresView:
                 check_on,
                 rl.Rectangle(0.0, 0.0, float(check_on.width), float(check_on.height)),
                 rl.Rectangle(
-                    right_x0 + HS_RIGHT_CHECK_X * scale, right_y0 + HS_RIGHT_CHECK_Y * scale, check_w, check_h
+                    right_top_left.x + HS_RIGHT_CHECK_X * scale,
+                    right_top_left.y + HS_RIGHT_CHECK_Y * scale,
+                    check_w,
+                    check_h,
                 ),
                 rl.Vector2(0.0, 0.0),
                 0.0,
@@ -2487,35 +2514,35 @@ class HighScoresView:
         draw_small_text(
             font,
             "Show internet scores",
-            Vec2(right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale, right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Number of players",
-            Vec2(right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale, right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game mode",
-            Vec2(right_x0 + HS_RIGHT_GAME_MODE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Show scores:",
-            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Selected score list:",
-            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale),
             text_scale,
             text_color,
         )
@@ -2528,38 +2555,43 @@ class HighScoresView:
             (HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y, HS_RIGHT_SHOW_SCORES_WIDGET_W),
             (HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y, HS_RIGHT_SCORE_LIST_WIDGET_W),
         ):
-            x = right_x0 + float(wx) * scale
-            y = right_y0 + float(wy) * scale
+            widget_pos = right_top_left + Vec2(float(wx) * scale, float(wy) * scale)
             w = float(ww) * scale
-            rl.draw_rectangle(int(x), int(y), int(w), int(widget_h), rl.WHITE)
-            rl.draw_rectangle(int(x) + 1, int(y) + 1, max(0, int(w) - 2), max(0, int(widget_h) - 2), rl.BLACK)
+            rl.draw_rectangle(int(widget_pos.x), int(widget_pos.y), int(w), int(widget_h), rl.WHITE)
+            rl.draw_rectangle(
+                int(widget_pos.x) + 1,
+                int(widget_pos.y) + 1,
+                max(0, int(w) - 2),
+                max(0, int(widget_h) - 2),
+                rl.BLACK,
+            )
 
         # Values (static in the oracle).
         draw_small_text(
             font,
             "1 player",
-            Vec2(right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Quests",
-            Vec2(right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_GAME_MODE_VALUE_X * scale, HS_RIGHT_GAME_MODE_VALUE_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Best of all time",
-            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_VALUE_X * scale, HS_RIGHT_SHOW_SCORES_VALUE_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "default",
-            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale),
+            right_top_left + Vec2(HS_RIGHT_SCORE_LIST_VALUE_X * scale, HS_RIGHT_SCORE_LIST_VALUE_Y * scale),
             text_scale,
             text_color,
         )
@@ -2578,7 +2610,12 @@ class HighScoresView:
             rl.draw_texture_pro(
                 drop_off,
                 rl.Rectangle(0.0, 0.0, float(drop_off.width), float(drop_off.height)),
-                rl.Rectangle(right_x0 + float(dx) * scale, right_y0 + float(dy) * scale, drop_w, drop_h),
+                rl.Rectangle(
+                    right_top_left.x + float(dx) * scale,
+                    right_top_left.y + float(dy) * scale,
+                    drop_w,
+                    drop_h,
+                ),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 rl.WHITE,
@@ -2592,8 +2629,6 @@ class HighScoresView:
         scale: float,
         highlight_rank: int | None,
     ) -> None:
-        right_x0 = right_top_left.x
-        right_y0 = right_top_left.y
         if not self._records:
             return
         idx = int(highlight_rank) if highlight_rank is not None else int(self._scroll_index)
@@ -2616,14 +2651,14 @@ class HighScoresView:
         draw_small_text(
             font,
             name,
-            Vec2(right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_NAME_X * scale, HS_LOCAL_NAME_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Local score",
-            Vec2(right_x0 + HS_LOCAL_LABEL_X * scale, right_y0 + HS_LOCAL_LABEL_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale),
             text_scale,
             text_color,
         )
@@ -2633,7 +2668,7 @@ class HighScoresView:
             draw_small_text(
                 font,
                 date_text,
-                Vec2(right_x0 + HS_LOCAL_DATE_X * scale, right_y0 + HS_LOCAL_DATE_Y * scale),
+                right_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale),
                 text_scale,
                 text_color,
             )
@@ -2641,14 +2676,14 @@ class HighScoresView:
         draw_small_text(
             font,
             "Score",
-            Vec2(right_x0 + HS_LOCAL_SCORE_LABEL_X * scale, right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale),
             text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game time",
-            Vec2(right_x0 + HS_LOCAL_TIME_LABEL_X * scale, right_y0 + HS_LOCAL_TIME_LABEL_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
             text_scale,
             text_color,
         )
@@ -2657,7 +2692,7 @@ class HighScoresView:
         draw_small_text(
             font,
             score_value,
-            Vec2(right_x0 + HS_LOCAL_SCORE_VALUE_X * scale, right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale),
             text_scale,
             text_color,
         )
@@ -2666,7 +2701,7 @@ class HighScoresView:
         draw_small_text(
             font,
             self._format_elapsed_mm_ss(elapsed_ms),
-            Vec2(right_x0 + HS_LOCAL_TIME_VALUE_X * scale, right_y0 + HS_LOCAL_TIME_VALUE_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
             text_scale,
             text_color,
         )
@@ -2674,7 +2709,7 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Rank: {self._ordinal(idx + 1)}",
-            Vec2(right_x0 + HS_LOCAL_RANK_X * scale, right_y0 + HS_LOCAL_RANK_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale),
             text_scale,
             text_color,
         )
@@ -2683,7 +2718,7 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Frags: {frags}",
-            Vec2(right_x0 + HS_LOCAL_FRAGS_X * scale, right_y0 + HS_LOCAL_FRAGS_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
             text_scale,
             text_color,
         )
@@ -2696,7 +2731,7 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Hit %: {hit_pct}%",
-            Vec2(right_x0 + HS_LOCAL_HIT_X * scale, right_y0 + HS_LOCAL_HIT_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
             text_scale,
             text_color,
         )
@@ -2706,13 +2741,13 @@ class HighScoresView:
         if icon_index is not None:
             self._draw_wicon(
                 icon_index,
-                pos=Vec2(right_x0 + HS_LOCAL_WICON_X * scale, right_y0 + HS_LOCAL_WICON_Y * scale),
+                pos=right_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
                 scale=scale,
             )
         draw_small_text(
             font,
             weapon_name,
-            Vec2(right_x0 + HS_LOCAL_WEAPON_X * scale, right_y0 + HS_LOCAL_WEAPON_Y * scale),
+            right_top_left + Vec2(HS_LOCAL_WEAPON_X * scale, HS_LOCAL_WEAPON_Y * scale),
             text_scale,
             text_color,
         )
@@ -2786,8 +2821,10 @@ class HighScoresView:
         sign = assets.sign
         screen_w = float(self._state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * sign_scale
         sign_h = MENU_SIGN_HEIGHT * sign_scale
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
@@ -2798,14 +2835,14 @@ class HighScoresView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,
