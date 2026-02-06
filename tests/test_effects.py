@@ -5,6 +5,7 @@ import math
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
+from grim.color import RGBA
 from grim.geom import Vec2
 
 
@@ -31,7 +32,7 @@ def test_effect_src_rect_uses_grid_and_frame() -> None:
 
 def test_fx_queue_caps_count() -> None:
     q = FxQueue(capacity=4, max_count=3)
-    rgba = (1.0, 1.0, 1.0, 1.0)
+    rgba = RGBA(1.0, 1.0, 1.0, 1.0)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
@@ -43,7 +44,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
         top_left=Vec2(),
-        rgba=(1.0, 1.0, 1.0, 1.0),
+        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,
@@ -55,7 +56,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q.clear()
     assert q.add(
         top_left=Vec2(),
-        rgba=(1.0, 1.0, 1.0, 1.0),
+        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,

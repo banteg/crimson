@@ -509,7 +509,7 @@ class FxQueue:
             width=w,
             height=w,
             rotation=rotation,
-            rgba=(gray, gray, gray, 1.0),
+            rgba=RGBA(gray, gray, gray, 1.0),
         )
 
 

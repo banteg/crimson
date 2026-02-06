@@ -477,7 +477,7 @@ class DecalsDebugView:
                     width=30.0,
                     height=30.0,
                     rotation=0.0,
-                    rgba=(1.0, 1.0, 1.0, 1.0),
+                    rgba=RGBA(1.0, 1.0, 1.0, 1.0),
                 )
 
         # Keep the player fixed; creatures use it as a target for heading/movement.

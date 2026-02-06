@@ -934,7 +934,7 @@ class WorldRenderer:
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.spin) * _RAD_TO_DEG
-            tint = self._color_from_rgba((entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
+            tint = self._color_from_rgba(RGBA(entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
             rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
 
         alpha_byte = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
@@ -1072,7 +1072,7 @@ class WorldRenderer:
                 tint = raw_color.scaled_alpha(alpha).to_rl()
             else:
                 tint = self._color_from_rgba(
-                    (
+                    RGBA(
                         float(getattr(entry, "color_r", 1.0)),
                         float(getattr(entry, "color_g", 1.0)),
                         float(getattr(entry, "color_b", 1.0)),

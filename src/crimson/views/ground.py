@@ -9,6 +9,7 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
+from grim.color import RGBA
 from grim.config import ensure_crimson_cfg
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -143,7 +144,7 @@ class GroundView:
                     width=30.0,
                     height=30.0,
                     rotation=0.0,
-                    rgba=(1.0, 1.0, 1.0, 1.0),
+                    rgba=RGBA(1.0, 1.0, 1.0, 1.0),
                 )
             if self._fx_textures is not None and (self._fx_queue.count or self._fx_queue_rotated.count):
                 bake_fx_queues(

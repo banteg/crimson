@@ -1315,7 +1315,7 @@ class SecondaryProjectilePool:
                             width=float(scale) * 256.0,
                             height=float(scale) * 256.0,
                             rotation=0.0,
-                            rgba=(0.0, 0.0, 0.0, 0.25),
+                            rgba=RGBA(0.0, 0.0, 0.0, 0.25),
                         )
                     entry.active = False
 
