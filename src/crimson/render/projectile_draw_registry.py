@@ -324,7 +324,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             glow_targets: list[object] = []
             rl.rl_set_texture(texture.id)
-            rl.rl_begin(rl.RL_QUADS)
+            rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
 
             for creature in targets:
                 target_screen = renderer.world_to_screen(creature.pos)

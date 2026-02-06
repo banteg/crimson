@@ -67,16 +67,6 @@ exclude_lines = [
 root_packages = ["crimson", "grim"]
 include_external_packages = true
 
-[[tool.ty.overrides]]
-include = [
-    "src/crimson/demo.py",
-    "src/crimson/ui/shadow.py",
-    "src/grim/terrain_render.py",
-]
-
-[tool.ty.overrides.rules]
-unresolved-attribute = "ignore"
-
 [[tool.importlinter.contracts]]
 name = "grim must not import crimson"
 type = "forbidden"

@@ -787,7 +787,7 @@ class WorldRenderer:
         tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         rl.rl_set_texture(self.bullet_trail_texture.id)
-        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(0.0, 0.0)
         rl.rl_vertex2f(p0.x, p0.y)
@@ -832,7 +832,7 @@ class WorldRenderer:
 
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         rl.rl_set_texture(self.bullet_trail_texture.id)
-        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
 
         for player in players:
             if float(getattr(player, "health", 0.0)) <= 0.0:
