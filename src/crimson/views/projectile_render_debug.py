@@ -15,6 +15,7 @@ from grim.view import View, ViewContext
 from ..creatures.spawn import CreatureFlags
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, player_update, weapon_assign_player
+from ..sim.world_defs import BEAM_TYPES
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_TABLE
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -105,15 +106,15 @@ class ProjectileRenderDebugView:
         self._world.update_camera(0.0)
 
     def _world_scale(self) -> float:
-        _camera, view_scale = self._world._world_params()
+        _camera, view_scale = self._world.renderer._world_params()
         return view_scale.avg_component()
 
     def _draw_grid(self) -> None:
         step = 64.0
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
-        screen_size = self._world._camera_screen_size()
-        camera, view_scale = self._world._world_params()
+        screen_size = self._world.renderer._camera_screen_size()
+        camera, view_scale = self._world.renderer._world_params()
 
         start_x = math.floor((-camera.x) / step) * step
         end_x = (-camera.x) + screen_size.x
@@ -259,7 +260,12 @@ class ProjectileRenderDebugView:
         self._world.state.secondary_projectiles.update_pulse_gun(float(dt), self._targets)
         if hits:
             self._world._queue_projectile_decals(hits)
-            self._world._play_hit_sfx(hits, game_mode=1)
+            self._world.audio_router.play_hit_sfx(
+                hits,
+                game_mode=1,
+                rand=self._world.presentation_rng.rand,
+                beam_types=BEAM_TYPES,
+            )
         self._targets = [target for target in self._targets if target.hp > 0.0]
 
         input_state = self._build_input()
@@ -267,7 +273,7 @@ class ProjectileRenderDebugView:
 
         if prev_audio is not None:
             prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio
-            self._world._handle_player_audio(
+            self._world.audio_router.handle_player_audio(
                 self._player,
                 prev_shot_seq=prev_shot_seq,
                 prev_reload_active=prev_reload_active,
@@ -280,8 +286,9 @@ class ProjectileRenderDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
-        camera, view_scale = self._world._world_params()
-        screen_size = self._world._camera_screen_size()
+        renderer = self._world.renderer
+        camera, view_scale = renderer._world_params()
+        screen_size = renderer._camera_screen_size()
 
         if self._world.ground is not None:
             self._world.ground.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
@@ -321,16 +328,16 @@ class ProjectileRenderDebugView:
         for proj_index, proj in enumerate(self._world.state.projectiles.entries):
             if not proj.active:
                 continue
-            self._world._draw_projectile(proj, proj_index=proj_index, scale=scale)
+            renderer._draw_projectile(proj, proj_index=proj_index, scale=scale)
         for proj in self._world.state.secondary_projectiles.iter_active():
-            self._world._draw_secondary_projectile(proj, scale=scale)
+            renderer._draw_secondary_projectile(proj, scale=scale)
 
         # Player.
         player = self._player
         if player is not None:
             texture = self._world.creature_textures.get("trooper")
             if texture is not None:
-                self._world._draw_player_trooper_sprite(
+                renderer._draw_player_trooper_sprite(
                     texture,
                     player,
                     camera=camera,
@@ -349,7 +356,7 @@ class ProjectileRenderDebugView:
             radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim)
-            self._world._draw_aim_circle(center=aim_screen, radius=screen_radius)
+            renderer._draw_aim_circle(center=aim_screen, radius=screen_radius)
 
         # UI.
         x = 16.0
