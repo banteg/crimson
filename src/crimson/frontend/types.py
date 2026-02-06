@@ -20,11 +20,16 @@ class GameState(Protocol):
 
     texture_cache: Any
     audio: Any
+    logos: Any
+    console: Any
 
     menu_ground: Any
     pause_background: PauseBackground | None
 
+    demo_enabled: bool
+    skip_intro: bool
+    menu_sign_locked: bool
+
     quit_requested: bool
     screen_fade_alpha: float
     screen_fade_ramp: bool
-
