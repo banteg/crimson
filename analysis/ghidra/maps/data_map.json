@@ -1514,10 +1514,10 @@
     },
     {
       "address": "0x00482728",
-      "comment": "Creature type table (stride 0x44 bytes).",
+      "comment": "Creature type table (6 entries, stride 0x44 bytes: zombie/lizard/alien/spider_sp1/spider_sp2/trooper).",
       "name": "creature_type_table",
       "program": "crimsonland.exe",
-      "type": "creature_type_t"
+      "type": "creature_type_table_t"
     },
     {
       "address": "0x0048272c",
@@ -1577,6 +1577,36 @@
       "address": "0x00482768",
       "comment": "Creature type animation flags (creature_type_table + 0x40).",
       "name": "creature_type_anim_flags",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048276c",
+      "comment": "Creature type entry #1 (lizard).",
+      "name": "creature_type_lizard",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004827b0",
+      "comment": "Creature type entry #2 (alien).",
+      "name": "creature_type_alien",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004827f4",
+      "comment": "Creature type entry #3 (spider_sp1).",
+      "name": "creature_type_spider_sp1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482838",
+      "comment": "Creature type entry #4 (spider_sp2).",
+      "name": "creature_type_spider_sp2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048287c",
+      "comment": "Creature type entry #5 (trooper).",
+      "name": "creature_type_trooper",
       "program": "crimsonland.exe"
     },
     {

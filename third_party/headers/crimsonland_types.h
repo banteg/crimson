@@ -155,6 +155,8 @@ typedef struct creature_type_t {
     int anim_flags;
 } creature_type_t;
 
+typedef creature_type_t creature_type_table_t[6];
+
 // Canonical projectile template ids used by `projectile_t.type_id`.
 //
 // Many weapons share a projectile template id (e.g. shotgun variants). We keep

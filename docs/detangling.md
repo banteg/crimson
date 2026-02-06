@@ -1254,6 +1254,13 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
 See [Creature pool struct](creatures/struct.md) for the expanded field map and cross-links.
+
+- Creature-type table carving updates:
+  - `creature_type_table` is now typed as `creature_type_table_t` (6 entries, stride `0x44`).
+  - Entry bases are labeled as `creature_type_lizard`, `creature_type_alien`,
+    `creature_type_spider_sp1`, `creature_type_spider_sp2`, and `creature_type_trooper`.
+  - Evidence: contiguous `gameplay_reset_state` writes at `+0x44` steps from `0x00482728`.
+
 ### Projectile pool (partial)
 
 - `FUN_00420440` -> `projectile_spawn`

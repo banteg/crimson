@@ -9364,7 +9364,7 @@ LAB_0040f6cc:
     iVar11 = iVar11 + 1;
   } while (iVar3 < 0x24);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_004827b0,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[2].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   fVar15 = 0.0;
   fVar14 = 0.0;
@@ -11363,71 +11363,76 @@ void gameplay_reset_state(void)
   camera_shake_pulses = 0;
   bonus_reset_availability();
   _DAT_00482940 = 6;
-  creature_type_table.texture_handle =
+  creature_type_table[0].texture_handle =
        (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_zombie_0047375c);
-  creature_type_table.sfx_bank_b[0] = sfx_zombie_attack_01;
-  creature_type_table.sfx_bank_b[1] = sfx_zombie_attack_02;
-  creature_type_table.sfx_bank_a[0] = sfx_zombie_die_01;
-  creature_type_table.sfx_bank_a[1] = sfx_zombie_die_02;
-  creature_type_table.field_0x20 = 1.0;
-  creature_type_table.anim_rate = 1.2;
-  creature_type_table.sfx_bank_a[2] = sfx_zombie_die_03;
-  creature_type_table.sfx_bank_a[3] = sfx_zombie_die_04;
-  creature_type_table.base_frame = 0x20;
-  creature_type_table.corpse_frame = 0;
-  _DAT_0048276c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_lizard_00473754);
-  _DAT_00482784 = sfx_lizard_attack_02;
-  _DAT_00482780 = sfx_lizard_attack_01;
-  _DAT_00482770 = sfx_lizard_die_01;
-  _DAT_00482778 = sfx_lizard_die_03;
-  _DAT_0048278c = 0x3f800000;
-  _DAT_004827a0 = 0x3fcccccd;
-  _DAT_00482774 = sfx_lizard_die_02;
-  _DAT_0048277c = sfx_lizard_die_04;
-  _DAT_004827ac = 1;
-  _DAT_004827a4 = 0x10;
-  _DAT_004827a8 = 3;
-  _DAT_004827f4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp1_00473748);
-  _DAT_00482808 = sfx_spider_attack_01;
-  _DAT_0048280c = sfx_spider_attack_02;
-  _DAT_00482814 = 0x3f800000;
-  _DAT_00482828 = 0x3fc00000;
-  _DAT_004827f8 = sfx_spider_die_01;
-  _DAT_004827fc = sfx_spider_die_02;
-  _DAT_00482800 = sfx_spider_die_03;
-  _DAT_00482804 = sfx_spider_die_04;
-  _DAT_00482834 = 1;
-  _DAT_0048282c = 0x10;
-  _DAT_00482830 = 1;
-  _DAT_00482838 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp2_0047373c);
-  _DAT_00482850 = sfx_spider_attack_02;
-  _DAT_0048284c = sfx_spider_attack_01;
-  _DAT_0048283c = sfx_spider_die_01;
-  _DAT_00482844 = sfx_spider_die_03;
-  _DAT_00482858 = 0x3f800000;
-  _DAT_0048286c = 0x3fc00000;
-  _DAT_00482840 = sfx_spider_die_02;
-  _DAT_00482848 = sfx_spider_die_04;
-  _DAT_00482878 = 1;
-  _DAT_00482870 = 0x10;
-  _DAT_00482874 = 2;
-  DAT_004827b0 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_alien_00473734);
-  _DAT_004827c4 = sfx_alien_attack_01;
-  _DAT_004827c8 = sfx_alien_attack_02;
-  _DAT_004827b4 = sfx_alien_die_01;
-  _DAT_004827b8 = sfx_alien_die_02;
-  _DAT_004827bc = sfx_alien_die_03;
-  _DAT_004827c0 = sfx_alien_die_04;
-  _DAT_00482880 = sfx_trooper_die_01;
-  _DAT_004827d0 = 0x3f800000;
-  _DAT_004827e4 = 0x3faccccd;
-  _DAT_004827f0 = 0;
-  _DAT_004827e8 = 0x20;
-  _DAT_004827ec = 4;
-  _DAT_00482884 = sfx_trooper_die_02;
-  _DAT_00482888 = sfx_trooper_die_03;
-  _DAT_004828b8 = 7;
-  DAT_0048287c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_trooper_0047372c);
+  creature_type_table[0].sfx_bank_b[0] = sfx_zombie_attack_01;
+  creature_type_table[0].sfx_bank_b[1] = sfx_zombie_attack_02;
+  creature_type_table[0].sfx_bank_a[0] = sfx_zombie_die_01;
+  creature_type_table[0].sfx_bank_a[1] = sfx_zombie_die_02;
+  creature_type_table[0].field_0x20 = 1.0;
+  creature_type_table[0].anim_rate = 1.2;
+  creature_type_table[0].sfx_bank_a[2] = sfx_zombie_die_03;
+  creature_type_table[0].sfx_bank_a[3] = sfx_zombie_die_04;
+  creature_type_table[0].base_frame = 0x20;
+  creature_type_table[0].corpse_frame = 0;
+  creature_type_table[1].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_lizard_00473754);
+  creature_type_table[1].sfx_bank_b[1] = sfx_lizard_attack_02;
+  creature_type_table[1].sfx_bank_b[0] = sfx_lizard_attack_01;
+  creature_type_table[1].sfx_bank_a[0] = sfx_lizard_die_01;
+  creature_type_table[1].sfx_bank_a[2] = sfx_lizard_die_03;
+  creature_type_table[1].field_0x20 = 1.0;
+  creature_type_table[1].anim_rate = 1.6;
+  creature_type_table[1].sfx_bank_a[1] = sfx_lizard_die_02;
+  creature_type_table[1].sfx_bank_a[3] = sfx_lizard_die_04;
+  creature_type_table[1].anim_flags = 1;
+  creature_type_table[1].base_frame = 0x10;
+  creature_type_table[1].corpse_frame = 3;
+  creature_type_table[3].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp1_00473748);
+  creature_type_table[3].sfx_bank_b[0] = sfx_spider_attack_01;
+  creature_type_table[3].sfx_bank_b[1] = sfx_spider_attack_02;
+  creature_type_table[3].field_0x20 = 1.0;
+  creature_type_table[3].anim_rate = 1.5;
+  creature_type_table[3].sfx_bank_a[0] = sfx_spider_die_01;
+  creature_type_table[3].sfx_bank_a[1] = sfx_spider_die_02;
+  creature_type_table[3].sfx_bank_a[2] = sfx_spider_die_03;
+  creature_type_table[3].sfx_bank_a[3] = sfx_spider_die_04;
+  creature_type_table[3].anim_flags = 1;
+  creature_type_table[3].base_frame = 0x10;
+  creature_type_table[3].corpse_frame = 1;
+  creature_type_table[4].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_spider_sp2_0047373c);
+  creature_type_table[4].sfx_bank_b[1] = sfx_spider_attack_02;
+  creature_type_table[4].sfx_bank_b[0] = sfx_spider_attack_01;
+  creature_type_table[4].sfx_bank_a[0] = sfx_spider_die_01;
+  creature_type_table[4].sfx_bank_a[2] = sfx_spider_die_03;
+  creature_type_table[4].field_0x20 = 1.0;
+  creature_type_table[4].anim_rate = 1.5;
+  creature_type_table[4].sfx_bank_a[1] = sfx_spider_die_02;
+  creature_type_table[4].sfx_bank_a[3] = sfx_spider_die_04;
+  creature_type_table[4].anim_flags = 1;
+  creature_type_table[4].base_frame = 0x10;
+  creature_type_table[4].corpse_frame = 2;
+  creature_type_table[2].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_alien_00473734);
+  creature_type_table[2].sfx_bank_b[0] = sfx_alien_attack_01;
+  creature_type_table[2].sfx_bank_b[1] = sfx_alien_attack_02;
+  creature_type_table[2].sfx_bank_a[0] = sfx_alien_die_01;
+  creature_type_table[2].sfx_bank_a[1] = sfx_alien_die_02;
+  creature_type_table[2].sfx_bank_a[2] = sfx_alien_die_03;
+  creature_type_table[2].sfx_bank_a[3] = sfx_alien_die_04;
+  creature_type_table[5].sfx_bank_a[0] = sfx_trooper_die_01;
+  creature_type_table[2].field_0x20 = 1.0;
+  creature_type_table[2].anim_rate = 1.35;
+  creature_type_table[2].anim_flags = 0;
+  creature_type_table[2].base_frame = 0x20;
+  creature_type_table[2].corpse_frame = 4;
+  creature_type_table[5].sfx_bank_a[1] = sfx_trooper_die_02;
+  creature_type_table[5].sfx_bank_a[2] = sfx_trooper_die_03;
+  creature_type_table[5].corpse_frame = 7;
+  creature_type_table[5].texture_handle =
+       (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_trooper_0047372c);
   _camera_offset_x = (float)_terrain_texture_width * 0.5;
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
@@ -14030,8 +14035,7 @@ void __cdecl creature_render_type(int type_id)
   float fStack_24;
   float fStack_20;
   
-  (*grim_interface_ptr->vtable->grim_bind_texture)((&creature_type_table)[type_id].texture_handle,0)
-  ;
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[type_id].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   fVar5 = (float)type_id;
   if ((config_blob.reserved0[0xe] != '\0') &&
@@ -14051,7 +14055,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -14060,7 +14064,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = *pfVar6 * 0.5 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14081,7 +14085,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((*pfVar6 < 0.0) && (fStack_2c = *pfVar6 * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
           }
@@ -14115,7 +14119,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *(float *)(iVar2 + -0x84)) {
             lVar7 = __ftol();
             frame = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < frame)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < frame)) {
               frame = 0x1f - frame;
             }
           }
@@ -14124,7 +14128,7 @@ void __cdecl creature_render_type(int type_id)
             frame = (int)lVar7;
           }
           else {
-            frame = (&creature_type_table)[type_id].base_frame + 0xf;
+            frame = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14145,7 +14149,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((*(float *)(iVar2 + -0x84) < 0.0) &&
              (fStack_2c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
@@ -14193,7 +14197,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= pfVar6[-6]) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -14202,7 +14206,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
             fStack_2c = pfVar6[-6] * 0.1 + fStack_2c;
             if (fStack_2c < 0.0) {
               fStack_2c = 0.0;
@@ -14223,7 +14227,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,(&creature_type_table)[type_id].base_frame + 0x10 + uVar3);
+                    (8,creature_type_table[type_id].base_frame + 0x10 + uVar3);
           if ((pfVar6[-6] < 0.0) && (fStack_2c = pfVar6[-6] * 0.1 + fStack_2c, fStack_2c < 0.0)) {
             fStack_2c = 0.0;
           }
@@ -14256,7 +14260,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *pfVar6) {
             lVar7 = __ftol();
             iVar2 = (int)lVar7;
-            if ((((&creature_type_table)[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
+            if (((creature_type_table[type_id].anim_flags & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
             if (((uint)fVar5 & 0x10) != 0) {
@@ -14268,7 +14272,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = (&creature_type_table)[type_id].base_frame + 0xf;
+            iVar2 = creature_type_table[type_id].base_frame + 0xf;
           }
           pIVar4 = grim_interface_ptr->vtable;
         }
@@ -14282,7 +14286,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           pIVar4 = grim_interface_ptr->vtable;
-          iVar2 = (&creature_type_table)[type_id].base_frame + 0x10 + uVar3;
+          iVar2 = creature_type_table[type_id].base_frame + 0x10 + uVar3;
         }
         (*pIVar4->grim_set_atlas_frame)(8,iVar2);
         (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&stack0xffffffb4);
@@ -18979,8 +18983,8 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
         }
-        sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[creature_id].type_id].
-                               sfx_bank_a[uVar3]);
+        sfx_play_panned((float)creature_type_table[(&creature_pool)[creature_id].type_id].sfx_bank_a
+                               [uVar3]);
       }
       else {
         _effect_template_color_r = 0x3f4ccccd;
@@ -20053,8 +20057,8 @@ LAB_00422821:
         if ((SUB41(pfVar13[8],0) == '\b') && (pfVar13[9] != -NAN)) {
           if ((&creature_pool)[(int)pfVar13[9]].active != '\0') {
             iVar7 = crt_rand();
-            sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[(int)pfVar13[9]].type_id]
-                                   .sfx_bank_a[iVar7 % 3]);
+            sfx_play_panned((float)creature_type_table[(&creature_pool)[(int)pfVar13[9]].type_id].
+                                   sfx_bank_a[iVar7 % 3]);
           }
           creature_handle_death((int)pfVar13[9],false);
         }
@@ -21376,7 +21380,7 @@ LAB_0042634c:
                 if ((int)uVar8 < 0) {
                   uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                 }
-                sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                sfx_play_panned((float)creature_type_table[(&creature_pool)[local_7c].type_id].
                                        sfx_bank_b[uVar8]);
               }
               fx_queue_add_random(pfVar16);
@@ -21626,7 +21630,7 @@ LAB_00426ac8:
             if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
                (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
               if ((&creature_pool)[local_7c].ai_mode != 7) {
-                fVar17 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
+                fVar17 = creature_type_table[(&creature_pool)[local_7c].type_id].anim_rate *
                          (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 25.0
                          + (&creature_pool)[local_7c].anim_phase;
                 (&creature_pool)[local_7c].anim_phase = fVar17;
@@ -21637,7 +21641,7 @@ LAB_00426ac8:
               }
             }
             else {
-              fVar17 = (&creature_type_table)[(&creature_pool)[local_7c].type_id].anim_rate *
+              fVar17 = creature_type_table[(&creature_pool)[local_7c].type_id].anim_rate *
                        (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 22.0 +
                        (&creature_pool)[local_7c].anim_phase;
               (&creature_pool)[local_7c].anim_phase = fVar17;
@@ -21725,7 +21729,7 @@ LAB_00426ac8:
                   if ((int)uVar8 < 0) {
                     uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                   }
-                  sfx_play_panned((float)(&creature_type_table)[(&creature_pool)[local_7c].type_id].
+                  sfx_play_panned((float)creature_type_table[(&creature_pool)[local_7c].type_id].
                                          sfx_bank_b[uVar8]);
                   iVar7 = perk_count_get(perk_id_mr_melee);
                   if (iVar7 != 0) {
@@ -22004,7 +22008,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+            iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             render_scratch_f0 = (&effect_uv4)[iVar1].u;
             render_scratch_f1 = (&effect_uv4)[iVar1].v;
             render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22036,7 +22040,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           pfVar4 = (float *)&fx_rotated_color_b;
           do {
-            iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+            iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
             render_scratch_f0 = (&effect_uv4)[iVar1].u;
             render_scratch_f1 = (&effect_uv4)[iVar1].v;
             render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22072,7 +22076,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+        iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         render_scratch_f0 = (&effect_uv4)[iVar1].u;
         render_scratch_f1 = (&effect_uv4)[iVar1].v;
         render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22103,7 +22107,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       pfVar4 = (float *)&fx_rotated_color_b;
       do {
-        iVar1 = (&creature_type_table)[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
+        iVar1 = creature_type_table[(&fx_rotated_effect_id)[iVar3]].corpse_frame;
         render_scratch_f0 = (&effect_uv4)[iVar1].u;
         render_scratch_f1 = (&effect_uv4)[iVar1].v;
         render_scratch_f2 = (&effect_uv4)[iVar1].u + 0.25;
@@ -22316,7 +22320,7 @@ void player_render_overlays(void)
                100.0,100.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048287c,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[5].texture_handle,0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
   fVar14 = 8.40779e-45;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
@@ -22369,7 +22373,7 @@ void player_render_overlays(void)
     (*grim_interface_ptr->vtable->grim_draw_quad)
               (render_scratch_f0 + 1.0,render_scratch_f1 + 1.0,fVar12,fVar12);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048287c,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(creature_type_table[5].texture_handle,0);
     fStack_7c = 6.111067e-39;
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
     fVar13 = 8.40779e-45;
