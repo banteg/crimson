@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import pyray as rl
 
@@ -19,6 +20,9 @@ class RenderFrame:
     This intentionally carries references (not deep copies) so render can be
     deterministic per frame boundary while remaining allocation-light.
     """
+
+    assets_dir: Path
+    missing_assets: list[str]
 
     world_size: float
     demo_mode_active: bool

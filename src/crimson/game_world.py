@@ -639,6 +639,8 @@ class GameWorld:
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
+            assets_dir=self.assets_dir,
+            missing_assets=self.missing_assets,
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             config=self.config,
