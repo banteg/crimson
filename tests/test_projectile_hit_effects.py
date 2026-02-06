@@ -69,3 +69,40 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
 
     split = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.SPLITTER_GUN) and int(p.owner_id) == 0]
     assert len(split) == 2
+
+
+def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
+    pool = ProjectilePool(size=64)
+    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
+    runtime_state = GameplayState()
+
+    pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTypeId.SHRINKIFIER,
+        owner_id=-100,
+        base_damage=10.0,
+    )
+
+    pool.update(
+        0.016,
+        [creature],
+        world_size=4096.0,
+        detail_preset=5,
+        rng=lambda: 0,
+        runtime_state=runtime_state,
+    )
+
+    effects = runtime_state.effects.iter_active()
+    rings = [entry for entry in effects if int(entry.effect_id) == 1]
+    bursts = [entry for entry in effects if int(entry.effect_id) == 0]
+
+    assert len(rings) == 1
+    assert len(bursts) == 4
+
+    ring = rings[0]
+    assert float(ring.scale_step) == pytest.approx(-4.0)
+    assert float(ring.lifetime) == pytest.approx(0.3)
+    assert float(ring.half_width) == pytest.approx(36.0)
+
+    assert float(creature.size) == pytest.approx(32.5)

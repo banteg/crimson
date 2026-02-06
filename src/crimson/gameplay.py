@@ -533,11 +533,30 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
     aim_pos = player.aim
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
-        if entry.bonus_id == 0 or entry.picked:
+        if entry.bonus_id == 0:
             continue
         if Vec2.distance_sq(aim_pos, entry.pos) < radius_sq:
             return idx, entry
     return None
+
+
+def bonus_label_for_entry(entry: BonusEntry) -> str:
+    """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
+
+    bonus_id = int(entry.bonus_id)
+    if bonus_id == int(BonusId.WEAPON):
+        weapon = WEAPON_BY_ID.get(int(entry.amount))
+        if weapon is not None and weapon.name:
+            return str(weapon.name)
+        return "Weapon"
+    if bonus_id == int(BonusId.POINTS):
+        points_meta = BONUS_BY_ID.get(int(BonusId.POINTS))
+        points_label = str(points_meta.name) if points_meta is not None else "Points"
+        return f"{points_label}: {int(entry.amount)}"
+    meta = BONUS_BY_ID.get(bonus_id)
+    if meta is not None:
+        return str(meta.name)
+    return "Bonus"
 
 
 @dataclass(slots=True)
@@ -2939,8 +2958,6 @@ def bonus_telekinetic_update(
 
     for player in players:
         if player.health <= 0.0:
-            player.bonus_aim_hover_index = -1
-            player.bonus_aim_hover_timer_ms = 0.0
             continue
 
         hovered = bonus_find_aim_hover_entry(player, state.bonus_pool)
@@ -2950,11 +2967,8 @@ def bonus_telekinetic_update(
             continue
 
         idx, entry = hovered
-        if idx != int(player.bonus_aim_hover_index):
-            player.bonus_aim_hover_index = int(idx)
-            player.bonus_aim_hover_timer_ms = dt_ms
-        else:
-            player.bonus_aim_hover_timer_ms += dt_ms
+        player.bonus_aim_hover_index = int(idx)
+        player.bonus_aim_hover_timer_ms += dt_ms
 
         if player.bonus_aim_hover_timer_ms <= BONUS_TELEKINETIC_PICKUP_MS:
             continue
@@ -2988,6 +3002,7 @@ def bonus_telekinetic_update(
         # Match the exe: after a telekinetic pickup, reset the hover accumulator.
         player.bonus_aim_hover_index = -1
         player.bonus_aim_hover_timer_ms = 0.0
+        break
 
     return pickups
 
