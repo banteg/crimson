@@ -351,6 +351,54 @@ class WorldRenderer:
         rotation_deg = float(seconds) * 6.0
         rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
+    def _hud_indicator_enabled(self, player_index: int) -> bool:
+        if self.config is None:
+            return True
+        raw = self.config.data.get("hud_indicators", b"\x01\x01")
+        if not isinstance(raw, (bytes, bytearray)):
+            return True
+        idx = int(player_index)
+        if idx < 0:
+            return False
+        if idx >= len(raw):
+            return True
+        return bool(raw[idx])
+
+    def _direction_arrow_tint(self, player_index: int, *, alpha: float) -> rl.Color:
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if len(self.players) == 2:
+            if int(player_index) == 0:
+                return rl.Color(204, 230, 255, int(153.0 * alpha + 0.5))
+            return rl.Color(255, 230, 204, int(153.0 * alpha + 0.5))
+        return rl.Color(255, 255, 255, int(77.0 * alpha + 0.5))
+
+    def _draw_direction_arrows(self, *, camera: Vec2, view_scale: Vec2, scale: float, alpha: float = 1.0) -> None:
+        alpha = clamp(float(alpha), 0.0, 1.0)
+        if alpha <= 1e-3:
+            return
+        arrow = self.arrow_texture
+        if arrow is None:
+            return
+
+        src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+        width = max(1.0, float(arrow.width) * scale)
+        height = max(1.0, float(arrow.height) * scale)
+        origin = rl.Vector2(width * 0.5, height * 0.5)
+
+        for player in self.players:
+            if float(getattr(player, "health", 0.0)) <= 0.0:
+                continue
+            index = int(getattr(player, "index", 0))
+            if not self._hud_indicator_enabled(index):
+                continue
+
+            heading = float(getattr(player, "heading", 0.0))
+            marker_pos = player.pos + Vec2.from_heading(heading) * 60.0
+            screen = self._world_to_screen_with(marker_pos, camera=camera, view_scale=view_scale)
+            dst = rl.Rectangle(screen.x, screen.y, width, height)
+            tint = self._direction_arrow_tint(index, alpha=alpha)
+            rl.draw_texture_pro(arrow, src, dst, origin, float(heading * _RAD_TO_DEG), tint)
+
     def _draw_creature_sprite(
         self,
         texture: rl.Texture,
@@ -1388,6 +1436,13 @@ class WorldRenderer:
                                 scale=scale,
                                 alpha=entity_alpha,
                             )
+
+            self._draw_direction_arrows(
+                camera=camera,
+                view_scale=view_scale,
+                scale=scale,
+                alpha=entity_alpha,
+            )
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         camera, view_scale = self._world_params()
