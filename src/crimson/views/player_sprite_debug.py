@@ -163,7 +163,7 @@ class PlayerSpriteDebugView:
 
         camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
         mouse = rl.get_mouse_position()
-        aim_world = Vec2(mouse.x, mouse.y) - camera
+        aim_world = Vec2.from_xy(mouse) - camera
         aim_delta = aim_world - self._player_pos
         if aim_delta.length_sq() > 1e-6:
             self._aim_heading = aim_delta.to_heading()

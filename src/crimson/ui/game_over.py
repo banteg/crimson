@@ -770,6 +770,6 @@ class GameOverUi:
         draw_menu_cursor(
             self.assets.particles,
             self.assets.perk_menu_assets.cursor,
-            pos=Vec2(mouse.x, mouse.y),
+            pos=Vec2.from_xy(mouse),
             pulse_time=float(self._cursor_pulse_time),
         )

@@ -53,7 +53,7 @@ def tick_quest_spawn_timeline(
         if entry.trigger_ms != trigger_ms:
             break
 
-        base_pos = Vec2(float(entry.x), float(entry.y))
+        base_pos = Vec2.from_xy(entry)
         offscreen_x = base_pos.x < 0.0 or float(terrain_width) < base_pos.x
 
         for spawn_idx in range(int(entry.count)):

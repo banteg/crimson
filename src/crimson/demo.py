@@ -423,7 +423,7 @@ class DemoView:
         cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
         mouse = rl.get_mouse_position()
         pulse_time = float(self._upsell_pulse_ms) * 0.001
-        draw_menu_cursor(particles, cursor_tex, pos=Vec2(mouse.x, mouse.y), pulse_time=pulse_time)
+        draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache

@@ -25,10 +25,10 @@ from ..ui.perk_menu import (
     cursor_draw,
     draw_menu_item,
     draw_ui_text,
+    draw_wrapped_ui_text_in_rect,
     load_perk_menu_assets,
     menu_item_hit_rect,
     perk_menu_compute_layout,
-    wrap_ui_text,
 )
 from ..ui.layout import ui_origin, ui_scale
 from .registry import register_view
@@ -333,19 +333,14 @@ class PerkSelectionView:
 
         selected = choices[self._perk_menu_selected]
         desc = perk_display_description(int(selected))
-        desc_x = float(computed.desc.x)
-        desc_y = float(computed.desc.y)
-        desc_w = float(computed.desc.width)
-        desc_h = float(computed.desc.height)
         desc_scale = scale * 0.85
-        desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
-        line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
-        y = desc_y
-        for line in desc_lines:
-            if y + line_h > desc_y + desc_h:
-                break
-            draw_ui_text(self._small, line, Vec2(desc_x, y), scale=desc_scale, color=UI_TEXT_COLOR)
-            y += line_h
+        draw_wrapped_ui_text_in_rect(
+            self._small,
+            desc,
+            rect=computed.desc,
+            scale=desc_scale,
+            color=UI_TEXT_COLOR,
+        )
 
         cancel_w = button_width(
             self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide

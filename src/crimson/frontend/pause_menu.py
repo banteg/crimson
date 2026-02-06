@@ -255,7 +255,7 @@ class PauseMenuView:
         if not self._menu_entries:
             return None
         mouse = rl.get_mouse_position()
-        mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+        mouse_pos = Vec2.from_xy(mouse)
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue

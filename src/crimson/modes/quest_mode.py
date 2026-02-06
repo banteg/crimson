@@ -395,7 +395,7 @@ class QuestMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self._world.screen_to_world(Vec2(mouse.x, mouse.y))
+        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -766,7 +766,7 @@ class QuestMode(BaseGameplayMode):
     def _draw_game_cursor(self) -> None:
         assets = self._perk_menu_assets
         cursor_tex = assets.cursor if assets is not None else None
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
@@ -777,7 +777,7 @@ class QuestMode(BaseGameplayMode):
     def _draw_aim_cursor(self) -> None:
         assets = self._perk_menu_assets
         aim_tex = assets.aim if assets is not None else None
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         draw_aim_cursor(
             self._world.particles_texture,
             aim_tex,

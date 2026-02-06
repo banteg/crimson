@@ -110,7 +110,7 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
 
     mouse = rl.get_mouse_position()
-    draw_menu_cursor(particles, cursor_tex, pos=Vec2(mouse.x, mouse.y), pulse_time=float(pulse_time))
+    draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))
 
 
 @dataclass(slots=True)
@@ -164,7 +164,7 @@ class MenuView:
         self._idle_ms = 0
         self._cursor_pulse_time = 0.0
         mouse = rl.get_mouse_position()
-        self._last_mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+        self._last_mouse_pos = Vec2.from_xy(mouse)
         self._closing = False
         self._close_action = None
         self._pending_action = None
@@ -202,7 +202,7 @@ class MenuView:
 
         if dt_ms > 0:
             mouse = rl.get_mouse_position()
-            mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+            mouse_pos = Vec2.from_xy(mouse)
             mouse_moved = mouse_pos != self._last_mouse_pos
             if mouse_moved:
                 self._last_mouse_pos = mouse_pos
@@ -476,7 +476,7 @@ class MenuView:
         if not self._menu_entries:
             return None
         mouse = rl.get_mouse_position()
-        mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+        mouse_pos = Vec2.from_xy(mouse)
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue

@@ -450,11 +450,11 @@ class DecalsDebugView:
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             mouse = rl.get_mouse_position()
-            self._spawn_enemy(self._screen_to_world(Vec2(float(mouse.x), float(mouse.y))))
+            self._spawn_enemy(self._screen_to_world(Vec2.from_xy(mouse)))
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             mouse = rl.get_mouse_position()
-            click_pos = self._screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
+            click_pos = self._screen_to_world(Vec2.from_xy(mouse))
             hit = None
             for creature in self._creatures.entries:
                 if not (creature.active and creature.hp > 0.0):

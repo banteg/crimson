@@ -85,38 +85,49 @@ def perk_menu_compute_layout(
         layout.panel_size.x * scale,
         layout.panel_size.y * scale,
     )
-    anchor_x = panel.x + MENU_PANEL_ANCHOR_X * scale
-    anchor_y = panel.y + MENU_PANEL_ANCHOR_Y * scale
+    anchor_pos = Vec2(
+        panel.x + MENU_PANEL_ANCHOR_X * scale,
+        panel.y + MENU_PANEL_ANCHOR_Y * scale,
+    )
 
     title = rl.Rectangle(
-        anchor_x + MENU_TITLE_X * scale,
-        anchor_y + MENU_TITLE_Y * scale,
+        anchor_pos.x + MENU_TITLE_X * scale,
+        anchor_pos.y + MENU_TITLE_Y * scale,
         MENU_TITLE_W * scale,
         MENU_TITLE_H * scale,
     )
 
     sponsor_pos = Vec2(
-        anchor_x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale,
-        anchor_y + MENU_SPONSOR_Y * scale,
+        anchor_pos.x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale,
+        anchor_pos.y + MENU_SPONSOR_Y * scale,
     )
 
     list_step_y = MENU_LIST_STEP_EXPERT if expert_owned else MENU_LIST_STEP_NORMAL
     list_pos = Vec2(
-        anchor_x,
-        anchor_y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale,
+        anchor_pos.x,
+        anchor_pos.y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale,
     )
 
-    desc_x = anchor_x + MENU_DESC_X * scale
-    desc_y = list_pos.y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale
+    desc_pos = Vec2(
+        anchor_pos.x + MENU_DESC_X * scale,
+        list_pos.y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale,
+    )
     if choice_count > 5:
-        desc_y -= MENU_DESC_Y_EXTRA_TIGHTEN * scale
+        desc_pos += Vec2(0.0, -MENU_DESC_Y_EXTRA_TIGHTEN * scale)
 
     # Keep the description within the monitor screen area and above the button.
     desc_right = panel.x + MENU_DESC_RIGHT_X * scale
-    cancel_pos = Vec2(anchor_x + MENU_BUTTON_X * scale, anchor_y + MENU_BUTTON_Y * scale)
-    desc_w = max(0.0, float(desc_right - desc_x))
-    desc_h = max(0.0, float(cancel_pos.y - 12.0 * scale - desc_y))
-    desc = rl.Rectangle(float(desc_x), float(desc_y), float(desc_w), float(desc_h))
+    cancel_pos = anchor_pos + Vec2(MENU_BUTTON_X * scale, MENU_BUTTON_Y * scale)
+    desc_size = Vec2(
+        max(0.0, float(desc_right - desc_pos.x)),
+        max(0.0, float(cancel_pos.y - 12.0 * scale - desc_pos.y)),
+    )
+    desc = rl.Rectangle(
+        float(desc_pos.x),
+        float(desc_pos.y),
+        float(desc_size.x),
+        float(desc_size.y),
+    )
 
     return PerkMenuComputedLayout(
         panel=panel,
@@ -250,6 +261,25 @@ def wrap_ui_text(font: SmallFontData | None, text: str, *, max_width: float, sca
         if current:
             lines.append(current)
     return lines
+
+
+def draw_wrapped_ui_text_in_rect(
+    font: SmallFontData | None,
+    text: str,
+    *,
+    rect: rl.Rectangle,
+    scale: float,
+    color: rl.Color,
+) -> None:
+    lines = wrap_ui_text(font, text, max_width=float(rect.width), scale=scale)
+    line_h = float(font.cell_size * scale) if font is not None else float(20 * scale)
+    pos = Vec2.from_xy(rect)
+    max_y = float(rect.y + rect.height)
+    for line in lines:
+        if pos.y + line_h > max_y:
+            break
+        draw_ui_text(font, line, pos, scale=scale, color=color)
+        pos += Vec2(0.0, line_h)
 
 
 MENU_ITEM_RGB = (0x46, 0xB4, 0xF0)  # from ui_menu_item_update: rgb(70, 180, 240)

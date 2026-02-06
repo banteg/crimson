@@ -150,7 +150,7 @@ class TutorialMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self._world.screen_to_world(Vec2(mouse.x, mouse.y))
+        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -471,7 +471,7 @@ class TutorialMode(BaseGameplayMode):
         if assets is None:
             return
         cursor_tex = assets.cursor
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
@@ -484,7 +484,7 @@ class TutorialMode(BaseGameplayMode):
         if assets is None:
             return
         aim_tex = assets.aim
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         draw_aim_cursor(
             self._world.particles_texture,
             aim_tex,

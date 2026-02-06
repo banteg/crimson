@@ -243,8 +243,7 @@ class LightingDebugView:
 
         self.close_requested = False
 
-        self._ui_mouse_x = 0.0
-        self._ui_mouse_y = 0.0
+        self._ui_mouse = Vec2()
 
         self._simulate = True
         self._draw_debug = True
@@ -360,8 +359,12 @@ class LightingDebugView:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse = Vec2.from_xy(mouse).clamp_rect(
+            0.0,
+            0.0,
+            max(0.0, screen_w - 1.0),
+            max(0.0, screen_h - 1.0),
+        )
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -571,8 +574,7 @@ class LightingDebugView:
         except Exception:
             self._solid_white = None
 
-        self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
-        self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         if self._debug_auto_dump:
             self._debug_dump_next_frame = True
 
@@ -598,7 +600,7 @@ class LightingDebugView:
         self._update_ui_mouse()
         self._handle_debug_input()
 
-        aim = self._world.screen_to_world(Vec2(self._ui_mouse_x, self._ui_mouse_y))
+        aim = self._world.screen_to_world(self._ui_mouse)
         if self._player is not None:
             self._player.aim = aim
 
@@ -916,7 +918,7 @@ class LightingDebugView:
             )
 
         def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
-            screen = self._world.world_to_screen(Vec2(float(proj.x), float(proj.y)))
+            screen = self._world.world_to_screen(Vec2.from_xy(proj))
             fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
@@ -936,7 +938,7 @@ class LightingDebugView:
                 lights.append(proj_light(self._projectiles[-1]))
             elif self._fly_lights_enabled and self._fly_lights:
                 fl = self._fly_lights[0]
-                screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
+                screen = self._world.world_to_screen(Vec2.from_xy(fl))
                 c = fl.color
                 lights.append(
                     (
@@ -960,7 +962,7 @@ class LightingDebugView:
                     lights.append(proj_light(proj))
             if self._fly_lights_enabled and self._fly_lights:
                 for fl in self._fly_lights[:12]:
-                    screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
+                    screen = self._world.world_to_screen(Vec2.from_xy(fl))
                     c = fl.color
                     lights.append(
                         (
@@ -1023,7 +1025,7 @@ class LightingDebugView:
             )
             return
 
-        light_pos = Vec2(float(self._ui_mouse_x), float(self._ui_mouse_y))
+        light_pos = self._ui_mouse
         sdf_ok = self._render_lightmap_sdf(light_pos=light_pos)
         if not sdf_ok:
             rl.begin_texture_mode(self._light_rt)
@@ -1043,7 +1045,7 @@ class LightingDebugView:
         if self._projectiles:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for proj in self._projectiles:
-                screen = self._world.world_to_screen(Vec2(float(proj.x), float(proj.y)))
+                screen = self._world.world_to_screen(Vec2.from_xy(proj))
                 fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
                 c = self._proj_light_tint
                 rl.draw_circle(
@@ -1057,7 +1059,7 @@ class LightingDebugView:
         if self._fly_lights_enabled and self._fly_lights:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for fl in self._fly_lights:
-                screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
+                screen = self._world.world_to_screen(Vec2.from_xy(fl))
                 c = fl.color
                 rl.draw_circle(
                     int(screen.x),

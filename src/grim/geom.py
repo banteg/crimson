@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Callable, TypeVar
+from typing import Callable, Protocol, TypeVar
 
 from .math import clamp
 
 TVector2 = TypeVar("TVector2")
+
+
+class SupportsXY(Protocol):
+    x: float
+    y: float
 
 
 @dataclass(slots=True, frozen=True)
@@ -57,6 +62,10 @@ class Vec2:
         return cls(x=math.cos(theta), y=math.sin(theta))
 
     @classmethod
+    def from_xy(cls, value: SupportsXY) -> Vec2:
+        return cls(x=float(value.x), y=float(value.y))
+
+    @classmethod
     def from_heading(cls, heading: float) -> Vec2:
         return cls.from_angle(heading - math.pi / 2.0)
 
@@ -76,6 +85,14 @@ class Vec2:
         """Build a target vector type (for example `pyray.Vector2`) from this Vec2."""
 
         return constructor(self.x, self.y)
+
+    def to_dict(self, *, ndigits: int | None = None) -> dict[str, float]:
+        if ndigits is None:
+            return {"x": float(self.x), "y": float(self.y)}
+        return {
+            "x": round(float(self.x), ndigits),
+            "y": round(float(self.y), ndigits),
+        }
 
     def rotated(self, theta: float) -> Vec2:
         cos_theta = math.cos(theta)

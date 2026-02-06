@@ -12,7 +12,6 @@ from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.view import ViewContext
 
 from ..gameplay import _creature_find_in_radius, perk_count_get
@@ -82,12 +81,12 @@ class BaseGameplayMode:
         self._game_over_ui = GameOverUi(
             assets_root=self._assets_root,
             base_dir=self._base_dir,
-            config=config or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": int(default_game_mode_id)}),
+            config=config
+            or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": int(default_game_mode_id)}),
         )
         self._game_over_banner = "reaper"
 
-        self._ui_mouse_x = 0.0
-        self._ui_mouse_y = 0.0
+        self._ui_mouse = Vec2()
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
         self._screen_fade: _ScreenFade | None = None
@@ -199,14 +198,18 @@ class BaseGameplayMode:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _ui_mouse_pos(self) -> rl.Vector2:
-        return rl.Vector2(float(self._ui_mouse_x), float(self._ui_mouse_y))
+        return self._ui_mouse.to_vector2(rl.Vector2)
 
     def _update_ui_mouse(self) -> None:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse = Vec2.from_xy(mouse).clamp_rect(
+            0.0,
+            0.0,
+            max(0.0, screen_w - 1.0),
+            max(0.0, screen_h - 1.0),
+        )
 
     def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
         dt_frame = float(dt)
@@ -264,8 +267,7 @@ class BaseGameplayMode:
         self._world.open()
         self._bind_world()
 
-        self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
-        self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
 
     def close(self) -> None:

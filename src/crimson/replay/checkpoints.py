@@ -199,8 +199,7 @@ def build_checkpoint(
         "creatures": [
             {
                 "type_id": int(creature.type_id),
-                "x": round(float(creature.pos.x), 4),
-                "y": round(float(creature.pos.y), 4),
+                **creature.pos.to_dict(ndigits=4),
                 "hp": round(float(creature.hp), 4),
                 "active": bool(creature.active),
             }
@@ -210,7 +209,7 @@ def build_checkpoint(
         "bonuses": [
             {
                 "bonus_id": int(bonus.bonus_id),
-                "pos": {"x": round(float(bonus.pos.x), 4), "y": round(float(bonus.pos.y), 4)},
+                "pos": bonus.pos.to_dict(ndigits=4),
                 "time_left": round(float(bonus.time_left), 4),
                 "picked": bool(bonus.picked),
                 "amount": int(bonus.amount),
@@ -229,7 +228,9 @@ def build_checkpoint(
         ],
         "bonus_timers": dict(bonus_timers),
     }
-    state_hash = hashlib.sha256(json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    state_hash = hashlib.sha256(
+        json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    ).hexdigest()[:16]
 
     return ReplayCheckpoint(
         tick_index=int(tick_index),

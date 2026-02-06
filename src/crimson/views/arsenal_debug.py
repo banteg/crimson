@@ -249,7 +249,7 @@ class ArsenalDebugView:
         )
 
         mouse = rl.get_mouse_position()
-        aim = self._world.screen_to_world(Vec2(mouse.x, mouse.y))
+        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -420,7 +420,7 @@ class ArsenalDebugView:
         draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2(mouse.x, mouse.y))
+        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("arsenal", "Arsenal")

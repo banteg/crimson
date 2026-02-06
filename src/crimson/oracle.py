@@ -20,9 +20,10 @@ from .sim.world_state import WorldState
 
 class OutputMode:
     """Output modes for oracle state emission."""
-    FULL = "full"        # Complete state every sample
+
+    FULL = "full"  # Complete state every sample
     SUMMARY = "summary"  # Score, kills, player pos/health only
-    HASH = "hash"        # SHA256 hash of full state for fast comparison
+    HASH = "hash"  # SHA256 hash of full state for fast comparison
     CHECKPOINTS = "checkpoints"  # Only on significant events
 
 
@@ -34,7 +35,7 @@ class OracleConfig:
     input_file: Path | None
     max_frames: int = 36000  # 10 minutes at 60fps
     frame_rate: int = 60
-    sample_rate: int = 1     # Emit state every N frames (1 = every frame, 60 = once per second)
+    sample_rate: int = 1  # Emit state every N frames (1 = every frame, 60 = once per second)
     output_mode: str = OutputMode.SUMMARY
     preserve_bugs: bool = False
 
@@ -86,7 +87,7 @@ def export_player_state(player: PlayerState) -> dict[str, Any]:
     """Export player state to JSON-serializable dict."""
     return {
         "index": int(player.index),
-        "pos": {"x": round(float(player.pos.x), 4), "y": round(float(player.pos.y), 4)},
+        "pos": player.pos.to_dict(ndigits=4),
         "health": round(float(player.health), 4),
         "weapon_id": int(player.weapon_id),
         "ammo": round(float(player.ammo), 4),
@@ -103,8 +104,7 @@ def export_creature_state(creature: Any) -> dict[str, Any]:
     return {
         "id": int(creature.id) if hasattr(creature, "id") else -1,
         "type_id": int(creature.type_id),
-        "x": round(float(creature.pos.x), 4),
-        "y": round(float(creature.pos.y), 4),
+        **creature.pos.to_dict(ndigits=4),
         "hp": round(float(creature.hp), 4),
         "active": bool(creature.active),
     }
@@ -114,7 +114,7 @@ def export_bonus_state(bonus: Any) -> dict[str, Any]:
     """Export bonus state to JSON-serializable dict."""
     return {
         "bonus_id": int(bonus.bonus_id),
-        "pos": {"x": round(float(bonus.pos.x), 4), "y": round(float(bonus.pos.y), 4)},
+        "pos": bonus.pos.to_dict(ndigits=4),
         "time_left": round(float(bonus.time_left), 4),
         "picked": bool(bonus.picked),
     }
@@ -200,7 +200,7 @@ def export_game_state_summary(
         "creature_count": creature_count,
         "players": [
             {
-                "pos": {"x": round(float(p.pos.x), 2), "y": round(float(p.pos.y), 2)},
+                "pos": p.pos.to_dict(ndigits=2),
                 "health": round(float(p.health), 2),
                 "weapon_id": int(p.weapon_id),
                 "level": int(p.level),
@@ -219,9 +219,7 @@ def export_game_state_hash(
 ) -> dict[str, Any]:
     """Export hash of game state for ultra-fast comparison."""
     # Get full state and hash it
-    full_state = export_game_state_full(
-        frame, world_state, players, rng_state, elapsed_ms
-    )
+    full_state = export_game_state_full(frame, world_state, players, rng_state, elapsed_ms)
     # Remove frame from hash computation (it's metadata)
     hashable = {k: v for k, v in full_state.items() if k != "frame"}
     state_bytes = json.dumps(hashable, sort_keys=True).encode()
@@ -238,6 +236,7 @@ def export_game_state_hash(
 @dataclass(slots=True)
 class CheckpointTracker:
     """Track significant events for checkpoint-only output."""
+
     last_score: int = 0
     last_kills: int = 0
     last_level: int = 1
@@ -253,11 +252,11 @@ class CheckpointTracker:
         weapon_id = players[0].weapon_id if players else 1
 
         changed = (
-            score != self.last_score or
-            kills != self.last_kills or
-            level != self.last_level or
-            int(health) != int(self.last_health) or  # Only trigger on integer health change
-            weapon_id != self.last_weapon_id
+            score != self.last_score
+            or kills != self.last_kills
+            or level != self.last_level
+            or int(health) != int(self.last_health)  # Only trigger on integer health change
+            or weapon_id != self.last_weapon_id
         )
 
         if changed:
@@ -364,7 +363,7 @@ def run_headless(config: OracleConfig) -> None:
                 should_emit = True
         else:
             # Sample rate based emission
-            should_emit = (frame % config.sample_rate == 0)
+            should_emit = frame % config.sample_rate == 0
 
         if should_emit:
             state_json = export_fn(

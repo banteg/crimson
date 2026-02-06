@@ -344,7 +344,7 @@ class GroundRenderer:
             self._debug_stamp(
                 "bake_decals",
                 count=len(decals),
-                pos0={"x": float(head.pos.x), "y": float(head.pos.y)},
+                pos0=head.pos.to_dict(),
                 rot0=float(head.rotation_rad),
             )
 
@@ -414,7 +414,7 @@ class GroundRenderer:
                 shadow=bool(shadow),
                 count=len(decals),
                 frame0=int(head.bodyset_frame),
-                top_left0={"x": float(head.top_left.x), "y": float(head.top_left.y)},
+                top_left0=head.top_left.to_dict(),
                 size0=float(head.size),
                 rot0=float(head.rotation_rad),
             )
@@ -469,7 +469,7 @@ class GroundRenderer:
             if w <= 0.0 or h <= 0.0:
                 return
 
-            pivot = Vec2(float(decal.pos.x), float(decal.pos.y))
+            pivot = decal.pos
             if not decal.centered:
                 pivot += Vec2(w * 0.5, h * 0.5)
 
@@ -534,10 +534,7 @@ class GroundRenderer:
                     for decal in self._fallback_corpse_decals:
                         src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                         size = float(decal.size) * 1.064
-                        pivot = Vec2(
-                            float(decal.top_left.x - 0.5) + size * 0.5,
-                            float(decal.top_left.y - 0.5) + size * 0.5,
-                        )
+                        pivot = decal.top_left + Vec2(size * 0.5 - 0.5, size * 0.5 - 0.5)
                         tint = rl.Color(decal.tint.r, decal.tint.g, decal.tint.b, int(decal.tint.a * 0.5))
                         rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
                         draw_corpse(size, pivot, rotation_deg, tint, src)
@@ -553,7 +550,7 @@ class GroundRenderer:
                 for decal in self._fallback_corpse_decals:
                     src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                     size = float(decal.size)
-                    pivot = Vec2(float(decal.top_left.x) + size * 0.5, float(decal.top_left.y) + size * 0.5)
+                    pivot = decal.top_left + Vec2(size * 0.5, size * 0.5)
                     rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
                     draw_corpse(size, pivot, rotation_deg, decal.tint, src)
 

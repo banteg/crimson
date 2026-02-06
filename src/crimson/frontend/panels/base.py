@@ -369,7 +369,7 @@ class PanelMenuView:
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         top_left, bottom_right = self._menu_item_bounds(entry)
         mouse = rl.get_mouse_position()
-        mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+        mouse_pos = Vec2.from_xy(mouse)
         return top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:

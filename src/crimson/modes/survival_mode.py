@@ -374,7 +374,7 @@ class SurvivalMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self._camera_screen_to_world(Vec2(mouse.x, mouse.y))
+        aim = self._camera_screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -681,7 +681,7 @@ class SurvivalMode(BaseGameplayMode):
                 rl.end_blend_mode()
 
     def _draw_game_cursor(self) -> None:
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
@@ -691,7 +691,7 @@ class SurvivalMode(BaseGameplayMode):
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
         draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 

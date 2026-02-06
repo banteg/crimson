@@ -171,7 +171,9 @@ class TypoShooterMode(BaseGameplayMode):
 
         return fire_pressed, reload_pressed
 
-    def _spawn_tinted_creature(self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: tuple[float, float, float, float]) -> int:
+    def _spawn_tinted_creature(
+        self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: tuple[float, float, float, float]
+    ) -> int:
         rand = self._state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
@@ -300,7 +302,7 @@ class TypoShooterMode(BaseGameplayMode):
         # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
@@ -310,7 +312,7 @@ class TypoShooterMode(BaseGameplayMode):
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
         draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 

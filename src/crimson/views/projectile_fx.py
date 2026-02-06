@@ -269,7 +269,7 @@ class ProjectileFxView:
             self._type_index = (self._type_index + 1) % max(1, len(self._type_ids))
 
         mouse = rl.get_mouse_position()
-        aim = self._camera_screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
+        aim = self._camera_screen_to_world(Vec2.from_xy(mouse))
         aim_delta = aim - self._origin
         angle = aim_delta.to_heading() if aim_delta.length_sq() > 1e-12 else math.pi / 2.0
 
@@ -489,8 +489,8 @@ class ProjectileFxView:
             beam_start = self._camera_world_to_screen(beam.start)
             beam_end = self._camera_world_to_screen(beam.end)
             rl.draw_line_ex(
-                rl.Vector2(float(beam_start.x), float(beam_start.y)),
-                rl.Vector2(float(beam_end.x), float(beam_end.y)),
+                beam_start.to_vector2(rl.Vector2),
+                beam_end.to_vector2(rl.Vector2),
                 2.0,
                 rl.Color(150, 220, 255, alpha),
             )

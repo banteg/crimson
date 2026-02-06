@@ -136,7 +136,7 @@ class GroundView:
             self._renderer.process_pending()
             if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 mouse = rl.get_mouse_position()
-                world_pos = Vec2(float(mouse.x), float(mouse.y)) - self._camera
+                world_pos = Vec2.from_xy(mouse) - self._camera
                 self._fx_queue.add(
                     effect_id=int(EffectId.BLOOD_SPLATTER),
                     pos=world_pos,
