@@ -43,6 +43,10 @@ Recent data-map lifts for one-shot setup guards:
   Check for updates, Back).
 - `profile_menu_init_flags` (`0x004cccd8`): `ui_profile_menu_update` setup
   guards for profile text input, action buttons, and list widget wiring.
+- `credits_screen_init_flags` (`0x00480978`): `credits_screen_update` one-shot
+  setup guards for Back and Secret buttons.
+- `mods_menu_init_flags` (`0x00481bb8`): `mods_menu_update` one-shot setup
+  guards for list widget and action buttons.
 
 ## Menu UI loop (perk_selection_screen_update)
 

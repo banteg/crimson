@@ -12,6 +12,8 @@ This page groups full-screen or modal flows that have their own update loops.
 - Handles high score entry, shows stats, and routes back to menu.
 - Plays exclusive SFX on entry when `game_state_pending` (`DAT_00487274`) == `0x19` and transition flag
   `ui_transition_direction` (`DAT_0048724c`) is set.
+- Uses `game_over_name_input_buffer` (`0x0048256c`) as the editable player-name
+  buffer for `ui_text_input_update`.
 
 ## Quest results (quest_results_screen_update / FUN_00410d20)
 
@@ -36,12 +38,16 @@ Recovered staged-reveal globals:
   `300`, `1000`, `50` ms windows).
 - `quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`
   (`DAT_00482700` / `DAT_00482704`) gate the unlock text rows.
+- Name entry uses `quest_results_name_input_buffer` (`0x004825dc`) as the
+  temporary UI text-input storage before writing `highscore_active_record`.
 
 ## Quest failed screen (quest_failed_screen_update)
 
 - Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
 - Renders failure text and retry options.
 - Note: the original string list includes a typo ("Persistence will be rewared."); we correct it to "rewarded" in the rewrite.
+- `quest_failed_screen_flags` (`0x004825d8`) is the one-shot init bitfield for
+  the three action buttons (Play Again / Play Another / Main Menu).
 
 ## Demo purchase screen (demo_purchase_screen_update / FUN_0040b740)
 

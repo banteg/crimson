@@ -1412,6 +1412,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480978",
+      "comment": "Credits screen one-shot init flags bitfield (guards Back/Secret button setup blocks).",
+      "name": "credits_screen_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00481188",
       "comment": "Credits screen Secret button state (ui_button_update target).",
       "name": "credits_secret_button",
@@ -1497,6 +1504,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00481bb8",
+      "comment": "Mods menu one-shot init flags bitfield (guards list widget + action button setup blocks).",
+      "name": "mods_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00481c10",
       "comment": "Credits secret flags; bit0 initializes Reset button, bit1 initializes Back button.",
       "name": "credits_secret_flags",
@@ -1531,6 +1545,20 @@
       "type": "HMODULE"
     },
     {
+      "address": "0x004824dc",
+      "comment": "Mods menu discovered DLL count (clamped to 0x1f entries during mods\\\\*.dll scan).",
+      "name": "mods_menu_entry_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004824e0",
+      "comment": "Pointer to currently selected mod info record in mods_menu_update (for metadata panel + launch gating).",
+      "name": "mods_menu_selected_info",
+      "program": "crimsonland.exe",
+      "type": "mod_info_t *"
+    },
+    {
       "address": "0x004824e4",
       "comment": "Credits secret countdown timer in ms (adds 2000 on match, reset to 0x2580).",
       "name": "credits_secret_timer_ms",
@@ -1554,6 +1582,25 @@
       "name": "quest_results_screen_flags",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x0048256c",
+      "comment": "Game-over high-score name input buffer (ui_text_input_update target).",
+      "name": "game_over_name_input_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004825d8",
+      "comment": "Quest-failed screen one-shot init flags bitfield (guards retry/menu button setup blocks).",
+      "name": "quest_failed_screen_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004825dc",
+      "comment": "Quest-results high-score name input buffer (ui_text_input_update target).",
+      "name": "quest_results_name_input_buffer",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004825fc",

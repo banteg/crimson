@@ -18,6 +18,17 @@ and expects two exports: `CMOD_GetInfo` and `CMOD_GetMod`.
   - `plugin_runtime_needs_init` (`0x00471304`) runs plugin `Init()` once after state entry.
   - `plugin_runtime_active_latch` (`0x004824d1`) keeps pause/resume callbacks on the plugin path.
 
+## Mods menu state globals
+
+`mods_menu_update` (`0x0040e9a0`) uses these recovered globals:
+
+- `mods_menu_init_flags` (`0x00481bb8`): one-shot setup guards for the list
+  widget and action buttons.
+- `mods_menu_entry_count` (`0x004824dc`): discovered DLL count while scanning
+  `mods\\*.dll` (clamped to 31 entries).
+- `mods_menu_selected_info` (`0x004824e0`): pointer to the currently selected
+  `mod_info_t` used for the metadata panel and Launch gating.
+
 ## Loading a mod info block
 
 `mod_load_info` (`0x0040e700`):
