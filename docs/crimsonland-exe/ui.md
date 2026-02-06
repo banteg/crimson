@@ -47,6 +47,22 @@ Recent data-map lifts for one-shot setup guards:
   setup guards for Back and Secret buttons.
 - `mods_menu_init_flags` (`0x00481bb8`): `mods_menu_update` one-shot setup
   guards for list widget and action buttons.
+- `quest_select_screen_flags` (`0x004d79d4`): `quest_select_menu_update`
+  runtime setup guards for Hardcore checkbox and Back button.
+
+## Controls menu list latches
+
+Recovered controls-menu open/enabled gates:
+
+- `controls_move_method_list_open` / `controls_move_method_list_enabled`
+  (`0x004d763c` / `0x004d7638`)
+- `controls_aim_method_list_open` / `controls_aim_method_list_enabled`
+  (`0x004d76ac` / `0x004d76a8`)
+- `controls_player_profile_list_open` / `controls_player_profile_list_enabled`
+  (`0x004d7664` / `0x004d7660`)
+
+`controls_menu_update` recomputes the `*_enabled` flags each frame so only one
+list can be active at a time.
 
 ## Menu UI loop (perk_selection_screen_update)
 

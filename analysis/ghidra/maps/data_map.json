@@ -1443,10 +1443,38 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00481180",
+      "comment": "Credits scroll visible end line index (clamped to credits_line_max_index).",
+      "name": "credits_scroll_line_end_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00481184",
+      "comment": "Credits scroll visible start line index (derived from credits_scroll_time_s).",
+      "name": "credits_scroll_line_start_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004811b8",
+      "comment": "Highest initialized credits line index (updated by credits_line_set).",
+      "name": "credits_line_max_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004811bc",
       "comment": "Credits Secret injected line base index (observed 0x54).",
       "name": "credits_secret_line_base_index",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004811c0",
+      "comment": "Credits scroll time accumulator in seconds (increments by frame_dt).",
+      "name": "credits_scroll_time_s",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004811c4",
@@ -6679,6 +6707,48 @@
       "type": "int"
     },
     {
+      "address": "0x004d7638",
+      "comment": "Controls menu movement-method list enabled gate (disabled while aim/profile lists are open).",
+      "name": "controls_move_method_list_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d763c",
+      "comment": "Controls menu movement-method list open latch toggled on list activation.",
+      "name": "controls_move_method_list_open",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7660",
+      "comment": "Controls menu player-profile list enabled gate (disabled while aim/move lists are open).",
+      "name": "controls_player_profile_list_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7664",
+      "comment": "Controls menu player-profile list open latch toggled on list activation.",
+      "name": "controls_player_profile_list_open",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76a8",
+      "comment": "Controls menu aim-method list enabled gate (disabled while move/profile lists are open).",
+      "name": "controls_aim_method_list_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76ac",
+      "comment": "Controls menu aim-method list open latch toggled on list activation.",
+      "name": "controls_aim_method_list_open",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004d7730",
       "comment": "Play-game menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "play_game_menu_init_flags",
@@ -6703,6 +6773,13 @@
       "address": "0x004d79d8",
       "comment": "Quest-select selected minor quest index (0..9), copied to _quest_stage_minor as +1.",
       "name": "quest_select_stage_minor_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d79d4",
+      "comment": "Quest-select screen runtime flags bitfield (guards Hardcore checkbox and Back button setup blocks).",
+      "name": "quest_select_screen_flags",
       "program": "crimsonland.exe",
       "type": "int"
     },

@@ -49,6 +49,15 @@ Recovered staged-reveal globals:
 - `quest_failed_screen_flags` (`0x004825d8`) is the one-shot init bitfield for
   the three action buttons (Play Again / Play Another / Main Menu).
 
+## Credits screen (credits_screen_update)
+
+- `credits_line_max_index` (`0x004811b8`) tracks the highest initialized line
+  in `credits_line_table`.
+- `credits_scroll_time_s` (`0x004811c0`) accumulates `frame_dt` and drives
+  scrolling.
+- `credits_scroll_line_start_index` / `credits_scroll_line_end_index`
+  (`0x00481184` / `0x00481180`) define the visible line window each frame.
+
 ## Demo purchase screen (demo_purchase_screen_update / FUN_0040b740)
 
 - Full-screen upsell flow.

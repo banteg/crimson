@@ -21,6 +21,8 @@ State globals recovered from `quest_select_menu_update`:
 - `quest_select_stage_minor_index` (`0x004d79d8`): current selected quest row (0..9)
 - `quest_select_menu_init_flags` (`0x004d76a0`): one-shot setup bitfield for static
   menu widgets/colors
+- `quest_select_screen_flags` (`0x004d79d4`): runtime setup bitfield for the
+  Hardcore checkbox and Back button blocks
 
 ## Anchor coordinates (from `quest_select_menu_update`)
 

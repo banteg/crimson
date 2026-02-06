@@ -7895,7 +7895,7 @@ void __cdecl credits_line_set(int index,char *text,int flags)
   }
   pcVar1 = strdup_malloc(text);
   credits_line_table[index].text = pcVar1;
-  DAT_004811b8 = index;
+  credits_line_max_index = index;
   return;
 }
 
@@ -8137,33 +8137,34 @@ void credits_screen_update(void)
   if (ui_screen_phase == 0) {
     ui_screen_phase = 1;
     credits_build_lines();
-    _DAT_004811c0 = 0.0;
-    DAT_00481184 = 0;
+    credits_scroll_time_s = 0.0;
+    credits_scroll_line_start_index = 0;
   }
   else if (ui_screen_phase == 1) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-    if (DAT_004811b8 + 2 < DAT_00481184) {
-      _DAT_004811c0 = 0.0;
-      DAT_00481184 = 0;
+    if (credits_line_max_index + 2 < credits_scroll_line_start_index) {
+      credits_scroll_time_s = 0.0;
+      credits_scroll_line_start_index = 0;
     }
     fStack_c = fStack_c - 4.0;
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fStack_10 + 4.0,fStack_c,menu_label_credits);
     fStack_c = (fStack_c + 20.0) - 6.0;
-    _DAT_004811c0 = frame_dt + _DAT_004811c0;
+    credits_scroll_time_s = frame_dt + credits_scroll_time_s;
     lVar8 = __ftol();
-    DAT_00481184 = (int)lVar8 + -0xf;
-    DAT_00481180 = (int)lVar8 + 1;
-    if (DAT_004811b8 < DAT_00481180) {
-      DAT_00481180 = DAT_004811b8;
+    credits_scroll_line_start_index = (int)lVar8 + -0xf;
+    credits_scroll_line_end_index = (int)lVar8 + 1;
+    if (credits_line_max_index < credits_scroll_line_end_index) {
+      credits_scroll_line_end_index = credits_line_max_index;
     }
-    for (fVar2 = _DAT_004811c0 * 16.0; 16.0 < fVar2; fVar2 = fVar2 - 16.0) {
+    for (fVar2 = credits_scroll_time_s * 16.0; 16.0 < fVar2; fVar2 = fVar2 - 16.0) {
     }
     iVar3 = 0;
-    if (DAT_00481180 != DAT_00481184 && -1 < DAT_00481180 - DAT_00481184) {
+    if (credits_scroll_line_end_index != credits_scroll_line_start_index &&
+        -1 < credits_scroll_line_end_index - credits_scroll_line_start_index) {
       iStack_24 = 0;
       do {
-        index = DAT_00481184 + iVar3;
+        index = credits_scroll_line_start_index + iVar3;
         if (index < 0) {
           index = 0;
         }
@@ -8171,7 +8172,8 @@ void credits_screen_update(void)
         y = ((float)iStack_24 + fStack_c) - fVar2;
         fVar9 = (fStack_c - 16.0) + 24.0;
         if (fVar9 <= y) {
-          fVar9 = ((float)(((DAT_00481180 - DAT_00481184) + -1) * 0x10) + fStack_c) - 24.0;
+          fVar9 = ((float)(((credits_scroll_line_end_index - credits_scroll_line_start_index) + -1)
+                          * 0x10) + fStack_c) - 24.0;
           if (fVar9 < y) {
             fStack_28 = (fVar9 - y) * 0.041666668 + 1.0;
             goto LAB_0040db8e;
@@ -8235,7 +8237,7 @@ LAB_0040dcc6:
                   ((fStack_10 + 140.0) - (float)(w / 2),y,credits_line_table[index].text);
         iVar3 = iVar3 + 1;
         iStack_24 = iStack_24 + 0x10;
-      } while (iVar3 < DAT_00481180 - DAT_00481184);
+      } while (iVar3 < credits_scroll_line_end_index - credits_scroll_line_start_index);
     }
     fStack_10 = fStack_10 + 100.0;
     _credits_back_button = &DAT_00472e80;
@@ -41682,8 +41684,8 @@ void quest_select_menu_update(void)
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   fStack_14 = fStack_14 + 50.0;
   fStack_18 = (fStack_18 - 208.0) + 16.0;
-  if ((DAT_004d79d4 & 1) == 0) {
-    DAT_004d79d4 = DAT_004d79d4 | 1;
+  if (((byte)quest_select_screen_flags & 1) == 0) {
+    quest_select_screen_flags._0_1_ = (byte)quest_select_screen_flags | 1;
     DAT_004d7700 = '\0';
     DAT_004d7701 = 0;
     DAT_004d7702 = 0;
@@ -41779,8 +41781,8 @@ LAB_00448631:
       }
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-      if ((DAT_004d79d4 & 2) == 0) {
-        DAT_004d79d4 = DAT_004d79d4 | 2;
+      if (((byte)quest_select_screen_flags & 2) == 0) {
+        quest_select_screen_flags._0_1_ = (byte)quest_select_screen_flags | 2;
         DAT_004d774e = 1;
         DAT_004d775d = 0;
         DAT_004d775c = 0;
@@ -42033,33 +42035,33 @@ void controls_menu_update(void)
   _DAT_004d75b8 = &DAT_00472e80;
   if (((byte)controls_menu_init_flags & 4) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 4;
-    DAT_004d7660 = 1;
+    controls_player_profile_list_enabled = '\x01';
     _DAT_004d7678 = 0;
     DAT_004d7674 = 0;
     _DAT_004d7668 = 0;
-    DAT_004d7664 = 0;
+    _controls_player_profile_list_open = 0;
     _DAT_004d7670 = 0;
     _DAT_004d766c = (char **)0x0;
     crt_atexit(&DAT_0044ed50);
   }
   if (((byte)controls_menu_init_flags & 8) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 8;
-    DAT_004d76a8 = 1;
+    controls_aim_method_list_enabled = '\x01';
     _DAT_004d76c0 = 0;
     DAT_004d76bc = 0;
     _DAT_004d76b0 = 0;
-    DAT_004d76ac = 0;
+    _controls_aim_method_list_open = 0;
     _DAT_004d76b8 = 0;
     _DAT_004d76b4 = (char **)0x0;
     crt_atexit(&DAT_0044ed40);
   }
   if (((byte)controls_menu_init_flags & 0x10) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x10;
-    DAT_004d7638 = 1;
+    controls_move_method_list_enabled = '\x01';
     _DAT_004d7650 = 0;
     DAT_004d764c = 0;
     _DAT_004d7640 = 0;
-    DAT_004d763c = 0;
+    _controls_move_method_list_open = 0;
     _DAT_004d7648 = 0;
     _DAT_004d7644 = (char **)0x0;
     crt_atexit(&DAT_0044ed30);
@@ -47768,13 +47770,16 @@ LAB_0044da08:
   }
   _config_key_reload = iVar14;
   DAT_004d77f1 = 0;
-  DAT_004d76a8 = DAT_004d7664 == 0 && DAT_004d763c == 0;
-  DAT_004d7638 = DAT_004d76ac == 0 && DAT_004d7664 == 0;
-  DAT_004d7660 = DAT_004d76ac == 0 && DAT_004d763c == 0;
-  if ((DAT_004d763c != 0) || (DAT_004d76ac != 0)) {
+  controls_aim_method_list_enabled =
+       _controls_player_profile_list_open == 0 && _controls_move_method_list_open == 0;
+  controls_move_method_list_enabled =
+       _controls_aim_method_list_open == 0 && _controls_player_profile_list_open == 0;
+  controls_player_profile_list_enabled =
+       _controls_aim_method_list_open == 0 && _controls_move_method_list_open == 0;
+  if ((_controls_move_method_list_open != 0) || (_controls_aim_method_list_open != 0)) {
     DAT_004d77f1 = 1;
   }
-  pcVar8 = &DAT_004d7638;
+  pcVar8 = &controls_move_method_list_enabled;
   fStack_70 = 10.0;
   fStack_6c = 104.0;
   pfVar10 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
@@ -47782,11 +47787,11 @@ LAB_0044da08:
   if ((-2 < iVar14) &&
      (((iVar5 = input_primary_just_pressed(), (char)iVar5 != '\0' ||
        (iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar5 != '\0')) &&
-      (DAT_004d763c = 1 - DAT_004d763c, -1 < iVar14)))) {
+      (_controls_move_method_list_open = 1 - _controls_move_method_list_open, -1 < iVar14)))) {
     _DAT_004d7640 = iVar14;
     *(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) = iVar14 + 1;
   }
-  pcVar8 = &DAT_004d76a8;
+  pcVar8 = &controls_aim_method_list_enabled;
   fStack_70 = 10.0;
   fStack_6c = 62.0;
   pfVar10 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
@@ -47794,11 +47799,11 @@ LAB_0044da08:
   if (((-2 < iVar14) &&
       ((iVar5 = input_primary_just_pressed(), (char)iVar5 != '\0' ||
        (iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar5 != '\0'))))
-     && (DAT_004d76ac = 1 - DAT_004d76ac, -1 < iVar14)) {
+     && (_controls_aim_method_list_open = 1 - _controls_aim_method_list_open, -1 < iVar14)) {
     _DAT_004d76b0 = iVar14;
     *(int *)(&config_aim_scheme + controls_rebind_player_index * 4) = iVar14;
   }
-  pcVar8 = &DAT_004d7660;
+  pcVar8 = &controls_player_profile_list_enabled;
   fStack_70 = 136.0;
   fStack_6c = 16.0;
   pfVar10 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
@@ -47806,7 +47811,8 @@ LAB_0044da08:
   if (((-2 < iVar14) &&
       ((iVar5 = input_primary_just_pressed(), (char)iVar5 != '\0' ||
        (iVar5 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar5 != '\0'))))
-     && (DAT_004d7664 = 1 - DAT_004d7664, -1 < iVar14)) {
+     && (_controls_player_profile_list_open = 1 - _controls_player_profile_list_open, -1 < iVar14))
+  {
     _DAT_004d76b0 = *(int *)(&config_aim_scheme + iVar14 * 4);
     _DAT_004d7640 = *(int *)(&config_player_mode_flags + iVar14 * 4) + -1;
     _DAT_004d7668 = iVar14;
