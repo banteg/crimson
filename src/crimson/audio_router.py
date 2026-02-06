@@ -82,6 +82,25 @@ class AudioRouter:
             return
         play_sfx(self.audio, key, rng=self.audio_rng)
 
+    def play_sfx_resolved(self, key: str | None) -> None:
+        if self.audio is None:
+            return
+        play_sfx(self.audio, key, rng=self.audio_rng, allow_variants=False)
+
+    def trigger_game_tune(self) -> str | None:
+        if self.audio is None:
+            return None
+
+        audio_rng = self.audio_rng
+        if audio_rng is None:
+            return trigger_game_tune(self.audio)
+
+        def _rand() -> int:
+            # Keep music randomization deterministic when a session RNG is bound.
+            return int(audio_rng.randrange(0, 0x8000))
+
+        return trigger_game_tune(self.audio, rand=_rand)
+
     def handle_player_audio(
         self,
         player: object,
