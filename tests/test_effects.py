@@ -42,8 +42,7 @@ def test_fx_queue_caps_count() -> None:
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
-        top_left_x=0.0,
-        top_left_y=0.0,
+        top_left=Vec2(0.0, 0.0),
         rgba=(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
@@ -55,8 +54,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
     q.clear()
     assert q.add(
-        top_left_x=0.0,
-        top_left_y=0.0,
+        top_left=Vec2(0.0, 0.0),
         rgba=(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,

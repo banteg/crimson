@@ -59,8 +59,7 @@ class GameWorld:
     state: GameplayState = field(init=False)
     players: list[PlayerState] = field(init=False)
     creatures: CreaturePool = field(init=False)
-    camera_x: float = field(init=False, default=-1.0)
-    camera_y: float = field(init=False, default=-1.0)
+    camera: Vec2 = field(init=False, default_factory=lambda: Vec2(-1.0, -1.0))
     _damage_scale_by_type: dict[int, float] = field(init=False, default_factory=dict)
     missing_assets: list[str] = field(init=False, default_factory=list)
     ground: GroundRenderer | None = field(init=False, default=None)
@@ -99,8 +98,7 @@ class GameWorld:
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.camera_x = -1.0
-        self.camera_y = -1.0
+        self.camera = Vec2(-1.0, -1.0)
         self.audio_router = AudioRouter(
             audio=self.audio,
             audio_rng=self.audio_rng,
@@ -162,8 +160,7 @@ class GameWorld:
             player = PlayerState(index=idx, pos=pos)
             weapon_assign_player(player, 1)
             self.players.append(player)
-        self.camera_x = -1.0
-        self.camera_y = -1.0
+        self.camera = Vec2(-1.0, -1.0)
         if self.ground is not None:
             terrain_seed = int(self.state.rng.rand() % 10_000)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
@@ -638,18 +635,13 @@ class GameWorld:
         if alive:
             focus_x = sum(player.pos.x for player in alive) / float(len(alive))
             focus_y = sum(player.pos.y for player in alive) / float(len(alive))
-            cam_x = (screen_size.x * 0.5) - focus_x
-            cam_y = (screen_size.y * 0.5) - focus_y
+            camera = Vec2((screen_size.x * 0.5) - focus_x, (screen_size.y * 0.5) - focus_y)
         else:
-            cam_x = self.camera_x
-            cam_y = self.camera_y
+            camera = self.camera
 
-        cam_x += self.state.camera_shake_offset.x
-        cam_y += self.state.camera_shake_offset.y
+        camera = camera + self.state.camera_shake_offset
 
-        clamped = self.renderer._clamp_camera(Vec2(cam_x, cam_y), screen_size)
-        self.camera_x = clamped.x
-        self.camera_y = clamped.y
+        self.camera = self.renderer._clamp_camera(camera, screen_size)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self.renderer.world_to_screen(pos)

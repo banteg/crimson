@@ -181,7 +181,7 @@ class CameraShakeView:
         camera, _view_scale = self._world._world_params()
         lines = [
             "WASD move  N: nuke shake  T: toggle reflex-boost shake-rate  R: reset  Esc: exit",
-            f"camera_offset=({camera.x:.1f},{camera.y:.1f})  camera_raw=({self._world.camera_x:.1f},{self._world.camera_y:.1f})",
+            f"camera_offset=({camera.x:.1f},{camera.y:.1f})  camera_raw=({self._world.camera.x:.1f},{self._world.camera.y:.1f})",
             f"shake_offset=({state.camera_shake_offset.x:.1f},{state.camera_shake_offset.y:.1f})  "
             f"shake_timer={state.camera_shake_timer:.3f}  pulses={state.camera_shake_pulses}",
             f"reflex_boost={state.bonuses.reflex_boost:.2f}  creatures_alive={len(self._world.creatures.iter_active())}",

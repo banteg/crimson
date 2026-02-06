@@ -10,6 +10,7 @@ from crimson.creatures.spawn import CreatureTypeId
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.terrain_render import GroundCorpseDecal, GroundRenderer, _maybe_alpha_test
 from grim.view import View, ViewContext
 
@@ -105,8 +106,7 @@ class CorpseStampDebugView:
         cy = WORLD_SIZE * 0.5
         return GroundCorpseDecal(
             bodyset_frame=int(frame),
-            top_left_x=cx - size * 0.5,
-            top_left_y=cy - size * 0.5,
+            top_left=Vec2(cx - size * 0.5, cy - size * 0.5),
             size=size,
             rotation_rad=float(self._corpse_rotation),
             tint=rl.Color(255, 255, 255, 255),

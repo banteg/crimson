@@ -490,8 +490,7 @@ class FxQueue:
 
 @dataclass(slots=True)
 class FxQueueRotatedEntry:
-    top_left_x: float = 0.0
-    top_left_y: float = 0.0
+    top_left: Vec2 = field(default_factory=Vec2)
     color_r: float = 1.0
     color_g: float = 1.0
     color_b: float = 1.0
@@ -528,8 +527,7 @@ class FxQueueRotated:
     def add(
         self,
         *,
-        top_left_x: float,
-        top_left_y: float,
+        top_left: Vec2,
         rgba: tuple[float, float, float, float],
         rotation: float,
         scale: float,
@@ -551,8 +549,7 @@ class FxQueueRotated:
             a = a * 0.8
 
         entry = self._entries[self._count]
-        entry.top_left_x = float(top_left_x)
-        entry.top_left_y = float(top_left_y)
+        entry.top_left = top_left
         entry.color_r = float(r)
         entry.color_g = float(g)
         entry.color_b = float(b)

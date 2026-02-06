@@ -8,6 +8,7 @@ from typing import Iterable, Sequence
 
 import pyray as rl
 
+from .geom import Vec2
 from .rand import CrtRand
 
 TERRAIN_TEXTURE_SIZE = 1024
@@ -151,8 +152,7 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
 class GroundDecal:
     texture: rl.Texture
     src: rl.Rectangle
-    x: float
-    y: float
+    pos: Vec2
     width: float
     height: float
     rotation_rad: float = 0.0
@@ -163,8 +163,7 @@ class GroundDecal:
 @dataclass(slots=True)
 class GroundCorpseDecal:
     bodyset_frame: int
-    top_left_x: float
-    top_left_y: float
+    top_left: Vec2
     size: float
     rotation_rad: float
     tint: rl.Color = rl.WHITE
@@ -345,7 +344,7 @@ class GroundRenderer:
             self._debug_stamp(
                 "bake_decals",
                 count=len(decals),
-                pos0={"x": float(head.x), "y": float(head.y)},
+                pos0={"x": float(head.pos.x), "y": float(head.pos.y)},
                 rot0=float(head.rotation_rad),
             )
 
@@ -366,11 +365,11 @@ class GroundRenderer:
                 w = decal.width
                 h = decal.height
                 if decal.centered:
-                    pivot_x = decal.x
-                    pivot_y = decal.y
+                    pivot_x = decal.pos.x
+                    pivot_y = decal.pos.y
                 else:
-                    pivot_x = decal.x + w * 0.5
-                    pivot_y = decal.y + h * 0.5
+                    pivot_x = decal.pos.x + w * 0.5
+                    pivot_y = decal.pos.y + h * 0.5
                 pivot_x *= inv_scale
                 pivot_y *= inv_scale
                 w *= inv_scale
@@ -415,7 +414,7 @@ class GroundRenderer:
                 shadow=bool(shadow),
                 count=len(decals),
                 frame0=int(head.bodyset_frame),
-                top_left0={"x": float(head.top_left_x), "y": float(head.top_left_y)},
+                top_left0={"x": float(head.top_left.x), "y": float(head.top_left.y)},
                 size0=float(head.size),
                 rot0=float(head.rotation_rad),
             )
@@ -471,8 +470,8 @@ class GroundRenderer:
             if w <= 0.0 or h <= 0.0:
                 return
 
-            pivot_x = float(decal.x)
-            pivot_y = float(decal.y)
+            pivot_x = float(decal.pos.x)
+            pivot_y = float(decal.pos.y)
             if not decal.centered:
                 pivot_x += w * 0.5
                 pivot_y += h * 0.5
@@ -540,8 +539,8 @@ class GroundRenderer:
                     for decal in self._fallback_corpse_decals:
                         src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                         size = float(decal.size) * 1.064
-                        pivot_x = float(decal.top_left_x - 0.5) + size * 0.5
-                        pivot_y = float(decal.top_left_y - 0.5) + size * 0.5
+                        pivot_x = float(decal.top_left.x - 0.5) + size * 0.5
+                        pivot_y = float(decal.top_left.y - 0.5) + size * 0.5
                         tint = rl.Color(decal.tint.r, decal.tint.g, decal.tint.b, int(decal.tint.a * 0.5))
                         rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
                         draw_corpse(size, pivot_x, pivot_y, rotation_deg, tint, src)
@@ -557,8 +556,8 @@ class GroundRenderer:
                 for decal in self._fallback_corpse_decals:
                     src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                     size = float(decal.size)
-                    pivot_x = float(decal.top_left_x) + size * 0.5
-                    pivot_y = float(decal.top_left_y) + size * 0.5
+                    pivot_x = float(decal.top_left.x) + size * 0.5
+                    pivot_y = float(decal.top_left.y) + size * 0.5
                     rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
                     draw_corpse(size, pivot_x, pivot_y, rotation_deg, decal.tint, src)
 
@@ -670,8 +669,7 @@ class GroundRenderer:
                 GroundDecal(
                     texture=texture,
                     src=src,
-                    x=float(x + size * 0.5),
-                    y=float(y + size * 0.5),
+                    pos=Vec2(float(x + size * 0.5), float(y + size * 0.5)),
                     width=size,
                     height=size,
                     rotation_rad=float(angle),
@@ -789,8 +787,8 @@ class GroundRenderer:
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                 size = decal.size * inv_scale * 1.064
-                x = (decal.top_left_x - 0.5) * inv_scale - offset
-                y = (decal.top_left_y - 0.5) * inv_scale - offset
+                x = (decal.top_left.x - 0.5) * inv_scale - offset
+                y = (decal.top_left.y - 0.5) * inv_scale - offset
                 dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
                 origin = rl.Vector2(size * 0.5, size * 0.5)
                 tint = rl.Color(
@@ -826,8 +824,8 @@ class GroundRenderer:
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                 size = decal.size * inv_scale
-                x = decal.top_left_x * inv_scale - offset
-                y = decal.top_left_y * inv_scale - offset
+                x = decal.top_left.x * inv_scale - offset
+                y = decal.top_left.y * inv_scale - offset
                 dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
                 origin = rl.Vector2(size * 0.5, size * 0.5)
                 rl.draw_texture_pro(

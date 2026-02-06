@@ -55,8 +55,7 @@ def bake_fx_queues(
             GroundDecal(
                 texture=textures.particles,
                 src=rl.Rectangle(*src),
-                x=entry.pos.x,
-                y=entry.pos.y,
+                pos=entry.pos,
                 width=entry.width,
                 height=entry.height,
                 rotation_rad=entry.rotation,
@@ -70,8 +69,7 @@ def bake_fx_queues(
         corpse_decals.append(
             GroundCorpseDecal(
                 bodyset_frame=corpse_frame_for_type(entry.creature_type_id),
-                top_left_x=entry.top_left_x,
-                top_left_y=entry.top_left_y,
+                top_left=entry.top_left,
                 size=entry.scale,
                 rotation_rad=entry.rotation,
                 tint=_rgba_to_color((entry.color_r, entry.color_g, entry.color_b, entry.color_a)),

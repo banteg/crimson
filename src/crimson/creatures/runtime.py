@@ -1025,8 +1025,7 @@ class CreaturePool:
             # Native uses a special fallback corpse id for ping-pong strip creatures.
             corpse_type_id = int(creature.type_id) if long_strip else 7
             ok = fx_queue_rotated.add(
-                top_left_x=creature.pos.x - corpse_size * 0.5,
-                top_left_y=creature.pos.y - corpse_size * 0.5,
+                top_left=Vec2(creature.pos.x - corpse_size * 0.5, creature.pos.y - corpse_size * 0.5),
                 rgba=(creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a),
                 rotation=float(creature.heading),
                 scale=corpse_size,
