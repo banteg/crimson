@@ -270,7 +270,7 @@ class QuestResultsUi:
 
     def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         if self.font is not None:
-            draw_small_text(self.font, text, Vec2(pos.x, pos.y), scale, color)
+            draw_small_text(self.font, text, pos, scale, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
@@ -486,7 +486,7 @@ class QuestResultsUi:
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
             panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
-            content_pos = panel_layout.top_left + Vec2(QUEST_RESULTS_CONTENT_X * scale, 0.0)
+            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
             input_pos = content_pos.offset(dy=150.0 * scale)
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
@@ -538,8 +538,8 @@ class QuestResultsUi:
             scale = ui_scale(screen_w, screen_h)
             panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
             qualifies = int(self.rank) < TABLE_MAX
-            content_pos = panel_layout.top_left + Vec2(QUEST_RESULTS_CONTENT_X * scale, 0.0)
-            score_card_pos = content_pos + Vec2(QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale, 0.0)
+            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
+            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale)
 
             var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0) * scale
             var_c_14 = var_c_12 + 84.0 * scale
@@ -637,7 +637,7 @@ class QuestResultsUi:
             fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
             draw_classic_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE, shadow=fx_detail)
 
-        content_pos = panel_layout.top_left + Vec2(QUEST_RESULTS_CONTENT_X * scale, 0.0)
+        content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
         if self.assets.text_well_done is not None:
             src = rl.Rectangle(
@@ -751,7 +751,7 @@ class QuestResultsUi:
             self._draw_name_entry_stats(pos=score_card_pos, scale=scale, alpha=1.0, show_weapon_row=True)
 
         else:
-            score_card_pos = content_pos + Vec2(QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale, 0.0)
+            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale)
             var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0) * scale
             if (not qualifies) and self.font is not None:
                 self._draw_small(

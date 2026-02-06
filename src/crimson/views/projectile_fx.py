@@ -150,7 +150,7 @@ class ProjectileFxView:
         self._beams.clear()
         self._effects.clear()
         self._creatures = [
-            DummyCreature(pos=self._origin + Vec2(180.0, 0.0), hp=140.0, size=38.0),
+            DummyCreature(pos=self._origin.offset(dx=180.0), hp=140.0, size=38.0),
             DummyCreature(pos=self._origin + Vec2(260.0, 40.0), hp=140.0, size=42.0),
             DummyCreature(pos=self._origin + Vec2(-220.0, 140.0), hp=140.0, size=52.0),
             DummyCreature(pos=self._origin + Vec2(-300.0, -120.0), hp=140.0, size=58.0),

@@ -205,18 +205,15 @@ void main()
 
 @dataclass
 class _EmissiveProjectile:
-    x: float
-    y: float
-    vx: float
-    vy: float
+    pos: Vec2
+    vel: Vec2
     age: float
     ttl: float
 
 
 @dataclass
 class _FlyingLight:
-    x: float
-    y: float
+    pos: Vec2
     angle: float
     radius: float
     omega: float
@@ -340,8 +337,7 @@ class LightingDebugView:
             sr = float(self._fly_light_source_radius) * (0.7 + rng.random() * 0.7)
             self._fly_lights.append(
                 _FlyingLight(
-                    x=float(spawn_pos.x),
-                    y=float(spawn_pos.y),
+                    pos=spawn_pos,
                     angle=float(angle),
                     radius=float(radius),
                     omega=float(omega),
@@ -635,18 +631,21 @@ class LightingDebugView:
                     wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
                     r = fl.radius * wobble
                     pos = (center + Vec2.from_polar(fl.angle, r)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
-                    fl.x = pos.x
-                    fl.y = pos.y
+                    fl.pos = pos
 
             keep: list[_EmissiveProjectile] = []
             margin = 80.0
             for proj in self._projectiles:
                 proj.age += dt_world
-                proj.x += proj.vx * dt_world
-                proj.y += proj.vy * dt_world
+                proj.pos = proj.pos + proj.vel * dt_world
                 if proj.age >= proj.ttl:
                     continue
-                if proj.x < -margin or proj.x > WORLD_SIZE + margin or proj.y < -margin or proj.y > WORLD_SIZE + margin:
+                if (
+                    proj.pos.x < -margin
+                    or proj.pos.x > WORLD_SIZE + margin
+                    or proj.pos.y < -margin
+                    or proj.pos.y > WORLD_SIZE + margin
+                ):
                     continue
                 keep.append(proj)
             self._projectiles = keep[-self._max_projectiles :]
@@ -664,10 +663,8 @@ class LightingDebugView:
         velocity = direction * speed
         self._projectiles.append(
             _EmissiveProjectile(
-                x=float(spawn_pos.x),
-                y=float(spawn_pos.y),
-                vx=float(velocity.x),
-                vy=float(velocity.y),
+                pos=spawn_pos,
+                vel=velocity,
                 age=0.0,
                 ttl=float(self._proj_ttl),
             )
@@ -912,7 +909,7 @@ class LightingDebugView:
             )
 
         def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
-            screen = self._world.world_to_screen(Vec2.from_xy(proj))
+            screen = self._world.world_to_screen(proj.pos)
             fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
@@ -932,7 +929,7 @@ class LightingDebugView:
                 lights.append(proj_light(self._projectiles[-1]))
             elif self._fly_lights_enabled and self._fly_lights:
                 fl = self._fly_lights[0]
-                screen = self._world.world_to_screen(Vec2.from_xy(fl))
+                screen = self._world.world_to_screen(fl.pos)
                 c = fl.color
                 lights.append(
                     (
@@ -956,7 +953,7 @@ class LightingDebugView:
                     lights.append(proj_light(proj))
             if self._fly_lights_enabled and self._fly_lights:
                 for fl in self._fly_lights[:12]:
-                    screen = self._world.world_to_screen(Vec2.from_xy(fl))
+                    screen = self._world.world_to_screen(fl.pos)
                     c = fl.color
                     lights.append(
                         (
@@ -1039,7 +1036,7 @@ class LightingDebugView:
         if self._projectiles:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for proj in self._projectiles:
-                screen = self._world.world_to_screen(Vec2.from_xy(proj))
+                screen = self._world.world_to_screen(proj.pos)
                 fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
                 c = self._proj_light_tint
                 rl.draw_circle(
@@ -1053,7 +1050,7 @@ class LightingDebugView:
         if self._fly_lights_enabled and self._fly_lights:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for fl in self._fly_lights:
-                screen = self._world.world_to_screen(Vec2.from_xy(fl))
+                screen = self._world.world_to_screen(fl.pos)
                 c = fl.color
                 rl.draw_circle(
                     int(screen.x),

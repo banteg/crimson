@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.spawn import SpawnId
+from grim.geom import Vec2
 from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
     build_quest_spawn_table,
@@ -12,9 +13,27 @@ from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
     entries = [
-        SpawnEntry(x=0.0, y=0.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=0, count=2),
-        SpawnEntry(x=0.0, y=0.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, trigger_ms=0, count=2),
-        SpawnEntry(x=0.0, y=0.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=0, count=1),
+        SpawnEntry(
+            pos=Vec2(0.0, 0.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            trigger_ms=0,
+            count=2,
+        ),
+        SpawnEntry(
+            pos=Vec2(0.0, 0.0),
+            heading=0.0,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            trigger_ms=0,
+            count=2,
+        ),
+        SpawnEntry(
+            pos=Vec2(0.0, 0.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+            trigger_ms=0,
+            count=1,
+        ),
     ]
 
     adjusted = apply_hardcore_spawn_table_adjustment(entries)
@@ -34,8 +53,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
         count = 1 if full_version else 2
         return [
             SpawnEntry(
-                x=1.0,
-                y=2.0,
+                pos=Vec2(1.0, 2.0),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
@@ -54,4 +72,3 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
     assert full_entries[0].trigger_ms == demo_entries[0].trigger_ms
     assert full_entries[0].count == 1
     assert demo_entries[0].count == 2
-

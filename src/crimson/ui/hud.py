@@ -215,7 +215,7 @@ def load_hud_assets(assets_root: Path) -> HudAssets:
 
 def _draw_text(font: SmallFontData | None, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
     if font is not None:
-        draw_small_text(font, text, Vec2(pos.x, pos.y), scale, color)
+        draw_small_text(font, text, pos, scale, color)
     else:
         rl.draw_text(text, int(pos.x), int(pos.y), int(18 * scale), color)
 
@@ -514,7 +514,7 @@ def draw_hud_overlay(
             ammo_count = max(0, int(hud_player.ammo))
             for idx in range(bars):
                 bar_alpha = base_alpha if idx < ammo_count else base_alpha * HUD_AMMO_DIM_ALPHA
-                bar_pos = player_ammo_base + Vec2(float(idx) * HUD_AMMO_BAR_STEP, 0.0)
+                bar_pos = player_ammo_base.offset(dx=float(idx) * HUD_AMMO_BAR_STEP)
                 dst = rl.Rectangle(
                     ui(bar_pos.x),
                     ui(bar_pos.y),
@@ -799,7 +799,7 @@ def draw_hud_overlay(
             # Slot icon.
             if assets.bonuses is not None and slot.icon_id >= 0:
                 src = _bonus_icon_src(assets.bonuses, slot.icon_id)
-                icon_pos = slot_pos + Vec2(-1.0, 0.0)
+                icon_pos = slot_pos.offset(dx=-1.0)
                 dst = rl.Rectangle(
                     ui(icon_pos.x),
                     ui(icon_pos.y),

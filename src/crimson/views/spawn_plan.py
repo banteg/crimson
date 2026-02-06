@@ -97,7 +97,7 @@ class SpawnPlanView:
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
         label_text = f"{label}: "
-        draw_ui_text(self._small, label_text, Vec2(pos.x, pos.y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, label_text, pos, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
         label_w = measure_small_text_width(self._small, label_text, UI_TEXT_SCALE) if self._small else 0.0
         draw_ui_text(self._small, value, Vec2(pos.x + label_w, pos.y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 

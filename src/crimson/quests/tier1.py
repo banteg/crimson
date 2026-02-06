@@ -130,7 +130,7 @@ def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = Non
         heading = heading_from_center(point, center)
         entries.append(
             spawn(
-                Vec2(point.x, point.y),
+                point,
                 heading=heading,
                 spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                 trigger_ms=trigger,

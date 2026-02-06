@@ -419,7 +419,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
         for pos, _angle in ring_points(center, 158.0, ring_count):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -475,7 +475,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
         for pos, _angle in ring_points(center, 258.0, outer_count):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -618,7 +618,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976):
         entries.append(
             spawn(
-                Vec2(pos.x, pos.y),
+                pos,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                 trigger_ms=trigger,
@@ -659,7 +659,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976, start=0.5235988):
         entries.append(
             spawn(
-                Vec2(pos.x, pos.y),
+                pos,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                 trigger_ms=trigger,
@@ -673,7 +673,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
         for pos, _angle in ring_points(center, 180.0, 12, step=0.5235988, start=0.5235988):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,

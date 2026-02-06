@@ -197,7 +197,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 256.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -209,7 +209,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 768.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -222,7 +222,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 512.0), Vec2(64.0, 0.0), ctx.player_count + 7):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
                     trigger_ms=trigger,
@@ -328,7 +328,7 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
             heading = heading_from_center(pos, center)
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=heading,
                     spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                     trigger_ms=trigger,
@@ -409,7 +409,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     def set_entry(idx: int, pos: Vec2, spawn_id: int, trigger: int, count: int) -> None:
         if idx < 0 or idx >= len(entries):
             return
-        entries[idx] = spawn(Vec2(pos.x, pos.y), heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
+        entries[idx] = spawn(pos, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
 
     # Loop 1: x from 256 to <688, step 72
     trigger = 500

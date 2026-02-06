@@ -229,8 +229,8 @@ class OptionsMenuView(PanelMenuView):
         )
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
         # `sub_4475d0`: title label is anchored at panel_top + 40.
-        label_pos = base_pos + Vec2(8.0 * panel_scale, 0.0)
-        slider_pos = label_pos + Vec2(130.0 * panel_scale, 0.0)
+        label_pos = base_pos.offset(dx=8.0 * panel_scale)
+        slider_pos = label_pos.offset(dx=130.0 * panel_scale)
         return _OptionsContentLayout(
             base_pos=base_pos,
             label_pos=label_pos,

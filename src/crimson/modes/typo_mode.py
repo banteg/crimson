@@ -98,7 +98,7 @@ class TypoShooterMode(BaseGameplayMode):
             if words:
                 self._unique_words = words
 
-        self._aim_target = self._player.pos + Vec2(128.0, 0.0)
+        self._aim_target = self._player.pos.offset(dx=128.0)
 
         enforce_typo_player_frame(self._player)
 

@@ -162,7 +162,7 @@ class StatisticsMenuView:
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
             w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-            return button_update(btn, pos=Vec2(pos.x, pos.y), width=w, dt_ms=dt_ms, mouse=mouse, click=click)
+            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):

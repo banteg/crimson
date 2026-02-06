@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from grim.geom import Vec2
-
 from ..creatures.spawn import SpawnTemplateCall
 
 from .types import SpawnEntry
@@ -53,7 +51,7 @@ def tick_quest_spawn_timeline(
         if entry.trigger_ms != trigger_ms:
             break
 
-        base_pos = Vec2.from_xy(entry)
+        base_pos = entry.pos
         offscreen_x = base_pos.x < 0.0 or float(terrain_width) < base_pos.x
 
         for spawn_idx in range(int(entry.count)):
@@ -62,7 +60,7 @@ def tick_quest_spawn_timeline(
             if offscreen_x:
                 pos = base_pos.offset(dy=offset)
             else:
-                pos = base_pos + Vec2(offset, 0.0)
+                pos = base_pos.offset(dx=offset)
             spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=float(entry.heading)))
 
         if entry.count != 0:

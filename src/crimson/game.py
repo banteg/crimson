@@ -2056,16 +2056,16 @@ class QuestFailedView:
 
         score_label = "Score"
         score_label_w = self._text_width(score_label, 1.0)
-        draw_small_text(font, score_label, score_pos + Vec2(32.0 - score_label_w * 0.5, 0.0), 1.0, label_color)
+        draw_small_text(font, score_label, score_pos.offset(dx=32.0 - score_label_w * 0.5), 1.0, label_color)
 
         score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
         score_value_w = self._text_width(score_value, 1.0)
         draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), 1.0, value_color)
 
-        sep_pos = score_pos + Vec2(80.0, 0.0)
+        sep_pos = score_pos.offset(dx=80.0)
         rl.draw_line(int(sep_pos.x), int(sep_pos.y), int(sep_pos.x), int(sep_pos.y + 48.0), separator_color)
 
-        col2_pos = score_pos + Vec2(96.0, 0.0)
+        col2_pos = score_pos.offset(dx=96.0)
         draw_small_text(font, "Experience", col2_pos, 1.0, value_color)
         xp_value = f"{int(record.score_xp)}"
         xp_w = self._text_width(xp_value, 1.0)
@@ -2330,8 +2330,8 @@ class HighScoresView:
         left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
         right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
         right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
-        left_panel_top_left = left_top_left + Vec2(float(left_slide_x), 0.0)
-        right_panel_top_left = right_top_left + Vec2(float(right_slide_x), 0.0)
+        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
+        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
             assets.panel,

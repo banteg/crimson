@@ -60,7 +60,7 @@ class ModsMenuView(PanelMenuView):
             + self._panel_offset * panel_scale
         )
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 32.0 * panel_scale)
-        label_pos = base_pos + Vec2(8.0 * panel_scale, 0.0)
+        label_pos = base_pos.offset(dx=8.0 * panel_scale)
         return _ModsContentLayout(scale=panel_scale, base_pos=base_pos, label_pos=label_pos)
 
     def _build_lines(self) -> list[str]:

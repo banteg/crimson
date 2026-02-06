@@ -222,7 +222,7 @@ class GameOverUi:
 
     def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         if self.font is not None:
-            draw_small_text(self.font, text, Vec2(pos.x, pos.y), scale, color)
+            draw_small_text(self.font, text, pos, scale, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
@@ -437,14 +437,14 @@ class GameOverUi:
         value_color = rl.Color(COLOR_SCORE_VALUE.r, COLOR_SCORE_VALUE.g, COLOR_SCORE_VALUE.b, int(255 * alpha))
         hint_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.7))
 
-        card_origin = pos + Vec2(4.0 * scale, 0.0)
+        card_origin = pos.offset(dx=4.0 * scale)
 
         # Left column: Score + value + Rank.
         score_label = "Score"
         score_label_w = self._text_width(score_label, 1.0 * scale)
         self._draw_small(
             score_label,
-            card_origin + Vec2(32.0 * scale - score_label_w * 0.5, 0.0),
+            card_origin.offset(dx=32.0 * scale - score_label_w * 0.5),
             1.0 * scale,
             label_color,
         )
@@ -483,7 +483,7 @@ class GameOverUi:
         )
 
         # Right column: Game time + gauge, or Experience in quest mode.
-        col2_pos = card_origin + Vec2(96.0 * scale, 0.0)
+        col2_pos = card_origin.offset(dx=96.0 * scale)
         if int(record.game_mode_id) == 3:
             self._draw_small("Experience", col2_pos, 1.0 * scale, label_color)
             xp_value = f"{int(record.score_xp)}"
@@ -496,7 +496,7 @@ class GameOverUi:
             )
             self._hover_time = max(0.0, float(self._hover_time) - dt_hover)
         else:
-            self._draw_small("Game time", col2_pos + Vec2(6.0 * scale, 0.0), 1.0 * scale, label_color)
+            self._draw_small("Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
             time_rect_pos = col2_pos + Vec2(8.0 * scale, 16.0 * scale)
             time_rect = rl.Rectangle(time_rect_pos.x, time_rect_pos.y, 64.0 * scale, 29.0 * scale)
             hovering_time = rl.check_collision_point_rec(mouse, time_rect)
@@ -560,7 +560,7 @@ class GameOverUi:
             self._draw_small(weapon_name, name_pos, 1.0 * scale, hint_color)
 
             frags_text = f"Frags: {int(record.creature_kill_count)}"
-            stats_pos = row_pos + Vec2(110.0 * scale, 0.0)
+            stats_pos = row_pos.offset(dx=110.0 * scale)
             self._draw_small(frags_text, stats_pos.offset(dy=1.0 * scale), 1.0 * scale, label_color)
 
             fired = max(0, int(record.shots_fired))
@@ -590,7 +590,7 @@ class GameOverUi:
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             self._draw_small(
                 "Most used weapon during the game",
-                tooltip_pos + Vec2(-20.0 * scale, 0.0),
+                tooltip_pos.offset(dx=-20.0 * scale),
                 1.0 * scale,
                 col,
             )
@@ -599,7 +599,7 @@ class GameOverUi:
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             self._draw_small(
                 "The time the game lasted",
-                tooltip_pos + Vec2(12.0 * scale, 0.0),
+                tooltip_pos.offset(dx=12.0 * scale),
                 1.0 * scale,
                 col,
             )
@@ -608,7 +608,7 @@ class GameOverUi:
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             self._draw_small(
                 "The % of shot bullets hit the target",
-                tooltip_pos + Vec2(-22.0 * scale, 0.0),
+                tooltip_pos.offset(dx=-22.0 * scale),
                 1.0 * scale,
                 col,
             )
@@ -653,7 +653,7 @@ class GameOverUi:
 
         if self.phase == 0:
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
-            self._draw_small("State your name, trooper!", form_pos + Vec2(42.0 * scale, 0.0), 1.0 * scale, COLOR_TEXT)
+            self._draw_small("State your name, trooper!", form_pos.offset(dx=42.0 * scale), 1.0 * scale, COLOR_TEXT)
 
             input_pos = form_pos.offset(dy=40.0 * scale)
             rl.draw_rectangle_lines(

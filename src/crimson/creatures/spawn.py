@@ -2555,7 +2555,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     parent.ai_mode = 6
-    parent.pos = ctx.pos + Vec2(256.0, 0.0)
+    parent.pos = ctx.pos.offset(dx=256.0)
     apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
     parent.health = 200.0
     parent.max_health = 200.0

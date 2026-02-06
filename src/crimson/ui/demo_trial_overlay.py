@@ -111,7 +111,7 @@ class DemoTrialOverlayUi:
         )
         maybe_clicked = button_update(
             self._maybe_later_button,
-            pos=button_base_pos + Vec2(button_w + gap, 0.0),
+            pos=button_base_pos.offset(dx=button_w + gap),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -218,7 +218,7 @@ class DemoTrialOverlayUi:
                 assets,
                 font,
                 self._maybe_later_button,
-                pos=button_base_pos + Vec2(button_w + gap, 0.0),
+                pos=button_base_pos.offset(dx=button_w + gap),
                 width=float(button_w),
                 scale=float(scale),
             )

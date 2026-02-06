@@ -105,8 +105,7 @@ def spawn(
     count: int,
 ) -> SpawnEntry:
     return SpawnEntry(
-        x=point.x,
-        y=point.y,
+        pos=point,
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,

@@ -149,13 +149,7 @@ class BaseGameplayMode:
         width = screen_right.x - screen_left.x
         if width <= 1e-3:
             return
-        draw_target_health_bar(
-            pos=Vec2(screen_left.x, screen_left.y),
-            width=width,
-            ratio=ratio,
-            alpha=alpha,
-            scale=width / 64.0,
-        )
+        draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
         self._state = self._world.state
@@ -193,7 +187,7 @@ class BaseGameplayMode:
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, Vec2(pos.x, pos.y), scale, color)
+            draw_small_text(self._small, text, pos, scale, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 

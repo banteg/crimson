@@ -356,9 +356,7 @@ class PlayGameMenuView(PanelMenuView):
         state.enabled = bool(enabled)
         font = self._ensure_small_font()
         width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        clicked = button_update(
-            state, pos=Vec2(pos.x, pos.y), width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click)
-        )
+        clicked = button_update(state, pos=pos, width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click))
         return clicked, state.hovered
 
     def _activate_mode(self, mode: _PlayGameModeEntry) -> None:
@@ -588,7 +586,7 @@ class PlayGameMenuView(PanelMenuView):
         font = self._ensure_small_font()
         state = self._mode_button_state(mode)
         width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        button_draw(textures, font, state, pos=Vec2(pos.x, pos.y), width=width, scale=scale)
+        button_draw(textures, font, state, pos=pos, width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         status = self._state.status
@@ -602,7 +600,7 @@ class PlayGameMenuView(PanelMenuView):
             count = int(status.mode_play_count("typo"))
         else:
             return
-        draw_small_text(self._ensure_small_font(), f"{count}", Vec2(pos.x, pos.y), scale, color)
+        draw_small_text(self._ensure_small_font(), f"{count}", pos, scale, color)
 
     def _draw_tooltips(self, entries: list[_PlayGameModeEntry], base_pos: Vec2, y_end: float, scale: float) -> None:
         # `sub_44ed80` draws these below the mode list based on per-button hover timers.

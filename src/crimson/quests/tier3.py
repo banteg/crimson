@@ -163,7 +163,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     for pos, angle in ring_points(center, 256.0, 28, step=0.34906587):
         entries.append(
             spawn(
-                Vec2(pos.x, pos.y),
+                pos,
                 heading=-angle,
                 spawn_id=SpawnId.LIZARD_RANDOM_31,
                 trigger_ms=trigger,
@@ -511,7 +511,7 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> li
         for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(
-                    Vec2(pos.x, pos.y),
+                    pos,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                     trigger_ms=trigger,

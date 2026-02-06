@@ -155,7 +155,7 @@ class ReplayPlaybackMode:
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, Vec2(pos.x, pos.y), scale, color)
+            draw_small_text(self._small, text, pos, scale, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 

@@ -220,8 +220,8 @@ class _DatabaseBaseView:
 
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
         right_top_left = self._panel_top_left(pos=Vec2(RIGHT_PANEL_POS_X, RIGHT_PANEL_POS_Y), scale=scale)
-        left_panel_top_left = left_top_left + Vec2(float(left_slide_x), 0.0)
-        right_panel_top_left = right_top_left + Vec2(float(right_slide_x), 0.0)
+        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
+        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
             assets.panel,

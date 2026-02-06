@@ -100,7 +100,7 @@ def _format_entry(idx: int, entry: SpawnEntry, *, plan_info: tuple[int, int] | N
         f"id=0x{entry.spawn_id:02x} ({entry.spawn_id:2d})  "
         f"creature={creature:10s}  "
         f"count={entry.count:2d}  "
-        f"x={entry.x:7.1f}  y={entry.y:7.1f}  heading={entry.heading:7.3f}{plan_text}"
+        f"x={entry.pos.x:7.1f}  y={entry.pos.y:7.1f}  heading={entry.heading:7.3f}{plan_text}"
     )
 
 

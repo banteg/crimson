@@ -604,14 +604,14 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
         entries.append(
             spawn(
-                Vec2(pos.x, pos.y), heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1
+                pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1
             )
         )
 
     for pos, angle in ring_points(center, 178.0, 12, step=0.5235988):
         entries.append(
             spawn(
-                Vec2(pos.x, pos.y), heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1
+                pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1
             )
         )
 

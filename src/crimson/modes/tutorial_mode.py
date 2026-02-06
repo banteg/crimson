@@ -222,7 +222,7 @@ class TutorialMode(BaseGameplayMode):
                 return
             if button_update(
                 self._repeat_button,
-                pos=button_base_pos + Vec2(play_w + gap, 0.0),
+                pos=button_base_pos.offset(dx=play_w + gap),
                 width=repeat_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -434,7 +434,7 @@ class TutorialMode(BaseGameplayMode):
                 self._ui_assets,
                 self._small,
                 self._repeat_button,
-                pos=button_base_pos + Vec2(play_w + gap, 0.0),
+                pos=button_base_pos.offset(dx=play_w + gap),
                 width=repeat_w,
                 scale=1.0,
             )

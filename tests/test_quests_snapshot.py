@@ -24,8 +24,8 @@ def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, obje
     entries = builder(ctx, **kwargs)
     return [
         {
-            "x": entry.x,
-            "y": entry.y,
+            "x": entry.pos.x,
+            "y": entry.pos.y,
             "heading": entry.heading,
             "spawn_id": entry.spawn_id,
             "trigger_ms": entry.trigger_ms,
