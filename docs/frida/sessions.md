@@ -370,3 +370,38 @@ Summary:
 - Oracle frames captured (28,011 frames; ~1.79M creature snapshots, capped at 64 per frame).
 - 26 weapon switches, 533 projectile spawns, 36 secondary spawns, 2 bonus pickups (Nuke + Speed).
 - SFX evidence present (`sfx_play_panned` 1,265; `sfx_play_exclusive` 4; `sfx_play` 23).
+
+## Session 10
+
+- **Date:** 2026-02-06
+- **Build / platform:** Win10 x64 (Bootcamp), Crimsonland v1.9.93
+- **Script:** `gameplay_state_capture.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js`
+- **Artifacts:** `artifacts/frida/share/gameplay_state_capture.jsonl`,
+  `analysis/frida/gameplay_state_capture_summary.json`,
+  `analysis/frida/gameplay_state_capture_report.md`
+
+Summary:
+
+- Large automated run (~694s, 475,802 lines) spanning menu + gameplay states.
+- State coverage included `0,1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17,26`.
+- Mode ticks in gameplay (`state 9`): `quest_mode_update` (218),
+  `survival_update` (212), `rush_mode_update` (56).
+- Bonus HUD pointer capture reaffirmed timer mappings:
+  `bonus_reflex_boost_timer`, `bonus_weapon_power_up_timer`,
+  `bonus_double_xp_timer`, and `player_speed_bonus_timer` / `player2_speed_bonus_timer`.
+- UI-adjacent high-frequency writes concentrated at
+  `0x004902e8/0x004902ec/0x004902f0/0x004902f4`, matching static cursor/aim
+  pulse accumulators; `0x004902f8` remained the quest progress fill ratio.
+- Type evidence: player clip/ammo fields are float-backed in memory
+  (`clip_size_f32` integer-valued in 1411/1411 snapshots; `ammo_f32` in
+  1356/1411).
+- Caveat: `mem_watch_enabled` emitted once, but `mem_watch_access` stayed at 0.
+
+Actionable insights:
+
+- Promote the newly verified UI globals (`0x004902e8..0x004902f8`) in `data_map.json`.
+- Keep player clip/ammo fields typed as float slots in maps/docs to avoid decompile
+  int/float confusion.
+- Next runtime pass should focus on fixing MemoryAccessMonitor emission, then rerun
+  a shorter targeted watch capture for struct-carving addresses.
