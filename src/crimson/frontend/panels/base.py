@@ -148,7 +148,7 @@ class PanelMenuView:
             self._begin_close_transition(self._back_action)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
             self._begin_close_transition(self._back_action)
-        if enabled and hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._begin_close_transition(self._back_action)
 
         if hovered:
@@ -316,7 +316,7 @@ class PanelMenuView:
             tint=tint,
         )
         if self._entry_enabled(entry):
-            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             MenuView._draw_ui_quad(
                 texture=label_tex,
                 src=src,

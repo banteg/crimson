@@ -26,7 +26,7 @@ def draw_ui_quad_shadow(
         rl.RL_FUNC_ADD,
         rl.RL_FUNC_ADD,
     )
-    rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
     rl.rl_set_blend_factors_separate(
         rl.RL_ZERO,
         rl.RL_ONE_MINUS_SRC_ALPHA,

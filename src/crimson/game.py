@@ -435,7 +435,7 @@ class QuestsMenuView:
 
         # Stage icons: hover is tracked, but stage selection requires a click.
         hovered_stage = self._hovered_stage(layout)
-        if hovered_stage is not None and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered_stage is not None and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._stage = hovered_stage
             return
 
@@ -452,7 +452,7 @@ class QuestsMenuView:
             font = self._ensure_small_font()
             back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
             mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             if button_update(
                 self._back_button,
                 pos=back_pos,
@@ -471,7 +471,7 @@ class QuestsMenuView:
             return
 
         hovered_row = self._hovered_row(layout)
-        if hovered_row is not None and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered_row is not None and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._try_start_quest(self._stage, hovered_row)
             return
 
@@ -555,7 +555,7 @@ class QuestsMenuView:
 
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             config.data["hardcore_flag"] = 0 if hardcore else 1
             self._dirty = True
             if self._state.demo_enabled:
@@ -1554,7 +1554,7 @@ class EndNoteView:
 
         font = self._ensure_small_font()
         mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         survival_w = button_width(
@@ -1815,7 +1815,7 @@ class QuestFailedView:
         scale = 1.0
 
         mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         font = self._ensure_small_font()
@@ -2224,7 +2224,7 @@ class HighScoresView:
             panel_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
             button_base_pos = panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             if button_update(
                 self._update_button,

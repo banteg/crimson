@@ -755,16 +755,16 @@ class LightingDebugView:
             try:
                 locs = self._sdf_shader.locs
                 builtin_locs = {
-                    "map_diffuse": int(locs[rl.SHADER_LOC_MAP_DIFFUSE]),
-                    "map_normal": int(locs[rl.SHADER_LOC_MAP_NORMAL]),
-                    "vector_view": int(locs[rl.SHADER_LOC_VECTOR_VIEW]),
-                    "matrix_mvp": int(locs[rl.SHADER_LOC_MATRIX_MVP]),
-                    "matrix_model": int(locs[rl.SHADER_LOC_MATRIX_MODEL]),
-                    "matrix_view": int(locs[rl.SHADER_LOC_MATRIX_VIEW]),
-                    "matrix_projection": int(locs[rl.SHADER_LOC_MATRIX_PROJECTION]),
-                    "color_diffuse": int(locs[rl.SHADER_LOC_COLOR_DIFFUSE]),
-                    "color_ambient": int(locs[rl.SHADER_LOC_COLOR_AMBIENT]),
-                    "color_specular": int(locs[rl.SHADER_LOC_COLOR_SPECULAR]),
+                    "map_diffuse": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MAP_ALBEDO]),
+                    "map_normal": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MAP_NORMAL]),
+                    "vector_view": int(locs[rl.ShaderLocationIndex.SHADER_LOC_VECTOR_VIEW]),
+                    "matrix_mvp": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MATRIX_MVP]),
+                    "matrix_model": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MATRIX_MODEL]),
+                    "matrix_view": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MATRIX_VIEW]),
+                    "matrix_projection": int(locs[rl.ShaderLocationIndex.SHADER_LOC_MATRIX_PROJECTION]),
+                    "color_diffuse": int(locs[rl.ShaderLocationIndex.SHADER_LOC_COLOR_DIFFUSE]),
+                    "color_ambient": int(locs[rl.ShaderLocationIndex.SHADER_LOC_COLOR_AMBIENT]),
+                    "color_specular": int(locs[rl.ShaderLocationIndex.SHADER_LOC_COLOR_SPECULAR]),
                 }
             except Exception:
                 builtin_locs = {}
@@ -845,26 +845,26 @@ class LightingDebugView:
             if loc < 0:
                 return
             buf = rl.ffi.new("float[2]", [value.x, value.y])
-            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
+            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
 
         def set_vec4(name: str, value: tuple[float, float, float, float]) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
             buf = rl.ffi.new("float[4]", [float(value[0]), float(value[1]), float(value[2]), float(value[3])])
-            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC4)
+            rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4)
 
         def set_float(name: str, value: float) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            rl.set_shader_value(shader, loc, rl.ffi.new("float *", float(value)), rl.SHADER_UNIFORM_FLOAT)
+            rl.set_shader_value(shader, loc, rl.ffi.new("float *", float(value)), rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
 
         def set_int(name: str, value: int) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            rl.set_shader_value(shader, loc, rl.ffi.new("int *", int(value)), rl.SHADER_UNIFORM_INT)
+            rl.set_shader_value(shader, loc, rl.ffi.new("int *", int(value)), rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
 
         rl.begin_texture_mode(self._light_rt)
         rl.clear_background(self._ambient)
@@ -889,10 +889,10 @@ class LightingDebugView:
                 shader,
                 circles_loc,
                 rl.ffi.cast("float *", buf),
-                rl.SHADER_UNIFORM_VEC4,
+                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
                 len(circles),
             )
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
         lights: list[tuple[float, float, float, float, float, float, float]] = []
 
@@ -1029,12 +1029,12 @@ class LightingDebugView:
 
         src_light = rl.Rectangle(0.0, 0.0, float(self._light_rt.texture.width), -float(self._light_rt.texture.height))
         dst_light = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
-        rl.begin_blend_mode(rl.BLEND_MULTIPLIED)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_MULTIPLIED)
         rl.draw_texture_pro(self._light_rt.texture, src_light, dst_light, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
 
         if self._projectiles:
-            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             for proj in self._projectiles:
                 screen = self._world.world_to_screen(proj.pos)
                 fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
@@ -1048,7 +1048,7 @@ class LightingDebugView:
             rl.end_blend_mode()
 
         if self._fly_lights_enabled and self._fly_lights:
-            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             for fl in self._fly_lights:
                 screen = self._world.world_to_screen(fl.pos)
                 c = fl.color
@@ -1067,7 +1067,7 @@ class LightingDebugView:
             preview_w = float(self._light_rt.texture.width) * scale
             preview_h = float(self._light_rt.texture.height) * scale
             dst_preview = rl.Rectangle(screen_w - preview_w - pad, pad, preview_w, preview_h)
-            rl.begin_blend_mode(rl.BLEND_ALPHA)
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
             rl.draw_texture_pro(
                 self._light_rt.texture,
                 src_light,

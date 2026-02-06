@@ -18,7 +18,7 @@ class SmallFontData:
 
 
 SMALL_FONT_UV_BIAS_PX = 0.5
-SMALL_FONT_FILTER = rl.TEXTURE_FILTER_POINT
+SMALL_FONT_FILTER = rl.TextureFilter.TEXTURE_FILTER_POINT
 SMALL_FONT_RENDER_SCALE = 1.0
 
 
@@ -60,7 +60,7 @@ def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, col
     if snap:
         scale_px = float(round(scale_px))
     origin = rl.Vector2(0.0, 0.0)
-    bias = 0.0 if SMALL_FONT_FILTER == rl.TEXTURE_FILTER_POINT else SMALL_FONT_UV_BIAS_PX
+    bias = 0.0 if SMALL_FONT_FILTER == rl.TextureFilter.TEXTURE_FILTER_POINT else SMALL_FONT_UV_BIAS_PX
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
             x_pos = pos.x

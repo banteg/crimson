@@ -168,7 +168,7 @@ class _DatabaseBaseView:
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
 
         mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         back_pos = self._back_button_pos()
         back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)

@@ -157,7 +157,7 @@ class StatisticsMenuView:
         panel_top_left = self._panel_top_left(scale=scale)
 
         mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:

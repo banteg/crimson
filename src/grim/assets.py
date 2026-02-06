@@ -174,7 +174,7 @@ def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:
     image = rl.load_image_from_memory(fmt, data, len(data))
     texture = rl.load_texture_from_image(image)
     rl.unload_image(image)
-    rl.set_texture_filter(texture, rl.TEXTURE_FILTER_BILINEAR)
+    rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     return texture
 
 

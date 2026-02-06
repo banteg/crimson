@@ -130,7 +130,7 @@ class PlayGameMenuView(PanelMenuView):
         # ESC always goes back; Enter should not auto-back on this screen.
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(self._back_action)
-        if enabled and hovered_back and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if enabled and hovered_back and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._begin_close_transition(self._back_action)
 
         if hovered_back:
@@ -154,7 +154,7 @@ class PlayGameMenuView(PanelMenuView):
             return
 
         mouse = rl.get_mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         button_enabled = not self._player_list_open
 
         y = base_pos.y
@@ -413,7 +413,7 @@ class PlayGameMenuView(PanelMenuView):
 
         mouse = rl.get_mouse_position()
         hovered_header = Rect.from_top_left(layout.pos, layout.width, layout.header_h).contains(mouse)
-        if hovered_header and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered_header and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._player_list_open = not self._player_list_open
             return True
 
@@ -422,7 +422,7 @@ class PlayGameMenuView(PanelMenuView):
 
         # Close if we click outside the dropdown + list.
         list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(mouse)
-        if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT) and not list_hovered:
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and not list_hovered:
             self._player_list_open = False
             return True
 
@@ -430,7 +430,7 @@ class PlayGameMenuView(PanelMenuView):
             del label
             item_y = layout.rows_y0 + layout.row_h * float(idx)
             item_hovered = Rect.from_top_left(Vec2(layout.pos.x, item_y), layout.width, layout.row_h).contains(mouse)
-            if item_hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            if item_hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 config.data["player_count"] = idx + 1
                 self._dirty = True
                 self._player_list_open = False

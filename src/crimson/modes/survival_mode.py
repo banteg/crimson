@@ -675,7 +675,7 @@ class SurvivalMode(BaseGameplayMode):
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
             if label_alpha > 0.0:
-                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                 rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
                 rl.end_blend_mode()
 

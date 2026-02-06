@@ -103,7 +103,7 @@ def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iter
     # apply them when switching the blend mode. Set factors both before and
     # after BeginBlendMode() to ensure the current draw uses the intended values.
     rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
-    rl.begin_blend_mode(rl.BLEND_CUSTOM)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM)
     rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
     try:
         yield
@@ -124,7 +124,7 @@ def _blend_custom_separate(
     # apply them when switching the blend mode. Set factors both before and
     # after BeginBlendMode() to ensure the current draw uses the intended values.
     rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
-    rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
     rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
     try:
         yield
@@ -596,13 +596,13 @@ class GroundRenderer:
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
         if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_POINT)
+            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         if self.terrain_filter == 2.0:
-            rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
+            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
 
     def _scatter_texture(
         self,
@@ -703,8 +703,8 @@ class GroundRenderer:
         self.render_target = candidate
         self._render_target_ready = False
         self._render_target_warmup_passes = 1
-        rl.set_texture_filter(self.render_target.texture, rl.TEXTURE_FILTER_BILINEAR)
-        rl.set_texture_wrap(self.render_target.texture, rl.TEXTURE_WRAP_CLAMP)
+        rl.set_texture_filter(self.render_target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True
 
     def _render_target_size_for(self, scale: float) -> tuple[int, int]:
@@ -738,7 +738,7 @@ class GroundRenderer:
 
     @staticmethod
     def _set_texture_filters(textures: Iterable[rl.Texture | None], *, point: bool) -> None:
-        mode = rl.TEXTURE_FILTER_POINT if point else rl.TEXTURE_FILTER_BILINEAR
+        mode = rl.TextureFilter.TEXTURE_FILTER_POINT if point else rl.TextureFilter.TEXTURE_FILTER_BILINEAR
         for texture in textures:
             if texture is None:
                 continue
