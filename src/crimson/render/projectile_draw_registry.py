@@ -57,12 +57,9 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     if renderer.bullet_trail_texture is not None:
         origin = _proj_origin(ctx.proj, ctx.pos)
         origin_screen = renderer.world_to_screen(origin)
-        sx0, sy0 = origin_screen.x, origin_screen.y
         drawn = renderer._draw_bullet_trail(
-            sx0,
-            sy0,
-            ctx.screen_pos.x,
-            ctx.screen_pos.y,
+            origin_screen,
+            ctx.screen_pos,
             type_id=type_id,
             alpha=alpha_byte,
             scale=ctx.scale,

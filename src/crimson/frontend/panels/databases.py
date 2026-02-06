@@ -220,28 +220,24 @@ class _DatabaseBaseView:
 
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
         right_top_left = self._panel_top_left(pos=Vec2(RIGHT_PANEL_POS_X, RIGHT_PANEL_POS_Y), scale=scale)
-        left_x0 = left_top_left.x
-        left_y0 = left_top_left.y
-        right_x0 = right_top_left.x
-        right_y0 = right_top_left.y
-        left_x0 += float(left_slide_x)
-        right_x0 += float(right_slide_x)
+        left_panel_top_left = left_top_left + Vec2(float(left_slide_x), 0.0)
+        right_panel_top_left = right_top_left + Vec2(float(right_slide_x), 0.0)
 
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(left_x0, left_y0, panel_w, LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
         draw_classic_menu_panel(
             assets.panel,
-            dst=rl.Rectangle(right_x0, right_y0, panel_w, RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
         )
 
         font = self._ensure_small_font()
-        self._draw_contents(left_x0, left_y0, right_x0, right_y0, scale=scale, font=font)
+        self._draw_contents(left_panel_top_left, right_panel_top_left, scale=scale, font=font)
 
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
@@ -251,7 +247,7 @@ class _DatabaseBaseView:
                 textures,
                 font,
                 self._back_button,
-                pos=Vec2(left_x0 + float(bx) * scale, left_y0 + float(by) * scale),
+                pos=Vec2(left_panel_top_left.x + float(bx) * scale, left_panel_top_left.y + float(by) * scale),
                 width=back_w,
                 scale=scale,
             )
@@ -264,10 +260,8 @@ class _DatabaseBaseView:
 
     def _draw_contents(
         self,
-        left_x0: float,
-        left_y0: float,
-        right_x0: float,
-        right_y0: float,
+        left_top_left: Vec2,
+        right_top_left: Vec2,
         *,
         scale: float,
         font: SmallFontData,
@@ -304,9 +298,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         # state_15: ui_buttonSm bbox [270,507]..[352,539] => relative to left panel (-98,194): (368, 313)
         return (368.0, 313.0)
 
-    def _draw_contents(
-        self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData
-    ) -> None:
+    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
+        left_x0 = left_top_left.x
+        left_y0 = left_top_left.y
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -476,9 +472,11 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
         return (356.0, 315.0)
 
-    def _draw_contents(
-        self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData
-    ) -> None:
+    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
+        left_x0 = left_top_left.x
+        left_y0 = left_top_left.y
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 

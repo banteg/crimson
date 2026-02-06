@@ -699,10 +699,8 @@ class WorldRenderer:
 
     def _draw_bullet_trail(
         self,
-        sx0: float,
-        sy0: float,
-        sx1: float,
-        sy1: float,
+        start: Vec2,
+        end: Vec2,
         *,
         type_id: int,
         alpha: int,
@@ -714,7 +712,7 @@ class WorldRenderer:
         if alpha <= 0:
             return False
 
-        segment = Vec2(sx1 - sx0, sy1 - sy0)
+        segment = end - start
         direction, dist = segment.normalized_with_length()
 
         # Native uses projectile travel direction as the side-offset basis and still emits the
@@ -734,14 +732,14 @@ class WorldRenderer:
 
         ox = side.x * half
         oy = side.y * half
-        x0 = sx0 - ox
-        y0 = sy0 - oy
-        x1 = sx0 + ox
-        y1 = sy0 + oy
-        x2 = sx1 + ox
-        y2 = sy1 + oy
-        x3 = sx1 - ox
-        y3 = sy1 - oy
+        x0 = start.x - ox
+        y0 = start.y - oy
+        x1 = start.x + ox
+        y1 = start.y + oy
+        x2 = end.x + ox
+        y2 = end.y + oy
+        x3 = end.x - ox
+        y3 = end.y - oy
 
         # Native uses additive blending for bullet trails and sets color slots per projectile type.
         # Gauss has a distinct blue tint; most other bullet trails are neutral gray.

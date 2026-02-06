@@ -2436,7 +2436,11 @@ class HighScoresView:
             )
 
         self._draw_right_panel(
-            font=font, right_x0=right_x0, right_y0=right_y0, scale=scale, mode_id=mode_id, highlight_rank=highlight_rank
+            font=font,
+            right_top_left=Vec2(right_x0, right_y0),
+            scale=scale,
+            mode_id=mode_id,
+            highlight_rank=highlight_rank,
         )
         self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
@@ -2445,26 +2449,24 @@ class HighScoresView:
         self,
         *,
         font: SmallFontData,
-        right_x0: float,
-        right_y0: float,
+        right_top_left: Vec2,
         scale: float,
         mode_id: int,
         highlight_rank: int | None,
     ) -> None:
         if int(mode_id) == 3:
-            self._draw_right_panel_quest_options(font=font, right_x0=right_x0, right_y0=right_y0, scale=scale)
+            self._draw_right_panel_quest_options(font=font, right_top_left=right_top_left, scale=scale)
             return
         self._draw_right_panel_local_score(
             font=font,
-            right_x0=right_x0,
-            right_y0=right_y0,
+            right_top_left=right_top_left,
             scale=scale,
             highlight_rank=highlight_rank,
         )
 
-    def _draw_right_panel_quest_options(
-        self, *, font: SmallFontData, right_x0: float, right_y0: float, scale: float
-    ) -> None:
+    def _draw_right_panel_quest_options(self, *, font: SmallFontData, right_top_left: Vec2, scale: float) -> None:
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -2586,11 +2588,12 @@ class HighScoresView:
         self,
         *,
         font: SmallFontData,
-        right_x0: float,
-        right_y0: float,
+        right_top_left: Vec2,
         scale: float,
         highlight_rank: int | None,
     ) -> None:
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         if not self._records:
             return
         idx = int(highlight_rank) if highlight_rank is not None else int(self._scroll_index)

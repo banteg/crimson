@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.projectiles import ProjectileTypeId
 from crimson.render.world_renderer import WorldRenderer
+from grim.geom import Vec2
 
 
 class _TextureStub:
@@ -31,10 +32,8 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(monkeypatch) -> Non
     renderer = WorldRenderer(_world=_WorldStub())  # type: ignore[arg-type]
 
     drawn = renderer._draw_bullet_trail(
-        120.0,
-        90.0,
-        120.0,
-        90.0,
+        Vec2(120.0, 90.0),
+        Vec2(120.0, 90.0),
         type_id=int(ProjectileTypeId.PISTOL),
         alpha=128,
         scale=1.0,
