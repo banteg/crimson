@@ -730,16 +730,11 @@ class WorldRenderer:
         else:
             side = Vec2.from_angle(angle)
 
-        ox = side.x * half
-        oy = side.y * half
-        x0 = start.x - ox
-        y0 = start.y - oy
-        x1 = start.x + ox
-        y1 = start.y + oy
-        x2 = end.x + ox
-        y2 = end.y + oy
-        x3 = end.x - ox
-        y3 = end.y - oy
+        side_offset = side * half
+        p0 = start - side_offset
+        p1 = start + side_offset
+        p2 = end + side_offset
+        p3 = end - side_offset
 
         # Native uses additive blending for bullet trails and sets color slots per projectile type.
         # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
@@ -756,16 +751,16 @@ class WorldRenderer:
         rl.rl_begin(rl.RL_QUADS)
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(0.0, 0.0)
-        rl.rl_vertex2f(x0, y0)
+        rl.rl_vertex2f(p0.x, p0.y)
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(1.0, 0.0)
-        rl.rl_vertex2f(x1, y1)
+        rl.rl_vertex2f(p1.x, p1.y)
         rl.rl_color4ub(head.r, head.g, head.b, head.a)
         rl.rl_tex_coord2f(1.0, 0.5)
-        rl.rl_vertex2f(x2, y2)
+        rl.rl_vertex2f(p2.x, p2.y)
         rl.rl_color4ub(head.r, head.g, head.b, head.a)
         rl.rl_tex_coord2f(0.0, 0.5)
-        rl.rl_vertex2f(x3, y3)
+        rl.rl_vertex2f(p3.x, p3.y)
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_blend_mode()
@@ -823,29 +818,24 @@ class WorldRenderer:
 
             thickness = max(1.0, 2.0 * scale)
             half = thickness * 0.5
-            side = direction.perp_left() * half
-
-            x0 = start_screen.x - side.x
-            y0 = start_screen.y - side.y
-            x1 = start_screen.x + side.x
-            y1 = start_screen.y + side.y
-            x2 = end_screen.x + side.x
-            y2 = end_screen.y + side.y
-            x3 = end_screen.x - side.x
-            y3 = end_screen.y - side.y
+            side_offset = direction.perp_left() * half
+            p0 = start_screen - side_offset
+            p1 = start_screen + side_offset
+            p2 = end_screen + side_offset
+            p3 = end_screen - side_offset
 
             rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
             rl.rl_tex_coord2f(0.0, 0.0)
-            rl.rl_vertex2f(x0, y0)
+            rl.rl_vertex2f(p0.x, p0.y)
             rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
             rl.rl_tex_coord2f(1.0, 0.0)
-            rl.rl_vertex2f(x1, y1)
+            rl.rl_vertex2f(p1.x, p1.y)
             rl.rl_color4ub(head.r, head.g, head.b, head.a)
             rl.rl_tex_coord2f(1.0, 0.5)
-            rl.rl_vertex2f(x2, y2)
+            rl.rl_vertex2f(p2.x, p2.y)
             rl.rl_color4ub(head.r, head.g, head.b, head.a)
             rl.rl_tex_coord2f(0.0, 0.5)
-            rl.rl_vertex2f(x3, y3)
+            rl.rl_vertex2f(p3.x, p3.y)
 
         rl.rl_end()
         rl.rl_set_texture(0)

@@ -633,9 +633,12 @@ class GameWorld:
 
         alive = [player for player in self.players if player.health > 0.0]
         if alive:
-            focus_x = sum(player.pos.x for player in alive) / float(len(alive))
-            focus_y = sum(player.pos.y for player in alive) / float(len(alive))
-            camera = Vec2((screen_size.x * 0.5) - focus_x, (screen_size.y * 0.5) - focus_y)
+            inv_alive = 1.0 / float(len(alive))
+            focus = Vec2(
+                sum(player.pos.x for player in alive) * inv_alive,
+                sum(player.pos.y for player in alive) * inv_alive,
+            )
+            camera = screen_size * 0.5 - focus
         else:
             camera = self.camera
 

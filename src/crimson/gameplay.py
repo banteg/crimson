@@ -187,7 +187,15 @@ WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
 class BonusHudState:
     slots: list[BonusHudSlot] = field(default_factory=lambda: [BonusHudSlot() for _ in range(BONUS_HUD_SLOT_COUNT)])
 
-    def register(self, bonus_id: BonusId, *, label: str, icon_id: int, timer_ref: _TimerRef, timer_ref_alt: _TimerRef | None = None) -> None:
+    def register(
+        self,
+        bonus_id: BonusId,
+        *,
+        label: str,
+        icon_id: int,
+        timer_ref: _TimerRef,
+        timer_ref_alt: _TimerRef | None = None,
+    ) -> None:
         existing = None
         free = None
         for slot in self.slots:
@@ -405,7 +413,9 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == int(WeaponId.PISTOL) or (players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)):
+                if entry.amount == int(WeaponId.PISTOL) or (
+                    players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
+                ):
                     self._clear_entry(entry)
                     return None
 
@@ -489,10 +499,7 @@ class BonusPool:
                 continue
 
             for player in players:
-                if (
-                    Vec2.distance_sq(entry.pos, player.pos)
-                    < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS
-                ):
+                if Vec2.distance_sq(entry.pos, player.pos) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
                     bonus_apply(
                         state,
                         player,
@@ -632,8 +639,10 @@ class _PerksUpdateEffectsCtx:
             return int(self._aim_target)
 
         target = -1
-        if self.players and self.creatures is not None and (
-            perk_active(self.players[0], PerkId.PYROKINETIC) or perk_active(self.players[0], PerkId.EVIL_EYES)
+        if (
+            self.players
+            and self.creatures is not None
+            and (perk_active(self.players[0], PerkId.PYROKINETIC) or perk_active(self.players[0], PerkId.EVIL_EYES))
         ):
             target = _creature_find_in_radius(
                 self.creatures,
@@ -907,7 +916,9 @@ def perks_rebuild_available(state: GameplayState) -> None:
     state._perk_available_unlock_index = unlock_index
 
 
-def perk_can_offer(state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int) -> bool:
+def perk_can_offer(
+    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int
+) -> bool:
     """Return whether `perk_id` is eligible for selection.
 
     Used by `perk_select_random` and modeled after `perk_can_offer` (0x0042fb10).
@@ -1253,7 +1264,10 @@ def perk_auto_pick(
     picks: list[PerkId] = []
     while perk_state.pending_count > 0:
         if perk_state.choices_dirty or not perk_state.choices:
-            perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+            perk_state.choices = [
+                int(perk)
+                for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+            ]
             perk_state.choices_dirty = False
         if not perk_state.choices:
             break
@@ -1285,7 +1299,10 @@ def perk_selection_current_choices(
     if player_count is None:
         player_count = len(players)
     if perk_state.choices_dirty or not perk_state.choices:
-        perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+        perk_state.choices = [
+            int(perk)
+            for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+        ]
         perk_state.choices_dirty = False
     return [PerkId(perk_id) for perk_id in perk_state.choices]
 
@@ -1601,8 +1618,7 @@ _BONUS_PICK_SUPPRESS_RULES: tuple[_BonusPickSuppressRule, ...] = (
 
 def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: list["PlayerState"]) -> int:
     has_fire_bullets_drop = any(
-        entry.bonus_id == int(BonusId.FIRE_BULLETS) and not entry.picked
-        for entry in pool.entries
+        entry.bonus_id == int(BonusId.FIRE_BULLETS) and not entry.picked for entry in pool.entries
     )
 
     for _ in range(101):
@@ -1743,7 +1759,9 @@ def player_swap_alt_weapon(player: PlayerState) -> bool:
 def player_start_reload(player: PlayerState, state: GameplayState) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
 
-    if player.reload_active and (perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)):
+    if player.reload_active and (
+        perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)
+    ):
         return
 
     weapon = _weapon_entry(player.weapon_id)
@@ -1828,7 +1846,9 @@ def _projectile_spawn(
     )
 
 
-def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
+def _perk_update_man_bomb(
+    player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None
+) -> None:
     player.man_bomb_timer += dt
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
@@ -1851,7 +1871,9 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, 
     state.perk_intervals.man_bomb = 4.0
 
 
-def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
+def _perk_update_hot_tempered(
+    player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None
+) -> None:
     player.hot_tempered_timer += dt
     if player.hot_tempered_timer <= state.perk_intervals.hot_tempered:
         return
@@ -2024,9 +2046,7 @@ def player_fire_weapon(
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
         shot_cooldown = (
-            float(fire_bullets_weapon.shot_cooldown)
-            if fire_bullets_weapon.shot_cooldown is not None
-            else 0.0
+            float(fire_bullets_weapon.shot_cooldown) if fire_bullets_weapon.shot_cooldown is not None else 0.0
         )
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
@@ -2280,8 +2300,7 @@ def player_update(
     if dt <= 0.0:
         return
 
-    prev_x = player.pos.x
-    prev_y = player.pos.y
+    prev_pos = player.pos
 
     if player.health <= 0.0:
         player.death_timer -= dt * 20.0
@@ -2359,7 +2378,8 @@ def player_update(
 
     player.move_phase += dt * player.move_speed * 19.0
 
-    stationary = abs(player.pos.x - prev_x) <= 1e-9 and abs(player.pos.y - prev_y) <= 1e-9
+    move_delta = player.pos - prev_pos
+    stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
     reload_scale = 1.0
     if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
@@ -2592,7 +2612,9 @@ def _bonus_apply_speed(ctx: _BonusApplyCtx) -> None:
 def _bonus_apply_fire_bullets(ctx: _BonusApplyCtx) -> None:
     should_register = float(ctx.player.fire_bullets_timer) <= 0.0
     if ctx.players is not None and len(ctx.players) > 1:
-        should_register = float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+        should_register = (
+            float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+        )
     if should_register:
         ctx.register_player("fire_bullets_timer")
     ctx.player.fire_bullets_timer = float(
@@ -2692,8 +2714,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
     ctx.state.camera_shake_timer = 0.2
 
     origin_pos = ctx.origin_pos()
-    ox = origin_pos.pos.x
-    oy = origin_pos.pos.y
+    origin = origin_pos.pos
     rand = ctx.state.rng.rand
 
     bullet_count = int(rand()) & 3
@@ -2703,7 +2724,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         proj_id = _projectile_spawn(
             ctx.state,
             players=ctx.players,
-            pos=Vec2(ox, oy),
+            pos=origin,
             angle=float(angle),
             type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
@@ -2717,14 +2738,14 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         _projectile_spawn(
             ctx.state,
             players=ctx.players,
-            pos=Vec2(ox, oy),
+            pos=origin,
             angle=float(angle),
             type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
         )
 
     ctx.state.effects.spawn_explosion_burst(
-        pos=Vec2(ox, oy),
+        pos=origin,
         scale=1.0,
         rand=rand,
         detail_preset=int(ctx.detail_preset),
@@ -2740,11 +2761,10 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
             # faster via the hp<=0 path in creature_apply_damage).
             if not creature.active:
                 continue
-            dx = creature.pos.x - ox
-            dy = creature.pos.y - oy
-            if abs(dx) > 256.0 or abs(dy) > 256.0:
+            delta = creature.pos - origin
+            if abs(delta.x) > 256.0 or abs(delta.y) > 256.0:
                 continue
-            dist = Vec2(dx, dy).length()
+            dist = delta.length()
             if dist < 256.0:
                 damage = (256.0 - dist) * 5.0
                 if ctx.apply_creature_damage is not None:
@@ -2848,7 +2868,9 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
         if not slot.active:
             continue
         timer = max(0.0, _timer_value(slot.timer_ref))
-        timer_alt = max(0.0, _timer_value(slot.timer_ref_alt)) if (slot.timer_ref_alt is not None and player_count > 1) else 0.0
+        timer_alt = (
+            max(0.0, _timer_value(slot.timer_ref_alt)) if (slot.timer_ref_alt is not None and player_count > 1) else 0.0
+        )
         slot.timer_value = float(timer)
         slot.timer_value_alt = float(timer_alt)
 

@@ -244,8 +244,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 texture,
                 grid=grid,
                 frame=frame,
-                x=pos_screen.x,
-                y=pos_screen.y,
+                pos=pos_screen,
                 scale=sprite_scale,
                 rotation_rad=ctx.angle,
                 tint=tint,
@@ -258,8 +257,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             texture,
             grid=grid,
             frame=frame,
-            x=ctx.screen_pos.x,
-            y=ctx.screen_pos.y,
+            pos=ctx.screen_pos,
             scale=sprite_scale,
             rotation_rad=ctx.angle,
             tint=head_tint,
@@ -295,8 +293,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             texture,
             grid=grid,
             frame=frame,
-            x=ctx.screen_pos.x,
-            y=ctx.screen_pos.y,
+            pos=ctx.screen_pos,
             scale=1.0 * ctx.scale,
             rotation_rad=ctx.angle,
             tint=core_tint,
@@ -330,9 +327,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             for creature in targets:
                 target_screen = renderer.world_to_screen(creature.pos)
-                tx = target_screen.x
-                ty = target_screen.y
-                segment = Vec2(tx - ctx.screen_pos.x, ty - ctx.screen_pos.y)
+                segment = target_screen - ctx.screen_pos
                 direction_screen, dlen = segment.normalized_with_length()
                 if dlen <= 1e-3:
                     continue
@@ -340,54 +335,40 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 side = direction_screen.perp_left()
 
                 # Outer strip (softer).
-                half = outer_half
-                off = side * half
-                off_x = off.x
-                off_y = off.y
-                x0 = ctx.screen_pos.x - off_x
-                y0 = ctx.screen_pos.y - off_y
-                x1 = ctx.screen_pos.x + off_x
-                y1 = ctx.screen_pos.y + off_y
-                x2 = float(tx) + off_x
-                y2 = float(ty) + off_y
-                x3 = float(tx) - off_x
-                y3 = float(ty) - off_y
+                side_offset = side * outer_half
+                p0 = ctx.screen_pos - side_offset
+                p1 = ctx.screen_pos + side_offset
+                p2 = target_screen + side_offset
+                p3 = target_screen - side_offset
 
                 outer_tint = renderer._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
                 rl.rl_tex_coord2f(u, v0)
-                rl.rl_vertex2f(x0, y0)
+                rl.rl_vertex2f(p0.x, p0.y)
                 rl.rl_tex_coord2f(u, v1)
-                rl.rl_vertex2f(x1, y1)
+                rl.rl_vertex2f(p1.x, p1.y)
                 rl.rl_tex_coord2f(u, v1)
-                rl.rl_vertex2f(x2, y2)
+                rl.rl_vertex2f(p2.x, p2.y)
                 rl.rl_tex_coord2f(u, v0)
-                rl.rl_vertex2f(x3, y3)
+                rl.rl_vertex2f(p3.x, p3.y)
 
                 # Inner strip (brighter).
-                half = inner_half
-                off = side * half
-                off_x = off.x
-                off_y = off.y
-                x0 = ctx.screen_pos.x - off_x
-                y0 = ctx.screen_pos.y - off_y
-                x1 = ctx.screen_pos.x + off_x
-                y1 = ctx.screen_pos.y + off_y
-                x2 = float(tx) + off_x
-                y2 = float(ty) + off_y
-                x3 = float(tx) - off_x
-                y3 = float(ty) - off_y
+                side_offset = side * inner_half
+                p0 = ctx.screen_pos - side_offset
+                p1 = ctx.screen_pos + side_offset
+                p2 = target_screen + side_offset
+                p3 = target_screen - side_offset
 
                 inner_tint = renderer._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 rl.rl_color4ub(inner_tint.r, inner_tint.g, inner_tint.b, inner_tint.a)
                 rl.rl_tex_coord2f(u, v0)
-                rl.rl_vertex2f(x0, y0)
+                rl.rl_vertex2f(p0.x, p0.y)
                 rl.rl_tex_coord2f(u, v1)
-                rl.rl_vertex2f(x1, y1)
+                rl.rl_vertex2f(p1.x, p1.y)
                 rl.rl_tex_coord2f(u, v1)
-                rl.rl_vertex2f(x2, y2)
+                rl.rl_vertex2f(p2.x, p2.y)
                 rl.rl_tex_coord2f(u, v0)
-                rl.rl_vertex2f(x3, y3)
+                rl.rl_vertex2f(p3.x, p3.y)
 
             rl.rl_end()
             rl.rl_set_texture(0)
@@ -399,8 +380,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     texture,
                     grid=grid,
                     frame=frame,
-                    x=target_screen.x,
-                    y=target_screen.y,
+                    pos=target_screen,
                     scale=sprite_scale,
                     rotation_rad=0.0,
                     tint=target_tint,
@@ -442,8 +422,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
             ctx.texture,
             grid=grid,
             frame=frame,
-            x=ctx.screen_pos.x,
-            y=ctx.screen_pos.y,
+            pos=ctx.screen_pos,
             scale=sprite_scale,
             rotation_rad=ctx.angle,
             tint=tint,
@@ -467,8 +446,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=ctx.screen_pos.x,
-        y=ctx.screen_pos.y,
+        pos=ctx.screen_pos,
         scale=sprite_scale,
         rotation_rad=ctx.angle,
         tint=tint,
@@ -516,8 +494,7 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=ctx.screen_pos.x,
-        y=ctx.screen_pos.y,
+        pos=ctx.screen_pos,
         scale=sprite_scale,
         rotation_rad=rotation_rad,
         tint=tint,
@@ -554,8 +531,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 ctx.texture,
                 grid=grid,
                 frame=frame,
-                x=pos_screen.x,
-                y=pos_screen.y,
+                pos=pos_screen,
                 scale=sprite_scale,
                 rotation_rad=0.0,
                 tint=tint,
@@ -606,8 +582,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=ctx.screen_pos.x,
-        y=ctx.screen_pos.y,
+        pos=ctx.screen_pos,
         scale=sprite_scale,
         rotation_rad=0.0,
         tint=tint,
