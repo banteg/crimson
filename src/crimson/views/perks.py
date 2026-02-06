@@ -210,7 +210,7 @@ class PerkSelectionView:
             label = perk_display_name(int(perk_id))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
-            if rl.check_collision_point_rec(mouse, rect):
+            if rect.contains(mouse):
                 self._perk_menu_selected = idx
                 if click:
                     perk_selection_pick(
@@ -302,12 +302,19 @@ class PerkSelectionView:
 
         panel_tex = self._ui_assets.menu_panel
         if panel_tex is not None:
-            draw_classic_menu_panel(panel_tex, dst=computed.panel)
+            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rectangle(rl.Rectangle))
 
         title_tex = self._ui_assets.title_pick_perk
         if title_tex is not None:
             src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            rl.draw_texture_pro(title_tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            rl.draw_texture_pro(
+                title_tex,
+                src,
+                computed.title.to_rectangle(rl.Rectangle),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
 
         sponsor = None
         if master_owned:
@@ -328,7 +335,7 @@ class PerkSelectionView:
             label = perk_display_name(int(perk_id))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
-            hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
+            hovered = rect.contains(mouse) or (idx == self._perk_menu_selected)
             draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]

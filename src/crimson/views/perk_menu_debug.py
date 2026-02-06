@@ -3,7 +3,7 @@ from __future__ import annotations
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -70,7 +70,7 @@ class PerkMenuDebugView:
         self._prompt_alpha = 1.0
         self._prompt_pulse = 0.0
         self._prompt_hover = False
-        self._prompt_rect: rl.Rectangle | None = None
+        self._prompt_rect: Rect | None = None
         self._cancel_button = UiButtonState("Cancel")
         self._debug_overlay = True
         self._show_prompt_rect = False
@@ -113,7 +113,7 @@ class PerkMenuDebugView:
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
         return hinge_x, hinge_y
 
-    def _perk_prompt_rect(self, label: str) -> rl.Rectangle:
+    def _perk_prompt_rect(self, label: str) -> Rect:
         hinge_x, hinge_y = self._perk_prompt_hinge()
         if self._assets is not None and self._assets.menu_item is not None:
             tex = self._assets.menu_item
@@ -121,7 +121,7 @@ class PerkMenuDebugView:
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return rl.Rectangle(
+            return Rect(
                 float(hinge_x + local_x),
                 float(hinge_y + local_y),
                 float(bar_w),
@@ -132,7 +132,7 @@ class PerkMenuDebugView:
         text_h = 20.0
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
-        return rl.Rectangle(x, y, text_w, text_h)
+        return Rect(x, y, text_w, text_h)
 
     def _draw_perk_prompt(self) -> None:
         if not self._show_prompt:
@@ -246,7 +246,7 @@ class PerkMenuDebugView:
                 rect = self._perk_prompt_rect(label)
                 self._prompt_rect = rect
                 mouse = rl.get_mouse_position()
-                self._prompt_hover = rl.check_collision_point_rec(mouse, rect)
+                self._prompt_hover = rect.contains(mouse)
 
         pulse_delta = dt_ms * (6.0 if self._prompt_hover else -2.0)
         self._prompt_pulse = clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
@@ -278,7 +278,7 @@ class PerkMenuDebugView:
             label = perk_display_name(int(perk_id))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
-            if rl.check_collision_point_rec(mouse, rect):
+            if rect.contains(mouse):
                 self._selected = idx
                 break
 
@@ -309,7 +309,7 @@ class PerkMenuDebugView:
 
         self._draw_perk_prompt()
         if self._show_prompt_rect and self._prompt_rect is not None:
-            rl.draw_rectangle_lines_ex(self._prompt_rect, 1.0, rl.Color(255, 0, 255, 255))
+            rl.draw_rectangle_lines_ex(self._prompt_rect.to_rectangle(rl.Rectangle), 1.0, rl.Color(255, 0, 255, 255))
 
         if self._show_menu and self._assets is not None:
             choices = self._choices()
@@ -330,12 +330,19 @@ class PerkMenuDebugView:
                 )
 
                 if self._assets.menu_panel is not None:
-                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel)
+                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rectangle(rl.Rectangle))
 
                 if self._assets.title_pick_perk is not None:
                     tex = self._assets.title_pick_perk
                     src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-                    rl.draw_texture_pro(tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+                    rl.draw_texture_pro(
+                        tex,
+                        src,
+                        computed.title.to_rectangle(rl.Rectangle),
+                        rl.Vector2(0.0, 0.0),
+                        0.0,
+                        rl.WHITE,
+                    )
 
                 sponsor = None
                 if self._master_owned:
@@ -356,7 +363,7 @@ class PerkMenuDebugView:
                     label = perk_display_name(int(perk_id))
                     item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
                     rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
-                    hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._selected)
+                    hovered = rect.contains(mouse) or (idx == self._selected)
                     draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]

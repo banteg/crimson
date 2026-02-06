@@ -10,7 +10,7 @@ import pyray as rl
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 
 from ..persistence.highscores import (
     NAME_MAX_EDIT,
@@ -97,7 +97,7 @@ class QuestResultsAssets:
 
 @dataclass(frozen=True, slots=True)
 class _QuestResultsPanelLayout:
-    panel: rl.Rectangle
+    panel: Rect
     top_left: Vec2
 
 
@@ -385,7 +385,7 @@ class QuestResultsUi:
         panel_pos = Vec2(
             panel_pos.x, (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale
         )
-        panel = rl.Rectangle(panel_pos.x, panel_pos.y, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
+        panel = Rect(panel_pos.x, panel_pos.y, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
 
     def update(
@@ -635,7 +635,12 @@ class QuestResultsUi:
 
         if self.assets.menu_panel is not None:
             fx_detail = bool(int(self.config.data.get("fx_detail_0", 0) or 0))
-            draw_classic_menu_panel(self.assets.menu_panel, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+            draw_classic_menu_panel(
+                self.assets.menu_panel,
+                dst=panel.to_rectangle(rl.Rectangle),
+                tint=rl.WHITE,
+                shadow=fx_detail,
+            )
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)

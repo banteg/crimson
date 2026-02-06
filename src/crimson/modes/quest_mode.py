@@ -9,7 +9,7 @@ from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.math import clamp
 from grim.view import ViewContext
@@ -429,7 +429,7 @@ class QuestMode(BaseGameplayMode):
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
         return hinge_x, hinge_y
 
-    def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> rl.Rectangle:
+    def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> Rect:
         hinge_x, hinge_y = self._perk_prompt_hinge()
         if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
             tex = self._perk_menu_assets.menu_item
@@ -437,7 +437,7 @@ class QuestMode(BaseGameplayMode):
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return rl.Rectangle(
+            return Rect(
                 float(hinge_x + local_x),
                 float(hinge_y + local_y),
                 float(bar_w),
@@ -449,7 +449,7 @@ class QuestMode(BaseGameplayMode):
         text_h = float(self._ui_line_height(scale))
         x = float(rl.get_screen_width()) - margin - text_w
         y = margin
-        return rl.Rectangle(x, y, text_w, text_h)
+        return Rect(x, y, text_w, text_h)
 
     def _close_failed_run(self) -> None:
         if self._outcome is None:
@@ -569,7 +569,7 @@ class QuestMode(BaseGameplayMode):
             label = self._perk_prompt_label()
             if label:
                 rect = self._perk_prompt_rect(label)
-                self._perk_prompt_hover = rl.check_collision_point_rec(self._ui_mouse_pos(), rect)
+                self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
 
             keybinds = config_keybinds(self._config)
             if not keybinds:

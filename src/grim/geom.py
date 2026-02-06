@@ -7,11 +7,19 @@ from typing import Callable, Protocol, TypeVar
 from .math import clamp
 
 TVector2 = TypeVar("TVector2")
+TRectangle = TypeVar("TRectangle")
 
 
 class SupportsXY(Protocol):
     x: float
     y: float
+
+
+class SupportsRect(Protocol):
+    x: float
+    y: float
+    width: float
+    height: float
 
 
 @dataclass(slots=True, frozen=True)
@@ -139,3 +147,73 @@ class Vec2:
             x=a.x + (b.x - a.x) * t,
             y=a.y + (b.y - a.y) * t,
         )
+
+
+@dataclass(slots=True, frozen=True)
+class Rect:
+    x: float = 0.0
+    y: float = 0.0
+    w: float = 0.0
+    h: float = 0.0
+
+    @classmethod
+    def from_xywh(cls, value: SupportsRect) -> Rect:
+        return cls(
+            x=float(value.x),
+            y=float(value.y),
+            w=float(value.width),
+            h=float(value.height),
+        )
+
+    @classmethod
+    def from_pos_size(cls, pos: Vec2, size: Vec2) -> Rect:
+        return cls(x=pos.x, y=pos.y, w=size.x, h=size.y)
+
+    @property
+    def top_left(self) -> Vec2:
+        return Vec2(self.x, self.y)
+
+    @property
+    def size(self) -> Vec2:
+        return Vec2(self.w, self.h)
+
+    @property
+    def width(self) -> float:
+        return self.w
+
+    @property
+    def height(self) -> float:
+        return self.h
+
+    @property
+    def right(self) -> float:
+        return self.x + self.w
+
+    @property
+    def bottom(self) -> float:
+        return self.y + self.h
+
+    @property
+    def center(self) -> Vec2:
+        return Vec2(self.x + self.w * 0.5, self.y + self.h * 0.5)
+
+    def offset(self, *, dx: float = 0.0, dy: float = 0.0) -> Rect:
+        return Rect(x=self.x + dx, y=self.y + dy, w=self.w, h=self.h)
+
+    def inset(self, *, dx: float = 0.0, dy: float = 0.0) -> Rect:
+        return Rect(
+            x=self.x + dx,
+            y=self.y + dy,
+            w=max(0.0, self.w - 2.0 * dx),
+            h=max(0.0, self.h - 2.0 * dy),
+        )
+
+    def contains(self, point: SupportsXY) -> bool:
+        px = float(point.x)
+        py = float(point.y)
+        return self.x <= px <= self.right and self.y <= py <= self.bottom
+
+    def to_rectangle(
+        self, constructor: Callable[[float, float, float, float], TRectangle]
+    ) -> TRectangle:
+        return constructor(self.x, self.y, self.w, self.h)

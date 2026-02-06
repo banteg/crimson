@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import math
 
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
+
+
+@dataclass(slots=True)
+class _RectLike:
+    x: float
+    y: float
+    width: float
+    height: float
 
 
 def test_vec2_length_and_length_sq() -> None:
@@ -171,3 +180,38 @@ def test_vec2_to_vector2_uses_constructor() -> None:
     result = vec.to_vector2(lambda x, y: {"x": x, "y": y})
 
     assert result == {"x": 1.25, "y": -4.5}
+
+
+def test_rect_properties_and_helpers() -> None:
+    rect = Rect(10.0, 20.0, 30.0, 40.0)
+
+    assert rect.top_left == Vec2(10.0, 20.0)
+    assert rect.size == Vec2(30.0, 40.0)
+    assert math.isclose(rect.right, 40.0, abs_tol=1e-9)
+    assert math.isclose(rect.bottom, 60.0, abs_tol=1e-9)
+    assert rect.center == Vec2(25.0, 40.0)
+
+
+def test_rect_offset_and_inset() -> None:
+    rect = Rect(10.0, 20.0, 30.0, 40.0)
+
+    assert rect.offset(dx=2.0, dy=-3.0) == Rect(12.0, 17.0, 30.0, 40.0)
+    assert rect.inset(dx=5.0, dy=4.0) == Rect(15.0, 24.0, 20.0, 32.0)
+    assert rect.inset(dx=100.0, dy=100.0) == Rect(110.0, 120.0, 0.0, 0.0)
+
+
+def test_rect_contains_edges() -> None:
+    rect = Rect(10.0, 20.0, 30.0, 40.0)
+
+    assert rect.contains(Vec2(10.0, 20.0))
+    assert rect.contains(Vec2(40.0, 60.0))
+    assert not rect.contains(Vec2(9.99, 20.0))
+    assert not rect.contains(Vec2(40.01, 60.0))
+
+
+def test_rect_conversion_helpers() -> None:
+    rect = Rect.from_pos_size(Vec2(1.0, 2.0), Vec2(3.0, 4.0))
+    round_trip = Rect.from_xywh(rect.to_rectangle(_RectLike))
+
+    assert rect == Rect(1.0, 2.0, 3.0, 4.0)
+    assert round_trip == rect

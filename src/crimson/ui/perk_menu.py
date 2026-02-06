@@ -8,7 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.math import clamp
 
 from .layout import menu_widescreen_y_shift
@@ -56,12 +56,12 @@ class PerkMenuLayout:
 
 @dataclass(slots=True)
 class PerkMenuComputedLayout:
-    panel: rl.Rectangle
-    title: rl.Rectangle
+    panel: Rect
+    title: Rect
     sponsor_pos: Vec2
     list_pos: Vec2
     list_step_y: float
-    desc: rl.Rectangle
+    desc: Rect
     cancel_pos: Vec2
 
 
@@ -79,7 +79,7 @@ def perk_menu_compute_layout(
     layout_w = screen_w / scale if scale else screen_w
     widescreen_shift_y = menu_widescreen_y_shift(layout_w)
     panel_pos = layout.panel_pos + Vec2(panel_slide_x, widescreen_shift_y)
-    panel = rl.Rectangle(
+    panel = Rect(
         origin.x + panel_pos.x * scale,
         origin.y + panel_pos.y * scale,
         layout.panel_size.x * scale,
@@ -90,7 +90,7 @@ def perk_menu_compute_layout(
         panel.y + MENU_PANEL_ANCHOR_Y * scale,
     )
 
-    title = rl.Rectangle(
+    title = Rect(
         anchor_pos.x + MENU_TITLE_X * scale,
         anchor_pos.y + MENU_TITLE_Y * scale,
         MENU_TITLE_W * scale,
@@ -122,7 +122,7 @@ def perk_menu_compute_layout(
         max(0.0, float(desc_right - desc_pos.x)),
         max(0.0, float(cancel_pos.y - 12.0 * scale - desc_pos.y)),
     )
-    desc = rl.Rectangle(
+    desc = Rect(
         float(desc_pos.x),
         float(desc_pos.y),
         float(desc_size.x),
@@ -267,14 +267,14 @@ def draw_wrapped_ui_text_in_rect(
     font: SmallFontData | None,
     text: str,
     *,
-    rect: rl.Rectangle,
+    rect: Rect,
     scale: float,
     color: rl.Color,
 ) -> None:
-    lines = wrap_ui_text(font, text, max_width=float(rect.width), scale=scale)
+    lines = wrap_ui_text(font, text, max_width=float(rect.w), scale=scale)
     line_h = float(font.cell_size * scale) if font is not None else float(20 * scale)
-    pos = Vec2.from_xy(rect)
-    max_y = float(rect.y + rect.height)
+    pos = rect.top_left
+    max_y = float(rect.bottom)
     for line in lines:
         if pos.y + line_h > max_y:
             break
@@ -287,10 +287,10 @@ MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
 
 
-def menu_item_hit_rect(font: SmallFontData | None, label: str, *, pos: Vec2, scale: float) -> rl.Rectangle:
+def menu_item_hit_rect(font: SmallFontData | None, label: str, *, pos: Vec2, scale: float) -> Rect:
     width = _ui_text_width(font, label, scale)
     height = 16.0 * scale
-    return rl.Rectangle(float(pos.x), float(pos.y), float(width), float(height))
+    return Rect(float(pos.x), float(pos.y), float(width), float(height))
 
 
 def draw_menu_item(
@@ -343,9 +343,9 @@ def button_width(font: SmallFontData | None, label: str, *, scale: float, force_
     return 145.0 * scale
 
 
-def button_hit_rect(*, pos: Vec2, width: float) -> rl.Rectangle:
+def button_hit_rect(*, pos: Vec2, width: float) -> Rect:
     # Mirrors ui_button_update: y is offset by +2, hit height is 0x1c (28).
-    return rl.Rectangle(float(pos.x), float(pos.y + 2.0), float(width), float(28.0))
+    return Rect(float(pos.x), float(pos.y + 2.0), float(width), float(28.0))
 
 
 def button_update(
@@ -360,7 +360,7 @@ def button_update(
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(pos=pos, width=width))
+        state.hovered = button_hit_rect(pos=pos, width=width).contains(mouse)
 
     delta = 6 if (state.enabled and state.hovered) else -4
     state.hover_t = int(clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))
