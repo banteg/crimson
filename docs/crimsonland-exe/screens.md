@@ -14,6 +14,12 @@ This page groups full-screen or modal flows that have their own update loops.
   `ui_transition_direction` (`DAT_0048724c`) is set.
 - Uses `game_over_name_input_buffer` (`0x0048256c`) as the editable player-name
   buffer for `ui_text_input_update`.
+- `game_over_highscore_rank_index` (`0x004825a4`) stores
+  `highscore_rank_index()` for the current score; values `>= 100` skip top-100
+  name entry.
+- `game_over_name_input_initial_length` (`0x00482594`) caches the original
+  active-record name length so final copy-back/termination preserves expected
+  bounds.
 
 ## Quest results (quest_results_screen_update / FUN_00410d20)
 
@@ -40,6 +46,10 @@ Recovered staged-reveal globals:
   (`DAT_00482700` / `DAT_00482704`) gate the unlock text rows.
 - Name entry uses `quest_results_name_input_buffer` (`0x004825dc`) as the
   temporary UI text-input storage before writing `highscore_active_record`.
+- `quest_results_highscore_rank_index` (`0x00482620`) stores
+  `highscore_rank_index()` and gates whether top-100 name entry is shown.
+- `quest_results_name_input_initial_length` (`0x004826ec`) caches the original
+  active-record name length for final copy-back/termination.
 
 ## Quest failed screen (quest_failed_screen_update)
 

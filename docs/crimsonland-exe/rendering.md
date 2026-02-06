@@ -54,6 +54,22 @@ weapon icons, along with health/score overlays.
 - `hud_show_quest_panel`
 - `hud_show_timer_panel`
 
+## Shared tint vectors
+
+Several UI/HUD paths use a shared global RGBA vector passed to
+`grim_set_color_ptr`:
+
+- `render_tint_color_r/g/b/a` (`0x004965f8..0x00496604`)
+- Alpha (`render_tint_color_a`) is animated in loading, HUD, game-over, and
+  quest-results paths while RGB stays white.
+
+High-score card divider rendering uses a second RGBA block:
+
+- `highscore_card_divider_color_r/g/b/a` (`0x004ccca8..0x004cccb4`)
+- Seeded from the shared tint vector with a dimmed alpha in
+  `ui_text_input_render`, then consumed by `highscore_card_draw_horizontal_divider`
+  and `highscore_card_draw_vertical_divider`.
+
 ## Terrain generation (terrain_generate / FUN_00417b80)
 
 `terrain_generate` renders the terrain texture into a render target and selects

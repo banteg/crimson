@@ -1552,6 +1552,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004824d0",
+      "comment": "Mod API GFX batching latch: set by mod_api_gfx_begin and cleared by mod_api_gfx_end; quad helpers use it to decide implicit begin/end calls.",
+      "name": "mod_api_gfx_batch_open",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004824d1",
       "comment": "Plugin runtime active/context latch used by pause/menu callbacks to resume into GAME_STATE_PLUGIN_RUNTIME when needed.",
       "name": "plugin_runtime_active_latch",
@@ -1618,6 +1625,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00482594",
+      "comment": "Game-over high-score entry: cached initial active-record player-name length used when copying edited text back.",
+      "name": "game_over_name_input_initial_length",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004825a4",
+      "comment": "Game-over high-score rank index from highscore_rank_index (>=100 means no top-100 entry).",
+      "name": "game_over_highscore_rank_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004825d8",
       "comment": "Quest-failed screen one-shot init flags bitfield (guards retry/menu button setup blocks).",
       "name": "quest_failed_screen_flags",
@@ -1645,10 +1666,24 @@
       "type": "int"
     },
     {
+      "address": "0x00482620",
+      "comment": "Quest-results high-score rank index from highscore_rank_index (>=100 means no top-100 entry).",
+      "name": "quest_results_highscore_rank_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00482624",
       "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
       "name": "time_format_mm_ss_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004826ec",
+      "comment": "Quest-results high-score entry: cached initial active-record player-name length used when copying edited text back.",
+      "name": "quest_results_name_input_initial_length",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482700",
@@ -4854,6 +4889,34 @@
       "type": "float"
     },
     {
+      "address": "0x004965f8",
+      "comment": "Shared UI/HUD tint RGBA vector component R used by grim_set_color_ptr helper paths.",
+      "name": "render_tint_color_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004965fc",
+      "comment": "Shared UI/HUD tint RGBA vector component G used by grim_set_color_ptr helper paths.",
+      "name": "render_tint_color_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x00496600",
+      "comment": "Shared UI/HUD tint RGBA vector component B used by grim_set_color_ptr helper paths.",
+      "name": "render_tint_color_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x00496604",
+      "comment": "Shared UI/HUD tint RGBA vector component A (alpha), animated across loading/HUD/high-score flows.",
+      "name": "render_tint_color_a",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x0049669c",
       "comment": "Rotated FX queue rotation array",
       "name": "fx_rotated_rotation",
@@ -6499,6 +6562,34 @@
       "comment": "UI focus candidate list used by ui_focus_update.",
       "name": "ui_focus_candidates",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004ccca8",
+      "comment": "High-score card divider tint RGBA component R used by highscore_card_draw_* helpers and ui_text_input_render.",
+      "name": "highscore_card_divider_color_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004cccac",
+      "comment": "High-score card divider tint RGBA component G used by highscore_card_draw_* helpers and ui_text_input_render.",
+      "name": "highscore_card_divider_color_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004cccb0",
+      "comment": "High-score card divider tint RGBA component B used by highscore_card_draw_* helpers and ui_text_input_render.",
+      "name": "highscore_card_divider_color_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004cccb4",
+      "comment": "High-score card divider tint RGBA component A used by highscore_card_draw_* helpers and ui_text_input_render.",
+      "name": "highscore_card_divider_color_a",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004cccb8",

@@ -130,6 +130,10 @@ within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 | `0x80` | `INP_GetKeyName` | `mod_api_inp_get_key_name` (`0x0040e680`) | Bridges to `input_key_name`. |
 | `0x84` | `CL_EnterMenu` | `mod_api_cl_enter_menu` (`0x0040e690`) | Only handles `"game_pause"`. |
 
+`mod_api_gfx_batch_open` (`0x004824d0`) is the internal batching latch toggled
+by `GFX_Begin`/`GFX_End`; `GFX_Quad`, `GFX_QuadRot`, and `GFX_DrawQuads` use it
+to decide whether to emit implicit `grim_begin_batch`/`grim_end_batch`.
+
 ## Open questions
 
 - Remaining semantics of the reserved `parms` bytes beyond `drawMouseCursor`, `onPause`, and the observed `request_exit` flag.

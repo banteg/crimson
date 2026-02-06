@@ -8676,7 +8676,7 @@ void mod_api_gfx_begin(void)
 
 {
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  DAT_004824d0 = 1;
+  mod_api_gfx_batch_open = '\x01';
   return;
 }
 
@@ -8691,7 +8691,7 @@ void mod_api_gfx_end(void)
 
 {
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  DAT_004824d0 = 0;
+  mod_api_gfx_batch_open = '\0';
   return;
 }
 
@@ -8707,7 +8707,7 @@ void mod_api_gfx_quad(float x,float y,float w,float h)
 {
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_draw_quad)(x,y,w,h);
-  if (DAT_004824d0 == '\0') {
+  if (mod_api_gfx_batch_open == '\0') {
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
   return;
@@ -8725,7 +8725,7 @@ void mod_api_gfx_quad_rot(float x,float y,float w,float h,float a)
 {
   (*grim_interface_ptr->vtable->grim_set_rotation)(a);
   (*grim_interface_ptr->vtable->grim_draw_quad_rotated_matrix)(x,y,w,h);
-  if (DAT_004824d0 == '\0') {
+  if (mod_api_gfx_batch_open == '\0') {
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
   return;
@@ -8743,13 +8743,13 @@ void mod_api_gfx_draw_quads(mod_vertex2_t *v,int numQuads)
 {
   float afStack_8 [2];
   
-  if (DAT_004824d0 == '\0') {
+  if (mod_api_gfx_batch_open == '\0') {
     (*grim_interface_ptr->vtable->grim_begin_batch)();
   }
   afStack_8[0] = 0.0;
   afStack_8[1] = 0.0;
   (*grim_interface_ptr->vtable->grim_submit_vertices_offset)((float *)v,numQuads,afStack_8);
-  if (DAT_004824d0 == '\0') {
+  if (mod_api_gfx_batch_open == '\0') {
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
   return;
@@ -9838,7 +9838,7 @@ void game_over_screen_update(void)
     game_over_screen_flags._0_1_ = (byte)game_over_screen_flags | 2;
     _DAT_004825a0 = 0x3f800000;
     _DAT_00482590 = &game_over_name_input_buffer;
-    DAT_00482594 = 0;
+    game_over_name_input_initial_length = 0;
     _DAT_00482598 = 0x18;
     _DAT_0048259c = 0x60;
     crt_atexit(&DAT_004107c0);
@@ -9873,12 +9873,12 @@ void game_over_screen_update(void)
   ui_draw_textured_quad((int)lVar13,iVar6,y,w,iVar3);
   if (ui_screen_phase == -1) {
     highscore_load_table();
-    DAT_004825a4 = highscore_rank_index();
+    game_over_highscore_rank_index = highscore_rank_index();
     highscore_active_record.game_mode_id = (undefined1)config_game_mode;
     (*grim_interface_ptr->vtable->grim_flush_input)();
     console_input_poll();
     (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
-    if (DAT_004825a4 < 100) {
+    if (game_over_highscore_rank_index < 100) {
       uVar4 = 0xffffffff;
       ui_screen_phase = 0;
       phVar12 = &highscore_active_record;
@@ -9913,16 +9913,16 @@ void game_over_screen_update(void)
         pcVar8 = phVar12->player_name;
         phVar12 = (highscore_record_t *)(phVar12->player_name + 1);
       } while (*pcVar8 != '\0');
-      DAT_00482594 = ~uVar4 - 1;
+      game_over_name_input_initial_length = ~uVar4 - 1;
 LAB_00410232:
       local_18 = local_18 + 8.0;
-      DAT_00496604 = 0x3f800000;
+      render_tint_color_a = 1.0;
       local_14 = local_14 + 84.0;
-      (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
+      (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_18 + 42.0,local_14,s_State_your_name__trooper__00473190);
       local_14 = local_14 + 40.0;
-      DAT_00496604 = 0x3f333333;
+      render_tint_color_a = 0.7;
       _DAT_004825a8 = &DAT_0047318c;
       local_10 = local_18 + 170.0;
       local_c = local_14 - 8.0;
@@ -9972,12 +9972,13 @@ LAB_00410232:
             _DAT_00482590 = &game_over_name_input_buffer;
             pcVar8 = pcVar11 + -uVar4;
             phVar12 = &highscore_active_record;
-            for (uVar5 = uVar4 >> 2; iVar3 = DAT_00482594, uVar5 != 0; uVar5 = uVar5 - 1) {
+            for (uVar5 = uVar4 >> 2; iVar3 = game_over_name_input_initial_length, uVar5 != 0;
+                uVar5 = uVar5 - 1) {
               *(undefined4 *)phVar12->player_name = *(undefined4 *)pcVar8;
               pcVar8 = pcVar8 + 4;
               phVar12 = (highscore_record_t *)(phVar12->player_name + 4);
             }
-            player_name_length = DAT_00482594;
+            player_name_length = game_over_name_input_initial_length;
             for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
               phVar12->player_name[0] = *pcVar8;
               pcVar8 = pcVar8 + 1;
@@ -9994,8 +9995,8 @@ LAB_00410232:
       }
 LAB_004103c2:
       local_14 = local_14 + 60.0;
-      (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
-      if (DAT_004825a4 < 100) {
+      (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
+      if (game_over_highscore_rank_index < 100) {
         local_10 = local_18 + 16.0;
         local_c = local_14 + 16.0;
         ui_text_input_render(&local_10,6.652423e-39,1.0);
@@ -10012,7 +10013,7 @@ LAB_004103c2:
   }
   local_18 = local_8 + 30.0;
   _DAT_00482590 = &game_over_name_input_buffer;
-  if (DAT_004825a4 < 100) {
+  if (game_over_highscore_rank_index < 100) {
     local_14 = fVar2 + 64.0;
   }
   else {
@@ -10346,7 +10347,7 @@ void quest_results_screen_update(void)
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 2;
     _DAT_004826f8 = 1.0;
     _DAT_004826e8 = &quest_results_name_input_buffer;
-    DAT_004826ec = 0;
+    quest_results_name_input_initial_length = 0;
     _DAT_004826f0 = 0x18;
     _DAT_004826f4 = 0x60;
     crt_atexit(&DAT_00412060);
@@ -10539,11 +10540,11 @@ void quest_results_screen_update(void)
     }
     if (ui_screen_phase == 0) {
       highscore_load_table();
-      DAT_00482620 = highscore_rank_index();
+      quest_results_highscore_rank_index = highscore_rank_index();
       (*grim_interface_ptr->vtable->grim_flush_input)();
       (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
-      if (99 < DAT_00482620) {
-        DAT_004826ec = 0;
+      if (99 < quest_results_highscore_rank_index) {
+        quest_results_name_input_initial_length = 0;
         _DAT_004826f0 = 0;
         _DAT_004826e8 = &quest_results_name_input_buffer;
         ui_screen_phase = 2;
@@ -10585,7 +10586,7 @@ void quest_results_screen_update(void)
         pcVar5 = phVar13->player_name;
         phVar13 = (highscore_record_t *)(phVar13->player_name + 1);
       } while (*pcVar5 != '\0');
-      DAT_004826ec = ~uVar6 - 1;
+      quest_results_name_input_initial_length = ~uVar6 - 1;
       perk_prompt_update_and_render();
       ui_cursor_render();
       return;
@@ -10597,14 +10598,14 @@ void quest_results_screen_update(void)
       else {
         quest_results_anim_timer = 500;
       }
-      DAT_00496604 = (float)quest_results_anim_timer * 0.002;
+      render_tint_color_a = (float)quest_results_anim_timer * 0.002;
       local_c = local_c + 22.0;
-      local_18 = DAT_00496604;
-      (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
+      local_18 = render_tint_color_a;
+      (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10 + 42.0,local_c,s_State_your_name_trooper__004732a8);
       local_c = local_c + 32.0;
-      DAT_00496604 = 0.7;
+      render_tint_color_a = 0.7;
       local_8 = local_10 + 170.0;
       _DAT_004826f4 = 0xa6;
       _DAT_004826f8 = local_18;
@@ -10634,7 +10635,7 @@ void quest_results_screen_update(void)
           if ((&quest_results_name_input_buffer)[iVar4] != '\0') {
             ui_screen_phase = 2;
             sfx_play(sfx_ui_typeenter);
-            iVar4 = DAT_004826ec;
+            iVar4 = quest_results_name_input_initial_length;
             uVar6 = 0xffffffff;
             pcVar5 = &quest_results_name_input_buffer;
             do {
@@ -10646,7 +10647,7 @@ void quest_results_screen_update(void)
               pcVar5 = pcVar12;
             } while (cVar1 != '\0');
             uVar6 = ~uVar6;
-            player_name_length = DAT_004826ec;
+            player_name_length = quest_results_name_input_initial_length;
             pcVar5 = pcVar12 + -uVar6;
             phVar13 = &highscore_active_record;
             for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
@@ -10654,7 +10655,7 @@ void quest_results_screen_update(void)
               pcVar5 = pcVar5 + 4;
               phVar13 = (highscore_record_t *)(phVar13->player_name + 4);
             }
-            DAT_004826ec = 0;
+            quest_results_name_input_initial_length = 0;
             _DAT_004826f0 = 0;
             for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
               phVar13->player_name[0] = *pcVar5;
@@ -10673,7 +10674,7 @@ void quest_results_screen_update(void)
       }
 LAB_00411906:
       local_c = local_c + 30.0;
-      (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
+      (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
       local_8 = local_10 + 26.0;
       local_4 = local_c + 16.0;
       ui_text_input_render(&local_8,6.652423e-39,local_18);
@@ -10694,7 +10695,7 @@ LAB_00411906:
   local_18 = a;
   local_c = fVar3;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
-  if (99 < DAT_00482620) {
+  if (99 < quest_results_highscore_rank_index) {
     local_c = local_c + 6.0;
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,local_10 + 8.0,local_c,s_Score_too_low_for_top_d__00473170,100);
@@ -15746,12 +15747,12 @@ LAB_0041c5bf:
             (grim_interface_ptr,4.0,(float)(int)value,&DAT_0047380c);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,26.0,(float)(iVar2 + -4),&DAT_00471f40,survival_xp_smoothed);
-  DAT_00496604 = fVar18;
-  (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
+  render_tint_color_a = fVar18;
+  (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,85.0,(float)(iVar2 + 1),&DAT_00471f40,player_state_table.level);
   iVar19 = player_state_table.level;
-  DAT_00496604 = 0.7;
+  render_tint_color_a = 0.7;
   crt_ci_pow();
   lVar11 = __ftol();
   iVar6 = 1000 - (int)lVar11;
@@ -24200,8 +24201,8 @@ LAB_0042bea6:
                s_Grim_SFX___d__d_004746b8);
   }
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
-  DAT_00496604 = fVar6 * 0.7;
-  (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
+  render_tint_color_a = fVar6 * 0.7;
+  (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)
             ((float *)&stack0xffffffd0,screen_width_f + 8.0,128.0);
   console_update(0x47eea0);
@@ -37753,7 +37754,7 @@ void highscore_card_draw_horizontal_divider(float *xy)
 {
   float *unaff_retaddr;
   
-  (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccca8);
+  (*grim_interface_ptr->vtable->grim_set_color_ptr)(&highscore_card_divider_color_r);
   *unaff_retaddr = *unaff_retaddr - 16.0;
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)(unaff_retaddr,192.0,1.0);
   *unaff_retaddr = *unaff_retaddr + 16.0;
@@ -37772,7 +37773,7 @@ void highscore_card_draw_vertical_divider(float *xy)
 {
   float *unaff_retaddr;
   
-  (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccca8);
+  (*grim_interface_ptr->vtable->grim_set_color_ptr)(&highscore_card_divider_color_r);
   *unaff_retaddr = *unaff_retaddr - 16.0;
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)(unaff_retaddr,1.0,48.0);
   *unaff_retaddr = *unaff_retaddr + 16.0;
@@ -37838,7 +37839,6 @@ char * __cdecl highscore_format_date_label(int day,int month_index)
 
 /* ui_text_input_render @ 004413a0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* renders a text input field (focus, text, and caret) */
 
 void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
@@ -37862,11 +37862,11 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   float fStack_4;
   
   fVar2 = alpha * 0.7;
-  DAT_00496604 = 0x3f333333;
-  _DAT_004ccca8 = DAT_004965f8;
-  _DAT_004cccac = DAT_004965fc;
-  _DAT_004cccb0 = DAT_00496600;
-  _DAT_004cccb4 = fVar2;
+  render_tint_color_a = 0.7;
+  highscore_card_divider_color_r = render_tint_color_r;
+  highscore_card_divider_color_g = render_tint_color_g;
+  highscore_card_divider_color_b = render_tint_color_b;
+  highscore_card_divider_color_a = fVar2;
   iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)((char *)y);
   fStack_c = *(float *)((int)input_state + 4);
   fStack_10 = *(float *)input_state + 4.0;
@@ -37874,7 +37874,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
      (game_state_id != GAME_STATE_QUEST_FAILED)) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
     (*grim_interface_ptr->vtable->grim_draw_text_small)(fStack_10,fStack_c,(char *)y);
-    (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccca8);
+    (*grim_interface_ptr->vtable->grim_set_color_ptr)(&highscore_card_divider_color_r);
     fStack_8 = fStack_10;
     fStack_4 = fStack_c + 13.0;
     (*grim_interface_ptr->vtable->grim_draw_rect_outline)(&fStack_8,(float)iVar3,1.0);
@@ -47343,10 +47343,10 @@ LAB_0044cafb:
     (&DAT_004d789e)[iVar5] = 0;
   }
   fVar26 = (fVar26 - 8.0) - 14.0;
-  DAT_00496604 = 0x3f333333;
-  fStack_68 = DAT_004965f8;
-  fStack_60 = (float)DAT_00496600;
-  fStack_64 = (float)DAT_004965fc;
+  render_tint_color_a = 0.7;
+  fStack_68 = render_tint_color_r;
+  fStack_60 = render_tint_color_b;
+  fStack_64 = render_tint_color_g;
   uStack_5c = 0x3f333333;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
