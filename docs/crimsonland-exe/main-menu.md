@@ -101,6 +101,9 @@ Runtime verification (Frida):
 - `width = 512.0`
 - `height = 64.0`
 - `offset = (-72.0, -60.0)`
+- Template global: `ui_menu_item_element` (`0x0048fba8`)
+  with mode/texture fields `ui_menu_item_element_mode` (`0x0048fc8c`) and
+  `ui_menu_item_element_texture_handle` (`0x0048fc88`).
 
 The pivot is intentionally offset so the element can rotate in from the left.
 
@@ -111,6 +114,9 @@ This is **not used in state 0** (but used by other menus/screens):
 - `width = 512.0`
 - `height = 256.0`
 - `offset = (20.0, -82.0)`
+- Template global: `ui_menu_panel_template` (`0x0048fc90`)
+  with mode/texture fields `ui_menu_panel_template_mode` (`0x0048fd74`) and
+  `ui_menu_panel_template_texture_handle` (`0x0048fd70`).
 
 ### Panel screen animation (Play Game / Options)
 

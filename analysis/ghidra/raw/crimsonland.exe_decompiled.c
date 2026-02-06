@@ -13774,7 +13774,6 @@ float __cdecl vec2_length(float *v)
 
 /* ui_menu_template_pool_init @ 00417690 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by
    ui_menu_layout_init */
 
@@ -13823,15 +13822,15 @@ int ui_menu_template_pool_init(void)
     puVar1 = puVar1 + 0x1c;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  _DAT_0048fc8c = 4;
-  puVar1 = &DAT_0048fc90;
+  ui_menu_item_element_mode = 4;
+  puVar1 = &ui_menu_panel_template;
   iVar2 = 8;
   do {
     ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  _DAT_0048fd74 = 4;
+  ui_menu_panel_template_mode = 4;
   invoke_callback_n(&ui_menu_item_subtemplate_block_01,0x1c,8,0x417a90);
   ui_menu_item_subtemplate_block_01.quad_mode = 4;
   invoke_callback_n(&ui_menu_item_subtemplate_block_02,0x1c,8,0x417a90);
@@ -14809,11 +14808,11 @@ void ui_menu_assets_init(void)
   local_8[0] = -72.0;
   local_8[1] = -60.0;
   ui_element_set_rect((ui_element_t *)&ui_menu_item_element,512.0,64.0,local_8);
-  ui_element_load((ui_element_t *)&DAT_0048fc90,s_ui_ui_menuPanel_jaz_004737cc);
+  ui_element_load((ui_element_t *)&ui_menu_panel_template,s_ui_ui_menuPanel_jaz_004737cc);
   local_8[0] = 20.0;
   local_8[1] = -82.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048fc90,512.0,256.0,local_8);
-  pfVar3 = (float *)&DAT_0048fc90;
+  ui_element_set_rect((ui_element_t *)&ui_menu_panel_template,512.0,256.0,local_8);
+  pfVar3 = (float *)&ui_menu_panel_template;
   puVar1 = &ui_menu_item_subtemplate_block_01;
   for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
     (puVar1->slot_00).x = *pfVar3;
@@ -48706,7 +48705,7 @@ void ui_menu_layout_init(void)
   if ((char)iVar10 != '\0') {
     main_menu_full_version_layout_latch = '\x01';
   }
-  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar9 = (float *)&ui_menu_panel_template;
   pfVar16 = ui_element_slot_31.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
     *pfVar16 = *pfVar9;
@@ -48938,7 +48937,7 @@ void ui_menu_layout_init(void)
   ui_element_slot_13._pad0[3] = '\0';
   ui_element_slot_13._pad0[4] = '\0';
   ui_element_slot_13._pad0[5] = '\0';
-  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar9 = (float *)&ui_menu_panel_template;
   pfVar16 = ui_element_slot_14.quad0;
   for (iVar10 = 0x3a; iVar11 = _config_screen_width, iVar10 != 0; iVar10 = iVar10 + -1) {
     *pfVar16 = *pfVar9;
@@ -49041,7 +49040,7 @@ void ui_menu_layout_init(void)
   ui_element_slot_39._pad0[4] = '\0';
   ui_element_slot_39._pad0[5] = '\0';
   fVar12 = (float)(iVar11 + -0x15e);
-  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar9 = (float *)&ui_menu_panel_template;
   pfVar16 = ui_element_slot_33.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
     *pfVar16 = *pfVar9;

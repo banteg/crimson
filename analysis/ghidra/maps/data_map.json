@@ -4139,6 +4139,41 @@
       "type": "ui_element_t"
     },
     {
+      "address": "0x0048fc88",
+      "comment": "Texture handle dword for ui_menu_item_element (+0xe0 from element base).",
+      "name": "ui_menu_item_element_texture_handle",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048fc8c",
+      "comment": "Mode sentinel for ui_menu_item_element (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_element_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048fc90",
+      "comment": "Menu panel UI template loaded from ui_menuPanel.jaz and copied into panel slots by ui_menu_layout_init.",
+      "name": "ui_menu_panel_template",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048fd70",
+      "comment": "Texture handle dword for ui_menu_panel_template (+0xe0 from element base).",
+      "name": "ui_menu_panel_template_texture_handle",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048fd74",
+      "comment": "Mode sentinel for ui_menu_panel_template (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_panel_template_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048fd78",
       "comment": "Menu item sub-template block 1 carved as 8 slots (stride 0x1c) + texture_handle(+0xe0) + quad_mode(+0xe4); seeded by ui_menu_template_pool_init and reshaped in ui_menu_assets_init.",
       "name": "ui_menu_item_subtemplate_block_01",
