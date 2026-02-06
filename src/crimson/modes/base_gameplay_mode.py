@@ -277,6 +277,9 @@ class BaseGameplayMode:
         self._action = None
         return action
 
+    def _enter_game_over(self) -> None:
+        raise NotImplementedError
+
     def _update_game_over_ui(self, dt: float) -> None:
         record = self._game_over_record
         if record is None:

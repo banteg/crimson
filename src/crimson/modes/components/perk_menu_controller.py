@@ -12,6 +12,7 @@ from ...gameplay import (
     GameplayState,
     PerkSelectionState,
     PlayerState,
+    _CreatureForPerks,
     perk_selection_current_choices,
     perk_selection_pick,
 )
@@ -46,8 +47,8 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 class PerkMenuContext:
     state: GameplayState
     perk_state: PerkSelectionState
-    players: Sequence[PlayerState]
-    creatures: Sequence[object]
+    players: list[PlayerState]
+    creatures: Sequence[_CreatureForPerks]
     player: PlayerState
     game_mode: int
     player_count: int

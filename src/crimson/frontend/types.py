@@ -16,15 +16,22 @@ class GameState(Protocol):
     assets_dir: Path
     rng: random.Random
     config: Any
+    status: Any
     preserve_bugs: bool
 
     texture_cache: Any
     audio: Any
+    resource_paq: Path
+    logos: Any
+    console: Any
 
     menu_ground: Any
     pause_background: PauseBackground | None
 
+    demo_enabled: bool
+    skip_intro: bool
+    menu_sign_locked: bool
+
     quit_requested: bool
     screen_fade_alpha: float
     screen_fade_ramp: bool
-

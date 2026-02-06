@@ -169,7 +169,7 @@ class DecalsDebugView:
         rl.clear_background(BG_LIGHT)
         rl.end_texture_mode()
         # GroundRenderer treats this as an internal invariant; set it for debug fills.
-        ground._render_target_ready = True  # type: ignore[attr-defined]
+        ground._render_target_ready = True
 
     def _reset_ground(self) -> None:
         if self._ground is None:

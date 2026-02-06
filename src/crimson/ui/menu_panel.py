@@ -22,7 +22,7 @@ MENU_PANEL_DST_BOTTOM_H = 116.0
 
 
 def draw_classic_menu_panel(
-    texture: rl.Texture2D,
+    texture: rl.Texture,
     *,
     dst: rl.Rectangle,
     tint: rl.Color = rl.WHITE,

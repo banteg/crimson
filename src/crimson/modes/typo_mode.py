@@ -200,7 +200,7 @@ class TypoShooterMode(BaseGameplayMode):
             reward_value=1.0,
             size=float(size),
             contact_damage=100.0,
-            tint=tint_rgba,
+            tint=tint_rgba.to_tuple(),
         )
         return self._creatures.spawn_init(init, rand=rand)
 

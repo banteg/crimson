@@ -174,7 +174,7 @@ class CameraShakeView:
             draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
 
         state = self._world.state
-        camera, _view_scale = self._world._world_params()
+        camera, _view_scale = self._world.renderer._world_params()
         lines = [
             "WASD move  N: nuke shake  T: toggle reflex-boost shake-rate  R: reset  Esc: exit",
             f"camera_offset=({camera.x:.1f},{camera.y:.1f})  camera_raw=({self._world.camera.x:.1f},{self._world.camera.y:.1f})",

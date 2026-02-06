@@ -43,10 +43,10 @@ class ControlsMenuView(PanelMenuView):
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
         self._small_font: SmallFontData | None = None
-        self._text_controls: rl.Texture2D | None = None
-        self._drop_off: rl.Texture2D | None = None
-        self._check_on: rl.Texture2D | None = None
-        self._check_off: rl.Texture2D | None = None
+        self._text_controls: rl.Texture | None = None
+        self._drop_off: rl.Texture | None = None
+        self._check_on: rl.Texture | None = None
+        self._check_off: rl.Texture | None = None
 
         self._config_player = 1
         self._dirty = False

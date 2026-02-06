@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .types import (
+    PackedPlayerInput,
+    PackedTickInputs,
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
@@ -78,7 +80,7 @@ def _header_from_dict(data: dict[str, Any]) -> ReplayHeader:
         world_size=float(data.get("world_size", 1024.0)),
         player_count=int(data.get("player_count", 1)),
         status=status,
-        input_quantization=input_quant,  # type: ignore[arg-type]
+        input_quantization=input_quant,
     )
 
 
@@ -161,7 +163,7 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
 
     # Keep inputs in compact array form:
     # inputs[tick][player] == [move_x, move_y, [aim_x, aim_y], flags]
-    inputs: list[list[list[float | int]]] = []
+    inputs: list[PackedTickInputs] = []
     for tick_idx, tick in enumerate(inputs_in):
         if not isinstance(tick, list):
             raise ReplayCodecError(f"replay inputs tick {tick_idx} must be a list")
@@ -169,7 +171,7 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
             raise ReplayCodecError(
                 f"replay tick {tick_idx} has {len(tick)} players, expected {int(header.player_count)}"
             )
-        packed_tick: list[list[float | int]] = []
+        packed_tick: PackedTickInputs = []
         for player_idx, packed in enumerate(tick):
             if not isinstance(packed, list):
                 raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must be a list")
@@ -193,7 +195,8 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
                 my_f = _quantize_f32(my_f)
                 ax_f = _quantize_f32(ax_f)
                 ay_f = _quantize_f32(ay_f)
-            packed_tick.append([mx_f, my_f, [ax_f, ay_f], flags_i])
+            packed_input: PackedPlayerInput = [mx_f, my_f, [ax_f, ay_f], flags_i]
+            packed_tick.append(packed_input)
         inputs.append(packed_tick)
 
     events_in = obj.get("events") or []

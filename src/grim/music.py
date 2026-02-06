@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from collections.abc import Callable
 from pathlib import Path
 import random
+from typing import cast
 
 import pyray as rl
 
@@ -101,7 +102,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
                 break
         if data is None:
             raise FileNotFoundError(f"audio: missing music entry for track '{track_name}' in {MUSIC_PAK_NAME}")
-        music = rl.load_music_stream_from_memory(".ogg", data, len(data))
+        music = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
         rl.set_music_volume(music, state.volume)
         state.tracks[track_name] = music
         loaded += 1
@@ -168,7 +169,7 @@ def load_music_track(
             if data is None:
                 data = entries.get(Path(normalized).name)
             if data is not None:
-                music_stream = rl.load_music_stream_from_memory(".ogg", data, len(data))
+                music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
     if music_stream is None:
         if console is not None:
             console.log.log(f"SFX Tune {track_id} <- '{normalized}' FAILED")

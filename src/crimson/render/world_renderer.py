@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -28,9 +28,18 @@ from ..weapons import WEAPON_BY_ID
 from .projectile_draw_registry import ProjectileDrawCtx, draw_projectile_from_registry
 from .projectile_render_registry import known_proj_rgb
 from .secondary_projectile_draw_registry import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
+from .frame import RenderFrame
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from grim.config import CrimsonConfig
+    from grim.terrain_render import GroundRenderer
+
+    from ..creatures.runtime import CreaturePool
     from ..game_world import GameWorld
+    from ..gameplay import GameplayState, PlayerState
+    from ..projectiles import Projectile, SecondaryProjectile
 
 _RAD_TO_DEG = 57.29577951308232
 
@@ -44,10 +53,176 @@ def monster_vision_fade_alpha(hitbox_size: float) -> float:
 @dataclass(slots=True)
 class WorldRenderer:
     _world: GameWorld
+    _render_frame: RenderFrame | None = None
     _small_font: SmallFontData | None = None
 
-    def __getattr__(self, name: str) -> object:
-        return getattr(self._world, name)
+    @property
+    def assets_dir(self) -> Path:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.assets_dir
+        return self._world.assets_dir
+
+    @property
+    def missing_assets(self) -> list[str]:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.missing_assets
+        return self._world.missing_assets
+
+    @property
+    def world_size(self) -> float:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.world_size
+        return self._world.world_size
+
+    @property
+    def demo_mode_active(self) -> bool:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.demo_mode_active
+        return self._world.demo_mode_active
+
+    @property
+    def config(self) -> CrimsonConfig | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.config
+        return self._world.config
+
+    @property
+    def camera(self) -> Vec2:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.camera
+        return self._world.camera
+
+    @property
+    def ground(self) -> GroundRenderer | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.ground
+        return self._world.ground
+
+    @property
+    def state(self) -> GameplayState:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.state
+        return self._world.state
+
+    @property
+    def players(self) -> list[PlayerState]:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.players
+        return self._world.players
+
+    @property
+    def creatures(self) -> CreaturePool:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.creatures
+        return self._world.creatures
+
+    @property
+    def creature_textures(self) -> dict[str, rl.Texture]:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.creature_textures
+        return self._world.creature_textures
+
+    @property
+    def projs_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.projs_texture
+        return self._world.projs_texture
+
+    @property
+    def particles_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.particles_texture
+        return self._world.particles_texture
+
+    @property
+    def bullet_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.bullet_texture
+        return self._world.bullet_texture
+
+    @property
+    def bullet_trail_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.bullet_trail_texture
+        return self._world.bullet_trail_texture
+
+    @property
+    def arrow_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.arrow_texture
+        return self._world.arrow_texture
+
+    @property
+    def bonuses_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.bonuses_texture
+        return self._world.bonuses_texture
+
+    @property
+    def bodyset_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.bodyset_texture
+        return self._world.bodyset_texture
+
+    @property
+    def clock_table_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.clock_table_texture
+        return self._world.clock_table_texture
+
+    @property
+    def clock_pointer_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.clock_pointer_texture
+        return self._world.clock_pointer_texture
+
+    @property
+    def muzzle_flash_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.muzzle_flash_texture
+        return self._world.muzzle_flash_texture
+
+    @property
+    def wicons_texture(self) -> rl.Texture | None:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.wicons_texture
+        return self._world.wicons_texture
+
+    @property
+    def elapsed_ms(self) -> float:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.elapsed_ms
+        return float(self._world._elapsed_ms)
+
+    @property
+    def bonus_anim_phase(self) -> float:
+        frame = self._render_frame
+        if frame is not None:
+            return frame.bonus_anim_phase
+        return float(self._world._bonus_anim_phase)
 
     def _ensure_small_font(self) -> SmallFontData | None:
         if self._small_font is not None:
@@ -80,7 +255,7 @@ class WorldRenderer:
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
+        camera = self._clamp_camera(self.camera, screen_size)
         scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
         scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
         return camera, Vec2(scale_x, scale_y)
@@ -166,7 +341,7 @@ class WorldRenderer:
                 if icon_index is None or not (0 <= icon_index <= 31) or self.wicons_texture is None:
                     continue
 
-                pulse = math.sin(float(self._bonus_anim_phase)) ** 4 * 0.25 + 0.75
+                pulse = math.sin(float(self.bonus_anim_phase)) ** 4 * 0.25 + 0.75
                 icon_scale = fade * pulse
                 if icon_scale <= 1e-3:
                     continue
@@ -186,14 +361,14 @@ class WorldRenderer:
             if bonus_id == int(BonusId.POINTS) and int(bonus.amount) == 1000:
                 icon_id += 1
 
-            pulse = math.sin(float(idx) + float(self._bonus_anim_phase)) ** 4 * 0.25 + 0.75
+            pulse = math.sin(float(idx) + float(self.bonus_anim_phase)) ** 4 * 0.25 + 0.75
             icon_scale = fade * pulse
             if icon_scale <= 1e-3:
                 continue
 
             src = self._bonus_icon_src(self.bonuses_texture, icon_id)
             size = 32.0 * icon_scale * scale
-            rotation_rad = math.sin(float(idx) - float(self._elapsed_ms) * 0.003) * 0.2
+            rotation_rad = math.sin(float(idx) - float(self.elapsed_ms) * 0.003) * 0.2
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
@@ -446,7 +621,7 @@ class WorldRenderer:
     def _draw_player_trooper_sprite(
         self,
         texture: rl.Texture,
-        player: object,
+        player: PlayerState,
         *,
         camera: Vec2,
         view_scale: Vec2,
@@ -456,8 +631,8 @@ class WorldRenderer:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        grid = 8
-        cell = float(texture.width) / float(grid) if grid > 0 else float(texture.width)
+        sprite_grid = 8
+        cell = float(texture.width) / float(sprite_grid) if sprite_grid > 0 else float(texture.width)
         if cell <= 0.0:
             return
 
@@ -481,7 +656,7 @@ class WorldRenderer:
                         max(0.0, cell_w - 2.0),
                         max(0.0, cell_h - 2.0),
                     )
-                    t = float(self._elapsed_ms) * 0.001
+                    t = float(self.elapsed_ms) * 0.001
                     aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                     if aura_alpha > 1e-3:
                         size = 100.0 * scale
@@ -496,7 +671,7 @@ class WorldRenderer:
         shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
         overlay_tint = tint
         if len(self.players) > 1:
-            index = int(getattr(player, "index", 0))
+            index = int(player.index)
             if index == 0:
                 overlay_tint = rl.Color(77, 77, 255, tint.a)
             else:
@@ -505,7 +680,7 @@ class WorldRenderer:
         def draw(frame: int, *, pos: Vec2, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
                 texture,
-                grid=grid,
+                grid=sprite_grid,
                 frame=max(0, min(63, int(frame))),
                 pos=pos,
                 scale=base_scale * float(scale_mul),
@@ -559,20 +734,20 @@ class WorldRenderer:
             if self.particles_texture is not None and float(player.shield_timer) > 1e-3 and alpha > 1e-3:
                 atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.SHIELD_RING))
                 if atlas is not None:
-                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-                    if grid:
+                    shield_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if shield_grid:
                         frame = int(atlas.frame)
-                        col = frame % grid
-                        row = frame // grid
-                        cell_w = float(self.particles_texture.width) / float(grid)
-                        cell_h = float(self.particles_texture.height) / float(grid)
+                        col = frame % shield_grid
+                        row = frame // shield_grid
+                        cell_w = float(self.particles_texture.width) / float(shield_grid)
+                        cell_h = float(self.particles_texture.height) / float(shield_grid)
                         src = rl.Rectangle(
                             cell_w * float(col),
                             cell_h * float(row),
                             max(0.0, cell_w - 2.0),
                             max(0.0, cell_h - 2.0),
                         )
-                        t = float(self._elapsed_ms) * 0.001
+                        t = float(self.elapsed_ms) * 0.001
                         timer = float(player.shield_timer)
                         strength = (math.sin(t) + 1.0) * 0.25 + timer
                         if timer < 1.0:
@@ -655,18 +830,16 @@ class WorldRenderer:
         )
         draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
-    def _draw_projectile(self, proj: object, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
+    def _draw_projectile(self, proj: Projectile, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         texture = self.projs_texture
-        type_id = int(getattr(proj, "type_id", 0))
-        proj_pos = getattr(proj, "pos", None)
-        if not isinstance(proj_pos, Vec2):
-            return
+        type_id = int(proj.type_id)
+        proj_pos = proj.pos
         screen = self.world_to_screen(proj_pos)
-        life = float(getattr(proj, "life_timer", 0.0))
-        angle = float(getattr(proj, "angle", 0.0))
+        life = float(proj.life_timer)
+        angle = float(proj.angle)
 
         ctx = ProjectileDrawCtx(
             renderer=self,
@@ -866,16 +1039,14 @@ class WorldRenderer:
         rl.rl_set_texture(0)
         rl.end_blend_mode()
 
-    def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
+    def _draw_secondary_projectile(self, proj: SecondaryProjectile, *, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        proj_pos = getattr(proj, "pos", None)
-        if not isinstance(proj_pos, Vec2):
-            return
+        proj_pos = proj.pos
         screen = self.world_to_screen(proj_pos)
-        proj_type = int(getattr(proj, "type_id", 0))
-        angle = float(getattr(proj, "angle", 0.0))
+        proj_type = int(proj.type_id)
+        angle = float(proj.angle)
 
         ctx = SecondaryProjectileDrawCtx(
             renderer=self,
@@ -1123,11 +1294,24 @@ class WorldRenderer:
                 draw_entry(entry)
         rl.end_blend_mode()
 
-    def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+    def draw(
+        self,
+        *,
+        render_frame: RenderFrame | None = None,
+        draw_aim_indicators: bool = True,
+        entity_alpha: float = 1.0,
+    ) -> None:
+        self._render_frame = render_frame if render_frame is not None else self._world.build_render_frame()
+        try:
+            self._draw_with_active_frame(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
+        finally:
+            self._render_frame = None
+
+    def _draw_with_active_frame(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
+        camera = self._clamp_camera(self.camera, screen_size)
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
         scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0
@@ -1160,7 +1344,8 @@ class WorldRenderer:
             alpha_test = bool(getattr(self.ground, "alpha_test", True))
 
         with _maybe_alpha_test(bool(alpha_test)):
-            trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
+            trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
+            trooper_texture = self.creature_textures.get(trooper_asset) if trooper_asset is not None else None
             particles_texture = self.particles_texture
             monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
             monster_vision_src: rl.Rectangle | None = None
@@ -1200,7 +1385,7 @@ class WorldRenderer:
                             max(0.0, cell_h - 2.0),
                         )
 
-            def draw_player(player: object) -> None:
+            def draw_player(player: PlayerState) -> None:
                 if trooper_texture is not None:
                     self._draw_player_trooper_sprite(
                         trooper_texture,

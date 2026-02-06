@@ -14,7 +14,15 @@ from ...gameplay import (
     perks_rebuild_available,
     weapon_refresh_available,
 )
-from ...replay import PerkMenuOpenEvent, PerkPickEvent, Replay, UnknownEvent, unpack_input_flags, warn_on_game_version_mismatch
+from ...replay import (
+    PerkMenuOpenEvent,
+    PerkPickEvent,
+    Replay,
+    UnknownEvent,
+    unpack_packed_player_input,
+    unpack_input_flags,
+    warn_on_game_version_mismatch,
+)
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ..world_state import WorldState
 from .common import (
@@ -166,8 +174,7 @@ def run_survival_replay(
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, aim_vec, flags = packed[:4]
-            ax, ay = aim_vec[:2]
+            mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             player_inputs.append(
                 PlayerInput(

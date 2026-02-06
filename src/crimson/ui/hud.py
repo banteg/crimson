@@ -942,7 +942,11 @@ def draw_hud_overlay(
                 max_y = max(max_y, dst.y + dst.height)
 
             weapon_entry = WEAPON_BY_ID.get(int(hud_player.weapon_id))
-            weapon_name = weapon_entry.name if weapon_entry is not None else f"weapon_{int(hud_player.weapon_id)}"
+            weapon_name = (
+                weapon_entry.name or f"weapon_{int(hud_player.weapon_id)}"
+                if weapon_entry is not None
+                else f"weapon_{int(hud_player.weapon_id)}"
+            )
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
             text_pos = aux_text_base_pos + aux_step * float(idx)
             _draw_text(

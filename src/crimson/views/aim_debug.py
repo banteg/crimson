@@ -178,7 +178,7 @@ class AimDebugView:
         if self._draw_test_circle:
             cx = float(rl.get_screen_width()) * 0.5
             cy = float(rl.get_screen_height()) * 0.5
-            self._world._draw_aim_circle(center=Vec2(cx, cy), radius=self._test_circle_radius)
+            self._world.renderer._draw_aim_circle(center=Vec2(cx, cy), radius=self._test_circle_radius)
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:
@@ -191,7 +191,7 @@ class AimDebugView:
             aim_pos = self._player.aim
             dist = (aim_pos - self._player.pos).length()
             radius = max(6.0, dist * self._player.spread_heat * 0.5)
-            camera, view_scale = self._world._world_params()
+            camera, view_scale = self._world.renderer._world_params()
             scale = view_scale.avg_component()
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim_pos)

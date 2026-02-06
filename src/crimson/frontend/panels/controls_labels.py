@@ -54,14 +54,18 @@ def _read_aim_schemes(config_data: Mapping[str, object]) -> tuple[int, int, int,
     # Defaults from `config_init_defaults`: 0 (Mouse) for aim schemes.
     values = [0, 0, 0, 0]
 
-    try:
-        values[0] = int(config_data.get("unknown_44", 0) or 0)
-    except Exception:
-        values[0] = 0
-    try:
-        values[1] = int(config_data.get("unknown_48", 0) or 0)
-    except Exception:
-        values[1] = 0
+    def _coerce_int(value: object, default: int = 0) -> int:
+        if isinstance(value, bool):
+            return int(value)
+        if isinstance(value, (int, float, str, bytes, bytearray)):
+            try:
+                return int(value)
+            except Exception:
+                return default
+        return default
+
+    values[0] = _coerce_int(config_data.get("unknown_44"), 0)
+    values[1] = _coerce_int(config_data.get("unknown_48"), 0)
 
     raw = config_data.get("unknown_4c")
     if isinstance(raw, (bytes, bytearray)) and len(raw) >= 8:

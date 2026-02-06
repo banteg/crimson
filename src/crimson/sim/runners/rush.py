@@ -8,7 +8,7 @@ from ...camera import camera_shake_update
 from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
 from ...gameplay import PlayerInput, perks_rebuild_available, weapon_assign_player, weapon_refresh_available
-from ...replay import Replay, unpack_input_flags, warn_on_game_version_mismatch
+from ...replay import Replay, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapons import WeaponId
 from ..world_state import WorldState
@@ -108,8 +108,7 @@ def run_rush_replay(
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, aim_vec, flags = packed[:4]
-            ax, ay = aim_vec[:2]
+            mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, _reload_pressed = unpack_input_flags(int(flags))
             player_inputs.append(
                 PlayerInput(

@@ -6,6 +6,7 @@ import random
 import os
 from pathlib import Path
 from dataclasses import dataclass
+from typing import cast
 
 import pyray as rl
 
@@ -442,7 +443,7 @@ class LightingDebugView:
         try:
             # Prefer raylib's default vertex shader to avoid attribute binding
             # mismatches across platforms/backends.
-            shader = rl.load_shader_from_memory(None, _SDF_SHADOW_FS_330)
+            shader = rl.load_shader_from_memory(cast(str, None), _SDF_SHADOW_FS_330)
         except Exception:
             try:
                 shader = rl.load_shader_from_memory(_SDF_SHADOW_VS_330, _SDF_SHADOW_FS_330)

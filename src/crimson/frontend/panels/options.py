@@ -49,11 +49,11 @@ class OptionsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state, title="Options", back_action="open_pause_menu")
         self._small_font: SmallFontData | None = None
-        self._rect_on: rl.Texture2D | None = None
-        self._rect_off: rl.Texture2D | None = None
-        self._check_on: rl.Texture2D | None = None
-        self._check_off: rl.Texture2D | None = None
-        self._button_tex: rl.Texture2D | None = None
+        self._rect_on: rl.Texture | None = None
+        self._rect_off: rl.Texture | None = None
+        self._check_on: rl.Texture | None = None
+        self._check_off: rl.Texture | None = None
+        self._button_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
@@ -244,8 +244,8 @@ class OptionsMenuView(PanelMenuView):
         slider_id: str,
         slider: SliderState,
         pos: Vec2,
-        rect_on: rl.Texture2D,
-        rect_off: rl.Texture2D,
+        rect_on: rl.Texture,
+        rect_off: rl.Texture,
         scale: float,
     ) -> bool:
         rect_w = float(rect_on.width) * scale
@@ -434,8 +434,8 @@ class OptionsMenuView(PanelMenuView):
         self,
         slider: SliderState,
         pos: Vec2,
-        rect_on: rl.Texture2D,
-        rect_off: rl.Texture2D,
+        rect_on: rl.Texture,
+        rect_off: rl.Texture,
         rect_w: float,
         rect_h: float,
     ) -> None:

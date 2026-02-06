@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
-from typing import Callable, Protocol
+from typing import Callable, Protocol, Sequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -160,7 +160,7 @@ class ParticlePool:
         self,
         dt: float,
         *,
-        creatures: list[_CreatureForParticles] | None = None,
+        creatures: Sequence[_CreatureForParticles] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         kill_creature: CreatureKillHandler | None = None,
         fx_queue: FxQueue | None = None,

@@ -11,10 +11,10 @@ from .types import GameState
 
 @dataclass(slots=True)
 class MenuAssets:
-    sign: rl.Texture2D | None
-    item: rl.Texture2D | None
-    panel: rl.Texture2D | None
-    labels: rl.Texture2D | None
+    sign: rl.Texture | None
+    item: rl.Texture | None
+    panel: rl.Texture | None
+    labels: rl.Texture | None
 
 
 def _load_resource_entries(state: GameState) -> dict[str, bytes]:

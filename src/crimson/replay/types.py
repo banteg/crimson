@@ -44,6 +44,45 @@ PackedPlayerInput: TypeAlias = list[float | int | list[float]]
 PackedTickInputs: TypeAlias = list[PackedPlayerInput]
 
 
+def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float, float, float, int]:
+    """Decode a compact replay input row into scalar values.
+
+    Stored shape is `[move_x, move_y, [aim_x, aim_y], flags]`.
+    Returns `(move_x, move_y, aim_x, aim_y, flags)` with tolerant numeric coercion.
+    """
+
+    def _num_f(value: object) -> float:
+        if isinstance(value, (int, float)):
+            return float(value)
+        return 0.0
+
+    def _num_i(value: object) -> int:
+        if isinstance(value, bool):
+            return int(value)
+        if isinstance(value, int):
+            return int(value)
+        if isinstance(value, float):
+            return int(value)
+        return 0
+
+    if len(packed) < 4:
+        return 0.0, 0.0, 0.0, 0.0, 0
+
+    mx = _num_f(packed[0])
+    my = _num_f(packed[1])
+    flags = _num_i(packed[3])
+
+    aim_raw = packed[2]
+    if isinstance(aim_raw, list) and len(aim_raw) >= 2:
+        ax = _num_f(aim_raw[0])
+        ay = _num_f(aim_raw[1])
+    else:
+        ax = 0.0
+        ay = 0.0
+
+    return mx, my, ax, ay, flags
+
+
 @dataclass(frozen=True, slots=True)
 class ReplayStatusSnapshot:
     quest_unlock_index: int = 0

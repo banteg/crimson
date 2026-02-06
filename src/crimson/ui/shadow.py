@@ -10,7 +10,7 @@ UI_SHADOW_TINT = rl.Color(0x44, 0x44, 0x44, 0x44)
 
 def draw_ui_quad_shadow(
     *,
-    texture: rl.Texture2D,
+    texture: rl.Texture,
     src: rl.Rectangle,
     dst: rl.Rectangle,
     origin: rl.Vector2,

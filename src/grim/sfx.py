@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import random
-from typing import Iterable
+from typing import Iterable, cast
 
 import pyray as rl
 
@@ -180,7 +180,7 @@ def _load_sample(state: SfxState, key: str) -> SfxSample | None:
         if data is None:
             return None
         file_type = Path(entry_name).suffix.lower()
-        wave = rl.load_wave_from_memory(file_type, data, len(data))
+        wave = rl.load_wave_from_memory(file_type, cast(str, data), len(data))
         source = rl.load_sound_from_wave(wave)
         rl.unload_wave(wave)
 
@@ -214,8 +214,8 @@ def play_sfx(
         base = _derive_sfx_base(resolved) or resolved
         variants = state.variants.get(base)
         if variants:
-            rng = rng or random
-            resolved = rng.choice(variants)
+            choice = rng.choice if rng is not None else random.choice
+            resolved = choice(variants)
 
     sample = _load_sample(state, resolved)
     if sample is None:
