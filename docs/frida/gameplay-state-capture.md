@@ -41,6 +41,15 @@ Just shortcut (Windows VM):
 just frida-gameplay-state-capture
 ```
 
+Reduce the capture into compact summaries:
+
+```text
+uv run scripts/gameplay_state_capture_reduce.py \
+  --log artifacts/frida/share/gameplay_state_capture.jsonl \
+  --out analysis/frida/gameplay_state_capture_summary.json \
+  --report analysis/frida/gameplay_state_capture_report.md --top 40
+```
+
 Recommended session:
 
 1. Main menu (`0`) -> Play menu (`1`) -> Options (`2`) -> Statistics (`4`).
@@ -51,3 +60,9 @@ Recommended session:
 
 This single pass yields enough evidence to continue field-level carving and type
 fixes without manual REPL interactions.
+
+Known caveat from the 2026-02-06 large run:
+
+- `mem_watch_enabled` was present, but no `mem_watch_access` events were emitted
+  (`0` hits in `analysis/frida/gameplay_state_capture_summary.json`). Plan to
+  re-check MemoryAccessMonitor range setup before the next dedicated watch run.

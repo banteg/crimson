@@ -776,6 +776,16 @@ function decodeUiOffset(offset) {
     block_offset: blockOffset,
   };
 
+  // Block 7 is not a menu-item template block; it contains adjacent UI globals.
+  if (block === 7) {
+    if (blockOffset === 0x00) out.field = "ui_cursor_anim_timer";
+    else if (blockOffset === 0x04) out.field = "ui_cursor_pulse_phase";
+    else if (blockOffset === 0x08) out.field = "ui_aim_enhancement_anim_timer";
+    else if (blockOffset === 0x0c) out.field = "ui_aim_enhancement_pulse_phase";
+    else if (blockOffset === 0x10) out.field = "quest_kill_progress_ratio";
+    if (out.field) return out;
+  }
+
   if (blockOffset < 0xe0) {
     const slot = Math.floor(blockOffset / STRIDES.uiSlot);
     const slotOff = blockOffset % STRIDES.uiSlot;
@@ -942,6 +952,14 @@ function rateLimitMemEvent() {
   }
 
   return true;
+}
+
+function normalizeMemOperation(operation) {
+  const op = String(operation || "").toLowerCase();
+  if (op === "w" || op === "write") return "write";
+  if (op === "r" || op === "read") return "read";
+  if (op === "x" || op === "execute") return "execute";
+  return op || "unknown";
 }
 
 function maybeEmitModeTick(name) {
@@ -1542,7 +1560,8 @@ function installMemWatch() {
     MemoryAccessMonitor.enable(ranges, {
       onAccess(details) {
         if (!details || !details.address) return;
-        if (CONFIG.memWatchWritesOnly && details.operation !== "write") return;
+        const operation = normalizeMemOperation(details.operation);
+        if (CONFIG.memWatchWritesOnly && operation !== "write") return;
         if (!rateLimitMemEvent()) return;
 
         const staticVa = runtimeToStatic(details.address);
@@ -1562,7 +1581,7 @@ function installMemWatch() {
         const evt = {
           event: "mem_watch_access",
           range: range.id,
-          operation: details.operation,
+          operation: operation,
           thread_id: details.threadId,
           address: details.address.toString(),
           static_va: toHex(staticVa, 8),

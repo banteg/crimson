@@ -3704,6 +3704,41 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004902e8",
+      "comment": "UI cursor animation timer incremented by frame_dt in ui_cursor_render.",
+      "name": "ui_cursor_anim_timer",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004902ec",
+      "comment": "UI cursor pulse phase accumulator (+= frame_dt * 1.1) fed through sin/pow for additive glow alpha in ui_cursor_render.",
+      "name": "ui_cursor_pulse_phase",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004902f0",
+      "comment": "Aim-enhancement overlay animation timer incremented by frame_dt in ui_render_aim_enhancement.",
+      "name": "ui_aim_enhancement_anim_timer",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004902f4",
+      "comment": "Aim-enhancement pulse phase accumulator (+= frame_dt * 0.6) used by ui_render_aim_enhancement.",
+      "name": "ui_aim_enhancement_pulse_phase",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004902f8",
+      "comment": "Quest HUD progress fill ratio (kills / (spawned + queued)) passed to ui_draw_progress_bar in ui_elements_update_and_render.",
+      "name": "quest_kill_progress_ratio",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x00490300",
       "comment": "Smoothed survival XP value used by HUD progress display.",
       "name": "survival_xp_smoothed",
@@ -3907,25 +3942,29 @@
       "address": "0x00490b70",
       "comment": "Per-player current weapon id (player_health + 0x29c)",
       "name": "player_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b74",
-      "comment": "Per-player clip size (player_health + 0x2a0)",
+      "comment": "Per-player clip size (float slot; runtime capture shows values like 10.0/12.0/25.0 at player_health + 0x2a0).",
       "name": "player_clip_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b78",
       "comment": "Per-player reload active flag (player_health + 0x2a4)",
       "name": "player_reload_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b7c",
-      "comment": "Per-player current ammo (player_health + 0x2a8)",
+      "comment": "Per-player current ammo (float slot; runtime capture shows values like 0.0..30.0 at player_health + 0x2a8).",
       "name": "player_ammo",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b80",
@@ -3949,25 +3988,29 @@
       "address": "0x00490b8c",
       "comment": "Per-player alt weapon id (player_health + 0x2b8)",
       "name": "player_alt_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b90",
-      "comment": "Per-player alt clip size (player_health + 0x2bc)",
+      "comment": "Per-player alt clip size (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_clip_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b94",
       "comment": "Per-player alt reload active flag (player_health + 0x2c0)",
       "name": "player_alt_reload_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b98",
-      "comment": "Per-player alt ammo count (player_health + 0x2c4)",
+      "comment": "Per-player alt ammo count (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_ammo",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b9c",
