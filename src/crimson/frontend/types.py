@@ -16,10 +16,12 @@ class GameState(Protocol):
     assets_dir: Path
     rng: random.Random
     config: Any
+    status: Any
     preserve_bugs: bool
 
     texture_cache: Any
     audio: Any
+    resource_paq: Path
     logos: Any
     console: Any
 
