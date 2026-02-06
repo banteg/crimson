@@ -101,6 +101,9 @@ Runtime verification (Frida):
 - `width = 512.0`
 - `height = 64.0`
 - `offset = (-72.0, -60.0)`
+- Template global: `ui_menu_item_element` (`0x0048fba8`)
+  with mode/texture fields `ui_menu_item_element_mode` (`0x0048fc8c`) and
+  `ui_menu_item_element_texture_handle` (`0x0048fc88`).
 
 The pivot is intentionally offset so the element can rotate in from the left.
 
@@ -111,6 +114,9 @@ This is **not used in state 0** (but used by other menus/screens):
 - `width = 512.0`
 - `height = 256.0`
 - `offset = (20.0, -82.0)`
+- Template global: `ui_menu_panel_template` (`0x0048fc90`)
+  with mode/texture fields `ui_menu_panel_template_mode` (`0x0048fd74`) and
+  `ui_menu_panel_template_texture_handle` (`0x0048fd70`).
 
 ### Panel screen animation (Play Game / Options)
 
@@ -124,10 +130,10 @@ In `ui_menu_layout_init` these elements have `render_mode = 1` (element+0x4 == 1
 
 Known positions (before widescreen shift):
 
-- Play Game (state `1`, screen update `sub_44ed80`):
+- Play Game (state `1`, screen update `play_game_menu_update`):
   - panel: `(-45, 210)`
   - back: `(-55, 462)`
-- Options (state `2`, screen update `sub_4475d0`):
+- Options (state `2`, screen update `options_menu_update`):
   - panel: `(-45, 210)`
   - back: `(-55, 430)`
 
@@ -165,6 +171,8 @@ Notes:
 - `mods_any_available()` gates the `MODS` button in full version builds.
 - A string config entry `grim_get_config_var(100)` controls whether the
   `OTHER GAMES` slot is present, and swaps table indices `6` and `7`.
+- `main_menu_full_version_layout_latch` (`0x00486faa`) prevents reapplying the
+  full-version position/UV adjustments after they have run once.
 
 ## Base positions and timings (`ui_menu_layout_init @ 0x0044fcb0`)
 

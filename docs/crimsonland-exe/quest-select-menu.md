@@ -6,7 +6,7 @@ tags:
 # Quest select menu (state 0x0b)
 
 This page documents the classic Crimsonland.exe **Quest selection** screen
-(transition target `0x0b`), updated by `sub_447d40`.
+(transition target `0x0b`), updated by `quest_select_menu_update`.
 
 The screen lets the player:
 
@@ -15,7 +15,16 @@ The screen lets the player:
 - toggle Hardcore after reaching stage 5 (unlock index >= 40)
 - optionally display per-quest completion stats with `F1`
 
-## Anchor coordinates (from `sub_447d40`)
+State globals recovered from `quest_select_menu_update`:
+
+- `quest_select_stage_major` (`0x00478e58`): current selected stage (1..5)
+- `quest_select_stage_minor_index` (`0x004d79d8`): current selected quest row (0..9)
+- `quest_select_menu_init_flags` (`0x004d76a0`): one-shot setup bitfield for static
+  menu widgets/colors
+- `quest_select_screen_flags` (`0x004d79d4`): runtime setup bitfield for the
+  Hardcore checkbox and Back button blocks
+
+## Anchor coordinates (from `quest_select_menu_update`)
 
 The function builds its layout from two base sums:
 
@@ -111,4 +120,3 @@ A UI button (`ui_button_update`) labeled `"Back"` returns to the Play Game menu 
 
 - x: `list_x + 148`
 - y: `y_after_list + 12`
-

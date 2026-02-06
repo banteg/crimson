@@ -8,11 +8,29 @@ tags:
 This is the classic 1.9.93 online leaderboard client logic as recovered from
 static analysis. The implementation lives in two threads:
 
-- High score submit/receive thread: `0x0042d0e0` (logs "beginthread () highscores thread.")
-- Version check thread: `0x0042d8a0` (logs "beginthread () (version check)")
+- High score submit/receive thread: `highscore_sync_worker` (`0x0042d0e0`)
+  (logs "beginthread () highscores thread.")
+- Version check thread: `statistics_update_check_worker` (`0x0042d8a0`)
+  (logs "beginthread () (version check)")
 
 The client uses WinINet (`InternetOpenA`, `InternetConnectA`, `HttpOpenRequestA`,
 `HttpSendRequestA`, `InternetReadFile`) and sends/receives raw binary payloads.
+
+## Shared state globals
+
+- `online_sync_status` (`0x004d11f0`): cross-screen worker status (`0` idle,
+  `1..5` progress/done, `6` failed).
+- `update_notice_url` (`0x004d11f4`): URL staged by update-check worker.
+- `update_notice_pending` (`0x004d11f8`): latch indicating update notice/open
+  path is active.
+- `update_notice_open_requested` (`0x00480838`): set when the in-UI
+  "Get the update" button is pressed.
+- `highscore_batch_sync_mode` (`0x004d11f9`): Shift-modified "update all /
+  receive all" mode that accelerates worker delays for batch cycling.
+- `highscore_batch_sync_stage_index` (`0x004ccb58`): stage/mode cursor used by
+  batch sync to iterate quest/game-mode combinations.
+- `highscore_post_sync_update_check_latch` (`0x004d1218`): one-shot guard for
+  the follow-up version-check worker after sync completion.
 
 ## HTTP endpoints
 

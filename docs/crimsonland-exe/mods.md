@@ -14,6 +14,20 @@ and expects two exports: `CMOD_GetInfo` and `CMOD_GetMod`.
 - It searches the filesystem with `mods\*.dll` (`FindFirstFileA` / `FindNextFileA`).
 - In `game_state_set` (`0x004461c0`), this boolean gates whether the mods entry
   is enabled in the main menu flow.
+- Runtime latches in `plugin_runtime_update_and_render`:
+  - `plugin_runtime_needs_init` (`0x00471304`) runs plugin `Init()` once after state entry.
+  - `plugin_runtime_active_latch` (`0x004824d1`) keeps pause/resume callbacks on the plugin path.
+
+## Mods menu state globals
+
+`mods_menu_update` (`0x0040e9a0`) uses these recovered globals:
+
+- `mods_menu_init_flags` (`0x00481bb8`): one-shot setup guards for the list
+  widget and action buttons.
+- `mods_menu_entry_count` (`0x004824dc`): discovered DLL count while scanning
+  `mods\\*.dll` (clamped to 31 entries).
+- `mods_menu_selected_info` (`0x004824e0`): pointer to the currently selected
+  `mod_info_t` used for the metadata panel and Launch gating.
 
 ## Loading a mod info block
 
@@ -115,6 +129,10 @@ within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 | `0x7c` | `INP_GetPressedChar` | `mod_api_inp_get_pressed_char` (`0x0040e610`) | Bridges to `grim_get_key_char`. |
 | `0x80` | `INP_GetKeyName` | `mod_api_inp_get_key_name` (`0x0040e680`) | Bridges to `input_key_name`. |
 | `0x84` | `CL_EnterMenu` | `mod_api_cl_enter_menu` (`0x0040e690`) | Only handles `"game_pause"`. |
+
+`mod_api_gfx_batch_open` (`0x004824d0`) is the internal batching latch toggled
+by `GFX_Begin`/`GFX_End`; `GFX_Quad`, `GFX_QuadRot`, and `GFX_DrawQuads` use it
+to decide whether to emit implicit `grim_begin_batch`/`grim_end_batch`.
 
 ## Open questions
 

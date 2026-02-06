@@ -495,7 +495,7 @@
     "address": "0x00409890",
     "name": "bonus_apply",
     "signature": "void bonus_apply(int player_index, bonus_entry_t *bonus_entry)",
-    "comment": "applies a picked bonus to the player and spawns related effects"
+    "comment": "applies a picked bonus to the player and spawns related effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play id is 62 (19/19); sfx_play_panned cluster includes ids 56/59/60."
   },
   {
     "program": "crimsonland.exe",
@@ -523,7 +523,7 @@
     "address": "0x0040aab0",
     "name": "gameplay_update_and_render",
     "signature": "void gameplay_update_and_render(void)",
-    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI)"
+    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI). Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (346/346)."
   },
   {
     "program": "crimsonland.exe",
@@ -884,6 +884,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040e9a0",
+    "name": "mods_menu_update",
+    "signature": "void mods_menu_update(void)",
+    "comment": "mods browser/menu callback for GAME_STATE_MODS_MENU: lists mods\\*.dll, previews metadata, and launches the selected mod"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
     "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
@@ -908,21 +915,21 @@
     "address": "0x0040ffc0",
     "name": "game_over_screen_update",
     "signature": "void game_over_screen_update(void)",
-    "comment": "game over flow: high score entry, results text, and navigation buttons"
+    "comment": "game over flow: high score entry, results text, and navigation buttons. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (714/716)."
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004107e0",
     "name": "quest_failed_screen_update",
     "signature": "void quest_failed_screen_update(void)",
-    "comment": "quest failure screen: retry options and navigation"
+    "comment": "quest failure screen: retry options and navigation. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (482/483)."
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00410d20",
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
-    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
+    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989)."
   },
   {
     "program": "crimsonland.exe",
@@ -1034,7 +1041,7 @@
     "address": "0x00413430",
     "name": "player_start_reload",
     "signature": "void player_start_reload(void)",
-    "comment": "starts reload for the active player, sets timers, and plays SFX"
+    "comment": "starts reload for the active player, sets timers, and plays SFX. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned id is 35 (15/20)."
   },
   {
     "program": "crimsonland.exe",
@@ -1048,7 +1055,7 @@
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
-    "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+    "comment": "per-player gameplay update: movement, firing, status timers, and effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 34 and 37 (with secondary 30)."
   },
   {
     "program": "crimsonland.exe",
@@ -1221,16 +1228,30 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041cfe0",
-    "name": "FUN_0041cfe0",
-    "signature": "int FUN_0041cfe0(int *arg1, int *arg2, char *arg3)",
-    "comment": "[binja] int32_t sub_41cfe0(int32_t* arg1, int32_t* arg2, char* arg3)"
+    "name": "dx_get_version_fallback_from_files",
+    "signature": "int dx_get_version_fallback_from_files(int *major, int *minor, char *letter)",
+    "comment": "fallback DirectX version probe: reads version info from system DLLs when dxdiag COM query is unavailable"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041db50",
-    "name": "FUN_0041db50",
-    "signature": "int FUN_0041db50(uint arg1, int *arg2)",
-    "comment": "[binja] int32_t sub_41db50(uint32_t arg1, int32_t* arg2)"
+    "name": "win32_file_get_version_words",
+    "signature": "int win32_file_get_version_words(char *file_path, uint *out_version_words)",
+    "comment": "reads VS_FIXEDFILEINFO from a PE file; writes {LS,MS} version dwords to out_version_words[0..1]"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc10",
+    "name": "dx_version_pack_4x16",
+    "signature": "unsigned long long dx_version_pack_4x16(int major, uint minor, int patch_major, uint patch_minor)",
+    "comment": "packs four 16-bit version components into {MS,LS} dwords for comparison"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc50",
+    "name": "dx_version_compare_4x16",
+    "signature": "int dx_version_compare_4x16(uint current_ls, uint current_ms, uint required_ls, uint required_ms)",
+    "comment": "compares packed {MS,LS} versions; returns 1 when current is newer, -1 when older, 0 when equal"
   },
   {
     "program": "crimsonland.exe",
@@ -1510,7 +1531,7 @@
     "address": "0x00420b90",
     "name": "projectile_update",
     "signature": "void projectile_update(void)",
-    "comment": "updates projectile movement, collisions, and hit effects"
+    "comment": "updates projectile movement, collisions, and hit effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned cluster is 54/51/53/55/52/50."
   },
   {
     "program": "crimsonland.exe",
@@ -1531,7 +1552,7 @@
     "address": "0x00425e50",
     "name": "player_take_damage",
     "signature": "void player_take_damage(int player_index, float damage)",
-    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects"
+    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 0/2/1."
   },
   {
     "program": "crimsonland.exe",
@@ -1751,6 +1772,20 @@
     "name": "crimsonland_main",
     "signature": "int crimsonland_main(void)",
     "comment": "primary game init/run/shutdown sequence"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042d0e0",
+    "name": "highscore_sync_worker",
+    "signature": "void highscore_sync_worker(void *arg)",
+    "comment": "background worker started from highscore_screen_update to submit/receive online highscore payloads"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042d8a0",
+    "name": "statistics_update_check_worker",
+    "signature": "void statistics_update_check_worker(void *arg)",
+    "comment": "background worker started from statistics/highscore flows to check for version updates and stage update notice URL state"
   },
   {
     "program": "crimsonland.exe",
@@ -2830,14 +2865,14 @@
     "program": "crimsonland.exe",
     "address": "0x0043d9b0",
     "name": "ui_segmented_slider_update",
-    "signature": "int ui_segmented_slider_update(float *xy, int *state)",
+    "signature": "int ui_segmented_slider_update(float *xy, ui_segmented_slider_t *state)",
     "comment": "updates a segmented slider widget (focus/mouse/keys), clamps value to [min..max], and renders off/on segments"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043dc80",
     "name": "ui_checkbox_update",
-    "signature": "int ui_checkbox_update(float *xy, char *checkbox)",
+    "signature": "int ui_checkbox_update(float *xy, ui_checkbox_t *checkbox)",
     "comment": "draws a checkbox widget, handles hover/focus, toggles on click"
   },
   {
@@ -2851,29 +2886,50 @@
     "program": "crimsonland.exe",
     "address": "0x0043e5e0",
     "name": "ui_menu_item_update",
-    "signature": "int ui_menu_item_update(float *xy, int *item)",
-    "comment": "draws a text menu item, updates hover/press state, and returns 1 when activated"
+    "signature": "int ui_menu_item_update(float *xy, ui_menu_item_t *item)",
+    "comment": "draws a text menu item, updates hover/press state, and returns 1 when activated. Runtime capture (2026-02-06 gameplay_state_capture): emits sfx_play id 63 on activation paths."
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043e830",
     "name": "ui_button_update",
     "signature": "int ui_button_update(float *xy, ui_button_t *button)",
-    "comment": "draws a UI button, updates hover/press state, and returns 1 when activated"
+    "comment": "draws a UI button, updates hover/press state, and returns 1 when activated. Runtime capture (2026-02-06 gameplay_state_capture): emits sfx_play id 63 (38/38)."
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043ecf0",
     "name": "ui_text_input_update",
-    "signature": "int ui_text_input_update(float *xy, int *input_state)",
+    "signature": "int ui_text_input_update(float *xy, ui_text_input_state_t *input_state)",
     "comment": "updates a text input field: focus, input polling, sfx, and rendering"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043efc0",
     "name": "ui_list_widget_update",
-    "signature": "int ui_list_widget_update(float *xy, char *list)",
+    "signature": "int ui_list_widget_update(float *xy, ui_list_widget_t *list)",
     "comment": "draws a list widget and updates selection/hover state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043f550",
+    "name": "statistics_menu_update",
+    "signature": "void statistics_menu_update(void)",
+    "comment": "statistics menu callback for GAME_STATE_STATISTICS_MENU: renders session totals and navigation buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440110",
+    "name": "unlocked_weapons_database_update",
+    "signature": "void unlocked_weapons_database_update(void)",
+    "comment": "state callback for GAME_STATE_WEAPON_DATABASE (Unlocked Weapons Database)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440960",
+    "name": "unlocked_perks_database_update",
+    "signature": "void unlocked_perks_database_update(void)",
+    "comment": "state callback for GAME_STATE_PERK_DATABASE (Unlocked Perks Database)"
   },
   {
     "program": "crimsonland.exe",
@@ -2909,6 +2965,13 @@
     "name": "ui_update_notice_update",
     "signature": "void ui_update_notice_update(float *xy, float alpha)",
     "comment": "renders the update-available notice and its button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004423d0",
+    "name": "highscore_screen_update",
+    "signature": "void highscore_screen_update(void)",
+    "comment": "high scores screen callback for GAME_STATE_HIGHSCORES: list filters, profile list, and online score actions"
   },
   {
     "program": "crimsonland.exe",
@@ -3020,7 +3083,7 @@
     "address": "0x00446170",
     "name": "ui_elements_reset_state",
     "signature": "void ui_elements_reset_state(void)",
-    "comment": "clears active flags and hover timers on all UI elements"
+    "comment": "clears active flags, hover timers, and callback pointers on all UI elements"
   },
   {
     "program": "crimsonland.exe",
@@ -3033,7 +3096,7 @@
     "program": "crimsonland.exe",
     "address": "0x004461c0",
     "name": "game_state_set",
-    "signature": "void game_state_set(int state_id)",
+    "signature": "void game_state_set(game_state_id_t state_id)",
     "comment": "resets UI state, updates game_state_prev/id, and seeds UI elements for the new state"
   },
   {
@@ -3041,7 +3104,7 @@
     "address": "0x00446900",
     "name": "ui_element_update",
     "signature": "void ui_element_update(ui_element_t *element)",
-    "comment": "updates hover/click/animation for a UI element and fires callbacks"
+    "comment": "updates hover/click/animation for a UI element and fires callbacks. Runtime capture (2026-02-06 gameplay_state_capture): mostly emits sfx_play id 64 (95/108), with id 63 as secondary."
   },
   {
     "program": "crimsonland.exe",
@@ -3052,10 +3115,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447350",
+    "name": "ui_menu_main_click_mods",
+    "signature": "void ui_menu_main_click_mods(void)",
+    "comment": "main menu MODS click callback (sets ui_transition_direction=0 and game_state_pending=0x14)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447370",
     "name": "ui_menu_main_click_options",
     "signature": "void ui_menu_main_click_options(void)",
     "comment": "main menu OPTIONS click callback (sets ui_transition_direction=0 and game_state_pending=2)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447390",
+    "name": "ui_menu_main_click_statistics",
+    "signature": "void ui_menu_main_click_statistics(void)",
+    "comment": "main menu STATISTICS click callback (queues state 4 and switches menu music to shortie)",
     "create": true
   },
   {
@@ -3090,10 +3169,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447490",
+    "name": "ui_menu_pause_click_resume",
+    "signature": "void ui_menu_pause_click_resume(void)",
+    "comment": "pause menu RESUME callback: queues gameplay/Typ-o resume, or plugin runtime when opened from plugin pause context",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004474e0",
+    "name": "ui_menu_pause_click_main_menu",
+    "signature": "void ui_menu_pause_click_main_menu(void)",
+    "comment": "pause menu MAIN MENU callback: exits plugin runtime if active, then returns to main menu/mods and restores menu music",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447580",
     "name": "config_apply_detail_preset",
     "signature": "void config_apply_detail_preset(void)",
     "comment": "Applies config_detail_preset (\"Graphics detail\" 1..5) to the config_fx_detail_flag0/1/2 bytes."
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004475d0",
+    "name": "options_menu_update",
+    "signature": "void options_menu_update(void)",
+    "comment": "options menu callback for GAME_STATE_OPTIONS_MENU: sound/music/detail controls plus controls/back navigation",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -3111,6 +3214,14 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447d40",
+    "name": "quest_select_menu_update",
+    "signature": "void quest_select_menu_update(void)",
+    "comment": "quest select menu callback for GAME_STATE_QUEST_SELECT: quest stage picker, mode toggles, and start/back actions",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00448b50",
     "name": "input_detect_active_analog_axis",
     "signature": "int input_detect_active_analog_axis(void)",
@@ -3118,10 +3229,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00448cd0",
+    "name": "controls_menu_update",
+    "signature": "void controls_menu_update(void)",
+    "comment": "controls/config menu callback for GAME_STATE_CONTROLS_MENU: device profile, aiming/movement scheme, and key/axis rebinding",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0044ecf0",
     "name": "vec2_add_out",
     "signature": "float * vec2_add_out(float *dst, float *lhs)",
     "comment": "writes this + lhs into dst and returns dst"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed80",
+    "name": "play_game_menu_update",
+    "signature": "void play_game_menu_update(void)",
+    "comment": "play game menu callback for GAME_STATE_PLAY_GAME_MENU: mode buttons, hardcore/tutorial toggles, and gameplay start routing",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -3136,6 +3263,22 @@
     "name": "ui_element_layout_calc",
     "signature": "float ui_element_layout_calc(float arg1)",
     "comment": "[binja] float sub_44fb50(float arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fc70",
+    "name": "ui_menu_main_click_buy_full_version",
+    "signature": "void ui_menu_main_click_buy_full_version(void)",
+    "comment": "shareware BUY NOW click callback: latches offer flags and opens http://buy.crimsonland.com",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fca0",
+    "name": "ui_menu_main_click_recheck_full_version",
+    "signature": "void ui_menu_main_click_recheck_full_version(void)",
+    "comment": "marks a pending full-version recheck flag processed in the frame loop",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -3163,7 +3306,7 @@
     "address": "0x00452d40",
     "name": "weapon_assign_player",
     "signature": "void weapon_assign_player(int player_index, int weapon_id)",
-    "comment": "assigns a weapon to a player and resets ammo timers"
+    "comment": "assigns a weapon to a player and resets ammo timers. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_panned cluster is led by id 31 (with 35/49 as secondary)."
   },
   {
     "program": "crimsonland.exe",

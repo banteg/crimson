@@ -72,12 +72,49 @@ Global bonus timers used by `player_update` and the main loop:
   - Cached Doctor target creature id for the HUD target-health overlay (`-1` when inactive).
 - `quest_stage_banner_timer_ms` (`DAT_00487244`)
   - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
+- `player_spread_damping_scalar` (`0x00473a40`)
+  - Shared spread-recovery multiplier used by both `player_update` and
+    `player_fire_weapon` (eased/clamped between `0.3` and `1.0`).
 - `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`DAT_00480850` / `DAT_00480898`)
   - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
 - `pause_keybind_help_alpha_ms` (`DAT_00487284`)
   - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
+- `player_overlay_suppressed_latch` (`0x0048727c`)
+  - Overlay suppression gate checked by `player_render_overlays`; set on
+    highscore-return path and cleared by `gameplay_reset_state`.
 - `time_played_ms` (`DAT_0048718c`)
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
+- `bonus_render_anim_phase` (`0x004aaf5c`)
+  - Phase accumulator advanced by `frame_dt * 1.3` in `bonus_render`; drives pickup icon pulse/rotation modulation.
+- `bonus_update_phase_accumulator` (`0x004aaf2c`)
+  - Bonus-update phase accumulator reset to `-1.0` in `gameplay_reset_state`; advanced only while non-negative in `bonus_update`.
+- `telekinetic_bonus_hover_timer_ms` (`0x004aaf60`)
+  - Per-player hover dwell timer used by `bonus_render`: increments while within `24` units of a pickup in gameplay,
+    then auto-applies the bonus at `> 650ms` when Telekinetic is active.
+- `projectile_update_tick` (`0x004aaf54`)
+  - Frame-local projectile update counter incremented once per `projectile_update` call.
+- `player_spread_damping_gate` (`0x004aaf34`)
+  - Branch gate for spread damping recovery in `player_update`: non-positive values ease
+    `player_spread_damping_scalar` toward `1.0`, positive values drive it down toward `0.3`.
+
+### Type lifts (2026-02-06)
+
+- Trigger/timer globals now explicitly type as `float`:
+  `perk_man_bomb_trigger_interval_s`, `perk_fire_cough_trigger_interval_s`,
+  `perk_hot_tempered_trigger_interval_s`, `bonus_reflex_boost_timer`,
+  `bonus_freeze_timer`, `bonus_weapon_power_up_timer`, `bonus_energizer_timer`,
+  and `bonus_double_xp_timer`.
+- Quest progression counters now explicitly type as integer scalars:
+  `quest_stage_major`, `quest_stage_minor`, `quest_unlock_index` (`u16`), and
+  `quest_unlock_index_full` (`u16`).
+- Highscore/progression tables now explicitly type as integer arrays:
+  `weapon_usage_time` (`unsigned int[64]`) and `quest_play_counts`
+  (`unsigned int[91]`).
+- Player helper globals now explicitly type as array/scalar slots:
+  `player_aux_timer` (`float[2]`), `player_aim_screen_x` (`float[4]`),
+  `player_name_length` (`int`), and the alternate keybind slots
+  (`player_alt_move_key_*`, `player_alt_turn_key_*`, `player_alt_fire_key`,
+  `player_alt_key_reserved_*`).
 
 ### Bonus HUD slots (active bonus list)
 
@@ -191,6 +228,10 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   sized `32×32`. The pulse alpha is
   `alpha = (pow(2.0, sin(t)) + 2.0) * 0.32` with `t += frame_dt * 1.1`. [static]
 
+  - `ui_analog_cursor_active` (`0x004808c8`) toggles this path for non-gameplay states:
+    it is set when aim/move stick magnitude exceeds `0.2`, cleared by real mouse motion,
+    and force-cleared in gameplay state `9`. [static]
+
   - Pulse blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=ONE` (`0x14=2`). [static]
   - Cursor blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=INVSRCALPHA` (`0x14=6`). [static]
 
@@ -230,6 +271,11 @@ shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 - **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`DAT_00490bcc`) > 0, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
   the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
+  Fire cadence/spread fallback and paired SFX come from:
+  `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
+  `fire_bullets_fallback_spread_heat` (`0x004d9048`),
+  `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
+  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
 
 - **Spawn guard:** `bonus_spawn_guard` is set while bonus/perk effects spawn
   projectiles to prevent bonus drops from chaining during those effect bursts.

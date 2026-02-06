@@ -53,6 +53,14 @@ Additional adjacent globals now mapped:
   slot (seeded to `ui_callback_noop` during layout init).
 - `ui_perk_prompt_levelup_element` (`0x0048f330`) is a nested UI block loaded
   from `ui\ui_textLevelUp.jaz` and shaped during layout init.
+- `ui_cursor_anim_timer` / `ui_cursor_pulse_phase`
+  (`0x004902e8` / `0x004902ec`) drive cursor glow pulse timing in
+  `ui_cursor_render`.
+- `ui_aim_enhancement_anim_timer` / `ui_aim_enhancement_pulse_phase`
+  (`0x004902f0` / `0x004902f4`) track aim overlay pulse timing in
+  `ui_render_aim_enhancement`.
+- `quest_kill_progress_ratio` (`0x004902f8`) stores the computed
+  `kills / (spawned + queued)` value fed into `ui_draw_progress_bar`.
 
 Template-pool globals (seeded in `ui_menu_template_pool_init`) are also mapped:
 
@@ -85,6 +93,10 @@ Observed transforms in `ui_menu_assets_init`:
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.
+
+Runtime cross-check (`analysis/frida/gameplay_state_capture_summary.json`) saw
+heavy writes to `0x004902f0/0x004902f4` and periodic writes to
+`0x004902e8/0x004902ec`, matching the static cursor/aim animation update paths.
 
 ## Struct view (ui_element_t)
 

@@ -29,7 +29,7 @@ see [State id glossary](state-ids.md).
 | Id | Label (inferred) | Evidence |
 | --- | --- | --- |
 | `0` | main menu / root UI | `game_state_set` (`FUN_004461c0(0)`), load step sets `game_state_id` (`DAT_00487270`) = `0` |
-| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI; runtime trace labels `state_11:#.#` |
+| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI and installs `quest_select_menu_update`; runtime trace labels `state_11:#.#` |
 | `5` | pause (console/mod pause) | `mod_api_cl_enter_menu` (`FUN_0040e690`) sets `game_state_pending` (`DAT_00487274`) = `5` on `game_pause` |
 | `6` | perk selection | direct `game_state_set` (`FUN_004461c0(6)`) when perk prompt is accepted |
 | `7` | game over / high score entry | `game_over_screen_update` checks `game_state_id` (`DAT_00487270`) == `7` |
@@ -40,9 +40,9 @@ see [State id glossary](state-ids.md).
 | `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe`; runtime labels `state_14:High scores - ...` |
 | `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits` |
 | `0x12` | Typ-o-Shooter gameplay | `typo_gameplay_update_and_render` (`FUN_004457c0`) updates when `game_state_id` (`DAT_00487270`) == `0x12` |
-| `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `sub_40e9a0` (mods menu); plugin flow queues `0x14` on exit/failure |
+| `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `mods_menu_update` (mods menu); plugin flow queues `0x14` on exit/failure |
 | `0x15` | final quest end note | dispatch routes to `game_update_victory_screen()` when `game_state_id == 0x15` |
-| `0x16` | modal/plugin flow | `plugin_runtime_update_and_render` drives a DLL-backed interface (`plugin_interface_ptr` (`DAT_004824d4`)) when `0x16` |
+| `0x16` | modal/plugin flow | `plugin_runtime_update_and_render` drives a DLL-backed interface (`plugin_interface_ptr`), with `plugin_runtime_needs_init` and `plugin_runtime_active_latch` controlling init/resume paths |
 | `0x1a` | credits secret flow | credits "Secret" button queues `0x1a`; `game_state_set(0x1a)` installs `credits_secret_alien_zookeeper_update` |
 
 ## Transition rules

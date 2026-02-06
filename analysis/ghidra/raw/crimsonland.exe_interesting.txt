@@ -32,6 +32,8 @@ Interesting Functions and Patterns
   console_cmd_open_url @ 0042a890
 
 [FILE related]
+  dx_get_version_fallback_from_files @ 0041cfe0
+  win32_file_get_version_words @ 0041db50
   config_ensure_file @ 0041f130
   ui_profile_menu_update @ 004443c0
   crt_lock_file @ 00463da5

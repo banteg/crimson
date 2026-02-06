@@ -54,6 +54,9 @@ Other states have their own loops but reuse the same render pass (`gameplay_rend
     - `ui_elements_update_and_render`
 
 14) Demo overlay and cursor handling.
+    - `ui_analog_cursor_active` (`DAT_004808c8`) enables stick-driven cursor movement in non-gameplay states.
+    - Screenshot capture key path uses `screenshot_file_index` (`DAT_004808c4`) and
+      `screenshot_filename_buf` (`DAT_0047f634`) to probe `shot_XX.bmp` filenames.
 
 Camera shake state (used by `camera_update`):
 

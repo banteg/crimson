@@ -57,11 +57,17 @@ typedef struct audio_entry_t {
 typedef audio_entry_t sfx_entry_t;
 typedef audio_entry_t music_entry_t;
 
+typedef unsigned short u16_t;
 typedef float sfx_cooldown_table_t[0x80];
 typedef LPDIRECTSOUNDBUFFER sfx_voice_table_t[0x20];
 typedef float sfx_volume_table_t[0x80];
 typedef char sfx_mute_flags_t[0x80];
 typedef int music_playlist_t[0x80];
+
+typedef unsigned int quest_play_counts_t[91];
+typedef unsigned int weapon_usage_time_t[64];
+typedef float player_aux_timer_t[2];
+typedef float player_aim_screen_xy_t[4];
 
 typedef struct player_input_t {
     int move_key_forward;
@@ -112,16 +118,16 @@ typedef struct player_state_t {
     float spread_heat;
     unsigned char _pad6[4];
     int weapon_id;
-    int clip_size;
+    float clip_size;
     int reload_active;
-    int ammo;
+    float ammo;
     float reload_timer;
     float shot_cooldown;
     float reload_timer_max;
     int alt_weapon_id;
-    int alt_clip_size;
+    float alt_clip_size;
     int alt_reload_active;
-    int alt_ammo;
+    float alt_ammo;
     float alt_reload_timer;
     float alt_shot_cooldown;
     float alt_reload_timer_max;
@@ -402,6 +408,8 @@ typedef struct effect_entry_t {
     float quad_data[29];
 } effect_entry_t;
 
+typedef void (*ui_element_callback_t)(void);
+
 typedef struct ui_element_t {
     unsigned char active;
     unsigned char enabled;
@@ -409,8 +417,8 @@ typedef struct ui_element_t {
     float pos_x;
     float pos_y;
     unsigned char _pad1[0x14];
-    void (*on_activate)(void);
-    unsigned char _pad2[4];
+    ui_element_callback_t on_activate;
+    ui_element_callback_t on_update;
     float quad0[14];
     float quad1[14];
     float quad2[14];
@@ -456,6 +464,60 @@ typedef struct ui_menu_item_subtemplate_block_t {
     int quad_mode;
 } ui_menu_item_subtemplate_block_t;
 
+// 0x10-byte text-item widget state consumed by ui_menu_item_update.
+typedef struct ui_menu_item_t {
+    char *label;
+    unsigned char hovered;
+    unsigned char activated;
+    unsigned char enabled;
+    unsigned char _pad0;
+    float hover_phase;
+    float alpha;
+} ui_menu_item_t;
+
+typedef ui_menu_item_t perk_selection_choice_item_table_t[10];
+typedef ui_menu_item_t controls_rebind_item_table_t[15];
+
+// 0x10-byte segmented slider state consumed by ui_segmented_slider_update.
+typedef struct ui_segmented_slider_t {
+    int value;
+    int max;
+    int min;
+    unsigned char enabled;
+    unsigned char _pad0[3];
+} ui_segmented_slider_t;
+
+// 0x08-byte checkbox state consumed by ui_checkbox_update.
+typedef struct ui_checkbox_t {
+    unsigned char checked;
+    unsigned char disabled;
+    unsigned char hovered;
+    unsigned char _pad0;
+    char *label;
+} ui_checkbox_t;
+
+// 0x1c-byte dropdown/list widget state consumed by ui_list_widget_update.
+typedef struct ui_list_widget_t {
+    unsigned char enabled;
+    unsigned char _pad0[3];
+    int open;
+    int selected_index;
+    char **items;
+    int item_count;
+    unsigned char hovered;
+    unsigned char _pad1[3];
+    int active_index;
+} ui_list_widget_t;
+
+// 0x14-byte text-input state consumed by ui_text_input_update.
+typedef struct ui_text_input_state_t {
+    char *text;
+    int cursor;
+    int max_chars;
+    int width_px;
+    float alpha;
+} ui_text_input_state_t;
+
 typedef struct ui_button_t {
     char *label;
     unsigned char hovered;
@@ -477,8 +539,67 @@ typedef struct credits_line_t {
 
 typedef credits_line_t credits_line_table_t[0x100];
 
+typedef enum game_mode_id_t {
+    GAME_MODE_SURVIVAL = 0x01,
+    GAME_MODE_RUSH = 0x02,
+    GAME_MODE_QUEST = 0x03,
+    GAME_MODE_TYPO_SHOOTER = 0x04,
+    GAME_MODE_TUTORIAL = 0x08,
+} game_mode_id_t;
+
+typedef enum game_state_id_t {
+    GAME_STATE_MAIN_MENU = 0x00,
+    GAME_STATE_PLAY_GAME_MENU = 0x01,
+    GAME_STATE_OPTIONS_MENU = 0x02,
+    GAME_STATE_CONTROLS_MENU = 0x03,
+    GAME_STATE_STATISTICS_MENU = 0x04,
+    GAME_STATE_PAUSE_MENU = 0x05,
+    GAME_STATE_PERK_SELECTION = 0x06,
+    GAME_STATE_GAME_OVER = 0x07,
+    GAME_STATE_QUEST_RESULTS = 0x08,
+    GAME_STATE_GAMEPLAY = 0x09,
+    GAME_STATE_QUIT_TRANSITION = 0x0A,
+    GAME_STATE_QUEST_SELECT = 0x0B,
+    GAME_STATE_QUEST_FAILED = 0x0C,
+    GAME_STATE_HIGHSCORE_LEGACY = 0x0D,
+    GAME_STATE_HIGHSCORES = 0x0E,
+    GAME_STATE_WEAPON_DATABASE = 0x0F,
+    GAME_STATE_PERK_DATABASE = 0x10,
+    GAME_STATE_CREDITS = 0x11,
+    GAME_STATE_TYPO_GAMEPLAY = 0x12,
+    GAME_STATE_MENU_LEGACY_VARIANT = 0x13,
+    GAME_STATE_MODS_MENU = 0x14,
+    GAME_STATE_FINAL_QUEST_END_NOTE = 0x15,
+    GAME_STATE_PLUGIN_RUNTIME = 0x16,
+    GAME_STATE_UNUSED_0X17 = 0x17,
+    GAME_STATE_DEMO_UPSELL_GAMEPLAY = 0x18,
+    GAME_STATE_PENDING_IDLE_SENTINEL = 0x19,
+    GAME_STATE_CREDITS_SECRET = 0x1A,
+} game_state_id_t;
+
 typedef struct crimson_cfg_t {
-    unsigned char reserved0[0x0a8];
+    unsigned char sound_disabled;
+    unsigned char music_disabled;
+    unsigned char highscore_date_mode;
+    unsigned char highscore_duplicate_mode;
+    unsigned char hud_indicator_toggle[2];
+    unsigned char reserved0_06[0x08];
+    unsigned char fx_detail_flag0;
+    unsigned char reserved0_0f;
+    unsigned char fx_detail_flag1;
+    unsigned char fx_detail_flag2;
+    unsigned char reserved0_12[2];
+    int player_count;
+    game_mode_id_t game_mode;
+    int player_mode_flags;
+    unsigned char reserved0_20[0x24];
+    int aim_scheme;
+    unsigned char reserved0_48[0x28];
+    float texture_scale;
+    char player_name_buf[12];
+    int name_slot_selected;
+    int name_slot_count;
+    int name_slot_order[8];
     char saved_names[8][27];
     char player_name[32];
     int player_name_length;
@@ -503,7 +624,7 @@ typedef struct crimson_cfg_t {
     unsigned char score_load_gate;
     unsigned char reserved7[2];
     int detail_preset;
-    unsigned char reserved8[4];
+    float mouse_sensitivity;
     int key_pick_perk;
     int key_reload;
 } crimson_cfg_t;

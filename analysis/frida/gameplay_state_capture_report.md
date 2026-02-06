@@ -1,0 +1,276 @@
+# Gameplay state capture report
+
+- log: `artifacts/frida/share/gameplay_state_capture.jsonl`
+- size: `186216313` bytes
+- duration: `694.20` s
+
+## Event volume
+- `ui_element_render_input`: 300345
+- `ui_subtemplate_delta`: 55209
+- `perks_update_effects_delta`: 50097
+- `bonus_hud_slot_update_tick`: 40080
+- `quest_spawn_timeline_delta`: 7316
+- `sfx_play_exclusive`: 5544
+- `creature_update_all_tick`: 2504
+- `hud_update_and_render_tick`: 2504
+- `ui_render_hud_tick`: 2504
+- `ui_button_update_tick`: 1873
+- `projectile_update_tick`: 1669
+- `snapshot_compact`: 1411
+- `sfx_play_panned`: 1301
+- `quest_results_reveal_delta`: 1295
+- `projectile_spawn`: 649
+- `mode_tick`: 486
+- `snapshot_full`: 406
+- `sfx_play`: 290
+- `creature_spawn_template`: 80
+- `player_take_damage`: 57
+- `game_state_set`: 56
+- `quest_failed_screen_tick`: 46
+- `hook_ok`: 35
+- `bonus_apply`: 19
+- `weapon_assign_player`: 9
+- `bonus_hud_slot_activate`: 6
+- `ui_subtemplate_baseline`: 5
+- `quest_start_selected`: 3
+- `start`: 1
+- `mem_watch_enabled`: 1
+- `ready`: 1
+
+## State coverage
+- game_state_set targets:
+  - `9`: 10
+  - `0`: 6
+  - `1`: 6
+  - `4`: 5
+  - `14`: 4
+  - `2`: 4
+  - `7`: 4
+  - `8`: 3
+  - `3`: 2
+  - `5`: 2
+  - `6`: 2
+  - `11`: 2
+  - `15`: 1
+  - `16`: 1
+  - `17`: 1
+  - `26`: 1
+  - `12`: 1
+  - `10`: 1
+- top transitions:
+  - `1->9`: 4
+  - `0->1`: 3
+  - `2->3`: 2
+  - `3->2`: 2
+  - `9->1`: 2
+  - `9->6`: 2
+  - `6->9`: 2
+  - `9->7`: 2
+  - `7->14`: 2
+  - `14->7`: 2
+  - `7->0`: 2
+  - `9->8`: 2
+  - `8->9`: 2
+  - `0->0`: 1
+  - `0->4`: 1
+  - `4->14`: 1
+  - `14->4`: 1
+  - `4->15`: 1
+  - `15->4`: 1
+  - `4->16`: 1
+  - `16->4`: 1
+  - `4->17`: 1
+  - `17->26`: 1
+  - `26->4`: 1
+  - `4->0`: 1
+  - `0->2`: 1
+  - `2->0`: 1
+  - `9->5`: 1
+  - `5->2`: 1
+  - `2->5`: 1
+  - `5->9`: 1
+  - `1->11`: 1
+  - `11->9`: 1
+  - `8->14`: 1
+  - `14->8`: 1
+  - `9->12`: 1
+  - `12->11`: 1
+  - `11->1`: 1
+  - `1->0`: 1
+  - `0->10`: 1
+- snapshot state density:
+  - state `9`: 699
+  - state `17`: 245
+  - state `14`: 78
+  - state `0`: 73
+  - state `26`: 73
+  - state `3`: 67
+  - state `2`: 32
+  - state `8`: 31
+  - state `1`: 26
+  - state `7`: 23
+  - state `4`: 18
+  - state `6`: 13
+  - state `16`: 9
+  - state `5`: 8
+  - state `11`: 6
+  - state `15`: 5
+  - state `12`: 5
+
+## Bonus/HUD
+- bonus id `1`: 6
+- bonus id `3`: 3
+- bonus id `6`: 2
+- bonus id `7`: 2
+- bonus id `4`: 2
+- bonus id `13`: 1
+- bonus id `5`: 1
+- bonus id `9`: 1
+- bonus id `8`: 1
+- timer ptr: `Double Experience|timer_ptr|0x00487024|bonus_double_xp_timer` x2
+- timer ptr: `Double Experience|alt_timer_ptr|0x00000000|?` x2
+- timer ptr: `Weapon Power Up|timer_ptr|0x0048701c|bonus_weapon_power_up_timer` x2
+- timer ptr: `Weapon Power Up|alt_timer_ptr|0x00000000|?` x2
+- timer ptr: `Speed|timer_ptr|0x00490bc4|player_speed_bonus_timer` x1
+- timer ptr: `Speed|alt_timer_ptr|0x00490f24|player2_speed_bonus_timer` x1
+- timer ptr: `Reflex Boost|timer_ptr|0x00487014|bonus_reflex_boost_timer` x1
+- timer ptr: `Reflex Boost|alt_timer_ptr|0x00000000|?` x1
+
+## Weapon/projectile
+- weapon assign `1:Pistol`: 6
+- weapon assign `5:Submachine Gun`: 1
+- weapon assign `2:Assault Rifle`: 1
+- weapon assign `12:Rocket Launcher`: 1
+- projectile overrides: true=0 false=649
+- projectile type pair `2->2`: 348
+- projectile type pair `5->5`: 221
+- projectile type pair `1->1`: 58
+- projectile type pair `9->9`: 16
+- projectile type pair `21->21`: 4
+- projectile type pair `6->6`: 2
+
+## Quest results reveal
+- samples: 1295
+- final_time_ms min/max: 0 / 19668
+- unlock weapon id `2`: 1294
+- unlock weapon id `0`: 1
+- unlock perk id `0`: 1295
+
+## UI subtemplate deltas
+- top offset writes:
+  - 0x004902f0|ui_aim_enhancement_anim_timer: 49178
+  - 0x004902f4|ui_aim_enhancement_pulse_phase: 49178
+  - 0x004902e8|ui_cursor_anim_timer: 6053
+  - 0x004902ec|ui_cursor_pulse_phase: 6053
+  - 0x004902f8|quest_kill_progress_ratio: 22
+- decoded field changes:
+  - state:9|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 49173
+  - state:9|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 49173
+  - state:0|block:7|slot:0|x|ui_cursor_anim_timer: 2447
+  - state:0|block:7|slot:0|y|ui_cursor_pulse_phase: 2447
+  - state:2|block:7|slot:0|x|ui_cursor_anim_timer: 1792
+  - state:2|block:7|slot:0|y|ui_cursor_pulse_phase: 1792
+  - state:4|block:7|slot:0|x|ui_cursor_anim_timer: 1064
+  - state:4|block:7|slot:0|y|ui_cursor_pulse_phase: 1064
+  - state:6|block:7|slot:0|x|ui_cursor_anim_timer: 731
+  - state:6|block:7|slot:0|y|ui_cursor_pulse_phase: 731
+  - state:9|block:7|slot:0|field_0x10|quest_kill_progress_ratio: 22
+  - state:9|block:7|slot:0|x|ui_cursor_anim_timer: 19
+  - state:9|block:7|slot:0|y|ui_cursor_pulse_phase: 19
+  - state:0|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 3
+  - state:0|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 3
+  - state:2|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
+  - state:2|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
+  - state:6|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
+  - state:6|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
+
+## SFX by function
+- sfx_play_exclusive|quest_results_screen_update: 3989
+- sfx_play_exclusive|game_over_screen_update: 716
+- sfx_play_panned|player_update: 638
+- sfx_play_exclusive|quest_failed_screen_update: 483
+- sfx_play_panned|projectile_update: 355
+- sfx_play_exclusive|gameplay_update_and_render: 346
+- sfx_play_panned|creature_apply_damage: 160
+- sfx_play|ui_element_update: 108
+- sfx_play_panned|creature_update_all: 57
+- sfx_play_panned|player_take_damage: 57
+- sfx_play|credits_secret_alien_zookeeper_update: 40
+- sfx_play|ui_button_update: 38
+- sfx_play|credits_screen_update: 38
+- sfx_play|quest_results_screen_update: 23
+- sfx_play_panned|player_start_reload: 20
+- sfx_play|bonus_apply: 19
+- sfx_play_panned|weapon_assign_player: 9
+- sfx_play|tutorial_timeline_update: 7
+- sfx_play_panned|bonus_apply: 5
+- sfx_play_exclusive|projectile_update: 4
+- sfx_play|ui_menu_item_update: 3
+- sfx_play_exclusive|game_startup_init: 2
+- sfx_play|gameplay_update_and_render: 2
+- sfx_play|perk_selection_screen_update: 2
+- sfx_play|perk_apply: 2
+- sfx_play|game_over_screen_update: 2
+- sfx_play|input_scheme_label: 2
+- sfx_play|quest_mode_update: 2
+- sfx_play_exclusive|quest_mode_update: 2
+- sfx_play_exclusive|ui_menu_main_click_options: 1
+- sfx_play|credits_line_clear_flag: 1
+- sfx_play_exclusive|ui_list_widget_update: 1
+- sfx_play|ui_text_input_update: 1
+- top function+id pairs:
+  - sfx_play_exclusive|quest_results_screen_update|5: 3989
+  - sfx_play_exclusive|game_over_screen_update|1: 714
+  - sfx_play_exclusive|quest_failed_screen_update|1: 482
+  - sfx_play_panned|player_update|34: 348
+  - sfx_play_exclusive|gameplay_update_and_render|1: 346
+  - sfx_play_panned|player_update|37: 221
+  - sfx_play|ui_element_update|64: 95
+  - sfx_play_panned|projectile_update|54: 63
+  - sfx_play_panned|projectile_update|51: 61
+  - sfx_play_panned|projectile_update|53: 58
+  - sfx_play_panned|projectile_update|55: 57
+  - sfx_play_panned|projectile_update|52: 57
+  - sfx_play_panned|player_update|30: 54
+  - sfx_play_panned|projectile_update|50: 50
+  - sfx_play|ui_button_update|63: 38
+  - sfx_play|credits_screen_update|62: 38
+  - sfx_play_panned|creature_apply_damage|15: 32
+  - sfx_play_panned|creature_apply_damage|12: 31
+  - sfx_play_panned|creature_apply_damage|13: 31
+  - sfx_play|credits_secret_alien_zookeeper_update|69: 28
+  - sfx_play_panned|creature_apply_damage|14: 26
+  - sfx_play_panned|player_take_damage|0: 22
+  - sfx_play|quest_results_screen_update|69: 21
+  - sfx_play_panned|player_take_damage|2: 20
+  - sfx_play|bonus_apply|62: 19
+  - sfx_play_panned|creature_update_all|17: 18
+  - sfx_play_panned|player_start_reload|35: 15
+  - sfx_play_panned|creature_update_all|16: 15
+  - sfx_play_panned|creature_apply_damage|24: 14
+  - sfx_play_panned|player_take_damage|1: 14
+  - sfx_play|ui_element_update|63: 13
+  - sfx_play_panned|creature_update_all|28: 12
+  - sfx_play_panned|creature_update_all|29: 12
+  - sfx_play_panned|player_update|47: 12
+  - sfx_play|credits_secret_alien_zookeeper_update|62: 11
+  - sfx_play_panned|creature_apply_damage|26: 11
+  - sfx_play_panned|creature_apply_damage|25: 10
+  - sfx_play|tutorial_timeline_update|65: 7
+  - sfx_play_panned|projectile_update|58: 7
+  - sfx_play_panned|weapon_assign_player|31: 6
+- high-confidence function->id:
+  - sfx_play_exclusive|quest_results_screen_update -> id 5 (3989/3989, 100.0%)
+  - sfx_play_exclusive|game_over_screen_update -> id 1 (714/716, 99.7%)
+  - sfx_play_exclusive|quest_failed_screen_update -> id 1 (482/483, 99.8%)
+  - sfx_play_exclusive|gameplay_update_and_render -> id 1 (346/346, 100.0%)
+  - sfx_play|ui_button_update -> id 63 (38/38, 100.0%)
+  - sfx_play|credits_screen_update -> id 62 (38/38, 100.0%)
+  - sfx_play|quest_results_screen_update -> id 69 (21/23, 91.3%)
+
+## Memory watch
+- mem_watch_access events: 0
+
+## Type artifact checks
+- clip_size bit-pattern samples: 1411 / 1411
+- ammo bit-pattern samples: 1356 / 1411

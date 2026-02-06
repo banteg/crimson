@@ -136,6 +136,7 @@ ghidra-exe:
       -s CreateCreditsSecretUpdate.java \
       -s CreateQuestBuilders.java \
       -s CreateConsoleFunctions.java \
+      -s CreateGameStateCallbacks.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
       -s ExportAll.java \

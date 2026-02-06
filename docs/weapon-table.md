@@ -57,7 +57,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
 | `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`FUN_00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`FUN_00452cd0`) skips entries with `0`. |
-| `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). |
+| `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). In player storage these land in float-typed slots (for example `10.0`, `12.0`, `25.0`). |
 | `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `player_fire_weapon`. |
 | `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `player_start_reload` (scaled by perks). |
 | `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`DAT_00490b68`) after each shot (scaled by perks). |
@@ -101,6 +101,12 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
+- Fire Bullets fallback helpers (initialized in `weapon_table_init` and consumed
+  by `player_fire_weapon` / `player_update`):
+  `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
+  `fire_bullets_fallback_spread_heat` (`0x004d9048`),
+  `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
+  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
 
 - Several weapons bypass the main projectile pool and use particle or secondary
   projectile pools instead (Flamethrower `0x08`, Blow Torch `0x0f`, HR Flamer

@@ -632,7 +632,6 @@ a limited amount of time.
 004732d0: Unpicked Perk Bonus:
 004732e8: Life Bonus:
 004732f4: Base Time:
-0047331b: ?You regain some of your health..
 00473340: MediKit
 00473348: For few seconds -- make them count.
 0047336c: Fire Bullets

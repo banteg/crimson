@@ -144,6 +144,37 @@ Alias entries are direct copies of another id in the init function.
 | DAT_004c4004 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_1 |
 | _DAT_004c4008 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_2 |
 
+## Playlist/runtime globals
+
+Recovered data labels for exclusive music-play path:
+
+- `music_playlist_entry_count` (`0x004cc8d0`): number of queued entries in
+  `music_playlist` (written by `music_queue_track`).
+- `music_playlist_randomized_latch` (`0x004cc8d4`): latch used by
+  `sfx_play_exclusive(music_track_extra_0)` to avoid re-randomizing every call.
+- `audio_assets_loaded_count` (`0x004cc8d8`): increments on
+  `sfx_load_sample`/`music_load_track`; displayed on startup loading UI
+  (`"Grim SFX: %d/%d"` line).
+
+## Runtime callsite clusters (2026-02-06 capture)
+
+From `analysis/frida/gameplay_state_capture_summary.json` (694s gameplay-heavy run):
+
+- `quest_results_screen_update` -> `sfx_play_exclusive(5)` in 3989/3989 calls.
+- `game_over_screen_update` -> `sfx_play_exclusive(1)` in 714/716 calls.
+- `quest_failed_screen_update` -> `sfx_play_exclusive(1)` in 482/483 calls.
+- `ui_button_update` -> `sfx_play(63)` in 38/38 calls.
+- `ui_element_update` -> mostly `sfx_play(64)` (95/108) with secondary `63` (13/108).
+
+Gameplay-heavy panned clusters (same capture):
+
+- `player_update`: dominant IDs `34` and `37` (plus `30`), matching weapon-fire cadence.
+- `projectile_update`: dominant IDs `54/51/53/55/52/50` (projectile hit/explosion family).
+- `player_take_damage`: IDs `0/2/1` (player hurt variants).
+- `player_start_reload`: mostly ID `35` (15/20).
+- `bonus_apply`: dominant `sfx_play` ID `62`; panned side effects include `56/59/60`.
+- `weapon_assign_player`: panned cluster led by `31` with secondary `35/49`.
+
 ## Unreferenced entries (in sfx.paq)
 
 These files exist in `sfx.paq`, but are not loaded by `audio_init_sfx` in 1.9.93:

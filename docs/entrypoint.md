@@ -61,7 +61,7 @@ uv run scripts/entrypoint_trace.py --depth 2 --skip-external
     - crt_free -> crt_free_base
     - game_load_status -> game_build_path (FUN_00402bd0), game_sequence_load, crt_fopen (FUN_0046103f), crt_fseek (FUN_00461d91), crt_ftell (FUN_00461c0e), crt_fclose, game_save_status, console_printf ...
     - console_flush_log -> crt_fflush (FUN_00461448), game_build_path (FUN_00402bd0), crt_fopen (FUN_0046103f), crt_fclose, crt_fwrite (FUN_004615ae)
-    - dx_get_version -> FUN_0041cfe0, crt_tolower (FUN_00461e9b), FUN_0041cdb0, crt_snprintf (FUN_00461e4a)
+    - dx_get_version -> dx_get_version_fallback_from_files, crt_tolower (FUN_00461e9b), FUN_0041cdb0, crt_snprintf (FUN_00461e4a)
     - HlinkNavigateString
     - Direct3DCreate8
     - FUN_004623b2 -> crt_mktime (FUN_00465da5)

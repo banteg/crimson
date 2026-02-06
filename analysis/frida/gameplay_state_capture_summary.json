@@ -1,0 +1,994 @@
+{
+  "bonus": {
+    "bonus_apply_id_counts": {
+      "1": 6,
+      "3": 3,
+      "4": 2,
+      "5": 1,
+      "6": 2,
+      "7": 2,
+      "8": 1,
+      "9": 1,
+      "13": 1
+    },
+    "bonus_hud_icon_counts": {
+      "Double Experience|icon:4": 2,
+      "Reflex Boost|icon:5": 1,
+      "Speed|icon:9": 1,
+      "Weapon Power Up|icon:7": 2
+    },
+    "bonus_hud_label_counts": {
+      "Double Experience": 2,
+      "Reflex Boost": 1,
+      "Speed": 1,
+      "Weapon Power Up": 2
+    },
+    "bonus_hud_timer_ptr_counts": {
+      "Double Experience|alt_timer_ptr|0x00000000|?": 2,
+      "Double Experience|timer_ptr|0x00487024|bonus_double_xp_timer": 2,
+      "Reflex Boost|alt_timer_ptr|0x00000000|?": 1,
+      "Reflex Boost|timer_ptr|0x00487014|bonus_reflex_boost_timer": 1,
+      "Speed|alt_timer_ptr|0x00490f24|player2_speed_bonus_timer": 1,
+      "Speed|timer_ptr|0x00490bc4|player_speed_bonus_timer": 1,
+      "Weapon Power Up|alt_timer_ptr|0x00000000|?": 2,
+      "Weapon Power Up|timer_ptr|0x0048701c|bonus_weapon_power_up_timer": 2
+    }
+  },
+  "event_counts": {
+    "bonus_apply": 19,
+    "bonus_hud_slot_activate": 6,
+    "bonus_hud_slot_update_tick": 40080,
+    "creature_spawn_template": 80,
+    "creature_update_all_tick": 2504,
+    "game_state_set": 56,
+    "hook_ok": 35,
+    "hud_update_and_render_tick": 2504,
+    "mem_watch_enabled": 1,
+    "mode_tick": 486,
+    "perks_update_effects_delta": 50097,
+    "player_take_damage": 57,
+    "projectile_spawn": 649,
+    "projectile_update_tick": 1669,
+    "quest_failed_screen_tick": 46,
+    "quest_results_reveal_delta": 1295,
+    "quest_spawn_timeline_delta": 7316,
+    "quest_start_selected": 3,
+    "ready": 1,
+    "sfx_play": 290,
+    "sfx_play_exclusive": 5544,
+    "sfx_play_panned": 1301,
+    "snapshot_compact": 1411,
+    "snapshot_full": 406,
+    "start": 1,
+    "ui_button_update_tick": 1873,
+    "ui_element_render_input": 300345,
+    "ui_render_hud_tick": 2504,
+    "ui_subtemplate_baseline": 5,
+    "ui_subtemplate_delta": 55209,
+    "weapon_assign_player": 9
+  },
+  "mem_watch": {
+    "access_count": 0,
+    "range_counts": {}
+  },
+  "perk_timers": {
+    "doctor_target_counts": {
+      "-1": 50097
+    },
+    "jinxed_max": -0.014000000432133675,
+    "jinxed_min": -0.027000000700354576,
+    "lean_mean_max": 0.25,
+    "lean_mean_min": 0.0,
+    "samples": 50097
+  },
+  "quest_results": {
+    "final_time_ms_max": 19668,
+    "final_time_ms_min": 0,
+    "last": {
+      "final_time_ms": 19668,
+      "health_bonus_ms": 5000,
+      "reveal_base_time_ms": 24668,
+      "reveal_health_bonus_ms": 5000,
+      "reveal_perk_bonus_s": 0,
+      "reveal_step_timer_ms": 50,
+      "reveal_total_time_ms": 19668,
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 2
+    },
+    "samples": 1295,
+    "unlock_perk_counts": {
+      "0": 1295
+    },
+    "unlock_weapon_counts": {
+      "0": 1,
+      "2": 1294
+    }
+  },
+  "sfx": {
+    "by_function": {
+      "sfx_play_exclusive|game_over_screen_update": 716,
+      "sfx_play_exclusive|game_startup_init": 2,
+      "sfx_play_exclusive|gameplay_update_and_render": 346,
+      "sfx_play_exclusive|projectile_update": 4,
+      "sfx_play_exclusive|quest_failed_screen_update": 483,
+      "sfx_play_exclusive|quest_mode_update": 2,
+      "sfx_play_exclusive|quest_results_screen_update": 3989,
+      "sfx_play_exclusive|ui_list_widget_update": 1,
+      "sfx_play_exclusive|ui_menu_main_click_options": 1,
+      "sfx_play_panned|bonus_apply": 5,
+      "sfx_play_panned|creature_apply_damage": 160,
+      "sfx_play_panned|creature_update_all": 57,
+      "sfx_play_panned|player_start_reload": 20,
+      "sfx_play_panned|player_take_damage": 57,
+      "sfx_play_panned|player_update": 638,
+      "sfx_play_panned|projectile_update": 355,
+      "sfx_play_panned|weapon_assign_player": 9,
+      "sfx_play|bonus_apply": 19,
+      "sfx_play|credits_line_clear_flag": 1,
+      "sfx_play|credits_screen_update": 38,
+      "sfx_play|credits_secret_alien_zookeeper_update": 40,
+      "sfx_play|game_over_screen_update": 2,
+      "sfx_play|gameplay_update_and_render": 2,
+      "sfx_play|input_scheme_label": 2,
+      "sfx_play|perk_apply": 2,
+      "sfx_play|perk_selection_screen_update": 2,
+      "sfx_play|quest_mode_update": 2,
+      "sfx_play|quest_results_screen_update": 23,
+      "sfx_play|tutorial_timeline_update": 7,
+      "sfx_play|ui_button_update": 38,
+      "sfx_play|ui_element_update": 108,
+      "sfx_play|ui_menu_item_update": 3,
+      "sfx_play|ui_text_input_update": 1
+    },
+    "by_function_and_id": {
+      "sfx_play_exclusive|game_over_screen_update|1": 714,
+      "sfx_play_exclusive|game_over_screen_update|4": 2,
+      "sfx_play_exclusive|game_startup_init|0": 1,
+      "sfx_play_exclusive|game_startup_init|4": 1,
+      "sfx_play_exclusive|gameplay_update_and_render|1": 346,
+      "sfx_play_exclusive|projectile_update|6": 4,
+      "sfx_play_exclusive|quest_failed_screen_update|1": 482,
+      "sfx_play_exclusive|quest_failed_screen_update|4": 1,
+      "sfx_play_exclusive|quest_mode_update|5": 2,
+      "sfx_play_exclusive|quest_results_screen_update|5": 3989,
+      "sfx_play_exclusive|ui_list_widget_update|4": 1,
+      "sfx_play_exclusive|ui_menu_main_click_options|1": 1,
+      "sfx_play_panned|bonus_apply|56": 2,
+      "sfx_play_panned|bonus_apply|58": 1,
+      "sfx_play_panned|bonus_apply|59": 1,
+      "sfx_play_panned|bonus_apply|60": 1,
+      "sfx_play_panned|creature_apply_damage|12": 31,
+      "sfx_play_panned|creature_apply_damage|13": 31,
+      "sfx_play_panned|creature_apply_damage|14": 26,
+      "sfx_play_panned|creature_apply_damage|15": 32,
+      "sfx_play_panned|creature_apply_damage|24": 14,
+      "sfx_play_panned|creature_apply_damage|25": 10,
+      "sfx_play_panned|creature_apply_damage|26": 11,
+      "sfx_play_panned|creature_apply_damage|27": 5,
+      "sfx_play_panned|creature_update_all|16": 15,
+      "sfx_play_panned|creature_update_all|17": 18,
+      "sfx_play_panned|creature_update_all|28": 12,
+      "sfx_play_panned|creature_update_all|29": 12,
+      "sfx_play_panned|player_start_reload|31": 3,
+      "sfx_play_panned|player_start_reload|35": 15,
+      "sfx_play_panned|player_start_reload|49": 2,
+      "sfx_play_panned|player_take_damage|0": 22,
+      "sfx_play_panned|player_take_damage|1": 14,
+      "sfx_play_panned|player_take_damage|2": 20,
+      "sfx_play_panned|player_take_damage|3": 1,
+      "sfx_play_panned|player_update|30": 54,
+      "sfx_play_panned|player_update|34": 348,
+      "sfx_play_panned|player_update|37": 221,
+      "sfx_play_panned|player_update|47": 12,
+      "sfx_play_panned|player_update|70": 1,
+      "sfx_play_panned|player_update|71": 2,
+      "sfx_play_panned|projectile_update|50": 50,
+      "sfx_play_panned|projectile_update|51": 61,
+      "sfx_play_panned|projectile_update|52": 57,
+      "sfx_play_panned|projectile_update|53": 58,
+      "sfx_play_panned|projectile_update|54": 63,
+      "sfx_play_panned|projectile_update|55": 57,
+      "sfx_play_panned|projectile_update|56": 2,
+      "sfx_play_panned|projectile_update|58": 7,
+      "sfx_play_panned|weapon_assign_player|31": 6,
+      "sfx_play_panned|weapon_assign_player|35": 2,
+      "sfx_play_panned|weapon_assign_player|49": 1,
+      "sfx_play|bonus_apply|62": 19,
+      "sfx_play|credits_line_clear_flag|0": 1,
+      "sfx_play|credits_screen_update|62": 38,
+      "sfx_play|credits_secret_alien_zookeeper_update|3": 1,
+      "sfx_play|credits_secret_alien_zookeeper_update|62": 11,
+      "sfx_play|credits_secret_alien_zookeeper_update|69": 28,
+      "sfx_play|game_over_screen_update|68": 2,
+      "sfx_play|gameplay_update_and_render|65": 2,
+      "sfx_play|input_scheme_label|63": 2,
+      "sfx_play|perk_apply|62": 2,
+      "sfx_play|perk_selection_screen_update|63": 2,
+      "sfx_play|quest_mode_update|61": 2,
+      "sfx_play|quest_results_screen_update|68": 2,
+      "sfx_play|quest_results_screen_update|69": 21,
+      "sfx_play|tutorial_timeline_update|65": 7,
+      "sfx_play|ui_button_update|63": 38,
+      "sfx_play|ui_element_update|63": 13,
+      "sfx_play|ui_element_update|64": 95,
+      "sfx_play|ui_menu_item_update|63": 3,
+      "sfx_play|ui_text_input_update|68": 1
+    },
+    "high_confidence_function_ids": [
+      {
+        "count": 3989,
+        "event": "sfx_play_exclusive",
+        "function": "quest_results_screen_update",
+        "id": 5,
+        "share": 1.0,
+        "total": 3989
+      },
+      {
+        "count": 714,
+        "event": "sfx_play_exclusive",
+        "function": "game_over_screen_update",
+        "id": 1,
+        "share": 0.9972,
+        "total": 716
+      },
+      {
+        "count": 482,
+        "event": "sfx_play_exclusive",
+        "function": "quest_failed_screen_update",
+        "id": 1,
+        "share": 0.9979,
+        "total": 483
+      },
+      {
+        "count": 346,
+        "event": "sfx_play_exclusive",
+        "function": "gameplay_update_and_render",
+        "id": 1,
+        "share": 1.0,
+        "total": 346
+      },
+      {
+        "count": 38,
+        "event": "sfx_play",
+        "function": "ui_button_update",
+        "id": 63,
+        "share": 1.0,
+        "total": 38
+      },
+      {
+        "count": 38,
+        "event": "sfx_play",
+        "function": "credits_screen_update",
+        "id": 62,
+        "share": 1.0,
+        "total": 38
+      },
+      {
+        "count": 21,
+        "event": "sfx_play",
+        "function": "quest_results_screen_update",
+        "id": 69,
+        "share": 0.913,
+        "total": 23
+      }
+    ],
+    "top_by_function": [
+      {
+        "count": 3989,
+        "key": "sfx_play_exclusive|quest_results_screen_update"
+      },
+      {
+        "count": 716,
+        "key": "sfx_play_exclusive|game_over_screen_update"
+      },
+      {
+        "count": 638,
+        "key": "sfx_play_panned|player_update"
+      },
+      {
+        "count": 483,
+        "key": "sfx_play_exclusive|quest_failed_screen_update"
+      },
+      {
+        "count": 355,
+        "key": "sfx_play_panned|projectile_update"
+      },
+      {
+        "count": 346,
+        "key": "sfx_play_exclusive|gameplay_update_and_render"
+      },
+      {
+        "count": 160,
+        "key": "sfx_play_panned|creature_apply_damage"
+      },
+      {
+        "count": 108,
+        "key": "sfx_play|ui_element_update"
+      },
+      {
+        "count": 57,
+        "key": "sfx_play_panned|creature_update_all"
+      },
+      {
+        "count": 57,
+        "key": "sfx_play_panned|player_take_damage"
+      },
+      {
+        "count": 40,
+        "key": "sfx_play|credits_secret_alien_zookeeper_update"
+      },
+      {
+        "count": 38,
+        "key": "sfx_play|ui_button_update"
+      },
+      {
+        "count": 38,
+        "key": "sfx_play|credits_screen_update"
+      },
+      {
+        "count": 23,
+        "key": "sfx_play|quest_results_screen_update"
+      },
+      {
+        "count": 20,
+        "key": "sfx_play_panned|player_start_reload"
+      },
+      {
+        "count": 19,
+        "key": "sfx_play|bonus_apply"
+      },
+      {
+        "count": 9,
+        "key": "sfx_play_panned|weapon_assign_player"
+      },
+      {
+        "count": 7,
+        "key": "sfx_play|tutorial_timeline_update"
+      },
+      {
+        "count": 5,
+        "key": "sfx_play_panned|bonus_apply"
+      },
+      {
+        "count": 4,
+        "key": "sfx_play_exclusive|projectile_update"
+      },
+      {
+        "count": 3,
+        "key": "sfx_play|ui_menu_item_update"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play_exclusive|game_startup_init"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|gameplay_update_and_render"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|perk_selection_screen_update"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|perk_apply"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|game_over_screen_update"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|input_scheme_label"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play|quest_mode_update"
+      },
+      {
+        "count": 2,
+        "key": "sfx_play_exclusive|quest_mode_update"
+      },
+      {
+        "count": 1,
+        "key": "sfx_play_exclusive|ui_menu_main_click_options"
+      },
+      {
+        "count": 1,
+        "key": "sfx_play|credits_line_clear_flag"
+      },
+      {
+        "count": 1,
+        "key": "sfx_play_exclusive|ui_list_widget_update"
+      },
+      {
+        "count": 1,
+        "key": "sfx_play|ui_text_input_update"
+      }
+    ],
+    "top_by_function_and_id": [
+      {
+        "count": 3989,
+        "key": "sfx_play_exclusive|quest_results_screen_update|5"
+      },
+      {
+        "count": 714,
+        "key": "sfx_play_exclusive|game_over_screen_update|1"
+      },
+      {
+        "count": 482,
+        "key": "sfx_play_exclusive|quest_failed_screen_update|1"
+      },
+      {
+        "count": 348,
+        "key": "sfx_play_panned|player_update|34"
+      },
+      {
+        "count": 346,
+        "key": "sfx_play_exclusive|gameplay_update_and_render|1"
+      },
+      {
+        "count": 221,
+        "key": "sfx_play_panned|player_update|37"
+      },
+      {
+        "count": 95,
+        "key": "sfx_play|ui_element_update|64"
+      },
+      {
+        "count": 63,
+        "key": "sfx_play_panned|projectile_update|54"
+      },
+      {
+        "count": 61,
+        "key": "sfx_play_panned|projectile_update|51"
+      },
+      {
+        "count": 58,
+        "key": "sfx_play_panned|projectile_update|53"
+      },
+      {
+        "count": 57,
+        "key": "sfx_play_panned|projectile_update|55"
+      },
+      {
+        "count": 57,
+        "key": "sfx_play_panned|projectile_update|52"
+      },
+      {
+        "count": 54,
+        "key": "sfx_play_panned|player_update|30"
+      },
+      {
+        "count": 50,
+        "key": "sfx_play_panned|projectile_update|50"
+      },
+      {
+        "count": 38,
+        "key": "sfx_play|ui_button_update|63"
+      },
+      {
+        "count": 38,
+        "key": "sfx_play|credits_screen_update|62"
+      },
+      {
+        "count": 32,
+        "key": "sfx_play_panned|creature_apply_damage|15"
+      },
+      {
+        "count": 31,
+        "key": "sfx_play_panned|creature_apply_damage|12"
+      },
+      {
+        "count": 31,
+        "key": "sfx_play_panned|creature_apply_damage|13"
+      },
+      {
+        "count": 28,
+        "key": "sfx_play|credits_secret_alien_zookeeper_update|69"
+      },
+      {
+        "count": 26,
+        "key": "sfx_play_panned|creature_apply_damage|14"
+      },
+      {
+        "count": 22,
+        "key": "sfx_play_panned|player_take_damage|0"
+      },
+      {
+        "count": 21,
+        "key": "sfx_play|quest_results_screen_update|69"
+      },
+      {
+        "count": 20,
+        "key": "sfx_play_panned|player_take_damage|2"
+      },
+      {
+        "count": 19,
+        "key": "sfx_play|bonus_apply|62"
+      },
+      {
+        "count": 18,
+        "key": "sfx_play_panned|creature_update_all|17"
+      },
+      {
+        "count": 15,
+        "key": "sfx_play_panned|player_start_reload|35"
+      },
+      {
+        "count": 15,
+        "key": "sfx_play_panned|creature_update_all|16"
+      },
+      {
+        "count": 14,
+        "key": "sfx_play_panned|creature_apply_damage|24"
+      },
+      {
+        "count": 14,
+        "key": "sfx_play_panned|player_take_damage|1"
+      },
+      {
+        "count": 13,
+        "key": "sfx_play|ui_element_update|63"
+      },
+      {
+        "count": 12,
+        "key": "sfx_play_panned|creature_update_all|28"
+      },
+      {
+        "count": 12,
+        "key": "sfx_play_panned|creature_update_all|29"
+      },
+      {
+        "count": 12,
+        "key": "sfx_play_panned|player_update|47"
+      },
+      {
+        "count": 11,
+        "key": "sfx_play|credits_secret_alien_zookeeper_update|62"
+      },
+      {
+        "count": 11,
+        "key": "sfx_play_panned|creature_apply_damage|26"
+      },
+      {
+        "count": 10,
+        "key": "sfx_play_panned|creature_apply_damage|25"
+      },
+      {
+        "count": 7,
+        "key": "sfx_play|tutorial_timeline_update|65"
+      },
+      {
+        "count": 7,
+        "key": "sfx_play_panned|projectile_update|58"
+      },
+      {
+        "count": 6,
+        "key": "sfx_play_panned|weapon_assign_player|31"
+      }
+    ]
+  },
+  "source_log": "artifacts/frida/share/gameplay_state_capture.jsonl",
+  "source_log_size_bytes": 186216313,
+  "state": {
+    "game_state_set_target_counts": {
+      "0": 6,
+      "1": 6,
+      "2": 4,
+      "3": 2,
+      "4": 5,
+      "5": 2,
+      "6": 2,
+      "7": 4,
+      "8": 3,
+      "9": 10,
+      "10": 1,
+      "11": 2,
+      "12": 1,
+      "14": 4,
+      "15": 1,
+      "16": 1,
+      "17": 1,
+      "26": 1
+    },
+    "game_state_set_transition_counts": {
+      "0->0": 1,
+      "0->1": 3,
+      "0->10": 1,
+      "0->2": 1,
+      "0->4": 1,
+      "1->0": 1,
+      "1->11": 1,
+      "1->9": 4,
+      "11->1": 1,
+      "11->9": 1,
+      "12->11": 1,
+      "14->4": 1,
+      "14->7": 2,
+      "14->8": 1,
+      "15->4": 1,
+      "16->4": 1,
+      "17->26": 1,
+      "2->0": 1,
+      "2->3": 2,
+      "2->5": 1,
+      "26->4": 1,
+      "3->2": 2,
+      "4->0": 1,
+      "4->14": 1,
+      "4->15": 1,
+      "4->16": 1,
+      "4->17": 1,
+      "5->2": 1,
+      "5->9": 1,
+      "6->9": 2,
+      "7->0": 2,
+      "7->14": 2,
+      "8->14": 1,
+      "8->9": 2,
+      "9->1": 2,
+      "9->12": 1,
+      "9->5": 1,
+      "9->6": 2,
+      "9->7": 2,
+      "9->8": 2
+    },
+    "mode_state_counts": {
+      "quest_mode_update@9": 218,
+      "rush_mode_update@9": 56,
+      "survival_update@9": 212
+    },
+    "mode_tick_counts": {
+      "quest_mode_update": 218,
+      "rush_mode_update": 56,
+      "survival_update": 212
+    },
+    "snapshot_state_counts": {
+      "0": 73,
+      "1": 26,
+      "2": 32,
+      "3": 67,
+      "4": 18,
+      "5": 8,
+      "6": 13,
+      "7": 23,
+      "8": 31,
+      "9": 699,
+      "11": 6,
+      "12": 5,
+      "14": 78,
+      "15": 5,
+      "16": 9,
+      "17": 245,
+      "26": 73
+    }
+  },
+  "timeline": {
+    "duration_s": 694.197,
+    "ts_max": 1770380421218,
+    "ts_min": 1770379727021
+  },
+  "typing_artifacts": {
+    "ammo_bitpattern_samples": 1356,
+    "ammo_samples": 1411,
+    "clip_bitpattern_samples": 1411,
+    "clip_samples": 1411
+  },
+  "ui_subtemplate": {
+    "delta_state_counts": {
+      "0": 2447,
+      "2": 1792,
+      "4": 1064,
+      "6": 731,
+      "9": 49175
+    },
+    "top_block_changes": [
+      {
+        "count": 98406,
+        "key": "state:9|block:7"
+      },
+      {
+        "count": 4900,
+        "key": "state:0|block:7"
+      },
+      {
+        "count": 3586,
+        "key": "state:2|block:7"
+      },
+      {
+        "count": 2128,
+        "key": "state:4|block:7"
+      },
+      {
+        "count": 1464,
+        "key": "state:6|block:7"
+      }
+    ],
+    "top_field_changes": [
+      {
+        "count": 49173,
+        "key": "state:9|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer"
+      },
+      {
+        "count": 49173,
+        "key": "state:9|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase"
+      },
+      {
+        "count": 2447,
+        "key": "state:0|block:7|slot:0|x|ui_cursor_anim_timer"
+      },
+      {
+        "count": 2447,
+        "key": "state:0|block:7|slot:0|y|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 1792,
+        "key": "state:2|block:7|slot:0|x|ui_cursor_anim_timer"
+      },
+      {
+        "count": 1792,
+        "key": "state:2|block:7|slot:0|y|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 1064,
+        "key": "state:4|block:7|slot:0|x|ui_cursor_anim_timer"
+      },
+      {
+        "count": 1064,
+        "key": "state:4|block:7|slot:0|y|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 731,
+        "key": "state:6|block:7|slot:0|x|ui_cursor_anim_timer"
+      },
+      {
+        "count": 731,
+        "key": "state:6|block:7|slot:0|y|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 22,
+        "key": "state:9|block:7|slot:0|field_0x10|quest_kill_progress_ratio"
+      },
+      {
+        "count": 19,
+        "key": "state:9|block:7|slot:0|x|ui_cursor_anim_timer"
+      },
+      {
+        "count": 19,
+        "key": "state:9|block:7|slot:0|y|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 3,
+        "key": "state:0|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer"
+      },
+      {
+        "count": 3,
+        "key": "state:0|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase"
+      },
+      {
+        "count": 1,
+        "key": "state:2|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer"
+      },
+      {
+        "count": 1,
+        "key": "state:2|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase"
+      },
+      {
+        "count": 1,
+        "key": "state:6|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer"
+      },
+      {
+        "count": 1,
+        "key": "state:6|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase"
+      }
+    ],
+    "top_offset_changes": [
+      {
+        "count": 49178,
+        "key": "0x004902f0|ui_aim_enhancement_anim_timer"
+      },
+      {
+        "count": 49178,
+        "key": "0x004902f4|ui_aim_enhancement_pulse_phase"
+      },
+      {
+        "count": 6053,
+        "key": "0x004902e8|ui_cursor_anim_timer"
+      },
+      {
+        "count": 6053,
+        "key": "0x004902ec|ui_cursor_pulse_phase"
+      },
+      {
+        "count": 22,
+        "key": "0x004902f8|quest_kill_progress_ratio"
+      }
+    ],
+    "top_ui_elements": [
+      {
+        "count": 47125,
+        "key": "state:9|0x0048f20c|ui_perk_prompt_element"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048ee50|ui_element_slot_40"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048e820|ui_element_slot_39"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048e508|ui_element_slot_38"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048e1f0|ui_element_slot_37"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048ded8|ui_element_slot_36"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048dbc0|ui_element_slot_35"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048d8a8|ui_element_slot_34"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048a0f8|ui_element_slot_33"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00488e68|ui_element_slot_32_layout_c"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00488b50|ui_element_slot_31"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048cc48|ui_element_slot_30"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048c930|ui_element_slot_29"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048eb38|ui_element_slot_28"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048c618|ui_element_slot_27"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048c300|ui_element_slot_26"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048bfe8|ui_element_slot_25"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048bcd0|ui_element_slot_24"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048b9b8|ui_element_slot_23"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048b6a0|ui_element_slot_22"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048b388|ui_element_slot_21"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048b070|ui_element_slot_20"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048ad58|ui_element_slot_19"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048d590|ui_element_slot_18_layout_b"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048aa40|ui_element_slot_17"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048a728|ui_element_slot_16"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048a410|ui_element_slot_15"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048d278|ui_element_slot_14"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x0048cf60|ui_element_slot_13"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x004897b0|ui_element_slot_12_layout_a"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00489498|ui_element_slot_11"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00489180|ui_element_slot_10"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00489de0|ui_element_slot_09"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00489ac8|ui_element_slot_08"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00488520|ui_element_slot_footer_variant_a"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00488838|ui_element_slot_footer_variant_b"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00487ef0|ui_element_slot_05_main_menu_statistics"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00487bd8|ui_element_slot_04_main_menu_options"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x004878c0|ui_element_slot_03_main_menu_play_game"
+      },
+      {
+        "count": 2448,
+        "key": "state:0|0x00488208|ui_element_slot_02_main_menu_primary"
+      }
+    ]
+  },
+  "weapon_and_projectile": {
+    "projectile_override_false": 649,
+    "projectile_override_true": 0,
+    "projectile_owner_counts": {
+      "-100": 647,
+      "4": 1,
+      "10": 1
+    },
+    "projectile_type_pairs": {
+      "1->1": 58,
+      "2->2": 348,
+      "21->21": 4,
+      "5->5": 221,
+      "6->6": 2,
+      "9->9": 16
+    },
+    "weapon_assign_counts": {
+      "12:Rocket Launcher": 1,
+      "1:Pistol": 6,
+      "2:Assault Rifle": 1,
+      "5:Submachine Gun": 1
+    }
+  }
+}

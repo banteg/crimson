@@ -35,12 +35,44 @@ Notes:
 
 - `DAT_004aaf0c` is used as the player index during the two overlay passes.
 - `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
+- `projectile_render` binds both `projectile_texture` (`0x0048f7d4`) and
+  `projectile_bullet_texture` (`0x0049bb30`, `bullet_i`) for distinct projectile sprite passes.
+- `gameplay_transition_latch` (`0x00487241`) is set on gameplay/Typ-o gameplay
+  state entry and cleared when the HUD transition timeline reaches 1.0; while
+  set, `gameplay_render_world` avoids forcing `ui_transition_alpha` to 1.0 in
+  branch paths that normally suppress transition fades.
+- `player_overlay_suppressed_latch` (`0x0048727c`) is an additional hard gate
+  for `player_render_overlays` during highscore-return/result-flow transitions.
 
 ## HUD render (ui_render_hud / FUN_0041aed0)
 
 The in-game HUD render is gated by `demo_mode_active` (`DAT_0048700d`) and is called from the main
 UI pass (`hud_update_and_render`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
 weapon icons, along with health/score overlays.
+
+`hud_update_and_render` sets explicit per-mode HUD gates before rendering:
+
+- `hud_show_health_panel`
+- `hud_show_weapon_panel`
+- `hud_show_xp_panel`
+- `hud_show_quest_panel`
+- `hud_show_timer_panel`
+
+## Shared tint vectors
+
+Several UI/HUD paths use a shared global RGBA vector passed to
+`grim_set_color_ptr`:
+
+- `render_tint_color_r/g/b/a` (`0x004965f8..0x00496604`)
+- Alpha (`render_tint_color_a`) is animated in loading, HUD, game-over, and
+  quest-results paths while RGB stays white.
+
+High-score card divider rendering uses a second RGBA block:
+
+- `highscore_card_divider_color_r/g/b/a` (`0x004ccca8..0x004cccb4`)
+- Seeded from the shared tint vector with a dimmed alpha in
+  `ui_text_input_render`, then consumed by `highscore_card_draw_horizontal_divider`
+  and `highscore_card_draw_vertical_divider`.
 
 ## Terrain generation (terrain_generate / FUN_00417b80)
 
@@ -73,7 +105,12 @@ matching the quest metadata and `terrain_ids_for` logic.
 
 `player_render_overlays` draws per-player indicators (aim reticles, shields,
 weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not drawn in modal
-states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition alpha).
+states like `0x14/0x16`), `ui_transition_alpha` (`DAT_00487278`) (transition alpha),
+and `player_overlay_suppressed_latch` (`0x0048727c`).
+
+The same function also checks `player_overlay_auto_target_line_perk_id` (`0x004c2bcc`) via
+`perk_count_get` before drawing the segmented auto-target line overlay toward the
+current `player_state.auto_target`. In `perk_metadata_init`, this selector defaults to `0`.
 
 ### Runtime evidence (2026-01-26)
 
@@ -87,7 +124,7 @@ states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition 
 `player_render_overlays` uses two UV tables for the trooper sprite:
 
 - Legs: `effect_uv8` (8×8 atlas grid, frames `0–14`, empty `15`)
-- Torso: `DAT_00491090`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
+- Torso: `player_overlay_torso_uv8`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
 
 This table is not filled separately; it aliases into `effect_uv8`, which is populated by
 `effect_uv_tables_init` (`FUN_0041fed0`), called during `game_startup_init_prelude` (`FUN_0042b090`).
@@ -116,7 +153,7 @@ During `player_render_overlays`, the **torso quad** is offset by a recoil vector
 - `offset = dir * (muzzle_flash_alpha * 12.0)`
 - the torso quad is drawn at `(camera + pos - size/2) + offset`
 
-The recoil pass uses the torso UV table (`DAT_00491090`) and rotates by `aim_heading`.
+The recoil pass uses `player_overlay_torso_uv8` and rotates by `aim_heading`.
 The shadow/highlight pass draws a slightly larger quad (`size * 1.03`) and shifts it by `(+1, +1)`.
 
 See also:
