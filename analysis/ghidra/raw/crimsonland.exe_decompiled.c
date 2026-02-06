@@ -130,11 +130,11 @@ int console_global_init(void)
 
 
 
-/* FUN_00401180 @ 00401180 */
+/* console_register_clear_log_atexit @ 00401180 */
 
-/* [binja] int32_t sub_401180() */
+/* registers console_clear_log via crt_atexit for process shutdown cleanup */
 
-int FUN_00401180(void)
+int console_register_clear_log_atexit(void)
 
 {
   int iVar1;
@@ -13510,70 +13510,71 @@ float __cdecl vec2_length(float *v)
 
 
 
-/* FUN_00417690 @ 00417690 */
+/* ui_menu_template_pool_init @ 00417690 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_417690() */
+/* initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by
+   ui_menu_layout_init */
 
-int FUN_00417690(void)
+int ui_menu_template_pool_init(void)
 
 {
   undefined *puVar1;
-  undefined4 *puVar2;
-  ui_element_t *puVar3;
-  int iVar4;
-  int iVar5;
+  undefined4 *slot;
+  ui_element_t *slot_00;
+  uchar *slot_01;
+  int iVar2;
   
   puVar1 = &DAT_0048f808;
-  iVar4 = 8;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   puVar1 = &DAT_0048f8f0;
   _DAT_0048f8ec = 4;
-  iVar4 = 8;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   _DAT_0048f9d4 = 4;
   puVar1 = &DAT_0048f9d8;
-  iVar4 = 8;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar1);
+    ui_template_slot_ctor_noop(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   _DAT_0048fabc = 4;
-  puVar2 = &DAT_0048fac0;
-  iVar4 = 8;
+  slot = &DAT_0048fac0;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar2);
-    puVar2 = puVar2 + 7;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    ui_template_slot_ctor_noop(slot);
+    slot = slot + 7;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   _DAT_0048fba4 = 4;
-  puVar3 = &ui_menu_item_element;
-  iVar4 = 8;
+  slot_00 = &ui_menu_item_element;
+  iVar2 = 8;
   do {
-    FUN_00417a90(puVar3);
-    puVar3 = (ui_element_t *)&puVar3->pos_y;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    ui_template_slot_ctor_noop(slot_00);
+    slot_00 = (ui_element_t *)&slot_00->pos_y;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   ui_menu_item_element._pad3[0] = '\x04';
   ui_menu_item_element._pad3[1] = '\0';
   ui_menu_item_element._pad3[2] = '\0';
   ui_menu_item_element._pad3[3] = '\0';
-  iVar4 = 0x48fc90;
-  iVar5 = 8;
+  slot_01 = ui_menu_item_element._pad3 + 4;
+  iVar2 = 8;
   do {
-    FUN_00417a90(iVar4);
-    iVar4 = iVar4 + 0x1c;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
+    ui_template_slot_ctor_noop(slot_01);
+    slot_01 = slot_01 + 0x1c;
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   ui_menu_item_element._pad4[0xa8] = '\x04';
   ui_menu_item_element._pad4[0xa9] = '\0';
   ui_menu_item_element._pad4[0xaa] = '\0';
@@ -13591,19 +13592,21 @@ int FUN_00417690(void)
   _DAT_00490114 = 4;
   FUN_004010f0(0x490118,0x1c,8,0x417a90);
   _DAT_004901fc = 4;
-  iVar4 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
+  iVar2 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
   _DAT_004902e4 = 4;
-  return iVar4;
+  return iVar2;
 }
 
 
 
-/* FUN_00417a90 @ 00417a90 */
+/* ui_template_slot_ctor_noop @ 00417a90 */
 
-undefined4 __fastcall FUN_00417a90(undefined4 param_1)
+/* identity/no-op slot constructor callback used while building ui menu template pools */
+
+void * __fastcall ui_template_slot_ctor_noop(void *slot)
 
 {
-  return param_1;
+  return slot;
 }
 
 
@@ -33081,32 +33084,33 @@ void highscore_record_init(void)
 
 
 
-/* FUN_0043b810 @ 0043b810 */
+/* sfx_entry_reset_runtime_state @ 0043b810 */
 
-/* [binja] void* __fastcall sub_43b810(void* arg1) */
+/* clears per-voice/runtime playback state fields in an sfx entry (stream offsets, dsound voice
+   pointers, and default gain) */
 
-void * __fastcall FUN_0043b810(void *arg1)
+void * __fastcall sfx_entry_reset_runtime_state(void *entry)
 
 {
   undefined4 *puVar1;
   int iVar2;
   
   iVar2 = 0x10;
-  *(undefined4 *)((int)arg1 + 0x80) = 0;
-  *(undefined4 *)((int)arg1 + 0x7c) = 0;
-  *(undefined4 *)((int)arg1 + 0x78) = 0;
-  *(undefined4 *)((int)arg1 + 0x74) = 0;
-  *(undefined4 *)((int)arg1 + 0x14) = 0;
-  *(undefined4 *)((int)arg1 + 0x18) = 0;
-  *(undefined4 *)((int)arg1 + 0x1c) = 0;
-  *(undefined4 *)((int)arg1 + 0x20) = 0xbf800000;
-  puVar1 = (undefined4 *)((int)arg1 + 0x60);
+  *(undefined4 *)((int)entry + 0x80) = 0;
+  *(undefined4 *)((int)entry + 0x7c) = 0;
+  *(undefined4 *)((int)entry + 0x78) = 0;
+  *(undefined4 *)((int)entry + 0x74) = 0;
+  *(undefined4 *)((int)entry + 0x14) = 0;
+  *(undefined4 *)((int)entry + 0x18) = 0;
+  *(undefined4 *)((int)entry + 0x1c) = 0;
+  *(undefined4 *)((int)entry + 0x20) = 0xbf800000;
+  puVar1 = (undefined4 *)((int)entry + 0x60);
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + -1;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  return arg1;
+  return entry;
 }
 
 

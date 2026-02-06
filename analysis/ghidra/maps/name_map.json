@@ -51,9 +51,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00401180",
-    "name": "FUN_00401180",
-    "signature": "int FUN_00401180(void)",
-    "comment": "[binja] int32_t sub_401180()"
+    "name": "console_register_clear_log_atexit",
+    "signature": "int console_register_clear_log_atexit(void)",
+    "comment": "registers console_clear_log via crt_atexit for process shutdown cleanup"
   },
   {
     "program": "crimsonland.exe",
@@ -1067,9 +1067,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00417690",
-    "name": "FUN_00417690",
-    "signature": "int FUN_00417690(void)",
-    "comment": "[binja] int32_t sub_417690()"
+    "name": "ui_menu_template_pool_init",
+    "signature": "int ui_menu_template_pool_init(void)",
+    "comment": "initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by ui_menu_layout_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417a90",
+    "name": "ui_template_slot_ctor_noop",
+    "signature": "void * ui_template_slot_ctor_noop(void *slot)",
+    "comment": "identity/no-op slot constructor callback used while building ui menu template pools"
   },
   {
     "program": "crimsonland.exe",
@@ -2458,9 +2465,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043b810",
-    "name": "FUN_0043b810",
-    "signature": "void * FUN_0043b810(void *arg1)",
-    "comment": "[binja] void* __fastcall sub_43b810(void* arg1)"
+    "name": "sfx_entry_reset_runtime_state",
+    "signature": "void * sfx_entry_reset_runtime_state(void *entry)",
+    "comment": "clears per-voice/runtime playback state fields in an sfx entry (stream offsets, dsound voice pointers, and default gain)"
   },
   {
     "program": "crimsonland.exe",

@@ -56,9 +56,9 @@
     "calls": ["console_init"]
   },
   {
-    "name": "FUN_00401180",
+    "name": "console_register_clear_log_atexit",
     "address": "00401180",
-    "signature": "int FUN_00401180(void)",
+    "signature": "int console_register_clear_log_atexit(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_atexit"]
@@ -1176,17 +1176,17 @@
     "calls": []
   },
   {
-    "name": "FUN_00417690",
+    "name": "ui_menu_template_pool_init",
     "address": "00417690",
-    "signature": "int FUN_00417690(void)",
+    "signature": "int ui_menu_template_pool_init(void)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_004010f0", "FUN_00417a90"]
+    "calls": ["FUN_004010f0", "ui_template_slot_ctor_noop"]
   },
   {
-    "name": "FUN_00417a90",
+    "name": "ui_template_slot_ctor_noop",
     "address": "00417a90",
-    "signature": "undefined4 FUN_00417a90(undefined4 param_1)",
+    "signature": "void * ui_template_slot_ctor_noop(void * slot)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2792,9 +2792,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0043b810",
+    "name": "sfx_entry_reset_runtime_state",
     "address": "0043b810",
-    "signature": "void * FUN_0043b810(void * arg1)",
+    "signature": "void * sfx_entry_reset_runtime_state(void * entry)",
     "external": false,
     "calls_total": 0,
     "calls": []

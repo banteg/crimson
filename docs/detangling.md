@@ -1373,3 +1373,20 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
     `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `crt_ci_pow()`.
+
+### UI template/audio init helpers (high confidence)
+
+- `FUN_00417690` -> `ui_menu_template_pool_init`
+  - Evidence: pre-initializes contiguous `ui_element_t` template blocks (`DAT_0048f808..DAT_004902e4`) and
+    seeds each block's mode sentinel (`= 4`) before `ui_menu_layout_init` copies from those templates.
+
+- `FUN_00417a90` -> `ui_template_slot_ctor_noop`
+  - Evidence: identity callback used repeatedly by `ui_menu_template_pool_init` while iterating slot arrays.
+
+- `FUN_00401180` -> `console_register_clear_log_atexit`
+  - Evidence: single-purpose `crt_atexit` wrapper that registers the local cleanup thunk at `LAB_00401190`.
+
+- `FUN_0043b810` -> `sfx_entry_reset_runtime_state`
+  - Evidence: clears runtime fields in the `sfx_entry_*` layout (`+0x74/+0x78/+0x7c/+0x80` stream offsets,
+    voice pointer slab at `+0x24..+0x60`, and default scalar at `+0x20`), matching the same fields used by
+    `sfx_entry_seek`, `sfx_release_entry`, and `music_stream_update`.
