@@ -725,22 +725,35 @@ class SurvivalMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
-            self._draw_ui_text(f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}", x, y, UI_TEXT_COLOR)
-            self._draw_ui_text(f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
+            self._draw_ui_text(
+                f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}",
+                Vec2(x, y),
+                UI_TEXT_COLOR,
+            )
+            self._draw_ui_text(
+                f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}",
+                Vec2(x, y + line),
+                UI_HINT_COLOR,
+            )
             god = "on" if self._state.debug_god_mode else "off"
-            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000", x, y + line * 2.0, UI_HINT_COLOR, scale=0.9)
+            self._draw_ui_text(
+                f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000",
+                Vec2(x, y + line * 2.0),
+                UI_HINT_COLOR,
+                scale=0.9,
+            )
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 3.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 3.0), UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 3.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", Vec2(x, y + line * 3.0), UI_ERROR_COLOR)
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         self._draw_perk_prompt()
         if not self._game_over_active:

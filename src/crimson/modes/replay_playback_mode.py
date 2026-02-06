@@ -153,11 +153,11 @@ class ReplayPlaybackMode:
         if world is not None:
             world.close()
 
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, *, scale: float = 1.0) -> None:
+    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
+            draw_small_text(self._small, text, pos.x, pos.y, scale, color)
         else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _enforce_rush_loadout(self) -> None:
         world = self._world
@@ -425,7 +425,7 @@ class ReplayPlaybackMode:
         else:
             rl.clear_background(rl.BLACK)
 
-        self._draw_ui_text("REPLAY", 18.0, 18.0, rl.Color(255, 255, 255, 220), scale=1.0)
+        self._draw_ui_text("REPLAY", Vec2(18.0, 18.0), rl.Color(255, 255, 255, 220), scale=1.0)
         replay = self._replay
         if replay is not None:
             total = len(replay.inputs)
@@ -433,19 +433,17 @@ class ReplayPlaybackMode:
             total_s = float(total) / float(self._tick_rate)
             self._draw_ui_text(
                 f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s",
-                18.0,
-                42.0,
+                Vec2(18.0, 42.0),
                 rl.Color(220, 220, 220, 200),
                 scale=0.9,
             )
         status = "PAUSED" if self._paused else "PLAYING"
-        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", 18.0, 66.0, rl.Color(220, 220, 220, 200), scale=0.9)
+        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", Vec2(18.0, 66.0), rl.Color(220, 220, 220, 200), scale=0.9)
         self._draw_ui_text(
             "[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s",
-            18.0,
-            90.0,
+            Vec2(18.0, 90.0),
             rl.Color(190, 190, 190, 200),
             scale=0.9,
         )
         if self._finished:
-            self._draw_ui_text("REPLAY ENDED (ESC)", 18.0, 114.0, rl.Color(220, 220, 220, 200), scale=0.9)
+            self._draw_ui_text("REPLAY ENDED (ESC)", Vec2(18.0, 114.0), rl.Color(220, 220, 220, 200), scale=0.9)

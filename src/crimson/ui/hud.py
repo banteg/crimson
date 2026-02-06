@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text
+from grim.geom import Vec2
 from ..game_modes import GameMode
 from ..gameplay import BonusHudState, PlayerState, survival_level_threshold
 from ..weapons import WEAPON_BY_ID
@@ -212,11 +213,11 @@ def load_hud_assets(assets_root: Path) -> HudAssets:
     )
 
 
-def _draw_text(font: SmallFontData | None, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
+def _draw_text(font: SmallFontData | None, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
     if font is not None:
-        draw_small_text(font, text, x, y, scale, color)
+        draw_small_text(font, text, pos.x, pos.y, scale, color)
     else:
-        rl.draw_text(text, int(x), int(y), int(18 * scale), color)
+        rl.draw_text(text, int(pos.x), int(pos.y), int(18 * scale), color)
 
 
 def _with_alpha(color: rl.Color, alpha: float) -> rl.Color:
@@ -240,7 +241,7 @@ def _survival_xp_progress_ratio(*, xp: int, level: int) -> float:
     return (int(xp) - prev_threshold) / float(next_threshold - prev_threshold)
 
 
-def _draw_progress_bar(x: float, y: float, width: float, ratio: float, rgba: tuple[float, float, float, float], scale: float) -> None:
+def _draw_progress_bar(pos: Vec2, width: float, ratio: float, rgba: tuple[float, float, float, float], scale: float) -> None:
     ratio = max(0.0, min(1.0, float(ratio)))
     width = max(0.0, float(width))
     if width <= 0.0:
@@ -259,12 +260,12 @@ def _draw_progress_bar(x: float, y: float, width: float, ratio: float, rgba: tup
         int(255 * rgba[2]),
         int(255 * rgba[3]),
     )
-    rl.draw_rectangle(int(x), int(y), int(width), int(bar_h), bg_color)
+    rl.draw_rectangle(int(pos.x), int(pos.y), int(width), int(bar_h), bg_color)
     inner_w = max(0.0, (width - 2.0 * scale) * ratio)
-    rl.draw_rectangle(int(x + scale), int(y + scale), int(inner_w), int(inner_h), fg_color)
+    rl.draw_rectangle(int(pos.x + scale), int(pos.y + scale), int(inner_w), int(inner_h), fg_color)
 
 
-def draw_target_health_bar(*, x: float, y: float, width: float, ratio: float, alpha: float = 1.0, scale: float = 1.0) -> None:
+def draw_target_health_bar(*, pos: Vec2, width: float, ratio: float, alpha: float = 1.0, scale: float = 1.0) -> None:
     ratio = max(0.0, min(1.0, float(ratio)))
     alpha = max(0.0, min(1.0, float(alpha)))
     scale = max(0.1, float(scale))
@@ -273,7 +274,7 @@ def draw_target_health_bar(*, x: float, y: float, width: float, ratio: float, al
     r = (1.0 - ratio) * 0.9 + 0.1
     g = ratio * 0.9 + 0.1
     rgba = (r, g, 0.7, 0.2 * alpha)
-    _draw_progress_bar(float(x), float(y), float(width), ratio, rgba, scale)
+    _draw_progress_bar(pos, float(width), ratio, rgba, scale)
 
 
 def _weapon_icon_index(weapon_id: int) -> int | None:
@@ -537,7 +538,7 @@ def draw_hud_overlay(
                 extra = ammo_count - bars
                 text_x = ammo_base_x + bars * HUD_AMMO_BAR_STEP + HUD_AMMO_TEXT_OFFSET[0]
                 text_y = base_y + HUD_AMMO_TEXT_OFFSET[1]
-                _draw_text(font, f"+ {extra}", sx(text_x), sy(text_y), text_scale, text_color)
+                _draw_text(font, f"+ {extra}", Vec2(sx(text_x), sy(text_y)), text_scale, text_color)
 
     # Quest HUD panels (mm:ss timer + progress).
     if show_quest_hud:
@@ -607,14 +608,14 @@ def draw_hud_overlay(
         total_seconds = max(0, int(time_ms) // 1000)
         minutes = total_seconds // 60
         seconds = total_seconds % 60
-        _draw_text(font, f"{minutes}:{seconds:02d}", sx(slide_x + 32.0), sy(86.0), text_scale, quest_text_color)
+        _draw_text(font, f"{minutes}:{seconds:02d}", Vec2(sx(slide_x + 32.0), sy(86.0)), text_scale, quest_text_color)
 
-        _draw_text(font, "Progress", sx(18.0), sy(122.0), text_scale, quest_text_color)
+        _draw_text(font, "Progress", Vec2(sx(18.0), sy(122.0)), text_scale, quest_text_color)
 
         if quest_progress_ratio is not None:
             ratio = max(0.0, min(1.0, float(quest_progress_ratio)))
             quest_bar_rgba = (0.2, 0.8, 0.3, alpha * 0.8)
-            _draw_progress_bar(sx(10.0), sy(139.0), sx(70.0), ratio, quest_bar_rgba, scale)
+            _draw_progress_bar(Vec2(sx(10.0), sy(139.0)), sx(70.0), ratio, quest_bar_rgba, scale)
 
     # Survival XP panel.
     xp_target = int(player.experience if score is None else score)
@@ -639,24 +640,21 @@ def draw_hud_overlay(
         _draw_text(
             font,
             "Xp",
-            sx(HUD_SURV_XP_LABEL_POS[0]),
-            sy(HUD_SURV_XP_LABEL_POS[1] + hud_y_shift),
+            Vec2(sx(HUD_SURV_XP_LABEL_POS[0]), sy(HUD_SURV_XP_LABEL_POS[1] + hud_y_shift)),
             text_scale,
             panel_text_color,
         )
         _draw_text(
             font,
             f"{xp_display}",
-            sx(HUD_SURV_XP_VALUE_POS[0]),
-            sy(HUD_SURV_XP_VALUE_POS[1] + hud_y_shift),
+            Vec2(sx(HUD_SURV_XP_VALUE_POS[0]), sy(HUD_SURV_XP_VALUE_POS[1] + hud_y_shift)),
             text_scale,
             panel_text_color,
         )
         _draw_text(
             font,
             f"{int(player.level)}",
-            sx(HUD_SURV_LVL_VALUE_POS[0]),
-            sy(HUD_SURV_LVL_VALUE_POS[1] + hud_y_shift),
+            Vec2(sx(HUD_SURV_LVL_VALUE_POS[0]), sy(HUD_SURV_LVL_VALUE_POS[1] + hud_y_shift)),
             text_scale,
             panel_text_color,
         )
@@ -666,7 +664,7 @@ def draw_hud_overlay(
         bar_y += hud_y_shift
         bar_w = HUD_SURV_PROGRESS_WIDTH
         bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], HUD_XP_BAR_RGBA[3] * alpha)
-        _draw_progress_bar(sx(bar_x), sy(bar_y), sx(bar_w), progress_ratio, bar_rgba, scale)
+        _draw_progress_bar(Vec2(sx(bar_x), sy(bar_y)), sx(bar_w), progress_ratio, bar_rgba, scale)
         max_y = max(max_y, sy(bar_y + 4.0))
 
     # Mode time clock/text (rush/typo-style HUD).
@@ -711,7 +709,7 @@ def draw_hud_overlay(
             )
         total_seconds = max(0, int(time_ms) // 1000)
         time_text = f"{total_seconds} seconds"
-        _draw_text(font, time_text, sx(255.0), sy(10.0), text_scale, text_color)
+        _draw_text(font, time_text, Vec2(sx(255.0), sy(10.0)), text_scale, text_color)
         max_y = max(max_y, sy(10.0 + line_h))
 
     # Bonus HUD slots (icon + timers), slide in/out from the left.
@@ -782,18 +780,54 @@ def draw_hud_overlay(
             # Slot timer bars.
             if not small_indicators:
                 if not has_alt:
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 21.0), sx(100.0), timer * 0.05, bar_rgba, scale)
-                    _draw_text(font, slot.label, sx(slot.slide_x + 36.0), sy(bonus_y + 6.0), text_scale, bonus_text_color)
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 21.0)),
+                        sx(100.0),
+                        timer * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
+                    _draw_text(font, slot.label, Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 6.0)), text_scale, bonus_text_color)
                 else:
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0), sx(100.0), timer * 0.05, bar_rgba, scale)
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 23.0), sx(100.0), timer_alt * 0.05, bar_rgba, scale)
-                    _draw_text(font, slot.label, sx(slot.slide_x + 36.0), sy(bonus_y + 2.0), text_scale, bonus_text_color)
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0)),
+                        sx(100.0),
+                        timer * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 23.0)),
+                        sx(100.0),
+                        timer_alt * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
+                    _draw_text(font, slot.label, Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 2.0)), text_scale, bonus_text_color)
             else:
                 if not has_alt:
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0), sx(32.0), timer * 0.05, bar_rgba, scale)
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 17.0)),
+                        sx(32.0),
+                        timer * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
                 else:
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 13.0), sx(32.0), timer * 0.05, bar_rgba, scale)
-                    _draw_progress_bar(sx(slot.slide_x + 36.0), sy(bonus_y + 19.0), sx(32.0), timer_alt * 0.05, bar_rgba, scale)
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 13.0)),
+                        sx(32.0),
+                        timer * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
+                    _draw_progress_bar(
+                        Vec2(sx(slot.slide_x + 36.0), sy(bonus_y + 19.0)),
+                        sx(32.0),
+                        timer_alt * 0.05,
+                        bar_rgba,
+                        scale,
+                    )
 
             bonus_y += HUD_BONUS_SPACING
             max_y = max(max_y, sy(bonus_y))
@@ -852,6 +886,12 @@ def draw_hud_overlay(
             weapon_entry = WEAPON_BY_ID.get(int(hud_player.weapon_id))
             weapon_name = weapon_entry.name if weapon_entry is not None else f"weapon_{int(hud_player.weapon_id)}"
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
-            _draw_text(font, weapon_name, sx(8.0), sy((aux_base_y + 1.0) + float(idx) * aux_step_y), text_scale, weapon_color)
+            _draw_text(
+                font,
+                weapon_name,
+                Vec2(sx(8.0), sy((aux_base_y + 1.0) + float(idx) * aux_step_y)),
+                text_scale,
+                weapon_color,
+            )
 
     return max_y

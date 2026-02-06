@@ -480,13 +480,13 @@ class WorldRenderer:
             else:
                 overlay_tint = rl.Color(255, 140, 89, tint.a)
 
-        def draw(frame: int, *, x: float, y: float, scale_mul: float, rotation: float, color: rl.Color) -> None:
+        def draw(frame: int, *, pos: Vec2, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
                 texture,
                 grid=grid,
                 frame=max(0, min(63, int(frame))),
-                x=x,
-                y=y,
+                x=pos.x,
+                y=pos.y,
                 scale=base_scale * float(scale_mul),
                 rotation_rad=float(rotation),
                 tint=color,
@@ -508,16 +508,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                x=sx + leg_shadow_off,
-                y=sy + leg_shadow_off,
+                pos=Vec2(sx + leg_shadow_off, sy + leg_shadow_off),
                 scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                x=sx + recoil_x + torso_shadow_off,
-                y=sy + recoil_y + torso_shadow_off,
+                pos=Vec2(sx + recoil_x + torso_shadow_off, sy + recoil_y + torso_shadow_off),
                 scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
@@ -525,16 +523,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                x=sx,
-                y=sy,
+                pos=Vec2(sx, sy),
                 scale_mul=1.0,
                 rotation=float(player.heading),
                 color=tint,
             )
             draw(
                 torso_frame,
-                x=sx + recoil_x,
-                y=sy + recoil_y,
+                pos=Vec2(sx + recoil_x, sy + recoil_y),
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
                 color=overlay_tint,

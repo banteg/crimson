@@ -345,7 +345,7 @@ class TypoShooterMode(BaseGameplayMode):
             bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
             fg = rl.Color(255, 255, 255, int(255 * label_alpha))
             rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
-            self._draw_ui_text(text, x, y, fg, scale=NAME_LABEL_SCALE)
+            self._draw_ui_text(text, Vec2(x, y), fg, scale=NAME_LABEL_SCALE)
 
     def _draw_typing_box(self) -> None:
         screen_h = float(rl.get_screen_height())
@@ -376,7 +376,7 @@ class TypoShooterMode(BaseGameplayMode):
         text = self._typing.text
         full_text = TYPING_PROMPT + text
         text_color = rl.Color(255, 255, 255, 255)
-        self._draw_ui_text(full_text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
+        self._draw_ui_text(full_text, Vec2(TYPING_TEXT_X, text_y), text_color, scale=1.0)
 
         # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 0.4 : 1.0)
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
@@ -389,7 +389,7 @@ class TypoShooterMode(BaseGameplayMode):
         cursor_y = text_y
 
         # Draw cursor as "_" character (original: DAT_004712b8 = "_")
-        self._draw_ui_text(TYPING_CURSOR, cursor_x, cursor_y, cursor_color, scale=1.0)
+        self._draw_ui_text(TYPING_CURSOR, Vec2(cursor_x, cursor_y), cursor_color, scale=1.0)
 
     def draw(self) -> None:
         alive = self._player.health > 0.0
@@ -427,11 +427,11 @@ class TypoShooterMode(BaseGameplayMode):
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         if show_gameplay_ui:
             self._draw_aim_cursor()

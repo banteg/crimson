@@ -2131,10 +2131,11 @@ class HighScoresView:
         self._records = []
         self._scroll_index = 0
 
-    def _panel_top_left(self, *, pos_x: float, pos_y: float, scale: float) -> tuple[float, float]:
-        x0 = float(pos_x + MENU_PANEL_OFFSET_X * scale)
-        y0 = float(pos_y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale)
-        return x0, y0
+    def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
+        return Vec2(
+            pos.x + MENU_PANEL_OFFSET_X * scale,
+            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+        )
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -2159,7 +2160,9 @@ class HighScoresView:
         if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             font = self._ensure_small_font()
-            panel_x0, panel_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
+            panel_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
+            panel_x0 = panel_top_left.x
+            panel_y0 = panel_top_left.y
 
             x0 = panel_x0 + HS_BUTTON_X * scale
             y0 = panel_y0 + HS_BUTTON_Y0 * scale
@@ -2262,9 +2265,13 @@ class HighScoresView:
             direction_flag=1,
         )
 
-        left_x0, left_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
         right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
-        right_x0, right_y0 = self._panel_top_left(pos_x=right_panel_pos_x, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
+        left_x0 = left_top_left.x
+        left_y0 = left_top_left.y
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         left_x0 += float(left_slide_x)
         right_x0 += float(right_slide_x)
 
@@ -2654,7 +2661,7 @@ class HighScoresView:
         weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
         weapon_name, icon_index = self._weapon_label_and_icon(weapon_id)
         if icon_index is not None:
-            self._draw_wicon(icon_index, x=right_x0 + HS_LOCAL_WICON_X * scale, y=right_y0 + HS_LOCAL_WICON_Y * scale, scale=scale)
+            self._draw_wicon(icon_index, pos=Vec2(right_x0 + HS_LOCAL_WICON_X * scale, right_y0 + HS_LOCAL_WICON_Y * scale), scale=scale)
         draw_small_text(
             font,
             weapon_name,
@@ -2664,7 +2671,7 @@ class HighScoresView:
             text_color,
         )
 
-    def _draw_wicon(self, icon_index: int, *, x: float, y: float, scale: float) -> None:
+    def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
         tex = self._wicons_tex
         if tex is None:
             return
@@ -2680,7 +2687,7 @@ class HighScoresView:
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(float(x), float(y), icon_w * scale, icon_h * scale),
+            rl.Rectangle(float(pos.x), float(pos.y), icon_w * scale, icon_h * scale),
             rl.Vector2(0.0, 0.0),
             0.0,
             rl.WHITE,

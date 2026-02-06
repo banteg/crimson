@@ -95,11 +95,11 @@ class SpawnPlanView:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _draw_ui_label(self, label: str, value: str, x: float, y: float) -> None:
+    def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
         label_text = f"{label}: "
-        draw_ui_text(self._small, label_text, x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, label_text, pos.x, pos.y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
         label_w = measure_small_text_width(self._small, label_text, UI_TEXT_SCALE) if self._small else 0.0
-        draw_ui_text(self._small, value, x + label_w, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, value, pos.x + label_w, pos.y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
@@ -260,15 +260,15 @@ class SpawnPlanView:
         draw_ui_text(self._small, hints, margin, margin + line_h, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
-        self._draw_ui_label("seed", f"0x{self._seed:08x}", margin, y)
+        self._draw_ui_label("seed", f"0x{self._seed:08x}", Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("world_scale", f"{self._world_scale:.2f}", margin, y)
+        self._draw_ui_label("world_scale", f"{self._world_scale:.2f}", Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("hardcore", str(self._hardcore), margin, y)
+        self._draw_ui_label("hardcore", str(self._hardcore), Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("difficulty", str(self._difficulty), margin, y)
+        self._draw_ui_label("difficulty", str(self._difficulty), Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), margin, y)
+        self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), Vec2(margin, y))
         y += line_h
 
         if self._error is not None:
@@ -282,19 +282,17 @@ class SpawnPlanView:
         self._draw_ui_label(
             "plan",
             f"creatures={summary.creature_count}  slots={summary.spawn_slot_count}  effects={summary.effect_count}  primary={summary.primary_idx}",
-            margin,
-            y,
+            Vec2(margin, y),
         )
         y += line_h
         sim_state = "running" if self._sim_running else "paused"
-        self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", margin, y)
+        self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", Vec2(margin, y))
         y += line_h
         for idx, slot in enumerate(self._sim_slots[:3]):
             self._draw_ui_label(
                 f"slot{idx:02d}",
                 f"timer={slot.timer:5.2f} count={slot.count:3d}/{slot.limit:<3d} interval={slot.interval:5.2f} child=0x{slot.child_template_id:02x}",
-                margin,
-                y,
+                Vec2(margin, y),
             )
             y += line_h
         if self._sim_events:

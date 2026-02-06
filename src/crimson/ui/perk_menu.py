@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.geom import Vec2
 from grim.math import clamp
 
 from .layout import menu_widescreen_y_shift
@@ -72,8 +73,7 @@ def perk_menu_compute_layout(
     layout: PerkMenuLayout,
     *,
     screen_w: float,
-    origin_x: float,
-    origin_y: float,
+    origin: Vec2,
     scale: float,
     choice_count: int,
     expert_owned: bool,
@@ -85,8 +85,8 @@ def perk_menu_compute_layout(
     panel_x = layout.panel_x + panel_slide_x
     panel_y = layout.panel_y + widescreen_shift_y
     panel = rl.Rectangle(
-        origin_x + panel_x * scale,
-        origin_y + panel_y * scale,
+        origin.x + panel_x * scale,
+        origin.y + panel_y * scale,
         layout.panel_w * scale,
         layout.panel_h * scale,
     )
@@ -262,10 +262,10 @@ MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
 
 
-def menu_item_hit_rect(font: SmallFontData | None, label: str, *, x: float, y: float, scale: float) -> rl.Rectangle:
+def menu_item_hit_rect(font: SmallFontData | None, label: str, *, pos: Vec2, scale: float) -> rl.Rectangle:
     width = _ui_text_width(font, label, scale)
     height = 16.0 * scale
-    return rl.Rectangle(float(x), float(y), float(width), float(height))
+    return rl.Rectangle(float(pos.x), float(pos.y), float(width), float(height))
 
 
 def draw_menu_item(
@@ -319,9 +319,9 @@ def button_width(font: SmallFontData | None, label: str, *, scale: float, force_
     return 145.0 * scale
 
 
-def button_hit_rect(*, x: float, y: float, width: float) -> rl.Rectangle:
+def button_hit_rect(*, pos: Vec2, width: float) -> rl.Rectangle:
     # Mirrors ui_button_update: y is offset by +2, hit height is 0x1c (28).
-    return rl.Rectangle(float(x), float(y + 2.0), float(width), float(28.0))
+    return rl.Rectangle(float(pos.x), float(pos.y + 2.0), float(width), float(28.0))
 
 
 def button_update(
@@ -337,7 +337,7 @@ def button_update(
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(x=x, y=y, width=width))
+        state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(pos=Vec2(x, y), width=width))
 
     delta = 6 if (state.enabled and state.hovered) else -4
     state.hover_t = int(clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))

@@ -669,7 +669,7 @@ class LightingDebugView:
             )
         )
 
-    def _dump_debug(self, *, light_x: float, light_y: float, sdf_ok: bool) -> None:
+    def _dump_debug(self, *, light_pos: Vec2, sdf_ok: bool) -> None:
         if self._light_rt is None:
             return
         out_dir = Path("artifacts") / "lighting-debug"
@@ -696,18 +696,18 @@ class LightingDebugView:
             iw = int(img.width)
             ih = int(img.height)
 
-            def sample(x: float, y: float) -> list[int]:
-                xi = max(0, min(iw - 1, int(x)))
-                yi = max(0, min(ih - 1, int(y)))
+            def sample(pos: Vec2) -> list[int]:
+                xi = max(0, min(iw - 1, int(pos.x)))
+                yi = max(0, min(ih - 1, int(pos.y)))
                 c = rl.get_image_color(img, xi, yi)
                 return [int(c.r), int(c.g), int(c.b), int(c.a)]
 
-            samples["light_xy"] = sample(light_x, light_y)
-            samples["light_xy_flip_y"] = sample(light_x, float(ih - 1) - light_y)
-            samples["center"] = sample(float(iw) * 0.5, float(ih) * 0.5)
-            samples["center_flip_y"] = sample(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5)
-            samples["tl"] = sample(0.0, 0.0)
-            samples["bl"] = sample(0.0, float(ih - 1))
+            samples["light_xy"] = sample(light_pos)
+            samples["light_xy_flip_y"] = sample(Vec2(light_pos.x, float(ih - 1) - light_pos.y))
+            samples["center"] = sample(Vec2(float(iw) * 0.5, float(ih) * 0.5))
+            samples["center_flip_y"] = sample(Vec2(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5))
+            samples["tl"] = sample(Vec2(0.0, 0.0))
+            samples["bl"] = sample(Vec2(0.0, float(ih - 1)))
 
             step_x = max(1, iw // 32)
             step_y = max(1, ih // 32)
@@ -771,7 +771,7 @@ class LightingDebugView:
             "sdf_ok": bool(sdf_ok),
             "screen_size": [int(rl.get_screen_width()), int(rl.get_screen_height())],
             "light_rt_size": [w, h],
-            "light_pos": [float(light_x), float(light_y)],
+            "light_pos": [float(light_pos.x), float(light_pos.y)],
             "light_radius": float(self._light_radius),
             "light_source_radius": float(self._light_source_radius),
             "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
@@ -802,7 +802,7 @@ class LightingDebugView:
         except Exception:
             pass
 
-    def _render_lightmap_sdf(self, *, light_x: float, light_y: float) -> bool:
+    def _render_lightmap_sdf(self, *, light_pos: Vec2) -> bool:
         if self._light_rt is None:
             return False
         shader = self._ensure_sdf_shader()
@@ -839,11 +839,11 @@ class LightingDebugView:
             circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
         self._last_sdf_circles = circles
 
-        def set_vec2(name: str, x: float, y: float) -> None:
+        def set_vec2(name: str, value: Vec2) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            buf = rl.ffi.new("float[2]", [float(x), float(y)])
+            buf = rl.ffi.new("float[2]", [float(value.x), float(value.y)])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
 
         def set_vec4(name: str, x: float, y: float, z: float, q: float) -> None:
@@ -872,7 +872,7 @@ class LightingDebugView:
         rl.rl_disable_depth_test()
         rl.rl_disable_depth_mask()
         rl.begin_shader_mode(shader)
-        set_vec2("u_resolution", w, h)
+        set_vec2("u_resolution", Vec2(w, h))
         set_float("u_shadow_k", float(self._sdf_shadow_k))
         set_float("u_shadow_floor", float(self._sdf_shadow_floor))
         set_int("u_debug_mode", int(self._sdf_debug_mode))
@@ -898,8 +898,8 @@ class LightingDebugView:
         def cursor_light() -> tuple[float, float, float, float, float, float, float]:
             lt = self._light_tint
             return (
-                float(light_x),
-                float(light_y),
+                float(light_pos.x),
+                float(light_pos.y),
                 float(self._light_radius),
                 float(self._light_source_radius),
                 float(lt.r) / 255.0,
@@ -978,7 +978,7 @@ class LightingDebugView:
             if lx < -lrange or lx > w + lrange or ly < -lrange or ly > h + lrange:
                 continue
             set_vec4("u_light_color", lr, lg, lb, 1.0)
-            set_vec2("u_light_pos", lx, ly)
+            set_vec2("u_light_pos", Vec2(lx, ly))
             set_float("u_light_range", lrange)
             set_float("u_light_source_radius", lsrc)
             draw_fullscreen()
@@ -1010,9 +1010,8 @@ class LightingDebugView:
             )
             return
 
-        light_x = float(self._ui_mouse_x)
-        light_y = float(self._ui_mouse_y)
-        sdf_ok = self._render_lightmap_sdf(light_x=light_x, light_y=light_y)
+        light_pos = Vec2(float(self._ui_mouse_x), float(self._ui_mouse_y))
+        sdf_ok = self._render_lightmap_sdf(light_pos=light_pos)
         if not sdf_ok:
             rl.begin_texture_mode(self._light_rt)
             rl.clear_background(self._ambient)
@@ -1092,19 +1091,19 @@ class LightingDebugView:
                 r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
                 rl.draw_circle_lines(int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 
-        rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
+        rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), 6, rl.Color(255, 255, 255, 220))
         if self._cursor_light_enabled:
-            rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
+            rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
             rl.draw_circle_lines(
-                int(light_x),
-                int(light_y),
+                int(light_pos.x),
+                int(light_pos.y),
                 int(max(1.0, self._light_source_radius)),
                 rl.Color(255, 255, 255, 100),
             )
 
         if self._debug_dump_next_frame:
             self._debug_dump_next_frame = False
-            self._dump_debug(light_x=light_x, light_y=light_y, sdf_ok=sdf_ok)
+            self._dump_debug(light_pos=light_pos, sdf_ok=sdf_ok)
             if self._debug_auto_dump:
                 self.close_requested = True
 

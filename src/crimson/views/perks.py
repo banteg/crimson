@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from grim.geom import Vec2
-
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -182,7 +181,7 @@ class PerkSelectionView:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        origin = ui_origin(screen_w, screen_h, scale)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -192,8 +191,7 @@ class PerkSelectionView:
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
+            origin=origin,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
@@ -204,7 +202,7 @@ class PerkSelectionView:
             label = perk_display_name(int(perk_id))
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
+            rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
             if rl.check_collision_point_rec(mouse, rect):
                 self._perk_menu_selected = idx
                 if click:
@@ -284,15 +282,14 @@ class PerkSelectionView:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        origin = ui_origin(screen_w, screen_h, scale)
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
+            origin=origin,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
@@ -328,7 +325,7 @@ class PerkSelectionView:
             label = perk_display_name(int(perk_id))
             item_x = computed.list_x
             item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
+            rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
             hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
             draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
 

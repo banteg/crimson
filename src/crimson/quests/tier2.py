@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import random
 
+from grim.geom import Vec2
+
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
 from .helpers import (
@@ -423,16 +425,16 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry | None] = [None] * 26
 
-    def set_entry(idx: int, x: float, y: float, spawn_id: int, trigger: int, count: int) -> None:
+    def set_entry(idx: int, pos: Vec2, spawn_id: int, trigger: int, count: int) -> None:
         if idx < 0 or idx >= len(entries):
             return
-        entries[idx] = spawn(x=x, y=y, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
+        entries[idx] = spawn(x=pos.x, y=pos.y, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
 
     # Loop 1: x from 256 to <688, step 72
     trigger = 500
     idx = 0
     for x in range(0x100, 0x2B0, 0x48):
-        set_entry(idx, float(x), 256.0, SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 256.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -440,7 +442,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 5900
     idx = 6
     for y in range(0x100, 0x2B0, 0x48):
-        set_entry(idx, 688.0, float(y), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(688.0, float(y)), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -448,7 +450,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 11300
     idx = 12
     for x in (0x2B0, 0x268, 0x220, 0x1D8):
-        set_entry(idx, float(x), 688.0, SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 688.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -456,7 +458,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 14900
     idx = 16
     for y in (0x2B0, 0x268, 0x220, 0x1D8):
-        set_entry(idx, 400.0, float(y), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(400.0, float(y)), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -464,15 +466,15 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 18500
     idx = 20
     for x in range(400, 0x220, 0x48):
-        set_entry(idx, float(x), 400.0, SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 400.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
         trigger += 900
         idx += 1
 
     # Final fixed entries
-    set_entry(22, 128.0, 128.0, SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 22300, 1)
-    set_entry(23, 896.0, 128.0, SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 22300, 1)
-    set_entry(24, 128.0, 896.0, SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 24300, 1)
-    set_entry(25, 896.0, 896.0, SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 24300, 1)
+    set_entry(22, Vec2(128.0, 128.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 22300, 1)
+    set_entry(23, Vec2(896.0, 128.0), SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 22300, 1)
+    set_entry(24, Vec2(128.0, 896.0), SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 24300, 1)
+    set_entry(25, Vec2(896.0, 896.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 24300, 1)
 
     return [entry for entry in entries if entry is not None]
 

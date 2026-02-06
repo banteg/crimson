@@ -6,6 +6,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 
 from ..demo_trial import DemoTrialOverlayInfo
@@ -76,8 +77,8 @@ class DemoTrialOverlayUi:
             self._cl_logo = cache.get_or_load("cl_logo", "load/logo_crimsonland.tga").texture
 
     @staticmethod
-    def _panel_xy(*, screen_w: float, screen_h: float) -> tuple[float, float]:
-        return screen_w * 0.5 - 256.0, screen_h * 0.5 - 128.0
+    def _panel_xy(*, screen_w: float, screen_h: float) -> Vec2:
+        return Vec2(screen_w * 0.5 - 256.0, screen_h * 0.5 - 128.0)
 
     def update(self, dt_ms: int) -> str | None:
         self._ensure_loaded()
@@ -90,15 +91,15 @@ class DemoTrialOverlayUi:
         mouse.y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        panel_x, panel_y = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
+        panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
         font = self._font
         scale = 1.0
         button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=True)
         gap = 20.0
         row_w = button_w * 2.0 + gap
-        base_x = panel_x + 256.0 - row_w * 0.5
-        button_y = panel_y + 214.0
+        base_x = panel_pos.x + 256.0 - row_w * 0.5
+        button_y = panel_pos.y + 214.0
 
         purchase_clicked = button_update(
             self._purchase_button,
@@ -125,17 +126,17 @@ class DemoTrialOverlayUi:
             return "maybe_later"
         return None
 
-    def _draw_text_block(self, text: str, *, x: float, y: float, width: float, scale: float) -> float:
+    def _draw_text_block(self, text: str, *, pos: Vec2, width: float, scale: float) -> float:
         font = self._font
         lines = wrap_ui_text(font, text, max_width=float(width), scale=float(scale))
         line_h = (font.cell_size if font is not None else 16) * scale
         color = rl.Color(220, 220, 220, 255)
-        y_pos = float(y)
+        y_pos = float(pos.y)
         for line in lines:
             if font is not None:
-                draw_small_text(font, line, float(x), y_pos, float(scale), color)
+                draw_small_text(font, line, float(pos.x), y_pos, float(scale), color)
             else:
-                rl.draw_text(line, int(x), int(y_pos), int(20 * scale), color)
+                rl.draw_text(line, int(pos.x), int(y_pos), int(20 * scale), color)
             y_pos += float(line_h)
         return y_pos
 
@@ -146,24 +147,24 @@ class DemoTrialOverlayUi:
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        panel_x, panel_y = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
+        panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
         rl.draw_rectangle(0, 0, int(screen_w), int(screen_h), rl.Color(0, 0, 0, 180))
-        rl.draw_rectangle(int(panel_x), int(panel_y), 512, 256, rl.Color(18, 18, 22, 230))
-        rl.draw_rectangle_lines(int(panel_x), int(panel_y), 512, 256, rl.Color(255, 255, 255, 255))
+        rl.draw_rectangle(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(18, 18, 22, 230))
+        rl.draw_rectangle_lines(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(255, 255, 255, 255))
 
         logo = self._cl_logo
         if logo is not None:
             src = rl.Rectangle(0.0, 0.0, float(logo.width), float(logo.height))
-            dst = rl.Rectangle(panel_x + 72.0, panel_y + 22.0, 371.2, 46.4)
+            dst = rl.Rectangle(panel_pos.x + 72.0, panel_pos.y + 22.0, 371.2, 46.4)
             rl.draw_texture_pro(logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = self._font
         header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
-            draw_small_text(font, header, panel_x + 28.0, panel_y + 9.0, 1.0, rl.Color(220, 220, 220, 255))
+            draw_small_text(font, header, panel_pos.x + 28.0, panel_pos.y + 9.0, 1.0, rl.Color(220, 220, 220, 255))
         else:
-            rl.draw_text(header, int(panel_x + 28.0), int(panel_y + 9.0), 16, rl.Color(220, 220, 220, 255))
+            rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 
         body = ""
         if info.kind == "quest_tier_limit":
@@ -193,10 +194,10 @@ class DemoTrialOverlayUi:
                 "Buy it now. You'll have a great time."
             )
 
-        text_x = panel_x + 26.0
-        text_y = panel_y + 78.0
+        text_x = panel_pos.x + 26.0
+        text_y = panel_pos.y + 78.0
         text_w = 512.0 - 52.0
-        self._draw_text_block(body, x=text_x, y=text_y, width=text_w, scale=1.0)
+        self._draw_text_block(body, pos=Vec2(text_x, text_y), width=text_w, scale=1.0)
 
         assets = self._assets
         if assets is not None:
@@ -204,8 +205,8 @@ class DemoTrialOverlayUi:
             button_w = 145.0 * scale
             gap = 20.0
             row_w = button_w * 2.0 + gap
-            base_x = panel_x + 256.0 - row_w * 0.5
-            button_y = panel_y + 214.0
+            base_x = panel_pos.x + 256.0 - row_w * 0.5
+            button_y = panel_pos.y + 214.0
             button_draw(
                 assets,
                 font,

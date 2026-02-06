@@ -366,11 +366,11 @@ class TutorialMode(BaseGameplayMode):
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         if perk_menu_active:
             self._perk_menu.draw(self._perk_menu_context())
@@ -410,7 +410,7 @@ class TutorialMode(BaseGameplayMode):
         if self._paused:
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
-            self._draw_ui_text("paused (TAB)", x, y, UI_HINT_COLOR)
+            self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
     def _draw_prompt_panel(self, text: str, *, alpha: float, y: float) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -425,7 +425,7 @@ class TutorialMode(BaseGameplayMode):
         x = float(rect.x + self._ui_layout.panel_pad_x)
         line_y = float(rect.y + self._ui_layout.panel_pad_y)
         for line in lines:
-            self._draw_ui_text(line, x, line_y, color, scale=1.0)
+            self._draw_ui_text(line, Vec2(x, line_y), color, scale=1.0)
             line_y += line_h
 
     def _draw_menu_cursor(self) -> None:

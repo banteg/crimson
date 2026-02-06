@@ -99,10 +99,11 @@ class _DatabaseBaseView:
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
-    def _panel_top_left(self, *, pos_x: float, pos_y: float, scale: float) -> tuple[float, float]:
-        x0 = pos_x + MENU_PANEL_OFFSET_X * scale
-        y0 = pos_y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale
-        return float(x0), float(y0)
+    def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
+        return Vec2(
+            pos.x + MENU_PANEL_OFFSET_X * scale,
+            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+        )
 
     def _draw_sign(self) -> None:
         assets = self._assets
@@ -162,7 +163,9 @@ class _DatabaseBaseView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        left_x0, left_y0 = self._panel_top_left(pos_x=LEFT_PANEL_POS_X, pos_y=LEFT_PANEL_POS_Y, scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
+        left_x0 = left_top_left.x
+        left_y0 = left_top_left.y
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
@@ -216,8 +219,12 @@ class _DatabaseBaseView:
             direction_flag=1,
         )
 
-        left_x0, left_y0 = self._panel_top_left(pos_x=LEFT_PANEL_POS_X, pos_y=LEFT_PANEL_POS_Y, scale=scale)
-        right_x0, right_y0 = self._panel_top_left(pos_x=RIGHT_PANEL_POS_X, pos_y=RIGHT_PANEL_POS_Y, scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(RIGHT_PANEL_POS_X, RIGHT_PANEL_POS_Y), scale=scale)
+        left_x0 = left_top_left.x
+        left_y0 = left_top_left.y
+        right_x0 = right_top_left.x
+        right_y0 = right_top_left.y
         left_x0 += float(left_slide_x)
         right_x0 += float(right_slide_x)
 
@@ -354,7 +361,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         )
         draw_small_text(font, name, right_x0 + 50.0 * scale, right_y0 + 50.0 * scale, text_scale, text_color)
         if icon_index is not None:
-            self._draw_wicon(icon_index, x=right_x0 + 82.0 * scale, y=right_y0 + 82.0 * scale, scale=scale)
+            self._draw_wicon(icon_index, pos=Vec2(right_x0 + 82.0 * scale, right_y0 + 82.0 * scale), scale=scale)
 
         if weapon is not None:
             rpm = self._weapon_rpm(weapon)
@@ -426,7 +433,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             return None
         return int(60.0 / cooldown)
 
-    def _draw_wicon(self, icon_index: int, *, x: float, y: float, scale: float) -> None:
+    def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
         tex = self._wicons_tex
         if tex is None:
             return
@@ -442,7 +449,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(float(x), float(y), icon_w * scale, icon_h * scale),
+            rl.Rectangle(float(pos.x), float(pos.y), icon_w * scale, icon_h * scale),
             rl.Vector2(0.0, 0.0),
             0.0,
             rl.WHITE,

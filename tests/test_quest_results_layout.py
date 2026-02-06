@@ -64,9 +64,9 @@ def _patch_draw_environment(  # noqa: ANN001
     monkeypatch.setattr("crimson.ui.quest_results.QuestResultsUi._text_width", lambda _self, text, _scale: float(len(text) * 8))
     monkeypatch.setattr(
         "crimson.ui.quest_results.QuestResultsUi._draw_small",
-        lambda _self, text, x, y, _scale, color: (
+        lambda _self, text, pos, _scale, color: (
             captured_text.append(str(text)),
-            captured_draws.append((str(text), float(x), float(y), color)) if captured_draws is not None else None,
+            captured_draws.append((str(text), float(pos.x), float(pos.y), color)) if captured_draws is not None else None,
         ),
     )
     monkeypatch.setattr(

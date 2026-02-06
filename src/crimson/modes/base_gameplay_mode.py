@@ -151,8 +151,7 @@ class BaseGameplayMode:
         if width <= 1e-3:
             return
         draw_target_health_bar(
-            x=screen_left.x,
-            y=screen_left.y,
+            pos=Vec2(screen_left.x, screen_left.y),
             width=width,
             ratio=ratio,
             alpha=alpha,
@@ -193,11 +192,11 @@ class BaseGameplayMode:
             return int(measure_small_text_width(self._small, text, scale))
         return int(rl.measure_text(text, int(20 * scale)))
 
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, scale: float = 1.0) -> None:
+    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
+            draw_small_text(self._small, text, pos.x, pos.y, scale, color)
         else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return rl.Vector2(float(self._ui_mouse_x), float(self._ui_mouse_y))

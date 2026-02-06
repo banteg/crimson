@@ -24,7 +24,7 @@ from ..persistence.highscores import (
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
 from ..weapons import WEAPON_BY_ID
 from .formatting import format_ordinal, format_time_mm_ss
-from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
+from .layout import menu_widescreen_y_shift, ui_scale
 from .menu_panel import draw_classic_menu_panel
 from .cursor import draw_menu_cursor
 from .perk_menu import (
@@ -262,18 +262,20 @@ class QuestResultsUi:
             return float(rl.measure_text(text, int(20 * scale)))
         return float(measure_small_text_width(self.font, text, scale))
 
-    def _draw_small(self, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
+    def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         if self.font is not None:
-            draw_small_text(self.font, text, x, y, scale, color)
+            draw_small_text(self.font, text, pos.x, pos.y, scale, color)
         else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
-    def _draw_name_entry_stats(self, *, x: float, y: float, scale: float, alpha: float, show_weapon_row: bool) -> None:
+    def _draw_name_entry_stats(self, *, pos: Vec2, scale: float, alpha: float, show_weapon_row: bool) -> None:
         if self.record is None:
             return
         record = self.record
         qualifies = int(self.rank) < TABLE_MAX
         rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
+        x = pos.x
+        y = pos.y
 
         seconds = float(int(record.survival_elapsed_ms)) * 0.001
         score_value = f"{seconds:.2f} secs"
@@ -291,18 +293,33 @@ class QuestResultsUi:
         right_center_x = right_label_x + 32.0 * scale
 
         score_w = self._text_width("Score", 1.0 * scale)
-        self._draw_small("Score", left_center_x - score_w * 0.5, y, 1.0 * scale, col_label)
+        self._draw_small("Score", Vec2(left_center_x - score_w * 0.5, y), 1.0 * scale, col_label)
         score_value_w = self._text_width(score_value, 1.0 * scale)
-        self._draw_small(score_value, left_center_x - score_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_score_value)
+        self._draw_small(
+            score_value,
+            Vec2(left_center_x - score_value_w * 0.5, y + 15.0 * scale),
+            1.0 * scale,
+            col_score_value,
+        )
         rank_label = f"Rank: {rank_text}"
         rank_w = self._text_width(rank_label, 1.0 * scale)
-        self._draw_small(rank_label, left_center_x - rank_w * 0.5, y + 30.0 * scale, 1.0 * scale, col_label)
+        self._draw_small(
+            rank_label,
+            Vec2(left_center_x - rank_w * 0.5, y + 30.0 * scale),
+            1.0 * scale,
+            col_label,
+        )
 
         # Native path: FUN_00441220 sets current color from DAT_004ccca8 just before
         # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
-        self._draw_small("Experience", right_label_x, y, 1.0 * scale, col_line)
+        self._draw_small("Experience", Vec2(right_label_x, y), 1.0 * scale, col_line)
         xp_value_w = self._text_width(xp_value, 1.0 * scale)
-        self._draw_small(xp_value, right_center_x - xp_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_label)
+        self._draw_small(
+            xp_value,
+            Vec2(right_center_x - xp_value_w * 0.5, y + 15.0 * scale),
+            1.0 * scale,
+            col_label,
+        )
 
         # Native vertical separator drawn via FUN_00441220 from x+84, height 48.
         sep_x = x + 84.0 * scale
@@ -325,16 +342,16 @@ class QuestResultsUi:
         weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id}"
         name_w = self._text_width(weapon_name, 1.0 * scale)
         name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
-        self._draw_small(weapon_name, name_x, row_y + 32.0 * scale, 1.0 * scale, col_row)
+        self._draw_small(weapon_name, Vec2(name_x, row_y + 32.0 * scale), 1.0 * scale, col_row)
 
         frags_text = f"Frags: {int(record.creature_kill_count)}"
-        self._draw_small(frags_text, x + 114.0 * scale, row_y + 1.0 * scale, 1.0 * scale, col_row)
+        self._draw_small(frags_text, Vec2(x + 114.0 * scale, row_y + 1.0 * scale), 1.0 * scale, col_row)
 
         fired = max(0, int(record.shots_fired))
         hit = max(0, min(int(record.shots_hit), fired))
         ratio = int((hit * 100) / fired) if fired > 0 else 0
         hit_text = f"Hit %: {ratio}%"
-        self._draw_small(hit_text, x + 114.0 * scale, row_y + 15.0 * scale, 1.0 * scale, col_row)
+        self._draw_small(hit_text, Vec2(x + 114.0 * scale, row_y + 15.0 * scale), 1.0 * scale, col_row)
 
         rl.draw_line(int(x - 12.0 * scale), int(row_y + 48.0 * scale), int(x + 180.0 * scale), int(row_y + 48.0 * scale), col_line)
 
@@ -503,7 +520,6 @@ class QuestResultsUi:
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())
             scale = ui_scale(screen_w, screen_h)
-            _origin_x, _origin_y = ui_origin(screen_w, screen_h, scale)
             _panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
             qualifies = int(self.rank) < TABLE_MAX
             content_x = left + QUEST_RESULTS_CONTENT_X * scale
@@ -562,8 +578,6 @@ class QuestResultsUi:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        _origin_x, _origin_y = ui_origin(screen_w, screen_h, scale)
-        _ = _origin_x, _origin_y
 
         panel, left, top = self._panel_layout(screen_w=screen_w, scale=scale)
 
@@ -622,16 +636,16 @@ class QuestResultsUi:
             perk_value = format_time_mm_ss(perk_bonus_ms)
             final_value = format_time_mm_ss(final_time_ms)
 
-            self._draw_small("Base Time:", label_x, y, 1.0 * scale, _row_color(0))
-            self._draw_small(base_value, value_x, y, 1.0 * scale, _row_color(0))
+            self._draw_small("Base Time:", Vec2(label_x, y), 1.0 * scale, _row_color(0))
+            self._draw_small(base_value, Vec2(value_x, y), 1.0 * scale, _row_color(0))
             y += 20.0 * scale
 
-            self._draw_small("Life Bonus:", label_x, y, 1.0 * scale, _row_color(1))
-            self._draw_small(life_value, value_x, y, 1.0 * scale, _row_color(1))
+            self._draw_small("Life Bonus:", Vec2(label_x, y), 1.0 * scale, _row_color(1))
+            self._draw_small(life_value, Vec2(value_x, y), 1.0 * scale, _row_color(1))
             y += 20.0 * scale
 
-            self._draw_small("Unpicked Perk Bonus:", label_x, y, 1.0 * scale, _row_color(2))
-            self._draw_small(perk_value, value_x, y, 1.0 * scale, _row_color(2))
+            self._draw_small("Unpicked Perk Bonus:", Vec2(label_x, y), 1.0 * scale, _row_color(2))
+            self._draw_small(perk_value, Vec2(value_x, y), 1.0 * scale, _row_color(2))
             y += 20.0 * scale
 
             # Final time underline + row (matches the extra quad draw in native).
@@ -640,13 +654,13 @@ class QuestResultsUi:
             rl.draw_rectangle(int(label_x - 4.0 * scale), int(line_y), int(168.0 * scale), int(1.0 * scale), line_color)
 
             y += 8.0 * scale
-            self._draw_small("Final Time:", label_x, y, 1.0 * scale, _row_color(3, final=True))
-            self._draw_small(final_value, value_x, y, 1.0 * scale, _row_color(3, final=True))
+            self._draw_small("Final Time:", Vec2(label_x, y), 1.0 * scale, _row_color(3, final=True))
+            self._draw_small(final_value, Vec2(value_x, y), 1.0 * scale, _row_color(3, final=True))
 
         elif self.phase == 1:
             anchor_x = content_x
             text_y = top + 118.0 * scale
-            self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_UI_ACCENT)
+            self._draw_small("State your name trooper!", Vec2(anchor_x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT)
 
             input_x = anchor_x
             input_y = top + 150.0 * scale
@@ -674,7 +688,7 @@ class QuestResultsUi:
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_x = anchor_x + 26.0 * scale
             score_card_y = input_y + 46.0 * scale
-            self._draw_name_entry_stats(x=score_card_x, y=score_card_y, scale=scale, alpha=1.0, show_weapon_row=True)
+            self._draw_name_entry_stats(pos=Vec2(score_card_x, score_card_y), scale=scale, alpha=1.0, show_weapon_row=True)
 
         else:
             score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
@@ -682,24 +696,23 @@ class QuestResultsUi:
             if (not qualifies) and self.font is not None:
                 self._draw_small(
                     "Score too low for top100.",
-                    score_card_x + 8.0 * scale,
-                    top + 102.0 * scale,
+                    Vec2(score_card_x + 8.0 * scale, top + 102.0 * scale),
                     1.0 * scale,
                     rl.Color(200, 200, 200, 255),
                 )
 
             card_y = var_c_12 + 16.0 * scale
-            self._draw_name_entry_stats(x=score_card_x, y=card_y, scale=scale, alpha=1.0, show_weapon_row=False)
+            self._draw_name_entry_stats(pos=Vec2(score_card_x, card_y), scale=scale, alpha=1.0, show_weapon_row=False)
 
             # Unlock lines (their presence shifts the buttons down in native).
             var_c_14 = var_c_12 + 84.0 * scale
             if self.unlock_weapon_name:
-                self._draw_small("Weapon unlocked:", score_card_x, var_c_14 + 1.0 * scale, 1.0 * scale, COLOR_TEXT_SUBTLE)
-                self._draw_small(self.unlock_weapon_name, score_card_x, var_c_14 + 14.0 * scale, 1.0 * scale, COLOR_TEXT)
+                self._draw_small("Weapon unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE)
+                self._draw_small(self.unlock_weapon_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT)
                 var_c_14 += 30.0 * scale
             if self.unlock_perk_name:
-                self._draw_small("Perk unlocked:", score_card_x, var_c_14 + 1.0 * scale, 1.0 * scale, COLOR_TEXT_SUBTLE)
-                self._draw_small(self.unlock_perk_name, score_card_x, var_c_14 + 14.0 * scale, 1.0 * scale, COLOR_TEXT)
+                self._draw_small("Perk unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE)
+                self._draw_small(self.unlock_perk_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT)
                 var_c_14 += 30.0 * scale
 
             # Buttons

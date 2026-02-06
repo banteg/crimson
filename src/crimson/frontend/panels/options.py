@@ -7,6 +7,7 @@ import pyray as rl
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.geom import Vec2
 
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import (
@@ -92,22 +93,22 @@ class OptionsMenuView(PanelMenuView):
         if rect_on is None or rect_off is None:
             return
 
-        if self._update_slider("sfx", self._slider_sfx, slider_x, base_y + 47.0 * scale, rect_on, rect_off, scale):
+        if self._update_slider("sfx", self._slider_sfx, Vec2(slider_x, base_y + 47.0 * scale), rect_on, rect_off, scale):
             config.data["sfx_volume"] = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self._state.audio, float(config.data["sfx_volume"]))
             self._dirty = True
 
-        if self._update_slider("music", self._slider_music, slider_x, base_y + 67.0 * scale, rect_on, rect_off, scale):
+        if self._update_slider("music", self._slider_music, Vec2(slider_x, base_y + 67.0 * scale), rect_on, rect_off, scale):
             config.data["music_volume"] = float(self._slider_music.value) * 0.1
             set_music_volume(self._state.audio, float(config.data["music_volume"]))
             self._dirty = True
 
-        if self._update_slider("detail", self._slider_detail, slider_x, base_y + 87.0 * scale, rect_on, rect_off, scale):
+        if self._update_slider("detail", self._slider_detail, Vec2(slider_x, base_y + 87.0 * scale), rect_on, rect_off, scale):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
             self._dirty = True
 
-        if self._update_slider("mouse", self._slider_mouse, slider_x, base_y + 107.0 * scale, rect_on, rect_off, scale):
+        if self._update_slider("mouse", self._slider_mouse, Vec2(slider_x, base_y + 107.0 * scale), rect_on, rect_off, scale):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
                 sensitivity = 0.1
@@ -116,7 +117,7 @@ class OptionsMenuView(PanelMenuView):
             config.data["mouse_sensitivity"] = sensitivity
             self._dirty = True
 
-        if self._update_checkbox(label_x, base_y + 135.0 * scale, scale):
+        if self._update_checkbox(Vec2(label_x, base_y + 135.0 * scale), scale):
             value = 1 if self._ui_info_texts else 0
             config.data["ui_info_texts"] = value
             self._dirty = True
@@ -225,8 +226,7 @@ class OptionsMenuView(PanelMenuView):
         self,
         slider_id: str,
         slider: SliderState,
-        x: float,
-        y: float,
+        pos: Vec2,
         rect_on: rl.Texture2D,
         rect_off: rl.Texture2D,
         scale: float,
@@ -237,6 +237,8 @@ class OptionsMenuView(PanelMenuView):
             return False
         bar_w = rect_w * float(slider.max_value)
         bar_h = rect_h
+        x = pos.x
+        y = pos.y
         mouse = rl.get_mouse_position()
         hovered = x <= mouse.x <= x + bar_w and y <= mouse.y <= y + bar_h
 
@@ -267,7 +269,7 @@ class OptionsMenuView(PanelMenuView):
 
         return changed
 
-    def _update_checkbox(self, x: float, y: float, scale: float) -> bool:
+    def _update_checkbox(self, pos: Vec2, scale: float) -> bool:
         check_on = self._check_on
         check_off = self._check_off
         if check_on is None or check_off is None:
@@ -278,6 +280,8 @@ class OptionsMenuView(PanelMenuView):
         label_w = measure_small_text_width(font, label, text_scale)
         rect_w = float(check_on.width) * scale + 6.0 * scale + label_w
         rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
+        x = pos.x
+        y = pos.y
         mouse = rl.get_mouse_position()
         hovered = x <= mouse.x <= x + rect_w and y <= mouse.y <= y + rect_h
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
@@ -337,10 +341,10 @@ class OptionsMenuView(PanelMenuView):
         rect_w = float(rect_on.width) * scale
         rect_h = float(rect_on.height) * scale
 
-        self._draw_slider(self._slider_sfx, slider_x, base_y + 47.0 * scale, rect_on, rect_off, rect_w, rect_h)
-        self._draw_slider(self._slider_music, slider_x, base_y + 67.0 * scale, rect_on, rect_off, rect_w, rect_h)
-        self._draw_slider(self._slider_detail, slider_x, base_y + 87.0 * scale, rect_on, rect_off, rect_w, rect_h)
-        self._draw_slider(self._slider_mouse, slider_x, base_y + 107.0 * scale, rect_on, rect_off, rect_w, rect_h)
+        self._draw_slider(self._slider_sfx, Vec2(slider_x, base_y + 47.0 * scale), rect_on, rect_off, rect_w, rect_h)
+        self._draw_slider(self._slider_music, Vec2(slider_x, base_y + 67.0 * scale), rect_on, rect_off, rect_w, rect_h)
+        self._draw_slider(self._slider_detail, Vec2(slider_x, base_y + 87.0 * scale), rect_on, rect_off, rect_w, rect_h)
+        self._draw_slider(self._slider_mouse, Vec2(slider_x, base_y + 107.0 * scale), rect_on, rect_off, rect_w, rect_h)
 
         check_on = self._check_on
         check_off = self._check_off
@@ -378,8 +382,7 @@ class OptionsMenuView(PanelMenuView):
     def _draw_slider(
         self,
         slider: SliderState,
-        x: float,
-        y: float,
+        pos: Vec2,
         rect_on: rl.Texture2D,
         rect_off: rl.Texture2D,
         rect_w: float,
@@ -387,7 +390,7 @@ class OptionsMenuView(PanelMenuView):
     ) -> None:
         for idx in range(slider.max_value):
             tex = rect_on if idx < slider.value else rect_off
-            dst = rl.Rectangle(x + float(idx) * rect_w, y, rect_w, rect_h)
+            dst = rl.Rectangle(pos.x + float(idx) * rect_w, pos.y, rect_w, rect_h)
             tint = rl.WHITE if idx < slider.value else rl.Color(255, 255, 255, int(255 * 0.5))
             rl.draw_texture_pro(
                 tex,

@@ -130,10 +130,11 @@ class StatisticsMenuView:
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
-    def _panel_top_left(self, *, scale: float) -> tuple[float, float]:
-        x0 = STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale
-        y0 = STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale
-        return float(x0), float(y0)
+    def _panel_top_left(self, *, scale: float) -> Vec2:
+        return Vec2(
+            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
+            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+        )
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -153,34 +154,36 @@ class StatisticsMenuView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
+        panel_top_left = self._panel_top_left(scale=scale)
+        panel_x0 = panel_top_left.x
+        panel_y0 = panel_top_left.y
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
-        def _update_button(btn: UiButtonState, *, x: float, y: float) -> bool:
+        def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
             w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-            return button_update(btn, x=x, y=y, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
+            return button_update(btn, x=pos.x, y=pos.y, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
         x = panel_x0 + _BUTTON_X * scale
         y0 = panel_y0 + _BUTTON_Y0 * scale
-        if _update_button(self._btn_high_scores, x=x, y=y0 + _BUTTON_STEP_Y * 0.0 * scale):
+        if _update_button(self._btn_high_scores, pos=Vec2(x, y0 + _BUTTON_STEP_Y * 0.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_high_scores"
             return
-        if _update_button(self._btn_weapons, x=x, y=y0 + _BUTTON_STEP_Y * 1.0 * scale):
+        if _update_button(self._btn_weapons, pos=Vec2(x, y0 + _BUTTON_STEP_Y * 1.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_weapon_database"
             return
-        if _update_button(self._btn_perks, x=x, y=y0 + _BUTTON_STEP_Y * 2.0 * scale):
+        if _update_button(self._btn_perks, pos=Vec2(x, y0 + _BUTTON_STEP_Y * 2.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_perk_database"
             return
-        if _update_button(self._btn_credits, x=x, y=y0 + _BUTTON_STEP_Y * 3.0 * scale):
+        if _update_button(self._btn_credits, pos=Vec2(x, y0 + _BUTTON_STEP_Y * 3.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_credits"
@@ -188,7 +191,7 @@ class StatisticsMenuView:
 
         back_x = panel_x0 + _BACK_BUTTON_X * scale
         back_y = panel_y0 + _BACK_BUTTON_Y * scale
-        if _update_button(self._btn_back, x=back_x, y=back_y):
+        if _update_button(self._btn_back, pos=Vec2(back_x, back_y)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_menu"
@@ -208,7 +211,9 @@ class StatisticsMenuView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
+        panel_top_left = self._panel_top_left(scale=scale)
+        panel_x0 = panel_top_left.x
+        panel_y0 = panel_top_left.y
         dst = rl.Rectangle(panel_x0, panel_y0, MENU_PANEL_WIDTH * scale, STATISTICS_PANEL_HEIGHT * scale)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
