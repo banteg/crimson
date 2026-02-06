@@ -247,7 +247,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x00438A40,
 )
 def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
-    def spawn_id_for(toggle: bool) -> int:
+    def spawn_id_for(toggle: bool) -> SpawnId:
         return SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D if toggle else SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07
 
     entries: list[SpawnEntry] = []
