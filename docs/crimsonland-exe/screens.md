@@ -22,6 +22,11 @@ This page groups full-screen or modal flows that have their own update loops.
   bounds.
 - Uses `highscore_card_text_buffer` (`0x004d0da0`) as a shared scratch buffer
   for score/time/rank text in `ui_text_input_render`.
+- Action button structs are persistent globals:
+  `game_over_play_again_button` (`0x00482508`),
+  `game_over_highscores_button` (`0x00482550`),
+  `game_over_main_menu_button` (`0x00482538`), and
+  `game_over_name_submit_button` (`0x004825a8`).
 
 ## Quest results (quest_results_screen_update / FUN_00410d20)
 
@@ -52,6 +57,13 @@ Recovered staged-reveal globals:
   `highscore_rank_index()` and gates whether top-100 name entry is shown.
 - `quest_results_name_input_initial_length` (`0x004826ec`) caches the original
   active-record name length for final copy-back/termination.
+- Persistent action button structs:
+  `quest_results_play_next_button` (`0x004825c0`),
+  `quest_results_play_again_button` (`0x00482608`),
+  `quest_results_highscores_button` (`0x00482668`),
+  `quest_results_main_menu_button` (`0x004826b0`), and
+  `quest_results_name_submit_button` (`0x00482520`) for the name-entry "Ok"
+  path.
 
 ## Quest failed screen (quest_failed_screen_update)
 
@@ -60,6 +72,12 @@ Recovered staged-reveal globals:
 - Note: the original string list includes a typo ("Persistence will be rewared."); we correct it to "rewarded" in the rewrite.
 - `quest_failed_screen_flags` (`0x004825d8`) is the one-shot init bitfield for
   the three action buttons (Play Again / Play Another / Main Menu).
+- Persistent action button structs:
+  `quest_failed_play_again_button` (`0x00482680`),
+  `quest_failed_play_another_button` (`0x00482698`), and
+  `quest_failed_main_menu_button` (`0x004824f0`).
+- `quest_failed_highscore_rank_index` (`0x00482604`) snapshots
+  `highscore_rank_index()` on entry for top-100 flow gating.
 
 ## Database screens (unlocked weapons/perks)
 

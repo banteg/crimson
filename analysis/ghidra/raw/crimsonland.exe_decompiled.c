@@ -9823,15 +9823,15 @@ void game_over_screen_update(void)
   
   if (((byte)game_over_screen_flags & 1) == 0) {
     game_over_screen_flags._0_1_ = (byte)game_over_screen_flags | 1;
-    DAT_004825ae = 1;
-    DAT_004825bd = 0;
-    DAT_004825bc = 0;
-    _DAT_004825b8 = 0x3f800000;
-    _DAT_004825b4 = 0;
-    _DAT_004825a8 = (undefined *)0x0;
-    DAT_004825ac = 0;
-    DAT_004825ad = '\0';
-    _DAT_004825b0 = 0;
+    game_over_name_submit_button.enabled = '\x01';
+    game_over_name_submit_button.force_wide = '\0';
+    game_over_name_submit_button.force_small = '\0';
+    game_over_name_submit_button.alpha = 1.0;
+    game_over_name_submit_button.click_anim = 0;
+    game_over_name_submit_button.label = (char *)0x0;
+    game_over_name_submit_button.hovered = '\0';
+    game_over_name_submit_button.activated = '\0';
+    game_over_name_submit_button.hover_anim = 0;
     crt_atexit(&DAT_004107d0);
   }
   if (((byte)game_over_screen_flags & 2) == 0) {
@@ -9923,13 +9923,13 @@ LAB_00410232:
                 (grim_interface_ptr,local_18 + 42.0,local_14,s_State_your_name__trooper__00473190);
       local_14 = local_14 + 40.0;
       render_tint_color_a = 0.7;
-      _DAT_004825a8 = &DAT_0047318c;
+      game_over_name_submit_button.label = &DAT_0047318c;
       local_10 = local_18 + 170.0;
       local_c = local_14 - 8.0;
-      ui_button_update(&local_10,(ui_button_t *)&DAT_004825a8);
+      ui_button_update(&local_10,&game_over_name_submit_button);
       _DAT_0048259c = 0xa6;
       iVar3 = ui_text_input_update(&local_18,(int *)&DAT_00482590);
-      if (((char)iVar3 != '\0') || (DAT_004825ad != '\0')) {
+      if (((char)iVar3 != '\0') || (game_over_name_submit_button.activated != '\0')) {
         uVar4 = 0xffffffff;
         iVar3 = 0;
         pcVar8 = (char *)&game_over_name_input_buffer;
@@ -9990,7 +9990,7 @@ LAB_00410232:
             goto LAB_004103c2;
           }
         }
-        DAT_004825ad = '\0';
+        game_over_name_submit_button.activated = '\0';
         sfx_play(sfx_shock_hit_01);
       }
 LAB_004103c2:
@@ -10028,54 +10028,54 @@ LAB_004103c2:
   local_14 = local_14 + 146.0;
   if (((byte)game_over_screen_flags & 4) == 0) {
     game_over_screen_flags._0_1_ = (byte)game_over_screen_flags | 4;
-    DAT_0048250e = 1;
-    DAT_0048251d = 0;
-    DAT_0048251c = 0;
-    _DAT_00482518 = 0x3f800000;
-    _DAT_00482514 = 0;
-    _DAT_00482508 = (char *)0x0;
-    DAT_0048250c = 0;
-    DAT_0048250d = '\0';
-    _DAT_00482510 = 0;
+    game_over_play_again_button.enabled = '\x01';
+    game_over_play_again_button.force_wide = '\0';
+    game_over_play_again_button.force_small = '\0';
+    game_over_play_again_button.alpha = 1.0;
+    game_over_play_again_button.click_anim = 0;
+    game_over_play_again_button.label = (char *)0x0;
+    game_over_play_again_button.hovered = '\0';
+    game_over_play_again_button.activated = '\0';
+    game_over_play_again_button.hover_anim = 0;
     crt_atexit(&DAT_004107b0);
   }
-  _DAT_00482508 = s_Play_Again_00473164;
+  game_over_play_again_button.label = s_Play_Again_00473164;
   if (((byte)game_over_screen_flags & 8) == 0) {
     game_over_screen_flags._0_1_ = (byte)game_over_screen_flags | 8;
-    DAT_00482556 = 1;
-    DAT_00482565 = 0;
-    DAT_00482564 = 0;
-    _DAT_00482560 = 0x3f800000;
-    _DAT_0048255c = 0;
-    _DAT_00482550 = (char *)0x0;
-    DAT_00482554 = 0;
-    DAT_00482555 = '\0';
-    _DAT_00482558 = 0;
+    game_over_highscores_button.enabled = '\x01';
+    game_over_highscores_button.force_wide = '\0';
+    game_over_highscores_button.force_small = '\0';
+    game_over_highscores_button.alpha = 1.0;
+    game_over_highscores_button.click_anim = 0;
+    game_over_highscores_button.label = (char *)0x0;
+    game_over_highscores_button.hovered = '\0';
+    game_over_highscores_button.activated = '\0';
+    game_over_highscores_button.hover_anim = 0;
     crt_atexit(&DAT_004107a0);
   }
-  _DAT_00482550 = s_High_scores_00473158;
+  game_over_highscores_button.label = s_High_scores_00473158;
   if (((byte)game_over_screen_flags & 0x10) == 0) {
     game_over_screen_flags._0_1_ = (byte)game_over_screen_flags | 0x10;
-    DAT_0048253e = 1;
-    DAT_0048254d = 0;
-    DAT_0048254c = 0;
-    _DAT_00482548 = 0x3f800000;
-    _DAT_00482544 = 0;
-    _DAT_00482538 = (char *)0x0;
-    DAT_0048253c = 0;
-    DAT_0048253d = '\0';
-    _DAT_00482540 = 0;
+    game_over_main_menu_button.enabled = '\x01';
+    game_over_main_menu_button.force_wide = '\0';
+    game_over_main_menu_button.force_small = '\0';
+    game_over_main_menu_button.alpha = 1.0;
+    game_over_main_menu_button.click_anim = 0;
+    game_over_main_menu_button.label = (char *)0x0;
+    game_over_main_menu_button.hovered = '\0';
+    game_over_main_menu_button.activated = '\0';
+    game_over_main_menu_button.hover_anim = 0;
     crt_atexit(&DAT_00410790);
   }
-  _DAT_00482538 = s_Main_Menu_00472084;
+  game_over_main_menu_button.label = s_Main_Menu_00472084;
   local_18 = (local_18 - 4.0) + 26.0;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_00482508);
+  ui_button_update(&local_18,&game_over_play_again_button);
   local_14 = local_14 + 32.0;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_00482550);
+  ui_button_update(&local_18,&game_over_highscores_button);
   local_14 = local_14 + 32.0;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_00482538);
+  ui_button_update(&local_18,&game_over_main_menu_button);
   local_14 = local_14 + 32.0;
-  if (DAT_0048250d != '\0') {
+  if (game_over_play_again_button.activated != '\0') {
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_GAMEPLAY;
     if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
@@ -10085,7 +10085,7 @@ LAB_004103c2:
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_00482555 != '\0') {
+  if (game_over_highscores_button.activated != '\0') {
     DAT_00487258 = config_game_mode;
     highscore_return_latch = '\x01';
     DAT_00487250 = _quest_stage_major;
@@ -10094,7 +10094,7 @@ LAB_004103c2:
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_HIGHSCORES;
   }
-  if (DAT_0048253d != '\0') {
+  if (game_over_main_menu_button.activated != '\0') {
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
@@ -10160,7 +10160,7 @@ void quest_failed_screen_update(void)
   ui_draw_textured_quad((int)lVar4,x,y,w,iVar2);
   if (ui_screen_phase == -1) {
     highscore_load_table();
-    DAT_00482604 = highscore_rank_index();
+    quest_failed_highscore_rank_index = highscore_rank_index();
     highscore_active_record.game_mode_id = (undefined1)config_game_mode;
     (*grim_interface_ptr->vtable->grim_flush_input)();
     console_input_poll();
@@ -10205,53 +10205,53 @@ void quest_failed_screen_update(void)
   local_18 = local_18 + 16.0;
   if (((byte)quest_failed_screen_flags & 1) == 0) {
     quest_failed_screen_flags._0_1_ = (byte)quest_failed_screen_flags | 1;
-    DAT_00482686 = 1;
-    DAT_00482695 = 0;
-    DAT_00482694 = 0;
-    _DAT_00482690 = 0x3f800000;
-    _DAT_0048268c = 0;
-    _DAT_00482680 = (char *)0x0;
-    DAT_00482684 = 0;
-    DAT_00482685 = '\0';
-    _DAT_00482688 = 0;
+    quest_failed_play_again_button.enabled = '\x01';
+    quest_failed_play_again_button.force_wide = '\0';
+    quest_failed_play_again_button.force_small = '\0';
+    quest_failed_play_again_button.alpha = 1.0;
+    quest_failed_play_again_button.click_anim = 0;
+    quest_failed_play_again_button.label = (char *)0x0;
+    quest_failed_play_again_button.hovered = '\0';
+    quest_failed_play_again_button.activated = '\0';
+    quest_failed_play_again_button.hover_anim = 0;
     crt_atexit(&DAT_00410d10);
   }
-  _DAT_00482680 = s_Play_Again_00473164;
+  quest_failed_play_again_button.label = s_Play_Again_00473164;
   if (((byte)quest_failed_screen_flags & 2) == 0) {
     quest_failed_screen_flags._0_1_ = (byte)quest_failed_screen_flags | 2;
-    DAT_0048269e = 1;
-    DAT_004826ad = 0;
-    DAT_004826ac = 0;
-    _DAT_004826a8 = 0x3f800000;
-    _DAT_004826a4 = 0;
-    _DAT_00482698 = (char *)0x0;
-    DAT_0048269c = 0;
-    DAT_0048269d = '\0';
-    _DAT_004826a0 = 0;
+    quest_failed_play_another_button.enabled = '\x01';
+    quest_failed_play_another_button.force_wide = '\0';
+    quest_failed_play_another_button.force_small = '\0';
+    quest_failed_play_another_button.alpha = 1.0;
+    quest_failed_play_another_button.click_anim = 0;
+    quest_failed_play_another_button.label = (char *)0x0;
+    quest_failed_play_another_button.hovered = '\0';
+    quest_failed_play_another_button.activated = '\0';
+    quest_failed_play_another_button.hover_anim = 0;
     crt_atexit(&DAT_00410d00);
   }
-  _DAT_00482698 = s_Play_Another_004731ac;
+  quest_failed_play_another_button.label = s_Play_Another_004731ac;
   if (((byte)quest_failed_screen_flags & 4) == 0) {
     quest_failed_screen_flags._0_1_ = (byte)quest_failed_screen_flags | 4;
-    DAT_004824f6 = 1;
-    DAT_00482505 = 0;
-    DAT_00482504 = 0;
-    _DAT_00482500 = 0x3f800000;
-    _DAT_004824fc = 0;
-    _DAT_004824f0 = (char *)0x0;
-    DAT_004824f4 = 0;
-    DAT_004824f5 = '\0';
-    _DAT_004824f8 = 0;
+    quest_failed_main_menu_button.enabled = '\x01';
+    quest_failed_main_menu_button.force_wide = '\0';
+    quest_failed_main_menu_button.force_small = '\0';
+    quest_failed_main_menu_button.alpha = 1.0;
+    quest_failed_main_menu_button.click_anim = 0;
+    quest_failed_main_menu_button.label = (char *)0x0;
+    quest_failed_main_menu_button.hovered = '\0';
+    quest_failed_main_menu_button.activated = '\0';
+    quest_failed_main_menu_button.hover_anim = 0;
     crt_atexit(&DAT_00410cf0);
   }
-  _DAT_004824f0 = s_Main_Menu_00472084;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_00482680);
+  quest_failed_main_menu_button.label = s_Main_Menu_00472084;
+  ui_button_update(&local_18,&quest_failed_play_again_button);
   local_14 = local_14 + 32.0;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_00482698);
+  ui_button_update(&local_18,&quest_failed_play_another_button);
   local_14 = local_14 + 32.0;
-  ui_button_update(&local_18,(ui_button_t *)&DAT_004824f0);
+  ui_button_update(&local_18,&quest_failed_main_menu_button);
   local_14 = local_14 + 32.0;
-  if (DAT_00482685 != '\0') {
+  if (quest_failed_play_again_button.activated != '\0') {
     quest_fail_retry_count = quest_fail_retry_count + 1;
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -10260,7 +10260,7 @@ void quest_failed_screen_update(void)
     sfx_mute_all(music_track_extra_0);
     render_pass_mode = 0;
   }
-  if (DAT_0048269d != '\0') {
+  if (quest_failed_play_another_button.activated != '\0') {
     quest_fail_retry_count = 0;
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_QUEST_SELECT;
@@ -10270,7 +10270,7 @@ void quest_failed_screen_update(void)
     sfx_mute_all(music_track_extra_0);
     sfx_play_exclusive(music_track_crimson_theme_id);
   }
-  if (DAT_004824f5 != '\0') {
+  if (quest_failed_main_menu_button.activated != '\0') {
     quest_fail_retry_count = 0;
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
@@ -10332,15 +10332,15 @@ void quest_results_screen_update(void)
   ui_elements_update_and_render();
   if (((byte)quest_results_screen_flags & 1) == 0) {
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 1;
-    DAT_00482526 = 1;
-    DAT_00482535 = 0;
-    DAT_00482534 = 0;
-    _DAT_00482530 = 1.0;
-    _DAT_0048252c = 0;
-    _DAT_00482520 = (undefined *)0x0;
-    DAT_00482524 = 0;
-    DAT_00482525 = '\0';
-    _DAT_00482528 = 0;
+    quest_results_name_submit_button.enabled = '\x01';
+    quest_results_name_submit_button.force_wide = '\0';
+    quest_results_name_submit_button.force_small = '\0';
+    quest_results_name_submit_button.alpha = 1.0;
+    quest_results_name_submit_button.click_anim = 0;
+    quest_results_name_submit_button.label = (char *)0x0;
+    quest_results_name_submit_button.hovered = '\0';
+    quest_results_name_submit_button.activated = '\0';
+    quest_results_name_submit_button.hover_anim = 0;
     crt_atexit(&DAT_00412070);
   }
   if (((byte)quest_results_screen_flags & 2) == 0) {
@@ -10609,12 +10609,12 @@ void quest_results_screen_update(void)
       local_8 = local_10 + 170.0;
       _DAT_004826f4 = 0xa6;
       _DAT_004826f8 = local_18;
-      _DAT_00482520 = &DAT_0047318c;
-      _DAT_00482530 = local_18;
+      quest_results_name_submit_button.label = &DAT_0047318c;
+      quest_results_name_submit_button.alpha = local_18;
       local_4 = local_c - 8.0;
-      ui_button_update(&local_8,(ui_button_t *)&DAT_00482520);
+      ui_button_update(&local_8,&quest_results_name_submit_button);
       iVar4 = ui_text_input_update(&local_10,(int *)&DAT_004826e8);
-      if (((char)iVar4 != '\0') || (DAT_00482525 != '\0')) {
+      if (((char)iVar4 != '\0') || (quest_results_name_submit_button.activated != '\0')) {
         uVar6 = 0xffffffff;
         iVar4 = 0;
         pcVar5 = &quest_results_name_input_buffer;
@@ -10669,7 +10669,7 @@ void quest_results_screen_update(void)
             goto LAB_00411906;
           }
         }
-        DAT_00482525 = '\0';
+        quest_results_name_submit_button.activated = '\0';
         sfx_play(sfx_shock_hit_01);
       }
 LAB_00411906:
@@ -10734,78 +10734,78 @@ LAB_00411906:
   }
   if (((byte)quest_results_screen_flags & 4) == 0) {
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 4;
-    DAT_004825c6 = 1;
-    DAT_004825d5 = 0;
-    DAT_004825d4 = 0;
-    _DAT_004825d0 = 1.0;
-    _DAT_004825cc = 0;
-    _DAT_004825c0 = (char *)0x0;
-    DAT_004825c4 = 0;
-    DAT_004825c5 = '\0';
-    _DAT_004825c8 = 0;
+    quest_results_play_next_button.enabled = '\x01';
+    quest_results_play_next_button.force_wide = '\0';
+    quest_results_play_next_button.force_small = '\0';
+    quest_results_play_next_button.alpha = 1.0;
+    quest_results_play_next_button.click_anim = 0;
+    quest_results_play_next_button.label = (char *)0x0;
+    quest_results_play_next_button.hovered = '\0';
+    quest_results_play_next_button.activated = '\0';
+    quest_results_play_next_button.hover_anim = 0;
     crt_atexit(&DAT_00412050);
   }
-  _DAT_004825c0 = s_Play_Next_00473278;
+  quest_results_play_next_button.label = s_Play_Next_00473278;
   if (((byte)quest_results_screen_flags & 8) == 0) {
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 8;
-    DAT_0048260e = 1;
-    DAT_0048261d = 0;
-    DAT_0048261c = 0;
-    _DAT_00482618 = 1.0;
-    _DAT_00482614 = 0;
-    _DAT_00482608 = (char *)0x0;
-    DAT_0048260c = 0;
-    DAT_0048260d = '\0';
-    _DAT_00482610 = 0;
+    quest_results_play_again_button.enabled = '\x01';
+    quest_results_play_again_button.force_wide = '\0';
+    quest_results_play_again_button.force_small = '\0';
+    quest_results_play_again_button.alpha = 1.0;
+    quest_results_play_again_button.click_anim = 0;
+    quest_results_play_again_button.label = (char *)0x0;
+    quest_results_play_again_button.hovered = '\0';
+    quest_results_play_again_button.activated = '\0';
+    quest_results_play_again_button.hover_anim = 0;
     crt_atexit(&DAT_00412040);
   }
-  _DAT_00482608 = s_Play_Again_00473164;
+  quest_results_play_again_button.label = s_Play_Again_00473164;
   if (((byte)quest_results_screen_flags & 0x10) == 0) {
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 0x10;
-    DAT_0048266e = 1;
-    DAT_0048267d = 0;
-    DAT_0048267c = 0;
-    _DAT_00482678 = 1.0;
-    _DAT_00482674 = 0;
-    _DAT_00482668 = (char *)0x0;
-    DAT_0048266c = 0;
-    DAT_0048266d = '\0';
-    _DAT_00482670 = 0;
+    quest_results_highscores_button.enabled = '\x01';
+    quest_results_highscores_button.force_wide = '\0';
+    quest_results_highscores_button.force_small = '\0';
+    quest_results_highscores_button.alpha = 1.0;
+    quest_results_highscores_button.click_anim = 0;
+    quest_results_highscores_button.label = (char *)0x0;
+    quest_results_highscores_button.hovered = '\0';
+    quest_results_highscores_button.activated = '\0';
+    quest_results_highscores_button.hover_anim = 0;
     crt_atexit(&DAT_00412030);
   }
-  _DAT_00482668 = s_High_scores_00473158;
+  quest_results_highscores_button.label = s_High_scores_00473158;
   if (((byte)quest_results_screen_flags & 0x20) == 0) {
     quest_results_screen_flags._0_1_ = (byte)quest_results_screen_flags | 0x20;
-    DAT_004826b6 = 1;
-    DAT_004826c5 = 0;
-    DAT_004826c4 = 0;
-    _DAT_004826c0 = 1.0;
-    _DAT_004826bc = 0;
-    _DAT_004826b0 = (char *)0x0;
-    DAT_004826b4 = 0;
-    DAT_004826b5 = '\0';
-    _DAT_004826b8 = 0;
+    quest_results_main_menu_button.enabled = '\x01';
+    quest_results_main_menu_button.force_wide = '\0';
+    quest_results_main_menu_button.force_small = '\0';
+    quest_results_main_menu_button.alpha = 1.0;
+    quest_results_main_menu_button.click_anim = 0;
+    quest_results_main_menu_button.label = (char *)0x0;
+    quest_results_main_menu_button.hovered = '\0';
+    quest_results_main_menu_button.activated = '\0';
+    quest_results_main_menu_button.hover_anim = 0;
     crt_atexit(&DAT_00412020);
   }
   local_c = local_c + 6.0;
-  _DAT_004826b0 = s_Main_Menu_00472084;
+  quest_results_main_menu_button.label = s_Main_Menu_00472084;
   if ((_quest_stage_major == 5) && (_quest_stage_minor == 10)) {
-    _DAT_004825c0 = s_Show_End_Note_00473268;
+    quest_results_play_next_button.label = s_Show_End_Note_00473268;
   }
   local_10 = local_10 + 20.0;
-  _DAT_00482678 = local_18;
-  _DAT_004825d0 = local_18;
-  _DAT_00482618 = local_18;
-  _DAT_004826c0 = local_18;
-  ui_button_update(&local_10,(ui_button_t *)&DAT_004825c0);
+  quest_results_highscores_button.alpha = local_18;
+  quest_results_play_next_button.alpha = local_18;
+  quest_results_play_again_button.alpha = local_18;
+  quest_results_main_menu_button.alpha = local_18;
+  ui_button_update(&local_10,&quest_results_play_next_button);
   local_c = local_c + 32.0;
-  ui_button_update(&local_10,(ui_button_t *)&DAT_00482608);
+  ui_button_update(&local_10,&quest_results_play_again_button);
   local_c = local_c + 32.0;
-  ui_button_update(&local_10,(ui_button_t *)&DAT_00482668);
+  ui_button_update(&local_10,&quest_results_highscores_button);
   local_c = local_c + 32.0;
-  ui_button_update(&local_10,(ui_button_t *)&DAT_004826b0);
+  ui_button_update(&local_10,&quest_results_main_menu_button);
   local_c = local_c + 32.0;
-  if (DAT_004825c5 != '\0') {
+  if (quest_results_play_next_button.activated != '\0') {
     if ((_quest_stage_major == 5) && (_quest_stage_minor == 10)) {
       render_pass_mode = 0;
       game_state_pending = GAME_STATE_FINAL_QUEST_END_NOTE;
@@ -10821,7 +10821,7 @@ LAB_00411906:
       render_pass_mode = 0;
     }
   }
-  if (DAT_0048260d != '\0') {
+  if (quest_results_play_again_button.activated != '\0') {
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_GAMEPLAY;
     sfx_mute_all(music_track_crimson_theme_id);
@@ -10829,7 +10829,7 @@ LAB_00411906:
     sfx_mute_all(music_track_extra_0);
     render_pass_mode = 0;
   }
-  if (DAT_0048266d != '\0') {
+  if (quest_results_highscores_button.activated != '\0') {
     DAT_00487258 = config_game_mode;
     highscore_return_latch = '\x01';
     DAT_00487250 = _quest_stage_major;
@@ -10838,7 +10838,7 @@ LAB_00411906:
     ui_transition_direction = '\0';
     game_state_pending = GAME_STATE_HIGHSCORES;
   }
-  if (DAT_004826b5 != '\0') {
+  if (quest_results_main_menu_button.activated != '\0') {
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);

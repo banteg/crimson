@@ -1665,6 +1665,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004824f0",
+      "comment": "Quest-failed screen action button state for \"Main Menu\".",
+      "name": "quest_failed_main_menu_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x00482568",
       "comment": "Quest results screen init flags for static UI state (atexit guards).",
       "name": "quest_results_screen_flags",
@@ -1676,6 +1683,34 @@
       "comment": "Game-over high-score name input buffer (ui_text_input_update target).",
       "name": "game_over_name_input_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482508",
+      "comment": "Game-over screen action button state for \"Play Again\".",
+      "name": "game_over_play_again_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00482520",
+      "comment": "Quest-results/name-entry action button state for \"Ok\".",
+      "name": "quest_results_name_submit_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00482538",
+      "comment": "Game-over screen action button state for \"Main Menu\".",
+      "name": "game_over_main_menu_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00482550",
+      "comment": "Game-over screen action button state for \"High scores\".",
+      "name": "game_over_highscores_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x00482594",
@@ -1690,6 +1725,20 @@
       "name": "game_over_highscore_rank_index",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004825a8",
+      "comment": "Game-over/name-entry action button state for \"Ok\".",
+      "name": "game_over_name_submit_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004825c0",
+      "comment": "Quest-results screen action button state for \"Play Next\" (or \"Show End Note\" on final quest).",
+      "name": "quest_results_play_next_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004825d8",
@@ -1719,6 +1768,20 @@
       "type": "int"
     },
     {
+      "address": "0x00482604",
+      "comment": "Quest-failed flow highscore rank index (snapshot from highscore_rank_index on entry).",
+      "name": "quest_failed_highscore_rank_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482608",
+      "comment": "Quest-results screen action button state for \"Play Again\".",
+      "name": "quest_results_play_again_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x00482620",
       "comment": "Quest-results high-score rank index from highscore_rank_index (>=100 means no top-100 entry).",
       "name": "quest_results_highscore_rank_index",
@@ -1730,6 +1793,34 @@
       "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
       "name": "time_format_mm_ss_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482668",
+      "comment": "Quest-results screen action button state for \"High scores\".",
+      "name": "quest_results_highscores_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00482680",
+      "comment": "Quest-failed screen action button state for \"Play Again\".",
+      "name": "quest_failed_play_again_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00482698",
+      "comment": "Quest-failed screen action button state for \"Play Another\".",
+      "name": "quest_failed_play_another_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004826b0",
+      "comment": "Quest-results screen action button state for \"Main Menu\".",
+      "name": "quest_results_main_menu_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004826ec",
