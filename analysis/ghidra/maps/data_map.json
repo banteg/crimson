@@ -176,19 +176,22 @@
       "address": "0x00473310",
       "comment": "Perk Man Bomb trigger interval threshold (seconds) used by player_update.",
       "name": "perk_man_bomb_trigger_interval_s",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00473314",
       "comment": "Perk Fire Cough trigger interval threshold (seconds) used by player_update.",
       "name": "perk_fire_cough_trigger_interval_s",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00473318",
       "comment": "Perk Hot Tempered trigger interval threshold (seconds) used by player_update.",
       "name": "perk_hot_tempered_trigger_interval_s",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0047365c",
@@ -2555,7 +2558,8 @@
       "address": "0x00485618",
       "comment": "Quest play/attempt counters (u32[?]); indexed by quest_stage_major * 10 + quest_stage_minor.",
       "name": "quest_play_counts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_play_counts_t"
     },
     {
       "address": "0x00485794",
@@ -2587,19 +2591,22 @@
       "address": "0x00486fac",
       "comment": "Pending perk picks; incremented on level-up and decremented on perk selection.",
       "name": "perk_pending_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fb0",
       "comment": "Perk choice refresh flag; set when perks change and cleared after perks_generate_choices runs.",
       "name": "perk_choices_dirty",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fb4",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot).",
       "name": "creature_spawned_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fb8",
@@ -2618,7 +2625,8 @@
       "address": "0x00486fc0",
       "comment": "Projectile index for the active Shock Chain segment.",
       "name": "shock_chain_projectile_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fc4",
@@ -2636,7 +2644,8 @@
       "address": "0x00486fcc",
       "comment": "Active creature count (set each creature_update_all pass).",
       "name": "creature_active_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fd0",
@@ -2712,13 +2721,15 @@
       "address": "0x00487004",
       "comment": "Quest stage major index (episode/tier). Initialized to 1 in FUN_004120b0; advances after every 10 minor stages; not persisted to disk.",
       "name": "quest_stage_major",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487008",
       "comment": "Quest stage minor index (mission within major tier). Initialized to 1 in FUN_004120b0; incremented on quest results \"Play Next\"; not persisted to disk.",
       "name": "quest_stage_minor",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048700c",
@@ -2748,31 +2759,36 @@
       "address": "0x00487014",
       "comment": "Global Reflex Boost timer (bonus id 9).",
       "name": "bonus_reflex_boost_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487018",
       "comment": "Global Freeze timer (bonus id 11).",
       "name": "bonus_freeze_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048701c",
       "comment": "Global Weapon Power Up timer (bonus id 4).",
       "name": "bonus_weapon_power_up_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487020",
       "comment": "Global Energizer timer (bonus id 2).",
       "name": "bonus_energizer_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487024",
       "comment": "Global Double XP timer (bonus id 6).",
       "name": "bonus_double_xp_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048702c",
@@ -2785,19 +2801,22 @@
       "address": "0x00487034",
       "comment": "Max quest unlock index (u16). Updated on quest completion; used to unlock perks/weapons; saved in game_status_blob.",
       "name": "quest_unlock_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "u16_t"
     },
     {
       "address": "0x00487038",
       "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by config_full_version.",
       "name": "quest_unlock_index_full",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "u16_t"
     },
     {
       "address": "0x0048703c",
       "comment": "Nonzero while bonus/perk effects spawn projectiles; skips bonus drop logic.",
       "name": "bonus_spawn_guard",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487040",
@@ -2858,7 +2877,8 @@
       "address": "0x00487074",
       "comment": "Total creature kills (incremented on creature death paths); stored in high score record offset 0x34.",
       "name": "creature_kill_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487080",
@@ -2907,7 +2927,8 @@
       "address": "0x0048708c",
       "comment": "Per-weapon usage tracking in milliseconds. Indexed by weapon_id (0-63) to derive most-used weapon for highscores.",
       "name": "weapon_usage_time",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "weapon_usage_time_t"
     },
     {
       "address": "0x0048718c",
@@ -3029,7 +3050,8 @@
       "address": "0x004871d0",
       "comment": "Per-player (P1/P2) auxiliary timer (2 floats). Used for UI feedback timing; decays over time.",
       "name": "player_aux_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "player_aux_timer_t"
     },
     {
       "address": "0x004871d8",
@@ -3059,7 +3081,8 @@
       "address": "0x004871e8",
       "comment": "Player name length (runtime, copied from config).",
       "name": "player_name_length",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004871ec",
@@ -3077,7 +3100,8 @@
       "address": "0x004871f4",
       "comment": "Per-player aim screen X coordinates. Stride 8 bytes (index * 2). Set from ui_mouse_x or joystick input.",
       "name": "player_aim_screen_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "player_aim_screen_xy_t"
     },
     {
       "address": "0x004871f8",
@@ -4945,55 +4969,64 @@
       "address": "0x00490f3c",
       "comment": "Alternate forward move key (used when _DAT_0048035c == 1)",
       "name": "player_alt_move_key_forward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f40",
       "comment": "Alternate backward move key (used when _DAT_0048035c == 1)",
       "name": "player_alt_move_key_backward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f44",
       "comment": "Alternate turn-left key (used when _DAT_0048035c == 1)",
       "name": "player_alt_turn_key_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f48",
       "comment": "Alternate turn-right key (used when _DAT_0048035c == 1)",
       "name": "player_alt_turn_key_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f4c",
       "comment": "Alternate primary fire key (checked by input_primary_is_down)",
       "name": "player_alt_fire_key",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f50",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x37c); copied from config, no callsites found.",
       "name": "player_alt_key_reserved_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f54",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x380); copied from config, no callsites found.",
       "name": "player_alt_key_reserved_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f58",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x384); copied from config, no callsites found.",
       "name": "player_alt_key_reserved_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490f5c",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x388); copied from config, no callsites found.",
       "name": "player_alt_key_reserved_3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00491010",
@@ -5808,7 +5841,8 @@
       "address": "0x004aaf0c",
       "comment": "Player index used for overlay rendering passes.",
       "name": "render_overlay_player_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf18",
@@ -5860,7 +5894,8 @@
       "address": "0x004aaf58",
       "comment": "Creature update tick counter used to throttle target recalculation.",
       "name": "creature_update_tick",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf5c",

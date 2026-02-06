@@ -97,6 +97,25 @@ Global bonus timers used by `player_update` and the main loop:
   - Branch gate for spread damping recovery in `player_update`: non-positive values ease
     `player_spread_damping_scalar` toward `1.0`, positive values drive it down toward `0.3`.
 
+### Type lifts (2026-02-06)
+
+- Trigger/timer globals now explicitly type as `float`:
+  `perk_man_bomb_trigger_interval_s`, `perk_fire_cough_trigger_interval_s`,
+  `perk_hot_tempered_trigger_interval_s`, `bonus_reflex_boost_timer`,
+  `bonus_freeze_timer`, `bonus_weapon_power_up_timer`, `bonus_energizer_timer`,
+  and `bonus_double_xp_timer`.
+- Quest progression counters now explicitly type as integer scalars:
+  `quest_stage_major`, `quest_stage_minor`, `quest_unlock_index` (`u16`), and
+  `quest_unlock_index_full` (`u16`).
+- Highscore/progression tables now explicitly type as integer arrays:
+  `weapon_usage_time` (`unsigned int[64]`) and `quest_play_counts`
+  (`unsigned int[91]`).
+- Player helper globals now explicitly type as array/scalar slots:
+  `player_aux_timer` (`float[2]`), `player_aim_screen_x` (`float[4]`),
+  `player_name_length` (`int`), and the alternate keybind slots
+  (`player_alt_move_key_*`, `player_alt_turn_key_*`, `player_alt_fire_key`,
+  `player_alt_key_reserved_*`).
+
 ### Bonus HUD slots (active bonus list)
 
 `bonus_apply` registers timed bonuses in the HUD list via `bonus_hud_slot_activate`, and

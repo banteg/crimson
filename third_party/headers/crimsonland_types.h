@@ -57,11 +57,17 @@ typedef struct audio_entry_t {
 typedef audio_entry_t sfx_entry_t;
 typedef audio_entry_t music_entry_t;
 
+typedef unsigned short u16_t;
 typedef float sfx_cooldown_table_t[0x80];
 typedef LPDIRECTSOUNDBUFFER sfx_voice_table_t[0x20];
 typedef float sfx_volume_table_t[0x80];
 typedef char sfx_mute_flags_t[0x80];
 typedef int music_playlist_t[0x80];
+
+typedef unsigned int quest_play_counts_t[91];
+typedef unsigned int weapon_usage_time_t[64];
+typedef float player_aux_timer_t[2];
+typedef float player_aim_screen_xy_t[4];
 
 typedef struct player_input_t {
     int move_key_forward;
