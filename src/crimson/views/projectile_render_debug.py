@@ -118,7 +118,7 @@ class ProjectileRenderDebugView:
         end_x = (-camera.x) + screen_size.x
         x = start_x
         while x <= end_x:
-            line_start = Vec2((Vec2(x, 0.0) + camera).mul_components(view_scale).x, 0.0)
+            line_start = Vec2(self._world.world_to_screen(Vec2(x, 0.0)).x, 0.0)
             line_end = Vec2(line_start.x, out_h)
             rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             x += step
@@ -127,7 +127,7 @@ class ProjectileRenderDebugView:
         end_y = (-camera.y) + screen_size.y
         y = start_y
         while y <= end_y:
-            line_start = Vec2(0.0, (Vec2(0.0, y) + camera).mul_components(view_scale).y)
+            line_start = Vec2(0.0, self._world.world_to_screen(Vec2(0.0, y)).y)
             line_end = Vec2(out_w, line_start.y)
             rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             y += step
