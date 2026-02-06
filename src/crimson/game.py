@@ -32,6 +32,7 @@ from grim.console import (
     register_boot_commands,
     register_core_cvars,
 )
+from grim.geom import Vec2
 from grim.app import run_view
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
@@ -471,7 +472,7 @@ class QuestsMenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
 
         self._draw_panel()
         self._draw_sign()
@@ -1434,7 +1435,7 @@ class QuestResultsView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
         ui = self._ui
         if ui is not None:
@@ -1578,7 +1579,7 @@ class EndNoteView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
         panel_tex = self._panel_tex
@@ -1815,7 +1816,7 @@ class QuestFailedView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
         panel_left, panel_top = self._panel_origin()
@@ -2227,7 +2228,7 @@ class HighScoresView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
         assets = self._assets

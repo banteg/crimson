@@ -441,8 +441,7 @@ class GroundRenderer:
 
     def _draw_fallback(
         self,
-        camera_x: float,
-        camera_y: float,
+        camera: Vec2,
         *,
         out_w: float,
         out_h: float,
@@ -456,8 +455,8 @@ class GroundRenderer:
         scale_x = out_w / screen_w
         scale_y = out_h / screen_h
 
-        view_x0 = -camera_x
-        view_y0 = -camera_y
+        view_x0 = -camera.x
+        view_y0 = -camera.y
         view_x1 = view_x0 + screen_w
         view_y1 = view_y0 + screen_h
 
@@ -481,8 +480,8 @@ class GroundRenderer:
             if pivot_y + h * 0.5 < view_y0 or pivot_y - h * 0.5 > view_y1:
                 return
 
-            sx = (pivot_x + camera_x) * scale_x
-            sy = (pivot_y + camera_y) * scale_y
+            sx = (pivot_x + camera.x) * scale_x
+            sy = (pivot_y + camera.y) * scale_y
             sw = w * scale_x
             sh = h * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(sw), float(sh))
@@ -518,8 +517,8 @@ class GroundRenderer:
                 return
             if pivot_y + size * 0.5 < view_y0 or pivot_y - size * 0.5 > view_y1:
                 return
-            sx = (pivot_x + camera_x) * scale_x
-            sy = (pivot_y + camera_y) * scale_y
+            sx = (pivot_x + camera.x) * scale_x
+            sy = (pivot_y + camera.y) * scale_y
             sw = size * scale_x
             sh = size * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(sw), float(sh))
@@ -563,8 +562,7 @@ class GroundRenderer:
 
     def draw(
         self,
-        camera_x: float,
-        camera_y: float,
+        camera: Vec2,
         *,
         screen_w: float | None = None,
         screen_h: float | None = None,
@@ -583,15 +581,15 @@ class GroundRenderer:
             screen_w = float(self.width)
         if screen_h > self.height:
             screen_h = float(self.height)
-        cam_x, cam_y = self._clamp_camera(camera_x, camera_y, screen_w, screen_h)
+        cam = self._clamp_camera(camera, screen_w, screen_h)
 
         if self.render_target is None or not self._render_target_ready:
-            self._draw_fallback(cam_x, cam_y, out_w=out_w, out_h=out_h, screen_w=float(screen_w), screen_h=float(screen_h))
+            self._draw_fallback(cam, out_w=out_w, out_h=out_h, screen_w=float(screen_w), screen_h=float(screen_h))
             return
 
         target = self.render_target
-        u0 = -cam_x / float(self.width)
-        v0 = -cam_y / float(self.height)
+        u0 = -cam.x / float(self.width)
+        v0 = -cam.y / float(self.height)
         u1 = u0 + screen_w / float(self.width)
         v1 = v0 + screen_h / float(self.height)
         src_x = u0 * float(target.texture.width)
@@ -678,18 +676,10 @@ class GroundRenderer:
                 )
             )
 
-    def _clamp_camera(self, camera_x: float, camera_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
+    def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
         min_x = screen_w - float(self.width)
         min_y = screen_h - float(self.height)
-        if camera_x > -1.0:
-            camera_x = -1.0
-        if camera_y > -1.0:
-            camera_y = -1.0
-        if camera_x < min_x:
-            camera_x = min_x
-        if camera_y < min_y:
-            camera_y = min_y
-        return camera_x, camera_y
+        return camera.clamp_rect(min_x, min_y, -1.0, -1.0)
 
     def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:

@@ -273,7 +273,7 @@ class MenuView:
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
         assets = self._assets
         if assets is None:

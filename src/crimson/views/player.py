@@ -36,14 +36,9 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 @dataclass(slots=True)
 class DummyCreature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     size: float = 32.0
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
 
 
 def _rand_float01(state: GameplayState) -> float:
@@ -66,8 +61,7 @@ class PlayerSandboxView:
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
 
-        self._camera_x = -1.0
-        self._camera_y = -1.0
+        self._camera = Vec2(-1.0, -1.0)
         self._paused = False
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
@@ -83,7 +77,7 @@ class PlayerSandboxView:
             margin = 40.0
             x = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
             y = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
-            self._creatures.append(DummyCreature(x=x, y=y, hp=80.0, size=28.0))
+            self._creatures.append(DummyCreature(pos=Vec2(x, y), hp=80.0, size=28.0))
 
     def _weapon_id(self) -> int:
         if not self._weapon_ids:
@@ -187,11 +181,11 @@ class PlayerSandboxView:
             self._player.fire_bullets_timer = 0.0
             bonus_hud_update(self._state, [self._player], dt=0.0)
 
-    def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self._camera_x + x, self._camera_y + y
+    def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._camera + pos
 
-    def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return x - self._camera_x, y - self._camera_y
+    def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
+        return pos - self._camera
 
     def _update_camera(self, dt: float) -> None:
         screen_w = float(rl.get_screen_width())
@@ -201,26 +195,15 @@ class PlayerSandboxView:
         if screen_h > WORLD_SIZE:
             screen_h = WORLD_SIZE
 
-        focus_x = self._player.pos.x
-        focus_y = self._player.pos.y
-
-        desired_x = (screen_w * 0.5) - focus_x
-        desired_y = (screen_h * 0.5) - focus_y
-
         min_x = screen_w - WORLD_SIZE
         min_y = screen_h - WORLD_SIZE
-        if desired_x > -1.0:
-            desired_x = -1.0
-        if desired_x < min_x:
-            desired_x = min_x
-        if desired_y > -1.0:
-            desired_y = -1.0
-        if desired_y < min_y:
-            desired_y = min_y
+        desired = Vec2(
+            (screen_w * 0.5) - self._player.pos.x,
+            (screen_h * 0.5) - self._player.pos.y,
+        ).clamp_rect(min_x, min_y, -1.0, -1.0)
 
         t = clamp(dt * 6.0, 0.0, 1.0)
-        self._camera_x = _lerp(self._camera_x, desired_x, t)
-        self._camera_y = _lerp(self._camera_y, desired_y, t)
+        self._camera = Vec2.lerp(self._camera, desired, t)
 
     def _build_input(self) -> PlayerInput:
         move = Vec2(
@@ -229,7 +212,7 @@ class PlayerSandboxView:
         )
 
         mouse = rl.get_mouse_position()
-        aim = Vec2(*self._camera_screen_to_world(float(mouse.x), float(mouse.y)))
+        aim = self._camera_screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -290,35 +273,46 @@ class PlayerSandboxView:
             return
 
         # World bounds.
-        x0, y0 = self._camera_world_to_screen(0.0, 0.0)
-        x1, y1 = self._camera_world_to_screen(WORLD_SIZE, WORLD_SIZE)
-        rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
+        world_min = self._camera_world_to_screen(Vec2())
+        world_max = self._camera_world_to_screen(Vec2(WORLD_SIZE, WORLD_SIZE))
+        rl.draw_rectangle_lines(
+            int(world_min.x),
+            int(world_min.y),
+            int(world_max.x - world_min.x),
+            int(world_max.y - world_min.y),
+            rl.Color(40, 40, 55, 255),
+        )
 
         # Creatures.
         for creature in self._creatures:
-            sx, sy = self._camera_world_to_screen(creature.pos.x, creature.pos.y)
+            screen_pos = self._camera_world_to_screen(creature.pos)
             color = rl.Color(220, 90, 90, 255)
-            rl.draw_circle(int(sx), int(sy), float(creature.size * 0.5), color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), color)
 
         # Projectiles.
         for proj in self._state.projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos.x, proj.pos.y)
-            rl.draw_circle(int(sx), int(sy), 2.0, rl.Color(240, 220, 160, 255))
+            screen_pos = self._camera_world_to_screen(proj.pos)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 2.0, rl.Color(240, 220, 160, 255))
 
         for proj in self._state.secondary_projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos.x, proj.pos.y)
+            screen_pos = self._camera_world_to_screen(proj.pos)
             color = rl.Color(120, 200, 240, 255) if proj.type_id != 3 else rl.Color(200, 240, 160, 255)
-            rl.draw_circle(int(sx), int(sy), 3.0, color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 3.0, color)
 
         # Player.
-        px, py = self._camera_world_to_screen(self._player.pos.x, self._player.pos.y)
-        rl.draw_circle(int(px), int(py), 14.0, rl.Color(90, 190, 120, 255))
-        rl.draw_circle_lines(int(px), int(py), 14.0, rl.Color(40, 80, 50, 255))
+        player_screen = self._camera_world_to_screen(self._player.pos)
+        rl.draw_circle(int(player_screen.x), int(player_screen.y), 14.0, rl.Color(90, 190, 120, 255))
+        rl.draw_circle_lines(int(player_screen.x), int(player_screen.y), 14.0, rl.Color(40, 80, 50, 255))
 
         aim_len = 42.0
-        ax = px + self._player.aim_dir.x * aim_len
-        ay = py + self._player.aim_dir.y * aim_len
-        rl.draw_line(int(px), int(py), int(ax), int(ay), rl.Color(240, 240, 240, 255))
+        aim_tip = player_screen + self._player.aim_dir * aim_len
+        rl.draw_line(
+            int(player_screen.x),
+            int(player_screen.y),
+            int(aim_tip.x),
+            int(aim_tip.y),
+            rl.Color(240, 240, 240, 255),
+        )
 
         hud_bottom = 0.0
         if self._hud_assets is not None:

@@ -270,9 +270,8 @@ class CorpseStampDebugView:
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        cam_x = screen_w * 0.5 - WORLD_SIZE * 0.5
-        cam_y = screen_h * 0.5 - WORLD_SIZE * 0.5
-        ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
+        camera = Vec2(screen_w * 0.5 - WORLD_SIZE * 0.5, screen_h * 0.5 - WORLD_SIZE * 0.5)
+        ground.draw(camera, screen_w=screen_w, screen_h=screen_h)
 
         # UI
         x = 24.0

@@ -4,6 +4,7 @@ import pyray as rl
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -199,7 +200,7 @@ class StatisticsMenuView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
         assets = self._assets

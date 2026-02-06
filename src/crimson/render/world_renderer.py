@@ -1141,7 +1141,7 @@ class WorldRenderer:
             rl.clear_background(clear_color)
         else:
             rl.clear_background(clear_color)
-            self.ground.draw(camera.x, camera.y, screen_w=screen_size.x, screen_h=screen_size.y)
+            self.ground.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
         scale = self._view_scale_avg(view_scale)
 
         # World bounds for debug if terrain is missing.

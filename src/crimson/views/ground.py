@@ -54,8 +54,7 @@ class GroundView:
         self._grim_mono: GrimMonoFont | None = None
         self._assets: GroundAssets | None = None
         self._renderer: GroundRenderer | None = None
-        self._camera_x = 0.0
-        self._camera_y = 0.0
+        self._camera = Vec2()
         self._quests: list[QuestDefinition] = []
         self._quest_index = 0
         self._terrain_seed: int | None = None
@@ -122,14 +121,11 @@ class GroundView:
 
     def update(self, dt: float) -> None:
         speed = 240.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            self._camera_x += speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            self._camera_x -= speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            self._camera_y += speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            self._camera_y -= speed * dt
+        movement = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_A)) - float(rl.is_key_down(rl.KeyboardKey.KEY_D)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_W)) - float(rl.is_key_down(rl.KeyboardKey.KEY_S)),
+        )
+        self._camera = self._camera + movement * (speed * dt)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
             self._quest_index = (self._quest_index - 1) % max(1, len(self._quests))
             self._apply_quest()
@@ -140,11 +136,10 @@ class GroundView:
             self._renderer.process_pending()
             if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 mouse = rl.get_mouse_position()
-                world_x = -self._camera_x + float(mouse.x)
-                world_y = -self._camera_y + float(mouse.y)
+                world_pos = Vec2(float(mouse.x), float(mouse.y)) - self._camera
                 self._fx_queue.add(
                     effect_id=int(EffectId.BLOOD_SPLATTER),
-                    pos=Vec2(world_x, world_y),
+                    pos=world_pos,
                     width=30.0,
                     height=30.0,
                     rotation=0.0,
@@ -168,7 +163,7 @@ class GroundView:
         if self._renderer is None:
             draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
-        self._renderer.draw(self._camera_x, self._camera_y)
+        self._renderer.draw(self._camera)
         self._draw_quest_title_overlay()
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
@@ -221,8 +216,7 @@ class GroundView:
             return
         renderer.schedule_generate(seed=self._terrain_seed, layers=3)
         if reset_camera:
-            self._camera_x = 0.0
-            self._camera_y = 0.0
+            self._camera = Vec2()
 
     def _quest_seed(self, level: str) -> int:
         tier_text, quest_text = level.split(".", 1)

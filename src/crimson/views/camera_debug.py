@@ -49,12 +49,9 @@ class CameraDebugView:
         self._config_screen_h = float(WINDOW_H)
         self._texture_scale = 1.0
         self._use_config_screen = False
-        self._player_x = WORLD_SIZE * 0.5
-        self._player_y = WORLD_SIZE * 0.5
-        self._camera_x = -1.0
-        self._camera_y = -1.0
-        self._camera_target_x = -1.0
-        self._camera_target_y = -1.0
+        self._player = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
+        self._camera = Vec2(-1.0, -1.0)
+        self._camera_target = Vec2(-1.0, -1.0)
         self._log_timer = 0.0
         self._log_path: Path | None = None
         self._log_file = None
@@ -71,7 +68,7 @@ class CameraDebugView:
         self._config_screen_h = float(cfg.screen_height)
         self._texture_scale = float(cfg.texture_scale)
 
-    def _camera_screen_size(self) -> tuple[float, float]:
+    def _camera_screen_size(self) -> Vec2:
         if self._use_config_screen:
             screen_w = float(self._config_screen_w)
             screen_h = float(self._config_screen_h)
@@ -82,29 +79,20 @@ class CameraDebugView:
             screen_w = WORLD_SIZE
         if screen_h > WORLD_SIZE:
             screen_h = WORLD_SIZE
-        return screen_w, screen_h
+        return Vec2(screen_w, screen_h)
 
-    def _clamp_camera(self, cam_x: float, cam_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
+    def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
         min_x = screen_w - WORLD_SIZE
         min_y = screen_h - WORLD_SIZE
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_y > -1.0:
-            cam_y = -1.0
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y < min_y:
-            cam_y = min_y
-        return cam_x, cam_y
+        return camera.clamp_rect(min_x, min_y, -1.0, -1.0)
 
-    def _world_params(self) -> tuple[float, float, float, float, float, float]:
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        screen_w, screen_h = self._camera_screen_size()
-        cam_x, cam_y = self._clamp_camera(self._camera_x, self._camera_y, screen_w, screen_h)
-        scale_x = out_w / screen_w if screen_w > 0 else 1.0
-        scale_y = out_h / screen_h if screen_h > 0 else 1.0
-        return cam_x, cam_y, scale_x, scale_y, screen_w, screen_h
+    def _world_params(self) -> tuple[Vec2, Vec2, Vec2]:
+        out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
+        screen_size = self._camera_screen_size()
+        camera = self._clamp_camera(self._camera, screen_size.x, screen_size.y)
+        scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
+        scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
+        return camera, Vec2(scale_x, scale_y), screen_size
 
     def _write_log(self, payload: dict) -> None:
         if self._log_file is None:
@@ -194,22 +182,18 @@ class CameraDebugView:
             move_y += 1.0
         move = Vec2(move_x, move_y)
         if move.length_sq() > 0.0:
-            move = move.normalized()
-            self._player_x += move.x * speed * dt
-            self._player_y += move.y * speed * dt
-            self._player_x = max(0.0, min(WORLD_SIZE, self._player_x))
-            self._player_y = max(0.0, min(WORLD_SIZE, self._player_y))
+            self._player = (self._player + move.normalized() * (speed * dt)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
 
-        screen_w, screen_h = self._camera_screen_size()
-        desired_x = (screen_w * 0.5) - self._player_x
-        desired_y = (screen_h * 0.5) - self._player_y
-        desired_x, desired_y = self._clamp_camera(desired_x, desired_y, screen_w, screen_h)
-        self._camera_target_x = desired_x
-        self._camera_target_y = desired_y
+        screen_size = self._camera_screen_size()
+        desired = Vec2(
+            (screen_size.x * 0.5) - self._player.x,
+            (screen_size.y * 0.5) - self._player.y,
+        )
+        desired = self._clamp_camera(desired, screen_size.x, screen_size.y)
+        self._camera_target = desired
 
         t = max(0.0, min(dt * 6.0, 1.0))
-        self._camera_x = self._camera_x + (desired_x - self._camera_x) * t
-        self._camera_y = self._camera_y + (desired_y - self._camera_y) * t
+        self._camera = Vec2.lerp(self._camera, desired, t)
 
         if self._renderer is not None:
             self._renderer.texture_scale = self._texture_scale
@@ -224,28 +208,28 @@ class CameraDebugView:
         self._log_timer += dt
         if self._log_timer >= LOG_INTERVAL_S:
             self._log_timer -= LOG_INTERVAL_S
-            cam_x, cam_y, scale_x, scale_y, screen_w, screen_h = self._world_params()
+            camera, view_scale, screen_size = self._world_params()
             payload = {
                 "ts": time.time(),
                 "dt": dt,
-                "player": {"x": self._player_x, "y": self._player_y},
-                "camera": {"x": cam_x, "y": cam_y},
-                "camera_raw": {"x": self._camera_x, "y": self._camera_y},
-                "camera_target": {"x": self._camera_target_x, "y": self._camera_target_y},
+                "player": {"x": self._player.x, "y": self._player.y},
+                "camera": {"x": camera.x, "y": camera.y},
+                "camera_raw": {"x": self._camera.x, "y": self._camera.y},
+                "camera_target": {"x": self._camera_target.x, "y": self._camera_target.y},
                 "world": {"size": WORLD_SIZE},
                 "screen": {
                     "window": {"w": rl.get_screen_width(), "h": rl.get_screen_height()},
-                    "camera": {"w": screen_w, "h": screen_h},
+                    "camera": {"w": screen_size.x, "h": screen_size.y},
                     "config": {"w": self._config_screen_w, "h": self._config_screen_h},
                     "use_config": self._use_config_screen,
                 },
                 "texture_scale": self._texture_scale,
-                "scale": {"x": scale_x, "y": scale_y},
+                "scale": {"x": view_scale.x, "y": view_scale.y},
                 "uv": {
-                    "u0": -cam_x / WORLD_SIZE,
-                    "v0": -cam_y / WORLD_SIZE,
-                    "u1": (-cam_x + screen_w) / WORLD_SIZE,
-                    "v1": (-cam_y + screen_h) / WORLD_SIZE,
+                    "u0": -camera.x / WORLD_SIZE,
+                    "v0": -camera.y / WORLD_SIZE,
+                    "u1": (-camera.x + screen_size.x) / WORLD_SIZE,
+                    "v1": (-camera.y + screen_size.y) / WORLD_SIZE,
                 },
             }
             if self._log_path is not None:
@@ -260,27 +244,27 @@ class CameraDebugView:
             draw_ui_text(self._small, "Ground renderer not initialized.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
-        cam_x, cam_y, scale_x, scale_y, screen_w, screen_h = self._world_params()
-        self._renderer.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
+        camera, view_scale, screen_size = self._world_params()
+        self._renderer.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
 
         # Grid in world space
         grid_major = rl.Color(70, 80, 95, 180)
         grid_minor = rl.Color(40, 50, 65, 140)
         for i in range(0, int(WORLD_SIZE) + 1, int(GRID_STEP)):
             color = grid_major if i % 256 == 0 else grid_minor
-            sx = (float(i) + cam_x) * scale_x
-            sy0 = (0.0 + cam_y) * scale_y
-            sy1 = (WORLD_SIZE + cam_y) * scale_y
+            sx = (float(i) + camera.x) * view_scale.x
+            sy0 = (0.0 + camera.y) * view_scale.y
+            sy1 = (WORLD_SIZE + camera.y) * view_scale.y
             rl.draw_line(int(sx), int(sy0), int(sx), int(sy1), color)
-            sy = (float(i) + cam_y) * scale_y
-            sx0 = (0.0 + cam_x) * scale_x
-            sx1 = (WORLD_SIZE + cam_x) * scale_x
+            sy = (float(i) + camera.y) * view_scale.y
+            sx0 = (0.0 + camera.x) * view_scale.x
+            sx1 = (WORLD_SIZE + camera.x) * view_scale.x
             rl.draw_line(int(sx0), int(sy), int(sx1), int(sy), color)
 
         # Player
-        px = (self._player_x + cam_x) * scale_x
-        py = (self._player_y + cam_y) * scale_y
-        rl.draw_circle(int(px), int(py), max(2, int(6 * (scale_x + scale_y) * 0.5)), rl.Color(255, 200, 120, 255))
+        px = (self._player.x + camera.x) * view_scale.x
+        py = (self._player.y + camera.y) * view_scale.y
+        rl.draw_circle(int(px), int(py), max(2, int(6 * (view_scale.x + view_scale.y) * 0.5)), rl.Color(255, 200, 120, 255))
 
         # Minimap
         out_w = float(rl.get_screen_width())
@@ -292,17 +276,17 @@ class CameraDebugView:
         rl.draw_rectangle_lines(int(map_x), int(map_y), int(map_size), int(map_size), rl.Color(180, 180, 200, 220))
 
         map_scale = map_size / WORLD_SIZE
-        view_left = -cam_x
-        view_top = -cam_y
-        view_w = screen_w
-        view_h = screen_h
+        view_left = -camera.x
+        view_top = -camera.y
+        view_w = screen_size.x
+        view_h = screen_size.y
         vx = map_x + view_left * map_scale
         vy = map_y + view_top * map_scale
         vw = view_w * map_scale
         vh = view_h * map_scale
         rl.draw_rectangle_lines(int(vx), int(vy), int(vw), int(vh), rl.Color(120, 200, 255, 220))
-        mx = map_x + self._player_x * map_scale
-        my = map_y + self._player_y * map_scale
+        mx = map_x + self._player.x * map_scale
+        my = map_y + self._player.y * map_scale
         rl.draw_circle(int(mx), int(my), 3, rl.Color(255, 200, 120, 255))
 
         # HUD
@@ -312,7 +296,7 @@ class CameraDebugView:
         mode = "config" if self._use_config_screen else "window"
         draw_ui_text(
             self._small,
-            f"window={int(out_w)}x{int(rl.get_screen_height())}  camera={int(screen_w)}x{int(screen_h)} ({mode})",
+            f"window={int(out_w)}x{int(rl.get_screen_height())}  camera={int(screen_size.x)}x{int(screen_size.y)} ({mode})",
             x,
             y,
             scale=UI_TEXT_SCALE,
@@ -322,16 +306,16 @@ class CameraDebugView:
         draw_ui_text(
             self._small,
             f"config={int(self._config_screen_w)}x{int(self._config_screen_h)}  "
-            f"scale={scale_x:.3f},{scale_y:.3f}  tex={self._texture_scale:.2f}",
+            f"scale={view_scale.x:.3f},{view_scale.y:.3f}  tex={self._texture_scale:.2f}",
             x,
             y,
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
         y += line
-        draw_ui_text(self._small, f"player={self._player_x:.1f},{self._player_y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, f"player={self._player.x:.1f},{self._player.y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += line
-        draw_ui_text(self._small, f"camera={cam_x:.1f},{cam_y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, f"camera={camera.x:.1f},{camera.y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += line
         if self._log_path is not None:
             draw_ui_text(self._small, f"log: {self._log_path}", x, y, scale=0.9, color=UI_HINT_COLOR)

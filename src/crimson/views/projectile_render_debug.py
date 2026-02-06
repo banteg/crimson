@@ -275,7 +275,7 @@ class ProjectileRenderDebugView:
         screen_size = self._world._camera_screen_size()
 
         if self._world.ground is not None:
-            self._world.ground.draw(camera.x, camera.y, screen_w=screen_size.x, screen_h=screen_size.y)
+            self._world.ground.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
 
         warn_x = 24.0
         warn_y = 24.0

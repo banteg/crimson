@@ -5,6 +5,7 @@ import math
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.rand import Crand
 from ..creatures.spawn import (
     CreatureTypeId,
@@ -21,7 +22,7 @@ from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_
 from grim.view import View, ViewContext
 
 
-BASE_POS = (512.0, 512.0)
+BASE_POS = Vec2(512.0, 512.0)
 
 UI_TEXT_SCALE = 1
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -216,13 +217,13 @@ class SpawnPlanView:
             if len(self._sim_events) > 12:
                 self._sim_events = self._sim_events[-12:]
 
-    def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        base_x, base_y = BASE_POS
+    def _world_to_screen(self, pos: Vec2) -> Vec2:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        cx = screen_w * 0.5 + (x - base_x) * self._world_scale
-        cy = screen_h * 0.5 + (y - base_y) * self._world_scale
-        return cx, cy
+        return Vec2(
+            screen_w * 0.5 + (pos.x - BASE_POS.x) * self._world_scale,
+            screen_h * 0.5 + (pos.y - BASE_POS.y) * self._world_scale,
+        )
 
     def _draw_grid(self) -> None:
         screen_w = rl.get_screen_width()
@@ -310,36 +311,51 @@ class SpawnPlanView:
             if not (0 <= c.ai_link_parent < len(self._plan.creatures)):
                 continue
             p = self._plan.creatures[c.ai_link_parent]
-            x0, y0 = self._world_to_screen(c.pos.x, c.pos.y)
-            x1, y1 = self._world_to_screen(p.pos.x, p.pos.y)
-            rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, LINK_COLOR)
+            child_screen = self._world_to_screen(c.pos)
+            parent_screen = self._world_to_screen(p.pos)
+            rl.draw_line_ex(
+                child_screen.to_vector2(rl.Vector2),
+                parent_screen.to_vector2(rl.Vector2),
+                2.0,
+                LINK_COLOR,
+            )
 
         # Offset hints.
         for c in self._plan.creatures:
             if c.target_offset is None:
                 continue
-            x0, y0 = self._world_to_screen(c.pos.x, c.pos.y)
-            x1, y1 = self._world_to_screen(c.pos.x + c.target_offset.x, c.pos.y + c.target_offset.y)
-            rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, OFFSET_COLOR)
-            rl.draw_circle_lines(int(x1), int(y1), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
+            origin_screen = self._world_to_screen(c.pos)
+            target_screen = self._world_to_screen(c.pos + c.target_offset)
+            rl.draw_line_ex(
+                origin_screen.to_vector2(rl.Vector2),
+                target_screen.to_vector2(rl.Vector2),
+                2.0,
+                OFFSET_COLOR,
+            )
+            rl.draw_circle_lines(int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
 
         # Creature dots.
         for idx, c in enumerate(self._plan.creatures):
-            x, y = self._world_to_screen(c.pos.x, c.pos.y)
+            screen_pos = self._world_to_screen(c.pos)
             radius = max(3.0, 6.0 * math.sqrt(max(1.0, (c.size or 50.0) / 50.0)))
             radius = min(radius, 24.0)
             color = _type_color(c.type_id)
-            rl.draw_circle(int(x), int(y), radius, color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), radius, color)
             if idx == summary.primary_idx:
-                rl.draw_circle_lines(int(x), int(y), radius + 2.0, rl.Color(255, 255, 255, 200))
+                rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), radius + 2.0, rl.Color(255, 255, 255, 200))
 
         # Spawn-slot owners.
         for slot in self._plan.spawn_slots:
             if not (0 <= slot.owner_creature < len(self._plan.creatures)):
                 continue
             owner = self._plan.creatures[slot.owner_creature]
-            x, y = self._world_to_screen(owner.pos.x, owner.pos.y)
-            rl.draw_circle_lines(int(x), int(y), max(8.0, 12.0 * self._world_scale), rl.Color(120, 255, 180, 200))
+            owner_screen = self._world_to_screen(owner.pos)
+            rl.draw_circle_lines(
+                int(owner_screen.x),
+                int(owner_screen.y),
+                max(8.0, 12.0 * self._world_scale),
+                rl.Color(120, 255, 180, 200),
+            )
 
 
 @register_view("spawn-plan", "Spawn plan")

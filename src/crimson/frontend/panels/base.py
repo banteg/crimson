@@ -4,6 +4,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import play_sfx, update_audio
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -222,7 +223,7 @@ class PanelMenuView:
             pause_background.draw_pause_background()
             return
         if self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
 
     def _draw_panel(self) -> None:
         assets = self._assets
