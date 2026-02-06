@@ -62,6 +62,26 @@ Template-pool globals (seeded in `ui_menu_template_pool_init`) are also mapped:
 - `ui_menu_item_subtemplate_block_01..06` + `_mode` sentinels
   (`0x0048fd78..0x004902e4`)
 
+### `ui_menu_item` subtemplate carving (`0x0048fd78..`)
+
+`ui_menu_item_subtemplate_block_01..06` are now typed as
+`ui_menu_item_subtemplate_block_t`:
+
+- `slot_00..slot_07` are `0x1c` stride records.
+- Per-slot `x`/`y` are high confidence from copy/offset loops in
+  `ui_menu_assets_init`.
+- `+0xe0` is `texture_handle` (`ui_menu_item_subtemplate_block_*_texture_handle`).
+- `+0xe4` is `quad_mode` (`ui_menu_item_subtemplate_block_*_mode`).
+
+Observed transforms in `ui_menu_assets_init`:
+
+- `block_01` is seeded from the menu panel quad payload (`memcpy` `0xe8` bytes).
+- A stride `0x1c` loop subtracts `84.0` from every `slot_i.x` in `block_01`.
+- `slot_02.y`/`slot_03.y` in `block_01` are shifted by `-116.0`.
+- `slot_04.y..slot_07.y` in `block_01` are shifted by `+124.0`.
+- `block_02` is copied from `block_01`, then `slot_04.y..slot_07.y` are shifted by
+  `-100.0`.
+
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.

@@ -13526,6 +13526,7 @@ float __cdecl vec2_length(float *v)
 
 /* ui_menu_template_pool_init @ 00417690 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by
    ui_menu_layout_init */
 
@@ -13533,8 +13534,6 @@ int ui_menu_template_pool_init(void)
 
 {
   undefined *puVar1;
-  ui_element_t *slot;
-  uchar *slot_00;
   int iVar2;
   
   puVar1 = &ui_template_pool_block_00;
@@ -13569,43 +13568,34 @@ int ui_menu_template_pool_init(void)
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
   ui_sign_crimson_template_mode = 4;
-  slot = &ui_menu_item_element;
+  puVar1 = &ui_menu_item_element;
   iVar2 = 8;
   do {
-    ui_template_slot_ctor_noop(slot);
-    slot = (ui_element_t *)&slot->pos_y;
+    ui_template_slot_ctor_noop(puVar1);
+    puVar1 = puVar1 + 0x1c;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  ui_menu_item_element._pad3[0] = '\x04';
-  ui_menu_item_element._pad3[1] = '\0';
-  ui_menu_item_element._pad3[2] = '\0';
-  ui_menu_item_element._pad3[3] = '\0';
-  slot_00 = ui_menu_item_element._pad3 + 4;
+  _DAT_0048fc8c = 4;
+  puVar1 = &DAT_0048fc90;
   iVar2 = 8;
   do {
-    ui_template_slot_ctor_noop(slot_00);
-    slot_00 = slot_00 + 0x1c;
+    ui_template_slot_ctor_noop(puVar1);
+    puVar1 = puVar1 + 0x1c;
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  ui_menu_item_element._pad4[0xa8] = '\x04';
-  ui_menu_item_element._pad4[0xa9] = '\0';
-  ui_menu_item_element._pad4[0xaa] = '\0';
-  ui_menu_item_element._pad4[0xab] = '\0';
-  invoke_callback_n(ui_menu_item_element._pad4 + 0xac,0x1c,8,0x417a90);
-  ui_menu_item_element._pad5[0xac] = '\x04';
-  ui_menu_item_element._pad5[0xad] = '\0';
-  ui_menu_item_element._pad5[0xae] = '\0';
-  ui_menu_item_element._pad5[0xaf] = '\0';
-  invoke_callback_n(ui_menu_item_element._pad5 + 0xb0,0x1c,8,0x417a90);
-  ui_menu_item_subtemplate_block_02_mode = 4;
+  _DAT_0048fd74 = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_01,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_01.quad_mode = 4;
+  invoke_callback_n(&ui_menu_item_subtemplate_block_02,0x1c,8,0x417a90);
+  ui_menu_item_subtemplate_block_02.quad_mode = 4;
   invoke_callback_n(&ui_menu_item_subtemplate_block_03,0x1c,8,0x417a90);
-  ui_menu_item_subtemplate_block_03_mode = 4;
+  ui_menu_item_subtemplate_block_03.quad_mode = 4;
   invoke_callback_n(&ui_menu_item_subtemplate_block_04,0x1c,8,0x417a90);
-  ui_menu_item_subtemplate_block_04_mode = 4;
+  ui_menu_item_subtemplate_block_04.quad_mode = 4;
   invoke_callback_n(&ui_menu_item_subtemplate_block_05,0x1c,8,0x417a90);
-  ui_menu_item_subtemplate_block_05_mode = 4;
+  ui_menu_item_subtemplate_block_05.quad_mode = 4;
   iVar2 = invoke_callback_n(&ui_menu_item_subtemplate_block_06,0x1c,8,0x417a90);
-  ui_menu_item_subtemplate_block_06_mode = 4;
+  ui_menu_item_subtemplate_block_06.quad_mode = 4;
   return iVar2;
 }
 
@@ -14549,107 +14539,95 @@ void __cdecl ui_element_load(ui_element_t *element,char *jaz_path)
 
 /* ui_menu_assets_init @ 00419dd0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* loads menu UI elements and seeds layout copies */
 
 void ui_menu_assets_init(void)
 
 {
-  uchar *puVar1;
+  ui_menu_item_subtemplate_block_t *puVar1;
   int iVar2;
-  uchar *puVar3;
+  float *pfVar3;
+  ui_menu_item_subtemplate_slot_t *puVar4;
+  ui_menu_item_subtemplate_slot_t *puVar5;
+  ui_menu_item_subtemplate_block_t *puVar6;
   float local_8 [2];
   
   ui_element_load((ui_element_t *)&ui_sign_crimson_template,s_ui_ui_signCrimson_jaz_004737f4);
   local_8[0] = -577.44;
   local_8[1] = -62.0;
   ui_element_set_rect((ui_element_t *)&ui_sign_crimson_template,573.44,143.36,local_8);
-  ui_element_load(&ui_menu_item_element,s_ui_ui_menuItem_jaz_004737e0);
+  ui_element_load((ui_element_t *)&ui_menu_item_element,s_ui_ui_menuItem_jaz_004737e0);
   local_8[0] = -72.0;
   local_8[1] = -60.0;
-  ui_element_set_rect(&ui_menu_item_element,512.0,64.0,local_8);
-  ui_element_load((ui_element_t *)(ui_menu_item_element._pad3 + 4),s_ui_ui_menuPanel_jaz_004737cc);
+  ui_element_set_rect((ui_element_t *)&ui_menu_item_element,512.0,64.0,local_8);
+  ui_element_load((ui_element_t *)&DAT_0048fc90,s_ui_ui_menuPanel_jaz_004737cc);
   local_8[0] = 20.0;
   local_8[1] = -82.0;
-  ui_element_set_rect((ui_element_t *)(ui_menu_item_element._pad3 + 4),512.0,256.0,local_8);
-  puVar1 = ui_menu_item_element._pad3;
-  puVar3 = ui_menu_item_element._pad4 + 0xac;
-  for (iVar2 = 0x3a; puVar1 = puVar1 + 4, iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5[0xac] = '\b';
-  ui_menu_item_element._pad5[0xad] = '\0';
-  ui_menu_item_element._pad5[0xae] = '\0';
-  ui_menu_item_element._pad5[0xaf] = '\0';
-  puVar1 = ui_menu_item_element._pad5 + 0x1c;
-  puVar3 = ui_menu_item_element._pad5 + 0x8c;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  puVar1 = ui_menu_item_element._pad5;
-  puVar3 = ui_menu_item_element._pad5 + 0x70;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5._4_4_ = (float)ui_menu_item_element._pad5._4_4_ - 116.0;
-  ui_menu_item_element._pad5._32_4_ = (float)ui_menu_item_element._pad5._32_4_ - 116.0;
-  ui_menu_item_element._pad5[0x18] = '\0';
-  ui_menu_item_element._pad5[0x19] = '\0';
-  ui_menu_item_element._pad5[0x1a] = '\x02';
-  ui_menu_item_element._pad5[0x1b] = '?';
-  ui_menu_item_element._pad5[0x34] = '\0';
-  ui_menu_item_element._pad5[0x35] = '\0';
-  ui_menu_item_element._pad5[0x36] = '\x02';
-  ui_menu_item_element._pad5[0x37] = '?';
-  puVar1 = ui_menu_item_element._pad5 + 0x1c;
-  puVar3 = ui_menu_item_element._pad5 + 0x38;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  puVar1 = ui_menu_item_element._pad5;
-  puVar3 = ui_menu_item_element._pad5 + 0x54;
-  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
-  }
-  ui_menu_item_element._pad5._60_4_ = (float)ui_menu_item_element._pad5._60_4_ + 124.0;
-  ui_menu_item_element._pad5._88_4_ = (float)ui_menu_item_element._pad5._88_4_ + 124.0;
-  ui_menu_item_element._pad5._116_4_ = (float)ui_menu_item_element._pad5._116_4_ + 124.0;
-  ui_menu_item_element._pad5[0x50] = '\0';
-  ui_menu_item_element._pad5[0x51] = '\0';
-  ui_menu_item_element._pad5[0x52] = '\x16';
-  ui_menu_item_element._pad5[0x53] = '?';
-  ui_menu_item_element._pad5[0x6c] = '\0';
-  ui_menu_item_element._pad5[0x6d] = '\0';
-  ui_menu_item_element._pad5[0x6e] = '\x16';
-  ui_menu_item_element._pad5[0x6f] = '?';
-  ui_menu_item_element._pad5._144_4_ = (float)ui_menu_item_element._pad5._144_4_ + 124.0;
-  puVar1 = ui_menu_item_element._pad4 + 0xac;
-  do {
-    *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4);
-    puVar3 = puVar1 + 0x1c;
-    *(float *)puVar1 = *(float *)puVar1 - 84.0;
-    puVar1 = puVar3;
-  } while ((int)puVar3 < 0x48fe58);
-  puVar1 = ui_menu_item_element._pad4 + 0xac;
-  puVar3 = ui_menu_item_element._pad5 + 0xb0;
+  ui_element_set_rect((ui_element_t *)&DAT_0048fc90,512.0,256.0,local_8);
+  pfVar3 = (float *)&DAT_0048fc90;
+  puVar1 = &ui_menu_item_subtemplate_block_01;
   for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
-    puVar1 = puVar1 + 4;
-    puVar3 = puVar3 + 4;
+    (puVar1->slot_00).x = *pfVar3;
+    pfVar3 = pfVar3 + 1;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)&(puVar1->slot_00).y;
   }
-  _DAT_0048fed4 = (float)ui_menu_item_element._pad5._60_4_ - 100.0;
-  _DAT_0048fef0 = _DAT_0048fef0 - 100.0;
-  _DAT_0048ff0c = _DAT_0048ff0c - 100.0;
-  _DAT_0048ff28 = _DAT_0048ff28 - 100.0;
+  ui_menu_item_subtemplate_block_01.quad_mode = 8;
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_03;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_07;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_02;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_06;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  ui_menu_item_subtemplate_block_01.slot_02.y = ui_menu_item_subtemplate_block_01.slot_02.y - 116.0;
+  ui_menu_item_subtemplate_block_01.slot_03.y = ui_menu_item_subtemplate_block_01.slot_03.y - 116.0;
+  ui_menu_item_subtemplate_block_01.slot_02.field_0x18 = 0.5078125;
+  ui_menu_item_subtemplate_block_01.slot_03.field_0x18 = 0.5078125;
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_03;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_04;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  puVar4 = &ui_menu_item_subtemplate_block_01.slot_02;
+  puVar5 = &ui_menu_item_subtemplate_block_01.slot_05;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    puVar5->x = puVar4->x;
+    puVar4 = (ui_menu_item_subtemplate_slot_t *)&puVar4->y;
+    puVar5 = (ui_menu_item_subtemplate_slot_t *)&puVar5->y;
+  }
+  ui_menu_item_subtemplate_block_01.slot_04.y = ui_menu_item_subtemplate_block_01.slot_04.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_05.y = ui_menu_item_subtemplate_block_01.slot_05.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_06.y = ui_menu_item_subtemplate_block_01.slot_06.y + 124.0;
+  ui_menu_item_subtemplate_block_01.slot_04.field_0x18 = 0.5859375;
+  ui_menu_item_subtemplate_block_01.slot_05.field_0x18 = 0.5859375;
+  ui_menu_item_subtemplate_block_01.slot_07.y = ui_menu_item_subtemplate_block_01.slot_07.y + 124.0;
+  puVar1 = &ui_menu_item_subtemplate_block_01;
+  do {
+    (puVar1->slot_00).y = (puVar1->slot_00).y;
+    puVar4 = &puVar1->slot_01;
+    (puVar1->slot_00).x = (puVar1->slot_00).x - 84.0;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)puVar4;
+  } while ((int)puVar4 < 0x48fe58);
+  puVar1 = &ui_menu_item_subtemplate_block_01;
+  puVar6 = &ui_menu_item_subtemplate_block_02;
+  for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
+    (puVar6->slot_00).x = (puVar1->slot_00).x;
+    puVar1 = (ui_menu_item_subtemplate_block_t *)&(puVar1->slot_00).y;
+    puVar6 = (ui_menu_item_subtemplate_block_t *)&(puVar6->slot_00).y;
+  }
+  ui_menu_item_subtemplate_block_02.slot_04.y = ui_menu_item_subtemplate_block_01.slot_04.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_05.y = ui_menu_item_subtemplate_block_02.slot_05.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_06.y = ui_menu_item_subtemplate_block_02.slot_06.y - 100.0;
+  ui_menu_item_subtemplate_block_02.slot_07.y = ui_menu_item_subtemplate_block_02.slot_07.y - 100.0;
   ui_menu_layout_init();
   return;
 }
@@ -38938,11 +38916,12 @@ void ui_menu_layout_init(void)
   float fVar12;
   char *unaff_EBX;
   ui_element_t **ppuVar13;
-  float *pfVar14;
+  ui_menu_item_subtemplate_block_t *puVar14;
   uchar *puVar15;
-  ui_element_t *puVar16;
-  char *pcVar17;
-  int iVar18;
+  float *pfVar16;
+  ui_element_t *puVar17;
+  char *pcVar18;
+  int iVar19;
   float fStack_30;
   float fStack_2c;
   float afStack_28 [2];
@@ -39013,32 +38992,32 @@ void ui_menu_layout_init(void)
     ppuVar13 = ppuVar13 + 1;
   } while ((int)ppuVar13 < 0x48f20c);
   pfVar9 = (float *)&ui_sign_crimson_template;
-  pfVar14 = ui_sign_crimson.quad0;
+  pfVar16 = ui_sign_crimson.quad0;
   for (iVar11 = 0x3a; iVar11 != 0; iVar11 = iVar11 + -1) {
-    *pfVar14 = *pfVar9;
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
-    pfVar14 = pfVar14 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_sign_crimson.pos_x = (float)(iVar10 + 4);
   ui_sign_crimson.pos_y = 70.0;
   if (iVar10 < 0x281) {
     ui_sign_crimson.pos_y = 60.0;
   }
-  pcVar17 = s_ui_ui_itemTexts_jaz_00479318;
+  pcVar18 = s_ui_ui_itemTexts_jaz_00479318;
   ui_item_texts_texture = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
   pcVar5 = s_ui_ui_textReaper_jaz_00479300;
-  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar17);
-  pcVar17 = s_ui_ui_textControls_jaz_004792e8;
+  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar18);
+  pcVar18 = s_ui_ui_textControls_jaz_004792e8;
   ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar5);
   pcVar5 = s_ui_ui_textPickAPerk_jaz_004792d0;
-  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar17);
+  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar18);
   ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar5);
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_02_main_menu_primary.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_02_main_menu_primary.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_02_main_menu_primary.pos_x = -60.0;
   ui_element_slot_02_main_menu_primary.pos_y = 210.0;
@@ -39055,12 +39034,12 @@ void ui_menu_layout_init(void)
   if ((char)iVar10 != '\0') {
     ui_element_slot_02_main_menu_primary.on_activate = (_func_1 *)&LAB_00447350;
   }
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_03_main_menu_play_game.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_03_main_menu_play_game.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_03_main_menu_play_game.pos_x = -60.0;
   ui_element_slot_03_main_menu_play_game.pos_y = 270.0;
@@ -39074,12 +39053,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_03_main_menu_play_game._pad1[0x12] = '\0';
   ui_element_slot_03_main_menu_play_game._pad1[0x13] = '\0';
   afStack_28[0] = 270.0;
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_04_main_menu_options.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_04_main_menu_options.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_04_main_menu_options.pos_x = -60.0;
   ui_element_slot_04_main_menu_options.pos_y = 330.0;
@@ -39092,12 +39071,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_04_main_menu_options._pad1[0x12] = '\0';
   ui_element_slot_04_main_menu_options._pad1[0x13] = '\0';
   afStack_28[0] = 270.0;
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_05_main_menu_statistics.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_05_main_menu_statistics.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_05_main_menu_statistics.pos_x = -60.0;
   ui_element_slot_05_main_menu_statistics.pos_y = 390.0;
@@ -39112,12 +39091,12 @@ void ui_menu_layout_init(void)
   iVar10 = 5;
   pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
   if (*pcVar5 != '\0') {
-    puVar7 = &ui_menu_item_element;
-    pfVar9 = ui_element_slot_footer_variant_a.quad0;
+    pfVar9 = (float *)&ui_menu_item_element;
+    pfVar16 = ui_element_slot_footer_variant_a.quad0;
     for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-      *pfVar9 = *(float *)puVar7;
-      puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+      *pfVar16 = *pfVar9;
       pfVar9 = pfVar9 + 1;
+      pfVar16 = pfVar16 + 1;
     }
     ui_element_slot_footer_variant_a.pos_x = -60.0;
     ui_element_slot_footer_variant_a.pos_y = 450.0;
@@ -39132,12 +39111,12 @@ void ui_menu_layout_init(void)
     ui_element_slot_footer_variant_a.on_activate = (_func_1 *)&LAB_0044fca0;
     iVar10 = 6;
   }
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_footer_variant_b.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_footer_variant_b.quad0;
   for (iVar11 = 0x3a; iVar11 != 0; iVar11 = iVar11 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   fStack_30 = 270.0;
   ui_element_slot_footer_variant_b.pos_x = -60.0;
@@ -39152,16 +39131,16 @@ void ui_menu_layout_init(void)
   iVar11 = 2;
   iVar10 = 0;
   do {
-    iVar18 = iVar10;
+    iVar19 = iVar10;
     if ((iVar11 == 2) && (iVar6 = game_is_full_version(), (char)iVar6 != '\0')) {
       iVar10 = 4;
-      iVar18 = 4;
+      iVar19 = 4;
     }
     pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
     if (*pcVar5 == '\0') {
       if (iVar11 == 6) {
         iVar10 = 6;
-        iVar18 = 6;
+        iVar19 = 6;
       }
       (&ui_element_table_end)[iVar11]->counter_id = ui_item_texts_texture;
       puVar7 = (&ui_element_table_end)[iVar11];
@@ -39169,13 +39148,13 @@ void ui_menu_layout_init(void)
       puVar7->_pad4[0x15] = '\0';
       puVar7->_pad4[0x16] = '\0';
       puVar7->_pad4[0x17] = '\0';
-      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar18 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x30] = '\0';
       puVar7->_pad4[0x31] = '\0';
       puVar7->_pad4[0x32] = 0x80;
       puVar7->_pad4[0x33] = '?';
-      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar18 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x4c] = '\0';
       puVar7->_pad4[0x4d] = '\0';
@@ -39197,13 +39176,13 @@ void ui_menu_layout_init(void)
       puVar7->_pad4[0x16] = '\0';
       puVar7->_pad4[0x17] = '\0';
       fStack_30 = 0.0;
-      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar18 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x30] = '\0';
       puVar7->_pad4[0x31] = '\0';
       puVar7->_pad4[0x32] = 0x80;
       puVar7->_pad4[0x33] = '?';
-      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar18 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x4c] = '\0';
       puVar7->_pad4[0x4d] = '\0';
@@ -39219,15 +39198,15 @@ void ui_menu_layout_init(void)
       fStack_2c = fVar12;
     }
     *(float *)(puVar7->_pad4 + 0x6c) = fVar12;
-    if ((iVar11 == 2) && (iVar18 = game_is_full_version(), (char)iVar18 != '\0')) {
+    if ((iVar11 == 2) && (iVar19 = game_is_full_version(), (char)iVar19 != '\0')) {
       iVar10 = 0;
     }
-    iVar18 = iVar10 + 1;
-    if (iVar18 == 4) {
-      iVar18 = iVar10 + 2;
+    iVar19 = iVar10 + 1;
+    if (iVar19 == 4) {
+      iVar19 = iVar10 + 2;
     }
     iVar11 = iVar11 + 1;
-    iVar10 = iVar18;
+    iVar10 = iVar19;
   } while (iVar11 < 8);
   if (config_blob.screen_width < 0x281) {
     iVar10 = 0;
@@ -39296,11 +39275,12 @@ void ui_menu_layout_init(void)
   if ((char)iVar10 != '\0') {
     DAT_00486faa = 1;
   }
-  puVar8 = ui_menu_item_element._pad3;
-  pfVar9 = ui_element_slot_31.quad0;
-  for (iVar10 = 0x3a; puVar8 = puVar8 + 4, iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_31.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_31._pad1._8_4_ = (float)ui_element_slot_31._pad1._0_4_ + 280.0;
   ui_element_slot_31._pad1._12_4_ = (float)ui_element_slot_31._pad1._4_4_ + 180.0;
@@ -39312,12 +39292,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_31._pad0[3] = '\0';
   ui_element_slot_31._pad0[4] = '\0';
   ui_element_slot_31._pad0[5] = '\0';
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_32_layout_c.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_32_layout_c.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_32_layout_c.pos_x = -55.0;
   ui_element_slot_32_layout_c.pos_y = 430.0;
@@ -39366,12 +39346,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_32_layout_c._pad1[0x11] = '\0';
   ui_element_slot_32_layout_c._pad1[0x12] = '\0';
   ui_element_slot_32_layout_c._pad1[0x13] = '\0';
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_23.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_23.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_23.pos_x = -60.0;
   ui_element_slot_23.pos_y = 210.0;
@@ -39385,12 +39365,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_23._pad0._14_4_ = ui_element_slot_23._pad0._14_4_ + 100;
   ui_element_slot_23._pad0._18_4_ = ui_element_slot_23._pad0._18_4_ + 100;
   ui_element_slot_23.on_activate = ui_menu_main_click_options;
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_24.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_24.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_24.pos_x = -80.0;
   ui_element_slot_24.pos_y = 270.0;
@@ -39404,12 +39384,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_24.on_activate = (_func_1 *)&LAB_004474e0;
   ui_element_slot_24._pad0._14_4_ = ui_element_slot_24._pad0._14_4_ + 200;
   ui_element_slot_24._pad0._18_4_ = ui_element_slot_24._pad0._18_4_ + 200;
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_25.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_25.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_25.pos_x = -100.0;
   ui_element_slot_25.pos_y = 330.0;
@@ -39433,11 +39413,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_26._pad0[3] = '\0';
   ui_element_slot_26._pad0[4] = '\0';
   ui_element_slot_26._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_27.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_27.pos_x = -45.0;
@@ -39454,11 +39434,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_10._pad0[3] = '\0';
   ui_element_slot_10._pad0[4] = '\0';
   ui_element_slot_10._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad5 + 0xb0;
+  puVar14 = &ui_menu_item_subtemplate_block_02;
   pfVar9 = ui_element_slot_11.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_11.pos_x = -45.0;
@@ -39475,12 +39455,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_11._pad0[3] = '\0';
   ui_element_slot_11._pad0[4] = '\0';
   ui_element_slot_11._pad0[5] = '\0';
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_12_layout_a.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_12_layout_a.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_12_layout_a.pos_y = 462.0;
   ui_element_slot_12_layout_a.pos_x = -55.0;
@@ -39506,11 +39486,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_29._pad0[3] = '\0';
   ui_element_slot_29._pad0[4] = '\0';
   ui_element_slot_29._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_30.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_30.pos_y = 110.0;
@@ -39519,7 +39499,6 @@ void ui_menu_layout_init(void)
   ui_element_slot_30._pad0._14_4_ = ui_element_slot_30._pad0._14_4_ + 100;
   ui_element_slot_13.pos_x = -180.0;
   ui_element_slot_13.pos_y = 135.0;
-  puVar8 = ui_menu_item_element._pad3;
   ui_element_slot_30._pad0[2] = '\x01';
   ui_element_slot_30._pad0[3] = '\0';
   ui_element_slot_30._pad0[4] = '\0';
@@ -39528,11 +39507,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_13._pad0[3] = '\0';
   ui_element_slot_13._pad0[4] = '\0';
   ui_element_slot_13._pad0[5] = '\0';
-  pfVar9 = ui_element_slot_14.quad0;
-  for (iVar10 = 0x3a; iVar11 = config_blob.screen_width, puVar8 = puVar8 + 4, iVar10 != 0;
-      iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_14.quad0;
+  for (iVar10 = 0x3a; iVar11 = config_blob.screen_width, iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_14.pos_x = -165.0;
   if (config_blob.screen_width < 0x281) {
@@ -39544,12 +39524,12 @@ void ui_menu_layout_init(void)
   ui_element_slot_14._pad0[3] = '\0';
   ui_element_slot_14._pad0[4] = '\0';
   ui_element_slot_14._pad0[5] = '\0';
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = ui_element_slot_18_layout_b.quad0;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = ui_element_slot_18_layout_b.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_18_layout_b.pos_x = -155.0;
   ui_element_slot_18_layout_b.pos_y = 420.0;
@@ -39575,11 +39555,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_34._pad0[3] = '\0';
   ui_element_slot_34._pad0[4] = '\0';
   ui_element_slot_34._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_35.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_35.pos_x = -45.0;
@@ -39596,11 +39576,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_36._pad0[3] = '\0';
   ui_element_slot_36._pad0[4] = '\0';
   ui_element_slot_36._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_37.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_37.pos_y = 185.0;
@@ -39616,11 +39596,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_38._pad0[3] = '\0';
   ui_element_slot_38._pad0[4] = '\0';
   ui_element_slot_38._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_39.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   ui_element_slot_39.pos_y = 185.0;
@@ -39629,12 +39609,13 @@ void ui_menu_layout_init(void)
   ui_element_slot_39._pad0[3] = '\0';
   ui_element_slot_39._pad0[4] = '\0';
   ui_element_slot_39._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad3;
   fVar12 = (float)(iVar11 + -0x15e);
-  pfVar9 = ui_element_slot_33.quad0;
-  for (iVar10 = 0x3a; puVar8 = puVar8 + 4, iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
+  pfVar9 = (float *)&DAT_0048fc90;
+  pfVar16 = ui_element_slot_33.quad0;
+  for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   ui_element_slot_33.pos_y = 200.0;
   if (iVar11 < 0x321) {
@@ -39662,11 +39643,11 @@ void ui_menu_layout_init(void)
   ui_element_slot_08._pad0[3] = '\0';
   ui_element_slot_08._pad0[4] = '\0';
   ui_element_slot_08._pad0[5] = '\0';
-  puVar8 = ui_menu_item_element._pad4 + 0xac;
+  puVar14 = &ui_menu_item_subtemplate_block_01;
   pfVar9 = ui_element_slot_09.quad0;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar8;
-    puVar8 = puVar8 + 4;
+    *pfVar9 = (puVar14->slot_00).x;
+    puVar14 = (ui_menu_item_subtemplate_block_t *)&(puVar14->slot_00).y;
     pfVar9 = pfVar9 + 1;
   }
   fStack_30 = -60.0;
@@ -39689,37 +39670,37 @@ void ui_menu_layout_init(void)
   do {
     if (iVar11 < 0x281) {
       fVar12 = (float)iVar10;
-      iVar18 = 0;
+      iVar19 = 0;
       do {
-        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar18);
-        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar18) * 0.9;
+        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar19);
+        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar19) * 0.9;
         pfVar9[1] = pfVar9[1] * 0.9;
-        puVar8 = (*ppuVar13)->_pad5 + iVar18 + 4;
-        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar18 + 4) * 0.9;
+        puVar8 = (*ppuVar13)->_pad5 + iVar19 + 4;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar19 + 4) * 0.9;
         *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
-        puVar8 = (*ppuVar13)->_pad4 + iVar18;
-        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar18) * 0.9;
+        puVar8 = (*ppuVar13)->_pad4 + iVar19;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar19) * 0.9;
         *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
-        *(float *)((int)(*ppuVar13)->quad0 + iVar18 + 4) =
-             *(float *)((int)(*ppuVar13)->quad0 + iVar18 + 4) - fVar12;
-        *(float *)((*ppuVar13)->_pad5 + iVar18 + 8) =
-             *(float *)((*ppuVar13)->_pad5 + iVar18 + 8) - fVar12;
-        iVar11 = iVar18 + 4;
-        iVar6 = iVar18 + 4;
-        iVar18 = iVar18 + 0x1c;
+        *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) =
+             *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) - fVar12;
+        *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) =
+             *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) - fVar12;
+        iVar11 = iVar19 + 4;
+        iVar6 = iVar19 + 4;
+        iVar19 = iVar19 + 0x1c;
         *(float *)((*ppuVar13)->_pad4 + iVar6) = *(float *)((*ppuVar13)->_pad4 + iVar11) - fVar12;
         iVar11 = config_blob.screen_width;
-      } while (iVar18 < 0x70);
+      } while (iVar19 < 0x70);
     }
     iVar10 = iVar10 + 0xb;
     ppuVar13 = ppuVar13 + 1;
   } while (iVar10 < 0x38);
   ppuVar13 = &ui_element_table_slot_22;
   iVar10 = -5;
-  iVar18 = -0xb;
+  iVar19 = -0xb;
   do {
     if (iVar11 < 0x281) {
-      fVar12 = (float)iVar18;
+      fVar12 = (float)iVar19;
       iVar6 = 0;
       do {
         pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar6);
@@ -39766,10 +39747,10 @@ void ui_menu_layout_init(void)
         iVar11 = config_blob.screen_width;
       } while (iVar6 < 0x70);
     }
-    iVar18 = iVar18 + 0xb;
+    iVar19 = iVar19 + 0xb;
     iVar10 = iVar10 + 5;
     ppuVar13 = ppuVar13 + 1;
-  } while (iVar18 < 0x17);
+  } while (iVar19 < 0x17);
   if (iVar11 < 0x281) {
     iVar10 = 0;
     do {
@@ -39780,7 +39761,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       puVar8 = ui_menu_layout_c->_pad4 + iVar10;
-      iVar18 = iVar10 + 0x1c;
+      iVar19 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
@@ -39789,9 +39770,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 11.0;
       *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 11.0;
-      iVar10 = iVar18;
+      iVar10 = iVar19;
       iVar11 = config_blob.screen_width;
-    } while (iVar18 < 0x70);
+    } while (iVar19 < 0x70);
   }
   else if (iVar11 < 0x321) {
     iVar10 = 0;
@@ -39803,7 +39784,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       puVar8 = ui_menu_layout_c->_pad4 + iVar10;
-      iVar18 = iVar10 + 0x1c;
+      iVar19 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
@@ -39812,9 +39793,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 3.0;
       *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 3.0;
-      iVar10 = iVar18;
+      iVar10 = iVar19;
       iVar11 = config_blob.screen_width;
-    } while (iVar18 < 0x70);
+    } while (iVar19 < 0x70);
   }
   if (iVar11 < 0x281) {
     iVar10 = 0;
@@ -39826,7 +39807,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       puVar8 = ui_menu_layout_a->_pad4 + iVar10;
-      iVar18 = iVar10 + 0x1c;
+      iVar19 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
@@ -39835,9 +39816,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 11.0;
       *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 11.0;
-      iVar10 = iVar18;
+      iVar10 = iVar19;
       iVar11 = config_blob.screen_width;
-    } while (iVar18 < 0x70);
+    } while (iVar19 < 0x70);
   }
   else if (iVar11 < 0x321) {
     iVar10 = 0;
@@ -39849,7 +39830,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       puVar8 = ui_menu_layout_a->_pad4 + iVar10;
-      iVar18 = iVar10 + 0x1c;
+      iVar19 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
@@ -39858,9 +39839,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 3.0;
       *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 3.0;
-      iVar10 = iVar18;
+      iVar10 = iVar19;
       iVar11 = config_blob.screen_width;
-    } while (iVar18 < 0x70);
+    } while (iVar19 < 0x70);
   }
   if (iVar11 < 0x281) {
     iVar10 = 0;
@@ -39908,12 +39889,12 @@ void ui_menu_layout_init(void)
   }
   ui_element_init_defaults((ui_element_t *)&ui_perk_prompt_element);
   ui_perk_prompt_on_activate = ui_callback_noop;
-  puVar7 = &ui_menu_item_element;
-  pfVar9 = &perk_prompt_bounds_min_x;
+  pfVar9 = (float *)&ui_menu_item_element;
+  pfVar16 = &perk_prompt_bounds_min_x;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *pfVar9 = *(float *)puVar7;
-    puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
+    *pfVar16 = *pfVar9;
     pfVar9 = pfVar9 + 1;
+    pfVar16 = pfVar16 + 1;
   }
   _DAT_0048f25c = 0x3f800000;
   _DAT_0048f278 = 0;
@@ -39925,7 +39906,7 @@ void ui_menu_layout_init(void)
   ui_element_set_rect((ui_element_t *)&ui_perk_prompt_levelup_element,75.0,25.0,&fStack_30);
   pfVar9 = (float *)&DAT_0048f334;
   do {
-    pfVar14 = pfVar9 + 7;
+    pfVar16 = pfVar9 + 7;
     pfVar9[-0x3b] = pfVar9[-0x3b] - 300.0;
     pfVar9[-0x3b] = pfVar9[-0x3b] * 0.75;
     pfVar9[-0x3a] = pfVar9[-0x3a] * 0.75;
@@ -39933,8 +39914,8 @@ void ui_menu_layout_init(void)
     *pfVar9 = *pfVar9 * 0.85;
     pfVar9[-1] = pfVar9[-1] - 46.0;
     *pfVar9 = *pfVar9 - 4.0;
-    pfVar9 = pfVar14;
-  } while ((int)pfVar14 < 0x48f3a4);
+    pfVar9 = pfVar16;
+  } while ((int)pfVar16 < 0x48f3a4);
   if (config_blob.screen_width == 0x280) {
     fStack_30 = 690.0;
     fStack_2c = 80.0;
@@ -39955,17 +39936,17 @@ void ui_menu_layout_init(void)
   } while ((int)ppuVar13 < 0x48f20c);
   ui_element_slot_40.pos_x = (float)(config_blob.screen_width + -0x15e);
   puVar7 = &ui_element_slot_09;
-  puVar16 = &ui_element_slot_40;
+  puVar17 = &ui_element_slot_40;
   for (iVar11 = 0xc6; iVar11 != 0; iVar11 = iVar11 + -1) {
     uVar2 = puVar7->enabled;
     uVar3 = puVar7->_pad0[0];
     uVar4 = puVar7->_pad0[1];
-    puVar16->active = puVar7->active;
-    puVar16->enabled = uVar2;
-    puVar16->_pad0[0] = uVar3;
-    puVar16->_pad0[1] = uVar4;
+    puVar17->active = puVar7->active;
+    puVar17->enabled = uVar2;
+    puVar17->_pad0[0] = uVar3;
+    puVar17->_pad0[1] = uVar4;
     puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
-    puVar16 = (ui_element_t *)(puVar16->_pad0 + 2);
+    puVar17 = (ui_element_t *)(puVar17->_pad0 + 2);
   }
   ui_element_slot_40.pos_y = 200.0;
   if (iVar10 < 0x281) {

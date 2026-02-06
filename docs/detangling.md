@@ -1386,6 +1386,15 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
     seeds each block's mode sentinel (`= 4`) before `ui_menu_layout_init` copies from those templates.
   - Mapping updates: `ui_template_pool_block_00..02`, `ui_sign_crimson_template`,
     and `ui_menu_item_subtemplate_block_01..06` (+ corresponding `_mode` sentinels).
+  - Field-level carve: `ui_menu_item_subtemplate_block_01..06` now use
+    `ui_menu_item_subtemplate_block_t` (`8 * 0x1c` slots + `texture_handle` + `quad_mode`),
+    with explicit `*_texture_handle` labels at `+0xe0` and a recovered
+    `ui_menu_item_subtemplate_block_01_mode` label at `0x0048fe5c`.
+  - Offset-loop evidence (`ui_menu_assets_init`):
+    - `slot_i.x -= 84.0` over all 8 slots in block 01 (`0x0048fd78 + i*0x1c`).
+    - `slot_02.y/slot_03.y -= 116.0`, `slot_04.y..slot_07.y += 124.0` in block 01.
+    - block 02 (`0x0048fe60`) is cloned from block 01 and then `slot_04.y..slot_07.y -= 100.0`
+      (`0x0048fed4`, `0x0048fef0`, `0x0048ff0c`, `0x0048ff28`).
 
 - `FUN_00417a90` -> `ui_template_slot_ctor_noop`
   - Evidence: identity callback used repeatedly by `ui_menu_template_pool_init` while iterating slot arrays.
