@@ -324,7 +324,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     continue
                 if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
                     continue
-                d = math.hypot(float(creature.x) - float(ctx.pos.x), float(creature.y) - float(ctx.pos.y))
+                d = math.hypot(float(creature.pos.x) - float(ctx.pos.x), float(creature.pos.y) - float(ctx.pos.y))
                 threshold = float(creature.size) * 0.14285715 + 3.0
                 if d - radius < threshold:
                     targets.append(creature)
@@ -340,7 +340,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             rl.rl_begin(rl.RL_QUADS)
 
             for creature in targets:
-                tx, ty = renderer.world_to_screen(float(creature.x), float(creature.y))
+                tx, ty = renderer.world_to_screen(float(creature.pos.x), float(creature.pos.y))
                 ddx = float(tx) - float(ctx.sx)
                 ddy = float(ty) - float(ctx.sy)
                 dlen = math.hypot(ddx, ddy)
@@ -405,7 +405,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             rl.rl_set_texture(0)
 
             for creature in glow_targets:
-                tx, ty = renderer.world_to_screen(float(creature.x), float(creature.y))
+                tx, ty = renderer.world_to_screen(float(creature.pos.x), float(creature.pos.y))
                 target_tint = renderer._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 renderer._draw_atlas_sprite(
                     texture,

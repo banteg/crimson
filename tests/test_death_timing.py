@@ -24,15 +24,15 @@ def test_projectile_kill_awards_xp_same_step() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.hp = 1.0
     creature.max_hp = 1.0
     creature.reward_value = 10.0
 
     world.state.projectiles.spawn(
-        pos=Vec2(float(creature.x), float(creature.y)),
+        pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-1,

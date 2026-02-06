@@ -21,8 +21,8 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 10.0
-    creature.x = 0.0
-    creature.y = 0.0
+    creature.pos.x = 0.0
+    creature.pos.y = 0.0
     creature.heading = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
     creature.ai_mode = 2
@@ -37,7 +37,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     assert int(proj.type_id) == 9
     assert math.isclose(proj.angle, creature.heading, abs_tol=1e-9)
 
-    direct_aim = math.atan2(player.pos.y - creature.y, player.pos.x - creature.x) + math.pi / 2.0
+    direct_aim = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
     assert result.sfx == ("sfx_shock_fire",)
 
@@ -50,8 +50,8 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 10.0
-    creature.x = 0.0
-    creature.y = 0.0
+    creature.pos.x = 0.0
+    creature.pos.y = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
     creature.ai_mode = 2
     creature.move_speed = 0.0
@@ -72,8 +72,8 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 10.0
-    creature.x = 0.0
-    creature.y = 0.0
+    creature.pos.x = 0.0
+    creature.pos.y = 0.0
     creature.heading = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
     creature.ai_mode = 2
@@ -145,14 +145,14 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     shooter = pool.entries[0]
     shooter.active = True
     shooter.hp = 10.0
-    shooter.x = 0.0
-    shooter.y = 0.0
+    shooter.pos.x = 0.0
+    shooter.pos.y = 0.0
 
     target = pool.entries[1]
     target.active = True
     target.hp = 100.0
-    target.x = 4.0
-    target.y = 0.0
+    target.pos.x = 4.0
+    target.pos.y = 0.0
 
     state.projectiles.spawn(
         pos=Vec2(0.0, 0.0),

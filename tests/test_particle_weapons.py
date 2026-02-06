@@ -139,8 +139,8 @@ def test_particle_hits_damage_creatures() -> None:
     creature = CreatureState()
     creature.active = True
     creature.hp = 100.0
-    creature.x = 16.0
-    creature.y = 0.0
+    creature.pos.x = 16.0
+    creature.pos.y = 0.0
     creature.size = 50.0
     creature.hitbox_size = 16.0
 
@@ -165,8 +165,8 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     creature = CreatureState()
     creature.active = True
     creature.hp = 100.0
-    creature.x = 16.0
-    creature.y = 0.0
+    creature.pos.x = 16.0
+    creature.pos.y = 0.0
     creature.size = 50.0
     creature.hitbox_size = 16.0
 

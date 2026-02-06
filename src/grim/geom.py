@@ -81,12 +81,6 @@ class Vec2:
             y=clamp(self.y, min_y, max_y),
         )
 
-    def wrapped(self, width: float, height: float) -> Vec2:
-        return Vec2(
-            x=self.x % width,
-            y=self.y % height,
-        )
-
     @staticmethod
     def distance_sq(a: Vec2, b: Vec2) -> float:
         dx = b.x - a.x

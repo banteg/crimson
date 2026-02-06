@@ -531,8 +531,8 @@ class DecalsDebugView:
             for creature in self._creatures.entries:
                 if not (creature.active and creature.hp > 0.0):
                     continue
-                dx = float(creature.x) - float(x)
-                dy = float(creature.y) - float(y)
+                dx = float(creature.pos.x) - float(x)
+                dy = float(creature.pos.y) - float(y)
                 r = float(creature.size) * 0.35 + 12.0
                 if dx * dx + dy * dy <= r * r:
                     hit = creature
@@ -682,8 +682,8 @@ class DecalsDebugView:
                 flags=flags,
                 phase=phase,
                 mirror_long=mirror_long,
-                world_x=float(creature.x),
-                world_y=float(creature.y),
+                world_x=float(creature.pos.x),
+                world_y=float(creature.pos.y),
                 rotation_rad=float(creature.heading) - math.pi / 2.0,
                 scale=scale,
                 size_scale=size_scale,

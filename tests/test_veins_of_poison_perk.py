@@ -17,8 +17,8 @@ def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.contact_damage = 10.0
@@ -38,8 +38,8 @@ def test_veins_of_poison_skips_when_player_shielded() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.contact_damage = 10.0

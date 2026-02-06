@@ -132,8 +132,8 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     creature = CreatureState()
     creature.active = True
     creature.hp = 100.0
-    creature.x = 0.0
-    creature.y = 0.0
+    creature.pos.x = 0.0
+    creature.pos.y = 0.0
     creature.size = 50.0
     creature.hitbox_size = 16.0
 
@@ -154,8 +154,8 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert math.isclose(float(particle.vel_x), expected_vel_x, abs_tol=1e-6)
     assert math.isclose(float(particle.vel_y), expected_vel_y, abs_tol=1e-6)
 
-    assert math.isclose(float(creature.x), expected_vel_x * dt, abs_tol=1e-6)
-    assert math.isclose(float(creature.y), expected_vel_y * dt, abs_tol=1e-6)
+    assert math.isclose(float(creature.pos.x), expected_vel_x * dt, abs_tol=1e-6)
+    assert math.isclose(float(creature.pos.y), expected_vel_y * dt, abs_tol=1e-6)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

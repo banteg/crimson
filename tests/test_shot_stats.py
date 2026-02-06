@@ -9,10 +9,13 @@ from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fir
 
 @dataclass(slots=True)
 class _DummyCreature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float = 100.0
     size: float = 200.0
+    active: bool = True
+    hitbox_size: float = 16.0
+    flags: int = 0
+    plague_infected: bool = False
 
 
 def test_shots_fired_and_hit_increment() -> None:
@@ -33,7 +36,7 @@ def test_shots_fired_and_hit_increment() -> None:
     assert state.shots_fired[0] == 1
     assert state.shots_hit[0] == 0
 
-    creature = _DummyCreature(x=22.0, y=0.0)
+    creature = _DummyCreature(pos=Vec2(22.0, 0.0))
     hits = state.projectiles.update(
         0.1,
         [creature],

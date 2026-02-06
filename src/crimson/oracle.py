@@ -105,8 +105,8 @@ def export_creature_state(creature: Any) -> dict[str, Any]:
     return {
         "id": int(creature.id) if hasattr(creature, "id") else -1,
         "type_id": int(creature.type_id),
-        "x": round(float(creature.x), 4),
-        "y": round(float(creature.y), 4),
+        "x": round(float(creature.pos.x), 4),
+        "y": round(float(creature.pos.y), 4),
         "hp": round(float(creature.hp), 4),
         "active": bool(creature.active),
     }

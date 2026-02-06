@@ -306,7 +306,7 @@ class ProjectileRenderDebugView:
 
         # Targets.
         for target in self._targets:
-            sx, sy = self._world.world_to_screen(float(target.x), float(target.y))
+            sx, sy = self._world.world_to_screen(float(target.pos.x), float(target.pos.y))
             radius = max(2.0, float(target.size) * 0.5 * scale)
             rl.draw_circle(int(sx), int(sy), radius, TARGET_FILL)
             rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, radius)), TARGET_OUTLINE)

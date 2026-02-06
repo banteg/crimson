@@ -21,8 +21,7 @@ __all__ = [
 
 
 class PositionLike(Protocol):
-    x: float
-    y: float
+    pos: Vec2
 
 
 class CreatureLinkLike(PositionLike, Protocol):
@@ -40,8 +39,7 @@ class CreatureAIStateLike(CreatureLinkLike, Protocol):
     orbit_radius: float
     heading: float
 
-    target_x: float
-    target_y: float
+    target: Vec2
     target_heading: float
     force_target: int
 
@@ -90,16 +88,14 @@ def creature_ai_update_target(
     """Compute the target position + heading for one creature.
 
     Updates:
-    - `target_x/target_y`
+    - `target`
     - `target_heading`
     - `force_target`
     - `ai_mode` (may reset to 0 in some modes)
     - `orbit_radius` (AI7 non-link timer uses it as a countdown)
     """
 
-    dx = player_pos.x - creature.x
-    dy = player_pos.y - creature.y
-    dist_to_player = math.hypot(dx, dy)
+    dist_to_player = (player_pos - creature.pos).length()
 
     orbit_phase = float(int(creature.phase_seed)) * 3.7 * math.pi
     move_scale = 1.0
@@ -110,34 +106,42 @@ def creature_ai_update_target(
     ai_mode = creature.ai_mode
     if ai_mode == 0:
         if dist_to_player > 800.0:
-            creature.target_x = player_pos.x
-            creature.target_y = player_pos.y
+            creature.target = Vec2(player_pos.x, player_pos.y)
         else:
-            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85
-            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85
+            creature.target = Vec2(
+                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85,
+                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85,
+            )
     elif ai_mode == 8:
-        creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.9
-        creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.9
+        creature.target = Vec2(
+            player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.9,
+            player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.9,
+        )
     elif ai_mode == 1:
         if dist_to_player > 800.0:
-            creature.target_x = player_pos.x
-            creature.target_y = player_pos.y
+            creature.target = Vec2(player_pos.x, player_pos.y)
         else:
-            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.55
-            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.55
+            creature.target = Vec2(
+                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.55,
+                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.55,
+            )
     elif ai_mode == 3:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
-            creature.target_x = link.x + float(creature.target_offset_x or 0.0)
-            creature.target_y = link.y + float(creature.target_offset_y or 0.0)
+            creature.target = link.pos + Vec2(
+                float(creature.target_offset_x or 0.0),
+                float(creature.target_offset_y or 0.0),
+            )
         else:
             creature.ai_mode = 0
     elif ai_mode == 5:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
-            creature.target_x = link.x + float(creature.target_offset_x or 0.0)
-            creature.target_y = link.y + float(creature.target_offset_y or 0.0)
-            dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
+            creature.target = link.pos + Vec2(
+                float(creature.target_offset_x or 0.0),
+                float(creature.target_offset_y or 0.0),
+            )
+            dist_to_target = (creature.target - creature.pos).length()
             if dist_to_target <= 64.0:
                 move_scale = dist_to_target * 0.015625
         else:
@@ -151,18 +155,17 @@ def creature_ai_update_target(
             creature.ai_mode = 0
             self_damage = 1000.0
         elif dist_to_player > 800.0:
-            creature.target_x = player_pos.x
-            creature.target_y = player_pos.y
+            creature.target = Vec2(player_pos.x, player_pos.y)
         else:
-            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85
-            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85
+            creature.target = Vec2(
+                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85,
+                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85,
+            )
     elif ai_mode == 7:
         if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
-            creature.target_x = creature.x
-            creature.target_y = creature.y
+            creature.target = Vec2(creature.pos.x, creature.pos.y)
         elif not (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.orbit_radius > 0.0:
-            creature.target_x = creature.x
-            creature.target_y = creature.y
+            creature.target = Vec2(creature.pos.x, creature.pos.y)
             creature.orbit_radius -= dt
         else:
             creature.ai_mode = 0
@@ -172,16 +175,17 @@ def creature_ai_update_target(
             creature.ai_mode = 0
         else:
             angle = float(creature.orbit_angle) + float(creature.heading)
-            creature.target_x = link.x + math.cos(angle) * float(creature.orbit_radius)
-            creature.target_y = link.y + math.sin(angle) * float(creature.orbit_radius)
+            creature.target = link.pos + Vec2(
+                math.cos(angle) * float(creature.orbit_radius),
+                math.sin(angle) * float(creature.orbit_radius),
+            )
 
-    dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
+    dist_to_target = (creature.target - creature.pos).length()
     if dist_to_target < 40.0 or dist_to_target > 400.0:
         creature.force_target = 1
 
     if creature.force_target or creature.ai_mode == 2:
-        creature.target_x = player_pos.x
-        creature.target_y = player_pos.y
+        creature.target = Vec2(player_pos.x, player_pos.y)
 
-    creature.target_heading = math.atan2(creature.target_y - creature.y, creature.target_x - creature.x) + math.pi / 2.0
+    creature.target_heading = (creature.target - creature.pos).to_heading()
     return CreatureAIUpdate(move_scale=move_scale, self_damage=self_damage)

@@ -1275,8 +1275,8 @@ class WorldRenderer:
             ]
             creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
             for _idx, creature in creatures:
-                sx = (creature.x + cam_x) * scale_x
-                sy = (creature.y + cam_y) * scale_y
+                sx = (creature.pos.x + cam_x) * scale_x
+                sy = (creature.pos.y + cam_y) * scale_y
                 hitbox_size = float(creature.hitbox_size)
                 try:
                     type_id = CreatureTypeId(int(creature.type_id))
@@ -1372,8 +1372,8 @@ class WorldRenderer:
                     phase=phase,
                     mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
                     shadow_alpha=shadow_alpha,
-                    world_x=float(creature.x),
-                    world_y=float(creature.y),
+                    world_x=float(creature.pos.x),
+                    world_y=float(creature.pos.y),
                     rotation_rad=float(creature.heading) - math.pi / 2.0,
                     scale=scale,
                     size_scale=size_scale,
@@ -1410,8 +1410,8 @@ class WorldRenderer:
                                 size = float(creature.size) * scale
                                 if size <= 1e-3:
                                     continue
-                                sx = (creature.x + cam_x) * scale_x
-                                sy = (creature.y + cam_y) * scale_y
+                                sx = (creature.pos.x + cam_x) * scale_x
+                                sy = (creature.pos.y + cam_y) * scale_y
                                 dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
                                 origin = rl.Vector2(size * 0.5, size * 0.5)
                                 rotation_deg = (float(idx) * 0.01 + float(creature.heading)) * _RAD_TO_DEG

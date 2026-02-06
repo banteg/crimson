@@ -58,8 +58,8 @@ def test_telekinetic_shock_chain_origin_is_bonus_position() -> None:
     pool = CreaturePool()
     target = pool.entries[0]
     target.active = True
-    target.x = 140.0
-    target.y = 100.0
+    target.pos.x = 140.0
+    target.pos.y = 100.0
     target.hp = 10.0
     target.max_hp = 10.0
 

@@ -123,7 +123,7 @@ def build_checkpoint(
     players: list[PlayerState] = list(world.players)
     score_xp = sum(int(player.experience) for player in players)
     kills = int(world.creatures.kill_count)
-    creature_count = sum(1 for creature in world.creatures.entries if bool(getattr(creature, "active", False)))
+    creature_count = sum(1 for creature in world.creatures.entries if creature.active)
 
     player_ckpts: list[ReplayPlayerCheckpoint] = []
     for player in players:
@@ -198,14 +198,14 @@ def build_checkpoint(
         "players": [asdict(p) for p in player_ckpts],
         "creatures": [
             {
-                "type_id": int(getattr(creature, "type_id", 0)),
-                "x": round(float(getattr(creature, "x", 0.0)), 4),
-                "y": round(float(getattr(creature, "y", 0.0)), 4),
-                "hp": round(float(getattr(creature, "hp", 0.0)), 4),
-                "active": bool(getattr(creature, "active", False)),
+                "type_id": int(creature.type_id),
+                "x": round(float(creature.pos.x), 4),
+                "y": round(float(creature.pos.y), 4),
+                "hp": round(float(creature.hp), 4),
+                "active": bool(creature.active),
             }
             for creature in world.creatures.entries
-            if bool(getattr(creature, "active", False))
+            if creature.active
         ],
         "bonuses": [
             {
@@ -220,13 +220,13 @@ def build_checkpoint(
         ],
         "projectiles": [
             {
-                "type_id": int(getattr(proj, "type_id", 0)),
-                "x": round(float(getattr(proj, "x", 0.0)), 4),
-                "y": round(float(getattr(proj, "y", 0.0)), 4),
-                "active": bool(getattr(proj, "active", False)),
+                "type_id": int(proj.type_id),
+                "x": round(float(proj.pos.x), 4),
+                "y": round(float(proj.pos.y), 4),
+                "active": bool(proj.active),
             }
             for proj in state.projectiles.entries
-            if bool(getattr(proj, "active", False))
+            if proj.active
         ],
         "bonus_timers": dict(bonus_timers),
     }

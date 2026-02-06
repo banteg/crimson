@@ -38,8 +38,7 @@ class _HasPos(Protocol):
 
 class _CreatureForPerks(Protocol):
     active: bool
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     flags: int
     hitbox_size: float
@@ -618,7 +617,7 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, r
         if not creature.active:
             continue
 
-        dist = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y) - radius
+        dist = math.hypot(float(creature.pos.x) - pos_x, float(creature.pos.y) - pos_y) - radius
         threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
@@ -714,8 +713,8 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
     creature.collision_timer = float(creature.collision_timer) - ctx.dt
     if creature.collision_timer < 0.0:
         creature.collision_timer = 0.5
-        pos_x = float(creature.x)
-        pos_y = float(creature.y)
+        pos_x = float(creature.pos.x)
+        pos_y = float(creature.pos.y)
         for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
             angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
             ctx.state.particles.spawn_particle(pos=Vec2(pos_x, pos_y), angle=angle, intensity=float(intensity))
@@ -1104,7 +1103,7 @@ def _perk_apply_lifeline_50_50(ctx: _PerkApplyCtx) -> None:
         if kill_toggle and creature.active and float(creature.hp) <= 500.0 and (int(creature.flags) & 0x04) == 0:
             creature.active = False
             ctx.state.effects.spawn_burst(
-                pos=Vec2(float(creature.x), float(creature.y)),
+                pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
                 count=4,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -2571,30 +2570,27 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
     if creatures:
         rand = ctx.state.rng.rand
         for creature in creatures:
-            active = getattr(creature, "active", True)
-            if not bool(active):
+            if not creature.active:
                 continue
-            if float(getattr(creature, "hp", 0.0)) > 0.0:
+            if creature.hp > 0.0:
                 continue
-            pos_x = float(getattr(creature, "x", 0.0))
-            pos_y = float(getattr(creature, "y", 0.0))
+            pos = creature.pos
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 ctx.state.effects.spawn_freeze_shard(
-                    pos=Vec2(pos_x, pos_y),
+                    pos=pos,
                     angle=angle,
                     rand=rand,
                     detail_preset=int(ctx.detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             ctx.state.effects.spawn_freeze_shatter(
-                pos=Vec2(pos_x, pos_y),
+                pos=pos,
                 angle=angle,
                 rand=rand,
                 detail_preset=int(ctx.detail_preset),
             )
-            if hasattr(creature, "active"):
-                setattr(creature, "active", False)
+            creature.active = False
 
     ctx.state.sfx_queue.append("sfx_shockwave")
 
@@ -2656,14 +2652,14 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
             continue
         if creature.hitbox_size != 16.0:
             continue
-        d_sq = Vec2.distance_sq(Vec2(origin_x, origin_y), Vec2(creature.x, creature.y))
+        d_sq = Vec2.distance_sq(Vec2(origin_x, origin_y), Vec2(creature.pos.x, creature.pos.y))
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
 
     target = creatures[best_idx]
-    dx = target.x - origin_x
-    dy = target.y - origin_y
+    dx = target.pos.x - origin_x
+    dy = target.pos.y - origin_y
     angle = Vec2(dx, dy).to_heading()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
@@ -2771,10 +2767,10 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
             # Native applies explosion damage to any active creature, including
             # those already in the death/corpse state (this shrinks corpses
             # faster via the hp<=0 path in creature_apply_damage).
-            if not bool(getattr(creature, "active", True)):
+            if not creature.active:
                 continue
-            dx = float(creature.x) - ox
-            dy = float(creature.y) - oy
+            dx = float(creature.pos.x) - ox
+            dy = float(creature.pos.y) - oy
             if abs(dx) > 256.0 or abs(dy) > 256.0:
                 continue
             dist = math.hypot(dx, dy)

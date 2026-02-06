@@ -24,12 +24,13 @@ from crimson.weapons import WeaponId
 
 @dataclass(slots=True)
 class _Creature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     size: float = 50.0
     active: bool = True
     hitbox_size: float = 16.0
+    flags: int = 0
+    plague_infected: bool = False
 
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:
@@ -352,9 +353,9 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     far_y = math.sqrt(100.0 * 100.0 - 50.0 * 50.0)
     creatures = [
-        _Creature(x=50.0, y=0.0, hp=100.0),
-        _Creature(x=80.0, y=0.0, hp=100.0),
-        _Creature(x=100.0, y=far_y, hp=100.0),
+        _Creature(pos=Vec2(50.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(80.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(100.0, far_y), hp=100.0),
     ]
 
     bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures)

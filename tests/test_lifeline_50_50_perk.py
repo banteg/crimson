@@ -23,8 +23,8 @@ def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slo
     for idx, creature in enumerate(creatures):
         creature.active = True
         creature.hp = 100.0
-        creature.x = float(idx)
-        creature.y = float(idx) * 10.0
+        creature.pos.x = float(idx)
+        creature.pos.y = float(idx) * 10.0
         creature.flags = 0
 
     # Odd indices (1,3,5,7) are considered by the toggle:

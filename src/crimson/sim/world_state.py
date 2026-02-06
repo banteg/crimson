@@ -96,8 +96,8 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
         if float(creature.hp) <= 0.0:
             continue
 
-        dx = float(creature.x) - px
-        dy = float(creature.y) - py
+        dx = float(creature.pos.x) - px
+        dy = float(creature.pos.y) - py
         if abs(dx) > 512.0 or abs(dy) > 512.0:
             continue
 

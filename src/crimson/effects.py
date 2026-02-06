@@ -46,8 +46,7 @@ def _default_rand() -> int:
 
 class _CreatureForParticles(Protocol):
     active: bool
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     size: float
     hitbox_size: float
@@ -196,15 +195,15 @@ class ParticlePool:
 
             for creature_idx in range(max_index):
                 creature = creatures[creature_idx]
-                if not bool(getattr(creature, "active", False)):
+                if not creature.active:
                     continue
-                if float(getattr(creature, "hp", 0.0)) <= 0.0:
+                if creature.hp <= 0.0:
                     continue
-                if float(getattr(creature, "hitbox_size", 0.0)) < 5.0:
+                if creature.hitbox_size < 5.0:
                     continue
 
-                size = float(getattr(creature, "size", 50.0))
-                dist = math.hypot(float(getattr(creature, "x", 0.0)) - pos_x, float(getattr(creature, "y", 0.0)) - pos_y) - radius
+                size = float(creature.size)
+                dist = math.hypot(float(creature.pos.x) - pos_x, float(creature.pos.y) - pos_y) - radius
                 threshold = size * 0.14285715 + 3.0
                 if threshold < dist:
                     continue
@@ -275,9 +274,9 @@ class ParticlePool:
 
             if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
                 target_id = int(entry.target_id)
-                if 0 <= target_id < len(creatures) and bool(getattr(creatures[target_id], "active", False)):
-                    entry.pos.x = float(getattr(creatures[target_id], "x", entry.pos.x))
-                    entry.pos.y = float(getattr(creatures[target_id], "y", entry.pos.y))
+                if 0 <= target_id < len(creatures) and creatures[target_id].active:
+                    entry.pos.x = float(creatures[target_id].pos.x)
+                    entry.pos.y = float(creatures[target_id].pos.y)
 
             if entry.render_flag and creatures is not None:
                 hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(entry.intensity, 0.0) * 8.0)
@@ -286,15 +285,15 @@ class ParticlePool:
                     creature = creatures[hit_idx]
                     if style == 8:
                         entry.target_id = int(hit_idx)
-                        entry.pos.x = float(getattr(creature, "x", entry.pos.x))
-                        entry.pos.y = float(getattr(creature, "y", entry.pos.y))
+                        entry.pos.x = float(creature.pos.x)
+                        entry.pos.y = float(creature.pos.y)
                         entry.vel_x = 0.0
                         entry.vel_y = 0.0
                     else:
                         entry.angle = float(entry.angle) % math.tau
                         hit_angle = math.atan2(
-                            (float(entry.pos.y) - float(entry.vel_y) * dt) - float(getattr(creature, "y", entry.pos.y)),
-                            (float(entry.pos.x) - float(entry.vel_x) * dt) - float(getattr(creature, "x", entry.pos.x)),
+                            (float(entry.pos.y) - float(entry.vel_y) * dt) - float(creature.pos.y),
+                            (float(entry.pos.x) - float(entry.vel_x) * dt) - float(creature.pos.x),
                         )
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
@@ -314,23 +313,23 @@ class ParticlePool:
                             if apply_creature_damage is not None:
                                 apply_creature_damage(int(hit_idx), float(damage), 4, 0.0, 0.0, int(entry.owner_id))
                             else:
-                                creature.hp = float(getattr(creature, "hp", 0.0)) - float(damage)
+                                creature.hp -= float(damage)
 
-                        tint_sum = float(getattr(creature, "tint_r", 1.0)) + float(getattr(creature, "tint_g", 1.0)) + float(getattr(creature, "tint_b", 1.0))
+                        tint_sum = float(creature.tint_r) + float(creature.tint_g) + float(creature.tint_b)
                         if tint_sum > 1.6:
                             factor = 1.0 - float(entry.intensity) * 0.01
-                            creature.tint_r = clamp(float(getattr(creature, "tint_r", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_g = clamp(float(getattr(creature, "tint_g", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_b = clamp(float(getattr(creature, "tint_b", 1.0)) * factor, 0.0, 1.0)
-                            creature.tint_a = clamp(float(getattr(creature, "tint_a", 1.0)) * factor, 0.0, 1.0)
+                            creature.tint_r = clamp(float(creature.tint_r) * factor, 0.0, 1.0)
+                            creature.tint_g = clamp(float(creature.tint_g) * factor, 0.0, 1.0)
+                            creature.tint_b = clamp(float(creature.tint_b) * factor, 0.0, 1.0)
+                            creature.tint_a = clamp(float(creature.tint_a) * factor, 0.0, 1.0)
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel_x = float(int(rand()) % 0x3C - 0x1E)
                             sprite_vel_y = float(int(rand()) % 0x3C - 0x1E)
                             sprite_id = sprite_effects.spawn(
                                 pos=Vec2(
-                                    float(getattr(creature, "x", entry.pos.x)),
-                                    float(getattr(creature, "y", entry.pos.y)),
+                                    float(creature.pos.x),
+                                    float(creature.pos.y),
                                 ),
                                 vel_x=sprite_vel_x,
                                 vel_y=sprite_vel_y,
@@ -341,14 +340,14 @@ class ParticlePool:
                         if fx_queue is not None:
                             fx_queue.add_random(
                                 pos=Vec2(
-                                    float(getattr(creature, "x", entry.pos.x)),
-                                    float(getattr(creature, "y", entry.pos.y)),
+                                    float(creature.pos.x),
+                                    float(creature.pos.y),
                                 ),
                                 rand=rand,
                             )
 
-                        creature.x = float(getattr(creature, "x", 0.0)) + float(entry.vel_x) * dt
-                        creature.y = float(getattr(creature, "y", 0.0)) + float(entry.vel_y) * dt
+                        creature.pos.x = float(creature.pos.x) + float(entry.vel_x) * dt
+                        creature.pos.y = float(creature.pos.y) + float(entry.vel_y) * dt
 
         return expired
 

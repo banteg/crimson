@@ -13,12 +13,13 @@ from crimson.gameplay import BonusId, GameplayState, PlayerState, bonus_apply
 
 @dataclass(slots=True)
 class _Creature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     active: bool = True
     hitbox_size: float = 16.0
     size: float = 50.0
+    flags: int = 0
+    plague_infected: bool = False
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
@@ -97,7 +98,7 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
 def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    creatures = [_Creature(x=100.0, y=100.0, hp=100.0), _Creature(x=500.0, y=500.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(100.0, 100.0), hp=100.0), _Creature(pos=Vec2(500.0, 500.0), hp=100.0)]
 
     bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures)
 

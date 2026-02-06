@@ -44,7 +44,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         )
         pool.entries[proj_idx].life_timer = 0.39
 
-        creature = CreatureState(active=True, hp=10.0, x=105.0, y=0.0, size=50.0)
+        creature = CreatureState(active=True, hp=10.0, pos=Vec2(105.0, 0.0), size=50.0)
         players = [PlayerState(index=0, pos=Vec2(0.0, 0.0))]
         if perk_active:
             players[0].perk_counts[int(PerkId.ION_GUN_MASTER)] = 1

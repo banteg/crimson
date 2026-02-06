@@ -112,13 +112,13 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 45.0
-    creature.x = -64.0
-    creature.y = 1088.0
+    creature.pos.x = -64.0
+    creature.pos.y = 1088.0
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert creature.x == pytest.approx(-64.0)
-    assert creature.y == pytest.approx(1088.0)
+    assert creature.pos.x == pytest.approx(-64.0)
+    assert creature.pos.y == pytest.approx(1088.0)
 
 
 @dataclass
@@ -149,8 +149,8 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
 
     creature = pool.entries[0]
     creature.active = True
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.reward_value = 10.0
     creature.hp = 0.0
 

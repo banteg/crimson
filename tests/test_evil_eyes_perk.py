@@ -25,17 +25,17 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 100.0
     creature.max_hp = 100.0
     creature.size = 50.0
     creature.move_speed = 1.0
 
-    before = (float(creature.x), float(creature.y))
+    before = (float(creature.pos.x), float(creature.pos.y))
     events = world.step(
         0.5,
-        inputs=[PlayerInput(aim_x=float(creature.x), aim_y=float(creature.y))],
+        inputs=[PlayerInput(aim_x=float(creature.pos.x), aim_y=float(creature.pos.y))],
         world_size=world_size,
         damage_scale_by_type={},
         detail_preset=5,
@@ -47,7 +47,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     )
     assert events
 
-    after = (float(creature.x), float(creature.y))
+    after = (float(creature.pos.x), float(creature.pos.y))
     assert math.isclose(after[0], before[0], abs_tol=1e-6)
     assert math.isclose(after[1], before[1], abs_tol=1e-6)
 

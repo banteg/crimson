@@ -531,7 +531,6 @@ class DemoView:
         return int(self._crand.rand() % mod)
 
     def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
-        pos = pos.wrapped(WORLD_SIZE, WORLD_SIZE)
         self._world.creatures.spawn_template(
             int(spawn_id),
             (pos.x, pos.y),
@@ -717,7 +716,7 @@ class DemoView:
             aim = Vec2(float(player.aim_x), float(player.aim_y))
             auto_fire = False
             if target is not None:
-                target_pos = Vec2(target.x, target.y)
+                target_pos = target.pos
                 aim_dir, aim_dist = (target_pos - aim).normalized_with_length()
                 if aim_dist >= 4.0:
                     step = aim_dist * 6.0 * dt
@@ -740,7 +739,7 @@ class DemoView:
             else:
                 center_dist = (player.pos - center).length()
                 if center_dist <= 300.0:
-                    move_delta = Vec2(target.x, target.y) - player.pos
+                    move_delta = target.pos - player.pos
                 else:
                     move_delta = center - player.pos
 
@@ -773,7 +772,7 @@ class DemoView:
         for idx, creature in enumerate(self._world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
-            d = Vec2.distance_sq(pos, Vec2(creature.x, creature.y))
+            d = Vec2.distance_sq(pos, Vec2(creature.pos.x, creature.pos.y))
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d

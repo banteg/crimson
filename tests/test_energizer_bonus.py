@@ -27,14 +27,14 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 10.0
     creature.max_hp = 400.0
 
     pool.update(0.016, state=state, players=[player])
 
-    base_heading = math.atan2(player.pos.y - creature.y, player.pos.x - creature.x) + math.pi / 2.0
+    base_heading = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     expected = _wrap_angle(base_heading + math.pi)
     assert abs(_angle_delta(float(creature.target_heading), expected)) < 1e-6
 
@@ -49,8 +49,8 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = player.pos.x + 1.0
-    creature.y = player.pos.y
+    creature.pos.x = player.pos.x + 1.0
+    creature.pos.y = player.pos.y
     creature.hp = 10.0
     creature.max_hp = 300.0
     creature.reward_value = 10.0

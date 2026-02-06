@@ -29,8 +29,8 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
 
     creature = CreatureState()
     creature.active = True
-    creature.x = 100.0
-    creature.y = 200.0
+    creature.pos.x = 100.0
+    creature.pos.y = 200.0
     creature.hitbox_size = 16.0
     creature.collision_timer = 0.1
 

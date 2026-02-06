@@ -474,7 +474,7 @@ class ProjectileFxView:
 
         # Creatures.
         for creature in self._creatures:
-            cx, cy = self._camera_world_to_screen(creature.x, creature.y)
+            cx, cy = self._camera_world_to_screen(creature.pos.x, creature.pos.y)
             color = (
                 rl.Color(220, 90, 90, 255)
                 if not creature.plague_infected

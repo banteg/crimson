@@ -305,7 +305,7 @@ class PlayerSandboxView:
 
         # Creatures.
         for creature in self._creatures:
-            sx, sy = self._camera_world_to_screen(creature.x, creature.y)
+            sx, sy = self._camera_world_to_screen(creature.pos.x, creature.pos.y)
             color = rl.Color(220, 90, 90, 255)
             rl.draw_circle(int(sx), int(sy), float(creature.size * 0.5), color)
 

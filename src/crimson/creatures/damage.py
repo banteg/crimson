@@ -165,16 +165,16 @@ def creature_apply_damage(
             step(ctx)
 
     creature.hp -= float(ctx.damage)
-    creature.vel_x -= float(ctx.impulse_x)
-    creature.vel_y -= float(ctx.impulse_y)
+    creature.vel.x -= float(ctx.impulse_x)
+    creature.vel.y -= float(ctx.impulse_y)
 
     if creature.hp <= 0.0:
         if dt > 0.0:
             creature.hitbox_size = float(creature.hitbox_size) - float(dt)
         else:
             creature.hitbox_size = float(creature.hitbox_size) - 0.001
-        creature.vel_x -= float(impulse_x) * 2.0
-        creature.vel_y -= float(impulse_y) * 2.0
+        creature.vel.x -= float(impulse_x) * 2.0
+        creature.vel.y -= float(impulse_y) * 2.0
         return True
 
     if creature.hitbox_size != CREATURE_HITBOX_ALIVE and dt > 0.0:

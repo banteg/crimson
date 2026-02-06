@@ -166,8 +166,8 @@ class TypoShooterMode(BaseGameplayMode):
                 if 0 <= target_idx < len(self._creatures.entries):
                     creature = self._creatures.entries[target_idx]
                     if creature.active:
-                        self._aim_target_x = float(creature.x)
-                        self._aim_target_y = float(creature.y)
+                        self._aim_target_x = float(creature.pos.x)
+                        self._aim_target_y = float(creature.pos.y)
                 fire_pressed = True
             if result.reload_requested:
                 reload_pressed = True
@@ -342,7 +342,7 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+            sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
             y = float(sy) - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0

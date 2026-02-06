@@ -30,8 +30,8 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = 120.0
-    creature.y = 100.0
+    creature.pos.x = 120.0
+    creature.pos.y = 100.0
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
@@ -51,8 +51,8 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.plague_infected = True
     creature.collision_timer = 0.1
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
@@ -72,8 +72,8 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     infected.active = True
     infected.flags = CreatureFlags.ANIM_PING_PONG
     infected.plague_infected = True
-    infected.x = 100.0
-    infected.y = 100.0
+    infected.pos.x = 100.0
+    infected.pos.y = 100.0
     infected.hp = 100.0
     infected.hitbox_size = CREATURE_HITBOX_ALIVE
 
@@ -81,8 +81,8 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     other.active = True
     other.flags = CreatureFlags.ANIM_PING_PONG
     other.plague_infected = False
-    other.x = 130.0
-    other.y = 100.0
+    other.pos.x = 130.0
+    other.pos.y = 100.0
     other.hp = 100.0
     other.hitbox_size = CREATURE_HITBOX_ALIVE
 
@@ -103,8 +103,8 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.plague_infected = True
     creature.collision_timer = 0.1
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos.x = 100.0
+    creature.pos.y = 100.0
     creature.hp = 10.0
     creature.reward_value = 10.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE

@@ -13,12 +13,13 @@ from crimson.projectiles import ProjectileTypeId
 
 @dataclass(slots=True)
 class _Creature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     active: bool = True
     hitbox_size: float = 16.0
     size: float = 50.0
+    flags: int = 0
+    plague_infected: bool = False
 
 
 def _fixed_rng(value: int):
@@ -81,7 +82,7 @@ def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
         base_damage=15.0,
     )
 
-    creatures = [_Creature(x=41.1428575, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(41.1428575, 0.0), hp=100.0)]
     hits = pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={4: 1.0})
 
     assert hits == [(4, 0.0, 0.0, 30.0, 0.0, 41.1428575, 0.0)]
@@ -97,7 +98,7 @@ def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
         owner_id=-100,
         base_damage=30.0,
     )
-    creatures = [_Creature(x=71.1428574, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(71.1428574, 0.0), hp=100.0)]
 
     hits = pool.update(
         0.1,
@@ -126,10 +127,10 @@ def test_projectile_pool_update_type_0x0b_does_not_splash_damage() -> None:
         base_damage=30.0,
     )
     creatures = [
-        _Creature(x=71.1428574, y=0.0, hp=100.0),
-        _Creature(x=100.0, y=0.0, hp=100.0),
-        _Creature(x=160.0, y=0.0, hp=100.0),
-        _Creature(x=220.0, y=0.0, hp=100.0),
+        _Creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
+        _Creature(pos=Vec2(100.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(160.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(220.0, 0.0), hp=100.0),
     ]
 
     hits = pool.update(
@@ -157,9 +158,9 @@ def test_projectile_pool_update_type_0x0b_does_not_splash_nearby_creatures() -> 
         base_damage=15.0,
     )
     creatures = [
-        _Creature(x=30.0, y=0.0, hp=100.0),
-        _Creature(x=70.0, y=0.0, hp=100.0),
-        _Creature(x=200.0, y=0.0, hp=100.0),
+        _Creature(pos=Vec2(30.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(70.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(200.0, 0.0), hp=100.0),
     ]
 
     pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x0B: 1.0})
@@ -178,7 +179,7 @@ def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
         owner_id=-100,
         base_damage=20.0,
     )
-    creatures = [_Creature(x=40.0, y=0.0, hp=200.0)]
+    creatures = [_Creature(pos=Vec2(40.0, 0.0), hp=200.0)]
 
     pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x16: 1.4})
     hp_after_hit = creatures[0].hp
@@ -196,7 +197,7 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
         owner_id=-100,
         base_damage=20.0,
     )
-    creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(10.0, 0.0), hp=100.0)]
 
     state.projectiles.update(
         0.1,
@@ -235,7 +236,7 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     idx = pool.spawn(pos=Vec2(0.0, 0.0), angle=math.pi / 2.0, type_id=4, owner_id=-100)
     proj = pool.entries[idx]
 
-    creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(10.0, 0.0), hp=100.0)]
     hits = pool.update_demo(
         0.1,
         creatures,
@@ -262,9 +263,9 @@ def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> No
     pool = ProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=math.pi / 2.0, type_id=0x0B, owner_id=-100)
     creatures = [
-        _Creature(x=10.0, y=0.0, hp=100.0),
-        _Creature(x=50.0, y=0.0, hp=100.0),
-        _Creature(x=200.0, y=0.0, hp=100.0),
+        _Creature(pos=Vec2(10.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(50.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(200.0, 0.0), hp=100.0),
     ]
     pool.update_demo(
         0.1,
@@ -281,7 +282,7 @@ def test_projectile_pool_demo_type_0x0b_does_not_splash_nearby_creatures() -> No
 def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=math.pi / 2.0, type_id=0x16, owner_id=-100)
-    creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(10.0, 0.0), hp=100.0)]
 
     pool.update_demo(
         0.1,
@@ -305,7 +306,7 @@ def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
 def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=4)
-    creatures = [_Creature(x=0.0, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(0.0, 0.0), hp=100.0)]
 
     pool.update_pulse_gun(0.01, creatures)
     entry = pool.entries[0]
@@ -364,7 +365,7 @@ def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> N
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=1)
 
-    creatures = [_Creature(x=0.0, y=0.0, hp=1000.0)]
+    creatures = [_Creature(pos=Vec2(0.0, 0.0), hp=1000.0)]
 
     pool.update_pulse_gun(0.01, creatures)
     entry = pool.entries[0]
@@ -378,8 +379,8 @@ def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> No
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=2)
     creatures = [
-        _Creature(x=100.0, y=0.0, hp=100.0),
-        _Creature(x=200.0, y=0.0, hp=100.0),
+        _Creature(pos=Vec2(100.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(200.0, 0.0), hp=100.0),
     ]
 
     pool.update_pulse_gun(0.01, creatures)
@@ -395,8 +396,8 @@ def test_secondary_projectile_pool_type2_uses_hint_for_initial_target() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=2, target_hint=Vec2(1000.0, 0.0))
     creatures = [
-        _Creature(x=100.0, y=0.0, hp=100.0),
-        _Creature(x=1000.0, y=0.0, hp=100.0),
+        _Creature(pos=Vec2(100.0, 0.0), hp=100.0),
+        _Creature(pos=Vec2(1000.0, 0.0), hp=100.0),
     ]
 
     pool.update_pulse_gun(0.01, creatures)
@@ -414,7 +415,7 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=2)
 
-    creatures = [_Creature(x=0.0, y=0.0, hp=1000.0)]
+    creatures = [_Creature(pos=Vec2(0.0, 0.0), hp=1000.0)]
 
     pool.update_pulse_gun(0.01, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
     entry = pool.entries[0]
@@ -437,7 +438,7 @@ def test_secondary_projectile_pool_detonation_radius_does_not_pad_creature_radiu
 
     # dt=0.25 => t=0.75 => radius = 1.0 * 0.75 * 80 = 60.
     # Keep the creature just outside the raw radius; old code padded by creature radius.
-    creatures = [_Creature(x=70.0, y=0.0, hp=100.0)]
+    creatures = [_Creature(pos=Vec2(70.0, 0.0), hp=100.0)]
     pool.update_pulse_gun(0.25, creatures)
     assert math.isclose(creatures[0].hp, 100.0, abs_tol=1e-9)
 
@@ -455,7 +456,7 @@ def test_secondary_projectile_pool_detonation_sets_camera_shake_pulses() -> None
 def test_secondary_projectile_pool_direct_hit_passes_impulse() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=1, time_to_live=2.0)
-    creatures = [_Creature(x=0.0, y=-9.0, hp=1000.0)]
+    creatures = [_Creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     calls: list[tuple[float, float]] = []
 
@@ -473,7 +474,7 @@ def test_secondary_projectile_pool_direct_hit_passes_impulse() -> None:
 def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=3, time_to_live=1.0)
-    creatures = [_Creature(x=3.0, y=4.0, hp=1000.0)]
+    creatures = [_Creature(pos=Vec2(3.0, 4.0), hp=1000.0)]
 
     calls: list[tuple[float, float]] = []
 
@@ -529,7 +530,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
     pool.spawn(pos=Vec2(0.0, 0.0), angle=0.0, type_id=4)
     pool.entries[0].trail_timer = 1.0
 
-    creatures = [_Creature(x=0.0, y=-4.0, hp=1000.0)]
+    creatures = [_Creature(pos=Vec2(0.0, -4.0), hp=1000.0)]
     pool.update_pulse_gun(0.1, creatures, runtime_state=runtime, detail_preset=5)
 
     # Freeze bonus spawns 4 shards at impact, then 8 more on conversion.

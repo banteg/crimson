@@ -847,7 +847,7 @@ class LightingDebugView:
         for creature in self._world.creatures.entries:
             if not creature.active:
                 continue
-            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+            sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
             cr = occ_radius(float(creature.size))
             circles.append((float(sx), float(sy), float(cr)))
 
@@ -1104,7 +1104,7 @@ class LightingDebugView:
             for creature in self._world.creatures.entries:
                 if not creature.active:
                     continue
-                sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+                sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
                 r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
                 rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 

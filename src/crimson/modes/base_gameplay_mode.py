@@ -148,8 +148,8 @@ class BaseGameplayMode:
         if ratio > 1.0:
             ratio = 1.0
 
-        x0, y0 = self._world.world_to_screen(float(creature.x) - 32.0, float(creature.y) + 32.0)
-        x1, _y1 = self._world.world_to_screen(float(creature.x) + 32.0, float(creature.y) + 32.0)
+        x0, y0 = self._world.world_to_screen(float(creature.pos.x) - 32.0, float(creature.pos.y) + 32.0)
+        x1, _y1 = self._world.world_to_screen(float(creature.pos.x) + 32.0, float(creature.pos.y) + 32.0)
         width = float(x1) - float(x0)
         if width <= 1e-3:
             return
