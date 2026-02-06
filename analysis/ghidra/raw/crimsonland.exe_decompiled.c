@@ -7740,16 +7740,17 @@ LAB_0040c8a0:
       (plugin_interface_ptr->parms).fields.onPause = '\x01';
     }
   }
-  if (DAT_00471308 == 0xffffffff) {
+  if (stats_menu_easter_egg_roll == -1) {
     uVar7 = crt_rand();
-    DAT_00471308 = uVar7 & 0x8000001f;
-    if ((int)DAT_00471308 < 0) {
-      DAT_00471308 = (DAT_00471308 - 1 | 0xffffffe0) + 1;
+    stats_menu_easter_egg_roll = uVar7 & 0x8000001f;
+    if (stats_menu_easter_egg_roll < 0) {
+      stats_menu_easter_egg_roll = (stats_menu_easter_egg_roll - 1U | 0xffffffe0) + 1;
     }
   }
   if ((((game_state_id == GAME_STATE_STATISTICS_MENU) && (render_pass_mode == '\0')) &&
-      (local_system_time._2_2_ == 3)) && ((local_system_day == 3 && (DAT_00471308 == 3)))) {
-    DAT_00471308 = 0xffffffff;
+      (local_system_time._2_2_ == 3)) &&
+     ((local_system_day == 3 && (stats_menu_easter_egg_roll == 3)))) {
+    stats_menu_easter_egg_roll = -1;
     (*grim_interface_ptr->vtable->grim_set_color)(0.2,1.0,0.6,0.5);
     pcVar4 = s_Orbes_Volantes_Exstare_00472978;
     y = 5.0;
@@ -23778,7 +23779,7 @@ int load_textures_step(void)
     _iVar4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_aim64_0047412c);
     _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),_terrain_render_target);
     _DAT_00496698 = (int)_iVar4;
-    DAT_004aaf86 = 1;
+    startup_bootstrap_pending = '\x01';
   }
   _terrain_render_target = (int)_iVar3;
   startup_texture_load_stage = startup_texture_load_stage + 1;
@@ -23884,24 +23885,24 @@ void game_startup_init(void)
   if (DAT_00473a60 != '\0') {
     DAT_00473a60 = '\0';
   }
-  if (DAT_004aaf9c == '\0') {
+  if (startup_logo_sequence_active == '\0') {
     load_textures_step();
   }
-  if ((DAT_00473a60 == '\0') && (DAT_004aaf86 != '\0')) {
+  if ((DAT_00473a60 == '\0') && (startup_bootstrap_pending != '\0')) {
     texture_get_or_load(s_splashReflexive_00474714,s_load_splashReflexive_jpg_00474724);
     in_stack_ffffffd8 = s_splash10Tons_004746ec;
     texture_get_or_load(s_splash10Tons_004746ec,s_load_splash10tons_jaz_004746fc);
     game_startup_init_prelude();
     crt_beginthread(&LAB_0042b250,0,(void *)0x0);
-    DAT_004aaf86 = '\0';
-    DAT_004aaf9c = '\x01';
+    startup_bootstrap_pending = '\0';
+    startup_logo_sequence_active = '\x01';
     if (0.5 < startup_splash_timer) {
       startup_splash_timer = 0.5;
     }
 LAB_0042b35f:
-    if ((DAT_004aaf8c != '\0') && (DAT_004aaf9d != '\0')) {
-      if (DAT_004aaf98 < 5) {
-        DAT_004aaf98 = DAT_004aaf98 + 1;
+    if ((startup_async_load_ready != '\0') && (startup_loading_fade_complete != '\0')) {
+      if (startup_post_load_settle_ticks < 5) {
+        startup_post_load_settle_ticks = startup_post_load_settle_ticks + 1;
         Sleep(5);
         (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
         audio_update();
@@ -23961,7 +23962,7 @@ LAB_0042b35f:
          ((iVar2 = input_primary_just_pressed(), (char)iVar2 != '\0' ||
           (iVar2 = (*grim_interface_ptr->vtable->grim_was_mouse_button_pressed)(1),
           (char)iVar2 != '\0')))) {
-        DAT_004aaf94 = '\x01';
+        startup_skip_requested = '\x01';
         goto LAB_0042bd39;
       }
       if (DAT_004aaed9 != '\0') goto LAB_0042bd39;
@@ -23972,7 +23973,7 @@ LAB_0042b35f:
       game_time_s = game_time_s + frame_dt;
       _DAT_0047ea48 = frame_dt;
       (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-      if (DAT_004aaf85 != '\0') {
+      if (startup_intro_enabled != '\0') {
         iVar2 = sfx_is_unmuted(music_track_intro_id);
         if ((char)iVar2 == '\0') {
           sfx_play_exclusive(music_track_intro_id);
@@ -23980,7 +23981,7 @@ LAB_0042b35f:
         startup_splash_timer = frame_dt * 1.1 + startup_splash_timer;
         (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
         startup_splash_timer = startup_splash_timer - 2.0;
-        if (DAT_004aaf94 != '\0') {
+        if (startup_skip_requested != '\0') {
           if ((startup_splash_timer < 1.0) ||
              ((5.0 <= startup_splash_timer &&
               ((startup_splash_timer < 7.0 || (11.0 <= startup_splash_timer)))))) {
@@ -24137,11 +24138,11 @@ LAB_0042bd39:
                 (grim_interface_ptr,(float)iVar2,(float)(_config_screen_height + -0x18),pcVar7);
       return;
     }
-    if ((DAT_004aaf9c != '\0') && (DAT_004aaf8c != '\0')) {
+    if ((startup_logo_sequence_active != '\0') && (startup_async_load_ready != '\0')) {
       startup_splash_timer = startup_splash_timer - frame_dt;
       if (startup_splash_timer < 0.0) {
         startup_splash_timer = 0.0;
-        DAT_004aaf9d = '\x01';
+        startup_loading_fade_complete = '\x01';
         pIVar4 = grim_interface_ptr->vtable;
         iVar2 = (*pIVar4->grim_get_texture_handle)(s_loading_004746e4);
         (*pIVar4->grim_destroy_texture)(iVar2);
@@ -24152,7 +24153,7 @@ LAB_0042bd39:
       goto LAB_0042bea6;
     }
   }
-  else if (DAT_004aaf9c != '\0') goto LAB_0042b35f;
+  else if (startup_logo_sequence_active != '\0') goto LAB_0042b35f;
   startup_splash_timer = startup_splash_timer + frame_dt;
 LAB_0042bea6:
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);

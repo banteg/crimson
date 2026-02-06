@@ -80,6 +80,9 @@ Additional shared UI strings/globals:
   counters and demo-time formatting.
 - `screen_height_f` (`0x00471144`): float mirror of `_config_screen_height` used
   by centered splash/loading layout.
+- `stats_menu_easter_egg_roll` (`0x00471308`): one-shot random roll (`0..31`)
+  used by `statistics_menu_update` for the March-3 "Orbes Volantes Exstare"
+  Easter-egg text gate (`roll == 3`, then reset to `-1`).
 
 ## Quest HUD helper globals
 

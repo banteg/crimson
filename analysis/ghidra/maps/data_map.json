@@ -100,6 +100,13 @@
       "type": "char"
     },
     {
+      "address": "0x00471308",
+      "comment": "Statistics-menu Easter egg roll (0..31, reset to -1 after the March-3 Orbes Volantes check).",
+      "name": "stats_menu_easter_egg_roll",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00471314",
       "comment": "Default player name string copied into config on load.",
       "name": "default_player_name",
@@ -5710,6 +5717,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004aaf85",
+      "comment": "Startup intro/logo render enable latch (checked in game_startup_init before splash logo timing logic).",
+      "name": "startup_intro_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004aaf86",
+      "comment": "Startup bootstrap pending latch set at load_textures_step stage 9; consumed by game_startup_init to run startup prelude/thread setup once.",
+      "name": "startup_bootstrap_pending",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004aaf88",
       "comment": "Startup texture loading stage index advanced by load_textures_step.",
       "name": "startup_texture_load_stage",
@@ -5717,11 +5738,46 @@
       "type": "int"
     },
     {
+      "address": "0x004aaf8c",
+      "comment": "Startup async-load ready latch used with startup_loading_fade_complete to advance past loading gate in game_startup_init (writer inferred to async startup thread).",
+      "name": "startup_async_load_ready",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004aaf90",
       "comment": "Startup splash/intro sequence timer/state (drives splash texture selection and fade thresholds).",
       "name": "startup_splash_timer",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004aaf94",
+      "comment": "Startup skip-request latch set by key/mouse input; accelerates/forces splash timeline progression in game_startup_init.",
+      "name": "startup_skip_requested",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004aaf98",
+      "comment": "Startup post-load settle ticks (caps at 5 with Sleep(5) pacing before logo sequence continues).",
+      "name": "startup_post_load_settle_ticks",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004aaf9c",
+      "comment": "Startup logo sequence active latch (set after prelude/bootstrap; gates load_textures_step loop vs splash/logo flow).",
+      "name": "startup_logo_sequence_active",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004aaf9d",
+      "comment": "Startup loading-fade complete latch set when startup_splash_timer decays to 0 while startup_async_load_ready is set.",
+      "name": "startup_loading_fade_complete",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004ab1bc",

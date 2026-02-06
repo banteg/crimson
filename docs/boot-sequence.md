@@ -81,8 +81,8 @@ clear. The routine:
 
 ### State / fade
 
-- `DAT_004aaf90` is incremented each tick by `DAT_00480840` (frame delta).
-- `alpha = clamp(2.0 * DAT_004aaf90, 0.0, 1.0)`; clamped by comparing against
+- `startup_splash_timer` (`0x004aaf90`) is incremented each tick by `frame_dt` (`0x00480840`).
+- `alpha = clamp(2.0 * startup_splash_timer, 0.0, 1.0)`; clamped by comparing against
   constants `1.0` and `0.0`.
 
 - The same `alpha` is used for `logo_esrb`, `loading`, and `cl_logo`.
@@ -133,14 +133,19 @@ The company logo sequence runs inside `game_startup_init` after
 
 - When textures finish, the game loads `splashReflexive` and `splash10Tons`,
   runs `game_startup_init_prelude`, starts the sound thread, and clamps
-  `_DAT_004aaf90` to `0.5` if it is larger. `[static]`
+  `startup_splash_timer` to `0.5` if it is larger. `[static]`
 
-- A 5-tick delay (`Sleep(5)` per tick) runs before the logos display. `[static]`
+- This handoff is gated by startup latches:
+  `startup_bootstrap_pending` (`0x004aaf86`) -> `startup_logo_sequence_active` (`0x004aaf9c`),
+  with `startup_skip_requested` (`0x004aaf94`) controlling fast-forward behavior. `[static]`
+
+- A 5-tick delay (`Sleep(5)` per tick) runs before the logos display, tracked by
+  `startup_post_load_settle_ticks` (`0x004aaf98`). `[static]`
 
 ### Timing model
 
-- The internal timer (`_DAT_004aaf90`) advances by `frame_dt * 1.1`. `[static]`
-- For logo rendering, it uses `t = _DAT_004aaf90 - 2.0`. `[static]`
+- The internal timer (`startup_splash_timer`) advances by `frame_dt * 1.1`. `[static]`
+- For logo rendering, it uses `t = startup_splash_timer - 2.0`. `[static]`
 - If the user skips (key/mouse), time jumps to `t = 16.0` when not inside a
   fade window; otherwise it accelerates by `frame_dt * 4.0`. `[static]`
 
@@ -158,7 +163,7 @@ The company logo sequence runs inside `game_startup_init` after
 
 ### Handoff to theme
 
-- When `_DAT_004aaf90 > 14.0`, the intro is muted and `crimson_theme` (or
+- When `startup_splash_timer > 14.0`, the intro is muted and `crimson_theme` (or
   `crimsonquest` in demo mode) begins, ending the logo sequence. `[static+runtime]`
 
 ## 6. Main Asset Loading Loop (`load_textures_step`)
@@ -166,7 +171,8 @@ The company logo sequence runs inside `game_startup_init` after
 The game enters a loop where it calls `load_textures_step` (`0x0042abd0`) repeatedly.
 While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on screen.
 
-`load_textures_step` returns `0` while busy and `1` when finished. It uses a state variable (`DAT_004aaf88`) to track progress (0-9).
+`load_textures_step` returns `0` while busy and `1` when finished. It uses
+`startup_texture_load_stage` (`0x004aaf88`) to track progress (`0..9`).
 
 ### Loading Steps
 
