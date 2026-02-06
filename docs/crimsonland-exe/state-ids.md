@@ -30,7 +30,7 @@ Runtime cross-check:
 | `7` | `0x07` | Game-over screen | Dispatch calls `game_over_screen_update`; non-quest death queues `7`. | high |
 | `8` | `0x08` | Quest results screen | Dispatch calls `quest_results_screen_update`; quest completion queues `8`; runtime label `state_8`. | high |
 | `9` | `0x09` | Main gameplay loop (Survival/Rush/Quest) | Dispatch calls `gameplay_update_and_render`; runtime label `state_9`. | high |
-| `10` | `0x0a` | Quit transition state | Main-menu Quit sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` and sets quit latch (`DAT_0047ea50`). | high |
+| `10` | `0x0a` | Quit transition state | Main-menu Quit sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` and sets quit latch (`quit_requested`). | high |
 | `11` | `0x0b` | Quest select menu | Quest-failed flow queues `0x0b`; `game_state_set(0x0b)` enables quest menu UI and installs `quest_select_menu_update`; runtime label `state_11:#.#`. | high |
 | `12` | `0x0c` | Quest-failed screen | Dispatch calls `quest_failed_screen_update`; quest death queues `0x0c`. | high |
 | `13` | `0x0d` | High-score setup variant (legacy/unclear) | `game_state_set(0x0d)` calls `highscore_load_table()` and installs no-op callback `ui_callback_noop`; no direct `game_state_pending = 0x0d` write seen in this build. | medium |

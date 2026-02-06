@@ -42,6 +42,14 @@ The in-game HUD render is gated by `demo_mode_active` (`DAT_0048700d`) and is ca
 UI pass (`hud_update_and_render`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
 weapon icons, along with health/score overlays.
 
+`hud_update_and_render` sets explicit per-mode HUD gates before rendering:
+
+- `hud_show_health_panel`
+- `hud_show_weapon_panel`
+- `hud_show_xp_panel`
+- `hud_show_quest_panel`
+- `hud_show_timer_panel`
+
 ## Terrain generation (terrain_generate / FUN_00417b80)
 
 `terrain_generate` renders the terrain texture into a render target and selects

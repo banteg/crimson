@@ -1984,6 +1984,22 @@
     "calls": ["Direct3DCreate8", "FUN_004623b2", "GetCommandLineA", "HlinkNavigateString", "MessageBoxA", "MultiByteToWideChar", "RegCloseKey", "RegCreateKeyExA", "Sleep", "audio_shutdown_all", "config_ensure_file", "config_load_presets", "config_sync_from_grim", "console_exec_line", "console_flush_log", "console_printf", "console_register_command", "console_register_cvar", "crt_free", "crt_getcwd", "crt_srand", "dx_get_version", "game_load_status", "game_save_status", "game_sequence_load", "grim_load_interface", "init_audio_and_terrain", "reg_write_dword", "register_core_cvars", "texture_get_or_load"]
   },
   {
+    "name": "highscore_sync_worker",
+    "address": "0042d0e0",
+    "signature": "void highscore_sync_worker(void * arg)",
+    "external": false,
+    "calls_total": 20,
+    "calls": ["GetLastError", "HttpOpenRequestA", "HttpSendRequestA", "InternetCloseHandle", "InternetConnectA", "InternetGetLastResponseInfoA", "InternetOpenA", "InternetReadFile", "Sleep", "console_flush_log", "console_printf", "crt_endthread", "crt_free", "crt_rand", "game_is_full_version", "highscore_load_table", "highscore_record_pack_for_submit", "highscore_save_record", "highscore_submit_full_version_guard", "operator_new"]
+  },
+  {
+    "name": "statistics_update_check_worker",
+    "address": "0042d8a0",
+    "signature": "void statistics_update_check_worker(void * arg)",
+    "external": false,
+    "calls_total": 18,
+    "calls": ["FUN_00462ba0", "GetLastError", "HttpOpenRequestA", "HttpSendRequestA", "InternetCloseHandle", "InternetConnectA", "InternetGetLastResponseInfoA", "InternetOpenA", "InternetReadFile", "Sleep", "_strchr", "_strstr", "console_flush_log", "console_printf", "crt_endthread", "crt_free", "operator_new", "strdup_malloc"]
+  },
+  {
     "name": "effect_init_entry",
     "address": "0042de80",
     "signature": "void effect_init_entry(void * entry)",

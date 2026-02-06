@@ -38,6 +38,8 @@ public class CreateGameStateCallbacks extends GhidraScript {
         new Seed(0x00447390L, "ui_menu_main_click_statistics"),
         new Seed(0x00447370L, "ui_menu_main_click_options"),
         new Seed(0x00447350L, "ui_menu_main_click_mods"),
+        new Seed(0x0042d8a0L, "statistics_update_check_worker"),
+        new Seed(0x0042d0e0L, "highscore_sync_worker"),
         new Seed(0x004423d0L, "highscore_screen_update"),
         new Seed(0x00442150L, "ui_update_notice_update"),
         new Seed(0x00440960L, "unlocked_perks_database_update"),

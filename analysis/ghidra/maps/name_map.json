@@ -1761,6 +1761,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042d0e0",
+    "name": "highscore_sync_worker",
+    "signature": "void highscore_sync_worker(void *arg)",
+    "comment": "background worker started from highscore_screen_update to submit/receive online highscore payloads"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042d8a0",
+    "name": "statistics_update_check_worker",
+    "signature": "void statistics_update_check_worker(void *arg)",
+    "comment": "background worker started from statistics/highscore flows to check for version updates and stage update notice URL state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042de80",
     "name": "effect_init_entry",
     "signature": "void effect_init_entry(void *entry)",

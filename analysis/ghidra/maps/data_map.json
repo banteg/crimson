@@ -553,6 +553,13 @@
       "type": "float"
     },
     {
+      "address": "0x0047ea50",
+      "comment": "Global quit latch set by menu/console quit paths and consumed by the main frame loop.",
+      "name": "quit_requested",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x0047ea54",
       "comment": "Console input cursor/index into console_input_buf (also acts as current length).",
       "name": "console_input_cursor",
@@ -1159,6 +1166,13 @@
       "name": "ui_button_maybe_later",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
+    },
+    {
+      "address": "0x00480838",
+      "comment": "Update notice click latch set by ui_update_notice_update to request browser launch via highscore/statistics flow.",
+      "name": "update_notice_open_requested",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x0048083c",
@@ -2412,6 +2426,48 @@
       "name": "player_alt_weapon_swap_cooldown_ms",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004871b0",
+      "comment": "HUD mode gate: enable heart/lifebar overlay rendering (set by hud_update_and_render per game mode).",
+      "name": "hud_show_health_panel",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004871b1",
+      "comment": "HUD mode gate: enable weapon icon + ammo indicator rendering.",
+      "name": "hud_show_weapon_panel",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004871b2",
+      "comment": "HUD mode gate: enable XP/level panel rendering.",
+      "name": "hud_show_xp_panel",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004871b3",
+      "comment": "HUD mode gate: enable quest progress panel rendering.",
+      "name": "hud_show_quest_panel",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004871b4",
+      "comment": "HUD mode gate: enable round timer clock panel rendering (Rush/Typ-o-Shooter).",
+      "name": "hud_show_timer_panel",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004871ca",
+      "comment": "UI focus/input lock latch; when set, keyboard focus navigation and activation paths are suppressed.",
+      "name": "ui_focus_input_locked",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004871c8",
@@ -6367,6 +6423,27 @@
       "name": "ui_focus_timer_ms",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d11f0",
+      "comment": "Online/highscore network worker status code (0=idle, 1..5 in-progress/done, 6=failed) used by statistics/highscore screens.",
+      "name": "online_sync_status",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d11f4",
+      "comment": "Update-notice URL staged by statistics_update_check_worker and opened via HlinkNavigateString.",
+      "name": "update_notice_url",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004d11f8",
+      "comment": "Update-notice pending latch; when set with update_notice_url, UI shows/open-browser update affordances.",
+      "name": "update_notice_pending",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004d1208",
