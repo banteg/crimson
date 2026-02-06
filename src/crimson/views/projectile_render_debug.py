@@ -102,29 +102,29 @@ class ProjectileRenderDebugView:
         self._world.update_camera(0.0)
 
     def _world_scale(self) -> float:
-        _cam_x, _cam_y, scale_x, scale_y = self._world._world_params()
-        return (scale_x + scale_y) * 0.5
+        _camera, view_scale = self._world._world_params()
+        return (view_scale.x + view_scale.y) * 0.5
 
     def _draw_grid(self) -> None:
         step = 64.0
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
-        screen_w, screen_h = self._world._camera_screen_size()
-        cam_x, cam_y, scale_x, scale_y = self._world._world_params()
+        screen_size = self._world._camera_screen_size()
+        camera, view_scale = self._world._world_params()
 
-        start_x = math.floor((-cam_x) / step) * step
-        end_x = (-cam_x) + screen_w
+        start_x = math.floor((-camera.x) / step) * step
+        end_x = (-camera.x) + screen_size.x
         x = start_x
         while x <= end_x:
-            sx = int((x + cam_x) * scale_x)
+            sx = int((x + camera.x) * view_scale.x)
             rl.draw_line(sx, 0, sx, int(out_h), GRID_COLOR)
             x += step
 
-        start_y = math.floor((-cam_y) / step) * step
-        end_y = (-cam_y) + screen_h
+        start_y = math.floor((-camera.y) / step) * step
+        end_y = (-camera.y) + screen_size.y
         y = start_y
         while y <= end_y:
-            sy = int((y + cam_y) * scale_y)
+            sy = int((y + camera.y) * view_scale.y)
             rl.draw_line(0, sy, int(out_w), sy, GRID_COLOR)
             y += step
 
@@ -271,11 +271,11 @@ class ProjectileRenderDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
-        cam_x, cam_y, scale_x, scale_y = self._world._world_params()
-        screen_w, screen_h = self._world._camera_screen_size()
+        camera, view_scale = self._world._world_params()
+        screen_size = self._world._camera_screen_size()
 
         if self._world.ground is not None:
-            self._world.ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
+            self._world.ground.draw(camera.x, camera.y, screen_w=screen_size.x, screen_h=screen_size.y)
 
         warn_x = 24.0
         warn_y = 24.0
@@ -320,10 +320,8 @@ class ProjectileRenderDebugView:
                 self._world._draw_player_trooper_sprite(
                     texture,
                     player,
-                    cam_x=cam_x,
-                    cam_y=cam_y,
-                    scale_x=scale_x,
-                    scale_y=scale_y,
+                    camera=camera,
+                    view_scale=view_scale,
                     scale=scale,
                 )
             else:
@@ -336,7 +334,7 @@ class ProjectileRenderDebugView:
             radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim)
-            self._world._draw_aim_circle(x=aim_screen.x, y=aim_screen.y, radius=screen_radius)
+            self._world._draw_aim_circle(center=aim_screen, radius=screen_radius)
 
         # UI.
         x = 16.0

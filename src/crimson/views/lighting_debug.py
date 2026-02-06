@@ -813,8 +813,8 @@ class LightingDebugView:
 
         w = float(self._light_rt.texture.width)
         h = float(self._light_rt.texture.height)
-        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
-        scale = (scale_x + scale_y) * 0.5
+        _camera, view_scale = self._world.renderer._world_params()
+        scale = (view_scale.x + view_scale.y) * 0.5
 
         def occ_radius(size: float) -> float:
             r = float(size) * 0.5 * scale
@@ -1074,8 +1074,8 @@ class LightingDebugView:
             rl.end_blend_mode()
             rl.draw_rectangle_lines(int(dst_preview.x), int(dst_preview.y), int(dst_preview.width), int(dst_preview.height), rl.Color(255, 255, 255, 120))
 
-        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
-        scale = (scale_x + scale_y) * 0.5
+        _camera, view_scale = self._world.renderer._world_params()
+        scale = (view_scale.x + view_scale.y) * 0.5
 
         if self._draw_occluders:
             player_screen = self._world.world_to_screen(self._player.pos)

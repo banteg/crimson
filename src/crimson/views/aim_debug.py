@@ -179,7 +179,7 @@ class AimDebugView:
         if self._draw_test_circle:
             cx = float(rl.get_screen_width()) * 0.5
             cy = float(rl.get_screen_height()) * 0.5
-            self._world._draw_aim_circle(x=cx, y=cy, radius=float(self._test_circle_radius))
+            self._world._draw_aim_circle(center=Vec2(cx, cy), radius=float(self._test_circle_radius))
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:
@@ -192,8 +192,8 @@ class AimDebugView:
             aim_pos = self._player.aim
             dist = (aim_pos - self._player.pos).length()
             radius = max(6.0, dist * float(self._player.spread_heat) * 0.5)
-            cam_x, cam_y, scale_x, scale_y = self._world._world_params()
-            scale = (scale_x + scale_y) * 0.5
+            camera, view_scale = self._world._world_params()
+            scale = (view_scale.x + view_scale.y) * 0.5
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim_pos)
 
@@ -226,7 +226,7 @@ class AimDebugView:
                 f"player_aim_screen=({aim_screen.x:.1f},{aim_screen.y:.1f})",
                 f"player=({float(self._player.pos.x):.1f},{float(self._player.pos.y):.1f})  dist={dist:.1f}",
                 f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
-                f"cam=({cam_x:.2f},{cam_y:.2f})  scale=({scale_x:.3f},{scale_y:.3f})  demo_mode={self._world.demo_mode_active}",
+                f"cam=({camera.x:.2f},{camera.y:.2f})  scale=({view_scale.x:.3f},{view_scale.y:.3f})  demo_mode={self._world.demo_mode_active}",
                 f"bulletTrail={'yes' if self._world.bullet_trail_texture is not None else 'no'}  "
                 f"particles={'yes' if self._world.particles_texture is not None else 'no'}",
             ]
