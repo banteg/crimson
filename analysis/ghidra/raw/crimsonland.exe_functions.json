@@ -1016,9 +1016,9 @@
     "calls": ["__ftol", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "highscore_record_init", "highscore_save_active", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "time_format_mm_ss", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update", "weapon_table_entry"]
   },
   {
-    "name": "FUN_004120b0",
+    "name": "gameplay_run_state_init",
     "address": "004120b0",
-    "signature": "int FUN_004120b0(void)",
+    "signature": "int gameplay_run_state_init(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_rand"]
@@ -3264,17 +3264,17 @@
     "calls": ["__ftol", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect", "ui_mouse_inside_rect_with_padding"]
   },
   {
-    "name": "FUN_004411c0",
+    "name": "highscore_card_draw_horizontal_divider",
     "address": "004411c0",
-    "signature": "undefined FUN_004411c0(void)",
+    "signature": "void highscore_card_draw_horizontal_divider(float * xy)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_00441220",
+    "name": "highscore_card_draw_vertical_divider",
     "address": "00441220",
-    "signature": "undefined FUN_00441220(void)",
+    "signature": "void highscore_card_draw_vertical_divider(float * xy)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3293,7 +3293,7 @@
     "signature": "void ui_text_input_render(void * input_state, float y, float alpha)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_004411c0", "FUN_00441220", "__ftol", "crt_sprintf", "format_ordinal", "highscore_format_date_label", "ui_draw_clock_gauge"]
+    "calls": ["__ftol", "crt_sprintf", "format_ordinal", "highscore_card_draw_horizontal_divider", "highscore_card_draw_vertical_divider", "highscore_format_date_label", "ui_draw_clock_gauge"]
   },
   {
     "name": "ui_update_notice_update",
@@ -3488,9 +3488,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00447420",
+    "name": "ui_menu_click_back_contextual",
     "address": "00447420",
-    "signature": "int FUN_00447420(void)",
+    "signature": "int ui_menu_click_back_contextual(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3528,17 +3528,17 @@
     "calls": []
   },
   {
-    "name": "FUN_00448b50",
+    "name": "input_detect_active_analog_axis",
     "address": "00448b50",
-    "signature": "undefined4 FUN_00448b50(undefined4 param_1)",
+    "signature": "int input_detect_active_analog_axis(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_0044ecf0",
+    "name": "vec2_add_out",
     "address": "0044ecf0",
-    "signature": "float * FUN_0044ecf0(void * this, float * arg1, float * arg2, float * arg3)",
+    "signature": "float * vec2_add_out(void * this, float * dst, float * lhs)",
     "external": false,
     "calls_total": 0,
     "calls": []

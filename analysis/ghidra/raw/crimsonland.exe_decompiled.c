@@ -10602,12 +10602,13 @@ LAB_00412007:
 
 
 
-/* FUN_004120b0 @ 004120b0 */
+/* gameplay_run_state_init @ 004120b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_4120b0() */
+/* initializes highscore_active_record defaults and resets run/quest runtime counters before
+   gameplay */
 
-int FUN_004120b0(void)
+int gameplay_run_state_init(void)
 
 {
   char cVar1;
@@ -36067,9 +36068,11 @@ LAB_0043f3aa:
 
 
 
-/* FUN_004411c0 @ 004411c0 */
+/* highscore_card_draw_horizontal_divider @ 004411c0 */
 
-void FUN_004411c0(void)
+/* draws a horizontal divider line on the highscore scorecard and advances y cursor by 4 */
+
+void highscore_card_draw_horizontal_divider(float *xy)
 
 {
   float *unaff_retaddr;
@@ -36084,9 +36087,11 @@ void FUN_004411c0(void)
 
 
 
-/* FUN_00441220 @ 00441220 */
+/* highscore_card_draw_vertical_divider @ 00441220 */
 
-void FUN_00441220(void)
+/* draws a vertical divider line on the highscore scorecard */
+
+void highscore_card_draw_vertical_divider(float *xy)
 
 {
   float *unaff_retaddr;
@@ -36111,43 +36116,43 @@ char * __cdecl highscore_format_date_label(int day,int month_index)
   
   switch(month_index) {
   case 1:
-    puVar1 = &DAT_004788b4;
+    puVar1 = &highscore_month_label_jan;
     break;
   case 2:
-    puVar1 = &DAT_004788b0;
+    puVar1 = &highscore_month_label_feb;
     break;
   case 3:
-    puVar1 = &DAT_004788ac;
+    puVar1 = &highscore_month_label_mar;
     break;
   case 4:
-    puVar1 = &DAT_004788a8;
+    puVar1 = &highscore_month_label_apr;
     break;
   case 5:
-    puVar1 = &DAT_004788a4;
+    puVar1 = &highscore_month_label_may;
     break;
   case 6:
-    puVar1 = &DAT_004788a0;
+    puVar1 = &highscore_month_label_jun;
     break;
   case 7:
-    puVar1 = &DAT_0047889c;
+    puVar1 = &highscore_month_label_jul;
     break;
   case 8:
-    puVar1 = &DAT_00478898;
+    puVar1 = &highscore_month_label_aug;
     break;
   case 9:
-    puVar1 = &DAT_00478894;
+    puVar1 = &highscore_month_label_sep;
     break;
   case 10:
-    puVar1 = &DAT_00478890;
+    puVar1 = &highscore_month_label_oct;
     break;
   case 0xb:
-    puVar1 = &DAT_0047888c;
+    puVar1 = &highscore_month_label_nov;
     break;
   case 0xc:
-    puVar1 = &DAT_00478888;
+    puVar1 = &highscore_month_label_dec;
     break;
   default:
-    puVar1 = &DAT_00478884;
+    puVar1 = &highscore_month_label_default;
   }
   crt_sprintf(&highscore_date_label_buffer,s_fmt_highscore_date_label,day,puVar1);
   return &highscore_date_label_buffer;
@@ -36174,7 +36179,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   int in_stack_00000010;
   float fVar7;
   float fVar8;
-  float h;
+  float fVar9;
   float fStack_10;
   float fStack_c;
   float fStack_8;
@@ -36193,18 +36198,18 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
     (*grim_interface_ptr->vtable->grim_draw_text_small)(fStack_10,fStack_c,(char *)y);
     (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccca8);
-    fStack_4 = fStack_c + 13.0;
     fStack_8 = fStack_10;
+    fStack_4 = fStack_c + 13.0;
     (*grim_interface_ptr->vtable->grim_draw_rect_outline)(&fStack_8,(float)iVar3,1.0);
     if ((*(byte *)((int)y + 0x44) & 2) == 0) {
       if ((*(byte *)((int)y + 0x44) & 1) == 0) {
         (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
-        pcVar4 = s_Local_score_00478974;
+        pcVar4 = s_highscore_label_local_score;
         pIVar5 = grim_interface_ptr->vtable;
       }
       else {
         (*grim_interface_ptr->vtable->grim_set_color)(0.7,1.0,0.7,alpha * 0.8);
-        pcVar4 = s_Score_from_the_Internet_00478980;
+        pcVar4 = s_highscore_label_internet_score;
         pIVar5 = grim_interface_ptr->vtable;
       }
       (*pIVar5->grim_draw_text_small_fmt)(grim_interface_ptr,fStack_10,fStack_c + 14.0,pcVar4);
@@ -36213,41 +36218,44 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
       (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fStack_10,fStack_c + 14.0,
-                 s_Internet_score_of_local_origin_004789a0);
+                 s_highscore_label_internet_local_origin);
       (*grim_interface_ptr->vtable->grim_set_color)(0.5,0.5,0.5,alpha * 0.5);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fStack_10 + 94.0,fStack_c - 12.0,s_uni__d_00478998);
+                (grim_interface_ptr,fStack_10 + 94.0,fStack_c - 12.0,s_fmt_highscore_universe_tag);
       (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,alpha * 0.8);
     }
+    fStack_c = fStack_c + 15.0;
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,alpha * 0.8);
     pIVar5 = grim_interface_ptr->vtable;
     pcVar4 = highscore_format_date_label
                        ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
-    fVar7 = fStack_c + 15.0 + 13.0;
+    fVar7 = fStack_c + 13.0;
     pIVar1 = grim_interface_ptr->vtable;
+    fVar8 = fStack_10 + 192.0;
     text = highscore_format_date_label
                      ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     iVar3 = (*pIVar1->grim_measure_text_width)(text);
-    (*pIVar5->grim_draw_text_small)
-              ((((fStack_10 + 192.0) - 32.0) - 8.0) - (float)(iVar3 / 2),fVar7,pcVar4);
+    (*pIVar5->grim_draw_text_small)(((fVar8 - 32.0) - 8.0) - (float)(iVar3 / 2),fVar7,pcVar4);
+    fStack_c = fStack_c + 13.0;
     fStack_10 = *(float *)input_state + 16.0;
-    FUN_004411c0();
-    fStack_c = fStack_c + 15.0 + 13.0 + 14.0;
+    highscore_card_draw_horizontal_divider(&fStack_10);
+    fStack_c = fStack_c + 14.0;
   }
   fVar7 = alpha * 0.8;
   (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
+  fVar8 = fStack_10 + 32.0;
   pIVar5 = grim_interface_ptr->vtable;
-  pcVar4 = s_Score_0047896c;
-  fVar8 = fStack_c;
-  iVar3 = (*pIVar5->grim_measure_text_width)(s_Score_0047896c);
-  (*pIVar5->grim_draw_text_small)((fStack_10 + 32.0) - (float)(iVar3 / 2),fVar8,pcVar4);
+  pcVar4 = s_highscore_label_score;
+  fVar9 = fStack_c;
+  iVar3 = (*pIVar5->grim_measure_text_width)(s_highscore_label_score);
+  (*pIVar5->grim_draw_text_small)(fVar8 - (float)(iVar3 / 2),fVar9,pcVar4);
   if (*(char *)((int)y + 0x28) == '\x02') {
-    crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960,(double)((float)*(int *)((int)y + 0x20) * 0.001))
-    ;
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+                (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else if (*(char *)((int)y + 0x28) == '\x03') {
-    crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960,(double)((float)*(int *)((int)y + 0x20) * 0.001))
-    ;
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+                (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else {
     crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
@@ -36258,17 +36266,17 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
             ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&DAT_004d0da0);
   if (game_state_id != 0xc) {
     format_ordinal(in_stack_00000010);
-    crt_sprintf(&DAT_004d0da0,s_Rank___s_00478954);
+    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_rank);
     iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 30.0,&DAT_004d0da0);
   }
   fStack_10 = fStack_10 + 96.0;
-  FUN_00441220();
+  highscore_card_draw_vertical_divider(&fStack_10);
   if (*(char *)((int)y + 0x28) == '\x03') {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10,fStack_c,s_Experience_00478948);
+              (grim_interface_ptr,fStack_10,fStack_c,s_highscore_label_experience);
     crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
     iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
@@ -36278,7 +36286,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   }
   else {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10 + 6.0,fStack_c,s_Game_time_0047893c);
+              (grim_interface_ptr,fStack_10 + 6.0,fStack_c,s_highscore_label_game_time);
     __ftol();
     __ftol();
     ui_draw_clock_gauge();
@@ -36308,20 +36316,21 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     ui_stats_hover_hit_ratio = 0.0;
   }
   else {
-    FUN_004411c0();
+    highscore_card_draw_horizontal_divider(&fStack_10);
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_weapon_icons_texture,0);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_sub_rect)
               (8,2,1,(&weapon_table)[*(byte *)((int)y + 0x2b)].hud_icon_id << 1);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
-    h = 32.0;
+    fVar9 = 32.0;
     pIVar5 = grim_interface_ptr->vtable;
     fVar8 = 64.0;
     lVar6 = __ftol();
-    fVar7 = (float)(int)lVar6;
+    fStack_c = (float)lVar6;
+    fVar7 = (float)(int)fStack_c;
     lVar6 = __ftol();
     fStack_c = (float)lVar6;
-    (*pIVar5->grim_draw_quad)((float)(int)fStack_c,fVar7,fVar8,h);
+    (*pIVar5->grim_draw_quad)((float)(int)fStack_c,fVar7,fVar8,fVar9);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     if ((((ui_mouse_x <= fStack_10) || (fStack_10 + 64.0 <= ui_mouse_x)) || (ui_mouse_y <= fStack_c)
@@ -36341,12 +36350,12 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               (fVar7 + fStack_10,fStack_c + 32.0,(&weapon_table)[*(byte *)((int)y + 0x2b)].name);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fStack_10 + 110.0,fStack_c + 1.0,s_Frags___d_00478930);
+              (grim_interface_ptr,fStack_10 + 110.0,fStack_c + 1.0,s_fmt_highscore_frags);
     self = grim_interface_ptr;
     pIVar5 = grim_interface_ptr->vtable;
     __ftol();
     (*pIVar5->grim_draw_text_small_fmt)
-              (self,fStack_10 + 110.0,(fStack_c + 16.0) - 1.0,s_Hit______d___00478920);
+              (self,fStack_10 + 110.0,(fStack_c + 16.0) - 1.0,s_fmt_highscore_hit_percent);
     if (((ui_mouse_x <= fStack_10 + 110.0) || (fStack_10 + 174.0 <= ui_mouse_x)) ||
        ((ui_mouse_y <= (fStack_c + 16.0) - 1.0 || (fStack_c + 32.0 <= ui_mouse_y)))) {
       ui_stats_hover_hit_ratio = ui_stats_hover_hit_ratio - (frame_dt + frame_dt);
@@ -36357,7 +36366,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     fStack_c = fStack_c + 48.0;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
-  FUN_004411c0();
+  highscore_card_draw_horizontal_divider(&fStack_10);
   if (ui_stats_hover_weapon <= 1.0) {
     if (ui_stats_hover_weapon < 0.0) {
       ui_stats_hover_weapon = 0.0;
@@ -36388,19 +36397,19 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
       fVar2 = (ui_stats_hover_weapon - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 - 20.0,fStack_c,s_Most_used_weapon_during_the_game_004788fc);
+                (fStack_10 - 20.0,fStack_c,s_highscore_tooltip_weapon_usage);
     }
     if (0.5 < ui_stats_hover_time) {
       fVar2 = (ui_stats_hover_time - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 + 12.0,fStack_c,s_The_time_the_game_lasted_004788e0);
+                (fStack_10 + 12.0,fStack_c,s_highscore_tooltip_game_time);
     }
     if (0.5 < ui_stats_hover_hit_ratio) {
       fVar2 = (ui_stats_hover_hit_ratio - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
-                (fStack_10 - 22.0,fStack_c,s_The___of_shot_bullets_hit_the_ta_004788b8);
+                (fStack_10 - 22.0,fStack_c,s_highscore_tooltip_hit_ratio);
     }
   }
   return;
@@ -38562,11 +38571,12 @@ void ui_menu_main_click_play_game(void)
 
 
 
-/* FUN_00447420 @ 00447420 */
+/* ui_menu_click_back_contextual @ 00447420 */
 
-/* [binja] int32_t sub_447420() */
+/* menu BACK callback: sets transition and routes to state 0 (main menu) or state 5 (in-game menu
+   context) */
 
-int FUN_00447420(void)
+int ui_menu_click_back_contextual(void)
 
 {
   undefined4 in_EAX;
@@ -38682,9 +38692,11 @@ char * __cdecl input_scheme_label(int scheme)
 
 
 
-/* FUN_00448b50 @ 00448b50 */
+/* input_detect_active_analog_axis @ 00448b50 */
 
-undefined4 __fastcall FUN_00448b50(undefined4 param_1)
+/* polls configured analog axis ids and returns the first axis code with abs(value) > 0.5, else 0 */
+
+int __fastcall input_detect_active_analog_axis(void)
 
 {
   float10 extraout_ST0;
@@ -38724,21 +38736,21 @@ undefined4 __fastcall FUN_00448b50(undefined4 param_1)
 
 
 
-/* FUN_0044ecf0 @ 0044ecf0 */
+/* vec2_add_out @ 0044ecf0 */
 
-/* [binja] float* __thiscall sub_44ecf0(float* arg1, float* arg2, float* arg3) */
+/* writes this + lhs into dst and returns dst */
 
-float * __thiscall FUN_0044ecf0(void *this,float *arg1,float *arg2,float *arg3)
+float * __thiscall vec2_add_out(void *this,float *dst,float *lhs)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = arg2[1];
+  fVar1 = lhs[1];
   fVar2 = *(float *)((int)this + 4);
-  *arg1 = *arg2 + *(float *)this;
-  arg1[1] = fVar1 + fVar2;
-  return arg1;
+  *dst = *lhs + *(float *)this;
+  dst[1] = fVar1 + fVar2;
+  return dst;
 }
 
 
@@ -39244,7 +39256,7 @@ void ui_menu_layout_init(void)
   _DAT_00488ff4 = 0;
   _DAT_00488fdc = 0x3f800000;
   _DAT_00488ff8 = 0x3f800000;
-  _DAT_00488e9c = FUN_00447420;
+  _DAT_00488e9c = ui_menu_click_back_contextual;
   _DAT_00488e6c = 1;
   _DAT_00488e98 = 0x30;
   puVar3 = &ui_menu_item_element;
@@ -39357,7 +39369,7 @@ void ui_menu_layout_init(void)
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
   }
-  _DAT_004897e4 = FUN_00447420;
+  _DAT_004897e4 = ui_menu_click_back_contextual;
   _DAT_0048c948 = 0xc32f0000;
   _DAT_004897b4 = 1;
   _DAT_004897e0 = 0x30;

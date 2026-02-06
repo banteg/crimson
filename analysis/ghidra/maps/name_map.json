@@ -927,9 +927,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004120b0",
-    "name": "FUN_004120b0",
-    "signature": "int FUN_004120b0(void)",
-    "comment": "[binja] int32_t sub_4120b0()"
+    "name": "gameplay_run_state_init",
+    "signature": "int gameplay_run_state_init(void)",
+    "comment": "initializes highscore_active_record defaults and resets run/quest runtime counters before gameplay"
   },
   {
     "program": "crimsonland.exe",
@@ -2870,6 +2870,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004411c0",
+    "name": "highscore_card_draw_horizontal_divider",
+    "signature": "void highscore_card_draw_horizontal_divider(float *xy)",
+    "comment": "draws a horizontal divider line on the highscore scorecard and advances y cursor by 4"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00441220",
+    "name": "highscore_card_draw_vertical_divider",
+    "signature": "void highscore_card_draw_vertical_divider(float *xy)",
+    "comment": "draws a vertical divider line on the highscore scorecard"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00441270",
     "name": "highscore_format_date_label",
     "signature": "char * highscore_format_date_label(int day, int month_index)",
@@ -3055,9 +3069,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00447420",
-    "name": "FUN_00447420",
-    "signature": "int FUN_00447420(void)",
-    "comment": "[binja] int32_t sub_447420()"
+    "name": "ui_menu_click_back_contextual",
+    "signature": "int ui_menu_click_back_contextual(void)",
+    "comment": "menu BACK callback: sets transition and routes to state 0 (main menu) or state 5 (in-game menu context)"
   },
   {
     "program": "crimsonland.exe",
@@ -3090,10 +3104,17 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00448b50",
+    "name": "input_detect_active_analog_axis",
+    "signature": "int input_detect_active_analog_axis(void)",
+    "comment": "polls configured analog axis ids and returns the first axis code with abs(value) > 0.5, else 0"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0044ecf0",
-    "name": "FUN_0044ecf0",
-    "signature": "float * FUN_0044ecf0(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __thiscall sub_44ecf0(float* arg1, float* arg2, float* arg3)"
+    "name": "vec2_add_out",
+    "signature": "float * vec2_add_out(float *dst, float *lhs)",
+    "comment": "writes this + lhs into dst and returns dst"
   },
   {
     "program": "crimsonland.exe",

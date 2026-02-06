@@ -137,6 +137,10 @@ grim.dll_functions.json
 
 ### Gameplay session reset (high confidence)
 
+- `FUN_004120b0` -> `gameplay_run_state_init`
+  - Evidence: initializes `highscore_active_record` to default/sentinel values and resets run-scoped
+    globals (quest stage/counters, demo flag, spawn stage) before gameplay/session flows.
+
 - `FUN_00412dc0` -> `gameplay_reset_state`
   - Evidence: clears HUD/bonus slots, resets spawn/timer globals, seeds creature type textures/SFX, refreshes
     weapon/perk availability, and zeroes run/high-score counters; invoked when demo mode starts and on state
@@ -200,6 +204,19 @@ grim.dll_functions.json
 - `FUN_00441270` -> `highscore_format_date_label`
   - Evidence: text input render uses it to format day/month label text in `highscore_date_label_buffer`
     via `s_fmt_highscore_date_label`.
+
+- `FUN_004411c0` / `FUN_00441220` -> `highscore_card_draw_horizontal_divider` /
+  `highscore_card_draw_vertical_divider`
+  - Evidence: both are small scorecard-only render helpers used by `ui_text_input_render`; they draw
+    1px divider lines with the shared card tint (`DAT_004ccca8..0xb4`) and update the local layout cursor.
+
+- `FUN_00448b50` -> `input_detect_active_analog_axis`
+  - Evidence: polls `grim_get_config_float` on analog axis keycodes (`0x13f`, `0x140`, `0x141`,
+    `0x153`, `0x154`, `0x155`) and returns the first moved axis id; used by control-config assignment flow.
+
+- `FUN_00447420` -> `ui_menu_click_back_contextual`
+  - Evidence: callback always starts a UI transition and routes `game_state_pending` to state `0`
+    (main menu) unless in the in-game menu context (`render_pass_mode`/`DAT_004824d1`), where it routes to state `5`.
 
 - `FUN_00447c90` -> `input_configure_for_label`
   - Evidence: returns the configure-for label set (`Mouse/Keyboard/Joystick/Mouse relative/Dual Action Pad/Computer`).
@@ -602,7 +619,7 @@ High score validation (`highscore_load_table`):
   - Evidence: increments after every 10 minor stages (`if 10 < quest_stage_minor` then
     `quest_stage_major++`, `quest_stage_minor -= 10`) during quest summary flow.
 
-- Initialized to `1` in `FUN_004120b0` alongside high‑score state reset.
+- Initialized to `1` in `gameplay_run_state_init` (`FUN_004120b0`) alongside high‑score state reset.
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
 - Incremented on quest results screen when the player chooses “Play Next”.

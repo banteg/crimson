@@ -255,6 +255,168 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478884",
+      "comment": "Fallback month label used by highscore_format_date_label for out-of-range month values.",
+      "name": "highscore_month_label_default",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478888",
+      "comment": "Month label used by highscore_format_date_label for month 12.",
+      "name": "highscore_month_label_dec",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047888c",
+      "comment": "Month label used by highscore_format_date_label for month 11.",
+      "name": "highscore_month_label_nov",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478890",
+      "comment": "Month label used by highscore_format_date_label for month 10.",
+      "name": "highscore_month_label_oct",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478894",
+      "comment": "Month label used by highscore_format_date_label for month 9.",
+      "name": "highscore_month_label_sep",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478898",
+      "comment": "Month label used by highscore_format_date_label for month 8.",
+      "name": "highscore_month_label_aug",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047889c",
+      "comment": "Month label used by highscore_format_date_label for month 7.",
+      "name": "highscore_month_label_jul",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a0",
+      "comment": "Month label used by highscore_format_date_label for month 6.",
+      "name": "highscore_month_label_jun",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a4",
+      "comment": "Month label used by highscore_format_date_label for month 5.",
+      "name": "highscore_month_label_may",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788a8",
+      "comment": "Month label used by highscore_format_date_label for month 4.",
+      "name": "highscore_month_label_apr",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788ac",
+      "comment": "Month label used by highscore_format_date_label for month 3.",
+      "name": "highscore_month_label_mar",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b0",
+      "comment": "Month label used by highscore_format_date_label for month 2.",
+      "name": "highscore_month_label_feb",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b4",
+      "comment": "Month label used by highscore_format_date_label for month 1.",
+      "name": "highscore_month_label_jan",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788b8",
+      "comment": "High-score tooltip text for shot hit percentage.",
+      "name": "s_highscore_tooltip_hit_ratio",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788e0",
+      "comment": "High-score tooltip text for total run time.",
+      "name": "s_highscore_tooltip_game_time",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004788fc",
+      "comment": "High-score tooltip text for most used weapon.",
+      "name": "s_highscore_tooltip_weapon_usage",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478920",
+      "comment": "Format string for high-score hit percent label (\"Hit %%: %d%%\").",
+      "name": "s_fmt_highscore_hit_percent",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478930",
+      "comment": "Format string for high-score frags label (\"Frags: %d\").",
+      "name": "s_fmt_highscore_frags",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047893c",
+      "comment": "High-score label text: \"Game time\".",
+      "name": "s_highscore_label_game_time",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478948",
+      "comment": "High-score label text: \"Experience\".",
+      "name": "s_highscore_label_experience",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478954",
+      "comment": "Format string for high-score rank label (\"Rank: %s\").",
+      "name": "s_fmt_highscore_rank",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478960",
+      "comment": "Format string for high-score elapsed seconds label (\"%.2f secs\").",
+      "name": "s_fmt_highscore_seconds",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047896c",
+      "comment": "High-score label text: \"Score\".",
+      "name": "s_highscore_label_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478974",
+      "comment": "High-score label text: \"Local score\".",
+      "name": "s_highscore_label_local_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478980",
+      "comment": "High-score label text: \"Score from the Internet\".",
+      "name": "s_highscore_label_internet_score",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478998",
+      "comment": "Format string used to show internet source tag (\"uni#%d\").",
+      "name": "s_fmt_highscore_universe_tag",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004789a0",
+      "comment": "High-score label text: \"Internet score of local origin\".",
+      "name": "s_highscore_label_internet_local_origin",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00478e04",
       "comment": "Typ-o fallback source word used when no highscore names are accepted (\"quickbrownfox\").",
       "name": "s_typo_fallback_word",

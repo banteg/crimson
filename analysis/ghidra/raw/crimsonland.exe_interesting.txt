@@ -160,6 +160,7 @@ Interesting Functions and Patterns
   console_flush_log @ 00402860
   tutorial_prompt_dialog @ 00408530
   mod_api_inp_get_analog @ 0040e620
+  input_detect_active_analog_axis @ 00448b50
 
 [PRINT related]
   console_printf @ 00401870
