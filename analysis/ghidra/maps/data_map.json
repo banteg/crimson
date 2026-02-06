@@ -86,6 +86,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471304",
+      "comment": "Plugin runtime init latch: set when entering/leaving plugin flow, consumed by plugin_runtime_update_and_render to run Init() once.",
+      "name": "plugin_runtime_needs_init",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x00471314",
       "comment": "Default player name string copied into config on load.",
       "name": "default_player_name",
@@ -1473,6 +1480,13 @@
       "name": "mod_info_block",
       "type": "mod_info_t",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004824d1",
+      "comment": "Plugin runtime active/context latch used by pause/menu callbacks to resume into GAME_STATE_PLUGIN_RUNTIME when needed.",
+      "name": "plugin_runtime_active_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004824d4",
@@ -6455,6 +6469,13 @@
       "name": "typo_spawn_counter",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d7a25",
+      "comment": "Main-menu full-version recheck latch set by ui_menu_main_click_recheck_full_version and consumed in frame loop.",
+      "name": "full_version_recheck_pending",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004d7a28",

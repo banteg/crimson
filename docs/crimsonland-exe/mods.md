@@ -14,6 +14,9 @@ and expects two exports: `CMOD_GetInfo` and `CMOD_GetMod`.
 - It searches the filesystem with `mods\*.dll` (`FindFirstFileA` / `FindNextFileA`).
 - In `game_state_set` (`0x004461c0`), this boolean gates whether the mods entry
   is enabled in the main menu flow.
+- Runtime latches in `plugin_runtime_update_and_render`:
+  - `plugin_runtime_needs_init` (`0x00471304`) runs plugin `Init()` once after state entry.
+  - `plugin_runtime_active_latch` (`0x004824d1`) keeps pause/resume callbacks on the plugin path.
 
 ## Loading a mod info block
 

@@ -7100,12 +7100,12 @@ void plugin_runtime_update_and_render(void)
     game_state_pending = GAME_STATE_MODS_MENU;
     ui_transition_direction = '\0';
     ui_elements_update_and_render();
-    DAT_00471304 = '\x01';
+    plugin_runtime_needs_init = '\x01';
     return;
   }
-  if ((game_state_id == GAME_STATE_PLUGIN_RUNTIME) && (DAT_00471304 != '\0')) {
-    DAT_00471304 = '\0';
-    DAT_004824d1 = '\0';
+  if ((game_state_id == GAME_STATE_PLUGIN_RUNTIME) && (plugin_runtime_needs_init != '\0')) {
+    plugin_runtime_needs_init = '\0';
+    plugin_runtime_active_latch = '\0';
     sfx_mute_all(music_track_extra_0);
     plugin_runtime_clear_pools();
     (*plugin_interface_ptr->vtable->Init)(unaff_EBX);
@@ -7114,25 +7114,25 @@ void plugin_runtime_update_and_render(void)
   else {
     uVar1 = (*plugin_interface_ptr->vtable->Frame)(frame_dt_ms,(int)unaff_EBX);
     if (uVar1 == '\0') {
-      DAT_004824d1 = '\0';
+      plugin_runtime_active_latch = '\0';
       (*plugin_interface_ptr->vtable->Shutdown)(unaff_retaddr);
       sfx_mute_all(music_track_extra_0);
       plugin_interface_ptr = (mod_interface_t *)0x0;
       FreeLibrary((HMODULE)plugin_module_handle);
       plugin_module_handle = (HMODULE)0x0;
-      DAT_00471304 = '\x01';
+      plugin_runtime_needs_init = '\x01';
       game_state_pending = GAME_STATE_MODS_MENU;
       ui_transition_direction = '\0';
     }
     else {
-      DAT_004824d1 = '\x01';
+      plugin_runtime_active_latch = '\x01';
     }
   }
   ui_elements_update_and_render();
   if (((ui_transition_direction == '\0') && (game_state_id == GAME_STATE_PLUGIN_RUNTIME)) ||
      ((plugin_interface_ptr != (mod_interface_t *)0x0 &&
-      ((DAT_004824d1 != '\0' && ((plugin_interface_ptr->parms).fields.drawMouseCursor != '\0'))))))
-  {
+      ((plugin_runtime_active_latch != '\0' &&
+       ((plugin_interface_ptr->parms).fields.drawMouseCursor != '\0')))))) {
     ui_cursor_render();
   }
   return;
@@ -7644,7 +7644,7 @@ LAB_0040c71b:
   if ((float)(_config_screen_height + -1) < ui_mouse_y) {
     ui_mouse_y = (float)(_config_screen_height + -1);
   }
-  if ((game_state_id == GAME_STATE_PLUGIN_RUNTIME) || (DAT_004824d1 != '\0')) {
+  if ((game_state_id == GAME_STATE_PLUGIN_RUNTIME) || (plugin_runtime_active_latch != '\0')) {
     plugin_runtime_update_and_render();
   }
   else if (game_state_id == GAME_STATE_GAMEPLAY) {
@@ -7855,8 +7855,8 @@ LAB_0040cf06:
     audio_suspend_all();
     game_is_full_version();
   }
-  if (DAT_004d7a25 != '\0') {
-    DAT_004d7a25 = '\0';
+  if (full_version_recheck_pending != '\0') {
+    full_version_recheck_pending = '\0';
     ui_render_loading();
     ui_render_loading();
     audio_suspend_all();
@@ -35012,7 +35012,7 @@ void __cdecl sfx_play_exclusive(int sfx_id)
   int iVar3;
   
   if (((sfx_unmuted_flag != '\0') && (config_music_disabled == '\0')) && (config_blob == '\0')) {
-    if (DAT_004824d1 == '\0') {
+    if (plugin_runtime_active_latch == '\0') {
       if (sfx_id == music_track_extra_0) {
         if (DAT_004cc8d4 != '\0') {
           return;
@@ -39894,7 +39894,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
     ui_element_slot_12_layout_a.active = '\x01';
   }
   else if (state_id == GAME_STATE_OPTIONS_MENU) {
-    if (DAT_004824d1 == '\0') {
+    if (plugin_runtime_active_latch == '\0') {
       ui_sign_crimson.active = '\x01';
     }
     ui_element_slot_31.active = '\x01';
@@ -39968,7 +39968,7 @@ LAB_00446764:
     ui_element_slot_37.active = '\x01';
   }
   else if (gVar1 == GAME_STATE_PAUSE_MENU) {
-    if (DAT_004824d1 == '\0') {
+    if (plugin_runtime_active_latch == '\0') {
       ui_sign_crimson.active = '\x01';
     }
     ui_sign_crimson._pad0[0] = '\0';
@@ -40410,9 +40410,9 @@ int ui_menu_click_back_contextual(void)
   undefined4 in_EAX;
   
   ui_transition_direction = 0;
-  if (DAT_004824d1 != '\0') {
+  if (plugin_runtime_active_latch != '\0') {
     game_state_pending = GAME_STATE_PAUSE_MENU;
-    return CONCAT31((int3)((uint)in_EAX >> 8),DAT_004824d1);
+    return CONCAT31((int3)((uint)in_EAX >> 8),plugin_runtime_active_latch);
   }
   game_state_pending = -(uint)(render_pass_mode != '\0') & GAME_STATE_PAUSE_MENU;
   return game_state_pending;
@@ -40454,7 +40454,7 @@ void ui_menu_pause_click_resume(void)
   }
   ui_sign_crimson._pad0[0] = '\0';
   ui_transition_direction = 0;
-  game_state_pending = (-(uint)(DAT_004824d1 != '\0') & 0xd) + GAME_STATE_GAMEPLAY;
+  game_state_pending = (-(uint)(plugin_runtime_active_latch != '\0') & 0xd) + GAME_STATE_GAMEPLAY;
   if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
     game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
   }
@@ -40479,13 +40479,13 @@ void ui_menu_pause_click_main_menu(void)
   }
   else {
     (plugin_interface_ptr->parms).fields.onPause = '\0';
-    DAT_004824d1 = 0;
+    plugin_runtime_active_latch = '\0';
     (*plugin_interface_ptr->vtable->Shutdown)(unaff_EBX);
     sfx_mute_all(music_track_extra_0);
     plugin_interface_ptr = (mod_interface_t *)0x0;
     FreeLibrary((HMODULE)plugin_module_handle);
     plugin_module_handle = (HMODULE)0x0;
-    DAT_00471304 = 1;
+    plugin_runtime_needs_init = '\x01';
     game_state_pending = GAME_STATE_MODS_MENU;
   }
   ui_transition_direction = 0;
@@ -47536,7 +47536,7 @@ void ui_menu_main_click_buy_full_version(void)
 void ui_menu_main_click_recheck_full_version(void)
 
 {
-  DAT_004d7a25 = 1;
+  full_version_recheck_pending = '\x01';
   return;
 }
 

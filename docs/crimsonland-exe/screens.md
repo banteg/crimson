@@ -84,3 +84,5 @@ Use Frida to log whenever the overlay is actually rendered:
   (`DAT_004824d4`).
 - `plugin_runtime_update_and_render` owns the frame dispatch for `0x16` and
   routes back to `0x14` when the plugin exits or is unavailable.
+- Runtime latches: `plugin_runtime_needs_init` gates one-shot plugin `Init()`,
+  and `plugin_runtime_active_latch` preserves resume-to-plugin behavior through pause/menu callbacks.
