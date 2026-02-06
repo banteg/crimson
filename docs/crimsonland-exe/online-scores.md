@@ -74,7 +74,7 @@ Header layout (offsets are from start of payload):
 Score records:
 
 - Each submitted record is exactly `0x40` bytes.
-- Records are built via `FUN_0043aa90`, which copies the base high score record
+- Records are built via `highscore_record_pack_for_submit`, which copies the base high score record
   fields (name + metadata) and zeroes bytes `0x3c..0x3f`.
 
 - The client appends each record immediately after the name string.
@@ -86,7 +86,7 @@ Selection logic:
 - Skips entries where flag bit 0 is set and bit 1 is not set. (Flags live at
   record offset `0x44`; see `docs/detangling.md` for meaning.)
 
-- Calls `FUN_0043aa60` (illegal-score guard) per entry; on failure, logs
+- Calls `highscore_submit_full_version_guard` (illegal-score guard) per entry; on failure, logs
   "Detected a potential illegal score" and does not include that entry.
 
 ## High score response payload (server -> client)
@@ -136,4 +136,3 @@ If we want to validate with live captures:
 - Hook `InternetReadFile` to dump the response body.
 - Trigger: use the "Update scores" / "Receive scores" UI flow in the high
   scores screen and submit a fresh local high score.
-

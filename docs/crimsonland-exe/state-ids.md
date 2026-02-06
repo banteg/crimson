@@ -42,7 +42,7 @@ Runtime cross-check:
 | `19` | `0x13` | Unknown menu-state variant (unused in observed flow) | `game_state_set(0x13)` toggles generic menu block flags but installs no unique update callback; no direct transition writes found. | low |
 | `20` | `0x14` | Mods browser/menu (also plugin fallback) | `game_state_set(0x14)` installs callback `sub_40e9a0` (mods list/launch UI); plugin flow queues `0x14` when plugin is missing/exits. | high |
 | `21` | `0x15` | Final-quest end note / victory screen | Dispatch calls `game_update_victory_screen`; final quest results queue `0x15`. | high |
-| `22` | `0x16` | Active plugin/mod runtime screen | Dispatch routes to plugin flow `FUN_0040b630`; mods menu Launch queues `0x16`. | high |
+| `22` | `0x16` | Active plugin/mod runtime screen | Dispatch routes to plugin flow `plugin_runtime_update_and_render`; mods menu Launch queues `0x16`. | high |
 | `23` | `0x17` | Unknown / unused | No `game_state_set(0x17)` case and no dispatch branch observed. | low |
 | `24` | `0x18` | Legacy demo/gameplay+upsell branch | Dispatch has special `game_state_id == 0x18` path (`gameplay_update_and_render` + `demo_purchase_screen_update`); no direct transition write to `0x18` found in this build. | medium |
 | `25` | `0x19` | Pending-state idle sentinel (not a real state) | After transition commit, `ui_elements_update_and_render` sets `game_state_pending = 0x19`. | high |

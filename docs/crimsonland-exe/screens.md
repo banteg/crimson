@@ -61,7 +61,7 @@ Use Frida to log whenever the overlay is actually rendered:
 - Optional: validate the log against the Python model:
   - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 
-## Modal/plugin flow (FUN_0040b630)
+## Modal/plugin flow (plugin_runtime_update_and_render)
 
 There is a modal flow keyed off state `game_state_id` (`DAT_00487270`) == `0x16` that appears to
 call into a plugin interface (`plugin_interface_ptr` (`DAT_004824d4`)). This likely represents a

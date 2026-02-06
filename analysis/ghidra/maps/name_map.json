@@ -332,9 +332,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00403430",
-    "name": "FUN_00403430",
-    "signature": "int FUN_00403430(float *arg1, int arg2, int arg3)",
-    "comment": "[binja] int32_t sub_403430(float* arg1, int32_t arg2, int32_t arg3)"
+    "name": "ui_mouse_inside_rect_with_padding",
+    "signature": "int ui_mouse_inside_rect_with_padding(float *xy, int h, int w)",
+    "comment": "returns 1 when the mouse is inside an expanded rect (x-10,y-2..x+w,y+h) and capture is clear"
   },
   {
     "program": "crimsonland.exe",
@@ -528,9 +528,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0040b5d0",
-    "name": "FUN_0040b5d0",
-    "signature": "int * FUN_0040b5d0(void)",
-    "comment": "[binja] int32_t* sub_40b5d0()"
+    "name": "plugin_runtime_clear_pools",
+    "signature": "void plugin_runtime_clear_pools(void)",
+    "comment": "clears bonus/creature/projectile/player runtime pools before entering plugin gameplay"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040b630",
+    "name": "plugin_runtime_update_and_render",
+    "signature": "void plugin_runtime_update_and_render(void)",
+    "comment": "state 0x16 plugin frame loop: init/frame/shutdown callbacks, UI transitions, and cursor draw"
   },
   {
     "program": "crimsonland.exe",
@@ -934,9 +941,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004121f0",
-    "name": "FUN_004121f0",
-    "signature": "int FUN_004121f0(void)",
-    "comment": "[binja] int32_t sub_4121f0()"
+    "name": "quest_meta_register_atexit",
+    "signature": "int quest_meta_register_atexit(void)",
+    "comment": "registers quest meta table destructor callback with crt_atexit"
   },
   {
     "program": "crimsonland.exe",
@@ -948,23 +955,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004123d0",
-    "name": "FUN_004123d0",
-    "signature": "int FUN_004123d0(void)",
-    "comment": "[binja] int32_t sub_4123d0()"
+    "name": "bonus_meta_table_init",
+    "signature": "int bonus_meta_table_init(void)",
+    "comment": "constructs bonus_meta_table entries (0x0f records, stride 0x14)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00412410",
-    "name": "FUN_00412410",
-    "signature": "void * FUN_00412410(int *arg1)",
-    "comment": "[binja] void* __fastcall sub_412410(int32_t* arg1)"
+    "name": "bonus_meta_entry_release",
+    "signature": "void bonus_meta_entry_release(int *entry)",
+    "comment": "frees heap-owned text pointers in one bonus_meta_table entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00412440",
-    "name": "FUN_00412440",
-    "signature": "int FUN_00412440(void)",
-    "comment": "[binja] int32_t sub_412440()"
+    "name": "bonus_meta_register_atexit",
+    "signature": "int bonus_meta_register_atexit(void)",
+    "comment": "registers bonus meta table destructor callback with crt_atexit"
   },
   {
     "program": "crimsonland.exe",
@@ -1846,16 +1853,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0042faa0",
-    "name": "FUN_0042faa0",
-    "signature": "int FUN_0042faa0(void)",
-    "comment": "[binja] int32_t sub_42faa0()"
+    "name": "perk_meta_table_init",
+    "signature": "int perk_meta_table_init(void)",
+    "comment": "constructs perk_meta_table entries (0x80 records, stride 0x14)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042fae0",
-    "name": "FUN_0042fae0",
-    "signature": "int FUN_0042fae0(void)",
-    "comment": "[binja] int32_t sub_42fae0()"
+    "name": "perk_meta_register_atexit",
+    "signature": "int perk_meta_register_atexit(void)",
+    "comment": "registers perk meta table destructor callback with crt_atexit"
   },
   {
     "program": "crimsonland.exe",
@@ -2321,10 +2328,17 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043aa60",
+    "name": "highscore_submit_full_version_guard",
+    "signature": "int highscore_submit_full_version_guard(void)",
+    "comment": "logs illegal-score warning in demo mode; submit path checks this before packing records"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043aa90",
-    "name": "FUN_0043aa90",
-    "signature": "void * FUN_0043aa90(void *arg1, void *arg2)",
-    "comment": "[binja] void* sub_43aa90(void* arg1, void* arg2)"
+    "name": "highscore_record_pack_for_submit",
+    "signature": "highscore_record_t * highscore_record_pack_for_submit(highscore_record_t *src, highscore_record_t *dst)",
+    "comment": "copies a high score record into submit layout and clears bytes 0x3c..0x3f"
   },
   {
     "program": "crimsonland.exe",
@@ -2842,6 +2856,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00441270",
+    "name": "highscore_format_date_label",
+    "signature": "char * highscore_format_date_label(int day, int month_index)",
+    "comment": "formats high-score day/month text into DAT_004d0e38 using month-name strings"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004413a0",
     "name": "ui_text_input_render",
     "signature": "void ui_text_input_render(void *input_state, float y, float alpha)",
@@ -2998,9 +3019,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004473e0",
-    "name": "FUN_004473e0",
-    "signature": "int FUN_004473e0(void)",
-    "comment": "[binja] int32_t sub_4473e0()"
+    "name": "ui_menu_main_click_controls",
+    "signature": "void ui_menu_main_click_controls(void)",
+    "comment": "main menu CONTROLS click callback (sets ui_transition_direction=0 and game_state_pending=3)"
   },
   {
     "program": "crimsonland.exe",
@@ -3035,9 +3056,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00447c90",
-    "name": "FUN_00447c90",
-    "signature": "int FUN_00447c90(int arg1)",
-    "comment": "[binja] int32_t sub_447c90(int32_t arg1)"
+    "name": "input_configure_for_label",
+    "signature": "char * input_configure_for_label(int config_id)",
+    "comment": "maps configure-for ids to labels (Mouse/Keyboard/Joystick/Mouse relative/Dual Action Pad/Computer)"
   },
   {
     "program": "crimsonland.exe",
@@ -3056,9 +3077,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0044faa0",
-    "name": "FUN_0044faa0",
-    "signature": "char * FUN_0044faa0(char *arg1)",
-    "comment": "[binja] char* sub_44faa0(char* arg1)"
+    "name": "ui_element_init_defaults",
+    "signature": "ui_element_t * ui_element_init_defaults(ui_element_t *element)",
+    "comment": "resets one ui_element_t record to default counters, animation values, and flags"
   },
   {
     "program": "crimsonland.exe",

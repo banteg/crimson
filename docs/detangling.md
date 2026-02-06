@@ -176,6 +176,41 @@ grim.dll_functions.json
   - Evidence: called at quest start before spawn setup; clears active creature slots and
     detaches any occupied `creature_spawn_slot_table[].owner` links.
 
+### Menu/plugin/highscore helpers (high confidence)
+
+- `FUN_0040b630` -> `plugin_runtime_update_and_render`
+  - Evidence: dispatch uses it for `game_state_id == 0x16`; runs plugin `Init/Frame/Shutdown`,
+    manages fallback to state `0x14`, and controls cursor/UI transition behavior.
+
+- `FUN_0040b5d0` -> `plugin_runtime_clear_pools`
+  - Evidence: called from plugin init path; clears bonus/creature/projectile/player active slots
+    before entering plugin runtime.
+
+- `FUN_00403430` -> `ui_mouse_inside_rect_with_padding`
+  - Evidence: list/dropdown widgets use it for hit-tests with relaxed left/top bounds (`x-10`, `y-2`).
+
+- `FUN_0043aa90` -> `highscore_record_pack_for_submit`
+  - Evidence: online submit path copies `highscore_record_t` metadata into 0x40-byte upload records and
+    clears bytes `0x3c..0x3f`.
+
+- `FUN_0043aa60` -> `highscore_submit_full_version_guard`
+  - Evidence: online submit selection path uses it as an illegal-score/full-version guard; emits the
+    "potential illegal score" log when blocked.
+
+- `FUN_00441270` -> `highscore_format_date_label`
+  - Evidence: text input render uses it to format day/month label text in `highscore_date_label_buffer`
+    via `s_fmt_highscore_date_label`.
+
+- `FUN_00447c90` -> `input_configure_for_label`
+  - Evidence: returns the configure-for label set (`Mouse/Keyboard/Joystick/Mouse relative/Dual Action Pad/Computer`).
+
+- `FUN_0044faa0` -> `ui_element_init_defaults`
+  - Evidence: menu layout init applies it across `ui_element_table_end` entries and a standalone prompt
+    element to seed default UI element runtime state.
+
+- `FUN_004123d0` / `FUN_0042faa0` -> `bonus_meta_table_init` / `perk_meta_table_init`
+  - Evidence: both are `crt_ehvec_ctor` table constructors with matching `crt_atexit` registration helpers.
+
 ### Typ-o gameplay loop (high confidence)
 
 - `FUN_004457c0` -> `typo_gameplay_update_and_render`
@@ -514,7 +549,7 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 | `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
 
 Bytes `0x38..0x3f` are currently unknown. The online submit path zeroes `0x3c..0x3f`
-in the 0x40-byte record copies (`FUN_0043aa90`), suggesting those bytes are not
+in the 0x40-byte record copies (`highscore_record_pack_for_submit`), suggesting those bytes are not
 required for leaderboard uploads.
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
 

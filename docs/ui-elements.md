@@ -62,7 +62,7 @@ Offsets below are relative to the UI element base pointer.
 | 0x204 | overlay_texture_handle | Overlay texture handle (`-1` disables). |
 | 0x2f4 | hover_enter_played | Gate for "hover enter" SFX. |
 | 0x2f8 | hover_amount | Hover lerp value, clamped 0..1000. |
-| 0x2fc | time_since_ready | Initialized to `0x100` in `FUN_0044faa0` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
+| 0x2fc | time_since_ready | Initialized to `0x100` in `ui_element_init_defaults` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
 | 0x300 | render_scale | Used to pick a special render state when zero. |
 | 0x304 | rot_m00 | Rotation matrix (cos). |
 | 0x308 | rot_m01 | Rotation matrix (-sin). |

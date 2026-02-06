@@ -243,9 +243,51 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478878",
+      "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
+      "name": "s_fmt_highscore_date_label",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00478e50",
       "comment": "Primary input edge latch used by input_primary_just_pressed.",
       "name": "input_primary_latch",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ecc",
+      "comment": "Configure-for label: \"Computer\".",
+      "name": "input_configure_label_computer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ed8",
+      "comment": "Configure-for label: \"Dual Action Pad\".",
+      "name": "input_configure_label_dual_action_pad",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ee8",
+      "comment": "Configure-for label: \"Joystick\".",
+      "name": "input_configure_label_joystick",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478ef4",
+      "comment": "Configure-for label: \"Keyboard\".",
+      "name": "input_configure_label_keyboard",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478f00",
+      "comment": "Configure-for label: \"Mouse relative\".",
+      "name": "input_configure_label_mouse_relative",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478f10",
+      "comment": "Configure-for label: \"Mouse\".",
+      "name": "input_configure_label_mouse",
       "program": "crimsonland.exe"
     },
     {
@@ -4779,6 +4821,12 @@
       "name": "typo_mode_reset_flag",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x004d0e38",
+      "comment": "Static text buffer written by highscore_format_date_label.",
+      "name": "highscore_date_label_buffer",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004d11e0",

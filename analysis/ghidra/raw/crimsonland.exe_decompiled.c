@@ -2295,16 +2295,15 @@ int demo_mode_start(void)
 
 
 
-/* FUN_00403430 @ 00403430 */
+/* ui_mouse_inside_rect_with_padding @ 00403430 */
 
-/* [binja] int32_t sub_403430(float* arg1, int32_t arg2, int32_t arg3) */
+/* returns 1 when the mouse is inside an expanded rect (x-10,y-2..x+w,y+h) and capture is clear */
 
-int __cdecl FUN_00403430(float *arg1,int arg2,int arg3)
+int __cdecl ui_mouse_inside_rect_with_padding(float *xy,int h,int w)
 
 {
-  if ((((*arg1 - 10.0 < ui_mouse_x) && (arg1[1] - 2.0 < ui_mouse_y)) &&
-      (ui_mouse_x < (float)arg3 + *arg1)) &&
-     ((ui_mouse_y < (float)arg2 + arg1[1] && (ui_mouse_blocked == '\0')))) {
+  if ((((*xy - 10.0 < ui_mouse_x) && (xy[1] - 2.0 < ui_mouse_y)) && (ui_mouse_x < (float)w + *xy))
+     && ((ui_mouse_y < (float)h + xy[1] && (ui_mouse_blocked == '\0')))) {
     return 1;
   }
   return 0;
@@ -7121,11 +7120,11 @@ LAB_0040b5b4:
 
 
 
-/* FUN_0040b5d0 @ 0040b5d0 */
+/* plugin_runtime_clear_pools @ 0040b5d0 */
 
-/* [binja] int32_t* sub_40b5d0() */
+/* clears bonus/creature/projectile/player runtime pools before entering plugin gameplay */
 
-int * FUN_0040b5d0(void)
+void plugin_runtime_clear_pools(void)
 
 {
   bonus_entry_t *pbVar1;
@@ -7154,14 +7153,16 @@ int * FUN_0040b5d0(void)
     *pfVar3 = -1.0;
     pfVar3 = pfVar3 + 0xd8;
   } while ((int)pfVar3 < 0x490f94);
-  return (int *)pfVar3;
+  return;
 }
 
 
 
-/* FUN_0040b630 @ 0040b630 */
+/* plugin_runtime_update_and_render @ 0040b630 */
 
-void FUN_0040b630(void)
+/* state 0x16 plugin frame loop: init/frame/shutdown callbacks, UI transitions, and cursor draw */
+
+void plugin_runtime_update_and_render(void)
 
 {
   uchar uVar1;
@@ -7179,7 +7180,7 @@ void FUN_0040b630(void)
     DAT_00471304 = '\0';
     DAT_004824d1 = '\0';
     sfx_mute_all(music_track_extra_0);
-    FUN_0040b5d0();
+    plugin_runtime_clear_pools();
     (*plugin_interface_ptr->vtable->Init)(unaff_EBX);
     (plugin_interface_ptr->parms).fields.onPause = '\0';
   }
@@ -7711,7 +7712,7 @@ LAB_0040c71b:
     ui_mouse_y = (float)(config_blob.screen_height + -1);
   }
   if ((game_state_id == 0x16) || (DAT_004824d1 != '\0')) {
-    FUN_0040b630();
+    plugin_runtime_update_and_render();
   }
   else if (game_state_id == 9) {
     if (demo_purchase_screen_active == '\0') {
@@ -10689,11 +10690,11 @@ int quest_meta_init(void)
 
 
 
-/* FUN_004121f0 @ 004121f0 */
+/* quest_meta_register_atexit @ 004121f0 */
 
-/* [binja] int32_t sub_4121f0() */
+/* registers quest meta table destructor callback with crt_atexit */
 
-int FUN_004121f0(void)
+int quest_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -10770,51 +10771,44 @@ int highscore_init_sentinels(void)
 
 
 
-/* FUN_004123d0 @ 004123d0 */
+/* bonus_meta_table_init @ 004123d0 */
 
-/* [binja] int32_t sub_4123d0() */
+/* constructs bonus_meta_table entries (0x0f records, stride 0x14) */
 
-int FUN_004123d0(void)
+int bonus_meta_table_init(void)
 
 {
   int extraout_EAX;
   
-  crt_ehvec_ctor(&bonus_meta_table,0x14,0xf,&LAB_004123f0,FUN_00412410);
+  crt_ehvec_ctor(&bonus_meta_table,0x14,0xf,&LAB_004123f0,bonus_meta_entry_release);
   return extraout_EAX;
 }
 
 
 
-/* FUN_00412410 @ 00412410 */
+/* bonus_meta_entry_release @ 00412410 */
 
-/* [binja] void* __fastcall sub_412410(int32_t* arg1) */
+/* frees heap-owned text pointers in one bonus_meta_table entry */
 
-void * __fastcall FUN_00412410(int *arg1)
+void __fastcall bonus_meta_entry_release(int *entry)
 
 {
-  void *extraout_EAX;
-  void *extraout_EAX_00;
-  void *pvVar1;
-  
-  pvVar1 = (void *)0x0;
-  if ((void *)*arg1 != (void *)0x0) {
-    crt_free((void *)*arg1);
-    pvVar1 = extraout_EAX;
+  if ((void *)*entry != (void *)0x0) {
+    crt_free((void *)*entry);
   }
-  if ((void *)arg1[1] != (void *)0x0) {
-    crt_free((void *)arg1[1]);
-    pvVar1 = extraout_EAX_00;
+  if ((void *)entry[1] != (void *)0x0) {
+    crt_free((void *)entry[1]);
   }
-  return pvVar1;
+  return;
 }
 
 
 
-/* FUN_00412440 @ 00412440 */
+/* bonus_meta_register_atexit @ 00412440 */
 
-/* [binja] int32_t sub_412440() */
+/* registers bonus meta table destructor callback with crt_atexit */
 
-int FUN_00412440(void)
+int bonus_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -25380,26 +25374,26 @@ void __cdecl effect_spawn_explosion_burst(float *pos,float scale)
 
 
 
-/* FUN_0042faa0 @ 0042faa0 */
+/* perk_meta_table_init @ 0042faa0 */
 
-/* [binja] int32_t sub_42faa0() */
+/* constructs perk_meta_table entries (0x80 records, stride 0x14) */
 
-int FUN_0042faa0(void)
+int perk_meta_table_init(void)
 
 {
   int extraout_EAX;
   
-  crt_ehvec_ctor(&perk_meta_table,0x14,0x80,&LAB_0042fac0,FUN_00412410);
+  crt_ehvec_ctor(&perk_meta_table,0x14,0x80,&LAB_0042fac0,bonus_meta_entry_release);
   return extraout_EAX;
 }
 
 
 
-/* FUN_0042fae0 @ 0042fae0 */
+/* perk_meta_register_atexit @ 0042fae0 */
 
-/* [binja] int32_t sub_42fae0() */
+/* registers perk meta table destructor callback with crt_atexit */
 
-int FUN_0042fae0(void)
+int perk_meta_register_atexit(void)
 
 {
   int iVar1;
@@ -32060,9 +32054,11 @@ int __cdecl highscore_date_checksum(int year,int month,int day)
 
 
 
-/* FUN_0043aa60 @ 0043aa60 */
+/* highscore_submit_full_version_guard @ 0043aa60 */
 
-undefined4 FUN_0043aa60(void)
+/* logs illegal-score warning in demo mode; submit path checks this before packing records */
+
+int highscore_submit_full_version_guard(void)
 
 {
   int iVar1;
@@ -32078,54 +32074,58 @@ undefined4 FUN_0043aa60(void)
 
 
 
-/* FUN_0043aa90 @ 0043aa90 */
+/* highscore_record_pack_for_submit @ 0043aa90 */
 
-/* [binja] void* sub_43aa90(void* arg1, void* arg2) */
+/* copies a high score record into submit layout and clears bytes 0x3c..0x3f */
 
-void * __cdecl FUN_0043aa90(void *arg1,void *arg2)
+highscore_record_t * __cdecl
+highscore_record_pack_for_submit(highscore_record_t *src,highscore_record_t *dst)
 
 {
-  char cVar1;
+  uint uVar1;
   uint uVar2;
-  uint uVar3;
-  char *pcVar4;
-  char *pcVar5;
+  char *pcVar3;
+  highscore_record_t *phVar4;
+  highscore_record_t *phVar5;
   
-  uVar2 = 0xffffffff;
-  pcVar4 = arg1;
+  uVar1 = 0xffffffff;
+  phVar5 = src;
   do {
-    pcVar5 = pcVar4;
-    if (uVar2 == 0) break;
-    uVar2 = uVar2 - 1;
-    pcVar5 = pcVar4 + 1;
-    cVar1 = *pcVar4;
-    pcVar4 = pcVar5;
-  } while (cVar1 != '\0');
-  uVar2 = ~uVar2;
-  pcVar4 = pcVar5 + -uVar2;
-  pcVar5 = arg2;
-  for (uVar3 = uVar2 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
-    *(undefined4 *)pcVar5 = *(undefined4 *)pcVar4;
-    pcVar4 = pcVar4 + 4;
-    pcVar5 = pcVar5 + 4;
+    phVar4 = phVar5;
+    if (uVar1 == 0) break;
+    uVar1 = uVar1 - 1;
+    phVar4 = (highscore_record_t *)(phVar5->player_name + 1);
+    pcVar3 = phVar5->player_name;
+    phVar5 = phVar4;
+  } while (*pcVar3 != '\0');
+  uVar1 = ~uVar1;
+  pcVar3 = (char *)((int)phVar4 - uVar1);
+  phVar5 = dst;
+  for (uVar2 = uVar1 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+    *(undefined4 *)phVar5->player_name = *(undefined4 *)pcVar3;
+    pcVar3 = pcVar3 + 4;
+    phVar5 = (highscore_record_t *)(phVar5->player_name + 4);
   }
-  for (uVar2 = uVar2 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
-    *pcVar5 = *pcVar4;
-    pcVar4 = pcVar4 + 1;
-    pcVar5 = pcVar5 + 1;
+  for (uVar1 = uVar1 & 3; uVar1 != 0; uVar1 = uVar1 - 1) {
+    phVar5->player_name[0] = *pcVar3;
+    pcVar3 = pcVar3 + 1;
+    phVar5 = (highscore_record_t *)(phVar5->player_name + 1);
   }
-  *(undefined4 *)((int)arg2 + 0x20) = *(undefined4 *)((int)arg1 + 0x20);
-  *(undefined4 *)((int)arg2 + 0x24) = *(undefined4 *)((int)arg1 + 0x24);
-  *(undefined1 *)((int)arg2 + 0x28) = *(undefined1 *)((int)arg1 + 0x28);
-  *(undefined1 *)((int)arg2 + 0x29) = *(undefined1 *)((int)arg1 + 0x29);
-  *(undefined1 *)((int)arg2 + 0x2a) = *(undefined1 *)((int)arg1 + 0x2a);
-  *(undefined1 *)((int)arg2 + 0x2b) = *(undefined1 *)((int)arg1 + 0x2b);
-  *(undefined4 *)((int)arg2 + 0x2c) = *(undefined4 *)((int)arg1 + 0x2c);
-  *(undefined4 *)((int)arg2 + 0x34) = *(undefined4 *)((int)arg1 + 0x34);
-  *(undefined4 *)((int)arg2 + 0x30) = *(undefined4 *)((int)arg1 + 0x30);
-  *(undefined4 *)((int)arg2 + 0x38) = *(undefined4 *)((int)arg1 + 0x38);
-  *(undefined4 *)((int)arg2 + 0x3c) = 0;
-  return arg2;
+  dst->survival_elapsed_ms = src->survival_elapsed_ms;
+  dst->score_xp = src->score_xp;
+  dst->game_mode_id = src->game_mode_id;
+  dst->quest_stage_major = src->quest_stage_major;
+  dst->quest_stage_minor = src->quest_stage_minor;
+  dst->most_used_weapon_id = src->most_used_weapon_id;
+  dst->shots_fired = src->shots_fired;
+  dst->creature_kill_count = src->creature_kill_count;
+  dst->shots_hit = src->shots_hit;
+  *(undefined4 *)dst->reserved0 = *(undefined4 *)src->reserved0;
+  dst->reserved0[4] = '\0';
+  dst->reserved0[5] = '\0';
+  dst->reserved0[6] = '\0';
+  dst->reserved0[7] = '\0';
+  return dst;
 }
 
 
@@ -36011,7 +36011,7 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   iVar4 = -2;
   if (*list != '\0') {
     lVar7 = __ftol();
-    iVar1 = FUN_00403430(xy_00,0xe,(int)lVar7);
+    iVar1 = ui_mouse_inside_rect_with_padding(xy_00,0xe,(int)lVar7);
     if ((char)iVar1 != '\0') {
       iVar4 = -1;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.95);
@@ -36034,7 +36034,7 @@ LAB_0043f3aa:
     iVar6 = 0;
     do {
       iVar2 = iVar6;
-      iVar3 = FUN_00403430((float *)&stack0xffffffbc,0xe,iVar1);
+      iVar3 = ui_mouse_inside_rect_with_padding((float *)&stack0xffffffbc,0xe,iVar1);
       if ((char)iVar3 == '\0') {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
       }
@@ -36096,14 +36096,16 @@ void FUN_00441220(void)
 
 
 
-/* FUN_00441270 @ 00441270 */
+/* highscore_format_date_label @ 00441270 */
 
-undefined * __cdecl FUN_00441270(undefined4 param_1,undefined4 param_2)
+/* formats high-score day/month text into DAT_004d0e38 using month-name strings */
+
+char * __cdecl highscore_format_date_label(int day,int month_index)
 
 {
   undefined *puVar1;
   
-  switch(param_2) {
+  switch(month_index) {
   case 1:
     puVar1 = &DAT_004788b4;
     break;
@@ -36143,8 +36145,8 @@ undefined * __cdecl FUN_00441270(undefined4 param_1,undefined4 param_2)
   default:
     puVar1 = &DAT_00478884;
   }
-  crt_sprintf(&DAT_004d0e38,s__d___s__d_00478878,param_1,puVar1);
-  return &DAT_004d0e38;
+  crt_sprintf(&highscore_date_label_buffer,s_fmt_highscore_date_label,day,puVar1);
+  return &highscore_date_label_buffer;
 }
 
 
@@ -36215,10 +36217,12 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     }
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,alpha * 0.8);
     pIVar5 = grim_interface_ptr->vtable;
-    pcVar4 = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
+    pcVar4 = highscore_format_date_label
+                       ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     fVar7 = fStack_c + 15.0 + 13.0;
     pIVar1 = grim_interface_ptr->vtable;
-    text = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
+    text = highscore_format_date_label
+                     ((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     iVar3 = (*pIVar1->grim_measure_text_width)(text);
     (*pIVar5->grim_draw_text_small)
               ((((fStack_10 + 192.0) - 32.0) - 8.0) - (float)(iVar3 / 2),fVar7,pcVar4);
@@ -38523,18 +38527,16 @@ void ui_menu_main_click_options(void)
 
 
 
-/* FUN_004473e0 @ 004473e0 */
+/* ui_menu_main_click_controls @ 004473e0 */
 
-/* [binja] int32_t sub_4473e0() */
+/* main menu CONTROLS click callback (sets ui_transition_direction=0 and game_state_pending=3) */
 
-int FUN_004473e0(void)
+void ui_menu_main_click_controls(void)
 
 {
-  int in_EAX;
-  
   ui_transition_direction = 0;
   game_state_pending = 3;
-  return in_EAX;
+  return;
 }
 
 
@@ -38621,28 +38623,29 @@ void config_apply_detail_preset(void)
 
 
 
-/* FUN_00447c90 @ 00447c90 */
+/* input_configure_for_label @ 00447c90 */
 
-/* [binja] int32_t sub_447c90(int32_t arg1) */
+/* maps configure-for ids to labels (Mouse/Keyboard/Joystick/Mouse relative/Dual Action
+   Pad/Computer) */
 
-int __cdecl FUN_00447c90(int arg1)
+char * __cdecl input_configure_for_label(int config_id)
 
 {
-  switch(arg1) {
+  switch(config_id) {
   case 0:
-    return 0x478f10;
+    return input_configure_label_mouse;
   case 1:
-    return 0x478ef4;
+    return input_configure_label_keyboard;
   case 2:
-    return 0x478ee8;
+    return input_configure_label_joystick;
   case 3:
-    return 0x478f00;
+    return input_configure_label_mouse_relative;
   case 4:
-    return 0x478ed8;
+    return input_configure_label_dual_action_pad;
   case 5:
-    return 0x478ecc;
+    return input_configure_label_computer;
   default:
-    return 0x4714a0;
+    return s_Unknown_004714a0;
   }
 }
 
@@ -38661,11 +38664,11 @@ char * __cdecl input_scheme_label(int scheme)
   case 2:
     return s_Static_00478f2c;
   case 3:
-    return s_Dual_Action_Pad_00478ed8;
+    return input_configure_label_dual_action_pad;
   case 4:
     return s_Mouse_point_click_00478f18;
   case 5:
-    return s_Computer_00478ecc;
+    return input_configure_label_computer;
   default:
     return s_Unknown_004714a0;
   }
@@ -38734,84 +38737,69 @@ float * __thiscall FUN_0044ecf0(void *this,float *arg1,float *arg2,float *arg3)
 
 
 
-/* FUN_0044faa0 @ 0044faa0 */
+/* ui_element_init_defaults @ 0044faa0 */
 
-/* [binja] char* sub_44faa0(char* arg1) */
+/* resets one ui_element_t record to default counters, animation values, and flags */
 
-char * __cdecl FUN_0044faa0(char *arg1)
+ui_element_t * __cdecl ui_element_init_defaults(ui_element_t *element)
 
 {
   char cVar1;
   undefined3 extraout_var;
   
-  if (arg1 == (char *)0x0) {
+  if (element == (ui_element_t *)0x0) {
     cVar1 = console_printf(&console_log_queue,s_____Elem____NULL__0047928c);
-    return (char *)CONCAT31(extraout_var,cVar1);
+    return (ui_element_t *)CONCAT31(extraout_var,cVar1);
   }
-  arg1[0x11c] = -1;
-  arg1[0x11d] = -1;
-  arg1[0x11e] = -1;
-  arg1[0x11f] = -1;
-  arg1[0x204] = -1;
-  arg1[0x205] = -1;
-  arg1[0x206] = -1;
-  arg1[0x207] = -1;
-  arg1[0x2ec] = -1;
-  arg1[0x2ed] = -1;
-  arg1[0x2ee] = -1;
-  arg1[0x2ef] = -1;
-  arg1[0x20] = '\0';
-  arg1[0x21] = '\0';
-  arg1[0x22] = 'i';
-  arg1[0x23] = 'C';
-  arg1[0x24] = '\0';
-  arg1[0x25] = '\0';
-  arg1[0x26] = -0x20;
-  arg1[0x27] = 'A';
-  arg1[0x28] = '\0';
-  arg1[0x29] = -0x80;
-  arg1[0x2a] = -0x29;
-  arg1[0x2b] = 'C';
-  arg1[0x2fc] = '\0';
-  arg1[0x2fd] = '\x01';
-  arg1[0x2fe] = '\0';
-  arg1[0x2ff] = '\0';
-  arg1[0x34] = '\0';
-  arg1[0x35] = '\0';
-  arg1[0x36] = '\0';
-  arg1[0x37] = '\0';
-  arg1[0x38] = '\0';
-  arg1[0x39] = '\0';
-  arg1[0x3a] = '\0';
-  arg1[0x3b] = '\0';
-  arg1[0x2c] = '\0';
-  arg1[0x2d] = '\0';
-  arg1[0x2e] = -0x78;
-  arg1[0x2f] = 'B';
-  arg1[0x300] = '\0';
-  arg1[0x301] = '\0';
-  arg1[0x302] = '\0';
-  arg1[0x303] = '\0';
-  *arg1 = '\0';
-  arg1[0x30] = '9';
-  arg1[0x31] = '\0';
-  arg1[0x32] = '\0';
-  arg1[0x33] = '\0';
-  arg1[0x2f4] = '\0';
-  arg1[0x10] = ',';
-  arg1[0x11] = '\x01';
-  arg1[0x12] = '\0';
-  arg1[0x13] = '\0';
-  arg1[0x14] = '\0';
-  arg1[0x15] = '\0';
-  arg1[0x16] = '\0';
-  arg1[0x17] = '\0';
-  arg1[2] = '\0';
-  arg1[4] = '\0';
-  arg1[5] = '\0';
-  arg1[6] = '\0';
-  arg1[7] = '\0';
-  return arg1;
+  element->texture_handle = -1;
+  element->counter_id = -1;
+  element->_pad5[0xe4] = 0xff;
+  element->_pad5[0xe5] = 0xff;
+  element->_pad5[0xe6] = 0xff;
+  element->_pad5[0xe7] = 0xff;
+  element->_pad1[0] = '\0';
+  element->_pad1[1] = '\0';
+  element->_pad1[2] = 'i';
+  element->_pad1[3] = 'C';
+  element->_pad1[4] = '\0';
+  element->_pad1[5] = '\0';
+  element->_pad1[6] = 0xe0;
+  element->_pad1[7] = 'A';
+  element->_pad1[8] = '\0';
+  element->_pad1[9] = 0x80;
+  element->_pad1[10] = 0xd7;
+  element->_pad1[0xb] = 'C';
+  element->counter_timer = 0x100;
+  element->on_activate = (_func_1 *)0x0;
+  element->_pad2[0] = '\0';
+  element->_pad2[1] = '\0';
+  element->_pad2[2] = '\0';
+  element->_pad2[3] = '\0';
+  element->_pad1[0xc] = '\0';
+  element->_pad1[0xd] = '\0';
+  element->_pad1[0xe] = 0x88;
+  element->_pad1[0xf] = 'B';
+  element->render_scale = 0.0;
+  element->active = '\0';
+  element->_pad1[0x10] = '9';
+  element->_pad1[0x11] = '\0';
+  element->_pad1[0x12] = '\0';
+  element->_pad1[0x13] = '\0';
+  element->_pad5[0xec] = '\0';
+  element->_pad0[0xe] = ',';
+  element->_pad0[0xf] = '\x01';
+  element->_pad0[0x10] = '\0';
+  element->_pad0[0x11] = '\0';
+  element->_pad0[0x12] = '\0';
+  element->_pad0[0x13] = '\0';
+  element->_pad0[0x14] = '\0';
+  element->_pad0[0x15] = '\0';
+  element->_pad0[0] = '\0';
+  element->_pad0[2] = '\0';
+  element->_pad0[3] = '\0';
+  element->_pad0[4] = '\0';
+  element->_pad0[5] = '\0';
+  return element;
 }
 
 
@@ -38954,7 +38942,7 @@ void ui_menu_layout_init(void)
   ui_element_table_start = (ui_element_t *)&DAT_0048ee50;
   ppuVar10 = &ui_element_table_end;
   do {
-    FUN_0044faa0((char *)*ppuVar10);
+    ui_element_init_defaults(*ppuVar10);
     iVar7 = config_blob.screen_width;
     ppuVar10 = ppuVar10 + 1;
   } while ((int)ppuVar10 < 0x48f20c);
@@ -39718,7 +39706,7 @@ void ui_menu_layout_init(void)
       iVar7 = iVar8;
     } while (iVar8 < 0x70);
   }
-  FUN_0044faa0(&DAT_0048f20c);
+  ui_element_init_defaults((ui_element_t *)&DAT_0048f20c);
   _DAT_0048f240 = FUN_00446140;
   puVar3 = &ui_menu_item_element;
   puVar12 = &perk_prompt_bounds_min_x;
