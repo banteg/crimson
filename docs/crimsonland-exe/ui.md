@@ -43,6 +43,12 @@ Recent data-map lifts for one-shot setup guards:
   Check for updates, Back).
 - `profile_menu_init_flags` (`0x004cccd8`): `ui_profile_menu_update` setup
   guards for profile text input, action buttons, and list widget wiring.
+- Profile name text-input state in `ui_profile_menu_update`:
+  `profile_name_input_state_text_ptr` (`0x004d0f28`),
+  `profile_name_input_state_cursor` (`0x004d0f2c`),
+  `profile_name_input_state_max_chars` (`0x004d0f30`),
+  `profile_name_input_state_width_px` (`0x004d0f34`),
+  `profile_name_input_state_alpha` (`0x004d0f38`).
 - `credits_screen_init_flags` (`0x00480978`): `credits_screen_update` one-shot
   setup guards for Back and Secret buttons.
 - `mods_menu_init_flags` (`0x00481bb8`): `mods_menu_update` one-shot setup
@@ -180,6 +186,9 @@ The main menu is `game_state_id == 0` and is built from the shared UI element
 system (logo sign + `ui_menuItem` elements with overlay label atlas).
 
 - [Main menu (state 0)](main-menu.md)
+- `main_menu_full_version_layout_latch` (`0x00486faa`) is a one-shot guard
+  used by main-menu layout update paths to avoid reapplying full-version slot
+  shifts every frame.
 
 ## Button helpers
 

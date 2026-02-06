@@ -14,6 +14,11 @@ This page groups full-screen or modal flows that have their own update loops.
   `ui_transition_direction` (`DAT_0048724c`) is set.
 - Uses `game_over_name_input_buffer` (`0x0048256c`) as the editable player-name
   buffer for `ui_text_input_update`.
+- Companion text-input state globals:
+  `game_over_name_input_state_text_ptr` (`0x00482590`),
+  `game_over_name_input_state_max_chars` (`0x00482598`),
+  `game_over_name_input_state_width_px` (`0x0048259c`), and
+  `game_over_name_input_state_alpha` (`0x004825a0`).
 - `game_over_highscore_rank_index` (`0x004825a4`) stores
   `highscore_rank_index()` for the current score; values `>= 100` skip top-100
   name entry.
@@ -53,6 +58,11 @@ Recovered staged-reveal globals:
   (`DAT_00482700` / `DAT_00482704`) gate the unlock text rows.
 - Name entry uses `quest_results_name_input_buffer` (`0x004825dc`) as the
   temporary UI text-input storage before writing `highscore_active_record`.
+- Companion text-input state globals:
+  `quest_results_name_input_state_text_ptr` (`0x004826e8`),
+  `quest_results_name_input_state_max_chars` (`0x004826f0`),
+  `quest_results_name_input_state_width_px` (`0x004826f4`), and
+  `quest_results_name_input_state_alpha` (`0x004826f8`).
 - `quest_results_highscore_rank_index` (`0x00482620`) stores
   `highscore_rank_index()` and gates whether top-100 name entry is shown.
 - `quest_results_name_input_initial_length` (`0x004826ec`) caches the original
@@ -91,6 +101,12 @@ Recovered staged-reveal globals:
   target in `highscore_screen_update`:
   - `-3` / `-2`: quest stage left/right arrows.
   - positive values: action buttons (sync, play, back).
+- When entering highscores from game-over/quest-result flows, return context is
+  snapshotted in:
+  `highscore_return_game_mode_id` (`0x00487258`),
+  `highscore_return_quest_stage_major` (`0x00487250`),
+  `highscore_return_quest_stage_minor` (`0x00487254`), and
+  `highscore_return_hardcore_flag` (`0x0048725c`).
 
 ## Credits screen (credits_screen_update)
 

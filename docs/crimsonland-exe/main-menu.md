@@ -165,6 +165,8 @@ Notes:
 - `mods_any_available()` gates the `MODS` button in full version builds.
 - A string config entry `grim_get_config_var(100)` controls whether the
   `OTHER GAMES` slot is present, and swaps table indices `6` and `7`.
+- `main_menu_full_version_layout_latch` (`0x00486faa`) prevents reapplying the
+  full-version position/UV adjustments after they have run once.
 
 ## Base positions and timings (`ui_menu_layout_init @ 0x0044fcb0`)
 

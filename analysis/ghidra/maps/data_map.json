@@ -1685,6 +1685,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00482590",
+      "comment": "Game-over name text-input state: editable text pointer passed to ui_text_input_update.",
+      "name": "game_over_name_input_state_text_ptr",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x00482508",
       "comment": "Game-over screen action button state for \"Play Again\".",
       "name": "game_over_play_again_button",
@@ -1718,6 +1725,27 @@
       "name": "game_over_name_input_initial_length",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x00482598",
+      "comment": "Game-over name text-input state: max accepted character count (0x14/0x18).",
+      "name": "game_over_name_input_state_max_chars",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048259c",
+      "comment": "Game-over name text-input state: input box width in pixels.",
+      "name": "game_over_name_input_state_width_px",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004825a0",
+      "comment": "Game-over name text-input state: alpha/visibility scalar.",
+      "name": "game_over_name_input_state_alpha",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004825a4",
@@ -1823,11 +1851,39 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x004826e8",
+      "comment": "Quest-results name text-input state: editable text pointer passed to ui_text_input_update.",
+      "name": "quest_results_name_input_state_text_ptr",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x004826ec",
       "comment": "Quest-results high-score entry: cached initial active-record player-name length used when copying edited text back.",
       "name": "quest_results_name_input_initial_length",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004826f0",
+      "comment": "Quest-results name text-input state: max accepted character count (0x14/0x18).",
+      "name": "quest_results_name_input_state_max_chars",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004826f4",
+      "comment": "Quest-results name text-input state: input box width in pixels.",
+      "name": "quest_results_name_input_state_width_px",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004826f8",
+      "comment": "Quest-results name text-input state: alpha/visibility scalar.",
+      "name": "quest_results_name_input_state_alpha",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482700",
@@ -2311,6 +2367,12 @@
       "type": "int"
     },
     {
+      "address": "0x004854fc",
+      "comment": "Scratch label buffer returned by game_mode_label().",
+      "name": "game_mode_label_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00485540",
       "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16).",
       "name": "game_status_blob",
@@ -2341,6 +2403,13 @@
       "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples).",
       "name": "survival_reward_handout_enabled",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00486faa",
+      "comment": "One-shot latch: full-version main-menu layout adjustments have been applied.",
+      "name": "main_menu_full_version_layout_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00486fac",
@@ -2860,6 +2929,34 @@
       "comment": "High-score return latch set when transitioning into the high score screen (state 0xe); used to restore prior mode/stage on return.",
       "name": "highscore_return_latch",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487250",
+      "comment": "Saved quest stage major index for returning from highscores to game-over/quest-results flow.",
+      "name": "highscore_return_quest_stage_major",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487254",
+      "comment": "Saved quest stage minor index for returning from highscores to game-over/quest-results flow.",
+      "name": "highscore_return_quest_stage_minor",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487258",
+      "comment": "Saved game mode id for returning from highscores to game-over/quest-results flow.",
+      "name": "highscore_return_game_mode_id",
+      "program": "crimsonland.exe",
+      "type": "game_mode_id_t"
+    },
+    {
+      "address": "0x0048725c",
+      "comment": "Saved hardcore toggle for returning from highscores to game-over/quest-results flow.",
+      "name": "highscore_return_hardcore_flag",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00487264",
@@ -6809,6 +6906,41 @@
       "name": "statistics_menu_init_flags",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d0f28",
+      "comment": "Profile menu name text-input state: editable text pointer passed to ui_text_input_update.",
+      "name": "profile_name_input_state_text_ptr",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004d0f2c",
+      "comment": "Profile menu name text-input state: current cursor/length index.",
+      "name": "profile_name_input_state_cursor",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d0f30",
+      "comment": "Profile menu name text-input state: max accepted character count (0x1b).",
+      "name": "profile_name_input_state_max_chars",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d0f34",
+      "comment": "Profile menu name text-input state: input box width in pixels.",
+      "name": "profile_name_input_state_width_px",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d0f38",
+      "comment": "Profile menu name text-input state: alpha/visibility scalar.",
+      "name": "profile_name_input_state_alpha",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d11e0",
