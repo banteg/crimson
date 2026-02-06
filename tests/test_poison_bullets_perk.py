@@ -37,8 +37,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
 
@@ -83,8 +82,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
 
@@ -129,12 +127,11 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
     creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = player.pos.x + 100.0
-    creature.pos.y = player.pos.y
+    creature.pos = player.pos + Vec2(100.0, 0.0)
     creature.hp = 2000.0
     creature.max_hp = 2000.0
 
-    assert world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.NUKE), state=world.state) is not None
+    assert world.state.bonus_pool.spawn_at(pos=player.pos, bonus_id=int(BonusId.NUKE), state=world.state) is not None
 
     world.step(
         0.016,

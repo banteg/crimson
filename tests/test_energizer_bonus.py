@@ -27,8 +27,7 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
     creature.max_hp = 400.0
 
@@ -49,8 +48,7 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = player.pos.x + 1.0
-    creature.pos.y = player.pos.y
+    creature.pos = player.pos + Vec2(1.0, 0.0)
     creature.hp = 10.0
     creature.max_hp = 300.0
     creature.reward_value = 10.0

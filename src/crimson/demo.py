@@ -466,8 +466,7 @@ class DemoView:
             if idx >= len(self._world.players):
                 continue
             player = self._world.players[idx]
-            player.pos.x = float(pos.x)
-            player.pos.y = float(pos.y)
+            player.pos = Vec2(float(pos.x), float(pos.y))
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim_x = float(pos.x)
             player.aim_y = float(pos.y)
@@ -735,7 +734,7 @@ class DemoView:
             # - chase target when near center
             # - return to center when too far
             if target is None:
-                move_delta = Vec2(-(float(player.pos.y) - center.y), float(player.pos.x) - center.x)
+                move_delta = (player.pos - center).rotated(math.pi / 2.0)
             else:
                 center_dist = (player.pos - center).length()
                 if center_dist <= 300.0:
@@ -772,7 +771,7 @@ class DemoView:
         for idx, creature in enumerate(self._world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
-            d = Vec2.distance_sq(pos, Vec2(creature.pos.x, creature.pos.y))
+            d = Vec2.distance_sq(pos, creature.pos)
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
@@ -796,8 +795,8 @@ class DemoView:
         cand_creature = creatures[candidate]
         if not cand_creature.active or cand_creature.hp <= 0.0:
             return current
-        cur_d = (Vec2(current_creature.x, current_creature.y) - player.pos).length()
-        cand_d = (Vec2(cand_creature.x, cand_creature.y) - player.pos).length()
+        cur_d = (current_creature.pos - player.pos).length()
+        cand_d = (cand_creature.pos - player.pos).length()
         if cand_d + 64.0 < cur_d:
             self._demo_targets[player_index] = candidate
             return candidate

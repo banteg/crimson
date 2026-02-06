@@ -317,8 +317,7 @@ class ProjectileFxView:
             self._spawn_fire_bullets_volley(angle=angle)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
-            self._player.pos.x = self._origin_x
-            self._player.pos.y = self._origin_y
+            self._player.pos = Vec2(self._origin_x, self._origin_y)
             bonus_apply(self._state, self._player, BonusId.SHOCK_CHAIN, origin=self._player, creatures=self._creatures)
 
     def update(self, dt: float) -> None:

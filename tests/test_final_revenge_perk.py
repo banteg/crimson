@@ -27,8 +27,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10000.0
     creature.max_hp = 10000.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE

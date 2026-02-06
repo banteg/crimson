@@ -18,8 +18,7 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
     corpse = pool.entries[0]
     corpse.active = True
     corpse.hp = 0.0
-    corpse.pos.x = 100.0
-    corpse.pos.y = 200.0
+    corpse.pos = Vec2(100.0, 200.0)
 
     assert corpse.active
     assert not state.effects.iter_active()
@@ -60,8 +59,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     creature.active = True
     creature.hp = 10.0
     creature.max_hp = 10.0
-    creature.pos.x = 100.0
-    creature.pos.y = 200.0
+    creature.pos = Vec2(100.0, 200.0)
     creature.move_speed = 1.0
     creature.ai_mode = 0
     creature.move_scale = 1.0

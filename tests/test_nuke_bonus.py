@@ -25,15 +25,13 @@ def test_nuke_damage_is_limited_to_radius() -> None:
     pool = CreaturePool()
     near = pool.entries[0]
     near.active = True
-    near.pos.x = player.pos.x + 100.0
-    near.pos.y = player.pos.y
+    near.pos = player.pos + Vec2(100.0, 0.0)
     near.hp = 10.0
     near.max_hp = 10.0
 
     far = pool.entries[1]
     far.active = True
-    far.pos.x = player.pos.x + 300.0
-    far.pos.y = player.pos.y
+    far.pos = player.pos + Vec2(300.0, 0.0)
     far.hp = 10.0
     far.max_hp = 10.0
 

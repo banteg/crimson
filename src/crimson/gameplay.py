@@ -303,8 +303,7 @@ class BonusPool:
 
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos.x = x
-        entry.pos.y = y
+        entry.pos = Vec2(x, y)
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -348,8 +347,7 @@ class BonusPool:
         bonus_id = bonus_pick_random_type(self, state, players)
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos.x = float(pos.x)
-        entry.pos.y = float(pos.y)
+        entry.pos = pos
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -495,7 +493,7 @@ class BonusPool:
 
             for player in players:
                 if (
-                    Vec2.distance_sq(Vec2(entry.pos.x, entry.pos.y), Vec2(player.pos.x, player.pos.y))
+                    Vec2.distance_sq(entry.pos, player.pos)
                     < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS
                 ):
                     bonus_apply(
@@ -516,7 +514,7 @@ class BonusPool:
                             player_index=player.index,
                             bonus_id=entry.bonus_id,
                             amount=entry.amount,
-                            pos=Vec2(entry.pos.x, entry.pos.y),
+                            pos=entry.pos,
                         )
                     )
                     break
@@ -2380,8 +2378,12 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
-    player.pos.x = clamp(player.pos.x + move_x * speed * dt, 0.0, float(world_size))
-    player.pos.y = clamp(player.pos.y + move_y * speed * dt, 0.0, float(world_size))
+    player.pos = (player.pos + Vec2(move_x, move_y) * (speed * dt)).clamp_rect(
+        0.0,
+        0.0,
+        float(world_size),
+        float(world_size),
+    )
 
     player.move_phase += dt * player.move_speed * 19.0
 
@@ -2781,8 +2783,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
                         int(idx),
                         float(damage),
                         3,
-                        0.0,
-                        0.0,
+                        Vec2(),
                         _owner_id_for_player(ctx.player.index),
                     )
                 else:

@@ -19,8 +19,7 @@ def test_toxic_avenger_sets_strong_self_damage_flags_on_contact_hit() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.contact_damage = 10.0
@@ -41,8 +40,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG | CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
 
@@ -60,8 +58,7 @@ def test_toxic_avenger_skips_when_player_shielded() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.contact_damage = 10.0

@@ -25,8 +25,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
     creature.max_hp = 100.0
     creature.size = 50.0

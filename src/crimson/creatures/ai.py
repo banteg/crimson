@@ -106,25 +106,16 @@ def creature_ai_update_target(
     ai_mode = creature.ai_mode
     if ai_mode == 0:
         if dist_to_player > 800.0:
-            creature.target = Vec2(player_pos.x, player_pos.y)
+            creature.target = player_pos
         else:
-            creature.target = Vec2(
-                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85,
-                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85,
-            )
+            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.85)
     elif ai_mode == 8:
-        creature.target = Vec2(
-            player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.9,
-            player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.9,
-        )
+        creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.9)
     elif ai_mode == 1:
         if dist_to_player > 800.0:
-            creature.target = Vec2(player_pos.x, player_pos.y)
+            creature.target = player_pos
         else:
-            creature.target = Vec2(
-                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.55,
-                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.55,
-            )
+            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.55)
     elif ai_mode == 3:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
@@ -155,17 +146,14 @@ def creature_ai_update_target(
             creature.ai_mode = 0
             self_damage = 1000.0
         elif dist_to_player > 800.0:
-            creature.target = Vec2(player_pos.x, player_pos.y)
+            creature.target = player_pos
         else:
-            creature.target = Vec2(
-                player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85,
-                player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85,
-            )
+            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.85)
     elif ai_mode == 7:
         if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
-            creature.target = Vec2(creature.pos.x, creature.pos.y)
+            creature.target = creature.pos
         elif not (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.orbit_radius > 0.0:
-            creature.target = Vec2(creature.pos.x, creature.pos.y)
+            creature.target = creature.pos
             creature.orbit_radius -= dt
         else:
             creature.ai_mode = 0
@@ -185,7 +173,7 @@ def creature_ai_update_target(
         creature.force_target = 1
 
     if creature.force_target or creature.ai_mode == 2:
-        creature.target = Vec2(player_pos.x, player_pos.y)
+        creature.target = player_pos
 
     creature.target_heading = (creature.target - creature.pos).to_heading()
     return CreatureAIUpdate(move_scale=move_scale, self_damage=self_damage)

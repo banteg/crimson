@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import math
 from typing import Callable
 
+from grim.geom import Vec2
+
 from ..gameplay import PlayerState, perk_active
 from ..perks import PerkId
 from .runtime import CREATURE_HITBOX_ALIVE, CreatureState
@@ -23,8 +25,7 @@ class _CreatureDamageCtx:
     creature: CreatureState
     damage: float
     damage_type: int
-    impulse_x: float
-    impulse_y: float
+    impulse: Vec2
     owner_id: int
     dt: float
     players: list[PlayerState]
@@ -113,8 +114,7 @@ def creature_apply_damage(
     *,
     damage_amount: float,
     damage_type: int,
-    impulse_x: float,
-    impulse_y: float,
+    impulse: Vec2,
     owner_id: int,
     dt: float,
     players: list[PlayerState],
@@ -139,8 +139,7 @@ def creature_apply_damage(
         creature=creature,
         damage=float(damage_amount),
         damage_type=int(damage_type),
-        impulse_x=float(impulse_x),
-        impulse_y=float(impulse_y),
+        impulse=impulse,
         owner_id=int(owner_id),
         dt=float(dt),
         players=players,
@@ -165,16 +164,14 @@ def creature_apply_damage(
             step(ctx)
 
     creature.hp -= float(ctx.damage)
-    creature.vel.x -= float(ctx.impulse_x)
-    creature.vel.y -= float(ctx.impulse_y)
+    creature.vel = creature.vel - ctx.impulse
 
     if creature.hp <= 0.0:
         if dt > 0.0:
             creature.hitbox_size = float(creature.hitbox_size) - float(dt)
         else:
             creature.hitbox_size = float(creature.hitbox_size) - 0.001
-        creature.vel.x -= float(impulse_x) * 2.0
-        creature.vel.y -= float(impulse_y) * 2.0
+        creature.vel = creature.vel - impulse * 2.0
         return True
 
     if creature.hitbox_size != CREATURE_HITBOX_ALIVE and dt > 0.0:

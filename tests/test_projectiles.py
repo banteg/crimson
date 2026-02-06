@@ -460,8 +460,8 @@ def test_secondary_projectile_pool_direct_hit_passes_impulse() -> None:
 
     calls: list[tuple[float, float]] = []
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse_x: float, impulse_y: float, owner_id: int) -> None:
-        calls.append((float(impulse_x), float(impulse_y)))
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
+        calls.append((float(impulse.x), float(impulse.y)))
 
     pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)
 
@@ -478,8 +478,8 @@ def test_secondary_projectile_pool_detonation_aoe_passes_impulse() -> None:
 
     calls: list[tuple[float, float]] = []
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse_x: float, impulse_y: float, owner_id: int) -> None:
-        calls.append((float(impulse_x), float(impulse_y)))
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
+        calls.append((float(impulse.x), float(impulse.y)))
 
     pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)
 

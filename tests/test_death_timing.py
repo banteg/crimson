@@ -24,8 +24,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.pos.x = 100.0
-    creature.pos.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.hp = 1.0
     creature.max_hp = 1.0

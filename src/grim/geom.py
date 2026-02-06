@@ -6,7 +6,7 @@ import math
 from .math import clamp
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class Vec2:
     x: float = 0.0
     y: float = 0.0
@@ -37,15 +37,8 @@ class Vec2:
         return Vec2(self.x * inv_magnitude, self.y * inv_magnitude)
 
     def normalize_ip(self) -> Vec2:
-        magnitude_sq = self.length_sq()
-        if magnitude_sq <= 0.0:
-            self.x = 0.0
-            self.y = 0.0
-            return self
-        inv_magnitude = 1.0 / math.sqrt(magnitude_sq)
-        self.x *= inv_magnitude
-        self.y *= inv_magnitude
-        return self
+        # Backward-compat alias for call sites/tests that still use the old name.
+        return self.normalized()
 
     def normalized_with_length(self, *, epsilon: float = 1e-6) -> tuple[Vec2, float]:
         magnitude = self.length()

@@ -2513,15 +2513,11 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
         contact_damage=14.0,
         tint=(0.6, 0.6, 0.31, 1.0),
     )
-    pos_x = ctx.pos.x
-    pos_y = ctx.pos.y
-
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset_x = -256.0 + float(idx) * 64.0
         child.target_offset_y = -256.0
         angle = float(2 + idx * 2) * (math.pi / 8.0)
-        child.pos.x = float(math.cos(angle) * 256.0 + pos_x)
-        child.pos.y = float(math.sin(angle) * 256.0 + pos_y)
+        child.pos = Vec2(math.cos(angle), math.sin(angle)) * 256.0 + ctx.pos
 
     chain_prev = ctx.chain_children(
         count=4,
@@ -2540,8 +2536,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     parent.ai_mode = 6
-    parent.pos.x = ctx.pos.x + 256.0
-    parent.pos.y = ctx.pos.y
+    parent.pos = ctx.pos + Vec2(256.0, 0.0)
     apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
     parent.health = 200.0
     parent.max_health = 200.0
@@ -2561,14 +2556,10 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
         orbit_angle=math.pi,
         orbit_radius=10.0,
     )
-    pos_x = ctx.pos.x
-    pos_y = ctx.pos.y
-
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
         angle = float(angle_idx) * math.radians(20.0)
-        child.pos.x = float(math.cos(angle) * 256.0 + pos_x)
-        child.pos.y = float(math.sin(angle) * 256.0 + pos_y)
+        child.pos = Vec2(math.cos(angle), math.sin(angle)) * 256.0 + ctx.pos
 
     chain_prev = ctx.chain_children(
         count=10,

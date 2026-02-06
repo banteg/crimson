@@ -93,8 +93,7 @@ class CameraShakeView:
         self._world.state.camera_shake_pulses = 0
 
         player = self._world.players[0]
-        player.pos.x = WORLD_SIZE * 0.5
-        player.pos.y = WORLD_SIZE * 0.5
+        player.pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
 
         spawn = [
             _SpawnSpec(r=140.0, angle_rad=0.0, type_id=CreatureTypeId.ZOMBIE, hp=50.0),

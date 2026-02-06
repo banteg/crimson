@@ -130,8 +130,7 @@ class PlayerSandboxView:
         self._weapon_index = 0
         self._set_weapon(self._weapon_id())
 
-        self._player.pos.x = WORLD_SIZE * 0.5
-        self._player.pos.y = WORLD_SIZE * 0.5
+        self._player.pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player.health = 100.0
         self._elapsed_ms = 0.0
 

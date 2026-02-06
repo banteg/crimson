@@ -15,7 +15,6 @@ import math
 from typing import Callable, Protocol, Sequence
 
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
@@ -221,8 +220,12 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     if eat_dist_sq >= 20.0 * 20.0:
         return
 
-    creature.pos.x = clamp(creature.pos.x - creature.vel.x * ctx.dt, 0.0, float(ctx.world_width))
-    creature.pos.y = clamp(creature.pos.y - creature.vel.y * ctx.dt, 0.0, float(ctx.world_height))
+    creature.pos = (creature.pos - creature.vel * ctx.dt).clamp_rect(
+        0.0,
+        0.0,
+        float(ctx.world_width),
+        float(ctx.world_height),
+    )
 
     ctx.state.effects.spawn_burst(
         pos=creature_pos,
@@ -281,8 +284,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             creature,
             damage_amount=25.0,
             damage_type=2,
-            impulse_x=0.0,
-            impulse_y=0.0,
+            impulse=Vec2(),
             owner_id=-1 - int(ctx.player.index),
             dt=ctx.dt,
             players=ctx.players,
@@ -598,8 +600,7 @@ class CreaturePool:
 
             if float(state.bonuses.freeze) > 0.0:
                 creature.move_scale = 0.0
-                creature.vel.x = 0.0
-                creature.vel.y = 0.0
+                creature.vel = Vec2(0.0, 0.0)
                 continue
 
             poison_killed = False
@@ -610,8 +611,7 @@ class CreaturePool:
                     creature,
                     damage_amount=dt * 180.0,
                     damage_type=0,
-                    impulse_x=0.0,
-                    impulse_y=0.0,
+                    impulse=Vec2(),
                     owner_id=int(creature.last_hit_owner_id),
                     dt=dt,
                     players=players,
@@ -624,8 +624,7 @@ class CreaturePool:
                     creature,
                     damage_amount=dt * 60.0,
                     damage_type=0,
-                    impulse_x=0.0,
-                    impulse_y=0.0,
+                    impulse=Vec2(),
                     owner_id=int(creature.last_hit_owner_id),
                     dt=dt,
                     players=players,
@@ -716,8 +715,7 @@ class CreaturePool:
             frozen_by_evil_eyes = idx == evil_target
             if frozen_by_evil_eyes:
                 creature.move_scale = 0.0
-                creature.vel.x = 0.0
-                creature.vel.y = 0.0
+                creature.vel = Vec2(0.0, 0.0)
             else:
                 creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 ai = creature_ai_update_target(
@@ -759,37 +757,26 @@ class CreaturePool:
 
                 if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
                     if creature.ai_mode == 7:
-                        creature.vel.x = 0.0
-                        creature.vel.y = 0.0
+                        creature.vel = Vec2(0.0, 0.0)
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        dir_x = math.cos(creature.heading - math.pi / 2.0)
-                        dir_y = math.sin(creature.heading - math.pi / 2.0)
-                        creature.vel.x = dir_x * speed
-                        creature.vel.y = dir_y * speed
+                        creature.vel = Vec2.from_heading(creature.heading) * speed
                         # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
                         # remain offscreen until their own velocity moves them in.
-                        creature.pos.x += creature.vel.x * dt
-                        creature.pos.y += creature.vel.y * dt
+                        creature.pos = creature.pos + creature.vel * dt
                 else:
                     # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
                     # unless ANIM_LONG_STRIP is set (see creature_update_all).
                     radius = max(0.0, float(creature.size))
                     max_x = max(radius, float(world_width) - radius)
                     max_y = max(radius, float(world_height) - radius)
-                    creature.pos.x = clamp(creature.pos.x, radius, max_x)
-                    creature.pos.y = clamp(creature.pos.y, radius, max_y)
+                    creature.pos = creature.pos.clamp_rect(radius, radius, max_x, max_y)
                     if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
-                        creature.vel.x = 0.0
-                        creature.vel.y = 0.0
+                        creature.vel = Vec2(0.0, 0.0)
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        dir_x = math.cos(creature.heading - math.pi / 2.0)
-                        dir_y = math.sin(creature.heading - math.pi / 2.0)
-                        creature.vel.x = dir_x * speed
-                        creature.vel.y = dir_y * speed
-                        creature.pos.x = clamp(creature.pos.x + creature.vel.x * dt, radius, max_x)
-                        creature.pos.y = clamp(creature.pos.y + creature.vel.y * dt, radius, max_y)
+                        creature.vel = Vec2.from_heading(creature.heading) * speed
+                        creature.pos = (creature.pos + creature.vel * dt).clamp_rect(radius, radius, max_x, max_y)
 
             interaction_ctx = _CreatureInteractionCtx(
                 pool=self,
@@ -941,10 +928,10 @@ class CreaturePool:
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
-        entry.pos = Vec2(float(init.pos.x), float(init.pos.y))
+        entry.pos = init.pos
         entry.heading = float(init.heading)
         entry.target_heading = float(init.heading)
-        entry.target = Vec2(float(init.pos.x), float(init.pos.y))
+        entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
 
         entry.flags = init.flags or CreatureFlags(0)
@@ -1027,15 +1014,11 @@ class CreaturePool:
         creature.hitbox_size = new_hitbox
         if new_hitbox > 0.0:
             if long_strip:
-                dir_x = math.cos(creature.heading - math.pi / 2.0)
-                dir_y = math.sin(creature.heading - math.pi / 2.0)
-                creature.vel.x = dir_x * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.vel.y = dir_y * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.pos.x = clamp(creature.pos.x - creature.vel.x, 0.0, float(world_width))
-                creature.pos.y = clamp(creature.pos.y - creature.vel.y, 0.0, float(world_height))
+                slide = new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
+                creature.vel = Vec2.from_heading(creature.heading) * slide
+                creature.pos = (creature.pos - creature.vel).clamp_rect(0.0, 0.0, float(world_width), float(world_height))
             else:
-                creature.vel.x = 0.0
-                creature.vel.y = 0.0
+                creature.vel = Vec2(0.0, 0.0)
             return
 
         # hitbox_size just crossed <= 0: bake a persistent corpse decal into the ground.

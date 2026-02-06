@@ -132,8 +132,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     creature = CreatureState()
     creature.active = True
     creature.hp = 100.0
-    creature.pos.x = 0.0
-    creature.pos.y = 0.0
+    creature.pos = Vec2(0.0, 0.0)
     creature.size = 50.0
     creature.hitbox_size = 16.0
 

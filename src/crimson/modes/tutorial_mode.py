@@ -101,8 +101,7 @@ class TutorialMode(BaseGameplayMode):
         self._state.perk_selection.choices.clear()
         self._state.perk_selection.choices_dirty = True
 
-        self._player.pos.x = float(self._world.world_size) * 0.5
-        self._player.pos.y = float(self._world.world_size) * 0.5
+        self._player.pos = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
         weapon_assign_player(self._player, 1)
 
     def close(self) -> None:

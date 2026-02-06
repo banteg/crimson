@@ -22,8 +22,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 46.0
-    creature.pos.y = 0.0
+    creature.pos = Vec2(46.0, 0.0)
     creature.hp = 50.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.collision_timer = 0.1
@@ -51,8 +50,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 46.0
-    creature.pos.y = 0.0
+    creature.pos = Vec2(46.0, 0.0)
     creature.hp = 10.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.reward_value = 12.7
@@ -80,8 +78,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature.active = True
     creature.type_id = 1
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.pos.x = 46.0
-    creature.pos.y = 0.0
+    creature.pos = Vec2(46.0, 0.0)
     creature.hp = 10.0
     creature.hitbox_size = CREATURE_HITBOX_ALIVE
     creature.reward_value = 12.7

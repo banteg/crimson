@@ -552,8 +552,7 @@ class DecalsDebugView:
                 )
 
         # Keep the player fixed; creatures use it as a target for heading/movement.
-        self._player.pos.x = WORLD_SIZE * 0.5
-        self._player.pos.y = WORLD_SIZE * 0.5
+        self._player.pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player.health = 1e9
 
         creature_result = self._creatures.update(

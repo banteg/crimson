@@ -4,6 +4,8 @@ import math
 
 import pytest
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
@@ -30,8 +32,7 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     parent = pool.entries[0]
     parent.active = True
     parent.flags = CreatureFlags.SPLIT_ON_DEATH
-    parent.pos.x = 100.0
-    parent.pos.y = 200.0
+    parent.pos = Vec2(100.0, 200.0)
     parent.heading = 0.0
     parent.hp = 0.0
     parent.max_hp = 400.0
