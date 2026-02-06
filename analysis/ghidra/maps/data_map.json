@@ -1513,10 +1513,31 @@
       "type": "int"
     },
     {
+      "address": "0x00482600",
+      "comment": "Quest results health bonus converted to milliseconds for final-time subtraction.",
+      "name": "quest_results_health_bonus_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00482624",
       "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
       "name": "time_format_mm_ss_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00482700",
+      "comment": "Quest results: weapon unlock id for the completed quest.",
+      "name": "quest_results_unlock_weapon_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482704",
+      "comment": "Quest results: perk unlock id for the completed quest.",
+      "name": "quest_results_unlock_perk_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482708",
@@ -1526,9 +1547,51 @@
       "type": "int"
     },
     {
+      "address": "0x0048270c",
+      "comment": "Quest results final computed time in milliseconds (base + perk bonus - health bonus).",
+      "name": "quest_results_final_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482710",
+      "comment": "Quest results staged reveal counter for base time (milliseconds).",
+      "name": "quest_results_reveal_base_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482714",
+      "comment": "Quest results staged reveal counter for health bonus (milliseconds).",
+      "name": "quest_results_reveal_health_bonus_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482718",
+      "comment": "Quest results staged reveal counter for unpicked-perk bonus in seconds.",
+      "name": "quest_results_reveal_perk_bonus_s",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048271c",
       "comment": "Quest results screen step/state index used for staged score reveal (0..3).",
       "name": "quest_results_step",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482720",
+      "comment": "Quest results staged reveal counter for running total time (milliseconds).",
+      "name": "quest_results_reveal_total_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00482724",
+      "comment": "Quest results staged reveal step timer in milliseconds.",
+      "name": "quest_results_reveal_step_timer_ms",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -5427,6 +5490,13 @@
       "comment": "Perk ID constant for Tough Reloader.",
       "name": "perk_id_tough_reloader",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c2c38",
+      "comment": "Highest defined perk id (used as +1 bound in perk randomization/availability loops).",
+      "name": "perk_id_max",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c2c40",

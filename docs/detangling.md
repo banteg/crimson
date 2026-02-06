@@ -1427,6 +1427,23 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: loaded from registry key `timePlayed` at startup, incremented during active gameplay
     frames, and written back on shutdown.
 
+- Labeled quest-results staged reveal globals:
+  - `quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`
+    (`DAT_00482700` / `DAT_00482704`)
+  - `quest_results_final_time_ms` (`DAT_0048270c`)
+  - `quest_results_reveal_base_time_ms` (`DAT_00482710`)
+  - `quest_results_reveal_health_bonus_ms` (`DAT_00482714`)
+  - `quest_results_reveal_perk_bonus_s` (`DAT_00482718`)
+  - `quest_results_reveal_total_time_ms` (`DAT_00482720`)
+  - `quest_results_reveal_step_timer_ms` (`DAT_00482724`)
+  - `quest_results_health_bonus_ms` (`DAT_00482600`)
+  - Evidence: `quest_results_screen_update` seeds these from quest metadata/timers and animates the
+    Base Time / Health Bonus / Unpicked Perk Bonus rows in discrete timed steps.
+
+- Labeled `perk_id_max` (`DAT_004c2c38`):
+  - Evidence: initialized to `0x39` in `perks_init_database` and used as the upper bound (+1) in
+    `perk_select_random` / `perks_rebuild_available`.
+
 - Labeled perk trigger interval globals:
   - `perk_man_bomb_trigger_interval_s` (`_DAT_00473310`)
   - `perk_fire_cough_trigger_interval_s` (`_DAT_00473314`)

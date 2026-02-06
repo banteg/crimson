@@ -10135,77 +10135,77 @@ void quest_results_screen_update(void)
   else {
     if (ui_screen_phase == -2) {
       iVar4 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
-      DAT_00482700 = (&quest_selected_meta)[iVar4].unlock_weapon_id;
-      DAT_00482704 = (&quest_selected_meta)[iVar4].unlock_perk_id;
+      quest_results_unlock_weapon_id = (&quest_selected_meta)[iVar4].unlock_weapon_id;
+      quest_results_unlock_perk_id = (&quest_selected_meta)[iVar4].unlock_perk_id;
       lVar14 = __ftol();
       local_18 = (float)lVar14;
       player_state_table.health = (float)(int)local_18;
       lVar14 = __ftol();
       iVar4 = (int)lVar14;
       if (config_blob.reserved0._20_4_ == 2) {
-        DAT_00482600 = iVar4;
+        quest_results_health_bonus_ms = iVar4;
         lVar14 = __ftol();
         iVar4 = iVar4 + (int)lVar14;
       }
-      DAT_0048270c = (quest_spawn_timeline + perk_pending_count * -1000) - iVar4;
-      highscore_active_record.survival_elapsed_ms = DAT_0048270c;
-      if (DAT_0048270c == 0) {
+      quest_results_final_time_ms = (quest_spawn_timeline + perk_pending_count * -1000) - iVar4;
+      highscore_active_record.survival_elapsed_ms = quest_results_final_time_ms;
+      if (quest_results_final_time_ms == 0) {
         highscore_active_record.survival_elapsed_ms = 1;
       }
       quest_results_anim_timer = 0;
-      DAT_00482600 = iVar4;
+      quest_results_health_bonus_ms = iVar4;
       highscore_record_init();
-      DAT_00482724 = 700;
+      quest_results_reveal_step_timer_ms = 700;
       ui_screen_phase = ui_screen_phase + 1;
-      DAT_00482710 = 0;
-      DAT_00482714 = 0;
-      DAT_00482718 = 0;
+      quest_results_reveal_base_time_ms = 0;
+      quest_results_reveal_health_bonus_ms = 0;
+      quest_results_reveal_perk_bonus_s = 0;
       quest_results_step = 0;
-      DAT_00482720 = 0;
+      quest_results_reveal_total_time_ms = 0;
     }
     if (ui_screen_phase == -1) {
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
       local_c = local_c + 40.0;
-      DAT_00482724 = DAT_00482724 - frame_dt_ms;
-      if (DAT_00482724 < 1) {
+      quest_results_reveal_step_timer_ms = quest_results_reveal_step_timer_ms - frame_dt_ms;
+      if (quest_results_reveal_step_timer_ms < 1) {
         if (quest_results_step < 3) {
           if (quest_results_step == 0) {
-            DAT_00482710 = DAT_00482710 + 2000;
-            DAT_00482724 = 0x28;
+            quest_results_reveal_base_time_ms = quest_results_reveal_base_time_ms + 2000;
+            quest_results_reveal_step_timer_ms = 0x28;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482710;
-            if (quest_spawn_timeline <= (int)DAT_00482710) {
+            quest_results_reveal_total_time_ms = quest_results_reveal_base_time_ms;
+            if (quest_spawn_timeline <= quest_results_reveal_base_time_ms) {
               quest_results_step = quest_results_step + 1;
-              DAT_00482710 = quest_spawn_timeline;
-              DAT_00482720 = DAT_00482710;
+              quest_results_reveal_base_time_ms = quest_spawn_timeline;
+              quest_results_reveal_total_time_ms = quest_results_reveal_base_time_ms;
             }
           }
           else if (quest_results_step == 1) {
-            DAT_00482714 = DAT_00482714 + 1000;
-            DAT_00482724 = 0x96;
+            quest_results_reveal_health_bonus_ms = quest_results_reveal_health_bonus_ms + 1000;
+            quest_results_reveal_step_timer_ms = 0x96;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 - 1000;
-            if (DAT_00482600 <= DAT_00482714) {
-              DAT_00482714 = DAT_00482600;
+            quest_results_reveal_total_time_ms = quest_results_reveal_total_time_ms + -1000;
+            if (quest_results_health_bonus_ms <= quest_results_reveal_health_bonus_ms) {
+              quest_results_reveal_health_bonus_ms = quest_results_health_bonus_ms;
               quest_results_step = quest_results_step + 1;
             }
           }
           else if (quest_results_step == 2) {
-            DAT_00482718 = DAT_00482718 + 1;
-            DAT_00482724 = 300;
+            quest_results_reveal_perk_bonus_s = quest_results_reveal_perk_bonus_s + 1;
+            quest_results_reveal_step_timer_ms = 300;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 - 1000;
-            if (perk_pending_count <= DAT_00482718) {
-              DAT_00482718 = perk_pending_count;
+            quest_results_reveal_total_time_ms = quest_results_reveal_total_time_ms + -1000;
+            if (perk_pending_count <= quest_results_reveal_perk_bonus_s) {
+              quest_results_reveal_perk_bonus_s = perk_pending_count;
               quest_results_step = quest_results_step + 1;
-              DAT_00482724 = 1000;
-              highscore_active_record.survival_elapsed_ms = DAT_0048270c;
-              DAT_00482720 = DAT_0048270c;
+              quest_results_reveal_step_timer_ms = 1000;
+              highscore_active_record.survival_elapsed_ms = quest_results_final_time_ms;
+              quest_results_reveal_total_time_ms = quest_results_final_time_ms;
             }
           }
         }
         else if (quest_results_step == 3) {
-          DAT_00482724 = 0x32;
+          quest_results_reveal_step_timer_ms = 0x32;
           quest_results_anim_timer = quest_results_anim_timer + 1;
         }
       }
@@ -10230,7 +10230,7 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Base_Time__004732f4);
       pIVar2 = grim_interface_ptr->vtable;
-      pcVar5 = time_format_mm_ss((int)DAT_00482710 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_base_time_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
@@ -10246,7 +10246,7 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Life_Bonus__004732e8);
       pIVar2 = grim_interface_ptr->vtable;
-      pcVar5 = time_format_mm_ss(DAT_00482714 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_health_bonus_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
@@ -10262,7 +10262,7 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Unpicked_Perk_Bonus__004732d0);
       pIVar2 = grim_interface_ptr->vtable;
-      pcVar5 = time_format_mm_ss(DAT_00482718);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_perk_bonus_s);
       (*pIVar2->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
@@ -10274,7 +10274,7 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10,local_c,s_Final_Time__004732c4);
       pIVar2 = grim_interface_ptr->vtable;
-      pcVar5 = time_format_mm_ss((int)DAT_00482720 / 1000);
+      pcVar5 = time_format_mm_ss(quest_results_reveal_total_time_ms / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
                 (grim_interface_ptr,local_10 + 132.0,local_c,&s_fmt_percent_s,pcVar5);
       local_c = local_c + 20.0;
@@ -10464,7 +10464,7 @@ LAB_00411906:
   local_4 = local_c + 16.0;
   ui_text_input_render(&local_8,6.652423e-39,a);
   local_c = local_c + 78.0 + 6.0;
-  if (DAT_00482700 != 0) {
+  if (quest_results_unlock_weapon_id != 0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,local_10,local_c + 1.0,s_Weapon_unlocked__00473294);
@@ -10478,7 +10478,7 @@ LAB_00411906:
     ;
     local_c = local_c + 16.0;
   }
-  if (DAT_00482704 != perk_id_antiperk) {
+  if (quest_results_unlock_perk_id != perk_id_antiperk) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,local_10,local_c + 1.0,s_Perk_unlocked__00473284);
@@ -25450,7 +25450,7 @@ int perk_select_random(void)
   iVar3 = 1;
   do {
     iVar1 = crt_rand();
-    iVar1 = iVar1 % DAT_004c2c38 + 1;
+    iVar1 = iVar1 % perk_id_max + 1;
     if ((char)(&perk_meta_table)[iVar1].available != '\0') {
       iVar2 = perk_can_offer(iVar1);
       if ((char)iVar2 != '\0') {
@@ -25479,7 +25479,7 @@ void perks_rebuild_available(void)
   int iVar5;
   int iVar6;
   
-  iVar5 = DAT_004c2c38 + 1;
+  iVar5 = perk_id_max + 1;
   if (0 < iVar5) {
     piVar3 = &perk_meta_table.available;
     do {
@@ -25995,7 +25995,7 @@ void __fastcall perks_init_database(void)
   _DAT_004c30b4 = wrap_text_to_width_alloc(this_x00112,s_Lifeline_50_50_00475724,0x100);
   _DAT_004c30b8 =
        wrap_text_to_width_alloc(this_x00113,s_The_computer_removes_half_of_the_004756cc,0x100);
-  DAT_004c2c38 = 0x39;
+  perk_id_max = 0x39;
   DAT_004c2b8c = 0x3a;
   perks_rebuild_available();
   return;
