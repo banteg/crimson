@@ -34,13 +34,13 @@ Runtime cross-check:
 | `11` | `0x0b` | Quest select menu | Quest-failed flow queues `0x0b`; `game_state_set(0x0b)` enables quest menu UI; runtime label `state_11:#.#`. | high |
 | `12` | `0x0c` | Quest-failed screen | Dispatch calls `quest_failed_screen_update`; quest death queues `0x0c`. | high |
 | `13` | `0x0d` | High-score setup variant (legacy/unclear) | `game_state_set(0x0d)` calls `highscore_load_table()` and installs no-op callback `ui_callback_noop`; no direct `game_state_pending = 0x0d` write seen in this build. | medium |
-| `14` | `0x0e` | High scores screen | `game_state_set(0x0e)` installs callback `sub_4423d0`; game-over/quest-results High scores buttons queue `0x0e`; runtime labels `state_14:High scores - ...`. | high |
-| `15` | `0x0f` | Unlocked Weapons Database | `game_state_set(0x0f)` installs callback `sub_440110`; runtime label `state_15:Unlocked Weapons Database`. | high |
-| `16` | `0x10` | Unlocked Perks Database | `game_state_set(0x10)` installs callback `sub_440960`; runtime label `state_16:Unlocked Perks Database`. | high |
+| `14` | `0x0e` | High scores screen | `game_state_set(0x0e)` installs callback `highscore_screen_update`; game-over/quest-results High scores buttons queue `0x0e`; runtime labels `state_14:High scores - ...`. | high |
+| `15` | `0x0f` | Unlocked Weapons Database | `game_state_set(0x0f)` installs callback `unlocked_weapons_database_update`; runtime label `state_15:Unlocked Weapons Database`. | high |
+| `16` | `0x10` | Unlocked Perks Database | `game_state_set(0x10)` installs callback `unlocked_perks_database_update`; runtime label `state_16:Unlocked Perks Database`. | high |
 | `17` | `0x11` | Credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits`. | high |
 | `18` | `0x12` | Typ-o-Shooter gameplay | Dispatch calls `typo_gameplay_update_and_render`; Play Again in Typ-o paths queues `0x12`. | high |
 | `19` | `0x13` | Unknown menu-state variant (unused in observed flow) | `game_state_set(0x13)` toggles generic menu block flags but installs no unique update callback; no direct transition writes found. | low |
-| `20` | `0x14` | Mods browser/menu (also plugin fallback) | `game_state_set(0x14)` installs callback `sub_40e9a0` (mods list/launch UI); plugin flow queues `0x14` when plugin is missing/exits. | high |
+| `20` | `0x14` | Mods browser/menu (also plugin fallback) | `game_state_set(0x14)` installs callback `mods_menu_update` (mods list/launch UI); plugin flow queues `0x14` when plugin is missing/exits. | high |
 | `21` | `0x15` | Final-quest end note / victory screen | Dispatch calls `game_update_victory_screen`; final quest results queue `0x15`. | high |
 | `22` | `0x16` | Active plugin/mod runtime screen | Dispatch routes to plugin flow `plugin_runtime_update_and_render`; mods menu Launch queues `0x16`. | high |
 | `23` | `0x17` | Unknown / unused | No `game_state_set(0x17)` case and no dispatch branch observed. | low |

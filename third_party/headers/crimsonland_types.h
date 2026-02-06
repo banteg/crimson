@@ -402,6 +402,8 @@ typedef struct effect_entry_t {
     float quad_data[29];
 } effect_entry_t;
 
+typedef void (*ui_element_callback_t)(void);
+
 typedef struct ui_element_t {
     unsigned char active;
     unsigned char enabled;
@@ -409,8 +411,8 @@ typedef struct ui_element_t {
     float pos_x;
     float pos_y;
     unsigned char _pad1[0x14];
-    void (*on_activate)(void);
-    unsigned char _pad2[4];
+    ui_element_callback_t on_activate;
+    ui_element_callback_t on_update;
     float quad0[14];
     float quad1[14];
     float quad2[14];

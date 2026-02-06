@@ -884,6 +884,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040e9a0",
+    "name": "mods_menu_update",
+    "signature": "void mods_menu_update(void)",
+    "comment": "mods browser/menu callback for GAME_STATE_MODS_MENU: lists mods\\*.dll, previews metadata, and launches the selected mod"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
     "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
@@ -2877,6 +2884,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043f550",
+    "name": "statistics_menu_update",
+    "signature": "void statistics_menu_update(void)",
+    "comment": "statistics menu callback for GAME_STATE_STATISTICS_MENU: renders session totals and navigation buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440110",
+    "name": "unlocked_weapons_database_update",
+    "signature": "void unlocked_weapons_database_update(void)",
+    "comment": "state callback for GAME_STATE_WEAPON_DATABASE (Unlocked Weapons Database)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440960",
+    "name": "unlocked_perks_database_update",
+    "signature": "void unlocked_perks_database_update(void)",
+    "comment": "state callback for GAME_STATE_PERK_DATABASE (Unlocked Perks Database)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004411c0",
     "name": "highscore_card_draw_horizontal_divider",
     "signature": "void highscore_card_draw_horizontal_divider(float *xy)",
@@ -2909,6 +2937,13 @@
     "name": "ui_update_notice_update",
     "signature": "void ui_update_notice_update(float *xy, float alpha)",
     "comment": "renders the update-available notice and its button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004423d0",
+    "name": "highscore_screen_update",
+    "signature": "void highscore_screen_update(void)",
+    "comment": "high scores screen callback for GAME_STATE_HIGHSCORES: list filters, profile list, and online score actions"
   },
   {
     "program": "crimsonland.exe",

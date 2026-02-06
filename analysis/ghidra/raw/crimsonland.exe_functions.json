@@ -968,6 +968,14 @@
     "calls": ["crt_findclose", "crt_findfirst", "crt_findnext"]
   },
   {
+    "name": "mods_menu_update",
+    "address": "0040e9a0",
+    "signature": "void mods_menu_update(void)",
+    "external": false,
+    "calls_total": 9,
+    "calls": ["crt_atexit", "crt_findclose", "crt_findfirst", "crt_findnext", "crt_sprintf", "mod_load_info", "mod_load_mod", "ui_button_update", "ui_scrollbar_update"]
+  },
+  {
     "name": "credits_secret_match3_find",
     "address": "0040f400",
     "signature": "uint credits_secret_match3_find(int * board, int * out_idx, uchar * out_dir)",
@@ -3264,6 +3272,30 @@
     "calls": ["__ftol", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect", "ui_mouse_inside_rect_with_padding"]
   },
   {
+    "name": "statistics_menu_update",
+    "address": "0043f550",
+    "signature": "void statistics_menu_update(void)",
+    "external": false,
+    "calls_total": 7,
+    "calls": ["Sleep", "crt_atexit", "crt_beginthread", "highscore_load_table", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update"]
+  },
+  {
+    "name": "unlocked_weapons_database_update",
+    "address": "00440110",
+    "signature": "void unlocked_weapons_database_update(void)",
+    "external": false,
+    "calls_total": 4,
+    "calls": ["__ftol", "crt_atexit", "ui_button_update", "ui_scrollbar_update"]
+  },
+  {
+    "name": "unlocked_perks_database_update",
+    "address": "00440960",
+    "signature": "void unlocked_perks_database_update(void)",
+    "external": false,
+    "calls_total": 3,
+    "calls": ["crt_atexit", "ui_button_update", "ui_scrollbar_update"]
+  },
+  {
     "name": "highscore_card_draw_horizontal_divider",
     "address": "004411c0",
     "signature": "void highscore_card_draw_horizontal_divider(float * xy)",
@@ -3302,6 +3334,14 @@
     "external": false,
     "calls_total": 2,
     "calls": ["crt_atexit", "ui_button_update"]
+  },
+  {
+    "name": "highscore_screen_update",
+    "address": "004423d0",
+    "signature": "void highscore_screen_update(void)",
+    "external": false,
+    "calls_total": 16,
+    "calls": ["Sleep", "crt_atexit", "crt_beginthread", "crt_sprintf", "game_is_full_version", "game_mode_label", "highscore_load_table", "input_primary_just_pressed", "sfx_mute_all", "ui_button_update", "ui_checkbox_update", "ui_list_widget_update", "ui_profile_menu_update", "ui_scrollbar_update", "ui_text_input_render", "ui_update_notice_update"]
   },
   {
     "name": "ui_profile_menu_update",

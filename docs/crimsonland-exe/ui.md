@@ -26,8 +26,8 @@ Responsibilities:
 
 Helpers:
 
-- `ui_elements_reset_state` (`FUN_00446170`) clears element active flags and
-  hover timers.
+- `ui_elements_reset_state` (`FUN_00446170`) clears element active flags,
+  hover timers, and per-element callbacks (`on_activate` / `on_update`).
 
 - `ui_elements_max_timeline` (`FUN_00446190`) returns the max timeline value
   among active elements.

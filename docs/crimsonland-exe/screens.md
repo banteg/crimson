@@ -79,6 +79,7 @@ Use Frida to log whenever the overlay is actually rendered:
 ## Mods / plugin runtime (plugin_runtime_update_and_render)
 
 - State `0x14` is the mods browser/menu flow (launch list + fallback target).
+  The state callback in `game_state_set` is `mods_menu_update`.
 - State `0x16` is the active plugin runtime flow driven by `plugin_interface_ptr`
   (`DAT_004824d4`).
 - `plugin_runtime_update_and_render` owns the frame dispatch for `0x16` and
