@@ -17,6 +17,39 @@ HS_RIGHT_PANEL_POS_X = 609.0
 HS_RIGHT_PANEL_POS_Y = 200.0
 HS_RIGHT_PANEL_HEIGHT = 254.0
 
+
+def hs_right_panel_pos_x(screen_width: float) -> float:
+    """
+    Return the classic right-panel base X for high-scores/databases screens.
+
+    Modeled from `ui_menu_layout_init` (`sub_450190`) writes to `data_48a110`:
+      x = screen_width - 350
+      if screen_width <= 800:
+          x += 10  (<=640)  or  x -= 30  (641..800)
+      else:
+          x -= 65
+
+    At 1024 this resolves to 609 (our original constant).
+    For non-native mid-wide widths (e.g. 1366), we bucket to the classic 1280
+    layout path so panel placement matches legacy runtime captures.
+    """
+
+    w = int(screen_width)
+    # Classic layout code only had explicit menu tuning for a small set of
+    # display widths; modern 1366-wide windows otherwise push the panel too far
+    # right. Bucket those mid-wide unsupported widths to the classic 1280 path.
+    if 1280 < w < 1600:
+        w = 1280
+    x = float(w - 350)
+    if w <= 800:
+        if w <= 640:
+            x += 10.0
+        else:
+            x -= 30.0
+    else:
+        x -= 65.0
+    return x
+
 # Buttons inside the left panel (relative to the left panel top-left).
 HS_BUTTON_X = 234.0  # x0=136 at 1024x768
 HS_BUTTON_Y0 = 268.0  # y0=462
@@ -24,6 +57,19 @@ HS_BUTTON_STEP_Y = 33.0
 
 HS_BACK_BUTTON_X = 400.0  # x0=302
 HS_BACK_BUTTON_Y = 301.0  # y0=495
+
+# Underline under "High scores - ..." title.
+# state_14 quests: [171,249]..[294,250], survival: [168,249]..[297,250]
+HS_TITLE_UNDERLINE_X = 269.0
+HS_TITLE_UNDERLINE_Y = 55.0
+HS_TITLE_UNDERLINE_W = 123.0
+
+# Left score-list frame (white border + black fill).
+# state_14: [112,295]..[362,459] and inner [113,296]..[361,458]
+HS_SCORE_FRAME_X = 210.0
+HS_SCORE_FRAME_Y = 101.0
+HS_SCORE_FRAME_W = 250.0
+HS_SCORE_FRAME_H = 164.0
 
 # Quest-mode high score selector arrow (left panel).
 # state_14:High scores - Quests: ui_arrow.jaz bbox [351,256]..[383,272]

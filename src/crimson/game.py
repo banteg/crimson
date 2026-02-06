@@ -88,7 +88,6 @@ from .frontend.high_scores_layout import (
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
     HS_RIGHT_PANEL_HEIGHT,
-    HS_RIGHT_PANEL_POS_X,
     HS_RIGHT_PANEL_POS_Y,
     HS_RIGHT_GAME_MODE_DROP_X,
     HS_RIGHT_GAME_MODE_DROP_Y,
@@ -128,6 +127,12 @@ from .frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
     HS_RIGHT_SHOW_SCORES_X,
     HS_RIGHT_SHOW_SCORES_Y,
+    HS_SCORE_FRAME_H,
+    HS_SCORE_FRAME_W,
+    HS_SCORE_FRAME_X,
+    HS_SCORE_FRAME_Y,
+    HS_TITLE_UNDERLINE_Y,
+    hs_right_panel_pos_x,
 )
 from .frontend.menu import (
     MENU_PANEL_OFFSET_X,
@@ -2152,20 +2157,21 @@ class HighScoresView:
         textures = self._button_textures
         if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            font = self._ensure_small_font()
             panel_x0, panel_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
 
             x0 = panel_x0 + HS_BUTTON_X * scale
             y0 = panel_y0 + HS_BUTTON_Y0 * scale
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             if button_update(self._update_button, x=x0, y=y0, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 # Reload scores from disk (no view transition).
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self.open()
                 return
-            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
                 x=x0,
@@ -2179,7 +2185,7 @@ class HighScoresView:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "open_play_game"
                 return
-            back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
                 x=panel_x0 + HS_BACK_BUTTON_X * scale,
@@ -2256,7 +2262,8 @@ class HighScoresView:
         )
 
         left_x0, left_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
-        right_x0, right_y0 = self._panel_top_left(pos_x=HS_RIGHT_PANEL_POS_X, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
+        right_x0, right_y0 = self._panel_top_left(pos_x=right_panel_pos_x, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
         left_x0 += float(left_slide_x)
         right_x0 += float(right_slide_x)
 
@@ -2271,6 +2278,7 @@ class HighScoresView:
             dst=rl.Rectangle(right_x0, right_y0, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
+            flip_x=True,
         )
 
         title = "High scores - Quests" if int(mode_id) == 3 else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
@@ -2278,10 +2286,21 @@ class HighScoresView:
         if int(mode_id) == 1:
             # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
             title_x = 266.0
-        draw_small_text(font, title, left_x0 + title_x * scale, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        title_draw_x = left_x0 + title_x * scale
+        draw_small_text(font, title, title_draw_x, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        ul_x = title_draw_x
+        ul_y = left_y0 + HS_TITLE_UNDERLINE_Y * scale
+        ul_w = measure_small_text_width(font, title, 1.0 * scale)
+        ul_h = max(1, int(round(1.0 * scale)))
+        rl.draw_rectangle(int(round(ul_x)), int(round(ul_y)), int(round(ul_w)), ul_h, rl.Color(255, 255, 255, int(255 * 0.7)))
         if int(mode_id) == 3:
+            hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+            if hardcore:
+                quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
+            else:
+                quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
             quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
-            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, quest_color)
             arrow = self._arrow_tex
             if arrow is not None:
                 dst_w = float(arrow.width) * scale
@@ -2296,6 +2315,20 @@ class HighScoresView:
         draw_small_text(font, "Rank", left_x0 + 211.0 * scale, row_y0, 1.0 * scale, header_color)
         draw_small_text(font, "Score", left_x0 + 246.0 * scale, row_y0, 1.0 * scale, header_color)
         draw_small_text(font, "Player", left_x0 + 302.0 * scale, row_y0, 1.0 * scale, header_color)
+
+        # Score list viewport frame (white 1px border + black interior).
+        frame_x = left_x0 + HS_SCORE_FRAME_X * scale
+        frame_y = left_y0 + HS_SCORE_FRAME_Y * scale
+        frame_w = HS_SCORE_FRAME_W * scale
+        frame_h = HS_SCORE_FRAME_H * scale
+        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
+        rl.draw_rectangle(
+            int(round(frame_x + 1.0 * scale)),
+            int(round(frame_y + 1.0 * scale)),
+            max(0, int(round(frame_w - 2.0 * scale))),
+            max(0, int(round(frame_h - 2.0 * scale))),
+            rl.BLACK,
+        )
 
         row_step = 16.0 * scale
         rows = 10
@@ -2333,11 +2366,11 @@ class HighScoresView:
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             button_x = left_x0 + HS_BUTTON_X * scale
             button_y0 = left_y0 + HS_BUTTON_Y0 * scale
-            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             button_draw(textures, font, self._update_button, x=button_x, y=button_y0, width=w, scale=scale)
-            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             button_draw(textures, font, self._play_button, x=button_x, y=button_y0 + HS_BUTTON_STEP_Y * scale, width=w, scale=scale)
-            w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
