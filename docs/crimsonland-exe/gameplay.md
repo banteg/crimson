@@ -86,11 +86,16 @@ Global bonus timers used by `player_update` and the main loop:
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
 - `bonus_render_anim_phase` (`0x004aaf5c`)
   - Phase accumulator advanced by `frame_dt * 1.3` in `bonus_render`; drives pickup icon pulse/rotation modulation.
+- `bonus_update_phase_accumulator` (`0x004aaf2c`)
+  - Bonus-update phase accumulator reset to `-1.0` in `gameplay_reset_state`; advanced only while non-negative in `bonus_update`.
 - `telekinetic_bonus_hover_timer_ms` (`0x004aaf60`)
   - Per-player hover dwell timer used by `bonus_render`: increments while within `24` units of a pickup in gameplay,
     then auto-applies the bonus at `> 650ms` when Telekinetic is active.
 - `projectile_update_tick` (`0x004aaf54`)
   - Frame-local projectile update counter incremented once per `projectile_update` call.
+- `player_spread_damping_gate` (`0x004aaf34`)
+  - Branch gate for spread damping recovery in `player_update`: non-positive values ease
+    `player_spread_damping_scalar` toward `1.0`, positive values drive it down toward `0.3`.
 
 ### Bonus HUD slots (active bonus list)
 

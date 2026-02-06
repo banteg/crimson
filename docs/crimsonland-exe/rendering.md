@@ -106,6 +106,10 @@ weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not 
 states like `0x14/0x16`), `ui_transition_alpha` (`DAT_00487278`) (transition alpha),
 and `player_overlay_suppressed_latch` (`0x0048727c`).
 
+The same function also checks `player_overlay_auto_target_line_perk_id` (`0x004c2bcc`) via
+`perk_count_get` before drawing the segmented auto-target line overlay toward the
+current `player_state.auto_target`. In `perk_metadata_init`, this selector defaults to `0`.
+
 ### Runtime evidence (2026-01-26)
 
 `artifacts/frida/share/player_sprite_trace.jsonl` (`scripts/frida/player_sprite_trace.js`, summarized in `analysis/frida/player_sprite_trace_summary.json`) matches the decompile:

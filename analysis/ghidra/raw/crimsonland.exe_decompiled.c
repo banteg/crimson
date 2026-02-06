@@ -6520,8 +6520,9 @@ void bonus_update(void)
     else {
       _bonus_double_xp_timer = _bonus_double_xp_timer - frame_dt;
     }
-    if (0.0 <= _DAT_004aaf2c) {
-      _DAT_004aaf2c = (_DAT_004aaf2c + 1.0) * frame_dt * 1.8 + _DAT_004aaf2c;
+    if (0.0 <= bonus_update_phase_accumulator) {
+      bonus_update_phase_accumulator =
+           (bonus_update_phase_accumulator + 1.0) * frame_dt * 1.8 + bonus_update_phase_accumulator;
     }
   }
   return;
@@ -11713,7 +11714,7 @@ void gameplay_reset_state(void)
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
   perk_jinxed_proc_timer_s = 0.0;
-  _DAT_004aaf2c = 0xbf800000;
+  bonus_update_phase_accumulator = -1.0;
   _perk_prompt_timer = 0;
   projectile_reset_pools();
   player_reset_all();
@@ -12148,7 +12149,7 @@ void player_update(void)
       _perk_hot_tempered_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
-  if (_DAT_004aaf34 <= 0.0) {
+  if (player_spread_damping_gate <= 0.0) {
     player_spread_damping_scalar = frame_dt * 0.8 + player_spread_damping_scalar;
     if (1.0 < player_spread_damping_scalar) {
       player_spread_damping_scalar = 1.0;
@@ -22767,7 +22768,7 @@ void player_render_overlays(void)
       (*pIVar5->grim_draw_quad)(fStack_80,fStack_7c,fVar13,fVar13);
       (*grim_interface_ptr->vtable->grim_end_batch)();
     }
-    iVar3 = perk_count_get(DAT_004c2bcc);
+    iVar3 = perk_count_get(player_overlay_auto_target_line_perk_id);
     if (iVar3 != 0) {
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
       pfVar10 = (float *)0x14;
@@ -26886,7 +26887,7 @@ void __fastcall perks_init_database(void)
   _DAT_004c2ec0 = wrap_text_to_width_alloc(this_63,s_Bonus_Economist_004764fc,0x100);
   _DAT_004c2ec4 =
        wrap_text_to_width_alloc(this_64,s_Your_bonus_power_ups_last_50__lo_004764bc,0x100);
-  DAT_004c2bcc = 0;
+  player_overlay_auto_target_line_perk_id = 0;
   perk_id_thick_skinned = 0x21;
   _DAT_004c2ed4 = wrap_text_to_width_alloc(this_65,s_Thick_Skinned_004764ac,0x100);
   _DAT_004c2ed8 =

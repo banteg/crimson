@@ -5617,6 +5617,20 @@
       "type": "float"
     },
     {
+      "address": "0x004aaf2c",
+      "comment": "Bonus-update phase accumulator; reset to -1 on gameplay reset and advanced while non-negative in bonus_update.",
+      "name": "bonus_update_phase_accumulator",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004aaf34",
+      "comment": "Player spread-damping gate; controls which spread recovery branch player_update uses.",
+      "name": "player_spread_damping_gate",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004aaf3c",
       "comment": "Rotated FX queue base (0x40 entries)",
       "name": "fx_queue_rotated",
@@ -6083,6 +6097,13 @@
       "comment": "Perk ID constant for Ammunition Within.",
       "name": "perk_id_ammunition_within",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c2bcc",
+      "comment": "Perk-id selector used by player_render_overlays to gate auto-target line rendering (defaults to 0 in perk_metadata_init).",
+      "name": "player_overlay_auto_target_line_perk_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c2bd0",
