@@ -22,7 +22,7 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x13, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x13, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Occupy a few pool slots so plan-local indices do not equal pool indices.
@@ -50,7 +50,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x00, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x00, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Seed an existing spawn slot so the plan slot id (0) must be remapped.
@@ -91,7 +91,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     state = GameplayState(rng=rng)
     pool = CreaturePool(env=env, effects=state.effects)
 
-    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, rng, env)
     pool.spawn_plan(plan, rand=rng.rand, detail_preset=5)
 
     active = state.effects.iter_active()

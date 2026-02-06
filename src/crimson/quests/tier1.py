@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import math
 import random
+
+from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
@@ -46,7 +47,7 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x00435CC0,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
         spawn(
@@ -80,8 +81,8 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
         if i > 6:
             entries.append(
                 spawn(
-                    x=edges.right[0],
-                    y=center_y - 256.0,
+                    x=edges.right.x,
+                    y=center.y - 256.0,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
@@ -101,8 +102,8 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
         if i > 10:
             entries.append(
                 spawn(
-                    x=edges.left[0],
-                    y=center_y + 256.0,
+                    x=edges.left.x,
+                    y=center.y + 256.0,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
@@ -122,20 +123,19 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
         angle = random_angle(rng)
         radius = (rng.randrange(8) + 2) * 0x20
-        x = math.cos(angle) * radius + center_x
-        y = math.sin(angle) * radius + center_y
-        heading = heading_from_center(x, y, center_x, center_y)
+        point = center + Vec2.from_angle(angle) * radius
+        heading = heading_from_center(point, center)
         entries.append(
             spawn(
-                x=x,
-                y=y,
+                x=point.x,
+                y=point.y,
                 heading=heading,
                 spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                 trigger_ms=trigger,
@@ -273,7 +273,7 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
 def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     trigger = 1500
     while trigger < 101500:
@@ -298,8 +298,8 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
         if rng.randrange(5) == 3:
             entries.append(
                 spawn(
-                    x=center_x,
-                    y=edges.bottom[1],
+                    x=center.x,
+                    y=edges.bottom.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=trigger,
@@ -446,12 +446,12 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x004364A0,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
-    center_x, _center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            x=center.x,
+            y=edges.bottom.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=1500,
@@ -475,16 +475,16 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             count=1,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            x=center.x,
+            y=edges.bottom.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=25000,
             count=ctx.player_count * 2 + 6,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            x=center.x,
+            y=edges.bottom.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=39000,
@@ -523,16 +523,16 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             count=1,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            x=center.x,
+            y=edges.bottom.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1E,
             trigger_ms=50000,
             count=ctx.player_count * 2 + 5,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            x=center.x,
+            y=edges.bottom.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1F,
             trigger_ms=55000,

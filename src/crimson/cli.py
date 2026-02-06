@@ -12,6 +12,7 @@ import typer
 from PIL import Image
 
 from grim import jaz, paq
+from grim.geom import Vec2
 from grim.rand import Crand
 from .paths import default_runtime_dir
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
@@ -166,7 +167,7 @@ def cmd_quests(
         for entry in entries:
             if entry.spawn_id in plan_cache:
                 continue
-            plan = build_spawn_plan(entry.spawn_id, (512.0, 512.0), 0.0, Crand(0), env)
+            plan = build_spawn_plan(entry.spawn_id, Vec2(512.0, 512.0), 0.0, Crand(0), env)
             plan_cache[entry.spawn_id] = (len(plan.creatures), len(plan.spawn_slots))
         total_alloc = sum(entry.count * plan_cache[entry.spawn_id][0] for entry in entries)
         total_slots = sum(entry.count * plan_cache[entry.spawn_id][1] for entry in entries)
@@ -525,7 +526,7 @@ def cmd_spawn_plan(
         hardcore=hardcore,
         difficulty_level=difficulty,
     )
-    plan = build_spawn_plan(template_id, (x, y), heading, rng, env)
+    plan = build_spawn_plan(template_id, Vec2(x, y), heading, rng, env)
     if as_json:
         payload: dict[str, object] = {
             "template_id": template_id,

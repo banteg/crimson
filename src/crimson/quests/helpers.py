@@ -13,38 +13,38 @@ from .types import SpawnEntry
 
 @dataclass(frozen=True, slots=True)
 class EdgePoints:
-    left: tuple[float, float]
-    right: tuple[float, float]
-    top: tuple[float, float]
-    bottom: tuple[float, float]
+    left: Vec2
+    right: Vec2
+    top: Vec2
+    bottom: Vec2
 
 
-def center_point(width: float, height: float | None = None) -> tuple[float, float]:
+def center_point(width: float, height: float | None = None) -> Vec2:
     if height is None:
         height = width
-    return float(width) / 2.0, float(height) / 2.0
+    return Vec2(float(width) * 0.5, float(height) * 0.5)
 
 
 def edge_midpoints(width: float, height: float | None = None, offset: float = 64.0) -> EdgePoints:
     if height is None:
         height = width
-    cx, cy = center_point(width, height)
+    center = center_point(width, height)
     return EdgePoints(
-        left=(-offset, cy),
-        right=(float(width) + offset, cy),
-        top=(cx, -offset),
-        bottom=(cx, float(height) + offset),
+        left=Vec2(-offset, center.y),
+        right=Vec2(float(width) + offset, center.y),
+        top=Vec2(center.x, -offset),
+        bottom=Vec2(center.x, float(height) + offset),
     )
 
 
-def corner_points(width: float, height: float | None = None, offset: float = 64.0) -> tuple[tuple[float, float], ...]:
+def corner_points(width: float, height: float | None = None, offset: float = 64.0) -> tuple[Vec2, ...]:
     if height is None:
         height = width
     return (
-        (-offset, -offset),
-        (float(width) + offset, -offset),
-        (-offset, float(height) + offset),
-        (float(width) + offset, float(height) + offset),
+        Vec2(-offset, -offset),
+        Vec2(float(width) + offset, -offset),
+        Vec2(-offset, float(height) + offset),
+        Vec2(float(width) + offset, float(height) + offset),
     )
 
 
@@ -58,20 +58,15 @@ def iter_angles(count: int, *, step: float | None = None, start: float = 0.0) ->
 
 
 def ring_points(
-    center_x: float,
-    center_y: float,
+    center: Vec2,
     radius: float,
     count: int,
     *,
     step: float | None = None,
     start: float = 0.0,
-) -> Iterator[tuple[float, float, float]]:
+) -> Iterator[tuple[Vec2, float]]:
     for angle in iter_angles(count, step=step, start=start):
-        yield (
-            math.cos(angle) * radius + center_x,
-            math.sin(angle) * radius + center_y,
-            angle,
-        )
+        yield center + Vec2.from_angle(angle) * radius, angle
 
 
 def random_angle(rng: random.Random) -> float:
@@ -79,36 +74,31 @@ def random_angle(rng: random.Random) -> float:
 
 
 def radial_points(
-    center_x: float,
-    center_y: float,
+    center: Vec2,
     angle: float,
     radius_start: float,
     radius_end: float,
     radius_step: float,
-) -> Iterator[tuple[float, float]]:
-    cos_a = math.cos(angle)
-    sin_a = math.sin(angle)
+) -> Iterator[Vec2]:
+    direction = Vec2.from_angle(angle)
     radius = radius_start
     while radius < radius_end:
-        yield (
-            cos_a * radius + center_x,
-            sin_a * radius + center_y,
-        )
+        yield center + direction * radius
         radius += radius_step
 
 
-def heading_from_center(x: float, y: float, center_x: float, center_y: float) -> float:
-    return Vec2(x - center_x, y - center_y).to_angle() - (math.pi / 2.0)
+def heading_from_center(point: Vec2, center: Vec2) -> float:
+    return (point - center).to_angle() - (math.pi / 2.0)
 
 
-def line_points_x(start: float, step: float, count: int, y: float) -> Iterator[tuple[float, float]]:
+def line_points_x(start: float, step: float, count: int, y: float) -> Iterator[Vec2]:
     for idx in range(count):
-        yield start + float(idx) * step, y
+        yield Vec2(start + float(idx) * step, y)
 
 
-def line_points_y(start: float, step: float, count: int, x: float) -> Iterator[tuple[float, float]]:
+def line_points_y(start: float, step: float, count: int, x: float) -> Iterator[Vec2]:
     for idx in range(count):
-        yield x, start + float(idx) * step
+        yield Vec2(x, start + float(idx) * step)
 
 
 def spawn(
@@ -131,17 +121,16 @@ def spawn(
 
 
 def spawn_at(
-    point: tuple[float, float],
+    point: Vec2,
     *,
     heading: float = 0.0,
     spawn_id: SpawnId,
     trigger_ms: int,
     count: int,
 ) -> SpawnEntry:
-    x, y = point
     return spawn(
-        x=x,
-        y=y,
+        x=point.x,
+        y=point.y,
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,

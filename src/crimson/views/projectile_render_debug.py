@@ -10,7 +10,6 @@ from grim.audio import AudioState, shutdown_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..game_world import GameWorld
@@ -37,10 +36,13 @@ TARGET_OUTLINE = rl.Color(140, 40, 40, 255)
 
 @dataclass(slots=True)
 class TargetDummy:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     size: float = 56.0
+    hitbox_size: float = 56.0
+    active: bool = True
+    flags: int = 0
+    plague_infected: bool = False
 
 
 class ProjectileRenderDebugView:
@@ -84,14 +86,12 @@ class ProjectileRenderDebugView:
 
     def _reset_targets(self) -> None:
         self._targets.clear()
-        base_x = WORLD_SIZE * 0.5
-        base_y = WORLD_SIZE * 0.5
+        center = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         ring = 260.0
         for idx in range(10):
             angle = float(idx) / 10.0 * math.tau
-            x = clamp(base_x + math.cos(angle) * ring, 40.0, WORLD_SIZE - 40.0)
-            y = clamp(base_y + math.sin(angle) * ring, 40.0, WORLD_SIZE - 40.0)
-            self._targets.append(TargetDummy(x=x, y=y, hp=260.0, size=64.0))
+            target_pos = (center + Vec2.from_angle(angle) * ring).clamp_rect(40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0)
+            self._targets.append(TargetDummy(pos=target_pos, hp=260.0, size=64.0, hitbox_size=64.0))
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))

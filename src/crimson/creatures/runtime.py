@@ -519,7 +519,7 @@ class CreaturePool:
     def spawn_template(
         self,
         template_id: int,
-        pos: tuple[float, float],
+        pos: Vec2,
         heading: float,
         rng: Crand,
         *,
@@ -854,7 +854,7 @@ class CreaturePool:
 
                 plan = build_spawn_plan(
                     int(child_template_id),
-                    (owner.pos.x, owner.pos.y),
+                    owner.pos,
                     float(owner.heading),
                     state.rng,
                     spawn_env,

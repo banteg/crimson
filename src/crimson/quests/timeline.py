@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from grim.geom import Vec2
+
 from ..creatures.spawn import SpawnTemplateCall
 
 from .types import SpawnEntry
@@ -59,9 +61,9 @@ def tick_quest_spawn_timeline(
             magnitude = float(spawn_idx * 0x28)
             offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
             if offscreen_x:
-                pos = (base_x, base_y + offset)
+                pos = Vec2(base_x, base_y + offset)
             else:
-                pos = (base_x + offset, base_y)
+                pos = Vec2(base_x + offset, base_y)
             spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=float(entry.heading)))
 
         if entry.count != 0:

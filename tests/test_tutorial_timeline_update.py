@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from grim.geom import Vec2
+
 from crimson.bonuses import BonusId
 from crimson.tutorial.timeline import TutorialState, tick_tutorial_timeline, tutorial_stage5_bonus_carrier_config
 
@@ -53,9 +55,9 @@ def test_stage1_move_spawns_point_bonuses() -> None:
     assert state.stage_transition_timer_ms == -1000
     assert actions.play_levelup_sfx is True
     assert [(c.bonus_id, c.amount, c.pos) for c in actions.spawn_bonuses] == [
-        (int(BonusId.POINTS), 500, (260.0, 260.0)),
-        (int(BonusId.POINTS), 1000, (600.0, 400.0)),
-        (int(BonusId.POINTS), 500, (300.0, 400.0)),
+        (int(BonusId.POINTS), 500, Vec2(260.0, 260.0)),
+        (int(BonusId.POINTS), 1000, Vec2(600.0, 400.0)),
+        (int(BonusId.POINTS), 500, Vec2(300.0, 400.0)),
     ]
 
 
@@ -82,4 +84,3 @@ def test_stage5_emits_bonus_carrier_drop_for_first_repeats(repeat: int) -> None:
         perk_pending_count=0,
     )
     assert actions.stage5_bonus_carrier_drop == tutorial_stage5_bonus_carrier_config(repeat)
-

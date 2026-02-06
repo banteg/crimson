@@ -23,16 +23,16 @@ def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
         difficulty_level=0,
     )
 
-    plan_demo = build_spawn_plan(1, (100.0, 200.0), 0.0, Crand(0), env_demo)
+    plan_demo = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env_demo)
     assert plan_demo.effects == ()
 
-    plan_live = build_spawn_plan(1, (100.0, 200.0), 0.0, Crand(0), env_live)
+    plan_live = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env_live)
     assert plan_live.effects == (BurstEffect(pos=Vec2(100.0, 200.0), count=8),)
 
-    assert build_spawn_plan(1, (0.0, 200.0), 0.0, Crand(0), env_live).effects == ()
-    assert build_spawn_plan(1, (1024.0, 200.0), 0.0, Crand(0), env_live).effects == ()
-    assert build_spawn_plan(1, (100.0, 0.0), 0.0, Crand(0), env_live).effects == ()
-    assert build_spawn_plan(1, (100.0, 1024.0), 0.0, Crand(0), env_live).effects == ()
+    assert build_spawn_plan(1, Vec2(0.0, 200.0), 0.0, Crand(0), env_live).effects == ()
+    assert build_spawn_plan(1, Vec2(1024.0, 200.0), 0.0, Crand(0), env_live).effects == ()
+    assert build_spawn_plan(1, Vec2(100.0, 0.0), 0.0, Crand(0), env_live).effects == ()
+    assert build_spawn_plan(1, Vec2(100.0, 1024.0), 0.0, Crand(0), env_live).effects == ()
 
 
 @pytest.mark.parametrize(
@@ -59,7 +59,7 @@ def test_spawn_plan_tail_applies_difficulty_scaling(
         hardcore=False,
         difficulty_level=difficulty,
     )
-    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     c = plan.creatures[0]
     assert c.reward_value == pytest.approx(1000.0 * reward_scale, abs=1e-9)
@@ -77,7 +77,7 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_difficulty() -> No
         hardcore=True,
         difficulty_level=4,
     )
-    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     c = plan.creatures[0]
     assert c.reward_value == 1000.0
@@ -102,7 +102,7 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_difficulty(difficulty: 
         hardcore=False,
         difficulty_level=difficulty,
     )
-    plan = build_spawn_plan(0x07, (100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
     assert plan.spawn_slots[0].interval == pytest.approx(2.2 + 0.2 + expected_extra, abs=1e-9)
@@ -116,7 +116,7 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
         hardcore=True,
         difficulty_level=9,
     )
-    plan = build_spawn_plan(0x07, (100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
     assert plan.spawn_slots[0].interval == pytest.approx(2.2 - 0.2, abs=1e-9)

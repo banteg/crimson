@@ -43,7 +43,7 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
     assert creatures_none_active is False
     assert idle_ms == pytest.approx(16.0, abs=1e-9)
     assert len(spawns) == 3
-    assert [(s.pos[0], s.pos[1]) for s in spawns] == [
+    assert [(s.pos.x, s.pos.y) for s in spawns] == [
         (pytest.approx(512.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(472.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(592.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
@@ -65,7 +65,7 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
         no_creatures_timer_ms=0.0,
     )
 
-    assert [(s.pos[0], s.pos[1]) for s in spawns] == [
+    assert [(s.pos.x, s.pos.y) for s in spawns] == [
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(472.0, abs=1e-9)),
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(592.0, abs=1e-9)),

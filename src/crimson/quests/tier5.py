@@ -647,12 +647,12 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
 def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
-    center_x, center_y = center_point(ctx.width, ctx.height)
-    for x, y, angle in ring_points(center_x, center_y, 128.0, 8, step=0.7853982):
-        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
+    center = center_point(ctx.width, ctx.height)
+    for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
+        entries.append(spawn(x=pos.x, y=pos.y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
 
-    for x, y, angle in ring_points(center_x, center_y, 178.0, 12, step=0.5235988):
-        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1))
+    for pos, angle in ring_points(center, 178.0, 12, step=0.5235988):
+        entries.append(spawn(x=pos.x, y=pos.y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1))
 
     trigger = 13000
     wave = 0

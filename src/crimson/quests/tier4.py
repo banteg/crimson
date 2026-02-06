@@ -420,17 +420,17 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
 def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width)
 
     ring_count = player_count + 9
     if ring_count > 0:
         trigger = 0
-        for x, y, _angle in ring_points(center_x, center_y, 158.0, ring_count):
+        for pos, _angle in ring_points(center, 158.0, ring_count):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -483,11 +483,11 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
     outer_count = player_count + 0x11
     if outer_count > 0:
         trigger = 42500
-        for x, y, _angle in ring_points(center_x, center_y, 258.0, outer_count):
+        for pos, _angle in ring_points(center, 258.0, outer_count):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -625,12 +625,12 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
         ),
     ]
 
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges_wide = edge_midpoints(ctx.width, ctx.height, offset=128.0)
 
     trigger = 13000
-    for x, y, _angle in ring_points(center_x, center_y, 80.0, 6, step=1.0471976):
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
+    for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976):
+        entries.append(spawn(x=pos.x, y=pos.y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 300
 
     entries.append(
@@ -648,7 +648,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = edges_wide.right[0] if toggle else edges_wide.left[0]
+        x = edges_wide.right.x if toggle else edges_wide.left.x
         entries.append(
             spawn(
                 x=x,
@@ -664,17 +664,17 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
         y += 0x80
 
     trigger = 43000
-    for x, y, _angle in ring_points(center_x, center_y, 80.0, 6, step=1.0471976, start=0.5235988):
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
+    for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976, start=0.5235988):
+        entries.append(spawn(x=pos.x, y=pos.y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 300
 
     if full_version:
         trigger = 62800
-        for x, y, _angle in ring_points(center_x, center_y, 180.0, 12, step=0.5235988, start=0.5235988):
+        for pos, _angle in ring_points(center, 180.0, 12, step=0.5235988, start=0.5235988):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
@@ -687,7 +687,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = edges_wide.right[0] if toggle else edges_wide.left[0]
+        x = edges_wide.right.x if toggle else edges_wide.left.x
         entries.append(
             spawn(
                 x=x,

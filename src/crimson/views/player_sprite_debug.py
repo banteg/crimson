@@ -40,8 +40,7 @@ class PlayerSpriteDebugView:
         self._small: SmallFontData | None = None
         self._assets: PlayerSpriteAssets | None = None
 
-        self._player_x = WORLD_SIZE * 0.5
-        self._player_y = WORLD_SIZE * 0.5
+        self._player_pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player_size = 50.0
         self._move_phase = 0.0
         self._move_heading = 0.0
@@ -133,8 +132,7 @@ class PlayerSpriteDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
             self._frame_count = min(64, self._frame_count + 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
-            self._player_x = WORLD_SIZE * 0.5
-            self._player_y = WORLD_SIZE * 0.5
+            self._player_pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
             self._move_phase = 0.0
             self._move_heading = 0.0
 
@@ -156,10 +154,7 @@ class PlayerSpriteDebugView:
             speed = 120.0
             if rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT):
                 speed *= 2.0
-            self._player_x += move.x * speed * dt
-            self._player_y += move.y * speed * dt
-            self._player_x = max(0.0, min(WORLD_SIZE, self._player_x))
-            self._player_y = max(0.0, min(WORLD_SIZE, self._player_y))
+            self._player_pos = (self._player_pos + move * speed * dt).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
             self._move_heading = move.to_heading()
 
             move_speed = 2.0
@@ -167,12 +162,10 @@ class PlayerSpriteDebugView:
             while self._move_phase > 14.0:
                 self._move_phase -= 14.0
 
-        cam_x = float(rl.get_screen_width()) * 0.5 - self._player_x
-        cam_y = float(rl.get_screen_height()) * 0.5 - self._player_y
+        camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
         mouse = rl.get_mouse_position()
-        aim_world_x = float(mouse.x) - cam_x
-        aim_world_y = float(mouse.y) - cam_y
-        aim_delta = Vec2(aim_world_x - self._player_x, aim_world_y - self._player_y)
+        aim_world = Vec2(mouse.x, mouse.y) - camera
+        aim_delta = aim_world - self._player_pos
         if aim_delta.length_sq() > 1e-6:
             self._aim_heading = aim_delta.to_heading()
 
@@ -187,25 +180,25 @@ class PlayerSpriteDebugView:
             draw_ui_text(self._small, "Trooper sprite not loaded.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
-        cam_x = float(rl.get_screen_width()) * 0.5 - self._player_x
-        cam_y = float(rl.get_screen_height()) * 0.5 - self._player_y
+        camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
 
         if self._show_grid:
             grid_major = rl.Color(70, 80, 95, 180)
             grid_minor = rl.Color(40, 50, 65, 140)
             for i in range(0, int(WORLD_SIZE) + 1, int(GRID_STEP)):
                 color = grid_major if i % 256 == 0 else grid_minor
-                sx = float(i) + cam_x
-                sy0 = cam_y
-                sy1 = WORLD_SIZE + cam_y
+                sx = float(i) + camera.x
+                sy0 = camera.y
+                sy1 = WORLD_SIZE + camera.y
                 rl.draw_line(int(sx), int(sy0), int(sx), int(sy1), color)
-                sy = float(i) + cam_y
-                sx0 = cam_x
-                sx1 = WORLD_SIZE + cam_x
+                sy = float(i) + camera.y
+                sx0 = camera.x
+                sx1 = WORLD_SIZE + camera.x
                 rl.draw_line(int(sx0), int(sy), int(sx1), int(sy), color)
 
-        px = self._player_x + cam_x
-        py = self._player_y + cam_y
+        player_screen = self._player_pos + camera
+        px = player_screen.x
+        py = player_screen.y
 
         frame = int(self._move_phase + 0.5)
         if self._frame_count > 0:
@@ -217,8 +210,7 @@ class PlayerSpriteDebugView:
 
         recoil_dir = self._aim_heading + math.pi / 2.0
         recoil_offset = self._muzzle_flash * 12.0
-        torso_offset_x = math.cos(recoil_dir) * recoil_offset
-        torso_offset_y = math.sin(recoil_dir) * recoil_offset
+        torso_offset = Vec2.from_angle(recoil_dir) * recoil_offset
 
         tint = rl.Color(240, 240, 255, 255)
         self._draw_sprite(
@@ -240,8 +232,8 @@ class PlayerSpriteDebugView:
             rotation_rad=self._aim_heading,
             tint=tint,
             shadow=self._show_shadow,
-            offset_x=torso_offset_x,
-            offset_y=torso_offset_y,
+            offset_x=torso_offset.x,
+            offset_y=torso_offset.y,
         )
 
         # Aim/debug helpers.

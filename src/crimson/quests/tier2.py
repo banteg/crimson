@@ -203,11 +203,11 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     if ctx.player_count + 4 >= 0:
         trigger = 500
-        for x, y in line_points_x(256.0, 102.4, ctx.player_count + 4, 256.0):
+        for pos in line_points_x(256.0, 102.4, ctx.player_count + 4, 256.0):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -216,11 +216,11 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
             )
             trigger += 500
         trigger = 10500
-        for x, y in line_points_x(256.0, 102.4, ctx.player_count + 4, 768.0):
+        for pos in line_points_x(256.0, 102.4, ctx.player_count + 4, 768.0):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -230,11 +230,11 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
             trigger += 500
     if ctx.player_count + 7 >= 0:
         trigger = 40500
-        for x, y in line_points_x(256.0, 64.0, ctx.player_count + 7, 512.0):
+        for pos in line_points_x(256.0, 64.0, ctx.player_count + 7, 512.0):
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
                     trigger_ms=trigger,
@@ -335,17 +335,17 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 720:
         angle = random_angle(rng)
-        for x, y in radial_points(center_x, center_y, angle, 0x54, 0xFC, 0x2A):
-            heading = heading_from_center(x, y, center_x, center_y)
+        for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
+            heading = heading_from_center(pos, center)
             entries.append(
                 spawn(
-                    x=x,
-                    y=y,
+                    x=pos.x,
+                    y=pos.y,
                     heading=heading,
                     spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                     trigger_ms=trigger,
@@ -536,11 +536,11 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries.append(spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2))
     trigger = 2500
     for i in range(12):
-        x = edges.left[0] if i % 2 == 0 else edges.right[0]
+        x = edges.left.x if i % 2 == 0 else edges.right.x
         entries.append(
             spawn(
                 x=x,
-                y=edges.left[1],
+                y=edges.left.y,
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_5_19,
                 trigger_ms=trigger,
@@ -552,7 +552,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries.append(
         spawn(
             x=-264.0,
-            y=edges.left[1],
+            y=edges.left.y,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=(loop_count - 1) * 2500,
@@ -562,8 +562,8 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     special_trigger = (5 * loop_count + 15) * 500
     entries.append(
         spawn(
-            x=edges.left[0],
-            y=edges.left[1],
+            x=edges.left.x,
+            y=edges.left.y,
             heading=0.0,
             spawn_id=SpawnId.FORMATION_GRID_ALIEN_BRONZE_18,
             trigger_ms=special_trigger,

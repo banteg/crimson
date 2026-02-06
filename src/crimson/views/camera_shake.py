@@ -8,7 +8,6 @@ import pyray as rl
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
@@ -66,13 +65,11 @@ class CameraShakeView:
         self._reflex_boost_locked = False
         self._reset_scene()
 
-    def _spawn_creature(self, *, world_x: float, world_y: float, type_id: CreatureTypeId, hp: float) -> None:
+    def _spawn_creature(self, *, world_pos: Vec2, type_id: CreatureTypeId, hp: float) -> None:
+        clamped_pos = world_pos.clamp_rect(64.0, 64.0, WORLD_SIZE - 64.0, WORLD_SIZE - 64.0)
         init = CreatureInit(
             origin_template_id=0,
-            pos=Vec2(
-                clamp(world_x, 64.0, WORLD_SIZE - 64.0),
-                clamp(world_y, 64.0, WORLD_SIZE - 64.0),
-            ),
+            pos=clamped_pos,
             heading=math.pi,
             phase_seed=0.0,
             type_id=type_id,
@@ -103,9 +100,8 @@ class CameraShakeView:
             _SpawnSpec(r=460.0, angle_rad=math.pi * 1.25, type_id=CreatureTypeId.ZOMBIE, hp=100.0),
         ]
         for entry in spawn:
-            x = player.pos.x + math.cos(entry.angle_rad) * entry.r
-            y = player.pos.y + math.sin(entry.angle_rad) * entry.r
-            self._spawn_creature(world_x=x, world_y=y, type_id=entry.type_id, hp=entry.hp)
+            spawn_pos = player.pos + Vec2.from_angle(entry.angle_rad) * entry.r
+            self._spawn_creature(world_pos=spawn_pos, type_id=entry.type_id, hp=entry.hp)
 
     def open(self) -> None:
         self._missing_assets.clear()

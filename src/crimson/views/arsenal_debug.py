@@ -9,7 +9,6 @@ from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusId
@@ -164,17 +163,17 @@ class ArsenalDebugView:
             return
 
         count = max(1, len(self._spawn_ids))
-        base_x = float(player.pos.x)
-        base_y = float(player.pos.y)
+        player_pos = player.pos
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
-            x = clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
-            y = clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
+                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0
+            )
             heading = angle + math.pi
             self._world.creatures.spawn_template(
                 spawn_id,
-                (x, y),
+                spawn_pos,
                 heading,
                 self._world.state.rng,
                 rand=self._world.state.rng.rand,
@@ -191,15 +190,13 @@ class ArsenalDebugView:
         bonus_ids = [int(entry.bonus_id) for entry in BONUS_TABLE if int(entry.bonus_id) != int(BonusId.UNUSED)]
         count = max(1, len(bonus_ids))
 
-        base_x = float(player.pos.x)
-        base_y = float(player.pos.y)
+        player_pos = player.pos
         rng = self._world.state.rng.rand
         current_weapon_id = int(player.weapon_id)
 
         for idx, bonus_id in enumerate(bonus_ids):
             angle = float(idx) / float(count) * math.tau
-            x = base_x + math.cos(angle) * float(ARSENAL_BONUS_RING_RADIUS)
-            y = base_y + math.sin(angle) * float(ARSENAL_BONUS_RING_RADIUS)
+            pos = player_pos + Vec2.from_angle(angle) * float(ARSENAL_BONUS_RING_RADIUS)
 
             amount_override = -1
             if bonus_id == int(BonusId.WEAPON) and self._weapon_ids:
@@ -211,7 +208,7 @@ class ArsenalDebugView:
                 amount_override = int(weapon_id)
 
             bonus_pool.spawn_at(
-                pos=Vec2(x, y),
+                pos=pos,
                 bonus_id=bonus_id,
                 duration_override=int(amount_override),
                 state=self._world.state,

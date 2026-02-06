@@ -531,7 +531,7 @@ class DemoView:
     def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
         self._world.creatures.spawn_template(
             int(spawn_id),
-            (pos.x, pos.y),
+            pos,
             float(heading),
             self._spawn_rng,
             rand=self._spawn_rng.rand,

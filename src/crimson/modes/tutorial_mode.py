@@ -297,7 +297,7 @@ class TutorialMode(BaseGameplayMode):
 
         for call in actions.spawn_bonuses:
             spawned = self._state.bonus_pool.spawn_at(
-                pos=Vec2(float(call.pos[0]), float(call.pos[1])),
+                pos=call.pos,
                 bonus_id=int(call.bonus_id),
                 duration_override=int(call.amount),
                 state=self._state,
