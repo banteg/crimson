@@ -1990,20 +1990,21 @@ class HighScoresView:
         textures = self._button_textures
         if enabled and textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
+            font = self._ensure_small_font()
             panel_x0, panel_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
 
             x0 = panel_x0 + HS_BUTTON_X * scale
             y0 = panel_y0 + HS_BUTTON_Y0 * scale
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
-            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             if button_update(self._update_button, x=x0, y=y0, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 # Reload scores from disk (no view transition).
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self.open()
                 return
-            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
                 x=x0,
@@ -2017,7 +2018,7 @@ class HighScoresView:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
                 self._action = "open_play_game"
                 return
-            back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
                 x=panel_x0 + HS_BACK_BUTTON_X * scale,
@@ -2197,11 +2198,11 @@ class HighScoresView:
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             button_x = left_x0 + HS_BUTTON_X * scale
             button_y0 = left_y0 + HS_BUTTON_Y0 * scale
-            w = button_width(None, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
             button_draw(textures, font, self._update_button, x=button_x, y=button_y0, width=w, scale=scale)
-            w = button_width(None, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             button_draw(textures, font, self._play_button, x=button_x, y=button_y0 + HS_BUTTON_STEP_Y * scale, width=w, scale=scale)
-            w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,

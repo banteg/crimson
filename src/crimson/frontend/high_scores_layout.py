@@ -30,9 +30,16 @@ def hs_right_panel_pos_x(screen_width: float) -> float:
           x -= 65
 
     At 1024 this resolves to 609 (our original constant).
+    For non-native mid-wide widths (e.g. 1366), we bucket to the classic 1280
+    layout path so panel placement matches legacy runtime captures.
     """
 
     w = int(screen_width)
+    # Classic layout code only had explicit menu tuning for a small set of
+    # display widths; modern 1366-wide windows otherwise push the panel too far
+    # right. Bucket those mid-wide unsupported widths to the classic 1280 path.
+    if 1280 < w < 1600:
+        w = 1280
     x = float(w - 350)
     if w <= 800:
         if w <= 640:
