@@ -26,6 +26,7 @@ from ..replay import (
     Replay,
     UnknownEvent,
     load_replay_file,
+    unpack_packed_player_input,
     unpack_input_flags,
     warn_on_game_version_mismatch,
 )
@@ -209,8 +210,7 @@ class ReplayPlaybackMode:
         packed_tick = replay.inputs[int(tick_index)]
         inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, aim_vec, flags = packed[:4]
-            ax, ay = aim_vec[:2]
+            mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             inputs.append(
                 PlayerInput(

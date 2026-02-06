@@ -13,6 +13,7 @@ from .types import (
     ReplayStatusSnapshot,
     UnknownEvent,
     pack_input_flags,
+    unpack_packed_player_input,
     unpack_input_flags,
 )
 from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
@@ -35,6 +36,7 @@ __all__ = [
     "load_replay",
     "load_replay_file",
     "pack_input_flags",
+    "unpack_packed_player_input",
     "unpack_input_flags",
     "warn_on_game_version_mismatch",
 ]
