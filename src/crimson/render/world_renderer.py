@@ -1266,7 +1266,7 @@ class WorldRenderer:
                     tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
                 if hitbox_size < 0.0:
                     # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
-                    tint_rgba = tint_rgba.with_a(max(0.0, tint_rgba.a + hitbox_size * 0.1))
+                    tint_rgba = tint_rgba.replace(a=max(0.0, tint_rgba.a + hitbox_size * 0.1))
                 tint = tint_rgba.scaled_alpha(entity_alpha).clamped().to_rl()
 
                 size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)

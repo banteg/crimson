@@ -10,7 +10,8 @@ def test_rgba_clamp_and_alpha_helpers() -> None:
 
     assert color.clamped() == RGBA(1.0, 0.0, 0.5, 0.25)
     assert color.scaled_alpha(0.5) == RGBA(1.2, -0.1, 0.5, 0.125)
-    assert color.with_a(1.0) == RGBA(1.2, -0.1, 0.5, 1.0)
+    assert color.replace(a=1.0) == RGBA(1.2, -0.1, 0.5, 1.0)
+    assert color.replace(r=0.3, b=0.7) == RGBA(0.3, -0.1, 0.7, 0.25)
 
 
 def test_rgba_to_rl_and_from_rl_round_trip() -> None:

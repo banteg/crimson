@@ -67,20 +67,23 @@ class RGBA:
             a=clamp(self.a, 0.0, 1.0),
         )
 
-    def with_r(self, value: float) -> RGBA:
-        return RGBA(r=float(value), g=self.g, b=self.b, a=self.a)
-
-    def with_g(self, value: float) -> RGBA:
-        return RGBA(r=self.r, g=float(value), b=self.b, a=self.a)
-
-    def with_b(self, value: float) -> RGBA:
-        return RGBA(r=self.r, g=float(value), b=self.b, a=self.a)
-
-    def with_a(self, value: float) -> RGBA:
-        return RGBA(r=self.r, g=self.g, b=self.b, a=float(value))
+    def replace(
+        self,
+        *,
+        r: float | None = None,
+        g: float | None = None,
+        b: float | None = None,
+        a: float | None = None,
+    ) -> RGBA:
+        return RGBA(
+            r=self.r if r is None else float(r),
+            g=self.g if g is None else float(g),
+            b=self.b if b is None else float(b),
+            a=self.a if a is None else float(a),
+        )
 
     def scaled_alpha(self, factor: float) -> RGBA:
-        return self.with_a(self.a * float(factor))
+        return self.replace(a=self.a * float(factor))
 
     def to_rl(self) -> rl.Color:
         import pyray as rl

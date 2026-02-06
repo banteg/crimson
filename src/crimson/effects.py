@@ -63,7 +63,7 @@ class _ColorProxy:
 
     @color_r.setter
     def color_r(self, value: float) -> None:
-        self.color = self.color.with_r(value)
+        self.color = self.color.replace(r=value)
 
     @property
     def color_g(self) -> float:
@@ -71,7 +71,7 @@ class _ColorProxy:
 
     @color_g.setter
     def color_g(self, value: float) -> None:
-        self.color = self.color.with_g(value)
+        self.color = self.color.replace(g=value)
 
     @property
     def color_b(self) -> float:
@@ -79,7 +79,7 @@ class _ColorProxy:
 
     @color_b.setter
     def color_b(self, value: float) -> None:
-        self.color = self.color.with_b(value)
+        self.color = self.color.replace(b=value)
 
     @property
     def color_a(self) -> float:
@@ -87,7 +87,7 @@ class _ColorProxy:
 
     @color_a.setter
     def color_a(self, value: float) -> None:
-        self.color = self.color.with_a(value)
+        self.color = self.color.replace(a=value)
 
 
 CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
@@ -338,7 +338,7 @@ class ParticlePool:
                         tint_sum = float(tint.r) + float(tint.g) + float(tint.b)
                         if tint_sum > 1.6:
                             factor = 1.0 - float(entry.intensity) * 0.01
-                            creature.tint = RGBA(
+                            creature.tint = tint.replace(
                                 r=clamp(float(tint.r) * factor, 0.0, 1.0),
                                 g=clamp(float(tint.g) * factor, 0.0, 1.0),
                                 b=clamp(float(tint.b) * factor, 0.0, 1.0),
@@ -426,7 +426,7 @@ class SpriteEffectPool:
                 continue
             entry.pos = entry.pos + entry.vel * dt
             entry.rotation += dt * 3.0
-            entry.color = entry.color.with_a(entry.color.a - dt)
+            entry.color = entry.color.replace(a=entry.color.a - dt)
             entry.scale += dt * 60.0
             if entry.color.a <= 0.0:
                 entry.active = False
@@ -573,7 +573,7 @@ class FxQueueRotated:
 
         entry = self._entries[self._count]
         entry.top_left = top_left
-        entry.color = color.with_a(a)
+        entry.color = color.replace(a=a)
         entry.rotation = float(rotation)
         entry.scale = float(scale)
         entry.creature_type_id = int(creature_type_id)
@@ -722,7 +722,7 @@ class EffectPool:
                         entry.scale += float(entry.scale_step) * float(dt)
                     if flags & 0x10:
                         next_alpha = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
-                        entry.color = entry.color.with_a(next_alpha)
+                        entry.color = entry.color.replace(a=next_alpha)
                 continue
 
             if fx_queue is not None and (flags & 0x80):
@@ -734,7 +734,7 @@ class EffectPool:
                     width=float(entry.half_width) * 2.0,
                     height=float(entry.half_height) * 2.0,
                     rotation=float(entry.rotation),
-                    rgba=entry.color.with_a(alpha),
+                    rgba=entry.color.replace(a=alpha),
                 )
 
             self.free(idx)

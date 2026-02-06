@@ -162,7 +162,7 @@ class CreatureState:
 
     @tint_r.setter
     def tint_r(self, value: float) -> None:
-        self.tint = self.tint.with_r(value)
+        self.tint = self.tint.replace(r=value)
 
     @property
     def tint_g(self) -> float:
@@ -170,7 +170,7 @@ class CreatureState:
 
     @tint_g.setter
     def tint_g(self, value: float) -> None:
-        self.tint = self.tint.with_g(value)
+        self.tint = self.tint.replace(g=value)
 
     @property
     def tint_b(self) -> float:
@@ -178,7 +178,7 @@ class CreatureState:
 
     @tint_b.setter
     def tint_b(self, value: float) -> None:
-        self.tint = self.tint.with_b(value)
+        self.tint = self.tint.replace(b=value)
 
     @property
     def tint_a(self) -> float:
@@ -186,7 +186,7 @@ class CreatureState:
 
     @tint_a.setter
     def tint_a(self, value: float) -> None:
-        self.tint = self.tint.with_a(value)
+        self.tint = self.tint.replace(a=value)
 
 
 @dataclass(frozen=True, slots=True)
