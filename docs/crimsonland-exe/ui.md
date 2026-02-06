@@ -138,6 +138,9 @@ Recovered segmented-slider state blocks used by `options_menu_update`
 
 Additional controls-rebind runtime globals:
 
+- `ui_menu_item_t` (`0x10` bytes, `ui_menu_item_update` payload):
+  `label` (+0x0), `hovered` (+0x4), `activated` (+0x5), `enabled` (+0x6),
+  `hover_phase` (+0x8), `alpha` (+0xc).
 - Rebind action slots passed to `ui_menu_item_update`:
   `controls_rebind_move_primary_item`, `controls_rebind_move_secondary_item`,
   `controls_rebind_move_tertiary_item`, `controls_rebind_move_quaternary_item`,
@@ -148,10 +151,10 @@ Additional controls-rebind runtime globals:
   `controls_rebind_move_up_down_axis_item`,
   `controls_rebind_move_left_right_axis_item`
   (`0x004d7898..0x004d7958`).
-- `controls_key_pick_perk_label` (`0x004d7968`): menu-label pointer updated
-  from `_config_key_pick_perk` key-name resolution.
-- `controls_key_reload_label` (`0x004d7978`): menu-label pointer updated from
-  `_config_key_reload` key-name resolution (also reused by move-to-cursor mode).
+- `controls_key_pick_perk_item` (`0x004d7968`): `ui_menu_item_t` slot for
+  the Level Up action; `.label` is updated from `_config_key_pick_perk`.
+- `controls_key_reload_item` (`0x004d7978`): `ui_menu_item_t` slot for the
+  Reload/Move-to-cursor action; `.label` is updated from `_config_key_reload`.
 - `controls_rebind_axis_peak_abs_13f/140/141/153/154/155`
   (`0x004d79e4..0x004d79f8`): per-axis absolute-value peaks accumulated during
   analog rebind capture and compared against the `0.5` assignment threshold.
@@ -186,10 +189,8 @@ Recovered action-button globals for this state:
 
 - `perk_selection_cancel_button` (`0x00480090`)
 - `perk_selection_select_button` (`0x00480820`)
-- Choice-item state table base/global fields:
-  `perk_selection_choice_item_slot0_label` (`0x004800a8`),
-  `perk_selection_choice_item_slot0_activated` (`0x004800ad`), and
-  `perk_selection_choice_item_slot0_alpha` (`0x004800b4`)
+- Choice-item state table base:
+  `perk_selection_choice_item_slot0` (`0x004800a8`, `ui_menu_item_t`)
   with stride `0x10` across perk slots.
 - Perk-selection one-shot idle/hover color vectors:
   `perk_selection_choice_color_idle_*` (`0x00480298..0x004802a4`) and

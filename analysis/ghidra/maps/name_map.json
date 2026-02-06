@@ -2872,7 +2872,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043e5e0",
     "name": "ui_menu_item_update",
-    "signature": "int ui_menu_item_update(float *xy, int *item)",
+    "signature": "int ui_menu_item_update(float *xy, ui_menu_item_t *item)",
     "comment": "draws a text menu item, updates hover/press state, and returns 1 when activated. Runtime capture (2026-02-06 gameplay_state_capture): emits sfx_play id 63 on activation paths."
   },
   {

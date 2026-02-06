@@ -771,24 +771,10 @@
     },
     {
       "address": "0x004800a8",
-      "comment": "Perk selection choice-item slot 0 label pointer; item records are stride 0x10 and consumed by ui_menu_item_update.",
-      "name": "perk_selection_choice_item_slot0_label",
+      "comment": "Perk selection choice-item slot 0 state record (stride 0x10), consumed by ui_menu_item_update across perk slots.",
+      "name": "perk_selection_choice_item_slot0",
       "program": "crimsonland.exe",
-      "type": "char *"
-    },
-    {
-      "address": "0x004800ad",
-      "comment": "Perk selection choice-item slot 0 activated flag byte (records are stride 0x10).",
-      "name": "perk_selection_choice_item_slot0_activated",
-      "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004800b4",
-      "comment": "Perk selection choice-item slot 0 alpha scalar (records are stride 0x10).",
-      "name": "perk_selection_choice_item_slot0_alpha",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x0048014c",
@@ -7738,81 +7724,92 @@
       "address": "0x004d7898",
       "comment": "Controls rebind menu-item slot for movement primary (Move Up / Forward, depending on movement mode).",
       "name": "controls_rebind_move_primary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78a8",
       "comment": "Controls rebind menu-item slot for movement secondary (Move Down / Backward, depending on movement mode).",
       "name": "controls_rebind_move_secondary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78b8",
       "comment": "Controls rebind menu-item slot for movement tertiary (Move Left / Turn Left, depending on movement mode).",
       "name": "controls_rebind_move_tertiary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78c8",
       "comment": "Controls rebind menu-item slot for movement quaternary (Move Right / Turn Right, depending on movement mode).",
       "name": "controls_rebind_move_quaternary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78d8",
       "comment": "Controls rebind menu-item slot for Fire action.",
       "name": "controls_rebind_fire_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7908",
       "comment": "Controls rebind menu-item slot for torso-left aiming action.",
       "name": "controls_rebind_torso_left_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7918",
       "comment": "Controls rebind menu-item slot for torso-right aiming action.",
       "name": "controls_rebind_torso_right_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7928",
       "comment": "Controls rebind menu-item slot for aim up/down analog axis.",
       "name": "controls_rebind_aim_up_down_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7938",
       "comment": "Controls rebind menu-item slot for aim left/right analog axis.",
       "name": "controls_rebind_aim_left_right_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7948",
       "comment": "Controls rebind menu-item slot for movement up/down analog axis.",
       "name": "controls_rebind_move_up_down_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7958",
       "comment": "Controls rebind menu-item slot for movement left/right analog axis.",
       "name": "controls_rebind_move_left_right_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7968",
-      "comment": "Controls rebind label pointer for the \"Level Up\" action menu item (mirrors _config_key_pick_perk display name).",
-      "name": "controls_key_pick_perk_label",
+      "comment": "Controls rebind menu-item slot for the \"Level Up\" action (label mirrors _config_key_pick_perk display name).",
+      "name": "controls_key_pick_perk_item",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7978",
-      "comment": "Controls rebind label pointer for the \"Reload\" / \"Move to cursor\" action menu item (mirrors _config_key_reload display name).",
-      "name": "controls_key_reload_label",
+      "comment": "Controls rebind menu-item slot for the \"Reload\" / \"Move to cursor\" action (label mirrors _config_key_reload display name).",
+      "name": "controls_key_reload_item",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d79a0",

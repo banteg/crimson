@@ -458,6 +458,17 @@ typedef struct ui_menu_item_subtemplate_block_t {
     int quad_mode;
 } ui_menu_item_subtemplate_block_t;
 
+// 0x10-byte text-item widget state consumed by ui_menu_item_update.
+typedef struct ui_menu_item_t {
+    char *label;
+    unsigned char hovered;
+    unsigned char activated;
+    unsigned char enabled;
+    unsigned char _pad0;
+    float hover_phase;
+    float alpha;
+} ui_menu_item_t;
+
 typedef struct ui_button_t {
     char *label;
     unsigned char hovered;

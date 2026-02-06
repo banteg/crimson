@@ -3258,7 +3258,7 @@
   {
     "name": "ui_menu_item_update",
     "address": "0043e5e0",
-    "signature": "int ui_menu_item_update(float * xy, int * item)",
+    "signature": "int ui_menu_item_update(float * xy, ui_menu_item_t * item)",
     "external": false,
     "calls_total": 8,
     "calls": ["__ftol", "crt_atexit", "input_primary_just_pressed", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
