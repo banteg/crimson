@@ -2549,6 +2549,13 @@
       "type": "ui_element_t"
     },
     {
+      "address": "0x0048f164",
+      "comment": "Set to 1 at the end of ui_menu_layout_init (layout-init latch; no consumer mapped yet).",
+      "name": "ui_menu_layout_init_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x0048f168",
       "comment": "UI element pointer table slot 0 (logo sign root); also the low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
@@ -2836,40 +2843,60 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f20c",
+      "comment": "Perk prompt root UI element rendered by perk_prompt_update_and_render (special-cased in ui_element_render focus handling).",
+      "name": "ui_perk_prompt_element",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
       "address": "0x0048f224",
       "comment": "Perk prompt origin X used to compute hover/click bounds (ui_mouse_x - origin_x).",
       "name": "perk_prompt_origin_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f228",
       "comment": "Perk prompt origin Y used to compute hover/click bounds (ui_mouse_y - origin_y).",
       "name": "perk_prompt_origin_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f248",
       "comment": "Perk prompt bounds min X (relative to perk_prompt_origin_x).",
       "name": "perk_prompt_bounds_min_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f24c",
       "comment": "Perk prompt bounds min Y (relative to perk_prompt_origin_y).",
       "name": "perk_prompt_bounds_min_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f280",
       "comment": "Perk prompt bounds max X (relative to perk_prompt_origin_x).",
       "name": "perk_prompt_bounds_max_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f284",
       "comment": "Perk prompt bounds max Y (relative to perk_prompt_origin_y).",
       "name": "perk_prompt_bounds_max_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048f330",
+      "comment": "Perk prompt nested UI block loaded from ui_textLevelUp.jaz and resized in ui_menu_layout_init.",
+      "name": "ui_perk_prompt_levelup_element",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x0048f500",

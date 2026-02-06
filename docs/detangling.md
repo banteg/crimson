@@ -1081,6 +1081,9 @@ Init timing note:
   - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 while perks are pending and feeds the
     prompt alpha plus the transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
 
+  - `ui_perk_prompt_element` (`DAT_0048f20c`) is the prompt's root UI element; `perk_prompt_update_and_render`
+    forces its active flag and renders it each frame while `ui_element_render` skips focus/click handling for it.
+
   - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) anchor the prompt bounds for hover/click
     tests; `perk_prompt_bounds_min_*` (`DAT_0048f248`/`DAT_0048f24c`) and
     `perk_prompt_bounds_max_*` (`DAT_0048f280`/`DAT_0048f284`) define the relative rectangle.
@@ -1424,3 +1427,8 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   (they are table slot anchors used for per-element quad/offset scaling).
 - Labeled and typed backing storage blocks for those slots (`0x004875a8..0x0048ee50`) as `ui_element_slot_*`
   (`ui_element_t`), so table assignments no longer point to anonymous `DAT_*` elements.
+- Labeled adjacent UI globals:
+  - `ui_menu_layout_init_latch` (`DAT_0048f164`) set to `1` at the end of `ui_menu_layout_init`.
+  - `ui_perk_prompt_element` (`DAT_0048f20c`) typed as `ui_element_t`.
+  - `ui_perk_prompt_levelup_element` (`DAT_0048f330`) typed as a nested `ui_element_t` block loaded from
+    `ui\\ui_textLevelUp.jaz`.

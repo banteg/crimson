@@ -2367,36 +2367,36 @@ void perk_prompt_update_and_render(void)
   
   if ((demo_mode_active == '\0') && (config_blob.reserved0._24_4_ != 2)) {
     if ((perk_pending_count < 1) || (game_state_id != 9)) {
-      perk_prompt_timer = perk_prompt_timer - frame_dt_ms;
-      if (perk_prompt_timer < 0) {
-        perk_prompt_timer = 0;
+      _perk_prompt_timer = _perk_prompt_timer - frame_dt_ms;
+      if (_perk_prompt_timer < 0) {
+        _perk_prompt_timer = 0;
       }
     }
     else {
-      perk_prompt_timer = perk_prompt_timer + frame_dt_ms;
-      if (200 < perk_prompt_timer) {
-        perk_prompt_timer = 200;
+      _perk_prompt_timer = _perk_prompt_timer + frame_dt_ms;
+      if (200 < _perk_prompt_timer) {
+        _perk_prompt_timer = 200;
       }
     }
-    if ((config_blob.full_version != '\0') && (0 < perk_prompt_timer)) {
-      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)perk_prompt_timer * 0.005);
+    if ((config_blob.full_version != '\0') && (0 < _perk_prompt_timer)) {
+      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)_perk_prompt_timer * 0.005);
       pcVar2 = input_key_name(config_blob.key_pick_perk);
       crt_sprintf(acStack_80,s_Press__s_to_pick_a_perk_00471488,pcVar2);
-      y = _perk_prompt_origin_y + 8.0;
+      y = perk_prompt_origin_y + 8.0;
       pIVar1 = grim_interface_ptr->vtable;
       pcVar2 = acStack_80;
       iVar3 = (*pIVar1->grim_measure_text_width)(acStack_80);
       (*pIVar1->grim_draw_text_small)((float)((config_blob.screen_width - iVar3) + -0x10),y,pcVar2);
     }
-    DAT_0048f20c = 1;
-    fVar4 = ((float10)1.0 - (float10)perk_prompt_timer * (float10)0.005) * (float10)-1.5707964;
+    ui_perk_prompt_element = 1;
+    fVar4 = ((float10)1.0 - (float10)_perk_prompt_timer * (float10)0.005) * (float10)-1.5707964;
     fVar5 = (float10)fcos(fVar4);
     _perk_prompt_transform_cos = (float)fVar5;
     fVar4 = (float10)fsin((float10)(float)fVar4);
     _perk_prompt_transform_sin_neg = (float)-fVar4;
     _perk_prompt_transform_sin = (float)fVar4;
     _perk_prompt_transform_cos_2 = (float)fVar5;
-    ui_element_render((ui_element_t *)&DAT_0048f20c);
+    ui_element_render((ui_element_t *)&ui_perk_prompt_element);
   }
   return;
 }
@@ -4938,6 +4938,7 @@ LAB_00407129:
 
 /* rush_mode_update @ 004072b0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* rush mode update: spawns edge waves and handles demo exit */
 
 void rush_mode_update(void)
@@ -4992,16 +4993,16 @@ void rush_mode_update(void)
       else {
         local_8 = 0.0;
       }
-      local_20 = (float)terrain_texture_width + 64.0;
+      local_20 = (float)_terrain_texture_width + 64.0;
       fVar2 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                             (float10)0.001);
-      local_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
+      local_1c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_20,&local_10,2);
       local_18 = -64.0;
       fVar2 = (float10)fsin((float10)(int)highscore_active_record.survival_elapsed_ms *
                             (float10)0.001);
       (&creature_pool)[iVar1].ai_mode = 8;
-      local_14 = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
+      local_14 = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_18,&local_10,3);
       (&creature_pool)[iVar1].ai_mode = 8;
       (&creature_pool)[iVar1].flags = (&creature_pool)[iVar1].flags | 0x80;
@@ -5273,6 +5274,7 @@ LAB_00407611:
 
 /* survival_update @ 00407cd0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* main survival mode update: timers, scripted spawns, and enemy wave spawning */
 
 void survival_update(void)
@@ -5490,8 +5492,8 @@ joined_r0x004082fb:
     iVar5 = iVar5 + uVar6 * 2;
     do {
       uVar2 = crt_rand();
-      iVar3 = terrain_texture_height;
-      iVar4 = terrain_texture_width;
+      iVar3 = _terrain_texture_height;
+      iVar4 = _terrain_texture_width;
       switch(uVar2 & 3) {
       case 0:
         iVar3 = crt_rand();
@@ -5505,7 +5507,7 @@ joined_r0x004082fb:
         local_48 = (float)(iVar3 % iVar4);
         pfVar7 = &local_38;
         local_38 = (float)(int)local_48;
-        local_34 = (float)terrain_texture_height + 40.0;
+        local_34 = (float)_terrain_texture_height + 40.0;
         break;
       case 2:
         iVar4 = crt_rand();
@@ -5519,7 +5521,7 @@ joined_r0x004082fb:
         local_48 = (float)(iVar4 % iVar3);
         pfVar7 = &local_28;
         local_24 = (float)(int)local_48;
-        local_28 = (float)terrain_texture_width + 40.0;
+        local_28 = (float)_terrain_texture_width + 40.0;
         break;
       default:
         goto switchD_00408344_default;
@@ -5534,8 +5536,8 @@ switchD_00408344_default:
   }
   survival_spawn_cooldown = survival_spawn_cooldown + iVar5;
   uVar6 = crt_rand();
-  iVar4 = terrain_texture_height;
-  iVar5 = terrain_texture_width;
+  iVar4 = _terrain_texture_height;
+  iVar5 = _terrain_texture_width;
   switch(uVar6 & 3) {
   case 0:
     iVar4 = crt_rand();
@@ -5549,7 +5551,7 @@ switchD_00408344_default:
     local_48 = (float)(iVar4 % iVar5);
     pfVar7 = &local_18;
     local_18 = (float)(int)local_48;
-    local_14 = (float)terrain_texture_height + 40.0;
+    local_14 = (float)_terrain_texture_height + 40.0;
     break;
   case 2:
     iVar5 = crt_rand();
@@ -5563,7 +5565,7 @@ switchD_00408344_default:
     local_48 = (float)(iVar5 % iVar4);
     pfVar7 = &local_8;
     local_4 = (float)(int)local_48;
-    local_8 = (float)terrain_texture_width + 40.0;
+    local_8 = (float)_terrain_texture_width + 40.0;
     break;
   default:
     goto joined_r0x004082fb;
@@ -6214,13 +6216,13 @@ LAB_004097e4:
   if (-1.0 < _camera_offset_y) {
     _camera_offset_y = -1.0;
   }
-  if (_camera_offset_x < (float)(config_blob.screen_width - terrain_texture_width)) {
-    _camera_offset_x = (float)(config_blob.screen_width - terrain_texture_width);
+  if (_camera_offset_x < (float)(config_blob.screen_width - _terrain_texture_width)) {
+    _camera_offset_x = (float)(config_blob.screen_width - _terrain_texture_width);
   }
-  if ((float)(config_blob.screen_height - terrain_texture_height) <= _camera_offset_y) {
+  if ((float)(config_blob.screen_height - _terrain_texture_height) <= _camera_offset_y) {
     return;
   }
-  _camera_offset_y = (float)(config_blob.screen_height - terrain_texture_height);
+  _camera_offset_y = (float)(config_blob.screen_height - _terrain_texture_height);
   return;
 }
 
@@ -6947,20 +6949,20 @@ LAB_0040ad8e:
     else {
       iVar2 = frame_dt_ms * 3;
     }
-    perk_prompt_pulse = perk_prompt_pulse + iVar2 * 2;
-    if (perk_prompt_pulse < 0) {
-      perk_prompt_pulse = 0;
+    _perk_prompt_pulse = _perk_prompt_pulse + iVar2 * 2;
+    if (_perk_prompt_pulse < 0) {
+      _perk_prompt_pulse = 0;
     }
-    else if (1000 < perk_prompt_pulse) {
-      perk_prompt_pulse = 1000;
+    else if (1000 < _perk_prompt_pulse) {
+      _perk_prompt_pulse = 1000;
     }
   }
   if (((((demo_mode_active == '\0') && (game_paused_flag == '\0')) && (mouse_button_down == '\0'))
       && ((config_blob.reserved0._24_4_ != 2 && (0 < perk_pending_count)))) &&
      ((0.0 < player_state_table.health ||
       ((config_blob.reserved0._20_4_ == 2 && (0.0 < player2_health)))))) {
-    local_8 = ui_mouse_x - _perk_prompt_origin_x;
-    fStack_4 = ui_mouse_y - _perk_prompt_origin_y;
+    local_8 = ui_mouse_x - perk_prompt_origin_x;
+    fStack_4 = ui_mouse_y - perk_prompt_origin_y;
     if (game_state_pending != 6) {
       iVar2 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_pick_perk);
       if ((((char)iVar2 == '\0') &&
@@ -6968,7 +6970,7 @@ LAB_0040ad8e:
          && (iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x4e), (char)iVar2 == '\0')
          ) {
         if (((local_8 <= perk_prompt_bounds_min_x) || (fStack_4 <= perk_prompt_bounds_min_y)) ||
-           ((_perk_prompt_bounds_max_x <= local_8 || (_perk_prompt_bounds_max_y <= fStack_4)))) {
+           ((perk_prompt_bounds_max_x <= local_8 || (perk_prompt_bounds_max_y <= fStack_4)))) {
           perk_prompt_hover_active = '\0';
         }
         else {
@@ -6978,7 +6980,7 @@ LAB_0040ad8e:
         }
       }
       else {
-        perk_prompt_pulse = 1000;
+        _perk_prompt_pulse = 1000;
 joined_r0x0040b1bc:
         if (perk_choices_dirty != '\0') {
           perks_generate_choices();
@@ -11425,7 +11427,7 @@ void gameplay_reset_state(void)
   _DAT_00482888 = sfx_trooper_die_03;
   _DAT_004828b8 = 7;
   DAT_0048287c = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_trooper_0047372c);
-  _camera_offset_x = (float)terrain_texture_width * 0.5;
+  _camera_offset_x = (float)_terrain_texture_width * 0.5;
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
   puVar14 = &weapon_usage_time;
@@ -11433,7 +11435,7 @@ void gameplay_reset_state(void)
     *puVar14 = 0;
     puVar14 = puVar14 + 1;
   }
-  _camera_offset_y = (float)terrain_texture_height * 0.5;
+  _camera_offset_y = (float)_terrain_texture_height * 0.5;
   weapon_table_init();
   weapon_refresh_available();
   perks_rebuild_available();
@@ -11469,7 +11471,7 @@ void gameplay_reset_state(void)
   _bonus_freeze_timer = 0;
   _DAT_004aaf1c = 0;
   _DAT_004aaf2c = 0xbf800000;
-  perk_prompt_timer = 0;
+  _perk_prompt_timer = 0;
   projectile_reset_pools();
   player_reset_all();
   player_aux_timer = 0;
@@ -13473,15 +13475,15 @@ LAB_0041753e:
   if (*pfVar16 < fVar14) {
     *pfVar16 = fVar14;
   }
-  if ((float)terrain_texture_width - fVar14 < *pfVar16) {
-    *pfVar16 = (float)terrain_texture_width - fVar14;
+  if ((float)_terrain_texture_width - fVar14 < *pfVar16) {
+    *pfVar16 = (float)_terrain_texture_width - fVar14;
   }
   pfVar16 = &(&player_state_table)[iVar7].pos_y;
   if ((&player_state_table)[iVar7].pos_y < fVar14) {
     *pfVar16 = fVar14;
   }
-  if ((float)terrain_texture_height - fVar14 < *pfVar16) {
-    *pfVar16 = (float)terrain_texture_height - fVar14;
+  if ((float)_terrain_texture_height - fVar14 < *pfVar16) {
+    *pfVar16 = (float)_terrain_texture_height - fVar14;
   }
   if (0.8 < *pfVar1) {
     *pfVar1 = 0.8;
@@ -13714,71 +13716,71 @@ void __cdecl terrain_generate(void *desc)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_target)((int)terrain_render_target);
+    (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x10)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x10) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 800;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 800;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 800;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 800;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x14)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x14) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 0x23;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0x23;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 0x23;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)
-              ((&terrain_texture_handles)[*(int *)(iVar5 + 0x18)],0);
+              (*(int *)(&terrain_texture_handles + *(int *)(iVar5 + 0x18) * 4),0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
+    iVar2 = _terrain_texture_height * _terrain_texture_width * 0xf;
     if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar2 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
         iVar2 = crt_rand();
-        fVar4 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar4 = (float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar2 = crt_rand();
-        fStack_58 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
+        fStack_58 = ((float)(iVar2 % (_terrain_texture_width + 0x80)) - 64.0) * 6.01384e-39;
         fStack_54 = fVar4 * 6.01384e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_58,7.697716e-37,7.697716e-37);
         iVar3 = iVar3 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 0xf;
+        iVar2 = _terrain_texture_height * _terrain_texture_width * 0xf;
       } while (iVar3 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
@@ -13794,7 +13796,8 @@ void __cdecl terrain_generate(void *desc)
     (*grim_interface_ptr->vtable->grim_set_render_target)(-1);
     return;
   }
-  terrain_render_target = (float)(&terrain_texture_handles)[*(int *)((int)desc + 0x10)];
+  _terrain_render_target =
+       *(undefined4 *)(&terrain_texture_handles + *(int *)((int)desc + 0x10) * 4);
   return;
 }
 
@@ -13823,8 +13826,8 @@ void terrain_generate_random(void)
   _DAT_0048f540 = crt_rand();
   _DAT_0048f540 = _DAT_0048f540 % 7;
   crt_rand();
-  iVar3 = terrain_texture_layer_1;
-  fVar5 = terrain_texture_handles;
+  iVar4 = terrain_texture_layer_1;
+  iVar3 = _terrain_texture_handles;
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
@@ -13853,69 +13856,69 @@ void terrain_generate_random(void)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
+    (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)fVar5,0);
-    (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
-    (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar4 = 0;
-    iVar2 = terrain_texture_height * terrain_texture_width * 800;
-    if (0 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13) {
-      do {
-        pIVar1 = grim_interface_ptr->vtable;
-        iVar2 = crt_rand();
-        (*pIVar1->grim_set_rotation)((float)(iVar2 % 0x13a) * 0.01);
-        iVar2 = crt_rand();
-        fVar5 = (float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar2 = crt_rand();
-        fStack_64 = ((float)(iVar2 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
-        fStack_60 = fVar5 * 6.016324e-39;
-        (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar4 = iVar4 + 1;
-        iVar2 = terrain_texture_height * terrain_texture_width * 800;
-      } while (iVar4 < (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffffU)) >> 0x13);
-    }
-    (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)(iVar3,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar2 = 0;
-    iVar3 = terrain_texture_height * terrain_texture_width * 0x23;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 800;
     if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar3 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
         iVar3 = crt_rand();
-        fVar5 = (float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar3 = crt_rand();
-        fStack_64 = ((float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
         fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
         iVar2 = iVar2 + 1;
-        iVar3 = terrain_texture_height * terrain_texture_width * 0x23;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 800;
       } while (iVar2 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
+    }
+    (*grim_interface_ptr->vtable->grim_end_batch)();
+    (*grim_interface_ptr->vtable->grim_bind_texture)(iVar4,0);
+    (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.9);
+    (*grim_interface_ptr->vtable->grim_begin_batch)();
+    iVar4 = 0;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 0x23;
+    if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
+      do {
+        pIVar1 = grim_interface_ptr->vtable;
+        iVar3 = crt_rand();
+        (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
+        iVar3 = crt_rand();
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
+        iVar3 = crt_rand();
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_60 = fVar5 * 6.016324e-39;
+        (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
+        iVar4 = iVar4 + 1;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 0x23;
+      } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_bind_texture)(iStack_54,0);
     (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,0.7,0.6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    iVar2 = 0;
-    iVar3 = terrain_texture_height * terrain_texture_width * 0xf;
+    iVar4 = 0;
+    iVar3 = _terrain_texture_height * _terrain_texture_width * 0xf;
     if (0 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         pIVar1 = grim_interface_ptr->vtable;
         iVar3 = crt_rand();
         (*pIVar1->grim_set_rotation)((float)(iVar3 % 0x13a) * 0.01);
         iVar3 = crt_rand();
-        fVar5 = (float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0;
+        fVar5 = (float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0;
         iVar3 = crt_rand();
-        fStack_64 = ((float)(iVar3 % (terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
+        fStack_64 = ((float)(iVar3 % (_terrain_texture_width + 0x80)) - 64.0) * 6.016324e-39;
         fStack_60 = fVar5 * 6.016324e-39;
         (*grim_interface_ptr->vtable->grim_draw_quad_xy)(&fStack_64,7.700894e-37,7.700894e-37);
-        iVar2 = iVar2 + 1;
-        iVar3 = terrain_texture_height * terrain_texture_width * 0xf;
-      } while (iVar2 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
+        iVar4 = iVar4 + 1;
+        iVar3 = _terrain_texture_height * _terrain_texture_width * 0xf;
+      } while (iVar4 < (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffffU)) >> 0x13);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     _camera_offset_x = 0;
@@ -13960,7 +13963,7 @@ void terrain_render(void)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
   if (terrain_texture_failed != '\0') {
-    (*grim_interface_ptr->vtable->grim_bind_texture)(terrain_render_target,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(_terrain_render_target,0);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x12,in_stack_ffffffc4 & 0xffffff00);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -13968,10 +13971,10 @@ void terrain_render(void)
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     iVar4 = 0;
-    iVar1 = (int)(terrain_texture_height + (terrain_texture_height >> 0x1f & 0xffU)) >> 8;
+    iVar1 = (int)(_terrain_texture_height + (_terrain_texture_height >> 0x1f & 0xffU)) >> 8;
     if (iVar1 != -1 && -1 < iVar1 + 1) {
       iVar5 = 0;
-      iVar1 = terrain_texture_width;
+      iVar1 = _terrain_texture_width;
       do {
         iVar3 = 0;
         iVar2 = (int)(iVar1 + (iVar1 >> 0x1f & 0xffU)) >> 8;
@@ -13983,14 +13986,14 @@ void terrain_render(void)
                       ((float)iVar2 + _camera_offset_x,fVar6 + _camera_offset_y,256.0,256.0);
             iVar2 = iVar2 + 0x100;
             iVar3 = iVar3 + 1;
-            iVar1 = terrain_texture_width;
-          } while (iVar3 < ((int)(terrain_texture_width + (terrain_texture_width >> 0x1f & 0xffU))
+            iVar1 = _terrain_texture_width;
+          } while (iVar3 < ((int)(_terrain_texture_width + (_terrain_texture_width >> 0x1f & 0xffU))
                            >> 8) + 1);
         }
         iVar4 = iVar4 + 1;
         iVar5 = iVar5 + 0x100;
-      } while (iVar4 < ((int)(terrain_texture_height + (terrain_texture_height >> 0x1f & 0xffU)) >>
-                       8) + 1);
+      } while (iVar4 < ((int)(_terrain_texture_height + (_terrain_texture_height >> 0x1f & 0xffU))
+                       >> 8) + 1);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
@@ -13998,14 +14001,14 @@ void terrain_render(void)
               (0x12,CONCAT31((int3)((uint)in_stack_ffffff9c >> 8),1));
     return;
   }
-  (*grim_interface_ptr->vtable->grim_bind_texture)(terrain_render_target,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(_terrain_render_target,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  fVar6 = -(_camera_offset_x / (float)terrain_texture_width);
-  v0 = -(_camera_offset_y / (float)terrain_texture_height);
+  fVar6 = -(_camera_offset_x / (float)_terrain_texture_width);
+  v0 = -(_camera_offset_y / (float)_terrain_texture_height);
   (*grim_interface_ptr->vtable->grim_set_uv)
-            (fVar6,v0,(float)config_blob.screen_width / (float)terrain_texture_width + fVar6,
-             (float)config_blob.screen_height / (float)terrain_texture_height + v0);
+            (fVar6,v0,(float)config_blob.screen_width / (float)_terrain_texture_width + fVar6,
+             (float)config_blob.screen_height / (float)_terrain_texture_height + v0);
   (*grim_interface_ptr->vtable->grim_draw_fullscreen_quad)(0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   return;
@@ -18037,11 +18040,11 @@ bonus_entry_t * __cdecl bonus_spawn_at(float *pos,bonus_id_t bonus_id,int durati
   if (pos[1] < 32.0) {
     pos[1] = 32.0;
   }
-  if ((float)(terrain_texture_width + -0x20) < *pos) {
-    *pos = (float)(terrain_texture_width + -0x20);
+  if ((float)(_terrain_texture_width + -0x20) < *pos) {
+    *pos = (float)(_terrain_texture_width + -0x20);
   }
-  if ((float)(terrain_texture_height + -0x20) < pos[1]) {
-    pos[1] = (float)(terrain_texture_height + -0x20);
+  if ((float)(_terrain_texture_height + -0x20) < pos[1]) {
+    pos[1] = (float)(_terrain_texture_height + -0x20);
   }
   if (config_blob.reserved0._24_4_ != 2) {
     pbVar1 = bonus_alloc_slot();
@@ -18093,6 +18096,7 @@ bonus_entry_t * __cdecl bonus_spawn_at(float *pos,bonus_id_t bonus_id,int durati
 
 /* bonus_spawn_at_pos @ 0041f790 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* allocates a bonus slot near pos, enforces spacing/edges, picks bonus type + amount */
 
 bonus_entry_t * __cdecl bonus_spawn_at_pos(float *pos)
@@ -18105,8 +18109,8 @@ bonus_entry_t * __cdecl bonus_spawn_at_pos(float *pos)
   int iVar5;
   bonus_entry_t *pbVar6;
   
-  if ((((*pos < 32.0) || ((float)(terrain_texture_width + -0x20) < *pos)) || (pos[1] < 32.0)) ||
-     (((float)(terrain_texture_height + -0x20) < pos[1] || (config_blob.reserved0._24_4_ == 2)))) {
+  if ((((*pos < 32.0) || ((float)(_terrain_texture_width + -0x20) < *pos)) || (pos[1] < 32.0)) ||
+     (((float)(_terrain_texture_height + -0x20) < pos[1] || (config_blob.reserved0._24_4_ == 2)))) {
     return &bonus_pool_sentinel;
   }
   pbVar3 = bonus_alloc_slot();
@@ -18352,10 +18356,10 @@ void * player_reset_all(void)
   render_overlay_player_index = 0;
   do {
     uVar5 = render_overlay_player_index;
-    fVar1 = (float)terrain_texture_width;
+    fVar1 = (float)_terrain_texture_width;
     _DAT_004aaf30 = 0;
     iVar6 = render_overlay_player_index * 0x360;
-    fVar2 = (float)terrain_texture_height;
+    fVar2 = (float)_terrain_texture_height;
     (&player_state_table)[render_overlay_player_index].speed_bonus_timer = 0.0;
     (&player_state_table)[uVar5].shield_timer = 0.0;
     (&player_state_table)[uVar5].state_aux = 0;
@@ -19131,8 +19135,8 @@ void projectile_update(void)
         pfVar13 = &projectile_pool[local_e8].pos_x;
         if ((((projectile_pool[local_e8].pos_x < -64.0) ||
              (projectile_pool[local_e8].pos.pos_y < -64.0)) ||
-            ((float)(terrain_texture_width + 0x40) < *pfVar13)) ||
-           ((float)(terrain_texture_height + 0x40) < projectile_pool[local_e8].pos.pos_y)) {
+            ((float)(_terrain_texture_width + 0x40) < *pfVar13)) ||
+           ((float)(_terrain_texture_height + 0x40) < projectile_pool[local_e8].pos.pos_y)) {
 LAB_004219ef:
           fVar11 = projectile_pool[local_e8].pos.tail.vy.life_timer - frame_dt;
 LAB_004219f8:
@@ -21989,7 +21993,7 @@ void fx_queue_render(void)
   fVar5 = 1.0 / (float)config_blob.reserved0._112_4_;
   if (terrain_texture_failed == '\0') {
     if ((fx_queue_rotated != 0) || (fx_queue_count != 0)) {
-      (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
+      (*grim_interface_ptr->vtable->grim_set_render_target)(_terrain_render_target);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       if (0 < fx_queue_count) {
         (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -23303,6 +23307,7 @@ int __cdecl reg_write_dword(HKEY key,char *name,uint value)
 
 /* init_audio_and_terrain @ 0042a9f0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* sound init + terrain texture setup */
 
 void init_audio_and_terrain(void)
@@ -23332,8 +23337,8 @@ void init_audio_and_terrain(void)
     console_printf(&console_log_queue,s____no_sounds_selected_004740cc);
   }
   console_printf(&console_log_queue,&DAT_004711c0);
-  terrain_texture_width = 0x400;
-  terrain_texture_height = 0x400;
+  _terrain_texture_width = 0x400;
+  _terrain_texture_height = 0x400;
   if (0.5 <= (float)config_blob.reserved0._112_4_) {
     if (4.0 < (float)config_blob.reserved0._112_4_) {
       config_blob.reserved0[0x70] = '\0';
@@ -23469,7 +23474,7 @@ int load_textures_step(void)
   if (startup_texture_load_stage == 5) {
     if (terrain_texture_failed == '\0') {
       pcVar2 = s_ter_ter_q1_base_jaz_00474354;
-      terrain_texture_handles =
+      _terrain_texture_handles =
            texture_get_or_load_alt(s_ter_ter_q1_base_jaz_00474354,unaff_retaddr);
       pcVar1 = s_ter_ter_q1_tex1_jaz_00474340;
       terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_ter_q1_tex1_jaz_00474340,pcVar2);
@@ -23488,13 +23493,13 @@ int load_textures_step(void)
     }
     else {
       pcVar2 = s_ter_fb_q1_jaz_004742b8;
-      terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
+      _terrain_texture_handles = texture_get_or_load_alt(s_ter_fb_q1_jaz_004742b8,unaff_retaddr);
       pcVar1 = s_ter_fb_q2_jaz_004742a8;
       terrain_texture_layer_1 = texture_get_or_load_alt(s_ter_fb_q2_jaz_004742a8,pcVar2);
       pcVar2 = s_ter_fb_q3_jaz_00474298;
       terrain_texture_layer_2 = texture_get_or_load_alt(s_ter_fb_q3_jaz_00474298,pcVar1);
       terrain_texture_layer_3 = texture_get_or_load_alt(s_ter_fb_q4_jaz_00474288,pcVar2);
-      terrain_render_target = terrain_texture_handles;
+      _terrain_render_target = _terrain_texture_handles;
       in_EDX = extraout_EDX_05;
     }
   }
@@ -23525,26 +23530,26 @@ int load_textures_step(void)
     ui_clock_pointer_texture = texture_get_or_load_alt(s_ui_ui_clockPointer_jaz_00474194,pcVar2);
     in_EDX = extraout_EDX_07;
   }
-  _iVar3 = CONCAT44(in_EDX,terrain_render_target);
+  _iVar3 = CONCAT44(in_EDX,_terrain_render_target);
   if (startup_texture_load_stage == 8) {
     muzzle_flash_texture = texture_get_or_load_alt(s_game_muzzleFlash_jaz_0047417c,unaff_retaddr);
     texture_get_or_load(s_ui_dropOn_00474158,s_ui_ui_dropDownOn_jaz_00474164);
     texture_get_or_load(s_ui_dropOff_00474134,s_ui_ui_dropDownOff_jaz_00474140);
-    _iVar3 = CONCAT44(extraout_EDX_08,terrain_render_target);
+    _iVar3 = CONCAT44(extraout_EDX_08,_terrain_render_target);
     if (terrain_texture_failed == '\0') {
       _iVar3 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ground_004740c4);
     }
   }
-  terrain_render_target = (int)_iVar3;
+  _terrain_render_target = (int)_iVar3;
   if (startup_texture_load_stage == 9) {
     game_state_id = 0;
     DAT_0049bb30 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_bullet_i_00474534);
     _iVar4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_aim64_0047412c);
-    _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),terrain_render_target);
+    _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),_terrain_render_target);
     _DAT_00496698 = (int)_iVar4;
     DAT_004aaf86 = 1;
   }
-  terrain_render_target = (int)_iVar3;
+  _terrain_render_target = (int)_iVar3;
   startup_texture_load_stage = startup_texture_load_stage + 1;
   DAT_00473a5c = 0xb;
   console_flush_log(&console_log_queue,(char *)((ulonglong)_iVar3 >> 0x20));
@@ -26089,6 +26094,7 @@ int creature_spawn_slot_alloc(void)
 
 /* creature_spawn_template @ 00430af0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* spawns creature(s) from template id; heading -100 uses a random heading */
 
 void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
@@ -27716,7 +27722,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
         goto LAB_00431094;
       }
       (&creature_pool)[iVar6].type_id = 2;
-      iVar7 = terrain_texture_height / 2;
+      iVar7 = _terrain_texture_height / 2;
       (&creature_pool)[iVar6].ai_mode = 2;
       (&creature_pool)[iVar6].pos_x = -10.0;
       fVar11 = (float10)fcos((float10)0.0);
@@ -27782,8 +27788,8 @@ LAB_00431094:
   console_printf(&console_log_queue,s_Unhandled_creatureType__00477758);
 LAB_004310b8:
   if ((((demo_mode_active == '\0') && (0.0 < pcVar10->pos_x)) &&
-      (pcVar10->pos_x < (float)terrain_texture_width)) &&
-     ((0.0 < pcVar10->pos_y && (pcVar10->pos_y < (float)terrain_texture_height)))) {
+      (pcVar10->pos_x < (float)_terrain_texture_width)) &&
+     ((0.0 < pcVar10->pos_y && (pcVar10->pos_y < (float)_terrain_texture_height)))) {
     effect_spawn_burst(&pcVar10->pos_x,8);
   }
   pcVar10->max_health = pcVar10->health;
@@ -27894,6 +27900,7 @@ int quest_spawn_table_empty(void)
 /* quest_spawn_timeline_update @ 00434250 */
 
 /* WARNING: Type propagation algorithm not settling */
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* updates quest spawn entries based on the quest timer */
 
 void quest_spawn_timeline_update(void)
@@ -27933,7 +27940,7 @@ void quest_spawn_timeline_update(void)
           if (0 < (pqVar4->pos_y_block).heading_block.count) {
             local_1c = 0;
             do {
-              if ((pqVar4->pos_x < 0.0) || ((float)terrain_texture_width < pqVar4->pos_x)) {
+              if ((pqVar4->pos_x < 0.0) || ((float)_terrain_texture_width < pqVar4->pos_x)) {
                 local_14 = (float)local_1c;
                 if ((uVar2 & 1) != 0) {
                   local_14 = -local_14;
@@ -28000,6 +28007,7 @@ void __cdecl quest_database_advance_slot(int *tier,int *index)
 
 /* quest_build_fallback @ 004343e0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* fills a default quest spawn table when no quest builder is present */
 
 void __cdecl quest_build_fallback(quest_spawn_entry_t *entries,int *count)
@@ -28008,13 +28016,13 @@ void __cdecl quest_build_fallback(quest_spawn_entry_t *entries,int *count)
   float fVar1;
   
   console_printf(&console_log_queue,s___Generating_a_fallback_quest__00477782 + 2);
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x40;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 10;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = -50.0;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
   entries[1].pos_y_block.heading_block.template_id = 0x40;
@@ -28192,6 +28200,7 @@ void quest_build_nagolipoli(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_monster_blues @ 00434860 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 8 (Monster Blues) */
 
@@ -28205,13 +28214,13 @@ void quest_build_monster_blues(quest_spawn_entry_t *entries,int *count)
   uint uVar5;
   int iVar6;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 4;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 10;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = 1074.0;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
   entries[1].pos_y_block.heading_block.template_id = 6;
@@ -28406,6 +28415,7 @@ void quest_build_army_of_three(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_knee_deep_in_the_dead @ 00434f00 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 5 (Knee-deep in the Dead) */
 
@@ -28423,7 +28433,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
   int iVar9;
   bool bVar10;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x43;
@@ -28442,7 +28452,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     pqVar2 = pqVar4;
     iVar9 = iVar8;
     if (bVar10) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar9 = iVar8 + 1;
       pqVar2 = pqVar4 + 1;
@@ -28451,7 +28461,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
       (pqVar4->pos_y_block).heading_block.trigger_time_ms = iVar5 + -2;
       (pqVar4->pos_y_block).heading_block.count = 1;
     }
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     pqVar2->pos_x = -50.0;
     (pqVar2->pos_y_block).pos_y = fVar1 * 0.5;
     (pqVar2->pos_y_block).heading_block.template_id = 0x41;
@@ -28460,7 +28470,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     iVar8 = iVar9 + 1;
     pqVar4 = pqVar2 + 1;
     if (0x30d4 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar8 = iVar9 + 2;
       pqVar4 = pqVar2 + 2;
@@ -28471,7 +28481,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar2 = pqVar4;
     if (0x5fb4 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar4->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar2 = pqVar4 + 1;
@@ -28482,7 +28492,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar3 = pqVar2;
     if (0x8e94 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar2->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar3 = pqVar2 + 1;
@@ -28493,7 +28503,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
     }
     pqVar4 = pqVar3;
     if (0xbd74 < iVar5) {
-      fVar1 = (float)terrain_texture_height;
+      fVar1 = (float)_terrain_texture_height;
       pqVar3->pos_x = -50.0;
       iVar8 = iVar8 + 1;
       pqVar4 = pqVar3 + 1;
@@ -28513,6 +28523,7 @@ void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_gang_wars @ 00435120 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 4 (The Gang Wars) */
 
@@ -28524,13 +28535,13 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   int iVar3;
   int iVar4;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -150.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x12;
   (entries->pos_y_block).heading_block.trigger_time_ms = 100;
   (entries->pos_y_block).heading_block.count = 1;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries[1].pos_x = 1174.0;
   iVar4 = 10;
   entries[1].pos_y_block.pos_y = fVar1 * 0.5;
@@ -28540,7 +28551,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0x157c;
   piVar2 = &entries[2].pos_y_block.heading_block.trigger_time_ms;
   do {
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     piVar2[-4] = 0x4492c000;
     piVar2[-3] = (int)(fVar1 * 0.5);
     piVar2[-1] = 0x12;
@@ -28558,7 +28569,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0xe86c;
   piVar2 = &entries[0xd].pos_y_block.heading_block.trigger_time_ms;
   do {
-    fVar1 = (float)terrain_texture_height;
+    fVar1 = (float)_terrain_texture_height;
     piVar2[-4] = -0x3cea0000;
     piVar2[-3] = (int)(fVar1 * 0.5);
     piVar2[-1] = 0x12;
@@ -28580,6 +28591,7 @@ void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_fortress @ 004352d0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 3 (The Fortress) */
 
@@ -28594,7 +28606,7 @@ void quest_build_the_fortress(quest_spawn_entry_t *entries,int *count)
   int iVar6;
   
   pqVar2 = entries;
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = -50.0;
   entries = (quest_spawn_entry_t *)0x200;
   (pqVar2->pos_y_block).pos_y = fVar1 * 0.5;
@@ -28648,6 +28660,7 @@ void quest_build_the_fortress(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_cross_fire @ 00435480 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 6 (Cross Fire) */
 
@@ -28656,7 +28669,7 @@ void quest_build_cross_fire(quest_spawn_entry_t *entries,int *count)
 {
   float fVar1;
   
-  fVar1 = (float)terrain_texture_height;
+  fVar1 = (float)_terrain_texture_height;
   entries->pos_x = 1074.0;
   (entries->pos_y_block).pos_y = fVar1 * 0.5;
   (entries->pos_y_block).heading_block.template_id = 0x40;
@@ -28700,6 +28713,7 @@ void quest_build_cross_fire(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_beating @ 00435610 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 1 (The Beating) */
 
@@ -28723,8 +28737,8 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 1;
   iVar5 = 10000;
-  iVar2 = terrain_texture_height / 2;
-  entries[1].pos_x = (float)(terrain_texture_width + 0x20);
+  iVar2 = _terrain_texture_height / 2;
+  entries[1].pos_x = (float)(_terrain_texture_width + 0x20);
   iVar9 = 0x40;
   iVar8 = 8;
   entries[1].pos_y_block.pos_y = (float)iVar2;
@@ -28733,9 +28747,9 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   entries[1].pos_y_block.heading_block.count = 3;
   piVar4 = &entries[2].pos_y_block.heading_block.trigger_time_ms;
   do {
-    iVar2 = iVar9 + terrain_texture_width;
+    iVar2 = iVar9 + _terrain_texture_width;
     iVar9 = iVar9 + 0x20;
-    iVar3 = terrain_texture_height / 2;
+    iVar3 = _terrain_texture_height / 2;
     piVar4[-4] = (int)(float)iVar2;
     piVar4[-3] = (int)(float)iVar3;
     piVar4[-1] = 0x25;
@@ -28745,7 +28759,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
     iVar8 = iVar8 + -1;
     piVar4 = piVar4 + 6;
   } while (iVar8 != 0);
-  iVar2 = terrain_texture_height / 2;
+  iVar2 = _terrain_texture_height / 2;
   entries[10].pos_x = -32.0;
   iVar5 = 20000;
   pqVar7 = entries + 0xb;
@@ -28757,7 +28771,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   piVar4 = &(pqVar7->pos_y_block).heading_block.trigger_time_ms;
   do {
     piVar6 = &entries[-2].pos_y_block.heading_block.trigger_time_ms;
-    iVar2 = terrain_texture_height / 2;
+    iVar2 = _terrain_texture_height / 2;
     piVar4[-4] = (int)(float)(int)entries;
     piVar4[-3] = (int)(float)iVar2;
     piVar4[-1] = 0x25;
@@ -28772,7 +28786,7 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   piVar4 = &pqVar1[0x13].pos_y_block.heading_block.trigger_time_ms;
   do {
     pqVar7 = (quest_spawn_entry_t *)((int)&entries[-2].pos_y_block.pos_y + 2);
-    piVar4[-4] = (int)(float)(terrain_texture_width / 2);
+    piVar4[-4] = (int)(float)(_terrain_texture_width / 2);
     piVar4[-3] = (int)(float)(int)entries;
     piVar4[-1] = 0xf;
     *piVar4 = iVar2;
@@ -28785,9 +28799,9 @@ void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
   iVar5 = 40000;
   piVar4 = &pqVar1[0x19].pos_y_block.heading_block.trigger_time_ms;
   do {
-    iVar8 = iVar2 + 0x2c + terrain_texture_width;
+    iVar8 = iVar2 + 0x2c + _terrain_texture_width;
     iVar2 = iVar2 + 0x20;
-    piVar4[-4] = (int)(float)(terrain_texture_width / 2);
+    piVar4[-4] = (int)(float)(_terrain_texture_width / 2);
     piVar4[-3] = (int)(float)iVar8;
     piVar4[-1] = 0x12;
     *piVar4 = iVar5;
@@ -28867,6 +28881,7 @@ void quest_build_the_spanking_of_the_dead(quest_spawn_entry_t *entries,int *coun
 
 /* quest_build_hidden_evil @ 00435a30 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 4 (Hidden Evil) */
 
@@ -28875,32 +28890,32 @@ void quest_build_hidden_evil(quest_spawn_entry_t *entries,int *count)
 {
   int iVar1;
   
-  iVar1 = terrain_texture_height + 0x40;
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).pos_y = (float)iVar1;
   (entries->pos_y_block).heading_block.template_id = 0x21;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 0x32;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[1].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[1].pos_x = (float)(_terrain_texture_width / 2);
   entries[1].pos_y_block.pos_y = (float)iVar1;
   entries[1].pos_y_block.heading_block.template_id = 0x22;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 15000;
   entries[1].pos_y_block.heading_block.count = 0x1e;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[2].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[2].pos_x = (float)(_terrain_texture_width / 2);
   entries[2].pos_y_block.pos_y = (float)iVar1;
   entries[2].pos_y_block.heading_block.template_id = 0x23;
   entries[2].pos_y_block.heading_block.trigger_time_ms = 25000;
   entries[2].pos_y_block.heading_block.count = 0x14;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[3].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[3].pos_x = (float)(_terrain_texture_width / 2);
   entries[3].pos_y_block.pos_y = (float)iVar1;
   entries[3].pos_y_block.heading_block.template_id = 0x23;
   entries[3].pos_y_block.heading_block.trigger_time_ms = 30000;
   entries[3].pos_y_block.heading_block.count = 0x1e;
-  iVar1 = terrain_texture_height + 0x40;
-  entries[4].pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries[4].pos_x = (float)(_terrain_texture_width / 2);
   entries[4].pos_y_block.pos_y = (float)iVar1;
   entries[4].pos_y_block.heading_block.template_id = 0x22;
   entries[4].pos_y_block.heading_block.trigger_time_ms = 35000;
@@ -28913,6 +28928,7 @@ void quest_build_hidden_evil(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_land_hostile @ 00435bd0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 1 (Land Hostile) */
 
@@ -28921,8 +28937,8 @@ void quest_build_land_hostile(quest_spawn_entry_t *entries,int *count)
 {
   int iVar1;
   
-  iVar1 = terrain_texture_height + 0x40;
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  iVar1 = _terrain_texture_height + 0x40;
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).pos_y = (float)iVar1;
   (entries->pos_y_block).heading_block.template_id = 0x26;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
@@ -28950,6 +28966,7 @@ void quest_build_land_hostile(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_minor_alien_breach @ 00435cc0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 2 (Minor Alien Breach) */
 
@@ -28977,8 +28994,8 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
   iVar4 = 2;
   pqVar3 = entries + 2;
   do {
-    iVar1 = terrain_texture_height / 2;
-    pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
+    iVar1 = _terrain_texture_height / 2;
+    pqVar3->pos_x = (float)(_terrain_texture_width + 0x40);
     (pqVar3->pos_y_block).pos_y = (float)iVar1;
     (pqVar3->pos_y_block).heading_block.template_id = 0x26;
     iVar5 = (iVar4 * 5 + -10) * 0x2d0;
@@ -28987,8 +29004,8 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
     pqVar2 = pqVar3 + 1;
     iVar1 = iVar6 + 1;
     if (6 < iVar4) {
-      iVar1 = terrain_texture_height / 2;
-      pqVar3[1].pos_x = (float)(terrain_texture_width + 0x40);
+      iVar1 = _terrain_texture_height / 2;
+      pqVar3[1].pos_x = (float)(_terrain_texture_width + 0x40);
       pqVar3[1].pos_y_block.pos_y = (float)(iVar1 + -0x100);
       pqVar3[1].pos_y_block.heading_block.template_id = 0x26;
       pqVar3[1].pos_y_block.heading_block.trigger_time_ms = iVar5;
@@ -28999,16 +29016,16 @@ void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
     iVar6 = iVar1;
     pqVar3 = pqVar2;
     if (iVar4 == 0xd) {
-      iVar1 = terrain_texture_height + 0x40;
+      iVar1 = _terrain_texture_height + 0x40;
       iVar6 = iVar6 + 1;
-      pqVar3->pos_x = (float)(terrain_texture_width / 2);
+      pqVar3->pos_x = (float)(_terrain_texture_width / 2);
       (pqVar3->pos_y_block).pos_y = (float)iVar1;
       (pqVar3->pos_y_block).heading_block.template_id = 0x29;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = 0x9ab0;
       (pqVar3->pos_y_block).heading_block.count = 1;
       pqVar2 = pqVar3 + 1;
 LAB_00435e39:
-      iVar1 = terrain_texture_height / 2;
+      iVar1 = _terrain_texture_height / 2;
       pqVar2->pos_x = -64.0;
       iVar6 = iVar6 + 1;
       pqVar3 = pqVar2 + 1;
@@ -29143,6 +29160,7 @@ void quest_build_zombie_masters(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_8_legged_terror @ 00436120 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 10 (8-legged Terror) */
 
@@ -29153,10 +29171,10 @@ void quest_build_8_legged_terror(quest_spawn_entry_t *entries,int *count)
   int iVar2;
   int iVar3;
   
-  entries->pos_x = (float)(terrain_texture_width + -0x100);
+  entries->pos_x = (float)(_terrain_texture_width + -0x100);
   iVar3 = 1;
   pqVar1 = entries + 1;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x3a;
   (entries->pos_y_block).heading_block.trigger_time_ms = 1000;
   (entries->pos_y_block).heading_block.count = 1;
@@ -29194,6 +29212,7 @@ void quest_build_8_legged_terror(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_ghost_patrols @ 00436200 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 9 (Ghost Patrols) */
 
@@ -29207,8 +29226,8 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
   bool bVar5;
   
   iVar2 = 0x9c4;
-  entries->pos_x = (float)(terrain_texture_width + 0x80);
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  entries->pos_x = (float)(_terrain_texture_width + 0x80);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = 2;
@@ -29228,7 +29247,7 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
       piVar3[-3] = 0x44900000;
     }
     uVar1 = uVar4 + 1;
-    piVar3[-2] = (int)(float)(terrain_texture_width / 2);
+    piVar3[-2] = (int)(float)(_terrain_texture_width / 2);
     *piVar3 = 0x19;
     piVar3[1] = iVar2;
     piVar3[2] = 1;
@@ -29236,12 +29255,12 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
     piVar3 = piVar3 + 6;
   } while (iVar2 < 0x7ef4);
   entries[0xd].pos_x = -264.0;
-  entries[0xd].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[0xd].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[0xd].pos_y_block.heading_block.template_id = 0x2b;
   entries[0xd].pos_y_block.heading_block.trigger_time_ms = uVar1 * 0x9c4 + -0x9c4;
   entries[0xd].pos_y_block.heading_block.count = 1;
   entries[0xe].pos_x = -128.0;
-  entries[0xe].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[0xe].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[0xe].pos_y_block.heading_block.template_id = 0x18;
   entries[0xe].pos_y_block.heading_block.trigger_time_ms = (uVar4 + 0x10 + uVar1 * 4) * 500;
   entries[0xe].pos_y_block.heading_block.count = 1;
@@ -29253,6 +29272,7 @@ void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_random_factor @ 00436350 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 1 Quest 6 (The Random Factor) */
 
 void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *count)
@@ -29268,15 +29288,15 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
   iVar3 = 0;
   do {
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1d;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = config_blob.reserved0._20_4_ * 2 + 4;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1d;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5 + 200;
     (pqVar1->pos_y_block).heading_block.count = 6;
@@ -29284,7 +29304,7 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
     if (iVar2 % 5 == 3) {
       pqVar1 = entries + iVar4;
       iVar4 = iVar3 + 3;
-      pqVar1->pos_x = (float)(terrain_texture_width / 2);
+      pqVar1->pos_x = (float)(_terrain_texture_width / 2);
       (pqVar1->pos_y_block).pos_y = 1088.0;
       (pqVar1->pos_y_block).heading_block.template_id = 0x29;
       (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
@@ -29301,6 +29321,7 @@ void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *cou
 
 /* quest_build_spider_wave_syndrome @ 00436440 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 1 Quest 7 (Spider Wave Syndrome) */
 
 void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *count)
@@ -29316,7 +29337,7 @@ void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *
     pqVar1 = entries + iVar2;
     pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 1;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x40;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     iVar3 = iVar3 + 0x157c;
@@ -29330,14 +29351,15 @@ void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *
 
 /* quest_build_nesting_grounds @ 004364a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 9 (Nesting Grounds) */
 
 void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
 
 {
-  entries->pos_x = (float)(terrain_texture_width / 2);
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_height + 0x40);
+  entries->pos_x = (float)(_terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_height + 0x40);
   (entries->pos_y_block).heading_block.template_id = 0x1d;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = config_blob.reserved0._20_4_ * 2 + 6;
@@ -29356,13 +29378,13 @@ void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
   entries[3].pos_y_block.heading_block.template_id = 9;
   entries[3].pos_y_block.heading_block.trigger_time_ms = 18000;
   entries[3].pos_y_block.heading_block.count = 1;
-  entries[4].pos_x = (float)(terrain_texture_width / 2);
-  entries[4].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[4].pos_x = (float)(_terrain_texture_width / 2);
+  entries[4].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[4].pos_y_block.heading_block.template_id = 0x1d;
   entries[4].pos_y_block.heading_block.trigger_time_ms = 25000;
   entries[4].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 6;
-  entries[5].pos_x = (float)(terrain_texture_width / 2);
-  entries[5].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[5].pos_x = (float)(_terrain_texture_width / 2);
+  entries[5].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[5].pos_y_block.heading_block.template_id = 0x1d;
   entries[5].pos_y_block.heading_block.trigger_time_ms = 39000;
   entries[5].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 3 + 3;
@@ -29386,13 +29408,13 @@ void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
   entries[9].pos_y_block.heading_block.template_id = 8;
   entries[9].pos_y_block.heading_block.trigger_time_ms = 0xac44;
   entries[9].pos_y_block.heading_block.count = 1;
-  entries[10].pos_x = (float)(terrain_texture_width / 2);
-  entries[10].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[10].pos_x = (float)(_terrain_texture_width / 2);
+  entries[10].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[10].pos_y_block.heading_block.template_id = 0x1e;
   entries[10].pos_y_block.heading_block.trigger_time_ms = 50000;
   entries[10].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 5;
-  entries[0xb].pos_x = (float)(terrain_texture_width / 2);
-  entries[0xb].pos_y_block.pos_y = (float)(terrain_texture_height + 0x40);
+  entries[0xb].pos_x = (float)(_terrain_texture_width / 2);
+  entries[0xb].pos_y_block.pos_y = (float)(_terrain_texture_height + 0x40);
   entries[0xb].pos_y_block.heading_block.template_id = 0x1f;
   entries[0xb].pos_y_block.heading_block.trigger_time_ms = 55000;
   entries[0xb].pos_y_block.heading_block.count = config_blob.reserved0._20_4_ * 2 + 2;
@@ -29516,6 +29538,7 @@ void quest_build_arachnoid_farm(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_gauntlet @ 004369a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 7 (Gauntlet) */
 
@@ -29565,23 +29588,23 @@ void quest_build_gauntlet(quest_spawn_entry_t *entries,int *count)
     pqVar4 = entries + iVar6;
     iVar7 = 2;
     do {
-      pqVar4->pos_x = (float)(terrain_texture_width + 0x40);
-      (pqVar4->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      pqVar4->pos_x = (float)(_terrain_texture_width + 0x40);
+      (pqVar4->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar4->pos_y_block).heading_block.template_id = 0x41;
       (pqVar4->pos_y_block).heading_block.trigger_time_ms = iVar5;
       (pqVar4->pos_y_block).heading_block.count = iVar7;
       pqVar4[1].pos_x = -64.0;
-      pqVar4[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+      pqVar4[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
       pqVar4[1].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[1].pos_y_block.heading_block.trigger_time_ms = iVar5;
       pqVar4[1].pos_y_block.heading_block.count = iVar7;
-      pqVar4[2].pos_x = (float)(terrain_texture_width / 2);
-      pqVar4[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+      pqVar4[2].pos_x = (float)(_terrain_texture_width / 2);
+      pqVar4[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
       pqVar4[2].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[2].pos_y_block.heading_block.trigger_time_ms = iVar5;
       pqVar4[2].pos_y_block.heading_block.count = iVar7;
       iVar6 = iVar6 + 4;
-      pqVar4[3].pos_x = (float)(terrain_texture_width / 2);
+      pqVar4[3].pos_x = (float)(_terrain_texture_width / 2);
       pqVar4[3].pos_y_block.pos_y = -64.0;
       pqVar4[3].pos_y_block.heading_block.template_id = 0x41;
       pqVar4[3].pos_y_block.heading_block.trigger_time_ms = iVar5;
@@ -29763,6 +29786,7 @@ void quest_build_spider_spawns(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_two_fronts @ 00436ee0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 4 (Two Fronts) */
 
@@ -29777,13 +29801,13 @@ void quest_build_two_fronts(quest_spawn_entry_t *entries,int *count)
   iVar2 = 0;
   iVar3 = 0;
   do {
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x1a;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar3 * 2000 + 1000;
     (entries->pos_y_block).heading_block.count = 1;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x1b;
     entries[1].pos_y_block.heading_block.trigger_time_ms = (iVar3 * 5 + 5) * 400;
     entries[1].pos_y_block.heading_block.count = 1;
@@ -29997,6 +30021,7 @@ void quest_build_spideroids(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_evil_zombies_at_large @ 004374a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 6 (Evil Zombies At Large) */
 
@@ -30012,23 +30037,23 @@ void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries,int *count)
   iVar4 = 0x5dc;
   iVar3 = 4;
   do {
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x41;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (entries->pos_y_block).heading_block.count = iVar3;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x41;
     entries[1].pos_y_block.heading_block.trigger_time_ms = iVar4;
     entries[1].pos_y_block.heading_block.count = iVar3;
-    entries[2].pos_x = (float)(terrain_texture_width / 2);
-    entries[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].pos_x = (float)(_terrain_texture_width / 2);
+    entries[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
     entries[2].pos_y_block.heading_block.template_id = 0x41;
     entries[2].pos_y_block.heading_block.trigger_time_ms = iVar4;
     entries[2].pos_y_block.heading_block.count = iVar3;
     iVar2 = iVar2 + 4;
-    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_x = (float)(_terrain_texture_width / 2);
     entries[3].pos_y_block.pos_y = -64.0;
     entries[3].pos_y_block.heading_block.template_id = 0x41;
     entries[3].pos_y_block.heading_block.trigger_time_ms = iVar4;
@@ -30046,6 +30071,7 @@ void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_everred_pastures @ 004375a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 1 (Everred Pastures) */
 
@@ -30063,38 +30089,38 @@ void quest_build_everred_pastures(quest_spawn_entry_t *entries,int *count)
   iVar6 = 0;
   do {
     iVar1 = iVar6 + 1;
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
     pqVar3 = entries + 4;
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x32;
     iVar2 = iVar6 * 13000 + 0x5dc;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar2;
     (entries->pos_y_block).heading_block.count = iVar1;
     entries[1].pos_x = -64.0;
-    entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+    entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
     entries[1].pos_y_block.heading_block.template_id = 0x33;
     entries[1].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[1].pos_y_block.heading_block.count = iVar1;
-    entries[2].pos_x = (float)(terrain_texture_width / 2);
-    entries[2].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].pos_x = (float)(_terrain_texture_width / 2);
+    entries[2].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
     entries[2].pos_y_block.heading_block.template_id = 0x34;
     entries[2].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[2].pos_y_block.heading_block.count = iVar1;
     iVar5 = iVar4 + 4;
-    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_x = (float)(_terrain_texture_width / 2);
     entries[3].pos_y_block.pos_y = -64.0;
     entries[3].pos_y_block.heading_block.template_id = 0x35;
     entries[3].pos_y_block.heading_block.trigger_time_ms = iVar2;
     entries[3].pos_y_block.heading_block.count = iVar1;
     if (iVar6 == 3) {
-      entries[4].pos_x = (float)(terrain_texture_width / 2);
+      entries[4].pos_x = (float)(_terrain_texture_width / 2);
       entries[4].pos_y_block.pos_y = -64.0;
       entries[4].pos_y_block.heading_block.template_id = 0x1b;
       entries[4].pos_y_block.heading_block.trigger_time_ms = 0x9e34;
       entries[4].pos_y_block.heading_block.count = 8;
       iVar5 = iVar4 + 6;
       pqVar3 = entries + 6;
-      entries[5].pos_x = (float)(terrain_texture_width / 2);
+      entries[5].pos_x = (float)(_terrain_texture_width / 2);
       entries[5].pos_y_block.pos_y = 1088.0;
       entries[5].pos_y_block.heading_block.template_id = 0x1b;
       entries[5].pos_y_block.heading_block.trigger_time_ms = 0x9e34;
@@ -30399,6 +30425,7 @@ void quest_build_land_of_lizards(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_lizquidation @ 00437c70 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 6 (The Lizquidation) */
 
@@ -30416,23 +30443,23 @@ void quest_build_the_lizquidation(quest_spawn_entry_t *entries,int *count)
   do {
     iVar1 = iVar5 * 8000 + 0x5dc;
     pqVar2 = entries + iVar3;
-    pqVar2->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar2->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar1;
     (pqVar2->pos_y_block).heading_block.count = iVar5 + 6;
     pqVar2 = entries + iVar3 + 1;
     pqVar2->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar1;
     (pqVar2->pos_y_block).heading_block.count = iVar5 + 6;
     if (iVar5 == 4) {
       pqVar2 = entries + iVar4;
-      pqVar2->pos_x = (float)(terrain_texture_width + 0x80);
+      pqVar2->pos_x = (float)(_terrain_texture_width + 0x80);
       iVar4 = iVar3 + 3;
-      (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar2->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar2->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
       (pqVar2->pos_y_block).heading_block.count = 2;
@@ -30448,6 +30475,7 @@ void quest_build_the_lizquidation(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_zombie_time @ 00437d70 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 4 Quest 2 (Zombie Time) */
 
 void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
@@ -30461,15 +30489,15 @@ void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0x5dc;
   do {
     pqVar1 = entries + iVar2;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     (pqVar1->pos_y_block).heading_block.count = 8;
     pqVar1 = entries + iVar2 + 1;
     pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 2;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar3;
     iVar3 = iVar3 + 8000;
@@ -30483,6 +30511,7 @@ void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_frontline_assault @ 00437e10 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 4 (Frontline Assault) */
 
@@ -30500,7 +30529,7 @@ void quest_build_frontline_assault(quest_spawn_entry_t *entries,int *count)
   iVar6 = 0x9c4;
   iVar4 = 2;
   do {
-    entries->pos_x = (float)(terrain_texture_width / 2);
+    entries->pos_x = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).pos_y = 1088.0;
     if (iVar4 < 5) {
       (entries->pos_y_block).heading_block.template_id = 0x26;
@@ -30565,6 +30594,7 @@ void quest_build_frontline_assault(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_collaboration @ 00437f30 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 4 (The Collaboration) */
 
@@ -30584,21 +30614,21 @@ void quest_build_the_collaboration(quest_spawn_entry_t *entries,int *count)
     lVar6 = __ftol();
     iVar2 = (int)lVar6;
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1a;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
     pqVar1 = entries + iVar3 + 1;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-    pqVar1->pos_x = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+    pqVar1->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1b;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
     pqVar1 = entries + iVar3 + 2;
     pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 3;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x1c;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = iVar2;
@@ -30619,6 +30649,7 @@ void quest_build_the_collaboration(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_blighting @ 00438050 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 1 (The Blighting) */
 
@@ -30634,14 +30665,14 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
   int iVar7;
   uint uStack_8;
   
-  entries->pos_x = (float)(terrain_texture_width + 0x80);
+  entries->pos_x = (float)(_terrain_texture_width + 0x80);
   iVar5 = 0x1a;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 0x5dc;
   (entries->pos_y_block).heading_block.count = 2;
   entries[1].pos_x = -128.0;
-  entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+  entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
   entries[1].pos_y_block.heading_block.template_id = 0x2b;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 0x5dc;
   entries[1].pos_y_block.heading_block.count = 2;
@@ -30678,7 +30709,7 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
       pqVar3->pos_x = -128.0;
       iVar7 = iVar7 + 1;
       pqVar2 = pqVar3 + 1;
-      (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar3->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = iVar6;
       (pqVar3->pos_y_block).heading_block.count = 4;
@@ -30687,7 +30718,7 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
       pqVar2->pos_x = 1152.0;
       iVar7 = iVar7 + 1;
       pqVar3 = pqVar2 + 1;
-      (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
       (pqVar2->pos_y_block).heading_block.template_id = 0x2b;
       (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar6;
       (pqVar2->pos_y_block).heading_block.count = 4;
@@ -30700,8 +30731,8 @@ void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
     }
     iVar4 = (int)uStack_8 % 5;
     if (iVar4 == 0) {
-      pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
-      (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+      pqVar3->pos_x = (float)(_terrain_texture_width + 0x40);
+      (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
 LAB_00438283:
       (pqVar3->pos_y_block).heading_block.template_id = iVar5;
       (pqVar3->pos_y_block).heading_block.trigger_time_ms = iVar6;
@@ -30713,13 +30744,13 @@ LAB_00438283:
     else {
       if (iVar4 == 1) {
         pqVar3->pos_x = -64.0;
-        (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+        (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 2) {
-        (pqVar3->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
+        (pqVar3->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
 LAB_00438281:
-        pqVar3->pos_x = (float)(terrain_texture_width / 2);
+        pqVar3->pos_x = (float)(_terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 3) {
@@ -30740,6 +30771,7 @@ LAB_00438281:
 
 /* quest_build_the_annihilation @ 004382c0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 9 (The Annihilation) */
 
@@ -30757,7 +30789,7 @@ void quest_build_the_annihilation(quest_spawn_entry_t *entries,int *count)
   uVar3 = 0;
   iVar5 = 0;
   piVar1 = &entries[1].pos_y_block.heading_block.template_id;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x2b;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 2;
@@ -30805,6 +30837,7 @@ void quest_build_the_annihilation(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_massacre @ 004383e0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 5 (The Massacre) */
 
@@ -30824,11 +30857,11 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
   iVar4 = 0;
   do {
     pqVar1 = entries + 1;
-    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_x = (float)(_terrain_texture_width + 0x40);
     iVar5 = iVar4 + 1;
     uVar3 = uVar2 & 0x80000001;
     bVar7 = uVar3 == 0;
-    (entries->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (entries->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (entries->pos_y_block).heading_block.template_id = 0x41;
     (entries->pos_y_block).heading_block.trigger_time_ms = iVar6;
     (entries->pos_y_block).heading_block.count = uVar2 + 3;
@@ -30836,10 +30869,10 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
       bVar7 = (uVar3 - 1 | 0xfffffffe) == 0xffffffff;
     }
     if (bVar7) {
-      pqVar1->pos_x = (float)(terrain_texture_width + 0x80);
+      pqVar1->pos_x = (float)(_terrain_texture_width + 0x80);
       iVar5 = iVar4 + 2;
       pqVar1 = entries + 2;
-      entries[1].pos_y_block.pos_y = (float)(terrain_texture_width / 2);
+      entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width / 2);
       entries[1].pos_y_block.heading_block.template_id = 0x2b;
       entries[1].pos_y_block.heading_block.trigger_time_ms = iVar6;
       entries[1].pos_y_block.heading_block.count = uVar2 + 1;
@@ -30857,6 +30890,7 @@ void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_the_killing @ 004384a0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 3 (The Killing) */
 
@@ -30892,9 +30926,9 @@ void quest_build_the_killing(quest_spawn_entry_t *entries,int *count)
     iVar1 = iStack_4 % 5;
     pqVar4 = pqVar5;
     if (iVar1 == 0) {
-      pqVar5->pos_x = (float)(terrain_texture_width + 0x40);
+      pqVar5->pos_x = (float)(_terrain_texture_width + 0x40);
 LAB_00438544:
-      entries = (quest_spawn_entry_t *)(terrain_texture_width / 2);
+      entries = (quest_spawn_entry_t *)(_terrain_texture_width / 2);
       (pqVar5->pos_y_block).pos_y = (float)(int)entries;
       (pqVar5->pos_y_block).heading_block.template_id = iVar3;
       (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
@@ -30910,8 +30944,8 @@ LAB_004386cc:
         goto LAB_00438544;
       }
       if (iVar1 == 2) {
-        (pqVar5->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        (pqVar5->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+        pqVar5->pos_x = (float)(_terrain_texture_width / 2);
         (pqVar5->pos_y_block).heading_block.template_id = iVar3;
         (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
         (pqVar5->pos_y_block).heading_block.count = 0xc;
@@ -30919,7 +30953,7 @@ LAB_004386cc:
       }
       if (iVar1 == 3) {
         (pqVar5->pos_y_block).pos_y = -64.0;
-        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        pqVar5->pos_x = (float)(_terrain_texture_width / 2);
         (pqVar5->pos_y_block).heading_block.template_id = iVar3;
         (pqVar5->pos_y_block).heading_block.trigger_time_ms = iVar6;
         (pqVar5->pos_y_block).heading_block.count = 0xc;
@@ -30965,6 +30999,7 @@ LAB_004386cc:
 
 /* quest_build_lizard_zombie_pact @ 00438700 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 3 (Lizard Zombie Pact) */
 
@@ -30983,14 +31018,14 @@ void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries,int *count)
   iVar3 = 0;
   do {
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = 6;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x41;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar5;
     (pqVar1->pos_y_block).heading_block.count = 6;
@@ -31023,6 +31058,7 @@ void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_lizard_raze @ 00438840 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* quest builder for Tier 3 Quest 8 (Lizard Raze) */
 
 void __cdecl quest_build_lizard_raze(quest_spawn_entry_t *entries,int *count)
@@ -31038,14 +31074,14 @@ void __cdecl quest_build_lizard_raze(quest_spawn_entry_t *entries,int *count)
   do {
     iVar3 = iVar2;
     pqVar1 = entries + iVar3;
-    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->pos_x = (float)(_terrain_texture_width + 0x40);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar1->pos_y_block).heading_block.count = 6;
     pqVar1 = entries + iVar3 + 1;
     pqVar1->pos_x = -64.0;
-    (pqVar1->pos_y_block).pos_y = (float)(terrain_texture_width / 2);
+    (pqVar1->pos_y_block).pos_y = (float)(_terrain_texture_width / 2);
     (pqVar1->pos_y_block).heading_block.template_id = 0x2e;
     (pqVar1->pos_y_block).heading_block.trigger_time_ms = iVar4;
     iVar4 = iVar4 + 6000;
@@ -31430,6 +31466,7 @@ void quest_build_the_end_of_all(quest_spawn_entry_t *entries,int *count)
 
 /* quest_build_spiders_inc @ 004390d0 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 7 (Spiders Inc.) */
 
@@ -31443,20 +31480,20 @@ void quest_build_spiders_inc(quest_spawn_entry_t *entries,int *count)
   int iVar5;
   
   pqVar3 = entries;
-  (entries->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-  entries->pos_x = (float)(terrain_texture_width / 2);
+  (entries->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+  entries->pos_x = (float)(_terrain_texture_width / 2);
   (entries->pos_y_block).heading_block.template_id = 0x38;
   (entries->pos_y_block).heading_block.trigger_time_ms = 500;
   (entries->pos_y_block).heading_block.count = 1;
-  entries[1].pos_y_block.pos_y = (float)(terrain_texture_width + 0x40);
-  entries[1].pos_x = (float)(terrain_texture_width / 2 + 0x40);
+  entries[1].pos_y_block.pos_y = (float)(_terrain_texture_width + 0x40);
+  entries[1].pos_x = (float)(_terrain_texture_width / 2 + 0x40);
   entries[1].pos_y_block.heading_block.template_id = 0x38;
   entries[1].pos_y_block.heading_block.trigger_time_ms = 500;
   entries[1].pos_y_block.heading_block.count = 1;
   entries[2].pos_y_block.pos_y = -64.0;
   iVar4 = 17000;
   entries = (quest_spawn_entry_t *)0x0;
-  pqVar3[2].pos_x = (float)(terrain_texture_width / 2);
+  pqVar3[2].pos_x = (float)(_terrain_texture_width / 2);
   pqVar3[2].pos_y_block.heading_block.template_id = 0x40;
   pqVar3[2].pos_y_block.heading_block.trigger_time_ms = 500;
   pqVar3[2].pos_y_block.heading_block.count = 4;
@@ -31464,15 +31501,15 @@ void quest_build_spiders_inc(quest_spawn_entry_t *entries,int *count)
   do {
     iVar1 = (int)entries / 2 + 3;
     pqVar2 = pqVar3 + iVar5;
-    (pqVar2->pos_y_block).pos_y = (float)(terrain_texture_width + 0x40);
-    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    (pqVar2->pos_y_block).pos_y = (float)(_terrain_texture_width + 0x40);
+    pqVar2->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x38;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar2->pos_y_block).heading_block.count = iVar1;
     pqVar2 = pqVar3 + iVar5 + 1;
     (pqVar2->pos_y_block).pos_y = -64.0;
     iVar5 = iVar5 + 2;
-    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    pqVar2->pos_x = (float)(_terrain_texture_width / 2);
     (pqVar2->pos_y_block).heading_block.template_id = 0x38;
     (pqVar2->pos_y_block).heading_block.trigger_time_ms = iVar4;
     (pqVar2->pos_y_block).heading_block.count = iVar1;
@@ -31991,8 +32028,8 @@ void __cdecl quest_start_selected(int tier,int index)
   uVar1 = crt_rand();
   highscore_active_record.reserved0._0_4_ = uVar1 & 0xfee050f;
   projectile_reset_pools();
-  player_state_table.pos_x = (float)terrain_texture_width * 0.5;
-  player_state_table.pos_y = (float)terrain_texture_height * 0.5;
+  player_state_table.pos_x = (float)_terrain_texture_width * 0.5;
+  player_state_table.pos_y = (float)_terrain_texture_height * 0.5;
   iVar4 = index + -0xb + tier * 10;
   terrain_generate(&quest_selected_meta + iVar4);
   weapon_assign_player(0,(&quest_selected_meta)[iVar4].start_weapon_id);
@@ -36920,14 +36957,14 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
     if ((&player_state_table)[iVar5].pos_x < fVar2) {
       (&player_state_table)[iVar5].pos_x = fVar2;
     }
-    if ((float)terrain_texture_width - fVar2 < (&player_state_table)[iVar5].pos_x) {
-      (&player_state_table)[iVar5].pos_x = (float)terrain_texture_width - fVar2;
+    if ((float)_terrain_texture_width - fVar2 < (&player_state_table)[iVar5].pos_x) {
+      (&player_state_table)[iVar5].pos_x = (float)_terrain_texture_width - fVar2;
     }
     if ((&player_state_table)[iVar5].pos_y < fVar2) {
       (&player_state_table)[iVar5].pos_y = fVar2;
     }
-    if ((float)terrain_texture_height - fVar2 < (&player_state_table)[iVar5].pos_y) {
-      (&player_state_table)[iVar5].pos_y = (float)terrain_texture_height - fVar2;
+    if ((float)_terrain_texture_height - fVar2 < (&player_state_table)[iVar5].pos_y) {
+      (&player_state_table)[iVar5].pos_y = (float)_terrain_texture_height - fVar2;
     }
     if (0.8 < (&player_state_table)[iVar5].muzzle_flash_alpha) {
       (&player_state_table)[iVar5].muzzle_flash_alpha = 0.8;
@@ -37635,16 +37672,16 @@ LAB_00445905:
       fStack_8 = 0.0;
     }
     typo_spawn_counter = typo_spawn_counter + 1;
-    local_30 = (float)terrain_texture_width + 64.0;
+    local_30 = (float)_terrain_texture_width + 64.0;
     fVar10 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                            (float10)0.001);
-    fStack_2c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
+    fStack_2c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&local_30,&fStack_10,4);
     typo_target_name_assign_random(iVar5);
     fStack_20 = -64.0;
     fVar10 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                            (float10)0.001);
-    fStack_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
+    fStack_1c = (float)((float10)_terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&fStack_20,&fStack_10,2);
     typo_target_name_assign_random(iVar5);
   }
@@ -38391,7 +38428,8 @@ void __cdecl ui_element_render(ui_element_t *element)
   if ((element->render_scale == 0.0) && (*(float *)((int)cv_uiPointFilterPanels + 0xc) != 0.0)) {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
-  if ((element->on_activate != (_func_1 *)0x0) && (element != (ui_element_t *)&DAT_0048f20c)) {
+  if ((element->on_activate != (_func_1 *)0x0) &&
+     (element != (ui_element_t *)&ui_perk_prompt_element)) {
     iVar3 = ui_focus_update((int)element);
     cVar5 = (char)iVar3;
     if (((cVar5 != '\0') &&
@@ -38904,10 +38942,9 @@ void ui_menu_layout_init(void)
   ui_element_t **ppuVar13;
   float *pfVar14;
   uchar *puVar15;
-  undefined4 *puVar16;
-  ui_element_t *puVar17;
-  char *pcVar18;
-  int iVar19;
+  ui_element_t *puVar16;
+  char *pcVar17;
+  int iVar18;
   float fStack_30;
   float fStack_2c;
   float afStack_28 [2];
@@ -38989,14 +39026,14 @@ void ui_menu_layout_init(void)
   if (iVar10 < 0x281) {
     ui_sign_crimson.pos_y = 60.0;
   }
-  pcVar18 = s_ui_ui_itemTexts_jaz_00479318;
+  pcVar17 = s_ui_ui_itemTexts_jaz_00479318;
   ui_item_texts_texture = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
   pcVar5 = s_ui_ui_textReaper_jaz_00479300;
-  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar18);
-  pcVar18 = s_ui_ui_textControls_jaz_004792e8;
+  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar17);
+  pcVar17 = s_ui_ui_textControls_jaz_004792e8;
   ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar5);
   pcVar5 = s_ui_ui_textPickAPerk_jaz_004792d0;
-  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar18);
+  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar17);
   ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar5);
   puVar7 = &ui_menu_item_element;
   pfVar9 = ui_element_slot_02_main_menu_primary.quad0;
@@ -39117,16 +39154,16 @@ void ui_menu_layout_init(void)
   iVar11 = 2;
   iVar10 = 0;
   do {
-    iVar19 = iVar10;
+    iVar18 = iVar10;
     if ((iVar11 == 2) && (iVar6 = game_is_full_version(), (char)iVar6 != '\0')) {
       iVar10 = 4;
-      iVar19 = 4;
+      iVar18 = 4;
     }
     pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
     if (*pcVar5 == '\0') {
       if (iVar11 == 6) {
         iVar10 = 6;
-        iVar19 = 6;
+        iVar18 = 6;
       }
       (&ui_element_table_end)[iVar11]->counter_id = ui_item_texts_texture;
       puVar7 = (&ui_element_table_end)[iVar11];
@@ -39134,13 +39171,13 @@ void ui_menu_layout_init(void)
       puVar7->_pad4[0x15] = '\0';
       puVar7->_pad4[0x16] = '\0';
       puVar7->_pad4[0x17] = '\0';
-      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar18 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x30] = '\0';
       puVar7->_pad4[0x31] = '\0';
       puVar7->_pad4[0x32] = 0x80;
       puVar7->_pad4[0x33] = '?';
-      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar18 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x4c] = '\0';
       puVar7->_pad4[0x4d] = '\0';
@@ -39162,13 +39199,13 @@ void ui_menu_layout_init(void)
       puVar7->_pad4[0x16] = '\0';
       puVar7->_pad4[0x17] = '\0';
       fStack_30 = 0.0;
-      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar19 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x18) = (float)iVar18 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x30] = '\0';
       puVar7->_pad4[0x31] = '\0';
       puVar7->_pad4[0x32] = 0x80;
       puVar7->_pad4[0x33] = '?';
-      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar19 * 0.125;
+      *(float *)(puVar7->_pad4 + 0x34) = (float)iVar18 * 0.125;
       puVar7 = (&ui_element_table_end)[iVar11];
       puVar7->_pad4[0x4c] = '\0';
       puVar7->_pad4[0x4d] = '\0';
@@ -39184,15 +39221,15 @@ void ui_menu_layout_init(void)
       fStack_2c = fVar12;
     }
     *(float *)(puVar7->_pad4 + 0x6c) = fVar12;
-    if ((iVar11 == 2) && (iVar19 = game_is_full_version(), (char)iVar19 != '\0')) {
+    if ((iVar11 == 2) && (iVar18 = game_is_full_version(), (char)iVar18 != '\0')) {
       iVar10 = 0;
     }
-    iVar19 = iVar10 + 1;
-    if (iVar19 == 4) {
-      iVar19 = iVar10 + 2;
+    iVar18 = iVar10 + 1;
+    if (iVar18 == 4) {
+      iVar18 = iVar10 + 2;
     }
     iVar11 = iVar11 + 1;
-    iVar10 = iVar19;
+    iVar10 = iVar18;
   } while (iVar11 < 8);
   if (config_blob.screen_width < 0x281) {
     iVar10 = 0;
@@ -39654,37 +39691,37 @@ void ui_menu_layout_init(void)
   do {
     if (iVar11 < 0x281) {
       fVar12 = (float)iVar10;
-      iVar19 = 0;
+      iVar18 = 0;
       do {
-        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar19);
-        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar19) * 0.9;
+        pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar18);
+        *pfVar9 = *(float *)((int)(*ppuVar13)->quad0 + iVar18) * 0.9;
         pfVar9[1] = pfVar9[1] * 0.9;
-        puVar8 = (*ppuVar13)->_pad5 + iVar19 + 4;
-        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar19 + 4) * 0.9;
+        puVar8 = (*ppuVar13)->_pad5 + iVar18 + 4;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad5 + iVar18 + 4) * 0.9;
         *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
-        puVar8 = (*ppuVar13)->_pad4 + iVar19;
-        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar19) * 0.9;
+        puVar8 = (*ppuVar13)->_pad4 + iVar18;
+        *(float *)puVar8 = *(float *)((*ppuVar13)->_pad4 + iVar18) * 0.9;
         *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
-        *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) =
-             *(float *)((int)(*ppuVar13)->quad0 + iVar19 + 4) - fVar12;
-        *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) =
-             *(float *)((*ppuVar13)->_pad5 + iVar19 + 8) - fVar12;
-        iVar11 = iVar19 + 4;
-        iVar6 = iVar19 + 4;
-        iVar19 = iVar19 + 0x1c;
+        *(float *)((int)(*ppuVar13)->quad0 + iVar18 + 4) =
+             *(float *)((int)(*ppuVar13)->quad0 + iVar18 + 4) - fVar12;
+        *(float *)((*ppuVar13)->_pad5 + iVar18 + 8) =
+             *(float *)((*ppuVar13)->_pad5 + iVar18 + 8) - fVar12;
+        iVar11 = iVar18 + 4;
+        iVar6 = iVar18 + 4;
+        iVar18 = iVar18 + 0x1c;
         *(float *)((*ppuVar13)->_pad4 + iVar6) = *(float *)((*ppuVar13)->_pad4 + iVar11) - fVar12;
         iVar11 = config_blob.screen_width;
-      } while (iVar19 < 0x70);
+      } while (iVar18 < 0x70);
     }
     iVar10 = iVar10 + 0xb;
     ppuVar13 = ppuVar13 + 1;
   } while (iVar10 < 0x38);
   ppuVar13 = &ui_element_table_slot_22;
   iVar10 = -5;
-  iVar19 = -0xb;
+  iVar18 = -0xb;
   do {
     if (iVar11 < 0x281) {
-      fVar12 = (float)iVar19;
+      fVar12 = (float)iVar18;
       iVar6 = 0;
       do {
         pfVar9 = (float *)((int)(*ppuVar13)->quad0 + iVar6);
@@ -39731,10 +39768,10 @@ void ui_menu_layout_init(void)
         iVar11 = config_blob.screen_width;
       } while (iVar6 < 0x70);
     }
-    iVar19 = iVar19 + 0xb;
+    iVar18 = iVar18 + 0xb;
     iVar10 = iVar10 + 5;
     ppuVar13 = ppuVar13 + 1;
-  } while (iVar19 < 0x17);
+  } while (iVar18 < 0x17);
   if (iVar11 < 0x281) {
     iVar10 = 0;
     do {
@@ -39745,7 +39782,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       puVar8 = ui_menu_layout_c->_pad4 + iVar10;
-      iVar19 = iVar10 + 0x1c;
+      iVar18 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
@@ -39754,9 +39791,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 11.0;
       *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 11.0;
-      iVar10 = iVar19;
+      iVar10 = iVar18;
       iVar11 = config_blob.screen_width;
-    } while (iVar19 < 0x70);
+    } while (iVar18 < 0x70);
   }
   else if (iVar11 < 0x321) {
     iVar10 = 0;
@@ -39768,7 +39805,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 4) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       puVar8 = ui_menu_layout_c->_pad4 + iVar10;
-      iVar19 = iVar10 + 0x1c;
+      iVar18 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_c->_pad4 + iVar10) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       *(float *)((int)ui_menu_layout_c->quad0 + iVar10 + 4) =
@@ -39777,9 +39814,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_c->_pad5 + iVar10 + 8) - 3.0;
       *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_c->_pad4 + iVar10 + 4) - 3.0;
-      iVar10 = iVar19;
+      iVar10 = iVar18;
       iVar11 = config_blob.screen_width;
-    } while (iVar19 < 0x70);
+    } while (iVar18 < 0x70);
   }
   if (iVar11 < 0x281) {
     iVar10 = 0;
@@ -39791,7 +39828,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       puVar8 = ui_menu_layout_a->_pad4 + iVar10;
-      iVar19 = iVar10 + 0x1c;
+      iVar18 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.8;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.8;
       *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
@@ -39800,9 +39837,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 11.0;
       *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 11.0;
-      iVar10 = iVar19;
+      iVar10 = iVar18;
       iVar11 = config_blob.screen_width;
-    } while (iVar19 < 0x70);
+    } while (iVar18 < 0x70);
   }
   else if (iVar11 < 0x321) {
     iVar10 = 0;
@@ -39814,7 +39851,7 @@ void ui_menu_layout_init(void)
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 4) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       puVar8 = ui_menu_layout_a->_pad4 + iVar10;
-      iVar19 = iVar10 + 0x1c;
+      iVar18 = iVar10 + 0x1c;
       *(float *)puVar8 = *(float *)(ui_menu_layout_a->_pad4 + iVar10) * 0.9;
       *(float *)(puVar8 + 4) = *(float *)(puVar8 + 4) * 0.9;
       *(float *)((int)ui_menu_layout_a->quad0 + iVar10 + 4) =
@@ -39823,9 +39860,9 @@ void ui_menu_layout_init(void)
            *(float *)(ui_menu_layout_a->_pad5 + iVar10 + 8) - 3.0;
       *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) =
            *(float *)(ui_menu_layout_a->_pad4 + iVar10 + 4) - 3.0;
-      iVar10 = iVar19;
+      iVar10 = iVar18;
       iVar11 = config_blob.screen_width;
-    } while (iVar19 < 0x70);
+    } while (iVar18 < 0x70);
   }
   if (iVar11 < 0x281) {
     iVar10 = 0;
@@ -39871,23 +39908,23 @@ void ui_menu_layout_init(void)
       iVar10 = iVar11;
     } while (iVar11 < 0x70);
   }
-  ui_element_init_defaults((ui_element_t *)&DAT_0048f20c);
+  ui_element_init_defaults((ui_element_t *)&ui_perk_prompt_element);
   _DAT_0048f240 = ui_callback_noop;
   puVar7 = &ui_menu_item_element;
-  puVar16 = &perk_prompt_bounds_min_x;
+  pfVar9 = &perk_prompt_bounds_min_x;
   for (iVar10 = 0x3a; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *puVar16 = *(undefined4 *)puVar7;
+    *pfVar9 = *(float *)puVar7;
     puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
-    puVar16 = puVar16 + 1;
+    pfVar9 = pfVar9 + 1;
   }
   _DAT_0048f25c = 0x3f800000;
   _DAT_0048f278 = 0;
   _DAT_0048f2b0 = 0x3f800000;
   _DAT_0048f294 = 0;
-  ui_element_load((ui_element_t *)&DAT_0048f330,s_ui_ui_textLevelUp_jaz_004792a0);
+  ui_element_load((ui_element_t *)&ui_perk_prompt_levelup_element,s_ui_ui_textLevelUp_jaz_004792a0);
   fStack_30 = -230.0;
   fStack_2c = -27.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048f330,75.0,25.0,&fStack_30);
+  ui_element_set_rect((ui_element_t *)&ui_perk_prompt_levelup_element,75.0,25.0,&fStack_30);
   pfVar9 = (float *)&DAT_0048f334;
   do {
     pfVar14 = pfVar9 + 7;
@@ -39903,15 +39940,15 @@ void ui_menu_layout_init(void)
   if (config_blob.screen_width == 0x280) {
     fStack_30 = 690.0;
     fStack_2c = 80.0;
-    _perk_prompt_origin_y = 0x42a00000;
+    perk_prompt_origin_y = 80.0;
   }
   else {
     fStack_2c = 40.0;
     fStack_30 = (float)(config_blob.screen_width + 0x32);
-    _perk_prompt_origin_y = 0x42200000;
+    perk_prompt_origin_y = 40.0;
   }
   ppuVar13 = &ui_element_table_slot_01_main_menu_aux;
-  _perk_prompt_origin_x = fStack_30;
+  perk_prompt_origin_x = fStack_30;
   do {
     puVar7 = *ppuVar13;
     ppuVar13 = ppuVar13 + 1;
@@ -39920,17 +39957,17 @@ void ui_menu_layout_init(void)
   } while ((int)ppuVar13 < 0x48f20c);
   ui_element_slot_40.pos_x = (float)(config_blob.screen_width + -0x15e);
   puVar7 = &ui_element_slot_09;
-  puVar17 = &ui_element_slot_40;
+  puVar16 = &ui_element_slot_40;
   for (iVar11 = 0xc6; iVar11 != 0; iVar11 = iVar11 + -1) {
     uVar2 = puVar7->enabled;
     uVar3 = puVar7->_pad0[0];
     uVar4 = puVar7->_pad0[1];
-    puVar17->active = puVar7->active;
-    puVar17->enabled = uVar2;
-    puVar17->_pad0[0] = uVar3;
-    puVar17->_pad0[1] = uVar4;
+    puVar16->active = puVar7->active;
+    puVar16->enabled = uVar2;
+    puVar16->_pad0[0] = uVar3;
+    puVar16->_pad0[1] = uVar4;
     puVar7 = (ui_element_t *)(puVar7->_pad0 + 2);
-    puVar17 = (ui_element_t *)(puVar17->_pad0 + 2);
+    puVar16 = (ui_element_t *)(puVar16->_pad0 + 2);
   }
   ui_element_slot_40.pos_y = 200.0;
   if (iVar10 < 0x281) {
@@ -39941,7 +39978,7 @@ void ui_menu_layout_init(void)
   ui_element_slot_40._pad0[3] = '\0';
   ui_element_slot_40._pad0[4] = '\0';
   ui_element_slot_40._pad0[5] = '\0';
-  DAT_0048f164 = 1;
+  ui_menu_layout_init_latch = '\x01';
   ppuVar13 = &ui_element_table_end;
   do {
     ui_element_layout_calc((float)*ppuVar13);

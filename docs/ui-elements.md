@@ -20,7 +20,7 @@ partial.
 
 UI elements are referenced via a fixed table of pointers from
 `ui_element_table_end` (`0x0048f168`) through `ui_element_table_start`
-(`0x0048f20c`), for a total of **41 pointers** (`0xA4` bytes).
+(`0x0048f208`), for a total of **41 pointers** (`0xA4` bytes).
 
 In `data_map.json` this table is now labeled as typed slot pointers:
 
@@ -42,6 +42,15 @@ The pointee storage blocks are also typed/labeled as `ui_element_t` globals
 - `ui_element_slot_18_layout_b` (`0x0048d590`)
 - `ui_element_slot_32_layout_c` (`0x00488e68`)
 - `ui_element_slot_40` (`0x0048ee50`)
+
+Additional adjacent globals now mapped:
+
+- `ui_menu_layout_init_latch` (`0x0048f164`) is set to `1` at the end of
+  `ui_menu_layout_init`.
+- `ui_perk_prompt_element` (`0x0048f20c`) is the special perk prompt element
+  rendered by `perk_prompt_update_and_render`.
+- `ui_perk_prompt_levelup_element` (`0x0048f330`) is a nested UI block loaded
+  from `ui\ui_textLevelUp.jaz` and shaped during layout init.
 
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
