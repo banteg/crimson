@@ -6,7 +6,11 @@ import random
 
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
-QUEST_COMPLETION_TRANSITION_MS = 1000.0
+QUEST_COMPLETION_HIT_SFX_START_MS = 800.0
+QUEST_COMPLETION_HIT_SFX_END_MS = float(0x353)
+QUEST_COMPLETION_MUSIC_START_MS = 2000.0
+QUEST_COMPLETION_MUSIC_END_MS = float(0x803)
+QUEST_COMPLETION_TRANSITION_MS = float(0x9C4)
 
 
 def _call_builder(
@@ -68,7 +72,7 @@ def tick_quest_completion_transition(
     *,
     creatures_none_active: bool,
     spawn_table_empty: bool,
-) -> tuple[float, bool]:
+) -> tuple[float, bool, bool, bool]:
     """Advance quest completion transition timer.
 
     The quest-mode update loop waits for a short delay after the quest is "idle complete"
@@ -76,7 +80,7 @@ def tick_quest_completion_transition(
     results screen.
 
     Returns:
-      (completion_transition_ms, completed)
+      (completion_transition_ms, completed, play_hit_sfx, play_completion_music)
     """
 
     dt_ms = float(frame_dt_ms)
@@ -84,8 +88,15 @@ def tick_quest_completion_transition(
 
     if creatures_none_active and spawn_table_empty:
         if timer_ms < 0.0:
-            timer_ms = 0.0
-        timer_ms += dt_ms
-        return timer_ms, bool(timer_ms >= QUEST_COMPLETION_TRANSITION_MS)
+            # Native quest_mode_update seeds the timer with the frame delta.
+            return dt_ms, False, False, False
+        if QUEST_COMPLETION_HIT_SFX_START_MS < timer_ms < QUEST_COMPLETION_HIT_SFX_END_MS:
+            # Match the native snap-forward after the quest-hit stinger.
+            return QUEST_COMPLETION_HIT_SFX_END_MS + dt_ms, False, True, False
+        if QUEST_COMPLETION_MUSIC_START_MS < timer_ms < QUEST_COMPLETION_MUSIC_END_MS:
+            # Match the native snap-forward before the completion music fade-in.
+            return QUEST_COMPLETION_MUSIC_END_MS + dt_ms, False, False, True
+        completed = bool(timer_ms > QUEST_COMPLETION_TRANSITION_MS)
+        return timer_ms + dt_ms, completed, False, False
 
-    return -1.0, False
+    return -1.0, False, False, False
