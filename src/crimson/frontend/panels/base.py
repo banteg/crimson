@@ -66,25 +66,19 @@ class PanelMenuView:
         *,
         title: str,
         body: str | None = None,
-        panel_pos_x: float = PANEL_POS_X,
-        panel_pos_y: float = PANEL_POS_Y,
-        panel_offset_x: float = MENU_PANEL_OFFSET_X,
-        panel_offset_y: float = MENU_PANEL_OFFSET_Y,
+        panel_pos: Vec2 = Vec2(PANEL_POS_X, PANEL_POS_Y),
+        panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         panel_height: float = MENU_PANEL_HEIGHT,
-        back_pos_x: float = PANEL_BACK_POS_X,
-        back_pos_y: float = PANEL_BACK_POS_Y,
+        back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
         back_action: str = "back_to_menu",
     ) -> None:
         self._state = state
         self._title = title
         self._body_lines = (body or "").splitlines()
-        self._panel_pos_x = panel_pos_x
-        self._panel_pos_y = panel_pos_y
-        self._panel_offset_x = panel_offset_x
-        self._panel_offset_y = panel_offset_y
+        self._panel_pos = panel_pos
+        self._panel_offset = panel_offset
         self._panel_height = panel_height
-        self._back_pos_x = back_pos_x
-        self._back_pos_y = back_pos_y
+        self._back_pos = back_pos
         self._back_action = back_action
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
@@ -105,7 +99,7 @@ class PanelMenuView:
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._assets = load_menu_assets(self._state)
-        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos_y)
+        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -240,9 +234,14 @@ class PanelMenuView:
         item_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * item_scale
         panel_h = float(self._panel_height) * item_scale
-        top_left_x = self._panel_pos_x + slide_x + self._panel_offset_x * item_scale
-        top_left_y = self._panel_pos_y + self._widescreen_y_shift + self._panel_offset_y * item_scale
-        dst = rl.Rectangle(float(top_left_x), float(top_left_y), float(panel_w), float(panel_h))
+        panel_top_left = (
+            Vec2(
+                self._panel_pos.x + slide_x,
+                self._panel_pos.y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * item_scale
+        )
+        dst = rl.Rectangle(float(panel_top_left.x), float(panel_top_left.y), float(panel_w), float(panel_h))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
@@ -256,8 +255,6 @@ class PanelMenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        pos_x = self._back_pos_x
-        pos_y = entry.y + self._widescreen_y_shift
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=2,
@@ -265,13 +262,13 @@ class PanelMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=item_w * self._menu_item_scale(entry.slot)[0],
         )
-        pos_x += slide_x
+        pos = Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_x = MENU_ITEM_OFFSET_X * item_scale
         offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
         dst = rl.Rectangle(
-            pos_x,
-            pos_y,
+            pos.x,
+            pos.y,
             item_w * item_scale,
             item_h * item_scale,
         )
@@ -304,8 +301,8 @@ class PanelMenuView:
         label_offset_x = MENU_LABEL_OFFSET_X * item_scale
         label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
         label_dst = rl.Rectangle(
-            pos_x,
-            pos_y,
+            pos.x,
+            pos.y,
             MENU_LABEL_WIDTH * item_scale,
             MENU_LABEL_HEIGHT * item_scale,
         )
@@ -336,8 +333,10 @@ class PanelMenuView:
             return
         screen_w = float(self._state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * scale
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
@@ -351,14 +350,14 @@ class PanelMenuView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,
@@ -368,30 +367,32 @@ class PanelMenuView:
         return self._timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
-        left, top, right, bottom = self._menu_item_bounds(entry)
+        top_left, bottom_right = self._menu_item_bounds(entry)
         mouse = rl.get_mouse_position()
-        mouse_x = float(mouse.x)
-        mouse_y = float(mouse.y)
-        return left <= mouse_x <= right and top <= mouse_y <= bottom
+        mouse_pos = Vec2(float(mouse.x), float(mouse.y))
+        return top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
         if self._menu_screen_width < 641:
             return 0.9, float(slot) * 11.0
         return 1.0, 0.0
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[float, float, float, float]:
+    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[Vec2, Vec2]:
         assets = self._assets
         if assets is None or assets.item is None:
-            return (0.0, 0.0, 0.0, 0.0)
+            return Vec2(), Vec2()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
-        x0 = MENU_ITEM_OFFSET_X * item_scale
-        y0 = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
-        x2 = (MENU_ITEM_OFFSET_X + item_w) * item_scale
-        y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
-        w = x2 - x0
-        h = y2 - y0
+        offset_min = Vec2(
+            MENU_ITEM_OFFSET_X * item_scale,
+            MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,
+        )
+        offset_max = Vec2(
+            (MENU_ITEM_OFFSET_X + item_w) * item_scale,
+            (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
+        )
+        size = offset_max - offset_min
         _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=2,
@@ -399,10 +400,13 @@ class PanelMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=item_w * item_scale,
         )
-        pos_x = self._back_pos_x + slide_x
-        pos_y = entry.y + self._widescreen_y_shift
-        left = pos_x + x0 + w * 0.54
-        top = pos_y + y0 + h * 0.28
-        right = pos_x + x2 - w * 0.05
-        bottom = pos_y + y2 - h * 0.10
-        return left, top, right, bottom
+        pos = Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
+        top_left = pos + Vec2(
+            offset_min.x + size.x * 0.54,
+            offset_min.y + size.y * 0.28,
+        )
+        bottom_right = pos + Vec2(
+            offset_max.x - size.x * 0.05,
+            offset_max.y - size.y * 0.10,
+        )
+        return top_left, bottom_right

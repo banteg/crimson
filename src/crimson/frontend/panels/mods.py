@@ -8,8 +8,6 @@ import pyray as rl
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 
 from ..menu import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MenuView,
 )
@@ -45,14 +43,15 @@ class ModsMenuView(PanelMenuView):
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
         )
-        panel_x = self._panel_pos_x + slide_x
-        panel_y = self._panel_pos_y + self._widescreen_y_shift
-        origin_x = -(MENU_PANEL_OFFSET_X * panel_scale)
-        origin_y = -(MENU_PANEL_OFFSET_Y * panel_scale)
-        panel_left = panel_x - origin_x
-        panel_top = panel_y - origin_y
-        base_x = panel_left + 212.0 * panel_scale
-        base_y = panel_top + 32.0 * panel_scale
+        panel_top_left = (
+            Vec2(
+                self._panel_pos.x + slide_x,
+                self._panel_pos.y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * panel_scale
+        )
+        base_x = panel_top_left.x + 212.0 * panel_scale
+        base_y = panel_top_left.y + 32.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         return {
             "base_x": base_x,

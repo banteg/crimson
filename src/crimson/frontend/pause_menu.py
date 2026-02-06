@@ -5,6 +5,7 @@ import math
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
+from grim.geom import Vec2
 
 from .assets import MenuAssets, load_menu_assets
 from .menu import (
@@ -229,38 +230,37 @@ class PauseMenuView:
             angle = -abs(angle)
         return angle, offset_x
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[float, float, float, float]:
+    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[Vec2, Vec2]:
         assets = self._assets
         if assets is None or assets.item is None:
-            return (0.0, 0.0, 0.0, 0.0)
+            return Vec2(), Vec2()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
-        x0 = MENU_ITEM_OFFSET_X * item_scale
-        y0 = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
-        x2 = (MENU_ITEM_OFFSET_X + item_w) * item_scale
-        y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
-        w = x2 - x0
-        h = y2 - y0
-        pos_x = MenuView._menu_slot_pos_x(entry.slot)
-        pos_y = entry.y
-        left = pos_x + x0 + w * 0.54
-        top = pos_y + y0 + h * 0.28
-        right = pos_x + x2 - w * 0.05
-        bottom = pos_y + y2 - h * 0.10
-        return left, top, right, bottom
+        offset_min = Vec2(
+            MENU_ITEM_OFFSET_X * item_scale,
+            MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,
+        )
+        offset_max = Vec2(
+            (MENU_ITEM_OFFSET_X + item_w) * item_scale,
+            (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
+        )
+        size = offset_max - offset_min
+        pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
+        top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
+        bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
+        return top_left, bottom_right
 
     def _hovered_entry_index(self) -> int | None:
         if not self._menu_entries:
             return None
         mouse = rl.get_mouse_position()
-        mouse_x = float(mouse.x)
-        mouse_y = float(mouse.y)
+        mouse_pos = Vec2(float(mouse.x), float(mouse.y))
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue
-            left, top, right, bottom = self._menu_item_bounds(entry)
-            if left <= mouse_x <= right and top <= mouse_y <= bottom:
+            top_left, bottom_right = self._menu_item_bounds(entry)
+            if top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y:
                 return idx
         return None
 
@@ -295,8 +295,7 @@ class PauseMenuView:
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
-            pos_x = MenuView._menu_slot_pos_x(entry.slot)
-            pos_y = entry.y
+            pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
             angle_rad, slide_x = self._ui_element_anim(
                 index=entry.slot + 2,
                 start_ms=MenuView._menu_slot_start_ms(entry.slot),
@@ -308,8 +307,8 @@ class PauseMenuView:
             offset_x = MENU_ITEM_OFFSET_X * item_scale
             offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
             dst = rl.Rectangle(
-                pos_x,
-                pos_y,
+                pos.x,
+                pos.y,
                 item_w * item_scale,
                 item_h * item_scale,
             )
@@ -345,8 +344,8 @@ class PauseMenuView:
             label_offset_x = MENU_LABEL_OFFSET_X * item_scale
             label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
             label_dst = rl.Rectangle(
-                pos_x,
-                pos_y,
+                pos.x,
+                pos.y,
                 MENU_LABEL_WIDTH * item_scale,
                 MENU_LABEL_HEIGHT * item_scale,
             )
@@ -380,8 +379,10 @@ class PauseMenuView:
             return
         screen_w = float(self._state.config.screen_width)
         scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * scale
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
@@ -402,14 +403,14 @@ class PauseMenuView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,

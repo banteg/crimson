@@ -13,8 +13,6 @@ from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, butt
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MenuView,
     _draw_menu_cursor,
@@ -211,20 +209,19 @@ class OptionsMenuView(PanelMenuView):
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
         )
-        panel_x = self._panel_pos_x + slide_x
-        panel_y = self._panel_pos_y + self._widescreen_y_shift
-        origin_x = -(MENU_PANEL_OFFSET_X * panel_scale)
-        origin_y = -(MENU_PANEL_OFFSET_Y * panel_scale)
-        panel_left = panel_x - origin_x
-        panel_top = panel_y - origin_y
-        base_x = panel_left + 212.0 * panel_scale
+        panel_top_left = (
+            Vec2(
+                self._panel_pos.x + slide_x,
+                self._panel_pos.y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * panel_scale
+        )
+        base_x = panel_top_left.x + 212.0 * panel_scale
         # `sub_4475d0`: title label is anchored at panel_top + 40.
-        base_y = panel_top + 40.0 * panel_scale
+        base_y = panel_top_left.y + 40.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         slider_x = label_x + 130.0 * panel_scale
         return {
-            "panel_left": panel_left,
-            "panel_top": panel_top,
             "base_x": base_x,
             "base_y": base_y,
             "label_x": label_x,

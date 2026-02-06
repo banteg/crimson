@@ -14,6 +14,7 @@ from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, butt
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
+    MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MenuView,
 )
@@ -44,9 +45,9 @@ class PlayGameMenuView(PanelMenuView):
         super().__init__(
             state,
             title="Play Game",
-            panel_offset_x=-63.0,
+            panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
-            back_pos_y=462.0,
+            back_pos=Vec2(-55.0, 462.0),
         )
         self._small_font: SmallFontData | None = None
         self._button_sm: rl.Texture2D | None = None
@@ -190,25 +191,24 @@ class PlayGameMenuView(PanelMenuView):
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
         )
-        panel_x = self._panel_pos_x + slide_x
-        panel_y = self._panel_pos_y + self._widescreen_y_shift
-        origin_x = -(self._panel_offset_x * panel_scale)
-        origin_y = -(self._panel_offset_y * panel_scale)
-        panel_left = panel_x - origin_x
-        panel_top = panel_y - origin_y
+        panel_top_left = (
+            Vec2(
+                self._panel_pos.x + slide_x,
+                self._panel_pos.y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * panel_scale
+        )
 
         # `sub_44ed80`:
         #   xy = panel_offset_x + panel_x + 330 - 64  (+ animated X offset)
         #   var_1c = panel_offset_y + panel_y + 50
-        base_x = panel_left + 266.0 * panel_scale
-        base_y = panel_top + 50.0 * panel_scale
+        base_x = panel_top_left.x + 266.0 * panel_scale
+        base_y = panel_top_left.y + 50.0 * panel_scale
 
         drop_x = base_x + 80.0 * panel_scale
         drop_y = base_y + 1.0 * panel_scale
 
         return {
-            "panel_left": panel_left,
-            "panel_top": panel_top,
             "scale": panel_scale,
             "base_x": base_x,
             "base_y": base_y,
