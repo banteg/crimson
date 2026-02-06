@@ -117,8 +117,9 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
 
     score_x, score_y, _score_color = draw_map["Score"]
     assert (score_x, score_y) == (154.0, 225.0)
-    exp_x, exp_y, _exp_color = draw_map["Experience"]
+    exp_x, exp_y, exp_color = draw_map["Experience"]
     assert (exp_x, exp_y) == (238.0, 225.0)
+    assert (exp_color.r, exp_color.g, exp_color.b, exp_color.a) == (149, 175, 198, 178)
     frags_x, frags_y, _frags_color = draw_map["Frags: 10"]
     assert (frags_x, frags_y) == (252.0, 278.0)
     hit_x, hit_y, _hit_color = draw_map["Hit %: 23%"]

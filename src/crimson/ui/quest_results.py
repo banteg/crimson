@@ -297,7 +297,9 @@ class QuestResultsUi:
         rank_w = self._text_width(rank_label, 1.0 * scale)
         self._draw_small(rank_label, left_center_x - rank_w * 0.5, y + 30.0 * scale, 1.0 * scale, col_label)
 
-        self._draw_small("Experience", right_label_x, y, 1.0 * scale, col_label)
+        # Native path: FUN_00441220 sets current color from DAT_004ccca8 just before
+        # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
+        self._draw_small("Experience", right_label_x, y, 1.0 * scale, col_line)
         xp_value_w = self._text_width(xp_value, 1.0 * scale)
         self._draw_small(xp_value, right_center_x - xp_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_label)
 
