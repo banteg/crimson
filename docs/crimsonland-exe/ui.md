@@ -53,6 +53,25 @@ Recent data-map lifts for one-shot setup guards:
   for the unlocked-perks database list and Back button.
 - `quest_select_screen_flags` (`0x004d79d4`): `quest_select_menu_update`
   runtime setup guards for Hardcore checkbox and Back button.
+- `demo_trial_overlay_init_flags` (`0x0047f62c`): `demo_trial_overlay_render`
+  one-shot setup guards for Maybe later / Purchase / Already paid.
+- `tutorial_prompt_dialog_init_flags` (`0x00480148`):
+  `tutorial_prompt_dialog` one-shot setup guards for Repeat / Play buttons.
+- `demo_purchase_screen_init_flags` (`0x00480320`):
+  `demo_purchase_screen_update` one-shot setup guards for Maybe later /
+  Purchase.
+- `ui_aim_indicators_init_flags` (`0x00480340`):
+  `ui_render_aim_indicators` one-shot atexit registration guards.
+
+Additional shared UI strings/globals:
+
+- `menu_label_back` (`0x00472e80`): shared `"Back"` label used by multiple
+  menu buttons.
+- `s_fmt_decimal_int` / `s_fmt_decimal_int_zero_prefixed`
+  (`0x00471f40` / `0x00471f44`): `%d` and `0%d` format strings used in menu
+  counters and demo-time formatting.
+- `screen_height_f` (`0x00471144`): float mirror of `_config_screen_height` used
+  by centered splash/loading layout.
 
 ## Controls menu list latches
 

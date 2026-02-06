@@ -20,6 +20,8 @@ This page groups full-screen or modal flows that have their own update loops.
 - `game_over_name_input_initial_length` (`0x00482594`) caches the original
   active-record name length so final copy-back/termination preserves expected
   bounds.
+- Uses `highscore_card_text_buffer` (`0x004d0da0`) as a shared scratch buffer
+  for score/time/rank text in `ui_text_input_render`.
 
 ## Quest results (quest_results_screen_update / FUN_00410d20)
 
@@ -58,6 +60,19 @@ Recovered staged-reveal globals:
 - Note: the original string list includes a typo ("Persistence will be rewared."); we correct it to "rewarded" in the rewrite.
 - `quest_failed_screen_flags` (`0x004825d8`) is the one-shot init bitfield for
   the three action buttons (Play Again / Play Another / Main Menu).
+
+## Database screens (unlocked weapons/perks)
+
+- `unlocked_weapons_nav_focus_index` (`0x004d1200`) and
+  `unlocked_perks_nav_focus_index` (`0x004d1204`) track keyboard focus between
+  the Back button (`0`) and list area (`1`) for left/right navigation.
+
+## Highscore screen action routing
+
+- `highscore_screen_action_id` (`0x004d1214`) carries the active click/confirm
+  target in `highscore_screen_update`:
+  - `-3` / `-2`: quest stage left/right arrows.
+  - positive values: action buttons (sync, play, back).
 
 ## Credits screen (credits_screen_update)
 

@@ -14,6 +14,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471144",
+      "comment": "Float screen height used for UI/layout (set from config_screen_height).",
+      "name": "screen_height_f",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004711f8",
       "comment": "Console command string: \"exec\".",
       "name": "console_cmd_exec",
@@ -99,6 +106,18 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471f40",
+      "comment": "printf-style format string \"%d\" used for integer UI counters.",
+      "name": "s_fmt_decimal_int",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471f44",
+      "comment": "printf-style format string \"0%d\" used for leading-zero second fields.",
+      "name": "s_fmt_decimal_int_zero_prefixed",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00471fc4",
       "comment": "printf-style format string \"%s\" used by grim_draw_text_small_fmt.",
       "name": "s_fmt_percent_s",
@@ -114,6 +133,12 @@
       "address": "0x00472998",
       "comment": "CString \"rb\" used for config/status file reads.",
       "name": "file_mode_read_binary",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00472e80",
+      "comment": "CString \"Back\" used by menu/back button labels across UI screens.",
+      "name": "menu_label_back",
       "program": "crimsonland.exe"
     },
     {
@@ -677,10 +702,24 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x0047f62c",
+      "comment": "Demo-trial overlay one-shot init flags for its action buttons (Maybe later/Purchase/Already paid).",
+      "name": "demo_trial_overlay_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x0048014c",
       "comment": "Scratch buffer used by game_build_path (base path + filename).",
       "name": "game_path_buf",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00480148",
+      "comment": "Tutorial prompt dialog one-shot init flags for Repeat/Play button setup.",
+      "name": "tutorial_prompt_dialog_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00480250",
@@ -706,6 +745,20 @@
       "comment": "Game-complete/congratulations screen init flags for the navigation buttons (Survival/Rush/Typ'o/Main Menu).",
       "name": "game_completed_screen_flags",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00480320",
+      "comment": "Demo purchase screen one-shot init flags for Maybe later/Purchase buttons.",
+      "name": "demo_purchase_screen_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x00480340",
+      "comment": "Aim-indicator render one-shot init flags guarding atexit cleanup registration.",
+      "name": "ui_aim_indicators_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00480348",
@@ -6538,6 +6591,27 @@
       "type": "music_playlist_t"
     },
     {
+      "address": "0x004cc8d0",
+      "comment": "Queued music-playlist entry count used by music_queue_track and random exclusive tune selection.",
+      "name": "music_playlist_entry_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004cc8d4",
+      "comment": "Random playlist selection latch used by sfx_play_exclusive(music_track_extra_0).",
+      "name": "music_playlist_randomized_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004cc8d8",
+      "comment": "Audio asset-load counter incremented by sfx_load_sample and music_load_track; shown on startup loading screen.",
+      "name": "audio_assets_loaded_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004cc8d6",
       "comment": "Global SFX unmuted flag checked by sfx_is_unmuted.",
       "name": "sfx_unmuted_flag",
@@ -6627,6 +6701,12 @@
       "type": "char"
     },
     {
+      "address": "0x004d0da0",
+      "comment": "Scratch text buffer used by ui_text_input_render for highscore card numeric/rank labels.",
+      "name": "highscore_card_text_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004d0e38",
       "comment": "Static text buffer written by highscore_format_date_label.",
       "name": "highscore_date_label_buffer",
@@ -6696,11 +6776,32 @@
       "type": "char"
     },
     {
+      "address": "0x004d1200",
+      "comment": "Unlocked-weapons database keyboard focus index (0=Back button, 1=list area).",
+      "name": "unlocked_weapons_nav_focus_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d1204",
+      "comment": "Unlocked-perks database keyboard focus index (0=Back button, 1=list area).",
+      "name": "unlocked_perks_nav_focus_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d1208",
       "comment": "UI stats hover accumulator for the \"most used weapon\" tooltip (clamped to [0..1]).",
       "name": "ui_stats_hover_weapon",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004d1214",
+      "comment": "Highscore screen action selector (-3/-2 for quest arrows, positive values for action buttons).",
+      "name": "highscore_screen_action_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d1218",

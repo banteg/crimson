@@ -3613,14 +3613,14 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
   if (iVar5 < 0) {
     iVar4 = 0;
     iVar3 = 0;
-    pcVar6 = &DAT_00471f44;
+    pcVar6 = &s_fmt_decimal_int_zero_prefixed;
     iVar5 = 0;
   }
   else if (iVar4 < 10) {
-    pcVar6 = &DAT_00471f44;
+    pcVar6 = &s_fmt_decimal_int_zero_prefixed;
   }
   else {
-    pcVar6 = &DAT_00471f40;
+    pcVar6 = &s_fmt_decimal_int;
   }
   crt_sprintf(acStack_98,pcVar6,iVar4);
   if (iVar3 < 10) {
@@ -3720,8 +3720,8 @@ LAB_00404b1b:
 LAB_00404ee5:
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,fVar7,fVar2,s_it_now__You_ll_have_a_great_time_00471b84);
-  if ((DAT_0047f62c & 1) == 0) {
-    DAT_0047f62c = DAT_0047f62c | 1;
+  if ((demo_trial_overlay_init_flags & 1U) == 0) {
+    demo_trial_overlay_init_flags = demo_trial_overlay_init_flags | 1;
     ui_button_maybe_later.enabled = '\x01';
     ui_button_maybe_later.force_wide = '\0';
     ui_button_maybe_later.force_small = '\0';
@@ -3734,8 +3734,8 @@ LAB_00404ee5:
     crt_atexit(&DAT_00405150);
   }
   ui_button_maybe_later.label = s_Maybe_later_00471b78;
-  if ((DAT_0047f62c & 2) == 0) {
-    DAT_0047f62c = DAT_0047f62c | 2;
+  if ((demo_trial_overlay_init_flags & 2U) == 0) {
+    demo_trial_overlay_init_flags = demo_trial_overlay_init_flags | 2;
     ui_button_table_a.enabled = '\x01';
     ui_button_table_a.force_wide = '\0';
     ui_button_table_a.force_small = '\0';
@@ -3748,8 +3748,8 @@ LAB_00404ee5:
     crt_atexit(&DAT_00405140);
   }
   ui_button_table_a.label = s_Purchase_00471b6c;
-  if ((DAT_0047f62c & 4) == 0) {
-    DAT_0047f62c = DAT_0047f62c | 4;
+  if ((demo_trial_overlay_init_flags & 4U) == 0) {
+    demo_trial_overlay_init_flags = demo_trial_overlay_init_flags | 4;
     ui_button_already_paid.enabled = '\x01';
     ui_button_already_paid.force_wide = '\0';
     ui_button_already_paid.force_small = '\0';
@@ -5550,8 +5550,8 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
   fStack_8 = afStack_20[2];
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,(float)(iVar3 + 0x14),68.0,unaff_retaddr,puVar7);
-  if ((DAT_00480148 & 1) == 0) {
-    DAT_00480148 = DAT_00480148 | 1;
+  if ((tutorial_prompt_dialog_init_flags & 1U) == 0) {
+    tutorial_prompt_dialog_init_flags = tutorial_prompt_dialog_init_flags | 1;
     ui_button_table_b.enabled = '\x01';
     ui_button_table_b.force_wide = '\0';
     ui_button_table_b.force_small = '\0';
@@ -5564,8 +5564,8 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     crt_atexit(&DAT_00408980);
   }
   ui_button_table_b.label = s_Repeat_tutorial_004722f8;
-  if ((DAT_00480148 & 2) == 0) {
-    DAT_00480148 = DAT_00480148 | 2;
+  if ((tutorial_prompt_dialog_init_flags & 2U) == 0) {
+    tutorial_prompt_dialog_init_flags = tutorial_prompt_dialog_init_flags | 2;
     ui_button_table_c.enabled = '\x01';
     ui_button_table_c.force_wide = '\0';
     ui_button_table_c.force_small = '\0';
@@ -6565,12 +6565,12 @@ void ui_render_aim_indicators(void)
   float fStack_60;
   
   if (demo_mode_active == '\0') {
-    if ((DAT_00480340 & 1) == 0) {
-      DAT_00480340 = DAT_00480340 | 1;
+    if ((ui_aim_indicators_init_flags & 1U) == 0) {
+      ui_aim_indicators_init_flags = ui_aim_indicators_init_flags | 1;
       crt_atexit(&DAT_0040aaa0);
     }
-    if ((DAT_00480340 & 2) == 0) {
-      DAT_00480340 = DAT_00480340 | 2;
+    if ((ui_aim_indicators_init_flags & 2U) == 0) {
+      ui_aim_indicators_init_flags = ui_aim_indicators_init_flags | 2;
       crt_atexit(&DAT_0040aa90);
     }
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
@@ -7192,8 +7192,8 @@ void demo_purchase_screen_update(void)
     demo_purchase_screen_active = '\x01';
     demo_time_limit_ms = 16000;
   }
-  if ((DAT_00480320 & 1) == 0) {
-    DAT_00480320 = DAT_00480320 | 1;
+  if ((demo_purchase_screen_init_flags & 1U) == 0) {
+    demo_purchase_screen_init_flags = demo_purchase_screen_init_flags | 1;
     DAT_004802b6 = 1;
     DAT_004802c5 = 0;
     DAT_004802c4 = 0;
@@ -7206,8 +7206,8 @@ void demo_purchase_screen_update(void)
     crt_atexit(&DAT_0040c1b0);
   }
   _DAT_004802b0 = s_Maybe_later_00471b78;
-  if ((DAT_00480320 & 2) == 0) {
-    DAT_00480320 = DAT_00480320 | 2;
+  if ((demo_purchase_screen_init_flags & 2U) == 0) {
+    demo_purchase_screen_init_flags = demo_purchase_screen_init_flags | 2;
     DAT_0047f67e = 1;
     DAT_0047f68d = 0;
     DAT_0047f68c = 0;
@@ -7709,7 +7709,7 @@ LAB_0040c8a0:
       (*pIVar1->grim_get_fps)();
       lVar9 = __ftol();
       uVar6 = (undefined4)lVar9;
-      pcVar4 = &DAT_00471f40;
+      pcVar4 = &s_fmt_decimal_int;
       iVar3 = _config_screen_width + -0x2d;
     }
     else {
@@ -8240,7 +8240,7 @@ LAB_0040dcc6:
       } while (iVar3 < credits_scroll_line_end_index - credits_scroll_line_start_index);
     }
     fStack_10 = fStack_10 + 100.0;
-    _credits_back_button = &DAT_00472e80;
+    _credits_back_button = &menu_label_back;
     fStack_c = fStack_c + 250.0;
     ui_button_update(&fStack_10,(ui_button_t *)&credits_back_button);
     pcVar7 = credits_line_table;
@@ -9756,7 +9756,7 @@ LAB_0040fae2:
         _DAT_00481bc8 = 0;
         crt_atexit(&DAT_0040ff30);
       }
-      _credits_secret_back_button = &DAT_00472e80;
+      _credits_secret_back_button = &menu_label_back;
       iVar11 = ui_button_update((float *)&stack0xffffff9c,(ui_button_t *)&credits_secret_back_button
                                );
       if ((char)iVar11 != '\0') {
@@ -15746,11 +15746,12 @@ LAB_0041c5bf:
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,4.0,(float)(int)value,&DAT_0047380c);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,26.0,(float)(iVar2 + -4),&DAT_00471f40,survival_xp_smoothed);
+            (grim_interface_ptr,26.0,(float)(iVar2 + -4),&s_fmt_decimal_int,survival_xp_smoothed);
   render_tint_color_a = fVar18;
   (*grim_interface_ptr->vtable->grim_set_color_ptr)(&render_tint_color_r);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,85.0,(float)(iVar2 + 1),&DAT_00471f40,player_state_table.level);
+            (grim_interface_ptr,85.0,(float)(iVar2 + 1),&s_fmt_decimal_int,player_state_table.level)
+  ;
   iVar19 = player_state_table.level;
   render_tint_color_a = 0.7;
   crt_ci_pow();
@@ -19702,7 +19703,7 @@ LAB_004219f8:
                               (pfVar13,(projectile_pool[local_e8].angle - 1.5707964) +
                                        (float)(iVar7 % 100) * 0.01);
                   }
-                  if (((demo_mode_active == '\0') && (DAT_004cc8d4 == '\0')) &&
+                  if (((demo_mode_active == '\0') && (music_playlist_randomized_latch == '\0')) &&
                      (config_game_mode != GAME_MODE_RUSH)) {
                     sfx_play_exclusive(music_track_extra_0);
                   }
@@ -19931,7 +19932,7 @@ LAB_00421d65:
           else if (sVar5 == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
             local_dc = *(float *)((int)(psVar14 + -1) + 4) * 20.0 + 40.0;
           }
-          if (((demo_mode_active == '\0') && (DAT_004cc8d4 == '\0')) &&
+          if (((demo_mode_active == '\0') && (music_playlist_randomized_latch == '\0')) &&
              (config_game_mode != GAME_MODE_RUSH)) {
             sfx_play_exclusive(music_track_extra_0);
           }
@@ -23909,7 +23910,7 @@ LAB_0042b35f:
           if ((int)lVar5 < 400) {
             (*pIVar4->grim_get_fps)();
             __ftol();
-            pcVar7 = &DAT_00471f40;
+            pcVar7 = &s_fmt_decimal_int;
             iVar2 = _config_screen_width + -0x2d;
           }
           else {
@@ -24118,7 +24119,7 @@ LAB_0042bd39:
       if ((int)lVar5 < 400) {
         (*pIVar4->grim_get_fps)();
         __ftol();
-        pcVar7 = &DAT_00471f40;
+        pcVar7 = &s_fmt_decimal_int;
         iVar2 = _config_screen_width + -0x2d;
       }
       else {
@@ -24170,7 +24171,7 @@ LAB_0042bea6:
   (*pIVar4->grim_bind_texture)(iVar2,(int)fVar6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)
-            ((screen_width_f - 256.0) - 1.0,(_DAT_00471144 - 128.0) - 1.0,256.0,128.0);
+            ((screen_width_f - 256.0) - 1.0,(screen_height_f - 128.0) - 1.0,256.0,128.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   fVar6 = 0.0;
   pIVar4 = grim_interface_ptr->vtable;
@@ -24178,7 +24179,7 @@ LAB_0042bea6:
   (*pIVar4->grim_bind_texture)(iVar2,(int)fVar6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)
-            (screen_width_f * 0.5 + 128.0,_DAT_00471144 * 0.5 + 16.0,128.0,32.0);
+            (screen_width_f * 0.5 + 128.0,screen_height_f * 0.5 + 16.0,128.0,32.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   pIVar4 = grim_interface_ptr->vtable;
@@ -24186,18 +24187,18 @@ LAB_0042bea6:
   iVar2 = (*pIVar4->grim_get_texture_handle)(s_cl_logo_00471f70);
   (*pIVar4->grim_bind_texture)(iVar2,(int)fVar6);
   (*grim_interface_ptr->vtable->grim_draw_quad)
-            (screen_width_f * 0.5 - 256.0,_DAT_00471144 * 0.5 - 32.0,512.0,64.0);
+            (screen_width_f * 0.5 - 256.0,screen_height_f * 0.5 - 32.0,512.0,64.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   fVar6 = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
   if (*(float *)((int)cv_silentloads + 0xc) == 0.0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar8 * 0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,screen_width_f * 0.5 - 246.0,_DAT_00471144 * 0.5 + 32.0,
+              (grim_interface_ptr,screen_width_f * 0.5 - 246.0,screen_height_f * 0.5 + 32.0,
                s_Grim_GFX__d__d_004746c8,startup_texture_load_stage);
-    fVar6 = DAT_004cc8d8;
+    fVar6 = (float)audio_assets_loaded_count;
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,screen_width_f * 0.5 - 246.0,_DAT_00471144 * 0.5 + 45.0,
+              (grim_interface_ptr,screen_width_f * 0.5 - 246.0,screen_height_f * 0.5 + 45.0,
                s_Grim_SFX___d__d_004746b8);
   }
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
@@ -24216,7 +24217,7 @@ LAB_0042bea6:
       (*pIVar4->grim_get_fps)();
       lVar5 = __ftol();
       uVar1 = (undefined4)lVar5;
-      pcVar7 = &DAT_00471f40;
+      pcVar7 = &s_fmt_decimal_int;
       iVar2 = _config_screen_width + -0x2d;
     }
     else {
@@ -24573,7 +24574,7 @@ int crimsonland_main(void)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
   screen_width_f = (float)_config_screen_width;
-  _DAT_00471144 = (float)_config_screen_height;
+  screen_height_f = (float)_config_screen_height;
   uStack_52c = 0x42cd8d;
   pvVar9 = console_register_cvar(&console_log_queue,s_v_width_00474938,&DAT_00474940);
   *(float *)((int)pvVar9 + 0xc) = (float)_config_screen_width;
@@ -35265,7 +35266,7 @@ LAB_0043c885:
         if (*(float *)((int)cv_silentloads + 0xc) == 0.0) {
           console_printf(&console_log_queue,s_SFX_Sample__d_<____s__ok_00477d2c,iVar6,path);
         }
-        DAT_004cc8d8 = DAT_004cc8d8 + 1;
+        audio_assets_loaded_count = audio_assets_loaded_count + 1;
         return iVar6;
       }
       pcVar5 = s____loading_ogg_sample___s__faile_00477d6c;
@@ -35288,7 +35289,7 @@ int __cdecl music_load_track(char *path)
   int iVar2;
   int iVar3;
   
-  DAT_004cc8d8 = DAT_004cc8d8 + 1;
+  audio_assets_loaded_count = audio_assets_loaded_count + 1;
   iVar3 = 0;
   ppvVar1 = &music_entry_table.vorbis_stream;
   while ((ppvVar1[-0x18] != (void *)0x0 || (*ppvVar1 != (void *)0x0))) {
@@ -35320,8 +35321,8 @@ void __cdecl music_queue_track(int track_id)
 
 {
   if (-1 < track_id) {
-    music_playlist[DAT_004cc8d0] = track_id;
-    DAT_004cc8d0 = DAT_004cc8d0 + 1;
+    music_playlist[music_playlist_entry_count] = track_id;
+    music_playlist_entry_count = music_playlist_entry_count + 1;
   }
   return;
 }
@@ -35780,18 +35781,18 @@ void __cdecl sfx_play_exclusive(int sfx_id)
   if (((sfx_unmuted_flag != '\0') && (config_music_disabled == '\0')) && (config_blob == '\0')) {
     if (plugin_runtime_active_latch == '\0') {
       if (sfx_id == music_track_extra_0) {
-        if (DAT_004cc8d4 != '\0') {
+        if (music_playlist_randomized_latch != '\0') {
           return;
         }
-        if (DAT_004cc8d0 == 0) {
+        if (music_playlist_entry_count == 0) {
           return;
         }
         iVar2 = crt_rand();
-        DAT_004cc8d4 = '\x01';
-        sfx_id = music_playlist[iVar2 % DAT_004cc8d0];
+        music_playlist_randomized_latch = '\x01';
+        sfx_id = music_playlist[iVar2 % music_playlist_entry_count];
       }
       else {
-        DAT_004cc8d4 = '\0';
+        music_playlist_randomized_latch = '\0';
       }
     }
     iVar2 = 0;
@@ -35825,7 +35826,7 @@ void __cdecl sfx_mute_all(int sfx_id)
   int sfx_id_00;
   
   if (((sfx_unmuted_flag != '\0') && (config_music_disabled == '\0')) && (config_blob == '\0')) {
-    DAT_004cc8d4 = 0;
+    music_playlist_randomized_latch = '\0';
     sfx_id_00 = 0;
     do {
       if (sfx_id_00 != sfx_id) {
@@ -37222,7 +37223,7 @@ void statistics_menu_update(void)
     _DAT_004cccc8 = 0;
     crt_atexit(&DAT_00440090);
   }
-  _DAT_004cccc0 = &DAT_00472e80;
+  _DAT_004cccc0 = &menu_label_back;
   if ((online_sync_status == 0) || (online_sync_status == 6)) {
     DAT_004cccc6 = 1;
     DAT_004d11ce = 1;
@@ -37443,18 +37444,18 @@ void unlocked_weapons_database_update(void)
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(200);
   if ((char)iVar2 != '\0') {
     ui_mouse_blocked = 1;
-    DAT_004d1200 = DAT_004d1200 + -1;
+    unlocked_weapons_nav_focus_index = unlocked_weapons_nav_focus_index + -1;
   }
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xd0);
   if ((char)iVar2 != '\0') {
     ui_mouse_blocked = 1;
-    DAT_004d1200 = DAT_004d1200 + 1;
+    unlocked_weapons_nav_focus_index = unlocked_weapons_nav_focus_index + 1;
   }
-  if (DAT_004d1200 < 0) {
-    DAT_004d1200 = 0;
+  if (unlocked_weapons_nav_focus_index < 0) {
+    unlocked_weapons_nav_focus_index = 0;
   }
-  else if (1 < DAT_004d1200) {
-    DAT_004d1200 = 1;
+  else if (1 < unlocked_weapons_nav_focus_index) {
+    unlocked_weapons_nav_focus_index = 1;
   }
   fVar13 = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -37509,7 +37510,7 @@ void unlocked_weapons_database_update(void)
     _DAT_004cc8e8 = 0;
     crt_atexit(&DAT_00440940);
   }
-  _DAT_004cc8e0 = &DAT_00472e80;
+  _DAT_004cc8e0 = &menu_label_back;
   iVar2 = ui_button_update((float *)&stack0xfffffec8,(ui_button_t *)&DAT_004cc8e0);
   if ((char)iVar2 != '\0') {
     ui_transition_direction = 0;
@@ -37625,18 +37626,18 @@ void unlocked_perks_database_update(void)
   iVar1 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(200);
   if ((char)iVar1 != '\0') {
     ui_mouse_blocked = 1;
-    DAT_004d1204 = DAT_004d1204 + -1;
+    unlocked_perks_nav_focus_index = unlocked_perks_nav_focus_index + -1;
   }
   iVar1 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xd0);
   if ((char)iVar1 != '\0') {
     ui_mouse_blocked = 1;
-    DAT_004d1204 = DAT_004d1204 + 1;
+    unlocked_perks_nav_focus_index = unlocked_perks_nav_focus_index + 1;
   }
-  if (DAT_004d1204 < 0) {
-    DAT_004d1204 = 0;
+  if (unlocked_perks_nav_focus_index < 0) {
+    unlocked_perks_nav_focus_index = 0;
   }
-  else if (1 < DAT_004d1204) {
-    DAT_004d1204 = 1;
+  else if (1 < unlocked_perks_nav_focus_index) {
+    unlocked_perks_nav_focus_index = 1;
   }
   fVar7 = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -37693,7 +37694,7 @@ void unlocked_perks_database_update(void)
     _DAT_004ccb88 = 0;
     crt_atexit(&DAT_00441180);
   }
-  _DAT_004ccb80 = &DAT_00472e80;
+  _DAT_004ccb80 = &menu_label_back;
   iVar1 = ui_button_update((float *)&stack0xfffffdc8,(ui_button_t *)&DAT_004ccb80);
   if ((char)iVar1 != '\0') {
     ui_transition_direction = 0;
@@ -37731,7 +37732,7 @@ void unlocked_perks_database_update(void)
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   iVar1 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
-  if (((char)iVar1 != '\0') && (DAT_004d1204 == 0)) {
+  if (((char)iVar1 != '\0') && (unlocked_perks_nav_focus_index == 0)) {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_STATISTICS_MENU;
   }
@@ -37927,38 +37928,38 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   iVar3 = (*pIVar5->grim_measure_text_width)(s_highscore_label_score);
   (*pIVar5->grim_draw_text_small)(fVar8 - (float)(iVar3 / 2),fVar9,pcVar4);
   if (*(char *)((int)y + 0x28) == '\x02') {
-    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+    crt_sprintf(&highscore_card_text_buffer,s_fmt_highscore_seconds,
                 (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else if (*(char *)((int)y + 0x28) == '\x03') {
-    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_seconds,
+    crt_sprintf(&highscore_card_text_buffer,s_fmt_highscore_seconds,
                 (double)((float)*(int *)((int)y + 0x20) * 0.001));
   }
   else {
-    crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
+    crt_sprintf(&highscore_card_text_buffer,&s_fmt_decimal_int);
   }
   (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,1.0,alpha);
-  iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
+  iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&highscore_card_text_buffer);
   (*grim_interface_ptr->vtable->grim_draw_text_small)
-            ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&DAT_004d0da0);
+            ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&highscore_card_text_buffer);
   if (game_state_id != GAME_STATE_QUEST_FAILED) {
     format_ordinal(in_stack_00000010);
-    crt_sprintf(&DAT_004d0da0,s_fmt_highscore_rank);
-    iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
+    crt_sprintf(&highscore_card_text_buffer,s_fmt_highscore_rank);
+    iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&highscore_card_text_buffer);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 30.0,&DAT_004d0da0);
+              ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 30.0,&highscore_card_text_buffer);
   }
   fStack_10 = fStack_10 + 96.0;
   highscore_card_draw_vertical_divider(&fStack_10);
   if (*(char *)((int)y + 0x28) == '\x03') {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fStack_10,fStack_c,s_highscore_label_experience);
-    crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
-    iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&DAT_004d0da0);
+    crt_sprintf(&highscore_card_text_buffer,&s_fmt_decimal_int);
+    iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)(&highscore_card_text_buffer);
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&DAT_004d0da0);
+              ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&highscore_card_text_buffer);
     ui_stats_hover_time = ui_stats_hover_time - (frame_dt + frame_dt);
   }
   else {
@@ -38274,7 +38275,7 @@ LAB_00442684:
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.56);
     }
     else {
-      DAT_004d1214 = -3;
+      highscore_screen_action_id = -3;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
     }
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_arrow_texture,0);
@@ -38290,7 +38291,7 @@ LAB_00442684:
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.51);
     }
     else {
-      DAT_004d1214 = -2;
+      highscore_screen_action_id = -2;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
     }
     (*grim_interface_ptr->vtable->grim_set_uv)(1.0,0.0,0.0,1.0);
@@ -38514,7 +38515,7 @@ LAB_0044300c:
     _DAT_004d0f98 = 0;
     crt_atexit(&DAT_00444370);
   }
-  _DAT_004d0f90 = &DAT_00472e80;
+  _DAT_004d0f90 = &menu_label_back;
   if ((online_sync_status == 6) || (DAT_004d0f96 = 0, online_sync_status == 0)) {
     DAT_004d0f96 = 1;
   }
@@ -38939,7 +38940,7 @@ LAB_00443c2a:
      (((cVar15 != '\0' && (iVar12 = input_primary_just_pressed(), (char)iVar12 != '\0')) ||
       (iVar12 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar12 != '\0'))))
   {
-    if (DAT_004d1214 == -3) {
+    if (highscore_screen_action_id == -3) {
       _quest_stage_minor = _quest_stage_minor + -1;
       if ((int)_quest_stage_minor < 1) {
         if (_quest_stage_major < 2) {
@@ -38966,7 +38967,7 @@ LAB_00443c2a:
       }
       highscore_load_table();
     }
-    else if (DAT_004d1214 == -2) {
+    else if (highscore_screen_action_id == -2) {
       if ((int)(_quest_stage_minor + _quest_stage_major * 10 + -0xb) < quest_unlock_index) {
         _quest_stage_minor = _quest_stage_minor + 1;
       }
@@ -38995,7 +38996,7 @@ LAB_00443c2a:
       }
       highscore_load_table();
     }
-    else if (DAT_004d1214 == 1) {
+    else if (highscore_screen_action_id == 1) {
       if ((online_sync_status == 0) || (online_sync_status == 6)) {
         iVar12 = (*grim_interface_ptr->vtable->grim_is_key_down)(0x2a);
         if (((char)iVar12 == '\0') &&
@@ -39010,7 +39011,7 @@ LAB_00443c2a:
         crt_beginthread(highscore_sync_worker,0,(void *)0x0);
       }
     }
-    else if (DAT_004d1214 == 2) {
+    else if (highscore_screen_action_id == 2) {
       render_pass_mode = 0;
       ui_sign_crimson._pad0[0] = '\0';
       ui_transition_direction = '\0';
@@ -39020,7 +39021,7 @@ LAB_00443c2a:
       sfx_mute_all(music_track_extra_0);
       screen_fade_ramp_flag = '\x01';
     }
-    else if (DAT_004d1214 == 3) {
+    else if (highscore_screen_action_id == 3) {
       ui_transition_direction = '\0';
       game_state_pending = GAME_STATE_STATISTICS_MENU;
     }
@@ -41795,7 +41796,7 @@ LAB_00448631:
         crt_atexit(&DAT_00448ab0);
       }
       fStack_24 = (fStack_2c - 10.0) + 148.0;
-      _DAT_004d7748 = &DAT_00472e80;
+      _DAT_004d7748 = &menu_label_back;
       fStack_20 = fStack_28;
       ui_button_update(&fStack_24,(ui_button_t *)&DAT_004d7748);
       if (DAT_004d774d != '\0') {
@@ -42032,7 +42033,7 @@ void controls_menu_update(void)
     _DAT_004d75c0 = 0;
     crt_atexit(&DAT_0044ed60);
   }
-  _DAT_004d75b8 = &DAT_00472e80;
+  _DAT_004d75b8 = &menu_label_back;
   if (((byte)controls_menu_init_flags & 4) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 4;
     controls_player_profile_list_enabled = '\x01';
@@ -47979,20 +47980,20 @@ void play_game_menu_update(void)
         iVar2 = iVar2 + uVar1;
       } while ((int)puVar3 < 0x4856e4);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,iVar2);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 32.0;
     ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,
                  game_status_blob.mode_play_rush);
     }
     fVar7 = fVar7 + 32.0;
     ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,
                  game_status_blob.mode_play_survival);
     }
     if ((0 < (int)(game_status_blob.mode_play_survival + game_status_blob.quest_play_counts[0xb] +
@@ -48019,20 +48020,20 @@ void play_game_menu_update(void)
         iVar2 = iVar2 + uVar1;
       } while ((int)puVar3 < 0x4856e4);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,iVar2);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 28.0;
     ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,
                  game_status_blob.mode_play_rush);
     }
     fVar7 = fVar7 + 28.0;
     ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,
                  game_status_blob.mode_play_survival);
     }
     fVar7 = fVar7 + 28.0;
@@ -48043,7 +48044,7 @@ void play_game_menu_update(void)
       }
       if (cVar5 != '\0') {
         (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&DAT_00471f40,
+                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,
                    game_status_blob.mode_play_typo);
       }
     }
