@@ -738,7 +738,7 @@ class WorldRenderer:
         segment = Vec2(sx1 - sx0, sy1 - sy0)
         direction, dist = segment.normalized_with_length()
 
-        # Native uses `vel_x/vel_y` as the side offset basis and still emits the
+        # Native uses projectile travel direction as the side-offset basis and still emits the
         # trail quad even when origin≈head (degenerate impact frames).
         if type_id in (int(ProjectileTypeId.PISTOL), int(ProjectileTypeId.ASSAULT_RIFLE)):
             side_mul = 1.2

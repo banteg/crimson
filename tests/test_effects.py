@@ -69,7 +69,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
     pool = SpriteEffectPool(size=1, rand=lambda: 0)
-    idx = pool.spawn(pos=Vec2(10.0, 20.0), vel_x=2.0, vel_y=-3.0, scale=1.0)
+    idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
     fx = pool.entries[idx]
     assert fx.active
     assert fx.color_a == 1.0
@@ -150,8 +150,8 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     speed_scale = 0.7
     expected_vel_x = math.cos(deflect_step) * 82.0 * speed_scale
     expected_vel_y = math.sin(deflect_step) * 82.0 * speed_scale
-    assert math.isclose(float(particle.vel_x), expected_vel_x, abs_tol=1e-6)
-    assert math.isclose(float(particle.vel_y), expected_vel_y, abs_tol=1e-6)
+    assert math.isclose(float(particle.vel.x), expected_vel_x, abs_tol=1e-6)
+    assert math.isclose(float(particle.vel.y), expected_vel_y, abs_tol=1e-6)
 
     assert math.isclose(float(creature.pos.x), expected_vel_x * dt, abs_tol=1e-6)
     assert math.isclose(float(creature.pos.y), expected_vel_y * dt, abs_tol=1e-6)

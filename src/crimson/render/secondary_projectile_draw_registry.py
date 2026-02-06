@@ -136,8 +136,8 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         return False
 
     # Secondary projectile detonation visuals (secondary_projectile_update + render).
-    t = clamp(float(getattr(ctx.proj, "vel_x", 0.0)), 0.0, 1.0)
-    det_scale = float(getattr(ctx.proj, "vel_y", 1.0))
+    t = clamp(float(getattr(ctx.proj, "detonation_t", 0.0)), 0.0, 1.0)
+    det_scale = float(getattr(ctx.proj, "detonation_scale", 1.0))
     fade = (1.0 - t) * float(ctx.alpha)
     if fade <= 1e-3 or det_scale <= 1e-6:
         return True

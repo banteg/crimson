@@ -130,8 +130,6 @@ class Projectile:
     angle: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
     origin: Vec2 = field(default_factory=Vec2)
-    vel_x: float = 0.0
-    vel_y: float = 0.0
     type_id: int = 0
     life_timer: float = 0.0
     reserved: float = 0.0
@@ -149,8 +147,9 @@ class SecondaryProjectile:
     angle: float = 0.0
     speed: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    vel: Vec2 = field(default_factory=Vec2)
+    detonation_t: float = 0.0
+    detonation_scale: float = 1.0
     type_id: int = 0
     owner_id: int = -100
     trail_timer: float = 0.0
@@ -234,8 +233,7 @@ def _spawn_ion_hit_effects(
     effects.spawn(
         effect_id=int(EffectId.RING),
         pos=pos,
-        vel_x=0.0,
-        vel_y=0.0,
+        vel=Vec2(),
         rotation=0.0,
         scale=1.0,
         half_width=4.0,
@@ -262,14 +260,15 @@ def _spawn_ion_hit_effects(
 
     for _ in range(max(0, count)):
         rotation = float(int(rng()) & 0x7F) * 0.049087387
-        vel_x = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
-        vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+        velocity = Vec2(
+            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
+            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
+        )
         scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
-            vel_x=vel_x,
-            vel_y=vel_y,
+            vel=velocity,
             rotation=rotation,
             scale=1.0,
             half_width=half,
@@ -316,8 +315,7 @@ def _spawn_plasma_cannon_hit_effects(
         effects.spawn(
             effect_id=int(EffectId.RING),
             pos=pos,
-            vel_x=0.0,
-            vel_y=0.0,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=4.0,
@@ -361,8 +359,7 @@ def _spawn_splitter_hit_effects(
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos + offset,
-            vel_x=0.0,
-            vel_y=0.0,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=4.0,
@@ -722,9 +719,6 @@ class ProjectilePool:
         entry.angle = angle
         entry.pos = pos
         entry.origin = pos
-        velocity = Vec2.from_angle(angle) * 1.5
-        entry.vel_x = velocity.x
-        entry.vel_y = velocity.y
         entry.type_id = int(type_id)
         entry.life_timer = 0.4
         entry.reserved = 0.0
@@ -1230,11 +1224,14 @@ class SecondaryProjectilePool:
         entry.target_hint_active = False
         entry.target_hint = Vec2(0.0, 0.0)
         entry.trail_timer = 0.0
+        entry.vel = Vec2()
+        entry.detonation_t = 0.0
+        entry.detonation_scale = 1.0
 
         if entry.type_id == SecondaryProjectileTypeId.DETONATION:
-            # Detonation state: `vel_x` becomes the expansion timer and `vel_y` the scale.
-            entry.vel_x = 0.0
-            entry.vel_y = float(time_to_live)
+            # Detonation uses explicit timer/scale fields now.
+            entry.detonation_t = 0.0
+            entry.detonation_scale = float(time_to_live)
             entry.speed = float(time_to_live)
             return index
 
@@ -1242,9 +1239,7 @@ class SecondaryProjectilePool:
         base_speed = 90.0
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             base_speed = 190.0
-        velocity = Vec2.from_heading(float(angle)) * base_speed
-        entry.vel_x = velocity.x
-        entry.vel_y = velocity.y
+        entry.vel = Vec2.from_heading(float(angle)) * base_speed
         entry.speed = float(time_to_live)
 
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
@@ -1305,13 +1300,12 @@ class SecondaryProjectilePool:
                 continue
 
             if entry.type_id == SecondaryProjectileTypeId.DETONATION:
-                # Detonation: `vel_x` becomes the expansion timer (0..1) and `vel_y` the scale.
                 if runtime_state is not None:
                     runtime_state.camera_shake_pulses = 4
 
-                entry.vel_x += dt * 3.0
-                t = float(entry.vel_x)
-                scale = float(entry.vel_y)
+                entry.detonation_t += dt * 3.0
+                t = float(entry.detonation_t)
+                scale = float(entry.detonation_scale)
                 if t > 1.0:
                     if fx_queue is not None:
                         fx_queue.add(
@@ -1350,22 +1344,19 @@ class SecondaryProjectilePool:
                 continue
 
             # Move.
-            entry.pos = entry.pos + Vec2(entry.vel_x * dt, entry.vel_y * dt)
+            entry.pos = entry.pos + entry.vel * dt
 
             # Update velocity + countdown.
-            velocity = Vec2(entry.vel_x, entry.vel_y)
-            speed_mag = velocity.length()
+            speed_mag = entry.vel.length()
             if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                 if speed_mag < 500.0:
                     factor = 1.0 + dt * 3.0
-                    entry.vel_x *= factor
-                    entry.vel_y *= factor
+                    entry.vel = entry.vel * factor
                 entry.speed -= dt
             elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                 if speed_mag < 600.0:
                     factor = 1.0 + dt * 4.0
-                    entry.vel_x *= factor
-                    entry.vel_y *= factor
+                    entry.vel = entry.vel * factor
                 entry.speed -= dt
             else:
                 # Type 2: homing projectile.
@@ -1394,15 +1385,14 @@ class SecondaryProjectilePool:
                     if dist > 1e-6:
                         entry.angle = to_target.to_heading()
                         accel = target_dir * (dt * 800.0)
-                        next_velocity = Vec2(entry.vel_x, entry.vel_y) + accel
+                        next_velocity = entry.vel + accel
                         if next_velocity.length() <= 350.0:
-                            entry.vel_x = next_velocity.x
-                            entry.vel_y = next_velocity.y
+                            entry.vel = next_velocity
 
                 entry.speed -= dt * 0.5
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            entry.trail_timer -= (abs(float(entry.vel_x)) + abs(float(entry.vel_y))) * dt * 0.01
+            entry.trail_timer -= (abs(float(entry.vel.x)) + abs(float(entry.vel.y))) * dt * 0.01
             if entry.trail_timer < 0.0:
                 direction = Vec2.from_heading(float(entry.angle))
                 spawn_pos = entry.pos - direction * 9.0
@@ -1410,8 +1400,7 @@ class SecondaryProjectilePool:
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
                     sprite_id = sprite_effects.spawn(
                         pos=spawn_pos,
-                        vel_x=trail_velocity.x,
-                        vel_y=trail_velocity.y,
+                        vel=trail_velocity,
                         scale=14.0,
                     )
                     try:
@@ -1447,7 +1436,7 @@ class SecondaryProjectilePool:
                     hit_idx,
                     damage,
                     owner_id=int(entry.owner_id),
-                    impulse=Vec2(float(entry.vel_x) / float(dt), float(entry.vel_y) / float(dt)),
+                    impulse=entry.vel * (1.0 / float(dt)),
                 )
 
                 det_scale = 0.5
@@ -1470,10 +1459,12 @@ class SecondaryProjectilePool:
                             )
                 elif fx_queue is not None:
                     for _ in range(3):
-                        off_x = float(int(rand()) % 0x14 - 10)
-                        off_y = float(int(rand()) % 0x14 - 10)
+                        offset = Vec2(
+                            float(int(rand()) % 0x14 - 10),
+                            float(int(rand()) % 0x14 - 10),
+                        )
                         fx_queue.add_random(
-                            pos=creatures[hit_idx].pos + Vec2(off_x, off_y),
+                            pos=creatures[hit_idx].pos + offset,
                             rand=rand,
                         )
 
@@ -1491,22 +1482,21 @@ class SecondaryProjectilePool:
                     )
 
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel_x = 0.0
-                entry.vel_y = float(det_scale)
+                entry.vel = Vec2()
+                entry.detonation_t = 0.0
+                entry.detonation_scale = float(det_scale)
                 entry.trail_timer = 0.0
 
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
                     if effects is not None and hasattr(effects, "spawn_freeze_shard"):
-                        shard_x = entry.pos.x
-                        shard_y = entry.pos.y
+                        shard_pos = entry.pos
                         if hit_type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                            shard_x = creatures[hit_idx].pos.x
-                            shard_y = creatures[hit_idx].pos.y
+                            shard_pos = creatures[hit_idx].pos
                         for _ in range(8):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
-                                pos=Vec2(shard_x, shard_y),
+                                pos=shard_pos,
                                 angle=shard_angle,
                                 rand=rand,
                                 detail_preset=int(detail_preset),
@@ -1526,8 +1516,7 @@ class SecondaryProjectilePool:
                             extra_decals = 3
                             extra_radius = 44.0
                     if fx_queue is not None and extra_decals > 0:
-                        cx = creatures[hit_idx].pos.x
-                        cy = creatures[hit_idx].pos.y
+                        center = creatures[hit_idx].pos
                         for _ in range(int(extra_decals)):
                             angle = float(int(rand()) % 0x274) * 0.01
                             if det_scale == 0.35:
@@ -1535,7 +1524,7 @@ class SecondaryProjectilePool:
                             else:
                                 radius = float(int(rand()) % max(1, int(extra_radius)))
                             fx_queue.add_random(
-                                pos=Vec2(cx + math.cos(angle) * radius, cy + math.sin(angle) * radius),
+                                pos=center + Vec2.from_angle(angle) * radius,
                                 rand=rand,
                             )
 
@@ -1544,12 +1533,10 @@ class SecondaryProjectilePool:
                     for idx in range(10):
                         mag = float(int(rand()) % 800) * 0.1
                         ang = float(idx) * step
-                        vel_x = math.cos(ang) * mag
-                        vel_y = math.sin(ang) * mag
+                        velocity = Vec2.from_angle(ang) * mag
                         sprite_id = sprite_effects.spawn(
                             pos=entry.pos,
-                            vel_x=vel_x,
-                            vel_y=vel_y,
+                            vel=velocity,
                             scale=14.0,
                         )
                         try:
@@ -1561,6 +1548,7 @@ class SecondaryProjectilePool:
 
             if entry.speed <= 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel_x = 0.0
-                entry.vel_y = 0.5
+                entry.vel = Vec2()
+                entry.detonation_t = 0.0
+                entry.detonation_scale = 0.5
                 entry.trail_timer = 0.0

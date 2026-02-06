@@ -1904,7 +1904,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0
-    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel_x=vel.x, vel_y=vel.y, scale=1.0)
+    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0)
     sprite = state.sprite_effects.entries[int(sprite_id)]
     sprite.color_r = 0.5
     sprite.color_g = 0.5

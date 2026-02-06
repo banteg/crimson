@@ -78,7 +78,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
 
 def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monkeypatch) -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=3, pos=Vec2(0.0, 0.0), angle=0.0, vel_x=0.25, vel_y=1.0)
+    proj = SimpleNamespace(type_id=3, pos=Vec2(0.0, 0.0), angle=0.0, detonation_t=0.25, detonation_scale=1.0)
     calls: list[float] = []
 
     def _draw_circle_lines(_x: int, _y: int, radius: float, _color) -> None:  # noqa: ANN001

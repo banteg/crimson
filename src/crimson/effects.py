@@ -65,8 +65,7 @@ class Particle:
     active: bool = False
     render_flag: bool = False
     pos: Vec2 = field(default_factory=Vec2)
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    vel: Vec2 = field(default_factory=Vec2)
     scale_x: float = 1.0
     scale_y: float = 1.0
     scale_z: float = 1.0
@@ -116,8 +115,7 @@ class ParticlePool:
         entry.active = True
         entry.render_flag = True
         entry.pos = pos
-        entry.vel_x = math.cos(angle) * 90.0
-        entry.vel_y = math.sin(angle) * 90.0
+        entry.vel = Vec2.from_angle(angle) * 90.0
         entry.scale_x = 1.0
         entry.scale_y = 1.0
         entry.scale_z = 1.0
@@ -144,8 +142,7 @@ class ParticlePool:
         entry.active = True
         entry.render_flag = True
         entry.pos = pos
-        entry.vel_x = math.cos(angle) * 30.0
-        entry.vel_y = math.sin(angle) * 30.0
+        entry.vel = Vec2.from_angle(angle) * 30.0
         entry.scale_x = 1.0
         entry.scale_y = 1.0
         entry.scale_z = 1.0
@@ -222,12 +219,12 @@ class ParticlePool:
                 move_scale = entry.intensity
                 if move_scale <= 0.15:
                     move_scale *= 0.55
-                entry.pos = entry.pos + Vec2(entry.vel_x, entry.vel_y) * (dt * move_scale)
+                entry.pos = entry.pos + entry.vel * (dt * move_scale)
             else:
                 entry.intensity -= dt * 0.9
                 entry.spin += dt
                 move_scale = max(entry.intensity, 0.15) * 2.5
-                entry.pos = entry.pos + Vec2(entry.vel_x, entry.vel_y) * (dt * move_scale)
+                entry.pos = entry.pos + entry.vel * (dt * move_scale)
 
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
@@ -242,8 +239,7 @@ class ParticlePool:
                     jitter *= 1.1
                     speed = 82.0
                 entry.angle -= jitter
-                entry.vel_x = math.cos(entry.angle) * speed
-                entry.vel_y = math.sin(entry.angle) * speed
+                entry.vel = Vec2.from_angle(entry.angle) * speed
 
             alpha = clamp(entry.intensity, 0.0, 1.0)
             shade = 1.0 - max(entry.intensity, 0.0) * 0.95
@@ -279,13 +275,12 @@ class ParticlePool:
                     if style == 8:
                         entry.target_id = int(hit_idx)
                         entry.pos = creature.pos
-                        entry.vel_x = 0.0
-                        entry.vel_y = 0.0
+                        entry.vel = Vec2()
                     else:
                         entry.angle = float(entry.angle) % math.tau
                         hit_angle = Vec2(
-                            (entry.pos.x - entry.vel_x * dt) - creature.pos.x,
-                            (entry.pos.y - entry.vel_y * dt) - creature.pos.y,
+                            (entry.pos.x - entry.vel.x * dt) - creature.pos.x,
+                            (entry.pos.y - entry.vel.y * dt) - creature.pos.y,
                         ).to_angle()
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
@@ -296,9 +291,7 @@ class ParticlePool:
 
                         bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
                         speed_scale = float(int(rand()) % 10) * 0.1
-                        bounce_velocity = bounce_velocity * speed_scale
-                        entry.vel_x = bounce_velocity.x
-                        entry.vel_y = bounce_velocity.y
+                        entry.vel = bounce_velocity * speed_scale
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
@@ -316,12 +309,13 @@ class ParticlePool:
                             creature.tint_a = clamp(float(creature.tint_a) * factor, 0.0, 1.0)
 
                         if sprite_effects is not None and (idx % 3 == 0):
-                            sprite_vel_x = float(int(rand()) % 0x3C - 0x1E)
-                            sprite_vel_y = float(int(rand()) % 0x3C - 0x1E)
+                            sprite_vel = Vec2(
+                                float(int(rand()) % 0x3C - 0x1E),
+                                float(int(rand()) % 0x3C - 0x1E),
+                            )
                             sprite_id = sprite_effects.spawn(
                                 pos=creature.pos,
-                                vel_x=sprite_vel_x,
-                                vel_y=sprite_vel_y,
+                                vel=sprite_vel,
                                 scale=13.0,
                             )
                             sprite_effects.entries[int(sprite_id)].color_a = 0.7
@@ -332,7 +326,7 @@ class ParticlePool:
                                 rand=rand,
                             )
 
-                        creature.pos = creature.pos + Vec2(entry.vel_x, entry.vel_y) * dt
+                        creature.pos = creature.pos + entry.vel * dt
 
         return expired
 
@@ -346,8 +340,7 @@ class SpriteEffect:
     color_a: float = 0.0
     rotation: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    vel: Vec2 = field(default_factory=Vec2)
     scale: float = 1.0
 
 
@@ -364,7 +357,7 @@ class SpriteEffectPool:
         for entry in self._entries:
             entry.active = False
 
-    def spawn(self, *, pos: Vec2, vel_x: float, vel_y: float, scale: float = 1.0) -> int:
+    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0) -> int:
         """Port of `fx_spawn_sprite` (0x0041fbb0)."""
 
         idx = None
@@ -385,8 +378,7 @@ class SpriteEffectPool:
         entry.color_a = 1.0
         entry.rotation = float(int(self._rand()) % 0x274) * 0.01
         entry.pos = pos
-        entry.vel_x = float(vel_x)
-        entry.vel_y = float(vel_y)
+        entry.vel = vel
         entry.scale = float(scale)
         return idx
 
@@ -401,7 +393,7 @@ class SpriteEffectPool:
         for idx, entry in enumerate(self._entries):
             if not entry.active:
                 continue
-            entry.pos = entry.pos + Vec2(entry.vel_x, entry.vel_y) * dt
+            entry.pos = entry.pos + entry.vel * dt
             entry.rotation += dt * 3.0
             entry.color_a -= dt
             entry.scale += dt * 60.0
@@ -577,8 +569,7 @@ class FxQueueRotated:
 class EffectEntry:
     pos: Vec2 = field(default_factory=Vec2)
     effect_id: int = 0
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    vel: Vec2 = field(default_factory=Vec2)
     rotation: float = 0.0
     scale: float = 1.0
     half_width: float = 0.0
@@ -645,8 +636,7 @@ class EffectPool:
         *,
         effect_id: int,
         pos: Vec2,
-        vel_x: float,
-        vel_y: float,
+        vel: Vec2,
         rotation: float,
         scale: float,
         half_width: float,
@@ -669,8 +659,7 @@ class EffectPool:
         entry = self._entries[idx]
         entry.pos = pos
         entry.effect_id = int(effect_id)
-        entry.vel_x = float(vel_x)
-        entry.vel_y = float(vel_y)
+        entry.vel = vel
         entry.rotation = float(rotation)
         entry.scale = float(scale)
         entry.half_width = float(half_width)
@@ -710,7 +699,7 @@ class EffectPool:
 
             if age < lifetime:
                 if age >= 0.0:
-                    entry.pos = entry.pos + Vec2(float(entry.vel_x), float(entry.vel_y)) * float(dt)
+                    entry.pos = entry.pos + entry.vel * float(dt)
                     if flags & 0x4:
                         entry.rotation += float(entry.rotation_step) * float(dt)
                     if flags & 0x8:
@@ -749,8 +738,7 @@ class EffectPool:
 
         angle = float(aim_heading) + float(int(rand()) & 0x3F) * 0.01
         speed = float(int(rand()) & 0x3F) * 0.022727273 + 1.0
-        vel_x = math.cos(angle) * speed * 100.0
-        vel_y = math.sin(angle) * speed * 100.0
+        velocity = Vec2.from_angle(angle) * (speed * 100.0)
 
         rotation = float((int(rand()) & 0x3F) - 0x20) * 0.1
         rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 14.0
@@ -758,8 +746,7 @@ class EffectPool:
         self.spawn(
             effect_id=int(EffectId.CASING),
             pos=pos,
-            vel_x=float(vel_x),
-            vel_y=float(vel_y),
+            vel=velocity,
             rotation=float(rotation),
             scale=1.0,
             half_width=2.0,
@@ -793,8 +780,7 @@ class EffectPool:
 
         lifetime = 0.25 - float(age)
         base = float(angle) + math.pi
-        dir_x = math.cos(base)
-        dir_y = math.sin(base)
+        direction = Vec2.from_angle(base)
 
         for _ in range(2):
             r0 = int(rand())
@@ -802,17 +788,17 @@ class EffectPool:
             r1 = int(rand())
             half = float((r1 & 7) + 1)
             r2 = int(rand())
-            vel_x = float((r2 & 0x3F) + 100) * dir_x
+            speed_x = float((r2 & 0x3F) + 100)
             r3 = int(rand())
-            vel_y = float((r3 & 0x3F) + 100) * dir_y
+            speed_y = float((r3 & 0x3F) + 100)
+            velocity = Vec2(direction.x * speed_x, direction.y * speed_y)
             r4 = int(rand())
             scale_step = float(r4 & 0x7F) * 0.03 + 0.1
 
             self.spawn(
                 effect_id=int(EffectId.BLOOD_SPLATTER),
                 pos=pos,
-                vel_x=vel_x,
-                vel_y=vel_y,
+                vel=velocity,
                 rotation=rotation,
                 scale=1.0,
                 half_width=half,
@@ -850,9 +836,10 @@ class EffectPool:
             r0 = int(rand())
             rotation = float(r0 & 0x7F) * 0.049087387
             r1 = int(rand())
-            vel_x = float((r1 & 0x7F) - 0x40)
+            vx = float((r1 & 0x7F) - 0x40)
             r2 = int(rand())
-            vel_y = float((r2 & 0x7F) - 0x40)
+            vy = float((r2 & 0x7F) - 0x40)
+            velocity = Vec2(vx, vy)
             if scale_step is None:
                 r3 = int(rand())
                 step = float(r3 % 100) * 0.01 + 0.1
@@ -862,8 +849,7 @@ class EffectPool:
             self.spawn(
                 effect_id=int(EffectId.BURST),
                 pos=pos,
-                vel_x=vel_x,
-                vel_y=vel_y,
+                vel=velocity,
                 rotation=rotation,
                 scale=1.0,
                 half_width=32.0,
@@ -897,8 +883,7 @@ class EffectPool:
         self.spawn(
             effect_id=int(EffectId.RING),
             pos=pos,
-            vel_x=0.0,
-            vel_y=0.0,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=32.0,
@@ -931,8 +916,7 @@ class EffectPool:
         rotation = float(int(rand()) % 100) * 0.01 + base
         half = float(int(rand()) % 5 + 7)
 
-        vel_x = math.cos(base) * 114.0
-        vel_y = math.sin(base) * 114.0
+        velocity = Vec2.from_angle(base) * 114.0
 
         rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 4.0
         scale_step = -float(int(rand()) & 0xF) * 0.1
@@ -941,8 +925,7 @@ class EffectPool:
         self.spawn(
             effect_id=int(effect_id),
             pos=pos,
-            vel_x=float(vel_x),
-            vel_y=float(vel_y),
+            vel=velocity,
             rotation=float(rotation),
             scale=1.0,
             half_width=float(half),
@@ -972,16 +955,14 @@ class EffectPool:
         lifetime = 1.1
         for idx in range(4):
             rotation = float(idx) * (math.pi / 2.0) + float(angle)
-            vel_x = math.cos(rotation) * 42.0
-            vel_y = math.sin(rotation) * 42.0
+            velocity = Vec2.from_angle(rotation) * 42.0
             half = float(int(rand()) % 10 + 0x12)
             rotation_step = (float(int(rand()) % 0x14) * 0.1 - 1.0) * 1.9
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
                 pos=pos,
-                vel_x=float(vel_x),
-                vel_y=float(vel_y),
+                vel=velocity,
                 rotation=float(rotation),
                 scale=1.0,
                 half_width=float(half),
@@ -1024,8 +1005,7 @@ class EffectPool:
         self.spawn(
             effect_id=int(EffectId.RING),
             pos=pos,
-            vel_x=0.0,
-            vel_y=0.0,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=32.0,
@@ -1051,8 +1031,7 @@ class EffectPool:
                 self.spawn(
                     effect_id=int(EffectId.EXPLOSION_PUFF),
                     pos=pos,
-                    vel_x=0.0,
-                    vel_y=0.0,
+                    vel=Vec2(),
                     rotation=float(rotation),
                     scale=1.0,
                     half_width=32.0,
@@ -1073,8 +1052,7 @@ class EffectPool:
         self.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
-            vel_x=0.0,
-            vel_y=0.0,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=32.0,
@@ -1099,15 +1077,16 @@ class EffectPool:
         # Extra shockwave particles.
         for _ in range(count):
             rotation = float(int(rand()) % 0x13A) * 0.02
-            vel_x = float((int(rand()) & 0x3F) * 2 - 0x40)
-            vel_y = float((int(rand()) & 0x3F) * 2 - 0x40)
+            velocity = Vec2(
+                float((int(rand()) & 0x3F) * 2 - 0x40),
+                float((int(rand()) & 0x3F) * 2 - 0x40),
+            )
             scale_step = float((int(rand()) - 3) & 7) * scale
             rotation_step = float((int(rand()) + 3) & 7)
             self.spawn(
                 effect_id=int(EffectId.EXPLOSION_BURST),
                 pos=pos,
-                vel_x=float(vel_x),
-                vel_y=float(vel_y),
+                vel=velocity,
                 rotation=float(rotation),
                 scale=1.0,
                 half_width=32.0,

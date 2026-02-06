@@ -321,8 +321,9 @@ def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.vel_y, 0.25, abs_tol=1e-9)
+    assert entry.vel == Vec2()
+    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.detonation_scale, 0.25, abs_tol=1e-9)
     assert math.isclose(entry.trail_timer, 0.0, abs_tol=1e-9)
 
     hp_after_hit = creatures[0].hp
@@ -342,8 +343,9 @@ def test_secondary_projectile_pool_timeout_switches_to_generic_detonation() -> N
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.vel_y, 0.5, abs_tol=1e-9)
+    assert entry.vel == Vec2()
+    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.detonation_scale, 0.5, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
@@ -360,14 +362,13 @@ def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
     assert math.isclose(entry.pos.y, -9.0, abs_tol=1e-9)
 
     # Seeker Rockets (type 1): accelerate by factor (1.0 + dt * 3.0) while speed < 500.
-    assert math.isclose(entry.vel_y, -117.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel.y, -117.0, abs_tol=1e-9)
     assert math.isclose(entry.speed, 1.9, abs_tol=1e-9)
 
     # No further acceleration once past the 500 speed threshold.
-    entry.vel_x = 0.0
-    entry.vel_y = -600.0
+    entry.vel = Vec2(0.0, -600.0)
     pool.update_pulse_gun(0.1, [])
-    assert math.isclose(entry.vel_y, -600.0, abs_tol=1e-9)
+    assert math.isclose(entry.vel.y, -600.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> None:
@@ -380,8 +381,9 @@ def test_secondary_projectile_pool_type1_hit_switches_to_detonation_scale() -> N
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.vel_y, 1.0, abs_tol=1e-9)
+    assert entry.vel == Vec2()
+    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.detonation_scale, 1.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> None:
@@ -398,7 +400,7 @@ def test_secondary_projectile_pool_type2_picks_nearest_target_and_steers() -> No
     assert entry.type_id == 2
     assert entry.target_id == 0
     assert entry.angle != 0.0
-    assert abs(entry.vel_x) > 0.0
+    assert abs(entry.vel.x) > 0.0
 
 
 def test_secondary_projectile_pool_type2_uses_hint_for_initial_target() -> None:
@@ -430,8 +432,9 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     entry = pool.entries[0]
     assert entry.active
     assert entry.type_id == 3
-    assert math.isclose(entry.vel_x, 0.0, abs_tol=1e-9)
-    assert math.isclose(entry.vel_y, 0.35, abs_tol=1e-9)
+    assert entry.vel == Vec2()
+    assert math.isclose(entry.detonation_t, 0.0, abs_tol=1e-9)
+    assert math.isclose(entry.detonation_scale, 0.35, abs_tol=1e-9)
 
     assert state.sfx_queue == ["sfx_explosion_medium"]
     assert fx_queue.count == 13
@@ -521,7 +524,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
         def __init__(self) -> None:
             self.entries: list[_SpriteEntry] = []
 
-        def spawn(self, *, pos: Vec2, vel_x: float, vel_y: float, scale: float) -> int:
+        def spawn(self, *, pos: Vec2, vel: Vec2, scale: float) -> int:
             self.entries.append(_SpriteEntry())
             return len(self.entries) - 1
 
