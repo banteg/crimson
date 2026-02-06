@@ -3766,8 +3766,8 @@ LAB_00404ee5:
   if ((char)iVar3 != '\0') {
     shareware_offer_seen_latch = 1;
     quit_requested = '\x01';
-    ShellExecuteA((HWND)0x0,&DAT_00471b38,s_http___buy_crimsonland_com_00471b40,(LPCSTR)0x0,
-                  (LPCSTR)0x0,1);
+    ShellExecuteA((HWND)0x0,&shell_execute_operation_open,s_http___buy_crimsonland_com_00471b40,
+                  (LPCSTR)0x0,(LPCSTR)0x0,1);
   }
   iVar3 = ui_button_update((float *)&stack0xfffffed0,&ui_button_maybe_later);
   if ((char)iVar3 != '\0') {
@@ -4159,18 +4159,17 @@ LAB_00405ab3:
 
 /* perk_selection_screen_update @ 00405be0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* perk selection screen: list choices, preview text, and selection handling */
 
 void perk_selection_screen_update(void)
 
 {
   int x;
-  undefined4 *puVar1;
+  float *pfVar1;
   int iVar2;
   float unaff_EBX;
   int *piVar3;
-  int *item;
+  char **item;
   longlong lVar4;
   int y;
   int w;
@@ -4227,45 +4226,45 @@ void perk_selection_screen_update(void)
   }
   if (((byte)perk_selection_screen_flags & 1) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 1;
-    _DAT_00480298 = 0x3e8c8c8d;
-    _DAT_0048029c = 0x3f34b4b5;
-    _DAT_004802a0 = 0x3f70f0f1;
-    _DAT_004802a4 = 0x3f19999a;
+    perk_selection_choice_color_idle_r = 0.27450982;
+    perk_selection_choice_color_idle_g = 0.7058824;
+    perk_selection_choice_color_idle_b = 0.9411765;
+    perk_selection_choice_color_idle_a = 0.6;
     crt_atexit(&DAT_00406170);
   }
   if (((byte)perk_selection_screen_flags & 2) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 2;
-    _DAT_00480310 = 0x3e8c8c8d;
-    _DAT_00480314 = 0x3f34b4b5;
-    _DAT_00480318 = 0x3f70f0f1;
-    _DAT_0048031c = 0x3f800000;
+    perk_selection_choice_color_hover_r = 0.27450982;
+    perk_selection_choice_color_hover_g = 0.7058824;
+    perk_selection_choice_color_hover_b = 0.9411765;
+    perk_selection_choice_color_hover_a = 1.0;
     crt_atexit(&DAT_00406160);
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   if (((byte)perk_selection_screen_flags & 4) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 4;
     iVar2 = 10;
-    puVar1 = &DAT_004800b4;
+    pfVar1 = &perk_selection_choice_item_slot0_alpha;
     do {
-      *(undefined1 *)((int)puVar1 + -6) = 1;
-      *puVar1 = 0x3f800000;
-      puVar1[-3] = 0;
-      *(undefined1 *)(puVar1 + -2) = 0;
-      *(undefined1 *)((int)puVar1 + -7) = 0;
-      puVar1[-1] = 0;
-      puVar1 = puVar1 + 4;
+      *(undefined1 *)((int)pfVar1 + -6) = 1;
+      *pfVar1 = 1.0;
+      pfVar1[-3] = 0.0;
+      *(undefined1 *)(pfVar1 + -2) = 0;
+      *(undefined1 *)((int)pfVar1 + -7) = 0;
+      pfVar1[-1] = 0.0;
+      pfVar1 = pfVar1 + 4;
       iVar2 = iVar2 + -1;
     } while (iVar2 != 0);
     crt_atexit(&DAT_00406150);
   }
   iVar2 = 0;
   if (local_24 != 0) {
-    item = &DAT_004800a8;
+    item = &perk_selection_choice_item_slot0_label;
     piVar3 = &perk_choice_ids;
     do {
-      *item = (int)(&perk_meta_table)[*piVar3].name;
-      ui_menu_item_update(&local_18,item);
-      if ((char)item[1] != '\0') {
+      *item = (&perk_meta_table)[*piVar3].name;
+      ui_menu_item_update(&local_18,(int *)item);
+      if (*(char *)(item + 1) != '\0') {
         uStack_28 = (float)CONCAT13(1,(uint3)uStack_28);
         perk_selection_index = iVar2;
       }
@@ -4322,7 +4321,7 @@ void perk_selection_screen_update(void)
   perk_prompt_update_and_render();
   ui_cursor_render();
   if (((cVar5 != '\0') && (-1 < perk_selection_index)) &&
-     ((&DAT_004800ad)[perk_selection_index * 0x10] != '\0')) {
+     ((&perk_selection_choice_item_slot0_activated)[perk_selection_index * 0x10] != '\0')) {
     sfx_play(sfx_ui_buttonclick);
     perk_apply((&perk_choice_ids)[perk_selection_index]);
     perk_pending_count = perk_pending_count + -1;
@@ -7344,8 +7343,8 @@ void demo_purchase_screen_update(void)
     if ((char)iVar5 != '\0') {
       shareware_offer_seen_latch = '\x01';
       quit_requested = '\x01';
-      ShellExecuteA((HWND)0x0,&DAT_00471b38,s_http___buy_crimsonland_com_00471b40,(LPCSTR)0x0,
-                    (LPCSTR)0x0,1);
+      ShellExecuteA((HWND)0x0,&shell_execute_operation_open,s_http___buy_crimsonland_com_00471b40,
+                    (LPCSTR)0x0,(LPCSTR)0x0,1);
       return;
     }
     fStack_2c = (float)(_config_screen_width / 2 + 0x80);
@@ -48303,8 +48302,8 @@ void ui_menu_main_click_buy_full_version(void)
 {
   quit_requested = '\x01';
   shareware_offer_seen_latch = 1;
-  ShellExecuteA((HWND)0x0,&DAT_00471b38,s_http___buy_crimsonland_com_00471b40,(LPCSTR)0x0,
-                (LPCSTR)0x0,1);
+  ShellExecuteA((HWND)0x0,&shell_execute_operation_open,s_http___buy_crimsonland_com_00471b40,
+                (LPCSTR)0x0,(LPCSTR)0x0,1);
   return;
 }
 

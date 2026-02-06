@@ -113,6 +113,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471b38",
+      "comment": "ShellExecute operation string \"open\" used by demo purchase/browser-launch paths.",
+      "name": "shell_execute_operation_open",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00471f40",
       "comment": "printf-style format string \"%d\" used for integer UI counters.",
       "name": "s_fmt_decimal_int",
@@ -764,6 +770,27 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x004800a8",
+      "comment": "Perk selection choice-item slot 0 label pointer; item records are stride 0x10 and consumed by ui_menu_item_update.",
+      "name": "perk_selection_choice_item_slot0_label",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004800ad",
+      "comment": "Perk selection choice-item slot 0 activated flag byte (records are stride 0x10).",
+      "name": "perk_selection_choice_item_slot0_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004800b4",
+      "comment": "Perk selection choice-item slot 0 alpha scalar (records are stride 0x10).",
+      "name": "perk_selection_choice_item_slot0_alpha",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x0048014c",
       "comment": "Scratch buffer used by game_build_path (base path + filename).",
       "name": "game_path_buf",
@@ -798,6 +825,34 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x00480298",
+      "comment": "Perk selection choice-item idle color component R (one-shot palette init in perk_selection_screen_update).",
+      "name": "perk_selection_choice_color_idle_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048029c",
+      "comment": "Perk selection choice-item idle color component G.",
+      "name": "perk_selection_choice_color_idle_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004802a0",
+      "comment": "Perk selection choice-item idle color component B.",
+      "name": "perk_selection_choice_color_idle_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004802a4",
+      "comment": "Perk selection choice-item idle color component A.",
+      "name": "perk_selection_choice_color_idle_a",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004802a8",
       "comment": "Aim/cursor screen X (camera_offset_x + player_aim_x).",
       "name": "aim_screen_x",
@@ -815,6 +870,34 @@
       "name": "demo_purchase_maybe_later_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
+    },
+    {
+      "address": "0x00480310",
+      "comment": "Perk selection choice-item hover color component R (one-shot palette init in perk_selection_screen_update).",
+      "name": "perk_selection_choice_color_hover_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x00480314",
+      "comment": "Perk selection choice-item hover color component G.",
+      "name": "perk_selection_choice_color_hover_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x00480318",
+      "comment": "Perk selection choice-item hover color component B.",
+      "name": "perk_selection_choice_color_hover_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048031c",
+      "comment": "Perk selection choice-item hover color component A.",
+      "name": "perk_selection_choice_color_hover_a",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00480321",

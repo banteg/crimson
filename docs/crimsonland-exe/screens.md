@@ -137,6 +137,8 @@ Recovered staged-reveal globals:
 - Persistent action-button globals:
   `demo_purchase_purchase_button` (`0x0047f678`) and
   `demo_purchase_maybe_later_button` (`0x004802b0`).
+- Browser launch uses `shell_execute_operation_open` (`0x00471b38`) as the
+  `ShellExecuteA` operation string (`"open"`).
 
 - **Rewrite note:** implemented in the Python rewrite for parity (the purchase
   URL is legacy).

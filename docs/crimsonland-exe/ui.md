@@ -179,6 +179,14 @@ Recovered action-button globals for this state:
 
 - `perk_selection_cancel_button` (`0x00480090`)
 - `perk_selection_select_button` (`0x00480820`)
+- Choice-item state table base/global fields:
+  `perk_selection_choice_item_slot0_label` (`0x004800a8`),
+  `perk_selection_choice_item_slot0_activated` (`0x004800ad`), and
+  `perk_selection_choice_item_slot0_alpha` (`0x004800b4`)
+  with stride `0x10` across perk slots.
+- Perk-selection one-shot idle/hover color vectors:
+  `perk_selection_choice_color_idle_*` (`0x00480298..0x004802a4`) and
+  `perk_selection_choice_color_hover_*` (`0x00480310..0x0048031c`).
 
 ### Runtime capture request (next large run)
 
