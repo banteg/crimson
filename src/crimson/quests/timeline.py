@@ -53,17 +53,16 @@ def tick_quest_spawn_timeline(
         if entry.trigger_ms != trigger_ms:
             break
 
-        base_x = float(entry.x)
-        base_y = float(entry.y)
-        offscreen_x = base_x < 0.0 or float(terrain_width) < base_x
+        base_pos = Vec2(float(entry.x), float(entry.y))
+        offscreen_x = base_pos.x < 0.0 or float(terrain_width) < base_pos.x
 
         for spawn_idx in range(int(entry.count)):
             magnitude = float(spawn_idx * 0x28)
             offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
             if offscreen_x:
-                pos = Vec2(base_x, base_y + offset)
+                pos = base_pos + Vec2(0.0, offset)
             else:
-                pos = Vec2(base_x + offset, base_y)
+                pos = base_pos + Vec2(offset, 0.0)
             spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=float(entry.heading)))
 
         if entry.count != 0:

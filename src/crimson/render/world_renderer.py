@@ -1122,11 +1122,18 @@ class WorldRenderer:
 
         # World bounds for debug if terrain is missing.
         if self.ground is None:
-            x0 = (0.0 + camera.x) * view_scale.x
-            y0 = (0.0 + camera.y) * view_scale.y
-            x1 = (float(self.world_size) + camera.x) * view_scale.x
-            y1 = (float(self.world_size) + camera.y) * view_scale.y
-            rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
+            world_min = Vec2(camera.x * view_scale.x, camera.y * view_scale.y)
+            world_max = Vec2(
+                (float(self.world_size) + camera.x) * view_scale.x,
+                (float(self.world_size) + camera.y) * view_scale.y,
+            )
+            rl.draw_rectangle_lines(
+                int(world_min.x),
+                int(world_min.y),
+                int(world_max.x - world_min.x),
+                int(world_max.y - world_min.y),
+                rl.Color(40, 40, 55, 255),
+            )
 
         if entity_alpha <= 1e-3:
             return

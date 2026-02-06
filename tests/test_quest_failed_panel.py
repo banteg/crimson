@@ -10,6 +10,7 @@ import pyray as rl
 from crimson.game import GameState, QuestFailedView
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.persistence import save_status
+from grim.geom import Vec2
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 
@@ -58,14 +59,14 @@ def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, tmp_path: Pat
     view = QuestFailedView(state)
 
     monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 640)
-    left_640, top_640 = view._panel_origin()
-    assert left_640 == -108.0
-    assert top_640 == 29.0
+    panel_640 = view._panel_origin()
+    assert panel_640.x == -108.0
+    assert panel_640.y == 29.0
 
     monkeypatch.setattr("crimson.game.rl.get_screen_width", lambda: 1024)
-    left_1024, top_1024 = view._panel_origin()
-    assert left_1024 == -108.0
-    assert top_1024 == 119.0
+    panel_1024 = view._panel_origin()
+    assert panel_1024.x == -108.0
+    assert panel_1024.y == 119.0
 
 
 def test_quest_failed_enter_retries_current_quest(monkeypatch, tmp_path: Path) -> None:
@@ -156,7 +157,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     monkeypatch.setattr("crimson.game.rl.measure_text", lambda text, _size: len(str(text)) * 8)
 
     view._small_font = None
-    view._draw_score_preview(None, panel_left=-108.0, panel_top=29.0)  # type: ignore[arg-type]
+    view._draw_score_preview(None, panel_top_left=Vec2(-108.0, 29.0))  # type: ignore[arg-type]
 
     assert "Score" in drawn_text
     assert "Experience" in drawn_text

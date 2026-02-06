@@ -11,13 +11,13 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
-    panel_640, _left_640, top_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
-    assert top_640 == 29.0
-    assert panel_640.y == 29.0
+    layout_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
+    assert layout_640.top_left.y == 29.0
+    assert layout_640.panel.y == 29.0
 
-    panel_1024, _left_1024, top_1024 = ui._panel_layout(screen_w=1024.0, scale=1.0)
-    assert top_1024 == 119.0
-    assert panel_1024.y == 119.0
+    layout_1024 = ui._panel_layout(screen_w=1024.0, scale=1.0)
+    assert layout_1024.top_left.y == 119.0
+    assert layout_1024.panel.y == 119.0
 
 
 def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_path: Path) -> None:

@@ -207,18 +207,26 @@ class TutorialMode(BaseGameplayMode):
                 scale=1.0,
             )
             gap = 18.0
-            button_y = rect.y + rect.height + 10.0
+            button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
-            play_x = rect.x + 10.0
-            repeat_x = play_x + play_w + gap
             if button_update(
-                self._play_button, pos=Vec2(play_x, button_y), width=play_w, dt_ms=dt_ms, mouse=mouse, click=click
+                self._play_button,
+                pos=button_base_pos,
+                width=play_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
             ):
                 self.close_requested = True
                 return
             if button_update(
-                self._repeat_button, pos=Vec2(repeat_x, button_y), width=repeat_w, dt_ms=dt_ms, mouse=mouse, click=click
+                self._repeat_button,
+                pos=button_base_pos + Vec2(play_w + gap, 0.0),
+                width=repeat_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
             ):
                 self.open()
                 return
@@ -411,19 +419,22 @@ class TutorialMode(BaseGameplayMode):
                 scale=1.0,
             )
             gap = 18.0
-            button_y = rect.y + rect.height + 10.0
+            button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
-            play_x = rect.x + 10.0
-            repeat_x = play_x + play_w + gap
             button_draw(
-                self._ui_assets, self._small, self._play_button, pos=Vec2(play_x, button_y), width=play_w, scale=1.0
+                self._ui_assets,
+                self._small,
+                self._play_button,
+                pos=button_base_pos,
+                width=play_w,
+                scale=1.0,
             )
             button_draw(
                 self._ui_assets,
                 self._small,
                 self._repeat_button,
-                pos=Vec2(repeat_x, button_y),
+                pos=button_base_pos + Vec2(play_w + gap, 0.0),
                 width=repeat_w,
                 scale=1.0,
             )

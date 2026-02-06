@@ -99,12 +99,11 @@ class DemoTrialOverlayUi:
         button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=True)
         gap = 20.0
         row_w = button_w * 2.0 + gap
-        base_x = panel_pos.x + 256.0 - row_w * 0.5
-        button_y = panel_pos.y + 214.0
+        button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
 
         purchase_clicked = button_update(
             self._purchase_button,
-            pos=Vec2(float(base_x), float(button_y)),
+            pos=button_base_pos,
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -112,7 +111,7 @@ class DemoTrialOverlayUi:
         )
         maybe_clicked = button_update(
             self._maybe_later_button,
-            pos=Vec2(float(base_x + button_w + gap), float(button_y)),
+            pos=button_base_pos + Vec2(button_w + gap, 0.0),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -206,13 +205,12 @@ class DemoTrialOverlayUi:
             button_w = 145.0 * scale
             gap = 20.0
             row_w = button_w * 2.0 + gap
-            base_x = panel_pos.x + 256.0 - row_w * 0.5
-            button_y = panel_pos.y + 214.0
+            button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
             button_draw(
                 assets,
                 font,
                 self._purchase_button,
-                pos=Vec2(float(base_x), float(button_y)),
+                pos=button_base_pos,
                 width=float(button_w),
                 scale=float(scale),
             )
@@ -220,7 +218,7 @@ class DemoTrialOverlayUi:
                 assets,
                 font,
                 self._maybe_later_button,
-                pos=Vec2(float(base_x + button_w + gap), float(button_y)),
+                pos=button_base_pos + Vec2(button_w + gap, 0.0),
                 width=float(button_w),
                 scale=float(scale),
             )

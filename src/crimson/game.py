@@ -1544,11 +1544,11 @@ class EndNoteView:
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
 
-        panel_left = (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale
-        panel_top = (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale
-
-        button_x = panel_left + END_NOTE_BUTTON_X_OFFSET * scale
-        button_y = panel_top + END_NOTE_BUTTON_Y_OFFSET * scale
+        panel_top_left = Vec2(
+            (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
+            (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale,
+        )
+        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
 
         font = self._ensure_small_font()
         mouse = rl.get_mouse_position()
@@ -1559,7 +1559,12 @@ class EndNoteView:
             font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
         )
         if button_update(
-            self._survival_button, pos=Vec2(button_x, button_y), width=survival_w, dt_ms=dt_ms, mouse=mouse, click=click
+            self._survival_button,
+            pos=button_pos,
+            width=survival_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
         ):
             self._state.config.data["game_mode"] = 1
             if self._state.audio is not None:
@@ -1567,10 +1572,15 @@ class EndNoteView:
             self._action = "start_survival"
             return
 
-        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
         rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
         if button_update(
-            self._rush_button, pos=Vec2(button_x, button_y), width=rush_w, dt_ms=dt_ms, mouse=mouse, click=click
+            self._rush_button,
+            pos=button_pos,
+            width=rush_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
         ):
             self._state.config.data["game_mode"] = 2
             if self._state.audio is not None:
@@ -1578,10 +1588,15 @@ class EndNoteView:
             self._action = "start_rush"
             return
 
-        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
         typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
         if button_update(
-            self._typo_button, pos=Vec2(button_x, button_y), width=typo_w, dt_ms=dt_ms, mouse=mouse, click=click
+            self._typo_button,
+            pos=button_pos,
+            width=typo_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
         ):
             self._state.config.data["game_mode"] = 4
             self._state.screen_fade_alpha = 0.0
@@ -1591,12 +1606,17 @@ class EndNoteView:
             self._action = "start_typo"
             return
 
-        button_y += END_NOTE_BUTTON_STEP_Y * scale
+        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
             font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
         )
         if button_update(
-            self._main_menu_button, pos=Vec2(button_x, button_y), width=main_w, dt_ms=dt_ms, mouse=mouse, click=click
+            self._main_menu_button,
+            pos=button_pos,
+            width=main_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
         ):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
@@ -1621,11 +1641,13 @@ class EndNoteView:
         layout_w = screen_w / scale if scale else screen_w
         widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
 
-        panel_left = (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale
-        panel_top = (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale
+        panel_top_left = Vec2(
+            (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
+            (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale,
+        )
         panel = rl.Rectangle(
-            float(panel_left),
-            float(panel_top),
+            float(panel_top_left.x),
+            float(panel_top_left.y),
             float(END_NOTE_PANEL_W * scale),
             float(END_NOTE_PANEL_H * scale),
         )
@@ -1657,43 +1679,38 @@ class EndNoteView:
             ]
         )
 
-        header_x = panel_left + END_NOTE_HEADER_X_OFFSET * scale
-        header_y = panel_top + END_NOTE_HEADER_Y_OFFSET * scale
+        header_pos = panel_top_left + Vec2(END_NOTE_HEADER_X_OFFSET * scale, END_NOTE_HEADER_Y_OFFSET * scale)
         header_color = rl.Color(255, 255, 255, int(255 * 0.8))
         body_color = rl.Color(255, 255, 255, int(255 * 0.5))
 
-        draw_small_text(font, header, Vec2(header_x, header_y), 1.5 * scale, header_color)
+        draw_small_text(font, header, header_pos, 1.5 * scale, header_color)
 
-        body_x = panel_left + END_NOTE_BODY_X_OFFSET * scale
-        body_y = header_y + END_NOTE_BODY_Y_GAP * scale
+        body_pos = Vec2(panel_top_left.x + END_NOTE_BODY_X_OFFSET * scale, header_pos.y + END_NOTE_BODY_Y_GAP * scale)
         for idx, line in enumerate(body_lines):
-            draw_small_text(font, line, Vec2(body_x, body_y), 1.0 * scale, body_color)
+            draw_small_text(font, line, body_pos, 1.0 * scale, body_color)
             if idx != len(body_lines) - 1:
-                body_y += END_NOTE_LINE_STEP_Y * scale
-        body_y += END_NOTE_AFTER_BODY_Y_GAP * scale
-        draw_small_text(font, "Good luck with your battles, trooper!", Vec2(body_x, body_y), 1.0 * scale, body_color)
+                body_pos = body_pos + Vec2(0.0, END_NOTE_LINE_STEP_Y * scale)
+        body_pos = body_pos + Vec2(0.0, END_NOTE_AFTER_BODY_Y_GAP * scale)
+        draw_small_text(font, "Good luck with your battles, trooper!", body_pos, 1.0 * scale, body_color)
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            button_x = panel_left + END_NOTE_BUTTON_X_OFFSET * scale
-            button_y = panel_top + END_NOTE_BUTTON_Y_OFFSET * scale
+            button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
             survival_w = button_width(
                 font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
             )
-            button_draw(
-                textures, font, self._survival_button, pos=Vec2(button_x, button_y), width=survival_w, scale=scale
-            )
-            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            button_draw(textures, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
+            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
             rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-            button_draw(textures, font, self._rush_button, pos=Vec2(button_x, button_y), width=rush_w, scale=scale)
-            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            button_draw(textures, font, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
+            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
             typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-            button_draw(textures, font, self._typo_button, pos=Vec2(button_x, button_y), width=typo_w, scale=scale)
-            button_y += END_NOTE_BUTTON_STEP_Y * scale
+            button_draw(textures, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
+            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
             main_w = button_width(
                 font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
             )
-            button_draw(textures, font, self._main_menu_button, pos=Vec2(button_x, button_y), width=main_w, scale=scale)
+            button_draw(textures, font, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
@@ -1789,7 +1806,7 @@ class QuestFailedView:
             self._activate_play_another()
             return
 
-        panel_left, panel_top = self._panel_origin()
+        panel_top_left = self._panel_origin()
         textures = self._button_textures
         if outcome is None or textures is None or (textures.button_sm is None and textures.button_md is None):
             return
@@ -1800,16 +1817,20 @@ class QuestFailedView:
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         font = self._ensure_small_font()
-        button_x = panel_left + QUEST_FAILED_BUTTON_X_OFFSET * scale
-        button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET * scale
+        button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
 
         retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
         if button_update(
-            self._retry_button, pos=Vec2(button_x, button_y), width=retry_w, dt_ms=dt_ms, mouse=mouse, click=click
+            self._retry_button,
+            pos=button_pos,
+            width=retry_w,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
         ):
             self._activate_retry()
             return
-        button_y += QUEST_FAILED_BUTTON_STEP_Y * scale
+        button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         play_another_w = button_width(
             font,
@@ -1819,7 +1840,7 @@ class QuestFailedView:
         )
         if button_update(
             self._quest_list_button,
-            pos=Vec2(button_x, button_y),
+            pos=button_pos,
             width=play_another_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -1827,7 +1848,7 @@ class QuestFailedView:
         ):
             self._activate_play_another()
             return
-        button_y += QUEST_FAILED_BUTTON_STEP_Y * scale
+        button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         main_menu_w = button_width(
             font,
@@ -1837,7 +1858,7 @@ class QuestFailedView:
         )
         if button_update(
             self._main_menu_button,
-            pos=Vec2(button_x, button_y),
+            pos=button_pos,
             width=main_menu_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -1855,12 +1876,12 @@ class QuestFailedView:
             self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
-        panel_left, panel_top = self._panel_origin()
+        panel_top_left = self._panel_origin()
         panel_tex = self._panel_tex
         if panel_tex is not None:
             panel = rl.Rectangle(
-                float(panel_left),
-                float(panel_top),
+                float(panel_top_left.x),
+                float(panel_top_left.y),
                 float(QUEST_FAILED_PANEL_W),
                 float(QUEST_FAILED_PANEL_H),
             )
@@ -1870,9 +1891,10 @@ class QuestFailedView:
         reaper_tex = self._reaper_tex
         if reaper_tex is not None:
             src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
+            banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
             dst = rl.Rectangle(
-                float(panel_left + QUEST_FAILED_BANNER_X_OFFSET),
-                float(panel_top + QUEST_FAILED_BANNER_Y_OFFSET),
+                float(banner_pos.x),
+                float(banner_pos.y),
                 float(QUEST_FAILED_BANNER_W),
                 float(QUEST_FAILED_BANNER_H),
             )
@@ -1883,23 +1905,22 @@ class QuestFailedView:
         draw_small_text(
             font,
             self._failure_message(),
-            Vec2(panel_left + QUEST_FAILED_MESSAGE_X_OFFSET, panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET),
+            panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET),
             1.0,
             text_color,
         )
-        self._draw_score_preview(font, panel_left=panel_left, panel_top=panel_top)
+        self._draw_score_preview(font, panel_top_left=panel_top_left)
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             scale = 1.0
-            button_x = panel_left + QUEST_FAILED_BUTTON_X_OFFSET
-            button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET
+            button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
             retry_w = button_width(
                 font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide
             )
-            button_draw(textures, font, self._retry_button, pos=Vec2(button_x, button_y), width=retry_w, scale=scale)
-            button_y += QUEST_FAILED_BUTTON_STEP_Y
+            button_draw(textures, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
+            button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y)
 
             play_another_w = button_width(
                 font,
@@ -1911,11 +1932,11 @@ class QuestFailedView:
                 textures,
                 font,
                 self._quest_list_button,
-                pos=Vec2(button_x, button_y),
+                pos=button_pos,
                 width=play_another_w,
                 scale=scale,
             )
-            button_y += QUEST_FAILED_BUTTON_STEP_Y
+            button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y)
 
             main_menu_w = button_width(
                 font,
@@ -1927,7 +1948,7 @@ class QuestFailedView:
                 textures,
                 font,
                 self._main_menu_button,
-                pos=Vec2(button_x, button_y),
+                pos=button_pos,
                 width=main_menu_w,
                 scale=scale,
             )
@@ -1939,12 +1960,13 @@ class QuestFailedView:
         self._action = None
         return action
 
-    def _panel_origin(self) -> tuple[float, float]:
+    def _panel_origin(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
         widescreen_shift_y = MenuView._menu_widescreen_y_shift(screen_w)
-        panel_left = QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X
-        panel_top = QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y
-        return float(panel_left), float(panel_top)
+        return Vec2(
+            QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X,
+            QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,
+        )
 
     def _failure_message(self) -> str:
         retry_count = int(self._state.quest_fail_retry_count)
@@ -2020,13 +2042,12 @@ class QuestFailedView:
             return float(rl.measure_text(text, int(20 * scale)))
         return float(measure_small_text_width(font, text, scale))
 
-    def _draw_score_preview(self, font: SmallFontData, *, panel_left: float, panel_top: float) -> None:
+    def _draw_score_preview(self, font: SmallFontData, *, panel_top_left: Vec2) -> None:
         record = self._record
         if record is None:
             return
 
-        x = panel_left + QUEST_FAILED_SCORE_X_OFFSET
-        y = panel_top + QUEST_FAILED_SCORE_Y_OFFSET
+        score_pos = panel_top_left + Vec2(QUEST_FAILED_SCORE_X_OFFSET, QUEST_FAILED_SCORE_Y_OFFSET)
 
         label_color = rl.Color(230, 230, 230, int(255 * 0.8))
         value_color = rl.Color(230, 230, 255, 255)
@@ -2035,23 +2056,24 @@ class QuestFailedView:
 
         score_label = "Score"
         score_label_w = self._text_width(score_label, 1.0)
-        draw_small_text(font, score_label, Vec2(x + 32.0 - score_label_w * 0.5, y), 1.0, label_color)
+        draw_small_text(font, score_label, score_pos + Vec2(32.0 - score_label_w * 0.5, 0.0), 1.0, label_color)
 
         score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
         score_value_w = self._text_width(score_value, 1.0)
-        draw_small_text(font, score_value, Vec2(x + 32.0 - score_value_w * 0.5, y + 15.0), 1.0, value_color)
+        draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), 1.0, value_color)
 
-        sep_x = x + 80.0
-        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0), separator_color)
+        sep_pos = score_pos + Vec2(80.0, 0.0)
+        rl.draw_line(int(sep_pos.x), int(sep_pos.y), int(sep_pos.x), int(sep_pos.y + 48.0), separator_color)
 
-        col2_x = x + 96.0
-        draw_small_text(font, "Experience", Vec2(col2_x, y), 1.0, value_color)
+        col2_pos = score_pos + Vec2(96.0, 0.0)
+        draw_small_text(font, "Experience", col2_pos, 1.0, value_color)
         xp_value = f"{int(record.score_xp)}"
         xp_w = self._text_width(xp_value, 1.0)
-        draw_small_text(font, xp_value, Vec2(col2_x + 32.0 - xp_w * 0.5, y + 15.0), 1.0, label_color)
+        draw_small_text(font, xp_value, col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0), 1.0, label_color)
 
         # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
-        rl.draw_rectangle(int(x - 16.0), int(y + 52.0), int(192.0), int(1.0), separator_color)
+        line_pos = score_pos + Vec2(-16.0, 52.0)
+        rl.draw_rectangle(int(line_pos.x), int(line_pos.y), int(192.0), int(1.0), separator_color)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -2198,15 +2220,18 @@ class HighScoresView:
             scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
             font = self._ensure_small_font()
             panel_top_left = self._panel_top_left(pos=Vec2(HS_LEFT_PANEL_POS_X, HS_LEFT_PANEL_POS_Y), scale=scale)
-            panel_x0 = panel_top_left.x
-            panel_y0 = panel_top_left.y
-
-            x0 = panel_x0 + HS_BUTTON_X * scale
-            y0 = panel_y0 + HS_BUTTON_Y0 * scale
+            button_base_pos = panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
-            if button_update(self._update_button, pos=Vec2(x0, y0), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(
+                self._update_button,
+                pos=button_base_pos,
+                width=w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 # Reload scores from disk (no view transition).
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
@@ -2215,7 +2240,7 @@ class HighScoresView:
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
-                pos=Vec2(x0, y0 + HS_BUTTON_STEP_Y * scale),
+                pos=button_base_pos + Vec2(0.0, HS_BUTTON_STEP_Y * scale),
                 width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -2228,7 +2253,7 @@ class HighScoresView:
             back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
-                pos=Vec2(panel_x0 + HS_BACK_BUTTON_X * scale, panel_y0 + HS_BACK_BUTTON_Y * scale),
+                pos=panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
                 width=back_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -2438,16 +2463,15 @@ class HighScoresView:
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            button_x = left_panel_top_left.x + HS_BUTTON_X * scale
-            button_y0 = left_panel_top_left.y + HS_BUTTON_Y0 * scale
+            button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
-            button_draw(textures, font, self._update_button, pos=Vec2(button_x, button_y0), width=w, scale=scale)
+            button_draw(textures, font, self._update_button, pos=button_base_pos, width=w, scale=scale)
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             button_draw(
                 textures,
                 font,
                 self._play_button,
-                pos=Vec2(button_x, button_y0 + HS_BUTTON_STEP_Y * scale),
+                pos=button_base_pos + Vec2(0.0, HS_BUTTON_STEP_Y * scale),
                 width=w,
                 scale=scale,
             )
@@ -2549,14 +2573,14 @@ class HighScoresView:
 
         # Closed list widgets (state_14 quest variant): white border + black fill.
         widget_h = 16.0 * scale
-        for wx, wy, ww in (
-            (HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y, HS_RIGHT_PLAYER_COUNT_WIDGET_W),
-            (HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y, HS_RIGHT_GAME_MODE_WIDGET_W),
-            (HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y, HS_RIGHT_SHOW_SCORES_WIDGET_W),
-            (HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y, HS_RIGHT_SCORE_LIST_WIDGET_W),
+        for widget_offset, widget_width in (
+            (Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y), HS_RIGHT_PLAYER_COUNT_WIDGET_W),
+            (Vec2(HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y), HS_RIGHT_GAME_MODE_WIDGET_W),
+            (Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y), HS_RIGHT_SHOW_SCORES_WIDGET_W),
+            (Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y), HS_RIGHT_SCORE_LIST_WIDGET_W),
         ):
-            widget_pos = right_top_left + Vec2(float(wx) * scale, float(wy) * scale)
-            w = float(ww) * scale
+            widget_pos = right_top_left + widget_offset * scale
+            w = float(widget_width) * scale
             rl.draw_rectangle(int(widget_pos.x), int(widget_pos.y), int(w), int(widget_h), rl.WHITE)
             rl.draw_rectangle(
                 int(widget_pos.x) + 1,
@@ -2601,18 +2625,19 @@ class HighScoresView:
             return
         drop_w = float(drop_off.width) * scale
         drop_h = float(drop_off.height) * scale
-        for dx, dy in (
-            (HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
-            (HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
-            (HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
-            (HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
+        for drop_offset in (
+            Vec2(HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
+            Vec2(HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
+            Vec2(HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
+            Vec2(HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
         ):
+            drop_pos = right_top_left + drop_offset * scale
             rl.draw_texture_pro(
                 drop_off,
                 rl.Rectangle(0.0, 0.0, float(drop_off.width), float(drop_off.height)),
                 rl.Rectangle(
-                    right_top_left.x + float(dx) * scale,
-                    right_top_left.y + float(dy) * scale,
+                    drop_pos.x,
+                    drop_pos.y,
                     drop_w,
                     drop_h,
                 ),

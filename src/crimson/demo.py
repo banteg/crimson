@@ -243,10 +243,8 @@ class DemoView:
         w = float(self._state.config.screen_width)
         h = float(self._state.config.screen_height)
         wide_shift = self._purchase_var_28_2()
-        button_x = w / 2.0 + 128.0
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
-        purchase_y = button_base_y + 50.0
-        maybe_y = button_base_y + 90.0
+        button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -256,7 +254,7 @@ class DemoView:
         )
         if button_update(
             self._purchase_button,
-            pos=Vec2(float(button_x), float(purchase_y)),
+            pos=button_base_pos,
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -275,7 +273,7 @@ class DemoView:
 
         if button_update(
             self._maybe_later_button,
-            pos=Vec2(float(button_x), float(maybe_y)),
+            pos=button_base_pos + Vec2(0.0, 40.0),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -404,16 +402,21 @@ class DemoView:
         if textures.button_sm is None and textures.button_md is None:
             return
 
-        button_x = screen_w / 2.0 + 128.0
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
-        purchase_y = button_base_y + 50.0
-        maybe_y = button_base_y + 90.0
+        button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
             small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
         )
-        button_draw(textures, small, self._purchase_button, pos=Vec2(button_x, purchase_y), width=button_w, scale=scale)
-        button_draw(textures, small, self._maybe_later_button, pos=Vec2(button_x, maybe_y), width=button_w, scale=scale)
+        button_draw(textures, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(
+            textures,
+            small,
+            self._maybe_later_button,
+            pos=button_base_pos + Vec2(0.0, 40.0),
+            width=button_w,
+            scale=scale,
+        )
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
         particles = cache.get_or_load("particles", "game/particles.jaz").texture
@@ -578,9 +581,8 @@ class DemoView:
             y = float(self._crand_mod(899) + 64)
             self._spawn(0x34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
-                x2 = float(self._crand_mod(30) + 32)
-                y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x35, Vec2(x2, y2), heading=RANDOM_HEADING_SENTINEL)
+                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                self._spawn(0x35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
@@ -608,9 +610,8 @@ class DemoView:
             y = float(self._crand_mod(899) + 64)
             self._spawn(0x24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
-                x2 = float(self._crand_mod(30) + 32)
-                y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x25, Vec2(x2, y2), heading=0.0)
+                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                self._spawn(0x25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
         if getattr(self._state, "demo_enabled", False):
