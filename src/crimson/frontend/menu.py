@@ -601,7 +601,7 @@ class MenuView:
     @staticmethod
     def _draw_ui_quad(
         *,
-        texture: rl.Texture2D,
+        texture: rl.Texture,
         src: rl.Rectangle,
         dst: rl.Rectangle,
         origin: rl.Vector2,
@@ -613,7 +613,7 @@ class MenuView:
     @staticmethod
     def _draw_ui_quad_shadow(
         *,
-        texture: rl.Texture2D,
+        texture: rl.Texture,
         src: rl.Rectangle,
         dst: rl.Rectangle,
         origin: rl.Vector2,

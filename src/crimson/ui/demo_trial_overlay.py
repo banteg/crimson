@@ -31,7 +31,7 @@ class DemoTrialOverlayUi:
         self._missing_assets: list[str] = []
         self._font: SmallFontData | None = None
         self._assets: PerkMenuAssets | None = None
-        self._cl_logo: rl.Texture2D | None = None
+        self._cl_logo: rl.Texture | None = None
 
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)

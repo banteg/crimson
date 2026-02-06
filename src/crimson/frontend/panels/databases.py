@@ -272,7 +272,7 @@ class _DatabaseBaseView:
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
-        self._wicons_tex: rl.Texture2D | None = None
+        self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []
         self._selected_weapon_id: int = 2
 

@@ -328,15 +328,15 @@ class QuestsMenuView:
         self._state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
-        self._panel_tex: rl.Texture2D | None = None
+        self._panel_tex: rl.Texture | None = None
 
         self._small_font: SmallFontData | None = None
-        self._text_quest: rl.Texture2D | None = None
-        self._stage_icons: dict[int, rl.Texture2D | None] = {}
-        self._check_on: rl.Texture2D | None = None
-        self._check_off: rl.Texture2D | None = None
-        self._button_sm: rl.Texture2D | None = None
-        self._button_md: rl.Texture2D | None = None
+        self._text_quest: rl.Texture | None = None
+        self._stage_icons: dict[int, rl.Texture | None] = {}
+        self._check_on: rl.Texture | None = None
+        self._check_off: rl.Texture | None = None
+        self._button_sm: rl.Texture | None = None
+        self._button_md: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
         self._back_button = UiButtonState("Back")
 
@@ -1495,7 +1495,7 @@ class EndNoteView:
         self._state = state
         self._ground: GroundRenderer | None = None
         self._small_font: SmallFontData | None = None
-        self._panel_tex: rl.Texture2D | None = None
+        self._panel_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
@@ -1739,8 +1739,8 @@ class QuestFailedView:
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
-        self._panel_tex: rl.Texture2D | None = None
-        self._reaper_tex: rl.Texture2D | None = None
+        self._panel_tex: rl.Texture | None = None
+        self._reaper_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
@@ -2096,12 +2096,12 @@ class HighScoresView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._small_font: SmallFontData | None = None
-        self._button_tex: rl.Texture2D | None = None
+        self._button_tex: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
-        self._check_on: rl.Texture2D | None = None
-        self._drop_off: rl.Texture2D | None = None
-        self._arrow_tex: rl.Texture2D | None = None
-        self._wicons_tex: rl.Texture2D | None = None
+        self._check_on: rl.Texture | None = None
+        self._drop_off: rl.Texture | None = None
+        self._arrow_tex: rl.Texture | None = None
+        self._wicons_tex: rl.Texture | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)

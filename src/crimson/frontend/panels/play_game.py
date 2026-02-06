@@ -72,11 +72,11 @@ class PlayGameMenuView(PanelMenuView):
             back_pos=Vec2(-55.0, 462.0),
         )
         self._small_font: SmallFontData | None = None
-        self._button_sm: rl.Texture2D | None = None
-        self._button_md: rl.Texture2D | None = None
+        self._button_sm: rl.Texture | None = None
+        self._button_md: rl.Texture | None = None
         self._button_textures: UiButtonTextureSet | None = None
-        self._drop_on: rl.Texture2D | None = None
-        self._drop_off: rl.Texture2D | None = None
+        self._drop_on: rl.Texture | None = None
+        self._drop_off: rl.Texture | None = None
 
         self._player_list_open = False
         self._dirty = False

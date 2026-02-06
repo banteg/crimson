@@ -103,7 +103,7 @@ class TextureLoader:
 class TextureAsset:
     name: str
     rel_path: str
-    texture: rl.Texture2D | None
+    texture: rl.Texture | None
 
     def unload(self) -> None:
         texture = self.texture
@@ -142,7 +142,7 @@ class PaqTextureCache:
     def get(self, name: str) -> TextureAsset | None:
         return self.textures.get(name)
 
-    def texture(self, name: str) -> rl.Texture2D | None:
+    def texture(self, name: str) -> rl.Texture | None:
         asset = self.textures.get(name)
         return asset.texture if asset is not None else None
 
@@ -170,7 +170,7 @@ def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
     return load_paq_entries_from_path(assets_dir / PAQ_NAME)
 
 
-def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:
+def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
     image = rl.load_image_from_memory(fmt, data, len(data))
     texture = rl.load_texture_from_image(image)
     rl.unload_image(image)
