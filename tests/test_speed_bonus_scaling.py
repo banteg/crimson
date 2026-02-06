@@ -9,7 +9,7 @@ from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_upd
 
 def test_speed_bonus_adds_one_to_speed_multiplier() -> None:
     dt = 0.1
-    input_state = PlayerInput(move_x=1.0, move_y=0.0, aim=Vec2(101.0, 100.0))
+    input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
 
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0)

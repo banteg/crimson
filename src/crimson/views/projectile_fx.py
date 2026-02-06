@@ -347,13 +347,17 @@ class ProjectileFxView:
             rng=self._state.rng.rand,
             runtime_state=self._state,
         )
-        for type_id, origin_x, origin_y, hit_x, hit_y, *_ in hits:
-            if type_id in _BEAM_TYPES:
-                self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
-                self._spawn_effect(effect_id=int(EffectId.RING), x=hit_x, y=hit_y, scale=0.9, duration=0.25)
+        for hit in hits:
+            if int(hit.type_id) in _BEAM_TYPES:
+                self._beams.append(BeamFx(x0=hit.origin.x, y0=hit.origin.y, x1=hit.hit.x, y1=hit.hit.y, life=0.08))
+                self._spawn_effect(effect_id=int(EffectId.RING), x=hit.hit.x, y=hit.hit.y, scale=0.9, duration=0.25)
             else:
-                effect_id = int(EffectId.EXPLOSION_PUFF) if type_id in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS) else int(EffectId.BURST)
-                self._spawn_effect(effect_id=effect_id, x=hit_x, y=hit_y, scale=1.2, duration=0.35)
+                effect_id = (
+                    int(EffectId.EXPLOSION_PUFF)
+                    if int(hit.type_id) in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS)
+                    else int(EffectId.BURST)
+                )
+                self._spawn_effect(effect_id=effect_id, x=hit.hit.x, y=hit.hit.y, scale=1.2, duration=0.35)
 
         self._creatures = [c for c in self._creatures if c.hp > 0.0]
 

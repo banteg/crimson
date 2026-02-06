@@ -23,8 +23,7 @@ def test_shots_fired_and_hit_increment() -> None:
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     weapon_assign_player(player, 1)
     player.spread_heat = 0.0
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(
         player,

@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_world import GameWorld
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles import ProjectileHit, ProjectileTypeId
+from grim.geom import Vec2
 
 
 def test_projectile_decals_do_not_consume_sim_rng() -> None:
@@ -16,18 +17,14 @@ def test_projectile_decals_do_not_consume_sim_rng() -> None:
     present_before = int(world.presentation_rng.state)
 
     player = world.players[0]
-    hit = (
-        int(ProjectileTypeId.PISTOL),
-        float(player.pos.x - 10.0),
-        float(player.pos.y - 10.0),
-        float(player.pos.x),
-        float(player.pos.y),
-        float(player.pos.x),
-        float(player.pos.y),
+    hit = ProjectileHit(
+        type_id=int(ProjectileTypeId.PISTOL),
+        origin=Vec2(float(player.pos.x - 10.0), float(player.pos.y - 10.0)),
+        hit=player.pos,
+        target=player.pos,
     )
     world._queue_projectile_decals([hit])
 
     assert int(world.state.rng.state) == sim_before
     assert int(world.presentation_rng.state) != present_before
     assert world.fx_queue.count > 0
-

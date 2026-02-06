@@ -27,7 +27,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
 
     world.step(
         1.0,
-        inputs=[PlayerInput(move_x=1.0, move_y=0.0)],
+        inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
         world_size=world_size,
         damage_scale_by_type={},
         detail_preset=5,

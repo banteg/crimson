@@ -34,8 +34,7 @@ def build_typo_player_input(
 ) -> PlayerInput:
     fire = bool(fire_requested)
     return PlayerInput(
-        move_x=0.0,
-        move_y=0.0,
+        move=Vec2(0.0, 0.0),
         aim=aim,
         fire_down=fire,
         fire_pressed=fire,

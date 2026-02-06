@@ -171,8 +171,7 @@ def run_survival_replay(
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             player_inputs.append(
                 PlayerInput(
-                    move_x=float(mx),
-                    move_y=float(my),
+                    move=Vec2(float(mx), float(my)),
                     aim=Vec2(float(ax), float(ay)),
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,

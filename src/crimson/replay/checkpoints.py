@@ -209,12 +209,11 @@ def build_checkpoint(
         ],
         "bonuses": [
             {
-                "bonus_id": int(getattr(bonus, "bonus_id", 0)),
-                "pos_x": round(float(getattr(bonus, "pos_x", 0.0)), 4),
-                "pos_y": round(float(getattr(bonus, "pos_y", 0.0)), 4),
-                "time_left": round(float(getattr(bonus, "time_left", 0.0)), 4),
-                "picked": bool(getattr(bonus, "picked", False)),
-                "amount": int(getattr(bonus, "amount", 0)),
+                "bonus_id": int(bonus.bonus_id),
+                "pos": {"x": round(float(bonus.pos.x), 4), "y": round(float(bonus.pos.y), 4)},
+                "time_left": round(float(bonus.time_left), 4),
+                "picked": bool(bonus.picked),
+                "amount": int(bonus.amount),
             }
             for bonus in state.bonus_pool.iter_active()
         ],
@@ -288,12 +287,10 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
             if not isinstance(p, dict):
                 raise ReplayCheckpointsError(f"checkpoint player must be an object: {p!r}")
             pos_raw = p.get("pos")
-            if isinstance(pos_raw, dict):
-                px = float(pos_raw.get("x", 0.0))
-                py = float(pos_raw.get("y", 0.0))
-            else:
-                px = float(p.get("pos_x", 0.0))
-                py = float(p.get("pos_y", 0.0))
+            if not isinstance(pos_raw, dict):
+                raise ReplayCheckpointsError("checkpoint player pos must be an object")
+            px = float(pos_raw.get("x", 0.0))
+            py = float(pos_raw.get("y", 0.0))
             players.append(
                 ReplayPlayerCheckpoint(
                     pos=Vec2(px, py),

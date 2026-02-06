@@ -87,8 +87,7 @@ class CameraShakeView:
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1)
-        self._world.state.camera_shake_offset_x = 0.0
-        self._world.state.camera_shake_offset_y = 0.0
+        self._world.state.camera_shake_offset = Vec2()
         self._world.state.camera_shake_timer = 0.0
         self._world.state.camera_shake_pulses = 0
 
@@ -145,16 +144,10 @@ class CameraShakeView:
             self._world.state.bonuses.reflex_boost = 9999.0 if self._reflex_boost_locked else 0.0
 
     def _build_input(self) -> PlayerInput:
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         mouse = rl.get_mouse_position()
         aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
@@ -164,8 +157,7 @@ class CameraShakeView:
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
+            move=move,
             aim=aim,
             fire_down=bool(fire_down),
             fire_pressed=bool(fire_pressed),
@@ -190,7 +182,7 @@ class CameraShakeView:
         lines = [
             "WASD move  N: nuke shake  T: toggle reflex-boost shake-rate  R: reset  Esc: exit",
             f"camera_offset=({cam_x:.1f},{cam_y:.1f})  camera_raw=({self._world.camera_x:.1f},{self._world.camera_y:.1f})",
-            f"shake_offset=({state.camera_shake_offset_x:.1f},{state.camera_shake_offset_y:.1f})  "
+            f"shake_offset=({state.camera_shake_offset.x:.1f},{state.camera_shake_offset.y:.1f})  "
             f"shake_timer={state.camera_shake_timer:.3f}  pulses={state.camera_shake_pulses}",
             f"reflex_boost={state.bonuses.reflex_boost:.2f}  creatures_alive={len(self._world.creatures.iter_active())}",
         ]

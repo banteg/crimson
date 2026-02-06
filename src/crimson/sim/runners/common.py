@@ -70,15 +70,13 @@ def reset_players(
     *,
     world_size: float,
     player_count: int,
-    spawn_x: float | None = None,
-    spawn_y: float | None = None,
+    spawn_pos: Vec2 | None = None,
 ) -> None:
     """Reset `players` to the classic initial layout used by `GameWorld.reset`."""
 
     players.clear()
 
-    base_x = float(world_size) * 0.5 if spawn_x is None else float(spawn_x)
-    base_y = float(world_size) * 0.5 if spawn_y is None else float(spawn_y)
+    base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
     count = max(1, int(player_count))
     if count <= 1:
         offsets = [(0.0, 0.0)]
@@ -89,8 +87,8 @@ def reset_players(
 
     for idx in range(count):
         offset_x, offset_y = offsets[idx]
-        x = base_x + float(offset_x)
-        y = base_y + float(offset_y)
+        x = float(base.x) + float(offset_x)
+        y = float(base.y) + float(offset_y)
         x = max(0.0, min(float(world_size), x))
         y = max(0.0, min(float(world_size), y))
         player = PlayerState(index=idx, pos=Vec2(x, y))

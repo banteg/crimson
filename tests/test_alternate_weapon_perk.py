@@ -15,8 +15,8 @@ def test_alternate_weapon_slows_movement() -> None:
     perk = PlayerState(index=0, pos=Vec2(0.0, 0.0), move_speed=2.0)
     perk.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
-    player_update(base, PlayerInput(move_x=1.0), dt=1.0, state=state)
-    player_update(perk, PlayerInput(move_x=1.0), dt=1.0, state=state)
+    player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
+    player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
 
     assert base.pos.x == pytest.approx(100.0)
     assert perk.pos.x == pytest.approx(80.0)

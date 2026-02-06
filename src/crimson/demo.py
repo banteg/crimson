@@ -752,8 +752,7 @@ class DemoView:
 
             inputs.append(
                 PlayerInput(
-                    move_x=move.x,
-                    move_y=move.y,
+                    move=Vec2(move.x, move.y),
                     aim=aim,
                     fire_down=auto_fire,
                     fire_pressed=auto_fire,

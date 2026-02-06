@@ -116,6 +116,14 @@ def _rng_zero() -> int:
 CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
 
 
+@dataclass(frozen=True, slots=True)
+class ProjectileHit:
+    type_id: int
+    origin: Vec2
+    hit: Vec2
+    target: Vec2
+
+
 @dataclass(slots=True)
 class Projectile:
     active: bool = False
@@ -391,10 +399,8 @@ class _ProjectileHitInfo:
     proj_index: int
     proj: Projectile
     hit_idx: int
-    move_dx: float
-    move_dy: float
-    target_x: float
-    target_y: float
+    move: Vec2
+    target: Vec2
 
 
 @dataclass(slots=True)
@@ -647,7 +653,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
 
 def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    creature.pos = creature.pos + Vec2(hit.move_dx * 3.0, hit.move_dy * 3.0)
+    creature.pos = creature.pos + hit.move * 3.0
 
 
 def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
@@ -772,12 +778,10 @@ class ProjectilePool:
         players: list[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
-    ) -> list[tuple[int, float, float, float, float, float, float]]:
+    ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
-
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
@@ -829,7 +833,7 @@ class ProjectilePool:
             effects = runtime_state.effects
             sfx_queue = runtime_state.sfx_queue
 
-        hits: list[tuple[int, float, float, float, float, float, float]] = []
+        hits: list[ProjectileHit] = []
         margin = 64.0
 
         def _damage_scale(type_id: int) -> float:
@@ -909,9 +913,8 @@ class ProjectilePool:
                 acc_y += dir_y * dt * 20.0 * proj.speed_scale * 3.0
 
                 if math.hypot(acc_x, acc_y) >= 4.0 or steps <= step + 3:
-                    move_dx = acc_x
-                    move_dy = acc_y
-                    proj.pos = proj.pos + Vec2(move_dx, move_dy)
+                    move = Vec2(acc_x, acc_y)
+                    proj.pos = proj.pos + move
                     acc_x = 0.0
                     acc_y = 0.0
 
@@ -962,13 +965,16 @@ class ProjectilePool:
                                 continue
 
                             type_id = proj.type_id
-                            hit_x = proj.pos.x
-                            hit_y = proj.pos.y
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            target_x = player.pos.x
-                            target_y = player.pos.y
-                            hits.append((type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, target_x, target_y))
+                            hits.append(
+                                ProjectileHit(
+                                    type_id=int(type_id),
+                                    origin=proj.origin,
+                                    hit=proj.pos,
+                                    target=player.pos,
+                                )
+                            )
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
@@ -1006,11 +1012,15 @@ class ProjectilePool:
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
-                    hit_x = proj.pos.x
-                    hit_y = proj.pos.y
-                    target_x = creature.pos.x
-                    target_y = creature.pos.y
-                    hits.append((type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, target_x, target_y))
+                    target = creature.pos
+                    hits.append(
+                        ProjectileHit(
+                            type_id=int(type_id),
+                            origin=proj.origin,
+                            hit=proj.pos,
+                            target=target,
+                        )
+                    )
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -1032,10 +1042,8 @@ class ProjectilePool:
                                 proj_index=int(proj_index),
                                 proj=proj,
                                 hit_idx=int(hit_idx),
-                                move_dx=float(move_dx),
-                                move_dy=float(move_dy),
-                                target_x=float(target_x),
-                                target_y=float(target_y),
+                                move=move,
+                                target=target,
                             ),
                         )
 
@@ -1098,16 +1106,14 @@ class ProjectilePool:
         world_size: float,
         speed_by_type: dict[int, float],
         damage_by_type: dict[int, float],
-    ) -> list[tuple[int, float, float, float, float, float, float]]:
+    ) -> list[ProjectileHit]:
         """Update a small projectile subset for the demo view.
-
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
             return []
 
-        hits: list[tuple[int, float, float, float, float, float, float]] = []
+        hits: list[ProjectileHit] = []
         margin = 64.0
 
         for proj in self._entries:
@@ -1172,10 +1178,15 @@ class ProjectilePool:
             if hit_idx is None:
                 continue
 
-            hit_x = proj.pos.x
-            hit_y = proj.pos.y
             creature = creatures[hit_idx]
-            hits.append((proj.type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, creature.pos.x, creature.pos.y))
+            hits.append(
+                ProjectileHit(
+                    type_id=int(proj.type_id),
+                    origin=proj.origin,
+                    hit=proj.pos,
+                    target=creature.pos,
+                )
+            )
 
             creature = creatures[hit_idx]
             creature.hp -= damage_by_type.get(proj.type_id, 10.0)
@@ -1409,14 +1420,16 @@ class SecondaryProjectilePool:
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
             entry.trail_timer -= (abs(float(entry.vel_x)) + abs(float(entry.vel_y))) * dt * 0.01
             if entry.trail_timer < 0.0:
-                dir_x = math.cos(float(entry.angle) - math.pi / 2.0)
-                dir_y = math.sin(float(entry.angle) - math.pi / 2.0)
-                spawn_x = entry.pos.x - dir_x * 9.0
-                spawn_y = entry.pos.y - dir_y * 9.0
-                vel_x = math.cos(float(entry.angle) + math.pi / 2.0) * 90.0
-                vel_y = math.sin(float(entry.angle) + math.pi / 2.0) * 90.0
+                direction = Vec2.from_angle(float(entry.angle) - math.pi / 2.0)
+                spawn_pos = entry.pos - direction * 9.0
+                trail_velocity = Vec2.from_angle(float(entry.angle) + math.pi / 2.0) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                    sprite_id = sprite_effects.spawn(pos=Vec2(spawn_x, spawn_y), vel_x=vel_x, vel_y=vel_y, scale=14.0)
+                    sprite_id = sprite_effects.spawn(
+                        pos=spawn_pos,
+                        vel_x=trail_velocity.x,
+                        vel_y=trail_velocity.y,
+                        scale=14.0,
+                    )
                     try:
                         sprite_effects.entries[int(sprite_id)].color_a = 0.25
                     except Exception:

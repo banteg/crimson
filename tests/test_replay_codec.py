@@ -37,15 +37,15 @@ def test_replay_codec_roundtrip() -> None:
     rec = ReplayRecorder(header)
     rec.record_tick(
         [
-            PlayerInput(move_x=1.0, aim=Vec2(10.25, 20.5), fire_down=True),
-            PlayerInput(move_y=-1.0, aim=Vec2(99.0, 42.75), reload_pressed=True),
+            PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(10.25, 20.5), fire_down=True),
+            PlayerInput(move=Vec2(0.0, -1.0), aim=Vec2(99.0, 42.75), reload_pressed=True),
         ]
     )
     rec.record_perk_pick(player_index=0, choice_index=2, tick_index=1)
     rec.record_tick(
         [
-            PlayerInput(move_x=0.0, move_y=0.0, aim=Vec2(11.0, 21.0), fire_pressed=True),
-            PlayerInput(move_x=-1.0, move_y=0.0, aim=Vec2(100.0, 43.0)),
+            PlayerInput(move=Vec2(0.0, 0.0), aim=Vec2(11.0, 21.0), fire_pressed=True),
+            PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(100.0, 43.0)),
         ]
     )
     replay = rec.finish()
@@ -96,7 +96,7 @@ def test_replay_codec_rejects_negative_event_tick_index() -> None:
 def test_replay_dump_is_stable() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)
-    rec.record_tick([PlayerInput(move_x=1.0, aim=Vec2(123.0, 456.0))])
+    rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
 
     assert dump_replay(replay) == dump_replay(replay)
@@ -105,7 +105,7 @@ def test_replay_dump_is_stable() -> None:
 def test_replay_load_accepts_plain_json_bytes() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)
-    rec.record_tick([PlayerInput(move_x=1.0, aim=Vec2(123.0, 456.0))])
+    rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
 
     blob = dump_replay(replay)

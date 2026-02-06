@@ -128,8 +128,7 @@ class GameWorld:
         *,
         seed: int = 0xBEEF,
         player_count: int = 1,
-        spawn_x: float | None = None,
-        spawn_y: float | None = None,
+        spawn_pos: Vec2 | None = None,
     ) -> None:
         self.world_state = WorldState.build(
             world_size=float(self.world_size),
@@ -149,8 +148,7 @@ class GameWorld:
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
-        base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
-        base_y = float(self.world_size) * 0.5 if spawn_y is None else float(spawn_y)
+        base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
         count = max(1, int(player_count))
         if count <= 1:
             offsets = [(0.0, 0.0)]
@@ -163,8 +161,8 @@ class GameWorld:
 
         for idx in range(count):
             offset_x, offset_y = offsets[idx]
-            x = base_x + float(offset_x)
-            y = base_y + float(offset_y)
+            x = float(base.x) + float(offset_x)
+            y = float(base.y) + float(offset_y)
             x = max(0.0, min(float(self.world_size), x))
             y = max(0.0, min(float(self.world_size), y))
             player = PlayerState(index=idx, pos=Vec2(x, y))
@@ -514,10 +512,10 @@ class GameWorld:
         freeze_active = self.state.bonuses.freeze > 0.0
         bloody = bool(self.players) and perk_active(self.players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
 
-        for type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y in hits:
-            type_id = int(type_id)
+        for hit in hits:
+            type_id = int(hit.type_id)
 
-            base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
+            base_angle = (hit.hit - hit.origin).to_angle()
 
             # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
             if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
@@ -530,7 +528,7 @@ class GameWorld:
                     if dist > 7.0:
                         dist = float(int(rand()) % 0x50 + 0x14) * 0.1
                     self.fx_queue.add_random(
-                        pos=Vec2(float(target_x) + dir_x * dist * 20.0, float(target_y) + dir_y * dist * 20.0),
+                        pos=hit.target + Vec2(dir_x, dir_y) * (dist * 20.0),
                         rand=rand,
                     )
             elif type_id in ION_TYPES:
@@ -541,17 +539,17 @@ class GameWorld:
                     angle = base_angle + spread
                     dir_x = math.cos(angle) * 20.0
                     dir_y = math.sin(angle) * 20.0
-                    self.fx_queue.add_random(pos=Vec2(float(target_x), float(target_y)), rand=rand)
+                    self.fx_queue.add_random(pos=hit.target, rand=rand)
                     self.fx_queue.add_random(
-                        pos=Vec2(float(target_x) + dir_x * 1.5, float(target_y) + dir_y * 1.5),
+                        pos=hit.target + Vec2(dir_x, dir_y) * 1.5,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos=Vec2(float(target_x) + dir_x * 2.0, float(target_y) + dir_y * 2.0),
+                        pos=hit.target + Vec2(dir_x, dir_y) * 2.0,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos=Vec2(float(target_x) + dir_x * 2.5, float(target_y) + dir_y * 2.5),
+                        pos=hit.target + Vec2(dir_x, dir_y) * 2.5,
                         rand=rand,
                     )
 
@@ -564,7 +562,7 @@ class GameWorld:
                         dx = float(int(rand()) % span + lo)
                         dy = float(int(rand()) % span + lo)
                         self.fx_queue.add_random(
-                            pos=Vec2(float(target_x) + dx, float(target_y) + dy),
+                            pos=hit.target + Vec2(dx, dy),
                             rand=rand,
                         )
                     lo -= 10
@@ -576,7 +574,7 @@ class GameWorld:
                 for _ in range(8):
                     spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
                     self.state.effects.spawn_blood_splatter(
-                        pos=Vec2(float(hit_x), float(hit_y)),
+                        pos=hit.hit,
                         angle=base_angle + spread,
                         age=0.0,
                         rand=rand,
@@ -584,7 +582,7 @@ class GameWorld:
                         fx_toggle=fx_toggle,
                     )
                 self.state.effects.spawn_blood_splatter(
-                    pos=Vec2(float(hit_x), float(hit_y)),
+                    pos=hit.hit,
                     angle=base_angle + math.pi,
                     age=0.0,
                     rand=rand,
@@ -598,7 +596,7 @@ class GameWorld:
 
             for _ in range(2):
                 self.state.effects.spawn_blood_splatter(
-                    pos=Vec2(float(hit_x), float(hit_y)),
+                    pos=hit.hit,
                     angle=base_angle,
                     age=0.0,
                     rand=rand,
@@ -607,7 +605,7 @@ class GameWorld:
                 )
                 if (int(rand()) & 7) == 2:
                     self.state.effects.spawn_blood_splatter(
-                        pos=Vec2(float(hit_x), float(hit_y)),
+                        pos=hit.hit,
                         angle=base_angle + math.pi,
                         age=0.0,
                         rand=rand,
@@ -654,8 +652,8 @@ class GameWorld:
             cam_x = self.camera_x
             cam_y = self.camera_y
 
-        cam_x += self.state.camera_shake_offset_x
-        cam_y += self.state.camera_shake_offset_y
+        cam_x += self.state.camera_shake_offset.x
+        cam_y += self.state.camera_shake_offset.y
 
         self.camera_x, self.camera_y = self.renderer._clamp_camera(cam_x, cam_y, screen_w, screen_h)
 

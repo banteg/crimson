@@ -594,24 +594,17 @@ class LightingDebugView:
         if self._player is not None:
             self._player.aim = aim
 
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         dt_world = dt_frame if self._simulate else 0.0
         self._world.update(
             dt_world,
             inputs=[
                 PlayerInput(
-                    move_x=move_x,
-                    move_y=move_y,
+                    move=move,
                     aim=aim,
                     fire_down=False,
                     fire_pressed=False,

@@ -25,28 +25,24 @@ class _Creature:
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
     state = GameplayState()
     state.camera_shake_timer = 0.0
-    state.camera_shake_offset_x = 5.0
-    state.camera_shake_offset_y = -3.0
+    state.camera_shake_offset = Vec2(5.0, -3.0)
 
     camera_shake_update(state, 0.016)
 
-    assert state.camera_shake_offset_x == 0.0
-    assert state.camera_shake_offset_y == 0.0
+    assert state.camera_shake_offset == Vec2()
 
 
 def test_camera_shake_update_decays_timer_without_pulse() -> None:
     state = GameplayState()
     state.camera_shake_timer = 1.0
     state.camera_shake_pulses = 10
-    state.camera_shake_offset_x = 7.0
-    state.camera_shake_offset_y = -9.0
+    state.camera_shake_offset = Vec2(7.0, -9.0)
 
     camera_shake_update(state, 0.1)
 
     assert math.isclose(state.camera_shake_timer, 0.7, abs_tol=1e-9)
     assert state.camera_shake_pulses == 10
-    assert state.camera_shake_offset_x == 7.0
-    assert state.camera_shake_offset_y == -9.0
+    assert state.camera_shake_offset == Vec2(7.0, -9.0)
 
 
 def test_camera_shake_update_matches_decompile_first_pulse() -> None:
@@ -59,8 +55,7 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
 
     assert state.camera_shake_pulses == 0x13
     assert math.isclose(state.camera_shake_timer, 0.1, abs_tol=1e-9)
-    assert state.camera_shake_offset_x == 28.0
-    assert state.camera_shake_offset_y == -32.0
+    assert state.camera_shake_offset == Vec2(28.0, -32.0)
 
 
 def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
@@ -79,20 +74,17 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
     state = GameplayState()
     state.camera_shake_pulses = 1
     state.camera_shake_timer = 0.01
-    state.camera_shake_offset_x = 11.0
-    state.camera_shake_offset_y = -13.0
+    state.camera_shake_offset = Vec2(11.0, -13.0)
 
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 0
     assert math.isclose(state.camera_shake_timer, 0.0, abs_tol=1e-9)
-    assert state.camera_shake_offset_x == 11.0
-    assert state.camera_shake_offset_y == -13.0
+    assert state.camera_shake_offset == Vec2(11.0, -13.0)
 
     camera_shake_update(state, 0.1)
 
-    assert state.camera_shake_offset_x == 0.0
-    assert state.camera_shake_offset_y == 0.0
+    assert state.camera_shake_offset == Vec2()
 
 
 def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:

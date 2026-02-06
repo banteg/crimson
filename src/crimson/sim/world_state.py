@@ -26,9 +26,8 @@ from ..gameplay import (
 )
 from ..perks import PerkId
 from ..player_damage import player_take_projectile_damage
+from ..projectiles import ProjectileHit
 from .world_defs import CREATURE_ANIM
-
-ProjectileHit = tuple[int, float, float, float, float, float, float]
 
 
 @dataclass(slots=True)

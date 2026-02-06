@@ -36,10 +36,6 @@ class Vec2:
         inv_magnitude = 1.0 / math.sqrt(magnitude_sq)
         return Vec2(self.x * inv_magnitude, self.y * inv_magnitude)
 
-    def normalize_ip(self) -> Vec2:
-        # Backward-compat alias for call sites/tests that still use the old name.
-        return self.normalized()
-
     def normalized_with_length(self, *, epsilon: float = 1e-6) -> tuple[Vec2, float]:
         magnitude = self.length()
         if magnitude <= epsilon:

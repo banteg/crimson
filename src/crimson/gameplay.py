@@ -48,8 +48,7 @@ class _CreatureForPerks(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class PlayerInput:
-    move_x: float = 0.0
-    move_y: float = 0.0
+    move: Vec2 = field(default_factory=Vec2)
     aim: Vec2 = field(default_factory=Vec2)
     fire_down: bool = False
     fire_pressed: bool = False
@@ -77,8 +76,7 @@ class PlayerState:
 
     aim: Vec2 = field(default_factory=Vec2)
     aim_heading: float = 0.0
-    aim_dir_x: float = 1.0
-    aim_dir_y: float = 0.0
+    aim_dir: Vec2 = field(default_factory=lambda: Vec2(1.0, 0.0))
     evil_eyes_target_creature: int = -1
 
     bonus_aim_hover_index: int = -1
@@ -568,8 +566,7 @@ class GameplayState:
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    camera_shake_offset_x: float = 0.0
-    camera_shake_offset_y: float = 0.0
+    camera_shake_offset: Vec2 = field(default_factory=Vec2)
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
@@ -1888,8 +1885,6 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
 
     aim_heading = float(player.aim_heading)
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
-    muzzle_x = muzzle.x
-    muzzle_y = muzzle.y
 
     aim = player.aim
     dist = (aim - player.pos).length()
@@ -1902,16 +1897,14 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     _projectile_spawn(
         state,
         players=[player],
-        pos=Vec2(muzzle_x, muzzle_y),
+        pos=muzzle,
         angle=angle,
         type_id=ProjectileTypeId.FIRE_BULLETS,
         owner_id=owner_id,
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0
-    vel_x = vel.x
-    vel_y = vel.y
-    sprite_id = state.sprite_effects.spawn(pos=Vec2(muzzle_x, muzzle_y), vel_x=vel_x, vel_y=vel_y, scale=1.0)
+    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel_x=vel.x, vel_y=vel.y, scale=1.0)
     sprite = state.sprite_effects.entries[int(sprite_id)]
     sprite.color_r = 0.5
     sprite.color_g = 0.5
@@ -2050,10 +2043,8 @@ def player_fire_weapon(
     aim_heading = aim_delta.to_heading()
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
-    muzzle_x = muzzle.x
-    muzzle_y = muzzle.y
     state.effects.spawn_shell_casing(
-        pos=Vec2(muzzle_x, muzzle_y),
+        pos=muzzle,
         aim_heading=aim_heading,
         weapon_flags=int(weapon.flags or 0),
         rand=state.rng.rand,
@@ -2093,7 +2084,7 @@ def player_fire_weapon(
         for _ in range(pellets):
             angle = shot_angle + float(int(state.rng.rand()) % 200 - 100) * 0.0015
             state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
                 owner_id=owner_id,
@@ -2102,7 +2093,7 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
         # Rocket Launcher -> secondary type 1.
         state.secondary_projectiles.spawn(
-            pos=Vec2(muzzle_x, muzzle_y),
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET,
             owner_id=owner_id,
@@ -2110,7 +2101,7 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
         state.secondary_projectiles.spawn(
-            pos=Vec2(muzzle_x, muzzle_y),
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
             owner_id=owner_id,
@@ -2123,7 +2114,7 @@ def player_fire_weapon(
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
         for _ in range(rocket_count):
             state.secondary_projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=angle,
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
                 owner_id=owner_id,
@@ -2135,29 +2126,29 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.ROCKET_MINIGUN:
         # Rocket Minigun -> secondary type 4.
         state.secondary_projectiles.spawn(
-            pos=Vec2(muzzle_x, muzzle_y),
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
             owner_id=owner_id,
         )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(
-            pos=Vec2(muzzle_x, muzzle_y),
+            pos=muzzle,
             angle=Vec2.from_heading(shot_angle).to_angle(),
             owner_id=owner_id,
         )
@@ -2178,7 +2169,7 @@ def player_fire_weapon(
         )
         for angle_offset, type_id in patterns:
             state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
                 owner_id=owner_id,
@@ -2192,7 +2183,7 @@ def player_fire_weapon(
         for _ in range(14):
             jitter = float((int(state.rng.rand()) & 0xFF) - 0x80) * 0.002
             proj_id = state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
                 owner_id=owner_id,
@@ -2207,7 +2198,7 @@ def player_fire_weapon(
         for _ in range(6):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.002
             proj_id = state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
                 owner_id=owner_id,
@@ -2222,7 +2213,7 @@ def player_fire_weapon(
         for _ in range(8):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.0026
             proj_id = state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
                 owner_id=owner_id,
@@ -2242,7 +2233,7 @@ def player_fire_weapon(
             if pellets > 1:
                 angle += float(int(state.rng.rand()) % 200 - 100) * jitter_step
             proj_id = state.projectiles.spawn(
-                pos=Vec2(muzzle_x, muzzle_y),
+                pos=muzzle,
                 angle=angle,
                 type_id=type_id,
                 owner_id=owner_id,
@@ -2316,23 +2307,20 @@ def player_update(
     player.aim = input_state.aim
     aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
-        player.aim_dir_x = aim_dir.x
-        player.aim_dir_y = aim_dir.y
+        player.aim_dir = aim_dir
         player.aim_heading = aim_dir.to_heading()
 
     # Movement.
-    raw_move_x = float(input_state.move_x)
-    raw_move_y = float(input_state.move_y)
-    raw_mag = math.hypot(raw_move_x, raw_move_y)
+    raw_move = input_state.move
+    raw_mag = raw_move.length()
     # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
     # heading alignment slowdown; don't apply a deadzone there.
     moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
 
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-        move_x = raw_move_x * inv
-        move_y = raw_move_y * inv
-        player.heading = Vec2(move_x, move_y).to_heading()
+        move = raw_move * inv
+        player.heading = move.to_heading()
         if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
             if player.move_speed < 2.0:
                 player.move_speed = float(player.move_speed + dt * 4.0)
@@ -2348,8 +2336,6 @@ def player_update(
         if player.move_speed < 0.0:
             player.move_speed = 0.0
         move = Vec2.from_heading(player.heading)
-        move_x = move.x
-        move_y = move.y
 
     if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
         player.move_speed = 0.8
@@ -2364,7 +2350,7 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
-    player.pos = (player.pos + Vec2(move_x, move_y) * (speed * dt)).clamp_rect(
+    player.pos = (player.pos + move * (speed * dt)).clamp_rect(
         0.0,
         0.0,
         float(world_size),

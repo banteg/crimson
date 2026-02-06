@@ -142,7 +142,7 @@ class ArsenalDebugView:
         weapon_assign_player(self._player, self._selected_weapon_id())
 
     def _reset_scene(self) -> None:
-        self._world.reset(seed=0xBEEF, player_count=1, spawn_x=WORLD_SIZE * 0.5, spawn_y=WORLD_SIZE * 0.5)
+        self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._player = self._world.players[0] if self._world.players else None
         self._apply_weapon()
         self._reset_creatures()
@@ -246,16 +246,10 @@ class ArsenalDebugView:
             self._screenshot_requested = True
 
     def _build_input(self) -> PlayerInput:
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         mouse = rl.get_mouse_position()
         aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
@@ -265,8 +259,7 @@ class ArsenalDebugView:
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
+            move=move,
             aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,

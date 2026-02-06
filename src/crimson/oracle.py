@@ -44,8 +44,7 @@ class FrameInput:
     """Input for a single frame."""
 
     frame: int
-    move_x: float = 0.0
-    move_y: float = 0.0
+    move: Vec2 = field(default_factory=Vec2)
     aim: Vec2 = field(default_factory=Vec2)
     fire_down: bool = False
     fire_pressed: bool = False
@@ -68,15 +67,13 @@ def load_inputs(path: Path) -> list[FrameInput]:
     inputs: list[FrameInput] = []
     for entry in data.get("frames", []):
         raw_aim = entry.get("aim", [0.0, 0.0])
-        aim = raw_aim if isinstance(raw_aim, list) else [0.0, 0.0]
-        aim_x = float(aim[0]) if len(aim) > 0 else 0.0
-        aim_y = float(aim[1]) if len(aim) > 1 else 0.0
+        if not isinstance(raw_aim, list) or len(raw_aim) != 2:
+            raise ValueError(f"frame {entry.get('frame', 0)} has invalid aim payload: expected [x, y]")
         inputs.append(
             FrameInput(
                 frame=int(entry.get("frame", 0)),
-                move_x=float(entry.get("move_x", 0.0)),
-                move_y=float(entry.get("move_y", 0.0)),
-                aim=Vec2(aim_x, aim_y),
+                move=Vec2(float(entry.get("move_x", 0.0)), float(entry.get("move_y", 0.0))),
+                aim=Vec2(float(raw_aim[0]), float(raw_aim[1])),
                 fire_down=bool(entry.get("fire_down", False)),
                 fire_pressed=bool(entry.get("fire_pressed", False)),
                 reload_pressed=bool(entry.get("reload_pressed", False)),
@@ -89,8 +86,7 @@ def export_player_state(player: PlayerState) -> dict[str, Any]:
     """Export player state to JSON-serializable dict."""
     return {
         "index": int(player.index),
-        "pos_x": round(float(player.pos.x), 4),
-        "pos_y": round(float(player.pos.y), 4),
+        "pos": {"x": round(float(player.pos.x), 4), "y": round(float(player.pos.y), 4)},
         "health": round(float(player.health), 4),
         "weapon_id": int(player.weapon_id),
         "ammo": round(float(player.ammo), 4),
@@ -118,8 +114,7 @@ def export_bonus_state(bonus: Any) -> dict[str, Any]:
     """Export bonus state to JSON-serializable dict."""
     return {
         "bonus_id": int(bonus.bonus_id),
-        "pos_x": round(float(bonus.pos.x), 4),
-        "pos_y": round(float(bonus.pos.y), 4),
+        "pos": {"x": round(float(bonus.pos.x), 4), "y": round(float(bonus.pos.y), 4)},
         "time_left": round(float(bonus.time_left), 4),
         "picked": bool(bonus.picked),
     }
@@ -205,8 +200,7 @@ def export_game_state_summary(
         "creature_count": creature_count,
         "players": [
             {
-                "pos_x": round(float(p.pos.x), 2),
-                "pos_y": round(float(p.pos.y), 2),
+                "pos": {"x": round(float(p.pos.x), 2), "y": round(float(p.pos.y), 2)},
                 "health": round(float(p.health), 2),
                 "weapon_id": int(p.weapon_id),
                 "level": int(p.level),
@@ -336,8 +330,7 @@ def run_headless(config: OracleConfig) -> None:
         # Convert to PlayerInput
         player_inputs = [
             PlayerInput(
-                move_x=current_input.move_x,
-                move_y=current_input.move_y,
+                move=current_input.move,
                 aim=current_input.aim,
                 fire_down=current_input.fire_down,
                 fire_pressed=current_input.fire_pressed,

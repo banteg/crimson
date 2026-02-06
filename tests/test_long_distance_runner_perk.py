@@ -12,7 +12,7 @@ def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
     dt = 0.1
     steps = 12  # reaches move_speed cap (2.8)
 
-    input_state = PlayerInput(move_x=1.0, move_y=0.0, aim=Vec2(101.0, 100.0))
+    input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
 
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos=Vec2(100.0, 100.0))

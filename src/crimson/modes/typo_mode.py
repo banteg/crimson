@@ -77,8 +77,7 @@ class TypoShooterMode(BaseGameplayMode):
         self._typo = _TypoState()
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(0)
-        self._aim_target_x = 0.0
-        self._aim_target_y = 0.0
+        self._aim_target = Vec2()
         self._unique_words: list[str] | None = None
 
         self._ui_assets = None
@@ -99,8 +98,7 @@ class TypoShooterMode(BaseGameplayMode):
             if words:
                 self._unique_words = words
 
-        self._aim_target_x = float(self._player.pos.x) + 128.0
-        self._aim_target_y = float(self._player.pos.y)
+        self._aim_target = self._player.pos + Vec2(128.0, 0.0)
 
         enforce_typo_player_frame(self._player)
 
@@ -166,8 +164,7 @@ class TypoShooterMode(BaseGameplayMode):
                 if 0 <= target_idx < len(self._creatures.entries):
                     creature = self._creatures.entries[target_idx]
                     if creature.active:
-                        self._aim_target_x = float(creature.pos.x)
-                        self._aim_target_y = float(creature.pos.y)
+                        self._aim_target = creature.pos
                 fire_pressed = True
             if result.reload_requested:
                 reload_pressed = True
@@ -258,7 +255,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         enforce_typo_player_frame(self._player)
         input_state = build_typo_player_input(
-            aim=Vec2(float(self._aim_target_x), float(self._aim_target_y)),
+            aim=self._aim_target,
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )

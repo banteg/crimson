@@ -223,28 +223,20 @@ class PlayerSandboxView:
         self._camera_y = _lerp(self._camera_y, desired_y, t)
 
     def _build_input(self) -> PlayerInput:
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         mouse = rl.get_mouse_position()
-        aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
-        aim = Vec2(aim_x, aim_y)
+        aim = Vec2(*self._camera_screen_to_world(float(mouse.x), float(mouse.y)))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
+            move=move,
             aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
@@ -324,8 +316,8 @@ class PlayerSandboxView:
         rl.draw_circle_lines(int(px), int(py), 14.0, rl.Color(40, 80, 50, 255))
 
         aim_len = 42.0
-        ax = px + self._player.aim_dir_x * aim_len
-        ay = py + self._player.aim_dir_y * aim_len
+        ax = px + self._player.aim_dir.x * aim_len
+        ay = py + self._player.aim_dir.y * aim_len
         rl.draw_line(int(px), int(py), int(ax), int(ay), rl.Color(240, 240, 240, 255))
 
         hud_bottom = 0.0

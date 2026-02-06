@@ -44,8 +44,8 @@ class ReplayRecorder:
         quant = self._header.input_quantization
         tick: list[list[float | int]] = []
         for inp in inputs:
-            mx = float(inp.move_x)
-            my = float(inp.move_y)
+            mx = float(inp.move.x)
+            my = float(inp.move.y)
             ax = float(inp.aim.x)
             ay = float(inp.aim.y)
             if quant == "f32":

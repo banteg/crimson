@@ -194,16 +194,10 @@ class RushMode(BaseGameplayMode):
             keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
         up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
 
-        move_x = 0.0
-        move_y = 0.0
-        if input_code_is_down(left_key):
-            move_x -= 1.0
-        if input_code_is_down(right_key):
-            move_x += 1.0
-        if input_code_is_down(up_key):
-            move_y -= 1.0
-        if input_code_is_down(down_key):
-            move_y += 1.0
+        move = Vec2(
+            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
+            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
+        )
 
         mouse = self._ui_mouse_pos()
         aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
@@ -212,8 +206,7 @@ class RushMode(BaseGameplayMode):
         fire_pressed = input_code_is_pressed(fire_key)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
+            move=move,
             aim=aim,
             fire_down=bool(fire_down),
             fire_pressed=bool(fire_pressed),
@@ -318,8 +311,7 @@ class RushMode(BaseGameplayMode):
         for tick_offset in range(int(ticks_to_run)):
             if tick_offset:
                 input_tick = PlayerInput(
-                    move_x=float(input_frame.move_x),
-                    move_y=float(input_frame.move_y),
+                    move=input_frame.move,
                     aim=input_frame.aim,
                     fire_down=bool(input_frame.fire_down),
                     fire_pressed=False,

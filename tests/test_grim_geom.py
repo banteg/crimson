@@ -25,10 +25,10 @@ def test_vec2_normalized_returns_unit_vector_without_mutating_original() -> None
     assert math.isclose(vec.y, 4.0, abs_tol=1e-9)
 
 
-def test_vec2_normalize_ip_returns_normalized_copy() -> None:
+def test_vec2_normalized_returns_normalized_copy() -> None:
     vec = Vec2(3.0, 4.0)
 
-    result = vec.normalize_ip()
+    result = vec.normalized()
 
     assert result is not vec
     assert math.isclose(result.x, 0.6, abs_tol=1e-9)
@@ -42,13 +42,9 @@ def test_vec2_normalization_of_zero_vector_returns_zero() -> None:
     vec = Vec2()
 
     normalized = vec.normalized()
-    result = vec.normalize_ip()
 
     assert math.isclose(normalized.x, 0.0, abs_tol=1e-9)
     assert math.isclose(normalized.y, 0.0, abs_tol=1e-9)
-    assert result is not vec
-    assert math.isclose(result.x, 0.0, abs_tol=1e-9)
-    assert math.isclose(result.y, 0.0, abs_tol=1e-9)
 
 
 def test_vec2_angle_helpers_round_trip() -> None:
