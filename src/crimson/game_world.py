@@ -71,6 +71,7 @@ class GameWorld:
     particles_texture: rl.Texture | None = field(init=False, default=None)
     bullet_texture: rl.Texture | None = field(init=False, default=None)
     bullet_trail_texture: rl.Texture | None = field(init=False, default=None)
+    arrow_texture: rl.Texture | None = field(init=False, default=None)
     bonuses_texture: rl.Texture | None = field(init=False, default=None)
     bodyset_texture: rl.Texture | None = field(init=False, default=None)
     clock_table_texture: rl.Texture | None = field(init=False, default=None)
@@ -320,6 +321,11 @@ class GameWorld:
             cache_path="load/bulletTrail.tga",
             file_path="load/bulletTrail.png",
         )
+        self.arrow_texture = self._load_texture(
+            "arrow",
+            cache_path="load/arrow.tga",
+            file_path="load/arrow.png",
+        )
         self.bonuses_texture = self._load_texture(
             "bonuses",
             cache_path="game/bonuses.jaz",
@@ -372,6 +378,7 @@ class GameWorld:
         self.particles_texture = None
         self.bullet_texture = None
         self.bullet_trail_texture = None
+        self.arrow_texture = None
         self.bonuses_texture = None
         self.wicons_texture = None
         self.bodyset_texture = None

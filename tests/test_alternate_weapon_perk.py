@@ -11,8 +11,9 @@ from crimson.perks import PerkId
 
 def test_alternate_weapon_slows_movement() -> None:
     state = GameplayState()
-    base = PlayerState(index=0, pos=Vec2(), move_speed=2.0)
-    perk = PlayerState(index=0, pos=Vec2(), move_speed=2.0)
+    move_heading = Vec2(1.0, 0.0).to_heading()
+    base = PlayerState(index=0, pos=Vec2(), move_speed=2.0, heading=move_heading)
+    perk = PlayerState(index=0, pos=Vec2(), move_speed=2.0, heading=move_heading)
     perk.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)

@@ -1,9 +1,9 @@
 from __future__ import annotations
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 
 import pyray as rl
 
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 from ..menu import (
     MENU_PANEL_HEIGHT,
@@ -42,6 +42,7 @@ class ControlsMenuView(PanelMenuView):
         self._check_off: rl.Texture2D | None = None
 
         self._config_player = 1
+        self._dirty = False
 
     def open(self) -> None:
         super().open()
@@ -51,6 +52,26 @@ class ControlsMenuView(PanelMenuView):
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._dirty = False
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if self._closing:
+            return
+        entry = self._entry
+        if entry is None or not self._entry_enabled(entry):
+            return
+        if self._update_direction_arrow_checkbox():
+            self._dirty = True
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._dirty:
+            try:
+                self._state.config.save()
+            except Exception:
+                pass
+            self._dirty = False
+        super()._begin_close_transition(action)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
@@ -58,6 +79,49 @@ class ControlsMenuView(PanelMenuView):
         missing_assets: list[str] = []
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
+
+    def _direction_arrow_enabled(self) -> bool:
+        raw = self._state.config.data.get("hud_indicators", b"\x01\x01")
+        if not isinstance(raw, (bytes, bytearray)):
+            return True
+        player_idx = max(0, min(1, int(self._config_player) - 1))
+        if player_idx >= len(raw):
+            return True
+        return bool(raw[player_idx])
+
+    def _set_direction_arrow_enabled(self, enabled: bool) -> None:
+        raw = self._state.config.data.get("hud_indicators", b"\x01\x01")
+        values = bytearray(raw) if isinstance(raw, (bytes, bytearray)) else bytearray(b"\x01\x01")
+        if len(values) < 2:
+            values.extend(b"\x01" * (2 - len(values)))
+        player_idx = max(0, min(1, int(self._config_player) - 1))
+        values[player_idx] = 1 if enabled else 0
+        self._state.config.data["hud_indicators"] = bytes(values[:2])
+
+    def _update_direction_arrow_checkbox(self) -> bool:
+        check_on = self._check_on
+        check_off = self._check_off
+        if check_on is None or check_off is None:
+            return False
+
+        panel_scale, _local_y_shift = self._menu_item_scale(0)
+        left_top_left = (
+            Vec2(self._panel_pos.x, self._panel_pos.y + self._widescreen_y_shift) + self._panel_offset * panel_scale
+        )
+
+        font = self._ensure_small_font()
+        text_scale = 1.0 * panel_scale
+        label = "Show direction arrow"
+        check_pos = Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 174.0 * panel_scale)
+        label_w = measure_small_text_width(font, label, text_scale)
+        rect_w = float(check_on.width) * panel_scale + 6.0 * panel_scale + label_w
+        rect_h = max(float(check_on.height) * panel_scale, font.cell_size * text_scale)
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
+        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
+            return True
+        return False
 
     def _draw_panel(self) -> None:
         assets = self._assets
@@ -195,7 +259,7 @@ class ControlsMenuView(PanelMenuView):
             text_color,
         )
 
-        check_tex = self._check_on
+        check_tex = self._check_on if self._direction_arrow_enabled() else self._check_off
         if check_tex is not None:
             MenuView._draw_ui_quad(
                 texture=check_tex,

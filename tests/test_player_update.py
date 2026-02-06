@@ -254,6 +254,18 @@ def test_player_update_tracks_aim_point() -> None:
     assert player.aim == Vec2(123.0, 456.0)
 
 
+def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=0.0)
+    input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
+
+    player_update(player, input_state, 0.1, state)
+
+    assert math.isclose(player.pos.x, 103.53553390593274, abs_tol=1e-9)
+    assert math.isclose(player.pos.y, 96.46446609406726, abs_tol=1e-9)
+    assert math.isclose(player.heading, math.pi / 4.0, abs_tol=1e-9)
+
+
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)

@@ -22,6 +22,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
 
     player = PlayerState(index=0, pos=Vec2())
     player.move_speed = 2.0
+    player.heading = Vec2(1.0, 0.0).to_heading()
     player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
 

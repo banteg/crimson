@@ -2332,10 +2332,14 @@ def player_update(
     # heading alignment slowdown; don't apply a deadzone there.
     moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
 
+    turn_alignment_scale = 1.0
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move = raw_move * inv
-        player.heading = move.to_heading()
+        target_heading = move.to_heading()
+        angle_diff = _player_heading_approach_target(player, target_heading, dt)
+        move = Vec2.from_heading(player.heading)
+        turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
         if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
             if player.move_speed < 2.0:
                 player.move_speed = float(player.move_speed + dt * 4.0)
@@ -2362,6 +2366,7 @@ def player_update(
     speed = player.move_speed * speed_multiplier * 25.0
     if moving_input:
         speed *= min(1.0, raw_mag)
+        speed *= turn_alignment_scale
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
@@ -2441,6 +2446,31 @@ def player_update(
         player.move_phase -= 14.0
     while player.move_phase < 0.0:
         player.move_phase += 14.0
+
+
+def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
+    """Native `player_heading_approach_target`: ease heading and return angular diff."""
+
+    heading = float(player.heading)
+    while heading < 0.0:
+        heading += math.tau
+    while heading > math.tau:
+        heading -= math.tau
+    player.heading = heading
+
+    direct = abs(float(target_heading) - heading)
+    high = float(target_heading) if heading < float(target_heading) else heading
+    low = float(target_heading) if float(target_heading) < heading else heading
+    wrapped = abs((math.tau - high) + low)
+    diff = direct if direct < wrapped else wrapped
+
+    if direct <= wrapped:
+        turn_sign = 1.0 if heading < float(target_heading) else -1.0
+    else:
+        turn_sign = 1.0 if float(target_heading) < heading else -1.0
+
+    player.heading = heading + turn_sign * dt * diff * 5.0
+    return diff
 
 
 @dataclass(slots=True)
