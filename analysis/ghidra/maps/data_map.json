@@ -3240,11 +3240,135 @@
       "type": "int"
     },
     {
+      "address": "0x0048f808",
+      "comment": "UI template pool block 0 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_00",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f8ec",
+      "comment": "Mode sentinel for ui_template_pool_block_00 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_00_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f8f0",
+      "comment": "UI template pool block 1 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_01",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f9d4",
+      "comment": "Mode sentinel for ui_template_pool_block_01 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_01_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f9d8",
+      "comment": "UI template pool block 2 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
+      "name": "ui_template_pool_block_02",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fabc",
+      "comment": "Mode sentinel for ui_template_pool_block_02 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_template_pool_block_02_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048fac0",
+      "comment": "Crimson logo UI template loaded/shaped in ui_menu_assets_init then copied into ui_sign_crimson during layout init.",
+      "name": "ui_sign_crimson_template",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048fba4",
+      "comment": "Mode sentinel for ui_sign_crimson_template (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_sign_crimson_template_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048fba8",
       "comment": "Menu UI element template loaded from ui_menuItem.jaz (used by ui_menu_assets_init).",
       "name": "ui_menu_item_element",
       "program": "crimsonland.exe",
       "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048fd78",
+      "comment": "Menu item sub-template block 1 seeded by ui_menu_template_pool_init (invoke_callback_n + ui_template_slot_ctor_noop).",
+      "name": "ui_menu_item_subtemplate_block_01",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fe60",
+      "comment": "Menu item sub-template block 2 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_02",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048ff44",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_02 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_02_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048ff48",
+      "comment": "Menu item sub-template block 3 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_03",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0049002c",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_03 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_03_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00490030",
+      "comment": "Menu item sub-template block 4 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_04",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490114",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_04 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_04_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00490118",
+      "comment": "Menu item sub-template block 5 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_05",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004901fc",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_05 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_05_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00490200",
+      "comment": "Menu item sub-template block 6 seeded by ui_menu_template_pool_init.",
+      "name": "ui_menu_item_subtemplate_block_06",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004902e4",
+      "comment": "Mode sentinel for ui_menu_item_subtemplate_block_06 (seeded to 4 by ui_menu_template_pool_init).",
+      "name": "ui_menu_item_subtemplate_block_06_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490300",

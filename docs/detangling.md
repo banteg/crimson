@@ -1382,8 +1382,10 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 ### UI template/audio init helpers (high confidence)
 
 - `FUN_00417690` -> `ui_menu_template_pool_init`
-  - Evidence: pre-initializes contiguous `ui_element_t` template blocks (`DAT_0048f808..DAT_004902e4`) and
+  - Evidence: pre-initializes contiguous UI template blocks (`0x0048f808..0x004902e4`) and
     seeds each block's mode sentinel (`= 4`) before `ui_menu_layout_init` copies from those templates.
+  - Mapping updates: `ui_template_pool_block_00..02`, `ui_sign_crimson_template`,
+    and `ui_menu_item_subtemplate_block_01..06` (+ corresponding `_mode` sentinels).
 
 - `FUN_00417a90` -> `ui_template_slot_ctor_noop`
   - Evidence: identity callback used repeatedly by `ui_menu_template_pool_init` while iterating slot arrays.

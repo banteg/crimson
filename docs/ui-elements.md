@@ -54,6 +54,14 @@ Additional adjacent globals now mapped:
 - `ui_perk_prompt_levelup_element` (`0x0048f330`) is a nested UI block loaded
   from `ui\ui_textLevelUp.jaz` and shaped during layout init.
 
+Template-pool globals (seeded in `ui_menu_template_pool_init`) are also mapped:
+
+- `ui_template_pool_block_00..02` + `_mode` sentinels (`0x0048f808..0x0048fabc`)
+- `ui_sign_crimson_template` + `ui_sign_crimson_template_mode`
+  (`0x0048fac0` / `0x0048fba4`)
+- `ui_menu_item_subtemplate_block_01..06` + `_mode` sentinels
+  (`0x0048fd78..0x004902e4`)
+
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.

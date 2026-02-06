@@ -26,7 +26,7 @@
   {
     "name": "invoke_callback_n",
     "address": "004010f0",
-    "signature": "int invoke_callback_n(int arg1, int arg2, int count, int callback)",
+    "signature": "int invoke_callback_n(void * arg1, int arg2, int count, int callback)",
     "external": false,
     "calls_total": 0,
     "calls": []

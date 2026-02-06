@@ -24,7 +24,7 @@
     "program": "crimsonland.exe",
     "address": "0x004010f0",
     "name": "invoke_callback_n",
-    "signature": "int invoke_callback_n(int arg1, int arg2, int count, int callback)",
+    "signature": "int invoke_callback_n(void *arg1, int arg2, int count, int callback)",
     "comment": "invokes callback `count` times; decompile currently shows arg1/arg2 unused in this helper"
   },
   {
