@@ -75,15 +75,27 @@ class _SpriteEffectsLike(Protocol):
 
 class ProjectileRuntimeState(Protocol):
     bonus_spawn_guard: bool
-    effects: _EffectsLike
-    sprite_effects: _SpriteEffectsLike
-    rng: _RngLike
-    bonuses: _BonusesLike
-    sfx_queue: MutableSequence[str]
     camera_shake_pulses: int
-    shots_hit: list[int]
     shock_chain_links_left: int
     shock_chain_projectile_id: int
+
+    @property
+    def effects(self) -> _EffectsLike: ...
+
+    @property
+    def sprite_effects(self) -> _SpriteEffectsLike: ...
+
+    @property
+    def rng(self) -> _RngLike: ...
+
+    @property
+    def bonuses(self) -> _BonusesLike: ...
+
+    @property
+    def sfx_queue(self) -> MutableSequence[str]: ...
+
+    @property
+    def shots_hit(self) -> MutableSequence[int]: ...
 
 
 class FxQueueLike(Protocol):

@@ -9,12 +9,13 @@ from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
-from ..creatures.runtime import CreaturePool
+from ..creatures.runtime import CreatureDeath, CreaturePool
 from ..creatures.runtime import CREATURE_HITBOX_ALIVE
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
+    BonusPickupEvent,
     GameplayState,
     PlayerInput,
     PlayerState,
@@ -33,8 +34,8 @@ from .world_defs import CREATURE_ANIM
 @dataclass(slots=True)
 class WorldEvents:
     hits: list[ProjectileHit]
-    deaths: tuple[object, ...]
-    pickups: list[object]
+    deaths: tuple[CreatureDeath, ...]
+    pickups: list[BonusPickupEvent]
     sfx: list[str]
 
 
@@ -66,7 +67,7 @@ class _PlayerDeathCtx:
     world_size: float
     detail_preset: int
     fx_queue: FxQueue
-    deaths: list[object]
+    deaths: list[CreatureDeath]
 
 
 _PlayerDeathHook = Callable[[_PlayerDeathCtx], None]
