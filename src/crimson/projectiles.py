@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import IntEnum
 import math
-from typing import Callable, Protocol
+from typing import Callable, MutableSequence, Protocol, Sequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -32,6 +32,10 @@ class PlayerDamageable(Protocol):
     perk_counts: list[int]
 
 
+class _SizeLike(Protocol):
+    size: float
+
+
 class _RngLike(Protocol):
     def rand(self) -> int: ...
 
@@ -40,13 +44,42 @@ class _BonusesLike(Protocol):
     freeze: float
 
 
+class _EffectsLike(Protocol):
+    def spawn(
+        self,
+        *,
+        effect_id: int,
+        pos: Vec2,
+        vel: Vec2,
+        rotation: float,
+        scale: float,
+        half_width: float,
+        half_height: float,
+        age: float,
+        lifetime: float,
+        flags: int,
+        color: RGBA,
+        rotation_step: float,
+        scale_step: float,
+        detail_preset: int,
+    ) -> int | None: ...
+
+    def spawn_freeze_shard(self, *, pos: Vec2, angle: float, rand: Callable[[], int], detail_preset: int) -> None: ...
+
+    def spawn_explosion_burst(self, *, pos: Vec2, scale: float, rand: Callable[[], int], detail_preset: int) -> None: ...
+
+
+class _SpriteEffectsLike(Protocol):
+    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int: ...
+
+
 class ProjectileRuntimeState(Protocol):
     bonus_spawn_guard: bool
-    effects: object
-    sprite_effects: object
+    effects: _EffectsLike
+    sprite_effects: _SpriteEffectsLike
     rng: _RngLike
     bonuses: _BonusesLike
-    sfx_queue: list[str]
+    sfx_queue: MutableSequence[str]
     camera_shake_pulses: int
     shots_hit: list[int]
     shock_chain_links_left: int
@@ -159,7 +192,7 @@ class SecondaryProjectile:
     target_hint: Vec2 = field(default_factory=Vec2)
 
 
-def _hit_radius_for(creature: Damageable) -> float:
+def _hit_radius_for(creature: _SizeLike) -> float:
     """Approximate `creature_find_in_radius`/`creatures_apply_radius_damage` sizing.
 
     The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
@@ -170,7 +203,7 @@ def _hit_radius_for(creature: Damageable) -> float:
 
 
 def _apply_damage_to_creature(
-    creatures: list[Damageable],
+    creatures: Sequence[Damageable],
     creature_index: int,
     damage: float,
     *,
@@ -256,15 +289,15 @@ def _spawn_shrinkifier_hit_effects(
 
 
 def _spawn_ion_hit_effects(
-    effects: object | None,
-    sfx_queue: object | None,
+    effects: _EffectsLike | None,
+    sfx_queue: MutableSequence[str] | None,
     *,
     type_id: int,
     pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
 ) -> None:
-    if effects is None or not hasattr(effects, "spawn"):
+    if effects is None:
         return
 
     ring_scale = 0.0
@@ -282,7 +315,7 @@ def _spawn_ion_hit_effects(
         ring_scale = 1.0
         ring_strength = 1.0
         burst_scale = 2.2
-        if isinstance(sfx_queue, list):
+        if sfx_queue is not None:
             sfx_queue.append("sfx_shockwave")
     else:
         return
@@ -341,8 +374,8 @@ def _spawn_ion_hit_effects(
 
 
 def _spawn_plasma_cannon_hit_effects(
-    effects: object | None,
-    sfx_queue: object | None,
+    effects: _EffectsLike | None,
+    sfx_queue: MutableSequence[str] | None,
     *,
     pos: Vec2,
     detail_preset: int,
@@ -356,10 +389,10 @@ def _spawn_plasma_cannon_hit_effects(
     - `FUN_0042f330(pos, 1.0, 1.0)`
     """
 
-    if effects is None or not hasattr(effects, "spawn"):
+    if effects is None:
         return
 
-    if isinstance(sfx_queue, list):
+    if sfx_queue is not None:
         sfx_queue.append("sfx_explosion_medium")
         sfx_queue.append("sfx_shockwave")
 
@@ -388,7 +421,7 @@ def _spawn_plasma_cannon_hit_effects(
 
 
 def _spawn_splitter_hit_effects(
-    effects: object | None,
+    effects: _EffectsLike | None,
     *,
     pos: Vec2,
     rng: Callable[[], int],
@@ -396,7 +429,7 @@ def _spawn_splitter_hit_effects(
 ) -> None:
     """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
 
-    if effects is None or not hasattr(effects, "spawn"):
+    if effects is None:
         return
 
     detail = int(detail_preset)
@@ -428,14 +461,14 @@ def _spawn_splitter_hit_effects(
 @dataclass(slots=True)
 class _ProjectileUpdateCtx:
     pool: ProjectilePool
-    creatures: list[Damageable]
+    creatures: Sequence[Damageable]
     dt: float
     ion_scale: float
     detail_preset: int
     rng: Callable[[], int]
     runtime_state: ProjectileRuntimeState | None
-    effects: object | None
-    sfx_queue: object | None
+    effects: _EffectsLike | None
+    sfx_queue: MutableSequence[str] | None
     apply_creature_damage: CreatureDamageApplier | None
 
 
@@ -815,7 +848,7 @@ class ProjectilePool:
     def update(
         self,
         dt: float,
-        creatures: list[Damageable],
+        creatures: Sequence[Damageable],
         *,
         world_size: float,
         damage_scale_by_type: dict[int, float] | None = None,
@@ -824,7 +857,7 @@ class ProjectilePool:
         detail_preset: int = 5,
         rng: Callable[[], int] | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
-        players: list[PlayerDamageable] | None = None,
+        players: Sequence[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
     ) -> list[ProjectileHit]:
@@ -876,8 +909,8 @@ class ProjectilePool:
         if rng is None:
             rng = _rng_zero
 
-        effects = None
-        sfx_queue = None
+        effects: _EffectsLike | None = None
+        sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:
             effects = runtime_state.effects
             sfx_queue = runtime_state.sfx_queue
@@ -1145,7 +1178,7 @@ class ProjectilePool:
     def update_demo(
         self,
         dt: float,
-        creatures: list[Damageable],
+        creatures: Sequence[Damageable],
         *,
         world_size: float,
         speed_by_type: dict[int, float],
@@ -1309,7 +1342,7 @@ class SecondaryProjectilePool:
     def update_pulse_gun(
         self,
         dt: float,
-        creatures: list[Damageable],
+        creatures: Sequence[Damageable],
         *,
         apply_creature_damage: CreatureDamageApplier | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
@@ -1340,9 +1373,9 @@ class SecondaryProjectilePool:
 
         rand = _rng_zero
         freeze_active = False
-        effects: object | None = None
-        sprite_effects: object | None = None
-        sfx_queue: list[str] | None = None
+        effects: _EffectsLike | None = None
+        sprite_effects: _SpriteEffectsLike | None = None
+        sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:
             rand = runtime_state.rng.rand
             freeze_active = float(runtime_state.bonuses.freeze) > 0.0
@@ -1452,7 +1485,7 @@ class SecondaryProjectilePool:
                 direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0
                 trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
-                if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                if sprite_effects is not None:
                     sprite_effects.spawn(
                         pos=spawn_pos,
                         vel=trail_velocity,
@@ -1500,7 +1533,7 @@ class SecondaryProjectilePool:
                     det_scale = 0.25
 
                 if freeze_active:
-                    if effects is not None and hasattr(effects, "spawn_freeze_shard"):
+                    if effects is not None:
                         for _ in range(4):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
@@ -1523,7 +1556,6 @@ class SecondaryProjectilePool:
                 if (
                     entry.type_id == SecondaryProjectileTypeId.ROCKET
                     and effects is not None
-                    and hasattr(effects, "spawn_explosion_burst")
                     and int(detail_preset) > 2
                 ):
                     effects.spawn_explosion_burst(
@@ -1541,7 +1573,7 @@ class SecondaryProjectilePool:
 
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
-                    if effects is not None and hasattr(effects, "spawn_freeze_shard"):
+                    if effects is not None:
                         shard_pos = entry.pos
                         if hit_type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                             shard_pos = creatures[hit_idx].pos
@@ -1580,7 +1612,7 @@ class SecondaryProjectilePool:
                                 rand=rand,
                             )
 
-                if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
+                if sprite_effects is not None:
                     step = math.tau / 10.0
                     for idx in range(10):
                         mag = float(int(rand()) % 800) * 0.1
