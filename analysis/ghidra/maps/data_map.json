@@ -4829,6 +4829,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00491248",
+      "comment": "Sprite-effect render UV U (fixed 4x4 atlas frame used by sprite_effect_pool rendering).",
+      "name": "sprite_effect_uv_u",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0049124c",
+      "comment": "Sprite-effect render UV V (fixed 4x4 atlas frame used by sprite_effect_pool rendering).",
+      "name": "sprite_effect_uv_v",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x00491290",
       "comment": "Effect UV table for 2x2 atlas frames (u,v).",
       "name": "effect_uv2",
@@ -4840,6 +4854,13 @@
       "comment": "Effect UV table V for 2x2 atlas frames (effect_uv2 + 0x04).",
       "name": "effect_uv2_v",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004912b0",
+      "comment": "fx_queue_add_random one-shot init flags bitfield (guards random color scratch defaults).",
+      "name": "fx_queue_random_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004912b8",

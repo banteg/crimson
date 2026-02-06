@@ -22130,8 +22130,8 @@ void __cdecl fx_queue_add_random(float *pos)
   float local_4;
   
   if (config_fx_toggle == '\0') {
-    if ((DAT_004912b0 & 1) == 0) {
-      DAT_004912b0 = DAT_004912b0 | 1;
+    if (((byte)fx_queue_random_init_flags & 1) == 0) {
+      fx_queue_random_init_flags._0_1_ = (byte)fx_queue_random_init_flags | 1;
       _fx_queue_random_color_r = 0.9;
       _fx_queue_random_color_g = 0.9;
       _fx_queue_random_color_b = 0.9;
@@ -23247,7 +23247,8 @@ LAB_00429df8:
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       (*grim_interface_ptr->vtable->grim_set_uv)
-                (DAT_00491248,DAT_0049124c,DAT_00491248 + 0.25,DAT_0049124c + 0.25);
+                (sprite_effect_uv_u,sprite_effect_uv_v,sprite_effect_uv_u + 0.25,
+                 sprite_effect_uv_v + 0.25);
       (*grim_interface_ptr->vtable->grim_begin_batch)();
       pfVar5 = &sprite_effect_pool.scale;
       do {

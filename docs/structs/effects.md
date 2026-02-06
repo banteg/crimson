@@ -184,7 +184,8 @@ Notes:
 
 - `fx_queue_add_random` is a small helper that spawns a random `fx_queue_add` entry
   (effect ids `3..7`) with randomized grayscale color and size; it uses the
-  `fx_queue_random_color_*` scratch RGBA globals.
+  `fx_queue_random_color_*` scratch RGBA globals and one-shot guard
+  `fx_queue_random_init_flags` (`0x004912b0`).
 
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
@@ -479,7 +480,8 @@ Layout (partial):
 Notes:
 
 - Render is gated by `DAT_00480359` and binds `particles_texture` (`DAT_0048f7ec`)
-  with a fixed 4x atlas UV (`effect_uv4` `u/v` + `0x38`), then draws each active entry
+  with fixed UV globals `sprite_effect_uv_u` / `sprite_effect_uv_v`
+  (`0x00491248` / `0x0049124c`, equal to `effect_uv4` + `0x38`), then draws each active entry
   with the per-entry rotation and RGBA.
 
 Common color overrides (callers mutate the RGBA fields after spawning):
