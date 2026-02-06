@@ -88,7 +88,6 @@ from .frontend.high_scores_layout import (
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
     HS_RIGHT_PANEL_HEIGHT,
-    HS_RIGHT_PANEL_POS_X,
     HS_RIGHT_PANEL_POS_Y,
     HS_RIGHT_GAME_MODE_DROP_X,
     HS_RIGHT_GAME_MODE_DROP_Y,
@@ -128,6 +127,12 @@ from .frontend.high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET_Y,
     HS_RIGHT_SHOW_SCORES_X,
     HS_RIGHT_SHOW_SCORES_Y,
+    HS_SCORE_FRAME_H,
+    HS_SCORE_FRAME_W,
+    HS_SCORE_FRAME_X,
+    HS_SCORE_FRAME_Y,
+    HS_TITLE_UNDERLINE_Y,
+    hs_right_panel_pos_x,
 )
 from .frontend.menu import (
     MENU_PANEL_OFFSET_X,
@@ -2089,7 +2094,8 @@ class HighScoresView:
         )
 
         left_x0, left_y0 = self._panel_top_left(pos_x=HS_LEFT_PANEL_POS_X, pos_y=HS_LEFT_PANEL_POS_Y, scale=scale)
-        right_x0, right_y0 = self._panel_top_left(pos_x=HS_RIGHT_PANEL_POS_X, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
+        right_panel_pos_x = hs_right_panel_pos_x(float(self._state.config.screen_width))
+        right_x0, right_y0 = self._panel_top_left(pos_x=right_panel_pos_x, pos_y=HS_RIGHT_PANEL_POS_Y, scale=scale)
         left_x0 += float(left_slide_x)
         right_x0 += float(right_slide_x)
 
@@ -2111,10 +2117,21 @@ class HighScoresView:
         if int(mode_id) == 1:
             # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
             title_x = 266.0
-        draw_small_text(font, title, left_x0 + title_x * scale, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        title_draw_x = left_x0 + title_x * scale
+        draw_small_text(font, title, title_draw_x, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        ul_x = title_draw_x
+        ul_y = left_y0 + HS_TITLE_UNDERLINE_Y * scale
+        ul_w = measure_small_text_width(font, title, 1.0 * scale)
+        ul_h = max(1, int(round(1.0 * scale)))
+        rl.draw_rectangle(int(round(ul_x)), int(round(ul_y)), int(round(ul_w)), ul_h, rl.Color(255, 255, 255, int(255 * 0.7)))
         if int(mode_id) == 3:
+            hardcore = bool(int(self._state.config.data.get("hardcore_flag", 0) or 0))
+            if hardcore:
+                quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
+            else:
+                quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
             quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
-            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, quest_color)
             arrow = self._arrow_tex
             if arrow is not None:
                 dst_w = float(arrow.width) * scale
@@ -2129,6 +2146,20 @@ class HighScoresView:
         draw_small_text(font, "Rank", left_x0 + 211.0 * scale, row_y0, 1.0 * scale, header_color)
         draw_small_text(font, "Score", left_x0 + 246.0 * scale, row_y0, 1.0 * scale, header_color)
         draw_small_text(font, "Player", left_x0 + 302.0 * scale, row_y0, 1.0 * scale, header_color)
+
+        # Score list viewport frame (white 1px border + black interior).
+        frame_x = left_x0 + HS_SCORE_FRAME_X * scale
+        frame_y = left_y0 + HS_SCORE_FRAME_Y * scale
+        frame_w = HS_SCORE_FRAME_W * scale
+        frame_h = HS_SCORE_FRAME_H * scale
+        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
+        rl.draw_rectangle(
+            int(round(frame_x + 1.0 * scale)),
+            int(round(frame_y + 1.0 * scale)),
+            max(0, int(round(frame_w - 2.0 * scale))),
+            max(0, int(round(frame_h - 2.0 * scale))),
+            rl.BLACK,
+        )
 
         row_step = 16.0 * scale
         rows = 10
