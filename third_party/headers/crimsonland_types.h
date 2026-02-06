@@ -469,6 +469,19 @@ typedef struct ui_menu_item_t {
     float alpha;
 } ui_menu_item_t;
 
+// 0x1c-byte dropdown/list widget state consumed by ui_list_widget_update.
+typedef struct ui_list_widget_t {
+    unsigned char enabled;
+    unsigned char _pad0[3];
+    int open;
+    int selected_index;
+    char **items;
+    int item_count;
+    unsigned char hovered;
+    unsigned char _pad1[3];
+    int active_index;
+} ui_list_widget_t;
+
 typedef struct ui_button_t {
     char *label;
     unsigned char hovered;

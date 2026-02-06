@@ -2893,7 +2893,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043efc0",
     "name": "ui_list_widget_update",
-    "signature": "int ui_list_widget_update(float *xy, char *list)",
+    "signature": "int ui_list_widget_update(float *xy, ui_list_widget_t *list)",
     "comment": "draws a list widget and updates selection/hover state"
   },
   {

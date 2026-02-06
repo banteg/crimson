@@ -36895,7 +36895,7 @@ int __cdecl ui_text_input_update(float *xy,int *input_state)
 
 /* draws a list widget and updates selection/hover state */
 
-int __cdecl ui_list_widget_update(float *xy,char *list)
+int __cdecl ui_list_widget_update(float *xy,ui_list_widget_t *list)
 
 {
   float *xy_00;
@@ -36923,40 +36923,36 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   iVar4 = 0;
   iVar1 = ui_focus_update((int)list);
   iVar6 = 0;
-  if (0 < *(int *)(list + 0x10)) {
+  if (0 < list->item_count) {
     do {
-      iVar2 = (*grim_interface_ptr->vtable->grim_measure_text_width)
-                        (*(char **)(*(int *)(list + 0xc) + iVar6 * 4));
+      iVar2 = (*grim_interface_ptr->vtable->grim_measure_text_width)(list->items[iVar6]);
       if (iVar4 < iVar2) {
         iVar4 = iVar2;
       }
       iVar6 = iVar6 + 1;
-    } while (iVar6 < *(int *)(list + 0x10));
+    } while (iVar6 < list->item_count);
   }
-  if (*list == '\0') {
+  if (list->enabled == '\0') {
     local_1c = 16.0;
-    list[0x14] = '\0';
-    list[4] = '\0';
-    list[5] = '\0';
-    list[6] = '\0';
-    list[7] = '\0';
+    list->hovered = '\0';
+    list->open = 0;
     xy = (float *)(float)(iVar4 + 0x30);
   }
-  else if (*(int *)(list + 4) < 1) {
+  else if (list->open < 1) {
     local_1c = 16.0;
-    list[0x14] = '\0';
+    list->hovered = '\0';
     xy = (float *)(float)(iVar4 + 0x30);
   }
   else {
-    local_1c = (float)(*(int *)(list + 0x10) * 0x10 + 0x18);
+    local_1c = (float)(list->item_count * 0x10 + 0x18);
     lVar7 = __ftol();
     iVar6 = (int)lVar7;
     lVar7 = __ftol();
     iVar6 = ui_mouse_inside_rect(xy,(int)lVar7,iVar6);
-    list[0x14] = (char)iVar6;
+    list->hovered = (uchar)iVar6;
     xy = (float *)(float)(iVar4 + 0x30);
   }
-  if (list[0x14] != '\0') {
+  if (list->hovered != '\0') {
     ui_focus_set((int)list,'\0');
   }
   if ((char)iVar1 != '\0') {
@@ -36965,36 +36961,28 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
     ui_focus_draw(&fStack_18);
     iVar4 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(200);
     if ((char)iVar4 != '\0') {
-      if (*(int *)(list + 4) == 0) {
-        list[4] = '\x01';
-        list[5] = '\0';
-        list[6] = '\0';
-        list[7] = '\0';
+      if (list->open == 0) {
+        list->open = 1;
       }
       else {
-        iVar4 = *(int *)(list + 0x18);
-        *(int *)(list + 0x18) = iVar4 + -1;
-        if (iVar4 + -1 < 0) {
-          list[0x18] = '\0';
-          list[0x19] = '\0';
-          list[0x1a] = '\0';
-          list[0x1b] = '\0';
+        iVar4 = list->active_index + -1;
+        list->active_index = iVar4;
+        if (iVar4 < 0) {
+          list->active_index = 0;
         }
       }
     }
     iVar4 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xd0);
     if ((char)iVar4 != '\0') {
-      if (*(int *)(list + 4) == 0) {
-        list[4] = '\x01';
-        list[5] = '\0';
-        list[6] = '\0';
-        list[7] = '\0';
+      if (list->open == 0) {
+        list->open = 1;
       }
       else {
-        iVar4 = *(int *)(list + 0x18);
-        *(int *)(list + 0x18) = iVar4 + 1;
-        if (*(int *)(list + 0x10) + -1 < iVar4 + 1) {
-          *(int *)(list + 0x18) = *(int *)(list + 0x10) + -1;
+        iVar1 = list->active_index + 1;
+        iVar4 = list->item_count + -1;
+        list->active_index = iVar1;
+        if (iVar4 < iVar1) {
+          list->active_index = iVar4;
         }
       }
     }
@@ -37013,7 +37001,7 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   xy_01 = (char *)&local_1c;
   (*grim_interface_ptr->vtable->grim_draw_rect_filled)
             ((float *)xy_01,unaff_retaddr - 2.0,unaff_EBX - 2.0);
-  if ((*(int *)(list + 4) < 1) && (list[0x14] == '\0')) {
+  if ((list->open < 1) && (list->hovered == '\0')) {
     stage = s_ui_dropOff_00474134;
     pIVar5 = grim_interface_ptr->vtable;
   }
@@ -37039,7 +37027,7 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   iVar4 = -2;
-  if (*list != '\0') {
+  if (list->enabled != '\0') {
     lVar7 = __ftol();
     iVar1 = ui_mouse_inside_rect_with_padding(xy_00,0xe,(int)lVar7);
     if ((char)iVar1 != '\0') {
@@ -37052,13 +37040,13 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
 LAB_0043f3aa:
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,*xy_00 + 4.0,xy_00[1] + 1.0,&s_fmt_percent_s,
-             *(undefined4 *)(*(int *)(list + 0xc) + *(int *)(list + 8) * 4));
-  if (*(int *)(list + 4) < 1) {
+             list->items[list->selected_index]);
+  if (list->open < 1) {
     return iVar4;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   iVar4 = 0;
-  if (0 < *(int *)(list + 0x10)) {
+  if (0 < list->item_count) {
     lVar7 = __ftol();
     iVar1 = (int)lVar7;
     iVar6 = 0;
@@ -37069,26 +37057,23 @@ LAB_0043f3aa:
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
       }
       else {
-        *(int *)(list + 0x18) = iVar4;
+        list->active_index = iVar4;
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.95);
       }
-      if ((unaff_DI != '\0') && (*(int *)(list + 0x18) == iVar4)) {
+      if ((unaff_DI != '\0') && (list->active_index == iVar4)) {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.96);
       }
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,*xy_00 + 4.0,(float)iVar2 + xy_00[1] + 17.0,&s_fmt_percent_s,
-                 *(undefined4 *)(*(int *)(list + 0xc) + iVar4 * 4));
+                 list->items[iVar4]);
       iVar4 = iVar4 + 1;
       iVar6 = iVar6 + 0x10;
-    } while (iVar4 < *(int *)(list + 0x10));
+    } while (iVar4 < list->item_count);
   }
-  if ((list[0x14] == '\0') && (unaff_DI == '\0')) {
-    list[4] = '\0';
-    list[5] = '\0';
-    list[6] = '\0';
-    list[7] = '\0';
+  if ((list->hovered == '\0') && (unaff_DI == '\0')) {
+    list->open = 0;
   }
-  return *(int *)(list + 0x18);
+  return list->active_index;
 }
 
 
@@ -38597,17 +38582,17 @@ LAB_0044300c:
     fStack_40 = 0.0;
     if (((byte)highscore_screen_init_flags & 0x40) == 0) {
       highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x40;
-      DAT_004d0d78 = 1;
-      _DAT_004d0d90 = 0;
-      DAT_004d0d8c = 0;
-      _DAT_004d0d80 = 0;
-      DAT_004d0d7c = 0;
-      _DAT_004d0d88 = 0;
-      _DAT_004d0d84 = (char **)0x0;
+      highscore_date_filter_list.enabled = '\x01';
+      highscore_date_filter_list.active_index = 0;
+      highscore_date_filter_list.hovered = '\0';
+      highscore_date_filter_list.selected_index = 0;
+      highscore_date_filter_list.open = 0;
+      highscore_date_filter_list.item_count = 0;
+      highscore_date_filter_list.items = (char **)0x0;
       crt_atexit(&DAT_00444350);
     }
-    _DAT_004d0d84 = &pcStack_50;
-    _DAT_004d0d88 = 4;
+    highscore_date_filter_list.items = &pcStack_50;
+    highscore_date_filter_list.item_count = 4;
     iVar2 = game_is_full_version();
     fVar18 = fVar19;
     if ((char)iVar2 != '\0') {
@@ -38616,7 +38601,7 @@ LAB_0044300c:
                 (fVar19,(fVar17 + 114.0) - 14.0,s_Selected_score_list__00478b70);
       ui_profile_menu_update((float *)&stack0xffffff78,DAT_00478678);
     }
-    _DAT_004d0d80 = (int)config_highscore_date_mode;
+    highscore_date_filter_list.selected_index = (int)config_highscore_date_mode;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.8);
     y = (fVar17 + 28.0) - 14.0;
     x = fVar18 + 2.0;
@@ -38624,13 +38609,13 @@ LAB_0044300c:
     (*grim_interface_ptr->vtable->grim_draw_text_small)(fVar18 + 130.0,y,s_Game_mode_00478b50);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               (fVar19,(fVar17 + 70.0) - 14.0,s_Show_scores__00478b40);
-    iVar2 = ui_list_widget_update((float *)&stack0xffffff78,&DAT_004d0d78);
+    iVar2 = ui_list_widget_update((float *)&stack0xffffff78,&highscore_date_filter_list);
     if (((online_sync_status == 6) || (online_sync_status == 0)) &&
        ((-2 < iVar2 &&
         ((iVar8 = input_primary_just_pressed(), (char)iVar8 != '\0' ||
          (iVar8 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar8 != '\0'))))
        )) {
-      DAT_004d0d7c = 1 - DAT_004d0d7c;
+      highscore_date_filter_list.open = 1 - highscore_date_filter_list.open;
       if (-1 < iVar2) {
         if (iVar2 == 0) {
           config_highscore_date_mode = '\0';
@@ -38644,7 +38629,7 @@ LAB_0044300c:
         else if (iVar2 == 3) {
           config_highscore_date_mode = '\x03';
         }
-        _DAT_004d0d80 = iVar2;
+        highscore_date_filter_list.selected_index = iVar2;
         highscore_load_table();
       }
     }
@@ -38652,28 +38637,28 @@ LAB_0044300c:
     pcStack_7c = s_2_players_00478b28;
     if (((byte)highscore_screen_init_flags & 0x80) == 0) {
       highscore_screen_init_flags._0_1_ = (byte)highscore_screen_init_flags | 0x80;
-      DAT_004d0fa8 = 1;
-      _DAT_004d0fc0 = 0;
-      DAT_004d0fbc = 0;
-      _DAT_004d0fb0 = 0;
-      DAT_004d0fac = 0;
-      _DAT_004d0fb8 = 0;
-      _DAT_004d0fb4 = (char **)0x0;
+      highscore_player_count_list.enabled = '\x01';
+      highscore_player_count_list.active_index = 0;
+      highscore_player_count_list.hovered = '\0';
+      highscore_player_count_list.selected_index = 0;
+      highscore_player_count_list.open = 0;
+      highscore_player_count_list.item_count = 0;
+      highscore_player_count_list.items = (char **)0x0;
       crt_atexit(&DAT_00444340);
     }
-    _DAT_004d0fb4 = &pcStack_80;
-    _DAT_004d0fb0 = _config_player_count + -1;
-    _DAT_004d0fb8 = 2;
+    highscore_player_count_list.items = &pcStack_80;
+    highscore_player_count_list.selected_index = _config_player_count + -1;
+    highscore_player_count_list.item_count = 2;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.81);
     fStack_6c = fVar17 + 28.0;
     fStack_70 = x;
-    iVar2 = ui_list_widget_update(&fStack_70,&DAT_004d0fa8);
+    iVar2 = ui_list_widget_update(&fStack_70,&highscore_player_count_list);
     if (((((online_sync_status == 6) || (online_sync_status == 0)) && (-2 < iVar2)) &&
         ((iVar8 = input_primary_just_pressed(), (char)iVar8 != '\0' ||
          (iVar8 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar8 != '\0'))))
-       && (DAT_004d0fac = 1 - DAT_004d0fac, -1 < iVar2)) {
+       && (highscore_player_count_list.open = 1 - highscore_player_count_list.open, -1 < iVar2)) {
       _config_player_count = iVar2 + 1;
-      _DAT_004d0fb0 = iVar2;
+      highscore_player_count_list.selected_index = iVar2;
       highscore_load_table();
     }
     pcStack_3c = s_Quests_0047360c;
@@ -38683,51 +38668,51 @@ LAB_0044300c:
     uStack_2c = 0;
     if ((DAT_004d0f58 & 1) == 0) {
       DAT_004d0f58 = DAT_004d0f58 | 1;
-      DAT_004ccce0 = 1;
-      _DAT_004cccf8 = 0;
-      DAT_004cccf4 = 0;
-      _DAT_004ccce8 = 0;
-      DAT_004ccce4 = 0;
-      _DAT_004cccf0 = 0;
-      _DAT_004cccec = (char **)0x0;
+      highscore_game_mode_list.enabled = '\x01';
+      highscore_game_mode_list.active_index = 0;
+      highscore_game_mode_list.hovered = '\0';
+      highscore_game_mode_list.selected_index = 0;
+      highscore_game_mode_list.open = 0;
+      highscore_game_mode_list.item_count = 0;
+      highscore_game_mode_list.items = (char **)0x0;
       crt_atexit(&DAT_00444330);
     }
-    _DAT_004cccec = &pcStack_3c;
-    _DAT_004cccf0 = 3;
+    highscore_game_mode_list.items = &pcStack_3c;
+    highscore_game_mode_list.item_count = 3;
     if (0x27 < quest_unlock_index) {
-      _DAT_004cccf0 = 4;
+      highscore_game_mode_list.item_count = 4;
     }
-    bVar14 = DAT_004d0fac == 0;
-    DAT_004d0d78 = bVar14 && DAT_004ccce4 == 0;
-    DAT_00478678 = bVar14 && DAT_004ccce4 == 0;
-    if (DAT_004d0d7c != 0) {
+    bVar14 = highscore_player_count_list.open == 0;
+    highscore_date_filter_list.enabled = bVar14 && highscore_game_mode_list.open == 0;
+    DAT_00478678 = bVar14 && highscore_game_mode_list.open == 0;
+    if (highscore_date_filter_list.open != 0) {
       DAT_00478678 = '\0';
     }
-    DAT_004ccce0 = DAT_004d0d7c == 0 && bVar14;
-    DAT_004d0fa8 = 1;
+    highscore_game_mode_list.enabled = highscore_date_filter_list.open == 0 && bVar14;
+    highscore_player_count_list.enabled = '\x01';
     if (config_game_mode == GAME_MODE_SURVIVAL) {
-      _DAT_004ccce8 = 2;
+      highscore_game_mode_list.selected_index = 2;
     }
     else if (config_game_mode == GAME_MODE_RUSH) {
-      _DAT_004ccce8 = 1;
+      highscore_game_mode_list.selected_index = 1;
     }
     else if (config_game_mode == GAME_MODE_QUEST) {
-      _DAT_004ccce8 = 0;
+      highscore_game_mode_list.selected_index = 0;
     }
     else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
-      _DAT_004ccce8 = 3;
-      DAT_004d0fa8 = 0;
-      _DAT_004d0fb0 = 0;
+      highscore_game_mode_list.selected_index = 3;
+      highscore_player_count_list.enabled = '\0';
+      highscore_player_count_list.selected_index = 0;
       _config_player_count = 1;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.81);
-    iVar2 = ui_list_widget_update((float *)&stack0xffffff60,&DAT_004ccce0);
+    iVar2 = ui_list_widget_update((float *)&stack0xffffff60,&highscore_game_mode_list);
     if (((online_sync_status == 6) || (online_sync_status == 0)) &&
        ((-2 < iVar2 &&
         ((iVar8 = input_primary_just_pressed(), (char)iVar8 != '\0' ||
          (iVar8 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar8 != '\0'))))
        )) {
-      DAT_004ccce4 = 1 - DAT_004ccce4;
+      highscore_game_mode_list.open = 1 - highscore_game_mode_list.open;
       if (-1 < iVar2) {
         if (iVar2 == 0) {
           config_game_mode = GAME_MODE_QUEST;
@@ -38742,7 +38727,7 @@ LAB_0044300c:
           config_game_mode = GAME_MODE_TYPO_SHOOTER;
           _config_player_count = 1;
         }
-        _DAT_004ccce8 = iVar2;
+        highscore_game_mode_list.selected_index = iVar2;
         highscore_load_table();
       }
     }
@@ -39228,27 +39213,27 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
 LAB_004446ac:
   if (((byte)profile_menu_init_flags & 8) == 0) {
     profile_menu_init_flags._0_1_ = (byte)profile_menu_init_flags | 8;
-    DAT_004d0ee8 = 1;
-    _DAT_004d0f00 = 0;
-    DAT_004d0efc = 0;
-    _DAT_004d0ef0 = 0;
-    _DAT_004d0eec = 0;
-    _DAT_004d0ef8 = 0;
-    _DAT_004d0ef4 = (undefined4 *)0x0;
+    profile_name_slot_list.enabled = '\x01';
+    profile_name_slot_list.active_index = 0;
+    profile_name_slot_list.hovered = '\0';
+    profile_name_slot_list.selected_index = 0;
+    profile_name_slot_list.open = 0;
+    profile_name_slot_list.item_count = 0;
+    profile_name_slot_list.items = (char **)0x0;
     crt_atexit(&DAT_004447d0);
   }
-  _DAT_004d0ef8 = local_c + 1;
-  _DAT_004d0ef4 = &DAT_004ccb5c;
-  DAT_004d0ee8 = arg2;
-  _DAT_004d0ef0 = _config_name_slot_selected;
-  iVar8 = ui_list_widget_update(arg1,&DAT_004d0ee8);
+  profile_name_slot_list.item_count = local_c + 1;
+  profile_name_slot_list.items = (char **)&DAT_004ccb5c;
+  profile_name_slot_list.enabled = arg2;
+  profile_name_slot_list.selected_index = _config_name_slot_selected;
+  iVar8 = ui_list_widget_update(arg1,&profile_name_slot_list);
   if ((-2 < iVar8) &&
      ((iVar4 = input_primary_just_pressed(), (char)iVar4 != '\0' ||
       (iVar4 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar4 != '\0')))) {
     DAT_004d121c = 1 - DAT_004d121c;
     if (-1 < iVar8) {
       _config_name_slot_selected = iVar8;
-      _DAT_004d0ef0 = iVar8;
+      profile_name_slot_list.selected_index = iVar8;
       if (iVar8 != local_c) {
         highscore_load_table();
       }
@@ -39257,7 +39242,7 @@ LAB_004446ac:
     }
     DAT_004d1220 = iVar8 == local_c;
   }
-  _DAT_004d0eec = DAT_004d121c;
+  profile_name_slot_list.open = DAT_004d121c;
   crt_free((void *)(&DAT_004ccb5c)[local_c]);
   return extraout_EAX & 0xffffff00;
 }
@@ -41980,10 +41965,11 @@ void controls_menu_update(void)
   float fVar18;
   float fVar19;
   ui_menu_item_t *puVar20;
-  int iVar21;
+  ui_list_widget_t *puVar21;
   int iVar22;
-  float fVar23;
+  int iVar23;
   float fVar24;
+  float fVar25;
   float fStack_70;
   float fStack_6c;
   float fStack_68;
@@ -42040,41 +42026,43 @@ void controls_menu_update(void)
   _DAT_004d75b8 = &menu_label_back;
   if (((byte)controls_menu_init_flags & 4) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 4;
-    controls_player_profile_list_enabled = '\x01';
-    _DAT_004d7678 = 0;
-    DAT_004d7674 = 0;
-    _DAT_004d7668 = 0;
-    _controls_player_profile_list_open = 0;
-    _DAT_004d7670 = 0;
-    _DAT_004d766c = (char **)0x0;
+    controls_player_profile_list.enabled = '\x01';
+    controls_player_profile_list.active_index = 0;
+    controls_player_profile_list.hovered = '\0';
+    controls_player_profile_list.selected_index = 0;
+    controls_player_profile_list.open = 0;
+    controls_player_profile_list.item_count = 0;
+    controls_player_profile_list.items = (char **)0x0;
     crt_atexit(&DAT_0044ed50);
   }
   if (((byte)controls_menu_init_flags & 8) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 8;
-    controls_aim_method_list_enabled = '\x01';
-    _DAT_004d76c0 = 0;
-    DAT_004d76bc = 0;
-    _DAT_004d76b0 = 0;
-    _controls_aim_method_list_open = 0;
-    _DAT_004d76b8 = 0;
-    _DAT_004d76b4 = (char **)0x0;
+    controls_aim_method_list.enabled = '\x01';
+    controls_aim_method_list.active_index = 0;
+    controls_aim_method_list.hovered = '\0';
+    controls_aim_method_list.selected_index = 0;
+    controls_aim_method_list.open = 0;
+    controls_aim_method_list.item_count = 0;
+    controls_aim_method_list.items = (char **)0x0;
     crt_atexit(&DAT_0044ed40);
   }
   if (((byte)controls_menu_init_flags & 0x10) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x10;
-    controls_move_method_list_enabled = '\x01';
-    _DAT_004d7650 = 0;
-    DAT_004d764c = 0;
-    _DAT_004d7640 = 0;
-    _controls_move_method_list_open = 0;
-    _DAT_004d7648 = 0;
-    _DAT_004d7644 = (char **)0x0;
+    controls_move_method_list.enabled = '\x01';
+    controls_move_method_list.active_index = 0;
+    controls_move_method_list.hovered = '\0';
+    controls_move_method_list.selected_index = 0;
+    controls_move_method_list.open = 0;
+    controls_move_method_list.item_count = 0;
+    controls_move_method_list.items = (char **)0x0;
     crt_atexit(&DAT_0044ed30);
   }
   if (DAT_00478e60 != '\0') {
     DAT_00478e60 = '\0';
-    _DAT_004d76b0 = *(int *)(&config_aim_scheme + controls_rebind_player_index * 4);
-    _DAT_004d7640 = *(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) + -1;
+    controls_aim_method_list.selected_index =
+         *(int *)(&config_aim_scheme + controls_rebind_player_index * 4);
+    controls_move_method_list.selected_index =
+         *(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) + -1;
   }
   pcStack_1c = input_configure_for_label(0);
   pcStack_18 = input_configure_for_label(1);
@@ -42083,26 +42071,26 @@ void controls_menu_update(void)
   pcStack_c = input_configure_for_label(4);
   pcStack_8 = input_configure_for_label(5);
   pcStack_4 = input_configure_for_label(6);
-  _DAT_004d76b4 = &pcStack_1c;
-  _DAT_004d76b8 = 5;
+  controls_aim_method_list.items = &pcStack_1c;
+  controls_aim_method_list.item_count = 5;
   pcStack_34 = input_scheme_label(1);
   pcStack_30 = input_scheme_label(2);
   pcStack_2c = input_scheme_label(3);
   pcStack_28 = input_scheme_label(4);
   pcStack_24 = input_scheme_label(5);
   pcStack_20 = input_scheme_label(6);
-  _DAT_004d7644 = &pcStack_34;
-  _DAT_004d7648 = 3;
+  controls_move_method_list.items = &pcStack_34;
+  controls_move_method_list.item_count = 3;
   if (*(float *)((int)cv_enableMousePointAndClickMovement + 0xc) != 0.0) {
-    _DAT_004d7648 = 4;
+    controls_move_method_list.item_count = 4;
   }
   fStack_58 = ui_element_slot_14.pos_y + ui_element_slot_14.quad0[1];
-  _DAT_004d766c = &pcStack_44;
+  controls_player_profile_list.items = &pcStack_44;
   pcStack_44 = s_Player_1_00479164;
   pcStack_40 = s_Player_2_00479158;
   pcStack_3c = s_Player_3_0047914c;
   pcStack_38 = s_Player_4_00479140;
-  _DAT_004d7670 = 2;
+  controls_player_profile_list.item_count = 2;
   fStack_70 = fStack_58 + 40.0;
   fStack_6c = (((float)ui_element_slot_14._pad0._6_4_ - 32.0) - 64.0) +
               ui_element_slot_14.quad0[0] + ui_element_slot_14.pos_x + 300.0;
@@ -42110,13 +42098,13 @@ void controls_menu_update(void)
   fStack_64 = fStack_6c;
   fStack_60 = fStack_70;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  iVar22 = 0x20;
-  iVar21 = 0x80;
-  fVar23 = (float)ui_text_controls_texture;
+  iVar23 = 0x20;
+  iVar22 = 0x80;
+  fVar24 = (float)ui_text_controls_texture;
   lVar17 = __ftol();
   iVar6 = (int)lVar17;
   lVar17 = __ftol();
-  ui_draw_textured_quad((int)lVar17,iVar6,iVar21,iVar22,(int)fVar23);
+  ui_draw_textured_quad((int)lVar17,iVar6,iVar22,iVar23,(int)fVar24);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.8);
   fStack_68 = fStack_68 + 3.0;
   fStack_6c = fStack_6c + 9.0;
@@ -42140,11 +42128,11 @@ void controls_menu_update(void)
   DAT_004d77f0 = (&config_hud_indicator_toggle)[controls_rebind_player_index];
   _DAT_004d77f4 = s_Show_direction_arrow_004790f8;
   ui_checkbox_update((float *)&stack0xffffff80,&DAT_004d77f0);
-  fVar24 = ui_element_slot_40.quad0[0] + ui_element_slot_40.pos_x;
+  fVar25 = ui_element_slot_40.quad0[0] + ui_element_slot_40.pos_x;
   fStack_6c = ui_element_slot_40.pos_y + ui_element_slot_40.quad0[1];
   (&config_hud_indicator_toggle)[controls_rebind_player_index] = DAT_004d77f0;
   piVar10 = &player_state_table.input.move_key_backward;
-  fVar23 = fStack_6c + 40.0;
+  fVar24 = fStack_6c + 40.0;
   fVar18 = (float)ui_element_slot_40._pad0._6_4_ - 64.0;
   piVar4 = (int *)&config_p1_axis_move_x;
   do {
@@ -42167,15 +42155,15 @@ void controls_menu_update(void)
   } while ((int)piVar5 < 0x4805c0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)_DAT_004d7710 * 0.00090000004);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
-  fVar24 = fVar18 + fVar24 + 50.0 + 64.0 + 16.0;
-  fVar23 = (fVar23 + 32.0 + 4.0) - 38.0;
+  fVar25 = fVar18 + fVar25 + 50.0 + 64.0 + 16.0;
+  fVar24 = (fVar24 + 32.0 + 4.0) - 38.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,fVar24 + 54.0,fVar23,s_Configured_controls_004790e4);
+            (grim_interface_ptr,fVar25 + 54.0,fVar24,s_Configured_controls_004790e4);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.8);
-  fStack_70 = fVar24 + 54.0;
+  fStack_70 = fVar25 + 54.0;
   fVar18 = 1.0;
-  fStack_6c = fVar23 + 13.0;
+  fStack_6c = fVar24 + 13.0;
   pIVar2 = grim_interface_ptr->vtable;
   iVar6 = (*pIVar2->grim_measure_text_width)(s_Configured_controls_004790e4);
   (*pIVar2->grim_draw_rect_outline)(&fStack_70,(float)iVar6,fVar18);
@@ -42207,12 +42195,12 @@ void controls_menu_update(void)
     if ((&controls_rebind_move_primary_item)[iVar13].label != (char *)0x0) {
       crt_free((&controls_rebind_move_primary_item)[iVar13].label);
     }
-    iVar21 = *(int *)(&config_p1_move_forward + iVar6 * 4);
+    iVar22 = *(int *)(&config_p1_move_forward + iVar6 * 4);
     iVar6 = iVar6 + 1;
-    if (iVar21 < 0x100) {
-      iVar22 = GetKeyNameTextA(iVar21 << 0x10,(LPSTR)&input_key_name_buf,0x3f);
-      if (iVar22 == 0) {
-        switch(iVar21) {
+    if (iVar22 < 0x100) {
+      iVar23 = GetKeyNameTextA(iVar22 << 0x10,(LPSTR)&input_key_name_buf,0x3f);
+      if (iVar23 == 0) {
+        switch(iVar22) {
         case 1:
           pcVar8 = s_DIK_ESCAPE_004718d8;
           break;
@@ -42653,7 +42641,7 @@ void controls_menu_update(void)
         pcVar8 = (char *)&input_key_name_buf;
       }
     }
-    else if (iVar21 == 0x100) {
+    else if (iVar22 == 0x100) {
       uVar11 = 0xffffffff;
       pcVar8 = s_Mouse1_00471af4;
       do {
@@ -42680,7 +42668,7 @@ void controls_menu_update(void)
       }
     }
     else {
-      if (iVar21 == 0x101) {
+      if (iVar22 == 0x101) {
         pcVar8 = s_Mouse2_00471aec;
 LAB_00449cce:
         uVar11 = 0xffffffff;
@@ -42707,7 +42695,7 @@ LAB_00449cce:
         }
       }
       else {
-        if (iVar21 == 0x102) {
+        if (iVar22 == 0x102) {
           uVar11 = 0xffffffff;
           pcVar8 = s_Mouse3_00471ae4;
           do {
@@ -42734,11 +42722,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x103) {
+        if (iVar22 == 0x103) {
           pcVar8 = s_Mouse4_00471adc;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x104) {
+        if (iVar22 == 0x104) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471ad4;
           do {
@@ -42765,11 +42753,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x109) {
+        if (iVar22 == 0x109) {
           pcVar8 = s_MWheelUp_00471ac8;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x10a) {
+        if (iVar22 == 0x10a) {
           uVar11 = 0xffffffff;
           pcVar8 = s_MWheelDown_00471abc;
           do {
@@ -42796,11 +42784,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x11f) {
+        if (iVar22 == 0x11f) {
           pcVar8 = s_Joys1_00471ab4;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x120) {
+        if (iVar22 == 0x120) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471aac;
           do {
@@ -42827,11 +42815,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x121) {
+        if (iVar22 == 0x121) {
           pcVar8 = s_Joys3_00471aa4;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x122) {
+        if (iVar22 == 0x122) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a9c;
           do {
@@ -42858,11 +42846,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x123) {
+        if (iVar22 == 0x123) {
           pcVar8 = s_Joys5_00471a94;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x124) {
+        if (iVar22 == 0x124) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a8c;
           do {
@@ -42889,11 +42877,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x125) {
+        if (iVar22 == 0x125) {
           pcVar8 = s_Joys7_00471a84;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x126) {
+        if (iVar22 == 0x126) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a7c;
           do {
@@ -42920,11 +42908,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x127) {
+        if (iVar22 == 0x127) {
           pcVar8 = s_Joys9_00471a74;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x128) {
+        if (iVar22 == 0x128) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a6c;
           do {
@@ -42951,11 +42939,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x129) {
+        if (iVar22 == 0x129) {
           pcVar8 = s_Joys11_00471a64;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x12a) {
+        if (iVar22 == 0x12a) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a5c;
           do {
@@ -42982,11 +42970,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x131) {
+        if (iVar22 == 0x131) {
           pcVar8 = s_JoysUp_00471a54;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x132) {
+        if (iVar22 == 0x132) {
           uVar11 = 0xffffffff;
           pcVar8 = s_JoysDown_00471a48;
           do {
@@ -43013,11 +43001,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x133) {
+        if (iVar22 == 0x133) {
           pcVar8 = s_JoysLeft_00471a3c;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x134) {
+        if (iVar22 == 0x134) {
           uVar11 = 0xffffffff;
           pcVar8 = s_JoysRight_00471a30;
           do {
@@ -43044,11 +43032,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x13f) {
+        if (iVar22 == 0x13f) {
           pcVar8 = s_JoyAxisX_00471a24;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x140) {
+        if (iVar22 == 0x140) {
           uVar11 = 0xffffffff;
           pcVar8 = s_JoyAxisY_00471a18;
           do {
@@ -43075,11 +43063,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x141) {
+        if (iVar22 == 0x141) {
           pcVar8 = s_JoyAxisZ_00471a0c;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x153) {
+        if (iVar22 == 0x153) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471a04;
           do {
@@ -43106,11 +43094,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x154) {
+        if (iVar22 == 0x154) {
           pcVar8 = s_JoyRotY_004719fc;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x155) {
+        if (iVar22 == 0x155) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_004719f4;
           do {
@@ -43137,11 +43125,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x17e) {
+        if (iVar22 == 0x17e) {
           pcVar8 = s_unbound_004719ec;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x163) {
+        if (iVar22 == 0x163) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_004719e0;
           do {
@@ -43168,11 +43156,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x164) {
+        if (iVar22 == 0x164) {
           pcVar8 = s_RIM1XAxis_004719d4;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x165) {
+        if (iVar22 == 0x165) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_004719c8;
           do {
@@ -43199,11 +43187,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x168) {
+        if (iVar22 == 0x168) {
           pcVar8 = s_RIM0YAxis_004719bc;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x169) {
+        if (iVar22 == 0x169) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_004719b0;
           do {
@@ -43230,11 +43218,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x16a) {
+        if (iVar22 == 0x16a) {
           pcVar8 = s_RIM2YAxis_004719a4;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x16d) {
+        if (iVar22 == 0x16d) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471998;
           do {
@@ -43261,11 +43249,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x16e) {
+        if (iVar22 == 0x16e) {
           pcVar8 = s_RIM0Btn2_0047198c;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x16f) {
+        if (iVar22 == 0x16f) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471980;
           do {
@@ -43292,11 +43280,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x170) {
+        if (iVar22 == 0x170) {
           pcVar8 = s_RIM0Btn4_00471974;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x171) {
+        if (iVar22 == 0x171) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471968;
           do {
@@ -43323,11 +43311,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x172) {
+        if (iVar22 == 0x172) {
           pcVar8 = s_RIM1Btn1_0047195c;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x173) {
+        if (iVar22 == 0x173) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471950;
           do {
@@ -43354,11 +43342,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x174) {
+        if (iVar22 == 0x174) {
           pcVar8 = s_RIM1Btn3_00471944;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x175) {
+        if (iVar22 == 0x175) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471938;
           do {
@@ -43385,11 +43373,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x176) {
+        if (iVar22 == 0x176) {
           pcVar8 = s_RIM1Btn5_0047192c;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x177) {
+        if (iVar22 == 0x177) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471920;
           do {
@@ -43416,11 +43404,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x178) {
+        if (iVar22 == 0x178) {
           pcVar8 = s_RIM2Btn2_00471914;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x179) {
+        if (iVar22 == 0x179) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_00471908;
           do {
@@ -43447,11 +43435,11 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (iVar21 == 0x17a) {
+        if (iVar22 == 0x17a) {
           pcVar8 = s_RIM2Btn4_004718fc;
           goto LAB_00449cce;
         }
-        if (iVar21 == 0x17b) {
+        if (iVar22 == 0x17b) {
           uVar11 = 0xffffffff;
           pcVar8 = &DAT_004718f0;
           do {
@@ -43478,7 +43466,7 @@ LAB_00449cce:
           }
           goto LAB_0044a2a9;
         }
-        if (0x163 < iVar21) {
+        if (0x163 < iVar22) {
           pcVar8 = s_RawInput___004718e4;
           goto LAB_00449cce;
         }
@@ -43495,8 +43483,8 @@ LAB_0044a2a9:
   }
   iVar6 = *(int *)(&config_p1_move_forward + iVar6 * 4);
   if (iVar6 < 0x100) {
-    iVar21 = GetKeyNameTextA(iVar6 << 0x10,(LPSTR)&input_key_name_buf,0x3f);
-    if (iVar21 == 0) {
+    iVar22 = GetKeyNameTextA(iVar6 << 0x10,(LPSTR)&input_key_name_buf,0x3f);
+    if (iVar22 == 0) {
       switch(iVar6) {
       case 1:
         pcVar8 = s_DIK_ESCAPE_004718d8;
@@ -47346,7 +47334,7 @@ LAB_0044cafb:
     (&controls_rebind_move_primary_item)[iVar13].label = pcVar8;
     (&controls_rebind_move_primary_item)[iVar13].enabled = '\0';
   }
-  fVar24 = (fVar24 - 8.0) - 14.0;
+  fVar25 = (fVar25 - 8.0) - 14.0;
   render_tint_color_a = 0.7;
   fStack_68 = render_tint_color_r;
   fStack_60 = render_tint_color_b;
@@ -47354,7 +47342,7 @@ LAB_0044cafb:
   uStack_5c = 0x3f333333;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,fVar24,fVar23 + 26.0,s_Aiming_004790dc);
+            (grim_interface_ptr,fVar25,fVar24 + 26.0,s_Aiming_004790dc);
   (*grim_interface_ptr->vtable->grim_set_color_ptr)(&fStack_68);
   fVar19 = 1.0;
   fVar18 = 228.0;
@@ -47363,12 +47351,12 @@ LAB_0044cafb:
   pIVar2 = grim_interface_ptr->vtable;
   pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
   (*pIVar2->grim_draw_rect_outline)(pfVar9,fVar18,fVar19);
-  fVar23 = fVar23 + 26.0 + 18.0;
-  fVar24 = fVar24 + 8.0;
+  fVar24 = fVar24 + 26.0 + 18.0;
+  fVar25 = fVar25 + 8.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   if (*(int *)(&config_aim_scheme + controls_rebind_player_index * 4) == 1) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Torso_left__004790d0);
+              (grim_interface_ptr,fVar25,fVar24,s_Torso_left__004790d0);
     puVar20 = &controls_rebind_torso_left_item;
     fStack_70 = 128.0;
     fStack_6c = 0.0;
@@ -47376,18 +47364,18 @@ LAB_0044cafb:
     ui_menu_item_update(pfVar9,puVar20);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 16.0,s_Torso_right__004790c0);
+              (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Torso_right__004790c0);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_torso_right_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0 + 16.0;
+    fVar24 = fVar24 + 16.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
   if (*(int *)(&config_aim_scheme + controls_rebind_player_index * 4) == 4) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Aim_Up_Down_Axis__004790ac);
+              (grim_interface_ptr,fVar25,fVar24,s_Aim_Up_Down_Axis__004790ac);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_aim_up_down_axis_item;
     fStack_6c = 0.0;
@@ -47395,27 +47383,27 @@ LAB_0044cafb:
     ui_menu_item_update(pfVar9,puVar20);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 16.0,s_Aim_Left_Right_Axis__00479094);
+              (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Aim_Left_Right_Axis__00479094);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_aim_left_right_axis_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0 + 16.0;
+    fVar24 = fVar24 + 16.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,fVar24,fVar23,s_Fire__00471f94);
+            (grim_interface_ptr,fVar25,fVar24,s_Fire__00471f94);
   fStack_70 = 128.0;
   puVar20 = &controls_rebind_fire_item;
   fStack_6c = 0.0;
   pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
   ui_menu_item_update(pfVar9,puVar20);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
-  fVar23 = fVar23 + 16.0 + 8.0;
+  fVar24 = fVar24 + 16.0 + 8.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-            (grim_interface_ptr,fVar24 - 8.0,fVar23,s_Moving_0047908c);
+            (grim_interface_ptr,fVar25 - 8.0,fVar24,s_Moving_0047908c);
   (*grim_interface_ptr->vtable->grim_set_color_ptr)(&fStack_68);
   fVar19 = 1.0;
   fVar18 = 228.0;
@@ -47425,11 +47413,11 @@ LAB_0044cafb:
   pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
   (*pIVar2->grim_draw_rect_outline)(pfVar9,fVar18,fVar19);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
-  fVar24 = (fVar24 - 8.0) + 8.0;
-  fVar23 = fVar23 + 18.0;
+  fVar25 = (fVar25 - 8.0) + 8.0;
+  fVar24 = fVar24 + 18.0;
   if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) == 2) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Move_Up__00479080);
+              (grim_interface_ptr,fVar25,fVar24,s_Move_Up__00479080);
     puVar20 = &controls_rebind_move_primary_item;
     fStack_70 = 128.0;
     fStack_6c = 0.0;
@@ -47437,36 +47425,36 @@ LAB_0044cafb:
     ui_menu_item_update(pfVar9,puVar20);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 16.0,s_Move_Down__00479074);
+              (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Move_Down__00479074);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_secondary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0 + 16.0;
+    fVar24 = fVar24 + 16.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Move_Left__00479068);
+              (grim_interface_ptr,fVar25,fVar24,s_Move_Left__00479068);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_tertiary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0;
+    fVar24 = fVar24 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Move_Right__0047905c);
+              (grim_interface_ptr,fVar25,fVar24,s_Move_Right__0047905c);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_quaternary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0;
+    fVar24 = fVar24 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
   if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) == 1) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Forward__00479050);
+              (grim_interface_ptr,fVar25,fVar24,s_Forward__00479050);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_primary_item;
     fStack_6c = 0.0;
@@ -47474,47 +47462,47 @@ LAB_0044cafb:
     ui_menu_item_update(pfVar9,puVar20);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 16.0,s_Backwards__00479044);
+              (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Backwards__00479044);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_secondary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0 + 16.0;
+    fVar24 = fVar24 + 16.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Turn_left__00479038);
+              (grim_interface_ptr,fVar25,fVar24,s_Turn_left__00479038);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_tertiary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0;
+    fVar24 = fVar24 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Turn_right__0047902c);
+              (grim_interface_ptr,fVar25,fVar24,s_Turn_right__0047902c);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_quaternary_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0;
+    fVar24 = fVar24 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
   if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) == 4) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Move_to_cursor__0047901c);
+              (grim_interface_ptr,fVar25,fVar24,s_Move_to_cursor__0047901c);
     fStack_70 = 128.0;
     puVar20 = &controls_key_reload_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0;
+    fVar24 = fVar24 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
   if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) == 3) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,s_Up_Down_Axis__0047900c);
+              (grim_interface_ptr,fVar25,fVar24,s_Up_Down_Axis__0047900c);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_up_down_axis_item;
     fStack_6c = 0.0;
@@ -47522,21 +47510,21 @@ LAB_0044cafb:
     ui_menu_item_update(pfVar9,puVar20);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 16.0,s_Left_Right_Axis__00478ff8);
+              (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Left_Right_Axis__00478ff8);
     fStack_70 = 128.0;
     puVar20 = &controls_rebind_move_left_right_axis_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 16.0 + 16.0;
+    fVar24 = fVar24 + 16.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
-  fVar23 = fVar23 + 8.0;
-  fVar24 = fVar24 - 8.0;
+  fVar24 = fVar24 + 8.0;
+  fVar25 = fVar25 - 8.0;
   if (controls_rebind_player_index == 0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23,&DAT_00478ff0);
+              (grim_interface_ptr,fVar25,fVar24,&DAT_00478ff0);
     (*grim_interface_ptr->vtable->grim_set_color_ptr)(&fStack_68);
     fVar19 = 1.0;
     fVar18 = 228.0;
@@ -47546,51 +47534,51 @@ LAB_0044cafb:
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     (*pIVar2->grim_draw_rect_outline)(pfVar9,fVar18,fVar19);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
-    fVar24 = fVar24 + 8.0;
+    fVar25 = fVar25 + 8.0;
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              (grim_interface_ptr,fVar24,fVar23 + 18.0,s_Level_Up__00471ff0);
+              (grim_interface_ptr,fVar25,fVar24 + 18.0,s_Level_Up__00471ff0);
     fStack_70 = 128.0;
     puVar20 = &controls_key_pick_perk_item;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
-    fVar23 = fVar23 + 18.0 + 16.0;
+    fVar24 = fVar24 + 18.0 + 16.0;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) != 4) {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24,fVar23,s_Reload__00471fc8);
+                (grim_interface_ptr,fVar25,fVar24,s_Reload__00471fc8);
       fStack_70 = 128.0;
       puVar20 = &controls_key_reload_item;
       fStack_6c = 0.0;
       pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
       ui_menu_item_update(pfVar9,puVar20);
-      fVar23 = fVar23 + 16.0;
+      fVar24 = fVar24 + 16.0;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     }
-    fVar23 = fVar23 + 8.0;
-    fVar24 = fVar24 - 8.0;
+    fVar24 = fVar24 + 8.0;
+    fVar25 = fVar25 - 8.0;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
-  fVar24 = fVar24 - 27.0;
+  fVar25 = fVar25 - 27.0;
   if (controls_rebind_slot_index != -1) {
     if ((controls_rebind_slot_index < 9) || (0xc < controls_rebind_slot_index)) {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24 + 54.0,fVar23 + 12.0,
+                (grim_interface_ptr,fVar25 + 54.0,fVar24 + 12.0,
                  s_Assign_control__eg__press_a_key__00478f5c);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24 + 54.0,fVar23 + 12.0 + 13.0,
+                (grim_interface_ptr,fVar25 + 54.0,fVar24 + 12.0 + 13.0,
                  s__press_ESCAPE_to_cancel__00478f80);
     }
     else {
-      fVar23 = fVar23 + 12.0;
+      fVar24 = fVar24 + 12.0;
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24 + 54.0,fVar23,s_Move_joystick_pad_analog_control_00478fc8
+                (grim_interface_ptr,fVar25 + 54.0,fVar24,s_Move_joystick_pad_analog_control_00478fc8
                 );
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24 + 54.0,fVar23 + 13.0,
+                (grim_interface_ptr,fVar25 + 54.0,fVar24 + 13.0,
                  s_axis_you_want_to_assign_the_cont_00478fa0);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar24 + 54.0,fVar23 + 26.0,s__press_ESCAPE_to_cancel__00478f80)
+                (grim_interface_ptr,fVar25 + 54.0,fVar24 + 26.0,s__press_ESCAPE_to_cancel__00478f80)
       ;
     }
   }
@@ -47688,42 +47676,42 @@ LAB_0044cafb:
         iVar13 = _config_key_reload;
         if (controls_rebind_capture_armed != '\0') {
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x13f);
-          fVar23 = ABS((float)extraout_ST0);
+          fVar24 = ABS((float)extraout_ST0);
           if (ABS((float)extraout_ST0) < controls_rebind_axis_peak_abs_13f) {
-            fVar23 = controls_rebind_axis_peak_abs_13f;
+            fVar24 = controls_rebind_axis_peak_abs_13f;
           }
-          controls_rebind_axis_peak_abs_13f = fVar23;
+          controls_rebind_axis_peak_abs_13f = fVar24;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x140);
-          fVar23 = ABS((float)extraout_ST0_00);
+          fVar24 = ABS((float)extraout_ST0_00);
           if (ABS((float)extraout_ST0_00) < controls_rebind_axis_peak_abs_140) {
-            fVar23 = controls_rebind_axis_peak_abs_140;
+            fVar24 = controls_rebind_axis_peak_abs_140;
           }
-          controls_rebind_axis_peak_abs_140 = fVar23;
+          controls_rebind_axis_peak_abs_140 = fVar24;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x141);
-          fVar23 = ABS((float)extraout_ST0_01);
+          fVar24 = ABS((float)extraout_ST0_01);
           if (ABS((float)extraout_ST0_01) < controls_rebind_axis_peak_abs_141) {
-            fVar23 = controls_rebind_axis_peak_abs_141;
+            fVar24 = controls_rebind_axis_peak_abs_141;
           }
-          controls_rebind_axis_peak_abs_141 = fVar23;
+          controls_rebind_axis_peak_abs_141 = fVar24;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x153);
-          fVar23 = ABS((float)extraout_ST0_02);
+          fVar24 = ABS((float)extraout_ST0_02);
           if (ABS((float)extraout_ST0_02) < controls_rebind_axis_peak_abs_153) {
-            fVar23 = controls_rebind_axis_peak_abs_153;
+            fVar24 = controls_rebind_axis_peak_abs_153;
           }
-          controls_rebind_axis_peak_abs_153 = fVar23;
+          controls_rebind_axis_peak_abs_153 = fVar24;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x154);
-          fVar23 = ABS((float)extraout_ST0_03);
+          fVar24 = ABS((float)extraout_ST0_03);
           if (ABS((float)extraout_ST0_03) < controls_rebind_axis_peak_abs_154) {
-            fVar23 = controls_rebind_axis_peak_abs_154;
+            fVar24 = controls_rebind_axis_peak_abs_154;
           }
-          controls_rebind_axis_peak_abs_154 = fVar23;
+          controls_rebind_axis_peak_abs_154 = fVar24;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x155);
           pIVar3 = grim_interface_ptr;
-          fVar23 = ABS((float)extraout_ST0_04);
+          fVar24 = ABS((float)extraout_ST0_04);
           if (ABS((float)extraout_ST0_04) < controls_rebind_axis_peak_abs_155) {
-            fVar23 = controls_rebind_axis_peak_abs_155;
+            fVar24 = controls_rebind_axis_peak_abs_155;
           }
-          controls_rebind_axis_peak_abs_155 = fVar23;
+          controls_rebind_axis_peak_abs_155 = fVar24;
           iVar6 = 0;
           pfVar9 = &controls_rebind_axis_peak_abs_13f;
           do {
@@ -47774,52 +47762,52 @@ LAB_0044da08:
   }
   _config_key_reload = iVar13;
   DAT_004d77f1 = 0;
-  controls_aim_method_list_enabled =
-       _controls_player_profile_list_open == 0 && _controls_move_method_list_open == 0;
-  controls_move_method_list_enabled =
-       _controls_aim_method_list_open == 0 && _controls_player_profile_list_open == 0;
-  controls_player_profile_list_enabled =
-       _controls_aim_method_list_open == 0 && _controls_move_method_list_open == 0;
-  if ((_controls_move_method_list_open != 0) || (_controls_aim_method_list_open != 0)) {
+  controls_aim_method_list.enabled =
+       controls_player_profile_list.open == 0 && controls_move_method_list.open == 0;
+  controls_move_method_list.enabled =
+       controls_aim_method_list.open == 0 && controls_player_profile_list.open == 0;
+  controls_player_profile_list.enabled =
+       controls_aim_method_list.open == 0 && controls_move_method_list.open == 0;
+  if ((controls_move_method_list.open != 0) || (controls_aim_method_list.open != 0)) {
     DAT_004d77f1 = 1;
   }
-  pcVar8 = &controls_move_method_list_enabled;
+  puVar21 = &controls_move_method_list;
   fStack_70 = 10.0;
   fStack_6c = 104.0;
   pfVar9 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
-  iVar13 = ui_list_widget_update(pfVar9,pcVar8);
+  iVar13 = ui_list_widget_update(pfVar9,puVar21);
   if ((-2 < iVar13) &&
      (((iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0' ||
        (iVar6 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar6 != '\0')) &&
-      (_controls_move_method_list_open = 1 - _controls_move_method_list_open, -1 < iVar13)))) {
-    _DAT_004d7640 = iVar13;
+      (controls_move_method_list.open = 1 - controls_move_method_list.open, -1 < iVar13)))) {
+    controls_move_method_list.selected_index = iVar13;
     *(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) = iVar13 + 1;
   }
-  pcVar8 = &controls_aim_method_list_enabled;
+  puVar21 = &controls_aim_method_list;
   fStack_70 = 10.0;
   fStack_6c = 62.0;
   pfVar9 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
-  iVar13 = ui_list_widget_update(pfVar9,pcVar8);
+  iVar13 = ui_list_widget_update(pfVar9,puVar21);
   if (((-2 < iVar13) &&
       ((iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0' ||
        (iVar6 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar6 != '\0'))))
-     && (_controls_aim_method_list_open = 1 - _controls_aim_method_list_open, -1 < iVar13)) {
-    _DAT_004d76b0 = iVar13;
+     && (controls_aim_method_list.open = 1 - controls_aim_method_list.open, -1 < iVar13)) {
+    controls_aim_method_list.selected_index = iVar13;
     *(int *)(&config_aim_scheme + controls_rebind_player_index * 4) = iVar13;
   }
-  pcVar8 = &controls_player_profile_list_enabled;
+  puVar21 = &controls_player_profile_list;
   fStack_70 = 136.0;
   fStack_6c = 16.0;
   pfVar9 = vec2_add_out(&stack0xffffff88,(float *)&stack0xffffff78,&fStack_70);
-  iVar13 = ui_list_widget_update(pfVar9,pcVar8);
+  iVar13 = ui_list_widget_update(pfVar9,puVar21);
   if (((-2 < iVar13) &&
       ((iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0' ||
        (iVar6 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c), (char)iVar6 != '\0'))))
-     && (_controls_player_profile_list_open = 1 - _controls_player_profile_list_open, -1 < iVar13))
-  {
-    _DAT_004d76b0 = *(int *)(&config_aim_scheme + iVar13 * 4);
-    _DAT_004d7640 = *(int *)(&config_player_mode_flags + iVar13 * 4) + -1;
-    _DAT_004d7668 = iVar13;
+     && (controls_player_profile_list.open = 1 - controls_player_profile_list.open, -1 < iVar13)) {
+    controls_aim_method_list.selected_index = *(int *)(&config_aim_scheme + iVar13 * 4);
+    controls_move_method_list.selected_index = *(int *)(&config_player_mode_flags + iVar13 * 4) + -1
+    ;
+    controls_player_profile_list.selected_index = iVar13;
     controls_rebind_player_index = iVar13;
   }
   return;
@@ -47861,6 +47849,7 @@ void play_game_menu_update(void)
   uint *puVar3;
   int iVar4;
   float *xy;
+  ui_list_widget_t *y;
   char cVar5;
   float fVar6;
   float fVar7;
@@ -48057,68 +48046,68 @@ void play_game_menu_update(void)
   }
   if (((byte)play_game_menu_init_flags & 0x40) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x40;
-    play_game_player_count_list_enabled = '\x01';
-    play_game_player_count_list_active_index = 0;
-    play_game_player_count_list_hovered = '\0';
-    play_game_player_count_list_selected_index = 0;
-    play_game_player_count_list_open = 0;
-    play_game_player_count_list_item_count = 0;
-    play_game_player_count_list_items = (char **)0x0;
+    play_game_player_count_list.enabled = '\x01';
+    play_game_player_count_list.active_index = 0;
+    play_game_player_count_list.hovered = '\0';
+    play_game_player_count_list.selected_index = 0;
+    play_game_player_count_list.open = 0;
+    play_game_player_count_list.item_count = 0;
+    play_game_player_count_list.items = (char **)0x0;
     crt_atexit(&DAT_0044fa30);
   }
-  play_game_player_count_list_items = (char **)&stack0xffffffc8;
-  play_game_player_count_list_selected_index = _config_player_count + -1;
-  play_game_player_count_list_item_count = 2;
+  play_game_player_count_list.items = (char **)&stack0xffffffc8;
+  play_game_player_count_list.selected_index = _config_player_count + -1;
+  play_game_player_count_list.item_count = 2;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.81);
   xy = (float *)&stack0xffffffc0;
-  pcVar8 = &play_game_player_count_list_enabled;
-  iVar2 = ui_list_widget_update(xy,&play_game_player_count_list_enabled);
+  y = &play_game_player_count_list;
+  iVar2 = ui_list_widget_update(xy,&play_game_player_count_list);
   if (-2 < iVar2) {
-    pcVar8 = (char *)0x44f634;
+    y = (ui_list_widget_t *)0x44f634;
     iVar4 = input_primary_just_pressed();
     if ((char)iVar4 == '\0') {
-      pcVar8 = (char *)0x1c;
+      y = (ui_list_widget_t *)0x1c;
       xy = (float *)0x44f645;
       iVar4 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
       if ((char)iVar4 == '\0') goto LAB_0044f676;
     }
-    play_game_player_count_list_open = 1 - play_game_player_count_list_open;
+    play_game_player_count_list.open = 1 - play_game_player_count_list.open;
     if (-1 < iVar2) {
       _config_player_count = iVar2 + 1;
-      pcVar8 = (char *)0x44f671;
-      play_game_player_count_list_selected_index = iVar2;
+      y = (ui_list_widget_t *)0x44f671;
+      play_game_player_count_list.selected_index = iVar2;
       highscore_load_table();
     }
   }
 LAB_0044f676:
-  DAT_004d75a6 = play_game_player_count_list_open == 0;
+  DAT_004d75a6 = play_game_player_count_list.open == 0;
   DAT_004d75fe = DAT_004d75a6;
   DAT_004d76ce = DAT_004d75a6;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   if (0 < DAT_004d7600) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7600 * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((float)xy - 8.0,(float)pcVar8,s_Unlock_new_weapons_and_perks_in_Q_00479220);
+              ((float)xy - 8.0,(float)y,s_Unlock_new_weapons_and_perks_in_Q_00479220);
   }
   if (0 < DAT_004d75a8) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75a8 * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((float)xy + 32.0,(float)pcVar8,s_Face_a_rush_of_aliens_in_Rush_mo_004791fc);
+              ((float)xy + 32.0,(float)y,s_Face_a_rush_of_aliens_in_Rush_mo_004791fc);
   }
   if (0 < DAT_004d76d0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d76d0 * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((float)xy + 20.0,(float)pcVar8,s_Gain_perks_and_weapons_and_fight_004791d4);
+              ((float)xy + 20.0,(float)y,s_Gain_perks_and_weapons_and_fight_004791d4);
   }
   if (0 < DAT_004d7618) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7618 * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((float)xy,(float)pcVar8 - 12.0,s_Use_your_typing_skills_as_the_we_0047919c);
+              ((float)xy,(float)y - 12.0,s_Use_your_typing_skills_as_the_we_0047919c);
   }
   if (0 < DAT_004d75d8) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75d8 * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
-              ((float)xy + 38.0,(float)pcVar8,s_Learn_how_to_play_Crimsonland__0047917c);
+              ((float)xy + 38.0,(float)y,s_Learn_how_to_play_Crimsonland__0047917c);
   }
   if (DAT_004d7615 != '\0') {
     render_pass_mode = 0;

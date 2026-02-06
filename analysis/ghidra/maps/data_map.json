@@ -7271,6 +7271,13 @@
       "type": "int"
     },
     {
+      "address": "0x004ccce0",
+      "comment": "Highscore screen game-mode dropdown/list state (Quest/Rush/Survival/Typ-o-Shooter).",
+      "name": "highscore_game_mode_list",
+      "program": "crimsonland.exe",
+      "type": "ui_list_widget_t"
+    },
+    {
       "address": "0x004ccd40",
       "comment": "ui_menu_item_update idle tint RGBA component R.",
       "name": "ui_menu_item_color_idle_r",
@@ -7304,6 +7311,13 @@
       "name": "typo_mode_reset_flag",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x004d0d78",
+      "comment": "Highscore screen date-filter dropdown/list state (all-time/month/week/day).",
+      "name": "highscore_date_filter_list",
+      "program": "crimsonland.exe",
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d0da0",
@@ -7346,6 +7360,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004d0ee8",
+      "comment": "Profile menu name-slot dropdown/list state (saved-name entries + add-new row).",
+      "name": "profile_name_slot_list",
+      "program": "crimsonland.exe",
+      "type": "ui_list_widget_t"
+    },
+    {
       "address": "0x004d0f20",
       "comment": "Statistics menu one-shot init flags bitfield (guards static tab/button setup blocks in statistics_menu_update).",
       "name": "statistics_menu_init_flags",
@@ -7386,6 +7407,13 @@
       "name": "profile_name_input_state_alpha",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004d0fa8",
+      "comment": "Highscore screen player-count dropdown/list state (1P/2P selector).",
+      "name": "highscore_player_count_list",
+      "program": "crimsonland.exe",
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d11e0",
@@ -7645,45 +7673,24 @@
     },
     {
       "address": "0x004d7638",
-      "comment": "Controls menu movement-method list enabled gate (disabled while aim/profile lists are open).",
-      "name": "controls_move_method_list_enabled",
+      "comment": "Controls menu movement-method dropdown/list state (configure-for choices).",
+      "name": "controls_move_method_list",
       "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004d763c",
-      "comment": "Controls menu movement-method list open latch toggled on list activation.",
-      "name": "controls_move_method_list_open",
-      "program": "crimsonland.exe",
-      "type": "char"
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d7660",
-      "comment": "Controls menu player-profile list enabled gate (disabled while aim/move lists are open).",
-      "name": "controls_player_profile_list_enabled",
+      "comment": "Controls menu player-profile dropdown/list state (Player 1..4 selector).",
+      "name": "controls_player_profile_list",
       "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004d7664",
-      "comment": "Controls menu player-profile list open latch toggled on list activation.",
-      "name": "controls_player_profile_list_open",
-      "program": "crimsonland.exe",
-      "type": "char"
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d76a8",
-      "comment": "Controls menu aim-method list enabled gate (disabled while move/profile lists are open).",
-      "name": "controls_aim_method_list_enabled",
+      "comment": "Controls menu aim-method dropdown/list state (Relative/Static/Pad/etc choices).",
+      "name": "controls_aim_method_list",
       "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004d76ac",
-      "comment": "Controls menu aim-method list open latch toggled on list activation.",
-      "name": "controls_aim_method_list_open",
-      "program": "crimsonland.exe",
-      "type": "char"
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d7730",
@@ -7820,52 +7827,10 @@
     },
     {
       "address": "0x004d79b8",
-      "comment": "Play-game menu player-count dropdown enabled flag passed as list_widget[0].",
-      "name": "play_game_player_count_list_enabled",
+      "comment": "Play-game menu player-count dropdown/list state (1P/2P selector).",
+      "name": "play_game_player_count_list",
       "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004d79bc",
-      "comment": "Play-game menu player-count dropdown open/expanded flag (list_widget[1]); also gates mode button enable state.",
-      "name": "play_game_player_count_list_open",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d79c0",
-      "comment": "Play-game menu player-count dropdown selected index (0-based player-count minus one).",
-      "name": "play_game_player_count_list_selected_index",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d79c4",
-      "comment": "Play-game menu player-count dropdown item string table pointer (char**).",
-      "name": "play_game_player_count_list_items",
-      "program": "crimsonland.exe",
-      "type": "char **"
-    },
-    {
-      "address": "0x004d79c8",
-      "comment": "Play-game menu player-count dropdown item count (2 entries in retail build: 1P/2P).",
-      "name": "play_game_player_count_list_item_count",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d79cc",
-      "comment": "Play-game menu player-count dropdown hover latch (list_widget+0x14).",
-      "name": "play_game_player_count_list_hovered",
-      "program": "crimsonland.exe",
-      "type": "char"
-    },
-    {
-      "address": "0x004d79d0",
-      "comment": "Play-game menu player-count dropdown highlighted/active row index (list_widget+0x18).",
-      "name": "play_game_player_count_list_active_index",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "type": "ui_list_widget_t"
     },
     {
       "address": "0x004d79d8",

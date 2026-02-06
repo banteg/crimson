@@ -108,19 +108,16 @@ Recovered runtime globals used by the in-game quest panel in `ui_render_hud`:
   scratch text buffer used for formatted stage labels (`major-minor`) near the
   quest title card.
 
-## Controls menu list latches
+## Controls menu lists
 
-Recovered controls-menu open/enabled gates:
+Recovered controls-menu dropdown blocks (`ui_list_widget_t`, size `0x1c`):
 
-- `controls_move_method_list_open` / `controls_move_method_list_enabled`
-  (`0x004d763c` / `0x004d7638`)
-- `controls_aim_method_list_open` / `controls_aim_method_list_enabled`
-  (`0x004d76ac` / `0x004d76a8`)
-- `controls_player_profile_list_open` / `controls_player_profile_list_enabled`
-  (`0x004d7664` / `0x004d7660`)
+- `controls_move_method_list` (`0x004d7638`)
+- `controls_aim_method_list` (`0x004d76a8`)
+- `controls_player_profile_list` (`0x004d7660`)
 
-`controls_menu_update` recomputes the `*_enabled` flags each frame so only one
-list can be active at a time.
+`controls_menu_update` recomputes `.enabled` each frame so only one dropdown
+stays interactive while the others are open.
 
 ## Options sliders
 
@@ -141,6 +138,9 @@ Additional controls-rebind runtime globals:
 - `ui_menu_item_t` (`0x10` bytes, `ui_menu_item_update` payload):
   `label` (+0x0), `hovered` (+0x4), `activated` (+0x5), `enabled` (+0x6),
   `hover_phase` (+0x8), `alpha` (+0xc).
+- `ui_list_widget_t` (`0x1c` bytes, `ui_list_widget_update` payload):
+  `enabled` (+0x0), `open` (+0x4), `selected_index` (+0x8), `items` (+0xc),
+  `item_count` (+0x10), `hovered` (+0x14), `active_index` (+0x18).
 - Rebind action slots passed to `ui_menu_item_update`:
   `controls_rebind_move_primary_item`, `controls_rebind_move_secondary_item`,
   `controls_rebind_move_tertiary_item`, `controls_rebind_move_quaternary_item`,

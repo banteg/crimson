@@ -3282,7 +3282,7 @@
   {
     "name": "ui_list_widget_update",
     "address": "0043efc0",
-    "signature": "int ui_list_widget_update(float * xy, char * list)",
+    "signature": "int ui_list_widget_update(float * xy, ui_list_widget_t * list)",
     "external": false,
     "calls_total": 6,
     "calls": ["__ftol", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect", "ui_mouse_inside_rect_with_padding"]
