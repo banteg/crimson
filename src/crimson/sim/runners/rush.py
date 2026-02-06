@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grim.geom import Vec2
+from grim.rand import Crand
 
 from ...camera import camera_shake_update
 from ...creatures.spawn import tick_rush_mode_spawns
@@ -11,6 +12,7 @@ from ...gameplay import PlayerInput, perks_rebuild_available, weapon_assign_play
 from ...replay import Replay, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapons import WeaponId
+from ..presentation_step import apply_world_presentation_step
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -85,6 +87,8 @@ def run_rush_replay(
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
     world.state.rng.srand(int(replay.header.seed))
+    presentation_rng = Crand(int(replay.header.seed) ^ 0xA5A5A5A5)
+    game_tune_started = False
 
     _enforce_rush_loadout(world)
 
@@ -122,6 +126,8 @@ def run_rush_replay(
 
         rng_before_world_step = int(state.rng.state)
         world_step_marks: dict[str, int] = {"gw_begin": int(rng_before_world_step)}
+        prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in world.players]
+        prev_perk_pending = int(state.perk_selection.pending_count)
         weapon_refresh_available(state)
         world_step_marks["gw_after_weapon_refresh"] = int(state.rng.state)
         perks_rebuild_available(state)
@@ -144,6 +150,26 @@ def run_rush_replay(
         # `GameWorld.update` runs camera shake update after simulation.
         camera_shake_update(state, dt_sim)
         rng_after_world_step = int(state.rng.state)
+        presentation = apply_world_presentation_step(
+            state=state,
+            players=world.players,
+            fx_queue=fx_queue,
+            hits=events.hits,
+            deaths=events.deaths,
+            pickups=events.pickups,
+            event_sfx=events.sfx,
+            prev_audio=prev_audio,
+            prev_perk_pending=prev_perk_pending,
+            game_mode=int(GameMode.RUSH),
+            demo_mode_active=False,
+            perk_progression_enabled=False,
+            rand=presentation_rng.rand,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=bool(game_tune_started),
+        )
+        if presentation.trigger_game_tune:
+            game_tune_started = True
         # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
         # Headless verification has no render pass, so clear explicitly per simulated tick.
         fx_queue.clear()
