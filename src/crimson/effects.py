@@ -54,42 +54,6 @@ class _CreatureForParticles(Protocol):
     tint: RGBA
 
 
-class _ColorProxy:
-    color: RGBA
-
-    @property
-    def color_r(self) -> float:
-        return self.color.r
-
-    @color_r.setter
-    def color_r(self, value: float) -> None:
-        self.color = self.color.replace(r=value)
-
-    @property
-    def color_g(self) -> float:
-        return self.color.g
-
-    @color_g.setter
-    def color_g(self, value: float) -> None:
-        self.color = self.color.replace(g=value)
-
-    @property
-    def color_b(self) -> float:
-        return self.color.b
-
-    @color_b.setter
-    def color_b(self, value: float) -> None:
-        self.color = self.color.replace(b=value)
-
-    @property
-    def color_a(self) -> float:
-        return self.color.a
-
-    @color_a.setter
-    def color_a(self, value: float) -> None:
-        self.color = self.color.replace(a=value)
-
-
 CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
 CreatureKillHandler = Callable[[int, int], None]
 
@@ -355,7 +319,7 @@ class ParticlePool:
                                 vel=sprite_vel,
                                 scale=13.0,
                             )
-                            sprite_effects.entries[int(sprite_id)].color_a = 0.7
+                            sprite_effects.entries[int(sprite_id)].color = RGBA(1.0, 1.0, 1.0, 0.7)
 
                         if fx_queue is not None:
                             fx_queue.add_random(
@@ -369,7 +333,7 @@ class ParticlePool:
 
 
 @dataclass(slots=True)
-class SpriteEffect(_ColorProxy):
+class SpriteEffect:
     active: bool = False
     color: RGBA = field(default_factory=lambda: RGBA(a=0.0))
     rotation: float = 0.0
@@ -435,7 +399,7 @@ class SpriteEffectPool:
 
 
 @dataclass(slots=True)
-class FxQueueEntry(_ColorProxy):
+class FxQueueEntry:
     effect_id: int = 0
     rotation: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
@@ -476,7 +440,7 @@ class FxQueue:
         width: float,
         height: float,
         rotation: float,
-        rgba: RGBA | tuple[float, float, float, float],
+        rgba: RGBA,
     ) -> bool:
         """Port of `fx_queue_add` (0x0041e840)."""
 
@@ -489,7 +453,7 @@ class FxQueue:
         entry.pos = pos
         entry.height = float(height)
         entry.width = float(width)
-        entry.color = RGBA.from_rgba(rgba)
+        entry.color = rgba
         self._count += 1
         return True
 
@@ -514,7 +478,7 @@ class FxQueue:
 
 
 @dataclass(slots=True)
-class FxQueueRotatedEntry(_ColorProxy):
+class FxQueueRotatedEntry:
     top_left: Vec2 = field(default_factory=Vec2)
     color: RGBA = field(default_factory=RGBA)
     rotation: float = 0.0
@@ -550,7 +514,7 @@ class FxQueueRotated:
         self,
         *,
         top_left: Vec2,
-        rgba: RGBA | tuple[float, float, float, float],
+        rgba: RGBA,
         rotation: float,
         scale: float,
         creature_type_id: int,
@@ -564,7 +528,7 @@ class FxQueueRotated:
         if self._count >= self._max_count:
             return False
 
-        color = RGBA.from_rgba(rgba)
+        color = rgba
         a = color.a
         if terrain_bodies_transparency != 0.0:
             a = a / float(terrain_bodies_transparency)
@@ -583,7 +547,7 @@ class FxQueueRotated:
 
 
 @dataclass(slots=True)
-class EffectEntry(_ColorProxy):
+class EffectEntry:
     pos: Vec2 = field(default_factory=Vec2)
     effect_id: int = 0
     vel: Vec2 = field(default_factory=Vec2)
@@ -658,10 +622,7 @@ class EffectPool:
         age: float,
         lifetime: float,
         flags: int,
-        color_r: float,
-        color_g: float,
-        color_b: float,
-        color_a: float,
+        color: RGBA,
         rotation_step: float,
         scale_step: float,
         detail_preset: int,
@@ -681,12 +642,7 @@ class EffectPool:
         entry.age = float(age)
         entry.lifetime = float(lifetime)
         entry.flags = int(flags)
-        entry.color = RGBA(
-            r=float(color_r),
-            g=float(color_g),
-            b=float(color_b),
-            a=float(color_a),
-        )
+        entry.color = color
         entry.rotation_step = float(rotation_step)
         entry.scale_step = float(scale_step)
         return idx
@@ -771,10 +727,7 @@ class EffectPool:
             age=0.0,
             lifetime=0.15,
             flags=0x1C5,
-            color_r=1.0,
-            color_g=1.0,
-            color_b=1.0,
-            color_a=0.6,
+            color=RGBA(1.0, 1.0, 1.0, 0.6),
             rotation_step=float(rotation_step),
             scale_step=0.0,
             detail_preset=int(detail_preset),
@@ -823,10 +776,7 @@ class EffectPool:
                 age=float(age),
                 lifetime=lifetime,
                 flags=0xC9,
-                color_r=1.0,
-                color_g=1.0,
-                color_b=1.0,
-                color_a=0.5,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
                 rotation_step=0.0,
                 scale_step=scale_step,
                 detail_preset=int(detail_preset),
@@ -841,10 +791,7 @@ class EffectPool:
         detail_preset: int,
         lifetime: float = 0.5,
         scale_step: float | None = None,
-        color_r: float = 0.4,
-        color_g: float = 0.5,
-        color_b: float = 1.0,
-        color_a: float = 0.5,
+        color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
     ) -> None:
         """Port of `effect_spawn_burst` (0x0042ef60)."""
 
@@ -874,10 +821,7 @@ class EffectPool:
                 age=0.0,
                 lifetime=float(lifetime),
                 flags=0x1D,
-                color_r=float(color_r),
-                color_g=float(color_g),
-                color_b=float(color_b),
-                color_a=float(color_a),
+                color=color,
                 rotation_step=0.0,
                 scale_step=step,
                 detail_preset=int(detail_preset),
@@ -888,10 +832,7 @@ class EffectPool:
         *,
         pos: Vec2,
         detail_preset: int,
-        color_r: float,
-        color_g: float,
-        color_b: float,
-        color_a: float,
+        color: RGBA,
         lifetime: float = 0.25,
         scale_step: float = 50.0,
     ) -> None:
@@ -908,10 +849,7 @@ class EffectPool:
             age=0.0,
             lifetime=float(lifetime),
             flags=0x19,
-            color_r=float(color_r),
-            color_g=float(color_g),
-            color_b=float(color_b),
-            color_a=float(color_a),
+            color=color,
             rotation_step=0.0,
             scale_step=float(scale_step),
             detail_preset=int(detail_preset),
@@ -950,10 +888,7 @@ class EffectPool:
             age=0.0,
             lifetime=float(lifetime),
             flags=0x1CD,
-            color_r=1.0,
-            color_g=1.0,
-            color_b=1.0,
-            color_a=0.5,
+            color=RGBA(1.0, 1.0, 1.0, 0.5),
             rotation_step=float(rotation_step),
             scale_step=float(scale_step),
             detail_preset=int(detail_preset),
@@ -987,10 +922,7 @@ class EffectPool:
                 age=0.0,
                 lifetime=float(lifetime),
                 flags=0x5D,
-                color_r=1.0,
-                color_g=1.0,
-                color_b=1.0,
-                color_a=0.5,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
                 rotation_step=float(rotation_step),
                 scale_step=0.0,
                 detail_preset=int(detail_preset),
@@ -1030,10 +962,7 @@ class EffectPool:
             age=-0.1,
             lifetime=0.35,
             flags=0x19,
-            color_r=0.6,
-            color_g=0.6,
-            color_b=0.6,
-            color_a=1.0,
+            color=RGBA(0.6, 0.6, 0.6, 1.0),
             rotation_step=0.0,
             scale_step=scale * 25.0,
             detail_preset=detail_preset,
@@ -1056,10 +985,7 @@ class EffectPool:
                     age=float(age),
                     lifetime=float(lifetime),
                     flags=0x5D,
-                    color_r=0.1,
-                    color_g=0.1,
-                    color_b=0.1,
-                    color_a=1.0,
+                    color=RGBA(0.1, 0.1, 0.1, 1.0),
                     rotation_step=1.4,
                     scale_step=scale * 5.0,
                     detail_preset=detail_preset,
@@ -1077,10 +1003,7 @@ class EffectPool:
             age=0.0,
             lifetime=0.3,
             flags=0x19,
-            color_r=1.0,
-            color_g=1.0,
-            color_b=1.0,
-            color_a=1.0,
+            color=RGBA(1.0, 1.0, 1.0, 1.0),
             rotation_step=0.0,
             scale_step=scale * 45.0,
             detail_preset=detail_preset,
@@ -1111,10 +1034,7 @@ class EffectPool:
                 age=0.0,
                 lifetime=0.7,
                 flags=0x1D,
-                color_r=1.0,
-                color_g=1.0,
-                color_b=1.0,
-                color_a=1.0,
+                color=RGBA(1.0, 1.0, 1.0, 1.0),
                 rotation_step=float(rotation_step),
                 scale_step=float(scale_step),
                 detail_preset=detail_preset,

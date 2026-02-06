@@ -156,38 +156,6 @@ class CreatureState:
     bonus_id: int | None = None
     bonus_duration_override: int | None = None
 
-    @property
-    def tint_r(self) -> float:
-        return self.tint.r
-
-    @tint_r.setter
-    def tint_r(self, value: float) -> None:
-        self.tint = self.tint.replace(r=value)
-
-    @property
-    def tint_g(self) -> float:
-        return self.tint.g
-
-    @tint_g.setter
-    def tint_g(self, value: float) -> None:
-        self.tint = self.tint.replace(g=value)
-
-    @property
-    def tint_b(self) -> float:
-        return self.tint.b
-
-    @tint_b.setter
-    def tint_b(self, value: float) -> None:
-        self.tint = self.tint.replace(b=value)
-
-    @property
-    def tint_a(self) -> float:
-        return self.tint.a
-
-    @tint_a.setter
-    def tint_a(self, value: float) -> None:
-        self.tint = self.tint.replace(a=value)
-
 
 @dataclass(frozen=True, slots=True)
 class CreatureDeath:

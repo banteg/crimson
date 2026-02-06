@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
@@ -398,28 +399,19 @@ class WorldState:
                         detail_preset=detail_preset,
                         lifetime=0.4,
                         scale_step=0.1,
-                        color_r=0.4,
-                        color_g=0.5,
-                        color_b=1.0,
-                        color_a=0.5,
+                        color=RGBA(0.4, 0.5, 1.0, 0.5),
                     )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
                         pos=pickup.pos,
                         detail_preset=detail_preset,
-                        color_r=0.6,
-                        color_g=0.6,
-                        color_b=1.0,
-                        color_a=1.0,
+                        color=RGBA(0.6, 0.6, 1.0, 1.0),
                     )
                 elif pickup.bonus_id == int(BonusId.FREEZE):
                     self.state.effects.spawn_ring(
                         pos=pickup.pos,
                         detail_preset=detail_preset,
-                        color_r=0.3,
-                        color_g=0.5,
-                        color_b=0.8,
-                        color_a=1.0,
+                        color=RGBA(0.3, 0.5, 0.8, 1.0),
                     )
         _mark("ws_after_bonus_update")
 

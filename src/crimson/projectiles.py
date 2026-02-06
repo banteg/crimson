@@ -62,7 +62,7 @@ class FxQueueLike(Protocol):
         width: float,
         height: float,
         rotation: float,
-        rgba: RGBA | tuple[float, float, float, float],
+        rgba: RGBA,
     ) -> bool: ...
 
     def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...
@@ -242,10 +242,7 @@ def _spawn_ion_hit_effects(
         age=0.0,
         lifetime=float(ring_strength) * 0.8,
         flags=0x19,
-        color_r=0.6,
-        color_g=0.6,
-        color_b=0.9,
-        color_a=1.0,
+        color=RGBA(0.6, 0.6, 0.9, 1.0),
         rotation_step=0.0,
         scale_step=float(ring_scale) * 45.0,
         detail_preset=detail,
@@ -277,10 +274,7 @@ def _spawn_ion_hit_effects(
             age=0.0,
             lifetime=float(lifetime),
             flags=0x1D,
-            color_r=0.4,
-            color_g=0.5,
-            color_b=1.0,
-            color_a=0.5,
+            color=RGBA(0.4, 0.5, 1.0, 0.5),
             rotation_step=0.0,
             scale_step=scale_step,
             detail_preset=detail,
@@ -324,10 +318,7 @@ def _spawn_plasma_cannon_hit_effects(
             age=0.1,
             lifetime=1.0,
             flags=0x19,
-            color_r=0.9,
-            color_g=0.6,
-            color_b=0.3,
-            color_a=1.0,
+            color=RGBA(0.9, 0.6, 0.3, 1.0),
             rotation_step=0.0,
             scale_step=float(scale) * 45.0,
             detail_preset=detail,
@@ -368,10 +359,7 @@ def _spawn_splitter_hit_effects(
             age=jitter_age,
             lifetime=lifetime,
             flags=0x19,
-            color_r=1.0,
-            color_g=0.9,
-            color_b=0.1,
-            color_a=1.0,
+            color=RGBA(1.0, 0.9, 0.1, 1.0),
             rotation_step=0.0,
             scale_step=55.0,
             detail_preset=detail,
@@ -1405,7 +1393,8 @@ class SecondaryProjectilePool:
                         scale=14.0,
                     )
                     try:
-                        sprite_effects.entries[int(sprite_id)].color_a = 0.25
+                        sprite_entry = sprite_effects.entries[int(sprite_id)]
+                        sprite_entry.color = sprite_entry.color.replace(a=0.25)
                     except Exception:
                         pass
                 entry.trail_timer = 0.06
@@ -1541,7 +1530,8 @@ class SecondaryProjectilePool:
                             scale=14.0,
                         )
                         try:
-                            sprite_effects.entries[int(sprite_id)].color_a = 0.37
+                            sprite_entry = sprite_effects.entries[int(sprite_id)]
+                            sprite_entry.color = sprite_entry.color.replace(a=0.37)
                         except Exception:
                             pass
 

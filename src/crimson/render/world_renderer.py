@@ -1065,16 +1065,9 @@ class WorldRenderer:
 
             rotation_deg = float(getattr(entry, "rotation", 0.0)) * _RAD_TO_DEG
             raw_color = getattr(entry, "color", None)
-            if isinstance(raw_color, RGBA):
-                tint = raw_color.scaled_alpha(alpha).to_rl()
-            else:
-                tint = RGBA(
-                    float(getattr(entry, "color_r", 1.0)),
-                    float(getattr(entry, "color_g", 1.0)),
-                    float(getattr(entry, "color_b", 1.0)),
-                    float(getattr(entry, "color_a", 1.0)),
-                ).to_rl()
-                tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
+            if not isinstance(raw_color, RGBA):
+                return
+            tint = raw_color.scaled_alpha(alpha).to_rl()
 
             dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)

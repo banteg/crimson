@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from dataclasses import dataclass
@@ -518,7 +519,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
 
     @dataclass(slots=True)
     class _SpriteEntry:
-        color_a: float = 0.0
+        color: RGBA = RGBA()
 
     class _Sprites:
         def __init__(self) -> None:
