@@ -10,6 +10,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.color import RGBA
 from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
@@ -231,12 +232,12 @@ class CreatureAnimationView:
             float(cell),
         )
         dst_frame = rl.Rectangle(float(preview_x), float(preview_y), float(preview_size), float(preview_size))
-        tint_r, tint_g, tint_b, tint_a = resolve_tint(template.tint)
+        tint_rgba = RGBA.from_rgba(resolve_tint(template.tint)).clamped()
         tint = rl.Color(
-            max(0, min(255, int(tint_r * 255))),
-            max(0, min(255, int(tint_g * 255))),
-            max(0, min(255, int(tint_b * 255))),
-            max(0, min(255, int(tint_a * 255))),
+            int(tint_rgba.r * 255.0),
+            int(tint_rgba.g * 255.0),
+            int(tint_rgba.b * 255.0),
+            int(tint_rgba.a * 255.0),
         )
         rl.draw_texture_pro(texture, src_frame, dst_frame, rl.Vector2(0.0, 0.0), 0.0, tint)
 

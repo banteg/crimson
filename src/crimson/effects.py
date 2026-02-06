@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import math
 from typing import Callable, Protocol
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
@@ -50,10 +51,43 @@ class _CreatureForParticles(Protocol):
     hp: float
     size: float
     hitbox_size: float
-    tint_r: float
-    tint_g: float
-    tint_b: float
-    tint_a: float
+    tint: RGBA
+
+
+class _ColorProxy:
+    color: RGBA
+
+    @property
+    def color_r(self) -> float:
+        return self.color.r
+
+    @color_r.setter
+    def color_r(self, value: float) -> None:
+        self.color = self.color.with_r(value)
+
+    @property
+    def color_g(self) -> float:
+        return self.color.g
+
+    @color_g.setter
+    def color_g(self, value: float) -> None:
+        self.color = self.color.with_g(value)
+
+    @property
+    def color_b(self) -> float:
+        return self.color.b
+
+    @color_b.setter
+    def color_b(self, value: float) -> None:
+        self.color = self.color.with_b(value)
+
+    @property
+    def color_a(self) -> float:
+        return self.color.a
+
+    @color_a.setter
+    def color_a(self, value: float) -> None:
+        self.color = self.color.with_a(value)
 
 
 CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
@@ -300,13 +334,16 @@ class ParticlePool:
                             else:
                                 creature.hp -= float(damage)
 
-                        tint_sum = float(creature.tint_r) + float(creature.tint_g) + float(creature.tint_b)
+                        tint = creature.tint
+                        tint_sum = float(tint.r) + float(tint.g) + float(tint.b)
                         if tint_sum > 1.6:
                             factor = 1.0 - float(entry.intensity) * 0.01
-                            creature.tint_r = clamp(float(creature.tint_r) * factor, 0.0, 1.0)
-                            creature.tint_g = clamp(float(creature.tint_g) * factor, 0.0, 1.0)
-                            creature.tint_b = clamp(float(creature.tint_b) * factor, 0.0, 1.0)
-                            creature.tint_a = clamp(float(creature.tint_a) * factor, 0.0, 1.0)
+                            creature.tint = RGBA(
+                                r=clamp(float(tint.r) * factor, 0.0, 1.0),
+                                g=clamp(float(tint.g) * factor, 0.0, 1.0),
+                                b=clamp(float(tint.b) * factor, 0.0, 1.0),
+                                a=clamp(float(tint.a) * factor, 0.0, 1.0),
+                            )
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
@@ -332,12 +369,9 @@ class ParticlePool:
 
 
 @dataclass(slots=True)
-class SpriteEffect:
+class SpriteEffect(_ColorProxy):
     active: bool = False
-    color_r: float = 1.0
-    color_g: float = 1.0
-    color_b: float = 1.0
-    color_a: float = 0.0
+    color: RGBA = field(default_factory=lambda: RGBA(a=0.0))
     rotation: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
     vel: Vec2 = field(default_factory=Vec2)
@@ -372,10 +406,7 @@ class SpriteEffectPool:
 
         entry = self._entries[idx]
         entry.active = True
-        entry.color_r = 1.0
-        entry.color_g = 1.0
-        entry.color_b = 1.0
-        entry.color_a = 1.0
+        entry.color = RGBA()
         entry.rotation = float(int(self._rand()) % 0x274) * 0.01
         entry.pos = pos
         entry.vel = vel
@@ -395,25 +426,22 @@ class SpriteEffectPool:
                 continue
             entry.pos = entry.pos + entry.vel * dt
             entry.rotation += dt * 3.0
-            entry.color_a -= dt
+            entry.color = entry.color.with_a(entry.color.a - dt)
             entry.scale += dt * 60.0
-            if entry.color_a <= 0.0:
+            if entry.color.a <= 0.0:
                 entry.active = False
                 expired.append(idx)
         return expired
 
 
 @dataclass(slots=True)
-class FxQueueEntry:
+class FxQueueEntry(_ColorProxy):
     effect_id: int = 0
     rotation: float = 0.0
     pos: Vec2 = field(default_factory=Vec2)
     height: float = 0.0
     width: float = 0.0
-    color_r: float = 1.0
-    color_g: float = 1.0
-    color_b: float = 1.0
-    color_a: float = 1.0
+    color: RGBA = field(default_factory=RGBA)
 
 
 class FxQueue:
@@ -448,7 +476,7 @@ class FxQueue:
         width: float,
         height: float,
         rotation: float,
-        rgba: tuple[float, float, float, float],
+        rgba: RGBA | tuple[float, float, float, float],
     ) -> bool:
         """Port of `fx_queue_add` (0x0041e840)."""
 
@@ -461,10 +489,7 @@ class FxQueue:
         entry.pos = pos
         entry.height = float(height)
         entry.width = float(width)
-        entry.color_r = float(rgba[0])
-        entry.color_g = float(rgba[1])
-        entry.color_b = float(rgba[2])
-        entry.color_a = float(rgba[3])
+        entry.color = RGBA.from_rgba(rgba)
         self._count += 1
         return True
 
@@ -489,12 +514,9 @@ class FxQueue:
 
 
 @dataclass(slots=True)
-class FxQueueRotatedEntry:
+class FxQueueRotatedEntry(_ColorProxy):
     top_left: Vec2 = field(default_factory=Vec2)
-    color_r: float = 1.0
-    color_g: float = 1.0
-    color_b: float = 1.0
-    color_a: float = 1.0
+    color: RGBA = field(default_factory=RGBA)
     rotation: float = 0.0
     scale: float = 1.0
     creature_type_id: int = 0
@@ -528,7 +550,7 @@ class FxQueueRotated:
         self,
         *,
         top_left: Vec2,
-        rgba: tuple[float, float, float, float],
+        rgba: RGBA | tuple[float, float, float, float],
         rotation: float,
         scale: float,
         creature_type_id: int,
@@ -542,7 +564,8 @@ class FxQueueRotated:
         if self._count >= self._max_count:
             return False
 
-        r, g, b, a = rgba
+        color = RGBA.from_rgba(rgba)
+        a = color.a
         if terrain_bodies_transparency != 0.0:
             a = a / float(terrain_bodies_transparency)
         else:
@@ -550,10 +573,7 @@ class FxQueueRotated:
 
         entry = self._entries[self._count]
         entry.top_left = top_left
-        entry.color_r = float(r)
-        entry.color_g = float(g)
-        entry.color_b = float(b)
-        entry.color_a = float(a)
+        entry.color = color.with_a(a)
         entry.rotation = float(rotation)
         entry.scale = float(scale)
         entry.creature_type_id = int(creature_type_id)
@@ -563,7 +583,7 @@ class FxQueueRotated:
 
 
 @dataclass(slots=True)
-class EffectEntry:
+class EffectEntry(_ColorProxy):
     pos: Vec2 = field(default_factory=Vec2)
     effect_id: int = 0
     vel: Vec2 = field(default_factory=Vec2)
@@ -574,10 +594,7 @@ class EffectEntry:
     age: float = 0.0
     lifetime: float = 0.0
     flags: int = 0
-    color_r: float = 1.0
-    color_g: float = 1.0
-    color_b: float = 1.0
-    color_a: float = 1.0
+    color: RGBA = field(default_factory=RGBA)
     rotation_step: float = 0.0
     scale_step: float = 0.0
 
@@ -664,10 +681,12 @@ class EffectPool:
         entry.age = float(age)
         entry.lifetime = float(lifetime)
         entry.flags = int(flags)
-        entry.color_r = float(color_r)
-        entry.color_g = float(color_g)
-        entry.color_b = float(color_b)
-        entry.color_a = float(color_a)
+        entry.color = RGBA(
+            r=float(color_r),
+            g=float(color_g),
+            b=float(color_b),
+            a=float(color_a),
+        )
         entry.rotation_step = float(rotation_step)
         entry.scale_step = float(scale_step)
         return idx
@@ -702,7 +721,8 @@ class EffectPool:
                     if flags & 0x8:
                         entry.scale += float(entry.scale_step) * float(dt)
                     if flags & 0x10:
-                        entry.color_a = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
+                        next_alpha = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
+                        entry.color = entry.color.with_a(next_alpha)
                 continue
 
             if fx_queue is not None and (flags & 0x80):
@@ -714,7 +734,7 @@ class EffectPool:
                     width=float(entry.half_width) * 2.0,
                     height=float(entry.half_height) * 2.0,
                     rotation=float(entry.rotation),
-                    rgba=(float(entry.color_r), float(entry.color_g), float(entry.color_b), float(alpha)),
+                    rgba=entry.color.with_a(alpha),
                 )
 
             self.free(idx)

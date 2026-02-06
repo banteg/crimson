@@ -5,6 +5,7 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from .creatures.spawn import CreatureFlags
@@ -61,7 +62,7 @@ class FxQueueLike(Protocol):
         width: float,
         height: float,
         rotation: float,
-        rgba: tuple[float, float, float, float],
+        rgba: RGBA | tuple[float, float, float, float],
     ) -> bool: ...
 
     def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...

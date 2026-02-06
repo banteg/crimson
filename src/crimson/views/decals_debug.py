@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from dataclasses import dataclass
@@ -583,14 +584,10 @@ class DecalsDebugView:
             if texture is None or info is None:
                 continue
 
-            alpha = float(creature.tint_a)
+            tint_rgba = creature.tint
             if float(creature.hitbox_size) < 0.0:
-                alpha = max(0.0, alpha + float(creature.hitbox_size) * 0.1)
-            r = int(max(0.0, min(float(creature.tint_r), 1.0)) * 255.0 + 0.5)
-            g = int(max(0.0, min(float(creature.tint_g), 1.0)) * 255.0 + 0.5)
-            b = int(max(0.0, min(float(creature.tint_b), 1.0)) * 255.0 + 0.5)
-            a = int(max(0.0, min(alpha, 1.0)) * 255.0 + 0.5)
-            tint = rl.Color(r, g, b, a)
+                tint_rgba = tint_rgba.with_a(max(0.0, tint_rgba.a + float(creature.hitbox_size) * 0.1))
+            tint = RGBA.from_rgba(tint_rgba).clamped().to_rl()
 
             flags = creature.flags
             long_strip = (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0

@@ -206,3 +206,4 @@ def test_rect_conversion_helpers() -> None:
     assert round_trip == rect
     assert from_top_left == rect
     assert from_center == rect
+
