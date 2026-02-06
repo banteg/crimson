@@ -360,8 +360,10 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
         if weapon is not None:
             rpm = self._weapon_rpm(weapon)
-            reload_time = weapon.reload_time
-            clip_size = weapon.clip_size
+            reload_raw = getattr(weapon, "reload_time", None)
+            clip_raw = getattr(weapon, "clip_size", None)
+            reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
+            clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
             if rpm is not None:
                 draw_small_text(
                     font,
@@ -381,7 +383,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             if clip_size is not None:
                 draw_small_text(
                     font,
-                    f"Clip size: {int(clip_size)}",
+                    f"Clip size: {clip_size}",
                     right + Vec2(66.0 * scale, 164.0 * scale),
                     text_scale,
                     text_color,
