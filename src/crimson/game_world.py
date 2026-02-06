@@ -23,7 +23,6 @@ from .gameplay import (
     GameplayState,
     PlayerInput,
     PlayerState,
-    perk_active,
     perks_rebuild_available,
     weapon_assign_player,
     weapon_refresh_available,
@@ -32,9 +31,12 @@ from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
 from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
-from .perks import PerkId
-from .projectiles import ProjectileTypeId
-from .sim.world_defs import BEAM_TYPES, CREATURE_ASSET, ION_TYPES
+from .sim.presentation_step import (
+    PresentationStepCommands,
+    apply_world_presentation_step,
+    queue_projectile_decals,
+)
+from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .weapons import WEAPON_TABLE
 from .game_modes import GameMode
@@ -82,8 +84,10 @@ class GameWorld:
     presentation_rng: Crand = field(init=False)
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
+    _game_tune_started: bool = field(init=False, default=False)
     _texture_loader: TextureLoader | None = field(init=False, default=None)
     last_events: WorldEvents = field(init=False)
+    last_presentation: PresentationStepCommands = field(init=False)
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
@@ -100,6 +104,7 @@ class GameWorld:
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
         self.camera = Vec2(-1.0, -1.0)
         self.audio_router = AudioRouter(
             audio=self.audio,
@@ -146,8 +151,10 @@ class GameWorld:
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
+        self._game_tune_started = False
         base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
         count = max(1, int(player_count))
         if count <= 1:
@@ -390,6 +397,8 @@ class GameWorld:
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
+        self._game_tune_started = False
 
     def update(
         self,
@@ -439,8 +448,10 @@ class GameWorld:
             self._bonus_anim_phase += float(dt) * 1.3
 
         detail_preset = 5
+        fx_toggle = 0
         if self.config is not None:
             detail_preset = int(self.config.data.get("detail_preset", 5) or 5)
+            fx_toggle = int(self.config.data.get("fx_toggle", 0) or 0)
 
         if self.ground is not None:
             self._sync_ground_settings()
@@ -464,151 +475,49 @@ class GameWorld:
         )
         self.last_events = events
 
-        if perk_progression_enabled and int(self.state.perk_selection.pending_count) > prev_perk_pending:
-            self.audio_router.play_sfx("sfx_ui_levelup")
-
-        if events.hits:
-            self._queue_projectile_decals(events.hits)
-            self.audio_router.play_hit_sfx(
-                events.hits,
-                game_mode=game_mode,
-                rand=self.presentation_rng.rand,
-                beam_types=BEAM_TYPES,
-            )
-
-        for idx, player in enumerate(self.players):
-            if idx < len(prev_audio):
-                prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
-                self.audio_router.handle_player_audio(
-                    player,
-                    prev_shot_seq=prev_shot_seq,
-                    prev_reload_active=prev_reload_active,
-                    prev_reload_timer=prev_reload_timer,
-                )
-
-        if events.deaths:
-            self.audio_router.play_death_sfx(events.deaths, rand=self.presentation_rng.rand)
-
-        if events.pickups:
-            for _ in events.pickups:
-                self.audio_router.play_sfx("sfx_ui_bonus")
-
-        if events.sfx:
-            for key in events.sfx[:4]:
-                self.audio_router.play_sfx(key)
+        presentation = apply_world_presentation_step(
+            state=self.state,
+            players=self.players,
+            fx_queue=self.fx_queue,
+            hits=events.hits,
+            deaths=events.deaths,
+            pickups=events.pickups,
+            event_sfx=events.sfx,
+            prev_audio=prev_audio,
+            prev_perk_pending=int(prev_perk_pending),
+            game_mode=int(game_mode),
+            demo_mode_active=bool(self.demo_mode_active),
+            perk_progression_enabled=bool(perk_progression_enabled),
+            rand=self.presentation_rng.rand,
+            detail_preset=int(detail_preset),
+            fx_toggle=int(fx_toggle),
+            game_tune_started=bool(self._game_tune_started),
+        )
+        self.last_presentation = presentation
+        if presentation.trigger_game_tune:
+            self._game_tune_started = True
+            self.audio_router.trigger_game_tune()
+        for key in presentation.sfx_keys:
+            self.audio_router.play_sfx_resolved(key)
 
         self.update_camera(dt)
         return events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
-        rand = self.presentation_rng.rand
         fx_toggle = 0
         detail_preset = 5
         if self.config is not None:
             fx_toggle = int(self.config.data.get("fx_toggle", 0) or 0)
             detail_preset = int(self.config.data.get("detail_preset", 5) or 5)
-
-        freeze_active = self.state.bonuses.freeze > 0.0
-        bloody = bool(self.players) and perk_active(self.players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
-
-        for hit in hits:
-            type_id = int(hit.type_id)
-
-            base_angle = (hit.hit - hit.origin).to_angle()
-
-            # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
-            if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
-                direction = Vec2.from_angle(base_angle)
-                for _ in range(6):
-                    dist = float(int(rand()) % 100) * 0.1
-                    if dist > 4.0:
-                        dist = float(int(rand()) % 0x5A + 10) * 0.1
-                    if dist > 7.0:
-                        dist = float(int(rand()) % 0x50 + 0x14) * 0.1
-                    self.fx_queue.add_random(
-                        pos=hit.target + direction * (dist * 20.0),
-                        rand=rand,
-                    )
-            elif type_id in ION_TYPES:
-                pass
-            elif not freeze_active:
-                for _ in range(3):
-                    spread = float(int(rand()) % 0x14 - 10) * 0.1
-                    angle = base_angle + spread
-                    direction = Vec2.from_angle(angle) * 20.0
-                    self.fx_queue.add_random(pos=hit.target, rand=rand)
-                    self.fx_queue.add_random(
-                        pos=hit.target + direction * 1.5,
-                        rand=rand,
-                    )
-                    self.fx_queue.add_random(
-                        pos=hit.target + direction * 2.0,
-                        rand=rand,
-                    )
-                    self.fx_queue.add_random(
-                        pos=hit.target + direction * 2.5,
-                        rand=rand,
-                    )
-
-            if bloody:
-                lo = -30
-                hi = 30
-                while lo > -60:
-                    span = hi - lo
-                    for _ in range(2):
-                        dx = float(int(rand()) % span + lo)
-                        dy = float(int(rand()) % span + lo)
-                        self.fx_queue.add_random(
-                            pos=hit.target + Vec2(dx, dy),
-                            rand=rand,
-                        )
-                    lo -= 10
-                    hi += 10
-
-            # Native hit path: spawn transient blood splatter particles and only
-            # bake decals into the terrain once those particles expire.
-            if bloody:
-                for _ in range(8):
-                    spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
-                    self.state.effects.spawn_blood_splatter(
-                        pos=hit.hit,
-                        angle=base_angle + spread,
-                        age=0.0,
-                        rand=rand,
-                        detail_preset=detail_preset,
-                        fx_toggle=fx_toggle,
-                    )
-                self.state.effects.spawn_blood_splatter(
-                    pos=hit.hit,
-                    angle=base_angle + math.pi,
-                    age=0.0,
-                    rand=rand,
-                    detail_preset=detail_preset,
-                    fx_toggle=fx_toggle,
-                )
-                continue
-
-            if freeze_active:
-                continue
-
-            for _ in range(2):
-                self.state.effects.spawn_blood_splatter(
-                    pos=hit.hit,
-                    angle=base_angle,
-                    age=0.0,
-                    rand=rand,
-                    detail_preset=detail_preset,
-                    fx_toggle=fx_toggle,
-                )
-                if (int(rand()) & 7) == 2:
-                    self.state.effects.spawn_blood_splatter(
-                        pos=hit.hit,
-                        angle=base_angle + math.pi,
-                        age=0.0,
-                        rand=rand,
-                        detail_preset=detail_preset,
-                        fx_toggle=fx_toggle,
-                    )
+        queue_projectile_decals(
+            state=self.state,
+            players=self.players,
+            fx_queue=self.fx_queue,
+            hits=hits,
+            rand=self.presentation_rng.rand,
+            detail_preset=detail_preset,
+            fx_toggle=fx_toggle,
+        )
 
     def _bake_fx_queues(self) -> None:
         if self.ground is None or self.fx_textures is None:
