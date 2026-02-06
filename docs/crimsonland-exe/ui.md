@@ -44,7 +44,7 @@ Recent data-map lifts for one-shot setup guards:
 - `profile_menu_init_flags` (`0x004cccd8`): `ui_profile_menu_update` setup
   guards for profile text input, action buttons, and list widget wiring.
 - Profile name text-input state in `ui_profile_menu_update`:
-  `profile_name_input_state_text_ptr` (`0x004d0f28`),
+  `profile_name_input_state` (`0x004d0f28`),
   `profile_name_input_state_cursor` (`0x004d0f2c`),
   `profile_name_input_state_max_chars` (`0x004d0f30`),
   `profile_name_input_state_width_px` (`0x004d0f34`),
@@ -124,14 +124,16 @@ stays interactive while the others are open.
 Recovered segmented-slider state blocks used by `options_menu_update`
 (`ui_segmented_slider_update`):
 
-- SFX volume: `options_sfx_volume_slider_value/max/min`
-  (`0x004d77f8/0x004d77fc/0x004d7800`)
-- Music volume: `options_music_volume_slider_value/max/min`
-  (`0x004d75e8/0x004d75ec/0x004d75f0`)
-- Graphics detail preset: `options_graphics_detail_slider_value/max/min`
-  (`0x004d7590/0x004d7594/0x004d7598`)
-- Mouse sensitivity: `options_mouse_sensitivity_slider_value/max/min`
-  (`0x004d7680/0x004d7684/0x004d7688`)
+- SFX volume: `options_sfx_volume_slider` (`0x004d77f8`)
+- Music volume: `options_music_volume_slider` (`0x004d75e8`)
+- Graphics detail preset: `options_graphics_detail_slider` (`0x004d7590`)
+- Mouse sensitivity: `options_mouse_sensitivity_slider` (`0x004d7680`)
+- Checkbox state blocks (`ui_checkbox_t`):
+  `options_ui_info_checkbox` (`0x004d77e0`),
+  `controls_direction_arrow_checkbox` (`0x004d77f0`),
+  `quest_select_hardcore_checkbox` (`0x004d7700`),
+  `highscore_hardcore_checkbox` (`0x004d0d98`), and
+  `highscore_online_scores_checkbox` (`0x004d0e20`).
 
 Additional controls-rebind runtime globals:
 

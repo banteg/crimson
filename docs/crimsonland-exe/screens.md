@@ -15,7 +15,7 @@ This page groups full-screen or modal flows that have their own update loops.
 - Uses `game_over_name_input_buffer` (`0x0048256c`) as the editable player-name
   buffer for `ui_text_input_update`.
 - Companion text-input state globals:
-  `game_over_name_input_state_text_ptr` (`0x00482590`),
+  `game_over_name_input_state` (`0x00482590`),
   `game_over_name_input_state_max_chars` (`0x00482598`),
   `game_over_name_input_state_width_px` (`0x0048259c`), and
   `game_over_name_input_state_alpha` (`0x004825a0`).
@@ -59,7 +59,7 @@ Recovered staged-reveal globals:
 - Name entry uses `quest_results_name_input_buffer` (`0x004825dc`) as the
   temporary UI text-input storage before writing `highscore_active_record`.
 - Companion text-input state globals:
-  `quest_results_name_input_state_text_ptr` (`0x004826e8`),
+  `quest_results_name_input_state` (`0x004826e8`),
   `quest_results_name_input_state_max_chars` (`0x004826f0`),
   `quest_results_name_input_state_width_px` (`0x004826f4`), and
   `quest_results_name_input_state_alpha` (`0x004826f8`).

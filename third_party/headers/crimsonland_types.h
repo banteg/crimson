@@ -472,6 +472,24 @@ typedef struct ui_menu_item_t {
 typedef ui_menu_item_t perk_selection_choice_item_table_t[10];
 typedef ui_menu_item_t controls_rebind_item_table_t[15];
 
+// 0x10-byte segmented slider state consumed by ui_segmented_slider_update.
+typedef struct ui_segmented_slider_t {
+    int value;
+    int max;
+    int min;
+    unsigned char enabled;
+    unsigned char _pad0[3];
+} ui_segmented_slider_t;
+
+// 0x08-byte checkbox state consumed by ui_checkbox_update.
+typedef struct ui_checkbox_t {
+    unsigned char checked;
+    unsigned char disabled;
+    unsigned char hovered;
+    unsigned char _pad0;
+    char *label;
+} ui_checkbox_t;
+
 // 0x1c-byte dropdown/list widget state consumed by ui_list_widget_update.
 typedef struct ui_list_widget_t {
     unsigned char enabled;
@@ -484,6 +502,15 @@ typedef struct ui_list_widget_t {
     unsigned char _pad1[3];
     int active_index;
 } ui_list_widget_t;
+
+// 0x14-byte text-input state consumed by ui_text_input_update.
+typedef struct ui_text_input_state_t {
+    char *text;
+    int cursor;
+    int max_chars;
+    int width_px;
+    float alpha;
+} ui_text_input_state_t;
 
 typedef struct ui_button_t {
     char *label;

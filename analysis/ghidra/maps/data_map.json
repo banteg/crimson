@@ -1866,10 +1866,10 @@
     },
     {
       "address": "0x00482590",
-      "comment": "Game-over name text-input state: editable text pointer passed to ui_text_input_update.",
-      "name": "game_over_name_input_state_text_ptr",
+      "comment": "Game-over name text-input state block passed to ui_text_input_update.",
+      "name": "game_over_name_input_state",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_text_input_state_t"
     },
     {
       "address": "0x00482508",
@@ -1903,29 +1903,25 @@
       "address": "0x00482594",
       "comment": "Game-over high-score entry: cached initial active-record player-name length used when copying edited text back.",
       "name": "game_over_name_input_initial_length",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00482598",
       "comment": "Game-over name text-input state: max accepted character count (0x14/0x18).",
       "name": "game_over_name_input_state_max_chars",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x0048259c",
       "comment": "Game-over name text-input state: input box width in pixels.",
       "name": "game_over_name_input_state_width_px",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004825a0",
       "comment": "Game-over name text-input state: alpha/visibility scalar.",
       "name": "game_over_name_input_state_alpha",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004825a4",
@@ -2032,38 +2028,34 @@
     },
     {
       "address": "0x004826e8",
-      "comment": "Quest-results name text-input state: editable text pointer passed to ui_text_input_update.",
-      "name": "quest_results_name_input_state_text_ptr",
+      "comment": "Quest-results name text-input state block passed to ui_text_input_update.",
+      "name": "quest_results_name_input_state",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_text_input_state_t"
     },
     {
       "address": "0x004826ec",
       "comment": "Quest-results high-score entry: cached initial active-record player-name length used when copying edited text back.",
       "name": "quest_results_name_input_initial_length",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004826f0",
       "comment": "Quest-results name text-input state: max accepted character count (0x14/0x18).",
       "name": "quest_results_name_input_state_max_chars",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004826f4",
       "comment": "Quest-results name text-input state: input box width in pixels.",
       "name": "quest_results_name_input_state_width_px",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004826f8",
       "comment": "Quest-results name text-input state: alpha/visibility scalar.",
       "name": "quest_results_name_input_state_alpha",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00482700",
@@ -7320,10 +7312,24 @@
       "type": "ui_list_widget_t"
     },
     {
+      "address": "0x004d0d98",
+      "comment": "Highscore screen Hardcore toggle checkbox state block.",
+      "name": "highscore_hardcore_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
+    },
+    {
       "address": "0x004d0da0",
       "comment": "Scratch text buffer used by ui_text_input_render for highscore card numeric/rank labels.",
       "name": "highscore_card_text_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d0e20",
+      "comment": "Highscore screen \"Show internet scores\" checkbox state block.",
+      "name": "highscore_online_scores_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
     },
     {
       "address": "0x004d0e28",
@@ -7375,38 +7381,34 @@
     },
     {
       "address": "0x004d0f28",
-      "comment": "Profile menu name text-input state: editable text pointer passed to ui_text_input_update.",
-      "name": "profile_name_input_state_text_ptr",
+      "comment": "Profile menu name text-input state block passed to ui_text_input_update.",
+      "name": "profile_name_input_state",
       "program": "crimsonland.exe",
-      "type": "char *"
+      "type": "ui_text_input_state_t"
     },
     {
       "address": "0x004d0f2c",
       "comment": "Profile menu name text-input state: current cursor/length index.",
       "name": "profile_name_input_state_cursor",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004d0f30",
       "comment": "Profile menu name text-input state: max accepted character count (0x1b).",
       "name": "profile_name_input_state_max_chars",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004d0f34",
       "comment": "Profile menu name text-input state: input box width in pixels.",
       "name": "profile_name_input_state_width_px",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004d0f38",
       "comment": "Profile menu name text-input state: alpha/visibility scalar.",
       "name": "profile_name_input_state_alpha",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004d0fa8",
@@ -7603,66 +7605,24 @@
     },
     {
       "address": "0x004d7590",
-      "comment": "Options menu graphics-detail segmented slider current value (copied to _config_detail_preset).",
-      "name": "options_graphics_detail_slider_value",
+      "comment": "Options menu graphics-detail segmented slider state block.",
+      "name": "options_graphics_detail_slider",
       "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d7594",
-      "comment": "Options menu graphics-detail segmented slider max value.",
-      "name": "options_graphics_detail_slider_max",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d7598",
-      "comment": "Options menu graphics-detail segmented slider min value.",
-      "name": "options_graphics_detail_slider_min",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "type": "ui_segmented_slider_t"
     },
     {
       "address": "0x004d75e8",
-      "comment": "Options menu music-volume segmented slider current value (0..10).",
-      "name": "options_music_volume_slider_value",
+      "comment": "Options menu music-volume segmented slider state block.",
+      "name": "options_music_volume_slider",
       "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d75ec",
-      "comment": "Options menu music-volume segmented slider max value.",
-      "name": "options_music_volume_slider_max",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d75f0",
-      "comment": "Options menu music-volume segmented slider min value.",
-      "name": "options_music_volume_slider_min",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "type": "ui_segmented_slider_t"
     },
     {
       "address": "0x004d7680",
-      "comment": "Options menu mouse-sensitivity segmented slider current value (scaled by 0.1).",
-      "name": "options_mouse_sensitivity_slider_value",
+      "comment": "Options menu mouse-sensitivity segmented slider state block.",
+      "name": "options_mouse_sensitivity_slider",
       "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d7684",
-      "comment": "Options menu mouse-sensitivity segmented slider max value.",
-      "name": "options_mouse_sensitivity_slider_max",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d7688",
-      "comment": "Options menu mouse-sensitivity segmented slider min value.",
-      "name": "options_mouse_sensitivity_slider_min",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "type": "ui_segmented_slider_t"
     },
     {
       "address": "0x004d76a0",
@@ -7693,11 +7653,25 @@
       "type": "ui_list_widget_t"
     },
     {
+      "address": "0x004d7700",
+      "comment": "Quest-select Hardcore toggle checkbox state block.",
+      "name": "quest_select_hardcore_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
+    },
+    {
       "address": "0x004d7730",
       "comment": "Play-game menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "play_game_menu_init_flags",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d77e0",
+      "comment": "Options menu \"UI info texts\" toggle checkbox state block.",
+      "name": "options_ui_info_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
     },
     {
       "address": "0x004d77e8",
@@ -7707,25 +7681,18 @@
       "type": "int"
     },
     {
+      "address": "0x004d77f0",
+      "comment": "Controls menu \"Show direction arrow\" toggle checkbox state block.",
+      "name": "controls_direction_arrow_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
+    },
+    {
       "address": "0x004d77f8",
-      "comment": "Options menu SFX-volume segmented slider current value (0..10).",
-      "name": "options_sfx_volume_slider_value",
+      "comment": "Options menu SFX-volume segmented slider state block.",
+      "name": "options_sfx_volume_slider",
       "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d77fc",
-      "comment": "Options menu SFX-volume segmented slider max value.",
-      "name": "options_sfx_volume_slider_max",
-      "program": "crimsonland.exe",
-      "type": "int"
-    },
-    {
-      "address": "0x004d7800",
-      "comment": "Options menu SFX-volume segmented slider min value.",
-      "name": "options_sfx_volume_slider_min",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "type": "ui_segmented_slider_t"
     },
     {
       "address": "0x004d7898",

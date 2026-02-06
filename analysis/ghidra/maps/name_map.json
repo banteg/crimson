@@ -2851,14 +2851,14 @@
     "program": "crimsonland.exe",
     "address": "0x0043d9b0",
     "name": "ui_segmented_slider_update",
-    "signature": "int ui_segmented_slider_update(float *xy, int *state)",
+    "signature": "int ui_segmented_slider_update(float *xy, ui_segmented_slider_t *state)",
     "comment": "updates a segmented slider widget (focus/mouse/keys), clamps value to [min..max], and renders off/on segments"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043dc80",
     "name": "ui_checkbox_update",
-    "signature": "int ui_checkbox_update(float *xy, char *checkbox)",
+    "signature": "int ui_checkbox_update(float *xy, ui_checkbox_t *checkbox)",
     "comment": "draws a checkbox widget, handles hover/focus, toggles on click"
   },
   {
@@ -2886,7 +2886,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043ecf0",
     "name": "ui_text_input_update",
-    "signature": "int ui_text_input_update(float *xy, int *input_state)",
+    "signature": "int ui_text_input_update(float *xy, ui_text_input_state_t *input_state)",
     "comment": "updates a text input field: focus, input polling, sfx, and rendering"
   },
   {

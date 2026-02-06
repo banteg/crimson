@@ -3234,7 +3234,7 @@
   {
     "name": "ui_segmented_slider_update",
     "address": "0043d9b0",
-    "signature": "int ui_segmented_slider_update(float * xy, int * state)",
+    "signature": "int ui_segmented_slider_update(float * xy, ui_segmented_slider_t * state)",
     "external": false,
     "calls_total": 6,
     "calls": ["__ftol", "input_primary_is_down", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
@@ -3242,7 +3242,7 @@
   {
     "name": "ui_checkbox_update",
     "address": "0043dc80",
-    "signature": "int ui_checkbox_update(float * xy, char * checkbox)",
+    "signature": "int ui_checkbox_update(float * xy, ui_checkbox_t * checkbox)",
     "external": false,
     "calls_total": 5,
     "calls": ["input_primary_just_pressed", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
@@ -3274,7 +3274,7 @@
   {
     "name": "ui_text_input_update",
     "address": "0043ecf0",
-    "signature": "int ui_text_input_update(float * xy, int * input_state)",
+    "signature": "int ui_text_input_update(float * xy, ui_text_input_state_t * input_state)",
     "external": false,
     "calls_total": 8,
     "calls": ["__ftol", "console_input_poll", "crt_rand", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
