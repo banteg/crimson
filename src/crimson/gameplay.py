@@ -2744,7 +2744,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
             dy = creature.pos.y - oy
             if abs(dx) > 256.0 or abs(dy) > 256.0:
                 continue
-            dist = math.hypot(dx, dy)
+            dist = Vec2(dx, dy).length()
             if dist < 256.0:
                 damage = (256.0 - dist) * 5.0
                 if ctx.apply_creature_damage is not None:

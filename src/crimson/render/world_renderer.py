@@ -660,9 +660,7 @@ class WorldRenderer:
         proj_pos = getattr(proj, "pos", None)
         if not isinstance(proj_pos, Vec2):
             return
-        pos_x = float(proj_pos.x)
-        pos_y = float(proj_pos.y)
-        sx, sy = self.world_to_screen(pos_x, pos_y)
+        sx, sy = self.world_to_screen(proj_pos.x, proj_pos.y)
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -672,7 +670,7 @@ class WorldRenderer:
             proj_index=int(proj_index),
             texture=texture,
             type_id=int(type_id),
-            pos=Vec2(float(pos_x), float(pos_y)),
+            pos=proj_pos,
             sx=float(sx),
             sy=float(sy),
             life=float(life),
@@ -737,9 +735,8 @@ class WorldRenderer:
         if alpha <= 0:
             return False
 
-        dx = sx1 - sx0
-        dy = sy1 - sy0
-        dist = math.hypot(dx, dy)
+        segment = Vec2(sx1 - sx0, sy1 - sy0)
+        direction, dist = segment.normalized_with_length()
 
         # Native uses `vel_x/vel_y` as the side offset basis and still emits the
         # trail quad even when origin≈head (degenerate impact frames).
@@ -752,15 +749,12 @@ class WorldRenderer:
         half = 1.5 * side_mul * float(scale)
 
         if dist > 1e-6:
-            inv = 1.0 / dist
-            px = -dy * inv
-            py = dx * inv
+            side = direction.perp_left()
         else:
-            px = math.cos(float(angle))
-            py = math.sin(float(angle))
+            side = Vec2.from_angle(float(angle))
 
-        ox = px * half
-        oy = py * half
+        ox = side.x * half
+        oy = side.y * half
         x0 = sx0 - ox
         y0 = sy0 - oy
         x1 = sx0 + ox
@@ -841,43 +835,29 @@ class WorldRenderer:
                 continue
 
             aim_heading = float(getattr(player, "aim_heading", 0.0))
-            dir_x = math.cos(aim_heading - math.pi / 2.0)
-            dir_y = math.sin(aim_heading - math.pi / 2.0)
+            aim_dir = Vec2.from_heading(aim_heading)
+            start = player_pos + aim_dir * 15.0
+            end = player_pos + aim_dir * 512.0
 
-            start_x = float(player_pos.x) + dir_x * 15.0
-            start_y = float(player_pos.y) + dir_y * 15.0
-            end_x = float(player_pos.x) + dir_x * 512.0
-            end_y = float(player_pos.y) + dir_y * 512.0
-
-            sx0 = (start_x + cam_x) * scale_x
-            sy0 = (start_y + cam_y) * scale_y
-            sx1 = (end_x + cam_x) * scale_x
-            sy1 = (end_y + cam_y) * scale_y
-
-            dx = sx1 - sx0
-            dy = sy1 - sy0
-            dist = math.hypot(dx, dy)
+            start_screen = Vec2((start.x + cam_x) * scale_x, (start.y + cam_y) * scale_y)
+            end_screen = Vec2((end.x + cam_x) * scale_x, (end.y + cam_y) * scale_y)
+            segment = end_screen - start_screen
+            direction, dist = segment.normalized_with_length()
             if dist <= 1e-3:
                 continue
 
             thickness = max(1.0, 2.0 * scale)
             half = thickness * 0.5
-            inv = 1.0 / dist
-            nx = dx * inv
-            ny = dy * inv
-            px = -ny
-            py = nx
-            ox = px * half
-            oy = py * half
+            side = direction.perp_left() * half
 
-            x0 = sx0 - ox
-            y0 = sy0 - oy
-            x1 = sx0 + ox
-            y1 = sy0 + oy
-            x2 = sx1 + ox
-            y2 = sy1 + oy
-            x3 = sx1 - ox
-            y3 = sy1 - oy
+            x0 = start_screen.x - side.x
+            y0 = start_screen.y - side.y
+            x1 = start_screen.x + side.x
+            y1 = start_screen.y + side.y
+            x2 = end_screen.x + side.x
+            y2 = end_screen.y + side.y
+            x3 = end_screen.x - side.x
+            y3 = end_screen.y - side.y
 
             rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
             rl.rl_tex_coord2f(0.0, 0.0)
@@ -903,7 +883,7 @@ class WorldRenderer:
         proj_pos = getattr(proj, "pos", None)
         if not isinstance(proj_pos, Vec2):
             return
-        sx, sy = self.world_to_screen(float(proj_pos.x), float(proj_pos.y))
+        sx, sy = self.world_to_screen(proj_pos.x, proj_pos.y)
         proj_type = int(getattr(proj, "type_id", 0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -1454,7 +1434,7 @@ class WorldRenderer:
                         continue
                     aim_x = float(player.aim.x)
                     aim_y = float(player.aim.y)
-                    dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
+                    dist = player.pos.distance_to(player.aim)
                     radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
                     sx = (aim_x + cam_x) * scale_x
                     sy = (aim_y + cam_y) * scale_y

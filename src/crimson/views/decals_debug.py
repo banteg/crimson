@@ -527,19 +527,18 @@ class DecalsDebugView:
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             mouse = rl.get_mouse_position()
             x, y = self._screen_to_world(float(mouse.x), float(mouse.y))
+            click_pos = Vec2(x, y)
             hit = None
             for creature in self._creatures.entries:
                 if not (creature.active and creature.hp > 0.0):
                     continue
-                dx = float(creature.pos.x) - float(x)
-                dy = float(creature.pos.y) - float(y)
                 r = float(creature.size) * 0.35 + 12.0
-                if dx * dx + dy * dy <= r * r:
+                if Vec2.distance_sq(creature.pos, click_pos) <= r * r:
                     hit = creature
                     break
             if hit is not None:
                 hit.hp -= 1.0
-                self._fx_queue.add_random(pos=Vec2(float(hit.x), float(hit.y)), rand=self._state.rng.rand)
+                self._fx_queue.add_random(pos=hit.pos, rand=self._state.rng.rand)
             else:
                 # Paint blood directly for ground decal checks.
                 self._fx_queue.add(

@@ -187,8 +187,6 @@ class ParticlePool:
             if creatures is None:
                 return -1
             max_index = min(len(creatures), 0x180)
-            pos_x = pos.x
-            pos_y = pos.y
             radius = float(radius)
 
             for creature_idx in range(max_index):
@@ -201,7 +199,7 @@ class ParticlePool:
                     continue
 
                 size = float(creature.size)
-                dist = math.hypot(creature.pos.x - pos_x, creature.pos.y - pos_y) - radius
+                dist = creature.pos.distance_to(pos) - radius
                 threshold = size * 0.14285715 + 3.0
                 if threshold < dist:
                     continue
@@ -285,10 +283,10 @@ class ParticlePool:
                         entry.vel_y = 0.0
                     else:
                         entry.angle = float(entry.angle) % math.tau
-                        hit_angle = math.atan2(
-                            (entry.pos.y - entry.vel_y * dt) - creature.pos.y,
+                        hit_angle = Vec2(
                             (entry.pos.x - entry.vel_x * dt) - creature.pos.x,
-                        )
+                            (entry.pos.y - entry.vel_y * dt) - creature.pos.y,
+                        ).to_angle()
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
                         if float(entry.angle) <= float(hit_angle):
@@ -296,11 +294,11 @@ class ParticlePool:
                         else:
                             entry.angle -= deflect_step
 
-                        entry.vel_x = math.cos(float(entry.angle)) * 82.0
-                        entry.vel_y = math.sin(float(entry.angle)) * 82.0
+                        bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
                         speed_scale = float(int(rand()) % 10) * 0.1
-                        entry.vel_x *= speed_scale
-                        entry.vel_y *= speed_scale
+                        bounce_velocity = bounce_velocity * speed_scale
+                        entry.vel_x = bounce_velocity.x
+                        entry.vel_y = bounce_velocity.y
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:

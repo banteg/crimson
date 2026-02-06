@@ -22,11 +22,11 @@ if TYPE_CHECKING:
 _RAD_TO_DEG = 57.29577951308232
 
 
-def _proj_origin_xy(proj: object, fallback: Vec2) -> tuple[float, float]:
+def _proj_origin(proj: object, fallback: Vec2) -> Vec2:
     origin = getattr(proj, "origin", None)
     if isinstance(origin, Vec2):
-        return float(origin.x), float(origin.y)
-    return float(fallback.x), float(fallback.y)
+        return origin
+    return fallback
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,8 +56,8 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     drawn = False
 
     if renderer.bullet_trail_texture is not None:
-        ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
-        sx0, sy0 = renderer.world_to_screen(ox, oy)
+        origin = _proj_origin(ctx.proj, ctx.pos)
+        sx0, sy0 = renderer.world_to_screen(origin.x, origin.y)
         drawn = renderer._draw_bullet_trail(
             sx0,
             sy0,
@@ -133,8 +133,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             seg_count = int(seg_limit)
 
         # The stored projectile angle is rotated by +pi/2 vs travel direction.
-        dir_x = math.cos(float(ctx.angle) + math.pi / 2.0) * speed_scale
-        dir_y = math.sin(float(ctx.angle) + math.pi / 2.0) * speed_scale
+        direction = Vec2.from_heading(float(ctx.angle) + math.pi) * speed_scale
 
         alpha = float(ctx.alpha)
         tail_tint = renderer._color_from_rgba((rgb[0], rgb[1], rgb[2], alpha * 0.4))
@@ -146,11 +145,11 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         if seg_count > 0:
             size = float(tail_size) * float(ctx.scale)
             origin = rl.Vector2(size * 0.5, size * 0.5)
-            step_x = dir_x * float(spacing)
-            step_y = dir_y * float(spacing)
+            step = direction * float(spacing)
             for idx in range(int(seg_count)):
-                px = float(ctx.pos.x) + float(idx) * step_x
-                py = float(ctx.pos.y) + float(idx) * step_y
+                pos = ctx.pos + step * float(idx)
+                px = pos.x
+                py = pos.y
                 psx, psy = renderer.world_to_screen(px, py)
                 dst = rl.Rectangle(float(psx), float(psy), float(size), float(size))
                 rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tail_tint)
@@ -199,15 +198,11 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     is_fire_bullets = type_id == int(ProjectileTypeId.FIRE_BULLETS)
     is_ion = type_id in ION_TYPES
 
-    ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
-    dx = float(ctx.pos.x) - ox
-    dy = float(ctx.pos.y) - oy
-    dist = math.hypot(dx, dy)
+    origin = _proj_origin(ctx.proj, ctx.pos)
+    beam = ctx.pos - origin
+    direction, dist = beam.normalized_with_length()
     if dist <= 1e-6:
         return True
-
-    dir_x = dx / dist
-    dir_y = dy / dist
 
     # In the native renderer, Ion Gun Master increases the chain effect thickness and reach.
     perk_scale = 1.0
@@ -247,8 +242,9 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         t = (s - start) / span if span > 1e-6 else 1.0
         seg_alpha = t * base_alpha
         if seg_alpha > 1e-3:
-            px = ox + dir_x * s
-            py = oy + dir_y * s
+            pos = origin + direction * s
+            px = pos.x
+            py = pos.y
             psx, psy = renderer.world_to_screen(px, py)
             tint = renderer._color_from_rgba((streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha))
             renderer._draw_atlas_sprite(
@@ -324,7 +320,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     continue
                 if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
                     continue
-                d = math.hypot(float(creature.pos.x) - float(ctx.pos.x), float(creature.pos.y) - float(ctx.pos.y))
+                d = ctx.pos.distance_to(creature.pos)
                 threshold = float(creature.size) * 0.14285715 + 3.0
                 if d - radius < threshold:
                     targets.append(creature)
@@ -341,22 +337,18 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             for creature in targets:
                 tx, ty = renderer.world_to_screen(float(creature.pos.x), float(creature.pos.y))
-                ddx = float(tx) - float(ctx.sx)
-                ddy = float(ty) - float(ctx.sy)
-                dlen = math.hypot(ddx, ddy)
+                segment = Vec2(float(tx) - float(ctx.sx), float(ty) - float(ctx.sy))
+                direction_screen, dlen = segment.normalized_with_length()
                 if dlen <= 1e-3:
                     continue
                 glow_targets.append(creature)
-                inv = 1.0 / dlen
-                nx = ddx * inv
-                ny = ddy * inv
-                px = -ny
-                py = nx
+                side = direction_screen.perp_left()
 
                 # Outer strip (softer).
                 half = outer_half
-                off_x = px * half
-                off_y = py * half
+                off = side * half
+                off_x = off.x
+                off_y = off.y
                 x0 = float(ctx.sx) - off_x
                 y0 = float(ctx.sy) - off_y
                 x1 = float(ctx.sx) + off_x
@@ -379,8 +371,9 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
                 # Inner strip (brighter).
                 half = inner_half
-                off_x = px * half
-                off_y = py * half
+                off = side * half
+                off_x = off.x
+                off_y = off.y
                 x0 = float(ctx.sx) - off_x
                 y0 = float(ctx.sy) - off_y
                 x1 = float(ctx.sx) + off_x
@@ -438,8 +431,8 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     alpha = float(ctx.alpha)
     life = float(ctx.life)
     if life >= 0.4:
-        ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
-        dist = math.hypot(float(ctx.pos.x) - ox, float(ctx.pos.y) - oy)
+        origin = _proj_origin(ctx.proj, ctx.pos)
+        dist = origin.distance_to(ctx.pos)
 
         desired_size = dist * 0.16 * float(ctx.scale)
         if desired_size <= 1e-3:
@@ -506,8 +499,8 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     if float(ctx.life) < 0.4:
         return True
 
-    ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
-    dist = math.hypot(float(ctx.pos.x) - ox, float(ctx.pos.y) - oy)
+    origin = _proj_origin(ctx.proj, ctx.pos)
+    dist = origin.distance_to(ctx.pos)
 
     desired_size = min(dist, 20.0) * float(ctx.scale)
     if desired_size <= 1e-3:
@@ -575,10 +568,10 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
 
         draw_plague_quad(px=float(ctx.pos.x), py=float(ctx.pos.y), size=60.0)
 
-        offset_angle = float(ctx.angle) + math.pi / 2.0
+        offset = Vec2.from_heading(float(ctx.angle) + math.pi) * 15.0
         draw_plague_quad(
-            px=float(ctx.pos.x) + math.cos(offset_angle) * 15.0,
-            py=float(ctx.pos.y) + math.sin(offset_angle) * 15.0,
+            px=float(ctx.pos.x) + offset.x,
+            py=float(ctx.pos.y) + offset.y,
             size=60.0,
         )
 

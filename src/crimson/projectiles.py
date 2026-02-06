@@ -902,21 +902,16 @@ class ProjectilePool:
             if barrel_greaser_active and int(proj.owner_id) < 0:
                 steps *= 2
 
-            dir_x = math.cos(proj.angle - math.pi / 2.0)
-            dir_y = math.sin(proj.angle - math.pi / 2.0)
-
-            acc_x = 0.0
-            acc_y = 0.0
+            direction = Vec2.from_heading(float(proj.angle))
+            acc = Vec2()
             step = 0
             while step < steps:
-                acc_x += dir_x * dt * 20.0 * proj.speed_scale * 3.0
-                acc_y += dir_y * dt * 20.0 * proj.speed_scale * 3.0
+                acc = acc + direction * (dt * 20.0 * proj.speed_scale * 3.0)
 
-                if math.hypot(acc_x, acc_y) >= 4.0 or steps <= step + 3:
-                    move = Vec2(acc_x, acc_y)
+                if acc.length() >= 4.0 or steps <= step + 3:
+                    move = acc
                     proj.pos = proj.pos + move
-                    acc_x = 0.0
-                    acc_y = 0.0
+                    acc = Vec2()
 
                     hit_idx = None
                     ion_hit_test = int(proj.type_id) in (
@@ -1029,9 +1024,9 @@ class ProjectilePool:
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
-                        proj.pos = proj.pos + Vec2(dir_x, dir_y) * float(jitter)
+                        proj.pos = proj.pos + direction * float(jitter)
 
-                    dist = math.hypot(proj.origin.x - proj.pos.x, proj.origin.y - proj.pos.y)
+                    dist = proj.origin.distance_to(proj.pos)
                     if dist < 50.0:
                         dist = 50.0
 
@@ -1053,7 +1048,7 @@ class ProjectilePool:
                     if damage_amount > 0.0 and (creature.hp > 0.0 or ion_hit_test):
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
-                        impulse = Vec2(dir_x, dir_y) * float(proj.speed_scale)
+                        impulse = direction * float(proj.speed_scale)
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
@@ -1162,9 +1157,8 @@ class ProjectilePool:
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
-            direction_x = math.cos(proj.angle - math.pi / 2.0)
-            direction_y = math.sin(proj.angle - math.pi / 2.0)
-            proj.pos = proj.pos + Vec2(direction_x, direction_y) * (speed * dt)
+            direction = Vec2.from_heading(float(proj.angle))
+            proj.pos = proj.pos + direction * (speed * dt)
 
             hit_idx = None
             for idx, creature in enumerate(creatures):
@@ -1248,10 +1242,9 @@ class SecondaryProjectilePool:
         base_speed = 90.0
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             base_speed = 190.0
-        vx = math.cos(angle - math.pi / 2.0) * base_speed
-        vy = math.sin(angle - math.pi / 2.0) * base_speed
-        entry.vel_x = vx
-        entry.vel_y = vy
+        velocity = Vec2.from_heading(float(angle)) * base_speed
+        entry.vel_x = velocity.x
+        entry.vel_y = velocity.y
         entry.speed = float(time_to_live)
 
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
@@ -1339,14 +1332,8 @@ class SecondaryProjectilePool:
                         continue
                     d_sq = Vec2.distance_sq(entry.pos, creature.pos)
                     if d_sq < radius_sq:
-                        dx = creature.pos.x - entry.pos.x
-                        dy = creature.pos.y - entry.pos.y
-                        dist = math.hypot(dx, dy)
-                        if dist > 1e-6:
-                            inv = 0.1 / dist
-                            impulse = Vec2(dx * inv, dy * inv)
-                        else:
-                            impulse = Vec2()
+                        impulse_dir = entry.pos.direction_to(creature.pos)
+                        impulse = impulse_dir * 0.1
                         _apply_secondary_damage(
                             creature_idx,
                             damage,
@@ -1366,7 +1353,8 @@ class SecondaryProjectilePool:
             entry.pos = entry.pos + Vec2(entry.vel_x * dt, entry.vel_y * dt)
 
             # Update velocity + countdown.
-            speed_mag = math.hypot(entry.vel_x, entry.vel_y)
+            velocity = Vec2(entry.vel_x, entry.vel_y)
+            speed_mag = velocity.length()
             if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                 if speed_mag < 500.0:
                     factor = 1.0 + dt * 3.0
@@ -1401,28 +1389,24 @@ class SecondaryProjectilePool:
 
                 if 0 <= target_id < len(creatures):
                     target = creatures[target_id]
-                    dx = target.pos.x - entry.pos.x
-                    dy = target.pos.y - entry.pos.y
-                    dist = math.hypot(dx, dy)
+                    to_target = target.pos - entry.pos
+                    target_dir, dist = to_target.normalized_with_length()
                     if dist > 1e-6:
-                        angle = math.atan2(dy, dx) + math.pi / 2.0
-                        entry.angle = angle
-                        dir_x = math.cos(angle - math.pi / 2.0)
-                        dir_y = math.sin(angle - math.pi / 2.0)
-                        entry.vel_x += dir_x * dt * 800.0
-                        entry.vel_y += dir_y * dt * 800.0
-                        if 350.0 < math.hypot(entry.vel_x, entry.vel_y):
-                            entry.vel_x -= dir_x * dt * 800.0
-                            entry.vel_y -= dir_y * dt * 800.0
+                        entry.angle = to_target.to_heading()
+                        accel = target_dir * (dt * 800.0)
+                        next_velocity = Vec2(entry.vel_x, entry.vel_y) + accel
+                        if next_velocity.length() <= 350.0:
+                            entry.vel_x = next_velocity.x
+                            entry.vel_y = next_velocity.y
 
                 entry.speed -= dt * 0.5
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
             entry.trail_timer -= (abs(float(entry.vel_x)) + abs(float(entry.vel_y))) * dt * 0.01
             if entry.trail_timer < 0.0:
-                direction = Vec2.from_angle(float(entry.angle) - math.pi / 2.0)
+                direction = Vec2.from_heading(float(entry.angle))
                 spawn_pos = entry.pos - direction * 9.0
-                trail_velocity = Vec2.from_angle(float(entry.angle) + math.pi / 2.0) * 90.0
+                trail_velocity = Vec2.from_heading(float(entry.angle) + math.pi) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
                     sprite_id = sprite_effects.spawn(
                         pos=spawn_pos,

@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.assets import resolve_asset_path
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.view import View, ViewContext
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
@@ -148,20 +149,18 @@ class PlayerSpriteDebugView:
         if rl.is_key_down(rl.KeyboardKey.KEY_S):
             move_y += 1.0
 
-        moving = move_x != 0.0 or move_y != 0.0
+        move = Vec2(move_x, move_y)
+        moving = move.length_sq() > 0.0
         if moving:
-            length = math.hypot(move_x, move_y)
-            if length > 0.0:
-                move_x /= length
-                move_y /= length
+            move = move.normalized()
             speed = 120.0
             if rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT):
                 speed *= 2.0
-            self._player_x += move_x * speed * dt
-            self._player_y += move_y * speed * dt
+            self._player_x += move.x * speed * dt
+            self._player_y += move.y * speed * dt
             self._player_x = max(0.0, min(WORLD_SIZE, self._player_x))
             self._player_y = max(0.0, min(WORLD_SIZE, self._player_y))
-            self._move_heading = math.atan2(move_y, move_x) + math.pi / 2.0
+            self._move_heading = move.to_heading()
 
             move_speed = 2.0
             self._move_phase += dt * move_speed * 19.0
@@ -173,10 +172,9 @@ class PlayerSpriteDebugView:
         mouse = rl.get_mouse_position()
         aim_world_x = float(mouse.x) - cam_x
         aim_world_y = float(mouse.y) - cam_y
-        aim_dx = aim_world_x - self._player_x
-        aim_dy = aim_world_y - self._player_y
-        if abs(aim_dx) > 1e-3 or abs(aim_dy) > 1e-3:
-            self._aim_heading = math.atan2(aim_dy, aim_dx) + math.pi / 2.0
+        aim_delta = Vec2(aim_world_x - self._player_x, aim_world_y - self._player_y)
+        if aim_delta.length_sq() > 1e-6:
+            self._aim_heading = aim_delta.to_heading()
 
         if rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._muzzle_flash = 0.8

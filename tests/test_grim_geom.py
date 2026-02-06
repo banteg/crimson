@@ -88,6 +88,30 @@ def test_vec2_distance_sq() -> None:
     assert math.isclose(Vec2.distance_sq(a, b), 25.0, abs_tol=1e-9)
 
 
+def test_vec2_distance_to() -> None:
+    a = Vec2(1.0, 2.0)
+    b = Vec2(4.0, 6.0)
+
+    assert math.isclose(a.distance_to(b), 5.0, abs_tol=1e-9)
+
+
+def test_vec2_direction_to() -> None:
+    a = Vec2(2.0, 3.0)
+    b = Vec2(5.0, 7.0)
+
+    direction = a.direction_to(b)
+
+    assert math.isclose(direction.length(), 1.0, abs_tol=1e-9)
+    assert math.isclose(direction.x, 0.6, abs_tol=1e-9)
+    assert math.isclose(direction.y, 0.8, abs_tol=1e-9)
+
+
+def test_vec2_direction_to_returns_zero_when_points_are_equal() -> None:
+    point = Vec2(4.0, -1.5)
+
+    assert point.direction_to(point) == Vec2()
+
+
 def test_vec2_lerp() -> None:
     a = Vec2(1.0, 5.0)
     b = Vec2(5.0, 1.0)
@@ -106,3 +130,10 @@ def test_vec2_operator_helpers() -> None:
     assert b - a == Vec2(2.0, 2.0)
     assert a * 2.0 == Vec2(2.0, 4.0)
     assert 2.0 * a == Vec2(2.0, 4.0)
+
+
+def test_vec2_perpendicular_helpers() -> None:
+    vec = Vec2(3.0, -2.0)
+
+    assert vec.perp_left() == Vec2(2.0, 3.0)
+    assert vec.perp_right() == Vec2(-2.0, -3.0)

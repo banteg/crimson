@@ -42,6 +42,13 @@ class Vec2:
             return Vec2(), 0.0
         return self * (1.0 / magnitude), magnitude
 
+    def distance_to(self, other: Vec2) -> float:
+        return (other - self).length()
+
+    def direction_to(self, other: Vec2, *, epsilon: float = 1e-6) -> Vec2:
+        direction, _ = (other - self).normalized_with_length(epsilon=epsilon)
+        return direction
+
     @classmethod
     def from_angle(cls, theta: float) -> Vec2:
         return cls(x=math.cos(theta), y=math.sin(theta))
@@ -55,6 +62,12 @@ class Vec2:
 
     def to_heading(self) -> float:
         return self.to_angle() + math.pi / 2.0
+
+    def perp_left(self) -> Vec2:
+        return Vec2(-self.y, self.x)
+
+    def perp_right(self) -> Vec2:
+        return Vec2(self.y, -self.x)
 
     def rotated(self, theta: float) -> Vec2:
         cos_theta = math.cos(theta)

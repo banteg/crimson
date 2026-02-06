@@ -91,10 +91,6 @@ def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
 
 
-def _angle_to_target(x0: float, y0: float, x1: float, y1: float) -> float:
-    return math.atan2(y1 - y0, x1 - x0) + math.pi / 2.0
-
-
 class ProjectileFxView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -294,7 +290,8 @@ class ProjectileFxView:
 
         mouse = rl.get_mouse_position()
         aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
-        angle = _angle_to_target(self._origin_x, self._origin_y, aim_x, aim_y)
+        aim_delta = Vec2(aim_x - self._origin_x, aim_y - self._origin_y)
+        angle = aim_delta.to_heading() if aim_delta.length_sq() > 1e-12 else math.pi / 2.0
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             self._origin_x = clamp(aim_x, 0.0, WORLD_SIZE)
@@ -398,7 +395,7 @@ class ProjectileFxView:
         proj_pos = getattr(proj, "pos", None)
         if not isinstance(proj_pos, Vec2):
             return
-        sx, sy = self._camera_world_to_screen(float(proj_pos.x), float(proj_pos.y))
+        sx, sy = self._camera_world_to_screen(proj_pos.x, proj_pos.y)
 
         if mapping is None:
             rl.draw_circle(int(sx), int(sy), 3.0, rl.Color(240, 220, 160, 255))
@@ -425,20 +422,16 @@ class ProjectileFxView:
             proj_origin = getattr(proj, "origin", None)
             if not isinstance(proj_origin, Vec2):
                 proj_origin = proj_pos
-            ox = float(proj_origin.x)
-            oy = float(proj_origin.y)
-            dx = float(proj_pos.x) - ox
-            dy = float(proj_pos.y) - oy
-            dist = math.hypot(dx, dy)
+            beam = proj_pos - proj_origin
+            direction, dist = beam.normalized_with_length()
             if dist > 1e-6:
                 step = 14.0
                 seg_count = max(1, int(dist // step) + 1)
-                dir_x = dx / dist
-                dir_y = dy / dist
                 for idx in range(seg_count):
                     t = float(idx) / float(max(1, seg_count - 1))
-                    px = ox + dir_x * dist * t
-                    py = oy + dir_y * dist * t
+                    trail_pos = proj_origin + direction * (dist * t)
+                    px = trail_pos.x
+                    py = trail_pos.y
                     alpha = int(220 * (1.0 - t * 0.75))
                     tint = rl.Color(color.r, color.g, color.b, alpha)
                     psx, psy = self._camera_world_to_screen(px, py)

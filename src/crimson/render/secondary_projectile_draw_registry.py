@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.math import clamp
 
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
@@ -69,9 +69,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     max(0.0, particle_cell_h - 2.0),
                 )
 
-                angle = float(ctx.angle)
-                dir_x = math.cos(angle - math.pi / 2.0)
-                dir_y = math.sin(angle - math.pi / 2.0)
+                direction = Vec2.from_heading(float(ctx.angle))
 
                 sx = float(ctx.sx)
                 sy = float(ctx.sy)
@@ -87,8 +85,8 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     if fx_alpha <= 1e-3:
                         return
                     tint = renderer._color_from_rgba(rgba)
-                    fx_sx = sx - dir_x * offset * scale
-                    fx_sy = sy - dir_y * offset * scale
+                    fx_sx = sx - direction.x * offset * scale
+                    fx_sy = sy - direction.y * offset * scale
                     dst_size = float(size) * scale
                     dst = rl.Rectangle(float(fx_sx), float(fx_sy), float(dst_size), float(dst_size))
                     origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)

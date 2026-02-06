@@ -5,6 +5,8 @@ import math
 import random
 from typing import Iterator
 
+from grim.geom import Vec2
+
 from ..creatures.spawn import SpawnId
 from .types import SpawnEntry
 
@@ -96,7 +98,7 @@ def radial_points(
 
 
 def heading_from_center(x: float, y: float, center_x: float, center_y: float) -> float:
-    return math.atan2(y - center_y, x - center_x) - (math.pi / 2.0)
+    return Vec2(x - center_x, y - center_y).to_angle() - (math.pi / 2.0)
 
 
 def line_points_x(start: float, step: float, count: int, y: float) -> Iterator[tuple[float, float]]:

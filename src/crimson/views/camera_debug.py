@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-import math
 from pathlib import Path
 import time
 
@@ -10,6 +9,7 @@ import pyray as rl
 
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
@@ -192,13 +192,11 @@ class CameraDebugView:
             move_y -= 1.0
         if rl.is_key_down(rl.KeyboardKey.KEY_S):
             move_y += 1.0
-        if move_x != 0.0 or move_y != 0.0:
-            length = math.hypot(move_x, move_y)
-            if length > 0.0:
-                move_x /= length
-                move_y /= length
-            self._player_x += move_x * speed * dt
-            self._player_y += move_y * speed * dt
+        move = Vec2(move_x, move_y)
+        if move.length_sq() > 0.0:
+            move = move.normalized()
+            self._player_x += move.x * speed * dt
+            self._player_y += move.y * speed * dt
             self._player_x = max(0.0, min(WORLD_SIZE, self._player_x))
             self._player_y = max(0.0, min(WORLD_SIZE, self._player_y))
 

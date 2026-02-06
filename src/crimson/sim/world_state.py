@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from typing import Callable
 
 from grim.geom import Vec2
@@ -100,7 +99,7 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
         if abs(dx) > 512.0 or abs(dy) > 512.0:
             continue
 
-        remaining = 512.0 - math.hypot(dx, dy)
+        remaining = 512.0 - Vec2(dx, dy).length()
         if remaining <= 0.0:
             continue
 
@@ -496,7 +495,7 @@ class WorldState:
             if idx >= len(prev_positions):
                 continue
             prev_x, prev_y = prev_positions[idx]
-            speed = math.hypot(player.pos.x - prev_x, player.pos.y - prev_y)
+            speed = Vec2(player.pos.x - prev_x, player.pos.y - prev_y).length()
             move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
             player.move_phase, _ = creature_anim_advance_phase(
                 player.move_phase,
