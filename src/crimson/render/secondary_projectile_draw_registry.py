@@ -12,13 +12,14 @@ from grim.math import clamp
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
 
 if TYPE_CHECKING:
+    from ..projectiles import SecondaryProjectile
     from .world_renderer import WorldRenderer
 
 
 @dataclass(frozen=True, slots=True)
 class SecondaryProjectileDrawCtx:
     renderer: WorldRenderer
-    proj: object
+    proj: SecondaryProjectile
     proj_type: int
     screen_pos: Vec2
     angle: float
@@ -139,7 +140,8 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         return True
 
     scale = ctx.scale
-    if renderer.particles_texture is None:
+    particles_texture = renderer.particles_texture
+    if particles_texture is None:
         radius = det_scale * t * 80.0
         alpha_byte = int(clamp((1.0 - t) * 180.0 * ctx.alpha, 0.0, 255.0) + 0.5)
         color = rl.Color(255, 180, 100, alpha_byte)
@@ -155,8 +157,8 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     frame = int(atlas.frame)
     col = frame % grid
     row = frame // grid
-    cell_w = renderer.particles_texture.width / grid
-    cell_h = renderer.particles_texture.height / grid
+    cell_w = particles_texture.width / grid
+    cell_h = particles_texture.height / grid
     src = rl.Rectangle(
         cell_w * col,
         cell_h * row,
@@ -174,7 +176,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         tint = RGBA(1.0, 0.6, 0.1, a).to_rl()
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, dst_size, dst_size)
         origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
-        rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)
+        rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     _draw_detonation_quad(size=det_scale * t * 64.0, alpha_mul=1.0)

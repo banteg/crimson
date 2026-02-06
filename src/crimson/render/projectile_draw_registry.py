@@ -18,12 +18,14 @@ from ..sim.world_defs import BEAM_TYPES, ION_TYPES, KNOWN_PROJ_FRAMES, PLASMA_PA
 from .projectile_render_registry import beam_effect_scale, plasma_projectile_render_config
 
 if TYPE_CHECKING:
+    from ..creatures.runtime import CreatureState
+    from ..projectiles import Projectile
     from .world_renderer import WorldRenderer
 
 _RAD_TO_DEG = 57.29577951308232
 
 
-def _proj_origin(proj: object, fallback: Vec2) -> Vec2:
+def _proj_origin(proj: Projectile, fallback: Vec2) -> Vec2:
     origin = getattr(proj, "origin", None)
     if isinstance(origin, Vec2):
         return origin
@@ -33,7 +35,7 @@ def _proj_origin(proj: object, fallback: Vec2) -> Vec2:
 @dataclass(frozen=True, slots=True)
 class ProjectileDrawCtx:
     renderer: WorldRenderer
-    proj: object
+    proj: Projectile
     proj_index: int
     texture: rl.Texture | None
     type_id: int
@@ -305,7 +307,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             radius = effect_scale * perk_scale * 40.0
 
             # Native iterates via creature_find_in_radius(pos, radius, start_index) in pool order.
-            targets: list[object] = []
+            targets: list[CreatureState] = []
             for creature in renderer.creatures.entries[1:]:
                 if not creature.active:
                     continue
@@ -322,7 +324,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             v0 = 0.0
             v1 = 0.25
 
-            glow_targets: list[object] = []
+            glow_targets: list[CreatureState] = []
             rl.rl_set_texture(texture.id)
             rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
 
@@ -487,7 +489,7 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     rotation_rad = ctx.angle
     rgb = (1.0, 1.0, 1.0)
     if type_id == int(ProjectileTypeId.BLADE_GUN):
-        rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer._elapsed_ms) * 0.1
+        rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer.elapsed_ms) * 0.1
         rgb = (0.8, 0.8, 0.8)
 
     tint = RGBA(rgb[0], rgb[1], rgb[2], float(ctx.alpha)).to_rl()
@@ -507,12 +509,13 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
     if int(ctx.type_id) != int(ProjectileTypeId.PLAGUE_SPREADER):
         return False
-    if ctx.texture is None:
+    texture = ctx.texture
+    if texture is None:
         return False
 
     grid = 4
     frame = 2
-    cell_w = float(ctx.texture.width) / float(grid)
+    cell_w = float(texture.width) / float(grid)
 
     alpha = float(ctx.alpha)
     life = float(ctx.life)
@@ -529,7 +532,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 return
             pos_screen = renderer.world_to_screen(pos)
             renderer._draw_atlas_sprite(
-                ctx.texture,
+                texture,
                 grid=grid,
                 frame=frame,
                 pos=pos_screen,
@@ -546,7 +549,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
             size=60.0,
         )
 
-        phase = float(int(ctx.proj_index)) + float(renderer._elapsed_ms) * 0.01
+        phase = float(int(ctx.proj_index)) + float(renderer.elapsed_ms) * 0.01
         cos_phase = math.cos(phase)
         sin_phase = math.sin(phase)
         draw_plague_quad(
@@ -580,7 +583,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
 
     tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
     renderer._draw_atlas_sprite(
-        ctx.texture,
+        texture,
         grid=grid,
         frame=frame,
         pos=ctx.screen_pos,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import pyray as rl
 
@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
     from ..game_world import GameWorld
     from ..gameplay import GameplayState, PlayerState
+    from ..projectiles import Projectile, SecondaryProjectile
 
 _RAD_TO_DEG = 57.29577951308232
 
@@ -254,7 +255,7 @@ class WorldRenderer:
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
+        camera = self._clamp_camera(self.camera, screen_size)
         scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
         scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
         return camera, Vec2(scale_x, scale_y)
@@ -620,7 +621,7 @@ class WorldRenderer:
     def _draw_player_trooper_sprite(
         self,
         texture: rl.Texture,
-        player: object,
+        player: PlayerState,
         *,
         camera: Vec2,
         view_scale: Vec2,
@@ -630,8 +631,8 @@ class WorldRenderer:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        grid = 8
-        cell = float(texture.width) / float(grid) if grid > 0 else float(texture.width)
+        sprite_grid = 8
+        cell = float(texture.width) / float(sprite_grid) if sprite_grid > 0 else float(texture.width)
         if cell <= 0.0:
             return
 
@@ -670,7 +671,7 @@ class WorldRenderer:
         shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
         overlay_tint = tint
         if len(self.players) > 1:
-            index = int(getattr(player, "index", 0))
+            index = int(player.index)
             if index == 0:
                 overlay_tint = rl.Color(77, 77, 255, tint.a)
             else:
@@ -679,7 +680,7 @@ class WorldRenderer:
         def draw(frame: int, *, pos: Vec2, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
                 texture,
-                grid=grid,
+                grid=sprite_grid,
                 frame=max(0, min(63, int(frame))),
                 pos=pos,
                 scale=base_scale * float(scale_mul),
@@ -733,13 +734,13 @@ class WorldRenderer:
             if self.particles_texture is not None and float(player.shield_timer) > 1e-3 and alpha > 1e-3:
                 atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.SHIELD_RING))
                 if atlas is not None:
-                    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-                    if grid:
+                    shield_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+                    if shield_grid:
                         frame = int(atlas.frame)
-                        col = frame % grid
-                        row = frame // grid
-                        cell_w = float(self.particles_texture.width) / float(grid)
-                        cell_h = float(self.particles_texture.height) / float(grid)
+                        col = frame % shield_grid
+                        row = frame // shield_grid
+                        cell_w = float(self.particles_texture.width) / float(shield_grid)
+                        cell_h = float(self.particles_texture.height) / float(shield_grid)
                         src = rl.Rectangle(
                             cell_w * float(col),
                             cell_h * float(row),
@@ -829,18 +830,16 @@ class WorldRenderer:
         )
         draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
-    def _draw_projectile(self, proj: object, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
+    def _draw_projectile(self, proj: Projectile, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
         texture = self.projs_texture
-        type_id = int(getattr(proj, "type_id", 0))
-        proj_pos = getattr(proj, "pos", None)
-        if not isinstance(proj_pos, Vec2):
-            return
+        type_id = int(proj.type_id)
+        proj_pos = proj.pos
         screen = self.world_to_screen(proj_pos)
-        life = float(getattr(proj, "life_timer", 0.0))
-        angle = float(getattr(proj, "angle", 0.0))
+        life = float(proj.life_timer)
+        angle = float(proj.angle)
 
         ctx = ProjectileDrawCtx(
             renderer=self,
@@ -1040,16 +1039,14 @@ class WorldRenderer:
         rl.rl_set_texture(0)
         rl.end_blend_mode()
 
-    def _draw_secondary_projectile(self, proj: object, *, scale: float, alpha: float = 1.0) -> None:
+    def _draw_secondary_projectile(self, proj: SecondaryProjectile, *, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        proj_pos = getattr(proj, "pos", None)
-        if not isinstance(proj_pos, Vec2):
-            return
+        proj_pos = proj.pos
         screen = self.world_to_screen(proj_pos)
-        proj_type = int(getattr(proj, "type_id", 0))
-        angle = float(getattr(proj, "angle", 0.0))
+        proj_type = int(proj.type_id)
+        angle = float(proj.angle)
 
         ctx = SecondaryProjectileDrawCtx(
             renderer=self,
@@ -1314,7 +1311,7 @@ class WorldRenderer:
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
+        camera = self._clamp_camera(self.camera, screen_size)
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
         scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0
@@ -1347,7 +1344,8 @@ class WorldRenderer:
             alpha_test = bool(getattr(self.ground, "alpha_test", True))
 
         with _maybe_alpha_test(bool(alpha_test)):
-            trooper_texture = self.creature_textures.get(CREATURE_ASSET.get(CreatureTypeId.TROOPER))
+            trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
+            trooper_texture = self.creature_textures.get(trooper_asset) if trooper_asset is not None else None
             particles_texture = self.particles_texture
             monster_vision = bool(self.players) and perk_active(self.players[0], PerkId.MONSTER_VISION)
             monster_vision_src: rl.Rectangle | None = None
@@ -1387,7 +1385,7 @@ class WorldRenderer:
                             max(0.0, cell_h - 2.0),
                         )
 
-            def draw_player(player: object) -> None:
+            def draw_player(player: PlayerState) -> None:
                 if trooper_texture is not None:
                     self._draw_player_trooper_sprite(
                         trooper_texture,
