@@ -64,5 +64,6 @@ fixes without manual REPL interactions.
 Known caveat from the 2026-02-06 large run:
 
 - `mem_watch_enabled` was present, but no `mem_watch_access` events were emitted
-  (`0` hits in `analysis/frida/gameplay_state_capture_summary.json`). Plan to
-  re-check MemoryAccessMonitor range setup before the next dedicated watch run.
+  (`0` hits in `analysis/frida/gameplay_state_capture_summary.json`). The script
+  now normalizes Frida access op codes (`w`/`write`, etc.); rerun a short
+  capture to validate that write events are flowing.

@@ -157,25 +157,32 @@
 - unlock perk id `0`: 1295
 
 ## UI subtemplate deltas
-- state:9|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 49173
-- state:9|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 49173
-- state:0|block:7|slot:0|x|ui_cursor_anim_timer: 2447
-- state:0|block:7|slot:0|y|ui_cursor_pulse_phase: 2447
-- state:2|block:7|slot:0|x|ui_cursor_anim_timer: 1792
-- state:2|block:7|slot:0|y|ui_cursor_pulse_phase: 1792
-- state:4|block:7|slot:0|x|ui_cursor_anim_timer: 1064
-- state:4|block:7|slot:0|y|ui_cursor_pulse_phase: 1064
-- state:6|block:7|slot:0|x|ui_cursor_anim_timer: 731
-- state:6|block:7|slot:0|y|ui_cursor_pulse_phase: 731
-- state:9|block:7|slot:0|field_0x10|quest_kill_progress_ratio: 22
-- state:9|block:7|slot:0|x|ui_cursor_anim_timer: 19
-- state:9|block:7|slot:0|y|ui_cursor_pulse_phase: 19
-- state:0|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 3
-- state:0|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 3
-- state:2|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
-- state:2|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
-- state:6|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
-- state:6|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
+- top offset writes:
+  - 0x004902f0|ui_aim_enhancement_anim_timer: 49178
+  - 0x004902f4|ui_aim_enhancement_pulse_phase: 49178
+  - 0x004902e8|ui_cursor_anim_timer: 6053
+  - 0x004902ec|ui_cursor_pulse_phase: 6053
+  - 0x004902f8|quest_kill_progress_ratio: 22
+- decoded field changes:
+  - state:9|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 49173
+  - state:9|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 49173
+  - state:0|block:7|slot:0|x|ui_cursor_anim_timer: 2447
+  - state:0|block:7|slot:0|y|ui_cursor_pulse_phase: 2447
+  - state:2|block:7|slot:0|x|ui_cursor_anim_timer: 1792
+  - state:2|block:7|slot:0|y|ui_cursor_pulse_phase: 1792
+  - state:4|block:7|slot:0|x|ui_cursor_anim_timer: 1064
+  - state:4|block:7|slot:0|y|ui_cursor_pulse_phase: 1064
+  - state:6|block:7|slot:0|x|ui_cursor_anim_timer: 731
+  - state:6|block:7|slot:0|y|ui_cursor_pulse_phase: 731
+  - state:9|block:7|slot:0|field_0x10|quest_kill_progress_ratio: 22
+  - state:9|block:7|slot:0|x|ui_cursor_anim_timer: 19
+  - state:9|block:7|slot:0|y|ui_cursor_pulse_phase: 19
+  - state:0|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 3
+  - state:0|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 3
+  - state:2|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
+  - state:2|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
+  - state:6|block:7|slot:0|field_0x08|ui_aim_enhancement_anim_timer: 1
+  - state:6|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
 
 ## SFX by function
 - sfx_play_exclusive|quest_results_screen_update: 3989

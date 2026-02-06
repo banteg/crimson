@@ -556,8 +556,12 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
 
     ui = summary.get("ui_subtemplate") or {}
     lines.append("## UI subtemplate deltas")
+    lines.append("- top offset writes:")
+    for row in ui.get("top_offset_changes") or []:
+        lines.append(f"  - {row.get('key')}: {row.get('count')}")
+    lines.append("- decoded field changes:")
     for row in ui.get("top_field_changes") or []:
-        lines.append(f"- {row.get('key')}: {row.get('count')}")
+        lines.append(f"  - {row.get('key')}: {row.get('count')}")
     lines.append("")
 
     sfx = summary.get("sfx") or {}
