@@ -27,7 +27,7 @@ def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     base_player = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
 
     assert (
-        base_state.bonus_pool.try_spawn_on_kill(100.0, 100.0, state=base_state, players=[base_player])
+        base_state.bonus_pool.try_spawn_on_kill(pos=Vec2(100.0, 100.0), state=base_state, players=[base_player])
         is None
     )
 
@@ -38,6 +38,6 @@ def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     perk_player.perk_counts[int(PerkId.BONUS_MAGNET)] = 1
 
     assert (
-        perk_state.bonus_pool.try_spawn_on_kill(100.0, 100.0, state=perk_state, players=[perk_player])
+        perk_state.bonus_pool.try_spawn_on_kill(pos=Vec2(100.0, 100.0), state=perk_state, players=[perk_player])
         is not None
     )

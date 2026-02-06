@@ -70,8 +70,7 @@ class _EffectsForCreatureSpawns(Protocol):
     def spawn_burst(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         count: int,
         rand: Callable[[], int],
         detail_preset: int,
@@ -229,8 +228,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     creature.y = clamp(creature.y - creature.vel_y * ctx.dt, 0.0, float(ctx.world_height))
 
     ctx.state.effects.spawn_burst(
-        pos_x=float(creature.x),
-        pos_y=float(creature.y),
+        pos=Vec2(float(creature.x), float(creature.y)),
         count=6,
         rand=ctx.rand,
         detail_preset=int(ctx.detail_preset),
@@ -312,8 +310,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dx = 0.0
             dy = 0.0
         ctx.fx_queue.add_random(
-            pos_x=float(ctx.player.pos.x) + dx * 3.0,
-            pos_y=float(ctx.player.pos.y) + dy * 3.0,
+            pos=Vec2(float(ctx.player.pos.x) + dx * 3.0, float(ctx.player.pos.y) + dy * 3.0),
             rand=ctx.rand,
         )
 
@@ -521,8 +518,7 @@ class CreaturePool:
             fx_rand = rand if rand is not None else (lambda: 0)
             for fx in plan.effects:
                 effect_pool.spawn_burst(
-                    pos_x=float(fx.x),
-                    pos_y=float(fx.y),
+                    pos=Vec2(float(fx.x), float(fx.y)),
                     count=int(fx.count),
                     rand=fx_rand,
                     detail_preset=int(detail_preset),
@@ -674,7 +670,7 @@ class CreaturePool:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
                     creature.hp -= 15.0
                     if fx_queue is not None:
-                        fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+                        fx_queue.add_random(pos=Vec2(creature.x, creature.y), rand=rand)
 
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
@@ -718,7 +714,7 @@ class CreaturePool:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
                         creature.hp -= (100.0 - dist) * 0.3
                         if fx_queue is not None:
-                            fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+                            fx_queue.add_random(pos=Vec2(creature.x, creature.y), rand=rand)
 
                         if creature.hp < 0.0:
                             if creature.type_id == 1:
@@ -940,16 +936,14 @@ class CreaturePool:
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 state.effects.spawn_freeze_shard(
-                    pos_x=pos_x,
-                    pos_y=pos_y,
+                    pos=Vec2(pos_x, pos_y),
                     angle=angle,
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             state.effects.spawn_freeze_shatter(
-                pos_x=pos_x,
-                pos_y=pos_y,
+                pos=Vec2(pos_x, pos_y),
                 angle=angle,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -1115,8 +1109,7 @@ class CreaturePool:
                 self.spawned_count += 1
 
             state.effects.spawn_burst(
-                pos_x=float(creature.x),
-                pos_y=float(creature.y),
+                pos=Vec2(float(creature.x), float(creature.y)),
                 count=8,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -1141,18 +1134,16 @@ class CreaturePool:
             spawned_bonus = None
             if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
                 spawned_bonus = state.bonus_pool.spawn_at(
-                    creature.x,
-                    creature.y,
-                    int(creature.bonus_id),
-                    int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                    pos=Vec2(creature.x, creature.y),
+                    bonus_id=int(creature.bonus_id),
+                    duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
                     state=state,
                     world_width=world_width,
                     world_height=world_height,
                 )
             else:
                 spawned_bonus = state.bonus_pool.try_spawn_on_kill(
-                    creature.x,
-                    creature.y,
+                    pos=Vec2(creature.x, creature.y),
                     state=state,
                     players=players,
                     world_width=world_width,
@@ -1160,15 +1151,14 @@ class CreaturePool:
                 )
             if spawned_bonus is not None:
                 state.effects.spawn_burst(
-                    pos_x=float(spawned_bonus.pos.x),
-                    pos_y=float(spawned_bonus.pos.y),
+                    pos=Vec2(float(spawned_bonus.pos.x), float(spawned_bonus.pos.y)),
                     count=16,
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
 
         if fx_queue is not None:
-            fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+            fx_queue.add_random(pos=Vec2(creature.x, creature.y), rand=rand)
 
         return CreatureDeath(
             index=int(idx),

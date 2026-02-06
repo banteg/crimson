@@ -28,7 +28,7 @@ def test_original_amount_weapon_id_suppression_bug_is_fixed_by_default() -> None
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(256.0, 256.0, state=state, players=[player])
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is not None
     assert entry.bonus_id == int(BonusId.SPEED)
 
@@ -39,6 +39,5 @@ def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(256.0, 256.0, state=state, players=[player])
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None
-

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+from grim.geom import Vec2
 from crimson.render.secondary_projectile_draw_registry import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 
 
@@ -20,7 +21,7 @@ class _RendererStub:
 
 def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=1, pos_x=0.0, pos_y=0.0, angle=0.0)
+    proj = SimpleNamespace(type_id=1, pos=Vec2(0.0, 0.0), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
@@ -37,7 +38,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
     renderer.projs_texture = _TextureStub(width=0, height=128)
-    proj = SimpleNamespace(type_id=1, pos_x=0.0, pos_y=0.0, angle=0.0)
+    proj = SimpleNamespace(type_id=1, pos=Vec2(0.0, 0.0), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
@@ -53,7 +54,7 @@ def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_inval
 
 def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=4, pos_x=0.0, pos_y=0.0, angle=0.0)
+    proj = SimpleNamespace(type_id=4, pos=Vec2(0.0, 0.0), angle=0.0)
     calls: list[tuple[int, int, float]] = []
 
     def _draw_circle(x: int, y: int, radius: float, _color) -> None:  # noqa: ANN001
@@ -77,7 +78,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
 
 def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monkeypatch) -> None:
     renderer = _RendererStub()
-    proj = SimpleNamespace(type_id=3, pos_x=0.0, pos_y=0.0, angle=0.0, vel_x=0.25, vel_y=1.0)
+    proj = SimpleNamespace(type_id=3, pos=Vec2(0.0, 0.0), angle=0.0, vel_x=0.25, vel_y=1.0)
     calls: list[float] = []
 
     def _draw_circle_lines(_x: int, _y: int, radius: float, _color) -> None:  # noqa: ANN001
@@ -98,4 +99,3 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
     assert draw_secondary_projectile_from_registry(ctx) is True
     # radius = det_scale * t * 80.0, then scaled.
     assert calls == [40.0]
-

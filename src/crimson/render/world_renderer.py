@@ -658,12 +658,10 @@ class WorldRenderer:
         texture = self.projs_texture
         type_id = int(getattr(proj, "type_id", 0))
         proj_pos = getattr(proj, "pos", None)
-        if isinstance(proj_pos, Vec2):
-            pos_x = float(proj_pos.x)
-            pos_y = float(proj_pos.y)
-        else:
-            pos_x = float(getattr(proj, "pos_x", 0.0))
-            pos_y = float(getattr(proj, "pos_y", 0.0))
+        if not isinstance(proj_pos, Vec2):
+            return
+        pos_x = float(proj_pos.x)
+        pos_y = float(proj_pos.y)
         sx, sy = self.world_to_screen(pos_x, pos_y)
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
@@ -674,8 +672,7 @@ class WorldRenderer:
             proj_index=int(proj_index),
             texture=texture,
             type_id=int(type_id),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
+            pos=Vec2(float(pos_x), float(pos_y)),
             sx=float(sx),
             sy=float(sy),
             life=float(life),
@@ -839,15 +836,18 @@ class WorldRenderer:
                 continue
             if not perk_active(player, PerkId.SHARPSHOOTER):
                 continue
+            player_pos = getattr(player, "pos", None)
+            if not isinstance(player_pos, Vec2):
+                continue
 
             aim_heading = float(getattr(player, "aim_heading", 0.0))
             dir_x = math.cos(aim_heading - math.pi / 2.0)
             dir_y = math.sin(aim_heading - math.pi / 2.0)
 
-            start_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 15.0
-            start_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 15.0
-            end_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 512.0
-            end_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 512.0
+            start_x = float(player_pos.x) + dir_x * 15.0
+            start_y = float(player_pos.y) + dir_y * 15.0
+            end_x = float(player_pos.x) + dir_x * 512.0
+            end_y = float(player_pos.y) + dir_y * 512.0
 
             sx0 = (start_x + cam_x) * scale_x
             sy0 = (start_y + cam_y) * scale_y
@@ -900,7 +900,10 @@ class WorldRenderer:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
+        proj_pos = getattr(proj, "pos", None)
+        if not isinstance(proj_pos, Vec2):
+            return
+        sx, sy = self.world_to_screen(float(proj_pos.x), float(proj_pos.y))
         proj_type = int(getattr(proj, "type_id", 0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -1116,8 +1119,11 @@ class WorldRenderer:
             if src is None:
                 return
 
-            pos_x = float(getattr(entry, "pos_x", 0.0))
-            pos_y = float(getattr(entry, "pos_y", 0.0))
+            pos = getattr(entry, "pos", None)
+            if not isinstance(pos, Vec2):
+                return
+            pos_x = float(pos.x)
+            pos_y = float(pos.y)
             sx = (pos_x + cam_x) * scale_x
             sy = (pos_y + cam_y) * scale_y
 

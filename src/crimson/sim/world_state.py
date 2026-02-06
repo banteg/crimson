@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import math
 from typing import Callable
 
+from grim.geom import Vec2
+
 from ..bonuses import BonusId
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
@@ -80,8 +82,7 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
     py = float(player.pos.y)
     rand = ctx.state.rng.rand
     ctx.state.effects.spawn_explosion_burst(
-        pos_x=px,
-        pos_y=py,
+        pos=Vec2(px, py),
         scale=1.8,
         rand=rand,
         detail_preset=int(ctx.detail_preset),
@@ -399,8 +400,7 @@ class WorldState:
             for pickup in pickups:
                 if pickup.bonus_id != int(BonusId.NUKE):
                     self.state.effects.spawn_burst(
-                        pos_x=float(pickup.pos.x),
-                        pos_y=float(pickup.pos.y),
+                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
                         count=12,
                         rand=self.state.rng.rand,
                         detail_preset=detail_preset,
@@ -413,8 +413,7 @@ class WorldState:
                     )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos.x),
-                        pos_y=float(pickup.pos.y),
+                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
                         detail_preset=detail_preset,
                         color_r=0.6,
                         color_g=0.6,
@@ -423,8 +422,7 @@ class WorldState:
                     )
                 elif pickup.bonus_id == int(BonusId.FREEZE):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos.x),
-                        pos_y=float(pickup.pos.y),
+                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
                         detail_preset=detail_preset,
                         color_r=0.3,
                         color_g=0.5,

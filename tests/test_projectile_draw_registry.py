@@ -71,8 +71,7 @@ def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> N
     proj = SimpleNamespace(
         type_id=int(ProjectileTypeId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
-        origin_x=10.0,
-        origin_y=20.0,
+        origin=Vec2(10.0, 20.0),
         life_timer=1.0,
         angle=0.0,
     )
@@ -98,8 +97,7 @@ def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
     proj = SimpleNamespace(
         type_id=int(ProjectileTypeId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
-        origin_x=10.0,
-        origin_y=20.0,
+        origin=Vec2(10.0, 20.0),
         life_timer=1.0,
         angle=0.0,
     )
@@ -125,8 +123,7 @@ def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
     proj = SimpleNamespace(
         type_id=int(ProjectileTypeId.PULSE_GUN),
         pos=Vec2(10.0, 20.0),
-        origin_x=10.0,
-        origin_y=20.0,
+        origin=Vec2(10.0, 20.0),
         life_timer=1.0,
         angle=0.0,
     )

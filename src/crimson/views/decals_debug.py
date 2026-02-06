@@ -345,8 +345,7 @@ class DecalsDebugView:
         heading = float(int(self._state.rng.rand()) % 628) * 0.01
         init = CreatureInit(
             origin_template_id=-1,
-            pos_x=float(x),
-            pos_y=float(y),
+            pos=Vec2(float(x), float(y)),
             heading=heading,
             phase_seed=float(int(self._state.rng.rand()) & 0xFF),
             type_id=type_id,
@@ -540,13 +539,12 @@ class DecalsDebugView:
                     break
             if hit is not None:
                 hit.hp -= 1.0
-                self._fx_queue.add_random(pos_x=float(hit.x), pos_y=float(hit.y), rand=self._state.rng.rand)
+                self._fx_queue.add_random(pos=Vec2(float(hit.x), float(hit.y)), rand=self._state.rng.rand)
             else:
                 # Paint blood directly for ground decal checks.
                 self._fx_queue.add(
                     effect_id=int(EffectId.BLOOD_SPLATTER),
-                    pos_x=float(x),
-                    pos_y=float(y),
+                    pos=Vec2(float(x), float(y)),
                     width=30.0,
                     height=30.0,
                     rotation=0.0,

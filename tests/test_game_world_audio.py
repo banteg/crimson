@@ -7,6 +7,7 @@ from crimson.bonuses import BonusId
 from crimson.gameplay import PlayerInput, player_update
 from crimson.game_world import GameWorld
 from crimson.perks import PerkId
+from grim.geom import Vec2
 
 
 def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
@@ -143,7 +144,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.POINTS), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.POINTS), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -166,7 +167,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.FIREBLAST), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.FIREBLAST), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)

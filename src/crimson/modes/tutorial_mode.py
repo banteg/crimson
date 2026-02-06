@@ -9,6 +9,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -305,18 +306,16 @@ class TutorialMode(BaseGameplayMode):
 
         for call in actions.spawn_bonuses:
             spawned = self._state.bonus_pool.spawn_at(
-                float(call.pos[0]),
-                float(call.pos[1]),
-                int(call.bonus_id),
-                int(call.amount),
+                pos=Vec2(float(call.pos[0]), float(call.pos[1])),
+                bonus_id=int(call.bonus_id),
+                duration_override=int(call.amount),
                 state=self._state,
                 world_width=float(self._world.world_size),
                 world_height=float(self._world.world_size),
             )
             if spawned is not None:
                 self._state.effects.spawn_burst(
-                    pos_x=float(spawned.pos.x),
-                    pos_y=float(spawned.pos.y),
+                    pos=Vec2(float(spawned.pos.x), float(spawned.pos.y)),
                     count=12,
                     rand=self._state.rng.rand,
                     detail_preset=detail_preset,

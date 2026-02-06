@@ -283,8 +283,7 @@ class BonusPool:
 
     def spawn_at(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         bonus_id: int | BonusId,
         duration_override: int = -1,
         *,
@@ -300,8 +299,8 @@ class BonusPool:
         if entry is None:
             return None
 
-        x = clamp(float(pos_x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
-        y = clamp(float(pos_y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
+        x = clamp(float(pos.x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
+        y = clamp(float(pos.y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
 
         entry.bonus_id = int(bonus_id)
         entry.picked = False
@@ -319,8 +318,7 @@ class BonusPool:
 
     def spawn_at_pos(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         *,
         state: "GameplayState",
         players: list["PlayerState"],
@@ -330,10 +328,10 @@ class BonusPool:
         if int(state.game_mode) == int(GameMode.RUSH):
             return None
         if (
-            pos_x < BONUS_SPAWN_MARGIN
-            or pos_y < BONUS_SPAWN_MARGIN
-            or pos_x > world_width - BONUS_SPAWN_MARGIN
-            or pos_y > world_height - BONUS_SPAWN_MARGIN
+            pos.x < BONUS_SPAWN_MARGIN
+            or pos.y < BONUS_SPAWN_MARGIN
+            or pos.x > world_width - BONUS_SPAWN_MARGIN
+            or pos.y > world_height - BONUS_SPAWN_MARGIN
         ):
             return None
 
@@ -341,7 +339,7 @@ class BonusPool:
         for entry in self._entries:
             if entry.bonus_id == 0:
                 continue
-            if Vec2.distance_sq(Vec2(pos_x, pos_y), Vec2(entry.pos.x, entry.pos.y)) < min_dist_sq:
+            if Vec2.distance_sq(pos, entry.pos) < min_dist_sq:
                 return None
 
         entry = self._alloc_slot()
@@ -351,8 +349,8 @@ class BonusPool:
         bonus_id = bonus_pick_random_type(self, state, players)
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos.x = float(pos_x)
-        entry.pos.y = float(pos_y)
+        entry.pos.x = float(pos.x)
+        entry.pos.y = float(pos.y)
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -368,8 +366,7 @@ class BonusPool:
 
     def try_spawn_on_kill(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         *,
         state: "GameplayState",
         players: list["PlayerState"],
@@ -393,8 +390,7 @@ class BonusPool:
         if players and any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players):
             if (int(rng.rand()) & 3) < 3:
                 entry = self.spawn_at_pos(
-                    pos_x,
-                    pos_y,
+                    pos,
                     state=state,
                     players=players,
                     world_width=world_width,
@@ -434,8 +430,7 @@ class BonusPool:
                     return None
 
         entry = self.spawn_at_pos(
-            pos_x,
-            pos_y,
+            pos,
             state=state,
             players=players,
             world_width=world_width,
@@ -446,7 +441,7 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            if players and Vec2.distance_sq(Vec2(pos_x, pos_y), Vec2(players[0].pos.x, players[0].pos.y)) < near_sq:
+            if players and Vec2.distance_sq(pos, players[0].pos) < near_sq:
                 entry.bonus_id = int(BonusId.POINTS)
                 entry.amount = 100
 
@@ -606,7 +601,7 @@ def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
 
 
-def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float, pos_y: float, radius: float, start_index: int) -> int:
+def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
     """Port of `creature_find_in_radius` (0x004206a0)."""
 
     start_index = max(0, int(start_index))
@@ -614,8 +609,8 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float
     if start_index >= max_index:
         return -1
 
-    pos_x = float(pos_x)
-    pos_y = float(pos_y)
+    pos_x = float(pos.x)
+    pos_y = float(pos.y)
     radius = float(radius)
 
     for idx in range(start_index, max_index):
@@ -652,8 +647,7 @@ class _PerksUpdateEffectsCtx:
         ):
             target = _creature_find_in_radius(
                 self.creatures,
-                pos_x=self.players[0].aim_x,
-                pos_y=self.players[0].aim_y,
+                pos=Vec2(self.players[0].aim_x, self.players[0].aim_y),
                 radius=12.0,
                 start_index=0,
             )
@@ -724,9 +718,9 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
         pos_y = float(creature.y)
         for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
             angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
-            ctx.state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
+            ctx.state.particles.spawn_particle(pos=Vec2(pos_x, pos_y), angle=angle, intensity=float(intensity))
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=Vec2(pos_x, pos_y), rand=ctx.state.rng.rand)
 
 
 def _perks_update_jinxed_timer(ctx: _PerksUpdateEffectsCtx) -> None:
@@ -746,8 +740,8 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
     if int(ctx.state.rng.rand()) % 10 == 3:
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos_x=player.pos.x, pos_y=player.pos.y, rand=ctx.state.rng.rand)
-            ctx.fx_queue.add_random(pos_x=player.pos.x, pos_y=player.pos.y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=Vec2(player.pos.x, player.pos.y), rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=Vec2(player.pos.x, player.pos.y), rand=ctx.state.rng.rand)
 
     ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
 
@@ -1110,8 +1104,7 @@ def _perk_apply_lifeline_50_50(ctx: _PerkApplyCtx) -> None:
         if kill_toggle and creature.active and float(creature.hp) <= 500.0 and (int(creature.flags) & 0x04) == 0:
             creature.active = False
             ctx.state.effects.spawn_burst(
-                pos_x=float(creature.x),
-                pos_y=float(creature.y),
+                pos=Vec2(float(creature.x), float(creature.y)),
                 count=4,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1184,8 +1177,7 @@ def _perk_apply_bandage(ctx: _PerkApplyCtx) -> None:
             scale = float(ctx.state.rng.rand() % 50 + 1)
             player.health = min(100.0, player.health * scale)
             ctx.state.effects.spawn_burst(
-                pos_x=float(player.pos.x),
-                pos_y=float(player.pos.y),
+                pos=Vec2(float(player.pos.x), float(player.pos.y)),
                 count=8,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1931,7 +1923,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     vel = Vec2.from_angle(aim_heading) * 25.0
     vel_x = vel.x
     vel_y = vel.y
-    sprite_id = state.sprite_effects.spawn(pos_x=muzzle_x, pos_y=muzzle_y, vel_x=vel_x, vel_y=vel_y, scale=1.0)
+    sprite_id = state.sprite_effects.spawn(pos=Vec2(muzzle_x, muzzle_y), vel_x=vel_x, vel_y=vel_y, scale=1.0)
     sprite = state.sprite_effects.entries[int(sprite_id)]
     sprite.color_r = 0.5
     sprite.color_g = 0.5
@@ -2075,8 +2067,7 @@ def player_fire_weapon(
     muzzle_x = muzzle.x
     muzzle_y = muzzle.y
     state.effects.spawn_shell_casing(
-        pos_x=muzzle_x,
-        pos_y=muzzle_y,
+        pos=Vec2(muzzle_x, muzzle_y),
         aim_heading=aim_heading,
         weapon_flags=int(weapon.flags or 0),
         rand=state.rng.rand,
@@ -2165,23 +2156,22 @@ def player_fire_weapon(
         )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=Vec2(muzzle_x, muzzle_y), angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
         state.particles.spawn_particle_slow(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
+            pos=Vec2(muzzle_x, muzzle_y),
             angle=Vec2.from_heading(shot_angle).to_angle(),
             owner_id=owner_id,
         )
@@ -2591,16 +2581,14 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 ctx.state.effects.spawn_freeze_shard(
-                    pos_x=pos_x,
-                    pos_y=pos_y,
+                    pos=Vec2(pos_x, pos_y),
                     angle=angle,
                     rand=rand,
                     detail_preset=int(ctx.detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             ctx.state.effects.spawn_freeze_shatter(
-                pos_x=pos_x,
-                pos_y=pos_y,
+                pos=Vec2(pos_x, pos_y),
                 angle=angle,
                 rand=rand,
                 detail_preset=int(ctx.detail_preset),
@@ -2769,8 +2757,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         )
 
     ctx.state.effects.spawn_explosion_burst(
-        pos_x=ox,
-        pos_y=oy,
+        pos=Vec2(ox, oy),
         scale=1.0,
         rand=rand,
         detail_preset=int(ctx.detail_preset),

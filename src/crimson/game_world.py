@@ -530,8 +530,7 @@ class GameWorld:
                     if dist > 7.0:
                         dist = float(int(rand()) % 0x50 + 0x14) * 0.1
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * dist * 20.0,
-                        pos_y=float(target_y) + dir_y * dist * 20.0,
+                        pos=Vec2(float(target_x) + dir_x * dist * 20.0, float(target_y) + dir_y * dist * 20.0),
                         rand=rand,
                     )
             elif type_id in ION_TYPES:
@@ -542,20 +541,17 @@ class GameWorld:
                     angle = base_angle + spread
                     dir_x = math.cos(angle) * 20.0
                     dir_y = math.sin(angle) * 20.0
-                    self.fx_queue.add_random(pos_x=float(target_x), pos_y=float(target_y), rand=rand)
+                    self.fx_queue.add_random(pos=Vec2(float(target_x), float(target_y)), rand=rand)
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 1.5,
-                        pos_y=float(target_y) + dir_y * 1.5,
+                        pos=Vec2(float(target_x) + dir_x * 1.5, float(target_y) + dir_y * 1.5),
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 2.0,
-                        pos_y=float(target_y) + dir_y * 2.0,
+                        pos=Vec2(float(target_x) + dir_x * 2.0, float(target_y) + dir_y * 2.0),
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 2.5,
-                        pos_y=float(target_y) + dir_y * 2.5,
+                        pos=Vec2(float(target_x) + dir_x * 2.5, float(target_y) + dir_y * 2.5),
                         rand=rand,
                     )
 
@@ -568,8 +564,7 @@ class GameWorld:
                         dx = float(int(rand()) % span + lo)
                         dy = float(int(rand()) % span + lo)
                         self.fx_queue.add_random(
-                            pos_x=float(target_x) + dx,
-                            pos_y=float(target_y) + dy,
+                            pos=Vec2(float(target_x) + dx, float(target_y) + dy),
                             rand=rand,
                         )
                     lo -= 10
@@ -581,8 +576,7 @@ class GameWorld:
                 for _ in range(8):
                     spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
                     self.state.effects.spawn_blood_splatter(
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
+                        pos=Vec2(float(hit_x), float(hit_y)),
                         angle=base_angle + spread,
                         age=0.0,
                         rand=rand,
@@ -590,8 +584,7 @@ class GameWorld:
                         fx_toggle=fx_toggle,
                     )
                 self.state.effects.spawn_blood_splatter(
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
+                    pos=Vec2(float(hit_x), float(hit_y)),
                     angle=base_angle + math.pi,
                     age=0.0,
                     rand=rand,
@@ -605,8 +598,7 @@ class GameWorld:
 
             for _ in range(2):
                 self.state.effects.spawn_blood_splatter(
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
+                    pos=Vec2(float(hit_x), float(hit_y)),
                     angle=base_angle,
                     age=0.0,
                     rand=rand,
@@ -615,8 +607,7 @@ class GameWorld:
                 )
                 if (int(rand()) & 7) == 2:
                     self.state.effects.spawn_blood_splatter(
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
+                        pos=Vec2(float(hit_x), float(hit_y)),
                         angle=base_angle + math.pi,
                         age=0.0,
                         rand=rand,

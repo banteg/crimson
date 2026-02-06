@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -68,8 +69,10 @@ class CameraShakeView:
     def _spawn_creature(self, *, world_x: float, world_y: float, type_id: CreatureTypeId, hp: float) -> None:
         init = CreatureInit(
             origin_template_id=0,
-            pos_x=clamp(world_x, 64.0, WORLD_SIZE - 64.0),
-            pos_y=clamp(world_y, 64.0, WORLD_SIZE - 64.0),
+            pos=Vec2(
+                clamp(world_x, 64.0, WORLD_SIZE - 64.0),
+                clamp(world_y, 64.0, WORLD_SIZE - 64.0),
+            ),
             heading=math.pi,
             phase_seed=0.0,
             type_id=type_id,

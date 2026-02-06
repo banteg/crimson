@@ -112,7 +112,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.NUKE), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.NUKE), state=world.state)
     assert entry is not None
 
     world.update(1.0 / 60.0, perk_progression_enabled=False)

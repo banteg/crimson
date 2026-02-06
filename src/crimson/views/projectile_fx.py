@@ -392,7 +392,10 @@ class ProjectileFxView:
 
         type_id = int(getattr(proj, "type_id", 0))
         mapping = _KNOWN_PROJ_FRAMES.get(type_id)
-        sx, sy = self._camera_world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
+        proj_pos = getattr(proj, "pos", None)
+        if not isinstance(proj_pos, Vec2):
+            return
+        sx, sy = self._camera_world_to_screen(float(proj_pos.x), float(proj_pos.y))
 
         if mapping is None:
             rl.draw_circle(int(sx), int(sy), 3.0, rl.Color(240, 220, 160, 255))
@@ -416,10 +419,13 @@ class ProjectileFxView:
 
         # Beam-style projectiles get a trail from origin to current position in the flight phase.
         if type_id in _BEAM_TYPES and life >= 0.4:
-            ox = float(getattr(proj, "origin_x", 0.0))
-            oy = float(getattr(proj, "origin_y", 0.0))
-            dx = float(getattr(proj, "pos_x", 0.0)) - ox
-            dy = float(getattr(proj, "pos_y", 0.0)) - oy
+            proj_origin = getattr(proj, "origin", None)
+            if not isinstance(proj_origin, Vec2):
+                proj_origin = proj_pos
+            ox = float(proj_origin.x)
+            oy = float(proj_origin.y)
+            dx = float(proj_pos.x) - ox
+            dy = float(proj_pos.y) - oy
             dist = math.hypot(dx, dy)
             if dist > 1e-6:
                 step = 14.0

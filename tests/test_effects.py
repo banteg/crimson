@@ -5,6 +5,7 @@ import math
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
+from grim.geom import Vec2
 
 
 class _SequenceRng:
@@ -31,10 +32,10 @@ def test_effect_src_rect_uses_grid_and_frame() -> None:
 def test_fx_queue_caps_count() -> None:
     q = FxQueue(capacity=4, max_count=3)
     rgba = (1.0, 1.0, 1.0, 1.0)
-    assert q.add(effect_id=0, pos_x=0.0, pos_y=0.0, width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos_x=0.0, pos_y=0.0, width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos_x=0.0, pos_y=0.0, width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert not q.add(effect_id=0, pos_x=0.0, pos_y=0.0, width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    assert not q.add(effect_id=0, pos=Vec2(0.0, 0.0), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.count == 3
 
 
@@ -68,7 +69,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
     pool = SpriteEffectPool(size=1, rand=lambda: 0)
-    idx = pool.spawn(pos_x=10.0, pos_y=20.0, vel_x=2.0, vel_y=-3.0, scale=1.0)
+    idx = pool.spawn(pos=Vec2(10.0, 20.0), vel_x=2.0, vel_y=-3.0, scale=1.0)
     fx = pool.entries[idx]
     assert fx.active
     assert fx.color_a == 1.0
@@ -89,7 +90,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     pool = ParticlePool(size=2, rand=lambda: 0)
 
     # Style 0 persists until intensity <= 0.0.
-    idx0 = pool.spawn_particle(pos_x=0.0, pos_y=0.0, angle=0.0, intensity=1.0)
+    idx0 = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0)
     p0 = pool.entries[idx0]
     p0.render_flag = False
     pool.update(1.0)
@@ -97,7 +98,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert math.isclose(p0.intensity, 0.1, abs_tol=1e-9)
 
     # Style 1 expires once intensity <= 0.8.
-    idx1 = pool.spawn_particle(pos_x=0.0, pos_y=0.0, angle=0.0, intensity=1.0)
+    idx1 = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0)
     p1 = pool.entries[idx1]
     p1.render_flag = False
     p1.style_id = 1
@@ -105,7 +106,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert not p1.active
 
     # Style 8 decays slowly and also uses the 0.8 cutoff.
-    idx2 = pool.spawn_particle_slow(pos_x=0.0, pos_y=0.0, angle=0.0)
+    idx2 = pool.spawn_particle_slow(pos=Vec2(0.0, 0.0), angle=0.0)
     p2 = pool.entries[idx2]
     p2.render_flag = False
     pool.update(1.0)
@@ -125,7 +126,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     fx_queue = FxQueue(capacity=1, max_count=1)
     sprite_effects = SpriteEffectPool(size=1, rand=lambda: 0)
 
-    particle_id = pool.spawn_particle(pos_x=0.0, pos_y=0.0, angle=0.0, intensity=1.0, owner_id=-1)
+    particle_id = pool.spawn_particle(pos=Vec2(0.0, 0.0), angle=0.0, intensity=1.0, owner_id=-1)
     particle = pool.entries[particle_id]
 
     creature = CreatureState()
@@ -162,8 +163,7 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     pool = EffectPool(size=8)
 
     pool.spawn_blood_splatter(
-        pos_x=10.0,
-        pos_y=20.0,
+        pos=Vec2(10.0, 20.0),
         angle=0.0,
         age=0.0,
         rand=lambda: 0,
@@ -197,8 +197,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     pool = EffectPool(size=4)
 
     pool.spawn_shell_casing(
-        pos_x=10.0,
-        pos_y=20.0,
+        pos=Vec2(10.0, 20.0),
         aim_heading=0.0,
         weapon_flags=1,
         rand=lambda: 0,
@@ -225,8 +224,7 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
     pool = EffectPool(size=8)
 
     pool.spawn_burst(
-        pos_x=10.0,
-        pos_y=20.0,
+        pos=Vec2(10.0, 20.0),
         count=3,
         rand=lambda: 0,
         detail_preset=5,
@@ -247,8 +245,7 @@ def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
     pool = EffectPool(size=4)
 
     pool.spawn_ring(
-        pos_x=3.0,
-        pos_y=4.0,
+        pos=Vec2(3.0, 4.0),
         detail_preset=5,
         color_r=0.6,
         color_g=0.6,

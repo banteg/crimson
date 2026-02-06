@@ -10,6 +10,7 @@ from crimson.effects_atlas import EffectId
 from crimson.render.terrain_fx import FxQueueTextures, bake_fx_queues
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from ..paths import default_runtime_dir
 from ..quests import all_quests
@@ -143,8 +144,7 @@ class GroundView:
                 world_y = -self._camera_y + float(mouse.y)
                 self._fx_queue.add(
                     effect_id=int(EffectId.BLOOD_SPLATTER),
-                    pos_x=world_x,
-                    pos_y=world_y,
+                    pos=Vec2(world_x, world_y),
                     width=30.0,
                     height=30.0,
                     rotation=0.0,

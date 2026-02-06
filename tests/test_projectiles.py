@@ -500,8 +500,8 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
         def __init__(self) -> None:
             self.calls: list[tuple[float, float]] = []
 
-        def spawn_freeze_shard(self, *, pos_x: float, pos_y: float, angle: float, rand, detail_preset: int) -> None:  # noqa: ANN001
-            self.calls.append((float(pos_x), float(pos_y)))
+        def spawn_freeze_shard(self, *, pos: Vec2, angle: float, rand, detail_preset: int) -> None:  # noqa: ANN001
+            self.calls.append((float(pos.x), float(pos.y)))
 
     @dataclass(slots=True)
     class _SpriteEntry:
@@ -511,7 +511,7 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
         def __init__(self) -> None:
             self.entries: list[_SpriteEntry] = []
 
-        def spawn(self, *, pos_x: float, pos_y: float, vel_x: float, vel_y: float, scale: float) -> int:
+        def spawn(self, *, pos: Vec2, vel_x: float, vel_y: float, scale: float) -> int:
             self.entries.append(_SpriteEntry())
             return len(self.entries) - 1
 

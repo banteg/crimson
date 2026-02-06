@@ -56,15 +56,14 @@ class FxQueueLike(Protocol):
         self,
         *,
         effect_id: int,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         width: float,
         height: float,
         rotation: float,
         rgba: tuple[float, float, float, float],
     ) -> bool: ...
 
-    def add_random(self, *, pos_x: float, pos_y: float, rand: Callable[[], int]) -> bool: ...
+    def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...
 
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
@@ -231,8 +230,7 @@ def _spawn_ion_hit_effects(
     # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
     effects.spawn(
         effect_id=int(EffectId.RING),
-        pos_x=float(pos.x),
-        pos_y=float(pos.y),
+        pos=Vec2(float(pos.x), float(pos.y)),
         vel_x=0.0,
         vel_y=0.0,
         rotation=0.0,
@@ -266,8 +264,7 @@ def _spawn_ion_hit_effects(
         scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos.x),
-            pos_y=float(pos.y),
+            pos=Vec2(float(pos.x), float(pos.y)),
             vel_x=vel_x,
             vel_y=vel_y,
             rotation=rotation,
@@ -315,8 +312,7 @@ def _spawn_plasma_cannon_hit_effects(
     def _spawn_ring(*, scale: float) -> None:
         effects.spawn(
             effect_id=int(EffectId.RING),
-            pos_x=float(pos.x),
-            pos_y=float(pos.y),
+            pos=Vec2(float(pos.x), float(pos.y)),
             vel_x=0.0,
             vel_y=0.0,
             rotation=0.0,
@@ -361,8 +357,7 @@ def _spawn_splitter_hit_effects(
         offset = Vec2.from_angle(angle) * radius
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos.x) + offset.x,
-            pos_y=float(pos.y) + offset.y,
+            pos=Vec2(float(pos.x) + offset.x, float(pos.y) + offset.y),
             vel_x=0.0,
             vel_y=0.0,
             rotation=0.0,
@@ -1344,8 +1339,7 @@ class SecondaryProjectilePool:
                     if fx_queue is not None:
                         fx_queue.add(
                             effect_id=int(EffectId.AURA),
-                            pos_x=float(entry.pos.x),
-                            pos_y=float(entry.pos.y),
+                            pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
                             width=float(scale) * 256.0,
                             height=float(scale) * 256.0,
                             rotation=0.0,
@@ -1455,7 +1449,7 @@ class SecondaryProjectilePool:
                 vel_x = math.cos(float(entry.angle) + math.pi / 2.0) * 90.0
                 vel_y = math.sin(float(entry.angle) + math.pi / 2.0) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                    sprite_id = sprite_effects.spawn(pos_x=spawn_x, pos_y=spawn_y, vel_x=vel_x, vel_y=vel_y, scale=14.0)
+                    sprite_id = sprite_effects.spawn(pos=Vec2(spawn_x, spawn_y), vel_x=vel_x, vel_y=vel_y, scale=14.0)
                     try:
                         sprite_effects.entries[int(sprite_id)].color_a = 0.25
                     except Exception:
@@ -1506,8 +1500,7 @@ class SecondaryProjectilePool:
                         for _ in range(4):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
-                                pos_x=float(entry.pos.x),
-                                pos_y=float(entry.pos.y),
+                                pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
                                 angle=shard_angle,
                                 rand=rand,
                                 detail_preset=int(detail_preset),
@@ -1517,8 +1510,7 @@ class SecondaryProjectilePool:
                         off_x = float(int(rand()) % 0x14 - 10)
                         off_y = float(int(rand()) % 0x14 - 10)
                         fx_queue.add_random(
-                            pos_x=float(creatures[hit_idx].x) + off_x,
-                            pos_y=float(creatures[hit_idx].y) + off_y,
+                            pos=Vec2(float(creatures[hit_idx].x) + off_x, float(creatures[hit_idx].y) + off_y),
                             rand=rand,
                         )
 
@@ -1529,8 +1521,7 @@ class SecondaryProjectilePool:
                     and int(detail_preset) > 2
                 ):
                     effects.spawn_explosion_burst(
-                        pos_x=float(entry.pos.x),
-                        pos_y=float(entry.pos.y),
+                        pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
                         scale=0.4,
                         rand=rand,
                         detail_preset=int(detail_preset),
@@ -1552,8 +1543,7 @@ class SecondaryProjectilePool:
                         for _ in range(8):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
-                                pos_x=shard_x,
-                                pos_y=shard_y,
+                                pos=Vec2(shard_x, shard_y),
                                 angle=shard_angle,
                                 rand=rand,
                                 detail_preset=int(detail_preset),
@@ -1582,8 +1572,7 @@ class SecondaryProjectilePool:
                             else:
                                 radius = float(int(rand()) % max(1, int(extra_radius)))
                             fx_queue.add_random(
-                                pos_x=cx + math.cos(angle) * radius,
-                                pos_y=cy + math.sin(angle) * radius,
+                                pos=Vec2(cx + math.cos(angle) * radius, cy + math.sin(angle) * radius),
                                 rand=rand,
                             )
 
@@ -1595,8 +1584,7 @@ class SecondaryProjectilePool:
                         vel_x = math.cos(ang) * mag
                         vel_y = math.sin(ang) * mag
                         sprite_id = sprite_effects.spawn(
-                            pos_x=float(entry.pos.x),
-                            pos_y=float(entry.pos.y),
+                            pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
                             vel_x=vel_x,
                             vel_y=vel_y,
                             scale=14.0,

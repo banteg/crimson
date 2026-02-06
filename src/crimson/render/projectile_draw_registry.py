@@ -26,7 +26,7 @@ def _proj_origin_xy(proj: object, fallback: Vec2) -> tuple[float, float]:
     origin = getattr(proj, "origin", None)
     if isinstance(origin, Vec2):
         return float(origin.x), float(origin.y)
-    return float(getattr(proj, "origin_x", fallback.x)), float(getattr(proj, "origin_y", fallback.y))
+    return float(fallback.x), float(fallback.y)
 
 
 @dataclass(frozen=True, slots=True)

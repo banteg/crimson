@@ -11,6 +11,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -522,8 +523,7 @@ class LightingDebugView:
             y = clamp(y, 40.0, WORLD_SIZE - 40.0)
             init = CreatureInit(
                 origin_template_id=0,
-                pos_x=float(x),
-                pos_y=float(y),
+                pos=Vec2(float(x), float(y)),
                 heading=float(rng.random() * math.tau),
                 phase_seed=float(rng.random() * 999.0),
                 type_id=t,

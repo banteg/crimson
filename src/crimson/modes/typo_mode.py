@@ -10,6 +10,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId
@@ -173,9 +174,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         return fire_pressed, reload_pressed
 
-    def _spawn_tinted_creature(
-        self, *, type_id: CreatureTypeId, pos_x: float, pos_y: float, tint_rgba: tuple[float, float, float, float]
-    ) -> int:
+    def _spawn_tinted_creature(self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: tuple[float, float, float, float]) -> int:
         rand = self._state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
         size = float(int(rand()) % 20 + 47)
@@ -189,8 +188,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         init = CreatureInit(
             origin_template_id=0,
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
+            pos=Vec2(float(pos.x), float(pos.y)),
             heading=float(heading),
             phase_seed=0.0,
             type_id=type_id,
@@ -290,8 +288,7 @@ class TypoShooterMode(BaseGameplayMode):
         for call in spawns:
             creature_idx = self._spawn_tinted_creature(
                 type_id=call.type_id,
-                pos_x=float(call.pos.x),
-                pos_y=float(call.pos.y),
+                pos=Vec2(float(call.pos.x), float(call.pos.y)),
                 tint_rgba=call.tint_rgba,
             )
             self._names.assign_random(

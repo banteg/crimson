@@ -8,6 +8,7 @@ import pyray as rl
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -210,9 +211,8 @@ class ArsenalDebugView:
                 amount_override = int(weapon_id)
 
             bonus_pool.spawn_at(
-                x,
-                y,
-                bonus_id,
+                pos=Vec2(x, y),
+                bonus_id=bonus_id,
                 duration_override=int(amount_override),
                 state=self._world.state,
                 world_width=float(WORLD_SIZE),
