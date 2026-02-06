@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from dataclasses import dataclass, field
@@ -124,11 +125,12 @@ def _load_script_from_paq(console: "ConsoleState", target: Path) -> str | None:
 
 
 def _rgba(r: float, g: float, b: float, a: float) -> rl.Color:
+    c = RGBA(r, g, b, a).clamped()
     return rl.Color(
-        int(clamp(r, 0.0, 1.0) * 255),
-        int(clamp(g, 0.0, 1.0) * 255),
-        int(clamp(b, 0.0, 1.0) * 255),
-        int(clamp(a, 0.0, 1.0) * 255),
+        int(c.r * 255.0),
+        int(c.g * 255.0),
+        int(c.b * 255.0),
+        int(c.a * 255.0),
     )
 
 

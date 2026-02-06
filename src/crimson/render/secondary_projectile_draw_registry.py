@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
@@ -41,7 +42,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
 
     alpha = ctx.alpha
     base_alpha = clamp(alpha * 0.9, 0.0, 1.0)
-    base_tint = renderer._color_from_rgba((0.8, 0.8, 0.8, base_alpha))
+    base_tint = RGBA(0.8, 0.8, 0.8, base_alpha).to_rl()
     base_size = 14.0
     if proj_type == 2:
         base_size = 10.0
@@ -76,12 +77,12 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     *,
                     size: float,
                     offset: float,
-                    rgba: tuple[float, float, float, float],
+                    rgba: RGBA,
                 ) -> None:
-                    fx_alpha = rgba[3]
+                    fx_alpha = rgba.a
                     if fx_alpha <= 1e-3:
                         return
-                    tint = renderer._color_from_rgba(rgba)
+                    tint = rgba.to_rl()
                     fx_pos = ctx.screen_pos - direction * (offset * scale)
                     dst_size = size * scale
                     dst = rl.Rectangle(fx_pos.x, fx_pos.y, dst_size, dst_size)
@@ -90,14 +91,14 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
 
                 rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                 # Large bloom around the rocket (effect_id=0x0D).
-                _draw_rocket_fx(size=140.0, offset=5.0, rgba=(1.0, 1.0, 1.0, alpha * 0.48))
+                _draw_rocket_fx(size=140.0, offset=5.0, rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48))
 
                 if proj_type == 4:
-                    _draw_rocket_fx(size=30.0, offset=9.0, rgba=(0.7, 0.7, 1.0, alpha * 0.158))
+                    _draw_rocket_fx(size=30.0, offset=9.0, rgba=RGBA(0.7, 0.7, 1.0, alpha * 0.158))
                 elif proj_type == 2:
-                    _draw_rocket_fx(size=40.0, offset=9.0, rgba=(1.0, 1.0, 1.0, alpha * 0.58))
+                    _draw_rocket_fx(size=40.0, offset=9.0, rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.58))
                 else:
-                    _draw_rocket_fx(size=60.0, offset=9.0, rgba=(1.0, 1.0, 1.0, alpha * 0.68))
+                    _draw_rocket_fx(size=60.0, offset=9.0, rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.68))
 
                 rl.end_blend_mode()
 
@@ -170,7 +171,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         dst_size = size * scale
         if dst_size <= 1e-3:
             return
-        tint = renderer._color_from_rgba((1.0, 0.6, 0.1, a))
+        tint = RGBA(1.0, 0.6, 0.1, a).to_rl()
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, dst_size, dst_size)
         origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
         rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)

@@ -7,6 +7,7 @@ import math
 import pyray as rl
 
 from grim.assets import TextureLoader
+from grim.color import RGBA
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
 from ..game_modes import GameMode
@@ -54,7 +55,7 @@ HUD_BONUS_ICON_SIZE = 32.0
 HUD_BONUS_TEXT_OFFSET = (36.0, 6.0)
 HUD_BONUS_SPACING = 52.0
 HUD_BONUS_PANEL_OFFSET_Y = -11.0
-HUD_XP_BAR_RGBA = (0.1, 0.3, 0.6, 1.0)
+HUD_XP_BAR_RGBA = RGBA(0.1, 0.3, 0.6, 1.0)
 HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 
@@ -241,26 +242,25 @@ def _survival_xp_progress_ratio(*, xp: int, level: int) -> float:
     return (int(xp) - prev_threshold) / float(next_threshold - prev_threshold)
 
 
-def _draw_progress_bar(
-    pos: Vec2, width: float, ratio: float, rgba: tuple[float, float, float, float], scale: float
-) -> None:
+def _draw_progress_bar(pos: Vec2, width: float, ratio: float, rgba: RGBA, scale: float) -> None:
     ratio = max(0.0, min(1.0, float(ratio)))
     width = max(0.0, float(width))
     if width <= 0.0:
         return
+    rgba = rgba.clamped()
     bar_h = 4.0 * scale
     inner_h = 2.0 * scale
     bg_color = rl.Color(
-        int(255 * rgba[0] * 0.6),
-        int(255 * rgba[1] * 0.6),
-        int(255 * rgba[2] * 0.6),
-        int(255 * rgba[3] * 0.4),
+        int(255 * rgba.r * 0.6),
+        int(255 * rgba.g * 0.6),
+        int(255 * rgba.b * 0.6),
+        int(255 * rgba.a * 0.4),
     )
     fg_color = rl.Color(
-        int(255 * rgba[0]),
-        int(255 * rgba[1]),
-        int(255 * rgba[2]),
-        int(255 * rgba[3]),
+        int(255 * rgba.r),
+        int(255 * rgba.g),
+        int(255 * rgba.b),
+        int(255 * rgba.a),
     )
     rl.draw_rectangle(int(pos.x), int(pos.y), int(width), int(bar_h), bg_color)
     inner_w = max(0.0, (width - 2.0 * scale) * ratio)
@@ -275,7 +275,7 @@ def draw_target_health_bar(*, pos: Vec2, width: float, ratio: float, alpha: floa
     # Matches `hud_update_and_render` (0x0041ca90): color shifts from red->green as ratio increases.
     r = (1.0 - ratio) * 0.9 + 0.1
     g = ratio * 0.9 + 0.1
-    rgba = (r, g, 0.7, 0.2 * alpha)
+    rgba = RGBA(r, g, 0.7, 0.2 * alpha)
     _draw_progress_bar(pos, float(width), ratio, rgba, scale)
 
 
@@ -639,7 +639,7 @@ def draw_hud_overlay(
 
         if quest_progress_ratio is not None:
             ratio = max(0.0, min(1.0, float(quest_progress_ratio)))
-            quest_bar_rgba = (0.2, 0.8, 0.3, alpha * 0.8)
+            quest_bar_rgba = RGBA(0.2, 0.8, 0.3, alpha * 0.8)
             progress_bar_pos = Vec2(10.0, 139.0)
             _draw_progress_bar(
                 Vec2(ui(progress_bar_pos.x), ui(progress_bar_pos.y)),
@@ -695,7 +695,7 @@ def draw_hud_overlay(
 
         progress_ratio = _survival_xp_progress_ratio(xp=xp_target, level=int(player.level))
         progress_pos = Vec2(*HUD_SURV_PROGRESS_POS).offset(dy=hud_y_shift)
-        bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], HUD_XP_BAR_RGBA[3] * alpha)
+        bar_rgba = HUD_XP_BAR_RGBA.scaled_alpha(alpha)
         _draw_progress_bar(
             Vec2(ui(progress_pos.x), ui(progress_pos.y)),
             ui(HUD_SURV_PROGRESS_WIDTH),
@@ -759,7 +759,7 @@ def draw_hud_overlay(
         bonus_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
         bonus_panel_alpha = alpha * 0.7
         bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
-        bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], bonus_panel_alpha)
+        bar_rgba = HUD_XP_BAR_RGBA.with_alpha(bonus_panel_alpha)
 
         slots = bonus_hud.slots[:16]
         for slot in slots:

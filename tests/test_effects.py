@@ -5,6 +5,7 @@ import math
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
+from grim.color import RGBA
 from grim.geom import Vec2
 
 
@@ -31,7 +32,7 @@ def test_effect_src_rect_uses_grid_and_frame() -> None:
 
 def test_fx_queue_caps_count() -> None:
     q = FxQueue(capacity=4, max_count=3)
-    rgba = (1.0, 1.0, 1.0, 1.0)
+    rgba = RGBA(1.0, 1.0, 1.0, 1.0)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
@@ -43,26 +44,26 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
         top_left=Vec2(),
-        rgba=(1.0, 1.0, 1.0, 1.0),
+        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,
         terrain_bodies_transparency=2.0,
     )
     entry = q.entries[0]
-    assert math.isclose(entry.color_a, 0.5, abs_tol=1e-9)
+    assert math.isclose(entry.color.a, 0.5, abs_tol=1e-9)
 
     q.clear()
     assert q.add(
         top_left=Vec2(),
-        rgba=(1.0, 1.0, 1.0, 1.0),
+        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,
         terrain_bodies_transparency=0.0,
     )
     entry = q.entries[0]
-    assert math.isclose(entry.color_a, 0.8, abs_tol=1e-9)
+    assert math.isclose(entry.color.a, 0.8, abs_tol=1e-9)
 
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
@@ -70,14 +71,14 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
     idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
     fx = pool.entries[idx]
     assert fx.active
-    assert fx.color_a == 1.0
+    assert fx.color.a == 1.0
     assert fx.rotation == 0.0
 
     pool.update(0.5)
     assert math.isclose(fx.pos.x, 11.0, abs_tol=1e-9)
     assert math.isclose(fx.pos.y, 18.5, abs_tol=1e-9)
     assert math.isclose(fx.rotation, 1.5, abs_tol=1e-9)
-    assert math.isclose(fx.color_a, 0.5, abs_tol=1e-9)
+    assert math.isclose(fx.color.a, 0.5, abs_tol=1e-9)
     assert math.isclose(fx.scale, 31.0, abs_tol=1e-9)
 
     pool.update(0.6)
@@ -140,7 +141,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert particle.render_flag is False
     assert fx_queue.count == 1
     assert sprite_effects.entries[0].active
-    assert math.isclose(sprite_effects.entries[0].color_a, 0.7, abs_tol=1e-9)
+    assert math.isclose(sprite_effects.entries[0].color.a, 0.7, abs_tol=1e-9)
 
     deflect_step = math.tau * 0.2
     assert math.isclose(float(particle.angle), deflect_step, abs_tol=1e-6)
@@ -183,10 +184,10 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     assert math.isclose(first.pos.y, 20.0, abs_tol=1e-9)
     assert math.isclose(first.width, 2.0, abs_tol=1e-9)
     assert math.isclose(first.height, 2.0, abs_tol=1e-9)
-    assert math.isclose(first.color_r, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color_g, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color_b, 1.0, abs_tol=1e-9)
-    assert math.isclose(first.color_a, 0.8, abs_tol=1e-9)
+    assert math.isclose(first.color.r, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color.g, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color.b, 1.0, abs_tol=1e-9)
+    assert math.isclose(first.color.a, 0.8, abs_tol=1e-9)
 
 
 def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
@@ -214,7 +215,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     assert entry.effect_id == 0x12
     assert math.isclose(entry.width, 4.0, abs_tol=1e-9)
     assert math.isclose(entry.height, 4.0, abs_tol=1e-9)
-    assert math.isclose(entry.color_a, 0.35, abs_tol=1e-9)
+    assert math.isclose(entry.color.a, 0.35, abs_tol=1e-9)
 
 
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
@@ -244,10 +245,7 @@ def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
     pool.spawn_ring(
         pos=Vec2(3.0, 4.0),
         detail_preset=5,
-        color_r=0.6,
-        color_g=0.6,
-        color_b=1.0,
-        color_a=1.0,
+        color=RGBA(0.6, 0.6, 1.0, 1.0),
     )
 
     active = pool.iter_active()

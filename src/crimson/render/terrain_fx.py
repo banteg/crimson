@@ -18,18 +18,6 @@ class FxQueueTextures:
     bodyset: rl.Texture
 
 
-def _clamp8(value: float) -> int:
-    if value <= 0.0:
-        return 0
-    if value >= 1.0:
-        return 255
-    return int(value * 255.0 + 0.5)
-
-
-def _rgba_to_color(rgba: tuple[float, float, float, float]) -> rl.Color:
-    return rl.Color(_clamp8(rgba[0]), _clamp8(rgba[1]), _clamp8(rgba[2]), _clamp8(rgba[3]))
-
-
 def bake_fx_queues(
     ground: GroundRenderer,
     *,
@@ -59,7 +47,7 @@ def bake_fx_queues(
                 width=entry.width,
                 height=entry.height,
                 rotation_rad=entry.rotation,
-                tint=_rgba_to_color((entry.color_r, entry.color_g, entry.color_b, entry.color_a)),
+                tint=entry.color.to_rl(),
                 centered=True,
             )
         )
@@ -72,7 +60,7 @@ def bake_fx_queues(
                 top_left=entry.top_left,
                 size=entry.scale,
                 rotation_rad=entry.rotation,
-                tint=_rgba_to_color((entry.color_r, entry.color_g, entry.color_b, entry.color_a)),
+                tint=entry.color.to_rl(),
             )
         )
 

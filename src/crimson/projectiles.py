@@ -5,6 +5,7 @@ from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from .creatures.spawn import CreatureFlags
@@ -61,7 +62,7 @@ class FxQueueLike(Protocol):
         width: float,
         height: float,
         rotation: float,
-        rgba: tuple[float, float, float, float],
+        rgba: RGBA,
     ) -> bool: ...
 
     def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...
@@ -241,10 +242,7 @@ def _spawn_ion_hit_effects(
         age=0.0,
         lifetime=float(ring_strength) * 0.8,
         flags=0x19,
-        color_r=0.6,
-        color_g=0.6,
-        color_b=0.9,
-        color_a=1.0,
+        color=RGBA(0.6, 0.6, 0.9, 1.0),
         rotation_step=0.0,
         scale_step=float(ring_scale) * 45.0,
         detail_preset=detail,
@@ -276,10 +274,7 @@ def _spawn_ion_hit_effects(
             age=0.0,
             lifetime=float(lifetime),
             flags=0x1D,
-            color_r=0.4,
-            color_g=0.5,
-            color_b=1.0,
-            color_a=0.5,
+            color=RGBA(0.4, 0.5, 1.0, 0.5),
             rotation_step=0.0,
             scale_step=scale_step,
             detail_preset=detail,
@@ -323,10 +318,7 @@ def _spawn_plasma_cannon_hit_effects(
             age=0.1,
             lifetime=1.0,
             flags=0x19,
-            color_r=0.9,
-            color_g=0.6,
-            color_b=0.3,
-            color_a=1.0,
+            color=RGBA(0.9, 0.6, 0.3, 1.0),
             rotation_step=0.0,
             scale_step=float(scale) * 45.0,
             detail_preset=detail,
@@ -367,10 +359,7 @@ def _spawn_splitter_hit_effects(
             age=jitter_age,
             lifetime=lifetime,
             flags=0x19,
-            color_r=1.0,
-            color_g=0.9,
-            color_b=0.1,
-            color_a=1.0,
+            color=RGBA(1.0, 0.9, 0.1, 1.0),
             rotation_step=0.0,
             scale_step=55.0,
             detail_preset=detail,
@@ -1314,7 +1303,7 @@ class SecondaryProjectilePool:
                             width=float(scale) * 256.0,
                             height=float(scale) * 256.0,
                             rotation=0.0,
-                            rgba=(0.0, 0.0, 0.0, 0.25),
+                            rgba=RGBA(0.0, 0.0, 0.0, 0.25),
                         )
                     entry.active = False
 
@@ -1398,15 +1387,12 @@ class SecondaryProjectilePool:
                 spawn_pos = entry.pos - direction * 9.0
                 trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                    sprite_id = sprite_effects.spawn(
+                    sprite_effects.spawn(
                         pos=spawn_pos,
                         vel=trail_velocity,
                         scale=14.0,
+                        color=RGBA(1.0, 1.0, 1.0, 0.25),
                     )
-                    try:
-                        sprite_effects.entries[int(sprite_id)].color_a = 0.25
-                    except Exception:
-                        pass
                 entry.trail_timer = 0.06
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
@@ -1534,15 +1520,12 @@ class SecondaryProjectilePool:
                         mag = float(int(rand()) % 800) * 0.1
                         ang = float(idx) * step
                         velocity = Vec2.from_angle(ang) * mag
-                        sprite_id = sprite_effects.spawn(
+                        sprite_effects.spawn(
                             pos=entry.pos,
                             vel=velocity,
                             scale=14.0,
+                            color=RGBA(1.0, 1.0, 1.0, 0.37),
                         )
-                        try:
-                            sprite_effects.entries[int(sprite_id)].color_a = 0.37
-                        except Exception:
-                            pass
 
                 continue
 

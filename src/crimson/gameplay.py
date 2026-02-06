@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import math
 from typing import TYPE_CHECKING, Callable, Protocol
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
@@ -1926,12 +1927,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0
-    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0)
-    sprite = state.sprite_effects.entries[int(sprite_id)]
-    sprite.color_r = 0.5
-    sprite.color_g = 0.5
-    sprite.color_b = 0.5
-    sprite.color_a = 0.413
+    state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
 from dataclasses import dataclass
@@ -476,7 +477,7 @@ class DecalsDebugView:
                     width=30.0,
                     height=30.0,
                     rotation=0.0,
-                    rgba=(1.0, 1.0, 1.0, 1.0),
+                    rgba=RGBA(1.0, 1.0, 1.0, 1.0),
                 )
 
         # Keep the player fixed; creatures use it as a target for heading/movement.
@@ -583,14 +584,10 @@ class DecalsDebugView:
             if texture is None or info is None:
                 continue
 
-            alpha = float(creature.tint_a)
+            tint_rgba = creature.tint
             if float(creature.hitbox_size) < 0.0:
-                alpha = max(0.0, alpha + float(creature.hitbox_size) * 0.1)
-            r = int(max(0.0, min(float(creature.tint_r), 1.0)) * 255.0 + 0.5)
-            g = int(max(0.0, min(float(creature.tint_g), 1.0)) * 255.0 + 0.5)
-            b = int(max(0.0, min(float(creature.tint_b), 1.0)) * 255.0 + 0.5)
-            a = int(max(0.0, min(alpha, 1.0)) * 255.0 + 0.5)
-            tint = rl.Color(r, g, b, a)
+                tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + float(creature.hitbox_size) * 0.1))
+            tint = tint_rgba.clamped().to_rl()
 
             flags = creature.flags
             long_strip = (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0

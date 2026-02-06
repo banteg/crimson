@@ -14,6 +14,7 @@ from dataclasses import dataclass, field, replace
 import math
 from typing import Callable, Protocol, Sequence
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
@@ -148,10 +149,7 @@ class CreatureState:
     anim_phase: float = 0.0
     hit_flash_timer: float = 0.0
     last_hit_owner_id: int = -100
-    tint_r: float = 1.0
-    tint_g: float = 1.0
-    tint_b: float = 1.0
-    tint_a: float = 1.0
+    tint: RGBA = field(default_factory=RGBA)
 
     # Rewrite-only helpers (not in native struct, but derived from spawn plans).
     spawn_slot_index: int | None = None
@@ -963,11 +961,7 @@ class CreaturePool:
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
         entry.bonus_duration_override = int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
 
-        tint = resolve_tint(init.tint)
-        entry.tint_r = float(tint[0])
-        entry.tint_g = float(tint[1])
-        entry.tint_b = float(tint[2])
-        entry.tint_a = float(tint[3])
+        entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
         entry.plague_infected = False
         entry.collision_timer = CONTACT_DAMAGE_PERIOD
@@ -1026,7 +1020,7 @@ class CreaturePool:
             corpse_type_id = int(creature.type_id) if long_strip else 7
             ok = fx_queue_rotated.add(
                 top_left=Vec2(creature.pos.x - corpse_size * 0.5, creature.pos.y - corpse_size * 0.5),
-                rgba=(creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a),
+                rgba=creature.tint,
                 rotation=float(creature.heading),
                 scale=corpse_size,
                 creature_type_id=corpse_type_id,

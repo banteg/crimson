@@ -8,6 +8,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
+from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -172,7 +173,7 @@ class TypoShooterMode(BaseGameplayMode):
         return fire_pressed, reload_pressed
 
     def _spawn_tinted_creature(
-        self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: tuple[float, float, float, float]
+        self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: RGBA
     ) -> int:
         rand = self._state.rng.rand
         heading = float(int(rand()) % 314) * 0.01

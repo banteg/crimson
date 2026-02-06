@@ -4,6 +4,7 @@ __all__ = [
     "app",
     "assets",
     "audio",
+    "color",
     "config",
     "console",
     "fonts",

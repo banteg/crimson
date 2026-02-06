@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 
@@ -12,7 +13,7 @@ from ..creatures.spawn import CreatureTypeId
 class TypoSpawnCall:
     pos: Vec2
     type_id: CreatureTypeId
-    tint_rgba: tuple[float, float, float, float]
+    tint_rgba: RGBA
 
 
 def tick_typo_spawns(
@@ -43,7 +44,7 @@ def tick_typo_spawns(
         tint_r = clamp(tint_t * 0.0000083333334 + 0.3, 0.0, 1.0)
         tint_g = clamp(tint_t * 10000.0 + 0.3, 0.0, 1.0)
         tint_b = clamp(math.sin(tint_t * 0.0001) + 0.3, 0.0, 1.0)
-        tint = (tint_r, tint_g, tint_b, 1.0)
+        tint = RGBA(tint_r, tint_g, tint_b, 1.0)
 
         spawns.append(
             TypoSpawnCall(

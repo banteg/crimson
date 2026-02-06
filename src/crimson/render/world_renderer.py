@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 import pyray as rl
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -91,13 +92,6 @@ class WorldRenderer:
     @staticmethod
     def _view_scale_avg(view_scale: Vec2) -> float:
         return view_scale.avg_component()
-
-    def _color_from_rgba(self, rgba: tuple[float, float, float, float]) -> rl.Color:
-        r = int(clamp(rgba[0], 0.0, 1.0) * 255.0 + 0.5)
-        g = int(clamp(rgba[1], 0.0, 1.0) * 255.0 + 0.5)
-        b = int(clamp(rgba[2], 0.0, 1.0) * 255.0 + 0.5)
-        a = int(clamp(rgba[3], 0.0, 1.0) * 255.0 + 0.5)
-        return rl.Color(r, g, b, a)
 
     def _bonus_icon_src(self, texture: rl.Texture, icon_id: int) -> rl.Rectangle:
         grid = 4
@@ -937,7 +931,7 @@ class WorldRenderer:
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.spin) * _RAD_TO_DEG
-            tint = self._color_from_rgba((entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
+            tint = RGBA(entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha).to_rl()
             rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
 
         alpha_byte = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
@@ -1004,7 +998,7 @@ class WorldRenderer:
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.rotation) * _RAD_TO_DEG
-            tint = self._color_from_rgba((entry.color_r, entry.color_g, entry.color_b, float(entry.color_a) * alpha))
+            tint = entry.color.scaled_alpha(alpha).to_rl()
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
         rl.end_blend_mode()
 
@@ -1070,15 +1064,10 @@ class WorldRenderer:
                 return
 
             rotation_deg = float(getattr(entry, "rotation", 0.0)) * _RAD_TO_DEG
-            tint = self._color_from_rgba(
-                (
-                    float(getattr(entry, "color_r", 1.0)),
-                    float(getattr(entry, "color_g", 1.0)),
-                    float(getattr(entry, "color_b", 1.0)),
-                    float(getattr(entry, "color_a", 1.0)),
-                )
-            )
-            tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
+            raw_color = getattr(entry, "color", None)
+            if not isinstance(raw_color, RGBA):
+                return
+            tint = raw_color.scaled_alpha(alpha).to_rl()
 
             dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
@@ -1248,10 +1237,7 @@ class WorldRenderer:
                 if info is None:
                     continue
 
-                tint_r = float(creature.tint_r)
-                tint_g = float(creature.tint_g)
-                tint_b = float(creature.tint_b)
-                tint_a = float(creature.tint_a)
+                tint_rgba = creature.tint
 
                 # Energizer: tint "weak" creatures blue-ish while active.
                 # Mirrors `creature_render_type` (0x00418b60) branch when
@@ -1265,16 +1251,11 @@ class WorldRenderer:
                         t = 1.0
                     elif t < 0.0:
                         t = 0.0
-                    inv = 1.0 - t
-                    tint_r = inv * tint_r + t * 0.5
-                    tint_g = inv * tint_g + t * 0.5
-                    tint_b = inv * tint_b + t * 1.0
-                    tint_a = inv * tint_a + t
+                    tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
                 if hitbox_size < 0.0:
                     # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
-                    tint_a = max(0.0, tint_a + hitbox_size * 0.1)
-                tint_a = clamp(tint_a * entity_alpha, 0.0, 1.0)
-                tint = self._color_from_rgba((tint_r, tint_g, tint_b, tint_a))
+                    tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + hitbox_size * 0.1))
+                tint = tint_rgba.scaled_alpha(entity_alpha).clamped().to_rl()
 
                 size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
                 fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
@@ -1297,7 +1278,7 @@ class WorldRenderer:
                 shadow_alpha = None
                 if shadow:
                     # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (hitbox_size < 0).
-                    shadow_a = float(creature.tint_a) * 0.4
+                    shadow_a = float(creature.tint.a) * 0.4
                     if hitbox_size < 0.0:
                         shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
                         shadow_a = max(0.0, shadow_a)
