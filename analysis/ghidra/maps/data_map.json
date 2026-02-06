@@ -492,6 +492,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478e64",
+      "comment": "Controls-menu keybind target slot index (-1 when no bind capture is active).",
+      "name": "controls_rebind_slot_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478ecc",
       "comment": "Configure-for label: \"Computer\".",
       "name": "input_configure_label_computer",
@@ -6378,6 +6385,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004ccb58",
+      "comment": "Highscore batch-sync stage cursor used by Shift-modified online sync flow (starts at -4 and iterates mode/quest variants).",
+      "name": "highscore_batch_sync_stage_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004ccbd0",
       "comment": "UI focus candidate list used by ui_focus_update.",
       "name": "ui_focus_candidates",
@@ -6446,11 +6460,25 @@
       "type": "char"
     },
     {
+      "address": "0x004d11f9",
+      "comment": "Shift-modified batch-sync latch: shortens highscore_sync_worker delays and keeps stage-cycling sync active.",
+      "name": "highscore_batch_sync_mode",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004d1208",
       "comment": "UI stats hover accumulator for the \"most used weapon\" tooltip (clamped to [0..1]).",
       "name": "ui_stats_hover_weapon",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004d1218",
+      "comment": "One-shot latch to kick statistics_update_check_worker after highscore sync reaches done state.",
+      "name": "highscore_post_sync_update_check_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004d120c",
@@ -6546,6 +6574,20 @@
       "name": "typo_spawn_counter",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d79dc",
+      "comment": "Controls menu active player/profile index used when editing per-player keybind and aiming scheme arrays.",
+      "name": "controls_rebind_player_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d79e0",
+      "comment": "Controls rebind arming latch: requires key release before accepting a new key/axis input.",
+      "name": "controls_rebind_capture_armed",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004d7a25",

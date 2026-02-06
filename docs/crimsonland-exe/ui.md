@@ -82,6 +82,9 @@ mode/timeline, UV/color tuples) with confidence across menu variants.
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
 colors, and textures. See [UI elements](../ui-elements.md) for struct details.
 
+Keyboard focus updates are globally gated by `ui_focus_input_locked`; controls
+rebind flows toggle this lock while waiting for key/axis capture.
+
 ## Main menu (state 0)
 
 The main menu is `game_state_id == 0` and is built from the shared UI element

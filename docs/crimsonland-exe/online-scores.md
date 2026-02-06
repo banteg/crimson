@@ -25,6 +25,12 @@ The client uses WinINet (`InternetOpenA`, `InternetConnectA`, `HttpOpenRequestA`
   path is active.
 - `update_notice_open_requested` (`0x00480838`): set when the in-UI
   "Get the update" button is pressed.
+- `highscore_batch_sync_mode` (`0x004d11f9`): Shift-modified "update all /
+  receive all" mode that accelerates worker delays for batch cycling.
+- `highscore_batch_sync_stage_index` (`0x004ccb58`): stage/mode cursor used by
+  batch sync to iterate quest/game-mode combinations.
+- `highscore_post_sync_update_check_latch` (`0x004d1218`): one-shot guard for
+  the follow-up version-check worker after sync completion.
 
 ## HTTP endpoints
 
