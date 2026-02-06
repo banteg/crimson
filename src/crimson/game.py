@@ -1572,7 +1572,7 @@ class EndNoteView:
             self._action = "start_survival"
             return
 
-        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
         if button_update(
             self._rush_button,
@@ -1588,7 +1588,7 @@ class EndNoteView:
             self._action = "start_rush"
             return
 
-        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
         if button_update(
             self._typo_button,
@@ -1606,7 +1606,7 @@ class EndNoteView:
             self._action = "start_typo"
             return
 
-        button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
             font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
         )
@@ -1689,8 +1689,8 @@ class EndNoteView:
         for idx, line in enumerate(body_lines):
             draw_small_text(font, line, body_pos, 1.0 * scale, body_color)
             if idx != len(body_lines) - 1:
-                body_pos = body_pos + Vec2(0.0, END_NOTE_LINE_STEP_Y * scale)
-        body_pos = body_pos + Vec2(0.0, END_NOTE_AFTER_BODY_Y_GAP * scale)
+                body_pos = body_pos.offset(dy=END_NOTE_LINE_STEP_Y * scale)
+        body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP * scale)
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, 1.0 * scale, body_color)
 
         textures = self._button_textures
@@ -1700,13 +1700,13 @@ class EndNoteView:
                 font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
             )
             button_draw(textures, font, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
-            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
             rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
             button_draw(textures, font, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
-            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
             typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
             button_draw(textures, font, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
-            button_pos = button_pos + Vec2(0.0, END_NOTE_BUTTON_STEP_Y * scale)
+            button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
             main_w = button_width(
                 font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
             )
@@ -1830,7 +1830,7 @@ class QuestFailedView:
         ):
             self._activate_retry()
             return
-        button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         play_another_w = button_width(
             font,
@@ -1848,7 +1848,7 @@ class QuestFailedView:
         ):
             self._activate_play_another()
             return
-        button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
 
         main_menu_w = button_width(
             font,
@@ -1920,7 +1920,7 @@ class QuestFailedView:
                 font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide
             )
             button_draw(textures, font, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
-            button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y)
+            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
             play_another_w = button_width(
                 font,
@@ -1936,7 +1936,7 @@ class QuestFailedView:
                 width=play_another_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, QUEST_FAILED_BUTTON_STEP_Y)
+            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
             main_menu_w = button_width(
                 font,
@@ -2240,7 +2240,7 @@ class HighScoresView:
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
-                pos=button_base_pos + Vec2(0.0, HS_BUTTON_STEP_Y * scale),
+                pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
                 width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -2471,7 +2471,7 @@ class HighScoresView:
                 textures,
                 font,
                 self._play_button,
-                pos=button_base_pos + Vec2(0.0, HS_BUTTON_STEP_Y * scale),
+                pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
                 width=w,
                 scale=scale,
             )

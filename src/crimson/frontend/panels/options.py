@@ -98,27 +98,27 @@ class OptionsMenuView(PanelMenuView):
         if rect_on is None or rect_off is None:
             return
 
-        if self._update_slider("sfx", self._slider_sfx, slider_pos + Vec2(0.0, 47.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
             config.data["sfx_volume"] = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self._state.audio, float(config.data["sfx_volume"]))
             self._dirty = True
 
         if self._update_slider(
-            "music", self._slider_music, slider_pos + Vec2(0.0, 67.0 * scale), rect_on, rect_off, scale
+            "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale
         ):
             config.data["music_volume"] = float(self._slider_music.value) * 0.1
             set_music_volume(self._state.audio, float(config.data["music_volume"]))
             self._dirty = True
 
         if self._update_slider(
-            "detail", self._slider_detail, slider_pos + Vec2(0.0, 87.0 * scale), rect_on, rect_off, scale
+            "detail", self._slider_detail, slider_pos.offset(dy=87.0 * scale), rect_on, rect_off, scale
         ):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
             self._dirty = True
 
         if self._update_slider(
-            "mouse", self._slider_mouse, slider_pos + Vec2(0.0, 107.0 * scale), rect_on, rect_off, scale
+            "mouse", self._slider_mouse, slider_pos.offset(dy=107.0 * scale), rect_on, rect_off, scale
         ):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
@@ -128,7 +128,7 @@ class OptionsMenuView(PanelMenuView):
             config.data["mouse_sensitivity"] = sensitivity
             self._dirty = True
 
-        if self._update_checkbox(label_pos + Vec2(0.0, 135.0 * scale), scale):
+        if self._update_checkbox(label_pos.offset(dy=135.0 * scale), scale):
             value = 1 if self._ui_info_texts else 0
             config.data["ui_info_texts"] = value
             self._dirty = True
@@ -136,7 +136,7 @@ class OptionsMenuView(PanelMenuView):
         textures = self._button_textures
         if textures is not None and textures.button_md is not None:
             # `sub_4475d0`: controls button is aligned with the panel content base.
-            controls_pos = base_pos + Vec2(0.0, 155.0 * scale)
+            controls_pos = base_pos.offset(dy=155.0 * scale)
             dt_ms = min(float(dt), 0.1) * 1000.0
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
@@ -342,7 +342,7 @@ class OptionsMenuView(PanelMenuView):
 
         y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
-            draw_small_text(font, label, label_pos + Vec2(0.0, offset * scale), text_scale, text_color)
+            draw_small_text(font, label, label_pos.offset(dy=offset * scale), text_scale, text_color)
 
         rect_on = self._rect_on
         rect_off = self._rect_off
@@ -353,7 +353,7 @@ class OptionsMenuView(PanelMenuView):
 
         self._draw_slider(
             self._slider_sfx,
-            slider_pos + Vec2(0.0, 47.0 * scale),
+            slider_pos.offset(dy=47.0 * scale),
             rect_on,
             rect_off,
             rect_w,
@@ -361,7 +361,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_music,
-            slider_pos + Vec2(0.0, 67.0 * scale),
+            slider_pos.offset(dy=67.0 * scale),
             rect_on,
             rect_off,
             rect_w,
@@ -369,7 +369,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_detail,
-            slider_pos + Vec2(0.0, 87.0 * scale),
+            slider_pos.offset(dy=87.0 * scale),
             rect_on,
             rect_off,
             rect_w,
@@ -377,7 +377,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_mouse,
-            slider_pos + Vec2(0.0, 107.0 * scale),
+            slider_pos.offset(dy=107.0 * scale),
             rect_on,
             rect_off,
             rect_w,
@@ -390,7 +390,7 @@ class OptionsMenuView(PanelMenuView):
             check_tex = check_on if self._ui_info_texts else check_off
             check_w = float(check_tex.width) * scale
             check_h = float(check_tex.height) * scale
-            check_pos = label_pos + Vec2(0.0, 135.0 * scale)
+            check_pos = label_pos.offset(dy=135.0 * scale)
             rl.draw_texture_pro(
                 check_tex,
                 rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
@@ -410,7 +410,7 @@ class OptionsMenuView(PanelMenuView):
         button = self._button_tex
         textures = self._button_textures
         if button is not None and textures is not None:
-            button_pos = base_pos + Vec2(0.0, 155.0 * scale)
+            button_pos = base_pos.offset(dy=155.0 * scale)
             button_w = button_width(
                 font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide
             )

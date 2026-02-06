@@ -385,7 +385,7 @@ class GameOverUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_again")
                 return None
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -402,7 +402,7 @@ class GameOverUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("high_scores")
                 return None
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
@@ -534,7 +534,7 @@ class GameOverUi:
             self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
 
         # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).
-        row_pos = card_origin.offset(0.0, 52.0 * scale)
+        row_pos = card_origin.offset(dy=52.0 * scale)
         self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
         self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
         if show_weapon_row and hud_assets is not None and hud_assets.wicons is not None:
@@ -561,21 +561,21 @@ class GameOverUi:
 
             frags_text = f"Frags: {int(record.creature_kill_count)}"
             stats_pos = row_pos + Vec2(110.0 * scale, 0.0)
-            self._draw_small(frags_text, stats_pos + Vec2(0.0, 1.0 * scale), 1.0 * scale, label_color)
+            self._draw_small(frags_text, stats_pos.offset(dy=1.0 * scale), 1.0 * scale, label_color)
 
             fired = max(0, int(record.shots_fired))
             hit = max(0, int(record.shots_hit))
             ratio = int((hit * 100) / fired) if fired > 0 else 0
             hit_text = f"Hit %: {ratio}%"
-            self._draw_small(hit_text, stats_pos + Vec2(0.0, 15.0 * scale), 1.0 * scale, label_color)
+            self._draw_small(hit_text, stats_pos.offset(dy=15.0 * scale), 1.0 * scale, label_color)
 
-            hit_rect_pos = stats_pos + Vec2(0.0, 15.0 * scale)
+            hit_rect_pos = stats_pos.offset(dy=15.0 * scale)
             hit_rect = rl.Rectangle(hit_rect_pos.x, hit_rect_pos.y, 64.0 * scale, 17.0 * scale)
             hovering_hit = rl.check_collision_point_rec(mouse, hit_rect)
             self._hover_hit_ratio = float(
                 max(0.0, min(1.0, self._hover_hit_ratio + (dt_hover if hovering_hit else -dt_hover)))
             )
-            tooltip_pos = row_pos + Vec2(0.0, 48.0 * scale)
+            tooltip_pos = row_pos.offset(dy=48.0 * scale)
         else:
             self._hover_weapon = max(0.0, float(self._hover_weapon) - dt_hover)
             self._hover_hit_ratio = 0.0
@@ -655,7 +655,7 @@ class GameOverUi:
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
             self._draw_small("State your name, trooper!", form_pos + Vec2(42.0 * scale, 0.0), 1.0 * scale, COLOR_TEXT)
 
-            input_pos = form_pos + Vec2(0.0, 40.0 * scale)
+            input_pos = form_pos.offset(dy=40.0 * scale)
             rl.draw_rectangle_lines(
                 int(input_pos.x), int(input_pos.y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE
             )
@@ -740,7 +740,7 @@ class GameOverUi:
                 width=play_again_w,
                 scale=scale,
             )
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -753,7 +753,7 @@ class GameOverUi:
                 width=high_scores_w,
                 scale=scale,
             )
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide

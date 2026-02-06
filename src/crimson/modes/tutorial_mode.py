@@ -405,7 +405,7 @@ class TutorialMode(BaseGameplayMode):
             self._draw_prompt_panel(
                 actions.hint_text,
                 alpha=float(actions.hint_alpha),
-                pos=self._ui_layout.panel_pos + Vec2(0.0, 84.0),
+                pos=self._ui_layout.panel_pos.offset(dy=84.0),
             )
 
         if self._ui_assets is None:

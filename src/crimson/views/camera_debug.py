@@ -256,8 +256,8 @@ class CameraDebugView:
         grid_minor = rl.Color(40, 50, 65, 140)
         for i in range(0, int(WORLD_SIZE) + 1, int(GRID_STEP)):
             color = grid_major if i % 256 == 0 else grid_minor
-            vertical_start = Vec2((float(i) + camera.x) * view_scale.x, (0.0 + camera.y) * view_scale.y)
-            vertical_end = Vec2(vertical_start.x, (WORLD_SIZE + camera.y) * view_scale.y)
+            vertical_start = (Vec2(float(i), 0.0) + camera).mul_components(view_scale)
+            vertical_end = (Vec2(float(i), WORLD_SIZE) + camera).mul_components(view_scale)
             rl.draw_line(
                 int(vertical_start.x),
                 int(vertical_start.y),
@@ -265,8 +265,8 @@ class CameraDebugView:
                 int(vertical_end.y),
                 color,
             )
-            horizontal_start = Vec2((0.0 + camera.x) * view_scale.x, (float(i) + camera.y) * view_scale.y)
-            horizontal_end = Vec2((WORLD_SIZE + camera.x) * view_scale.x, horizontal_start.y)
+            horizontal_start = (Vec2(0.0, float(i)) + camera).mul_components(view_scale)
+            horizontal_end = (Vec2(WORLD_SIZE, float(i)) + camera).mul_components(view_scale)
             rl.draw_line(
                 int(horizontal_start.x),
                 int(horizontal_start.y),
@@ -276,10 +276,12 @@ class CameraDebugView:
             )
 
         # Player
-        px = (self._player.x + camera.x) * view_scale.x
-        py = (self._player.y + camera.y) * view_scale.y
+        player_screen = (self._player + camera).mul_components(view_scale)
         rl.draw_circle(
-            int(px), int(py), max(2, int(6 * (view_scale.x + view_scale.y) * 0.5)), rl.Color(255, 200, 120, 255)
+            int(player_screen.x),
+            int(player_screen.y),
+            max(2, int(6 * view_scale.avg_component())),
+            rl.Color(255, 200, 120, 255),
         )
 
         # Minimap

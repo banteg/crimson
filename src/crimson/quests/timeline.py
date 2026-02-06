@@ -60,7 +60,7 @@ def tick_quest_spawn_timeline(
             magnitude = float(spawn_idx * 0x28)
             offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
             if offscreen_x:
-                pos = base_pos + Vec2(0.0, offset)
+                pos = base_pos.offset(dy=offset)
             else:
                 pos = base_pos + Vec2(offset, 0.0)
             spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=float(entry.heading)))

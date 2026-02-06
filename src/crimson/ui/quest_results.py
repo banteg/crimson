@@ -487,7 +487,7 @@ class QuestResultsUi:
             scale = ui_scale(screen_w, screen_h)
             panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
             content_pos = panel_layout.top_left + Vec2(QUEST_RESULTS_CONTENT_X * scale, 0.0)
-            input_pos = content_pos + Vec2(0.0, 150.0 * scale)
+            input_pos = content_pos.offset(dy=150.0 * scale)
             ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
@@ -565,7 +565,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_next")
                 return None
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             play_again_w = button_width(
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
@@ -582,7 +582,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_again")
                 return None
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -599,7 +599,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("high_scores")
                 return None
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
@@ -715,7 +715,7 @@ class QuestResultsUi:
                 "State your name trooper!", Vec2(content_pos.x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT
             )
 
-            input_pos = content_pos + Vec2(0.0, 150.0 * scale)
+            input_pos = content_pos.offset(dy=150.0 * scale)
             rl.draw_rectangle_lines(
                 int(input_pos.x), int(input_pos.y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE
             )
@@ -804,7 +804,7 @@ class QuestResultsUi:
                 width=play_next_w,
                 scale=scale,
             )
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
             play_again_w = button_width(
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
             )
@@ -816,7 +816,7 @@ class QuestResultsUi:
                 width=play_again_w,
                 scale=scale,
             )
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
             )
@@ -828,7 +828,7 @@ class QuestResultsUi:
                 width=high_scores_w,
                 scale=scale,
             )
-            button_pos = button_pos.offset(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0 * scale)
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
             )

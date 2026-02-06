@@ -192,7 +192,7 @@ class AimDebugView:
             dist = (aim_pos - self._player.pos).length()
             radius = max(6.0, dist * float(self._player.spread_heat) * 0.5)
             camera, view_scale = self._world._world_params()
-            scale = (view_scale.x + view_scale.y) * 0.5
+            scale = view_scale.avg_component()
             screen_radius = max(1.0, radius * scale)
             aim_screen = self._world.world_to_screen(aim_pos)
 

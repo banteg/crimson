@@ -165,22 +165,22 @@ class StatisticsMenuView:
             return button_update(btn, pos=Vec2(pos.x, pos.y), width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
-        if _update_button(self._btn_high_scores, pos=button_base + Vec2(0.0, _BUTTON_STEP_Y * 0.0 * scale)):
+        if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_high_scores"
             return
-        if _update_button(self._btn_weapons, pos=button_base + Vec2(0.0, _BUTTON_STEP_Y * 1.0 * scale)):
+        if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_weapon_database"
             return
-        if _update_button(self._btn_perks, pos=button_base + Vec2(0.0, _BUTTON_STEP_Y * 2.0 * scale)):
+        if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_perk_database"
             return
-        if _update_button(self._btn_credits, pos=button_base + Vec2(0.0, _BUTTON_STEP_Y * 3.0 * scale)):
+        if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_credits"
@@ -263,7 +263,7 @@ class StatisticsMenuView:
                     textures,
                     font,
                     btn,
-                    pos=button_base + Vec2(0.0, _BUTTON_STEP_Y * float(i) * scale),
+                    pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
                     width=w,
                     scale=scale,
                 )

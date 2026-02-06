@@ -199,17 +199,19 @@ class DecalsDebugView:
 
     def _world_to_screen(self, pos: Vec2) -> Vec2:
         camera, view_scale, _ = self._view_params()
-        return Vec2((pos.x + camera.x) * view_scale.x, (pos.y + camera.y) * view_scale.y)
+        return (pos + camera).mul_components(view_scale)
 
     def _screen_to_world(self, pos: Vec2) -> Vec2:
         camera, view_scale, _ = self._view_params()
-        scale_x = view_scale.x if view_scale.x > 0.0 else 1.0
-        scale_y = view_scale.y if view_scale.y > 0.0 else 1.0
-        return Vec2((pos.x / scale_x) - camera.x, (pos.y / scale_y) - camera.y)
+        safe_scale = Vec2(
+            view_scale.x if view_scale.x > 0.0 else 1.0,
+            view_scale.y if view_scale.y > 0.0 else 1.0,
+        )
+        return pos.div_components(safe_scale) - camera
 
     def _world_scale(self) -> float:
         _camera, view_scale, _screen_size = self._view_params()
-        return (view_scale.x + view_scale.y) * 0.5
+        return view_scale.avg_component()
 
     def _draw_grid(self) -> None:
         ground = self._ground
@@ -224,7 +226,7 @@ class DecalsDebugView:
         end_x = (-camera.x) + screen_size.x
         x = start_x
         while x <= end_x:
-            line_start = Vec2((x + camera.x) * view_scale.x, 0.0)
+            line_start = Vec2((Vec2(x, 0.0) + camera).mul_components(view_scale).x, 0.0)
             line_end = Vec2(line_start.x, out_h)
             rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             x += step
@@ -233,7 +235,7 @@ class DecalsDebugView:
         end_y = (-camera.y) + screen_size.y
         y = start_y
         while y <= end_y:
-            line_start = Vec2(0.0, (y + camera.y) * view_scale.y)
+            line_start = Vec2(0.0, (Vec2(0.0, y) + camera).mul_components(view_scale).y)
             line_end = Vec2(out_w, line_start.y)
             rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             y += step

@@ -339,7 +339,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             draw_small_text(
                 font,
                 name,
-                list_top_left + Vec2(0.0, float(row) * row_step),
+                list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
                 text_color,
             )
@@ -514,7 +514,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             draw_small_text(
                 font,
                 self._perk_name(perk_id),
-                list_top_left + Vec2(0.0, float(row) * row_step),
+                list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
                 text_color,
             )

@@ -452,8 +452,7 @@ class GroundRenderer:
         if screen_w <= 0.0 or screen_h <= 0.0:
             return
 
-        scale_x = out_w / screen_w
-        scale_y = out_h / screen_h
+        view_scale = Vec2(out_w / screen_w, out_h / screen_h)
 
         view_x0 = -camera.x
         view_y0 = -camera.y
@@ -478,9 +477,10 @@ class GroundRenderer:
             if pivot.y + h * 0.5 < view_y0 or pivot.y - h * 0.5 > view_y1:
                 return
 
-            screen_pivot = Vec2((pivot.x + camera.x) * scale_x, (pivot.y + camera.y) * scale_y)
-            sw = w * scale_x
-            sh = h * scale_y
+            screen_pivot = (pivot + camera).mul_components(view_scale)
+            scaled_size = Vec2(w, h).mul_components(view_scale)
+            sw = scaled_size.x
+            sh = scaled_size.y
             dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(
@@ -514,9 +514,10 @@ class GroundRenderer:
                 return
             if pivot.y + size * 0.5 < view_y0 or pivot.y - size * 0.5 > view_y1:
                 return
-            screen_pivot = Vec2((pivot.x + camera.x) * scale_x, (pivot.y + camera.y) * scale_y)
-            sw = size * scale_x
-            sh = size * scale_y
+            screen_pivot = (pivot + camera).mul_components(view_scale)
+            scaled_size = Vec2(size, size).mul_components(view_scale)
+            sw = scaled_size.x
+            sh = scaled_size.y
             dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(bodyset_texture, src, dst, origin, rotation_deg, tint)

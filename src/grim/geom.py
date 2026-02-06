@@ -37,6 +37,15 @@ class Vec2:
     def __rmul__(self, scalar: float) -> Vec2:
         return self * scalar
 
+    def mul_components(self, other: Vec2) -> Vec2:
+        return Vec2(self.x * other.x, self.y * other.y)
+
+    def div_components(self, other: Vec2) -> Vec2:
+        return Vec2(self.x / other.x, self.y / other.y)
+
+    def avg_component(self) -> float:
+        return (self.x + self.y) * 0.5
+
     def normalized(self) -> Vec2:
         magnitude_sq = self.length_sq()
         if magnitude_sq <= 0.0:
@@ -82,7 +91,7 @@ class Vec2:
     def to_polar(self) -> tuple[float, float]:
         return self.to_angle(), self.length()
 
-    def offset(self, dx: float = 0.0, dy: float = 0.0) -> Vec2:
+    def offset(self, *, dx: float = 0.0, dy: float = 0.0) -> Vec2:
         return Vec2(self.x + dx, self.y + dy)
 
     def perp_left(self) -> Vec2:

@@ -143,6 +143,15 @@ def test_vec2_operator_helpers() -> None:
     assert 2.0 * a == Vec2(2.0, 4.0)
 
 
+def test_vec2_component_helpers() -> None:
+    a = Vec2(6.0, 8.0)
+    b = Vec2(2.0, 4.0)
+
+    assert a.mul_components(b) == Vec2(12.0, 32.0)
+    assert a.div_components(b) == Vec2(3.0, 2.0)
+    assert math.isclose(a.avg_component(), 7.0, abs_tol=1e-9)
+
+
 def test_vec2_perpendicular_helpers() -> None:
     vec = Vec2(3.0, -2.0)
 
@@ -153,7 +162,7 @@ def test_vec2_perpendicular_helpers() -> None:
 def test_vec2_offset_helper() -> None:
     vec = Vec2(3.0, -2.0)
 
-    assert vec.offset(5.0, -1.5) == Vec2(8.0, -3.5)
+    assert vec.offset(dx=5.0, dy=-1.5) == Vec2(8.0, -3.5)
 
 
 def test_vec2_to_vector2_uses_constructor() -> None:

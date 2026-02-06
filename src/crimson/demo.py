@@ -273,7 +273,7 @@ class DemoView:
 
         if button_update(
             self._maybe_later_button,
-            pos=button_base_pos + Vec2(0.0, 40.0),
+            pos=button_base_pos.offset(dy=40.0),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -413,7 +413,7 @@ class DemoView:
             textures,
             small,
             self._maybe_later_button,
-            pos=button_base_pos + Vec2(0.0, 40.0),
+            pos=button_base_pos.offset(dy=40.0),
             width=button_w,
             scale=scale,
         )

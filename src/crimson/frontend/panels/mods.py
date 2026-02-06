@@ -104,8 +104,8 @@ class ModsMenuView(PanelMenuView):
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         draw_small_text(font, "MODS", base_pos, title_scale, title_color)
-        line_pos = label_pos + Vec2(0.0, 44.0 * scale)
+        line_pos = label_pos.offset(dy=44.0 * scale)
         line_step = (font.cell_size + 4.0) * scale
         for line in self._lines:
             draw_small_text(font, line, line_pos, text_scale, text_color)
-            line_pos = line_pos + Vec2(0.0, line_step)
+            line_pos = line_pos.offset(dy=line_step)

@@ -126,7 +126,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     while trigger < 0xA988:
         angle = step_index * 0.33333334
         radius = 512.0 - step_index * 3.8
-        pos = Vec2.from_polar(angle, radius).offset(512.0, 512.0)
+        pos = Vec2.from_polar(angle, radius).offset(dx=512.0, dy=512.0)
         entries.append(
             spawn(
                 pos,

@@ -420,7 +420,7 @@ def draw_hud_overlay(
             bar_base_pos = Vec2(bar_base_pos.x, 6.0)
 
         for idx, hud_player in enumerate(hud_players):
-            bar_pos = bar_base_pos + Vec2(0.0, float(idx) * 16.0 if player_count > 1 else 0.0)
+            bar_pos = bar_base_pos.offset(dy=float(idx) * 16.0 if player_count > 1 else 0.0)
             bg_dst = rl.Rectangle(ui(bar_pos.x), ui(bar_pos.y), ui(bar_size.x), ui(bar_size.y))
             rl.draw_texture_pro(
                 assets.ind_life,
@@ -653,7 +653,7 @@ def draw_hud_overlay(
     xp_target = int(player.experience if score is None else score)
     xp_display = state.smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
     if show_xp and assets.ind_panel is not None:
-        panel_pos = Vec2(*HUD_SURV_PANEL_POS) + Vec2(0.0, hud_y_shift)
+        panel_pos = Vec2(*HUD_SURV_PANEL_POS).offset(dy=hud_y_shift)
         panel_size = Vec2(*HUD_SURV_PANEL_SIZE)
         dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
         src = rl.Rectangle(0.0, 0.0, float(assets.ind_panel.width), float(assets.ind_panel.height))
@@ -668,9 +668,9 @@ def draw_hud_overlay(
         max_y = max(max_y, dst.y + dst.height)
 
     if show_xp:
-        xp_label_pos = Vec2(*HUD_SURV_XP_LABEL_POS) + Vec2(0.0, hud_y_shift)
-        xp_value_pos = Vec2(*HUD_SURV_XP_VALUE_POS) + Vec2(0.0, hud_y_shift)
-        lvl_value_pos = Vec2(*HUD_SURV_LVL_VALUE_POS) + Vec2(0.0, hud_y_shift)
+        xp_label_pos = Vec2(*HUD_SURV_XP_LABEL_POS).offset(dy=hud_y_shift)
+        xp_value_pos = Vec2(*HUD_SURV_XP_VALUE_POS).offset(dy=hud_y_shift)
+        lvl_value_pos = Vec2(*HUD_SURV_LVL_VALUE_POS).offset(dy=hud_y_shift)
         _draw_text(
             font,
             "Xp",
@@ -694,7 +694,7 @@ def draw_hud_overlay(
         )
 
         progress_ratio = _survival_xp_progress_ratio(xp=xp_target, level=int(player.level))
-        progress_pos = Vec2(*HUD_SURV_PROGRESS_POS) + Vec2(0.0, hud_y_shift)
+        progress_pos = Vec2(*HUD_SURV_PROGRESS_POS).offset(dy=hud_y_shift)
         bar_rgba = (HUD_XP_BAR_RGBA[0], HUD_XP_BAR_RGBA[1], HUD_XP_BAR_RGBA[2], HUD_XP_BAR_RGBA[3] * alpha)
         _draw_progress_bar(
             Vec2(ui(progress_pos.x), ui(progress_pos.y)),
@@ -778,7 +778,7 @@ def draw_hud_overlay(
             # Slot panel.
             if assets.ind_panel is not None:
                 if not small_indicators:
-                    panel_pos = slot_pos + Vec2(0.0, HUD_BONUS_PANEL_OFFSET_Y)
+                    panel_pos = slot_pos.offset(dy=HUD_BONUS_PANEL_OFFSET_Y)
                     panel_size = Vec2(182.0, 53.0)
                 else:
                     panel_pos = slot_pos + Vec2(-96.0, 5.0)

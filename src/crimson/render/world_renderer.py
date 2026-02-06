@@ -86,11 +86,11 @@ class WorldRenderer:
 
     @staticmethod
     def _world_to_screen_with(pos: Vec2, *, camera: Vec2, view_scale: Vec2) -> Vec2:
-        return Vec2((pos.x + camera.x) * view_scale.x, (pos.y + camera.y) * view_scale.y)
+        return (pos + camera).mul_components(view_scale)
 
     @staticmethod
     def _view_scale_avg(view_scale: Vec2) -> float:
-        return (view_scale.x + view_scale.y) * 0.5
+        return view_scale.avg_component()
 
     def _color_from_rgba(self, rgba: tuple[float, float, float, float]) -> rl.Color:
         r = int(clamp(rgba[0], 0.0, 1.0) * 255.0 + 0.5)
@@ -500,14 +500,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                pos=screen_pos.offset(leg_shadow_off, leg_shadow_off),
+                pos=screen_pos.offset(dx=leg_shadow_off, dy=leg_shadow_off),
                 scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                pos=screen_pos.offset(recoil_offset.x + torso_shadow_off, recoil_offset.y + torso_shadow_off),
+                pos=screen_pos.offset(dx=recoil_offset.x + torso_shadow_off, dy=recoil_offset.y + torso_shadow_off),
                 scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
@@ -620,7 +620,7 @@ class WorldRenderer:
         dead_shadow_off = 1.0 * scale + base_size * (dead_shadow_scale - 1.0) * 0.5
         draw(
             frame,
-            pos=screen_pos + Vec2(dead_shadow_off, dead_shadow_off),
+            pos=screen_pos.offset(dx=dead_shadow_off, dy=dead_shadow_off),
             scale_mul=dead_shadow_scale,
             rotation=float(player.aim_heading),
             color=shadow_tint,
@@ -1119,11 +1119,8 @@ class WorldRenderer:
 
         # World bounds for debug if terrain is missing.
         if self.ground is None:
-            world_min = Vec2(camera.x * view_scale.x, camera.y * view_scale.y)
-            world_max = Vec2(
-                (float(self.world_size) + camera.x) * view_scale.x,
-                (float(self.world_size) + camera.y) * view_scale.y,
-            )
+            world_min = camera.mul_components(view_scale)
+            world_max = (camera + Vec2(float(self.world_size), float(self.world_size))).mul_components(view_scale)
             rl.draw_rectangle_lines(
                 int(world_min.x),
                 int(world_min.y),
@@ -1417,6 +1414,8 @@ class WorldRenderer:
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
         camera, view_scale = self._world_params()
-        inv_x = 1.0 / view_scale.x if view_scale.x > 0 else 1.0
-        inv_y = 1.0 / view_scale.y if view_scale.y > 0 else 1.0
-        return Vec2(pos.x * inv_x - camera.x, pos.y * inv_y - camera.y)
+        safe_scale = Vec2(
+            view_scale.x if view_scale.x > 0.0 else 1.0,
+            view_scale.y if view_scale.y > 0.0 else 1.0,
+        )
+        return pos.div_components(safe_scale) - camera

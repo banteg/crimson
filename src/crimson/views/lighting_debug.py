@@ -818,7 +818,7 @@ class LightingDebugView:
         w = float(self._light_rt.texture.width)
         h = float(self._light_rt.texture.height)
         _camera, view_scale = self._world.renderer._world_params()
-        scale = (view_scale.x + view_scale.y) * 0.5
+        scale = view_scale.avg_component()
 
         def occ_radius(size: float) -> float:
             r = float(size) * 0.5 * scale
@@ -1089,7 +1089,7 @@ class LightingDebugView:
             )
 
         _camera, view_scale = self._world.renderer._world_params()
-        scale = (view_scale.x + view_scale.y) * 0.5
+        scale = view_scale.avg_component()
 
         if self._draw_occluders:
             player_screen = self._world.world_to_screen(self._player.pos)
