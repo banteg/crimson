@@ -19,8 +19,7 @@ class SecondaryProjectileDrawCtx:
     renderer: WorldRenderer
     proj: object
     proj_type: int
-    sx: float
-    sy: float
+    screen_pos: Vec2
     angle: float
     scale: float
     alpha: float
@@ -71,8 +70,6 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
 
                 direction = Vec2.from_heading(float(ctx.angle))
 
-                sx = float(ctx.sx)
-                sy = float(ctx.sy)
                 scale = float(ctx.scale)
 
                 def _draw_rocket_fx(
@@ -85,10 +82,9 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     if fx_alpha <= 1e-3:
                         return
                     tint = renderer._color_from_rgba(rgba)
-                    fx_sx = sx - direction.x * offset * scale
-                    fx_sy = sy - direction.y * offset * scale
+                    fx_pos = ctx.screen_pos - direction * (offset * scale)
                     dst_size = float(size) * scale
-                    dst = rl.Rectangle(float(fx_sx), float(fx_sy), float(dst_size), float(dst_size))
+                    dst = rl.Rectangle(float(fx_pos.x), float(fx_pos.y), float(dst_size), float(dst_size))
                     origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
                     rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
@@ -109,8 +105,8 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
         texture,
         grid=4,
         frame=3,
-        x=float(ctx.sx),
-        y=float(ctx.sy),
+        x=float(ctx.screen_pos.x),
+        y=float(ctx.screen_pos.y),
         scale=sprite_scale,
         rotation_rad=float(ctx.angle),
         tint=base_tint,
@@ -122,8 +118,8 @@ def _draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
     if int(ctx.proj_type) != 4:
         return False
     rl.draw_circle(
-        int(ctx.sx),
-        int(ctx.sy),
+        int(ctx.screen_pos.x),
+        int(ctx.screen_pos.y),
         max(1.0, 12.0 * float(ctx.scale)),
         rl.Color(200, 120, 255, int(255 * float(ctx.alpha) + 0.5)),
     )
@@ -142,14 +138,12 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     if fade <= 1e-3 or det_scale <= 1e-6:
         return True
 
-    sx = float(ctx.sx)
-    sy = float(ctx.sy)
     scale = float(ctx.scale)
     if renderer.particles_texture is None:
         radius = det_scale * t * 80.0
         alpha_byte = int(clamp((1.0 - t) * 180.0 * float(ctx.alpha), 0.0, 255.0) + 0.5)
         color = rl.Color(255, 180, 100, alpha_byte)
-        rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
+        rl.draw_circle_lines(int(ctx.screen_pos.x), int(ctx.screen_pos.y), max(1.0, radius * scale), color)
         return True
 
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
@@ -178,7 +172,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         if dst_size <= 1e-3:
             return
         tint = renderer._color_from_rgba((1.0, 0.6, 0.1, a))
-        dst = rl.Rectangle(float(sx), float(sy), float(dst_size), float(dst_size))
+        dst = rl.Rectangle(float(ctx.screen_pos.x), float(ctx.screen_pos.y), float(dst_size), float(dst_size))
         origin = rl.Vector2(float(dst_size) * 0.5, float(dst_size) * 0.5)
         rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)
 

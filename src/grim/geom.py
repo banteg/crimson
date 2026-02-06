@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import Callable, TypeVar
 
 from .math import clamp
+
+TVector2 = TypeVar("TVector2")
 
 
 @dataclass(slots=True, frozen=True)
@@ -68,6 +71,11 @@ class Vec2:
 
     def perp_right(self) -> Vec2:
         return Vec2(self.y, -self.x)
+
+    def to_vector2(self, constructor: Callable[[float, float], TVector2]) -> TVector2:
+        """Build a target vector type (for example `pyray.Vector2`) from this Vec2."""
+
+        return constructor(self.x, self.y)
 
     def rotated(self, theta: float) -> Vec2:
         cos_theta = math.cos(theta)

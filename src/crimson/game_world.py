@@ -632,14 +632,14 @@ class GameWorld:
         if not self.players:
             return
 
-        screen_w, screen_h = self.renderer._camera_screen_size()
+        screen_size = self.renderer._camera_screen_size()
 
         alive = [player for player in self.players if player.health > 0.0]
         if alive:
             focus_x = sum(player.pos.x for player in alive) / float(len(alive))
             focus_y = sum(player.pos.y for player in alive) / float(len(alive))
-            cam_x = (screen_w * 0.5) - focus_x
-            cam_y = (screen_h * 0.5) - focus_y
+            cam_x = (screen_size.x * 0.5) - focus_x
+            cam_y = (screen_size.y * 0.5) - focus_y
         else:
             cam_x = self.camera_x
             cam_y = self.camera_y
@@ -647,7 +647,9 @@ class GameWorld:
         cam_x += self.state.camera_shake_offset.x
         cam_y += self.state.camera_shake_offset.y
 
-        self.camera_x, self.camera_y = self.renderer._clamp_camera(cam_x, cam_y, screen_w, screen_h)
+        clamped = self.renderer._clamp_camera(Vec2(cam_x, cam_y), screen_size)
+        self.camera_x = clamped.x
+        self.camera_y = clamped.y
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self.renderer.world_to_screen(pos)

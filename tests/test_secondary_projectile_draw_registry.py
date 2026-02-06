@@ -26,8 +26,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_type=1,
-        sx=0.0,
-        sy=0.0,
+        screen_pos=Vec2(0.0, 0.0),
         angle=0.0,
         scale=1.0,
         alpha=1.0,
@@ -43,8 +42,7 @@ def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_inval
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_type=1,
-        sx=0.0,
-        sy=0.0,
+        screen_pos=Vec2(0.0, 0.0),
         angle=0.0,
         scale=1.0,
         alpha=1.0,
@@ -66,8 +64,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch) -> N
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_type=4,
-        sx=10.0,
-        sy=20.0,
+        screen_pos=Vec2(10.0, 20.0),
         angle=0.0,
         scale=2.0,
         alpha=0.5,
@@ -90,8 +87,7 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
         renderer=renderer,  # type: ignore[arg-type]
         proj=proj,
         proj_type=3,
-        sx=10.0,
-        sy=20.0,
+        screen_pos=Vec2(10.0, 20.0),
         angle=0.0,
         scale=2.0,
         alpha=1.0,

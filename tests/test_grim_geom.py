@@ -137,3 +137,11 @@ def test_vec2_perpendicular_helpers() -> None:
 
     assert vec.perp_left() == Vec2(2.0, 3.0)
     assert vec.perp_right() == Vec2(-2.0, -3.0)
+
+
+def test_vec2_to_vector2_uses_constructor() -> None:
+    vec = Vec2(1.25, -4.5)
+
+    result = vec.to_vector2(lambda x, y: {"x": x, "y": y})
+
+    assert result == {"x": 1.25, "y": -4.5}
