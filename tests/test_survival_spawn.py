@@ -3,12 +3,13 @@ from __future__ import annotations
 import pytest
 
 from grim.rand import Crand
+from grim.geom import Vec2
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     rng = Crand(1)
-    c = build_survival_spawn_creature((1.0, 2.0), rng, player_experience=0)
+    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=0)
 
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags(0)
@@ -29,14 +30,14 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
 
 def test_survival_spawn_creature_xp_threshold_25000_consumes_extra_rand() -> None:
     rng_24999 = Crand(1)
-    c_24999 = build_survival_spawn_creature((1.0, 2.0), rng_24999, player_experience=24_999)
+    c_24999 = build_survival_spawn_creature(Vec2(1.0, 2.0), rng_24999, player_experience=24_999)
 
     assert c_24999.type_id == CreatureTypeId.SPIDER_SP1
     assert (c_24999.flags & CreatureFlags.AI7_LINK_TIMER) != 0
     assert rng_24999.state == 0xC1BBB05F
 
     rng_25000 = Crand(1)
-    c_25000 = build_survival_spawn_creature((1.0, 2.0), rng_25000, player_experience=25_000)
+    c_25000 = build_survival_spawn_creature(Vec2(1.0, 2.0), rng_25000, player_experience=25_000)
 
     assert c_25000.type_id == CreatureTypeId.SPIDER_SP1
     assert (c_25000.flags & CreatureFlags.AI7_LINK_TIMER) != 0
@@ -45,7 +46,7 @@ def test_survival_spawn_creature_xp_threshold_25000_consumes_extra_rand() -> Non
 
 def test_survival_spawn_creature_applies_zombie_speed_floor_and_health_scale() -> None:
     rng = Crand(1)
-    c = build_survival_spawn_creature((1.0, 2.0), rng, player_experience=90_000)
+    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=90_000)
 
     assert c.type_id == CreatureTypeId.ZOMBIE
     assert c.flags == CreatureFlags(0)
@@ -89,7 +90,7 @@ def test_survival_spawn_creature_rare_variants(
     expected_rng_state: int,
 ) -> None:
     rng = Crand(seed)
-    c = build_survival_spawn_creature((1.0, 2.0), rng, player_experience=0)
+    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=0)
 
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags(0)

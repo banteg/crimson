@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pyray as rl
 
@@ -79,7 +79,7 @@ class WorldRenderer:
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(self.camera, screen_size)
+        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
         scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
         scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
         return camera, Vec2(scale_x, scale_y)
@@ -1104,7 +1104,7 @@ class WorldRenderer:
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_size = self._camera_screen_size()
-        camera = self._clamp_camera(self.camera, screen_size)
+        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
         scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0

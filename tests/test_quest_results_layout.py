@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pyray as rl
+
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.quest_results import PANEL_SLIDE_START_MS, QuestResultsUi
 
@@ -81,7 +83,7 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
     texture_draws: list[object] = []
     _patch_draw_environment(monkeypatch, captured_text, texture_draws)
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     assert "State your name trooper!" in captured_text
     assert "Score" in captured_text
@@ -107,7 +109,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
         line_draws=line_draws,
     )
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     draw_map = {text: (x, y, color) for text, x, y, color in captured_draws}
 
@@ -136,7 +138,7 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_
     texture_draws: list[object] = []
     _patch_draw_environment(monkeypatch, captured_text, texture_draws)
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     assert "Score" in captured_text
     assert "Experience" in captured_text

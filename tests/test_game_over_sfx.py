@@ -30,7 +30,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
     monkeypatch.setattr("crimson.ui.game_over.button_update", lambda *args, **kwargs: False)  # noqa: ARG005
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.ui.game_over.rl.get_screen_height", lambda: 480)
-    monkeypatch.setattr("crimson.ui.game_over.rl.get_mouse_position", lambda: SimpleNamespace(x=0.0, y=0.0))
+    monkeypatch.setattr("crimson.ui.game_over.rl.get_mouse_position", lambda: rl.Vector2(0.0, 0.0))
     monkeypatch.setattr("crimson.ui.game_over.rl.is_mouse_button_pressed", lambda _button: False)
     monkeypatch.setattr("crimson.ui.game_over.rl.check_collision_point_rec", lambda _pos, _rect: False)
     monkeypatch.setattr("crimson.ui.game_over.rl.is_key_pressed", lambda _key: False)
@@ -41,7 +41,7 @@ def test_game_over_panel_open_plays_panel_click(monkeypatch, tmp_path: Path) -> 
         player_name_default="",
         play_sfx=_play_sfx,
         rand=lambda: 0,
-        mouse=SimpleNamespace(x=0.0, y=0.0),
+        mouse=rl.Vector2(0.0, 0.0),
     )
 
     assert played == ["sfx_ui_panelclick"]

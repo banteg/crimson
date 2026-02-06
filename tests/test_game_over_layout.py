@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pyray as rl
+
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
 
@@ -44,7 +46,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
         0.0,
         record=HighScoreRecord.blank(),
         player_name_default="",
-        mouse=SimpleNamespace(x=0.0, y=0.0),
+        mouse=rl.Vector2(0.0, 0.0),
     )
 
     # At 640x480: panel_left = -24, banner_x = panel_left + 214, first button x = banner_x + 52.
@@ -86,7 +88,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
         record=HighScoreRecord.blank(),
         banner_kind="reaper",
         hud_assets=None,
-        mouse=SimpleNamespace(x=0.0, y=0.0),
+        mouse=rl.Vector2(0.0, 0.0),
     )
 
     assert len(captured_panel) == 1
