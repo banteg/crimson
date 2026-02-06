@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Protocol, SupportsFloat
 
 from .math import clamp
 
@@ -11,10 +11,17 @@ if TYPE_CHECKING:
 
 
 class SupportsRGBA(Protocol):
-    r: float
-    g: float
-    b: float
-    a: float
+    @property
+    def r(self) -> SupportsFloat: ...
+
+    @property
+    def g(self) -> SupportsFloat: ...
+
+    @property
+    def b(self) -> SupportsFloat: ...
+
+    @property
+    def a(self) -> SupportsFloat: ...
 
 
 @dataclass(slots=True, frozen=True)
