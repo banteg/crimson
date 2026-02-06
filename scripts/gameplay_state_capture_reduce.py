@@ -664,6 +664,12 @@ def main() -> int:
         help="output markdown report path",
     )
     parser.add_argument(
+        "--sfx-candidates",
+        type=Path,
+        default=Path("analysis/frida/gameplay_state_capture_sfx_candidates.json"),
+        help="output JSON path for high-confidence SFX function->id candidates",
+    )
+    parser.add_argument(
         "--data-map",
         type=Path,
         default=Path("analysis/ghidra/maps/data_map.json"),
@@ -691,11 +697,15 @@ def main() -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.report.parent.mkdir(parents=True, exist_ok=True)
+    args.sfx_candidates.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     args.report.write_text(build_report(summary, args.top), encoding="utf-8")
+    sfx_candidates = (summary.get("sfx") or {}).get("high_confidence_function_ids") or []
+    args.sfx_candidates.write_text(json.dumps(sfx_candidates, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"wrote {args.out}")
     print(f"wrote {args.report}")
+    print(f"wrote {args.sfx_candidates}")
     return 0
 
 

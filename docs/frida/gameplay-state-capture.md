@@ -47,8 +47,14 @@ Reduce the capture into compact summaries:
 uv run scripts/gameplay_state_capture_reduce.py \
   --log artifacts/frida/share/gameplay_state_capture.jsonl \
   --out analysis/frida/gameplay_state_capture_summary.json \
-  --report analysis/frida/gameplay_state_capture_report.md --top 40
+  --report analysis/frida/gameplay_state_capture_report.md \
+  --sfx-candidates analysis/frida/gameplay_state_capture_sfx_candidates.json \
+  --top 40
 ```
+
+The reducer also emits `gameplay_state_capture_sfx_candidates.json` containing
+high-confidence `event|function -> id` mappings for promotion into
+`name_map.json` comments/docs.
 
 Recommended session:
 
