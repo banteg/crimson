@@ -2442,10 +2442,101 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f798",
+      "comment": "Texture handle for ui_cursor.jaz (loaded in load_textures_step stage 4).",
+      "name": "ui_cursor_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f79c",
+      "comment": "Texture handle for ui_aim.jaz reticle (loaded in load_textures_step stage 4).",
+      "name": "ui_aim_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a0",
+      "comment": "Texture handle for ui_textLevComp.jaz (quest complete HUD heading).",
+      "name": "ui_text_level_complete_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a4",
+      "comment": "Texture handle for ui_textQuest.jaz (quest HUD heading).",
+      "name": "ui_text_quest_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7a8",
+      "comment": "Texture handle for ui_num1.jaz (quest HUD digit texture).",
+      "name": "ui_digit_1_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7ac",
+      "comment": "Texture handle for ui_num2.jaz (quest HUD digit texture).",
+      "name": "ui_digit_2_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b0",
+      "comment": "Texture handle for ui_num3.jaz (quest HUD digit texture).",
+      "name": "ui_digit_3_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b4",
+      "comment": "Texture handle for ui_num4.jaz (quest HUD digit texture).",
+      "name": "ui_digit_4_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7b8",
+      "comment": "Texture handle for ui_num5.jaz (quest HUD digit texture).",
+      "name": "ui_digit_5_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7bc",
+      "comment": "Texture handle for ui_arrow.jaz (HUD arrow marker).",
+      "name": "ui_hud_arrow_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7c0",
+      "comment": "Texture handle for ui_indLife.jaz (HUD life bar fill).",
+      "name": "ui_hud_life_indicator_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7c4",
+      "comment": "Texture handle for ui_indPanel.jaz (HUD panel/frame quads).",
+      "name": "ui_hud_panel_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f7c8",
       "comment": "Texture handle for ui_clockTable.jaz.",
       "name": "ui_clock_table_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f7cc",
+      "comment": "Texture handle for ui_clockPointer.jaz (HUD timer hand).",
+      "name": "ui_clock_pointer_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f7d4",
@@ -2454,10 +2545,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f7d8",
+      "comment": "Texture handle for arrow.tga world marker used in player overlay render.",
+      "name": "world_arrow_marker_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f7dc",
       "comment": "Texture handle for bodyset atlas (fx_queue_render / corpse frame atlas).",
       "name": "bodyset_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f7e0",
+      "comment": "Texture handle for game_muzzleFlash.jaz used by muzzle flash effects.",
+      "name": "muzzle_flash_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f7e4",
@@ -2482,6 +2587,41 @@
       "comment": "Texture handle for bonuses atlas.",
       "name": "bonus_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f7f4",
+      "comment": "Texture handle for ui_itemTexts.jaz used by menu item counters/labels.",
+      "name": "ui_item_texts_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7f8",
+      "comment": "Texture handle for ui_textReaper.jaz used by menu layouts.",
+      "name": "ui_text_reaper_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f7fc",
+      "comment": "Texture handle for ui_textControls.jaz used by menu layouts.",
+      "name": "ui_text_controls_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f800",
+      "comment": "Texture handle for ui_textPickAPerk.jaz used by perk selection screen text.",
+      "name": "ui_text_pick_perk_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048f804",
+      "comment": "Texture handle for ui_textWellDone.jaz used by level completion text.",
+      "name": "ui_text_well_done_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048fba8",

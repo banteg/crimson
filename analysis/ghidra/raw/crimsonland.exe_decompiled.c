@@ -4270,7 +4270,7 @@ void perk_selection_screen_update(void)
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   w = 0x20;
   y = 0x80;
-  iVar2 = DAT_0048f800;
+  iVar2 = ui_text_pick_perk_texture;
   lVar4 = __ftol();
   x = (int)lVar4;
   lVar4 = __ftol();
@@ -4464,7 +4464,7 @@ void ui_draw_clock_gauge(void)
   (*grim_interface_ptr->vtable->grim_draw_quad)((float)iStack_10,(float)unaff_EDI,32.0,32.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_set_rotation)((float)(iVar1 / 1000) * 0.10471976);
   (*grim_interface_ptr->vtable->grim_draw_quad)((float)iStack_10,(float)unaff_EDI,32.0,32.0);
@@ -6698,7 +6698,7 @@ void ui_render_aim_indicators(void)
            (config_blob.reserved0[render_overlay_player_index + 4] != '\0')) {
           (*grim_interface_ptr->vtable->grim_set_rotation)
                     ((&player_state_table)[render_overlay_player_index].heading);
-          (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7d8,0);
+          (*grim_interface_ptr->vtable->grim_bind_texture)(world_arrow_marker_texture,0);
           (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
           if (config_blob.reserved0._20_4_ == 2) {
             if (render_overlay_player_index == 0) {
@@ -9611,7 +9611,7 @@ void game_over_screen_update(void)
   w = 0x40;
   local_18 = (_DAT_0048cc50 + local_10 + 44.0) - 10.0;
   y = 0x100;
-  iVar3 = DAT_0048f7f8;
+  iVar3 = ui_text_reaper_texture;
   local_14 = fVar2;
   local_c = fVar2;
   local_8 = local_18;
@@ -9897,7 +9897,7 @@ void quest_failed_screen_update(void)
   w = 0x40;
   local_18 = (_DAT_0048dbc8 + local_10 + 44.0) - 10.0;
   y = 0x100;
-  iVar2 = DAT_0048f7f8;
+  iVar2 = ui_text_reaper_texture;
   local_14 = fVar1;
   local_c = fVar1;
   local_8 = local_18;
@@ -10102,7 +10102,7 @@ void quest_results_screen_update(void)
   local_18 = DAT_0048dbfc + _DAT_0048dbd8 + 180.0;
   local_14 = local_4 + 40.0;
   local_10 = local_18 + _DAT_0048dbc8 + 40.0;
-  iVar4 = DAT_0048f804;
+  iVar4 = ui_text_well_done_texture;
   local_c = local_14;
   lVar14 = __ftol();
   iVar8 = (int)lVar14;
@@ -14691,7 +14691,7 @@ void ui_cursor_render(void)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f798,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_cursor_texture,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -14732,7 +14732,7 @@ void ui_render_aim_enhancement(void)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f79c,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_aim_texture,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)
             (1.0,1.0,1.0,*(float *)((int)cv_aimEnhancementFade + 0xc));
@@ -14943,7 +14943,7 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
       return;
     }
     if (*(float *)((int)cv_uiSmallIndicators + 0xc) == 0.0) {
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
       (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_0000000c * 0.7);
@@ -14953,7 +14953,7 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
       (*grim_interface_ptr->vtable->grim_end_batch)();
     }
     else {
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
       (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_0000000c * 0.7);
@@ -15195,7 +15195,7 @@ void ui_render_hud(void)
   }
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   if (DAT_004871b0 != '\0') {
-    (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048f7c0,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_life_indicator_texture,0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     if (config_blob.reserved0._20_4_ == 1) {
       fVar14 = 16.0;
@@ -15313,7 +15313,7 @@ void ui_render_hud(void)
   value = 0x4e;
   if (DAT_004871b3 != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
@@ -15335,7 +15335,7 @@ void ui_render_hud(void)
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_ffffff8c * 0.9);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_rotation)
@@ -15446,7 +15446,7 @@ LAB_0041bdf8:
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
       fVar21 = (float)quest_transition_timer_ms * 0.0004 * 0.13 + 0.95;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)puVar12 * in_stack_ffffff8c);
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7a0,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(ui_text_level_complete_texture,0);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       (*grim_interface_ptr->vtable->grim_draw_quad)
                 ((float)(config_blob.screen_width / 2) - fVar21 * 128.0,
@@ -15468,7 +15468,7 @@ LAB_0041bdf8:
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar21);
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_pointer_texture,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_rotation)
@@ -15484,7 +15484,7 @@ LAB_0041bdf8:
                (int)highscore_active_record.survival_elapsed_ms / 1000);
   }
   if (DAT_004871b2 == '\0') goto LAB_0041c783;
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,a);
@@ -15581,7 +15581,7 @@ LAB_0041c783:
         }
         fVar21 = fVar21 * in_stack_ffffff8c;
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar21 * 0.8);
-        (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+        (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
         (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
         (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -22498,7 +22498,7 @@ void player_render_overlays(void)
       fcos(fVar6);
       fsin(fVar6);
       fVar14 = 6.113207e-39;
-      (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7e0,0);
+      (*grim_interface_ptr->vtable->grim_bind_texture)(muzzle_flash_texture,0);
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,2);
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -23426,7 +23426,7 @@ int load_textures_step(void)
     in_EDX = extraout_EDX;
   }
   if (startup_texture_load_stage == 1) {
-    DAT_0048f7d8 = texture_get_or_load(s_arrow_00474554,s_load_arrow_tga_0047455c);
+    world_arrow_marker_texture = texture_get_or_load(s_arrow_00474554,s_load_arrow_tga_0047455c);
     texture_get_or_load(s_bullet_i_00474534,s_load_bullet16_tga_00474540);
     bullet_trail_texture =
          texture_get_or_load(s_bulletTrail_00474510,s_load_bulletTrail_tga_0047451c);
@@ -23460,14 +23460,15 @@ int load_textures_step(void)
   }
   if (startup_texture_load_stage == 4) {
     pcVar1 = s_ui_ui_indLife_jaz_004743b0;
-    DAT_0048f7c0 = texture_get_or_load_alt(s_ui_ui_indLife_jaz_004743b0,unaff_retaddr);
+    ui_hud_life_indicator_texture =
+         texture_get_or_load_alt(s_ui_ui_indLife_jaz_004743b0,unaff_retaddr);
     pcVar2 = s_ui_ui_indPanel_jaz_0047439c;
-    DAT_0048f7c4 = texture_get_or_load_alt(s_ui_ui_indPanel_jaz_0047439c,pcVar1);
+    ui_hud_panel_texture = texture_get_or_load_alt(s_ui_ui_indPanel_jaz_0047439c,pcVar1);
     pcVar1 = s_ui_ui_arrow_jaz_0047438c;
-    DAT_0048f7bc = texture_get_or_load_alt(s_ui_ui_arrow_jaz_0047438c,pcVar2);
+    ui_hud_arrow_texture = texture_get_or_load_alt(s_ui_ui_arrow_jaz_0047438c,pcVar2);
     pcVar2 = s_ui_ui_cursor_jaz_00474378;
-    DAT_0048f798 = texture_get_or_load_alt(s_ui_ui_cursor_jaz_00474378,pcVar1);
-    DAT_0048f79c = texture_get_or_load_alt(s_ui_ui_aim_jaz_00474368,pcVar2);
+    ui_cursor_texture = texture_get_or_load_alt(s_ui_ui_cursor_jaz_00474378,pcVar1);
+    ui_aim_texture = texture_get_or_load_alt(s_ui_ui_aim_jaz_00474368,pcVar2);
     in_EDX = extraout_EDX_03;
   }
   if (startup_texture_load_stage == 5) {
@@ -23504,18 +23505,19 @@ int load_textures_step(void)
   }
   if (startup_texture_load_stage == 6) {
     pcVar1 = s_ui_ui_textLevComp_jaz_00474270;
-    DAT_0048f7a0 = texture_get_or_load_alt(s_ui_ui_textLevComp_jaz_00474270,unaff_retaddr);
+    ui_text_level_complete_texture =
+         texture_get_or_load_alt(s_ui_ui_textLevComp_jaz_00474270,unaff_retaddr);
     pcVar2 = s_ui_ui_textQuest_jaz_0047425c;
-    DAT_0048f7a4 = texture_get_or_load_alt(s_ui_ui_textQuest_jaz_0047425c,pcVar1);
+    ui_text_quest_texture = texture_get_or_load_alt(s_ui_ui_textQuest_jaz_0047425c,pcVar1);
     pcVar1 = s_ui_ui_num1_jaz_0047424c;
-    DAT_0048f7a8 = texture_get_or_load_alt(s_ui_ui_num1_jaz_0047424c,pcVar2);
+    ui_digit_1_texture = texture_get_or_load_alt(s_ui_ui_num1_jaz_0047424c,pcVar2);
     pcVar2 = s_ui_ui_num2_jaz_0047423c;
-    DAT_0048f7ac = texture_get_or_load_alt(s_ui_ui_num2_jaz_0047423c,pcVar1);
+    ui_digit_2_texture = texture_get_or_load_alt(s_ui_ui_num2_jaz_0047423c,pcVar1);
     pcVar1 = s_ui_ui_num3_jaz_0047422c;
-    _DAT_0048f7b0 = texture_get_or_load_alt(s_ui_ui_num3_jaz_0047422c,pcVar2);
+    ui_digit_3_texture = texture_get_or_load_alt(s_ui_ui_num3_jaz_0047422c,pcVar2);
     pcVar2 = s_ui_ui_num4_jaz_0047421c;
-    DAT_0048f7b4 = texture_get_or_load_alt(s_ui_ui_num4_jaz_0047421c,pcVar1);
-    _DAT_0048f7b8 = texture_get_or_load_alt(s_ui_ui_num5_jaz_0047420c,pcVar2);
+    ui_digit_4_texture = texture_get_or_load_alt(s_ui_ui_num4_jaz_0047421c,pcVar1);
+    ui_digit_5_texture = texture_get_or_load_alt(s_ui_ui_num5_jaz_0047420c,pcVar2);
     in_EDX = extraout_EDX_06;
   }
   if (startup_texture_load_stage == 7) {
@@ -23525,12 +23527,12 @@ int load_textures_step(void)
     texture_get_or_load(s_iHeart_0047388c,s_ui_ui_lifeHeart_jaz_004741c4);
     pcVar2 = s_ui_ui_clockTable_jaz_004741ac;
     ui_clock_table_texture = texture_get_or_load_alt(s_ui_ui_clockTable_jaz_004741ac,pcVar1);
-    DAT_0048f7cc = texture_get_or_load_alt(s_ui_ui_clockPointer_jaz_00474194,pcVar2);
+    ui_clock_pointer_texture = texture_get_or_load_alt(s_ui_ui_clockPointer_jaz_00474194,pcVar2);
     in_EDX = extraout_EDX_07;
   }
   _iVar3 = CONCAT44(in_EDX,terrain_render_target);
   if (startup_texture_load_stage == 8) {
-    DAT_0048f7e0 = texture_get_or_load_alt(s_game_muzzleFlash_jaz_0047417c,unaff_retaddr);
+    muzzle_flash_texture = texture_get_or_load_alt(s_game_muzzleFlash_jaz_0047417c,unaff_retaddr);
     texture_get_or_load(s_ui_dropOn_00474158,s_ui_ui_dropDownOn_jaz_00474164);
     texture_get_or_load(s_ui_dropOff_00474134,s_ui_ui_dropDownOff_jaz_00474140);
     _iVar3 = CONCAT44(extraout_EDX_08,terrain_render_target);
@@ -37692,7 +37694,7 @@ LAB_00445905:
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   fVar13 = 2.94273e-44;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(ui_hud_panel_texture,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
@@ -37967,7 +37969,7 @@ void __cdecl game_state_set(int state_id)
         if (iVar3 == 6) {
           state_id = 6;
         }
-        (&ui_element_table_end)[iVar3]->counter_id = DAT_0048f7f4;
+        (&ui_element_table_end)[iVar3]->counter_id = ui_item_texts_texture;
         puVar6 = (&ui_element_table_end)[iVar3];
         puVar6->_pad4[0x14] = '\0';
         puVar6->_pad4[0x15] = '\0';
@@ -37994,7 +37996,7 @@ void __cdecl game_state_set(int state_id)
         puVar6->_pad4[0x6b] = '\0';
       }
       else {
-        (&ui_element_table_end)[iVar3]->counter_id = DAT_0048f7f4;
+        (&ui_element_table_end)[iVar3]->counter_id = ui_item_texts_texture;
         puVar6 = (&ui_element_table_end)[iVar3];
         puVar6->_pad4[0x14] = '\0';
         puVar6->_pad4[0x15] = '\0';
@@ -38983,14 +38985,14 @@ void ui_menu_layout_init(void)
     _DAT_004872ac = 0x42700000;
   }
   pcVar14 = s_ui_ui_itemTexts_jaz_00479318;
-  DAT_0048f7f4 = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
+  ui_item_texts_texture = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
   pcVar1 = s_ui_ui_textReaper_jaz_00479300;
-  DAT_0048f7f8 = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
+  ui_text_reaper_texture = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
   pcVar14 = s_ui_ui_textControls_jaz_004792e8;
-  DAT_0048f7fc = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar1);
+  ui_text_controls_texture = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar1);
   pcVar1 = s_ui_ui_textPickAPerk_jaz_004792d0;
-  DAT_0048f800 = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
-  DAT_0048f804 = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar1);
+  ui_text_pick_perk_texture = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
+  ui_text_well_done_texture = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar1);
   puVar3 = &ui_menu_item_element;
   puVar12 = &DAT_00488244;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
@@ -39098,7 +39100,7 @@ void ui_menu_layout_init(void)
         iVar7 = 6;
         iVar15 = 6;
       }
-      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
+      (&ui_element_table_end)[iVar8]->counter_id = ui_item_texts_texture;
       puVar3 = (&ui_element_table_end)[iVar8];
       puVar3->_pad4[0x14] = '\0';
       puVar3->_pad4[0x15] = '\0';
@@ -39125,7 +39127,7 @@ void ui_menu_layout_init(void)
       puVar3->_pad4[0x6b] = '\0';
     }
     else {
-      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
+      (&ui_element_table_end)[iVar8]->counter_id = ui_item_texts_texture;
       puVar3 = (&ui_element_table_end)[iVar8];
       puVar3->_pad4[0x14] = '\0';
       puVar3->_pad4[0x15] = '\0';
@@ -39253,7 +39255,7 @@ void ui_menu_layout_init(void)
   fStack_30 = 270.0;
   fStack_2c = -38.0;
   ui_element_set_rect((ui_element_t *)&DAT_00488f8c,124.0,30.0,&fStack_30);
-  _DAT_0048906c = DAT_0048f7f4;
+  _DAT_0048906c = ui_item_texts_texture;
   _DAT_00488fa0 = 0;
   _DAT_00488fa4 = 0x3f600000;
   _DAT_00488fc0 = 0x3f600000;

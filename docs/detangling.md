@@ -1390,3 +1390,12 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: clears runtime fields in the `sfx_entry_*` layout (`+0x74/+0x78/+0x7c/+0x80` stream offsets,
     voice pointer slab at `+0x24..+0x60`, and default scalar at `+0x20`), matching the same fields used by
     `sfx_entry_seek`, `sfx_release_entry`, and `music_stream_update`.
+
+### HUD/menu texture handle globals (high confidence)
+
+- Labeled `DAT_0048f798..DAT_0048f804` as UI/HUD texture handles loaded by `load_textures_step` and reused by
+  `ui_menu_layout_init`/HUD render paths.
+  - Examples: `ui_cursor_texture`, `ui_aim_texture`, `ui_hud_panel_texture`, `ui_clock_pointer_texture`,
+    `ui_item_texts_texture`, `ui_text_pick_perk_texture`.
+  - Evidence: direct `texture_get_or_load(_alt)` assignments in `load_textures_step` plus `grim_bind_texture`
+    callsites in overlay/menu rendering.
