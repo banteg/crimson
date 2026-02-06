@@ -27,6 +27,7 @@ def draw_classic_menu_panel(
     dst: rl.Rectangle,
     tint: rl.Color = rl.WHITE,
     shadow: bool = False,
+    flip_x: bool = False,
 ) -> None:
     """
     Draw a classic menu panel (ui_menuPanel) with the same slicing behavior as the original.
@@ -55,8 +56,13 @@ def draw_classic_menu_panel(
 
     origin = rl.Vector2(0.0, 0.0)
 
+    def _src(rect: rl.Rectangle) -> rl.Rectangle:
+        if not flip_x:
+            return rect
+        return rl.Rectangle(rect.x + rect.width, rect.y, -rect.width, rect.height)
+
     if mid_h <= 0.0:
-        src = rl.Rectangle(src_x, src_y, src_w, src_h)
+        src = _src(rl.Rectangle(src_x, src_y, src_w, src_h))
         if shadow:
             draw_ui_quad_shadow(
                 texture=texture,
@@ -74,9 +80,11 @@ def draw_classic_menu_panel(
         return
 
     # Source slice rects (in texture pixels, with 1px inset).
-    src_top = rl.Rectangle(src_x, src_y, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y1 - inset))
-    src_mid = rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1))
-    src_bot = rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2))
+    src_top = _src(rl.Rectangle(src_x, src_y, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y1 - inset)))
+    src_mid = _src(
+        rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1))
+    )
+    src_bot = _src(rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2)))
 
     # Destination slices.
     dst_top = rl.Rectangle(float(dst.x), float(dst.y), float(dst.width), float(top_h))
@@ -124,4 +132,3 @@ def draw_classic_menu_panel(
     rl.draw_texture_pro(texture, src_top, dst_top, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_mid, dst_mid, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
-

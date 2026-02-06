@@ -2111,6 +2111,7 @@ class HighScoresView:
             dst=rl.Rectangle(right_x0, right_y0, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
+            flip_x=True,
         )
 
         title = "High scores - Quests" if int(mode_id) == 3 else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
