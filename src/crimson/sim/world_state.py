@@ -207,12 +207,11 @@ class WorldState:
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
 
-        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position
-        # (`player_state_table.aim_x/aim_y`). Our aim is otherwise updated inside `player_update`, so stage it here.
+        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position.
+        # Our aim is otherwise updated inside `player_update`, so stage it here.
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player.aim_x = float(input_state.aim_x)
-            player.aim_y = float(input_state.aim_y)
+            player.aim = Vec2(input_state.aim_x, input_state.aim_y)
 
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")

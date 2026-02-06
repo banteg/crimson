@@ -76,8 +76,7 @@ class PlayerState:
     death_timer: float = 16.0
     low_health_timer: float = 100.0
 
-    aim_x: float = 0.0
-    aim_y: float = 0.0
+    aim: Vec2 = field(default_factory=Vec2)
     aim_heading: float = 0.0
     aim_dir_x: float = 1.0
     aim_dir_y: float = 0.0
@@ -526,7 +525,7 @@ class BonusPool:
 def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
     """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
 
-    aim_pos = Vec2(player.aim_x, player.aim_y)
+    aim_pos = player.aim
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
@@ -642,7 +641,7 @@ class _PerksUpdateEffectsCtx:
         ):
             target = _creature_find_in_radius(
                 self.creatures,
-                pos=Vec2(self.players[0].aim_x, self.players[0].aim_y),
+                pos=self.players[0].aim,
                 radius=12.0,
                 start_index=0,
             )
@@ -1893,16 +1892,13 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     muzzle_x = muzzle.x
     muzzle_y = muzzle.y
 
-    aim_x = float(player.aim_x)
-    aim_y = float(player.aim_y)
-    dx = aim_x - player.pos.x
-    dy = aim_y - player.pos.y
-    dist = math.hypot(dx, dy)
+    aim = player.aim
+    dist = (aim - player.pos).length()
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
+    jitter = aim + Vec2.from_angle(dir_angle) * offset
     angle = (jitter - player.pos).to_heading()
     _projectile_spawn(
         state,
@@ -2050,11 +2046,9 @@ def player_fire_weapon(
         shot_cooldown *= 1.05
     player.shot_cooldown = max(0.0, shot_cooldown)
 
-    aim_x = float(input_state.aim_x)
-    aim_y = float(input_state.aim_y)
-    dx = aim_x - player.pos.x
-    dy = aim_y - player.pos.y
-    aim_heading = Vec2(dx, dy).to_heading()
+    aim = Vec2(input_state.aim_x, input_state.aim_y)
+    aim_delta = aim - player.pos
+    aim_heading = aim_delta.to_heading()
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     muzzle_x = muzzle.x
@@ -2067,12 +2061,12 @@ def player_fire_weapon(
         detail_preset=int(detail_preset),
     )
 
-    dist = math.hypot(dx, dy)
+    dist = aim_delta.length()
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    aim_jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
+    aim_jitter = aim + Vec2.from_angle(dir_angle) * offset
     shot_angle = (aim_jitter - player.pos).to_heading()
     particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
@@ -2121,7 +2115,7 @@ def player_fire_weapon(
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
             owner_id=owner_id,
-            target_hint=Vec2(float(aim_x), float(aim_y)),
+            target_hint=aim,
         )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
@@ -2134,7 +2128,7 @@ def player_fire_weapon(
                 angle=angle,
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
                 owner_id=owner_id,
-                target_hint=Vec2(float(aim_x), float(aim_y)),
+                target_hint=aim,
             )
             angle += step
         ammo_cost = float(rocket_count)
@@ -2320,11 +2314,8 @@ def player_update(
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
     # Aim: compute direction from (player -> aim point).
-    player.aim_x = float(input_state.aim_x)
-    player.aim_y = float(input_state.aim_y)
-    aim_dx = player.aim_x - player.pos.x
-    aim_dy = player.aim_y - player.pos.y
-    aim_dir = Vec2(aim_dx, aim_dy).normalized()
+    player.aim = Vec2(input_state.aim_x, input_state.aim_y)
+    aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
         player.aim_dir_x = aim_dir.x
         player.aim_dir_y = aim_dir.y

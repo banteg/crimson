@@ -468,7 +468,7 @@ class DemoView:
             player = self._world.players[idx]
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
-            player.aim_x, player.aim_y = pos.x, pos.y
+            player.aim = pos
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
@@ -711,7 +711,7 @@ class DemoView:
                     target = candidate
 
             # Aim: ease the aim point toward the target.
-            aim = Vec2(float(player.aim_x), float(player.aim_y))
+            aim = player.aim
             auto_fire = False
             if target is not None:
                 target_pos = target.pos

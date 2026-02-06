@@ -254,8 +254,8 @@ class WorldRenderer:
             if not label:
                 continue
 
-            aim_x = float(getattr(player, "aim_x", player.pos.x))
-            aim_y = float(getattr(player, "aim_y", player.pos.y))
+            aim_x = float(player.aim.x)
+            aim_y = float(player.aim.y)
             x = (aim_x + cam_x) * scale_x + 16.0
             y = (aim_y + cam_y) * scale_y - 7.0
 
@@ -1452,8 +1452,8 @@ class WorldRenderer:
                 for player in self.players:
                     if player.health <= 0.0:
                         continue
-                    aim_x = float(getattr(player, "aim_x", player.pos.x))
-                    aim_y = float(getattr(player, "aim_y", player.pos.y))
+                    aim_x = float(player.aim.x)
+                    aim_y = float(player.aim.y)
                     dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
                     radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
                     sx = (aim_x + cam_x) * scale_x

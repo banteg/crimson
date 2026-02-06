@@ -339,8 +339,8 @@ class ProjectileRenderDebugView:
                 rl.draw_circle(int(px), int(py), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
 
         if player is not None and player.health > 0.0:
-            aim_x = float(getattr(player, "aim_x", player.pos.x))
-            aim_y = float(getattr(player, "aim_y", player.pos.y))
+            aim_x = float(player.aim.x)
+            aim_y = float(player.aim.y)
             dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
             radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
             screen_radius = max(1.0, radius * scale)

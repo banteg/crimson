@@ -11,7 +11,6 @@ from grim.audio import AudioState, update_audio
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -124,10 +123,7 @@ class BaseGameplayMode:
 
         target_idx = _creature_find_in_radius(
             creatures,
-            pos=Vec2(
-                float(getattr(self._player, "aim_x", 0.0)),
-                float(getattr(self._player, "aim_y", 0.0)),
-            ),
+            pos=self._player.aim,
             radius=12.0,
             start_index=0,
         )

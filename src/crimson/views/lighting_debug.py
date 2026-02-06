@@ -592,8 +592,7 @@ class LightingDebugView:
 
         aim_x, aim_y = self._world.screen_to_world(self._ui_mouse_x, self._ui_mouse_y)
         if self._player is not None:
-            self._player.aim_x = float(aim_x)
-            self._player.aim_y = float(aim_y)
+            self._player.aim = Vec2(aim_x, aim_y)
 
         move_x = 0.0
         move_y = 0.0

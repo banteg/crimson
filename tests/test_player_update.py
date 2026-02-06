@@ -258,8 +258,7 @@ def test_player_update_tracks_aim_point() -> None:
 
     player_update(player, input_state, 0.1, state)
 
-    assert player.aim_x == 123.0
-    assert player.aim_y == 456.0
+    assert player.aim == Vec2(123.0, 456.0)
 
 
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:

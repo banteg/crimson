@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 import pyray as rl
 
 from grim.config import ensure_crimson_cfg
@@ -141,8 +139,7 @@ class AimDebugView:
 
         aim_x, aim_y = self._world.screen_to_world(self._ui_mouse_x, self._ui_mouse_y)
         if self._player is not None:
-            self._player.aim_x = float(aim_x)
-            self._player.aim_y = float(aim_y)
+            self._player.aim = Vec2(aim_x, aim_y)
             if self._force_heat:
                 self._player.spread_heat = float(self._forced_heat)
 
@@ -200,12 +197,13 @@ class AimDebugView:
         mouse_back_x, mouse_back_y = self._world.world_to_screen(float(mouse_world_x), float(mouse_world_y))
 
         if self._draw_expected_overlay and self._player is not None:
-            dist = math.hypot(float(self._player.aim_x) - float(self._player.pos.x), float(self._player.aim_y) - float(self._player.pos.y))
+            aim_pos = self._player.aim
+            dist = (aim_pos - self._player.pos).length()
             radius = max(6.0, dist * float(self._player.spread_heat) * 0.5)
             cam_x, cam_y, scale_x, scale_y = self._world._world_params()
             scale = (scale_x + scale_y) * 0.5
             screen_radius = max(1.0, radius * scale)
-            aim_screen_x, aim_screen_y = self._world.world_to_screen(float(self._player.aim_x), float(self._player.aim_y))
+            aim_screen_x, aim_screen_y = self._world.world_to_screen(float(aim_pos.x), float(aim_pos.y))
 
             rl.draw_circle_lines(
                 int(aim_screen_x),
@@ -232,7 +230,7 @@ class AimDebugView:
                     f"world=({mouse_world_x:.1f},{mouse_world_y:.1f}) -> "
                     f"screen=({mouse_back_x:.1f},{mouse_back_y:.1f})"
                 ),
-                f"player_aim_world=({float(self._player.aim_x):.1f},{float(self._player.aim_y):.1f})  "
+                f"player_aim_world=({float(aim_pos.x):.1f},{float(aim_pos.y):.1f})  "
                 f"player_aim_screen=({aim_screen_x:.1f},{aim_screen_y:.1f})",
                 f"player=({float(self._player.pos.x):.1f},{float(self._player.pos.y):.1f})  dist={dist:.1f}",
                 f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",

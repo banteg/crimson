@@ -24,8 +24,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
 
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
-    player.aim_x = 100.0
-    player.aim_y = 200.0
+    player.aim = Vec2(100.0, 200.0)
 
     creature = CreatureState()
     creature.active = True
@@ -44,4 +43,3 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     assert len(particles) == 5
     intensities = [entry.intensity for entry in particles]
     assert all(math.isclose(actual, expected, abs_tol=1e-9) for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)))
-
