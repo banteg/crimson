@@ -37472,8 +37472,8 @@ void unlocked_weapons_database_update(void)
     }
     puVar4 = puVar4 + 0x1f;
   } while ((int)puVar4 < 0x4d992c);
-  if ((DAT_004ccc51 & 1) == 0) {
-    DAT_004ccc51 = DAT_004ccc51 | 1;
+  if ((unlocked_weapons_database_init_flags & 1U) == 0) {
+    unlocked_weapons_database_init_flags = unlocked_weapons_database_init_flags | 1;
     _DAT_004ccc68 = 0;
     _DAT_004ccc6c = 0;
     crt_atexit(&DAT_00440950);
@@ -37496,8 +37496,8 @@ void unlocked_weapons_database_update(void)
       fVar12 = -NAN;
     } while ((int)pcVar5 < 0x4d996c);
   }
-  if ((DAT_004ccc51 & 2) == 0) {
-    DAT_004ccc51 = DAT_004ccc51 | 2;
+  if ((unlocked_weapons_database_init_flags & 2U) == 0) {
+    unlocked_weapons_database_init_flags = unlocked_weapons_database_init_flags | 2;
     DAT_004cc8e6 = 1;
     DAT_004cc8f5 = 0;
     DAT_004cc8f4 = 0;
@@ -37655,8 +37655,8 @@ void unlocked_perks_database_update(void)
     }
     ppVar3 = ppVar3 + 1;
   } while ((int)ppVar3 < 0x4c3640);
-  if ((DAT_004ccc50 & 1) == 0) {
-    DAT_004ccc50 = DAT_004ccc50 | 1;
+  if ((unlocked_perks_database_init_flags & 1U) == 0) {
+    unlocked_perks_database_init_flags = unlocked_perks_database_init_flags | 1;
     _DAT_004ccba8 = 0;
     _DAT_004ccbac = 0;
     crt_atexit(&DAT_00441190);
@@ -37680,8 +37680,8 @@ void unlocked_perks_database_update(void)
       fVar10 = -NAN;
     } while ((int)piVar4 < 0x4c364c);
   }
-  if ((DAT_004ccc50 & 2) == 0) {
-    DAT_004ccc50 = DAT_004ccc50 | 2;
+  if ((unlocked_perks_database_init_flags & 2U) == 0) {
+    unlocked_perks_database_init_flags = unlocked_perks_database_init_flags | 2;
     DAT_004ccb86 = 1;
     DAT_004ccb95 = 0;
     DAT_004ccb94 = 0;
@@ -41354,46 +41354,46 @@ void options_menu_update(void)
     options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 2;
     DAT_004d7804 = 1;
     DAT_004d7805 = 0;
-    _DAT_004d77f8 = 0;
-    _DAT_004d77fc = 10;
-    _DAT_004d7800 = 0;
+    options_sfx_volume_slider_value = 0;
+    options_sfx_volume_slider_max = 10;
+    options_sfx_volume_slider_min = 0;
     crt_atexit(&DAT_00447c70);
   }
   lVar7 = __ftol();
-  _DAT_004d77f8 = (int)lVar7;
-  ui_segmented_slider_update((float *)&stack0xffffffd0,(int *)&DAT_004d77f8);
-  _config_sfx_volume = (float)_DAT_004d77f8 * 0.1;
+  options_sfx_volume_slider_value = (int)lVar7;
+  ui_segmented_slider_update((float *)&stack0xffffffd0,&options_sfx_volume_slider_value);
+  _config_sfx_volume = (float)options_sfx_volume_slider_value * 0.1;
   if (((byte)options_menu_init_flags & 4) == 0) {
     options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 4;
     DAT_004d75f4 = 1;
     DAT_004d75f5 = 0;
-    _DAT_004d75e8 = 0;
-    _DAT_004d75ec = 10;
-    _DAT_004d75f0 = 0;
+    options_music_volume_slider_value = 0;
+    options_music_volume_slider_max = 10;
+    options_music_volume_slider_min = 0;
     crt_atexit(&DAT_00447c60);
   }
   lVar7 = __ftol();
-  _DAT_004d75e8 = (int)lVar7;
-  ui_segmented_slider_update((float *)&stack0xffffffd0,(int *)&DAT_004d75e8);
-  _config_music_volume = (float)_DAT_004d75e8 * 0.1;
+  options_music_volume_slider_value = (int)lVar7;
+  ui_segmented_slider_update((float *)&stack0xffffffd0,&options_music_volume_slider_value);
+  _config_music_volume = (float)options_music_volume_slider_value * 0.1;
   if (((byte)options_menu_init_flags & 8) == 0) {
     options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 8;
     DAT_004d759c = 1;
     DAT_004d759d = 0;
-    DAT_004d7590 = 0;
-    _DAT_004d7594 = 10;
-    _DAT_004d7598 = 0;
+    options_graphics_detail_slider_value = 0;
+    options_graphics_detail_slider_max = 10;
+    options_graphics_detail_slider_min = 0;
     crt_atexit(&DAT_00447c50);
   }
-  _DAT_004d7594 = 5;
-  _DAT_004d7598 = 1;
-  DAT_004d7590 = _config_detail_preset;
-  ui_segmented_slider_update((float *)&stack0xffffffd0,&DAT_004d7590);
-  _config_detail_preset = DAT_004d7590;
-  if (DAT_004d7590 < 1) {
+  options_graphics_detail_slider_max = 5;
+  options_graphics_detail_slider_min = 1;
+  options_graphics_detail_slider_value = _config_detail_preset;
+  ui_segmented_slider_update((float *)&stack0xffffffd0,&options_graphics_detail_slider_value);
+  _config_detail_preset = options_graphics_detail_slider_value;
+  if (options_graphics_detail_slider_value < 1) {
     _config_detail_preset = 1;
   }
-  else if (5 < DAT_004d7590) {
+  else if (5 < options_graphics_detail_slider_value) {
     _config_detail_preset = 5;
   }
   config_apply_detail_preset();
@@ -41401,17 +41401,17 @@ void options_menu_update(void)
     options_menu_init_flags._0_1_ = (byte)options_menu_init_flags | 0x10;
     DAT_004d768c = 1;
     DAT_004d768d = 0;
-    _DAT_004d7680 = 0;
-    _DAT_004d7684 = 10;
-    _DAT_004d7688 = 0;
+    options_mouse_sensitivity_slider_value = 0;
+    options_mouse_sensitivity_slider_max = 10;
+    options_mouse_sensitivity_slider_min = 0;
     crt_atexit(&DAT_00447c40);
   }
-  _DAT_004d7684 = 10;
-  _DAT_004d7688 = 1;
+  options_mouse_sensitivity_slider_max = 10;
+  options_mouse_sensitivity_slider_min = 1;
   lVar7 = __ftol();
-  _DAT_004d7680 = (int)lVar7;
-  ui_segmented_slider_update((float *)&stack0xffffffd0,(int *)&DAT_004d7680);
-  config_mouse_sensitivity = (float)_DAT_004d7680 * 0.1;
+  options_mouse_sensitivity_slider_value = (int)lVar7;
+  ui_segmented_slider_update((float *)&stack0xffffffd0,&options_mouse_sensitivity_slider_value);
+  config_mouse_sensitivity = (float)options_mouse_sensitivity_slider_value * 0.1;
   if (0.1 <= config_mouse_sensitivity) {
     if (1.0 < config_mouse_sensitivity) {
       config_mouse_sensitivity = 1.0;

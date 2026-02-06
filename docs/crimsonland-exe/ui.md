@@ -47,6 +47,10 @@ Recent data-map lifts for one-shot setup guards:
   setup guards for Back and Secret buttons.
 - `mods_menu_init_flags` (`0x00481bb8`): `mods_menu_update` one-shot setup
   guards for list widget and action buttons.
+- `unlocked_weapons_database_init_flags` (`0x004ccc51`): one-shot setup guards
+  for the unlocked-weapons database list and Back button.
+- `unlocked_perks_database_init_flags` (`0x004ccc50`): one-shot setup guards
+  for the unlocked-perks database list and Back button.
 - `quest_select_screen_flags` (`0x004d79d4`): `quest_select_menu_update`
   runtime setup guards for Hardcore checkbox and Back button.
 
@@ -63,6 +67,20 @@ Recovered controls-menu open/enabled gates:
 
 `controls_menu_update` recomputes the `*_enabled` flags each frame so only one
 list can be active at a time.
+
+## Options sliders
+
+Recovered segmented-slider state blocks used by `options_menu_update`
+(`ui_segmented_slider_update`):
+
+- SFX volume: `options_sfx_volume_slider_value/max/min`
+  (`0x004d77f8/0x004d77fc/0x004d7800`)
+- Music volume: `options_music_volume_slider_value/max/min`
+  (`0x004d75e8/0x004d75ec/0x004d75f0`)
+- Graphics detail preset: `options_graphics_detail_slider_value/max/min`
+  (`0x004d7590/0x004d7594/0x004d7598`)
+- Mouse sensitivity: `options_mouse_sensitivity_slider_value/max/min`
+  (`0x004d7680/0x004d7684/0x004d7688`)
 
 Additional controls-rebind runtime globals:
 

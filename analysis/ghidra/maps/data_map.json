@@ -6564,6 +6564,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004ccc50",
+      "comment": "Unlocked-perks database screen one-shot init flags bitfield (scroll list + back button setup guards).",
+      "name": "unlocked_perks_database_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004ccc51",
+      "comment": "Unlocked-weapons database screen one-shot init flags bitfield (scroll list + back button setup guards).",
+      "name": "unlocked_weapons_database_init_flags",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004ccca8",
       "comment": "High-score card divider tint RGBA component R used by highscore_card_draw_* helpers and ui_text_input_render.",
       "name": "highscore_card_divider_color_r",
@@ -6791,6 +6805,69 @@
       "type": "int"
     },
     {
+      "address": "0x004d7590",
+      "comment": "Options menu graphics-detail segmented slider current value (copied to _config_detail_preset).",
+      "name": "options_graphics_detail_slider_value",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7594",
+      "comment": "Options menu graphics-detail segmented slider max value.",
+      "name": "options_graphics_detail_slider_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7598",
+      "comment": "Options menu graphics-detail segmented slider min value.",
+      "name": "options_graphics_detail_slider_min",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d75e8",
+      "comment": "Options menu music-volume segmented slider current value (0..10).",
+      "name": "options_music_volume_slider_value",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d75ec",
+      "comment": "Options menu music-volume segmented slider max value.",
+      "name": "options_music_volume_slider_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d75f0",
+      "comment": "Options menu music-volume segmented slider min value.",
+      "name": "options_music_volume_slider_min",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7680",
+      "comment": "Options menu mouse-sensitivity segmented slider current value (scaled by 0.1).",
+      "name": "options_mouse_sensitivity_slider_value",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7684",
+      "comment": "Options menu mouse-sensitivity segmented slider max value.",
+      "name": "options_mouse_sensitivity_slider_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7688",
+      "comment": "Options menu mouse-sensitivity segmented slider min value.",
+      "name": "options_mouse_sensitivity_slider_min",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d76a0",
       "comment": "Quest-select menu one-shot init flags bitfield (guards static UI color/button setup blocks).",
       "name": "quest_select_menu_init_flags",
@@ -6850,6 +6927,27 @@
       "address": "0x004d77e8",
       "comment": "Controls menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "controls_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d77f8",
+      "comment": "Options menu SFX-volume segmented slider current value (0..10).",
+      "name": "options_sfx_volume_slider_value",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d77fc",
+      "comment": "Options menu SFX-volume segmented slider max value.",
+      "name": "options_sfx_volume_slider_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7800",
+      "comment": "Options menu SFX-volume segmented slider min value.",
+      "name": "options_sfx_volume_slider_min",
       "program": "crimsonland.exe",
       "type": "int"
     },
