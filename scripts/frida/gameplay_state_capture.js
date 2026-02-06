@@ -962,6 +962,28 @@ function normalizeMemOperation(operation) {
   return op || "unknown";
 }
 
+function parseMemOperation(details) {
+  const rawCandidates = [
+    details ? details.operation : null,
+    details ? details.type : null,
+    details ? details.access : null,
+    details ? details.kind : null,
+  ];
+  for (let i = 0; i < rawCandidates.length; i++) {
+    const raw = rawCandidates[i];
+    if (raw == null) continue;
+    const normalized = normalizeMemOperation(raw);
+    if (normalized !== "unknown") {
+      return { normalized: normalized, raw: String(raw) };
+    }
+  }
+  const fallbackRaw = rawCandidates.find((v) => v != null);
+  return {
+    normalized: "unknown",
+    raw: fallbackRaw == null ? null : String(fallbackRaw),
+  };
+}
+
 function maybeEmitModeTick(name) {
   const t = nowMs();
   const last = lastModeTickAt[name] || 0;
@@ -1560,8 +1582,8 @@ function installMemWatch() {
     MemoryAccessMonitor.enable(ranges, {
       onAccess(details) {
         if (!details || !details.address) return;
-        const operation = normalizeMemOperation(details.operation);
-        if (CONFIG.memWatchWritesOnly && operation !== "write") return;
+        const opInfo = parseMemOperation(details);
+        if (CONFIG.memWatchWritesOnly && opInfo.normalized === "read") return;
         if (!rateLimitMemEvent()) return;
 
         const staticVa = runtimeToStatic(details.address);
@@ -1581,7 +1603,8 @@ function installMemWatch() {
         const evt = {
           event: "mem_watch_access",
           range: range.id,
-          operation: operation,
+          operation: opInfo.normalized,
+          operation_raw: opInfo.raw,
           thread_id: details.threadId,
           address: details.address.toString(),
           static_va: toHex(staticVa, 8),
