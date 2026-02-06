@@ -570,10 +570,10 @@ class WorldRenderer:
                                 origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
                                 rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
-                            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-                            rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
-                            rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
-                            rl.end_blend_mode()
+                                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                                rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
+                                rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
+                                rl.end_blend_mode()
 
             if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
