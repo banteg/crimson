@@ -242,7 +242,7 @@ def _apply_damage_to_creature(
 
 
 def _spawn_shrinkifier_hit_effects(
-    effects: object | None,
+    effects: _EffectsLike | None,
     *,
     pos: Vec2,
     rng: Callable[[], int],
@@ -250,7 +250,7 @@ def _spawn_shrinkifier_hit_effects(
 ) -> None:
     """Port of `effect_spawn_shrinkifier_hit` (0x0042f080)."""
 
-    if effects is None or not hasattr(effects, "spawn"):
+    if effects is None:
         return
 
     detail = int(detail_preset)
