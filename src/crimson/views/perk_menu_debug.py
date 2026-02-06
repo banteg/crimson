@@ -89,7 +89,6 @@ class PerkMenuDebugView:
     def close(self) -> None:
         rl.show_cursor()
         if self._assets is not None:
-            self._assets.unload()
             self._assets = None
         if self._small is not None:
             rl.unload_texture(self._small.texture)
