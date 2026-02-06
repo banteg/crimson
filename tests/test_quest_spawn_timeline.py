@@ -3,13 +3,20 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.spawn import SpawnId
+from grim.geom import Vec2
 from crimson.quests.timeline import tick_quest_spawn_timeline
 from crimson.quests.types import SpawnEntry
 
 
 def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_active() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=1000, count=1),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=1000,
+            count=1,
+        ),
     )
     updated, creatures_none_active, idle_ms, spawns = tick_quest_spawn_timeline(
         entries,
@@ -28,7 +35,13 @@ def test_tick_quest_spawn_timeline_no_trigger_resets_idle_timer_when_creatures_a
 
 def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=1.25, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=1000, count=3),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=1.25,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=1000,
+            count=3,
+        ),
     )
     updated, creatures_none_active, idle_ms, spawns = tick_quest_spawn_timeline(
         entries,
@@ -43,7 +56,7 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
     assert creatures_none_active is False
     assert idle_ms == pytest.approx(16.0, abs=1e-9)
     assert len(spawns) == 3
-    assert [(s.pos[0], s.pos[1]) for s in spawns] == [
+    assert [(s.pos.x, s.pos.y) for s in spawns] == [
         (pytest.approx(512.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(472.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(592.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
@@ -54,7 +67,13 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
 
 def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -> None:
     entries = (
-        SpawnEntry(x=-50.0, y=512.0, heading=0.25, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=1000, count=3),
+        SpawnEntry(
+            pos=Vec2(-50.0, 512.0),
+            heading=0.25,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=1000,
+            count=3,
+        ),
     )
     _, _, _, spawns = tick_quest_spawn_timeline(
         entries,
@@ -65,7 +84,7 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
         no_creatures_timer_ms=0.0,
     )
 
-    assert [(s.pos[0], s.pos[1]) for s in spawns] == [
+    assert [(s.pos.x, s.pos.y) for s in spawns] == [
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(512.0, abs=1e-9)),
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(472.0, abs=1e-9)),
         (pytest.approx(-50.0, abs=1e-9), pytest.approx(592.0, abs=1e-9)),
@@ -74,9 +93,27 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
 
 def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=500, count=1),
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=500, count=1),
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, trigger_ms=600, count=1),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=500,
+            count=1,
+        ),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            trigger_ms=500,
+            count=1,
+        ),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            trigger_ms=600,
+            count=1,
+        ),
     )
     updated, _, _, spawns = tick_quest_spawn_timeline(
         entries,
@@ -93,7 +130,13 @@ def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> No
 
 def test_tick_quest_spawn_timeline_force_fires_after_idle_timeout() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=999_999, count=1),
+        SpawnEntry(
+            pos=Vec2(512.0, 512.0),
+            heading=0.0,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
+            trigger_ms=999_999,
+            count=1,
+        ),
     )
     updated, creatures_none_active, idle_ms, spawns = tick_quest_spawn_timeline(
         entries,

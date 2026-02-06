@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -68,30 +70,24 @@ def reset_players(
     *,
     world_size: float,
     player_count: int,
-    spawn_x: float | None = None,
-    spawn_y: float | None = None,
+    spawn_pos: Vec2 | None = None,
 ) -> None:
     """Reset `players` to the classic initial layout used by `GameWorld.reset`."""
 
     players.clear()
 
-    base_x = float(world_size) * 0.5 if spawn_x is None else float(spawn_x)
-    base_y = float(world_size) * 0.5 if spawn_y is None else float(spawn_y)
+    base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
     count = max(1, int(player_count))
     if count <= 1:
-        offsets = [(0.0, 0.0)]
+        offsets = [Vec2()]
     else:
         radius = 32.0
         step = math.tau / float(count)
-        offsets = [(math.cos(float(idx) * step) * radius, math.sin(float(idx) * step) * radius) for idx in range(count)]
+        offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
 
     for idx in range(count):
-        offset_x, offset_y = offsets[idx]
-        x = base_x + float(offset_x)
-        y = base_y + float(offset_y)
-        x = max(0.0, min(float(world_size), x))
-        y = max(0.0, min(float(world_size), y))
-        player = PlayerState(index=idx, pos_x=x, pos_y=y)
+        pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
+        player = PlayerState(index=idx, pos=pos)
         weapon_assign_player(player, 1)
         players.append(player)
 

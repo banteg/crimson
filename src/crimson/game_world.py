@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass, field
 import math
 import random
@@ -57,8 +59,7 @@ class GameWorld:
     state: GameplayState = field(init=False)
     players: list[PlayerState] = field(init=False)
     creatures: CreaturePool = field(init=False)
-    camera_x: float = field(init=False, default=-1.0)
-    camera_y: float = field(init=False, default=-1.0)
+    camera: Vec2 = field(init=False, default_factory=lambda: Vec2(-1.0, -1.0))
     _damage_scale_by_type: dict[int, float] = field(init=False, default_factory=dict)
     missing_assets: list[str] = field(init=False, default_factory=list)
     ground: GroundRenderer | None = field(init=False, default=None)
@@ -97,8 +98,7 @@ class GameWorld:
         self.fx_queue = FxQueue()
         self.fx_queue_rotated = FxQueueRotated()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.camera_x = -1.0
-        self.camera_y = -1.0
+        self.camera = Vec2(-1.0, -1.0)
         self.audio_router = AudioRouter(
             audio=self.audio,
             audio_rng=self.audio_rng,
@@ -126,8 +126,7 @@ class GameWorld:
         *,
         seed: int = 0xBEEF,
         player_count: int = 1,
-        spawn_x: float | None = None,
-        spawn_y: float | None = None,
+        spawn_pos: Vec2 | None = None,
     ) -> None:
         self.world_state = WorldState.build(
             world_size=float(self.world_size),
@@ -147,29 +146,21 @@ class GameWorld:
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
-        base_x = float(self.world_size) * 0.5 if spawn_x is None else float(spawn_x)
-        base_y = float(self.world_size) * 0.5 if spawn_y is None else float(spawn_y)
+        base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
         count = max(1, int(player_count))
         if count <= 1:
-            offsets = [(0.0, 0.0)]
+            offsets = [Vec2()]
         else:
             radius = 32.0
             step = math.tau / float(count)
-            offsets = [
-                (math.cos(float(idx) * step) * radius, math.sin(float(idx) * step) * radius) for idx in range(count)
-            ]
+            offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
 
         for idx in range(count):
-            offset_x, offset_y = offsets[idx]
-            x = base_x + float(offset_x)
-            y = base_y + float(offset_y)
-            x = max(0.0, min(float(self.world_size), x))
-            y = max(0.0, min(float(self.world_size), y))
-            player = PlayerState(index=idx, pos_x=x, pos_y=y)
+            pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
+            player = PlayerState(index=idx, pos=pos)
             weapon_assign_player(player, 1)
             self.players.append(player)
-        self.camera_x = -1.0
-        self.camera_y = -1.0
+        self.camera = Vec2(-1.0, -1.0)
         if self.ground is not None:
             terrain_seed = int(self.state.rng.rand() % 10_000)
             self.ground.schedule_generate(seed=terrain_seed, layers=3)
@@ -512,15 +503,14 @@ class GameWorld:
         freeze_active = self.state.bonuses.freeze > 0.0
         bloody = bool(self.players) and perk_active(self.players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
 
-        for type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y in hits:
-            type_id = int(type_id)
+        for hit in hits:
+            type_id = int(hit.type_id)
 
-            base_angle = math.atan2(float(hit_y) - float(origin_y), float(hit_x) - float(origin_x))
+            base_angle = (hit.hit - hit.origin).to_angle()
 
             # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
             if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
-                dir_x = math.cos(base_angle)
-                dir_y = math.sin(base_angle)
+                direction = Vec2.from_angle(base_angle)
                 for _ in range(6):
                     dist = float(int(rand()) % 100) * 0.1
                     if dist > 4.0:
@@ -528,8 +518,7 @@ class GameWorld:
                     if dist > 7.0:
                         dist = float(int(rand()) % 0x50 + 0x14) * 0.1
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * dist * 20.0,
-                        pos_y=float(target_y) + dir_y * dist * 20.0,
+                        pos=hit.target + direction * (dist * 20.0),
                         rand=rand,
                     )
             elif type_id in ION_TYPES:
@@ -538,22 +527,18 @@ class GameWorld:
                 for _ in range(3):
                     spread = float(int(rand()) % 0x14 - 10) * 0.1
                     angle = base_angle + spread
-                    dir_x = math.cos(angle) * 20.0
-                    dir_y = math.sin(angle) * 20.0
-                    self.fx_queue.add_random(pos_x=float(target_x), pos_y=float(target_y), rand=rand)
+                    direction = Vec2.from_angle(angle) * 20.0
+                    self.fx_queue.add_random(pos=hit.target, rand=rand)
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 1.5,
-                        pos_y=float(target_y) + dir_y * 1.5,
+                        pos=hit.target + direction * 1.5,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 2.0,
-                        pos_y=float(target_y) + dir_y * 2.0,
+                        pos=hit.target + direction * 2.0,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos_x=float(target_x) + dir_x * 2.5,
-                        pos_y=float(target_y) + dir_y * 2.5,
+                        pos=hit.target + direction * 2.5,
                         rand=rand,
                     )
 
@@ -566,8 +551,7 @@ class GameWorld:
                         dx = float(int(rand()) % span + lo)
                         dy = float(int(rand()) % span + lo)
                         self.fx_queue.add_random(
-                            pos_x=float(target_x) + dx,
-                            pos_y=float(target_y) + dy,
+                            pos=hit.target + Vec2(dx, dy),
                             rand=rand,
                         )
                     lo -= 10
@@ -579,8 +563,7 @@ class GameWorld:
                 for _ in range(8):
                     spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
                     self.state.effects.spawn_blood_splatter(
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
+                        pos=hit.hit,
                         angle=base_angle + spread,
                         age=0.0,
                         rand=rand,
@@ -588,8 +571,7 @@ class GameWorld:
                         fx_toggle=fx_toggle,
                     )
                 self.state.effects.spawn_blood_splatter(
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
+                    pos=hit.hit,
                     angle=base_angle + math.pi,
                     age=0.0,
                     rand=rand,
@@ -603,8 +585,7 @@ class GameWorld:
 
             for _ in range(2):
                 self.state.effects.spawn_blood_splatter(
-                    pos_x=float(hit_x),
-                    pos_y=float(hit_y),
+                    pos=hit.hit,
                     angle=base_angle,
                     age=0.0,
                     rand=rand,
@@ -613,8 +594,7 @@ class GameWorld:
                 )
                 if (int(rand()) & 7) == 2:
                     self.state.effects.spawn_blood_splatter(
-                        pos_x=float(hit_x),
-                        pos_y=float(hit_y),
+                        pos=hit.hit,
                         angle=base_angle + math.pi,
                         age=0.0,
                         rand=rand,
@@ -649,25 +629,25 @@ class GameWorld:
         if not self.players:
             return
 
-        screen_w, screen_h = self.renderer._camera_screen_size()
+        screen_size = self.renderer._camera_screen_size()
 
         alive = [player for player in self.players if player.health > 0.0]
         if alive:
-            focus_x = sum(player.pos_x for player in alive) / float(len(alive))
-            focus_y = sum(player.pos_y for player in alive) / float(len(alive))
-            cam_x = (screen_w * 0.5) - focus_x
-            cam_y = (screen_h * 0.5) - focus_y
+            inv_alive = 1.0 / float(len(alive))
+            focus = Vec2(
+                sum(player.pos.x for player in alive) * inv_alive,
+                sum(player.pos.y for player in alive) * inv_alive,
+            )
+            camera = screen_size * 0.5 - focus
         else:
-            cam_x = self.camera_x
-            cam_y = self.camera_y
+            camera = self.camera
 
-        cam_x += self.state.camera_shake_offset_x
-        cam_y += self.state.camera_shake_offset_y
+        camera = camera + self.state.camera_shake_offset
 
-        self.camera_x, self.camera_y = self.renderer._clamp_camera(cam_x, cam_y, screen_w, screen_h)
+        self.camera = self.renderer._clamp_camera(camera, screen_size)
 
-    def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self.renderer.world_to_screen(x, y)
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return self.renderer.world_to_screen(pos)
 
-    def screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return self.renderer.screen_to_world(x, y)
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return self.renderer.screen_to_world(pos)

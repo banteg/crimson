@@ -8,6 +8,7 @@ from grim.audio import AudioState, play_sfx, trigger_game_tune
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
+from .projectiles import ProjectileHit
 from .weapon_sfx import resolve_weapon_sfx_ref
 from .weapons import WEAPON_BY_ID, WeaponId
 
@@ -129,7 +130,7 @@ class AudioRouter:
 
     def play_hit_sfx(
         self,
-        hits: list[tuple[int, float, float, float, float, float, float]],
+        hits: list[ProjectileHit],
         *,
         game_mode: int,
         rand: Callable[[], int],
@@ -145,7 +146,7 @@ class AudioRouter:
 
         end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)
         for idx in range(start_idx, end):
-            type_id = int(hits[idx][0])
+            type_id = int(hits[idx].type_id)
             self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand))
 
     def play_death_sfx(self, deaths: tuple[object, ...], *, rand: Callable[[], int]) -> None:

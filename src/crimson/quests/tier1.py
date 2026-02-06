@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import math
 import random
+
+from grim.geom import Vec2
 
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
@@ -46,20 +47,18 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x00435CC0,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
         spawn(
-            x=256.0,
-            y=256.0,
+            Vec2(256.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
             trigger_ms=1000,
             count=2,
         ),
         spawn(
-            x=256.0,
-            y=128.0,
+            Vec2(256.0, 128.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
             trigger_ms=1700,
@@ -80,8 +79,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
         if i > 6:
             entries.append(
                 spawn(
-                    x=edges.right[0],
-                    y=center_y - 256.0,
+                    Vec2(edges.right.x, center.y - 256.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
@@ -101,8 +99,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
         if i > 10:
             entries.append(
                 spawn(
-                    x=edges.left[0],
-                    y=center_y + 256.0,
+                    Vec2(edges.left.x, center.y + 256.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
@@ -122,20 +119,18 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
         angle = random_angle(rng)
         radius = (rng.randrange(8) + 2) * 0x20
-        x = math.cos(angle) * radius + center_x
-        y = math.sin(angle) * radius + center_y
-        heading = heading_from_center(x, y, center_x, center_y)
+        point = center + Vec2.from_angle(angle) * radius
+        heading = heading_from_center(point, center)
         entries.append(
             spawn(
-                x=x,
-                y=y,
+                point,
                 heading=heading,
                 spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                 trigger_ms=trigger,
@@ -233,27 +228,28 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1),
-        spawn(x=768.0, y=768.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1),
         spawn(
-            x=512.0,
-            y=512.0,
+            Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1
+        ),
+        spawn(
+            Vec2(768.0, 768.0), heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1
+        ),
+        spawn(
+            Vec2(512.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=23500,
             count=ctx.player_count,
         ),
         spawn(
-            x=256.0,
-            y=768.0,
+            Vec2(256.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=38500,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=256.0,
+            Vec2(768.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=38500,
@@ -273,7 +269,7 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
 def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
-    center_x, center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     trigger = 1500
     while trigger < 101500:
@@ -298,8 +294,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
         if rng.randrange(5) == 3:
             entries.append(
                 spawn(
-                    x=center_x,
-                    y=edges.bottom[1],
+                    Vec2(center.x, edges.bottom.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=trigger,
@@ -347,64 +342,56 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
 def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         spawn(
-            x=-256.0,
-            y=256.0,
+            Vec2(-256.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
-            x=-256.0,
-            y=768.0,
+            Vec2(-256.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=2500,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=-256.0,
+            Vec2(768.0, -256.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=5500,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=1280.0,
+            Vec2(768.0, 1280.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=8500,
             count=1,
         ),
         spawn(
-            x=1280.0,
-            y=1280.0,
+            Vec2(1280.0, 1280.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=14500,
             count=1,
         ),
         spawn(
-            x=1280.0,
-            y=768.0,
+            Vec2(1280.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=18500,
             count=1,
         ),
         spawn(
-            x=-256.0,
-            y=256.0,
+            Vec2(-256.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=25000,
             count=1,
         ),
         spawn(
-            x=-256.0,
-            y=768.0,
+            Vec2(-256.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=30000,
@@ -415,8 +402,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     while trigger < 83000:
         entries.append(
             spawn(
-                x=-64.0,
-                y=-64.0,
+                Vec2(-64.0, -64.0),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger - 400,
@@ -425,8 +411,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
         )
         entries.append(
             spawn(
-                x=ctx.width + 64.0,
-                y=ctx.height + 64.0,
+                Vec2(ctx.width + 64.0, ctx.height + 64.0),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
@@ -446,93 +431,88 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x004364A0,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
-    center_x, _center_y = center_point(ctx.width, ctx.height)
+    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            Vec2(center.x, edges.bottom.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=1500,
             count=ctx.player_count * 2 + 6,
         ),
-        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09, trigger_ms=8000, count=1),
         spawn(
-            x=512.0,
-            y=512.0,
+            Vec2(256.0, 256.0),
+            heading=0.0,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            trigger_ms=8000,
+            count=1,
+        ),
+        spawn(
+            Vec2(512.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=13000,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=768.0,
+            Vec2(768.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=18000,
             count=1,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            Vec2(center.x, edges.bottom.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=25000,
             count=ctx.player_count * 2 + 6,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            Vec2(center.x, edges.bottom.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=39000,
             count=ctx.player_count * 3 + 3,
         ),
         spawn(
-            x=384.0,
-            y=512.0,
+            Vec2(384.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=41100,
             count=1,
         ),
         spawn(
-            x=640.0,
-            y=512.0,
+            Vec2(640.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=42100,
             count=1,
         ),
         spawn(
-            x=512.0,
-            y=640.0,
+            Vec2(512.0, 640.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=43100,
             count=1,
         ),
         spawn(
-            x=512.0,
-            y=512.0,
+            Vec2(512.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=44100,
             count=1,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            Vec2(center.x, edges.bottom.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1E,
             trigger_ms=50000,
             count=ctx.player_count * 2 + 5,
         ),
         spawn(
-            x=center_x,
-            y=edges.bottom[1],
+            Vec2(center.x, edges.bottom.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_1F,
             trigger_ms=55000,
@@ -553,8 +533,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
 def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         spawn(
-            x=float(ctx.width - 256),
-            y=float(ctx.width // 2),
+            Vec2(float(ctx.width - 256), float(ctx.width // 2)),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=1000,

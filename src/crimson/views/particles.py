@@ -9,6 +9,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -124,10 +125,12 @@ class ParticleView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
-            draw_ui_text(self._small, "No particles texture loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No particles texture loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         self._handle_input()
@@ -221,8 +224,7 @@ class ParticleView:
         draw_ui_text(
             self._small,
             f"particles.png (grid {grid}x{grid})",
-            info_x,
-            info_y,
+            Vec2(info_x, info_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -230,8 +232,7 @@ class ParticleView:
         draw_ui_text(
             self._small,
             "Up/Down: grid  2/4/8: direct  1: grid16  U: UV clamp",
-            info_x,
-            info_y,
+            Vec2(info_x, info_y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -241,15 +242,20 @@ class ParticleView:
             draw_ui_text(
                 self._small,
                 f"UV clamp: {step_px}px of {int(self._texture.width / grid)}px",
-                info_x,
-                info_y,
+                Vec2(info_x, info_y),
                 scale=UI_TEXT_SCALE,
                 color=UI_HINT_COLOR,
             )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
         if hovered_index is not None:
-            draw_ui_text(self._small, f"frame {hovered_index:02d}", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small,
+                f"frame {hovered_index:02d}",
+                Vec2(info_x, info_y),
+                scale=UI_TEXT_SCALE,
+                color=UI_TEXT_COLOR,
+            )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             entries = known_frames.get(hovered_index, [])
             if entries:
@@ -258,18 +264,19 @@ class ParticleView:
                     draw_ui_text(
                         self._small,
                         f"0x{entry.effect_id:02x}{label}",
-                        info_x,
-                        info_y,
+                        Vec2(info_x, info_y),
                         scale=UI_TEXT_SCALE,
                         color=UI_TEXT_COLOR,
                     )
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             else:
-                draw_ui_text(self._small, "no known mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(
+                    self._small, "no known mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             info_y += 8
 
-        draw_ui_text(self._small, "Effect table", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, "Effect table", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
         for entry in EFFECT_ENTRIES:
             grid_label = entry.grid
@@ -277,7 +284,7 @@ class ParticleView:
             if entry.label:
                 line += f" {entry.label}"
             color = UI_TEXT_COLOR if entry.grid == grid else UI_HINT_COLOR
-            draw_ui_text(self._small, line, info_x, info_y, scale=UI_TEXT_SCALE, color=color)
+            draw_ui_text(self._small, line, Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=color)
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 3
 
 

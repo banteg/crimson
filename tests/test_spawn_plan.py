@@ -5,6 +5,7 @@ import math
 import pytest
 
 from crimson.bonuses import BonusId
+from grim.geom import Vec2
 from grim.rand import Crand
 from crimson.creatures.spawn import (
     CreatureFlags,
@@ -38,12 +39,12 @@ def test_spawn_plan_effects_emit_when_demo_mode_disabled() -> None:
         difficulty_level=0,
     )
 
-    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.effects) == 1
     effect = plan.effects[0]
-    assert effect.x == 100.0
-    assert effect.y == 200.0
+    assert effect.pos.x == 100.0
+    assert effect.pos.y == 200.0
     assert effect.count == 8
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -59,7 +60,7 @@ def test_spawn_plan_effects_suppressed_in_demo_mode() -> None:
         difficulty_level=0,
     )
 
-    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.effects == ()
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -74,7 +75,7 @@ def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x00, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x00, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -113,7 +114,7 @@ def test_spawn_plan_template_1_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -147,7 +148,7 @@ def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> No
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x03, (100.0, 200.0), -100.0, rng, env)
+    plan = build_spawn_plan(0x03, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -200,7 +201,7 @@ def test_spawn_plan_template_04_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x04, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x04, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -245,7 +246,7 @@ def test_spawn_plan_template_05_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x05, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x05, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -294,7 +295,7 @@ def test_spawn_plan_template_06_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x06, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x06, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -343,7 +344,7 @@ def test_spawn_plan_template_3c_sets_ranged_projectile_type() -> None:
         difficulty_level=0,
     )
 
-    plan = build_spawn_plan(SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -364,7 +365,7 @@ def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x07, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x07, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -401,7 +402,7 @@ def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x08, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x08, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -438,7 +439,7 @@ def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x09, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x09, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -474,7 +475,7 @@ def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -513,7 +514,7 @@ def test_spawn_plan_template_0a_scales_with_difficulty() -> None:
         hardcore=False,
         difficulty_level=2,
     )
-    plan = build_spawn_plan(0x0A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -546,7 +547,7 @@ def test_spawn_plan_template_0a_hardcore_buffs_and_shortens_interval() -> None:
         hardcore=True,
         difficulty_level=3,
     )
-    plan = build_spawn_plan(0x0A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -579,7 +580,7 @@ def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0B, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -614,7 +615,7 @@ def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0C, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -650,7 +651,7 @@ def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0D, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -686,7 +687,7 @@ def test_spawn_plan_template_0f_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0F, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -720,7 +721,7 @@ def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x10, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x10, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -753,7 +754,7 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x12, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x12, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 9
     assert plan.primary == 8
@@ -782,8 +783,8 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.tint == (0.32, 0.588, 0.426, 1.0)
 
         angle = float(i) * (math.pi / 4.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -801,7 +802,7 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x13, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x13, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 11
     assert plan.primary == 10
@@ -811,8 +812,8 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
     assert parent.type_id == CreatureTypeId.ALIEN
     assert parent.ai_mode == 6
     assert parent.ai_link_parent == 10
-    assert parent.pos_x == 356.0
-    assert parent.pos_y == 200.0
+    assert parent.pos.x == 356.0
+    assert parent.pos.y == 200.0
     assert parent.health == 200.0
     assert parent.max_health == 200.0
     assert parent.move_speed == 2.0
@@ -838,8 +839,8 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
         angle = float(2 + 2 * i) * math.radians(20.0)
-        assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -857,7 +858,7 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x14, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x14, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
     assert plan.primary == 81
@@ -880,10 +881,9 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 5
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -910,7 +910,7 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x15, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x15, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
     assert plan.primary == 81
@@ -933,10 +933,9 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -963,7 +962,7 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x16, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x16, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
     assert plan.primary == 81
@@ -987,10 +986,9 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
         assert child.type_id == expected_type
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -1017,7 +1015,7 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x17, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x17, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
     assert plan.primary == 81
@@ -1041,10 +1039,9 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
         assert child.type_id == expected_type
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -1071,7 +1068,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x18, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x18, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 82
     assert plan.primary == 81
@@ -1094,10 +1091,9 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 260.0
         assert child.health == expected_health
@@ -1124,7 +1120,7 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x19, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x19, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 6
     assert plan.primary == 5
@@ -1150,10 +1146,10 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)
 
         angle = float(i) * (math.tau / 5.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
-        assert child.pos_x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + (child.target_offset_y or 0.0), abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + (child.target_offset.x if child.target_offset is not None else 0.0), abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + (child.target_offset.y if child.target_offset is not None else 0.0), abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -1172,7 +1168,7 @@ def test_spawn_plan_template_1a_is_randomized_tint() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1209,7 +1205,7 @@ def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() 
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1B, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1248,7 +1244,7 @@ def test_spawn_plan_template_1c_is_randomized_tint() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1C, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1285,7 +1281,7 @@ def test_spawn_plan_template_1d_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1D, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1341,7 +1337,7 @@ def test_spawn_plan_template_1e_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1E, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1397,7 +1393,7 @@ def test_spawn_plan_template_1f_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x1F, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x1F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1453,7 +1449,7 @@ def test_spawn_plan_template_20_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x20, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x20, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1500,7 +1496,7 @@ def test_spawn_plan_template_21_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x21, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x21, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1529,7 +1525,7 @@ def test_spawn_plan_template_21_scales_with_difficulty() -> None:
         hardcore=False,
         difficulty_level=2,
     )
-    plan = build_spawn_plan(0x21, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x21, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1558,7 +1554,7 @@ def test_spawn_plan_template_22_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x22, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x22, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1587,7 +1583,7 @@ def test_spawn_plan_template_23_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x23, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x23, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1616,7 +1612,7 @@ def test_spawn_plan_template_24_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x24, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x24, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1645,7 +1641,7 @@ def test_spawn_plan_template_25_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x25, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x25, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1674,7 +1670,7 @@ def test_spawn_plan_template_26_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x26, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x26, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1703,7 +1699,7 @@ def test_spawn_plan_template_27_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x27, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x27, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1735,7 +1731,7 @@ def test_spawn_plan_template_28_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x28, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x28, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1764,7 +1760,7 @@ def test_spawn_plan_template_29_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x29, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x29, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1793,7 +1789,7 @@ def test_spawn_plan_template_2a_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1822,7 +1818,7 @@ def test_spawn_plan_template_2b_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2B, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1851,7 +1847,7 @@ def test_spawn_plan_template_2c_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2C, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1880,7 +1876,7 @@ def test_spawn_plan_template_2d_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2D, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1911,7 +1907,7 @@ def test_spawn_plan_template_2e_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2E, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1964,7 +1960,7 @@ def test_spawn_plan_template_2f_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x2F, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x2F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -1993,7 +1989,7 @@ def test_spawn_plan_template_30_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x30, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x30, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2023,7 +2019,7 @@ def test_spawn_plan_template_31_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x31, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x31, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2070,7 +2066,7 @@ def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> No
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x32, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x32, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2119,7 +2115,7 @@ def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> No
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x33, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x33, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2169,7 +2165,7 @@ def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> No
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x34, (100.0, 200.0), -100.0, rng, env)
+    plan = build_spawn_plan(0x34, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2221,7 +2217,7 @@ def test_spawn_plan_template_35_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x35, (100.0, 200.0), -100.0, rng, env)
+    plan = build_spawn_plan(0x35, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2271,7 +2267,7 @@ def test_spawn_plan_template_36_is_randomized_tint() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x36, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x36, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
     state, _ = _msvcrt_rand(state)  # alloc phase_seed
@@ -2309,7 +2305,7 @@ def test_spawn_plan_template_37_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x37, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x37, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
     state, _ = _msvcrt_rand(state)  # alloc phase_seed
@@ -2346,7 +2342,7 @@ def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x38, (100.0, 200.0), -100.0, rng, env)
+    plan = build_spawn_plan(0x38, Vec2(100.0, 200.0), -100.0, rng, env)
 
     state = seed
     state, _ = _msvcrt_rand(state)  # alloc phase_seed
@@ -2386,7 +2382,7 @@ def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x39, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x39, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
     state, _ = _msvcrt_rand(state)  # alloc phase_seed
@@ -2423,7 +2419,7 @@ def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3A, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3A, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2457,7 +2453,7 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3B, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3B, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2488,7 +2484,7 @@ def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3C, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3C, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2524,7 +2520,7 @@ def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> No
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3D, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3D, Vec2(100.0, 200.0), 0.0, rng, env)
 
     state = seed
     state, _ = _msvcrt_rand(state)  # alloc phase_seed
@@ -2564,7 +2560,7 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3E, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2595,7 +2591,7 @@ def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x3F, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x3F, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2626,7 +2622,7 @@ def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x40, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x40, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2658,7 +2654,7 @@ def test_spawn_plan_template_41_is_randomized() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x41, (100.0, 200.0), -100.0, rng, env)
+    plan = build_spawn_plan(0x41, Vec2(100.0, 200.0), -100.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2705,7 +2701,7 @@ def test_spawn_plan_template_42_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x42, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x42, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2735,7 +2731,7 @@ def test_spawn_plan_template_43_is_constant() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x43, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x43, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert plan.primary == 0
     assert len(plan.creatures) == 1
@@ -2765,7 +2761,7 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x0E, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x0E, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 25
     assert plan.primary == 24
@@ -2799,8 +2795,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        assert child.pos_x == 100.0
-        assert child.pos_y == 200.0
+        assert child.pos.x == 100.0
+        assert child.pos.y == 200.0
         assert child.phase_seed == float(r_phase_seed & 0x17F)
         assert child.health == 40.0
         assert child.max_health == 40.0
@@ -2810,8 +2806,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.tint == (1.0, 0.3, 0.3, 1.0)
 
         angle = float(i) * (math.pi / 12.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -2829,7 +2825,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x11, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x11, Vec2(100.0, 200.0), 0.0, rng, env)
 
     assert len(plan.creatures) == 5
     assert plan.primary == 4
@@ -2851,8 +2847,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
     for i, child in enumerate(plan.creatures[1:], start=0):
         assert child.ai_mode == 3
         assert child.ai_link_parent == i
-        assert child.target_offset_x == offset_xs[i]
-        assert child.target_offset_y == -256.0
+        assert child.target_offset == Vec2(offset_xs[i], -256.0)
         assert child.reward_value == 60.0
         assert child.move_speed == 2.4
         assert child.size == 50.0
@@ -2860,8 +2855,8 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert child.tint == (0.6, 0.6, 0.31, 1.0)
 
         angle = float(2 + 2 * i) * (math.pi / 8.0)
-        assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
     # The original falls into the "Unhandled creatureType.\n" block after the loop, which overwrites
     # the return creature (last child).

@@ -87,9 +87,9 @@ def draw_classic_menu_panel(
     src_bot = _src(rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2)))
 
     # Destination slices.
-    dst_top = rl.Rectangle(float(dst.x), float(dst.y), float(dst.width), float(top_h))
-    dst_mid = rl.Rectangle(float(dst.x), float(dst.y) + float(top_h), float(dst.width), float(mid_h))
-    dst_bot = rl.Rectangle(float(dst.x), float(dst.y) + float(top_h) + float(mid_h), float(dst.width), float(bottom_h))
+    dst_top = rl.Rectangle(dst.x, dst.y, float(dst.width), float(top_h))
+    dst_mid = rl.Rectangle(dst.x, dst.y + float(top_h), float(dst.width), float(mid_h))
+    dst_bot = rl.Rectangle(dst.x, dst.y + float(top_h) + float(mid_h), float(dst.width), float(bottom_h))
 
     if shadow:
         draw_ui_quad_shadow(

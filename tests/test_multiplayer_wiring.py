@@ -26,7 +26,7 @@ def test_game_world_reset_spreads_player_spawn_positions() -> None:
     world = GameWorld(assets_dir=assets_dir)
     world.reset(seed=0xBEEF, player_count=4)
 
-    positions = {(round(player.pos_x, 3), round(player.pos_y, 3)) for player in world.players}
+    positions = {(round(player.pos.x, 3), round(player.pos.y, 3)) for player in world.players}
     assert len(positions) == 4
 
 

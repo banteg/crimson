@@ -8,6 +8,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -67,10 +68,10 @@ class UiTextureView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._textures:
-            draw_ui_text(self._small, "No UI textures loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, "No UI textures loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
 
         self._handle_input()
@@ -80,9 +81,11 @@ class UiTextureView:
         header_y = margin
         line_height = ui_line_height(self._small, scale=UI_TEXT_SCALE)
         title = f"{self._index + 1}/{len(self._textures)} {entry.name}"
-        draw_ui_text(self._small, title, margin, header_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, title, Vec2(margin, header_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         header_y += line_height + 6
-        draw_ui_text(self._small, "Left/Right: texture", margin, header_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(
+            self._small, "Left/Right: texture", Vec2(margin, header_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+        )
 
         available_width = rl.get_screen_width() - margin * 2
         available_height = rl.get_screen_height() - (header_y + line_height + margin)

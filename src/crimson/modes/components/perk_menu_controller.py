@@ -8,7 +8,13 @@ import pyray as rl
 from grim.fonts.small import SmallFontData
 from grim.math import clamp
 
-from ...gameplay import GameplayState, PerkSelectionState, PlayerState, perk_selection_current_choices, perk_selection_pick
+from ...gameplay import (
+    GameplayState,
+    PerkSelectionState,
+    PlayerState,
+    perk_selection_current_choices,
+    perk_selection_pick,
+)
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
@@ -21,10 +27,10 @@ from ...ui.perk_menu import (
     button_width,
     draw_menu_item,
     draw_ui_text,
+    draw_wrapped_ui_text_in_rect,
     menu_item_hit_rect,
     perk_menu_compute_layout,
     perk_menu_panel_slide_x,
-    wrap_ui_text,
 )
 from ...ui.layout import ui_origin, ui_scale
 
@@ -166,8 +172,8 @@ class PerkMenuController:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_w)
+        origin = ui_origin(screen_w, screen_h, scale)
+        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -176,8 +182,7 @@ class PerkMenuController:
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
+            origin=origin,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
@@ -187,10 +192,9 @@ class PerkMenuController:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(ctx.font, label, x=item_x, y=item_y, scale=scale)
-            if rl.check_collision_point_rec(ctx.mouse, rect):
+            item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            if rect.contains(ctx.mouse):
                 self._selected_index = idx
                 if click:
                     if ctx.play_sfx is not None:
@@ -219,12 +223,9 @@ class PerkMenuController:
             scale=scale,
             force_wide=self._cancel_button.force_wide,
         )
-        cancel_x = computed.cancel_x
-        cancel_y = computed.cancel_y
         if button_update(
             self._cancel_button,
-            x=cancel_x,
-            y=cancel_y,
+            pos=computed.cancel_pos,
             width=cancel_w,
             dt_ms=float(dt_ui_ms),
             mouse=ctx.mouse,
@@ -274,16 +275,15 @@ class PerkMenuController:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_w)
+        origin = ui_origin(screen_w, screen_h, scale)
+        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         master_owned = int(ctx.player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(ctx.player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
+            origin=origin,
             scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
@@ -293,12 +293,19 @@ class PerkMenuController:
 
         panel_tex = ctx.assets.menu_panel
         if panel_tex is not None:
-            draw_classic_menu_panel(panel_tex, dst=computed.panel, shadow=bool(ctx.fx_detail))
+            draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.fx_detail))
 
         title_tex = ctx.assets.title_pick_perk
         if title_tex is not None:
             src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            rl.draw_texture_pro(title_tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            rl.draw_texture_pro(
+                title_tex,
+                src,
+                computed.title.to_rl(),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
 
         sponsor = None
         if master_owned:
@@ -306,31 +313,34 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(ctx.font, sponsor, computed.sponsor_x, computed.sponsor_y, scale=scale, color=UI_SPONSOR_COLOR)
+            draw_ui_text(ctx.font, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(ctx.font, label, x=item_x, y=item_y, scale=scale)
-            hovered = rl.check_collision_point_rec(ctx.mouse, rect) or (idx == self._selected_index)
-            draw_menu_item(ctx.font, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
+            item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
+            hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
+            draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
-        desc_x = float(computed.desc.x)
-        desc_y = float(computed.desc.y)
-        desc_w = float(computed.desc.width)
-        desc_h = float(computed.desc.height)
         desc_scale = scale * 0.85
-        desc_lines = wrap_ui_text(ctx.font, desc, max_width=desc_w, scale=desc_scale)
-        line_h = float(ctx.font.cell_size * desc_scale) if ctx.font is not None else float(20 * desc_scale)
-        y = desc_y
-        for line in desc_lines:
-            if y + line_h > desc_y + desc_h:
-                break
-            draw_ui_text(ctx.font, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
-            y += line_h
+        draw_wrapped_ui_text_in_rect(
+            ctx.font,
+            desc,
+            rect=computed.desc,
+            scale=desc_scale,
+            color=UI_TEXT_COLOR,
+        )
 
-        cancel_w = button_width(ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
-        button_draw(ctx.assets, ctx.font, self._cancel_button, x=computed.cancel_x, y=computed.cancel_y, width=cancel_w, scale=scale)
+        cancel_w = button_width(
+            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
+        button_draw(
+            ctx.assets,
+            ctx.font,
+            self._cancel_button,
+            pos=computed.cancel_pos,
+            width=cancel_w,
+            scale=scale,
+        )

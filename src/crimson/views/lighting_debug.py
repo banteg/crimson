@@ -11,6 +11,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -204,18 +205,15 @@ void main()
 
 @dataclass
 class _EmissiveProjectile:
-    x: float
-    y: float
-    vx: float
-    vy: float
+    pos: Vec2
+    vel: Vec2
     age: float
     ttl: float
 
 
 @dataclass
 class _FlyingLight:
-    x: float
-    y: float
+    pos: Vec2
     angle: float
     radius: float
     omega: float
@@ -242,8 +240,7 @@ class LightingDebugView:
 
         self.close_requested = False
 
-        self._ui_mouse_x = 0.0
-        self._ui_mouse_y = 0.0
+        self._ui_mouse = Vec2()
 
         self._simulate = True
         self._draw_debug = True
@@ -251,7 +248,12 @@ class LightingDebugView:
         self._debug_lightmap_preview = False
         self._debug_dump_next_frame = False
         self._debug_dump_count = 0
-        self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in ("", "0", "false", "False")
+        self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in (
+            "",
+            "0",
+            "false",
+            "False",
+        )
 
         self._sdf_shadow_k = 12.0
         self._sdf_shadow_floor = 0.25
@@ -321,8 +323,7 @@ class LightingDebugView:
             rl.Color(180, 140, 255, 255),
             rl.Color(255, 160, 90, 255),
         ]
-        px = float(self._player.pos_x)
-        py = float(self._player.pos_y)
+        center = self._player.pos
         self._fly_lights.clear()
         for i in range(int(self._fly_light_count)):
             angle = rng.random() * math.tau
@@ -331,14 +332,12 @@ class LightingDebugView:
             c = palette[i % len(palette)]
             if rng.random() < 0.5:
                 c = palette[int(rng.random() * len(palette)) % len(palette)]
-            x = clamp(px + math.cos(angle) * radius, 0.0, WORLD_SIZE)
-            y = clamp(py + math.sin(angle) * radius, 0.0, WORLD_SIZE)
+            spawn_pos = (center + Vec2.from_polar(angle, radius)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
             r = float(self._fly_light_range) * (0.8 + rng.random() * 0.5)
             sr = float(self._fly_light_source_radius) * (0.7 + rng.random() * 0.7)
             self._fly_lights.append(
                 _FlyingLight(
-                    x=float(x),
-                    y=float(y),
+                    pos=spawn_pos,
                     angle=float(angle),
                     radius=float(radius),
                     omega=float(omega),
@@ -354,8 +353,12 @@ class LightingDebugView:
         mouse = rl.get_mouse_position()
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
-        self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
+        self._ui_mouse = Vec2.from_xy(mouse).clamp_rect(
+            0.0,
+            0.0,
+            max(0.0, screen_w - 1.0),
+            max(0.0, screen_h - 1.0),
+        )
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -475,7 +478,10 @@ class LightingDebugView:
 
     def _ensure_render_target(self, rt: rl.RenderTexture | None, w: int, h: int) -> rl.RenderTexture:
         if rt is not None and int(getattr(rt, "id", 0)) > 0:
-            if int(getattr(getattr(rt, "texture", None), "width", 0)) == w and int(getattr(getattr(rt, "texture", None), "height", 0)) == h:
+            if (
+                int(getattr(getattr(rt, "texture", None), "width", 0)) == w
+                and int(getattr(getattr(rt, "texture", None), "height", 0)) == h
+            ):
                 return rt
             rl.unload_render_texture(rt)
         return rl.load_render_texture(w, h)
@@ -502,8 +508,7 @@ class LightingDebugView:
         rng = random.Random(int(seed))
         if self._player is None:
             return
-        center_x = float(self._player.pos_x)
-        center_y = float(self._player.pos_y)
+        center = self._player.pos
 
         self._world.creatures.reset()
         types = [
@@ -516,14 +521,10 @@ class LightingDebugView:
             t = types[idx % len(types)]
             angle = rng.random() * math.tau
             radius = 120.0 + rng.random() * 260.0
-            x = center_x + math.cos(angle) * radius
-            y = center_y + math.sin(angle) * radius
-            x = clamp(x, 40.0, WORLD_SIZE - 40.0)
-            y = clamp(y, 40.0, WORLD_SIZE - 40.0)
+            pos = (center + Vec2.from_polar(angle, radius)).clamp_rect(40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0)
             init = CreatureInit(
                 origin_template_id=0,
-                pos_x=float(x),
-                pos_y=float(y),
+                pos=pos,
                 heading=float(rng.random() * math.tau),
                 phase_seed=float(rng.random() * 999.0),
                 type_id=t,
@@ -563,8 +564,7 @@ class LightingDebugView:
         except Exception:
             self._solid_white = None
 
-        self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
-        self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         if self._debug_auto_dump:
             self._debug_dump_next_frame = True
 
@@ -590,31 +590,22 @@ class LightingDebugView:
         self._update_ui_mouse()
         self._handle_debug_input()
 
-        aim_x, aim_y = self._world.screen_to_world(self._ui_mouse_x, self._ui_mouse_y)
+        aim = self._world.screen_to_world(self._ui_mouse)
         if self._player is not None:
-            self._player.aim_x = float(aim_x)
-            self._player.aim_y = float(aim_y)
+            self._player.aim = aim
 
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         dt_world = dt_frame if self._simulate else 0.0
         self._world.update(
             dt_world,
             inputs=[
                 PlayerInput(
-                    move_x=move_x,
-                    move_y=move_y,
-                    aim_x=float(aim_x),
-                    aim_y=float(aim_y),
+                    move=move,
+                    aim=aim,
                     fire_down=False,
                     fire_pressed=False,
                     reload_pressed=False,
@@ -627,65 +618,59 @@ class LightingDebugView:
         if not self._debug_auto_dump and rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._proj_fire_cd -= dt_frame
             while self._proj_fire_cd <= 0.0:
-                self._spawn_projectile(aim_x=float(aim_x), aim_y=float(aim_y))
+                self._spawn_projectile(aim=aim)
                 self._proj_fire_cd += float(self._proj_fire_interval)
         else:
             self._proj_fire_cd = max(0.0, self._proj_fire_cd - dt_frame)
 
         if dt_world > 0.0:
             if self._fly_lights_enabled and self._fly_lights and self._player is not None:
-                px = float(self._player.pos_x)
-                py = float(self._player.pos_y)
+                center = self._player.pos
                 for fl in self._fly_lights:
                     fl.angle += fl.omega * dt_world
                     wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
                     r = fl.radius * wobble
-                    fl.x = clamp(px + math.cos(fl.angle) * r, 0.0, WORLD_SIZE)
-                    fl.y = clamp(py + math.sin(fl.angle) * r, 0.0, WORLD_SIZE)
+                    pos = (center + Vec2.from_polar(fl.angle, r)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
+                    fl.pos = pos
 
             keep: list[_EmissiveProjectile] = []
             margin = 80.0
             for proj in self._projectiles:
                 proj.age += dt_world
-                proj.x += proj.vx * dt_world
-                proj.y += proj.vy * dt_world
+                proj.pos = proj.pos + proj.vel * dt_world
                 if proj.age >= proj.ttl:
                     continue
-                if proj.x < -margin or proj.x > WORLD_SIZE + margin or proj.y < -margin or proj.y > WORLD_SIZE + margin:
+                if (
+                    proj.pos.x < -margin
+                    or proj.pos.x > WORLD_SIZE + margin
+                    or proj.pos.y < -margin
+                    or proj.pos.y > WORLD_SIZE + margin
+                ):
                     continue
                 keep.append(proj)
             self._projectiles = keep[-self._max_projectiles :]
 
-    def _spawn_projectile(self, *, aim_x: float, aim_y: float) -> None:
+    def _spawn_projectile(self, *, aim: Vec2) -> None:
         if self._player is None:
             return
-        px = float(self._player.pos_x)
-        py = float(self._player.pos_y)
-        dx = float(aim_x) - px
-        dy = float(aim_y) - py
-        d = math.hypot(dx, dy)
-        if d <= 1e-3:
-            dx = 1.0
-            dy = 0.0
-            d = 1.0
-        dx /= d
-        dy /= d
+        origin = self._player.pos
+        direction, distance = (aim - origin).normalized_with_length()
+        if distance <= 1e-3:
+            direction = Vec2(1.0, 0.0)
         muzzle = 18.0
-        x = px + dx * muzzle
-        y = py + dy * muzzle
+        spawn_pos = origin + direction * muzzle
         speed = float(self._proj_speed)
+        velocity = direction * speed
         self._projectiles.append(
             _EmissiveProjectile(
-                x=float(x),
-                y=float(y),
-                vx=float(dx) * speed,
-                vy=float(dy) * speed,
+                pos=spawn_pos,
+                vel=velocity,
                 age=0.0,
                 ttl=float(self._proj_ttl),
             )
         )
 
-    def _dump_debug(self, *, light_x: float, light_y: float, sdf_ok: bool) -> None:
+    def _dump_debug(self, *, light_pos: Vec2, sdf_ok: bool) -> None:
         if self._light_rt is None:
             return
         out_dir = Path("artifacts") / "lighting-debug"
@@ -712,18 +697,18 @@ class LightingDebugView:
             iw = int(img.width)
             ih = int(img.height)
 
-            def sample(x: float, y: float) -> list[int]:
-                xi = max(0, min(iw - 1, int(x)))
-                yi = max(0, min(ih - 1, int(y)))
+            def sample(pos: Vec2) -> list[int]:
+                xi = max(0, min(iw - 1, int(pos.x)))
+                yi = max(0, min(ih - 1, int(pos.y)))
                 c = rl.get_image_color(img, xi, yi)
                 return [int(c.r), int(c.g), int(c.b), int(c.a)]
 
-            samples["light_xy"] = sample(light_x, light_y)
-            samples["light_xy_flip_y"] = sample(light_x, float(ih - 1) - light_y)
-            samples["center"] = sample(float(iw) * 0.5, float(ih) * 0.5)
-            samples["center_flip_y"] = sample(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5)
-            samples["tl"] = sample(0.0, 0.0)
-            samples["bl"] = sample(0.0, float(ih - 1))
+            samples["light_xy"] = sample(light_pos)
+            samples["light_xy_flip_y"] = sample(Vec2(light_pos.x, float(ih - 1) - light_pos.y))
+            samples["center"] = sample(Vec2(float(iw) * 0.5, float(ih) * 0.5))
+            samples["center_flip_y"] = sample(Vec2(float(iw) * 0.5, float(ih - 1) - float(ih) * 0.5))
+            samples["tl"] = sample(Vec2())
+            samples["bl"] = sample(Vec2(0.0, float(ih - 1)))
 
             step_x = max(1, iw // 32)
             step_y = max(1, ih // 32)
@@ -787,7 +772,7 @@ class LightingDebugView:
             "sdf_ok": bool(sdf_ok),
             "screen_size": [int(rl.get_screen_width()), int(rl.get_screen_height())],
             "light_rt_size": [w, h],
-            "light_pos": [float(light_x), float(light_y)],
+            "light_pos": [light_pos.x, light_pos.y],
             "light_radius": float(self._light_radius),
             "light_source_radius": float(self._light_source_radius),
             "light_tint_rgba": [int(lt.r), int(lt.g), int(lt.b), int(lt.a)],
@@ -818,7 +803,7 @@ class LightingDebugView:
         except Exception:
             pass
 
-    def _render_lightmap_sdf(self, *, light_x: float, light_y: float) -> bool:
+    def _render_lightmap_sdf(self, *, light_pos: Vec2) -> bool:
         if self._light_rt is None:
             return False
         shader = self._ensure_sdf_shader()
@@ -829,8 +814,8 @@ class LightingDebugView:
 
         w = float(self._light_rt.texture.width)
         h = float(self._light_rt.texture.height)
-        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
-        scale = (scale_x + scale_y) * 0.5
+        _camera, view_scale = self._world.renderer._world_params()
+        scale = view_scale.avg_component()
 
         def occ_radius(size: float) -> float:
             r = float(size) * 0.5 * scale
@@ -840,33 +825,33 @@ class LightingDebugView:
         circles: list[tuple[float, float, float]] = []
 
         if self._player is not None:
-            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
+            player_screen = self._world.world_to_screen(self._player.pos)
             pr = occ_radius(float(self._player.size))
-            circles.append((float(px), float(py), float(pr)))
+            circles.append((player_screen.x, player_screen.y, float(pr)))
 
         for creature in self._world.creatures.entries:
             if not creature.active:
                 continue
-            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
+            creature_screen = self._world.world_to_screen(creature.pos)
             cr = occ_radius(float(creature.size))
-            circles.append((float(sx), float(sy), float(cr)))
+            circles.append((creature_screen.x, creature_screen.y, float(cr)))
 
         if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
             circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
         self._last_sdf_circles = circles
 
-        def set_vec2(name: str, x: float, y: float) -> None:
+        def set_vec2(name: str, value: Vec2) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            buf = rl.ffi.new("float[2]", [float(x), float(y)])
+            buf = rl.ffi.new("float[2]", [value.x, value.y])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
 
-        def set_vec4(name: str, x: float, y: float, z: float, q: float) -> None:
+        def set_vec4(name: str, value: tuple[float, float, float, float]) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            buf = rl.ffi.new("float[4]", [float(x), float(y), float(z), float(q)])
+            buf = rl.ffi.new("float[4]", [float(value[0]), float(value[1]), float(value[2]), float(value[3])])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC4)
 
         def set_float(name: str, value: float) -> None:
@@ -888,7 +873,7 @@ class LightingDebugView:
         rl.rl_disable_depth_test()
         rl.rl_disable_depth_mask()
         rl.begin_shader_mode(shader)
-        set_vec2("u_resolution", w, h)
+        set_vec2("u_resolution", Vec2(w, h))
         set_float("u_shadow_k", float(self._sdf_shadow_k))
         set_float("u_shadow_floor", float(self._sdf_shadow_floor))
         set_int("u_debug_mode", int(self._sdf_debug_mode))
@@ -914,8 +899,8 @@ class LightingDebugView:
         def cursor_light() -> tuple[float, float, float, float, float, float, float]:
             lt = self._light_tint
             return (
-                float(light_x),
-                float(light_y),
+                light_pos.x,
+                light_pos.y,
                 float(self._light_radius),
                 float(self._light_source_radius),
                 float(lt.r) / 255.0,
@@ -924,12 +909,12 @@ class LightingDebugView:
             )
 
         def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
-            sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+            screen = self._world.world_to_screen(proj.pos)
             fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
-                float(sx),
-                float(sy),
+                screen.x,
+                screen.y,
                 float(self._proj_light_range),
                 float(self._proj_light_source_radius),
                 float(pr.r) / 255.0 * fade,
@@ -944,12 +929,12 @@ class LightingDebugView:
                 lights.append(proj_light(self._projectiles[-1]))
             elif self._fly_lights_enabled and self._fly_lights:
                 fl = self._fly_lights[0]
-                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                screen = self._world.world_to_screen(fl.pos)
                 c = fl.color
                 lights.append(
                     (
-                        float(sx),
-                        float(sy),
+                        screen.x,
+                        screen.y,
                         float(fl.range),
                         float(fl.source_radius),
                         float(c.r) / 255.0,
@@ -968,12 +953,12 @@ class LightingDebugView:
                     lights.append(proj_light(proj))
             if self._fly_lights_enabled and self._fly_lights:
                 for fl in self._fly_lights[:12]:
-                    sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                    screen = self._world.world_to_screen(fl.pos)
                     c = fl.color
                     lights.append(
                         (
-                            float(sx),
-                            float(sy),
+                            screen.x,
+                            screen.y,
                             float(fl.range),
                             float(fl.source_radius),
                             float(c.r) / 255.0,
@@ -993,8 +978,8 @@ class LightingDebugView:
         for lx, ly, lrange, lsrc, lr, lg, lb in lights:
             if lx < -lrange or lx > w + lrange or ly < -lrange or ly > h + lrange:
                 continue
-            set_vec4("u_light_color", lr, lg, lb, 1.0)
-            set_vec2("u_light_pos", lx, ly)
+            set_vec4("u_light_color", (lr, lg, lb, 1.0))
+            set_vec2("u_light_pos", Vec2(lx, ly))
             set_float("u_light_range", lrange)
             set_float("u_light_source_radius", lsrc)
             draw_fullscreen()
@@ -1010,7 +995,13 @@ class LightingDebugView:
     def draw(self) -> None:
         if self._player is None:
             rl.clear_background(rl.Color(10, 10, 12, 255))
-            draw_ui_text(self._small, "Lighting debug view: missing player", 16.0, 16.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small,
+                "Lighting debug view: missing player",
+                Vec2(16.0, 16.0),
+                scale=UI_TEXT_SCALE,
+                color=UI_ERROR_COLOR,
+            )
             return
 
         self._ensure_render_targets()
@@ -1019,16 +1010,14 @@ class LightingDebugView:
             draw_ui_text(
                 self._small,
                 "Lighting debug view: missing render targets",
-                16.0,
-                16.0,
+                Vec2(16.0, 16.0),
                 scale=UI_TEXT_SCALE,
                 color=UI_ERROR_COLOR,
             )
             return
 
-        light_x = float(self._ui_mouse_x)
-        light_y = float(self._ui_mouse_y)
-        sdf_ok = self._render_lightmap_sdf(light_x=light_x, light_y=light_y)
+        light_pos = self._ui_mouse
+        sdf_ok = self._render_lightmap_sdf(light_pos=light_pos)
         if not sdf_ok:
             rl.begin_texture_mode(self._light_rt)
             rl.clear_background(self._ambient)
@@ -1047,12 +1036,12 @@ class LightingDebugView:
         if self._projectiles:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for proj in self._projectiles:
-                sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+                screen = self._world.world_to_screen(proj.pos)
                 fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
                 c = self._proj_light_tint
                 rl.draw_circle(
-                    int(sx),
-                    int(sy),
+                    int(screen.x),
+                    int(screen.y),
                     float(self._proj_radius_px),
                     rl.Color(int(c.r), int(c.g), int(c.b), int(220.0 * fade)),
                 )
@@ -1061,11 +1050,11 @@ class LightingDebugView:
         if self._fly_lights_enabled and self._fly_lights:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for fl in self._fly_lights:
-                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                screen = self._world.world_to_screen(fl.pos)
                 c = fl.color
                 rl.draw_circle(
-                    int(sx),
-                    int(sy),
+                    int(screen.x),
+                    int(screen.y),
                     4.0,
                     rl.Color(int(c.r), int(c.g), int(c.b), 220),
                 )
@@ -1088,39 +1077,57 @@ class LightingDebugView:
                 rl.WHITE,
             )
             rl.end_blend_mode()
-            rl.draw_rectangle_lines(int(dst_preview.x), int(dst_preview.y), int(dst_preview.width), int(dst_preview.height), rl.Color(255, 255, 255, 120))
+            rl.draw_rectangle_lines(
+                int(dst_preview.x),
+                int(dst_preview.y),
+                int(dst_preview.width),
+                int(dst_preview.height),
+                rl.Color(255, 255, 255, 120),
+            )
 
-        _cam_x, _cam_y, scale_x, scale_y = self._world.renderer._world_params()
-        scale = (scale_x + scale_y) * 0.5
+        _camera, view_scale = self._world.renderer._world_params()
+        scale = view_scale.avg_component()
 
         if self._draw_occluders:
-            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
+            player_screen = self._world.world_to_screen(self._player.pos)
             rl.draw_circle_lines(
-                int(px),
-                int(py),
-                int(max(1.0, float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px))),
+                int(player_screen.x),
+                int(player_screen.y),
+                int(
+                    max(
+                        1.0,
+                        float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul)
+                        + float(self._occluder_radius_pad_px),
+                    )
+                ),
                 rl.Color(80, 220, 120, 180),
             )
             for creature in self._world.creatures.entries:
                 if not creature.active:
                     continue
-                sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-                r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
-                rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
+                creature_screen = self._world.world_to_screen(creature.pos)
+                r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(
+                    self._occluder_radius_pad_px
+                )
+                rl.draw_circle_lines(
+                    int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180)
+                )
 
-        rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
+        rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), 6, rl.Color(255, 255, 255, 220))
         if self._cursor_light_enabled:
-            rl.draw_circle_lines(int(light_x), int(light_y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
             rl.draw_circle_lines(
-                int(light_x),
-                int(light_y),
+                int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40)
+            )
+            rl.draw_circle_lines(
+                int(light_pos.x),
+                int(light_pos.y),
                 int(max(1.0, self._light_source_radius)),
                 rl.Color(255, 255, 255, 100),
             )
 
         if self._debug_dump_next_frame:
             self._debug_dump_next_frame = False
-            self._dump_debug(light_x=light_x, light_y=light_y, sdf_ok=sdf_ok)
+            self._dump_debug(light_pos=light_pos, sdf_ok=sdf_ok)
             if self._debug_auto_dump:
                 self.close_requested = True
 
@@ -1152,8 +1159,7 @@ class LightingDebugView:
                 draw_ui_text(
                     self._small,
                     line,
-                    x0,
-                    y0 + lh * float(idx),
+                    Vec2(x0, y0 + lh * float(idx)),
                     scale=UI_TEXT_SCALE,
                     color=UI_TEXT_COLOR if idx < 5 else UI_HINT_COLOR,
                 )

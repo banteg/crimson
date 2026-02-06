@@ -10,6 +10,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId
@@ -76,8 +77,7 @@ class TypoShooterMode(BaseGameplayMode):
         self._typo = _TypoState()
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(0)
-        self._aim_target_x = 0.0
-        self._aim_target_y = 0.0
+        self._aim_target = Vec2()
         self._unique_words: list[str] | None = None
 
         self._ui_assets = None
@@ -98,8 +98,7 @@ class TypoShooterMode(BaseGameplayMode):
             if words:
                 self._unique_words = words
 
-        self._aim_target_x = float(self._player.pos_x) + 128.0
-        self._aim_target_y = float(self._player.pos_y)
+        self._aim_target = self._player.pos.offset(dx=128.0)
 
         enforce_typo_player_frame(self._player)
 
@@ -165,8 +164,7 @@ class TypoShooterMode(BaseGameplayMode):
                 if 0 <= target_idx < len(self._creatures.entries):
                     creature = self._creatures.entries[target_idx]
                     if creature.active:
-                        self._aim_target_x = float(creature.x)
-                        self._aim_target_y = float(creature.y)
+                        self._aim_target = creature.pos
                 fire_pressed = True
             if result.reload_requested:
                 reload_pressed = True
@@ -174,7 +172,7 @@ class TypoShooterMode(BaseGameplayMode):
         return fire_pressed, reload_pressed
 
     def _spawn_tinted_creature(
-        self, *, type_id: CreatureTypeId, pos_x: float, pos_y: float, tint_rgba: tuple[float, float, float, float]
+        self, *, type_id: CreatureTypeId, pos: Vec2, tint_rgba: tuple[float, float, float, float]
     ) -> int:
         rand = self._state.rng.rand
         heading = float(int(rand()) % 314) * 0.01
@@ -189,8 +187,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         init = CreatureInit(
             origin_template_id=0,
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
+            pos=pos,
             heading=float(heading),
             phase_seed=0.0,
             type_id=type_id,
@@ -260,8 +257,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         enforce_typo_player_frame(self._player)
         input_state = build_typo_player_input(
-            aim_x=float(self._aim_target_x),
-            aim_y=float(self._aim_target_y),
+            aim=self._aim_target,
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )
@@ -290,8 +286,7 @@ class TypoShooterMode(BaseGameplayMode):
         for call in spawns:
             creature_idx = self._spawn_tinted_creature(
                 type_id=call.type_id,
-                pos_x=float(call.pos_x),
-                pos_y=float(call.pos_y),
+                pos=call.pos,
                 tint_rgba=call.tint_rgba,
             )
             self._names.assign_random(
@@ -307,22 +302,19 @@ class TypoShooterMode(BaseGameplayMode):
         # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=mouse_x,
-            y=mouse_y,
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def _draw_name_labels(self) -> None:
         names = self._names.names
@@ -345,17 +337,17 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            sx, sy = self._world.world_to_screen(float(creature.x), float(creature.y))
-            y = float(sy) - 50.0
+            screen_pos = self._world.world_to_screen(creature.pos)
+            y = screen_pos.y - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
-            x = float(sx) - text_w * 0.5
+            x = screen_pos.x - text_w * 0.5
 
             bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
             bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
             fg = rl.Color(255, 255, 255, int(255 * label_alpha))
             rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
-            self._draw_ui_text(text, x, y, fg, scale=NAME_LABEL_SCALE)
+            self._draw_ui_text(text, Vec2(x, y), fg, scale=NAME_LABEL_SCALE)
 
     def _draw_typing_box(self) -> None:
         screen_h = float(rl.get_screen_height())
@@ -386,7 +378,7 @@ class TypoShooterMode(BaseGameplayMode):
         text = self._typing.text
         full_text = TYPING_PROMPT + text
         text_color = rl.Color(255, 255, 255, 255)
-        self._draw_ui_text(full_text, TYPING_TEXT_X, text_y, text_color, scale=1.0)
+        self._draw_ui_text(full_text, Vec2(TYPING_TEXT_X, text_y), text_color, scale=1.0)
 
         # Draw cursor (original: alpha = sin(game_time_s * 4.0) > 0.0 ? 0.4 : 1.0)
         cursor_dim = math.sin(float(self._cursor_pulse_time) * 4.0) > 0.0
@@ -399,7 +391,7 @@ class TypoShooterMode(BaseGameplayMode):
         cursor_y = text_y
 
         # Draw cursor as "_" character (original: DAT_004712b8 = "_")
-        self._draw_ui_text(TYPING_CURSOR, cursor_x, cursor_y, cursor_color, scale=1.0)
+        self._draw_ui_text(TYPING_CURSOR, Vec2(cursor_x, cursor_y), cursor_color, scale=1.0)
 
     def draw(self) -> None:
         alive = self._player.health > 0.0
@@ -437,11 +429,11 @@ class TypoShooterMode(BaseGameplayMode):
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         if show_gameplay_ui:
             self._draw_aim_cursor()

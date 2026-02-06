@@ -6,6 +6,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.geom import Vec2
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,9 +51,9 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
     return SmallFontData(widths=widths, texture=texture)
 
 
-def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
-    x_pos = x
-    y_pos = y
+def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
+    x_pos = pos.x
+    y_pos = pos.y
     scale_px = scale * SMALL_FONT_RENDER_SCALE
     line_height = font.cell_size * scale_px
     snap = abs(scale_px - round(scale_px)) < 0.001
@@ -62,7 +63,7 @@ def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: f
     bias = 0.0 if SMALL_FONT_FILTER == rl.TEXTURE_FILTER_POINT else SMALL_FONT_UV_BIAS_PX
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
-            x_pos = x
+            x_pos = pos.x
             y_pos += line_height
             continue
         if value == 0x0D:

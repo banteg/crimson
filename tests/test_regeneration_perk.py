@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.gameplay import GameplayState, PlayerState, perks_update_effects
@@ -18,7 +20,7 @@ def test_perks_update_effects_regeneration_heals_when_rng_allows() -> None:
     state = GameplayState()
     state.rng = _FixedRng(1)  # rand & 1 == 1
 
-    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0, health=90.0)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
     player.perk_counts[int(PerkId.REGENERATION)] = 1
 
     perks_update_effects(state, [player], 0.2)
@@ -30,7 +32,7 @@ def test_perks_update_effects_regeneration_skips_when_rng_blocks() -> None:
     state = GameplayState()
     state.rng = _FixedRng(0)  # rand & 1 == 0
 
-    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0, health=90.0)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
     player.perk_counts[int(PerkId.REGENERATION)] = 1
 
     perks_update_effects(state, [player], 0.2)

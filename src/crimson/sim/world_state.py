@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from typing import Callable
+
+from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..camera import camera_shake_update
@@ -24,9 +25,8 @@ from ..gameplay import (
 )
 from ..perks import PerkId
 from ..player_damage import player_take_projectile_damage
+from ..projectiles import ProjectileHit
 from .world_defs import CREATURE_ANIM
-
-ProjectileHit = tuple[int, float, float, float, float, float, float]
 
 
 @dataclass(slots=True)
@@ -76,12 +76,10 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
 
-    px = float(player.pos_x)
-    py = float(player.pos_y)
+    player_pos = player.pos
     rand = ctx.state.rng.rand
     ctx.state.effects.spawn_explosion_burst(
-        pos_x=px,
-        pos_y=py,
+        pos=player_pos,
         scale=1.8,
         rand=rand,
         detail_preset=int(ctx.detail_preset),
@@ -95,12 +93,11 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
         if float(creature.hp) <= 0.0:
             continue
 
-        dx = float(creature.x) - px
-        dy = float(creature.y) - py
-        if abs(dx) > 512.0 or abs(dy) > 512.0:
+        delta = creature.pos - player_pos
+        if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:
             continue
 
-        remaining = 512.0 - math.hypot(dx, dy)
+        remaining = 512.0 - delta.length()
         if remaining <= 0.0:
             continue
 
@@ -110,8 +107,7 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
             creature,
             damage_amount=damage,
             damage_type=3,
-            impulse_x=0.0,
-            impulse_y=0.0,
+            impulse=Vec2(),
             owner_id=-1 - int(player.index),
             dt=float(ctx.dt),
             players=ctx.players,
@@ -204,15 +200,14 @@ class WorldState:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
-        prev_positions = [(player.pos_x, player.pos_y) for player in self.players]
+        prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
 
-        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position
-        # (`player_state_table.aim_x/aim_y`). Our aim is otherwise updated inside `player_update`, so stage it here.
+        # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position.
+        # Our aim is otherwise updated inside `player_update`, so stage it here.
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player.aim_x = float(input_state.aim_x)
-            player.aim_y = float(input_state.aim_y)
+            player.aim = input_state.aim
 
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")
@@ -245,8 +240,7 @@ class WorldState:
             creature_index: int,
             damage: float,
             damage_type: int,
-            impulse_x: float,
-            impulse_y: float,
+            impulse: Vec2,
             owner_id: int,
         ) -> None:
             idx = int(creature_index)
@@ -261,8 +255,7 @@ class WorldState:
                 creature,
                 damage_amount=float(damage),
                 damage_type=int(damage_type),
-                impulse_x=float(impulse_x),
-                impulse_y=float(impulse_y),
+                impulse=impulse,
                 owner_id=int(owner_id),
                 dt=float(dt),
                 players=self.players,
@@ -399,8 +392,7 @@ class WorldState:
             for pickup in pickups:
                 if pickup.bonus_id != int(BonusId.NUKE):
                     self.state.effects.spawn_burst(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos=pickup.pos,
                         count=12,
                         rand=self.state.rng.rand,
                         detail_preset=detail_preset,
@@ -413,8 +405,7 @@ class WorldState:
                     )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos=pickup.pos,
                         detail_preset=detail_preset,
                         color_r=0.6,
                         color_g=0.6,
@@ -423,8 +414,7 @@ class WorldState:
                     )
                 elif pickup.bonus_id == int(BonusId.FREEZE):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos=pickup.pos,
                         detail_preset=detail_preset,
                         color_r=0.3,
                         color_g=0.5,
@@ -503,7 +493,7 @@ class WorldState:
             if idx >= len(prev_positions):
                 continue
             prev_x, prev_y = prev_positions[idx]
-            speed = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
+            speed = Vec2(player.pos.x - prev_x, player.pos.y - prev_y).length()
             move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
             player.move_phase, _ = creature_anim_advance_phase(
                 player.move_phase,

@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pyray as rl
+
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.quest_results import PANEL_SLIDE_START_MS, QuestResultsUi
 
@@ -64,9 +66,9 @@ def _patch_draw_environment(  # noqa: ANN001
     monkeypatch.setattr("crimson.ui.quest_results.QuestResultsUi._text_width", lambda _self, text, _scale: float(len(text) * 8))
     monkeypatch.setattr(
         "crimson.ui.quest_results.QuestResultsUi._draw_small",
-        lambda _self, text, x, y, _scale, color: (
+        lambda _self, text, pos, _scale, color: (
             captured_text.append(str(text)),
-            captured_draws.append((str(text), float(x), float(y), color)) if captured_draws is not None else None,
+            captured_draws.append((str(text), float(pos.x), float(pos.y), color)) if captured_draws is not None else None,
         ),
     )
     monkeypatch.setattr(
@@ -81,7 +83,7 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
     texture_draws: list[object] = []
     _patch_draw_environment(monkeypatch, captured_text, texture_draws)
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     assert "State your name trooper!" in captured_text
     assert "Score" in captured_text
@@ -107,7 +109,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tm
         line_draws=line_draws,
     )
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     draw_map = {text: (x, y, color) for text, x, y, color in captured_draws}
 
@@ -136,7 +138,7 @@ def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_
     texture_draws: list[object] = []
     _patch_draw_environment(monkeypatch, captured_text, texture_draws)
 
-    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     assert "Score" in captured_text
     assert "Experience" in captured_text

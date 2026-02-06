@@ -34,4 +34,4 @@ class CrtRand:
 
 
 class Crand(CrtRand):
-    """Backward-compatible name for the MSVCRT LCG."""
+    """MSVCRT-compatible `rand()` LCG."""

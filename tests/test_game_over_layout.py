@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pyray as rl
+
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import GameOverUi, PANEL_SLIDE_DURATION_MS
 
@@ -11,13 +13,13 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=object())
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
-    panel_640, _left_640, top_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
-    assert top_640 == 29.0
-    assert panel_640.y == 29.0
+    layout_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
+    assert layout_640.top_left.y == 29.0
+    assert layout_640.panel.y == 29.0
 
-    panel_1024, _left_1024, top_1024 = ui._panel_layout(screen_w=1024.0, scale=1.0)
-    assert top_1024 == 119.0
-    assert panel_1024.y == 119.0
+    layout_1024 = ui._panel_layout(screen_w=1024.0, scale=1.0)
+    assert layout_1024.top_left.y == 119.0
+    assert layout_1024.panel.y == 119.0
 
 
 def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_path: Path) -> None:
@@ -29,8 +31,8 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
 
     captured_x: list[float] = []
 
-    def _button_update(_button, *, x, y, width, dt_ms, mouse, click):  # noqa: ANN001, ARG001
-        captured_x.append(float(x))
+    def _button_update(_button, *, pos, width, dt_ms, mouse, click):  # noqa: ANN001, ARG001
+        captured_x.append(float(pos.x))
         return False
 
     monkeypatch.setattr("crimson.ui.game_over.button_update", _button_update)
@@ -44,7 +46,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
         0.0,
         record=HighScoreRecord.blank(),
         player_name_default="",
-        mouse=SimpleNamespace(x=0.0, y=0.0),
+        mouse=rl.Vector2(0.0, 0.0),
     )
 
     # At 640x480: panel_left = -24, banner_x = panel_left + 214, first button x = banner_x + 52.
@@ -86,7 +88,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, tmp_path: Path) -> 
         record=HighScoreRecord.blank(),
         banner_kind="reaper",
         hud_assets=None,
-        mouse=SimpleNamespace(x=0.0, y=0.0),
+        mouse=rl.Vector2(0.0, 0.0),
     )
 
     assert len(captured_panel) == 1

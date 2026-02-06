@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
+from grim.geom import Vec2
+
 from ..creatures.spawn import SpawnId
 
 
@@ -15,8 +17,7 @@ class QuestContext:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SpawnEntry:
-    x: float
-    y: float
+    pos: Vec2
     heading: float
     spawn_id: SpawnId
     trigger_ms: int

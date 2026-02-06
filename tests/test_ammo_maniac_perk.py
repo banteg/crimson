@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.gameplay import GameplayState, PlayerState, perk_apply
@@ -13,8 +15,8 @@ def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
     owner_weapon = int(ProjectileTypeId.ASSAULT_RIFLE)
     other_weapon = int(ProjectileTypeId.PISTOL)
 
-    owner = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=owner_weapon)
-    other = PlayerState(index=1, pos_x=0.0, pos_y=0.0, weapon_id=other_weapon)
+    owner = PlayerState(index=0, pos=Vec2(), weapon_id=owner_weapon)
+    other = PlayerState(index=1, pos=Vec2(), weapon_id=other_weapon)
 
     perk_apply(state, [owner, other], PerkId.AMMO_MANIAC)
 

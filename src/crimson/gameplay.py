@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import math
 from typing import TYPE_CHECKING, Callable, Protocol
 
-from grim.math import clamp, distance_sq
+from grim.geom import Vec2
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
@@ -32,14 +32,12 @@ if TYPE_CHECKING:
 
 
 class _HasPos(Protocol):
-    pos_x: float
-    pos_y: float
+    pos: Vec2
 
 
 class _CreatureForPerks(Protocol):
     active: bool
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     flags: int
     hitbox_size: float
@@ -50,10 +48,8 @@ class _CreatureForPerks(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class PlayerInput:
-    move_x: float = 0.0
-    move_y: float = 0.0
-    aim_x: float = 0.0
-    aim_y: float = 0.0
+    move: Vec2 = field(default_factory=Vec2)
+    aim: Vec2 = field(default_factory=Vec2)
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
@@ -67,8 +63,7 @@ WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 @dataclass(slots=True)
 class PlayerState:
     index: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     health: float = 100.0
     size: float = 50.0
 
@@ -79,11 +74,9 @@ class PlayerState:
     death_timer: float = 16.0
     low_health_timer: float = 100.0
 
-    aim_x: float = 0.0
-    aim_y: float = 0.0
+    aim: Vec2 = field(default_factory=Vec2)
     aim_heading: float = 0.0
-    aim_dir_x: float = 1.0
-    aim_dir_y: float = 0.0
+    aim_dir: Vec2 = field(default_factory=lambda: Vec2(1.0, 0.0))
     evil_eyes_target_creature: int = -1
 
     bonus_aim_hover_index: int = -1
@@ -194,7 +187,15 @@ WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
 class BonusHudState:
     slots: list[BonusHudSlot] = field(default_factory=lambda: [BonusHudSlot() for _ in range(BONUS_HUD_SLOT_COUNT)])
 
-    def register(self, bonus_id: BonusId, *, label: str, icon_id: int, timer_ref: _TimerRef, timer_ref_alt: _TimerRef | None = None) -> None:
+    def register(
+        self,
+        bonus_id: BonusId,
+        *,
+        label: str,
+        icon_id: int,
+        timer_ref: _TimerRef,
+        timer_ref_alt: _TimerRef | None = None,
+    ) -> None:
         existing = None
         free = None
         for slot in self.slots:
@@ -223,8 +224,7 @@ class BonusEntry:
     picked: bool = False
     time_left: float = 0.0
     time_max: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     amount: int = 0
 
 
@@ -233,8 +233,7 @@ class BonusPickupEvent:
     player_index: int
     bonus_id: int
     amount: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
 
 
 # Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
@@ -286,8 +285,7 @@ class BonusPool:
 
     def spawn_at(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         bonus_id: int | BonusId,
         duration_override: int = -1,
         *,
@@ -303,13 +301,14 @@ class BonusPool:
         if entry is None:
             return None
 
-        x = clamp(float(pos_x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
-        y = clamp(float(pos_y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
-
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos_x = x
-        entry.pos_y = y
+        entry.pos = pos.clamp_rect(
+            BONUS_SPAWN_MARGIN,
+            BONUS_SPAWN_MARGIN,
+            float(world_width) - BONUS_SPAWN_MARGIN,
+            float(world_height) - BONUS_SPAWN_MARGIN,
+        )
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -322,8 +321,7 @@ class BonusPool:
 
     def spawn_at_pos(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         *,
         state: "GameplayState",
         players: list["PlayerState"],
@@ -333,10 +331,10 @@ class BonusPool:
         if int(state.game_mode) == int(GameMode.RUSH):
             return None
         if (
-            pos_x < BONUS_SPAWN_MARGIN
-            or pos_y < BONUS_SPAWN_MARGIN
-            or pos_x > world_width - BONUS_SPAWN_MARGIN
-            or pos_y > world_height - BONUS_SPAWN_MARGIN
+            pos.x < BONUS_SPAWN_MARGIN
+            or pos.y < BONUS_SPAWN_MARGIN
+            or pos.x > world_width - BONUS_SPAWN_MARGIN
+            or pos.y > world_height - BONUS_SPAWN_MARGIN
         ):
             return None
 
@@ -344,7 +342,7 @@ class BonusPool:
         for entry in self._entries:
             if entry.bonus_id == 0:
                 continue
-            if distance_sq(pos_x, pos_y, entry.pos_x, entry.pos_y) < min_dist_sq:
+            if Vec2.distance_sq(pos, entry.pos) < min_dist_sq:
                 return None
 
         entry = self._alloc_slot()
@@ -354,8 +352,7 @@ class BonusPool:
         bonus_id = bonus_pick_random_type(self, state, players)
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos = pos
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -371,8 +368,7 @@ class BonusPool:
 
     def try_spawn_on_kill(
         self,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         *,
         state: "GameplayState",
         players: list["PlayerState"],
@@ -396,8 +392,7 @@ class BonusPool:
         if players and any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players):
             if (int(rng.rand()) & 3) < 3:
                 entry = self.spawn_at_pos(
-                    pos_x,
-                    pos_y,
+                    pos,
                     state=state,
                     players=players,
                     world_width=world_width,
@@ -418,7 +413,9 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == int(WeaponId.PISTOL) or (players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)):
+                if entry.amount == int(WeaponId.PISTOL) or (
+                    players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
+                ):
                     self._clear_entry(entry)
                     return None
 
@@ -437,8 +434,7 @@ class BonusPool:
                     return None
 
         entry = self.spawn_at_pos(
-            pos_x,
-            pos_y,
+            pos,
             state=state,
             players=players,
             world_width=world_width,
@@ -449,7 +445,7 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            if players and distance_sq(pos_x, pos_y, players[0].pos_x, players[0].pos_y) < near_sq:
+            if players and Vec2.distance_sq(pos, players[0].pos) < near_sq:
                 entry.bonus_id = int(BonusId.POINTS)
                 entry.amount = 100
 
@@ -503,7 +499,7 @@ class BonusPool:
                 continue
 
             for player in players:
-                if distance_sq(entry.pos_x, entry.pos_y, player.pos_x, player.pos_y) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
+                if Vec2.distance_sq(entry.pos, player.pos) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
                     bonus_apply(
                         state,
                         player,
@@ -522,8 +518,7 @@ class BonusPool:
                             player_index=player.index,
                             bonus_id=entry.bonus_id,
                             amount=entry.amount,
-                            pos_x=entry.pos_x,
-                            pos_y=entry.pos_y,
+                            pos=entry.pos,
                         )
                     )
                     break
@@ -534,13 +529,12 @@ class BonusPool:
 def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
     """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
 
-    aim_x = float(getattr(player, "aim_x", player.pos_x))
-    aim_y = float(getattr(player, "aim_y", player.pos_y))
+    aim_pos = player.aim
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
             continue
-        if distance_sq(aim_x, aim_y, entry.pos_x, entry.pos_y) < radius_sq:
+        if Vec2.distance_sq(aim_pos, entry.pos) < radius_sq:
             return idx, entry
     return None
 
@@ -579,8 +573,7 @@ class GameplayState:
     bonus_pool: BonusPool = field(default_factory=BonusPool)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    camera_shake_offset_x: float = 0.0
-    camera_shake_offset_y: float = 0.0
+    camera_shake_offset: Vec2 = field(default_factory=Vec2)
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
     shots_fired: list[int] = field(default_factory=lambda: [0] * 4)
@@ -607,7 +600,7 @@ def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
 
 
-def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float, pos_y: float, radius: float, start_index: int) -> int:
+def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
     """Port of `creature_find_in_radius` (0x004206a0)."""
 
     start_index = max(0, int(start_index))
@@ -615,8 +608,6 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float
     if start_index >= max_index:
         return -1
 
-    pos_x = float(pos_x)
-    pos_y = float(pos_y)
     radius = float(radius)
 
     for idx in range(start_index, max_index):
@@ -624,7 +615,7 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos_x: float
         if not creature.active:
             continue
 
-        dist = math.hypot(float(creature.x) - pos_x, float(creature.y) - pos_y) - radius
+        dist = (creature.pos - pos).length() - radius
         threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
@@ -648,13 +639,14 @@ class _PerksUpdateEffectsCtx:
             return int(self._aim_target)
 
         target = -1
-        if self.players and self.creatures is not None and (
-            perk_active(self.players[0], PerkId.PYROKINETIC) or perk_active(self.players[0], PerkId.EVIL_EYES)
+        if (
+            self.players
+            and self.creatures is not None
+            and (perk_active(self.players[0], PerkId.PYROKINETIC) or perk_active(self.players[0], PerkId.EVIL_EYES))
         ):
             target = _creature_find_in_radius(
                 self.creatures,
-                pos_x=self.players[0].aim_x,
-                pos_y=self.players[0].aim_y,
+                pos=self.players[0].aim,
                 radius=12.0,
                 start_index=0,
             )
@@ -721,13 +713,11 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
     creature.collision_timer = float(creature.collision_timer) - ctx.dt
     if creature.collision_timer < 0.0:
         creature.collision_timer = 0.5
-        pos_x = float(creature.x)
-        pos_y = float(creature.y)
         for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
             angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
-            ctx.state.particles.spawn_particle(pos_x=pos_x, pos_y=pos_y, angle=angle, intensity=float(intensity))
+            ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos_x=pos_x, pos_y=pos_y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=creature.pos, rand=ctx.state.rng.rand)
 
 
 def _perks_update_jinxed_timer(ctx: _PerksUpdateEffectsCtx) -> None:
@@ -747,8 +737,8 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
     if int(ctx.state.rng.rand()) % 10 == 3:
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
-            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=player.pos, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=player.pos, rand=ctx.state.rng.rand)
 
     ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
 
@@ -926,7 +916,9 @@ def perks_rebuild_available(state: GameplayState) -> None:
     state._perk_available_unlock_index = unlock_index
 
 
-def perk_can_offer(state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int) -> bool:
+def perk_can_offer(
+    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int
+) -> bool:
     """Return whether `perk_id` is eligible for selection.
 
     Used by `perk_select_random` and modeled after `perk_can_offer` (0x0042fb10).
@@ -1111,8 +1103,7 @@ def _perk_apply_lifeline_50_50(ctx: _PerkApplyCtx) -> None:
         if kill_toggle and creature.active and float(creature.hp) <= 500.0 and (int(creature.flags) & 0x04) == 0:
             creature.active = False
             ctx.state.effects.spawn_burst(
-                pos_x=float(creature.x),
-                pos_y=float(creature.y),
+                pos=creature.pos,
                 count=4,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1185,8 +1176,7 @@ def _perk_apply_bandage(ctx: _PerkApplyCtx) -> None:
             scale = float(ctx.state.rng.rand() % 50 + 1)
             player.health = min(100.0, player.health * scale)
             ctx.state.effects.spawn_burst(
-                pos_x=float(player.pos_x),
-                pos_y=float(player.pos_y),
+                pos=player.pos,
                 count=8,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1274,7 +1264,10 @@ def perk_auto_pick(
     picks: list[PerkId] = []
     while perk_state.pending_count > 0:
         if perk_state.choices_dirty or not perk_state.choices:
-            perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+            perk_state.choices = [
+                int(perk)
+                for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+            ]
             perk_state.choices_dirty = False
         if not perk_state.choices:
             break
@@ -1306,7 +1299,10 @@ def perk_selection_current_choices(
     if player_count is None:
         player_count = len(players)
     if perk_state.choices_dirty or not perk_state.choices:
-        perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+        perk_state.choices = [
+            int(perk)
+            for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)
+        ]
         perk_state.choices_dirty = False
     return [PerkId(perk_id) for perk_id in perk_state.choices]
 
@@ -1371,14 +1367,6 @@ def survival_progression_update(
             creatures=creatures,
         )
     return []
-
-
-def _normalize(x: float, y: float) -> tuple[float, float]:
-    mag = math.hypot(x, y)
-    if mag <= 1e-9:
-        return 0.0, 0.0
-    inv = 1.0 / mag
-    return x * inv, y * inv
 
 
 def _owner_id_for_player(player_index: int) -> int:
@@ -1630,8 +1618,7 @@ _BONUS_PICK_SUPPRESS_RULES: tuple[_BonusPickSuppressRule, ...] = (
 
 def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: list["PlayerState"]) -> int:
     has_fire_bullets_drop = any(
-        entry.bonus_id == int(BonusId.FIRE_BULLETS) and not entry.picked
-        for entry in pool.entries
+        entry.bonus_id == int(BonusId.FIRE_BULLETS) and not entry.picked for entry in pool.entries
     )
 
     for _ in range(101):
@@ -1772,7 +1759,9 @@ def player_swap_alt_weapon(player: PlayerState) -> bool:
 def player_start_reload(player: PlayerState, state: GameplayState) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
 
-    if player.reload_active and (perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)):
+    if player.reload_active and (
+        perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)
+    ):
         return
 
     weapon = _weapon_entry(player.weapon_id)
@@ -1807,8 +1796,7 @@ def _spawn_projectile_ring(
         _projectile_spawn(
             state,
             players=players,
-            pos_x=float(origin.pos_x),
-            pos_y=float(origin.pos_y),
+            pos=origin.pos,
             angle=float(idx) * step + float(angle_offset),
             type_id=int(type_id),
             owner_id=int(owner_id),
@@ -1830,8 +1818,7 @@ def _projectile_spawn(
     state: GameplayState,
     *,
     players: list[PlayerState] | None,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     angle: float,
     type_id: int,
     owner_id: int,
@@ -1850,8 +1837,7 @@ def _projectile_spawn(
 
     meta = _projectile_meta_for_type_id(type_id)
     return state.projectiles.spawn(
-        pos_x=float(pos_x),
-        pos_y=float(pos_y),
+        pos=pos,
         angle=float(angle),
         type_id=int(type_id),
         owner_id=int(owner_id),
@@ -1860,7 +1846,9 @@ def _projectile_spawn(
     )
 
 
-def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
+def _perk_update_man_bomb(
+    player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None
+) -> None:
     player.man_bomb_timer += dt
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
@@ -1872,8 +1860,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, 
         _projectile_spawn(
             state,
             players=players,
-            pos_x=player.pos_x,
-            pos_y=player.pos_y,
+            pos=player.pos,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
@@ -1884,7 +1871,9 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, 
     state.perk_intervals.man_bomb = 4.0
 
 
-def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None) -> None:
+def _perk_update_hot_tempered(
+    player: PlayerState, dt: float, state: GameplayState, *, players: list[PlayerState] | None
+) -> None:
     player.hot_tempered_timer += dt
     if player.hot_tempered_timer <= state.perk_intervals.hot_tempered:
         return
@@ -1896,8 +1885,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
         _projectile_spawn(
             state,
             players=players,
-            pos_x=player.pos_x,
-            pos_y=player.pos_y,
+            pos=player.pos,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
@@ -1918,35 +1906,27 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     state.sfx_queue.append("sfx_plasmaminigun_fire")
 
     aim_heading = float(player.aim_heading)
-    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
-    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
 
-    aim_x = float(player.aim_x)
-    aim_y = float(player.aim_y)
-    dx = aim_x - float(player.pos_x)
-    dy = aim_y - float(player.pos_y)
-    dist = math.hypot(dx, dy)
+    aim = player.aim
+    dist = (aim - player.pos).length()
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    jitter_x = aim_x + math.cos(dir_angle) * offset
-    jitter_y = aim_y + math.sin(dir_angle) * offset
-    angle = math.atan2(jitter_y - float(player.pos_y), jitter_x - float(player.pos_x)) + math.pi / 2.0
+    jitter = aim + Vec2.from_angle(dir_angle) * offset
+    angle = (jitter - player.pos).to_heading()
     _projectile_spawn(
         state,
         players=[player],
-        pos_x=muzzle_x,
-        pos_y=muzzle_y,
+        pos=muzzle,
         angle=angle,
         type_id=ProjectileTypeId.FIRE_BULLETS,
         owner_id=owner_id,
     )
 
-    vel_x = math.cos(aim_heading) * 25.0
-    vel_y = math.sin(aim_heading) * 25.0
-    sprite_id = state.sprite_effects.spawn(pos_x=muzzle_x, pos_y=muzzle_y, vel_x=vel_x, vel_y=vel_y, scale=1.0)
+    vel = Vec2.from_angle(aim_heading) * 25.0
+    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0)
     sprite = state.sprite_effects.entries[int(sprite_id)]
     sprite.color_r = 0.5
     sprite.color_g = 0.5
@@ -2066,9 +2046,7 @@ def player_fire_weapon(
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
         shot_cooldown = (
-            float(fire_bullets_weapon.shot_cooldown)
-            if fire_bullets_weapon.shot_cooldown is not None
-            else 0.0
+            float(fire_bullets_weapon.shot_cooldown) if fire_bullets_weapon.shot_cooldown is not None else 0.0
         )
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
@@ -2080,35 +2058,29 @@ def player_fire_weapon(
         shot_cooldown *= 1.05
     player.shot_cooldown = max(0.0, shot_cooldown)
 
-    aim_x = float(input_state.aim_x)
-    aim_y = float(input_state.aim_y)
-    dx = aim_x - float(player.pos_x)
-    dy = aim_y - float(player.pos_y)
-    aim_heading = math.atan2(dy, dx) + math.pi / 2.0
+    aim = input_state.aim
+    aim_delta = aim - player.pos
+    aim_heading = aim_delta.to_heading()
 
-    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
-    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     state.effects.spawn_shell_casing(
-        pos_x=muzzle_x,
-        pos_y=muzzle_y,
+        pos=muzzle,
         aim_heading=aim_heading,
         weapon_flags=int(weapon.flags or 0),
         rand=state.rng.rand,
         detail_preset=int(detail_preset),
     )
 
-    dist = math.hypot(dx, dy)
+    dist = aim_delta.length()
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    aim_jitter_x = aim_x + math.cos(dir_angle) * offset
-    aim_jitter_y = aim_y + math.sin(dir_angle) * offset
-    shot_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x)) + math.pi / 2.0
-    particle_angle = shot_angle - math.pi / 2.0
+    aim_jitter = aim + Vec2.from_angle(dir_angle) * offset
+    shot_angle = (aim_jitter - player.pos).to_heading()
+    particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
-        particle_angle = aim_heading - math.pi / 2.0
+        particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
@@ -2132,8 +2104,7 @@ def player_fire_weapon(
         for _ in range(pellets):
             angle = shot_angle + float(int(state.rng.rand()) % 200 - 100) * 0.0015
             state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
                 owner_id=owner_id,
@@ -2142,8 +2113,7 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
         # Rocket Launcher -> secondary type 1.
         state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET,
             owner_id=owner_id,
@@ -2151,13 +2121,11 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
         state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
             owner_id=owner_id,
-            target_hint_x=float(aim_x),
-            target_hint_y=float(aim_y),
+            target_hint=aim,
         )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
@@ -2166,13 +2134,11 @@ def player_fire_weapon(
         angle = (shot_angle - math.pi) - step * float(rocket_count) * 0.5
         for _ in range(rocket_count):
             state.secondary_projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=angle,
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
                 owner_id=owner_id,
-                target_hint_x=float(aim_x),
-                target_hint_y=float(aim_y),
+                target_hint=aim,
             )
             angle += step
         ammo_cost = float(rocket_count)
@@ -2180,29 +2146,32 @@ def player_fire_weapon(
     elif weapon_id == WeaponId.ROCKET_MINIGUN:
         # Rocket Minigun -> secondary type 4.
         state.secondary_projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
+            pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
             owner_id=owner_id,
         )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 1
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos_x=muzzle_x, pos_y=muzzle_y, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
         state.particles.entries[particle_id].style_id = 2
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
-        state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
+        state.particles.spawn_particle_slow(
+            pos=muzzle,
+            angle=Vec2.from_heading(shot_angle).to_angle(),
+            owner_id=owner_id,
+        )
         ammo_cost = 0.15
     elif weapon_id == WeaponId.MULTI_PLASMA:
         # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
@@ -2220,8 +2189,7 @@ def player_fire_weapon(
         )
         for angle_offset, type_id in patterns:
             state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
                 owner_id=owner_id,
@@ -2235,8 +2203,7 @@ def player_fire_weapon(
         for _ in range(14):
             jitter = float((int(state.rng.rand()) & 0xFF) - 0x80) * 0.002
             proj_id = state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
                 owner_id=owner_id,
@@ -2251,8 +2218,7 @@ def player_fire_weapon(
         for _ in range(6):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.002
             proj_id = state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
                 owner_id=owner_id,
@@ -2267,8 +2233,7 @@ def player_fire_weapon(
         for _ in range(8):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.0026
             proj_id = state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
                 owner_id=owner_id,
@@ -2288,8 +2253,7 @@ def player_fire_weapon(
             if pellets > 1:
                 angle += float(int(state.rng.rand()) % 200 - 100) * jitter_step
             proj_id = state.projectiles.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
+                pos=muzzle,
                 angle=angle,
                 type_id=type_id,
                 owner_id=owner_id,
@@ -2336,8 +2300,7 @@ def player_update(
     if dt <= 0.0:
         return
 
-    prev_x = player.pos_x
-    prev_y = player.pos_y
+    prev_pos = player.pos
 
     if player.health <= 0.0:
         player.death_timer -= dt * 20.0
@@ -2360,29 +2323,23 @@ def player_update(
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
     # Aim: compute direction from (player -> aim point).
-    player.aim_x = float(input_state.aim_x)
-    player.aim_y = float(input_state.aim_y)
-    aim_dx = player.aim_x - player.pos_x
-    aim_dy = player.aim_y - player.pos_y
-    aim_dir_x, aim_dir_y = _normalize(aim_dx, aim_dy)
-    if aim_dir_x != 0.0 or aim_dir_y != 0.0:
-        player.aim_dir_x = aim_dir_x
-        player.aim_dir_y = aim_dir_y
-        player.aim_heading = math.atan2(aim_dir_y, aim_dir_x) + math.pi / 2.0
+    player.aim = input_state.aim
+    aim_dir = (player.aim - player.pos).normalized()
+    if aim_dir.length_sq() > 0.0:
+        player.aim_dir = aim_dir
+        player.aim_heading = aim_dir.to_heading()
 
     # Movement.
-    raw_move_x = float(input_state.move_x)
-    raw_move_y = float(input_state.move_y)
-    raw_mag = math.hypot(raw_move_x, raw_move_y)
+    raw_move = input_state.move
+    raw_mag = raw_move.length()
     # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
     # heading alignment slowdown; don't apply a deadzone there.
     moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
 
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-        move_x = raw_move_x * inv
-        move_y = raw_move_y * inv
-        player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
+        move = raw_move * inv
+        player.heading = move.to_heading()
         if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
             if player.move_speed < 2.0:
                 player.move_speed = float(player.move_speed + dt * 4.0)
@@ -2397,8 +2354,7 @@ def player_update(
         player.move_speed = float(player.move_speed - dt * 15.0)
         if player.move_speed < 0.0:
             player.move_speed = 0.0
-        move_x = math.cos(player.heading - math.pi / 2.0)
-        move_y = math.sin(player.heading - math.pi / 2.0)
+        move = Vec2.from_heading(player.heading)
 
     if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
         player.move_speed = 0.8
@@ -2413,12 +2369,17 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
-    player.pos_x = clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
-    player.pos_y = clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
+    player.pos = (player.pos + move * (speed * dt)).clamp_rect(
+        0.0,
+        0.0,
+        float(world_size),
+        float(world_size),
+    )
 
     player.move_phase += dt * player.move_speed * 19.0
 
-    stationary = abs(player.pos_x - prev_x) <= 1e-9 and abs(player.pos_y - prev_y) <= 1e-9
+    move_delta = player.pos - prev_pos
+    stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
     reload_scale = 1.0
     if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
@@ -2603,32 +2564,27 @@ def _bonus_apply_freeze(ctx: _BonusApplyCtx) -> None:
     if creatures:
         rand = ctx.state.rng.rand
         for creature in creatures:
-            active = getattr(creature, "active", True)
-            if not bool(active):
+            if not creature.active:
                 continue
-            if float(getattr(creature, "hp", 0.0)) > 0.0:
+            if creature.hp > 0.0:
                 continue
-            pos_x = float(getattr(creature, "x", 0.0))
-            pos_y = float(getattr(creature, "y", 0.0))
+            pos = creature.pos
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 ctx.state.effects.spawn_freeze_shard(
-                    pos_x=pos_x,
-                    pos_y=pos_y,
+                    pos=pos,
                     angle=angle,
                     rand=rand,
                     detail_preset=int(ctx.detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             ctx.state.effects.spawn_freeze_shatter(
-                pos_x=pos_x,
-                pos_y=pos_y,
+                pos=pos,
                 angle=angle,
                 rand=rand,
                 detail_preset=int(ctx.detail_preset),
             )
-            if hasattr(creature, "active"):
-                setattr(creature, "active", False)
+            creature.active = False
 
     ctx.state.sfx_queue.append("sfx_shockwave")
 
@@ -2656,7 +2612,9 @@ def _bonus_apply_speed(ctx: _BonusApplyCtx) -> None:
 def _bonus_apply_fire_bullets(ctx: _BonusApplyCtx) -> None:
     should_register = float(ctx.player.fire_bullets_timer) <= 0.0
     if ctx.players is not None and len(ctx.players) > 1:
-        should_register = float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+        should_register = (
+            float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
+        )
     if should_register:
         ctx.register_player("fire_bullets_timer")
     ctx.player.fire_bullets_timer = float(
@@ -2681,8 +2639,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     # - requires `hitbox_size == 16.0` (alive sentinel)
     # - no HP gate
     # - falls back to index 0 if nothing qualifies
-    origin_x = float(origin_pos.pos_x)
-    origin_y = float(origin_pos.pos_y)
+    origin = origin_pos.pos
     best_idx = 0
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
@@ -2690,15 +2647,13 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
             continue
         if creature.hitbox_size != 16.0:
             continue
-        d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
+        d_sq = Vec2.distance_sq(origin, creature.pos)
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
 
     target = creatures[best_idx]
-    dx = target.x - origin_x
-    dy = target.y - origin_y
-    angle = math.atan2(dy, dx) + math.pi / 2.0
+    angle = (target.pos - origin).to_heading()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
     ctx.state.bonus_spawn_guard = True
@@ -2706,8 +2661,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     ctx.state.shock_chain_projectile_id = _projectile_spawn(
         ctx.state,
         players=ctx.players,
-        pos_x=origin_x,
-        pos_y=origin_y,
+        pos=origin,
         angle=angle,
         type_id=int(ProjectileTypeId.ION_RIFLE),
         owner_id=int(owner_id),
@@ -2760,8 +2714,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
     ctx.state.camera_shake_timer = 0.2
 
     origin_pos = ctx.origin_pos()
-    ox = float(origin_pos.pos_x)
-    oy = float(origin_pos.pos_y)
+    origin = origin_pos.pos
     rand = ctx.state.rng.rand
 
     bullet_count = int(rand()) & 3
@@ -2771,8 +2724,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         proj_id = _projectile_spawn(
             ctx.state,
             players=ctx.players,
-            pos_x=ox,
-            pos_y=oy,
+            pos=origin,
             angle=float(angle),
             type_id=int(ProjectileTypeId.PISTOL),
             owner_id=-100,
@@ -2786,16 +2738,14 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
         _projectile_spawn(
             ctx.state,
             players=ctx.players,
-            pos_x=ox,
-            pos_y=oy,
+            pos=origin,
             angle=float(angle),
             type_id=int(ProjectileTypeId.GAUSS_GUN),
             owner_id=-100,
         )
 
     ctx.state.effects.spawn_explosion_burst(
-        pos_x=ox,
-        pos_y=oy,
+        pos=origin,
         scale=1.0,
         rand=rand,
         detail_preset=int(ctx.detail_preset),
@@ -2809,13 +2759,12 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
             # Native applies explosion damage to any active creature, including
             # those already in the death/corpse state (this shrinks corpses
             # faster via the hp<=0 path in creature_apply_damage).
-            if not bool(getattr(creature, "active", True)):
+            if not creature.active:
                 continue
-            dx = float(creature.x) - ox
-            dy = float(creature.y) - oy
-            if abs(dx) > 256.0 or abs(dy) > 256.0:
+            delta = creature.pos - origin
+            if abs(delta.x) > 256.0 or abs(delta.y) > 256.0:
                 continue
-            dist = math.hypot(dx, dy)
+            dist = delta.length()
             if dist < 256.0:
                 damage = (256.0 - dist) * 5.0
                 if ctx.apply_creature_damage is not None:
@@ -2823,8 +2772,7 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
                         int(idx),
                         float(damage),
                         3,
-                        0.0,
-                        0.0,
+                        Vec2(),
                         _owner_id_for_player(ctx.player.index),
                     )
                 else:
@@ -2920,7 +2868,9 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
         if not slot.active:
             continue
         timer = max(0.0, _timer_value(slot.timer_ref))
-        timer_alt = max(0.0, _timer_value(slot.timer_ref_alt)) if (slot.timer_ref_alt is not None and player_count > 1) else 0.0
+        timer_alt = (
+            max(0.0, _timer_value(slot.timer_ref_alt)) if (slot.timer_ref_alt is not None and player_count > 1) else 0.0
+        )
         slot.timer_value = float(timer)
         slot.timer_value_alt = float(timer_alt)
 
@@ -3005,8 +2955,7 @@ def bonus_telekinetic_update(
                 player_index=int(player.index),
                 bonus_id=int(entry.bonus_id),
                 amount=int(entry.amount),
-                pos_x=float(entry.pos_x),
-                pos_y=float(entry.pos_y),
+                pos=entry.pos,
             )
         )
 

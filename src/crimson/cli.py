@@ -12,6 +12,7 @@ import typer
 from PIL import Image
 
 from grim import jaz, paq
+from grim.geom import Vec2
 from grim.rand import Crand
 from .paths import default_runtime_dir
 from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
@@ -99,7 +100,7 @@ def _format_entry(idx: int, entry: SpawnEntry, *, plan_info: tuple[int, int] | N
         f"id=0x{entry.spawn_id:02x} ({entry.spawn_id:2d})  "
         f"creature={creature:10s}  "
         f"count={entry.count:2d}  "
-        f"x={entry.x:7.1f}  y={entry.y:7.1f}  heading={entry.heading:7.3f}{plan_text}"
+        f"x={entry.pos.x:7.1f}  y={entry.pos.y:7.1f}  heading={entry.heading:7.3f}{plan_text}"
     )
 
 
@@ -166,7 +167,7 @@ def cmd_quests(
         for entry in entries:
             if entry.spawn_id in plan_cache:
                 continue
-            plan = build_spawn_plan(entry.spawn_id, (512.0, 512.0), 0.0, Crand(0), env)
+            plan = build_spawn_plan(entry.spawn_id, Vec2(512.0, 512.0), 0.0, Crand(0), env)
             plan_cache[entry.spawn_id] = (len(plan.creatures), len(plan.spawn_slots))
         total_alloc = sum(entry.count * plan_cache[entry.spawn_id][0] for entry in entries)
         total_slots = sum(entry.count * plan_cache[entry.spawn_id][1] for entry in entries)
@@ -497,6 +498,21 @@ def _parse_int_auto(text: str) -> int:
         raise typer.BadParameter(f"invalid integer: {text!r}") from exc
 
 
+def _parse_vec2(text: str) -> Vec2:
+    raw = text.strip()
+    if "," in raw:
+        left, right = raw.split(",", 1)
+    else:
+        parts = raw.split()
+        if len(parts) != 2:
+            raise typer.BadParameter(f"invalid vec2: {text!r} (expected 'x,y' or 'x y')")
+        left, right = parts
+    try:
+        return Vec2(float(left.strip()), float(right.strip()))
+    except ValueError as exc:
+        raise typer.BadParameter(f"invalid vec2: {text!r}") from exc
+
+
 def _dc_to_dict(obj: object) -> dict[str, object]:
     return {f.name: getattr(obj, f.name) for f in fields(obj)}
 
@@ -505,8 +521,7 @@ def _dc_to_dict(obj: object) -> dict[str, object]:
 def cmd_spawn_plan(
     template: str = typer.Argument(..., help="spawn id (e.g. 0x12)"),
     seed: str = typer.Option("0xBEEF", help="MSVCRT rand() seed (e.g. 0xBEEF)"),
-    x: float = typer.Option(512.0, help="spawn x"),
-    y: float = typer.Option(512.0, help="spawn y"),
+    pos: str = typer.Option("512,512", help="spawn position as 'x,y'"),
     heading: float = typer.Option(0.0, help="heading (radians)"),
     terrain_w: float = typer.Option(1024.0, help="terrain width"),
     terrain_h: float = typer.Option(1024.0, help="terrain height"),
@@ -518,6 +533,7 @@ def cmd_spawn_plan(
     """Build and print a spawn plan for a single template id."""
     template_id = _parse_int_auto(template)
     rng = Crand(_parse_int_auto(seed))
+    spawn_pos = _parse_vec2(pos)
     env = SpawnEnv(
         terrain_width=terrain_w,
         terrain_height=terrain_h,
@@ -525,11 +541,11 @@ def cmd_spawn_plan(
         hardcore=hardcore,
         difficulty_level=difficulty,
     )
-    plan = build_spawn_plan(template_id, (x, y), heading, rng, env)
+    plan = build_spawn_plan(template_id, spawn_pos, heading, rng, env)
     if as_json:
         payload: dict[str, object] = {
             "template_id": template_id,
-            "pos": [x, y],
+            "pos": [spawn_pos.x, spawn_pos.y],
             "heading": heading,
             "seed": _parse_int_auto(seed),
             "env": {
@@ -549,7 +565,10 @@ def cmd_spawn_plan(
         return
 
     typer.echo(f"template_id=0x{template_id:02x} ({template_id}) creature={spawn_id_label(template_id)}")
-    typer.echo(f"pos=({x:.1f},{y:.1f}) heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}")
+    typer.echo(
+        f"pos=({spawn_pos.x:.1f},{spawn_pos.y:.1f}) "
+        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}"
+    )
     typer.echo(
         "env="
         f"demo_mode_active={demo_mode_active} "
@@ -564,7 +583,7 @@ def cmd_spawn_plan(
         primary = "*" if idx == plan.primary else " "
         typer.echo(
             f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
-            f"pos=({c.pos_x:7.1f},{c.pos_y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
+            f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
             f"slot={c.spawn_slot!s:>3s}"
         )
     if plan.spawn_slots:
@@ -579,7 +598,7 @@ def cmd_spawn_plan(
         typer.echo("")
         typer.echo("effects:")
         for fx in plan.effects:
-            typer.echo(f"burst x={fx.x:.1f} y={fx.y:.1f} count={fx.count}")
+            typer.echo(f"burst x={fx.pos.x:.1f} y={fx.pos.y:.1f} count={fx.count}")
 
 
 @app.command("oracle")

@@ -45,7 +45,7 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert alien.type_id == CreatureTypeId.ALIEN
     assert alien.ai_mode == 8
     assert alien.flags == CreatureFlags(0)
-    assert (alien.pos_x, alien.pos_y) == (pytest.approx(1088.0, abs=1e-9), pytest.approx(768.0, abs=1e-9))
+    assert (alien.pos.x, alien.pos.y) == (pytest.approx(1088.0, abs=1e-9), pytest.approx(768.0, abs=1e-9))
     assert alien.health == pytest.approx(10.0, abs=1e-9)
     assert alien.max_health == pytest.approx(10.0, abs=1e-9)
     assert alien.move_speed == pytest.approx(2.5, abs=1e-9)
@@ -59,7 +59,7 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert spider.type_id == CreatureTypeId.SPIDER_SP1
     assert spider.ai_mode == 8
     assert (spider.flags & CreatureFlags.AI7_LINK_TIMER) != 0
-    assert (spider.pos_x, spider.pos_y) == (pytest.approx(-64.0, abs=1e-9), pytest.approx(512.0, abs=1e-9))
+    assert (spider.pos.x, spider.pos.y) == (pytest.approx(-64.0, abs=1e-9), pytest.approx(512.0, abs=1e-9))
     assert spider.health == pytest.approx(10.0, abs=1e-9)
     assert spider.max_health == pytest.approx(10.0, abs=1e-9)
     assert spider.move_speed == pytest.approx(3.5, abs=1e-9)

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.terrain_render import _maybe_alpha_test
@@ -57,7 +58,7 @@ class WorldRenderer:
             self._small_font = None
         return self._small_font
 
-    def _camera_screen_size(self) -> tuple[float, float]:
+    def _camera_screen_size(self) -> Vec2:
         if self.config is not None:
             screen_w = float(self.config.screen_width)
             screen_h = float(self.config.screen_height)
@@ -68,29 +69,28 @@ class WorldRenderer:
             screen_w = float(self.world_size)
         if screen_h > self.world_size:
             screen_h = float(self.world_size)
-        return screen_w, screen_h
+        return Vec2(screen_w, screen_h)
 
-    def _clamp_camera(self, cam_x: float, cam_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
-        min_x = screen_w - float(self.world_size)
-        min_y = screen_h - float(self.world_size)
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y > -1.0:
-            cam_y = -1.0
-        if cam_y < min_y:
-            cam_y = min_y
-        return cam_x, cam_y
+    def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
+        min_x = screen_size.x - float(self.world_size)
+        min_y = screen_size.y - float(self.world_size)
+        return camera.clamp_rect(min_x, min_y, -1.0, -1.0)
 
-    def _world_params(self) -> tuple[float, float, float, float]:
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        screen_w, screen_h = self._camera_screen_size()
-        cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
-        scale_x = out_w / screen_w if screen_w > 0 else 1.0
-        scale_y = out_h / screen_h if screen_h > 0 else 1.0
-        return cam_x, cam_y, scale_x, scale_y
+    def _world_params(self) -> tuple[Vec2, Vec2]:
+        out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
+        screen_size = self._camera_screen_size()
+        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
+        scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
+        scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
+        return camera, Vec2(scale_x, scale_y)
+
+    @staticmethod
+    def _world_to_screen_with(pos: Vec2, *, camera: Vec2, view_scale: Vec2) -> Vec2:
+        return (pos + camera).mul_components(view_scale)
+
+    @staticmethod
+    def _view_scale_avg(view_scale: Vec2) -> float:
+        return view_scale.avg_component()
 
     def _color_from_rgba(self, rgba: tuple[float, float, float, float]) -> rl.Color:
         r = int(clamp(rgba[0], 0.0, 1.0) * 255.0 + 0.5)
@@ -132,10 +132,8 @@ class WorldRenderer:
     def _draw_bonus_pickups(
         self,
         *,
-        cam_x: float,
-        cam_y: float,
-        scale_x: float,
-        scale_y: float,
+        camera: Vec2,
+        view_scale: Vec2,
         scale: float,
         alpha: float = 1.0,
     ) -> None:
@@ -146,10 +144,9 @@ class WorldRenderer:
             for bonus in self.state.bonus_pool.entries:
                 if bonus.bonus_id == 0:
                     continue
-                sx = (bonus.pos_x + cam_x) * scale_x
-                sy = (bonus.pos_y + cam_y) * scale_y
+                screen = self._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
                 tint = rl.Color(220, 220, 90, int(255 * alpha + 0.5))
-                rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), tint)
+                rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 10.0 * scale), tint)
             return
 
         bubble_src = self._bonus_icon_src(self.bonuses_texture, 0)
@@ -162,9 +159,8 @@ class WorldRenderer:
             fade = self._bonus_fade(float(bonus.time_left), float(bonus.time_max))
             bubble_alpha = clamp(fade * 0.9, 0.0, 1.0) * alpha
 
-            sx = (bonus.pos_x + cam_x) * scale_x
-            sy = (bonus.pos_y + cam_y) * scale_y
-            bubble_dst = rl.Rectangle(float(sx), float(sy), float(bubble_size), float(bubble_size))
+            screen = self._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
+            bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
             bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
             tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
             rl.draw_texture_pro(self.bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
@@ -184,7 +180,7 @@ class WorldRenderer:
                 src = self._weapon_icon_src(self.wicons_texture, icon_index)
                 w = 60.0 * icon_scale * scale
                 h = 30.0 * icon_scale * scale
-                dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+                dst = rl.Rectangle(screen.x, screen.y, w, h)
                 origin = rl.Vector2(w * 0.5, h * 0.5)
                 rl.draw_texture_pro(self.wicons_texture, src, dst, origin, 0.0, tint)
                 continue
@@ -204,7 +200,7 @@ class WorldRenderer:
             src = self._bonus_icon_src(self.bonuses_texture, icon_id)
             size = 32.0 * icon_scale * scale
             rotation_rad = math.sin(float(idx) - float(self._elapsed_ms) * 0.003) * 0.2
-            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+            dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
@@ -225,10 +221,8 @@ class WorldRenderer:
     def _draw_bonus_hover_labels(
         self,
         *,
-        cam_x: float,
-        cam_y: float,
-        scale_x: float,
-        scale_y: float,
+        camera: Vec2,
+        view_scale: Vec2,
         alpha: float = 1.0,
     ) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -253,10 +247,10 @@ class WorldRenderer:
             if not label:
                 continue
 
-            aim_x = float(getattr(player, "aim_x", player.pos_x))
-            aim_y = float(getattr(player, "aim_y", player.pos_y))
-            x = (aim_x + cam_x) * scale_x + 16.0
-            y = (aim_y + cam_y) * scale_y - 7.0
+            aim = player.aim
+            aim_screen = self._world_to_screen_with(aim, camera=camera, view_scale=view_scale)
+            x = aim_screen.x + 16.0
+            y = aim_screen.y - 7.0
 
             if font is not None:
                 text_w = measure_small_text_width(font, label, text_scale)
@@ -266,8 +260,8 @@ class WorldRenderer:
                 x = max(0.0, screen_w - text_w)
 
             if font is not None:
-                draw_small_text(font, label, x + 1.0, y + 1.0, text_scale, shadow)
-                draw_small_text(font, label, x, y, text_scale, color)
+                draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), text_scale, shadow)
+                draw_small_text(font, label, Vec2(x, y), text_scale, color)
             else:
                 rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
                 rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)
@@ -278,8 +272,7 @@ class WorldRenderer:
         *,
         grid: int,
         frame: int,
-        x: float,
-        y: float,
+        pos: Vec2,
         scale: float,
         rotation_rad: float = 0.0,
         tint: rl.Color = rl.WHITE,
@@ -293,7 +286,7 @@ class WorldRenderer:
         src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
         w = cell_w * float(scale)
         h = cell_h * float(scale)
-        dst = rl.Rectangle(float(x), float(y), w, h)
+        dst = rl.Rectangle(pos.x, pos.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
@@ -307,7 +300,7 @@ class WorldRenderer:
         # grim_draw_circle_outline (grim.dll): segments = trunc(radius * 0.2 + 14.0)
         return max(3, int(radius * 0.2 + 14.0))
 
-    def _draw_aim_circle(self, *, x: float, y: float, radius: float, alpha: float = 1.0) -> None:
+    def _draw_aim_circle(self, *, center: Vec2, radius: float, alpha: float = 1.0) -> None:
         if radius <= 1e-3:
             return
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -325,18 +318,19 @@ class WorldRenderer:
         # primitives that still use triangles internally, but allow higher
         # segment counts for a smoother result when scaled.
         seg_count = max(self._grim2d_circle_segments_filled(radius), 64, int(radius))
-        rl.draw_circle_sector(rl.Vector2(x, y), float(radius), 0.0, 360.0, int(seg_count), fill)
+        center_rl = center.to_rl()
+        rl.draw_circle_sector(center_rl, float(radius), 0.0, 360.0, int(seg_count), fill)
 
         seg_count = max(self._grim2d_circle_segments_outline(radius), int(seg_count))
         # grim_draw_circle_outline draws a 2px-thick ring (outer radius = r + 2).
         # The exe binds bulletTrail, but that texture is white; the visual intent is
         # a subtle white outline around the filled spread circle.
-        rl.draw_ring(rl.Vector2(x, y), float(radius), float(radius + 2.0), 0.0, 360.0, int(seg_count), outline)
+        rl.draw_ring(center_rl, float(radius), float(radius + 2.0), 0.0, 360.0, int(seg_count), outline)
 
         rl.rl_set_texture(0)
         rl.end_blend_mode()
 
-    def _draw_clock_gauge(self, *, x: float, y: float, ms: int, scale: float, alpha: float = 1.0) -> None:
+    def _draw_clock_gauge(self, *, pos: Vec2, ms: int, scale: float, alpha: float = 1.0) -> None:
         if self.clock_table_texture is None or self.clock_pointer_texture is None:
             return
         size = 32.0 * scale
@@ -345,8 +339,10 @@ class WorldRenderer:
         tint = rl.Color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
         half = size * 0.5
 
-        table_src = rl.Rectangle(0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height))
-        table_dst = rl.Rectangle(float(x), float(y), size, size)
+        table_src = rl.Rectangle(
+            0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height)
+        )
+        table_dst = rl.Rectangle(pos.x, pos.y, size, size)
         rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
         seconds = int(ms) // 1000
@@ -356,7 +352,7 @@ class WorldRenderer:
             float(self.clock_pointer_texture.width),
             float(self.clock_pointer_texture.height),
         )
-        pointer_dst = rl.Rectangle(float(x) + half, float(y) + half, size, size)
+        pointer_dst = rl.Rectangle(pos.x + half, pos.y + half, size, size)
         origin = rl.Vector2(half, half)
         rotation_deg = float(seconds) * 6.0
         rl.draw_texture_pro(self.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
@@ -370,8 +366,7 @@ class WorldRenderer:
         phase: float,
         mirror_long: bool | None = None,
         shadow_alpha: int | None = None,
-        world_x: float,
-        world_y: float,
+        pos: Vec2,
         rotation_rad: float,
         scale: float,
         size_scale: float,
@@ -392,7 +387,7 @@ class WorldRenderer:
         if index < 0:
             return
 
-        sx, sy = self.world_to_screen(world_x, world_y)
+        screen_pos = self.world_to_screen(pos)
         width = float(texture.width) / 8.0 * size_scale * scale
         height = float(texture.height) / 8.0 * size_scale * scale
         src_x = float((index % 8) * (texture.width // 8))
@@ -412,11 +407,11 @@ class WorldRenderer:
             shadow_w = width * shadow_scale
             shadow_h = height * shadow_scale
             offset = width * 0.035 - 0.7 * scale
-            shadow_dst = rl.Rectangle(sx + offset, sy + offset, shadow_w, shadow_h)
+            shadow_dst = rl.Rectangle(screen_pos.x + offset, screen_pos.y + offset, shadow_w, shadow_h)
             shadow_origin = rl.Vector2(shadow_w * 0.5, shadow_h * 0.5)
             rl.draw_texture_pro(texture, src, shadow_dst, shadow_origin, rotation_deg, shadow_tint)
 
-        dst = rl.Rectangle(sx, sy, width, height)
+        dst = rl.Rectangle(screen_pos.x, screen_pos.y, width, height)
         origin = rl.Vector2(width * 0.5, height * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
@@ -425,10 +420,8 @@ class WorldRenderer:
         texture: rl.Texture,
         player: object,
         *,
-        cam_x: float,
-        cam_y: float,
-        scale_x: float,
-        scale_y: float,
+        camera: Vec2,
+        view_scale: Vec2,
         scale: float,
         alpha: float = 1.0,
     ) -> None:
@@ -440,16 +433,11 @@ class WorldRenderer:
         if cell <= 0.0:
             return
 
-        sx = (player.pos_x + cam_x) * scale_x
-        sy = (player.pos_y + cam_y) * scale_y
+        screen_pos = self._world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
         base_size = float(player.size) * scale
         base_scale = base_size / cell
 
-        if (
-            self.particles_texture is not None
-            and perk_active(player, PerkId.RADIOACTIVE)
-            and alpha > 1e-3
-        ):
+        if self.particles_texture is not None and perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
             if atlas is not None:
                 aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -469,7 +457,7 @@ class WorldRenderer:
                     aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                     if aura_alpha > 1e-3:
                         size = 100.0 * scale
-                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -486,13 +474,12 @@ class WorldRenderer:
             else:
                 overlay_tint = rl.Color(255, 140, 89, tint.a)
 
-        def draw(frame: int, *, x: float, y: float, scale_mul: float, rotation: float, color: rl.Color) -> None:
+        def draw(frame: int, *, pos: Vec2, scale_mul: float, rotation: float, color: rl.Color) -> None:
             self._draw_atlas_sprite(
                 texture,
                 grid=grid,
                 frame=max(0, min(63, int(frame))),
-                x=x,
-                y=y,
+                pos=pos,
                 scale=base_scale * float(scale_mul),
                 rotation_rad=float(rotation),
                 tint=color,
@@ -504,8 +491,7 @@ class WorldRenderer:
 
             recoil_dir = float(player.aim_heading) + math.pi / 2.0
             recoil = float(player.muzzle_flash_alpha) * 12.0 * scale
-            recoil_x = math.cos(recoil_dir) * recoil
-            recoil_y = math.sin(recoil_dir) * recoil
+            recoil_offset = Vec2.from_polar(recoil_dir, recoil)
 
             leg_shadow_scale = 1.02
             torso_shadow_scale = 1.03
@@ -514,16 +500,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                x=sx + leg_shadow_off,
-                y=sy + leg_shadow_off,
+                pos=screen_pos.offset(dx=leg_shadow_off, dy=leg_shadow_off),
                 scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                x=sx + recoil_x + torso_shadow_off,
-                y=sy + recoil_y + torso_shadow_off,
+                pos=screen_pos.offset(dx=recoil_offset.x + torso_shadow_off, dy=recoil_offset.y + torso_shadow_off),
                 scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
@@ -531,16 +515,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                x=sx,
-                y=sy,
+                pos=screen_pos,
                 scale_mul=1.0,
                 rotation=float(player.heading),
                 color=tint,
             )
             draw(
                 torso_frame,
-                x=sx + recoil_x,
-                y=sy + recoil_y,
+                pos=screen_pos + recoil_offset,
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
                 color=overlay_tint,
@@ -567,34 +549,31 @@ class WorldRenderer:
                         strength = (math.sin(t) + 1.0) * 0.25 + timer
                         if timer < 1.0:
                             strength *= timer
-                        strength = min(1.0, strength) * alpha
-                        if strength > 1e-3:
-                            offset_dir = float(player.aim_heading) - math.pi / 2.0
-                            ox = math.cos(offset_dir) * 3.0 * scale
-                            oy = math.sin(offset_dir) * 3.0 * scale
-                            cx = sx + ox
-                            cy = sy + oy
+                            strength = min(1.0, strength) * alpha
+                            if strength > 1e-3:
+                                offset_dir = float(player.aim_heading) - math.pi / 2.0
+                                center = screen_pos + Vec2.from_polar(offset_dir, 3.0 * scale)
 
-                            half = math.sin(t * 3.0) + 17.5
-                            size = half * 2.0 * scale
-                            a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
-                            tint = rl.Color(91, 180, 255, a)
-                            dst = rl.Rectangle(float(cx), float(cy), float(size), float(size))
-                            origin = rl.Vector2(size * 0.5, size * 0.5)
-                            rotation_deg = float((t + t) * _RAD_TO_DEG)
+                                half = math.sin(t * 3.0) + 17.5
+                                size = half * 2.0 * scale
+                                a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
+                                tint = rl.Color(91, 180, 255, a)
+                                dst = rl.Rectangle(center.x, center.y, float(size), float(size))
+                                origin = rl.Vector2(size * 0.5, size * 0.5)
+                                rotation_deg = float((t + t) * _RAD_TO_DEG)
 
-                            half = math.sin(t * 3.0) * 4.0 + 24.0
-                            size2 = half * 2.0 * scale
-                            a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
-                            tint2 = rl.Color(91, 180, 255, a2)
-                            dst2 = rl.Rectangle(float(cx), float(cy), float(size2), float(size2))
-                            origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
-                            rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
+                                half = math.sin(t * 3.0) * 4.0 + 24.0
+                                size2 = half * 2.0 * scale
+                                a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
+                                tint2 = rl.Color(91, 180, 255, a2)
+                                dst2 = rl.Rectangle(center.x, center.y, float(size2), float(size2))
+                                origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
+                                rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
-                            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
-                            rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
-                            rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
-                            rl.end_blend_mode()
+                                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                                rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
+                                rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
+                                rl.end_blend_mode()
 
             if self.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
                 weapon = WEAPON_BY_ID.get(int(player.weapon_id))
@@ -605,15 +584,14 @@ class WorldRenderer:
                         size = base_size * (0.5 if (flags & 0x4) else 1.0)
                         heading = float(player.aim_heading) + math.pi / 2.0
                         offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
-                        pos_x = sx + math.cos(heading) * offset
-                        pos_y = sy + math.sin(heading) * offset
+                        flash_pos = screen_pos + Vec2.from_angle(heading) * offset
                         src = rl.Rectangle(
                             0.0,
                             0.0,
                             float(self.muzzle_flash_texture.width),
                             float(self.muzzle_flash_texture.height),
                         )
-                        dst = rl.Rectangle(pos_x, pos_y, size, size)
+                        dst = rl.Rectangle(flash_pos.x, flash_pos.y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -642,13 +620,12 @@ class WorldRenderer:
         dead_shadow_off = 1.0 * scale + base_size * (dead_shadow_scale - 1.0) * 0.5
         draw(
             frame,
-            x=sx + dead_shadow_off,
-            y=sy + dead_shadow_off,
+            pos=screen_pos.offset(dx=dead_shadow_off, dy=dead_shadow_off),
             scale_mul=dead_shadow_scale,
             rotation=float(player.aim_heading),
             color=shadow_tint,
         )
-        draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
+        draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
     def _draw_projectile(self, proj: object, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -656,9 +633,10 @@ class WorldRenderer:
             return
         texture = self.projs_texture
         type_id = int(getattr(proj, "type_id", 0))
-        pos_x = float(getattr(proj, "pos_x", 0.0))
-        pos_y = float(getattr(proj, "pos_y", 0.0))
-        sx, sy = self.world_to_screen(pos_x, pos_y)
+        proj_pos = getattr(proj, "pos", None)
+        if not isinstance(proj_pos, Vec2):
+            return
+        screen = self.world_to_screen(proj_pos)
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -668,10 +646,8 @@ class WorldRenderer:
             proj_index=int(proj_index),
             texture=texture,
             type_id=int(type_id),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
-            sx=float(sx),
-            sy=float(sy),
+            pos=proj_pos,
+            screen_pos=screen,
             life=float(life),
             angle=float(angle),
             scale=float(scale),
@@ -686,7 +662,9 @@ class WorldRenderer:
         if texture is None:
             if life < 0.39:
                 return
-            rl.draw_circle(int(sx), int(sy), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5)))
+            rl.draw_circle(
+                int(screen.x), int(screen.y), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5))
+            )
             return
         grid, frame = mapping
 
@@ -697,8 +675,7 @@ class WorldRenderer:
             texture,
             grid=grid,
             frame=frame,
-            x=sx,
-            y=sy,
+            pos=screen,
             scale=0.6 * scale,
             rotation_rad=angle,
             tint=tint,
@@ -719,10 +696,8 @@ class WorldRenderer:
 
     def _draw_bullet_trail(
         self,
-        sx0: float,
-        sy0: float,
-        sx1: float,
-        sy1: float,
+        start: Vec2,
+        end: Vec2,
         *,
         type_id: int,
         alpha: int,
@@ -734,11 +709,10 @@ class WorldRenderer:
         if alpha <= 0:
             return False
 
-        dx = sx1 - sx0
-        dy = sy1 - sy0
-        dist = math.hypot(dx, dy)
+        segment = end - start
+        direction, dist = segment.normalized_with_length()
 
-        # Native uses `vel_x/vel_y` as the side offset basis and still emits the
+        # Native uses projectile travel direction as the side-offset basis and still emits the
         # trail quad even when origin≈head (degenerate impact frames).
         if type_id in (int(ProjectileTypeId.PISTOL), int(ProjectileTypeId.ASSAULT_RIFLE)):
             side_mul = 1.2
@@ -746,26 +720,18 @@ class WorldRenderer:
             side_mul = 1.1
         else:
             side_mul = 0.7
-        half = 1.5 * side_mul * float(scale)
+        half = 1.5 * side_mul * scale
 
         if dist > 1e-6:
-            inv = 1.0 / dist
-            px = -dy * inv
-            py = dx * inv
+            side = direction.perp_left()
         else:
-            px = math.cos(float(angle))
-            py = math.sin(float(angle))
+            side = Vec2.from_angle(angle)
 
-        ox = px * half
-        oy = py * half
-        x0 = sx0 - ox
-        y0 = sy0 - oy
-        x1 = sx0 + ox
-        y1 = sy0 + oy
-        x2 = sx1 + ox
-        y2 = sy1 + oy
-        x3 = sx1 - ox
-        y3 = sy1 - oy
+        side_offset = side * half
+        p0 = start - side_offset
+        p1 = start + side_offset
+        p2 = end + side_offset
+        p3 = end - side_offset
 
         # Native uses additive blending for bullet trails and sets color slots per projectile type.
         # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
@@ -782,16 +748,16 @@ class WorldRenderer:
         rl.rl_begin(rl.RL_QUADS)
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(0.0, 0.0)
-        rl.rl_vertex2f(x0, y0)
+        rl.rl_vertex2f(p0.x, p0.y)
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(1.0, 0.0)
-        rl.rl_vertex2f(x1, y1)
+        rl.rl_vertex2f(p1.x, p1.y)
         rl.rl_color4ub(head.r, head.g, head.b, head.a)
         rl.rl_tex_coord2f(1.0, 0.5)
-        rl.rl_vertex2f(x2, y2)
+        rl.rl_vertex2f(p2.x, p2.y)
         rl.rl_color4ub(head.r, head.g, head.b, head.a)
         rl.rl_tex_coord2f(0.0, 0.5)
-        rl.rl_vertex2f(x3, y3)
+        rl.rl_vertex2f(p3.x, p3.y)
         rl.rl_end()
         rl.rl_set_texture(0)
         rl.end_blend_mode()
@@ -800,10 +766,8 @@ class WorldRenderer:
     def _draw_sharpshooter_laser_sight(
         self,
         *,
-        cam_x: float,
-        cam_y: float,
-        scale_x: float,
-        scale_y: float,
+        camera: Vec2,
+        view_scale: Vec2,
         scale: float,
         alpha: float,
     ) -> None:
@@ -833,58 +797,42 @@ class WorldRenderer:
                 continue
             if not perk_active(player, PerkId.SHARPSHOOTER):
                 continue
+            player_pos = getattr(player, "pos", None)
+            if not isinstance(player_pos, Vec2):
+                continue
 
             aim_heading = float(getattr(player, "aim_heading", 0.0))
-            dir_x = math.cos(aim_heading - math.pi / 2.0)
-            dir_y = math.sin(aim_heading - math.pi / 2.0)
+            aim_dir = Vec2.from_heading(aim_heading)
+            start = player_pos + aim_dir * 15.0
+            end = player_pos + aim_dir * 512.0
 
-            start_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 15.0
-            start_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 15.0
-            end_x = float(getattr(player, "pos_x", 0.0)) + dir_x * 512.0
-            end_y = float(getattr(player, "pos_y", 0.0)) + dir_y * 512.0
-
-            sx0 = (start_x + cam_x) * scale_x
-            sy0 = (start_y + cam_y) * scale_y
-            sx1 = (end_x + cam_x) * scale_x
-            sy1 = (end_y + cam_y) * scale_y
-
-            dx = sx1 - sx0
-            dy = sy1 - sy0
-            dist = math.hypot(dx, dy)
+            start_screen = self._world_to_screen_with(start, camera=camera, view_scale=view_scale)
+            end_screen = self._world_to_screen_with(end, camera=camera, view_scale=view_scale)
+            segment = end_screen - start_screen
+            direction, dist = segment.normalized_with_length()
             if dist <= 1e-3:
                 continue
 
             thickness = max(1.0, 2.0 * scale)
             half = thickness * 0.5
-            inv = 1.0 / dist
-            nx = dx * inv
-            ny = dy * inv
-            px = -ny
-            py = nx
-            ox = px * half
-            oy = py * half
-
-            x0 = sx0 - ox
-            y0 = sy0 - oy
-            x1 = sx0 + ox
-            y1 = sy0 + oy
-            x2 = sx1 + ox
-            y2 = sy1 + oy
-            x3 = sx1 - ox
-            y3 = sy1 - oy
+            side_offset = direction.perp_left() * half
+            p0 = start_screen - side_offset
+            p1 = start_screen + side_offset
+            p2 = end_screen + side_offset
+            p3 = end_screen - side_offset
 
             rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
             rl.rl_tex_coord2f(0.0, 0.0)
-            rl.rl_vertex2f(x0, y0)
+            rl.rl_vertex2f(p0.x, p0.y)
             rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
             rl.rl_tex_coord2f(1.0, 0.0)
-            rl.rl_vertex2f(x1, y1)
+            rl.rl_vertex2f(p1.x, p1.y)
             rl.rl_color4ub(head.r, head.g, head.b, head.a)
             rl.rl_tex_coord2f(1.0, 0.5)
-            rl.rl_vertex2f(x2, y2)
+            rl.rl_vertex2f(p2.x, p2.y)
             rl.rl_color4ub(head.r, head.g, head.b, head.a)
             rl.rl_tex_coord2f(0.0, 0.5)
-            rl.rl_vertex2f(x3, y3)
+            rl.rl_vertex2f(p3.x, p3.y)
 
         rl.rl_end()
         rl.rl_set_texture(0)
@@ -894,7 +842,10 @@ class WorldRenderer:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
-        sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
+        proj_pos = getattr(proj, "pos", None)
+        if not isinstance(proj_pos, Vec2):
+            return
+        screen = self.world_to_screen(proj_pos)
         proj_type = int(getattr(proj, "type_id", 0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -902,17 +853,18 @@ class WorldRenderer:
             renderer=self,
             proj=proj,
             proj_type=int(proj_type),
-            sx=float(sx),
-            sy=float(sy),
+            screen_pos=screen,
             angle=float(angle),
             scale=float(scale),
             alpha=float(alpha),
         )
         if draw_secondary_projectile_from_registry(ctx):
             return
-        rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
+        rl.draw_circle(
+            int(screen.x), int(screen.y), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5))
+        )
 
-    def _draw_particle_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
+    def _draw_particle_pool(self, *, camera: Vec2, view_scale: Vec2, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
@@ -924,7 +876,7 @@ class WorldRenderer:
         if not any(entry.active for entry in particles):
             return
 
-        scale = (scale_x + scale_y) * 0.5
+        scale = self._view_scale_avg(view_scale)
 
         def src_rect(effect_id: int) -> rl.Rectangle | None:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
@@ -966,10 +918,9 @@ class WorldRenderer:
                 size = max(0.0, radius * 2.0 * scale)
                 if size <= 0.0:
                     continue
-                sx = (float(entry.pos_x) + cam_x) * scale_x
-                sy = (float(entry.pos_y) + cam_y) * scale_y
-                dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-                origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+                screen = self._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+                dst = rl.Rectangle(screen.x, screen.y, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
                 rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
 
         for entry in particles:
@@ -982,10 +933,9 @@ class WorldRenderer:
             size = max(0.0, radius * 2.0 * scale)
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            screen = self._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+            dst = rl.Rectangle(screen.x, screen.y, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.spin) * _RAD_TO_DEG
             tint = self._color_from_rgba((entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
             rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
@@ -1001,10 +951,9 @@ class WorldRenderer:
             h = max(0.0, half_h * 2.0 * scale)
             if w <= 0.0 or h <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
-            origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
+            screen = self._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+            dst = rl.Rectangle(screen.x, screen.y, w, h)
+            origin = rl.Vector2(w * 0.5, h * 0.5)
             tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
             rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
 
@@ -1013,10 +962,8 @@ class WorldRenderer:
     def _draw_sprite_effect_pool(
         self,
         *,
-        cam_x: float,
-        cam_y: float,
-        scale_x: float,
-        scale_y: float,
+        camera: Vec2,
+        view_scale: Vec2,
         alpha: float = 1.0,
     ) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -1044,7 +991,7 @@ class WorldRenderer:
         cell_w = float(texture.width) / float(grid)
         cell_h = float(texture.height) / float(grid)
         src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
-        scale = (scale_x + scale_y) * 0.5
+        scale = self._view_scale_avg(view_scale)
 
         rl.begin_blend_mode(rl.BLEND_ALPHA)
         for entry in effects:
@@ -1053,16 +1000,15 @@ class WorldRenderer:
             size = float(entry.scale) * scale
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            screen = self._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+            dst = rl.Rectangle(screen.x, screen.y, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.rotation) * _RAD_TO_DEG
             tint = self._color_from_rgba((entry.color_r, entry.color_g, entry.color_b, float(entry.color_a) * alpha))
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
         rl.end_blend_mode()
 
-    def _draw_effect_pool(self, *, cam_x: float, cam_y: float, scale_x: float, scale_y: float, alpha: float = 1.0) -> None:
+    def _draw_effect_pool(self, *, camera: Vec2, view_scale: Vec2, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
         if alpha <= 1e-3:
             return
@@ -1074,7 +1020,7 @@ class WorldRenderer:
         if not any(entry.flags and entry.age >= 0.0 for entry in effects):
             return
 
-        scale = (scale_x + scale_y) * 0.5
+        scale = self._view_scale_avg(view_scale)
 
         src_cache: dict[int, rl.Rectangle] = {}
 
@@ -1110,10 +1056,10 @@ class WorldRenderer:
             if src is None:
                 return
 
-            pos_x = float(getattr(entry, "pos_x", 0.0))
-            pos_y = float(getattr(entry, "pos_y", 0.0))
-            sx = (pos_x + cam_x) * scale_x
-            sy = (pos_y + cam_y) * scale_y
+            pos = getattr(entry, "pos", None)
+            if not isinstance(pos, Vec2):
+                return
+            screen = self._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
 
             half_w = float(getattr(entry, "half_width", 0.0))
             half_h = float(getattr(entry, "half_height", 0.0))
@@ -1134,7 +1080,7 @@ class WorldRenderer:
             )
             tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
 
-            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+            dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
@@ -1157,26 +1103,31 @@ class WorldRenderer:
     def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
-        screen_w, screen_h = self._camera_screen_size()
-        cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
+        screen_size = self._camera_screen_size()
+        camera = self._clamp_camera(cast(Vec2, self.camera), screen_size)
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
-        scale_x = out_w / screen_w if screen_w > 0 else 1.0
-        scale_y = out_h / screen_h if screen_h > 0 else 1.0
+        scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0
+        scale_y = out_h / screen_size.y if screen_size.y > 0 else 1.0
+        view_scale = Vec2(scale_x, scale_y)
         if self.ground is None:
             rl.clear_background(clear_color)
         else:
             rl.clear_background(clear_color)
-            self.ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
-        scale = (scale_x + scale_y) * 0.5
+            self.ground.draw(camera, screen_w=screen_size.x, screen_h=screen_size.y)
+        scale = self._view_scale_avg(view_scale)
 
         # World bounds for debug if terrain is missing.
         if self.ground is None:
-            x0 = (0.0 + cam_x) * scale_x
-            y0 = (0.0 + cam_y) * scale_y
-            x1 = (float(self.world_size) + cam_x) * scale_x
-            y1 = (float(self.world_size) + cam_y) * scale_y
-            rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
+            world_min = camera.mul_components(view_scale)
+            world_max = (camera + Vec2(float(self.world_size), float(self.world_size))).mul_components(view_scale)
+            rl.draw_rectangle_lines(
+                int(world_min.x),
+                int(world_min.y),
+                int(world_max.x - world_min.x),
+                int(world_max.y - world_min.y),
+                rl.Color(40, 40, 55, 255),
+            )
 
         if entity_alpha <= 1e-3:
             return
@@ -1231,19 +1182,16 @@ class WorldRenderer:
                     self._draw_player_trooper_sprite(
                         trooper_texture,
                         player,
-                        cam_x=cam_x,
-                        cam_y=cam_y,
-                        scale_x=scale_x,
-                        scale_y=scale_y,
+                        camera=camera,
+                        view_scale=view_scale,
                         scale=scale,
                         alpha=entity_alpha,
                     )
                     return
 
-                sx = (player.pos_x + cam_x) * scale_x
-                sy = (player.pos_y + cam_y) * scale_y
+                screen = self._world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
                 tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
-                rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
+                rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * scale), tint)
 
             for player in self.players:
                 if player.health <= 0.0:
@@ -1256,15 +1204,12 @@ class WorldRenderer:
                 int(CreatureTypeId.ALIEN): 3,
                 int(CreatureTypeId.LIZARD): 4,
             }
-            creatures = [
-                (idx, creature)
-                for idx, creature in enumerate(self.creatures.entries)
-                if creature.active
-            ]
-            creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
+            creatures = [(idx, creature) for idx, creature in enumerate(self.creatures.entries) if creature.active]
+            creatures.sort(
+                key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0])
+            )
             for _idx, creature in creatures:
-                sx = (creature.x + cam_x) * scale_x
-                sy = (creature.y + cam_y) * scale_y
+                screen = self._world_to_screen_with(creature.pos, camera=camera, view_scale=view_scale)
                 hitbox_size = float(creature.hitbox_size)
                 try:
                     type_id = CreatureTypeId(int(creature.type_id))
@@ -1272,12 +1217,16 @@ class WorldRenderer:
                     type_id = None
                 asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
                 texture = self.creature_textures.get(asset) if asset is not None else None
-                if particles_texture is not None and poison_src is not None and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK):
+                if (
+                    particles_texture is not None
+                    and poison_src is not None
+                    and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+                ):
                     fade = monster_vision_fade_alpha(hitbox_size)
                     poison_alpha = fade * entity_alpha
                     if poison_alpha > 1e-3:
                         size = 60.0 * scale
-                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        dst = rl.Rectangle(screen.x, screen.y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
                         rl.draw_texture_pro(particles_texture, poison_src, dst, origin, 0.0, tint)
@@ -1286,13 +1235,13 @@ class WorldRenderer:
                     mv_alpha = fade * entity_alpha
                     if mv_alpha > 1e-3:
                         size = 90.0 * scale
-                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        dst = rl.Rectangle(screen.x, screen.y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
                         rl.draw_texture_pro(particles_texture, monster_vision_src, dst, origin, 0.0, tint)
                 if texture is None:
                     tint = rl.Color(220, 90, 90, int(255 * entity_alpha + 0.5))
-                    rl.draw_circle(int(sx), int(sy), max(1.0, creature.size * 0.5 * scale), tint)
+                    rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * scale), tint)
                     continue
 
                 info = CREATURE_ANIM.get(type_id) if type_id is not None else None
@@ -1360,8 +1309,7 @@ class WorldRenderer:
                     phase=phase,
                     mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
                     shadow_alpha=shadow_alpha,
-                    world_x=float(creature.x),
-                    world_y=float(creature.y),
+                    pos=creature.pos,
                     rotation_rad=float(creature.heading) - math.pi / 2.0,
                     scale=scale,
                     size_scale=size_scale,
@@ -1398,9 +1346,12 @@ class WorldRenderer:
                                 size = float(creature.size) * scale
                                 if size <= 1e-3:
                                     continue
-                                sx = (creature.x + cam_x) * scale_x
-                                sy = (creature.y + cam_y) * scale_y
-                                dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                                creature_screen = self._world_to_screen_with(
+                                    creature.pos,
+                                    camera=camera,
+                                    view_scale=view_scale,
+                                )
+                                dst = rl.Rectangle(creature_screen.x, creature_screen.y, size, size)
                                 origin = rl.Vector2(size * 0.5, size * 0.5)
                                 rotation_deg = (float(idx) * 0.01 + float(creature.heading)) * _RAD_TO_DEG
                                 rl.draw_texture_pro(particles_texture, src, dst, origin, rotation_deg, tint)
@@ -1411,10 +1362,8 @@ class WorldRenderer:
                     draw_player(player)
 
             self._draw_sharpshooter_laser_sight(
-                cam_x=cam_x,
-                cam_y=cam_y,
-                scale_x=scale_x,
-                scale_y=scale_y,
+                camera=camera,
+                view_scale=view_scale,
                 scale=scale,
                 alpha=entity_alpha,
             )
@@ -1424,44 +1373,49 @@ class WorldRenderer:
                     continue
                 self._draw_projectile(proj, proj_index=proj_index, scale=scale, alpha=entity_alpha)
 
-            self._draw_particle_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+            self._draw_particle_pool(camera=camera, view_scale=view_scale, alpha=entity_alpha)
 
             for proj in self.state.secondary_projectiles.entries:
                 if not proj.active:
                     continue
                 self._draw_secondary_projectile(proj, scale=scale, alpha=entity_alpha)
 
-            self._draw_sprite_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
-            self._draw_effect_pool(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
-            self._draw_bonus_pickups(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, scale=scale, alpha=entity_alpha)
-            self._draw_bonus_hover_labels(cam_x=cam_x, cam_y=cam_y, scale_x=scale_x, scale_y=scale_y, alpha=entity_alpha)
+            self._draw_sprite_effect_pool(camera=camera, view_scale=view_scale, alpha=entity_alpha)
+            self._draw_effect_pool(camera=camera, view_scale=view_scale, alpha=entity_alpha)
+            self._draw_bonus_pickups(camera=camera, view_scale=view_scale, scale=scale, alpha=entity_alpha)
+            self._draw_bonus_hover_labels(camera=camera, view_scale=view_scale, alpha=entity_alpha)
 
             if draw_aim_indicators and (not self.demo_mode_active):
                 for player in self.players:
                     if player.health <= 0.0:
                         continue
-                    aim_x = float(getattr(player, "aim_x", player.pos_x))
-                    aim_y = float(getattr(player, "aim_y", player.pos_y))
-                    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+                    aim = player.aim
+                    dist = player.pos.distance_to(player.aim)
                     radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
-                    sx = (aim_x + cam_x) * scale_x
-                    sy = (aim_y + cam_y) * scale_y
+                    aim_screen = self._world_to_screen_with(aim, camera=camera, view_scale=view_scale)
                     screen_radius = max(1.0, radius * scale)
-                    self._draw_aim_circle(x=sx, y=sy, radius=screen_radius, alpha=entity_alpha)
+                    self._draw_aim_circle(center=aim_screen, radius=screen_radius, alpha=entity_alpha)
                     reload_timer = float(getattr(player, "reload_timer", 0.0))
                     reload_max = float(getattr(player, "reload_timer_max", 0.0))
                     if reload_max > 1e-6 and reload_timer > 1e-6:
                         progress = reload_timer / reload_max
                         if progress > 0.0:
                             ms = int(progress * 60000.0)
-                            self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=entity_alpha)
+                            self._draw_clock_gauge(
+                                pos=Vec2(int(aim_screen.x), int(aim_screen.y)),
+                                ms=ms,
+                                scale=scale,
+                                alpha=entity_alpha,
+                            )
 
-    def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
-        return (x + cam_x) * scale_x, (y + cam_y) * scale_y
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        camera, view_scale = self._world_params()
+        return self._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
 
-    def screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
-        inv_x = 1.0 / scale_x if scale_x > 0 else 1.0
-        inv_y = 1.0 / scale_y if scale_y > 0 else 1.0
-        return x * inv_x - cam_x, y * inv_y - cam_y
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        camera, view_scale = self._world_params()
+        safe_scale = Vec2(
+            view_scale.x if view_scale.x > 0.0 else 1.0,
+            view_scale.y if view_scale.y > 0.0 else 1.0,
+        )
+        return pos.div_components(safe_scale) - camera

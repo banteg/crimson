@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from pathlib import Path
 
 from crimson.game_modes import GameMode
@@ -46,7 +48,7 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_1_7() -> None:
     state = GameplayState(rng=_SeqRng([0, 1, 2, 3, 4, 5, 6]))
     state.quest_stage_major = 1
     state.quest_stage_minor = 7
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.QUESTS), player_count=1)
     assert choices and choices[0] == PerkId.MONSTER_VISION
@@ -58,7 +60,7 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
     for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=1)
+    player = PlayerState(index=0, pos=Vec2(), weapon_id=1)
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
     assert PerkId.PYROMANIAC not in choices
 
@@ -68,7 +70,7 @@ def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
     perks_rebuild_available(state)
     state.perk_available[int(PerkId.JINXED)] = True
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
@@ -82,6 +84,6 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
     for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
     assert PerkId.ANXIOUS_LOADER not in choices

@@ -5,6 +5,7 @@ import math
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.rand import Crand
 from ..creatures.spawn import (
     CreatureTypeId,
@@ -21,7 +22,7 @@ from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_
 from grim.view import View, ViewContext
 
 
-BASE_POS = (512.0, 512.0)
+BASE_POS = Vec2(512.0, 512.0)
 
 UI_TEXT_SCALE = 1
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -94,11 +95,11 @@ class SpawnPlanView:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _draw_ui_label(self, label: str, value: str, x: float, y: float) -> None:
+    def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
         label_text = f"{label}: "
-        draw_ui_text(self._small, label_text, x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, label_text, pos, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
         label_w = measure_small_text_width(self._small, label_text, UI_TEXT_SCALE) if self._small else 0.0
-        draw_ui_text(self._small, value, x + label_w, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, value, Vec2(pos.x + label_w, pos.y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
@@ -216,13 +217,13 @@ class SpawnPlanView:
             if len(self._sim_events) > 12:
                 self._sim_events = self._sim_events[-12:]
 
-    def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        base_x, base_y = BASE_POS
+    def _world_to_screen(self, pos: Vec2) -> Vec2:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        cx = screen_w * 0.5 + (x - base_x) * self._world_scale
-        cy = screen_h * 0.5 + (y - base_y) * self._world_scale
-        return cx, cy
+        return Vec2(
+            screen_w * 0.5 + (pos.x - BASE_POS.x) * self._world_scale,
+            screen_h * 0.5 + (pos.y - BASE_POS.y) * self._world_scale,
+        )
 
     def _draw_grid(self) -> None:
         screen_w = rl.get_screen_width()
@@ -250,57 +251,54 @@ class SpawnPlanView:
         draw_ui_text(
             self._small,
             f"spawn-plan view  (template 0x{spawn_id:02x})",
-            margin,
-            margin,
+            Vec2(margin, margin),
             scale=0.8,
             color=UI_TEXT_COLOR,
         )
         hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty  Space: sim  Backspace: reset"
-        draw_ui_text(self._small, hints, margin, margin + line_h, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, hints, Vec2(margin, margin + line_h), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
-        self._draw_ui_label("seed", f"0x{self._seed:08x}", margin, y)
+        self._draw_ui_label("seed", f"0x{self._seed:08x}", Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("world_scale", f"{self._world_scale:.2f}", margin, y)
+        self._draw_ui_label("world_scale", f"{self._world_scale:.2f}", Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("hardcore", str(self._hardcore), margin, y)
+        self._draw_ui_label("hardcore", str(self._hardcore), Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("difficulty", str(self._difficulty), margin, y)
+        self._draw_ui_label("difficulty", str(self._difficulty), Vec2(margin, y))
         y += line_h
-        self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), margin, y)
+        self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), Vec2(margin, y))
         y += line_h
 
         if self._error is not None:
-            draw_ui_text(self._small, self._error, margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, self._error, Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._plan is None or self._plan_summary is None:
-            draw_ui_text(self._small, "No plan.", margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, "No plan.", Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         summary = self._plan_summary
         self._draw_ui_label(
             "plan",
             f"creatures={summary.creature_count}  slots={summary.spawn_slot_count}  effects={summary.effect_count}  primary={summary.primary_idx}",
-            margin,
-            y,
+            Vec2(margin, y),
         )
         y += line_h
         sim_state = "running" if self._sim_running else "paused"
-        self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", margin, y)
+        self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", Vec2(margin, y))
         y += line_h
         for idx, slot in enumerate(self._sim_slots[:3]):
             self._draw_ui_label(
                 f"slot{idx:02d}",
                 f"timer={slot.timer:5.2f} count={slot.count:3d}/{slot.limit:<3d} interval={slot.interval:5.2f} child=0x{slot.child_template_id:02x}",
-                margin,
-                y,
+                Vec2(margin, y),
             )
             y += line_h
         if self._sim_events:
-            draw_ui_text(self._small, "events:", margin, y + 2.0, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, "events:", Vec2(margin, y + 2.0), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line_h
             for ev in self._sim_events[-5:]:
-                draw_ui_text(self._small, ev, margin, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                draw_ui_text(self._small, ev, Vec2(margin, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                 y += line_h
 
         # Link lines.
@@ -310,36 +308,53 @@ class SpawnPlanView:
             if not (0 <= c.ai_link_parent < len(self._plan.creatures)):
                 continue
             p = self._plan.creatures[c.ai_link_parent]
-            x0, y0 = self._world_to_screen(c.pos_x, c.pos_y)
-            x1, y1 = self._world_to_screen(p.pos_x, p.pos_y)
-            rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, LINK_COLOR)
+            child_screen = self._world_to_screen(c.pos)
+            parent_screen = self._world_to_screen(p.pos)
+            rl.draw_line_ex(
+                child_screen.to_rl(),
+                parent_screen.to_rl(),
+                2.0,
+                LINK_COLOR,
+            )
 
         # Offset hints.
         for c in self._plan.creatures:
-            if c.target_offset_x is None or c.target_offset_y is None:
+            if c.target_offset is None:
                 continue
-            x0, y0 = self._world_to_screen(c.pos_x, c.pos_y)
-            x1, y1 = self._world_to_screen(c.pos_x + c.target_offset_x, c.pos_y + c.target_offset_y)
-            rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, OFFSET_COLOR)
-            rl.draw_circle_lines(int(x1), int(y1), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
+            origin_screen = self._world_to_screen(c.pos)
+            target_screen = self._world_to_screen(c.pos + c.target_offset)
+            rl.draw_line_ex(
+                origin_screen.to_rl(),
+                target_screen.to_rl(),
+                2.0,
+                OFFSET_COLOR,
+            )
+            rl.draw_circle_lines(
+                int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR
+            )
 
         # Creature dots.
         for idx, c in enumerate(self._plan.creatures):
-            x, y = self._world_to_screen(c.pos_x, c.pos_y)
+            screen_pos = self._world_to_screen(c.pos)
             radius = max(3.0, 6.0 * math.sqrt(max(1.0, (c.size or 50.0) / 50.0)))
             radius = min(radius, 24.0)
             color = _type_color(c.type_id)
-            rl.draw_circle(int(x), int(y), radius, color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), radius, color)
             if idx == summary.primary_idx:
-                rl.draw_circle_lines(int(x), int(y), radius + 2.0, rl.Color(255, 255, 255, 200))
+                rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), radius + 2.0, rl.Color(255, 255, 255, 200))
 
         # Spawn-slot owners.
         for slot in self._plan.spawn_slots:
             if not (0 <= slot.owner_creature < len(self._plan.creatures)):
                 continue
             owner = self._plan.creatures[slot.owner_creature]
-            x, y = self._world_to_screen(owner.pos_x, owner.pos_y)
-            rl.draw_circle_lines(int(x), int(y), max(8.0, 12.0 * self._world_scale), rl.Color(120, 255, 180, 200))
+            owner_screen = self._world_to_screen(owner.pos)
+            rl.draw_circle_lines(
+                int(owner_screen.x),
+                int(owner_screen.y),
+                max(8.0, 12.0 * self._world_scale),
+                rl.Color(120, 255, 180, 200),
+            )
 
 
 @register_view("spawn-plan", "Spawn plan")

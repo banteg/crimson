@@ -10,6 +10,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -146,24 +147,28 @@ class CreatureAnimationView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._templates:
-            draw_ui_text(self._small, "No spawn templates loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No spawn templates loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         self._handle_input()
         template = self._current_template()
         if template is None or template.type_id is None or template.creature is None:
-            draw_ui_text(self._small, "Invalid template.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, "Invalid template.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
         texture = self._textures.get(template.creature)
         if texture is None:
-            draw_ui_text(self._small, "Missing texture for creature.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "Missing texture for creature.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
         info = TYPE_ANIM.get(template.type_id)
         if info is None:
-            draw_ui_text(self._small, "Missing anim info.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, "Missing anim info.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             return
 
         frame, mirror_applied, mode = creature_anim_select_frame(
@@ -179,16 +184,14 @@ class CreatureAnimationView:
 
         margin = 24
         title = f"{template.creature} (spawn 0x{template.spawn_id:02x})"
-        draw_ui_text(self._small, title, margin, margin, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, title, Vec2(margin, margin), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         hint = (
-            "Left/Right: spawn template  Up/Down: move_speed  PgUp/PgDn: size  "
-            "[/]: local scale  Space: pause  R: reset"
+            "Left/Right: spawn template  Up/Down: move_speed  PgUp/PgDn: size  [/]: local scale  Space: pause  R: reset"
         )
         draw_ui_text(
             self._small,
             hint,
-            margin,
-            margin + ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6,
+            Vec2(margin, margin + ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -255,7 +258,7 @@ class CreatureAnimationView:
         ]
         y = int(preview_y + preview_size + 16)
         for line in info_lines:
-            draw_ui_text(self._small, line, preview_x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, line, Vec2(preview_x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
 
 

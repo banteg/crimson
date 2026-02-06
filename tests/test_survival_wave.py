@@ -41,8 +41,8 @@ def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
     assert len(spawns) == 1
     c = spawns[0]
 
-    assert c.pos_x == pytest.approx(35.0, abs=1e-9)
-    assert c.pos_y == pytest.approx(1064.0, abs=1e-9)
+    assert c.pos.x == pytest.approx(35.0, abs=1e-9)
+    assert c.pos.y == pytest.approx(1064.0, abs=1e-9)
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.health == pytest.approx(85.0, abs=1e-9)
     assert c.reward_value == pytest.approx(336.0, abs=1e-9)
@@ -64,7 +64,7 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
 
     assert cooldown == pytest.approx(0.0, abs=1e-9)
     assert len(spawns) == 3
-    assert [(c.pos_x, c.pos_y) for c in spawns] == [
+    assert [(c.pos.x, c.pos.y) for c in spawns] == [
         (pytest.approx(35.0, abs=1e-9), pytest.approx(1064.0, abs=1e-9)),
         (pytest.approx(1064.0, abs=1e-9), pytest.approx(947.0, abs=1e-9)),
         (pytest.approx(-40.0, abs=1e-9), pytest.approx(435.0, abs=1e-9)),

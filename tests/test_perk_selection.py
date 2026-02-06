@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.game_modes import GameMode
@@ -9,7 +11,7 @@ from crimson.perks import PerkId
 
 def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     perk_state = PerkSelectionState(
         pending_count=1,
         choices=[int(PerkId.INSTANT_WINNER)],
@@ -27,7 +29,7 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
 
 def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0, level=1)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, level=1)
     perk_state = PerkSelectionState(
         pending_count=1,
         choices=[int(PerkId.INFERNAL_CONTRACT)],
@@ -45,7 +47,7 @@ def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
 
 def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
 
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.TUTORIAL), player_count=1)
 
@@ -60,8 +62,8 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
 
 def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     state = GameplayState()
-    p1 = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=90.0)
-    p2 = PlayerState(index=1, pos_x=0.0, pos_y=0.0, health=60.0)
+    p1 = PlayerState(index=0, pos=Vec2(), health=90.0)
+    p2 = PlayerState(index=1, pos=Vec2(), health=60.0)
     perk_state = PerkSelectionState(
         pending_count=1,
         choices=[int(PerkId.THICK_SKINNED)],

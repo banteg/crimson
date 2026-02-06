@@ -12,6 +12,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import tick_rush_mode_spawns
@@ -140,11 +141,15 @@ class RushMode(BaseGameplayMode):
             except Exception:
                 weapon_usage_counts = ()
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
-            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(0, WEAPON_USAGE_COUNT - len(weapon_usage_counts))
+            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
+                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)
+            )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            if status is not None
+            else 0,
             weapon_usage_counts=weapon_usage_counts,
         )
         self._replay_recorder = ReplayRecorder(
@@ -193,28 +198,20 @@ class RushMode(BaseGameplayMode):
             keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
         up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
 
-        move_x = 0.0
-        move_y = 0.0
-        if input_code_is_down(left_key):
-            move_x -= 1.0
-        if input_code_is_down(right_key):
-            move_x += 1.0
-        if input_code_is_down(up_key):
-            move_y -= 1.0
-        if input_code_is_down(down_key):
-            move_y += 1.0
+        move = Vec2(
+            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
+            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
+        )
 
         mouse = self._ui_mouse_pos()
-        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
-            aim_x=float(aim_x),
-            aim_y=float(aim_y),
+            move=move,
+            aim=aim,
             fire_down=bool(fire_down),
             fire_pressed=bool(fire_pressed),
             reload_pressed=False,
@@ -235,7 +232,11 @@ class RushMode(BaseGameplayMode):
         if self._game_over_active:
             return
 
-        game_mode_id = int(self._config.data.get("game_mode", int(GameMode.RUSH))) if self._config is not None else int(GameMode.RUSH)
+        game_mode_id = (
+            int(self._config.data.get("game_mode", int(GameMode.RUSH)))
+            if self._config is not None
+            else int(GameMode.RUSH)
+        )
         record = build_highscore_record_for_game_over(
             state=self._state,
             player=self._player,
@@ -318,10 +319,8 @@ class RushMode(BaseGameplayMode):
         for tick_offset in range(int(ticks_to_run)):
             if tick_offset:
                 input_tick = PlayerInput(
-                    move_x=float(input_frame.move_x),
-                    move_y=float(input_frame.move_y),
-                    aim_x=float(input_frame.aim_x),
-                    aim_y=float(input_frame.aim_y),
+                    move=input_frame.move,
+                    aim=input_frame.aim,
                     fire_down=bool(input_frame.fire_down),
                     fire_pressed=False,
                     reload_pressed=False,
@@ -379,22 +378,19 @@ class RushMode(BaseGameplayMode):
                 break
 
     def _draw_game_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=mouse_x,
-            y=mouse_y,
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
         self._world.draw(draw_aim_indicators=(not self._game_over_active))
@@ -425,21 +421,21 @@ class RushMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
-            self._draw_ui_text(f"rush: t={self._rush.elapsed_ms/1000.0:6.1f}s", x, y, UI_TEXT_COLOR)
-            self._draw_ui_text(f"kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
+            self._draw_ui_text(f"rush: t={self._rush.elapsed_ms / 1000.0:6.1f}s", Vec2(x, y), UI_TEXT_COLOR)
+            self._draw_ui_text(f"kills={self._creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 2.0), UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", Vec2(x, y + line * 2.0), UI_ERROR_COLOR)
 
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         if not self._game_over_active:
             self._draw_aim_cursor()

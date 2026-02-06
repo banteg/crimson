@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 
 import pyray as rl
@@ -34,14 +36,9 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 @dataclass(slots=True)
 class DummyCreature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     size: float = 32.0
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
 
 
 def _rand_float01(state: GameplayState) -> float:
@@ -55,7 +52,7 @@ class PlayerSandboxView:
         self._small: SmallFontData | None = None
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures: list[DummyCreature] = []
 
         self._hud_assets: HudAssets | None = None
@@ -64,8 +61,7 @@ class PlayerSandboxView:
         self._elapsed_ms = 0.0
         self._last_dt_ms = 0.0
 
-        self._camera_x = -1.0
-        self._camera_y = -1.0
+        self._camera = Vec2(-1.0, -1.0)
         self._paused = False
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
@@ -81,7 +77,7 @@ class PlayerSandboxView:
             margin = 40.0
             x = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
             y = margin + _rand_float01(self._state) * (WORLD_SIZE - margin * 2)
-            self._creatures.append(DummyCreature(x=x, y=y, hp=80.0, size=28.0))
+            self._creatures.append(DummyCreature(pos=Vec2(x, y), hp=80.0, size=28.0))
 
     def _weapon_id(self) -> int:
         if not self._weapon_ids:
@@ -128,8 +124,7 @@ class PlayerSandboxView:
         self._weapon_index = 0
         self._set_weapon(self._weapon_id())
 
-        self._player.pos_x = WORLD_SIZE * 0.5
-        self._player.pos_y = WORLD_SIZE * 0.5
+        self._player.pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player.health = 100.0
         self._elapsed_ms = 0.0
 
@@ -186,11 +181,11 @@ class PlayerSandboxView:
             self._player.fire_bullets_timer = 0.0
             bonus_hud_update(self._state, [self._player], dt=0.0)
 
-    def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self._camera_x + x, self._camera_y + y
+    def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._camera + pos
 
-    def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return x - self._camera_x, y - self._camera_y
+    def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
+        return pos - self._camera
 
     def _update_camera(self, dt: float) -> None:
         screen_w = float(rl.get_screen_width())
@@ -200,51 +195,32 @@ class PlayerSandboxView:
         if screen_h > WORLD_SIZE:
             screen_h = WORLD_SIZE
 
-        focus_x = self._player.pos_x
-        focus_y = self._player.pos_y
-
-        desired_x = (screen_w * 0.5) - focus_x
-        desired_y = (screen_h * 0.5) - focus_y
-
         min_x = screen_w - WORLD_SIZE
         min_y = screen_h - WORLD_SIZE
-        if desired_x > -1.0:
-            desired_x = -1.0
-        if desired_x < min_x:
-            desired_x = min_x
-        if desired_y > -1.0:
-            desired_y = -1.0
-        if desired_y < min_y:
-            desired_y = min_y
+        desired = Vec2(
+            (screen_w * 0.5) - self._player.pos.x,
+            (screen_h * 0.5) - self._player.pos.y,
+        ).clamp_rect(min_x, min_y, -1.0, -1.0)
 
         t = clamp(dt * 6.0, 0.0, 1.0)
-        self._camera_x = _lerp(self._camera_x, desired_x, t)
-        self._camera_y = _lerp(self._camera_y, desired_y, t)
+        self._camera = Vec2.lerp(self._camera, desired, t)
 
     def _build_input(self) -> PlayerInput:
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         mouse = rl.get_mouse_position()
-        aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._camera_screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
-            aim_x=aim_x,
-            aim_y=aim_y,
+            move=move,
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -293,39 +269,50 @@ class PlayerSandboxView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
-        x0, y0 = self._camera_world_to_screen(0.0, 0.0)
-        x1, y1 = self._camera_world_to_screen(WORLD_SIZE, WORLD_SIZE)
-        rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
+        world_min = self._camera_world_to_screen(Vec2())
+        world_max = self._camera_world_to_screen(Vec2(WORLD_SIZE, WORLD_SIZE))
+        rl.draw_rectangle_lines(
+            int(world_min.x),
+            int(world_min.y),
+            int(world_max.x - world_min.x),
+            int(world_max.y - world_min.y),
+            rl.Color(40, 40, 55, 255),
+        )
 
         # Creatures.
         for creature in self._creatures:
-            sx, sy = self._camera_world_to_screen(creature.x, creature.y)
+            screen_pos = self._camera_world_to_screen(creature.pos)
             color = rl.Color(220, 90, 90, 255)
-            rl.draw_circle(int(sx), int(sy), float(creature.size * 0.5), color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), color)
 
         # Projectiles.
         for proj in self._state.projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
-            rl.draw_circle(int(sx), int(sy), 2.0, rl.Color(240, 220, 160, 255))
+            screen_pos = self._camera_world_to_screen(proj.pos)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 2.0, rl.Color(240, 220, 160, 255))
 
         for proj in self._state.secondary_projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
+            screen_pos = self._camera_world_to_screen(proj.pos)
             color = rl.Color(120, 200, 240, 255) if proj.type_id != 3 else rl.Color(200, 240, 160, 255)
-            rl.draw_circle(int(sx), int(sy), 3.0, color)
+            rl.draw_circle(int(screen_pos.x), int(screen_pos.y), 3.0, color)
 
         # Player.
-        px, py = self._camera_world_to_screen(self._player.pos_x, self._player.pos_y)
-        rl.draw_circle(int(px), int(py), 14.0, rl.Color(90, 190, 120, 255))
-        rl.draw_circle_lines(int(px), int(py), 14.0, rl.Color(40, 80, 50, 255))
+        player_screen = self._camera_world_to_screen(self._player.pos)
+        rl.draw_circle(int(player_screen.x), int(player_screen.y), 14.0, rl.Color(90, 190, 120, 255))
+        rl.draw_circle_lines(int(player_screen.x), int(player_screen.y), 14.0, rl.Color(40, 80, 50, 255))
 
         aim_len = 42.0
-        ax = px + self._player.aim_dir_x * aim_len
-        ay = py + self._player.aim_dir_y * aim_len
-        rl.draw_line(int(px), int(py), int(ax), int(ay), rl.Color(240, 240, 240, 255))
+        aim_tip = player_screen + self._player.aim_dir * aim_len
+        rl.draw_line(
+            int(player_screen.x),
+            int(player_screen.y),
+            int(aim_tip.x),
+            int(aim_tip.y),
+            rl.Color(240, 240, 240, 255),
+        )
 
         hud_bottom = 0.0
         if self._hud_assets is not None:
@@ -342,7 +329,7 @@ class PlayerSandboxView:
 
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            draw_ui_text(self._small, warn, 24, rl.get_screen_height() - 28, scale=0.8, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, warn, Vec2(24, rl.get_screen_height() - 28), scale=0.8, color=UI_ERROR_COLOR)
 
         # UI.
         scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
@@ -353,13 +340,14 @@ class PlayerSandboxView:
 
         weapon_id = self._player.weapon_id
         weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
-        draw_ui_text(self._small, f"{weapon_name} (id {weapon_id})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, f"{weapon_name} (id {weapon_id})", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         y += line + 4
         draw_ui_text(
             self._small,
             f"ammo {self._player.ammo}/{self._player.clip_size}  reload {self._player.reload_timer:.2f}/{self._player.reload_timer_max:.2f}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -367,8 +355,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             f"cooldown {self._player.shot_cooldown:.3f}  spread {self._player.spread_heat:.3f}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -377,8 +364,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "WASD move  Mouse aim  LMB fire  R reload/swap  Q/E weapon  Tab pause",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -386,8 +372,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "1 Sharpshooter 2 Anxious 3 Stationary 4 Angry 5 Man Bomb 6 Hot Tempered 7 Fire Cough  T Alt Weapon",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -395,8 +380,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "Z PowerUp  X Shield  C Speed  V FireBullets  B Fireblast  Backspace clear bonuses",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -418,8 +402,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "perks: " + (", ".join(active_perks) if active_perks else "none"),
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -428,10 +411,10 @@ class PlayerSandboxView:
         # Bonus HUD slots (text-only).
         slots = [slot for slot in self._state.bonus_hud.slots if slot.active]
         if slots:
-            draw_ui_text(self._small, "bonuses:", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, "bonuses:", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             y += line + 4
             for slot in slots:
-                draw_ui_text(self._small, f"- {slot.label}", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(self._small, f"- {slot.label}", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
                 y += line + 2
 
 

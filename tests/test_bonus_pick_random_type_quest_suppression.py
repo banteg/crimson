@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.bonuses import BonusId
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState, bonus_pick_random_type
@@ -24,7 +26,7 @@ def test_bonus_pick_random_type_quest_2_10_suppresses_nuke() -> None:
     state.game_mode = int(GameMode.QUESTS)
     state.quest_stage_major = 2
     state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == int(BonusId.FREEZE)
@@ -36,7 +38,7 @@ def test_bonus_pick_random_type_hardcore_quest_2_10_suppresses_nuke_and_freeze()
     state.hardcore = True
     state.quest_stage_major = 2
     state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == int(BonusId.POINTS)
@@ -47,7 +49,7 @@ def test_bonus_pick_random_type_quest_4_10_suppresses_nuke_and_freeze() -> None:
     state.game_mode = int(GameMode.QUESTS)
     state.quest_stage_major = 4
     state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == int(BonusId.POINTS)
@@ -58,7 +60,7 @@ def test_bonus_pick_random_type_quest_5_10_suppresses_nuke() -> None:
     state.game_mode = int(GameMode.QUESTS)
     state.quest_stage_major = 5
     state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == int(BonusId.FREEZE)
@@ -70,7 +72,7 @@ def test_bonus_pick_random_type_hardcore_quest_3_10_suppresses_nuke() -> None:
     state.hardcore = True
     state.quest_stage_major = 3
     state.quest_stage_minor = 10
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == int(BonusId.FREEZE)

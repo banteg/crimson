@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 
 import pytest
@@ -20,7 +22,7 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x13, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x13, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Occupy a few pool slots so plan-local indices do not equal pool indices.
@@ -48,7 +50,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x00, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(0x00, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Seed an existing spawn slot so the plan slot id (0) must be remapped.
@@ -89,7 +91,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     state = GameplayState(rng=rng)
     pool = CreaturePool(env=env, effects=state.effects)
 
-    plan = build_spawn_plan(1, (100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, rng, env)
     pool.spawn_plan(plan, rand=rng.rand, detail_preset=5)
 
     active = state.effects.iter_active()
@@ -99,7 +101,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
 
 def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -110,13 +112,12 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.ai_mode = 0
     creature.move_speed = 0.0
     creature.size = 45.0
-    creature.x = -64.0
-    creature.y = 1088.0
+    creature.pos = Vec2(-64.0, 1088.0)
 
     pool.update(1.0 / 60.0, state=state, players=[player])
 
-    assert creature.x == pytest.approx(-64.0)
-    assert creature.y == pytest.approx(1088.0)
+    assert creature.pos.x == pytest.approx(-64.0)
+    assert creature.pos.y == pytest.approx(1088.0)
 
 
 @dataclass
@@ -142,13 +143,12 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     # - points amount: (rand & 7) < 3 => 1000
     state.rng = _StubRand([1, 0, 0])  # type: ignore[assignment]
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
 
     creature = pool.entries[0]
     creature.active = True
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.reward_value = 10.0
     creature.hp = 0.0
 

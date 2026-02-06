@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -11,39 +13,36 @@ from crimson.gameplay import BonusId, GameplayState, PlayerState, bonus_apply
 
 @dataclass(slots=True)
 class _Creature:
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     active: bool = True
     hitbox_size: float = 16.0
     size: float = 50.0
+    flags: int = 0
+    plague_infected: bool = False
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
     state = GameplayState()
     state.camera_shake_timer = 0.0
-    state.camera_shake_offset_x = 5.0
-    state.camera_shake_offset_y = -3.0
+    state.camera_shake_offset = Vec2(5.0, -3.0)
 
     camera_shake_update(state, 0.016)
 
-    assert state.camera_shake_offset_x == 0.0
-    assert state.camera_shake_offset_y == 0.0
+    assert state.camera_shake_offset == Vec2()
 
 
 def test_camera_shake_update_decays_timer_without_pulse() -> None:
     state = GameplayState()
     state.camera_shake_timer = 1.0
     state.camera_shake_pulses = 10
-    state.camera_shake_offset_x = 7.0
-    state.camera_shake_offset_y = -9.0
+    state.camera_shake_offset = Vec2(7.0, -9.0)
 
     camera_shake_update(state, 0.1)
 
     assert math.isclose(state.camera_shake_timer, 0.7, abs_tol=1e-9)
     assert state.camera_shake_pulses == 10
-    assert state.camera_shake_offset_x == 7.0
-    assert state.camera_shake_offset_y == -9.0
+    assert state.camera_shake_offset == Vec2(7.0, -9.0)
 
 
 def test_camera_shake_update_matches_decompile_first_pulse() -> None:
@@ -56,8 +55,7 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
 
     assert state.camera_shake_pulses == 0x13
     assert math.isclose(state.camera_shake_timer, 0.1, abs_tol=1e-9)
-    assert state.camera_shake_offset_x == 28.0
-    assert state.camera_shake_offset_y == -32.0
+    assert state.camera_shake_offset == Vec2(28.0, -32.0)
 
 
 def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
@@ -76,26 +74,23 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
     state = GameplayState()
     state.camera_shake_pulses = 1
     state.camera_shake_timer = 0.01
-    state.camera_shake_offset_x = 11.0
-    state.camera_shake_offset_y = -13.0
+    state.camera_shake_offset = Vec2(11.0, -13.0)
 
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 0
     assert math.isclose(state.camera_shake_timer, 0.0, abs_tol=1e-9)
-    assert state.camera_shake_offset_x == 11.0
-    assert state.camera_shake_offset_y == -13.0
+    assert state.camera_shake_offset == Vec2(11.0, -13.0)
 
     camera_shake_update(state, 0.1)
 
-    assert state.camera_shake_offset_x == 0.0
-    assert state.camera_shake_offset_y == 0.0
+    assert state.camera_shake_offset == Vec2()
 
 
 def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
-    creatures = [_Creature(x=100.0, y=100.0, hp=100.0), _Creature(x=500.0, y=500.0, hp=100.0)]
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    creatures = [_Creature(pos=Vec2(100.0, 100.0), hp=100.0), _Creature(pos=Vec2(500.0, 500.0), hp=100.0)]
 
     bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures)
 
@@ -110,7 +105,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.NUKE), state=world.state)
     assert entry is not None
 
     world.update(1.0 / 60.0, perk_progression_enabled=False)

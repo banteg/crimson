@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CreatureState
@@ -40,7 +42,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
         ]
     )
 
-    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0, experience=100, health=50.0)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
     perks_update_effects(state, [player], dt, creatures=creatures)
@@ -64,7 +66,7 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     )
     state.bonuses.freeze = 1.0
 
-    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0, health=50.0)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
     fx_queue = FxQueue(capacity=8, max_count=8)

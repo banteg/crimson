@@ -8,6 +8,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -118,10 +119,12 @@ class SpriteSheetView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._sheets:
-            draw_ui_text(self._small, "No sprite sheets loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No sprite sheets loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         self._handle_input()
@@ -130,13 +133,12 @@ class SpriteSheetView:
 
         margin = 24
         info = f"{sheet.name} (grid {grid}x{grid})"
-        draw_ui_text(self._small, info, margin, margin, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, info, Vec2(margin, margin), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         hint = "Left/Right: sheet  Up/Down: grid  1/2/4/8: grid"
         draw_ui_text(
             self._small,
             hint,
-            margin,
-            margin + ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6,
+            Vec2(margin, margin + ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -191,7 +193,13 @@ class SpriteSheetView:
                     float(cell_h),
                 )
                 rl.draw_rectangle_lines_ex(hl, 2, rl.Color(240, 200, 80, 255))
-                draw_ui_text(self._small, f"frame {index:02d}", x, y + draw_h + 10, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                draw_ui_text(
+                    self._small,
+                    f"frame {index:02d}",
+                    Vec2(x, y + draw_h + 10),
+                    scale=UI_TEXT_SCALE,
+                    color=UI_TEXT_COLOR,
+                )
 
 
 @register_view("sprites", "Sprite atlas preview")

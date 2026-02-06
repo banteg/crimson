@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from grim.geom import Vec2
+
 from ..bonuses import BonusId
 from ..creatures.spawn import (
     SpawnTemplateCall,
@@ -50,7 +52,7 @@ class TutorialState:
 class BonusSpawnCall:
     bonus_id: int
     amount: int
-    pos: tuple[float, float]
+    pos: Vec2
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,8 +153,8 @@ def _tick_hint(state: TutorialState, *, frame_dt_ms: int, hint_bonus_died: bool)
         state.hint_index = int(state.hint_index) + 1
         hint_spawns.extend(
             (
-                SpawnTemplateCall(template_id=0x24, pos=(128.0, 128.0), heading=3.1415927),
-                SpawnTemplateCall(template_id=0x26, pos=(152.0, 160.0), heading=3.1415927),
+                SpawnTemplateCall(template_id=0x24, pos=Vec2(128.0, 128.0), heading=3.1415927),
+                SpawnTemplateCall(template_id=0x26, pos=Vec2(152.0, 160.0), heading=3.1415927),
             )
         )
 
@@ -233,9 +235,9 @@ def tick_tutorial_timeline(
             play_levelup_sfx = True
             spawn_bonuses.extend(
                 (
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=(260.0, 260.0)),
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=1000, pos=(600.0, 400.0)),
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=(300.0, 400.0)),
+                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(260.0, 260.0)),
+                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=1000, pos=Vec2(600.0, 400.0)),
+                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(300.0, 400.0)),
                 )
             )
     elif stage_index == 2:

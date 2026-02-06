@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import json
 import math
@@ -8,7 +10,11 @@ import time
 
 import pyray as rl
 
-from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
+from crimson.creatures.anim import (
+    creature_anim_advance_phase,
+    creature_anim_select_frame,
+    creature_corpse_frame_for_type,
+)
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
@@ -90,8 +96,7 @@ class DecalsDebugView:
 
         self._fx_textures: FxQueueTextures | None = None
         self._ground: GroundRenderer | None = None
-        self._camera_x = 0.0
-        self._camera_y = 0.0
+        self._camera = Vec2()
         self._light_mode = False
 
         self._terrain_seed = 0xBEEF
@@ -102,7 +107,7 @@ class DecalsDebugView:
         self._stamp_log_file = None
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures = CreaturePool()
         self._env = SpawnEnv(
             terrain_width=WORLD_SIZE,
@@ -173,133 +178,66 @@ class DecalsDebugView:
         else:
             self._apply_terrain_pair()
 
-    def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
+    def _view_params(self) -> tuple[Vec2, Vec2, Vec2]:
         ground = self._ground
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
         if ground is None:
-            return x, y
+            return self._camera, Vec2(1.0, 1.0), out_size
 
         # Mirror GameWorld camera behavior (ground.draw uses the same clamp rules).
-        cfg_w = float(ground.screen_width or screen_w)
-        cfg_h = float(ground.screen_height or screen_h)
+        cfg_w = ground.screen_width or out_size.x
+        cfg_h = ground.screen_height or out_size.y
         if cfg_w > WORLD_SIZE:
             cfg_w = WORLD_SIZE
         if cfg_h > WORLD_SIZE:
             cfg_h = WORLD_SIZE
 
-        min_x = cfg_w - WORLD_SIZE
-        min_y = cfg_h - WORLD_SIZE
-        cam_x = self._camera_x
-        cam_y = self._camera_y
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y > -1.0:
-            cam_y = -1.0
-        if cam_y < min_y:
-            cam_y = min_y
+        camera = self._camera.clamp_rect(cfg_w - WORLD_SIZE, cfg_h - WORLD_SIZE, -1.0, -1.0)
+        scale_x = out_size.x / cfg_w if cfg_w > 0 else 1.0
+        scale_y = out_size.y / cfg_h if cfg_h > 0 else 1.0
+        return camera, Vec2(scale_x, scale_y), Vec2(cfg_w, cfg_h)
 
-        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
-        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
-        return (x + cam_x) * scale_x, (y + cam_y) * scale_y
+    def _world_to_screen(self, pos: Vec2) -> Vec2:
+        camera, view_scale, _ = self._view_params()
+        return (pos + camera).mul_components(view_scale)
 
-    def _screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        ground = self._ground
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        if ground is None:
-            return x, y
-
-        cfg_w = float(ground.screen_width or screen_w)
-        cfg_h = float(ground.screen_height or screen_h)
-        if cfg_w > WORLD_SIZE:
-            cfg_w = WORLD_SIZE
-        if cfg_h > WORLD_SIZE:
-            cfg_h = WORLD_SIZE
-
-        min_x = cfg_w - WORLD_SIZE
-        min_y = cfg_h - WORLD_SIZE
-        cam_x = self._camera_x
-        cam_y = self._camera_y
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y > -1.0:
-            cam_y = -1.0
-        if cam_y < min_y:
-            cam_y = min_y
-
-        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
-        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
-        world_x = (x / scale_x) - cam_x
-        world_y = (y / scale_y) - cam_y
-        return world_x, world_y
+    def _screen_to_world(self, pos: Vec2) -> Vec2:
+        camera, view_scale, _ = self._view_params()
+        safe_scale = Vec2(
+            view_scale.x if view_scale.x > 0.0 else 1.0,
+            view_scale.y if view_scale.y > 0.0 else 1.0,
+        )
+        return pos.div_components(safe_scale) - camera
 
     def _world_scale(self) -> float:
-        ground = self._ground
-        if ground is None:
-            return 1.0
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        cfg_w = float(ground.screen_width or out_w)
-        cfg_h = float(ground.screen_height or out_h)
-        if cfg_w > WORLD_SIZE:
-            cfg_w = WORLD_SIZE
-        if cfg_h > WORLD_SIZE:
-            cfg_h = WORLD_SIZE
-        if cfg_w <= 0.0 or cfg_h <= 0.0:
-            return 1.0
-        scale_x = out_w / cfg_w
-        scale_y = out_h / cfg_h
-        return (scale_x + scale_y) * 0.5
+        _camera, view_scale, _screen_size = self._view_params()
+        return view_scale.avg_component()
 
     def _draw_grid(self) -> None:
         ground = self._ground
         if ground is None:
             return
         step = 64.0
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        cfg_w = float(ground.screen_width or screen_w)
-        cfg_h = float(ground.screen_height or screen_h)
-        if cfg_w > WORLD_SIZE:
-            cfg_w = WORLD_SIZE
-        if cfg_h > WORLD_SIZE:
-            cfg_h = WORLD_SIZE
+        out_w = float(rl.get_screen_width())
+        out_h = float(rl.get_screen_height())
+        camera, view_scale, screen_size = self._view_params()
 
-        min_x = cfg_w - WORLD_SIZE
-        min_y = cfg_h - WORLD_SIZE
-        cam_x = self._camera_x
-        cam_y = self._camera_y
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y > -1.0:
-            cam_y = -1.0
-        if cam_y < min_y:
-            cam_y = min_y
-
-        scale_x = screen_w / cfg_w if cfg_w > 0 else 1.0
-        scale_y = screen_h / cfg_h if cfg_h > 0 else 1.0
-
-        start_x = math.floor((-cam_x) / step) * step
-        end_x = (-cam_x) + cfg_w
+        start_x = math.floor((-camera.x) / step) * step
+        end_x = (-camera.x) + screen_size.x
         x = start_x
         while x <= end_x:
-            sx = int((x + cam_x) * scale_x)
-            rl.draw_line(sx, 0, sx, int(screen_h), GRID_COLOR)
+            line_start = Vec2(self._world_to_screen(Vec2(x, 0.0)).x, 0.0)
+            line_end = Vec2(line_start.x, out_h)
+            rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             x += step
 
-        start_y = math.floor((-cam_y) / step) * step
-        end_y = (-cam_y) + cfg_h
+        start_y = math.floor((-camera.y) / step) * step
+        end_y = (-camera.y) + screen_size.y
         y = start_y
         while y <= end_y:
-            sy = int((y + cam_y) * scale_y)
-            rl.draw_line(0, sy, int(screen_w), sy, GRID_COLOR)
+            line_start = Vec2(0.0, self._world_to_screen(Vec2(0.0, y)).y)
+            line_end = Vec2(out_w, line_start.y)
+            rl.draw_line(int(line_start.x), int(line_start.y), int(line_end.x), int(line_end.y), GRID_COLOR)
             y += step
 
     def _draw_creature_sprite(
@@ -310,8 +248,7 @@ class DecalsDebugView:
         flags: CreatureFlags,
         phase: float,
         mirror_long: bool,
-        world_x: float,
-        world_y: float,
+        world_pos: Vec2,
         rotation_rad: float,
         scale: float,
         size_scale: float,
@@ -328,14 +265,14 @@ class DecalsDebugView:
         row = frame // grid
         col = frame % grid
         src = rl.Rectangle(float(col * cell), float(row * cell), float(cell), float(cell))
-        sx, sy = self._world_to_screen(world_x, world_y)
+        screen_pos = self._world_to_screen(world_pos)
         width = cell * float(scale) * float(size_scale)
         height = cell * float(scale) * float(size_scale)
-        dst = rl.Rectangle(float(sx), float(sy), float(width), float(height))
+        dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(width), float(height))
         origin = rl.Vector2(float(width) * 0.5, float(height) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, math.degrees(float(rotation_rad)), tint)
 
-    def _spawn_enemy(self, x: float, y: float) -> None:
+    def _spawn_enemy(self, pos: Vec2) -> None:
         type_id = CreatureTypeId(int(self._state.rng.rand()) % 5)
         size = float(int(self._state.rng.rand()) % 30 + 40)
         move_speed = float(int(self._state.rng.rand()) % 30) * 0.05 + 1.0
@@ -343,8 +280,7 @@ class DecalsDebugView:
         heading = float(int(self._state.rng.rand()) % 628) * 0.01
         init = CreatureInit(
             origin_template_id=-1,
-            pos_x=float(x),
-            pos_y=float(y),
+            pos=pos,
             heading=heading,
             phase_seed=float(int(self._state.rng.rand()) & 0xFF),
             type_id=type_id,
@@ -425,8 +361,7 @@ class DecalsDebugView:
             screen_height=screen_h,
         )
         self._reset_ground()
-        self._camera_x = 0.0
-        self._camera_y = 0.0
+        self._camera = Vec2()
         self._frame = 0
 
         log_dir = Path("artifacts") / "debug"
@@ -444,7 +379,7 @@ class DecalsDebugView:
         for _ in range(6):
             ox = float(int(self._state.rng.rand()) % 200 - 100)
             oy = float(int(self._state.rng.rand()) % 200 - 100)
-            self._spawn_enemy(WORLD_SIZE * 0.5 + ox, WORLD_SIZE * 0.5 + oy)
+            self._spawn_enemy(Vec2(WORLD_SIZE * 0.5 + ox, WORLD_SIZE * 0.5 + oy))
 
     def close(self) -> None:
         if self._ground is not None and self._ground.render_target is not None:
@@ -477,14 +412,11 @@ class DecalsDebugView:
         self._frame += 1
 
         speed = 240.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            self._camera_x += speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            self._camera_x -= speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            self._camera_y += speed * dt
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            self._camera_y -= speed * dt
+        movement = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_A)) - float(rl.is_key_down(rl.KeyboardKey.KEY_D)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_W)) - float(rl.is_key_down(rl.KeyboardKey.KEY_S)),
+        )
+        self._camera = self._camera + movement * (speed * dt)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_G):
             self._light_mode = not self._light_mode
@@ -520,31 +452,27 @@ class DecalsDebugView:
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             mouse = rl.get_mouse_position()
-            x, y = self._screen_to_world(float(mouse.x), float(mouse.y))
-            self._spawn_enemy(x, y)
+            self._spawn_enemy(self._screen_to_world(Vec2.from_xy(mouse)))
 
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             mouse = rl.get_mouse_position()
-            x, y = self._screen_to_world(float(mouse.x), float(mouse.y))
+            click_pos = self._screen_to_world(Vec2.from_xy(mouse))
             hit = None
             for creature in self._creatures.entries:
                 if not (creature.active and creature.hp > 0.0):
                     continue
-                dx = float(creature.x) - float(x)
-                dy = float(creature.y) - float(y)
                 r = float(creature.size) * 0.35 + 12.0
-                if dx * dx + dy * dy <= r * r:
+                if Vec2.distance_sq(creature.pos, click_pos) <= r * r:
                     hit = creature
                     break
             if hit is not None:
                 hit.hp -= 1.0
-                self._fx_queue.add_random(pos_x=float(hit.x), pos_y=float(hit.y), rand=self._state.rng.rand)
+                self._fx_queue.add_random(pos=hit.pos, rand=self._state.rng.rand)
             else:
                 # Paint blood directly for ground decal checks.
                 self._fx_queue.add(
                     effect_id=int(EffectId.BLOOD_SPLATTER),
-                    pos_x=float(x),
-                    pos_y=float(y),
+                    pos=click_pos,
                     width=30.0,
                     height=30.0,
                     rotation=0.0,
@@ -552,8 +480,7 @@ class DecalsDebugView:
                 )
 
         # Keep the player fixed; creatures use it as a target for heading/movement.
-        self._player.pos_x = WORLD_SIZE * 0.5
-        self._player.pos_y = WORLD_SIZE * 0.5
+        self._player.pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player.health = 1e9
 
         creature_result = self._creatures.update(
@@ -625,18 +552,19 @@ class DecalsDebugView:
             draw_ui_text(
                 self._small,
                 "Missing assets: " + ", ".join(self._missing_assets),
-                24,
-                24,
+                Vec2(24, 24),
                 scale=UI_TEXT_SCALE,
                 color=UI_ERROR_COLOR,
             )
             return
 
         if self._ground is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
 
-        self._ground.draw(self._camera_x, self._camera_y)
+        self._ground.draw(self._camera)
         if self._light_mode:
             self._draw_grid()
 
@@ -682,8 +610,7 @@ class DecalsDebugView:
                 flags=flags,
                 phase=phase,
                 mirror_long=mirror_long,
-                world_x=float(creature.x),
-                world_y=float(creature.y),
+                world_pos=creature.pos,
                 rotation_rad=float(creature.heading) - math.pi / 2.0,
                 scale=scale,
                 size_scale=size_scale,
@@ -696,15 +623,20 @@ class DecalsDebugView:
         x = 16
         y = 12
         line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
-        draw_ui_text(self._small, "Decals debug", x, y, scale=UI_TEXT_SCALE, color=text_color)
+        draw_ui_text(self._small, "Decals debug", Vec2(x, y), scale=UI_TEXT_SCALE, color=text_color)
         y += line
-        draw_ui_text(self._small, "LMB: blood / damage enemy   RMB: spawn enemy", x, y, scale=UI_TEXT_SCALE, color=hint_color)
+        draw_ui_text(
+            self._small,
+            "LMB: blood / damage enemy   RMB: spawn enemy",
+            Vec2(x, y),
+            scale=UI_TEXT_SCALE,
+            color=hint_color,
+        )
         y += line
         draw_ui_text(
             self._small,
             "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear   L: stamp log",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=hint_color,
         )
@@ -712,8 +644,7 @@ class DecalsDebugView:
         draw_ui_text(
             self._small,
             f"enemies={len([c for c in self._creatures.entries if c.active])}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=hint_color,
         )
@@ -723,8 +654,7 @@ class DecalsDebugView:
             draw_ui_text(
                 self._small,
                 f"stamp log ({status}): {self._stamp_log_path}",
-                x,
-                y,
+                Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=hint_color,
             )
@@ -732,7 +662,7 @@ class DecalsDebugView:
         if self._ground is not None and self._show_stamp_log:
             stamp_log = self._ground.debug_stamp_log()
             if stamp_log:
-                draw_ui_text(self._small, "stamp order:", x, y, scale=UI_TEXT_SCALE, color=hint_color)
+                draw_ui_text(self._small, "stamp order:", Vec2(x, y), scale=UI_TEXT_SCALE, color=hint_color)
                 y += line
                 for event in stamp_log[-6:]:
                     kind = str(event.get("kind", "?"))
@@ -744,7 +674,7 @@ class DecalsDebugView:
                         msg = f"{kind} draws={event.get('draws')}"
                     else:
                         msg = kind
-                    draw_ui_text(self._small, msg, x, y, scale=UI_TEXT_SCALE, color=hint_color)
+                    draw_ui_text(self._small, msg, Vec2(x, y), scale=UI_TEXT_SCALE, color=hint_color)
                     y += line
 
 

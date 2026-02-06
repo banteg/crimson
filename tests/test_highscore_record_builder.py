@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.modes.components.highscore_record_builder import (
     build_highscore_record_for_game_over,
@@ -21,7 +23,7 @@ def test_shots_from_state_handles_out_of_bounds_player() -> None:
 
 def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.experience = 1234
     player.weapon_id = 1
 
@@ -48,7 +50,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
 
 def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
 
     record = build_highscore_record_for_game_over(
         state=state,

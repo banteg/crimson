@@ -8,6 +8,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -88,10 +89,12 @@ class ProjectileView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
-            draw_ui_text(self._small, "No projectile texture loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No projectile texture loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         self._handle_input()
@@ -165,17 +168,24 @@ class ProjectileView:
         draw_ui_text(
             self._small,
             f"projs.png (grid {self._grid}x{self._grid})",
-            info_x,
-            info_y,
+            Vec2(info_x, info_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
-        draw_ui_text(self._small, "2/4: grid  G: toggle", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(
+            self._small, "2/4: grid  G: toggle", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+        )
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
         if hovered_index is not None:
-            draw_ui_text(self._small, f"frame {hovered_index:02d}", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small,
+                f"frame {hovered_index:02d}",
+                Vec2(info_x, info_y),
+                scale=UI_TEXT_SCALE,
+                color=UI_TEXT_COLOR,
+            )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             entries = known_frames.get(hovered_index, [])
             if entries:
@@ -183,23 +193,30 @@ class ProjectileView:
                     draw_ui_text(
                         self._small,
                         f"0x{entry.type_id:02x} {entry.label}",
-                        info_x,
-                        info_y,
+                        Vec2(info_x, info_y),
                         scale=UI_TEXT_SCALE,
                         color=UI_TEXT_COLOR,
                     )
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             else:
-                draw_ui_text(self._small, "no known mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(
+                    self._small, "no known mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             info_y += 8
 
-        draw_ui_text(self._small, "Known frames", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, "Known frames", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
         for frame_index in sorted(known_frames.keys()):
             entries = known_frames[frame_index]
             labels = ", ".join(f"0x{entry.type_id:02x} {entry.label}" for entry in entries)
-            draw_ui_text(self._small, f"{frame_index:02d}: {labels}", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(
+                self._small,
+                f"{frame_index:02d}: {labels}",
+                Vec2(info_x, info_y),
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
 
 

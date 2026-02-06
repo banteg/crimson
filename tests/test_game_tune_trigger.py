@@ -3,10 +3,12 @@ from __future__ import annotations
 import crimson.audio_router as audio_router
 from crimson.audio_router import AudioRouter
 from crimson.game_modes import GameMode
+from crimson.projectiles import ProjectileHit
+from grim.geom import Vec2
 
 
-def _hits(count: int) -> list[tuple[int, float, float, float, float]]:
-    return [(0, 0.0, 0.0, 0.0, 0.0) for _ in range(int(count))]
+def _hits(count: int) -> list[ProjectileHit]:
+    return [ProjectileHit(type_id=0, origin=Vec2(), hit=Vec2(), target=Vec2()) for _ in range(int(count))]
 
 
 def test_game_tune_triggers_in_typo_mode(monkeypatch) -> None:

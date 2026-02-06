@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..gameplay import PlayerState
 from ..sim.world_state import WorldState
@@ -21,8 +22,7 @@ class ReplayCheckpointsError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class ReplayPlayerCheckpoint:
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     health: float
     weapon_id: int
     ammo: float
@@ -104,7 +104,7 @@ def resolve_checkpoint_sample_rate(default_rate: int) -> int:
 
 def _bonus_timer_ms(value: float) -> int:
     # Keep checkpoint values compact/stable: ms resolution is enough for divergence detection.
-    ms = int(round(float(value) * 1000.0))
+    ms = int(round(value * 1000.0))
     if ms < 0:
         return 0
     return ms
@@ -123,17 +123,16 @@ def build_checkpoint(
     players: list[PlayerState] = list(world.players)
     score_xp = sum(int(player.experience) for player in players)
     kills = int(world.creatures.kill_count)
-    creature_count = sum(1 for creature in world.creatures.entries if bool(getattr(creature, "active", False)))
+    creature_count = sum(1 for creature in world.creatures.entries if creature.active)
 
     player_ckpts: list[ReplayPlayerCheckpoint] = []
     for player in players:
         player_ckpts.append(
             ReplayPlayerCheckpoint(
-                pos_x=round(float(player.pos_x), 4),
-                pos_y=round(float(player.pos_y), 4),
-                health=round(float(player.health), 4),
+                pos=Vec2(round(player.pos.x, 4), round(player.pos.y, 4)),
+                health=round(player.health, 4),
                 weapon_id=int(player.weapon_id),
-                ammo=round(float(player.ammo), 4),
+                ammo=round(player.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),
             )
@@ -199,44 +198,44 @@ def build_checkpoint(
         "players": [asdict(p) for p in player_ckpts],
         "creatures": [
             {
-                "type_id": int(getattr(creature, "type_id", 0)),
-                "x": round(float(getattr(creature, "x", 0.0)), 4),
-                "y": round(float(getattr(creature, "y", 0.0)), 4),
-                "hp": round(float(getattr(creature, "hp", 0.0)), 4),
-                "active": bool(getattr(creature, "active", False)),
+                "type_id": int(creature.type_id),
+                **creature.pos.to_dict(ndigits=4),
+                "hp": round(creature.hp, 4),
+                "active": bool(creature.active),
             }
             for creature in world.creatures.entries
-            if bool(getattr(creature, "active", False))
+            if creature.active
         ],
         "bonuses": [
             {
-                "bonus_id": int(getattr(bonus, "bonus_id", 0)),
-                "pos_x": round(float(getattr(bonus, "pos_x", 0.0)), 4),
-                "pos_y": round(float(getattr(bonus, "pos_y", 0.0)), 4),
-                "time_left": round(float(getattr(bonus, "time_left", 0.0)), 4),
-                "picked": bool(getattr(bonus, "picked", False)),
-                "amount": int(getattr(bonus, "amount", 0)),
+                "bonus_id": int(bonus.bonus_id),
+                "pos": bonus.pos.to_dict(ndigits=4),
+                "time_left": round(bonus.time_left, 4),
+                "picked": bool(bonus.picked),
+                "amount": int(bonus.amount),
             }
             for bonus in state.bonus_pool.iter_active()
         ],
         "projectiles": [
             {
-                "type_id": int(getattr(proj, "type_id", 0)),
-                "x": round(float(getattr(proj, "x", 0.0)), 4),
-                "y": round(float(getattr(proj, "y", 0.0)), 4),
-                "active": bool(getattr(proj, "active", False)),
+                "type_id": int(proj.type_id),
+                "x": round(proj.pos.x, 4),
+                "y": round(proj.pos.y, 4),
+                "active": bool(proj.active),
             }
             for proj in state.projectiles.entries
-            if bool(getattr(proj, "active", False))
+            if proj.active
         ],
         "bonus_timers": dict(bonus_timers),
     }
-    state_hash = hashlib.sha256(json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    state_hash = hashlib.sha256(
+        json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    ).hexdigest()[:16]
 
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
-        elapsed_ms=int(round(float(elapsed_ms))),
+        elapsed_ms=int(round(elapsed_ms)),
         score_xp=int(score_xp),
         kills=int(kills),
         creature_count=int(creature_count),
@@ -288,10 +287,14 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
         for p in players_in:
             if not isinstance(p, dict):
                 raise ReplayCheckpointsError(f"checkpoint player must be an object: {p!r}")
+            pos_raw = p.get("pos")
+            if not isinstance(pos_raw, dict):
+                raise ReplayCheckpointsError("checkpoint player pos must be an object")
+            px = float(pos_raw.get("x", 0.0))
+            py = float(pos_raw.get("y", 0.0))
             players.append(
                 ReplayPlayerCheckpoint(
-                    pos_x=float(p.get("pos_x", 0.0)),
-                    pos_y=float(p.get("pos_y", 0.0)),
+                    pos=Vec2(px, py),
                     health=float(p.get("health", 0.0)),
                     weapon_id=int(p.get("weapon_id", 0)),
                     ammo=float(p.get("ammo", 0.0)),

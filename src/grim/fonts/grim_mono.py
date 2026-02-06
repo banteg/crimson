@@ -6,6 +6,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.geom import Vec2
 
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
@@ -65,9 +66,9 @@ def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMon
     )
 
 
-def draw_grim_mono_text(font: GrimMonoFont, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
-    x_pos = x
-    y_pos = y
+def draw_grim_mono_text(font: GrimMonoFont, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
+    x_pos = pos.x
+    y_pos = pos.y
     advance = font.advance * scale
     draw_size = GRIM_MONO_DRAW_SIZE * scale
     line_height = GRIM_MONO_LINE_HEIGHT * scale
@@ -75,7 +76,7 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, x: float, y: float, scale
     skip_advance = False
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
-            x_pos = x
+            x_pos = pos.x
             y_pos += line_height
             continue
         if value == 0x0D:

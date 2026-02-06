@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.gameplay import GameplayState, PlayerState, perk_apply
 from crimson.perks import PerkId
 
@@ -26,7 +28,7 @@ class _SequenceRng:
 
 def test_random_weapon_assigns_a_non_pistol_weapon() -> None:
     state = GameplayState(rng=_FixedRng(1))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.weapon_id = 1  # pistol
 
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)
@@ -37,7 +39,7 @@ def test_random_weapon_assigns_a_non_pistol_weapon() -> None:
 def test_random_weapon_skips_pistol_when_current_is_not_pistol() -> None:
     # First roll is pistol (0 % 33 + 1 = 1), second roll is Assault Rifle (1 % 33 + 1 = 2).
     state = GameplayState(rng=_SequenceRng([0, 1]))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.weapon_id = 3  # shotgun
 
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.bonuses import BonusId
@@ -18,20 +20,18 @@ class _FixedRng:
 
 def test_nuke_damage_is_limited_to_radius() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     pool = CreaturePool()
     near = pool.entries[0]
     near.active = True
-    near.x = player.pos_x + 100.0
-    near.y = player.pos_y
+    near.pos = player.pos + Vec2(100.0, 0.0)
     near.hp = 10.0
     near.max_hp = 10.0
 
     far = pool.entries[1]
     far.active = True
-    far.x = player.pos_x + 300.0
-    far.y = player.pos_y
+    far.pos = player.pos + Vec2(300.0, 0.0)
     far.hp = 10.0
     far.max_hp = 10.0
 
@@ -51,7 +51,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
 def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     bonus_apply(state, player, BonusId.NUKE, origin=player, detail_preset=5)
 

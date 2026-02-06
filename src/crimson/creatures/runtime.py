@@ -10,11 +10,11 @@ not to perfectly match every edge case in `creature_update_all`.
 See: `docs/creatures/update.md`.
 """
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 import math
 from typing import Callable, Protocol, Sequence
 
-from grim.math import clamp, distance_sq
+from grim.geom import Vec2
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
@@ -69,8 +69,7 @@ class _EffectsForCreatureSpawns(Protocol):
     def spawn_burst(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         count: int,
         rand: Callable[[], int],
         detail_preset: int,
@@ -114,22 +113,18 @@ class CreatureState:
     type_id: int = 0
 
     # Movement / AI.
-    x: float = 0.0
-    y: float = 0.0
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
+    vel: Vec2 = field(default_factory=Vec2)
     heading: float = 0.0
     target_heading: float = 0.0
     force_target: int = 0
-    target_x: float = 0.0
-    target_y: float = 0.0
+    target: Vec2 = field(default_factory=Vec2)
     target_player: int = 0
     ai_mode: int = 0
     flags: CreatureFlags = CreatureFlags(0)
 
     link_index: int = 0
-    target_offset_x: float | None = None
-    target_offset_y: float | None = None
+    target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
     phase_seed: float = 0.0
@@ -167,8 +162,7 @@ class CreatureState:
 @dataclass(frozen=True, slots=True)
 class CreatureDeath:
     index: int
-    x: float
-    y: float
+    pos: Vec2
     type_id: int
     reward_value: float
     xp_awarded: int
@@ -220,16 +214,20 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.player.health) <= 0.0:
         return
 
-    eat_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    creature_pos = creature.pos
+    eat_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
     if eat_dist_sq >= 20.0 * 20.0:
         return
 
-    creature.x = clamp(creature.x - creature.vel_x * ctx.dt, 0.0, float(ctx.world_width))
-    creature.y = clamp(creature.y - creature.vel_y * ctx.dt, 0.0, float(ctx.world_height))
+    creature.pos = (creature.pos - creature.vel * ctx.dt).clamp_rect(
+        0.0,
+        0.0,
+        float(ctx.world_width),
+        float(ctx.world_height),
+    )
 
     ctx.state.effects.spawn_burst(
-        pos_x=float(creature.x),
-        pos_y=float(creature.y),
+        pos=creature_pos,
         count=6,
         rand=ctx.rand,
         detail_preset=int(ctx.detail_preset),
@@ -261,7 +259,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    ctx.contact_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    creature_pos = creature.pos
+    ctx.contact_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
     contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
     in_contact = ctx.contact_dist_sq <= contact_r * contact_r
     if not in_contact:
@@ -284,8 +283,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             creature,
             damage_amount=25.0,
             damage_type=2,
-            impulse_x=0.0,
-            impulse_y=0.0,
+            impulse=Vec2(),
             owner_id=-1 - int(ctx.player.index),
             dt=ctx.dt,
             players=ctx.players,
@@ -301,18 +299,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
 
     if ctx.fx_queue is not None:
-        dx = float(ctx.player.pos_x) - float(creature.x)
-        dy = float(ctx.player.pos_y) - float(creature.y)
-        dist = math.hypot(dx, dy)
-        if dist > 1e-9:
-            dx /= dist
-            dy /= dist
-        else:
-            dx = 0.0
-            dy = 0.0
+        push_dir = (ctx.player.pos - creature_pos).normalized()
         ctx.fx_queue.add_random(
-            pos_x=float(ctx.player.pos_x) + dx * 3.0,
-            pos_y=float(ctx.player.pos_y) + dy * 3.0,
+            pos=ctx.player.pos + push_dir * 3.0,
             rand=ctx.rand,
         )
 
@@ -401,7 +390,7 @@ class CreaturePool:
             if not creature.active:
                 continue
 
-            if math.hypot(float(creature.x) - float(origin.x), float(creature.y) - float(origin.y)) < 45.0:
+            if Vec2.distance_sq(creature.pos, origin.pos) < 45.0 * 45.0:
                 if creature.plague_infected and float(origin.hp) < 150.0:
                     origin.plague_infected = True
                 if origin.plague_infected and float(creature.hp) < 150.0:
@@ -520,8 +509,7 @@ class CreaturePool:
             fx_rand = rand if rand is not None else (lambda: 0)
             for fx in plan.effects:
                 effect_pool.spawn_burst(
-                    pos_x=float(fx.x),
-                    pos_y=float(fx.y),
+                    pos=fx.pos,
                     count=int(fx.count),
                     rand=fx_rand,
                     detail_preset=int(detail_preset),
@@ -531,7 +519,7 @@ class CreaturePool:
     def spawn_template(
         self,
         template_id: int,
-        pos: tuple[float, float],
+        pos: Vec2,
         heading: float,
         rng: Crand,
         *,
@@ -611,8 +599,7 @@ class CreaturePool:
 
             if float(state.bonuses.freeze) > 0.0:
                 creature.move_scale = 0.0
-                creature.vel_x = 0.0
-                creature.vel_y = 0.0
+                creature.vel = Vec2()
                 continue
 
             poison_killed = False
@@ -623,8 +610,7 @@ class CreaturePool:
                     creature,
                     damage_amount=dt * 180.0,
                     damage_type=0,
-                    impulse_x=0.0,
-                    impulse_y=0.0,
+                    impulse=Vec2(),
                     owner_id=int(creature.last_hit_owner_id),
                     dt=dt,
                     players=players,
@@ -637,8 +623,7 @@ class CreaturePool:
                     creature,
                     damage_amount=dt * 60.0,
                     damage_type=0,
-                    impulse_x=0.0,
-                    impulse_y=0.0,
+                    impulse=Vec2(),
                     owner_id=int(creature.last_hit_owner_id),
                     dt=dt,
                     players=players,
@@ -673,7 +658,7 @@ class CreaturePool:
                     creature.collision_timer += CONTACT_DAMAGE_PERIOD
                     creature.hp -= 15.0
                     if fx_queue is not None:
-                        fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+                        fx_queue.add_random(pos=creature.pos, rand=rand)
 
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
@@ -707,17 +692,14 @@ class CreaturePool:
 
             if players and perk_active(players[0], PerkId.RADIOACTIVE):
                 radioactive_player = players[0]
-                dist = math.hypot(
-                    float(creature.x) - float(radioactive_player.pos_x),
-                    float(creature.y) - float(radioactive_player.pos_y),
-                )
+                dist = (creature.pos - radioactive_player.pos).length()
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
                     if creature.collision_timer < 0.0:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
                         creature.hp -= (100.0 - dist) * 0.3
                         if fx_queue is not None:
-                            fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+                            fx_queue.add_random(pos=creature.pos, rand=rand)
 
                         if creature.hp < 0.0:
                             if creature.type_id == 1:
@@ -732,14 +714,12 @@ class CreaturePool:
             frozen_by_evil_eyes = idx == evil_target
             if frozen_by_evil_eyes:
                 creature.move_scale = 0.0
-                creature.vel_x = 0.0
-                creature.vel_y = 0.0
+                creature.vel = Vec2()
             else:
                 creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 ai = creature_ai_update_target(
                     creature,
-                    player_x=player.pos_x,
-                    player_y=player.pos_y,
+                    player_pos=player.pos,
                     creatures=self._entries,
                     dt=dt,
                 )
@@ -776,37 +756,26 @@ class CreaturePool:
 
                 if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
                     if creature.ai_mode == 7:
-                        creature.vel_x = 0.0
-                        creature.vel_y = 0.0
+                        creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        dir_x = math.cos(creature.heading - math.pi / 2.0)
-                        dir_y = math.sin(creature.heading - math.pi / 2.0)
-                        creature.vel_x = dir_x * speed
-                        creature.vel_y = dir_y * speed
+                        creature.vel = Vec2.from_heading(creature.heading) * speed
                         # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
                         # remain offscreen until their own velocity moves them in.
-                        creature.x = creature.x + creature.vel_x * dt
-                        creature.y = creature.y + creature.vel_y * dt
+                        creature.pos = creature.pos + creature.vel * dt
                 else:
                     # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
                     # unless ANIM_LONG_STRIP is set (see creature_update_all).
                     radius = max(0.0, float(creature.size))
                     max_x = max(radius, float(world_width) - radius)
                     max_y = max(radius, float(world_height) - radius)
-                    creature.x = clamp(creature.x, radius, max_x)
-                    creature.y = clamp(creature.y, radius, max_y)
+                    creature.pos = creature.pos.clamp_rect(radius, radius, max_x, max_y)
                     if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
-                        creature.vel_x = 0.0
-                        creature.vel_y = 0.0
+                        creature.vel = Vec2()
                     else:
                         creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
-                        dir_x = math.cos(creature.heading - math.pi / 2.0)
-                        dir_y = math.sin(creature.heading - math.pi / 2.0)
-                        creature.vel_x = dir_x * speed
-                        creature.vel_y = dir_y * speed
-                        creature.x = clamp(creature.x + creature.vel_x * dt, radius, max_x)
-                        creature.y = clamp(creature.y + creature.vel_y * dt, radius, max_y)
+                        creature.vel = Vec2.from_heading(creature.heading) * speed
+                        creature.pos = (creature.pos + creature.vel * dt).clamp_rect(radius, radius, max_x, max_y)
 
             interaction_ctx = _CreatureInteractionCtx(
                 pool=self,
@@ -840,13 +809,12 @@ class CreaturePool:
                 else:
                     creature.attack_cooldown -= dt
 
-                dist = math.hypot(creature.x - player.pos_x, creature.y - player.pos_y)
+                dist = (creature.pos - player.pos).length()
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = int(ProjectileTypeId.PLASMA_RIFLE)
                         state.projectiles.spawn(
-                            pos_x=creature.x,
-                            pos_y=creature.y,
+                            pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner_id=idx,
@@ -859,8 +827,7 @@ class CreaturePool:
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
                         projectile_type = int(creature.orbit_radius)
                         state.projectiles.spawn(
-                            pos_x=creature.x,
-                            pos_y=creature.y,
+                            pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=idx,
@@ -887,7 +854,7 @@ class CreaturePool:
 
                 plan = build_spawn_plan(
                     int(child_template_id),
-                    (owner.x, owner.y),
+                    owner.pos,
                     float(owner.heading),
                     state.rng,
                     spawn_env,
@@ -936,21 +903,18 @@ class CreaturePool:
             creature.active = False
 
         if float(state.bonuses.freeze) > 0.0:
-            pos_x = float(creature.x)
-            pos_y = float(creature.y)
+            creature_pos = creature.pos
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 state.effects.spawn_freeze_shard(
-                    pos_x=pos_x,
-                    pos_y=pos_y,
+                    pos=creature_pos,
                     angle=angle,
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             state.effects.spawn_freeze_shatter(
-                pos_x=pos_x,
-                pos_y=pos_y,
+                pos=creature_pos,
                 angle=angle,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -963,12 +927,10 @@ class CreaturePool:
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
-        entry.x = float(init.pos_x)
-        entry.y = float(init.pos_y)
+        entry.pos = init.pos
         entry.heading = float(init.heading)
         entry.target_heading = float(init.heading)
-        entry.target_x = float(init.pos_x)
-        entry.target_y = float(init.pos_y)
+        entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
 
         entry.flags = init.flags or CreatureFlags(0)
@@ -985,8 +947,7 @@ class CreaturePool:
         entry.size = float(init.size or 50.0)
         entry.contact_damage = float(init.contact_damage or 0.0)
 
-        entry.target_offset_x = init.target_offset_x
-        entry.target_offset_y = init.target_offset_y
+        entry.target_offset = init.target_offset
         entry.orbit_angle = float(init.orbit_angle or 0.0)
         if init.orbit_radius is not None:
             orbit_radius = float(init.orbit_radius)
@@ -1051,15 +1012,11 @@ class CreaturePool:
         creature.hitbox_size = new_hitbox
         if new_hitbox > 0.0:
             if long_strip:
-                dir_x = math.cos(creature.heading - math.pi / 2.0)
-                dir_y = math.sin(creature.heading - math.pi / 2.0)
-                creature.vel_x = dir_x * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.vel_y = dir_y * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.x = clamp(creature.x - creature.vel_x, 0.0, float(world_width))
-                creature.y = clamp(creature.y - creature.vel_y, 0.0, float(world_height))
+                slide = new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
+                creature.vel = Vec2.from_heading(creature.heading) * slide
+                creature.pos = (creature.pos - creature.vel).clamp_rect(0.0, 0.0, float(world_width), float(world_height))
             else:
-                creature.vel_x = 0.0
-                creature.vel_y = 0.0
+                creature.vel = Vec2()
             return
 
         # hitbox_size just crossed <= 0: bake a persistent corpse decal into the ground.
@@ -1068,8 +1025,7 @@ class CreaturePool:
             # Native uses a special fallback corpse id for ping-pong strip creatures.
             corpse_type_id = int(creature.type_id) if long_strip else 7
             ok = fx_queue_rotated.add(
-                top_left_x=creature.x - corpse_size * 0.5,
-                top_left_y=creature.y - corpse_size * 0.5,
+                top_left=Vec2(creature.pos.x - corpse_size * 0.5, creature.pos.y - corpse_size * 0.5),
                 rgba=(creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a),
                 rotation=float(creature.heading),
                 scale=corpse_size,
@@ -1116,8 +1072,7 @@ class CreaturePool:
                 self.spawned_count += 1
 
             state.effects.spawn_burst(
-                pos_x=float(creature.x),
-                pos_y=float(creature.y),
+                pos=creature.pos,
                 count=8,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -1142,18 +1097,16 @@ class CreaturePool:
             spawned_bonus = None
             if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
                 spawned_bonus = state.bonus_pool.spawn_at(
-                    creature.x,
-                    creature.y,
-                    int(creature.bonus_id),
-                    int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
+                    pos=creature.pos,
+                    bonus_id=int(creature.bonus_id),
+                    duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
                     state=state,
                     world_width=world_width,
                     world_height=world_height,
                 )
             else:
                 spawned_bonus = state.bonus_pool.try_spawn_on_kill(
-                    creature.x,
-                    creature.y,
+                    pos=creature.pos,
                     state=state,
                     players=players,
                     world_width=world_width,
@@ -1161,20 +1114,18 @@ class CreaturePool:
                 )
             if spawned_bonus is not None:
                 state.effects.spawn_burst(
-                    pos_x=float(spawned_bonus.pos_x),
-                    pos_y=float(spawned_bonus.pos_y),
+                    pos=spawned_bonus.pos,
                     count=16,
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
 
         if fx_queue is not None:
-            fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
+            fx_queue.add_random(pos=creature.pos, rand=rand)
 
         return CreatureDeath(
             index=int(idx),
-            x=float(creature.x),
-            y=float(creature.y),
+            pos=creature.pos,
             type_id=int(creature.type_id),
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),

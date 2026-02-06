@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from grim.geom import Vec2
+
 from ...camera import camera_shake_update
 from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
@@ -106,14 +108,13 @@ def run_rush_replay(
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, ax, ay, flags = packed[:5]
+            mx, my, aim_vec, flags = packed[:4]
+            ax, ay = aim_vec[:2]
             fire_down, fire_pressed, _reload_pressed = unpack_input_flags(int(flags))
             player_inputs.append(
                 PlayerInput(
-                    move_x=float(mx),
-                    move_y=float(my),
-                    aim_x=float(ax),
-                    aim_y=float(ay),
+                    move=Vec2(float(mx), float(my)),
+                    aim=Vec2(float(ax), float(ay)),
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=False,

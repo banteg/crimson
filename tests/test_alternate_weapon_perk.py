@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.bonuses import BonusId
@@ -9,20 +11,20 @@ from crimson.perks import PerkId
 
 def test_alternate_weapon_slows_movement() -> None:
     state = GameplayState()
-    base = PlayerState(index=0, pos_x=0.0, pos_y=0.0, move_speed=2.0)
-    perk = PlayerState(index=0, pos_x=0.0, pos_y=0.0, move_speed=2.0)
+    base = PlayerState(index=0, pos=Vec2(), move_speed=2.0)
+    perk = PlayerState(index=0, pos=Vec2(), move_speed=2.0)
     perk.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
-    player_update(base, PlayerInput(move_x=1.0), dt=1.0, state=state)
-    player_update(perk, PlayerInput(move_x=1.0), dt=1.0, state=state)
+    player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
+    player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
 
-    assert base.pos_x == pytest.approx(100.0)
-    assert perk.pos_x == pytest.approx(80.0)
+    assert base.pos.x == pytest.approx(100.0)
+    assert perk.pos.x == pytest.approx(80.0)
 
 
 def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, 1)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
@@ -35,7 +37,7 @@ def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> No
 
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, 1)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)

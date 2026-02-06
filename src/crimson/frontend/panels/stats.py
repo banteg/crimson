@@ -4,6 +4,7 @@ import pyray as rl
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -129,10 +130,11 @@ class StatisticsMenuView:
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
-    def _panel_top_left(self, *, scale: float) -> tuple[float, float]:
-        x0 = STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale
-        y0 = STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale
-        return float(x0), float(y0)
+    def _panel_top_left(self, *, scale: float) -> Vec2:
+        return Vec2(
+            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
+            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+        )
 
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
@@ -152,42 +154,39 @@ class StatisticsMenuView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
+        panel_top_left = self._panel_top_left(scale=scale)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
-        def _update_button(btn: UiButtonState, *, x: float, y: float) -> bool:
+        def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
             w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-            return button_update(btn, x=x, y=y, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
+            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
-        x = panel_x0 + _BUTTON_X * scale
-        y0 = panel_y0 + _BUTTON_Y0 * scale
-        if _update_button(self._btn_high_scores, x=x, y=y0 + _BUTTON_STEP_Y * 0.0 * scale):
+        button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
+        if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_high_scores"
             return
-        if _update_button(self._btn_weapons, x=x, y=y0 + _BUTTON_STEP_Y * 1.0 * scale):
+        if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_weapon_database"
             return
-        if _update_button(self._btn_perks, x=x, y=y0 + _BUTTON_STEP_Y * 2.0 * scale):
+        if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_perk_database"
             return
-        if _update_button(self._btn_credits, x=x, y=y0 + _BUTTON_STEP_Y * 3.0 * scale):
+        if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "open_credits"
             return
 
-        back_x = panel_x0 + _BACK_BUTTON_X * scale
-        back_y = panel_y0 + _BACK_BUTTON_Y * scale
-        if _update_button(self._btn_back, x=back_x, y=back_y):
+        if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_menu"
@@ -199,7 +198,7 @@ class StatisticsMenuView:
         if pause_background is not None:
             pause_background.draw_pause_background()
         elif self._ground is not None:
-            self._ground.draw(0.0, 0.0)
+            self._ground.draw(Vec2())
         _draw_screen_fade(self._state)
 
         assets = self._assets
@@ -207,8 +206,10 @@ class StatisticsMenuView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_x0, panel_y0 = self._panel_top_left(scale=scale)
-        dst = rl.Rectangle(panel_x0, panel_y0, MENU_PANEL_WIDTH * scale, STATISTICS_PANEL_HEIGHT * scale)
+        panel_top_left = self._panel_top_left(scale=scale)
+        dst = rl.Rectangle(
+            panel_top_left.x, panel_top_left.y, MENU_PANEL_WIDTH * scale, STATISTICS_PANEL_HEIGHT * scale
+        )
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
@@ -220,7 +221,12 @@ class StatisticsMenuView:
             MenuView._draw_ui_quad(
                 texture=label_tex,
                 src=src,
-                dst=rl.Rectangle(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale, _TITLE_W * scale, _TITLE_H * scale),
+                dst=rl.Rectangle(
+                    panel_top_left.x + _TITLE_X * scale,
+                    panel_top_left.y + _TITLE_Y * scale,
+                    _TITLE_W * scale,
+                    _TITLE_H * scale,
+                ),
                 origin=rl.Vector2(0.0, 0.0),
                 rotation_deg=0.0,
                 tint=rl.WHITE,
@@ -242,8 +248,7 @@ class StatisticsMenuView:
         draw_small_text(
             font,
             playtime_text,
-            panel_x0 + _PLAYTIME_X * scale,
-            panel_y0 + _PLAYTIME_Y * scale,
+            panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale),
             1.0 * scale,
             rl.Color(255, 255, 255, int(255 * 0.8)),
         )
@@ -251,19 +256,24 @@ class StatisticsMenuView:
         # Buttons.
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            btn_x = panel_x0 + _BUTTON_X * scale
-            btn_y0 = panel_y0 + _BUTTON_Y0 * scale
+            button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
             for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
                 w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-                button_draw(textures, font, btn, x=btn_x, y=btn_y0 + _BUTTON_STEP_Y * float(i) * scale, width=w, scale=scale)
+                button_draw(
+                    textures,
+                    font,
+                    btn,
+                    pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
+                    width=w,
+                    scale=scale,
+                )
 
             back_w = button_width(None, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
             button_draw(
                 textures,
                 font,
                 self._btn_back,
-                x=panel_x0 + _BACK_BUTTON_X * scale,
-                y=panel_y0 + _BACK_BUTTON_Y * scale,
+                pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
                 width=back_w,
                 scale=scale,
             )
@@ -278,8 +288,10 @@ class StatisticsMenuView:
         sign = assets.sign
         screen_w = float(self._state.config.screen_width)
         sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_pos = Vec2(
+            screen_w + MENU_SIGN_POS_X_PAD,
+            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        )
         sign_w = MENU_SIGN_WIDTH * sign_scale
         sign_h = MENU_SIGN_HEIGHT * sign_scale
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
@@ -290,14 +302,14 @@ class StatisticsMenuView:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
+                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
             )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
             tint=rl.WHITE,

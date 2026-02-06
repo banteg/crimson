@@ -12,7 +12,8 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.math import clamp, distance_sq
+from grim.geom import Vec2
+from grim.math import clamp
 
 from grim.rand import Crand
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
@@ -66,14 +67,6 @@ def _weapon_name(weapon_id: int) -> str:
         if weapon.weapon_id == weapon_id:
             return weapon.name or f"weapon_{weapon_id}"
     return f"weapon_{weapon_id}"
-
-
-def _normalize(dx: float, dy: float) -> tuple[float, float, float]:
-    d = math.hypot(dx, dy)
-    if d <= 1e-6:
-        return 0.0, 0.0, 0.0
-    inv = 1.0 / d
-    return dx * inv, dy * inv, d
 
 
 class DemoView:
@@ -156,7 +149,11 @@ class DemoView:
         if frame_dt_ms <= 0:
             return
 
-        if (not self._purchase_active) and getattr(self._state, "demo_enabled", False) and self._purchase_screen_triggered():
+        if (
+            (not self._purchase_active)
+            and getattr(self._state, "demo_enabled", False)
+            and self._purchase_screen_triggered()
+        ):
             self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
 
         if self._purchase_active:
@@ -246,19 +243,18 @@ class DemoView:
         w = float(self._state.config.screen_width)
         h = float(self._state.config.screen_height)
         wide_shift = self._purchase_var_28_2()
-        button_x = w / 2.0 + 128.0
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
-        purchase_y = button_base_y + 50.0
-        maybe_y = button_base_y + 90.0
+        button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
-        button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
+        button_w = button_width(
+            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+        )
         if button_update(
             self._purchase_button,
-            x=float(button_x),
-            y=float(purchase_y),
+            pos=button_base_pos,
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -277,8 +273,7 @@ class DemoView:
 
         if button_update(
             self._maybe_later_button,
-            x=float(button_x),
-            y=float(maybe_y),
+            pos=button_base_pos.offset(dy=40.0),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -384,9 +379,9 @@ class DemoView:
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
-        draw_small_text(small, _DEMO_PURCHASE_TITLE, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), text_scale, color)
         y += 28.0
-        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), text_scale, color)
 
         underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE, text_scale)
         rl.draw_rectangle_rec(rl.Rectangle(x_text, y + 15.0, underline_w, 2.0), rl.Color(255, 255, 255, 160))
@@ -394,9 +389,9 @@ class DemoView:
         y += 22.0
         x_list = x_text + 8.0
         for line, delta_y in _DEMO_PURCHASE_FEATURE_LINES:
-            draw_small_text(small, line, x_list, y, text_scale, color)
+            draw_small_text(small, line, Vec2(x_list, y), text_scale, color)
             y += delta_y
-        draw_small_text(small, _DEMO_PURCHASE_FOOTER, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), text_scale, color)
 
         # Buttons on the right.
         cache = self._ensure_cache()
@@ -407,21 +402,28 @@ class DemoView:
         if textures.button_sm is None and textures.button_md is None:
             return
 
-        button_x = screen_w / 2.0 + 128.0
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
-        purchase_y = button_base_y + 50.0
-        maybe_y = button_base_y + 90.0
+        button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
-        button_w = button_width(small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
-        button_draw(textures, small, self._purchase_button, x=button_x, y=purchase_y, width=button_w, scale=scale)
-        button_draw(textures, small, self._maybe_later_button, x=button_x, y=maybe_y, width=button_w, scale=scale)
+        button_w = button_width(
+            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+        )
+        button_draw(textures, small, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(
+            textures,
+            small,
+            self._maybe_later_button,
+            pos=button_base_pos.offset(dy=40.0),
+            width=button_w,
+            scale=scale,
+        )
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
         particles = cache.get_or_load("particles", "game/particles.jaz").texture
         cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
         mouse = rl.get_mouse_position()
         pulse_time = float(self._upsell_pulse_ms) * 0.001
-        draw_menu_cursor(particles, cursor_tex, x=float(mouse.x), y=float(mouse.y), pulse_time=pulse_time)
+        draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -466,18 +468,16 @@ class DemoView:
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
 
-    def _setup_world_players(self, specs: list[tuple[float, float, int]]) -> None:
+    def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self._state.rng.getrandbits(32))
         self._world.reset(seed=seed, player_count=len(specs))
-        for idx, (x, y, weapon_id) in enumerate(specs):
+        for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._world.players):
                 continue
             player = self._world.players[idx]
-            player.pos_x = float(x)
-            player.pos_y = float(y)
+            player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
-            player.aim_x = float(x)
-            player.aim_y = float(y)
+            player.aim = pos
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
@@ -532,19 +532,15 @@ class DemoView:
             overlay_path=overlay_path,
         )
 
-    def _wrap_pos(self, x: float, y: float) -> tuple[float, float]:
-        return (x % WORLD_SIZE, y % WORLD_SIZE)
-
     def _crand_mod(self, mod: int) -> int:
         if mod <= 0:
             return 0
         return int(self._crand.rand() % mod)
 
-    def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
-        x, y = self._wrap_pos(x, y)
+    def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
         self._world.creatures.spawn_template(
             int(spawn_id),
-            (x, y),
+            pos,
             float(heading),
             self._spawn_rng,
             rand=self._spawn_rng.rand,
@@ -556,16 +552,16 @@ class DemoView:
         weapon_id = 11
         self._setup_world_players(
             [
-                (448.0, 384.0, weapon_id),
-                (546.0, 654.0, weapon_id),
+                (Vec2(448.0, 384.0), weapon_id),
+                (Vec2(546.0, 654.0), weapon_id),
             ]
         )
         y = 256
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(0x38, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x38, float(col * 64 + 798), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 80
             i += 1
 
@@ -575,33 +571,32 @@ class DemoView:
         weapon_id = 5
         self._setup_world_players(
             [
-                (490.0, 448.0, weapon_id),
-                (480.0, 576.0, weapon_id),
+                (Vec2(490.0, 448.0), weapon_id),
+                (Vec2(480.0, 576.0), weapon_id),
             ]
         )
         self._world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x34, x, y, heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
-                x2 = float(self._crand_mod(30) + 32)
-                y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x35, x2, y2, heading=RANDOM_HEADING_SENTINEL)
+                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                self._spawn(0x35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
         # demo_setup_variant_2 uses weapon_id=0x15.
         weapon_id = 21
-        self._setup_world_players([(512.0, 512.0, weapon_id)])
+        self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         y = 128
         i = 0
         while y < 848:
             col = i % 2
-            self._spawn(0x41, float(col * 64 + 32), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float((col + 2) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float(col * 64 - 64), float(y), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, float((col + 12) * 64), float(y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float(col * 64 + 32), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float(col * 64 - 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(0x41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 60
             i += 1
 
@@ -609,15 +604,14 @@ class DemoView:
         self._demo_time_limit_ms = 4000
         # demo_setup_variant_3 uses weapon_id=0x12.
         weapon_id = 18
-        self._setup_world_players([(512.0, 512.0, weapon_id)])
+        self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x24, x, y, heading=0.0)
+            self._spawn(0x24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
-                x2 = float(self._crand_mod(30) + 32)
-                y2 = float(self._crand_mod(899) + 64)
-                self._spawn(0x25, x2, y2, heading=0.0)
+                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                self._spawn(0x25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
         if getattr(self._state, "demo_enabled", False):
@@ -686,7 +680,7 @@ class DemoView:
             rl.Color(128, 26, 26, bar_alpha),
         )
 
-        draw_grim_mono_text(font, msg, text_x, text_y, scale, rl.Color(255, 255, 255, txt_alpha))
+        draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
     def _update_world(self, dt: float) -> None:
         if not self._world.players:
@@ -699,8 +693,7 @@ class DemoView:
         creatures = self._world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
-        center_x = float(self._world.world_size) * 0.5
-        center_y = float(self._world.world_size) * 0.5
+        center = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
 
         dt = float(dt)
 
@@ -725,61 +718,49 @@ class DemoView:
                     target = candidate
 
             # Aim: ease the aim point toward the target.
-            aim_x = float(player.aim_x)
-            aim_y = float(player.aim_y)
+            aim = player.aim
             auto_fire = False
             if target is not None:
-                aim_dx = float(target.x) - aim_x
-                aim_dy = float(target.y) - aim_y
-                aim_dir_x, aim_dir_y, aim_dist = _normalize(aim_dx, aim_dy)
+                target_pos = target.pos
+                aim_dir, aim_dist = (target_pos - aim).normalized_with_length()
                 if aim_dist >= 4.0:
                     step = aim_dist * 6.0 * dt
-                    aim_x += aim_dir_x * step
-                    aim_y += aim_dir_y * step
+                    aim += aim_dir * step
                 else:
-                    aim_x = float(target.x)
-                    aim_y = float(target.y)
+                    aim = target_pos
                 auto_fire = aim_dist < 128.0
             else:
-                ax, ay, amag = _normalize(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                away_from_center, amag = (player.pos - center).normalized_with_length()
                 if amag <= 1e-6:
-                    ax, ay = 0.0, -1.0
-                aim_x = float(player.pos_x) + ax * 60.0
-                aim_y = float(player.pos_y) + ay * 60.0
+                    away_from_center = Vec2(0.0, -1.0)
+                aim = player.pos + away_from_center * 60.0
 
             # Movement:
             # - orbit center if no target
             # - chase target when near center
             # - return to center when too far
             if target is None:
-                move_dx = -(float(player.pos_y) - center_y)
-                move_dy = float(player.pos_x) - center_x
+                move_delta = (player.pos - center).rotated(math.pi / 2.0)
             else:
-                center_dist = math.hypot(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                center_dist = (player.pos - center).length()
                 if center_dist <= 300.0:
-                    move_dx = float(target.x) - float(player.pos_x)
-                    move_dy = float(target.y) - float(player.pos_y)
+                    move_delta = target.pos - player.pos
                 else:
-                    move_dx = center_x - float(player.pos_x)
-                    move_dy = center_y - float(player.pos_y)
+                    move_delta = center - player.pos
 
-            desired_x, desired_y, desired_mag = _normalize(move_dx, move_dy)
+            desired_dir, desired_mag = move_delta.normalized_with_length()
             if desired_mag <= 1e-6:
-                move_x = 0.0
-                move_y = 0.0
+                move = Vec2()
             else:
-                desired_heading = math.atan2(desired_y, desired_x) + math.pi / 2.0
+                desired_heading = desired_dir.to_heading()
                 smoothed_heading, angle_diff = _turn_towards_heading(float(player.heading), desired_heading)
                 move_mag = max(0.001, (math.pi - angle_diff) / math.pi)
-                move_x = math.cos(smoothed_heading - math.pi / 2.0) * move_mag
-                move_y = math.sin(smoothed_heading - math.pi / 2.0) * move_mag
+                move = Vec2.from_heading(smoothed_heading) * move_mag
 
             inputs.append(
                 PlayerInput(
-                    move_x=move_x,
-                    move_y=move_y,
-                    aim_x=aim_x,
-                    aim_y=aim_y,
+                    move=move,
+                    aim=aim,
                     fire_down=auto_fire,
                     fire_pressed=auto_fire,
                     reload_pressed=False,
@@ -788,20 +769,20 @@ class DemoView:
 
         return inputs
 
-    def _nearest_world_creature_index(self, x: float, y: float) -> int | None:
+    def _nearest_world_creature_index(self, pos: Vec2) -> int | None:
         best_idx = None
         best_dist = 0.0
         for idx, creature in enumerate(self._world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
-            d = distance_sq(x, y, creature.x, creature.y)
+            d = Vec2.distance_sq(pos, creature.pos)
             if best_idx is None or d < best_dist:
                 best_idx = idx
                 best_dist = d
         return best_idx
 
     def _select_demo_target(self, player_index: int, player: PlayerState, creatures: list) -> int | None:
-        candidate = self._nearest_world_creature_index(player.pos_x, player.pos_y)
+        candidate = self._nearest_world_creature_index(player.pos)
         current = self._demo_targets[player_index] if player_index < len(self._demo_targets) else None
         if current is None:
             self._demo_targets[player_index] = candidate
@@ -818,8 +799,8 @@ class DemoView:
         cand_creature = creatures[candidate]
         if not cand_creature.active or cand_creature.hp <= 0.0:
             return current
-        cur_d = math.hypot(current_creature.x - player.pos_x, current_creature.y - player.pos_y)
-        cand_d = math.hypot(cand_creature.x - player.pos_x, cand_creature.y - player.pos_y)
+        cur_d = (current_creature.pos - player.pos).length()
+        cand_d = (cand_creature.pos - player.pos).length()
         if cand_d + 64.0 < cur_d:
             self._demo_targets[player_index] = candidate
             return candidate

@@ -10,6 +10,7 @@ from crimson.creatures.spawn import CreatureTypeId
 from grim.assets import resolve_asset_path
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.terrain_render import GroundCorpseDecal, GroundRenderer, _maybe_alpha_test
 from grim.view import View, ViewContext
 
@@ -105,8 +106,7 @@ class CorpseStampDebugView:
         cy = WORLD_SIZE * 0.5
         return GroundCorpseDecal(
             bodyset_frame=int(frame),
-            top_left_x=cx - size * 0.5,
-            top_left_y=cy - size * 0.5,
+            top_left=Vec2(cx - size * 0.5, cy - size * 0.5),
             size=size,
             rotation_rad=float(self._corpse_rotation),
             tint=rl.Color(255, 255, 255, 255),
@@ -256,12 +256,14 @@ class CorpseStampDebugView:
         rl.clear_background(BG)
 
         if self._missing_assets:
-            draw_ui_text(self._small, "Missing assets: " + ", ".join(self._missing_assets), 24, 24, color=UI_ERROR)
+            draw_ui_text(
+                self._small, "Missing assets: " + ", ".join(self._missing_assets), Vec2(24, 24), color=UI_ERROR
+            )
             return
 
         ground = self._ground
         if ground is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, color=UI_ERROR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", Vec2(24, 24), color=UI_ERROR)
             return
 
         if self._dump_requested:
@@ -270,9 +272,8 @@ class CorpseStampDebugView:
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
-        cam_x = screen_w * 0.5 - WORLD_SIZE * 0.5
-        cam_y = screen_h * 0.5 - WORLD_SIZE * 0.5
-        ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
+        camera = Vec2(screen_w * 0.5 - WORLD_SIZE * 0.5, screen_h * 0.5 - WORLD_SIZE * 0.5)
+        ground.draw(camera, screen_w=screen_w, screen_h=screen_h)
 
         # UI
         x = 24.0
@@ -280,23 +281,23 @@ class CorpseStampDebugView:
         line = float(ui_line_height(self._small))
         step = _STEPS[self._step_index]
         alpha_test = bool(getattr(ground, "alpha_test", True))
-        draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", x, y, color=UI_TEXT)
+        draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", Vec2(x, y), color=UI_TEXT)
         y += line
         draw_ui_text(
             self._small,
             "N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot   D: dump RT",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
         y += line
-        draw_ui_text(self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, color=UI_HINT)
+        draw_ui_text(
+            self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", Vec2(x, y), color=UI_HINT
+        )
         y += line
         draw_ui_text(
             self._small,
             f"alpha_test={'on' if alpha_test else 'off'}  size={self._corpse_size:.1f}  dump_index={self._dump_index}",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
 

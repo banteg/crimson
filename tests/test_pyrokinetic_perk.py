@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CreatureState
@@ -20,15 +22,13 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     dt = 0.2
     state = GameplayState(rng=_FixedRng(0))
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROKINETIC)] = 1
-    player.aim_x = 100.0
-    player.aim_y = 200.0
+    player.aim = Vec2(100.0, 200.0)
 
     creature = CreatureState()
     creature.active = True
-    creature.x = 100.0
-    creature.y = 200.0
+    creature.pos = Vec2(100.0, 200.0)
     creature.hitbox_size = 16.0
     creature.collision_timer = 0.1
 
@@ -43,4 +43,3 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     assert len(particles) == 5
     intensities = [entry.intensity for entry in particles]
     assert all(math.isclose(actual, expected, abs_tol=1e-9) for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)))
-

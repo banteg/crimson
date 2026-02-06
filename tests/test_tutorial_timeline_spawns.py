@@ -14,8 +14,8 @@ from crimson.creatures.spawn import (
 
 def _assert_call(call, *, template_id: int, x: float, y: float) -> None:
     assert call.template_id == template_id
-    assert call.pos[0] == pytest.approx(x, abs=1e-9)
-    assert call.pos[1] == pytest.approx(y, abs=1e-9)
+    assert call.pos.x == pytest.approx(x, abs=1e-9)
+    assert call.pos.y == pytest.approx(y, abs=1e-9)
     assert call.heading == pytest.approx(math.pi, abs=1e-9)
 
 

@@ -7,6 +7,7 @@ import pyray as rl
 
 from grim.assets import resolve_asset_path
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.view import View, ViewContext
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
@@ -39,8 +40,7 @@ class PlayerSpriteDebugView:
         self._small: SmallFontData | None = None
         self._assets: PlayerSpriteAssets | None = None
 
-        self._player_x = WORLD_SIZE * 0.5
-        self._player_y = WORLD_SIZE * 0.5
+        self._player_pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
         self._player_size = 50.0
         self._move_phase = 0.0
         self._move_heading = 0.0
@@ -70,25 +70,24 @@ class PlayerSpriteDebugView:
         texture: rl.Texture,
         frame_index: int,
         *,
-        x: float,
-        y: float,
+        pos: Vec2,
         size: float,
         rotation_rad: float,
         tint: rl.Color,
         shadow: bool,
-        offset_x: float = 0.0,
-        offset_y: float = 0.0,
+        offset: Vec2 = Vec2(),
     ) -> None:
         src = self._frame_src(texture, frame_index)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(rotation_rad * 57.29577951308232)
+        draw_pos = pos + offset
 
         if shadow:
             shadow_color = rl.Color(0, 0, 0, 90)
-            dst = rl.Rectangle(x + offset_x + 1.0, y + offset_y + 1.0, size, size)
+            dst = rl.Rectangle(draw_pos.x + 1.0, draw_pos.y + 1.0, size, size)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, shadow_color)
 
-        dst = rl.Rectangle(x + offset_x, y + offset_y, size, size)
+        dst = rl.Rectangle(draw_pos.x, draw_pos.y, size, size)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     def open(self) -> None:
@@ -132,8 +131,7 @@ class PlayerSpriteDebugView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
             self._frame_count = min(64, self._frame_count + 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
-            self._player_x = WORLD_SIZE * 0.5
-            self._player_y = WORLD_SIZE * 0.5
+            self._player_pos = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
             self._move_phase = 0.0
             self._move_heading = 0.0
 
@@ -148,35 +146,27 @@ class PlayerSpriteDebugView:
         if rl.is_key_down(rl.KeyboardKey.KEY_S):
             move_y += 1.0
 
-        moving = move_x != 0.0 or move_y != 0.0
+        move = Vec2(move_x, move_y)
+        moving = move.length_sq() > 0.0
         if moving:
-            length = math.hypot(move_x, move_y)
-            if length > 0.0:
-                move_x /= length
-                move_y /= length
+            move = move.normalized()
             speed = 120.0
             if rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT):
                 speed *= 2.0
-            self._player_x += move_x * speed * dt
-            self._player_y += move_y * speed * dt
-            self._player_x = max(0.0, min(WORLD_SIZE, self._player_x))
-            self._player_y = max(0.0, min(WORLD_SIZE, self._player_y))
-            self._move_heading = math.atan2(move_y, move_x) + math.pi / 2.0
+            self._player_pos = (self._player_pos + move * speed * dt).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
+            self._move_heading = move.to_heading()
 
             move_speed = 2.0
             self._move_phase += dt * move_speed * 19.0
             while self._move_phase > 14.0:
                 self._move_phase -= 14.0
 
-        cam_x = float(rl.get_screen_width()) * 0.5 - self._player_x
-        cam_y = float(rl.get_screen_height()) * 0.5 - self._player_y
+        camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
         mouse = rl.get_mouse_position()
-        aim_world_x = float(mouse.x) - cam_x
-        aim_world_y = float(mouse.y) - cam_y
-        aim_dx = aim_world_x - self._player_x
-        aim_dy = aim_world_y - self._player_y
-        if abs(aim_dx) > 1e-3 or abs(aim_dy) > 1e-3:
-            self._aim_heading = math.atan2(aim_dy, aim_dx) + math.pi / 2.0
+        aim_world = Vec2.from_xy(mouse) - camera
+        aim_delta = aim_world - self._player_pos
+        if aim_delta.length_sq() > 1e-6:
+            self._aim_heading = aim_delta.to_heading()
 
         if rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._muzzle_flash = 0.8
@@ -186,28 +176,40 @@ class PlayerSpriteDebugView:
     def draw(self) -> None:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._assets is None:
-            draw_ui_text(self._small, "Trooper sprite not loaded.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Trooper sprite not loaded.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
 
-        cam_x = float(rl.get_screen_width()) * 0.5 - self._player_x
-        cam_y = float(rl.get_screen_height()) * 0.5 - self._player_y
+        camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
 
         if self._show_grid:
             grid_major = rl.Color(70, 80, 95, 180)
             grid_minor = rl.Color(40, 50, 65, 140)
             for i in range(0, int(WORLD_SIZE) + 1, int(GRID_STEP)):
                 color = grid_major if i % 256 == 0 else grid_minor
-                sx = float(i) + cam_x
-                sy0 = cam_y
-                sy1 = WORLD_SIZE + cam_y
-                rl.draw_line(int(sx), int(sy0), int(sx), int(sy1), color)
-                sy = float(i) + cam_y
-                sx0 = cam_x
-                sx1 = WORLD_SIZE + cam_x
-                rl.draw_line(int(sx0), int(sy), int(sx1), int(sy), color)
+                vertical_start = Vec2(float(i) + camera.x, camera.y)
+                vertical_end = Vec2(vertical_start.x, WORLD_SIZE + camera.y)
+                rl.draw_line(
+                    int(vertical_start.x),
+                    int(vertical_start.y),
+                    int(vertical_end.x),
+                    int(vertical_end.y),
+                    color,
+                )
+                horizontal_start = Vec2(camera.x, float(i) + camera.y)
+                horizontal_end = Vec2(WORLD_SIZE + camera.x, horizontal_start.y)
+                rl.draw_line(
+                    int(horizontal_start.x),
+                    int(horizontal_start.y),
+                    int(horizontal_end.x),
+                    int(horizontal_end.y),
+                    color,
+                )
 
-        px = self._player_x + cam_x
-        py = self._player_y + cam_y
+        player_screen = self._player_pos + camera
+        px = player_screen.x
+        py = player_screen.y
 
         frame = int(self._move_phase + 0.5)
         if self._frame_count > 0:
@@ -219,15 +221,13 @@ class PlayerSpriteDebugView:
 
         recoil_dir = self._aim_heading + math.pi / 2.0
         recoil_offset = self._muzzle_flash * 12.0
-        torso_offset_x = math.cos(recoil_dir) * recoil_offset
-        torso_offset_y = math.sin(recoil_dir) * recoil_offset
+        torso_offset = Vec2.from_angle(recoil_dir) * recoil_offset
 
         tint = rl.Color(240, 240, 255, 255)
         self._draw_sprite(
             self._assets.trooper,
             leg_frame,
-            x=px,
-            y=py,
+            pos=Vec2(px, py),
             size=self._player_size,
             rotation_rad=self._move_heading,
             tint=tint,
@@ -236,14 +236,12 @@ class PlayerSpriteDebugView:
         self._draw_sprite(
             self._assets.trooper,
             torso_frame,
-            x=px,
-            y=py,
+            pos=Vec2(px, py),
             size=self._player_size,
             rotation_rad=self._aim_heading,
             tint=tint,
             shadow=self._show_shadow,
-            offset_x=torso_offset_x,
-            offset_y=torso_offset_y,
+            offset=torso_offset,
         )
 
         # Aim/debug helpers.
@@ -257,8 +255,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"legs frame={leg_frame} (base {self._leg_base}, count {self._frame_count})",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -267,8 +264,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"torso frame={torso_frame} (base {self._torso_base}, mode {torso_label})",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -276,8 +272,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"move_heading={self._move_heading:.2f}  aim_heading={self._aim_heading:.2f}",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -285,8 +280,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             "WASD move, mouse aim, LMB recoil, F1 grid, F2 shadow, F3 torso mode",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -294,8 +288,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             "[/] torso base, ;/' legs base, ,/. frame count, R reset",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )

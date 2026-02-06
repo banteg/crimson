@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.effects import FxQueue, FxQueueRotated
@@ -17,23 +19,22 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    player = PlayerState(index=0, pos_x=300.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(300.0, 100.0))
     player.perk_counts[int(PerkId.EVIL_EYES)] = 1
     world.players.append(player)
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.x = 100.0
-    creature.y = 100.0
+    creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
     creature.max_hp = 100.0
     creature.size = 50.0
     creature.move_speed = 1.0
 
-    before = (float(creature.x), float(creature.y))
+    before = (float(creature.pos.x), float(creature.pos.y))
     events = world.step(
         0.5,
-        inputs=[PlayerInput(aim_x=float(creature.x), aim_y=float(creature.y))],
+        inputs=[PlayerInput(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
         world_size=world_size,
         damage_scale_by_type={},
         detail_preset=5,
@@ -45,7 +46,6 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     )
     assert events
 
-    after = (float(creature.x), float(creature.y))
+    after = (float(creature.pos.x), float(creature.pos.y))
     assert math.isclose(after[0], before[0], abs_tol=1e-6)
     assert math.isclose(after[1], before[1], abs_tol=1e-6)
-

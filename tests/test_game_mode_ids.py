@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from pathlib import Path
 
 from crimson.game_modes import GameMode
@@ -167,6 +169,6 @@ def test_perk_mode_3_only_is_offered_only_in_mode_3() -> None:
     assert meta is not None
 
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is False
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True

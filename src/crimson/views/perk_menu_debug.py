@@ -3,6 +3,7 @@ from __future__ import annotations
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -18,10 +19,10 @@ from ..ui.perk_menu import (
     cursor_draw,
     draw_menu_item,
     draw_ui_text,
+    draw_wrapped_ui_text_in_rect,
     load_perk_menu_assets,
     menu_item_hit_rect,
     perk_menu_compute_layout,
-    wrap_ui_text,
 )
 from ..ui.layout import ui_origin, ui_scale
 from .registry import register_view
@@ -58,9 +59,7 @@ class PerkMenuDebugView:
         self._assets: PerkMenuAssets | None = None
         self._layout = PerkMenuLayout()
 
-        self._perk_ids = [
-            perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != int(PerkId.ANTIPERK)
-        ]
+        self._perk_ids = [perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != int(PerkId.ANTIPERK)]
         self._choice_count = 6
         self._selected = 0
         self._expert_owned = False
@@ -71,7 +70,7 @@ class PerkMenuDebugView:
         self._prompt_alpha = 1.0
         self._prompt_pulse = 0.0
         self._prompt_hover = False
-        self._prompt_rect: rl.Rectangle | None = None
+        self._prompt_rect: Rect | None = None
         self._cancel_button = UiButtonState("Cancel")
         self._debug_overlay = True
         self._show_prompt_rect = False
@@ -108,32 +107,31 @@ class PerkMenuDebugView:
         return f"Press Mouse2 to pick a perk{suffix}"
 
     @staticmethod
-    def _perk_prompt_hinge() -> tuple[float, float]:
+    def _perk_prompt_hinge() -> Vec2:
         screen_w = float(rl.get_screen_width())
         hinge_x = screen_w + PERK_PROMPT_OUTSET_X
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
-        return hinge_x, hinge_y
+        return Vec2(hinge_x, hinge_y)
 
-    def _perk_prompt_rect(self, label: str) -> rl.Rectangle:
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+    def _perk_prompt_rect(self, label: str) -> Rect:
+        hinge = self._perk_prompt_hinge()
         if self._assets is not None and self._assets.menu_item is not None:
             tex = self._assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
             bar_h = float(tex.height) * PERK_PROMPT_BAR_SCALE
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
-            return rl.Rectangle(
-                float(hinge_x + local_x),
-                float(hinge_y + local_y),
-                float(bar_w),
-                float(bar_h),
+            return Rect.from_top_left(
+                hinge.offset(dx=local_x, dy=local_y),
+                bar_w,
+                bar_h,
             )
 
         text_w = float(_ui_text_width(self._small, label, 1.0))
         text_h = 20.0
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
-        return rl.Rectangle(x, y, text_w, text_h)
+        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
+        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def _draw_perk_prompt(self) -> None:
         if not self._show_prompt:
@@ -147,15 +145,15 @@ class PerkMenuDebugView:
         if alpha <= 1e-3:
             return
 
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+        hinge = self._perk_prompt_hinge()
         rot_deg = (1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
         text_w = float(_ui_text_width(self._small, label, 1.0))
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
+        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, x, y, scale=1.0, color=color)
+        draw_ui_text(self._small, label, Vec2(x, y), scale=1.0, color=color)
 
         if self._assets.menu_item is not None:
             tex = self._assets.menu_item
@@ -164,7 +162,7 @@ class PerkMenuDebugView:
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
             src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(bar_w), float(bar_h))
+            dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -179,7 +177,7 @@ class PerkMenuDebugView:
             label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
             pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
+            dst = rl.Rectangle(hinge.x, hinge.y, w, h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
             if label_alpha > 0.0:
@@ -237,7 +235,7 @@ class PerkMenuDebugView:
         if rl.is_key_down(rl.KeyboardKey.KEY_RIGHT):
             self._panel_slide_x += step
 
-        self._panel_slide_x = clamp(self._panel_slide_x, -self._layout.panel_w, 0.0)
+        self._panel_slide_x = clamp(self._panel_slide_x, -self._layout.panel_size.x, 0.0)
 
         self._prompt_hover = False
         self._prompt_rect = None
@@ -247,7 +245,7 @@ class PerkMenuDebugView:
                 rect = self._perk_prompt_rect(label)
                 self._prompt_rect = rect
                 mouse = rl.get_mouse_position()
-                self._prompt_hover = rl.check_collision_point_rec(mouse, rect)
+                self._prompt_hover = rect.contains(mouse)
 
         pulse_delta = dt_ms * (6.0 if self._prompt_hover else -2.0)
         self._prompt_pulse = clamp(self._prompt_pulse + pulse_delta, 0.0, 1000.0)
@@ -261,12 +259,11 @@ class PerkMenuDebugView:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
         scale = ui_scale(screen_w, screen_h)
-        origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+        origin = ui_origin(screen_w, screen_h, scale)
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin_x=origin_x,
-            origin_y=origin_y,
+            origin=origin,
             scale=scale,
             choice_count=len(choices),
             expert_owned=self._expert_owned,
@@ -278,20 +275,18 @@ class PerkMenuDebugView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id))
-            item_x = computed.list_x
-            item_y = computed.list_y + float(idx) * computed.list_step_y
-            rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-            if rl.check_collision_point_rec(mouse, rect):
+            item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
+            rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
+            if rect.contains(mouse):
                 self._selected = idx
                 break
 
-        cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
-        cancel_x = computed.cancel_x
-        button_y = computed.cancel_y
+        cancel_w = button_width(
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
         if button_update(
             self._cancel_button,
-            x=cancel_x,
-            y=button_y,
+            pos=computed.cancel_pos,
             width=cancel_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -305,8 +300,7 @@ class PerkMenuDebugView:
             draw_ui_text(
                 self._small,
                 "Missing assets: " + ", ".join(self._missing_assets),
-                24.0,
-                24.0,
+                Vec2(24.0, 24.0),
                 scale=1.0,
                 color=UI_ERROR_COLOR,
             )
@@ -314,7 +308,7 @@ class PerkMenuDebugView:
 
         self._draw_perk_prompt()
         if self._show_prompt_rect and self._prompt_rect is not None:
-            rl.draw_rectangle_lines_ex(self._prompt_rect, 1.0, rl.Color(255, 0, 255, 255))
+            rl.draw_rectangle_lines_ex(self._prompt_rect.to_rl(), 1.0, rl.Color(255, 0, 255, 255))
 
         if self._show_menu and self._assets is not None:
             choices = self._choices()
@@ -322,12 +316,11 @@ class PerkMenuDebugView:
                 screen_w = float(rl.get_screen_width())
                 screen_h = float(rl.get_screen_height())
                 scale = ui_scale(screen_w, screen_h)
-                origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
+                origin = ui_origin(screen_w, screen_h, scale)
                 computed = perk_menu_compute_layout(
                     self._layout,
                     screen_w=screen_w,
-                    origin_x=origin_x,
-                    origin_y=origin_y,
+                    origin=origin,
                     scale=scale,
                     choice_count=len(choices),
                     expert_owned=self._expert_owned,
@@ -336,12 +329,19 @@ class PerkMenuDebugView:
                 )
 
                 if self._assets.menu_panel is not None:
-                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel)
+                    draw_classic_menu_panel(self._assets.menu_panel, dst=computed.panel.to_rl())
 
                 if self._assets.title_pick_perk is not None:
                     tex = self._assets.title_pick_perk
                     src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-                    rl.draw_texture_pro(tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+                    rl.draw_texture_pro(
+                        tex,
+                        src,
+                        computed.title.to_rl(),
+                        rl.Vector2(0.0, 0.0),
+                        0.0,
+                        rl.WHITE,
+                    )
 
                 sponsor = None
                 if self._master_owned:
@@ -352,8 +352,7 @@ class PerkMenuDebugView:
                     draw_ui_text(
                         self._small,
                         sponsor,
-                        computed.sponsor_x,
-                        computed.sponsor_y,
+                        computed.sponsor_pos,
                         scale=scale,
                         color=UI_SPONSOR_COLOR,
                     )
@@ -361,30 +360,33 @@ class PerkMenuDebugView:
                 mouse = rl.get_mouse_position()
                 for idx, perk_id in enumerate(choices):
                     label = perk_display_name(int(perk_id))
-                    item_x = computed.list_x
-                    item_y = computed.list_y + float(idx) * computed.list_step_y
-                    rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
-                    hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._selected)
-                    draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
+                    item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
+                    rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
+                    hovered = rect.contains(mouse) or (idx == self._selected)
+                    draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]
                 desc = perk_display_description(int(selected_id))
-                desc_x = float(computed.desc.x)
-                desc_y = float(computed.desc.y)
-                desc_w = float(computed.desc.width)
-                desc_h = float(computed.desc.height)
                 desc_scale = scale * 0.85
-                desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
-                line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
-                y = desc_y
-                for line in desc_lines:
-                    if y + line_h > desc_y + desc_h:
-                        break
-                    draw_ui_text(self._small, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
-                    y += line_h
+                draw_wrapped_ui_text_in_rect(
+                    self._small,
+                    desc,
+                    rect=computed.desc,
+                    scale=desc_scale,
+                    color=UI_TEXT_COLOR,
+                )
 
-                cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
-                button_draw(self._assets, self._small, self._cancel_button, x=computed.cancel_x, y=computed.cancel_y, width=cancel_w, scale=scale)
+                cancel_w = button_width(
+                    self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+                )
+                button_draw(
+                    self._assets,
+                    self._small,
+                    self._cancel_button,
+                    pos=computed.cancel_pos,
+                    width=cancel_w,
+                    scale=scale,
+                )
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -407,7 +409,7 @@ class PerkMenuDebugView:
             f"slide_x={self._panel_slide_x:.1f} choices={self._choice_count} selected={self._selected}",
         ]
         for line in lines:
-            draw_ui_text(self._small, line, x, y, scale=scale, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, line, Vec2(x, y), scale=scale, color=UI_HINT_COLOR)
             y += line_h
 
 

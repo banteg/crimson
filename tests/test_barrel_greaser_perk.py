@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 import pytest
@@ -14,15 +16,14 @@ from crimson.weapons import WEAPON_BY_ID
 
 def test_barrel_greaser_increases_bullet_damage() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
     killed = creature_apply_damage(
         creature,
         damage_amount=10.0,
         damage_type=1,
-        impulse_x=0.0,
-        impulse_y=0.0,
+        impulse=Vec2(),
         owner_id=-100,
         dt=0.016,
         players=[player],
@@ -38,15 +39,14 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].projectile_meta
     base_damage = float(meta if meta is not None else 45.0)
     pool.spawn(
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
         base_damage=base_damage,
     )
 
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2())]
     if barrel_greaser_active:
         players[0].perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
@@ -58,7 +58,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         players=players,
     )
 
-    return float(pool.entries[0].pos_x)
+    return float(pool.entries[0].pos.x)
 
 
 def test_barrel_greaser_doubles_projectile_speed_steps() -> None:

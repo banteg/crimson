@@ -6,6 +6,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
@@ -152,11 +153,11 @@ class ReplayPlaybackMode:
         if world is not None:
             world.close()
 
-    def _draw_ui_text(self, text: str, x: float, y: float, color: rl.Color, *, scale: float = 1.0) -> None:
+    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, x, y, scale, color)
+            draw_small_text(self._small, text, pos, scale, color)
         else:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _enforce_rush_loadout(self) -> None:
         world = self._world
@@ -208,14 +209,13 @@ class ReplayPlaybackMode:
         packed_tick = replay.inputs[int(tick_index)]
         inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, ax, ay, flags = packed[:5]
+            mx, my, aim_vec, flags = packed[:4]
+            ax, ay = aim_vec[:2]
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             inputs.append(
                 PlayerInput(
-                    move_x=float(mx),
-                    move_y=float(my),
-                    aim_x=float(ax),
-                    aim_y=float(ay),
+                    move=Vec2(float(mx), float(my)),
+                    aim=Vec2(float(ax), float(ay)),
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=reload_pressed,
@@ -425,7 +425,7 @@ class ReplayPlaybackMode:
         else:
             rl.clear_background(rl.BLACK)
 
-        self._draw_ui_text("REPLAY", 18.0, 18.0, rl.Color(255, 255, 255, 220), scale=1.0)
+        self._draw_ui_text("REPLAY", Vec2(18.0, 18.0), rl.Color(255, 255, 255, 220), scale=1.0)
         replay = self._replay
         if replay is not None:
             total = len(replay.inputs)
@@ -433,19 +433,17 @@ class ReplayPlaybackMode:
             total_s = float(total) / float(self._tick_rate)
             self._draw_ui_text(
                 f"{self._tick_index}/{total}  {elapsed_s:.1f}s/{total_s:.1f}s",
-                18.0,
-                42.0,
+                Vec2(18.0, 42.0),
                 rl.Color(220, 220, 220, 200),
                 scale=0.9,
             )
         status = "PAUSED" if self._paused else "PLAYING"
-        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", 18.0, 66.0, rl.Color(220, 220, 220, 200), scale=0.9)
+        self._draw_ui_text(f"{status}  {self._playback_speed():.2f}x", Vec2(18.0, 66.0), rl.Color(220, 220, 220, 200), scale=0.9)
         self._draw_ui_text(
             "[/] speed  1 reset  SPACE pause  RIGHT +5s  PGDN +30s",
-            18.0,
-            90.0,
+            Vec2(18.0, 90.0),
             rl.Color(190, 190, 190, 200),
             scale=0.9,
         )
         if self._finished:
-            self._draw_ui_text("REPLAY ENDED (ESC)", 18.0, 114.0, rl.Color(220, 220, 220, 200), scale=0.9)
+            self._draw_ui_text("REPLAY ENDED (ESC)", Vec2(18.0, 114.0), rl.Color(220, 220, 220, 200), scale=0.9)

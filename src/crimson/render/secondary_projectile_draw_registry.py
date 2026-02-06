@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.math import clamp
 
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
@@ -19,8 +19,7 @@ class SecondaryProjectileDrawCtx:
     renderer: WorldRenderer
     proj: object
     proj_type: int
-    sx: float
-    sy: float
+    screen_pos: Vec2
     angle: float
     scale: float
     alpha: float
@@ -36,11 +35,11 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
     if texture is None:
         return False
 
-    cell_w = float(texture.width) / 4.0
+    cell_w = texture.width / 4.0
     if cell_w <= 1e-6:
         return True
 
-    alpha = float(ctx.alpha)
+    alpha = ctx.alpha
     base_alpha = clamp(alpha * 0.9, 0.0, 1.0)
     base_tint = renderer._color_from_rgba((0.8, 0.8, 0.8, base_alpha))
     base_size = 14.0
@@ -48,7 +47,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
         base_size = 10.0
     elif proj_type == 4:
         base_size = 8.0
-    sprite_scale = (base_size * float(ctx.scale)) / cell_w
+    sprite_scale = (base_size * ctx.scale) / cell_w
 
     fx_detail_1 = bool(renderer.config.data.get("fx_detail_1", 0)) if renderer.config is not None else True
     if fx_detail_1 and renderer.particles_texture is not None:
@@ -57,25 +56,21 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
         if atlas is not None:
             grid = SIZE_CODE_GRID.get(int(atlas.size_code))
             if grid:
-                particle_cell_w = float(particles_texture.width) / float(grid)
-                particle_cell_h = float(particles_texture.height) / float(grid)
+                particle_cell_w = particles_texture.width / grid
+                particle_cell_h = particles_texture.height / grid
                 frame = int(atlas.frame)
                 col = frame % grid
                 row = frame // grid
                 src = rl.Rectangle(
-                    particle_cell_w * float(col),
-                    particle_cell_h * float(row),
+                    particle_cell_w * col,
+                    particle_cell_h * row,
                     max(0.0, particle_cell_w - 2.0),
                     max(0.0, particle_cell_h - 2.0),
                 )
 
-                angle = float(ctx.angle)
-                dir_x = math.cos(angle - math.pi / 2.0)
-                dir_y = math.sin(angle - math.pi / 2.0)
+                direction = Vec2.from_heading(ctx.angle)
 
-                sx = float(ctx.sx)
-                sy = float(ctx.sy)
-                scale = float(ctx.scale)
+                scale = ctx.scale
 
                 def _draw_rocket_fx(
                     *,
@@ -87,10 +82,9 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     if fx_alpha <= 1e-3:
                         return
                     tint = renderer._color_from_rgba(rgba)
-                    fx_sx = sx - dir_x * offset * scale
-                    fx_sy = sy - dir_y * offset * scale
-                    dst_size = float(size) * scale
-                    dst = rl.Rectangle(float(fx_sx), float(fx_sy), float(dst_size), float(dst_size))
+                    fx_pos = ctx.screen_pos - direction * (offset * scale)
+                    dst_size = size * scale
+                    dst = rl.Rectangle(fx_pos.x, fx_pos.y, dst_size, dst_size)
                     origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
                     rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
@@ -111,10 +105,9 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
         texture,
         grid=4,
         frame=3,
-        x=float(ctx.sx),
-        y=float(ctx.sy),
+        pos=ctx.screen_pos,
         scale=sprite_scale,
-        rotation_rad=float(ctx.angle),
+        rotation_rad=ctx.angle,
         tint=base_tint,
     )
     return True
@@ -124,10 +117,10 @@ def _draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
     if int(ctx.proj_type) != 4:
         return False
     rl.draw_circle(
-        int(ctx.sx),
-        int(ctx.sy),
-        max(1.0, 12.0 * float(ctx.scale)),
-        rl.Color(200, 120, 255, int(255 * float(ctx.alpha) + 0.5)),
+        int(ctx.screen_pos.x),
+        int(ctx.screen_pos.y),
+        max(1.0, 12.0 * ctx.scale),
+        rl.Color(200, 120, 255, int(255 * ctx.alpha + 0.5)),
     )
     return True
 
@@ -138,20 +131,18 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         return False
 
     # Secondary projectile detonation visuals (secondary_projectile_update + render).
-    t = clamp(float(getattr(ctx.proj, "vel_x", 0.0)), 0.0, 1.0)
-    det_scale = float(getattr(ctx.proj, "vel_y", 1.0))
-    fade = (1.0 - t) * float(ctx.alpha)
+    t = clamp(float(getattr(ctx.proj, "detonation_t", 0.0)), 0.0, 1.0)
+    det_scale = float(getattr(ctx.proj, "detonation_scale", 1.0))
+    fade = (1.0 - t) * ctx.alpha
     if fade <= 1e-3 or det_scale <= 1e-6:
         return True
 
-    sx = float(ctx.sx)
-    sy = float(ctx.sy)
-    scale = float(ctx.scale)
+    scale = ctx.scale
     if renderer.particles_texture is None:
         radius = det_scale * t * 80.0
-        alpha_byte = int(clamp((1.0 - t) * 180.0 * float(ctx.alpha), 0.0, 255.0) + 0.5)
+        alpha_byte = int(clamp((1.0 - t) * 180.0 * ctx.alpha, 0.0, 255.0) + 0.5)
         color = rl.Color(255, 180, 100, alpha_byte)
-        rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
+        rl.draw_circle_lines(int(ctx.screen_pos.x), int(ctx.screen_pos.y), max(1.0, radius * scale), color)
         return True
 
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
@@ -163,11 +154,11 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
     frame = int(atlas.frame)
     col = frame % grid
     row = frame // grid
-    cell_w = float(renderer.particles_texture.width) / float(grid)
-    cell_h = float(renderer.particles_texture.height) / float(grid)
+    cell_w = renderer.particles_texture.width / grid
+    cell_h = renderer.particles_texture.height / grid
     src = rl.Rectangle(
-        cell_w * float(col),
-        cell_h * float(row),
+        cell_w * col,
+        cell_h * row,
         max(0.0, cell_w - 2.0),
         max(0.0, cell_h - 2.0),
     )
@@ -176,12 +167,12 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         a = fade * alpha_mul
         if a <= 1e-3:
             return
-        dst_size = float(size) * scale
+        dst_size = size * scale
         if dst_size <= 1e-3:
             return
         tint = renderer._color_from_rgba((1.0, 0.6, 0.1, a))
-        dst = rl.Rectangle(float(sx), float(sy), float(dst_size), float(dst_size))
-        origin = rl.Vector2(float(dst_size) * 0.5, float(dst_size) * 0.5)
+        dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, dst_size, dst_size)
+        origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
         rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE)

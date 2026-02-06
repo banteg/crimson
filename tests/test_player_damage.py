@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
@@ -7,7 +9,7 @@ from crimson.player_damage import player_take_damage
 
 def test_player_take_damage_ninja_dodges_1_in_3() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.NINJA)] = 1
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 6)
@@ -18,7 +20,7 @@ def test_player_take_damage_ninja_dodges_1_in_3() -> None:
 
 def test_player_take_damage_ninja_applies_damage_otherwise() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.NINJA)] = 1
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 1)
@@ -29,7 +31,7 @@ def test_player_take_damage_ninja_applies_damage_otherwise() -> None:
 
 def test_player_take_damage_dodger_dodges_1_in_5() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DODGER)] = 1
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 10)
@@ -40,7 +42,7 @@ def test_player_take_damage_dodger_dodges_1_in_5() -> None:
 
 def test_player_take_damage_ninja_has_priority_over_dodger() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.NINJA)] = 1
     player.perk_counts[int(PerkId.DODGER)] = 1
 
@@ -52,7 +54,7 @@ def test_player_take_damage_ninja_has_priority_over_dodger() -> None:
 
 def test_player_take_damage_resets_low_health_timer_on_hit() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=25.0)
+    player = PlayerState(index=0, pos=Vec2(), health=25.0)
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
 
@@ -63,7 +65,7 @@ def test_player_take_damage_resets_low_health_timer_on_hit() -> None:
 
 def test_player_take_damage_does_not_reset_low_health_timer_above_threshold() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=50.0)
+    player = PlayerState(index=0, pos=Vec2(), health=50.0)
 
     applied = player_take_damage(state, player, 10.0, rand=lambda: 3)
 
@@ -74,7 +76,7 @@ def test_player_take_damage_does_not_reset_low_health_timer_above_threshold() ->
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=5.0, death_timer=16.0)
+    player = PlayerState(index=0, pos=Vec2(), health=5.0, death_timer=16.0)
 
     applied = player_take_damage(state, player, 10.0, dt=0.1, rand=lambda: 0)
 

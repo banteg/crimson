@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import gzip
 import json
 
@@ -39,7 +41,7 @@ def _base_world() -> WorldState:
         difficulty_level=0,
         preserve_bugs=False,
     )
-    world.players.append(PlayerState(index=0, pos_x=512.0, pos_y=512.0))
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     return world
 
 

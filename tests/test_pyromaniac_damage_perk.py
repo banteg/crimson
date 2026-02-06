@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.creatures.damage import creature_apply_damage
@@ -19,7 +21,7 @@ class _CountRand:
 
 def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.PYROMANIAC)] = 1
 
     rand = _CountRand()
@@ -27,8 +29,7 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
         creature,
         damage_amount=10.0,
         damage_type=4,
-        impulse_x=0.0,
-        impulse_y=0.0,
+        impulse=Vec2(),
         owner_id=-100,
         dt=0.016,
         players=[player],

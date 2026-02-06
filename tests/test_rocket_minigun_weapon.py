@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, weapon_assign_player
@@ -15,15 +17,14 @@ class _FixedRng:
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 17)
     assert player.ammo == player.clip_size
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
     assert len(spawned) == player.clip_size

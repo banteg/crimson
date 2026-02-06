@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.bonuses import BonusId
 from crimson.gameplay import BonusPool, GameplayState, PlayerState
 from crimson.weapons import WeaponId
@@ -25,8 +27,8 @@ def test_original_amount_weapon_id_suppression_bug_is_fixed_by_default() -> None
     state.preserve_bugs = False
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos_x=256.0, pos_y=256.0, weapon_id=int(WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(256.0, 256.0, state=state, players=[player])
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is not None
     assert entry.bonus_id == int(BonusId.SPEED)
 
@@ -36,7 +38,6 @@ def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
     state.preserve_bugs = True
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos_x=256.0, pos_y=256.0, weapon_id=int(WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(256.0, 256.0, state=state, players=[player])
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
+    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None
-

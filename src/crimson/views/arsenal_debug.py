@@ -8,7 +8,7 @@ import pyray as rl
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
-from grim.math import clamp
+from grim.geom import Vec2
 from grim.view import View, ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusId
@@ -141,7 +141,7 @@ class ArsenalDebugView:
         weapon_assign_player(self._player, self._selected_weapon_id())
 
     def _reset_scene(self) -> None:
-        self._world.reset(seed=0xBEEF, player_count=1, spawn_x=WORLD_SIZE * 0.5, spawn_y=WORLD_SIZE * 0.5)
+        self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._player = self._world.players[0] if self._world.players else None
         self._apply_weapon()
         self._reset_creatures()
@@ -163,17 +163,17 @@ class ArsenalDebugView:
             return
 
         count = max(1, len(self._spawn_ids))
-        base_x = float(player.pos_x)
-        base_y = float(player.pos_y)
+        player_pos = player.pos
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
-            x = clamp(base_x + math.cos(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
-            y = clamp(base_y + math.sin(angle) * self._spawn_ring_radius, 48.0, WORLD_SIZE - 48.0)
+            spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
+                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0
+            )
             heading = angle + math.pi
             self._world.creatures.spawn_template(
                 spawn_id,
-                (x, y),
+                spawn_pos,
                 heading,
                 self._world.state.rng,
                 rand=self._world.state.rng.rand,
@@ -190,15 +190,13 @@ class ArsenalDebugView:
         bonus_ids = [int(entry.bonus_id) for entry in BONUS_TABLE if int(entry.bonus_id) != int(BonusId.UNUSED)]
         count = max(1, len(bonus_ids))
 
-        base_x = float(player.pos_x)
-        base_y = float(player.pos_y)
+        player_pos = player.pos
         rng = self._world.state.rng.rand
         current_weapon_id = int(player.weapon_id)
 
         for idx, bonus_id in enumerate(bonus_ids):
             angle = float(idx) / float(count) * math.tau
-            x = base_x + math.cos(angle) * float(ARSENAL_BONUS_RING_RADIUS)
-            y = base_y + math.sin(angle) * float(ARSENAL_BONUS_RING_RADIUS)
+            pos = player_pos + Vec2.from_angle(angle) * float(ARSENAL_BONUS_RING_RADIUS)
 
             amount_override = -1
             if bonus_id == int(BonusId.WEAPON) and self._weapon_ids:
@@ -210,9 +208,8 @@ class ArsenalDebugView:
                 amount_override = int(weapon_id)
 
             bonus_pool.spawn_at(
-                x,
-                y,
-                bonus_id,
+                pos=pos,
+                bonus_id=bonus_id,
                 duration_override=int(amount_override),
                 state=self._world.state,
                 world_width=float(WORLD_SIZE),
@@ -246,29 +243,21 @@ class ArsenalDebugView:
             self._screenshot_requested = True
 
     def _build_input(self) -> PlayerInput:
-        move_x = 0.0
-        move_y = 0.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_A):
-            move_x -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_D):
-            move_x += 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_W):
-            move_y -= 1.0
-        if rl.is_key_down(rl.KeyboardKey.KEY_S):
-            move_y += 1.0
+        move = Vec2(
+            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
+            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
+        )
 
         mouse = rl.get_mouse_position()
-        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
-            aim_x=float(aim_x),
-            aim_y=float(aim_y),
+            move=move,
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -307,9 +296,9 @@ class ArsenalDebugView:
         reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
         lines.extend(
             [
-                f"clip { _fmt_int(weapon.clip_size) }  reload { _fmt_float(weapon.reload_time) }  cooldown { _fmt_float(weapon.shot_cooldown) }",
-                f"pellets { _fmt_int(weapon.pellet_count) }  spread_inc { _fmt_float(weapon.spread_heat_inc) }  dmg_scale { _fmt_float(weapon.damage_scale) }  meta { _fmt_int(weapon.projectile_meta) }",
-                f"ammo_class { _fmt_int(weapon.ammo_class) }  flags { _fmt_hex(weapon.flags) }  icon { _fmt_int(weapon.icon_index) }",
+                f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
+                f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.projectile_meta)}",
+                f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
                 f"sfx fire {fire_sfx or '—'}  reload {reload_sfx or '—'}",
             ]
         )
@@ -389,14 +378,18 @@ class ArsenalDebugView:
         warn_y = 24.0
         warn_line = float(ui_line_height(self._small))
         if self._missing_assets:
-            draw_ui_text(self._small, "Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, color=UI_ERROR)
+            draw_ui_text(
+                self._small,
+                "Missing assets (ui): " + ", ".join(self._missing_assets),
+                Vec2(warn_x, warn_y),
+                color=UI_ERROR,
+            )
             warn_y += warn_line
         if self._world.missing_assets:
             draw_ui_text(
                 self._small,
                 "Missing assets (world): " + ", ".join(self._world.missing_assets),
-                warn_x,
-                warn_y,
+                Vec2(warn_x, warn_y),
                 color=UI_ERROR,
             )
             warn_y += warn_line
@@ -407,28 +400,27 @@ class ArsenalDebugView:
 
         weapon = WEAPON_BY_ID.get(int(self._player.weapon_id)) if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
-            draw_ui_text(self._small, text, x, y, color=UI_TEXT)
+            draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line
 
         if self._player is not None:
             alive = sum(1 for c in self._world.creatures.entries if c.active and c.hp > 0.0)
             total = sum(1 for c in self._world.creatures.entries if c.active)
-            draw_ui_text(self._small, f"creatures alive {alive}/{total}", x, y, color=UI_TEXT)
+            draw_ui_text(self._small, f"creatures alive {alive}/{total}", Vec2(x, y), color=UI_TEXT)
             y += line
 
         y += 6.0
         draw_ui_text(
             self._small,
             "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  T respawn  B spawn all bonuses  Backspace reset  Esc quit",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
         y += line
-        draw_ui_text(self._small, "P screenshot", x, y, color=UI_HINT)
+        draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))
+        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("arsenal", "Arsenal")

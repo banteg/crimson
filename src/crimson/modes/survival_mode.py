@@ -12,6 +12,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -246,11 +247,11 @@ class SurvivalMode(BaseGameplayMode):
                 lines.append(current)
         return lines
 
-    def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self._world.world_to_screen(x, y)
+    def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._world.world_to_screen(pos)
 
-    def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return self._world.screen_to_world(x, y)
+    def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
+        return self._world.screen_to_world(pos)
 
     def open(self) -> None:
         super().open()
@@ -278,11 +279,15 @@ class SurvivalMode(BaseGameplayMode):
             except Exception:
                 weapon_usage_counts = ()
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
-            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(0, WEAPON_USAGE_COUNT - len(weapon_usage_counts))
+            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
+                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)
+            )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            if status is not None
+            else 0,
             weapon_usage_counts=weapon_usage_counts,
         )
         self._replay_recorder = ReplayRecorder(
@@ -363,19 +368,13 @@ class SurvivalMode(BaseGameplayMode):
             keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100)
         up_key, down_key, left_key, right_key, fire_key = player_move_fire_binds(keybinds, 0)
 
-        move_x = 0.0
-        move_y = 0.0
-        if input_code_is_down(left_key):
-            move_x -= 1.0
-        if input_code_is_down(right_key):
-            move_x += 1.0
-        if input_code_is_down(up_key):
-            move_y -= 1.0
-        if input_code_is_down(down_key):
-            move_y += 1.0
+        move = Vec2(
+            float(input_code_is_down(right_key)) - float(input_code_is_down(left_key)),
+            float(input_code_is_down(down_key)) - float(input_code_is_down(up_key)),
+        )
 
         mouse = self._ui_mouse_pos()
-        aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._camera_screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -385,10 +384,8 @@ class SurvivalMode(BaseGameplayMode):
         reload_pressed = input_code_is_pressed(reload_key)
 
         return PlayerInput(
-            move_x=move_x,
-            move_y=move_y,
-            aim_x=aim_x,
-            aim_y=aim_y,
+            move=move,
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -431,14 +428,14 @@ class SurvivalMode(BaseGameplayMode):
         suffix = f" ({pending})" if pending > 1 else ""
         return f"Press Mouse2 to pick a perk{suffix}"
 
-    def _perk_prompt_hinge(self) -> tuple[float, float]:
+    def _perk_prompt_hinge(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
         hinge_x = screen_w + PERK_PROMPT_OUTSET_X
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
-        return hinge_x, hinge_y
+        return Vec2(hinge_x, hinge_y)
 
-    def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> rl.Rectangle:
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+    def _perk_prompt_rect(self, label: str, *, scale: float = UI_TEXT_SCALE) -> Rect:
+        hinge = self._perk_prompt_hinge()
         if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
             tex = self._perk_menu_assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
@@ -446,11 +443,10 @@ class SurvivalMode(BaseGameplayMode):
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
 
-            return rl.Rectangle(
-                float(hinge_x + local_x),
-                float(hinge_y + local_y),
-                float(bar_w),
-                float(bar_h),
+            return Rect.from_top_left(
+                hinge.offset(dx=local_x, dy=local_y),
+                bar_w,
+                bar_h,
             )
 
         margin = 16.0 * scale
@@ -458,7 +454,7 @@ class SurvivalMode(BaseGameplayMode):
         text_h = float(self._ui_line_height(scale))
         x = float(rl.get_screen_width()) - margin - text_w
         y = margin
-        return rl.Rectangle(x, y, text_w, text_h)
+        return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
@@ -489,7 +485,7 @@ class SurvivalMode(BaseGameplayMode):
             if label:
                 rect = self._perk_prompt_rect(label)
                 mouse = self._ui_mouse_pos()
-                self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
+                self._perk_prompt_hover = rect.contains(mouse)
 
             keybinds = config_keybinds(self._config)
             if not keybinds:
@@ -550,10 +546,8 @@ class SurvivalMode(BaseGameplayMode):
         for tick_offset in range(int(ticks_to_run)):
             if tick_offset:
                 input_tick = PlayerInput(
-                    move_x=float(input_frame.move_x),
-                    move_y=float(input_frame.move_y),
-                    aim_x=float(input_frame.aim_x),
-                    aim_y=float(input_frame.aim_y),
+                    move=input_frame.move,
+                    aim=input_frame.aim,
                     fire_down=bool(input_frame.fire_down),
                     fire_pressed=False,
                     reload_pressed=False,
@@ -644,16 +638,16 @@ class SurvivalMode(BaseGameplayMode):
         if alpha <= 1e-3:
             return
 
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+        hinge = self._perk_prompt_hinge()
         # Prompt swings counter-clockwise; raylib's Y-down makes positive rotation clockwise.
         rot_deg = -(1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
         text_w = float(self._ui_text_width(label, UI_TEXT_SCALE))
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
+        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=color)
+        draw_ui_text(self._small, label, Vec2(x, y), scale=UI_TEXT_SCALE, color=color)
 
         if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
             tex = self._perk_menu_assets.menu_item
@@ -662,7 +656,7 @@ class SurvivalMode(BaseGameplayMode):
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
             src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(bar_w), float(bar_h))
+            dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -677,7 +671,7 @@ class SurvivalMode(BaseGameplayMode):
             label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
             pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
+            dst = rl.Rectangle(hinge.x, hinge.y, w, h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
             if label_alpha > 0.0:
@@ -686,22 +680,19 @@ class SurvivalMode(BaseGameplayMode):
                 rl.end_blend_mode()
 
     def _draw_game_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=mouse_x,
-            y=mouse_y,
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = self._ui_mouse
         aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
@@ -737,22 +728,35 @@ class SurvivalMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
-            self._draw_ui_text(f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}", x, y, UI_TEXT_COLOR)
-            self._draw_ui_text(f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
+            self._draw_ui_text(
+                f"survival: t={self._survival.elapsed_ms / 1000.0:6.1f}s  stage={self._survival.stage}",
+                Vec2(x, y),
+                UI_TEXT_COLOR,
+            )
+            self._draw_ui_text(
+                f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}",
+                Vec2(x, y + line),
+                UI_HINT_COLOR,
+            )
             god = "on" if self._state.debug_god_mode else "off"
-            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000", x, y + line * 2.0, UI_HINT_COLOR, scale=0.9)
+            self._draw_ui_text(
+                f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000",
+                Vec2(x, y + line * 2.0),
+                UI_HINT_COLOR,
+                scale=0.9,
+            )
             if self._paused:
-                self._draw_ui_text("paused (TAB)", x, y + line * 3.0, UI_HINT_COLOR)
+                self._draw_ui_text("paused (TAB)", Vec2(x, y + line * 3.0), UI_HINT_COLOR)
             if self._player.health <= 0.0:
-                self._draw_ui_text("game over", x, y + line * 3.0, UI_ERROR_COLOR)
+                self._draw_ui_text("game over", Vec2(x, y + line * 3.0), UI_ERROR_COLOR)
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
             warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, Vec2(24.0, warn_y), UI_ERROR_COLOR, scale=0.8)
 
         self._draw_perk_prompt()
         if not self._game_over_active:

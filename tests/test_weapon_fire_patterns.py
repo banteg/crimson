@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, weapon_assign_player
@@ -20,13 +22,12 @@ def _active_projectiles(state: GameplayState) -> list[object]:
 
 def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 10)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
@@ -51,13 +52,12 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     # Use a value where (rand & 0xff) and (rand % 200 - 100) differ in sign, so we
     # catch the decompile-accurate mask behavior.
     state = GameplayState(rng=_FixedRng(255))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 14)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
@@ -74,27 +74,25 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
 
 def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 14)
     start_ammo = float(player.ammo)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
     assert math.isclose(float(player.ammo), start_ammo - 1.0, abs_tol=1e-9)
 
 
 def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 20)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 4
@@ -109,13 +107,12 @@ def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> No
 
 def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 30)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 6
@@ -130,13 +127,12 @@ def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
 
 def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    player.aim_dir_x = 1.0
-    player.aim_dir_y = 0.0
+    player = PlayerState(index=0, pos=Vec2())
+    player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 31)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 8

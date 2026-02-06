@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 import math
 from typing import Callable, Protocol
 
-from grim.math import distance_sq
+from grim.geom import Vec2
 
 from .creatures.spawn import CreatureFlags
 from .effects_atlas import EffectId
@@ -15,16 +15,16 @@ from .weapons import weapon_entry_for_projectile_type_id
 
 class Damageable(Protocol):
     active: bool
-    x: float
-    y: float
+    pos: Vec2
     hp: float
     hitbox_size: float
     size: float
+    flags: int
+    plague_infected: bool
 
 
 class PlayerDamageable(Protocol):
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     health: float
     shield_timer: float
     size: float
@@ -57,15 +57,14 @@ class FxQueueLike(Protocol):
         self,
         *,
         effect_id: int,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         width: float,
         height: float,
         rotation: float,
         rgba: tuple[float, float, float, float],
     ) -> bool: ...
 
-    def add_random(self, *, pos_x: float, pos_y: float, rand: Callable[[], int]) -> bool: ...
+    def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...
 
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
@@ -114,19 +113,23 @@ def _rng_zero() -> int:
     return 0
 
 
-CreatureDamageApplier = Callable[[int, float, int, float, float, int], None]
+CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectileHit:
+    type_id: int
+    origin: Vec2
+    hit: Vec2
+    target: Vec2
 
 
 @dataclass(slots=True)
 class Projectile:
     active: bool = False
     angle: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
-    origin_x: float = 0.0
-    origin_y: float = 0.0
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
+    origin: Vec2 = field(default_factory=Vec2)
     type_id: int = 0
     life_timer: float = 0.0
     reserved: float = 0.0
@@ -143,17 +146,16 @@ class SecondaryProjectile:
     active: bool = False
     angle: float = 0.0
     speed: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
-    vel_x: float = 0.0
-    vel_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
+    vel: Vec2 = field(default_factory=Vec2)
+    detonation_t: float = 0.0
+    detonation_scale: float = 1.0
     type_id: int = 0
     owner_id: int = -100
     trail_timer: float = 0.0
     target_id: int = -1
     target_hint_active: bool = False
-    target_hint_x: float = 0.0
-    target_hint_y: float = 0.0
+    target_hint: Vec2 = field(default_factory=Vec2)
 
 
 def _hit_radius_for(creature: Damageable) -> float:
@@ -162,11 +164,7 @@ def _hit_radius_for(creature: Damageable) -> float:
     The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
     """
 
-    raw = getattr(creature, "size", None)
-    if raw is None:
-        size = 50.0
-    else:
-        size = float(raw)
+    size = float(creature.size)
     return max(0.0, size * 0.14285715 + 3.0)
 
 
@@ -176,8 +174,7 @@ def _apply_damage_to_creature(
     damage: float,
     *,
     damage_type: int,
-    impulse_x: float,
-    impulse_y: float,
+    impulse: Vec2,
     owner_id: int,
     apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> None:
@@ -191,8 +188,7 @@ def _apply_damage_to_creature(
             idx,
             float(damage),
             int(damage_type),
-            float(impulse_x),
-            float(impulse_y),
+            impulse,
             int(owner_id),
         )
     else:
@@ -204,8 +200,7 @@ def _spawn_ion_hit_effects(
     sfx_queue: object | None,
     *,
     type_id: int,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
 ) -> None:
@@ -237,10 +232,8 @@ def _spawn_ion_hit_effects(
     # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
     effects.spawn(
         effect_id=int(EffectId.RING),
-        pos_x=float(pos_x),
-        pos_y=float(pos_y),
-        vel_x=0.0,
-        vel_y=0.0,
+        pos=pos,
+        vel=Vec2(),
         rotation=0.0,
         scale=1.0,
         half_width=4.0,
@@ -267,15 +260,15 @@ def _spawn_ion_hit_effects(
 
     for _ in range(max(0, count)):
         rotation = float(int(rng()) & 0x7F) * 0.049087387
-        vel_x = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
-        vel_y = float((int(rng()) & 0x7F) - 0x40) * burst * 1.4
+        velocity = Vec2(
+            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
+            float((int(rng()) & 0x7F) - 0x40) * burst * 1.4,
+        )
         scale_step = (float(int(rng()) % 100) * 0.01 + 0.1) * burst
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
-            vel_x=vel_x,
-            vel_y=vel_y,
+            pos=pos,
+            vel=velocity,
             rotation=rotation,
             scale=1.0,
             half_width=half,
@@ -297,8 +290,7 @@ def _spawn_plasma_cannon_hit_effects(
     effects: object | None,
     sfx_queue: object | None,
     *,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     detail_preset: int,
 ) -> None:
     """Port of `projectile_update` Plasma Cannon hit extras.
@@ -322,10 +314,8 @@ def _spawn_plasma_cannon_hit_effects(
     def _spawn_ring(*, scale: float) -> None:
         effects.spawn(
             effect_id=int(EffectId.RING),
-            pos_x=float(pos_x),
-            pos_y=float(pos_y),
-            vel_x=0.0,
-            vel_y=0.0,
+            pos=pos,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=4.0,
@@ -349,8 +339,7 @@ def _spawn_plasma_cannon_hit_effects(
 def _spawn_splitter_hit_effects(
     effects: object | None,
     *,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
 ) -> None:
@@ -366,12 +355,11 @@ def _spawn_splitter_hit_effects(
         jitter_age = -float(int(rng()) & 0xFF) * 0.0012
         lifetime = 0.1 - jitter_age
 
+        offset = Vec2.from_angle(angle) * radius
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos_x=float(pos_x) + math.cos(angle) * radius,
-            pos_y=float(pos_y) + math.sin(angle) * radius,
-            vel_x=0.0,
-            vel_y=0.0,
+            pos=pos + offset,
+            vel=Vec2(),
             rotation=0.0,
             scale=1.0,
             half_width=4.0,
@@ -408,10 +396,8 @@ class _ProjectileHitInfo:
     proj_index: int
     proj: Projectile
     hit_idx: int
-    move_dx: float
-    move_dy: float
-    target_x: float
-    target_y: float
+    move: Vec2
+    target: Vec2
 
 
 @dataclass(slots=True)
@@ -428,8 +414,7 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
     if ctx.owner_perk_active(int(ctx.proj.owner_id), int(ctx.poison_idx)) and (int(ctx.rng()) & 7) == 1:
-        if hasattr(ctx.creature, "flags"):
-            ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+        ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
 
 _PROJECTILE_HIT_PERK_HOOKS: tuple[_ProjectileHitPerkHook, ...] = (_projectile_hit_perk_poison_bullets,)
@@ -466,14 +451,13 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
-        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
             _apply_damage_to_creature(
                 ctx.creatures,
                 creature_idx,
                 damage,
                 damage_type=7,
-                impulse_x=0.0,
-                impulse_y=0.0,
+                impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
             )
@@ -490,14 +474,13 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
-        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
             _apply_damage_to_creature(
                 ctx.creatures,
                 creature_idx,
                 damage,
                 damage_type=7,
-                impulse_x=0.0,
-                impulse_y=0.0,
+                impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
             )
@@ -514,14 +497,13 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
             continue
         creature_radius = _hit_radius_for(creature)
         hit_r = radius + creature_radius
-        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
             _apply_damage_to_creature(
                 ctx.creatures,
                 creature_idx,
                 damage,
                 damage_type=7,
-                impulse_x=0.0,
-                impulse_y=0.0,
+                impulse=Vec2(),
                 owner_id=int(proj.owner_id),
                 apply_creature_damage=ctx.apply_creature_damage,
             )
@@ -530,14 +512,12 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
 def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int) -> None:
     _spawn_splitter_hit_effects(
         ctx.effects,
-        pos_x=float(proj.pos_x),
-        pos_y=float(proj.pos_y),
+        pos=proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
     ctx.pool.spawn(
-        pos_x=proj.pos_x,
-        pos_y=proj.pos_y,
+        pos=proj.pos,
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
@@ -545,8 +525,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         hits_players=proj.hits_players,
     )
     ctx.pool.spawn(
-        pos_x=proj.pos_x,
-        pos_y=proj.pos_y,
+        pos=proj.pos,
         angle=proj.angle + 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=int(hit_idx),
@@ -560,8 +539,7 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
         ctx.effects,
         ctx.sfx_queue,
         type_id=int(hit.proj.type_id),
-        pos_x=float(hit.proj.pos_x),
-        pos_y=float(hit.proj.pos_y),
+        pos=hit.proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
@@ -580,8 +558,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
         if links_left > 0 and creatures:
             runtime_state.shock_chain_links_left = links_left - 1
 
-            origin_x = float(hit.proj.pos_x)
-            origin_y = float(hit.proj.pos_y)
+            origin_pos = hit.proj.pos
             min_dist_sq = 100.0 * 100.0
 
             best_idx = 0
@@ -591,7 +568,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     continue
                 if not creature.active:
                     continue
-                d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
+                d_sq = Vec2.distance_sq(origin_pos, creature.pos)
                 if d_sq <= min_dist_sq:
                     continue
                 if d_sq < best_dist_sq:
@@ -600,14 +577,13 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
             origin = creatures[hit_creature]
             target = creatures[best_idx]
-            angle = math.atan2(target.y - origin.y, target.x - origin.x) + math.pi / 2.0
+            angle = (target.pos - origin.pos).to_heading()
 
             prev_guard = bool(runtime_state.bonus_spawn_guard)
             runtime_state.bonus_spawn_guard = True
             try:
                 proj_id = ctx.pool.spawn(
-                    pos_x=origin_x,
-                    pos_y=origin_y,
+                    pos=origin_pos,
                     angle=angle,
                     type_id=int(hit.proj.type_id),
                     owner_id=hit_creature,
@@ -621,7 +597,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
 def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    size = float(getattr(creature, "size", 50.0) or 50.0)
+    size = float(creature.size)
     ring_radius = size * 0.5 + 1.0
 
     plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
@@ -635,9 +611,9 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     try:
         for ring_idx in range(12):
             ring_angle = float(ring_idx) * (math.pi / 6.0)
+            ring_offset = Vec2.from_angle(ring_angle) * ring_radius
             ctx.pool.spawn(
-                pos_x=hit.proj.pos_x + math.cos(ring_angle) * ring_radius,
-                pos_y=hit.proj.pos_y + math.sin(ring_angle) * ring_radius,
+                pos=hit.proj.pos + ring_offset,
                 angle=ring_angle,
                 type_id=ProjectileTypeId.PLASMA_RIFLE,
                 owner_id=-100,
@@ -650,41 +626,36 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
         ctx.sfx_queue,
-        pos_x=float(hit.proj.pos_x),
-        pos_y=float(hit.proj.pos_y),
+        pos=hit.proj.pos,
         detail_preset=ctx.detail_preset,
     )
 
 
 def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    if hasattr(creature, "size"):
-        new_size = float(getattr(creature, "size", 50.0) or 50.0) * 0.65
-        setattr(creature, "size", new_size)
-        if new_size < 16.0:
-            _apply_damage_to_creature(
-                ctx.creatures,
-                int(hit.hit_idx),
-                float(creature.hp) + 1.0,
-                damage_type=1,
-                impulse_x=0.0,
-                impulse_y=0.0,
-                owner_id=int(hit.proj.owner_id),
-                apply_creature_damage=ctx.apply_creature_damage,
-            )
+    new_size = float(creature.size) * 0.65
+    creature.size = new_size
+    if new_size < 16.0:
+        _apply_damage_to_creature(
+            ctx.creatures,
+            int(hit.hit_idx),
+            float(creature.hp) + 1.0,
+            damage_type=1,
+            impulse=Vec2(),
+            owner_id=int(hit.proj.owner_id),
+            apply_creature_damage=ctx.apply_creature_damage,
+        )
     hit.proj.life_timer = 0.25
 
 
 def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    creature.x += hit.move_dx * 3.0
-    creature.y += hit.move_dy * 3.0
+    creature.pos = creature.pos + hit.move * 3.0
 
 
 def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    if hasattr(creature, "plague_infected"):
-        setattr(creature, "plague_infected", True)
+    creature.plague_infected = True
 
 
 _DEFAULT_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
@@ -728,8 +699,7 @@ class ProjectilePool:
     def spawn(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         angle: float,
         type_id: int,
         owner_id: int,
@@ -747,12 +717,8 @@ class ProjectilePool:
 
         entry.active = True
         entry.angle = angle
-        entry.pos_x = pos_x
-        entry.pos_y = pos_y
-        entry.origin_x = pos_x
-        entry.origin_y = pos_y
-        entry.vel_x = math.cos(angle) * 1.5
-        entry.vel_y = math.sin(angle) * 1.5
+        entry.pos = pos
+        entry.origin = pos
         entry.type_id = int(type_id)
         entry.life_timer = 0.4
         entry.reserved = 0.0
@@ -806,12 +772,10 @@ class ProjectilePool:
         players: list[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
-    ) -> list[tuple[int, float, float, float, float, float, float]]:
+    ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
-
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
@@ -863,7 +827,7 @@ class ProjectilePool:
             effects = runtime_state.effects
             sfx_queue = runtime_state.sfx_queue
 
-        hits: list[tuple[int, float, float, float, float, float, float]] = []
+        hits: list[ProjectileHit] = []
         margin = 64.0
 
         def _damage_scale(type_id: int) -> float:
@@ -916,10 +880,10 @@ class ProjectilePool:
                 continue
 
             if (
-                proj.pos_x < -margin
-                or proj.pos_y < -margin
-                or proj.pos_x > world_size + margin
-                or proj.pos_y > world_size + margin
+                proj.pos.x < -margin
+                or proj.pos.y < -margin
+                or proj.pos.x > world_size + margin
+                or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
                 if proj.life_timer <= 0.0:
@@ -932,23 +896,16 @@ class ProjectilePool:
             if barrel_greaser_active and int(proj.owner_id) < 0:
                 steps *= 2
 
-            dir_x = math.cos(proj.angle - math.pi / 2.0)
-            dir_y = math.sin(proj.angle - math.pi / 2.0)
-
-            acc_x = 0.0
-            acc_y = 0.0
+            direction = Vec2.from_heading(float(proj.angle))
+            acc = Vec2()
             step = 0
             while step < steps:
-                acc_x += dir_x * dt * 20.0 * proj.speed_scale * 3.0
-                acc_y += dir_y * dt * 20.0 * proj.speed_scale * 3.0
+                acc = acc + direction * (dt * 20.0 * proj.speed_scale * 3.0)
 
-                if math.hypot(acc_x, acc_y) >= 4.0 or steps <= step + 3:
-                    move_dx = acc_x
-                    move_dy = acc_y
-                    proj.pos_x += move_dx
-                    proj.pos_y += move_dy
-                    acc_x = 0.0
-                    acc_y = 0.0
+                if acc.length() >= 4.0 or steps <= step + 3:
+                    move = acc
+                    proj.pos = proj.pos + move
+                    acc = Vec2()
 
                     hit_idx = None
                     ion_hit_test = int(proj.type_id) in (
@@ -968,7 +925,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = proj.hit_radius + creature_radius
-                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             hit_idx = idx
                             break
 
@@ -986,7 +943,7 @@ class ProjectilePool:
                                     player_radius = _hit_radius_for(player)
                                     hit_r = proj.hit_radius + player_radius
                                     if (
-                                        distance_sq(proj.pos_x, proj.pos_y, player.pos_x, player.pos_y)
+                                        Vec2.distance_sq(proj.pos, player.pos)
                                         <= hit_r * hit_r
                                     ):
                                         hit_player_idx = idx
@@ -997,13 +954,16 @@ class ProjectilePool:
                                 continue
 
                             type_id = proj.type_id
-                            hit_x = float(proj.pos_x)
-                            hit_y = float(proj.pos_y)
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            target_x = float(player.pos_x)
-                            target_y = float(player.pos_y)
-                            hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
+                            hits.append(
+                                ProjectileHit(
+                                    type_id=int(type_id),
+                                    origin=proj.origin,
+                                    hit=proj.pos,
+                                    target=player.pos,
+                                )
+                            )
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
@@ -1041,11 +1001,15 @@ class ProjectilePool:
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
-                    hit_x = float(proj.pos_x)
-                    hit_y = float(proj.pos_y)
-                    target_x = float(creature.x)
-                    target_y = float(creature.y)
-                    hits.append((type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, target_x, target_y))
+                    target = creature.pos
+                    hits.append(
+                        ProjectileHit(
+                            type_id=int(type_id),
+                            origin=proj.origin,
+                            hit=proj.pos,
+                            target=target,
+                        )
+                    )
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -1054,10 +1018,9 @@ class ProjectilePool:
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
-                        proj.pos_x += dir_x * float(jitter)
-                        proj.pos_y += dir_y * float(jitter)
+                        proj.pos = proj.pos + direction * float(jitter)
 
-                    dist = math.hypot(proj.origin_x - proj.pos_x, proj.origin_y - proj.pos_y)
+                    dist = proj.origin.distance_to(proj.pos)
                     if dist < 50.0:
                         dist = 50.0
 
@@ -1068,10 +1031,8 @@ class ProjectilePool:
                                 proj_index=int(proj_index),
                                 proj=proj,
                                 hit_idx=int(hit_idx),
-                                move_dx=float(move_dx),
-                                move_dy=float(move_dy),
-                                target_x=float(target_x),
-                                target_y=float(target_y),
+                                move=move,
+                                target=target,
                             ),
                         )
 
@@ -1081,8 +1042,7 @@ class ProjectilePool:
                     if damage_amount > 0.0 and (creature.hp > 0.0 or ion_hit_test):
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
-                        impulse_x = dir_x * float(proj.speed_scale)
-                        impulse_y = dir_y * float(proj.speed_scale)
+                        impulse = direction * float(proj.speed_scale)
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
@@ -1090,8 +1050,7 @@ class ProjectilePool:
                                 int(hit_idx),
                                 float(damage_amount),
                                 damage_type=damage_type,
-                                impulse_x=impulse_x,
-                                impulse_y=impulse_y,
+                                impulse=impulse,
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
@@ -1104,8 +1063,7 @@ class ProjectilePool:
                                 int(hit_idx),
                                 float(remaining),
                                 damage_type=damage_type,
-                                impulse_x=impulse_x,
-                                impulse_y=impulse_y,
+                                impulse=impulse,
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
@@ -1137,16 +1095,14 @@ class ProjectilePool:
         world_size: float,
         speed_by_type: dict[int, float],
         damage_by_type: dict[int, float],
-    ) -> list[tuple[int, float, float, float, float, float, float]]:
+    ) -> list[ProjectileHit]:
         """Update a small projectile subset for the demo view.
-
-        Returns a list of hit tuples: (type_id, origin_x, origin_y, hit_x, hit_y, target_x, target_y).
         """
 
         if dt <= 0.0:
             return []
 
-        hits: list[tuple[int, float, float, float, float, float, float]] = []
+        hits: list[ProjectileHit] = []
         margin = 64.0
 
         for proj in self._entries:
@@ -1166,7 +1122,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
                 elif proj.type_id == ProjectileTypeId.ION_MINIGUN:
                     damage = dt * 40.0
@@ -1176,7 +1132,7 @@ class ProjectilePool:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
-                        if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
                 proj.life_timer -= dt
                 if proj.life_timer <= 0.0:
@@ -1184,10 +1140,10 @@ class ProjectilePool:
                 continue
 
             if (
-                proj.pos_x < -margin
-                or proj.pos_y < -margin
-                or proj.pos_x > world_size + margin
-                or proj.pos_y > world_size + margin
+                proj.pos.x < -margin
+                or proj.pos.y < -margin
+                or proj.pos.x > world_size + margin
+                or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
                 if proj.life_timer <= 0.0:
@@ -1195,10 +1151,8 @@ class ProjectilePool:
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
-            direction_x = math.cos(proj.angle - math.pi / 2.0)
-            direction_y = math.sin(proj.angle - math.pi / 2.0)
-            proj.pos_x += direction_x * speed * dt
-            proj.pos_y += direction_y * speed * dt
+            direction = Vec2.from_heading(float(proj.angle))
+            proj.pos = proj.pos + direction * (speed * dt)
 
             hit_idx = None
             for idx, creature in enumerate(creatures):
@@ -1206,16 +1160,21 @@ class ProjectilePool:
                     continue
                 creature_radius = _hit_radius_for(creature)
                 hit_r = proj.hit_radius + creature_radius
-                if distance_sq(proj.pos_x, proj.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                     hit_idx = idx
                     break
             if hit_idx is None:
                 continue
 
-            hit_x = float(proj.pos_x)
-            hit_y = float(proj.pos_y)
             creature = creatures[hit_idx]
-            hits.append((proj.type_id, proj.origin_x, proj.origin_y, hit_x, hit_y, float(creature.x), float(creature.y)))
+            hits.append(
+                ProjectileHit(
+                    type_id=int(proj.type_id),
+                    origin=proj.origin,
+                    hit=proj.pos,
+                    target=creature.pos,
+                )
+            )
 
             creature = creatures[hit_idx]
             creature.hp -= damage_by_type.get(proj.type_id, 10.0)
@@ -1240,14 +1199,12 @@ class SecondaryProjectilePool:
     def spawn(
         self,
         *,
-        pos_x: float,
-        pos_y: float,
+        pos: Vec2,
         angle: float,
         type_id: int,
         owner_id: int = -100,
         time_to_live: float = 2.0,
-        target_hint_x: float | None = None,
-        target_hint_y: float | None = None,
+        target_hint: Vec2 | None = None,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -1261,19 +1218,20 @@ class SecondaryProjectilePool:
         entry.active = True
         entry.angle = float(angle)
         entry.type_id = int(type_id)
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos = pos
         entry.owner_id = int(owner_id)
         entry.target_id = -1
         entry.target_hint_active = False
-        entry.target_hint_x = 0.0
-        entry.target_hint_y = 0.0
+        entry.target_hint = Vec2()
         entry.trail_timer = 0.0
+        entry.vel = Vec2()
+        entry.detonation_t = 0.0
+        entry.detonation_scale = 1.0
 
         if entry.type_id == SecondaryProjectileTypeId.DETONATION:
-            # Detonation state: `vel_x` becomes the expansion timer and `vel_y` the scale.
-            entry.vel_x = 0.0
-            entry.vel_y = float(time_to_live)
+            # Detonation uses explicit timer/scale fields now.
+            entry.detonation_t = 0.0
+            entry.detonation_scale = float(time_to_live)
             entry.speed = float(time_to_live)
             return index
 
@@ -1281,16 +1239,12 @@ class SecondaryProjectilePool:
         base_speed = 90.0
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
             base_speed = 190.0
-        vx = math.cos(angle - math.pi / 2.0) * base_speed
-        vy = math.sin(angle - math.pi / 2.0) * base_speed
-        entry.vel_x = vx
-        entry.vel_y = vy
+        entry.vel = Vec2.from_heading(float(angle)) * base_speed
         entry.speed = float(time_to_live)
 
-        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint_x is not None and target_hint_y is not None:
+        if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
             entry.target_hint_active = True
-            entry.target_hint_x = float(target_hint_x)
-            entry.target_hint_y = float(target_hint_y)
+            entry.target_hint = target_hint
 
         return index
 
@@ -1317,16 +1271,14 @@ class SecondaryProjectilePool:
             damage: float,
             *,
             owner_id: int,
-            impulse_x: float = 0.0,
-            impulse_y: float = 0.0,
+            impulse: Vec2 = Vec2(),
         ) -> None:
             _apply_damage_to_creature(
                 creatures,
                 int(creature_index),
                 float(damage),
                 damage_type=3,
-                impulse_x=float(impulse_x),
-                impulse_y=float(impulse_y),
+                impulse=impulse,
                 owner_id=int(owner_id),
                 apply_creature_damage=apply_creature_damage,
             )
@@ -1348,19 +1300,17 @@ class SecondaryProjectilePool:
                 continue
 
             if entry.type_id == SecondaryProjectileTypeId.DETONATION:
-                # Detonation: `vel_x` becomes the expansion timer (0..1) and `vel_y` the scale.
                 if runtime_state is not None:
                     runtime_state.camera_shake_pulses = 4
 
-                entry.vel_x += dt * 3.0
-                t = float(entry.vel_x)
-                scale = float(entry.vel_y)
+                entry.detonation_t += dt * 3.0
+                t = float(entry.detonation_t)
+                scale = float(entry.detonation_scale)
                 if t > 1.0:
                     if fx_queue is not None:
                         fx_queue.add(
                             effect_id=int(EffectId.AURA),
-                            pos_x=float(entry.pos_x),
-                            pos_y=float(entry.pos_y),
+                            pos=entry.pos,
                             width=float(scale) * 256.0,
                             height=float(scale) * 256.0,
                             rotation=0.0,
@@ -1374,24 +1324,15 @@ class SecondaryProjectilePool:
                 for creature_idx, creature in enumerate(creatures):
                     if creature.hp <= 0.0:
                         continue
-                    d_sq = distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y)
+                    d_sq = Vec2.distance_sq(entry.pos, creature.pos)
                     if d_sq < radius_sq:
-                        dx = float(creature.x) - float(entry.pos_x)
-                        dy = float(creature.y) - float(entry.pos_y)
-                        dist = math.hypot(dx, dy)
-                        if dist > 1e-6:
-                            inv = 0.1 / dist
-                            impulse_x = dx * inv
-                            impulse_y = dy * inv
-                        else:
-                            impulse_x = 0.0
-                            impulse_y = 0.0
+                        impulse_dir = entry.pos.direction_to(creature.pos)
+                        impulse = impulse_dir * 0.1
                         _apply_secondary_damage(
                             creature_idx,
                             damage,
                             owner_id=int(entry.owner_id),
-                            impulse_x=impulse_x,
-                            impulse_y=impulse_y,
+                            impulse=impulse,
                         )
                 continue
 
@@ -1403,39 +1344,34 @@ class SecondaryProjectilePool:
                 continue
 
             # Move.
-            entry.pos_x += entry.vel_x * dt
-            entry.pos_y += entry.vel_y * dt
+            entry.pos = entry.pos + entry.vel * dt
 
             # Update velocity + countdown.
-            speed_mag = math.hypot(entry.vel_x, entry.vel_y)
+            speed_mag = entry.vel.length()
             if entry.type_id == SecondaryProjectileTypeId.ROCKET:
                 if speed_mag < 500.0:
                     factor = 1.0 + dt * 3.0
-                    entry.vel_x *= factor
-                    entry.vel_y *= factor
+                    entry.vel = entry.vel * factor
                 entry.speed -= dt
             elif entry.type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
                 if speed_mag < 600.0:
                     factor = 1.0 + dt * 4.0
-                    entry.vel_x *= factor
-                    entry.vel_y *= factor
+                    entry.vel = entry.vel * factor
                 entry.speed -= dt
             else:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
                 if not (0 <= target_id < len(creatures)) or creatures[target_id].hp <= 0.0:
-                    search_x = float(entry.pos_x)
-                    search_y = float(entry.pos_y)
+                    search_pos = entry.pos
                     if entry.target_hint_active:
                         entry.target_hint_active = False
-                        search_x = float(entry.target_hint_x)
-                        search_y = float(entry.target_hint_y)
+                        search_pos = entry.target_hint
                     best_idx = -1
                     best_dist = 0.0
                     for idx, creature in enumerate(creatures):
                         if creature.hp <= 0.0:
                             continue
-                        d = distance_sq(search_x, search_y, creature.x, creature.y)
+                        d = Vec2.distance_sq(search_pos, creature.pos)
                         if best_idx == -1 or d < best_dist:
                             best_idx = idx
                             best_dist = d
@@ -1444,33 +1380,29 @@ class SecondaryProjectilePool:
 
                 if 0 <= target_id < len(creatures):
                     target = creatures[target_id]
-                    dx = target.x - entry.pos_x
-                    dy = target.y - entry.pos_y
-                    dist = math.hypot(dx, dy)
+                    to_target = target.pos - entry.pos
+                    target_dir, dist = to_target.normalized_with_length()
                     if dist > 1e-6:
-                        angle = math.atan2(dy, dx) + math.pi / 2.0
-                        entry.angle = angle
-                        dir_x = math.cos(angle - math.pi / 2.0)
-                        dir_y = math.sin(angle - math.pi / 2.0)
-                        entry.vel_x += dir_x * dt * 800.0
-                        entry.vel_y += dir_y * dt * 800.0
-                        if 350.0 < math.hypot(entry.vel_x, entry.vel_y):
-                            entry.vel_x -= dir_x * dt * 800.0
-                            entry.vel_y -= dir_y * dt * 800.0
+                        entry.angle = to_target.to_heading()
+                        accel = target_dir * (dt * 800.0)
+                        next_velocity = entry.vel + accel
+                        if next_velocity.length() <= 350.0:
+                            entry.vel = next_velocity
 
                 entry.speed -= dt * 0.5
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            entry.trail_timer -= (abs(float(entry.vel_x)) + abs(float(entry.vel_y))) * dt * 0.01
+            entry.trail_timer -= (abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01
             if entry.trail_timer < 0.0:
-                dir_x = math.cos(float(entry.angle) - math.pi / 2.0)
-                dir_y = math.sin(float(entry.angle) - math.pi / 2.0)
-                spawn_x = float(entry.pos_x) - dir_x * 9.0
-                spawn_y = float(entry.pos_y) - dir_y * 9.0
-                vel_x = math.cos(float(entry.angle) + math.pi / 2.0) * 90.0
-                vel_y = math.sin(float(entry.angle) + math.pi / 2.0) * 90.0
+                direction = Vec2.from_heading(entry.angle)
+                spawn_pos = entry.pos - direction * 9.0
+                trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                    sprite_id = sprite_effects.spawn(pos_x=spawn_x, pos_y=spawn_y, vel_x=vel_x, vel_y=vel_y, scale=14.0)
+                    sprite_id = sprite_effects.spawn(
+                        pos=spawn_pos,
+                        vel=trail_velocity,
+                        scale=14.0,
+                    )
                     try:
                         sprite_effects.entries[int(sprite_id)].color_a = 0.25
                     except Exception:
@@ -1484,7 +1416,7 @@ class SecondaryProjectilePool:
                     continue
                 creature_radius = _hit_radius_for(creature)
                 hit_r = 8.0 + creature_radius
-                if distance_sq(entry.pos_x, entry.pos_y, creature.x, creature.y) <= hit_r * hit_r:
+                if Vec2.distance_sq(entry.pos, creature.pos) <= hit_r * hit_r:
                     hit_idx = idx
                     break
             if hit_idx is not None:
@@ -1504,8 +1436,7 @@ class SecondaryProjectilePool:
                     hit_idx,
                     damage,
                     owner_id=int(entry.owner_id),
-                    impulse_x=float(entry.vel_x) / float(dt),
-                    impulse_y=float(entry.vel_y) / float(dt),
+                    impulse=entry.vel / float(dt),
                 )
 
                 det_scale = 0.5
@@ -1521,19 +1452,19 @@ class SecondaryProjectilePool:
                         for _ in range(4):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
-                                pos_x=float(entry.pos_x),
-                                pos_y=float(entry.pos_y),
+                                pos=entry.pos,
                                 angle=shard_angle,
                                 rand=rand,
                                 detail_preset=int(detail_preset),
                             )
                 elif fx_queue is not None:
                     for _ in range(3):
-                        off_x = float(int(rand()) % 0x14 - 10)
-                        off_y = float(int(rand()) % 0x14 - 10)
+                        offset = Vec2(
+                            float(int(rand()) % 0x14 - 10),
+                            float(int(rand()) % 0x14 - 10),
+                        )
                         fx_queue.add_random(
-                            pos_x=float(creatures[hit_idx].x) + off_x,
-                            pos_y=float(creatures[hit_idx].y) + off_y,
+                            pos=creatures[hit_idx].pos + offset,
                             rand=rand,
                         )
 
@@ -1544,31 +1475,28 @@ class SecondaryProjectilePool:
                     and int(detail_preset) > 2
                 ):
                     effects.spawn_explosion_burst(
-                        pos_x=float(entry.pos_x),
-                        pos_y=float(entry.pos_y),
+                        pos=entry.pos,
                         scale=0.4,
                         rand=rand,
                         detail_preset=int(detail_preset),
                     )
 
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel_x = 0.0
-                entry.vel_y = float(det_scale)
+                entry.vel = Vec2()
+                entry.detonation_t = 0.0
+                entry.detonation_scale = float(det_scale)
                 entry.trail_timer = 0.0
 
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
                     if effects is not None and hasattr(effects, "spawn_freeze_shard"):
-                        shard_x = float(entry.pos_x)
-                        shard_y = float(entry.pos_y)
+                        shard_pos = entry.pos
                         if hit_type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                            shard_x = float(creatures[hit_idx].x)
-                            shard_y = float(creatures[hit_idx].y)
+                            shard_pos = creatures[hit_idx].pos
                         for _ in range(8):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
-                                pos_x=shard_x,
-                                pos_y=shard_y,
+                                pos=shard_pos,
                                 angle=shard_angle,
                                 rand=rand,
                                 detail_preset=int(detail_preset),
@@ -1588,8 +1516,7 @@ class SecondaryProjectilePool:
                             extra_decals = 3
                             extra_radius = 44.0
                     if fx_queue is not None and extra_decals > 0:
-                        cx = float(creatures[hit_idx].x)
-                        cy = float(creatures[hit_idx].y)
+                        center = creatures[hit_idx].pos
                         for _ in range(int(extra_decals)):
                             angle = float(int(rand()) % 0x274) * 0.01
                             if det_scale == 0.35:
@@ -1597,8 +1524,7 @@ class SecondaryProjectilePool:
                             else:
                                 radius = float(int(rand()) % max(1, int(extra_radius)))
                             fx_queue.add_random(
-                                pos_x=cx + math.cos(angle) * radius,
-                                pos_y=cy + math.sin(angle) * radius,
+                                pos=center + Vec2.from_angle(angle) * radius,
                                 rand=rand,
                             )
 
@@ -1607,13 +1533,10 @@ class SecondaryProjectilePool:
                     for idx in range(10):
                         mag = float(int(rand()) % 800) * 0.1
                         ang = float(idx) * step
-                        vel_x = math.cos(ang) * mag
-                        vel_y = math.sin(ang) * mag
+                        velocity = Vec2.from_angle(ang) * mag
                         sprite_id = sprite_effects.spawn(
-                            pos_x=float(entry.pos_x),
-                            pos_y=float(entry.pos_y),
-                            vel_x=vel_x,
-                            vel_y=vel_y,
+                            pos=entry.pos,
+                            vel=velocity,
                             scale=14.0,
                         )
                         try:
@@ -1625,6 +1548,7 @@ class SecondaryProjectilePool:
 
             if entry.speed <= 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel_x = 0.0
-                entry.vel_y = 0.5
+                entry.vel = Vec2()
+                entry.detonation_t = 0.0
+                entry.detonation_scale = 0.5
                 entry.trail_timer = 0.0
