@@ -64,6 +64,16 @@ Recovered controls-menu open/enabled gates:
 `controls_menu_update` recomputes the `*_enabled` flags each frame so only one
 list can be active at a time.
 
+Additional controls-rebind runtime globals:
+
+- `controls_key_pick_perk_label` (`0x004d7968`): menu-label pointer updated
+  from `_config_key_pick_perk` key-name resolution.
+- `controls_key_reload_label` (`0x004d7978`): menu-label pointer updated from
+  `_config_key_reload` key-name resolution (also reused by move-to-cursor mode).
+- `controls_rebind_axis_peak_abs_13f/140/141/153/154/155`
+  (`0x004d79e4..0x004d79f8`): per-axis absolute-value peaks accumulated during
+  analog rebind capture and compared against the `0.5` assignment threshold.
+
 ## Menu UI loop (perk_selection_screen_update)
 
 A common menu loop that:

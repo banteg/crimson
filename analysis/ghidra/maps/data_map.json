@@ -6854,6 +6854,20 @@
       "type": "int"
     },
     {
+      "address": "0x004d7968",
+      "comment": "Controls rebind label pointer for the \"Level Up\" action menu item (mirrors _config_key_pick_perk display name).",
+      "name": "controls_key_pick_perk_label",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004d7978",
+      "comment": "Controls rebind label pointer for the \"Reload\" / \"Move to cursor\" action menu item (mirrors _config_key_reload display name).",
+      "name": "controls_key_reload_label",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x004d79a0",
       "comment": "Options menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "options_menu_init_flags",
@@ -6887,6 +6901,48 @@
       "name": "controls_rebind_capture_armed",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x004d79e4",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x13f.",
+      "name": "controls_rebind_axis_peak_abs_13f",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d79e8",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x140.",
+      "name": "controls_rebind_axis_peak_abs_140",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d79ec",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x141.",
+      "name": "controls_rebind_axis_peak_abs_141",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d79f0",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x153.",
+      "name": "controls_rebind_axis_peak_abs_153",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d79f4",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x154.",
+      "name": "controls_rebind_axis_peak_abs_154",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d79f8",
+      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x155.",
+      "name": "controls_rebind_axis_peak_abs_155",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d7a25",

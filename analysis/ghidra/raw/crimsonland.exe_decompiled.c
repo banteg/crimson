@@ -44768,8 +44768,8 @@ LAB_0044aa50:
 LAB_0044b027:
   pcVar8 = strdup_malloc(pcVar8);
   (&DAT_004d7898)[iVar14 * 4] = pcVar8;
-  if (DAT_004d7968 != (char *)0x0) {
-    crt_free(DAT_004d7968);
+  if (controls_key_pick_perk_label != (char *)0x0) {
+    crt_free(controls_key_pick_perk_label);
   }
   iVar14 = _config_key_pick_perk;
   if (_config_key_pick_perk < 0x100) {
@@ -46049,9 +46049,9 @@ LAB_0044b7b9:
     pcVar8 = (char *)&input_key_name_buf;
   }
 LAB_0044bd90:
-  DAT_004d7968 = strdup_malloc(pcVar8);
-  if (DAT_004d7978 != (char *)0x0) {
-    crt_free(DAT_004d7978);
+  controls_key_pick_perk_label = strdup_malloc(pcVar8);
+  if (controls_key_reload_label != (char *)0x0) {
+    crt_free(controls_key_reload_label);
   }
   iVar14 = _config_key_reload;
   if (_config_key_reload < 0x100) {
@@ -47331,7 +47331,7 @@ LAB_0044c524:
   }
   pcVar8 = (char *)&input_key_name_buf;
 LAB_0044cafb:
-  DAT_004d7978 = strdup_malloc(pcVar8);
+  controls_key_reload_label = strdup_malloc(pcVar8);
   if (controls_rebind_slot_index != -1) {
     if ((void *)(&DAT_004d7898)[controls_rebind_slot_index * 4] != (void *)0x0) {
       crt_free((void *)(&DAT_004d7898)[controls_rebind_slot_index * 4]);
@@ -47501,7 +47501,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar26,fVar25,s_Move_to_cursor__0047901c);
     fStack_70 = 128.0;
-    ppcVar22 = &DAT_004d7978;
+    ppcVar22 = &controls_key_reload_label;
     fStack_6c = 0.0;
     pfVar10 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar10,(int *)ppcVar22);
@@ -47546,7 +47546,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar26,fVar25 + 18.0,s_Level_Up__00471ff0);
     fStack_70 = 128.0;
-    ppcVar22 = &DAT_004d7968;
+    ppcVar22 = &controls_key_pick_perk_label;
     fStack_6c = 0.0;
     pfVar10 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar10,(int *)ppcVar22);
@@ -47556,7 +47556,7 @@ LAB_0044cafb:
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fVar26,fVar25,s_Reload__00471fc8);
       fStack_70 = 128.0;
-      ppcVar22 = &DAT_004d7978;
+      ppcVar22 = &controls_key_reload_label;
       fStack_6c = 0.0;
       pfVar10 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
       ui_menu_item_update(pfVar10,(int *)ppcVar22);
@@ -47673,7 +47673,7 @@ LAB_0044cafb:
       if ((controls_rebind_capture_armed == '\0') &&
          (iVar14 = input_any_key_pressed(), (char)iVar14 == '\0')) {
         controls_rebind_capture_armed = '\x01';
-        pfVar10 = &DAT_004d79e4;
+        pfVar10 = &controls_rebind_axis_peak_abs_13f;
         for (iVar14 = 0x10; iVar14 != 0; iVar14 = iVar14 + -1) {
           *pfVar10 = 0.0;
           pfVar10 = pfVar10 + 1;
@@ -47685,43 +47685,43 @@ LAB_0044cafb:
         if (controls_rebind_capture_armed != '\0') {
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x13f);
           fVar25 = ABS((float)extraout_ST0);
-          if (ABS((float)extraout_ST0) < DAT_004d79e4) {
-            fVar25 = DAT_004d79e4;
+          if (ABS((float)extraout_ST0) < controls_rebind_axis_peak_abs_13f) {
+            fVar25 = controls_rebind_axis_peak_abs_13f;
           }
-          DAT_004d79e4 = fVar25;
+          controls_rebind_axis_peak_abs_13f = fVar25;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x140);
           fVar25 = ABS((float)extraout_ST0_00);
-          if (ABS((float)extraout_ST0_00) < DAT_004d79e8) {
-            fVar25 = DAT_004d79e8;
+          if (ABS((float)extraout_ST0_00) < controls_rebind_axis_peak_abs_140) {
+            fVar25 = controls_rebind_axis_peak_abs_140;
           }
-          DAT_004d79e8 = fVar25;
+          controls_rebind_axis_peak_abs_140 = fVar25;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x141);
           fVar25 = ABS((float)extraout_ST0_01);
-          if (ABS((float)extraout_ST0_01) < _DAT_004d79ec) {
-            fVar25 = _DAT_004d79ec;
+          if (ABS((float)extraout_ST0_01) < controls_rebind_axis_peak_abs_141) {
+            fVar25 = controls_rebind_axis_peak_abs_141;
           }
-          _DAT_004d79ec = fVar25;
+          controls_rebind_axis_peak_abs_141 = fVar25;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x153);
           fVar25 = ABS((float)extraout_ST0_02);
-          if (ABS((float)extraout_ST0_02) < _DAT_004d79f0) {
-            fVar25 = _DAT_004d79f0;
+          if (ABS((float)extraout_ST0_02) < controls_rebind_axis_peak_abs_153) {
+            fVar25 = controls_rebind_axis_peak_abs_153;
           }
-          _DAT_004d79f0 = fVar25;
+          controls_rebind_axis_peak_abs_153 = fVar25;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x154);
           fVar25 = ABS((float)extraout_ST0_03);
-          if (ABS((float)extraout_ST0_03) < _DAT_004d79f4) {
-            fVar25 = _DAT_004d79f4;
+          if (ABS((float)extraout_ST0_03) < controls_rebind_axis_peak_abs_154) {
+            fVar25 = controls_rebind_axis_peak_abs_154;
           }
-          _DAT_004d79f4 = fVar25;
+          controls_rebind_axis_peak_abs_154 = fVar25;
           (*grim_interface_ptr->vtable->grim_get_config_float)(0x155);
           pIVar3 = grim_interface_ptr;
           fVar25 = ABS((float)extraout_ST0_04);
-          if (ABS((float)extraout_ST0_04) < _DAT_004d79f8) {
-            fVar25 = _DAT_004d79f8;
+          if (ABS((float)extraout_ST0_04) < controls_rebind_axis_peak_abs_155) {
+            fVar25 = controls_rebind_axis_peak_abs_155;
           }
-          _DAT_004d79f8 = fVar25;
+          controls_rebind_axis_peak_abs_155 = fVar25;
           iVar5 = 0;
-          pfVar10 = &DAT_004d79e4;
+          pfVar10 = &controls_rebind_axis_peak_abs_13f;
           do {
             if (0.5 < *pfVar10) {
               iVar14 = controls_rebind_player_index * 0x10 + controls_rebind_slot_index;
