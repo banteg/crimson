@@ -612,7 +612,7 @@ class WorldRenderer:
                             float(self.muzzle_flash_texture.width),
                             float(self.muzzle_flash_texture.height),
                         )
-                        dst = rl.Rectangle(float(flash_pos.x), float(flash_pos.y), size, size)
+                        dst = rl.Rectangle(flash_pos.x, flash_pos.y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -745,12 +745,12 @@ class WorldRenderer:
             side_mul = 1.1
         else:
             side_mul = 0.7
-        half = 1.5 * side_mul * float(scale)
+        half = 1.5 * side_mul * scale
 
         if dist > 1e-6:
             side = direction.perp_left()
         else:
-            side = Vec2.from_angle(float(angle))
+            side = Vec2.from_angle(angle)
 
         ox = side.x * half
         oy = side.y * half
@@ -955,10 +955,10 @@ class WorldRenderer:
                 size = max(0.0, radius * 2.0 * scale)
                 if size <= 0.0:
                     continue
-                sx = (float(entry.pos.x) + cam_x) * scale_x
-                sy = (float(entry.pos.y) + cam_y) * scale_y
-                dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-                origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+                sx = (entry.pos.x + cam_x) * scale_x
+                sy = (entry.pos.y + cam_y) * scale_y
+                dst = rl.Rectangle(sx, sy, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
                 rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
 
         for entry in particles:
@@ -971,10 +971,10 @@ class WorldRenderer:
             size = max(0.0, radius * 2.0 * scale)
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos.x) + cam_x) * scale_x
-            sy = (float(entry.pos.y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            sx = (entry.pos.x + cam_x) * scale_x
+            sy = (entry.pos.y + cam_y) * scale_y
+            dst = rl.Rectangle(sx, sy, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.spin) * _RAD_TO_DEG
             tint = self._color_from_rgba((entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha))
             rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
@@ -990,10 +990,10 @@ class WorldRenderer:
             h = max(0.0, half_h * 2.0 * scale)
             if w <= 0.0 or h <= 0.0:
                 continue
-            sx = (float(entry.pos.x) + cam_x) * scale_x
-            sy = (float(entry.pos.y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
-            origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
+            sx = (entry.pos.x + cam_x) * scale_x
+            sy = (entry.pos.y + cam_y) * scale_y
+            dst = rl.Rectangle(sx, sy, w, h)
+            origin = rl.Vector2(w * 0.5, h * 0.5)
             tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
             rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
 
@@ -1042,10 +1042,10 @@ class WorldRenderer:
             size = float(entry.scale) * scale
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos.x) + cam_x) * scale_x
-            sy = (float(entry.pos.y) + cam_y) * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
-            origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
+            sx = (entry.pos.x + cam_x) * scale_x
+            sy = (entry.pos.y + cam_y) * scale_y
+            dst = rl.Rectangle(sx, sy, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
             rotation_deg = float(entry.rotation) * _RAD_TO_DEG
             tint = self._color_from_rgba((entry.color_r, entry.color_g, entry.color_b, float(entry.color_a) * alpha))
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)

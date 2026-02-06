@@ -73,10 +73,10 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     if renderer.bullet_texture is not None and float(ctx.life) >= 0.39:
         size = renderer._bullet_sprite_size(type_id, scale=ctx.scale)
         src = rl.Rectangle(0.0, 0.0, float(renderer.bullet_texture.width), float(renderer.bullet_texture.height))
-        dst = rl.Rectangle(float(ctx.sx), float(ctx.sy), float(size), float(size))
+        dst = rl.Rectangle(ctx.sx, ctx.sy, float(size), float(size))
         origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
         tint = rl.Color(220, 220, 220, int(alpha_byte))
-        rl.draw_texture_pro(renderer.bullet_texture, src, dst, origin, float(ctx.angle) * _RAD_TO_DEG, tint)
+        rl.draw_texture_pro(renderer.bullet_texture, src, dst, origin, ctx.angle * _RAD_TO_DEG, tint)
         drawn = True
 
     return bool(drawn)
@@ -134,7 +134,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             seg_count = int(seg_limit)
 
         # The stored projectile angle is rotated by +pi/2 vs travel direction.
-        direction = Vec2.from_heading(float(ctx.angle) + math.pi) * speed_scale
+        direction = Vec2.from_heading(ctx.angle + math.pi) * speed_scale
 
         alpha = float(ctx.alpha)
         tail_tint = renderer._color_from_rgba((rgb[0], rgb[1], rgb[2], alpha * 0.4))
@@ -144,24 +144,24 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
 
         if seg_count > 0:
-            size = float(tail_size) * float(ctx.scale)
+            size = float(tail_size) * ctx.scale
             origin = rl.Vector2(size * 0.5, size * 0.5)
             step = direction * float(spacing)
             for idx in range(int(seg_count)):
                 pos = ctx.pos + step * float(idx)
                 pos_screen = renderer.world_to_screen(pos)
-                dst = rl.Rectangle(float(pos_screen.x), float(pos_screen.y), float(size), float(size))
+                dst = rl.Rectangle(pos_screen.x, pos_screen.y, float(size), float(size))
                 rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tail_tint)
 
-        size = float(head_size) * float(ctx.scale)
+        size = float(head_size) * ctx.scale
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        dst = rl.Rectangle(float(ctx.sx), float(ctx.sy), float(size), float(size))
+        dst = rl.Rectangle(ctx.sx, ctx.sy, float(size), float(size))
         rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, head_tint)
 
         if fx_detail_1:
-            size = float(aura_size) * float(ctx.scale)
+            size = float(aura_size) * ctx.scale
             origin = rl.Vector2(size * 0.5, size * 0.5)
-            dst = rl.Rectangle(float(ctx.sx), float(ctx.sy), float(size), float(size))
+            dst = rl.Rectangle(ctx.sx, ctx.sy, float(size), float(size))
             rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, aura_tint)
 
         rl.end_blend_mode()
@@ -171,8 +171,8 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     fade_alpha = fade * float(ctx.alpha)
     if fade_alpha > 1e-3:
         tint = renderer._color_from_rgba((1.0, 1.0, 1.0, fade_alpha))
-        size = 56.0 * float(ctx.scale)
-        dst = rl.Rectangle(float(ctx.sx), float(ctx.sy), float(size), float(size))
+        size = 56.0 * ctx.scale
+        dst = rl.Rectangle(ctx.sx, ctx.sy, float(size), float(size))
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
         rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
@@ -232,7 +232,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         span = 256.0
 
     step = min(effect_scale * 3.1, 9.0)
-    sprite_scale = effect_scale * float(ctx.scale)
+    sprite_scale = effect_scale * ctx.scale
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE)
 
@@ -248,10 +248,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 texture,
                 grid=grid,
                 frame=frame,
-                x=float(pos_screen.x),
-                y=float(pos_screen.y),
+                x=pos_screen.x,
+                y=pos_screen.y,
                 scale=sprite_scale,
-                rotation_rad=float(ctx.angle),
+                rotation_rad=ctx.angle,
                 tint=tint,
             )
         s += step
@@ -262,10 +262,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             texture,
             grid=grid,
             frame=frame,
-            x=float(ctx.sx),
-            y=float(ctx.sy),
+            x=ctx.sx,
+            y=ctx.sy,
             scale=sprite_scale,
-            rotation_rad=float(ctx.angle),
+            rotation_rad=ctx.angle,
             tint=head_tint,
         )
 
@@ -288,10 +288,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                         max(0.0, cell_h - 2.0),
                     )
                     tint = renderer._color_from_rgba((1.0, 1.0, 1.0, alpha))
-                    size = 64.0 * float(ctx.scale)
-                    dst = rl.Rectangle(float(ctx.sx), float(ctx.sy), float(size), float(size))
+                    size = 64.0 * ctx.scale
+                    dst = rl.Rectangle(ctx.sx, ctx.sy, float(size), float(size))
                     origin = rl.Vector2(size * 0.5, size * 0.5)
-                    rl.draw_texture_pro(particles_texture, src, dst, origin, float(ctx.angle) * _RAD_TO_DEG, tint)
+                    rl.draw_texture_pro(particles_texture, src, dst, origin, ctx.angle * _RAD_TO_DEG, tint)
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
         core_tint = renderer._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
@@ -299,10 +299,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             texture,
             grid=grid,
             frame=frame,
-            x=float(ctx.sx),
-            y=float(ctx.sy),
-            scale=1.0 * float(ctx.scale),
-            rotation_rad=float(ctx.angle),
+            x=ctx.sx,
+            y=ctx.sy,
+            scale=1.0 * ctx.scale,
+            rotation_rad=ctx.angle,
             tint=core_tint,
         )
 
@@ -322,8 +322,8 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 if d - radius < threshold:
                     targets.append(creature)
 
-            inner_half = 10.0 * perk_scale * float(ctx.scale)
-            outer_half = 14.0 * perk_scale * float(ctx.scale)
+            inner_half = 10.0 * perk_scale * ctx.scale
+            outer_half = 14.0 * perk_scale * ctx.scale
             u = 0.625
             v0 = 0.0
             v1 = 0.25
@@ -334,9 +334,9 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             for creature in targets:
                 target_screen = renderer.world_to_screen(creature.pos)
-                tx = float(target_screen.x)
-                ty = float(target_screen.y)
-                segment = Vec2(tx - float(ctx.sx), ty - float(ctx.sy))
+                tx = target_screen.x
+                ty = target_screen.y
+                segment = Vec2(tx - ctx.sx, ty - ctx.sy)
                 direction_screen, dlen = segment.normalized_with_length()
                 if dlen <= 1e-3:
                     continue
@@ -348,10 +348,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 off = side * half
                 off_x = off.x
                 off_y = off.y
-                x0 = float(ctx.sx) - off_x
-                y0 = float(ctx.sy) - off_y
-                x1 = float(ctx.sx) + off_x
-                y1 = float(ctx.sy) + off_y
+                x0 = ctx.sx - off_x
+                y0 = ctx.sy - off_y
+                x1 = ctx.sx + off_x
+                y1 = ctx.sy + off_y
                 x2 = float(tx) + off_x
                 y2 = float(ty) + off_y
                 x3 = float(tx) - off_x
@@ -373,10 +373,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 off = side * half
                 off_x = off.x
                 off_y = off.y
-                x0 = float(ctx.sx) - off_x
-                y0 = float(ctx.sy) - off_y
-                x1 = float(ctx.sx) + off_x
-                y1 = float(ctx.sy) + off_y
+                x0 = ctx.sx - off_x
+                y0 = ctx.sy - off_y
+                x1 = ctx.sx + off_x
+                y1 = ctx.sy + off_y
                 x2 = float(tx) + off_x
                 y2 = float(ty) + off_y
                 x3 = float(tx) - off_x
@@ -403,8 +403,8 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     texture,
                     grid=grid,
                     frame=frame,
-                    x=float(target_screen.x),
-                    y=float(target_screen.y),
+                    x=target_screen.x,
+                    y=target_screen.y,
                     scale=sprite_scale,
                     rotation_rad=0.0,
                     tint=target_tint,
@@ -433,7 +433,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
         origin = _proj_origin(ctx.proj, ctx.pos)
         dist = origin.distance_to(ctx.pos)
 
-        desired_size = dist * 0.16 * float(ctx.scale)
+        desired_size = dist * 0.16 * ctx.scale
         if desired_size <= 1e-3:
             return True
         sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
@@ -446,10 +446,10 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
             ctx.texture,
             grid=grid,
             frame=frame,
-            x=float(ctx.sx),
-            y=float(ctx.sy),
+            x=ctx.sx,
+            y=ctx.sy,
             scale=sprite_scale,
-            rotation_rad=float(ctx.angle),
+            rotation_rad=ctx.angle,
             tint=tint,
         )
         rl.end_blend_mode()
@@ -460,7 +460,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     if fade_alpha <= 1e-3:
         return True
 
-    desired_size = 56.0 * float(ctx.scale)
+    desired_size = 56.0 * ctx.scale
     sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
     if sprite_scale <= 1e-6:
         return True
@@ -471,10 +471,10 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=float(ctx.sx),
-        y=float(ctx.sy),
+        x=ctx.sx,
+        y=ctx.sy,
         scale=sprite_scale,
-        rotation_rad=float(ctx.angle),
+        rotation_rad=ctx.angle,
         tint=tint,
     )
     rl.end_blend_mode()
@@ -501,7 +501,7 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     origin = _proj_origin(ctx.proj, ctx.pos)
     dist = origin.distance_to(ctx.pos)
 
-    desired_size = min(dist, 20.0) * float(ctx.scale)
+    desired_size = min(dist, 20.0) * ctx.scale
     if desired_size <= 1e-3:
         return True
 
@@ -509,7 +509,7 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     if sprite_scale <= 1e-6:
         return True
 
-    rotation_rad = float(ctx.angle)
+    rotation_rad = ctx.angle
     rgb = (1.0, 1.0, 1.0)
     if type_id == int(ProjectileTypeId.BLADE_GUN):
         rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer._elapsed_ms) * 0.1
@@ -520,8 +520,8 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=float(ctx.sx),
-        y=float(ctx.sy),
+        x=ctx.sx,
+        y=ctx.sy,
         scale=sprite_scale,
         rotation_rad=rotation_rad,
         tint=tint,
@@ -549,7 +549,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
             size = float(size)
             if size <= 1e-3:
                 return
-            desired_size = size * float(ctx.scale)
+            desired_size = size * ctx.scale
             sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
             if sprite_scale <= 1e-6:
                 return
@@ -558,8 +558,8 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 ctx.texture,
                 grid=grid,
                 frame=frame,
-                x=float(pos_screen.x),
-                y=float(pos_screen.y),
+                x=pos_screen.x,
+                y=pos_screen.y,
                 scale=sprite_scale,
                 rotation_rad=0.0,
                 tint=tint,
@@ -567,7 +567,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
 
         draw_plague_quad(pos=ctx.pos, size=60.0)
 
-        offset = Vec2.from_heading(float(ctx.angle) + math.pi) * 15.0
+        offset = Vec2.from_heading(ctx.angle + math.pi) * 15.0
         draw_plague_quad(
             pos=ctx.pos + offset,
             size=60.0,
@@ -600,7 +600,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     if fade_alpha <= 1e-3:
         return True
 
-    desired_size = (fade * 40.0 + 32.0) * float(ctx.scale)
+    desired_size = (fade * 40.0 + 32.0) * ctx.scale
     sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
     if sprite_scale <= 1e-6:
         return True
@@ -610,8 +610,8 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         ctx.texture,
         grid=grid,
         frame=frame,
-        x=float(ctx.sx),
-        y=float(ctx.sy),
+        x=ctx.sx,
+        y=ctx.sy,
         scale=sprite_scale,
         rotation_rad=0.0,
         tint=tint,

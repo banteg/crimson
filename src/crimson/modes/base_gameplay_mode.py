@@ -147,15 +147,15 @@ class BaseGameplayMode:
 
         screen_left = self._world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
         screen_right = self._world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
-        width = float(screen_right.x) - float(screen_left.x)
+        width = screen_right.x - screen_left.x
         if width <= 1e-3:
             return
         draw_target_health_bar(
-            x=float(screen_left.x),
-            y=float(screen_left.y),
+            x=screen_left.x,
+            y=screen_left.y,
             width=width,
             ratio=ratio,
-            alpha=float(alpha),
+            alpha=alpha,
             scale=width / 64.0,
         )
 

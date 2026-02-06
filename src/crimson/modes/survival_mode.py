@@ -370,7 +370,7 @@ class SurvivalMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self._camera_screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
+        aim = self._camera_screen_to_world(Vec2(mouse.x, mouse.y))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)

@@ -1392,11 +1392,11 @@ class SecondaryProjectilePool:
                 entry.speed -= dt * 0.5
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            entry.trail_timer -= (abs(float(entry.vel.x)) + abs(float(entry.vel.y))) * dt * 0.01
+            entry.trail_timer -= (abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01
             if entry.trail_timer < 0.0:
-                direction = Vec2.from_heading(float(entry.angle))
+                direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0
-                trail_velocity = Vec2.from_heading(float(entry.angle) + math.pi) * 90.0
+                trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
                     sprite_id = sprite_effects.spawn(
                         pos=spawn_pos,

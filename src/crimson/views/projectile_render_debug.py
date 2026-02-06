@@ -158,7 +158,7 @@ class ProjectileRenderDebugView:
         )
 
         mouse = rl.get_mouse_position()
-        aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
+        aim = self._world.screen_to_world(Vec2(mouse.x, mouse.y))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
