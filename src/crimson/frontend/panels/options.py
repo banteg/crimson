@@ -139,7 +139,7 @@ class OptionsMenuView(PanelMenuView):
             controls_pos = base_pos.offset(dy=155.0 * scale)
             dt_ms = min(float(dt), 0.1) * 1000.0
             mouse = rl.get_mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             width = button_width(
                 self._ensure_small_font(),
                 self._controls_button.label,
@@ -265,8 +265,8 @@ class OptionsMenuView(PanelMenuView):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
                 slider.value = min(slider.max_value, slider.value + 1)
                 changed = True
-        mouse_down = rl.is_mouse_button_down(rl.MOUSE_BUTTON_LEFT)
-        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        mouse_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._active_slider = slider_id
         if self._active_slider == slider_id and mouse_down:
             relative = mouse_pos.x - pos.x
@@ -296,7 +296,7 @@ class OptionsMenuView(PanelMenuView):
         rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._ui_info_texts = not self._ui_info_texts
             return True
         return False

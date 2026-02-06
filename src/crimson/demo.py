@@ -332,9 +332,9 @@ class DemoView:
         )
         c3 = rl.Color(_to_u8(0.0), _to_u8(0.4), _to_u8(0.4), _to_u8(1.0))
 
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         rl.rl_set_texture(backplasma.id)
-        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
         # TL
         rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
         rl.rl_tex_coord2f(0.0, 0.0)

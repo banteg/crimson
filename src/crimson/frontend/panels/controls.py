@@ -118,7 +118,7 @@ class ControlsMenuView(PanelMenuView):
         rect_h = max(float(check_on.height) * panel_scale, font.cell_size * text_scale)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
             return True
         return False

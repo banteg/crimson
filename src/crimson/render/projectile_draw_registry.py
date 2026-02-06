@@ -138,7 +138,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         head_tint = RGBA(rgb[0], rgb[1], rgb[2], alpha * head_alpha_mul).to_rl()
         aura_tint = RGBA(aura_rgb[0], aura_rgb[1], aura_rgb[2], alpha * aura_alpha_mul).to_rl()
 
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
         if seg_count > 0:
             size = float(tail_size) * ctx.scale
@@ -171,7 +171,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         size = 56.0 * ctx.scale
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
         rl.end_blend_mode()
 
@@ -231,7 +231,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     step = min(effect_scale * 3.1, 9.0)
     sprite_scale = effect_scale * ctx.scale
 
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
     s = start
     while s < dist:
@@ -324,7 +324,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             glow_targets: list[object] = []
             rl.rl_set_texture(texture.id)
-            rl.rl_begin(rl.RL_QUADS)
+            rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
 
             for creature in targets:
                 target_screen = renderer.world_to_screen(creature.pos)
@@ -418,7 +418,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
             return True
 
         tint = RGBA(0.1, 0.6, 0.2, alpha * 0.7).to_rl()
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         renderer._draw_atlas_sprite(
             ctx.texture,
             grid=grid,
@@ -442,7 +442,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
         return True
 
     tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     renderer._draw_atlas_sprite(
         ctx.texture,
         grid=grid,

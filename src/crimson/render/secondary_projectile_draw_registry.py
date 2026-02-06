@@ -89,7 +89,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
                     rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
-                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                 # Large bloom around the rocket (effect_id=0x0D).
                 _draw_rocket_fx(size=140.0, offset=5.0, rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48))
 
@@ -176,7 +176,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
         rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)
 
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     _draw_detonation_quad(size=det_scale * t * 64.0, alpha_mul=1.0)
     _draw_detonation_quad(size=det_scale * t * 200.0, alpha_mul=0.3)
     rl.end_blend_mode()

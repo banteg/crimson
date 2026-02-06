@@ -306,7 +306,7 @@ class WorldRenderer:
         fill = rl.Color(0, 0, 26, fill_a)
         outline = rl.Color(255, 255, 255, outline_a)
 
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
 
         # The original uses a triangle fan (polygons). Raylib provides circle
         # primitives that still use triangles internally, but allow higher
@@ -502,7 +502,7 @@ class WorldRenderer:
                         dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                         rl.draw_texture_pro(self.particles_texture, src, dst, origin, 0.0, tint)
                         rl.end_blend_mode()
 
@@ -612,7 +612,7 @@ class WorldRenderer:
                                 origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
                                 rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
-                                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                                 rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
                                 rl.draw_texture_pro(self.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
                                 rl.end_blend_mode()
@@ -636,7 +636,7 @@ class WorldRenderer:
                         dst = rl.Rectangle(flash_pos.x, flash_pos.y, size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
-                        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                         rl.draw_texture_pro(
                             self.muzzle_flash_texture,
                             src,
@@ -785,9 +785,9 @@ class WorldRenderer:
         tail_rgb = (128, 128, 128)
         head = rl.Color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
         tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         rl.rl_set_texture(self.bullet_trail_texture.id)
-        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(0.0, 0.0)
         rl.rl_vertex2f(p0.x, p0.y)
@@ -830,9 +830,9 @@ class WorldRenderer:
         tail = rl.Color(255, 0, 0, tail_alpha)
         head = rl.Color(255, 0, 0, head_alpha)
 
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         rl.rl_set_texture(self.bullet_trail_texture.id)
-        rl.rl_begin(rl.RL_QUADS)
+        rl.rl_begin(rl.RL_QUADS)  # ty: ignore[unresolved-attribute]
 
         for player in players:
             if float(getattr(player, "health", 0.0)) <= 0.0:
@@ -947,7 +947,7 @@ class WorldRenderer:
 
         fx_detail_1 = bool(self.config.data.get("fx_detail_1", 0)) if self.config is not None else True
 
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
         if fx_detail_1 and src_large is not None:
             alpha_byte = int(clamp(alpha * 0.065, 0.0, 1.0) * 255.0 + 0.5)
@@ -1035,7 +1035,7 @@ class WorldRenderer:
         src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
         scale = self._view_scale_avg(view_scale)
 
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         for entry in effects:
             if not entry.active:
                 continue
@@ -1121,7 +1121,7 @@ class WorldRenderer:
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
-        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         for entry in effects:
             if not entry.flags or entry.age < 0.0:
                 continue
@@ -1129,7 +1129,7 @@ class WorldRenderer:
                 draw_entry(entry)
         rl.end_blend_mode()
 
-        rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         for entry in effects:
             if not entry.flags or entry.age < 0.0:
                 continue
@@ -1368,7 +1368,7 @@ class WorldRenderer:
                         freeze_alpha = clamp(fade * entity_alpha * 0.7, 0.0, 1.0)
                         if freeze_alpha > 1e-3:
                             tint = rl.Color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
-                            rl.begin_blend_mode(rl.BLEND_ALPHA)
+                            rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
                             for idx, creature in enumerate(self.creatures.entries):
                                 if not creature.active:
                                     continue

@@ -133,7 +133,7 @@ class PauseMenuView:
                 activated_index = self._selected_index
 
         if activated_index is None and self._hovered_index is not None:
-            if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 hovered = self._hovered_index
                 entry = self._menu_entries[hovered]
                 if self._menu_entry_enabled(entry):
@@ -361,7 +361,7 @@ class PauseMenuView:
                 glow_alpha = alpha
                 if 0 <= entry.ready_timer_ms < 0x100:
                     glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
-                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                 MenuView._draw_ui_quad(
                     texture=label_tex,
                     src=src,

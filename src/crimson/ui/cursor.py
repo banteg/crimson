@@ -39,7 +39,7 @@ def draw_cursor_glow(
     src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
     origin = rl.Vector2(0.0, 0.0)
 
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     if pulse_time is None:
         dst = rl.Rectangle(float(pos.x - 32.0), float(pos.y - 32.0), 64.0, 64.0)
         rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, rl.WHITE)
