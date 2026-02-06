@@ -4085,7 +4085,7 @@ void gameplay_render_world(void)
     piVar1 = piVar1 + 0xd8;
     player_index = player_index + 1;
   } while ((int)piVar1 < 0x491230);
-  if (DAT_00487241 == '\0') {
+  if (gameplay_transition_latch == '\0') {
     if (((game_state_id == GAME_STATE_GAMEPLAY) || (game_state_id == GAME_STATE_PERK_SELECTION)) ||
        ((((game_state_id == GAME_STATE_QUEST_RESULTS ||
           ((game_state_id == GAME_STATE_QUEST_FAILED || (game_state_id == GAME_STATE_GAME_OVER))))
@@ -15850,7 +15850,7 @@ void hud_update_and_render(void)
   fVar1 = (float)ui_elements_timeline /
           (float)(int)(ui_element_slot_28._pad0._14_4_ - ui_element_slot_28._pad0._18_4_);
   if ((1.0 < fVar1) || (fVar1 == 1.0)) {
-    DAT_00487241 = 0;
+    gameplay_transition_latch = '\0';
   }
   if (perk_doctor_target_creature_id != -1) {
     local_14 = _camera_offset_y + (&creature_pool)[perk_doctor_target_creature_id].pos_y;
@@ -36557,16 +36557,16 @@ int __cdecl ui_menu_item_update(float *xy,int *item)
   
   id = item;
   iVar1 = ui_focus_update((int)item);
-  if ((DAT_004cc910 & 1) == 0) {
-    DAT_004cc910 = DAT_004cc910 | 1;
+  if (((byte)menu_item_palette_init_flags & 1) == 0) {
+    menu_item_palette_init_flags._0_1_ = (byte)menu_item_palette_init_flags | 1;
     _DAT_004ccd40 = 0x3e8c8c8d;
     _DAT_004ccd44 = 0x3f34b4b5;
     _DAT_004ccd48 = 0x3f70f0f1;
     _DAT_004ccd4c = 0x3f19999a;
     crt_atexit(&DAT_0043e820);
   }
-  if ((DAT_004cc910 & 2) == 0) {
-    DAT_004cc910 = DAT_004cc910 | 2;
+  if (((byte)menu_item_palette_init_flags & 2) == 0) {
+    menu_item_palette_init_flags._0_1_ = (byte)menu_item_palette_init_flags | 2;
     _DAT_004d0e28 = 0x3e8c8c8d;
     _DAT_004d0e2c = 0x3f34b4b5;
     _DAT_004d0e30 = 0x3f70f0f1;
@@ -37106,8 +37106,8 @@ void statistics_menu_update(void)
   float fVar6;
   float y_00;
   
-  if ((DAT_004d0f20 & 1) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 1;
+  if (((byte)statistics_menu_init_flags & 1) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 1;
     DAT_004cc91e = 1;
     DAT_004cc92d = 0;
     DAT_004cc92c = 0;
@@ -37120,8 +37120,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_00440100);
   }
   _DAT_004cc918 = s_High_scores_00473158;
-  if ((DAT_004d0f20 & 2) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 2;
+  if (((byte)statistics_menu_init_flags & 2) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 2;
     DAT_004d0f46 = 1;
     DAT_004d0f55 = 0;
     DAT_004d0f54 = 0;
@@ -37134,8 +37134,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400f0);
   }
   _DAT_004d0f40 = s_Weapons_00478788;
-  if ((DAT_004d0f20 & 4) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 4;
+  if (((byte)statistics_menu_init_flags & 4) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 4;
     DAT_004cc8fe = 1;
     DAT_004cc90d = 0;
     DAT_004cc90c = 0;
@@ -37148,8 +37148,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400e0);
   }
   _DAT_004cc8f8 = s_Perks_0047877c;
-  if ((DAT_004d0f20 & 8) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 8;
+  if (((byte)statistics_menu_init_flags & 8) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 8;
     DAT_004d0ebe = 1;
     DAT_004d0ecd = 0;
     DAT_004d0ecc = 0;
@@ -37162,8 +37162,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400d0);
   }
   _DAT_004d0eb8 = s_Credits_00478770;
-  if ((DAT_004d0f20 & 0x10) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 0x10;
+  if (((byte)statistics_menu_init_flags & 0x10) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 0x10;
     DAT_004d0f66 = 1;
     DAT_004d0f75 = 0;
     DAT_004d0f74 = 0;
@@ -37176,8 +37176,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400c0);
   }
   _DAT_004d0f60 = s__Typ_o_Shooter__0047875c;
-  if ((DAT_004d0f20 & 0x20) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 0x20;
+  if (((byte)statistics_menu_init_flags & 0x20) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 0x20;
     DAT_004ccd56 = 1;
     DAT_004ccd65 = 0;
     DAT_004ccd64 = 0;
@@ -37190,8 +37190,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400b0);
   }
   _DAT_004ccd50 = s__Mods__00478754;
-  if ((DAT_004d0f20 & 0x40) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 0x40;
+  if (((byte)statistics_menu_init_flags & 0x40) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 0x40;
     DAT_004d11ce = 1;
     DAT_004d11dd = 0;
     DAT_004d11dc = 0;
@@ -37204,8 +37204,8 @@ void statistics_menu_update(void)
     crt_atexit(&DAT_004400a0);
   }
   _DAT_004d11c8 = s_Check_for_updates_00478740;
-  if ((DAT_004d0f20 & 0x80) == 0) {
-    DAT_004d0f20 = DAT_004d0f20 | 0x80;
+  if (((byte)statistics_menu_init_flags & 0x80) == 0) {
+    statistics_menu_init_flags._0_1_ = (byte)statistics_menu_init_flags | 0x80;
     DAT_004cccc6 = 1;
     DAT_004cccd5 = 0;
     DAT_004cccd4 = 0;
@@ -39065,8 +39065,8 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
   float local_8;
   float local_4;
   
-  if ((DAT_004cccd8 & 1) == 0) {
-    DAT_004cccd8 = DAT_004cccd8 | 1;
+  if (((byte)profile_menu_init_flags & 1) == 0) {
+    profile_menu_init_flags._0_1_ = (byte)profile_menu_init_flags | 1;
     _DAT_004d0f38 = 0x3f800000;
     _DAT_004d0f28 = &DAT_004ccb18;
     _DAT_004d0f2c = 0;
@@ -39089,8 +39089,8 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
   }
   pcVar3 = strdup_malloc(s_<add_new_named_list>_00478c6c);
   (&DAT_004ccb5c)[local_c] = pcVar3;
-  if ((DAT_004cccd8 & 2) == 0) {
-    DAT_004cccd8 = DAT_004cccd8 | 2;
+  if (((byte)profile_menu_init_flags & 2) == 0) {
+    profile_menu_init_flags._0_1_ = (byte)profile_menu_init_flags | 2;
     DAT_004ccc96 = 1;
     DAT_004ccca5 = 0;
     DAT_004ccca4 = 0;
@@ -39103,8 +39103,8 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
     crt_atexit(&DAT_004447f0);
   }
   _DAT_004ccc90 = &DAT_00478c68;
-  if ((DAT_004cccd8 & 4) == 0) {
-    DAT_004cccd8 = DAT_004cccd8 | 4;
+  if (((byte)profile_menu_init_flags & 4) == 0) {
+    profile_menu_init_flags._0_1_ = (byte)profile_menu_init_flags | 4;
     DAT_004ccb06 = 1;
     DAT_004ccb15 = 0;
     DAT_004ccb14 = 0;
@@ -39217,8 +39217,8 @@ int __cdecl ui_profile_menu_update(float *arg1,char arg2)
   }
   highscore_load_table();
 LAB_004446ac:
-  if ((DAT_004cccd8 & 8) == 0) {
-    DAT_004cccd8 = DAT_004cccd8 | 8;
+  if (((byte)profile_menu_init_flags & 8) == 0) {
+    profile_menu_init_flags._0_1_ = (byte)profile_menu_init_flags | 8;
     DAT_004d0ee8 = 1;
     _DAT_004d0f00 = 0;
     DAT_004d0efc = 0;
@@ -40482,7 +40482,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
   game_state_prev = game_state_id;
   game_state_id = state_id;
   _DAT_00487238 = 0;
-  DAT_00487241 = 0;
+  gameplay_transition_latch = '\0';
   (*grim_interface_ptr->vtable->grim_flush_input)();
   console_input_poll();
   if (state_id == GAME_STATE_MAIN_MENU) {
@@ -40615,27 +40615,27 @@ void __cdecl game_state_set(game_state_id_t state_id)
              game_status_blob.quest_play_counts[_quest_stage_minor + _quest_stage_major * 10] + 1;
         quest_start_selected(iVar3,iVar4);
         render_pass_mode = '\x01';
-        DAT_00487241 = 1;
+        gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_RUSH) {
         render_pass_mode = '\x01';
         game_status_blob.mode_play_rush = game_status_blob.mode_play_rush + 1;
-        DAT_00487241 = 1;
+        gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_SURVIVAL) {
         render_pass_mode = '\x01';
         game_status_blob.mode_play_survival = game_status_blob.mode_play_survival + 1;
-        DAT_00487241 = 1;
+        gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
         render_pass_mode = '\x01';
         game_status_blob.mode_play_typo = game_status_blob.mode_play_typo + 1;
-        DAT_00487241 = 1;
+        gameplay_transition_latch = '\x01';
       }
       else {
         render_pass_mode = '\x01';
         game_status_blob.mode_play_other = game_status_blob.mode_play_other + 1;
-        DAT_00487241 = 1;
+        gameplay_transition_latch = '\x01';
       }
     }
   }
@@ -40648,7 +40648,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
       highscore_return_latch = '\0';
       gameplay_reset_state();
       render_pass_mode = '\x01';
-      DAT_00487241 = 1;
+      gameplay_transition_latch = '\x01';
     }
   }
   else if (state_id == GAME_STATE_PLAY_GAME_MENU) {

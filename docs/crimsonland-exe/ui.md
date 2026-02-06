@@ -32,6 +32,18 @@ Helpers:
 - `ui_elements_max_timeline` (`FUN_00446190`) returns the max timeline value
   among active elements.
 
+## Recovered menu init bitfields
+
+Recent data-map lifts for one-shot setup guards:
+
+- `menu_item_palette_init_flags` (`0x004cc910`): `ui_menu_item_update` static
+  color palette init (idle/hover RGBA blocks).
+- `statistics_menu_init_flags` (`0x004d0f20`): `statistics_menu_update`
+  tab/button setup guards (High scores, Weapons, Perks, Credits, Typ-o, Mods,
+  Check for updates, Back).
+- `profile_menu_init_flags` (`0x004cccd8`): `ui_profile_menu_update` setup
+  guards for profile text input, action buttons, and list widget wiring.
+
 ## Menu UI loop (perk_selection_screen_update)
 
 A common menu loop that:

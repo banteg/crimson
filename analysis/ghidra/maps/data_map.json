@@ -2576,6 +2576,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487241",
+      "comment": "Gameplay transition latch set on gameplay-state entry and cleared when HUD timeline reaches 1.0; gates world transition alpha forcing in gameplay_render_world.",
+      "name": "gameplay_transition_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x00487244",
       "comment": "Quest stage banner timer in milliseconds (used for fade-in/out of the stage title card).",
       "name": "quest_stage_banner_timer_ms",
@@ -6399,6 +6406,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004cc910",
+      "comment": "ui_menu_item_update one-shot init flags bitfield (guards static hover/idle color palette setup blocks).",
+      "name": "menu_item_palette_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004ccb58",
       "comment": "Highscore batch-sync stage cursor used by Shift-modified online sync flow (starts at -4 and iterates mode/quest variants).",
       "name": "highscore_batch_sync_stage_index",
@@ -6419,6 +6433,13 @@
       "type": "int"
     },
     {
+      "address": "0x004cccd8",
+      "comment": "Profile/name-slot menu one-shot init flags bitfield (guards text input + button + list widget setup in ui_profile_menu_update).",
+      "name": "profile_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478c94",
       "comment": "Typ-o mode reset flag set on state 0x12 entry and consumed by typo_gameplay_update_and_render.",
       "name": "typo_mode_reset_flag",
@@ -6430,6 +6451,13 @@
       "comment": "Static text buffer written by highscore_format_date_label.",
       "name": "highscore_date_label_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d0f20",
+      "comment": "Statistics menu one-shot init flags bitfield (guards static tab/button setup blocks in statistics_menu_update).",
+      "name": "statistics_menu_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d11e0",

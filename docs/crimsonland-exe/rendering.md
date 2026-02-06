@@ -35,6 +35,10 @@ Notes:
 
 - `DAT_004aaf0c` is used as the player index during the two overlay passes.
 - `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
+- `gameplay_transition_latch` (`0x00487241`) is set on gameplay/Typ-o gameplay
+  state entry and cleared when the HUD transition timeline reaches 1.0; while
+  set, `gameplay_render_world` avoids forcing `ui_transition_alpha` to 1.0 in
+  branch paths that normally suppress transition fades.
 
 ## HUD render (ui_render_hud / FUN_0041aed0)
 
