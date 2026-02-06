@@ -12,6 +12,7 @@ from grim.math import clamp
 from grim.view import View, ViewContext
 
 from ..bonuses import BonusId
+from ..creatures.spawn import CreatureFlags
 from ..gameplay import (
     GameplayState,
     PlayerInput,
@@ -41,7 +42,7 @@ class DummyCreature:
     size: float = 32.0
     active: bool = True
     hitbox_size: float = 16.0
-    flags: int = 0
+    flags: CreatureFlags = CreatureFlags(0)
     plague_infected: bool = False
 
 

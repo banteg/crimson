@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
-from typing import TYPE_CHECKING, Callable, Protocol
+from typing import TYPE_CHECKING, Callable, Protocol, Sequence
 
 from grim.color import RGBA
 from grim.geom import Vec2
 from .bonuses import BONUS_BY_ID, BonusId
+from .creatures.spawn import CreatureFlags
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
@@ -40,7 +41,7 @@ class _CreatureForPerks(Protocol):
     active: bool
     pos: Vec2
     hp: float
-    flags: int
+    flags: CreatureFlags
     hitbox_size: float
     collision_timer: float
     reward_value: float
@@ -476,7 +477,7 @@ class BonusPool:
         *,
         state: "GameplayState",
         players: list["PlayerState"],
-        creatures: list[Damageable] | None = None,
+        creatures: Sequence[Damageable] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
         detail_preset: int = 5,
     ) -> list[BonusPickupEvent]:
@@ -620,7 +621,7 @@ def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
 
 
-def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
+def _creature_find_in_radius(creatures: Sequence[_CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
     """Port of `creature_find_in_radius` (0x004206a0)."""
 
     start_index = max(0, int(start_index))
@@ -650,7 +651,7 @@ class _PerksUpdateEffectsCtx:
     state: GameplayState
     players: list[PlayerState]
     dt: float
-    creatures: list[_CreatureForPerks] | None
+    creatures: Sequence[_CreatureForPerks] | None
     fx_queue: FxQueue | None
     _aim_target: int | None = None
 
@@ -798,7 +799,7 @@ def perks_update_effects(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: list[_CreatureForPerks] | None = None,
+    creatures: Sequence[_CreatureForPerks] | None = None,
     fx_queue: FxQueue | None = None,
 ) -> None:
     """Port subset of `perks_update_effects` (0x00406b40)."""
@@ -1082,7 +1083,7 @@ class _PerkApplyCtx:
     perk_id: PerkId
     perk_state: PerkSelectionState | None
     dt: float | None
-    creatures: list[_CreatureForPerks] | None
+    creatures: Sequence[_CreatureForPerks] | None
 
     def frame_dt(self) -> float:
         return float(self.dt) if self.dt is not None else 0.0
@@ -1237,7 +1238,7 @@ def perk_apply(
     *,
     perk_state: PerkSelectionState | None = None,
     dt: float | None = None,
-    creatures: list[_CreatureForPerks] | None = None,
+    creatures: Sequence[_CreatureForPerks] | None = None,
 ) -> None:
     """Apply immediate perk effects and increment the perk counter."""
 
@@ -1273,7 +1274,7 @@ def perk_auto_pick(
     game_mode: int,
     player_count: int | None = None,
     dt: float | None = None,
-    creatures: list[_CreatureForPerks] | None = None,
+    creatures: Sequence[_CreatureForPerks] | None = None,
 ) -> list[PerkId]:
     """Resolve pending perks by auto-selecting from generated choices."""
 
@@ -1336,7 +1337,7 @@ def perk_selection_pick(
     game_mode: int,
     player_count: int | None = None,
     dt: float | None = None,
-    creatures: list[_CreatureForPerks] | None = None,
+    creatures: Sequence[_CreatureForPerks] | None = None,
 ) -> PerkId | None:
     """Pick a perk from the current choice list and apply it.
 
@@ -1367,7 +1368,7 @@ def survival_progression_update(
     player_count: int | None = None,
     auto_pick: bool = True,
     dt: float | None = None,
-    creatures: list[_CreatureForPerks] | None = None,
+    creatures: Sequence[_CreatureForPerks] | None = None,
 ) -> list[PerkId]:
     """Advance survival level/perk progression and optionally auto-pick perks."""
 
@@ -2499,7 +2500,7 @@ class _BonusApplyCtx:
     bonus_id: BonusId
     amount: int
     origin: _HasPos | None
-    creatures: list[Damageable] | None
+    creatures: Sequence[Damageable] | None
     players: list[PlayerState] | None
     apply_creature_damage: CreatureDamageApplier | None
     detail_preset: int
@@ -2853,7 +2854,7 @@ def bonus_apply(
     *,
     amount: int | None = None,
     origin: _HasPos | None = None,
-    creatures: list[Damageable] | None = None,
+    creatures: Sequence[Damageable] | None = None,
     players: list[PlayerState] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
@@ -2944,7 +2945,7 @@ def bonus_telekinetic_update(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: list[Damageable] | None = None,
+    creatures: Sequence[Damageable] | None = None,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
 ) -> list[BonusPickupEvent]:
@@ -3012,7 +3013,7 @@ def bonus_update(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: list[Damageable] | None = None,
+    creatures: Sequence[Damageable] | None = None,
     update_hud: bool = True,
     apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,

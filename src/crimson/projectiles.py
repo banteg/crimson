@@ -20,7 +20,7 @@ class Damageable(Protocol):
     hp: float
     hitbox_size: float
     size: float
-    flags: int
+    flags: CreatureFlags
     plague_infected: bool
 
 

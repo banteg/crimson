@@ -12,6 +12,7 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.view import View, ViewContext
 
+from ..creatures.spawn import CreatureFlags
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, player_update, weapon_assign_player
 from ..ui.cursor import draw_aim_cursor
@@ -41,7 +42,7 @@ class TargetDummy:
     size: float = 56.0
     hitbox_size: float = 56.0
     active: bool = True
-    flags: int = 0
+    flags: CreatureFlags = CreatureFlags(0)
     plague_infected: bool = False
 
 
