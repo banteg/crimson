@@ -29,6 +29,7 @@ from .gameplay import (
     weapon_refresh_available,
 )
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
+from .render.frame import RenderFrame
 from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
 from .perks import PerkId
@@ -630,7 +631,37 @@ class GameWorld:
         # Bake decals into the ground render target as part of the render pass,
         # matching `fx_queue_render()` placement in `gameplay_render_world`.
         self._bake_fx_queues()
-        self.renderer.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
+        self.renderer.draw(
+            render_frame=self.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
+
+    def build_render_frame(self) -> RenderFrame:
+        return RenderFrame(
+            world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            config=self.config,
+            camera=self.camera,
+            ground=self.ground,
+            state=self.state,
+            players=self.players,
+            creatures=self.creatures,
+            creature_textures=self.creature_textures,
+            projs_texture=self.projs_texture,
+            particles_texture=self.particles_texture,
+            bullet_texture=self.bullet_texture,
+            bullet_trail_texture=self.bullet_trail_texture,
+            arrow_texture=self.arrow_texture,
+            bonuses_texture=self.bonuses_texture,
+            bodyset_texture=self.bodyset_texture,
+            clock_table_texture=self.clock_table_texture,
+            clock_pointer_texture=self.clock_pointer_texture,
+            muzzle_flash_texture=self.muzzle_flash_texture,
+            wicons_texture=self.wicons_texture,
+            elapsed_ms=float(self._elapsed_ms),
+            bonus_anim_phase=float(self._bonus_anim_phase),
+        )
 
     def update_camera(self, _dt: float) -> None:
         if not self.players:

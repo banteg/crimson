@@ -28,6 +28,7 @@ from ..weapons import WEAPON_BY_ID
 from .projectile_draw_registry import ProjectileDrawCtx, draw_projectile_from_registry
 from .projectile_render_registry import known_proj_rgb
 from .secondary_projectile_draw_registry import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
+from .frame import RenderFrame
 
 if TYPE_CHECKING:
     from ..game_world import GameWorld
@@ -1123,7 +1124,14 @@ class WorldRenderer:
                 draw_entry(entry)
         rl.end_blend_mode()
 
-    def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+    def draw(
+        self,
+        *,
+        render_frame: RenderFrame | None = None,
+        draw_aim_indicators: bool = True,
+        entity_alpha: float = 1.0,
+    ) -> None:
+        del render_frame
         entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
         clear_color = rl.Color(10, 10, 12, 255)
         screen_size = self._camera_screen_size()
