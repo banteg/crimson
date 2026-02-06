@@ -9,6 +9,8 @@ from dataclasses import dataclass
 import math
 from typing import Callable, Protocol, Sequence
 
+from grim.geom import Vec2
+
 from .spawn import CreatureFlags
 
 __all__ = [
@@ -81,8 +83,7 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 def creature_ai_update_target(
     creature: CreatureAIStateLike,
     *,
-    player_x: float,
-    player_y: float,
+    player_pos: Vec2,
     creatures: Sequence[CreatureLinkLike],
     dt: float,
 ) -> CreatureAIUpdate:
@@ -96,8 +97,8 @@ def creature_ai_update_target(
     - `orbit_radius` (AI7 non-link timer uses it as a countdown)
     """
 
-    dx = player_x - creature.x
-    dy = player_y - creature.y
+    dx = player_pos.x - creature.x
+    dy = player_pos.y - creature.y
     dist_to_player = math.hypot(dx, dy)
 
     orbit_phase = float(int(creature.phase_seed)) * 3.7 * math.pi
@@ -109,21 +110,21 @@ def creature_ai_update_target(
     ai_mode = creature.ai_mode
     if ai_mode == 0:
         if dist_to_player > 800.0:
-            creature.target_x = player_x
-            creature.target_y = player_y
+            creature.target_x = player_pos.x
+            creature.target_y = player_pos.y
         else:
-            creature.target_x = player_x + math.cos(orbit_phase) * dist_to_player * 0.85
-            creature.target_y = player_y + math.sin(orbit_phase) * dist_to_player * 0.85
+            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85
+            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85
     elif ai_mode == 8:
-        creature.target_x = player_x + math.cos(orbit_phase) * dist_to_player * 0.9
-        creature.target_y = player_y + math.sin(orbit_phase) * dist_to_player * 0.9
+        creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.9
+        creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.9
     elif ai_mode == 1:
         if dist_to_player > 800.0:
-            creature.target_x = player_x
-            creature.target_y = player_y
+            creature.target_x = player_pos.x
+            creature.target_y = player_pos.y
         else:
-            creature.target_x = player_x + math.cos(orbit_phase) * dist_to_player * 0.55
-            creature.target_y = player_y + math.sin(orbit_phase) * dist_to_player * 0.55
+            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.55
+            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.55
     elif ai_mode == 3:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
@@ -150,11 +151,11 @@ def creature_ai_update_target(
             creature.ai_mode = 0
             self_damage = 1000.0
         elif dist_to_player > 800.0:
-            creature.target_x = player_x
-            creature.target_y = player_y
+            creature.target_x = player_pos.x
+            creature.target_y = player_pos.y
         else:
-            creature.target_x = player_x + math.cos(orbit_phase) * dist_to_player * 0.85
-            creature.target_y = player_y + math.sin(orbit_phase) * dist_to_player * 0.85
+            creature.target_x = player_pos.x + math.cos(orbit_phase) * dist_to_player * 0.85
+            creature.target_y = player_pos.y + math.sin(orbit_phase) * dist_to_player * 0.85
     elif ai_mode == 7:
         if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
             creature.target_x = creature.x
@@ -179,8 +180,8 @@ def creature_ai_update_target(
         creature.force_target = 1
 
     if creature.force_target or creature.ai_mode == 2:
-        creature.target_x = player_x
-        creature.target_y = player_y
+        creature.target_x = player_pos.x
+        creature.target_y = player_pos.y
 
     creature.target_heading = math.atan2(creature.target_y - creature.y, creature.target_x - creature.x) + math.pi / 2.0
     return CreatureAIUpdate(move_scale=move_scale, self_damage=self_damage)

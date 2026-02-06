@@ -525,16 +525,13 @@ class DemoView:
             overlay_path=overlay_path,
         )
 
-    def _wrap_pos(self, pos: Vec2) -> Vec2:
-        return Vec2(pos.x % WORLD_SIZE, pos.y % WORLD_SIZE)
-
     def _crand_mod(self, mod: int) -> int:
         if mod <= 0:
             return 0
         return int(self._crand.rand() % mod)
 
     def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
-        pos = self._wrap_pos(pos)
+        pos = pos.wrapped(WORLD_SIZE, WORLD_SIZE)
         self._world.creatures.spawn_template(
             int(spawn_id),
             (pos.x, pos.y),
@@ -720,7 +717,7 @@ class DemoView:
             aim = Vec2(float(player.aim_x), float(player.aim_y))
             auto_fire = False
             if target is not None:
-                target_pos = Vec2(float(target.x), float(target.y))
+                target_pos = Vec2(target.x, target.y)
                 aim_dir, aim_dist = (target_pos - aim).normalized_with_length()
                 if aim_dist >= 4.0:
                     step = aim_dist * 6.0 * dt
@@ -743,7 +740,7 @@ class DemoView:
             else:
                 center_dist = (player.pos - center).length()
                 if center_dist <= 300.0:
-                    move_delta = Vec2(float(target.x), float(target.y)) - player.pos
+                    move_delta = Vec2(target.x, target.y) - player.pos
                 else:
                     move_delta = center - player.pos
 

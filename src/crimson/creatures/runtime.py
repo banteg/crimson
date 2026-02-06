@@ -15,7 +15,7 @@ import math
 from typing import Callable, Protocol, Sequence
 
 from grim.geom import Vec2
-from grim.math import clamp, distance_sq
+from grim.math import clamp
 from grim.rand import Crand
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import GameplayState, PlayerState, award_experience, perk_active
@@ -167,8 +167,7 @@ class CreatureState:
 @dataclass(frozen=True, slots=True)
 class CreatureDeath:
     index: int
-    x: float
-    y: float
+    pos: Vec2
     type_id: int
     reward_value: float
     xp_awarded: int
@@ -220,15 +219,17 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.player.health) <= 0.0:
         return
 
-    eat_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos.x, ctx.player.pos.y)
+    creature_pos = Vec2(creature.x, creature.y)
+    eat_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
     if eat_dist_sq >= 20.0 * 20.0:
         return
 
     creature.x = clamp(creature.x - creature.vel_x * ctx.dt, 0.0, float(ctx.world_width))
     creature.y = clamp(creature.y - creature.vel_y * ctx.dt, 0.0, float(ctx.world_height))
+    creature_pos = Vec2(creature.x, creature.y)
 
     ctx.state.effects.spawn_burst(
-        pos=Vec2(float(creature.x), float(creature.y)),
+        pos=creature_pos,
         count=6,
         rand=ctx.rand,
         detail_preset=int(ctx.detail_preset),
@@ -260,7 +261,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    ctx.contact_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos.x, ctx.player.pos.y)
+    creature_pos = Vec2(creature.x, creature.y)
+    ctx.contact_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
     contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
     in_contact = ctx.contact_dist_sq <= contact_r * contact_r
     if not in_contact:
@@ -300,17 +302,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
 
     if ctx.fx_queue is not None:
-        dx = float(ctx.player.pos.x) - float(creature.x)
-        dy = float(ctx.player.pos.y) - float(creature.y)
-        dist = math.hypot(dx, dy)
-        if dist > 1e-9:
-            dx /= dist
-            dy /= dist
-        else:
-            dx = 0.0
-            dy = 0.0
+        push_dir = (ctx.player.pos - creature_pos).normalized()
         ctx.fx_queue.add_random(
-            pos=Vec2(float(ctx.player.pos.x) + dx * 3.0, float(ctx.player.pos.y) + dy * 3.0),
+            pos=ctx.player.pos + push_dir * 3.0,
             rand=ctx.rand,
         )
 
@@ -399,7 +393,7 @@ class CreaturePool:
             if not creature.active:
                 continue
 
-            if math.hypot(float(creature.x) - float(origin.x), float(creature.y) - float(origin.y)) < 45.0:
+            if Vec2.distance_sq(Vec2(creature.x, creature.y), Vec2(origin.x, origin.y)) < 45.0 * 45.0:
                 if creature.plague_infected and float(origin.hp) < 150.0:
                     origin.plague_infected = True
                 if origin.plague_infected and float(creature.hp) < 150.0:
@@ -518,7 +512,7 @@ class CreaturePool:
             fx_rand = rand if rand is not None else (lambda: 0)
             for fx in plan.effects:
                 effect_pool.spawn_burst(
-                    pos=Vec2(float(fx.x), float(fx.y)),
+                    pos=fx.pos,
                     count=int(fx.count),
                     rand=fx_rand,
                     detail_preset=int(detail_preset),
@@ -704,10 +698,7 @@ class CreaturePool:
 
             if players and perk_active(players[0], PerkId.RADIOACTIVE):
                 radioactive_player = players[0]
-                dist = math.hypot(
-                    float(creature.x) - float(radioactive_player.pos.x),
-                    float(creature.y) - float(radioactive_player.pos.y),
-                )
+                dist = (Vec2(creature.x, creature.y) - radioactive_player.pos).length()
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
                     if creature.collision_timer < 0.0:
@@ -735,8 +726,7 @@ class CreaturePool:
                 creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 ai = creature_ai_update_target(
                     creature,
-                    player_x=player.pos.x,
-                    player_y=player.pos.y,
+                    player_pos=player.pos,
                     creatures=self._entries,
                     dt=dt,
                 )
@@ -931,19 +921,18 @@ class CreaturePool:
             creature.active = False
 
         if float(state.bonuses.freeze) > 0.0:
-            pos_x = float(creature.x)
-            pos_y = float(creature.y)
+            creature_pos = Vec2(creature.x, creature.y)
             for _ in range(8):
                 angle = float(int(rand()) % 0x264) * 0.01
                 state.effects.spawn_freeze_shard(
-                    pos=Vec2(pos_x, pos_y),
+                    pos=creature_pos,
                     angle=angle,
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
             angle = float(int(rand()) % 0x264) * 0.01
             state.effects.spawn_freeze_shatter(
-                pos=Vec2(pos_x, pos_y),
+                pos=creature_pos,
                 angle=angle,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -1109,7 +1098,7 @@ class CreaturePool:
                 self.spawned_count += 1
 
             state.effects.spawn_burst(
-                pos=Vec2(float(creature.x), float(creature.y)),
+                pos=Vec2(creature.x, creature.y),
                 count=8,
                 rand=rand,
                 detail_preset=int(detail_preset),
@@ -1151,7 +1140,7 @@ class CreaturePool:
                 )
             if spawned_bonus is not None:
                 state.effects.spawn_burst(
-                    pos=Vec2(float(spawned_bonus.pos.x), float(spawned_bonus.pos.y)),
+                    pos=spawned_bonus.pos,
                     count=16,
                     rand=rand,
                     detail_preset=int(detail_preset),
@@ -1162,8 +1151,7 @@ class CreaturePool:
 
         return CreatureDeath(
             index=int(idx),
-            x=float(creature.x),
-            y=float(creature.y),
+            pos=Vec2(creature.x, creature.y),
             type_id=int(creature.type_id),
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),

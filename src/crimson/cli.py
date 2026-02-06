@@ -579,7 +579,7 @@ def cmd_spawn_plan(
         typer.echo("")
         typer.echo("effects:")
         for fx in plan.effects:
-            typer.echo(f"burst x={fx.x:.1f} y={fx.y:.1f} count={fx.count}")
+            typer.echo(f"burst x={fx.pos.x:.1f} y={fx.pos.y:.1f} count={fx.count}")
 
 
 @app.command("oracle")

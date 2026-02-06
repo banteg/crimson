@@ -1357,8 +1357,7 @@ class SpawnEnv:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class BurstEffect:
-    x: float
-    y: float
+    pos: Vec2
     count: int
 
 
@@ -1538,8 +1537,7 @@ def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: floa
 def spawn_ring_children(
     creatures: list[CreatureInit],
     template_id: int,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Crand,
     *,
     count: int,
@@ -1553,15 +1551,17 @@ def spawn_ring_children(
 ) -> int:
     last_idx = -1
     for i in range(count):
-        child = alloc_creature(template_id, pos_x, pos_y, rng)
+        child = alloc_creature(template_id, pos, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
         angle = float(i) * angle_step
         child.target_offset_x = float(math.cos(angle) * radius)
         child.target_offset_y = float(math.sin(angle) * radius)
         if set_position:
-            child.pos.x = pos_x + (child.target_offset_x or 0.0)
-            child.pos.y = pos_y + (child.target_offset_y or 0.0)
+            child.pos = Vec2(
+                pos.x + (child.target_offset_x or 0.0),
+                pos.y + (child.target_offset_y or 0.0),
+            )
         if heading_override is not None:
             child.heading = heading_override
         apply_child_spec(child, child_spec)
@@ -1573,8 +1573,7 @@ def spawn_ring_children(
 def spawn_grid_children(
     creatures: list[CreatureInit],
     template_id: int,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Crand,
     *,
     x_range: range,
@@ -1586,13 +1585,12 @@ def spawn_grid_children(
     last_idx = -1
     for x_offset in x_range:
         for y_offset in y_range:
-            child = alloc_creature(template_id, pos_x, pos_y, rng)
+            child = alloc_creature(template_id, pos, rng)
             child.ai_mode = ai_mode
             child.ai_link_parent = link_parent
             child.target_offset_x = float(x_offset)
             child.target_offset_y = float(y_offset)
-            child.pos.x = float(pos_x + x_offset)
-            child.pos.y = float(pos_y + y_offset)
+            child.pos = Vec2(pos.x + float(x_offset), pos.y + float(y_offset))
             apply_child_spec(child, child_spec)
             creatures.append(child)
             last_idx = len(creatures) - 1
@@ -1602,8 +1600,7 @@ def spawn_grid_children(
 def spawn_chain_children(
     creatures: list[CreatureInit],
     template_id: int,
-    pos_x: float,
-    pos_y: float,
+    pos: Vec2,
     rng: Crand,
     *,
     count: int,
@@ -1614,7 +1611,7 @@ def spawn_chain_children(
 ) -> int:
     chain_prev = link_parent_start
     for idx in range(count):
-        child = alloc_creature(template_id, pos_x, pos_y, rng)
+        child = alloc_creature(template_id, pos, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = chain_prev
         setup_child(child, idx)
@@ -1644,10 +1641,10 @@ class PlanBuilder:
         rng: Crand,
         env: SpawnEnv,
     ) -> tuple["PlanBuilder", float]:
-        pos_x, pos_y = pos
+        origin = Vec2(*pos)
 
         # creature_alloc_slot() for the base creature.
-        creatures: list[CreatureInit] = [alloc_creature(template_id, pos_x, pos_y, rng)]
+        creatures: list[CreatureInit] = [alloc_creature(template_id, origin, rng)]
         spawn_slots: list[SpawnSlotInit] = []
         effects: list[BurstEffect] = []
 
@@ -1661,7 +1658,7 @@ class PlanBuilder:
 
         return cls(
             template_id=template_id,
-            pos=Vec2(pos_x, pos_y),
+            pos=origin,
             rng=rng,
             env=env,
             creatures=creatures,
@@ -1688,8 +1685,7 @@ class PlanBuilder:
         return spawn_ring_children(
             self.creatures,
             self.template_id,
-            self.pos.x,
-            self.pos.y,
+            self.pos,
             self.rng,
             **kwargs,
         )
@@ -1698,8 +1694,7 @@ class PlanBuilder:
         return spawn_grid_children(
             self.creatures,
             self.template_id,
-            self.pos.x,
-            self.pos.y,
+            self.pos,
             self.rng,
             **kwargs,
         )
@@ -1708,8 +1703,7 @@ class PlanBuilder:
         return spawn_chain_children(
             self.creatures,
             self.template_id,
-            self.pos.x,
-            self.pos.y,
+            self.pos,
             self.rng,
             **kwargs,
         )
@@ -1767,12 +1761,12 @@ def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
     return None
 
 
-def alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) -> CreatureInit:
+def alloc_creature(template_id: int, pos: Vec2, rng: Crand) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
     phase_seed = float(rng.rand() & 0x17F)
-    return CreatureInit(origin_template_id=template_id, pos=Vec2(pos_x, pos_y), heading=0.0, phase_seed=phase_seed)
+    return CreatureInit(origin_template_id=template_id, pos=Vec2(pos.x, pos.y), heading=0.0, phase_seed=phase_seed)
 
 
 def clamp01(value: float) -> float:
@@ -1789,10 +1783,10 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
     Note: this is not a `creature_spawn_template` spawn id; it picks a `type_id` and stats
     dynamically based on `player_experience`.
     """
-    pos_x, pos_y = pos
+    origin = Vec2(*pos)
     xp = int(player_experience)
 
-    c = alloc_creature(-1, pos_x, pos_y, rng)
+    c = alloc_creature(-1, origin, rng)
     c.ai_mode = 0
 
     r10 = rng.rand() % 10
@@ -2115,10 +2109,10 @@ def build_rush_mode_spawn_creature(
     survival_elapsed_ms: int,
 ) -> CreatureInit:
     """Pure model of `creature_spawn` (0x00428240) as used by `rush_mode_update` (0x004072b0)."""
-    pos_x, pos_y = pos
+    origin = Vec2(*pos)
     elapsed_ms = int(survival_elapsed_ms)
 
-    c = alloc_creature(-1, pos_x, pos_y, rng)
+    c = alloc_creature(-1, origin, rng)
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = 0
 
@@ -2262,7 +2256,7 @@ def apply_tail(
         and 0.0 < c.pos.x < env.terrain_width
         and 0.0 < c.pos.y < env.terrain_height
     ):
-        plan_effects.append(BurstEffect(x=c.pos.x, y=c.pos.y, count=8))
+        plan_effects.append(BurstEffect(pos=Vec2(c.pos.x, c.pos.y), count=8))
 
     if c.health is not None:
         c.max_health = c.health

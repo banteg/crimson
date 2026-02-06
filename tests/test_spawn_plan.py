@@ -42,8 +42,8 @@ def test_spawn_plan_effects_emit_when_demo_mode_disabled() -> None:
 
     assert len(plan.effects) == 1
     effect = plan.effects[0]
-    assert effect.x == 100.0
-    assert effect.y == 200.0
+    assert effect.pos.x == 100.0
+    assert effect.pos.y == 200.0
     assert effect.count == 8
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from grim.geom import Vec2
 from grim.rand import Crand
 from crimson.creatures.spawn import BurstEffect, SpawnEnv, build_spawn_plan
 
@@ -26,7 +27,7 @@ def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
     assert plan_demo.effects == ()
 
     plan_live = build_spawn_plan(1, (100.0, 200.0), 0.0, Crand(0), env_live)
-    assert plan_live.effects == (BurstEffect(x=100.0, y=200.0, count=8),)
+    assert plan_live.effects == (BurstEffect(pos=Vec2(100.0, 200.0), count=8),)
 
     assert build_spawn_plan(1, (0.0, 200.0), 0.0, Crand(0), env_live).effects == ()
     assert build_spawn_plan(1, (1024.0, 200.0), 0.0, Crand(0), env_live).effects == ()
