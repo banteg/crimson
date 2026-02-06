@@ -67,21 +67,21 @@ int console_input_poll(void)
 
 
 
-/* FUN_004010f0 @ 004010f0 */
+/* invoke_callback_n @ 004010f0 */
 
-/* [binja] int32_t __stdcall sub_4010f0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4) */
+/* invokes callback `count` times; decompile currently shows arg1/arg2 unused in this helper */
 
-int FUN_004010f0(int arg1,int arg2,int arg3,int arg4)
+int invoke_callback_n(int arg1,int arg2,int count,int callback)
 
 {
   int iVar1;
   
-  iVar1 = arg3 + -1;
+  iVar1 = count + -1;
   if (-1 < iVar1) {
     do {
-      iVar1 = (*(code *)arg4)();
-      arg3 = arg3 + -1;
-    } while (arg3 != 0);
+      iVar1 = (*(code *)callback)();
+      count = count + -1;
+    } while (count != 0);
   }
   return iVar1;
 }
@@ -13579,20 +13579,20 @@ int ui_menu_template_pool_init(void)
   ui_menu_item_element._pad4[0xa9] = '\0';
   ui_menu_item_element._pad4[0xaa] = '\0';
   ui_menu_item_element._pad4[0xab] = '\0';
-  FUN_004010f0(0x48fd78,0x1c,8,0x417a90);
+  invoke_callback_n(0x48fd78,0x1c,8,0x417a90);
   ui_menu_item_element._pad5[0xac] = '\x04';
   ui_menu_item_element._pad5[0xad] = '\0';
   ui_menu_item_element._pad5[0xae] = '\0';
   ui_menu_item_element._pad5[0xaf] = '\0';
-  FUN_004010f0(0x48fe60,0x1c,8,0x417a90);
+  invoke_callback_n(0x48fe60,0x1c,8,0x417a90);
   _DAT_0048ff44 = 4;
-  FUN_004010f0(0x48ff48,0x1c,8,0x417a90);
+  invoke_callback_n(0x48ff48,0x1c,8,0x417a90);
   _DAT_0049002c = 4;
-  FUN_004010f0(0x490030,0x1c,8,0x417a90);
+  invoke_callback_n(0x490030,0x1c,8,0x417a90);
   _DAT_00490114 = 4;
-  FUN_004010f0(0x490118,0x1c,8,0x417a90);
+  invoke_callback_n(0x490118,0x1c,8,0x417a90);
   _DAT_004901fc = 4;
-  iVar2 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
+  iVar2 = invoke_callback_n(0x490200,0x1c,8,0x417a90);
   _DAT_004902e4 = 4;
   return iVar2;
 }
@@ -13611,53 +13611,36 @@ void * __fastcall ui_template_slot_ctor_noop(void *slot)
 
 
 
-/* FUN_00417aa0 @ 00417aa0 */
+/* ui_template_block_set_mode4 @ 00417aa0 */
 
-/* [binja] void* __fastcall sub_417aa0(void* arg1) */
+/* sets template block mode sentinel at offset +0xe4 to 4 */
 
-void * __fastcall FUN_00417aa0(void *arg1)
+void * __fastcall ui_template_block_set_mode4(void *block)
 
 {
-  *(undefined4 *)((int)arg1 + 0xe4) = 4;
-  return arg1;
+  *(undefined4 *)((int)block + 0xe4) = 4;
+  return block;
 }
 
 
 
-/* FUN_00417ab0 @ 00417ab0 */
+/* ui_template_triplet_reset_and_seed_modes @ 00417ab0 */
 
-/* [binja] char* __fastcall sub_417ab0(char* arg1) */
+/* resets head flags and seeds three template sub-block mode sentinels (+0x120/+0x208/+0x2f0) to 4
+    */
 
-char * __fastcall FUN_00417ab0(char *arg1)
+void * __fastcall ui_template_triplet_reset_and_seed_modes(void *block)
 
 {
-  arg1[0x120] = '\x04';
-  arg1[0x121] = '\0';
-  arg1[0x122] = '\0';
-  arg1[0x123] = '\0';
-  arg1[0x208] = '\x04';
-  arg1[0x209] = '\0';
-  arg1[0x20a] = '\0';
-  arg1[0x20b] = '\0';
-  arg1[0x2f0] = '\x04';
-  arg1[0x2f1] = '\0';
-  arg1[0x2f2] = '\0';
-  arg1[0x2f3] = '\0';
-  arg1[0x2f8] = '\0';
-  arg1[0x2f9] = '\0';
-  arg1[0x2fa] = '\0';
-  arg1[0x2fb] = '\0';
-  arg1[0x314] = '\0';
-  arg1[0x38] = '\0';
-  arg1[0x39] = '\0';
-  arg1[0x3a] = '\0';
-  arg1[0x3b] = '\0';
-  arg1[0x34] = '\0';
-  arg1[0x35] = '\0';
-  arg1[0x36] = '\0';
-  arg1[0x37] = '\0';
-  *arg1 = '\0';
-  return arg1;
+  *(undefined4 *)((int)block + 0x120) = 4;
+  *(undefined4 *)((int)block + 0x208) = 4;
+  *(undefined4 *)((int)block + 0x2f0) = 4;
+  *(undefined4 *)((int)block + 0x2f8) = 0;
+  *(undefined1 *)((int)block + 0x314) = 0;
+  *(undefined4 *)((int)block + 0x38) = 0;
+  *(undefined4 *)((int)block + 0x34) = 0;
+  *(undefined1 *)block = 0;
+  return block;
 }
 
 

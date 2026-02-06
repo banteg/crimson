@@ -24,9 +24,9 @@
     "calls": []
   },
   {
-    "name": "FUN_004010f0",
+    "name": "invoke_callback_n",
     "address": "004010f0",
-    "signature": "int FUN_004010f0(int arg1, int arg2, int arg3, int arg4)",
+    "signature": "int invoke_callback_n(int arg1, int arg2, int count, int callback)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1181,7 +1181,7 @@
     "signature": "int ui_menu_template_pool_init(void)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_004010f0", "ui_template_slot_ctor_noop"]
+    "calls": ["invoke_callback_n", "ui_template_slot_ctor_noop"]
   },
   {
     "name": "ui_template_slot_ctor_noop",
@@ -1192,17 +1192,17 @@
     "calls": []
   },
   {
-    "name": "FUN_00417aa0",
+    "name": "ui_template_block_set_mode4",
     "address": "00417aa0",
-    "signature": "void * FUN_00417aa0(void * arg1)",
+    "signature": "void * ui_template_block_set_mode4(void * block)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_00417ab0",
+    "name": "ui_template_triplet_reset_and_seed_modes",
     "address": "00417ab0",
-    "signature": "char * FUN_00417ab0(char * arg1)",
+    "signature": "void * ui_template_triplet_reset_and_seed_modes(void * block)",
     "external": false,
     "calls_total": 0,
     "calls": []

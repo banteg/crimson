@@ -23,9 +23,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004010f0",
-    "name": "FUN_004010f0",
-    "signature": "int FUN_004010f0(int arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t __stdcall sub_4010f0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)"
+    "name": "invoke_callback_n",
+    "signature": "int invoke_callback_n(int arg1, int arg2, int count, int callback)",
+    "comment": "invokes callback `count` times; decompile currently shows arg1/arg2 unused in this helper"
   },
   {
     "program": "crimsonland.exe",
@@ -1081,16 +1081,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00417aa0",
-    "name": "FUN_00417aa0",
-    "signature": "void * FUN_00417aa0(void *arg1)",
-    "comment": "[binja] void* __fastcall sub_417aa0(void* arg1)"
+    "name": "ui_template_block_set_mode4",
+    "signature": "void * ui_template_block_set_mode4(void *block)",
+    "comment": "sets template block mode sentinel at offset +0xe4 to 4"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00417ab0",
-    "name": "FUN_00417ab0",
-    "signature": "char * FUN_00417ab0(char *arg1)",
-    "comment": "[binja] char* __fastcall sub_417ab0(char* arg1)"
+    "name": "ui_template_triplet_reset_and_seed_modes",
+    "signature": "void * ui_template_triplet_reset_and_seed_modes(void *block)",
+    "comment": "resets head flags and seeds three template sub-block mode sentinels (+0x120/+0x208/+0x2f0) to 4"
   },
   {
     "program": "crimsonland.exe",

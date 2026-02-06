@@ -1383,6 +1383,16 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 - `FUN_00417a90` -> `ui_template_slot_ctor_noop`
   - Evidence: identity callback used repeatedly by `ui_menu_template_pool_init` while iterating slot arrays.
 
+- `FUN_004010f0` -> `invoke_callback_n`
+  - Evidence: helper repeatedly invokes a callback pointer `count` times; used by `ui_menu_template_pool_init`
+    for late template-slot batches.
+
+- `FUN_00417aa0` -> `ui_template_block_set_mode4`
+  - Evidence: writes mode sentinel value `4` at `block+0xe4`.
+
+- `FUN_00417ab0` -> `ui_template_triplet_reset_and_seed_modes`
+  - Evidence: zeroes head flags and seeds three mode sentinel dwords at `+0x120`, `+0x208`, and `+0x2f0`.
+
 - `FUN_00401180` -> `console_register_clear_log_atexit`
   - Evidence: single-purpose `crt_atexit` wrapper that registers the local cleanup thunk at `LAB_00401190`.
 
