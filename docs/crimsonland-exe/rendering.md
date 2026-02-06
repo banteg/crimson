@@ -118,7 +118,7 @@ and `player_overlay_suppressed_latch` (`0x0048727c`).
 `player_render_overlays` uses two UV tables for the trooper sprite:
 
 - Legs: `effect_uv8` (8×8 atlas grid, frames `0–14`, empty `15`)
-- Torso: `DAT_00491090`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
+- Torso: `player_overlay_torso_uv8`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
 
 This table is not filled separately; it aliases into `effect_uv8`, which is populated by
 `effect_uv_tables_init` (`FUN_0041fed0`), called during `game_startup_init_prelude` (`FUN_0042b090`).
@@ -147,7 +147,7 @@ During `player_render_overlays`, the **torso quad** is offset by a recoil vector
 - `offset = dir * (muzzle_flash_alpha * 12.0)`
 - the torso quad is drawn at `(camera + pos - size/2) + offset`
 
-The recoil pass uses the torso UV table (`DAT_00491090`) and rotates by `aim_heading`.
+The recoil pass uses `player_overlay_torso_uv8` and rotates by `aim_heading`.
 The shadow/highlight pass draws a slightly larger quad (`size * 1.03`) and shifts it by `(+1, +1)`.
 
 See also:

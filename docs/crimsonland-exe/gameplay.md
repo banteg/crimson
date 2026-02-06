@@ -84,6 +84,11 @@ Global bonus timers used by `player_update` and the main loop:
     highscore-return path and cleared by `gameplay_reset_state`.
 - `time_played_ms` (`DAT_0048718c`)
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
+- `bonus_render_anim_phase` (`0x004aaf5c`)
+  - Phase accumulator advanced by `frame_dt * 1.3` in `bonus_render`; drives pickup icon pulse/rotation modulation.
+- `telekinetic_bonus_hover_timer_ms` (`0x004aaf60`)
+  - Per-player hover dwell timer used by `bonus_render`: increments while within `24` units of a pickup in gameplay,
+    then auto-applies the bonus at `> 650ms` when Telekinetic is active.
 
 ### Bonus HUD slots (active bonus list)
 

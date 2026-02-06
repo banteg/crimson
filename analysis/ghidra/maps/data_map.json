@@ -4768,6 +4768,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00491090",
+      "comment": "Player torso overlay UV table alias (effect_uv8 + 0x10 frames).",
+      "name": "player_overlay_torso_uv8",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
+    },
+    {
       "address": "0x00491210",
       "comment": "Effect UV table for 4x4 atlas frames (u,v).",
       "name": "effect_uv4",
@@ -5564,6 +5571,20 @@
       "comment": "Creature update tick counter used to throttle target recalculation.",
       "name": "creature_update_tick",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aaf5c",
+      "comment": "Bonus-render animation phase accumulator used for icon pulse and rotation.",
+      "name": "bonus_render_anim_phase",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004aaf60",
+      "comment": "Per-player telekinetic bonus-hover timer in ms (auto-picks nearby bonuses after dwell).",
+      "name": "telekinetic_bonus_hover_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf84",
