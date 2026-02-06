@@ -15087,7 +15087,7 @@ void __cdecl bonus_hud_slot_activate(char *label,int icon_id,float *timer_ptr,fl
       do {
         if ((char)ppfVar5[-3] != '\0') {
           iVar4 = 0x10;
-          puVar2 = &DAT_0048f788;
+          puVar2 = &quest_stage_label_buffer;
           do {
             if ((*ppfVar5 == *(float **)(puVar2 + 0xc)) && (iVar1 != iVar4)) {
               *puVar2 = 0;
@@ -15574,15 +15574,15 @@ void ui_render_hud(void)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ee66666);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,18.0,122.0,s_Progress_00473824);
-    if ((DAT_0048f528 & 1) == 0) {
-      DAT_0048f528 = DAT_0048f528 | 1;
-      _DAT_004871a0 = 0x3e4ccccd;
-      _DAT_004871a4 = 0x3f4ccccd;
-      _DAT_004871a8 = 0x3e99999a;
-      _DAT_004871ac = 1.0;
+    if (((byte)ui_hud_init_flags & 1) == 0) {
+      ui_hud_init_flags._0_1_ = (byte)ui_hud_init_flags | 1;
+      quest_progress_bar_color_r = 0.2;
+      quest_progress_bar_color_g = 0.8;
+      quest_progress_bar_color_b = 0.3;
+      quest_progress_bar_color_a = 1.0;
       crt_atexit(&DAT_0041ca80);
     }
-    _DAT_004871ac = unaff_EBX * 0.8;
+    quest_progress_bar_color_a = unaff_EBX * 0.8;
     iVar2 = 0;
     _DAT_004902fc = 0;
     if (0 < quest_spawn_count) {
@@ -15599,7 +15599,8 @@ void ui_render_hud(void)
          (float)(int)highscore_active_record.creature_kill_count /
          (float)(creature_spawned_count + iVar2);
     ui_draw_progress_bar
-              ((float *)&stack0xffffffbc,70.0,quest_kill_progress_ratio,(float *)&DAT_004871a0);
+              ((float *)&stack0xffffffbc,70.0,quest_kill_progress_ratio,&quest_progress_bar_color_r)
+    ;
     iVar2 = 0x9e;
     if (quest_stage_banner_timer_ms < 500) {
       fVar15 = (float)(quest_stage_banner_timer_ms * 2) * 0.001;
@@ -15646,10 +15647,10 @@ LAB_0041bdf8:
         _quest_stage_major = _quest_stage_major + 1;
         _quest_stage_minor = _quest_stage_minor + -10;
       }
-      crt_sprintf(&DAT_0048f788,s__d__d_0047381c,_quest_stage_major,_quest_stage_minor);
-      puVar12 = &DAT_0048f788;
+      crt_sprintf(&quest_stage_label_buffer,s__d__d_0047381c,_quest_stage_major,_quest_stage_minor);
+      puVar12 = &quest_stage_label_buffer;
       uVar4 = 0xffffffff;
-      pcVar7 = &DAT_0048f788;
+      pcVar7 = &quest_stage_label_buffer;
       do {
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
@@ -15660,7 +15661,7 @@ LAB_0041bdf8:
                 (grim_interface_ptr,
                  (((float)pcVar13 - (float)(~uVar4 - 1) * fVar15 * 8.0) - fVar15 * 32.0) - 4.0,
                  (fVar15 * 23.36 + (float)(_config_screen_height / 2 + -0x20)) - fVar15 * 16.0,
-                 &DAT_0048f788);
+                 &quest_stage_label_buffer);
     }
     if (0 < quest_transition_timer_ms) {
       (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
@@ -19347,7 +19348,7 @@ void projectile_update(void)
   float local_14;
   float local_10 [4];
   
-  DAT_004aaf54 = DAT_004aaf54 + 1;
+  projectile_update_tick = projectile_update_tick + 1;
   local_c0 = 1.0;
   iVar7 = perk_count_get(perk_id_ion_gun_master);
   if (iVar7 != 0) {

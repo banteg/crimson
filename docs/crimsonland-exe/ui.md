@@ -68,6 +68,8 @@ Recent data-map lifts for one-shot setup guards:
   Purchase.
 - `ui_aim_indicators_init_flags` (`0x00480340`):
   `ui_render_aim_indicators` one-shot atexit registration guards.
+- `ui_hud_init_flags` (`0x0048f528`):
+  `ui_render_hud` one-shot setup guard for quest-progress bar tint defaults.
 
 Additional shared UI strings/globals:
 
@@ -78,6 +80,17 @@ Additional shared UI strings/globals:
   counters and demo-time formatting.
 - `screen_height_f` (`0x00471144`): float mirror of `_config_screen_height` used
   by centered splash/loading layout.
+
+## Quest HUD helper globals
+
+Recovered runtime globals used by the in-game quest panel in `ui_render_hud`:
+
+- `quest_progress_bar_color_r/g/b/a` (`0x004871a0..0x004871ac`):
+  RGBA vector passed to `ui_draw_progress_bar` for quest-kill progress fill.
+  RGB is seeded to `(0.2, 0.8, 0.3)` and alpha is scaled from transition alpha.
+- `quest_stage_label_buffer` (`0x0048f788`):
+  scratch text buffer used for formatted stage labels (`major-minor`) near the
+  quest title card.
 
 ## Controls menu list latches
 

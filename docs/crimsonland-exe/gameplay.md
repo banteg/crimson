@@ -89,6 +89,8 @@ Global bonus timers used by `player_update` and the main loop:
 - `telekinetic_bonus_hover_timer_ms` (`0x004aaf60`)
   - Per-player hover dwell timer used by `bonus_render`: increments while within `24` units of a pickup in gameplay,
     then auto-applies the bonus at `> 650ms` when Telekinetic is active.
+- `projectile_update_tick` (`0x004aaf54`)
+  - Frame-local projectile update counter incremented once per `projectile_update` call.
 
 ### Bonus HUD slots (active bonus list)
 

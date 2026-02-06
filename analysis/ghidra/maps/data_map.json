@@ -2779,6 +2779,34 @@
       "type": "int"
     },
     {
+      "address": "0x004871a0",
+      "comment": "Quest HUD progress bar tint color R (ui_render_hud / ui_draw_progress_bar).",
+      "name": "quest_progress_bar_color_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004871a4",
+      "comment": "Quest HUD progress bar tint color G (ui_render_hud / ui_draw_progress_bar).",
+      "name": "quest_progress_bar_color_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004871a8",
+      "comment": "Quest HUD progress bar tint color B (ui_render_hud / ui_draw_progress_bar).",
+      "name": "quest_progress_bar_color_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004871ac",
+      "comment": "Quest HUD progress bar tint color A (scaled from transition alpha in ui_render_hud).",
+      "name": "quest_progress_bar_color_a",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004871b0",
       "comment": "HUD mode gate: enable heart/lifebar overlay rendering (set by hud_update_and_render per game mode).",
       "name": "hud_show_health_panel",
@@ -3712,6 +3740,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f528",
+      "comment": "ui_render_hud one-shot init flags bitfield (guards static quest progress bar color setup).",
+      "name": "ui_hud_init_flags",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048f530",
       "comment": "Terrain render target index/handle used by grim_set_render_target.",
       "name": "terrain_render_target",
@@ -3819,6 +3854,12 @@
       "address": "0x0048f5a0",
       "comment": "Bonus HUD slot icon id (bonus_hud_slot_table + 0x18).",
       "name": "bonus_hud_slot_icon_id",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048f788",
+      "comment": "Quest HUD stage label scratch buffer (formatted as major/minor, e.g. \"3-7\").",
+      "name": "quest_stage_label_buffer",
       "program": "crimsonland.exe"
     },
     {
@@ -5565,6 +5606,13 @@
       "comment": "Flag set after grim_apply_config invocation.",
       "name": "grim_config_invoked",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aaf54",
+      "comment": "Projectile update tick counter incremented once per projectile_update call.",
+      "name": "projectile_update_tick",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf58",
