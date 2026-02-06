@@ -259,6 +259,14 @@
   - sfx_play|tutorial_timeline_update|65: 7
   - sfx_play_panned|projectile_update|58: 7
   - sfx_play_panned|weapon_assign_player|31: 6
+- high-confidence function->id:
+  - sfx_play_exclusive|quest_results_screen_update -> id 5 (3989/3989, 100.0%)
+  - sfx_play_exclusive|game_over_screen_update -> id 1 (714/716, 99.7%)
+  - sfx_play_exclusive|quest_failed_screen_update -> id 1 (482/483, 99.8%)
+  - sfx_play_exclusive|gameplay_update_and_render -> id 1 (346/346, 100.0%)
+  - sfx_play|ui_button_update -> id 63 (38/38, 100.0%)
+  - sfx_play|credits_screen_update -> id 62 (38/38, 100.0%)
+  - sfx_play|quest_results_screen_update -> id 69 (21/23, 91.3%)
 
 ## Memory watch
 - mem_watch_access events: 0

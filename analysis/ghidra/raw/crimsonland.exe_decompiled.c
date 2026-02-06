@@ -9564,7 +9564,8 @@ char * __cdecl time_format_mm_ss(int total_seconds)
 /* game_over_screen_update @ 0040ffc0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* game over flow: high score entry, results text, and navigation buttons */
+/* game over flow: high score entry, results text, and navigation buttons. Runtime capture
+   (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (714/716). */
 
 void game_over_screen_update(void)
 
@@ -9883,7 +9884,8 @@ LAB_00410782:
 /* quest_failed_screen_update @ 004107e0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* quest failure screen: retry options and navigation */
+/* quest failure screen: retry options and navigation. Runtime capture (2026-02-06
+   gameplay_state_capture): dominant sfx_play_exclusive id is 1 (482/483). */
 
 void quest_failed_screen_update(void)
 
@@ -10057,7 +10059,8 @@ LAB_00410cc1:
 /* quest_results_screen_update @ 00410d20 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* quest/campaign results screen: final time, perk bonus, high score entry, and buttons */
+/* quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime
+   capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989). */
 
 void quest_results_screen_update(void)
 
@@ -11568,7 +11571,8 @@ void gameplay_reset_state(void)
 /* player_start_reload @ 00413430 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* starts reload for the active player, sets timers, and plays SFX */
+/* starts reload for the active player, sets timers, and plays SFX. Runtime capture (2026-02-06
+   gameplay_state_capture): dominant sfx_play_panned id is 35 (15/20). */
 
 void player_start_reload(void)
 
@@ -35556,7 +35560,8 @@ LAB_0043e37f:
 /* ui_menu_item_update @ 0043e5e0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* draws a text menu item, updates hover/press state, and returns 1 when activated */
+/* draws a text menu item, updates hover/press state, and returns 1 when activated. Runtime capture
+   (2026-02-06 gameplay_state_capture): emits sfx_play id 63 on activation paths. */
 
 int __cdecl ui_menu_item_update(float *xy,int *item)
 
@@ -35647,7 +35652,8 @@ LAB_0043e7e0:
 
 /* ui_button_update @ 0043e830 */
 
-/* draws a UI button, updates hover/press state, and returns 1 when activated */
+/* draws a UI button, updates hover/press state, and returns 1 when activated. Runtime capture
+   (2026-02-06 gameplay_state_capture): emits sfx_play id 63 (38/38). */
 
 int __cdecl ui_button_update(float *xy,ui_button_t *button)
 
@@ -38255,7 +38261,8 @@ LAB_004468da:
 /* ui_element_update @ 00446900 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* updates hover/click/animation for a UI element and fires callbacks */
+/* updates hover/click/animation for a UI element and fires callbacks. Runtime capture (2026-02-06
+   gameplay_state_capture): mostly emits sfx_play id 64 (95/108), with id 63 as secondary. */
 
 void __cdecl ui_element_update(ui_element_t *element)
 

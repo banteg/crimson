@@ -168,6 +168,45 @@ def top_counter(counter: Counter[Any], limit: int) -> list[dict[str, Any]]:
     return [{"key": key, "count": count} for key, count in counter.most_common(limit)]
 
 
+def parse_sfx_function_and_id(key: str) -> tuple[str, str, int | None]:
+    event, fn_name, raw_id = (key.split("|", 2) + ["", ""])[:3]
+    return event, fn_name, parse_int(raw_id)
+
+
+def extract_sfx_id_candidates(
+    by_function: Counter[str], by_function_and_id: Counter[str], min_total: int = 20, min_share: float = 0.9
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for fn_key, total in by_function.items():
+        if total < min_total:
+            continue
+        prefix = f"{fn_key}|"
+        id_counts: Counter[int | None] = Counter()
+        for key, count in by_function_and_id.items():
+            if key.startswith(prefix):
+                _event, _fn_name, sid = parse_sfx_function_and_id(key)
+                id_counts[sid] += count
+        if not id_counts:
+            continue
+        top_id, top_count = id_counts.most_common(1)[0]
+        share = float(top_count) / float(total) if total else 0.0
+        if share < min_share:
+            continue
+        event, fn_name = (fn_key.split("|", 1) + [""])[:2]
+        out.append(
+            {
+                "event": event,
+                "function": fn_name,
+                "id": top_id,
+                "count": top_count,
+                "total": total,
+                "share": round(share, 4),
+            }
+        )
+    out.sort(key=lambda row: (row["total"], row["count"]), reverse=True)
+    return out
+
+
 def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, top_n: int) -> dict[str, Any]:
     exe = ExeInfo()
 
@@ -420,6 +459,7 @@ def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, to
 
     quest_final_min = min(quest_results_final_time_values) if quest_results_final_time_values else None
     quest_final_max = max(quest_results_final_time_values) if quest_results_final_time_values else None
+    sfx_id_candidates = extract_sfx_id_candidates(sfx_func_counts, sfx_func_id_counts, min_total=20, min_share=0.9)
 
     return {
         "source_log": str(log_path),
@@ -482,6 +522,7 @@ def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, to
             "by_function_and_id": dict(sfx_func_id_counts),
             "top_by_function": top_counter(sfx_func_counts, top_n),
             "top_by_function_and_id": top_counter(sfx_func_id_counts, top_n),
+            "high_confidence_function_ids": sfx_id_candidates,
         },
         "typing_artifacts": {
             "clip_samples": clip_samples,
@@ -571,6 +612,16 @@ def build_report(summary: dict[str, Any], top_n: int) -> str:
     lines.append("- top function+id pairs:")
     for row in sfx.get("top_by_function_and_id") or []:
         lines.append(f"  - {row.get('key')}: {row.get('count')}")
+    lines.append("- high-confidence function->id:")
+    for row in sfx.get("high_confidence_function_ids") or []:
+        sid = row.get("id")
+        sid_text = "None" if sid is None else str(sid)
+        share = row.get("share")
+        share_text = f"{float(share) * 100:.1f}%" if isinstance(share, (int, float)) else str(share)
+        lines.append(
+            f"  - {row.get('event')}|{row.get('function')} -> id {sid_text} "
+            f"({row.get('count')}/{row.get('total')}, {share_text})"
+        )
     lines.append("")
 
     mem_watch = summary.get("mem_watch") or {}

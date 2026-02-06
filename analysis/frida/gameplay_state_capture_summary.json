@@ -214,6 +214,64 @@
       "sfx_play|ui_menu_item_update|63": 3,
       "sfx_play|ui_text_input_update|68": 1
     },
+    "high_confidence_function_ids": [
+      {
+        "count": 3989,
+        "event": "sfx_play_exclusive",
+        "function": "quest_results_screen_update",
+        "id": 5,
+        "share": 1.0,
+        "total": 3989
+      },
+      {
+        "count": 714,
+        "event": "sfx_play_exclusive",
+        "function": "game_over_screen_update",
+        "id": 1,
+        "share": 0.9972,
+        "total": 716
+      },
+      {
+        "count": 482,
+        "event": "sfx_play_exclusive",
+        "function": "quest_failed_screen_update",
+        "id": 1,
+        "share": 0.9979,
+        "total": 483
+      },
+      {
+        "count": 346,
+        "event": "sfx_play_exclusive",
+        "function": "gameplay_update_and_render",
+        "id": 1,
+        "share": 1.0,
+        "total": 346
+      },
+      {
+        "count": 38,
+        "event": "sfx_play",
+        "function": "ui_button_update",
+        "id": 63,
+        "share": 1.0,
+        "total": 38
+      },
+      {
+        "count": 38,
+        "event": "sfx_play",
+        "function": "credits_screen_update",
+        "id": 62,
+        "share": 1.0,
+        "total": 38
+      },
+      {
+        "count": 21,
+        "event": "sfx_play",
+        "function": "quest_results_screen_update",
+        "id": 69,
+        "share": 0.913,
+        "total": 23
+      }
+    ],
     "top_by_function": [
       {
         "count": 3989,
