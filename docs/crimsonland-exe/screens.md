@@ -89,6 +89,18 @@ Recovered staged-reveal globals:
 - `quest_failed_highscore_rank_index` (`0x00482604`) snapshots
   `highscore_rank_index()` on entry for top-100 flow gating.
 
+## Game completed screen (game_update_victory_screen / FUN_00406350)
+
+- Post-completion routing screen that offers mode shortcuts and a return to main
+  menu.
+- Uses `game_completed_screen_flags` (`0x00480321`) as one-shot init guards for
+  navigation button setup.
+- Persistent navigation button globals:
+  `game_completed_survival_button` (`0x0047f5e0`),
+  `game_completed_rush_button` (`0x00480280`),
+  `game_completed_typo_button` (`0x00480328`), and
+  `game_completed_main_menu_button` (`0x00480268`).
+
 ## Database screens (unlocked weapons/perks)
 
 - `unlocked_weapons_nav_focus_index` (`0x004d1200`) and
@@ -122,6 +134,9 @@ Recovered staged-reveal globals:
 - Full-screen upsell flow.
 - Renders the feature list, shows the logo/mockup, and opens the purchase URL
   when the user clicks "Purchase".
+- Persistent action-button globals:
+  `demo_purchase_purchase_button` (`0x0047f678`) and
+  `demo_purchase_maybe_later_button` (`0x004802b0`).
 
 - **Rewrite note:** implemented in the Python rewrite for parity (the purchase
   URL is legacy).

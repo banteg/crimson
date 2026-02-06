@@ -83,6 +83,12 @@ Additional shared UI strings/globals:
 - `stats_menu_easter_egg_roll` (`0x00471308`): one-shot random roll (`0..31`)
   used by `statistics_menu_update` for the March-3 "Orbes Volantes Exstare"
   Easter-egg text gate (`roll == 3`, then reset to `-1`).
+- `ui_button_tex_small` / `ui_button_tex_medium`
+  (`0x00478670` / `0x00478674`): lazy-loaded texture-handle caches used by
+  `ui_button_update` for small/medium button frames.
+- `ui_menu_item_color_idle_*` (`0x004ccd40..0x004ccd4c`) and
+  `ui_menu_item_color_hover_*` (`0x004d0e28..0x004d0e34`): persistent RGBA
+  palette vectors used by `ui_menu_item_update` for idle/hover text tint.
 
 ## Quest HUD helper globals
 
@@ -168,6 +174,11 @@ selection to confirm the exact fade-in timing/curve.
 
 Perk prompt origin/bounds can be captured with `scripts/frida/perk_prompt_trace.js` (see `analysis/ghidra/maps/data_map.json`
 for the underlying globals).
+
+Recovered action-button globals for this state:
+
+- `perk_selection_cancel_button` (`0x00480090`)
+- `perk_selection_select_button` (`0x00480820`)
 
 ### Runtime capture request (next large run)
 

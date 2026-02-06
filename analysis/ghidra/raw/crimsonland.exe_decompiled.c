@@ -4288,33 +4288,33 @@ void perk_selection_screen_update(void)
              (&perk_meta_table)[(&perk_choice_ids)[perk_selection_index]].description);
   if (((byte)perk_selection_screen_flags & 8) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 8;
-    DAT_00480096 = 1;
-    DAT_004800a5 = 0;
-    DAT_004800a4 = 0;
-    _DAT_004800a0 = 0x3f800000;
-    _DAT_0048009c = 0;
-    _DAT_00480090 = (char *)0x0;
-    DAT_00480094 = 0;
-    DAT_00480095 = 0;
-    _DAT_00480098 = 0;
+    perk_selection_cancel_button.enabled = '\x01';
+    perk_selection_cancel_button.force_wide = '\0';
+    perk_selection_cancel_button.force_small = '\0';
+    perk_selection_cancel_button.alpha = 1.0;
+    perk_selection_cancel_button.click_anim = 0;
+    perk_selection_cancel_button.label = (char *)0x0;
+    perk_selection_cancel_button.hovered = '\0';
+    perk_selection_cancel_button.activated = '\0';
+    perk_selection_cancel_button.hover_anim = 0;
     crt_atexit(&DAT_00406140);
   }
-  _DAT_00480090 = s_Cancel_00472010;
+  perk_selection_cancel_button.label = s_Cancel_00472010;
   if (((byte)perk_selection_screen_flags & 0x10) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 0x10;
-    DAT_00480826 = 1;
-    DAT_00480835 = 0;
-    DAT_00480834 = 0;
-    _DAT_00480830 = 0x3f800000;
-    _DAT_0048082c = 0;
-    _DAT_00480820 = (char *)0x0;
-    DAT_00480824 = 0;
-    DAT_00480825 = 0;
-    _DAT_00480828 = 0;
+    perk_selection_select_button.enabled = '\x01';
+    perk_selection_select_button.force_wide = '\0';
+    perk_selection_select_button.force_small = '\0';
+    perk_selection_select_button.alpha = 1.0;
+    perk_selection_select_button.click_anim = 0;
+    perk_selection_select_button.label = (char *)0x0;
+    perk_selection_select_button.hovered = '\0';
+    perk_selection_select_button.activated = '\0';
+    perk_selection_select_button.hover_anim = 0;
     crt_atexit(&DAT_00406130);
   }
-  _DAT_00480820 = s_Select_00472008;
-  iVar2 = ui_button_update((float *)&stack0xffffffcc,(ui_button_t *)&DAT_00480090);
+  perk_selection_select_button.label = s_Select_00472008;
+  iVar2 = ui_button_update((float *)&stack0xffffffcc,&perk_selection_cancel_button);
   if ((char)iVar2 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -4404,7 +4404,6 @@ void ui_draw_clock_gauge(void)
 
 /* game_update_victory_screen @ 00406350 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* [binja] int32_t sub_406350() */
 
 int game_update_victory_screen(void)
@@ -4480,65 +4479,65 @@ int game_update_victory_screen(void)
             );
   if ((game_completed_screen_flags & 1) == 0) {
     game_completed_screen_flags = game_completed_screen_flags | 1;
-    DAT_0047f5e6 = 1;
-    DAT_0047f5f5 = 0;
-    DAT_0047f5f4 = 0;
-    _DAT_0047f5f0 = 0x3f800000;
-    _DAT_0047f5ec = 0;
-    _DAT_0047f5e0 = (char *)0x0;
-    DAT_0047f5e4 = 0;
-    DAT_0047f5e5 = '\0';
-    _DAT_0047f5e8 = 0;
+    game_completed_survival_button.enabled = '\x01';
+    game_completed_survival_button.force_wide = '\0';
+    game_completed_survival_button.force_small = '\0';
+    game_completed_survival_button.alpha = 1.0;
+    game_completed_survival_button.click_anim = 0;
+    game_completed_survival_button.label = (char *)0x0;
+    game_completed_survival_button.hovered = '\0';
+    game_completed_survival_button.activated = '\0';
+    game_completed_survival_button.hover_anim = 0;
     crt_atexit(&DAT_00406ae0);
   }
-  _DAT_0047f5e0 = s_Survival_004720ac;
+  game_completed_survival_button.label = s_Survival_004720ac;
   if ((game_completed_screen_flags & 2) == 0) {
     game_completed_screen_flags = game_completed_screen_flags | 2;
-    DAT_00480286 = 1;
-    DAT_00480295 = 0;
-    DAT_00480294 = 0;
-    _DAT_00480290 = 0x3f800000;
-    _DAT_0048028c = 0;
-    _DAT_00480280 = (char *)0x0;
-    DAT_00480284 = 0;
-    DAT_00480285 = '\0';
-    _DAT_00480288 = 0;
+    game_completed_rush_button.enabled = '\x01';
+    game_completed_rush_button.force_wide = '\0';
+    game_completed_rush_button.force_small = '\0';
+    game_completed_rush_button.alpha = 1.0;
+    game_completed_rush_button.click_anim = 0;
+    game_completed_rush_button.label = (char *)0x0;
+    game_completed_rush_button.hovered = '\0';
+    game_completed_rush_button.activated = '\0';
+    game_completed_rush_button.hover_anim = 0;
     crt_atexit(&DAT_00406ad0);
   }
-  _DAT_00480280 = s_Rush_004720a0;
+  game_completed_rush_button.label = s_Rush_004720a0;
   if ((game_completed_screen_flags & 4) == 0) {
     game_completed_screen_flags = game_completed_screen_flags | 4;
-    DAT_0048032e = 1;
-    DAT_0048033d = 0;
-    DAT_0048033c = 0;
-    _DAT_00480338 = 0x3f800000;
-    _DAT_00480334 = 0;
-    _DAT_00480328 = (char *)0x0;
-    DAT_0048032c = 0;
-    DAT_0048032d = '\0';
-    _DAT_00480330 = 0;
+    game_completed_typo_button.enabled = '\x01';
+    game_completed_typo_button.force_wide = '\0';
+    game_completed_typo_button.force_small = '\0';
+    game_completed_typo_button.alpha = 1.0;
+    game_completed_typo_button.click_anim = 0;
+    game_completed_typo_button.label = (char *)0x0;
+    game_completed_typo_button.hovered = '\0';
+    game_completed_typo_button.activated = '\0';
+    game_completed_typo_button.hover_anim = 0;
     crt_atexit(&DAT_00406ac0);
   }
-  _DAT_00480328 = s_Typ_o_Shooter_00472090;
+  game_completed_typo_button.label = s_Typ_o_Shooter_00472090;
   if ((game_completed_screen_flags & 8) == 0) {
     game_completed_screen_flags = game_completed_screen_flags | 8;
-    DAT_0048026e = 1;
-    DAT_0048027d = 0;
-    DAT_0048027c = 0;
-    _DAT_00480278 = 0x3f800000;
-    _DAT_00480274 = 0;
-    _DAT_00480268 = (char *)0x0;
-    DAT_0048026c = 0;
-    DAT_0048026d = '\0';
-    _DAT_00480270 = 0;
+    game_completed_main_menu_button.enabled = '\x01';
+    game_completed_main_menu_button.force_wide = '\0';
+    game_completed_main_menu_button.force_small = '\0';
+    game_completed_main_menu_button.alpha = 1.0;
+    game_completed_main_menu_button.click_anim = 0;
+    game_completed_main_menu_button.label = (char *)0x0;
+    game_completed_main_menu_button.hovered = '\0';
+    game_completed_main_menu_button.activated = '\0';
+    game_completed_main_menu_button.hover_anim = 0;
     crt_atexit(&DAT_00406ab0);
   }
-  _DAT_00480268 = s_Main_Menu_00472084;
-  ui_button_update((float *)&stack0xffffffc0,(ui_button_t *)&DAT_0047f5e0);
-  ui_button_update((float *)&stack0xffffffc0,(ui_button_t *)&DAT_00480280);
-  ui_button_update((float *)&stack0xffffffc0,(ui_button_t *)&DAT_00480328);
-  ui_button_update((float *)&stack0xffffffc0,(ui_button_t *)&DAT_00480268);
-  if (DAT_00480285 != '\0') {
+  game_completed_main_menu_button.label = s_Main_Menu_00472084;
+  ui_button_update((float *)&stack0xffffffc0,&game_completed_survival_button);
+  ui_button_update((float *)&stack0xffffffc0,&game_completed_rush_button);
+  ui_button_update((float *)&stack0xffffffc0,&game_completed_typo_button);
+  ui_button_update((float *)&stack0xffffffc0,&game_completed_main_menu_button);
+  if (game_completed_rush_button.activated != '\0') {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
     sfx_mute_all(music_track_crimson_theme_id);
@@ -4546,7 +4545,7 @@ int game_update_victory_screen(void)
     sfx_mute_all(music_track_extra_0);
     config_game_mode = GAME_MODE_RUSH;
   }
-  if (DAT_0047f5e5 != '\0') {
+  if (game_completed_survival_button.activated != '\0') {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
     config_game_mode = GAME_MODE_SURVIVAL;
@@ -4554,7 +4553,7 @@ int game_update_victory_screen(void)
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_0048032d != '\0') {
+  if (game_completed_typo_button.activated != '\0') {
     render_pass_mode = 0;
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
@@ -4564,7 +4563,7 @@ int game_update_victory_screen(void)
     sfx_mute_all(music_track_extra_0);
     screen_fade_ramp_flag = '\x01';
   }
-  if (DAT_0048026d != '\0') {
+  if (game_completed_main_menu_button.activated != '\0') {
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
@@ -7195,32 +7194,32 @@ void demo_purchase_screen_update(void)
   }
   if ((demo_purchase_screen_init_flags & 1U) == 0) {
     demo_purchase_screen_init_flags = demo_purchase_screen_init_flags | 1;
-    DAT_004802b6 = 1;
-    DAT_004802c5 = 0;
-    DAT_004802c4 = 0;
-    _DAT_004802c0 = 0x3f800000;
-    _DAT_004802bc = 0;
-    _DAT_004802b0 = (char *)0x0;
-    DAT_004802b4 = 0;
-    DAT_004802b5 = 0;
-    _DAT_004802b8 = 0;
+    demo_purchase_maybe_later_button.enabled = '\x01';
+    demo_purchase_maybe_later_button.force_wide = '\0';
+    demo_purchase_maybe_later_button.force_small = '\0';
+    demo_purchase_maybe_later_button.alpha = 1.0;
+    demo_purchase_maybe_later_button.click_anim = 0;
+    demo_purchase_maybe_later_button.label = (char *)0x0;
+    demo_purchase_maybe_later_button.hovered = '\0';
+    demo_purchase_maybe_later_button.activated = '\0';
+    demo_purchase_maybe_later_button.hover_anim = 0;
     crt_atexit(&DAT_0040c1b0);
   }
-  _DAT_004802b0 = s_Maybe_later_00471b78;
+  demo_purchase_maybe_later_button.label = s_Maybe_later_00471b78;
   if ((demo_purchase_screen_init_flags & 2U) == 0) {
     demo_purchase_screen_init_flags = demo_purchase_screen_init_flags | 2;
-    DAT_0047f67e = 1;
-    DAT_0047f68d = 0;
-    DAT_0047f68c = 0;
-    _DAT_0047f688 = 0x3f800000;
-    _DAT_0047f684 = 0;
-    _DAT_0047f678 = (char *)0x0;
-    DAT_0047f67c = 0;
-    DAT_0047f67d = 0;
-    _DAT_0047f680 = 0;
+    demo_purchase_purchase_button.enabled = '\x01';
+    demo_purchase_purchase_button.force_wide = '\0';
+    demo_purchase_purchase_button.force_small = '\0';
+    demo_purchase_purchase_button.alpha = 1.0;
+    demo_purchase_purchase_button.click_anim = 0;
+    demo_purchase_purchase_button.label = (char *)0x0;
+    demo_purchase_purchase_button.hovered = '\0';
+    demo_purchase_purchase_button.activated = '\0';
+    demo_purchase_purchase_button.hover_anim = 0;
     crt_atexit(&DAT_0040c1a0);
   }
-  _DAT_0047f678 = s_Purchase_00471b6c;
+  demo_purchase_purchase_button.label = s_Purchase_00471b6c;
   fStack_20 = 1.0;
   fStack_2c = (float)quest_spawn_timeline * 0.016;
   if (fStack_2c < 20.0) {
@@ -7341,7 +7340,7 @@ void demo_purchase_screen_update(void)
     fVar14 = fVar14 + 17.0 + 17.0 + 22.0;
     fStack_2c = (float)(_config_screen_width / 2 + 0x80);
     fStack_28 = (float)(_config_screen_height / 2 + 0x66) + fVar1 * 0.3 + 50.0;
-    iVar5 = ui_button_update(&fStack_2c,(ui_button_t *)&DAT_0047f678);
+    iVar5 = ui_button_update(&fStack_2c,&demo_purchase_purchase_button);
     if ((char)iVar5 != '\0') {
       shareware_offer_seen_latch = '\x01';
       quit_requested = '\x01';
@@ -7352,7 +7351,7 @@ void demo_purchase_screen_update(void)
     fStack_2c = (float)(_config_screen_width / 2 + 0x80);
     unaff_EDI = (float)(_config_screen_height / 2 + 0x66);
     fStack_28 = (float)(int)unaff_EDI + fVar1 * 0.3 + 90.0;
-    iVar5 = ui_button_update(&fStack_2c,(ui_button_t *)&DAT_004802b0);
+    iVar5 = ui_button_update(&fStack_2c,&demo_purchase_maybe_later_button);
     if ((char)iVar5 != '\0') {
       if (shareware_offer_seen_latch != '\0') {
         quit_requested = '\x01';
@@ -36550,7 +36549,6 @@ LAB_0043e37f:
 
 /* ui_menu_item_update @ 0043e5e0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* draws a text menu item, updates hover/press state, and returns 1 when activated. Runtime capture
    (2026-02-06 gameplay_state_capture): emits sfx_play id 63 on activation paths. */
 
@@ -36570,18 +36568,18 @@ int __cdecl ui_menu_item_update(float *xy,int *item)
   iVar1 = ui_focus_update((int)item);
   if (((byte)menu_item_palette_init_flags & 1) == 0) {
     menu_item_palette_init_flags._0_1_ = (byte)menu_item_palette_init_flags | 1;
-    _DAT_004ccd40 = 0x3e8c8c8d;
-    _DAT_004ccd44 = 0x3f34b4b5;
-    _DAT_004ccd48 = 0x3f70f0f1;
-    _DAT_004ccd4c = 0x3f19999a;
+    ui_menu_item_color_idle_r = 0.27450982;
+    ui_menu_item_color_idle_g = 0.7058824;
+    ui_menu_item_color_idle_b = 0.9411765;
+    ui_menu_item_color_idle_a = 0.6;
     crt_atexit(&DAT_0043e820);
   }
   if (((byte)menu_item_palette_init_flags & 2) == 0) {
     menu_item_palette_init_flags._0_1_ = (byte)menu_item_palette_init_flags | 2;
-    _DAT_004d0e28 = 0x3e8c8c8d;
-    _DAT_004d0e2c = 0x3f34b4b5;
-    _DAT_004d0e30 = 0x3f70f0f1;
-    _DAT_004d0e34 = 0x3f800000;
+    ui_menu_item_color_hover_r = 0.27450982;
+    ui_menu_item_color_hover_g = 0.7058824;
+    ui_menu_item_color_hover_b = 0.9411765;
+    ui_menu_item_color_hover_a = 1.0;
     crt_atexit(&DAT_0043e810);
   }
   if ((char)iVar1 != '\0') {
@@ -36598,11 +36596,11 @@ int __cdecl ui_menu_item_update(float *xy,int *item)
   iVar2 = ui_mouse_inside_rect(xy,0x10,(int)lVar5);
   *(char *)(id + 1) = (char)iVar2;
   if ((char)iVar2 == '\0') {
-    (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004ccd40);
+    (*grim_interface_ptr->vtable->grim_set_color_ptr)(&ui_menu_item_color_idle_r);
   }
   else {
     ui_focus_set((int)id,'\0');
-    (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004d0e28);
+    (*grim_interface_ptr->vtable->grim_set_color_ptr)(&ui_menu_item_color_hover_r);
   }
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,*xy,xy[1],&s_fmt_percent_s,*id);
@@ -36678,11 +36676,13 @@ int __cdecl ui_button_update(float *xy,ui_button_t *button)
     ui_focus_draw(&local_18);
   }
   iVar2 = (*grim_interface_ptr->vtable->grim_measure_text_width)(button->label);
-  if (DAT_00478670 == -1) {
-    DAT_00478670 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_buttonSm_00474498);
+  if (ui_button_tex_small == -1) {
+    ui_button_tex_small =
+         (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_buttonSm_00474498);
   }
-  if (DAT_00478674 == -1) {
-    DAT_00478674 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_buttonMd_00474474);
+  if (ui_button_tex_medium == -1) {
+    ui_button_tex_medium =
+         (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_ui_buttonMd_00474474);
   }
   if (((float)iVar2 < 40.0) || (xy = (float *)0x43110000, button->force_small != '\0')) {
     xy = (float *)0x42a40000;
@@ -36742,15 +36742,15 @@ int __cdecl ui_button_update(float *xy,ui_button_t *button)
   }
   if ((unaff_EBP < 40.0) || (button->force_small != '\0')) {
     pIVar5 = grim_interface_ptr->vtable;
-    iVar1 = DAT_00478670;
+    iVar1 = ui_button_tex_small;
   }
   else {
     pIVar5 = grim_interface_ptr->vtable;
-    iVar1 = DAT_00478674;
+    iVar1 = ui_button_tex_medium;
   }
   (*pIVar5->grim_bind_texture)(iVar1,0);
   if (button->force_wide != '\0') {
-    (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_00478674,0);
+    (*grim_interface_ptr->vtable->grim_bind_texture)(ui_button_tex_medium,0);
   }
   cVar9 = '\0';
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,button->alpha);

@@ -327,6 +327,20 @@
       "type": "int"
     },
     {
+      "address": "0x00478670",
+      "comment": "Texture handle cache for ui_button_update narrow button frame (ui_buttonSm).",
+      "name": "ui_button_tex_small",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00478674",
+      "comment": "Texture handle cache for ui_button_update wide button frame (ui_buttonMd).",
+      "name": "ui_button_tex_medium",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478878",
       "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
       "name": "s_fmt_highscore_date_label",
@@ -702,6 +716,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047f5e0",
+      "comment": "Game-complete screen navigation button for \"Survival\".",
+      "name": "game_completed_survival_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x0047f5f8",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
       "name": "ui_button_table_a",
@@ -729,6 +750,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047f678",
+      "comment": "Demo purchase upsell button state for the \"Purchase\" action.",
+      "name": "demo_purchase_purchase_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00480090",
+      "comment": "Perk selection menu action button state for \"Cancel\".",
+      "name": "perk_selection_cancel_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x0048014c",
       "comment": "Scratch buffer used by game_build_path (base path + filename).",
       "name": "game_path_buf",
@@ -749,6 +784,20 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x00480268",
+      "comment": "Game-complete screen navigation button for \"Main Menu\".",
+      "name": "game_completed_main_menu_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00480280",
+      "comment": "Game-complete screen navigation button for \"Rush\".",
+      "name": "game_completed_rush_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004802a8",
       "comment": "Aim/cursor screen X (camera_offset_x + player_aim_x).",
       "name": "aim_screen_x",
@@ -759,6 +808,13 @@
       "comment": "Aim/cursor screen Y (camera_offset_y + player_aim_y).",
       "name": "aim_screen_y",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004802b0",
+      "comment": "Demo purchase upsell button state for \"Maybe later\".",
+      "name": "demo_purchase_maybe_later_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x00480321",
@@ -772,6 +828,13 @@
       "name": "demo_purchase_screen_init_flags",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x00480328",
+      "comment": "Game-complete screen navigation button for \"Typ-o-Shooter\".",
+      "name": "game_completed_typo_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x00480340",
@@ -1251,6 +1314,13 @@
       "address": "0x00480808",
       "comment": "Shareware prompt: \"Maybe later\" button state.",
       "name": "ui_button_maybe_later",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00480820",
+      "comment": "Perk selection menu action button state for \"Select\".",
+      "name": "perk_selection_select_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
     },
@@ -7132,6 +7202,34 @@
       "type": "int"
     },
     {
+      "address": "0x004ccd40",
+      "comment": "ui_menu_item_update idle tint RGBA component R.",
+      "name": "ui_menu_item_color_idle_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004ccd44",
+      "comment": "ui_menu_item_update idle tint RGBA component G.",
+      "name": "ui_menu_item_color_idle_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004ccd48",
+      "comment": "ui_menu_item_update idle tint RGBA component B.",
+      "name": "ui_menu_item_color_idle_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004ccd4c",
+      "comment": "ui_menu_item_update idle tint RGBA component A.",
+      "name": "ui_menu_item_color_idle_a",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x00478c94",
       "comment": "Typ-o mode reset flag set on state 0x12 entry and consumed by typo_gameplay_update_and_render.",
       "name": "typo_mode_reset_flag",
@@ -7143,6 +7241,34 @@
       "comment": "Scratch text buffer used by ui_text_input_render for highscore card numeric/rank labels.",
       "name": "highscore_card_text_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d0e28",
+      "comment": "ui_menu_item_update hover tint RGBA component R.",
+      "name": "ui_menu_item_color_hover_r",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d0e2c",
+      "comment": "ui_menu_item_update hover tint RGBA component G.",
+      "name": "ui_menu_item_color_hover_g",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d0e30",
+      "comment": "ui_menu_item_update hover tint RGBA component B.",
+      "name": "ui_menu_item_color_hover_b",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d0e34",
+      "comment": "ui_menu_item_update hover tint RGBA component A.",
+      "name": "ui_menu_item_color_hover_a",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d0e38",
