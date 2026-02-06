@@ -115,6 +115,7 @@ Store raw logs under `analysis/frida/raw/`:
 mkdir -p analysis/frida/raw
 cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
+cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```

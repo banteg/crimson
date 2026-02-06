@@ -272,7 +272,7 @@ frida-sync-share:
 [unix]
 frida-import-raw:
     mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
+    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl; do \
         [ -e "{{share_dir}}/$f" ] || continue; \
         cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
     done
