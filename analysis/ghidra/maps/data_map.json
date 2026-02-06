@@ -730,8 +730,8 @@
     },
     {
       "address": "0x0047f5f8",
-      "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
-      "name": "ui_button_table_a",
+      "comment": "Demo-trial overlay action button state for \"Purchase\".",
+      "name": "demo_trial_purchase_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
     },
@@ -805,8 +805,8 @@
     },
     {
       "address": "0x00480250",
-      "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
-      "name": "ui_button_table_b",
+      "comment": "Tutorial prompt dialog action button state for \"Repeat tutorial\".",
+      "name": "tutorial_prompt_repeat_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
     },
@@ -1382,8 +1382,8 @@
     },
     {
       "address": "0x004807d0",
-      "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
-      "name": "ui_button_table_c",
+      "comment": "Tutorial prompt dialog primary action button state (label switches between \"Play a game\" and \"Skip tutorial\").",
+      "name": "tutorial_prompt_primary_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
     },

@@ -61,8 +61,15 @@ Recent data-map lifts for one-shot setup guards:
   runtime setup guards for Hardcore checkbox and Back button.
 - `demo_trial_overlay_init_flags` (`0x0047f62c`): `demo_trial_overlay_render`
   one-shot setup guards for Maybe later / Purchase / Already paid.
+- `demo_trial_purchase_button` (`0x0047f5f8`):
+  persistent `ui_button_t` state used by `demo_trial_overlay_render` for the
+  Purchase action.
 - `tutorial_prompt_dialog_init_flags` (`0x00480148`):
   `tutorial_prompt_dialog` one-shot setup guards for Repeat / Play buttons.
+- `tutorial_prompt_repeat_button` (`0x00480250`) and
+  `tutorial_prompt_primary_button` (`0x004807d0`):
+  persistent `ui_button_t` states used by `tutorial_prompt_dialog` (primary
+  label switches between "Play a game" and "Skip tutorial").
 - `demo_purchase_screen_init_flags` (`0x00480320`):
   `demo_purchase_screen_update` one-shot setup guards for Maybe later /
   Purchase.

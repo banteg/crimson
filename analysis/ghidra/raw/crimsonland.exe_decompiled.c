@@ -3736,18 +3736,18 @@ LAB_00404ee5:
   ui_button_maybe_later.label = s_Maybe_later_00471b78;
   if ((demo_trial_overlay_init_flags & 2U) == 0) {
     demo_trial_overlay_init_flags = demo_trial_overlay_init_flags | 2;
-    ui_button_table_a.enabled = '\x01';
-    ui_button_table_a.force_wide = '\0';
-    ui_button_table_a.force_small = '\0';
-    ui_button_table_a.alpha = 1.0;
-    ui_button_table_a.click_anim = 0;
-    ui_button_table_a.label = (char *)0x0;
-    ui_button_table_a.hovered = '\0';
-    ui_button_table_a.activated = '\0';
-    ui_button_table_a.hover_anim = 0;
+    demo_trial_purchase_button.enabled = '\x01';
+    demo_trial_purchase_button.force_wide = '\0';
+    demo_trial_purchase_button.force_small = '\0';
+    demo_trial_purchase_button.alpha = 1.0;
+    demo_trial_purchase_button.click_anim = 0;
+    demo_trial_purchase_button.label = (char *)0x0;
+    demo_trial_purchase_button.hovered = '\0';
+    demo_trial_purchase_button.activated = '\0';
+    demo_trial_purchase_button.hover_anim = 0;
     crt_atexit(&DAT_00405140);
   }
-  ui_button_table_a.label = s_Purchase_00471b6c;
+  demo_trial_purchase_button.label = s_Purchase_00471b6c;
   if ((demo_trial_overlay_init_flags & 4U) == 0) {
     demo_trial_overlay_init_flags = demo_trial_overlay_init_flags | 4;
     ui_button_already_paid.enabled = '\x01';
@@ -3762,7 +3762,7 @@ LAB_00404ee5:
     crt_atexit(&DAT_00405130);
   }
   ui_button_already_paid.label = s_Already_paid_00471b5c;
-  iVar3 = ui_button_update((float *)&stack0xfffffec4,&ui_button_table_a);
+  iVar3 = ui_button_update((float *)&stack0xfffffec4,&demo_trial_purchase_button);
   if ((char)iVar3 != '\0') {
     shareware_offer_seen_latch = 1;
     quit_requested = '\x01';
@@ -5550,47 +5550,47 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
             (grim_interface_ptr,(float)(iVar3 + 0x14),68.0,unaff_retaddr,puVar7);
   if ((tutorial_prompt_dialog_init_flags & 1U) == 0) {
     tutorial_prompt_dialog_init_flags = tutorial_prompt_dialog_init_flags | 1;
-    ui_button_table_b.enabled = '\x01';
-    ui_button_table_b.force_wide = '\0';
-    ui_button_table_b.force_small = '\0';
-    ui_button_table_b.alpha = 1.0;
-    ui_button_table_b.click_anim = 0;
-    ui_button_table_b.label = (char *)0x0;
-    ui_button_table_b.hovered = '\0';
-    ui_button_table_b.activated = '\0';
-    ui_button_table_b.hover_anim = 0;
+    tutorial_prompt_repeat_button.enabled = '\x01';
+    tutorial_prompt_repeat_button.force_wide = '\0';
+    tutorial_prompt_repeat_button.force_small = '\0';
+    tutorial_prompt_repeat_button.alpha = 1.0;
+    tutorial_prompt_repeat_button.click_anim = 0;
+    tutorial_prompt_repeat_button.label = (char *)0x0;
+    tutorial_prompt_repeat_button.hovered = '\0';
+    tutorial_prompt_repeat_button.activated = '\0';
+    tutorial_prompt_repeat_button.hover_anim = 0;
     crt_atexit(&DAT_00408980);
   }
-  ui_button_table_b.label = s_Repeat_tutorial_004722f8;
+  tutorial_prompt_repeat_button.label = s_Repeat_tutorial_004722f8;
   if ((tutorial_prompt_dialog_init_flags & 2U) == 0) {
     tutorial_prompt_dialog_init_flags = tutorial_prompt_dialog_init_flags | 2;
-    ui_button_table_c.enabled = '\x01';
-    ui_button_table_c.force_wide = '\0';
-    ui_button_table_c.force_small = '\0';
-    ui_button_table_c.alpha = 1.0;
-    ui_button_table_c.click_anim = 0;
-    ui_button_table_c.label = (char *)0x0;
-    ui_button_table_c.hovered = '\0';
-    ui_button_table_c.activated = '\0';
-    ui_button_table_c.hover_anim = 0;
+    tutorial_prompt_primary_button.enabled = '\x01';
+    tutorial_prompt_primary_button.force_wide = '\0';
+    tutorial_prompt_primary_button.force_small = '\0';
+    tutorial_prompt_primary_button.alpha = 1.0;
+    tutorial_prompt_primary_button.click_anim = 0;
+    tutorial_prompt_primary_button.label = (char *)0x0;
+    tutorial_prompt_primary_button.hovered = '\0';
+    tutorial_prompt_primary_button.activated = '\0';
+    tutorial_prompt_primary_button.hover_anim = 0;
     crt_atexit(&DAT_00408970);
   }
-  ui_button_table_c.label = s_Play_a_game_004722ec;
+  tutorial_prompt_primary_button.label = s_Play_a_game_004722ec;
   if (alpha._0_1_ == '\0') {
-    ui_button_table_c.alpha = (float)(tutorial_stage_timer + -1000) * 0.001;
-    if (ui_button_table_c.alpha <= 1.0) {
-      if (ui_button_table_c.alpha < 0.0) {
-        ui_button_table_c.alpha = 0.0;
+    tutorial_prompt_primary_button.alpha = (float)(tutorial_stage_timer + -1000) * 0.001;
+    if (tutorial_prompt_primary_button.alpha <= 1.0) {
+      if (tutorial_prompt_primary_button.alpha < 0.0) {
+        tutorial_prompt_primary_button.alpha = 0.0;
       }
     }
     else {
-      ui_button_table_c.alpha = 1.0;
+      tutorial_prompt_primary_button.alpha = 1.0;
     }
     afStack_20[0] = (float)(_config_screen_height + -0x32);
-    ui_button_table_c.label = s_Skip_tutorial_004722dc;
+    tutorial_prompt_primary_button.label = s_Skip_tutorial_004722dc;
     fStack_24 = 10.0;
-    ui_button_update(&fStack_24,&ui_button_table_c);
-    if (ui_button_table_c.activated != '\0') {
+    ui_button_update(&fStack_24,&tutorial_prompt_primary_button);
+    if (tutorial_prompt_primary_button.activated != '\0') {
       ui_sign_crimson._pad0[0] = '\0';
       game_state_pending = GAME_STATE_PLAY_GAME_MENU;
       render_pass_mode = 0;
@@ -5601,15 +5601,15 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     }
   }
   else {
-    ui_button_table_c.alpha = (float)text;
+    tutorial_prompt_primary_button.alpha = (float)text;
     fStack_24 = (float)(iVar3 + 0x20);
-    ui_button_table_b.alpha = (float)text;
+    tutorial_prompt_repeat_button.alpha = (float)text;
     afStack_20[0] = 90.0;
-    ui_button_update(&fStack_24,&ui_button_table_c);
+    ui_button_update(&fStack_24,&tutorial_prompt_primary_button);
     fStack_24 = (float)(iVar3 + 0xc0);
     afStack_20[0] = 90.0;
-    ui_button_update(&fStack_24,&ui_button_table_b);
-    if (ui_button_table_c.activated != '\0') {
+    ui_button_update(&fStack_24,&tutorial_prompt_repeat_button);
+    if (tutorial_prompt_primary_button.activated != '\0') {
       ui_sign_crimson._pad0[0] = '\0';
       game_state_pending = GAME_STATE_PLAY_GAME_MENU;
       render_pass_mode = 0;
@@ -5618,7 +5618,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
       console_input_poll();
       tutorial_stage_transition_timer = 0xfffffc18;
     }
-    if (ui_button_table_b.activated != '\0') {
+    if (tutorial_prompt_repeat_button.activated != '\0') {
       player_state_table.level = 1;
       piVar5 = player_state_table.perk_counts;
       for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {

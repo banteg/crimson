@@ -152,6 +152,9 @@ Recovered staged-reveal globals:
   - Quest-only grace timer (ms): `demo_trial_elapsed_ms` (`0x0048084c`)
   - Mode id: `config_game_mode` (`0x00480360`) (`1=survival`, `2=rush`, `3=quest`, `8=tutorial`)
   - Quest stage gating: `quest_stage_major`/`quest_stage_minor` (`0x00487004`/`0x00487008`)
+  - Action buttons: `demo_trial_purchase_button` (`0x0047f5f8`),
+    `ui_button_maybe_later` (`0x00480808`), and
+    `ui_button_already_paid` (`0x0047f610`).
 
 ### Evidence capture (Windows VM)
 
