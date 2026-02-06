@@ -9,7 +9,7 @@ import random
 import time
 import traceback
 import webbrowser
-from typing import Protocol, TYPE_CHECKING
+from typing import Protocol, TYPE_CHECKING, cast
 
 import pyray as rl
 
@@ -3040,7 +3040,7 @@ class GameLoopView:
                 if pause_view is None:
                     return
                 if self._front_active in self._gameplay_views:
-                    self._state.pause_background = self._front_active
+                    self._state.pause_background = cast(PauseBackground, self._front_active)
                     self._front_stack.append(self._front_active)
                     pause_view.open()
                     self._front_active = pause_view
@@ -3077,10 +3077,10 @@ class GameLoopView:
                 if view is not None:
                     if action in {"open_high_scores", "open_weapon_database", "open_perk_database", "open_credits"}:
                         if (self._front_active in self._gameplay_views) and (self._state.pause_background is None):
-                            self._state.pause_background = self._front_active
+                            self._state.pause_background = cast(PauseBackground, self._front_active)
                         self._front_stack.append(self._front_active)
                     elif action in {"quest_results", "quest_failed"} and (self._front_active in self._gameplay_views):
-                        self._state.pause_background = self._front_active
+                        self._state.pause_background = cast(PauseBackground, self._front_active)
                         self._front_stack.append(self._front_active)
                     else:
                         if action in {
