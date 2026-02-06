@@ -586,8 +586,8 @@ class DecalsDebugView:
 
             tint_rgba = creature.tint
             if float(creature.hitbox_size) < 0.0:
-                tint_rgba = tint_rgba.replace(a=max(0.0, tint_rgba.a + float(creature.hitbox_size) * 0.1))
-            tint = RGBA.from_rgba(tint_rgba).clamped().to_rl()
+                tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + float(creature.hitbox_size) * 0.1))
+            tint = tint_rgba.clamped().to_rl()
 
             flags = creature.flags
             long_strip = (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0

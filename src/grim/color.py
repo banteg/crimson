@@ -82,8 +82,20 @@ class RGBA:
             a=self.a if a is None else float(a),
         )
 
+    def with_alpha(self, alpha: float) -> RGBA:
+        return self.replace(a=alpha)
+
+    def scaled(self, factor: float) -> RGBA:
+        factor = float(factor)
+        return RGBA(
+            r=self.r * factor,
+            g=self.g * factor,
+            b=self.b * factor,
+            a=self.a * factor,
+        )
+
     def scaled_alpha(self, factor: float) -> RGBA:
-        return self.replace(a=self.a * float(factor))
+        return self.with_alpha(self.a * float(factor))
 
     def to_rl(self) -> rl.Color:
         import pyray as rl

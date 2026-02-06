@@ -1387,16 +1387,12 @@ class SecondaryProjectilePool:
                 spawn_pos = entry.pos - direction * 9.0
                 trail_velocity = Vec2.from_heading(entry.angle + math.pi) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
-                    sprite_id = sprite_effects.spawn(
+                    sprite_effects.spawn(
                         pos=spawn_pos,
                         vel=trail_velocity,
                         scale=14.0,
+                        color=RGBA(1.0, 1.0, 1.0, 0.25),
                     )
-                    try:
-                        sprite_entry = sprite_effects.entries[int(sprite_id)]
-                        sprite_entry.color = sprite_entry.color.replace(a=0.25)
-                    except Exception:
-                        pass
                 entry.trail_timer = 0.06
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
@@ -1524,16 +1520,12 @@ class SecondaryProjectilePool:
                         mag = float(int(rand()) % 800) * 0.1
                         ang = float(idx) * step
                         velocity = Vec2.from_angle(ang) * mag
-                        sprite_id = sprite_effects.spawn(
+                        sprite_effects.spawn(
                             pos=entry.pos,
                             vel=velocity,
                             scale=14.0,
+                            color=RGBA(1.0, 1.0, 1.0, 0.37),
                         )
-                        try:
-                            sprite_entry = sprite_effects.entries[int(sprite_id)]
-                            sprite_entry.color = sprite_entry.color.replace(a=0.37)
-                        except Exception:
-                            pass
 
                 continue
 

@@ -302,24 +302,19 @@ class ParticlePool:
                         tint_sum = float(tint.r) + float(tint.g) + float(tint.b)
                         if tint_sum > 1.6:
                             factor = 1.0 - float(entry.intensity) * 0.01
-                            creature.tint = tint.replace(
-                                r=clamp(float(tint.r) * factor, 0.0, 1.0),
-                                g=clamp(float(tint.g) * factor, 0.0, 1.0),
-                                b=clamp(float(tint.b) * factor, 0.0, 1.0),
-                                a=clamp(float(tint.a) * factor, 0.0, 1.0),
-                            )
+                            creature.tint = tint.scaled(factor).clamped()
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
                                 float(int(rand()) % 0x3C - 0x1E),
                                 float(int(rand()) % 0x3C - 0x1E),
                             )
-                            sprite_id = sprite_effects.spawn(
+                            sprite_effects.spawn(
                                 pos=creature.pos,
                                 vel=sprite_vel,
                                 scale=13.0,
+                                color=RGBA(1.0, 1.0, 1.0, 0.7),
                             )
-                            sprite_effects.entries[int(sprite_id)].color = RGBA(1.0, 1.0, 1.0, 0.7)
 
                         if fx_queue is not None:
                             fx_queue.add_random(
@@ -355,7 +350,7 @@ class SpriteEffectPool:
         for entry in self._entries:
             entry.active = False
 
-    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0) -> int:
+    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int:
         """Port of `fx_spawn_sprite` (0x0041fbb0)."""
 
         idx = None
@@ -370,7 +365,7 @@ class SpriteEffectPool:
 
         entry = self._entries[idx]
         entry.active = True
-        entry.color = RGBA()
+        entry.color = RGBA() if color is None else color
         entry.rotation = float(int(self._rand()) % 0x274) * 0.01
         entry.pos = pos
         entry.vel = vel
@@ -390,7 +385,7 @@ class SpriteEffectPool:
                 continue
             entry.pos = entry.pos + entry.vel * dt
             entry.rotation += dt * 3.0
-            entry.color = entry.color.replace(a=entry.color.a - dt)
+            entry.color = entry.color.with_alpha(entry.color.a - dt)
             entry.scale += dt * 60.0
             if entry.color.a <= 0.0:
                 entry.active = False
@@ -537,7 +532,7 @@ class FxQueueRotated:
 
         entry = self._entries[self._count]
         entry.top_left = top_left
-        entry.color = color.replace(a=a)
+        entry.color = color.with_alpha(a)
         entry.rotation = float(rotation)
         entry.scale = float(scale)
         entry.creature_type_id = int(creature_type_id)
@@ -678,7 +673,7 @@ class EffectPool:
                         entry.scale += float(entry.scale_step) * float(dt)
                     if flags & 0x10:
                         next_alpha = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
-                        entry.color = entry.color.replace(a=next_alpha)
+                        entry.color = entry.color.with_alpha(next_alpha)
                 continue
 
             if fx_queue is not None and (flags & 0x80):
@@ -690,7 +685,7 @@ class EffectPool:
                     width=float(entry.half_width) * 2.0,
                     height=float(entry.half_height) * 2.0,
                     rotation=float(entry.rotation),
-                    rgba=entry.color.replace(a=alpha),
+                    rgba=entry.color.with_alpha(alpha),
                 )
 
             self.free(idx)

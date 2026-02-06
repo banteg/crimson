@@ -1927,9 +1927,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0
-    sprite_id = state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0)
-    sprite = state.sprite_effects.entries[int(sprite_id)]
-    sprite.color = RGBA(0.5, 0.5, 0.5, 0.413)
+    state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
     state.perk_intervals.fire_cough = float(state.rng.rand() % 4) + 2.0

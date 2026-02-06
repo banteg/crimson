@@ -695,7 +695,7 @@ def draw_hud_overlay(
 
         progress_ratio = _survival_xp_progress_ratio(xp=xp_target, level=int(player.level))
         progress_pos = Vec2(*HUD_SURV_PROGRESS_POS).offset(dy=hud_y_shift)
-        bar_rgba = HUD_XP_BAR_RGBA.replace(a=HUD_XP_BAR_RGBA.a * alpha)
+        bar_rgba = HUD_XP_BAR_RGBA.scaled_alpha(alpha)
         _draw_progress_bar(
             Vec2(ui(progress_pos.x), ui(progress_pos.y)),
             ui(HUD_SURV_PROGRESS_WIDTH),
@@ -759,7 +759,7 @@ def draw_hud_overlay(
         bonus_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
         bonus_panel_alpha = alpha * 0.7
         bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
-        bar_rgba = HUD_XP_BAR_RGBA.replace(a=bonus_panel_alpha)
+        bar_rgba = HUD_XP_BAR_RGBA.with_alpha(bonus_panel_alpha)
 
         slots = bonus_hud.slots[:16]
         for slot in slots:

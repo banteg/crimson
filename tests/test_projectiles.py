@@ -525,8 +525,8 @@ def test_secondary_projectile_pool_freeze_spawns_extra_shards_and_burst() -> Non
         def __init__(self) -> None:
             self.entries: list[_SpriteEntry] = []
 
-        def spawn(self, *, pos: Vec2, vel: Vec2, scale: float) -> int:
-            self.entries.append(_SpriteEntry())
+        def spawn(self, *, pos: Vec2, vel: Vec2, scale: float, color: RGBA | None = None) -> int:
+            self.entries.append(_SpriteEntry(color=RGBA() if color is None else color))
             return len(self.entries) - 1
 
     class _RuntimeState:
