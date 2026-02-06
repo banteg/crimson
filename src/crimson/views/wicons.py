@@ -9,6 +9,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -70,14 +71,13 @@ class WeaponIconView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
             draw_ui_text(
                 self._small,
                 "No weapon icon texture loaded.",
-                24,
-                24,
+                Vec2(24, 24),
                 scale=UI_TEXT_SCALE,
                 color=UI_TEXT_COLOR,
             )
@@ -116,8 +116,7 @@ class WeaponIconView:
             draw_ui_text(
                 self._small,
                 f"{idx:02d}",
-                dst_x + 4,
-                dst_y + 4,
+                Vec2(dst_x + 4, dst_y + 4),
                 scale=0.75,
                 color=UI_HINT_COLOR,
             )
@@ -127,8 +126,7 @@ class WeaponIconView:
         draw_ui_text(
             self._small,
             "ui_wicons.png (8x8 grid, 2x1 subrects)",
-            info_x,
-            info_y,
+            Vec2(info_x, info_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -139,20 +137,21 @@ class WeaponIconView:
             draw_ui_text(
                 self._small,
                 f"icon_index {hovered_index}  frame {frame}",
-                info_x,
-                info_y,
+                Vec2(info_x, info_y),
                 scale=UI_TEXT_SCALE,
                 color=UI_TEXT_COLOR,
             )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             group = WEAPON_ICON_GROUPS.get(hovered_index)
             if group is None:
-                draw_ui_text(self._small, "no weapon mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(
+                    self._small, "no weapon mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:
                 for weapon in group.weapons:
                     name = weapon.name or f"weapon_{weapon.weapon_id}"
-                    draw_ui_text(self._small, name, info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                    draw_ui_text(self._small, name, Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                     info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
 
 

@@ -173,6 +173,7 @@ if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
     from .persistence.highscores import HighScoreRecord
 
+
 @dataclass(frozen=True, slots=True)
 class GameConfig:
     base_dir: Path = field(default_factory=default_runtime_dir)
@@ -444,8 +445,7 @@ class QuestsMenuView:
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
             if button_update(
                 self._back_button,
-                x=float(back_x),
-                y=float(back_y),
+                pos=Vec2(float(back_x), float(back_y)),
                 width=float(back_w),
                 dt_ms=float(dt_ms),
                 mouse=mouse,
@@ -811,7 +811,14 @@ class QuestsMenuView:
             back_x = list_x + QUEST_BACK_BUTTON_X_OFFSET
             back_y = y0 + QUEST_BACK_BUTTON_Y_OFFSET
             back_w = button_width(font, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
-            button_draw(textures, font, self._back_button, x=float(back_x), y=float(back_y), width=float(back_w), scale=1.0)
+            button_draw(
+                textures,
+                font,
+                self._back_button,
+                pos=Vec2(float(back_x), float(back_y)),
+                width=float(back_w),
+                scale=1.0,
+            )
 
     def _draw_sign(self) -> None:
         assets = self._assets
@@ -1297,7 +1304,11 @@ class QuestResultsView:
                     from .weapons import WEAPON_BY_ID
 
                     weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
-                    self._unlock_weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id_native}"
+                    self._unlock_weapon_name = (
+                        weapon_entry.name
+                        if weapon_entry is not None and weapon_entry.name
+                        else f"weapon_{weapon_id_native}"
+                    )
 
                 from .perks import PERK_BY_ID, PerkId, perk_display_name
 
@@ -1537,8 +1548,12 @@ class EndNoteView:
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
-        survival_w = button_width(font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide)
-        if button_update(self._survival_button, x=button_x, y=button_y, width=survival_w, dt_ms=dt_ms, mouse=mouse, click=click):
+        survival_w = button_width(
+            font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
+        )
+        if button_update(
+            self._survival_button, pos=Vec2(button_x, button_y), width=survival_w, dt_ms=dt_ms, mouse=mouse, click=click
+        ):
             self._state.config.data["game_mode"] = 1
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
@@ -1547,7 +1562,9 @@ class EndNoteView:
 
         button_y += END_NOTE_BUTTON_STEP_Y * scale
         rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-        if button_update(self._rush_button, x=button_x, y=button_y, width=rush_w, dt_ms=dt_ms, mouse=mouse, click=click):
+        if button_update(
+            self._rush_button, pos=Vec2(button_x, button_y), width=rush_w, dt_ms=dt_ms, mouse=mouse, click=click
+        ):
             self._state.config.data["game_mode"] = 2
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
@@ -1556,7 +1573,9 @@ class EndNoteView:
 
         button_y += END_NOTE_BUTTON_STEP_Y * scale
         typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-        if button_update(self._typo_button, x=button_x, y=button_y, width=typo_w, dt_ms=dt_ms, mouse=mouse, click=click):
+        if button_update(
+            self._typo_button, pos=Vec2(button_x, button_y), width=typo_w, dt_ms=dt_ms, mouse=mouse, click=click
+        ):
             self._state.config.data["game_mode"] = 4
             self._state.screen_fade_alpha = 0.0
             self._state.screen_fade_ramp = True
@@ -1566,8 +1585,12 @@ class EndNoteView:
             return
 
         button_y += END_NOTE_BUTTON_STEP_Y * scale
-        main_w = button_width(font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
-        if button_update(self._main_menu_button, x=button_x, y=button_y, width=main_w, dt_ms=dt_ms, mouse=mouse, click=click):
+        main_w = button_width(
+            font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+        )
+        if button_update(
+            self._main_menu_button, pos=Vec2(button_x, button_y), width=main_w, dt_ms=dt_ms, mouse=mouse, click=click
+        ):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
             self._action = "back_to_menu"
@@ -1647,17 +1670,23 @@ class EndNoteView:
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
             button_x = panel_left + END_NOTE_BUTTON_X_OFFSET * scale
             button_y = panel_top + END_NOTE_BUTTON_Y_OFFSET * scale
-            survival_w = button_width(font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide)
-            button_draw(textures, font, self._survival_button, x=button_x, y=button_y, width=survival_w, scale=scale)
+            survival_w = button_width(
+                font, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide
+            )
+            button_draw(
+                textures, font, self._survival_button, pos=Vec2(button_x, button_y), width=survival_w, scale=scale
+            )
             button_y += END_NOTE_BUTTON_STEP_Y * scale
             rush_w = button_width(font, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-            button_draw(textures, font, self._rush_button, x=button_x, y=button_y, width=rush_w, scale=scale)
+            button_draw(textures, font, self._rush_button, pos=Vec2(button_x, button_y), width=rush_w, scale=scale)
             button_y += END_NOTE_BUTTON_STEP_Y * scale
             typo_w = button_width(font, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-            button_draw(textures, font, self._typo_button, x=button_x, y=button_y, width=typo_w, scale=scale)
+            button_draw(textures, font, self._typo_button, pos=Vec2(button_x, button_y), width=typo_w, scale=scale)
             button_y += END_NOTE_BUTTON_STEP_Y * scale
-            main_w = button_width(font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
-            button_draw(textures, font, self._main_menu_button, x=button_x, y=button_y, width=main_w, scale=scale)
+            main_w = button_width(
+                font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+            )
+            button_draw(textures, font, self._main_menu_button, pos=Vec2(button_x, button_y), width=main_w, scale=scale)
 
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
@@ -1768,7 +1797,9 @@ class QuestFailedView:
         button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET * scale
 
         retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
-        if button_update(self._retry_button, x=button_x, y=button_y, width=retry_w, dt_ms=dt_ms, mouse=mouse, click=click):
+        if button_update(
+            self._retry_button, pos=Vec2(button_x, button_y), width=retry_w, dt_ms=dt_ms, mouse=mouse, click=click
+        ):
             self._activate_retry()
             return
         button_y += QUEST_FAILED_BUTTON_STEP_Y * scale
@@ -1781,8 +1812,7 @@ class QuestFailedView:
         )
         if button_update(
             self._quest_list_button,
-            x=button_x,
-            y=button_y,
+            pos=Vec2(button_x, button_y),
             width=play_another_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -1800,8 +1830,7 @@ class QuestFailedView:
         )
         if button_update(
             self._main_menu_button,
-            x=button_x,
-            y=button_y,
+            pos=Vec2(button_x, button_y),
             width=main_menu_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -1847,7 +1876,8 @@ class QuestFailedView:
         draw_small_text(
             font,
             self._failure_message(),
-            Vec2(panel_left + QUEST_FAILED_MESSAGE_X_OFFSET, panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET), 1.0,
+            Vec2(panel_left + QUEST_FAILED_MESSAGE_X_OFFSET, panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET),
+            1.0,
             text_color,
         )
         self._draw_score_preview(font, panel_left=panel_left, panel_top=panel_top)
@@ -1858,8 +1888,10 @@ class QuestFailedView:
             button_x = panel_left + QUEST_FAILED_BUTTON_X_OFFSET
             button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET
 
-            retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
-            button_draw(textures, font, self._retry_button, x=button_x, y=button_y, width=retry_w, scale=scale)
+            retry_w = button_width(
+                font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide
+            )
+            button_draw(textures, font, self._retry_button, pos=Vec2(button_x, button_y), width=retry_w, scale=scale)
             button_y += QUEST_FAILED_BUTTON_STEP_Y
 
             play_another_w = button_width(
@@ -1872,8 +1904,7 @@ class QuestFailedView:
                 textures,
                 font,
                 self._quest_list_button,
-                x=button_x,
-                y=button_y,
+                pos=Vec2(button_x, button_y),
                 width=play_another_w,
                 scale=scale,
             )
@@ -1889,8 +1920,7 @@ class QuestFailedView:
                 textures,
                 font,
                 self._main_menu_button,
-                x=button_x,
-                y=button_y,
+                pos=Vec2(button_x, button_y),
                 width=main_menu_w,
                 scale=scale,
             )
@@ -2087,7 +2117,9 @@ class HighScoresView:
         if request is None:
             request = HighScoresRequest(game_mode_id=int(self._state.config.data.get("game_mode", 1) or 1))
 
-        if int(request.game_mode_id) == 3 and (int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0):
+        if int(request.game_mode_id) == 3 and (
+            int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0
+        ):
             major, minor = self._parse_quest_level(self._state.pending_quest_level)
             if major <= 0 or minor <= 0:
                 major, minor = self._parse_quest_level(self._state.config.data.get("quest_level"))
@@ -2167,7 +2199,7 @@ class HighScoresView:
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
-            if button_update(self._update_button, x=x0, y=y0, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(self._update_button, pos=Vec2(x0, y0), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 # Reload scores from disk (no view transition).
                 if self._state.audio is not None:
                     play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
@@ -2176,8 +2208,7 @@ class HighScoresView:
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
-                x=x0,
-                y=y0 + HS_BUTTON_STEP_Y * scale,
+                pos=Vec2(x0, y0 + HS_BUTTON_STEP_Y * scale),
                 width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -2190,8 +2221,7 @@ class HighScoresView:
             back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
                 self._back_button,
-                x=panel_x0 + HS_BACK_BUTTON_X * scale,
-                y=panel_y0 + HS_BACK_BUTTON_Y * scale,
+                pos=Vec2(panel_x0 + HS_BACK_BUTTON_X * scale, panel_y0 + HS_BACK_BUTTON_Y * scale),
                 width=back_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -2238,7 +2268,9 @@ class HighScoresView:
 
         font = self._ensure_small_font()
         request = self._request
-        mode_id = int(request.game_mode_id) if request is not None else int(self._state.config.data.get("game_mode", 1) or 1)
+        mode_id = (
+            int(request.game_mode_id) if request is not None else int(self._state.config.data.get("game_mode", 1) or 1)
+        )
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
         highlight_rank = request.highlight_rank if request is not None else None
@@ -2287,7 +2319,11 @@ class HighScoresView:
             flip_x=True,
         )
 
-        title = "High scores - Quests" if int(mode_id) == 3 else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
+        title = (
+            "High scores - Quests"
+            if int(mode_id) == 3
+            else f"High scores - {self._mode_label(mode_id, quest_major, quest_minor)}"
+        )
         title_x = 269.0
         if int(mode_id) == 1:
             # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
@@ -2343,7 +2379,13 @@ class HighScoresView:
         y = left_y0 + 103.0 * scale
 
         if start >= end:
-            draw_small_text(font, "No scores yet.", Vec2(left_x0 + 211.0 * scale, y + 8.0 * scale), 1.0 * scale, rl.Color(190, 190, 200, 255))
+            draw_small_text(
+                font,
+                "No scores yet.",
+                Vec2(left_x0 + 211.0 * scale, y + 8.0 * scale),
+                1.0 * scale,
+                rl.Color(190, 190, 200, 255),
+            )
         else:
             for idx in range(start, end):
                 entry = self._records[idx]
@@ -2373,21 +2415,29 @@ class HighScoresView:
             button_x = left_x0 + HS_BUTTON_X * scale
             button_y0 = left_y0 + HS_BUTTON_Y0 * scale
             w = button_width(font, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
-            button_draw(textures, font, self._update_button, x=button_x, y=button_y0, width=w, scale=scale)
+            button_draw(textures, font, self._update_button, pos=Vec2(button_x, button_y0), width=w, scale=scale)
             w = button_width(font, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
-            button_draw(textures, font, self._play_button, x=button_x, y=button_y0 + HS_BUTTON_STEP_Y * scale, width=w, scale=scale)
+            button_draw(
+                textures,
+                font,
+                self._play_button,
+                pos=Vec2(button_x, button_y0 + HS_BUTTON_STEP_Y * scale),
+                width=w,
+                scale=scale,
+            )
             w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
                 self._back_button,
-                x=left_x0 + HS_BACK_BUTTON_X * scale,
-                y=left_y0 + HS_BACK_BUTTON_Y * scale,
+                pos=Vec2(left_x0 + HS_BACK_BUTTON_X * scale, left_y0 + HS_BACK_BUTTON_Y * scale),
                 width=w,
                 scale=scale,
             )
 
-        self._draw_right_panel(font=font, right_x0=right_x0, right_y0=right_y0, scale=scale, mode_id=mode_id, highlight_rank=highlight_rank)
+        self._draw_right_panel(
+            font=font, right_x0=right_x0, right_y0=right_y0, scale=scale, mode_id=mode_id, highlight_rank=highlight_rank
+        )
         self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
@@ -2412,7 +2462,9 @@ class HighScoresView:
             highlight_rank=highlight_rank,
         )
 
-    def _draw_right_panel_quest_options(self, *, font: SmallFontData, right_x0: float, right_y0: float, scale: float) -> None:
+    def _draw_right_panel_quest_options(
+        self, *, font: SmallFontData, right_x0: float, right_y0: float, scale: float
+    ) -> None:
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -2423,7 +2475,9 @@ class HighScoresView:
             rl.draw_texture_pro(
                 check_on,
                 rl.Rectangle(0.0, 0.0, float(check_on.width), float(check_on.height)),
-                rl.Rectangle(right_x0 + HS_RIGHT_CHECK_X * scale, right_y0 + HS_RIGHT_CHECK_Y * scale, check_w, check_h),
+                rl.Rectangle(
+                    right_x0 + HS_RIGHT_CHECK_X * scale, right_y0 + HS_RIGHT_CHECK_Y * scale, check_w, check_h
+                ),
                 rl.Vector2(0.0, 0.0),
                 0.0,
                 rl.WHITE,
@@ -2431,31 +2485,36 @@ class HighScoresView:
         draw_small_text(
             font,
             "Show internet scores",
-            Vec2(right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale, right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale, right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Number of players",
-            Vec2(right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale, right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale, right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game mode",
-            Vec2(right_x0 + HS_RIGHT_GAME_MODE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_GAME_MODE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Show scores:",
-            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Selected score list:",
-            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2477,25 +2536,29 @@ class HighScoresView:
         draw_small_text(
             font,
             "1 player",
-            Vec2(right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Quests",
-            Vec2(right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Best of all time",
-            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "default",
-            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2547,11 +2610,18 @@ class HighScoresView:
             name = ""
         if not name:
             name = "???"
-        draw_small_text(font, name, Vec2(right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale), text_scale, text_color)
+        draw_small_text(
+            font,
+            name,
+            Vec2(right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale),
+            text_scale,
+            text_color,
+        )
         draw_small_text(
             font,
             "Local score",
-            Vec2(right_x0 + HS_LOCAL_LABEL_X * scale, right_y0 + HS_LOCAL_LABEL_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_LABEL_X * scale, right_y0 + HS_LOCAL_LABEL_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2560,20 +2630,23 @@ class HighScoresView:
             draw_small_text(
                 font,
                 date_text,
-                Vec2(right_x0 + HS_LOCAL_DATE_X * scale, right_y0 + HS_LOCAL_DATE_Y * scale), text_scale,
+                Vec2(right_x0 + HS_LOCAL_DATE_X * scale, right_y0 + HS_LOCAL_DATE_Y * scale),
+                text_scale,
                 text_color,
             )
 
         draw_small_text(
             font,
             "Score",
-            Vec2(right_x0 + HS_LOCAL_SCORE_LABEL_X * scale, right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_SCORE_LABEL_X * scale, right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game time",
-            Vec2(right_x0 + HS_LOCAL_TIME_LABEL_X * scale, right_y0 + HS_LOCAL_TIME_LABEL_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_TIME_LABEL_X * scale, right_y0 + HS_LOCAL_TIME_LABEL_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2581,7 +2654,8 @@ class HighScoresView:
         draw_small_text(
             font,
             score_value,
-            Vec2(right_x0 + HS_LOCAL_SCORE_VALUE_X * scale, right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_SCORE_VALUE_X * scale, right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2589,14 +2663,16 @@ class HighScoresView:
         draw_small_text(
             font,
             self._format_elapsed_mm_ss(elapsed_ms),
-            Vec2(right_x0 + HS_LOCAL_TIME_VALUE_X * scale, right_y0 + HS_LOCAL_TIME_VALUE_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_TIME_VALUE_X * scale, right_y0 + HS_LOCAL_TIME_VALUE_Y * scale),
+            text_scale,
             text_color,
         )
 
         draw_small_text(
             font,
             f"Rank: {self._ordinal(idx + 1)}",
-            Vec2(right_x0 + HS_LOCAL_RANK_X * scale, right_y0 + HS_LOCAL_RANK_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_RANK_X * scale, right_y0 + HS_LOCAL_RANK_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2604,7 +2680,8 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Frags: {frags}",
-            Vec2(right_x0 + HS_LOCAL_FRAGS_X * scale, right_y0 + HS_LOCAL_FRAGS_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_FRAGS_X * scale, right_y0 + HS_LOCAL_FRAGS_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -2616,18 +2693,24 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Hit %: {hit_pct}%",
-            Vec2(right_x0 + HS_LOCAL_HIT_X * scale, right_y0 + HS_LOCAL_HIT_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_HIT_X * scale, right_y0 + HS_LOCAL_HIT_Y * scale),
+            text_scale,
             text_color,
         )
 
         weapon_id = int(getattr(entry, "most_used_weapon_id", 0) or 0)
         weapon_name, icon_index = self._weapon_label_and_icon(weapon_id)
         if icon_index is not None:
-            self._draw_wicon(icon_index, pos=Vec2(right_x0 + HS_LOCAL_WICON_X * scale, right_y0 + HS_LOCAL_WICON_Y * scale), scale=scale)
+            self._draw_wicon(
+                icon_index,
+                pos=Vec2(right_x0 + HS_LOCAL_WICON_X * scale, right_y0 + HS_LOCAL_WICON_Y * scale),
+                scale=scale,
+            )
         draw_small_text(
             font,
             weapon_name,
-            Vec2(right_x0 + HS_LOCAL_WEAPON_X * scale, right_y0 + HS_LOCAL_WEAPON_Y * scale), text_scale,
+            Vec2(right_x0 + HS_LOCAL_WEAPON_X * scale, right_y0 + HS_LOCAL_WEAPON_Y * scale),
+            text_scale,
             text_color,
         )
 
@@ -3002,7 +3085,12 @@ class GameLoopView:
             self._active = self._menu
             self._menu_active = True
             return
-        if (not self._demo_active) and (not self._menu_active) and self._front_active is None and self._boot.is_theme_started():
+        if (
+            (not self._demo_active)
+            and (not self._menu_active)
+            and self._front_active is None
+            and self._boot.is_theme_started()
+        ):
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
@@ -3145,9 +3233,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
     def cmd_set_gamma_ramp(args: list[str]) -> None:
         if len(args) != 1:
             console.log.log("setGammaRamp <scalar > 0>")
-            console.log.log(
-                "Command adjusts gamma ramp linearly by multiplying with given scalar"
-            )
+            console.log.log("Command adjusts gamma ramp linearly by multiplying with given scalar")
             return
         value = _parse_float_arg(args[0])
         state.gamma_ramp = value
@@ -3259,9 +3345,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         except ValueError:
             value = 0
         state.demo_trial_elapsed_ms = max(0, value)
-        console.log.log(
-            f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)"
-        )
+        console.log.log(f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)")
 
     def cmd_demo_trial_reset(_args: list[str]) -> None:
         state.status.game_sequence_id = 0

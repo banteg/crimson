@@ -353,7 +353,13 @@ class QuestResultsUi:
         hit_text = f"Hit %: {ratio}%"
         self._draw_small(hit_text, Vec2(x + 114.0 * scale, row_y + 15.0 * scale), 1.0 * scale, col_row)
 
-        rl.draw_line(int(x - 12.0 * scale), int(row_y + 48.0 * scale), int(x + 180.0 * scale), int(row_y + 48.0 * scale), col_line)
+        rl.draw_line(
+            int(x - 12.0 * scale),
+            int(row_y + 48.0 * scale),
+            int(x + 180.0 * scale),
+            int(row_y + 48.0 * scale),
+            col_line,
+        )
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
         # Match MenuView._ui_element_anim offset math (linear, with a 100ms hold hidden).
@@ -388,6 +394,7 @@ class QuestResultsUi:
         if mouse is None:
             mouse = rl.get_mouse_position()
         if rand is None:
+
             def rand() -> int:
                 return 0
 
@@ -446,7 +453,9 @@ class QuestResultsUi:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             typed = poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:
-                self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[:NAME_MAX_EDIT]
+                self.input_text = (self.input_text[: self.input_caret] + typed + self.input_text[self.input_caret :])[
+                    :NAME_MAX_EDIT
+                ]
                 self.input_caret = min(len(self.input_text), self.input_caret + len(typed))
                 if play_sfx is not None:
                     play_sfx("sfx_ui_typeclick_01" if (int(rand()) & 1) == 0 else "sfx_ui_typeclick_02")
@@ -474,7 +483,9 @@ class QuestResultsUi:
             ok_x = anchor_x + 170.0 * scale
             ok_y = input_y - 8.0 * scale
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            ok_clicked = button_update(self._ok_button, x=ok_x, y=ok_y, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(
+                self._ok_button, pos=Vec2(ok_x, ok_y), width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click
+            )
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if self.input_text.strip():
@@ -535,32 +546,68 @@ class QuestResultsUi:
             button_x = score_card_x + 20.0 * scale
             button_y = var_c_14 + 6.0 * scale
 
-            play_next_w = button_width(self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide)
-            if button_update(self._play_next_button, x=button_x, y=button_y, width=play_next_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            play_next_w = button_width(
+                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide
+            )
+            if button_update(
+                self._play_next_button,
+                pos=Vec2(button_x, button_y),
+                width=play_next_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_next")
                 return None
             button_y += 32.0 * scale
 
-            play_again_w = button_width(self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
-            if button_update(self._play_again_button, x=button_x, y=button_y, width=play_again_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            play_again_w = button_width(
+                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
+            )
+            if button_update(
+                self._play_again_button,
+                pos=Vec2(button_x, button_y),
+                width=play_again_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_again")
                 return None
             button_y += 32.0 * scale
 
-            high_scores_w = button_width(self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide)
-            if button_update(self._high_scores_button, x=button_x, y=button_y, width=high_scores_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            high_scores_w = button_width(
+                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
+            )
+            if button_update(
+                self._high_scores_button,
+                pos=Vec2(button_x, button_y),
+                width=high_scores_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("high_scores")
                 return None
             button_y += 32.0 * scale
 
-            main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
-            if button_update(self._main_menu_button, x=button_x, y=button_y, width=main_menu_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            main_menu_w = button_width(
+                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+            )
+            if button_update(
+                self._main_menu_button,
+                pos=Vec2(button_x, button_y),
+                width=main_menu_w,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
                 if play_sfx is not None:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("main_menu")
@@ -589,7 +636,9 @@ class QuestResultsUi:
         banner_x = content_x + QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale
         banner_y = top + 36.0 * scale
         if self.assets.text_well_done is not None:
-            src = rl.Rectangle(0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height))
+            src = rl.Rectangle(
+                0.0, 0.0, float(self.assets.text_well_done.width), float(self.assets.text_well_done.height)
+            )
             dst = rl.Rectangle(banner_x, banner_y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
             rl.draw_texture_pro(self.assets.text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
@@ -660,11 +709,15 @@ class QuestResultsUi:
         elif self.phase == 1:
             anchor_x = content_x
             text_y = top + 118.0 * scale
-            self._draw_small("State your name trooper!", Vec2(anchor_x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT)
+            self._draw_small(
+                "State your name trooper!", Vec2(anchor_x + 42.0 * scale, text_y), 1.0 * scale, COLOR_UI_ACCENT
+            )
 
             input_x = anchor_x
             input_y = top + 150.0 * scale
-            rl.draw_rectangle_lines(int(input_x), int(input_y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE)
+            rl.draw_rectangle_lines(
+                int(input_x), int(input_y), int(INPUT_BOX_W * scale), int(INPUT_BOX_H * scale), rl.WHITE
+            )
             rl.draw_rectangle(
                 int(input_x + 1.0 * scale),
                 int(input_y + 1.0 * scale),
@@ -672,23 +725,35 @@ class QuestResultsUi:
                 int((INPUT_BOX_H - 2.0) * scale),
                 rl.Color(0, 0, 0, 255),
             )
-            draw_ui_text(self.font, self.input_text, input_x + 4.0 * scale, input_y + 2.0 * scale, scale=1.0 * scale, color=COLOR_TEXT_MUTED)
+            draw_ui_text(
+                self.font,
+                self.input_text,
+                Vec2(input_x + 4.0 * scale, input_y + 2.0 * scale),
+                scale=1.0 * scale,
+                color=COLOR_TEXT_MUTED,
+            )
             caret_alpha = 1.0
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
             caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
             caret_x = input_x + 4.0 * scale + self._text_width(self.input_text[: self.input_caret], 1.0 * scale)
-            rl.draw_rectangle(int(caret_x), int(input_y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color)
+            rl.draw_rectangle(
+                int(caret_x), int(input_y + 2.0 * scale), int(1.0 * scale), int(14.0 * scale), caret_color
+            )
 
             ok_x = anchor_x + 170.0 * scale
             ok_y = input_y - 8.0 * scale
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._ok_button, x=ok_x, y=ok_y, width=ok_w, scale=scale)
+            button_draw(
+                self.assets.perk_menu_assets, self.font, self._ok_button, pos=Vec2(ok_x, ok_y), width=ok_w, scale=scale
+            )
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_x = anchor_x + 26.0 * scale
             score_card_y = input_y + 46.0 * scale
-            self._draw_name_entry_stats(pos=Vec2(score_card_x, score_card_y), scale=scale, alpha=1.0, show_weapon_row=True)
+            self._draw_name_entry_stats(
+                pos=Vec2(score_card_x, score_card_y), scale=scale, alpha=1.0, show_weapon_row=True
+            )
 
         else:
             score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
@@ -707,28 +772,72 @@ class QuestResultsUi:
             # Unlock lines (their presence shifts the buttons down in native).
             var_c_14 = var_c_12 + 84.0 * scale
             if self.unlock_weapon_name:
-                self._draw_small("Weapon unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE)
-                self._draw_small(self.unlock_weapon_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT)
+                self._draw_small(
+                    "Weapon unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE
+                )
+                self._draw_small(
+                    self.unlock_weapon_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT
+                )
                 var_c_14 += 30.0 * scale
             if self.unlock_perk_name:
-                self._draw_small("Perk unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE)
-                self._draw_small(self.unlock_perk_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT)
+                self._draw_small(
+                    "Perk unlocked:", Vec2(score_card_x, var_c_14 + 1.0 * scale), 1.0 * scale, COLOR_TEXT_SUBTLE
+                )
+                self._draw_small(
+                    self.unlock_perk_name, Vec2(score_card_x, var_c_14 + 14.0 * scale), 1.0 * scale, COLOR_TEXT
+                )
                 var_c_14 += 30.0 * scale
 
             # Buttons
             button_x = score_card_x + 20.0 * scale
             button_y = var_c_14 + 6.0 * scale
-            play_next_w = button_width(self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._play_next_button, x=button_x, y=button_y, width=play_next_w, scale=scale)
+            play_next_w = button_width(
+                self.font, self._play_next_button.label, scale=scale, force_wide=self._play_next_button.force_wide
+            )
+            button_draw(
+                self.assets.perk_menu_assets,
+                self.font,
+                self._play_next_button,
+                pos=Vec2(button_x, button_y),
+                width=play_next_w,
+                scale=scale,
+            )
             button_y += 32.0 * scale
-            play_again_w = button_width(self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._play_again_button, x=button_x, y=button_y, width=play_again_w, scale=scale)
+            play_again_w = button_width(
+                self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
+            )
+            button_draw(
+                self.assets.perk_menu_assets,
+                self.font,
+                self._play_again_button,
+                pos=Vec2(button_x, button_y),
+                width=play_again_w,
+                scale=scale,
+            )
             button_y += 32.0 * scale
-            high_scores_w = button_width(self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._high_scores_button, x=button_x, y=button_y, width=high_scores_w, scale=scale)
+            high_scores_w = button_width(
+                self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
+            )
+            button_draw(
+                self.assets.perk_menu_assets,
+                self.font,
+                self._high_scores_button,
+                pos=Vec2(button_x, button_y),
+                width=high_scores_w,
+                scale=scale,
+            )
             button_y += 32.0 * scale
-            main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
-            button_draw(self.assets.perk_menu_assets, self.font, self._main_menu_button, x=button_x, y=button_y, width=main_menu_w, scale=scale)
+            main_menu_w = button_width(
+                self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
+            )
+            button_draw(
+                self.assets.perk_menu_assets,
+                self.font,
+                self._main_menu_button,
+                pos=Vec2(button_x, button_y),
+                width=main_menu_w,
+                scale=scale,
+            )
 
         draw_menu_cursor(
             self.assets.particles,

@@ -171,7 +171,7 @@ class CameraShakeView:
 
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
 
         state = self._world.state
         camera, _view_scale = self._world._world_params()
@@ -186,7 +186,7 @@ class CameraShakeView:
         y = 24.0 + float(ui_line_height(self._small, scale=UI_TEXT_SCALE)) + 12.0
         for idx, line in enumerate(lines):
             color = UI_HINT_COLOR if idx == 0 else UI_TEXT_COLOR
-            draw_ui_text(self._small, line, x, y, scale=UI_TEXT_SCALE, color=color)
+            draw_ui_text(self._small, line, Vec2(x, y), scale=UI_TEXT_SCALE, color=color)
             y += float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
 
 

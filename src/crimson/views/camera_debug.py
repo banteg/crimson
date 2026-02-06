@@ -182,7 +182,9 @@ class CameraDebugView:
             move_y += 1.0
         move = Vec2(move_x, move_y)
         if move.length_sq() > 0.0:
-            self._player = (self._player + move.normalized() * (speed * dt)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
+            self._player = (self._player + move.normalized() * (speed * dt)).clamp_rect(
+                0.0, 0.0, WORLD_SIZE, WORLD_SIZE
+            )
 
         screen_size = self._camera_screen_size()
         desired = Vec2(
@@ -241,7 +243,9 @@ class CameraDebugView:
         rl.clear_background(clear_color)
 
         if self._renderer is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Ground renderer not initialized.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
 
         camera, view_scale, screen_size = self._world_params()
@@ -264,7 +268,9 @@ class CameraDebugView:
         # Player
         px = (self._player.x + camera.x) * view_scale.x
         py = (self._player.y + camera.y) * view_scale.y
-        rl.draw_circle(int(px), int(py), max(2, int(6 * (view_scale.x + view_scale.y) * 0.5)), rl.Color(255, 200, 120, 255))
+        rl.draw_circle(
+            int(px), int(py), max(2, int(6 * (view_scale.x + view_scale.y) * 0.5)), rl.Color(255, 200, 120, 255)
+        )
 
         # Minimap
         out_w = float(rl.get_screen_width())
@@ -297,8 +303,7 @@ class CameraDebugView:
         draw_ui_text(
             self._small,
             f"window={int(out_w)}x{int(rl.get_screen_height())}  camera={int(screen_size.x)}x{int(screen_size.y)} ({mode})",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -307,20 +312,29 @@ class CameraDebugView:
             self._small,
             f"config={int(self._config_screen_w)}x{int(self._config_screen_h)}  "
             f"scale={view_scale.x:.3f},{view_scale.y:.3f}  tex={self._texture_scale:.2f}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
         y += line
-        draw_ui_text(self._small, f"player={self._player.x:.1f},{self._player.y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small,
+            f"player={self._player.x:.1f},{self._player.y:.1f}",
+            Vec2(x, y),
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
+        )
         y += line
-        draw_ui_text(self._small, f"camera={camera.x:.1f},{camera.y:.1f}", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, f"camera={camera.x:.1f},{camera.y:.1f}", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         y += line
         if self._log_path is not None:
-            draw_ui_text(self._small, f"log: {self._log_path}", x, y, scale=0.9, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, f"log: {self._log_path}", Vec2(x, y), scale=0.9, color=UI_HINT_COLOR)
             y += line
-        draw_ui_text(self._small, "F1: toggle camera size (config/window)", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(
+            self._small, "F1: toggle camera size (config/window)", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+        )
 
 
 @register_view("camera-debug", "Camera debug")

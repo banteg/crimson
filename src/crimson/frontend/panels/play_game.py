@@ -343,7 +343,9 @@ class PlayGameMenuView(PanelMenuView):
         state.enabled = bool(enabled)
         font = self._ensure_small_font()
         width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        clicked = button_update(state, x=pos.x, y=pos.y, width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click))
+        clicked = button_update(
+            state, pos=Vec2(pos.x, pos.y), width=width, dt_ms=float(dt_ms), mouse=mouse, click=bool(click)
+        )
         return clicked, state.hovered
 
     def _activate_mode(self, mode: _PlayGameModeEntry) -> None:
@@ -488,7 +490,9 @@ class PlayGameMenuView(PanelMenuView):
         show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         if show_counts:
-            draw_small_text(font, "times played:", Vec2(base_x + 132.0 * scale, base_y + 16.0 * scale), text_scale, text_color)
+            draw_small_text(
+                font, "times played:", Vec2(base_x + 132.0 * scale, base_y + 16.0 * scale), text_scale, text_color
+            )
 
         for mode in entries:
             self._draw_mode_button(mode, Vec2(base_x, y), scale)
@@ -575,7 +579,7 @@ class PlayGameMenuView(PanelMenuView):
         font = self._ensure_small_font()
         state = self._mode_button_state(mode)
         width = button_width(font, state.label, scale=scale, force_wide=state.force_wide)
-        button_draw(textures, font, state, x=pos.x, y=pos.y, width=width, scale=scale)
+        button_draw(textures, font, state, pos=Vec2(pos.x, pos.y), width=width, scale=scale)
 
     def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         status = self._state.status

@@ -5,6 +5,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.view import View, ViewContext
 
 from ..ui.perk_menu import MENU_ITEM_ALPHA_IDLE, MENU_ITEM_RGB, draw_menu_item
@@ -129,7 +130,7 @@ class SmallFontDebugView:
         rl.draw_text("perk menu render", right_x, header_y, 20, UI_TEXT_COLOR)
         text_y = float(atlas_y)
         for line in SAMPLE_LINES:
-            draw_menu_item(self._small, line, x=float(right_x), y=text_y, scale=1.0, hovered=False)
+            draw_menu_item(self._small, line, pos=Vec2(float(right_x), text_y), scale=1.0, hovered=False)
             text_y += row_step
         perk_list_bottom = text_y
         section_y = perk_list_bottom + 16.0
@@ -148,8 +149,7 @@ class SmallFontDebugView:
                 self._draw_vector_menu_item(
                     self._vector_font_alt,
                     line,
-                    x=float(vector_x),
-                    y=float(vector_y),
+                    pos=Vec2(float(vector_x), float(vector_y)),
                     font_size_px=PIXEL_ARIAL_DRAW_SIZE,
                     spacing=VECTOR_FONT_SPACING,
                 )
@@ -169,8 +169,7 @@ class SmallFontDebugView:
                 self._draw_vector_menu_item(
                     self._vector_font,
                     line,
-                    x=float(alt_x),
-                    y=float(alt_y),
+                    pos=Vec2(float(alt_x), float(alt_y)),
                     font_size_px=ARIAL_FONT_DRAW_SIZE,
                     spacing=VECTOR_FONT_SPACING,
                 )
@@ -181,21 +180,20 @@ class SmallFontDebugView:
         font: rl.Font,
         text: str,
         *,
-        x: float,
-        y: float,
+        pos: Vec2,
         font_size_px: float,
         spacing: float,
     ) -> None:
         r, g, b = MENU_ITEM_RGB
         color = rl.Color(int(r), int(g), int(b), int(255 * MENU_ITEM_ALPHA_IDLE))
-        rl.draw_text_ex(font, text, rl.Vector2(float(x), float(y)), float(font_size_px), float(spacing), color)
+        rl.draw_text_ex(font, text, pos.to_vector2(rl.Vector2), float(font_size_px), float(spacing), color)
         try:
             size = rl.measure_text_ex(font, text, float(font_size_px), float(spacing))
             width = float(size.x)
         except Exception:
             width = float(rl.measure_text(text, int(font_size_px)))
-        line_y = y + 13.0
-        rl.draw_line(int(x), int(line_y), int(x + width), int(line_y), color)
+        line_y = pos.y + 13.0
+        rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
 
 
 @register_view("small-font-debug", "Small font debug")

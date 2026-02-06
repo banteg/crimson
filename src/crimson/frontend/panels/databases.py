@@ -174,8 +174,7 @@ class _DatabaseBaseView:
         back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            x=left_x0 + float(bx) * scale,
-            y=left_y0 + float(by) * scale,
+            pos=Vec2(left_x0 + float(bx) * scale, left_y0 + float(by) * scale),
             width=back_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -252,8 +251,7 @@ class _DatabaseBaseView:
                 textures,
                 font,
                 self._back_button,
-                x=left_x0 + float(bx) * scale,
-                y=left_y0 + float(by) * scale,
+                pos=Vec2(left_x0 + float(bx) * scale, left_y0 + float(by) * scale),
                 width=back_w,
                 scale=scale,
             )
@@ -306,7 +304,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         # state_15: ui_buttonSm bbox [270,507]..[352,539] => relative to left panel (-98,194): (368, 313)
         return (368.0, 313.0)
 
-    def _draw_contents(self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData) -> None:
+    def _draw_contents(
+        self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData
+    ) -> None:
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -314,7 +314,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             "Unlocked Weapons Database",
-            Vec2(left_x0 + 251.0 * scale, left_y0 + 50.0 * scale), text_scale,
+            Vec2(left_x0 + 251.0 * scale, left_y0 + 50.0 * scale),
+            text_scale,
             rl.Color(255, 255, 255, 255),
         )
 
@@ -324,13 +325,15 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             f"{count} {weapon_label} in database",
-            Vec2(left_x0 + 210.0 * scale, left_y0 + 80.0 * scale), text_scale,
+            Vec2(left_x0 + 210.0 * scale, left_y0 + 80.0 * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Weapon",
-            Vec2(left_x0 + 210.0 * scale, left_y0 + 108.0 * scale), text_scale,
+            Vec2(left_x0 + 210.0 * scale, left_y0 + 108.0 * scale),
+            text_scale,
             text_color,
         )
 
@@ -348,7 +351,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             f"wepno #{weapon_id}",
-            Vec2(right_x0 + 240.0 * scale, right_y0 + 32.0 * scale), text_scale,
+            Vec2(right_x0 + 240.0 * scale, right_y0 + 32.0 * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(font, name, Vec2(right_x0 + 50.0 * scale, right_y0 + 50.0 * scale), text_scale, text_color)
@@ -363,21 +367,24 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 draw_small_text(
                     font,
                     f"Firerate: {rpm} rpm",
-                    Vec2(right_x0 + 66.0 * scale, right_y0 + 128.0 * scale), text_scale,
+                    Vec2(right_x0 + 66.0 * scale, right_y0 + 128.0 * scale),
+                    text_scale,
                     text_color,
                 )
             if reload_time is not None:
                 draw_small_text(
                     font,
                     f"Reload time: {reload_time:g} secs",
-                    Vec2(right_x0 + 66.0 * scale, right_y0 + 146.0 * scale), text_scale,
+                    Vec2(right_x0 + 66.0 * scale, right_y0 + 146.0 * scale),
+                    text_scale,
                     text_color,
                 )
             if clip_size is not None:
                 draw_small_text(
                     font,
                     f"Clip size: {int(clip_size)}",
-                    Vec2(right_x0 + 66.0 * scale, right_y0 + 164.0 * scale), text_scale,
+                    Vec2(right_x0 + 66.0 * scale, right_y0 + 164.0 * scale),
+                    text_scale,
                     text_color,
                 )
 
@@ -469,7 +476,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
         return (356.0, 315.0)
 
-    def _draw_contents(self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData) -> None:
+    def _draw_contents(
+        self, left_x0: float, left_y0: float, right_x0: float, right_y0: float, *, scale: float, font: SmallFontData
+    ) -> None:
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
@@ -477,7 +486,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             "Unlocked Perks Database",
-            Vec2(left_x0 + 261.0 * scale, left_y0 + 50.0 * scale), text_scale,
+            Vec2(left_x0 + 261.0 * scale, left_y0 + 50.0 * scale),
+            text_scale,
             rl.Color(255, 255, 255, 255),
         )
 
@@ -487,13 +497,15 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         draw_small_text(
             font,
             f"{count} {perk_label} in database",
-            Vec2(left_x0 + 210.0 * scale, left_y0 + 78.0 * scale), text_scale,
+            Vec2(left_x0 + 210.0 * scale, left_y0 + 78.0 * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Perks",
-            Vec2(left_x0 + 210.0 * scale, left_y0 + 106.0 * scale), text_scale,
+            Vec2(left_x0 + 210.0 * scale, left_y0 + 106.0 * scale),
+            text_scale,
             text_color,
         )
 
@@ -501,14 +513,17 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         list_y0 = left_y0 + 128.0 * scale
         row_step = 16.0 * scale
         for row, perk_id in enumerate(perk_ids[:9]):
-            draw_small_text(font, self._perk_name(perk_id), Vec2(list_x, list_y0 + float(row) * row_step), text_scale, text_color)
+            draw_small_text(
+                font, self._perk_name(perk_id), Vec2(list_x, list_y0 + float(row) * row_step), text_scale, text_color
+            )
 
         perk_id = int(self._selected_perk_id)
         perk_name = self._perk_name(perk_id)
         draw_small_text(
             font,
             f"perkno #{perk_id}",
-            Vec2(right_x0 + 224.0 * scale, right_y0 + 32.0 * scale), text_scale,
+            Vec2(right_x0 + 224.0 * scale, right_y0 + 32.0 * scale),
+            text_scale,
             text_color,
         )
         draw_small_text(font, perk_name, Vec2(right_x0 + 93.0 * scale, right_y0 + 50.0 * scale), text_scale, text_color)

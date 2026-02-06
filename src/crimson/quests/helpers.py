@@ -97,17 +97,16 @@ def line_points(start: Vec2, step: Vec2, count: int) -> Iterator[Vec2]:
 
 
 def spawn(
+    point: Vec2,
     *,
-    x: float,
-    y: float,
     heading: float = 0.0,
     spawn_id: SpawnId,
     trigger_ms: int,
     count: int,
 ) -> SpawnEntry:
     return SpawnEntry(
-        x=x,
-        y=y,
+        x=point.x,
+        y=point.y,
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,
@@ -124,8 +123,7 @@ def spawn_at(
     count: int,
 ) -> SpawnEntry:
     return spawn(
-        x=point.x,
-        y=point.y,
+        point,
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,

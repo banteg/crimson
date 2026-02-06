@@ -213,10 +213,14 @@ class TutorialMode(BaseGameplayMode):
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
             play_x = rect.x + 10.0
             repeat_x = play_x + play_w + gap
-            if button_update(self._play_button, x=play_x, y=button_y, width=play_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(
+                self._play_button, pos=Vec2(play_x, button_y), width=play_w, dt_ms=dt_ms, mouse=mouse, click=click
+            ):
                 self.close_requested = True
                 return
-            if button_update(self._repeat_button, x=repeat_x, y=button_y, width=repeat_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(
+                self._repeat_button, pos=Vec2(repeat_x, button_y), width=repeat_w, dt_ms=dt_ms, mouse=mouse, click=click
+            ):
                 self.open()
                 return
             return
@@ -224,7 +228,7 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.enabled:
             y = float(rl.get_screen_height()) - 50.0
             w = button_width(self._small, self._skip_button.label, scale=1.0, force_wide=True)
-            if button_update(self._skip_button, x=10.0, y=y, width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 self.close_requested = True
 
     def update(self, dt: float) -> None:
@@ -410,14 +414,23 @@ class TutorialMode(BaseGameplayMode):
             repeat_w = button_width(self._small, self._repeat_button.label, scale=1.0, force_wide=True)
             play_x = rect.x + 10.0
             repeat_x = play_x + play_w + gap
-            button_draw(self._ui_assets, self._small, self._play_button, x=play_x, y=button_y, width=play_w, scale=1.0)
-            button_draw(self._ui_assets, self._small, self._repeat_button, x=repeat_x, y=button_y, width=repeat_w, scale=1.0)
+            button_draw(
+                self._ui_assets, self._small, self._play_button, pos=Vec2(play_x, button_y), width=play_w, scale=1.0
+            )
+            button_draw(
+                self._ui_assets,
+                self._small,
+                self._repeat_button,
+                pos=Vec2(repeat_x, button_y),
+                width=repeat_w,
+                scale=1.0,
+            )
             return
 
         if self._skip_button.alpha > 1e-3:
             y = float(rl.get_screen_height()) - 50.0
             w = button_width(self._small, self._skip_button.label, scale=1.0, force_wide=True)
-            button_draw(self._ui_assets, self._small, self._skip_button, x=10.0, y=y, width=w, scale=1.0)
+            button_draw(self._ui_assets, self._small, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
 
         if self._paused:
             x = 18.0

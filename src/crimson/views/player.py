@@ -269,7 +269,7 @@ class PlayerSandboxView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
@@ -329,7 +329,7 @@ class PlayerSandboxView:
 
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            draw_ui_text(self._small, warn, 24, rl.get_screen_height() - 28, scale=0.8, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, warn, Vec2(24, rl.get_screen_height() - 28), scale=0.8, color=UI_ERROR_COLOR)
 
         # UI.
         scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
@@ -340,13 +340,14 @@ class PlayerSandboxView:
 
         weapon_id = self._player.weapon_id
         weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
-        draw_ui_text(self._small, f"{weapon_name} (id {weapon_id})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, f"{weapon_name} (id {weapon_id})", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         y += line + 4
         draw_ui_text(
             self._small,
             f"ammo {self._player.ammo}/{self._player.clip_size}  reload {self._player.reload_timer:.2f}/{self._player.reload_timer_max:.2f}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -354,8 +355,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             f"cooldown {self._player.shot_cooldown:.3f}  spread {self._player.spread_heat:.3f}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -364,8 +364,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "WASD move  Mouse aim  LMB fire  R reload/swap  Q/E weapon  Tab pause",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -373,8 +372,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "1 Sharpshooter 2 Anxious 3 Stationary 4 Angry 5 Man Bomb 6 Hot Tempered 7 Fire Cough  T Alt Weapon",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -382,8 +380,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "Z PowerUp  X Shield  C Speed  V FireBullets  B Fireblast  Backspace clear bonuses",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -405,8 +402,7 @@ class PlayerSandboxView:
         draw_ui_text(
             self._small,
             "perks: " + (", ".join(active_perks) if active_perks else "none"),
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -415,10 +411,10 @@ class PlayerSandboxView:
         # Bonus HUD slots (text-only).
         slots = [slot for slot in self._state.bonus_hud.slots if slot.active]
         if slots:
-            draw_ui_text(self._small, "bonuses:", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, "bonuses:", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             y += line + 4
             for slot in slots:
-                draw_ui_text(self._small, f"- {slot.label}", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(self._small, f"- {slot.label}", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
                 y += line + 2
 
 

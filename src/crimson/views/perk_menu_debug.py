@@ -59,9 +59,7 @@ class PerkMenuDebugView:
         self._assets: PerkMenuAssets | None = None
         self._layout = PerkMenuLayout()
 
-        self._perk_ids = [
-            perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != int(PerkId.ANTIPERK)
-        ]
+        self._perk_ids = [perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != int(PerkId.ANTIPERK)]
         self._choice_count = 6
         self._selected = 0
         self._expert_owned = False
@@ -156,7 +154,7 @@ class PerkMenuDebugView:
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, x, y, scale=1.0, color=color)
+        draw_ui_text(self._small, label, Vec2(x, y), scale=1.0, color=color)
 
         if self._assets.menu_item is not None:
             tex = self._assets.menu_item
@@ -285,13 +283,14 @@ class PerkMenuDebugView:
                 self._selected = idx
                 break
 
-        cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
+        cancel_w = button_width(
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
         cancel_x = computed.cancel_x
         button_y = computed.cancel_y
         if button_update(
             self._cancel_button,
-            x=cancel_x,
-            y=button_y,
+            pos=Vec2(cancel_x, button_y),
             width=cancel_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -305,8 +304,7 @@ class PerkMenuDebugView:
             draw_ui_text(
                 self._small,
                 "Missing assets: " + ", ".join(self._missing_assets),
-                24.0,
-                24.0,
+                Vec2(24.0, 24.0),
                 scale=1.0,
                 color=UI_ERROR_COLOR,
             )
@@ -351,8 +349,7 @@ class PerkMenuDebugView:
                     draw_ui_text(
                         self._small,
                         sponsor,
-                        computed.sponsor_x,
-                        computed.sponsor_y,
+                        Vec2(computed.sponsor_x, computed.sponsor_y),
                         scale=scale,
                         color=UI_SPONSOR_COLOR,
                     )
@@ -364,7 +361,7 @@ class PerkMenuDebugView:
                     item_y = computed.list_y + float(idx) * computed.list_step_y
                     rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
                     hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._selected)
-                    draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
+                    draw_menu_item(self._small, label, pos=Vec2(item_x, item_y), scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]
                 desc = perk_display_description(int(selected_id))
@@ -374,16 +371,27 @@ class PerkMenuDebugView:
                 desc_h = float(computed.desc.height)
                 desc_scale = scale * 0.85
                 desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
-                line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
+                line_h = (
+                    float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
+                )
                 y = desc_y
                 for line in desc_lines:
                     if y + line_h > desc_y + desc_h:
                         break
-                    draw_ui_text(self._small, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
+                    draw_ui_text(self._small, line, Vec2(desc_x, y), scale=desc_scale, color=UI_TEXT_COLOR)
                     y += line_h
 
-                cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
-                button_draw(self._assets, self._small, self._cancel_button, x=computed.cancel_x, y=computed.cancel_y, width=cancel_w, scale=scale)
+                cancel_w = button_width(
+                    self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+                )
+                button_draw(
+                    self._assets,
+                    self._small,
+                    self._cancel_button,
+                    pos=Vec2(computed.cancel_x, computed.cancel_y),
+                    width=cancel_w,
+                    scale=scale,
+                )
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -406,7 +414,7 @@ class PerkMenuDebugView:
             f"slide_x={self._panel_slide_x:.1f} choices={self._choice_count} selected={self._selected}",
         ]
         for line in lines:
-            draw_ui_text(self._small, line, x, y, scale=scale, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, line, Vec2(x, y), scale=scale, color=UI_HINT_COLOR)
             y += line_h
 
 

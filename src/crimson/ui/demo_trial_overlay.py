@@ -22,6 +22,7 @@ from .perk_menu import (
 
 DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
 
+
 class DemoTrialOverlayUi:
     def __init__(self, assets_root: Path) -> None:
         self._assets_root = assets_root
@@ -103,8 +104,7 @@ class DemoTrialOverlayUi:
 
         purchase_clicked = button_update(
             self._purchase_button,
-            x=float(base_x),
-            y=float(button_y),
+            pos=Vec2(float(base_x), float(button_y)),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -112,8 +112,7 @@ class DemoTrialOverlayUi:
         )
         maybe_clicked = button_update(
             self._maybe_later_button,
-            x=float(base_x + button_w + gap),
-            y=float(button_y),
+            pos=Vec2(float(base_x + button_w + gap), float(button_y)),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -162,7 +161,9 @@ class DemoTrialOverlayUi:
         font = self._font
         header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
-            draw_small_text(font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), 1.0, rl.Color(220, 220, 220, 255))
+            draw_small_text(
+                font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), 1.0, rl.Color(220, 220, 220, 255)
+            )
         else:
             rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 
@@ -211,8 +212,7 @@ class DemoTrialOverlayUi:
                 assets,
                 font,
                 self._purchase_button,
-                x=float(base_x),
-                y=float(button_y),
+                pos=Vec2(float(base_x), float(button_y)),
                 width=float(button_w),
                 scale=float(scale),
             )
@@ -220,8 +220,7 @@ class DemoTrialOverlayUi:
                 assets,
                 font,
                 self._maybe_later_button,
-                x=float(base_x + button_w + gap),
-                y=float(button_y),
+                pos=Vec2(float(base_x + button_w + gap), float(button_y)),
                 width=float(button_w),
                 scale=float(scale),
             )

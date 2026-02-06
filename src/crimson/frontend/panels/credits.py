@@ -129,8 +129,7 @@ class CreditsView:
         w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            x=panel_x0 + _BACK_BUTTON_X * scale,
-            y=panel_y0 + _BACK_BUTTON_Y * scale,
+            pos=Vec2(panel_x0 + _BACK_BUTTON_X * scale, panel_y0 + _BACK_BUTTON_Y * scale),
             width=w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -163,7 +162,8 @@ class CreditsView:
         draw_small_text(
             font,
             "credits",
-            Vec2(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale), 1.0 * scale,
+            Vec2(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale),
+            1.0 * scale,
             rl.Color(255, 255, 255, 255),
         )
 
@@ -174,8 +174,7 @@ class CreditsView:
                 textures,
                 font,
                 self._back_button,
-                x=panel_x0 + _BACK_BUTTON_X * scale,
-                y=panel_y0 + _BACK_BUTTON_Y * scale,
+                pos=Vec2(panel_x0 + _BACK_BUTTON_X * scale, panel_y0 + _BACK_BUTTON_Y * scale),
                 width=back_w,
                 scale=scale,
             )

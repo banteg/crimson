@@ -158,10 +158,12 @@ class GroundView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._renderer is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
         self._renderer.draw(self._camera)
         self._draw_quest_title_overlay()

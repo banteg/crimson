@@ -279,11 +279,15 @@ class SurvivalMode(BaseGameplayMode):
             except Exception:
                 weapon_usage_counts = ()
         if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
-            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(0, WEAPON_USAGE_COUNT - len(weapon_usage_counts))
+            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
+                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts)
+            )
             weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(getattr(status, "quest_unlock_index", 0) or 0) if status is not None else 0,
-            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0) if status is not None else 0,
+            quest_unlock_index_full=int(getattr(status, "quest_unlock_index_full", 0) or 0)
+            if status is not None
+            else 0,
             weapon_usage_counts=weapon_usage_counts,
         )
         self._replay_recorder = ReplayRecorder(
@@ -644,7 +648,7 @@ class SurvivalMode(BaseGameplayMode):
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=color)
+        draw_ui_text(self._small, label, Vec2(x, y), scale=UI_TEXT_SCALE, color=color)
 
         if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
             tex = self._perk_menu_assets.menu_item
@@ -726,7 +730,7 @@ class SurvivalMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
             self._draw_ui_text(
-                f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}",
+                f"survival: t={self._survival.elapsed_ms / 1000.0:6.1f}s  stage={self._survival.stage}",
                 Vec2(x, y),
                 UI_TEXT_COLOR,
             )

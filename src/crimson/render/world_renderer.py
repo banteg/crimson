@@ -272,8 +272,7 @@ class WorldRenderer:
         *,
         grid: int,
         frame: int,
-        x: float,
-        y: float,
+        pos: Vec2,
         scale: float,
         rotation_rad: float = 0.0,
         tint: rl.Color = rl.WHITE,
@@ -287,7 +286,7 @@ class WorldRenderer:
         src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
         w = cell_w * float(scale)
         h = cell_h * float(scale)
-        dst = rl.Rectangle(float(x), float(y), w, h)
+        dst = rl.Rectangle(float(pos.x), float(pos.y), w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
@@ -340,7 +339,9 @@ class WorldRenderer:
         tint = rl.Color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
         half = size * 0.5
 
-        table_src = rl.Rectangle(0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height))
+        table_src = rl.Rectangle(
+            0.0, 0.0, float(self.clock_table_texture.width), float(self.clock_table_texture.height)
+        )
         table_dst = rl.Rectangle(float(pos.x), float(pos.y), size, size)
         rl.draw_texture_pro(self.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
@@ -386,8 +387,7 @@ class WorldRenderer:
         if index < 0:
             return
 
-        screen = self.world_to_screen(pos)
-        sx, sy = screen.x, screen.y
+        screen_pos = self.world_to_screen(pos)
         width = float(texture.width) / 8.0 * size_scale * scale
         height = float(texture.height) / 8.0 * size_scale * scale
         src_x = float((index % 8) * (texture.width // 8))
@@ -407,11 +407,11 @@ class WorldRenderer:
             shadow_w = width * shadow_scale
             shadow_h = height * shadow_scale
             offset = width * 0.035 - 0.7 * scale
-            shadow_dst = rl.Rectangle(sx + offset, sy + offset, shadow_w, shadow_h)
+            shadow_dst = rl.Rectangle(screen_pos.x + offset, screen_pos.y + offset, shadow_w, shadow_h)
             shadow_origin = rl.Vector2(shadow_w * 0.5, shadow_h * 0.5)
             rl.draw_texture_pro(texture, src, shadow_dst, shadow_origin, rotation_deg, shadow_tint)
 
-        dst = rl.Rectangle(sx, sy, width, height)
+        dst = rl.Rectangle(screen_pos.x, screen_pos.y, width, height)
         origin = rl.Vector2(width * 0.5, height * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
@@ -433,17 +433,11 @@ class WorldRenderer:
         if cell <= 0.0:
             return
 
-        player_screen = self._world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
-        sx = player_screen.x
-        sy = player_screen.y
+        screen_pos = self._world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
         base_size = float(player.size) * scale
         base_scale = base_size / cell
 
-        if (
-            self.particles_texture is not None
-            and perk_active(player, PerkId.RADIOACTIVE)
-            and alpha > 1e-3
-        ):
+        if self.particles_texture is not None and perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
             if atlas is not None:
                 aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -463,7 +457,7 @@ class WorldRenderer:
                     aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                     if aura_alpha > 1e-3:
                         size = 100.0 * scale
-                        dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
+                        dst = rl.Rectangle(float(screen_pos.x), float(screen_pos.y), float(size), float(size))
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -485,8 +479,7 @@ class WorldRenderer:
                 texture,
                 grid=grid,
                 frame=max(0, min(63, int(frame))),
-                x=pos.x,
-                y=pos.y,
+                pos=pos,
                 scale=base_scale * float(scale_mul),
                 rotation_rad=float(rotation),
                 tint=color,
@@ -508,14 +501,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                pos=Vec2(sx + leg_shadow_off, sy + leg_shadow_off),
+                pos=screen_pos + Vec2(leg_shadow_off, leg_shadow_off),
                 scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                pos=Vec2(sx + recoil_x + torso_shadow_off, sy + recoil_y + torso_shadow_off),
+                pos=screen_pos + Vec2(recoil_x + torso_shadow_off, recoil_y + torso_shadow_off),
                 scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
@@ -523,14 +516,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                pos=Vec2(sx, sy),
+                pos=screen_pos,
                 scale_mul=1.0,
                 rotation=float(player.heading),
                 color=tint,
             )
             draw(
                 torso_frame,
-                pos=Vec2(sx + recoil_x, sy + recoil_y),
+                pos=screen_pos + Vec2(recoil_x, recoil_y),
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
                 color=overlay_tint,
@@ -557,29 +550,28 @@ class WorldRenderer:
                         strength = (math.sin(t) + 1.0) * 0.25 + timer
                         if timer < 1.0:
                             strength *= timer
-                        strength = min(1.0, strength) * alpha
-                        if strength > 1e-3:
-                            offset_dir = float(player.aim_heading) - math.pi / 2.0
-                            ox = math.cos(offset_dir) * 3.0 * scale
-                            oy = math.sin(offset_dir) * 3.0 * scale
-                            cx = sx + ox
-                            cy = sy + oy
+                            strength = min(1.0, strength) * alpha
+                            if strength > 1e-3:
+                                offset_dir = float(player.aim_heading) - math.pi / 2.0
+                                ox = math.cos(offset_dir) * 3.0 * scale
+                                oy = math.sin(offset_dir) * 3.0 * scale
+                                center = screen_pos + Vec2(ox, oy)
 
-                            half = math.sin(t * 3.0) + 17.5
-                            size = half * 2.0 * scale
-                            a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
-                            tint = rl.Color(91, 180, 255, a)
-                            dst = rl.Rectangle(float(cx), float(cy), float(size), float(size))
-                            origin = rl.Vector2(size * 0.5, size * 0.5)
-                            rotation_deg = float((t + t) * _RAD_TO_DEG)
+                                half = math.sin(t * 3.0) + 17.5
+                                size = half * 2.0 * scale
+                                a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
+                                tint = rl.Color(91, 180, 255, a)
+                                dst = rl.Rectangle(float(center.x), float(center.y), float(size), float(size))
+                                origin = rl.Vector2(size * 0.5, size * 0.5)
+                                rotation_deg = float((t + t) * _RAD_TO_DEG)
 
-                            half = math.sin(t * 3.0) * 4.0 + 24.0
-                            size2 = half * 2.0 * scale
-                            a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
-                            tint2 = rl.Color(91, 180, 255, a2)
-                            dst2 = rl.Rectangle(float(cx), float(cy), float(size2), float(size2))
-                            origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
-                            rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
+                                half = math.sin(t * 3.0) * 4.0 + 24.0
+                                size2 = half * 2.0 * scale
+                                a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
+                                tint2 = rl.Color(91, 180, 255, a2)
+                                dst2 = rl.Rectangle(float(center.x), float(center.y), float(size2), float(size2))
+                                origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
+                                rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
                             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                             rl.draw_texture_pro(self.particles_texture, src, dst, origin, rotation_deg, tint)
@@ -595,7 +587,7 @@ class WorldRenderer:
                         size = base_size * (0.5 if (flags & 0x4) else 1.0)
                         heading = float(player.aim_heading) + math.pi / 2.0
                         offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
-                        flash_pos = Vec2(sx, sy) + Vec2.from_angle(heading) * offset
+                        flash_pos = screen_pos + Vec2.from_angle(heading) * offset
                         src = rl.Rectangle(
                             0.0,
                             0.0,
@@ -631,13 +623,12 @@ class WorldRenderer:
         dead_shadow_off = 1.0 * scale + base_size * (dead_shadow_scale - 1.0) * 0.5
         draw(
             frame,
-            x=sx + dead_shadow_off,
-            y=sy + dead_shadow_off,
+            pos=screen_pos + Vec2(dead_shadow_off, dead_shadow_off),
             scale_mul=dead_shadow_scale,
             rotation=float(player.aim_heading),
             color=shadow_tint,
         )
-        draw(frame, x=sx, y=sy, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
+        draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
 
     def _draw_projectile(self, proj: object, *, proj_index: int = 0, scale: float, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -674,7 +665,9 @@ class WorldRenderer:
         if texture is None:
             if life < 0.39:
                 return
-            rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5)))
+            rl.draw_circle(
+                int(screen.x), int(screen.y), max(1.0, 2.0 * scale), rl.Color(180, 180, 180, int(180 * alpha + 0.5))
+            )
             return
         grid, frame = mapping
 
@@ -685,8 +678,7 @@ class WorldRenderer:
             texture,
             grid=grid,
             frame=frame,
-            x=screen.x,
-            y=screen.y,
+            pos=screen,
             scale=0.6 * scale,
             rotation_rad=angle,
             tint=tint,
@@ -883,7 +875,9 @@ class WorldRenderer:
         )
         if draw_secondary_projectile_from_registry(ctx):
             return
-        rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5)))
+        rl.draw_circle(
+            int(screen.x), int(screen.y), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, int(200 * alpha + 0.5))
+        )
 
     def _draw_particle_pool(self, *, camera: Vec2, view_scale: Vec2, alpha: float = 1.0) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
@@ -1081,8 +1075,6 @@ class WorldRenderer:
             if not isinstance(pos, Vec2):
                 return
             screen = self._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
-            sx = screen.x
-            sy = screen.y
 
             half_w = float(getattr(entry, "half_width", 0.0))
             half_h = float(getattr(entry, "half_height", 0.0))
@@ -1103,7 +1095,7 @@ class WorldRenderer:
             )
             tint = rl.Color(tint.r, tint.g, tint.b, int(tint.a * alpha + 0.5))
 
-            dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
+            dst = rl.Rectangle(float(screen.x), float(screen.y), float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
@@ -1223,12 +1215,10 @@ class WorldRenderer:
                 int(CreatureTypeId.ALIEN): 3,
                 int(CreatureTypeId.LIZARD): 4,
             }
-            creatures = [
-                (idx, creature)
-                for idx, creature in enumerate(self.creatures.entries)
-                if creature.active
-            ]
-            creatures.sort(key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0]))
+            creatures = [(idx, creature) for idx, creature in enumerate(self.creatures.entries) if creature.active]
+            creatures.sort(
+                key=lambda item: (creature_type_order.get(int(getattr(item[1], "type_id", -1)), 999), item[0])
+            )
             for _idx, creature in creatures:
                 screen = self._world_to_screen_with(creature.pos, camera=camera, view_scale=view_scale)
                 hitbox_size = float(creature.hitbox_size)
@@ -1238,7 +1228,11 @@ class WorldRenderer:
                     type_id = None
                 asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
                 texture = self.creature_textures.get(asset) if asset is not None else None
-                if particles_texture is not None and poison_src is not None and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK):
+                if (
+                    particles_texture is not None
+                    and poison_src is not None
+                    and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+                ):
                     fade = monster_vision_fade_alpha(hitbox_size)
                     poison_alpha = fade * entity_alpha
                     if poison_alpha > 1e-3:

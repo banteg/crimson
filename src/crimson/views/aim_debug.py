@@ -237,13 +237,18 @@ class AimDebugView:
                 draw_ui_text(
                     self._small,
                     line,
-                    x0,
-                    y0 + lh * float(idx),
+                    Vec2(x0, y0 + lh * float(idx)),
                     scale=UI_TEXT_SCALE,
                     color=UI_TEXT_COLOR if idx < 6 else UI_HINT_COLOR,
                 )
         elif self._draw_expected_overlay and self._player is None:
-            draw_ui_text(self._small, "Aim debug view: missing player", 16.0, 16.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small,
+                "Aim debug view: missing player",
+                Vec2(16.0, 16.0),
+                scale=UI_TEXT_SCALE,
+                color=UI_ERROR_COLOR,
+            )
 
 
 @register_view("aim-debug", "Aim indicator debug")

@@ -252,7 +252,12 @@ class LightingDebugView:
         self._debug_lightmap_preview = False
         self._debug_dump_next_frame = False
         self._debug_dump_count = 0
-        self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in ("", "0", "false", "False")
+        self._debug_auto_dump = os.environ.get("CRIMSON_LIGHTING_DEBUG_AUTODUMP", "0") not in (
+            "",
+            "0",
+            "false",
+            "False",
+        )
 
         self._sdf_shadow_k = 12.0
         self._sdf_shadow_floor = 0.25
@@ -476,7 +481,10 @@ class LightingDebugView:
 
     def _ensure_render_target(self, rt: rl.RenderTexture | None, w: int, h: int) -> rl.RenderTexture:
         if rt is not None and int(getattr(rt, "id", 0)) > 0:
-            if int(getattr(getattr(rt, "texture", None), "width", 0)) == w and int(getattr(getattr(rt, "texture", None), "height", 0)) == h:
+            if (
+                int(getattr(getattr(rt, "texture", None), "width", 0)) == w
+                and int(getattr(getattr(rt, "texture", None), "height", 0)) == h
+            ):
                 return rt
             rl.unload_render_texture(rt)
         return rl.load_render_texture(w, h)
@@ -994,7 +1002,13 @@ class LightingDebugView:
     def draw(self) -> None:
         if self._player is None:
             rl.clear_background(rl.Color(10, 10, 12, 255))
-            draw_ui_text(self._small, "Lighting debug view: missing player", 16.0, 16.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small,
+                "Lighting debug view: missing player",
+                Vec2(16.0, 16.0),
+                scale=UI_TEXT_SCALE,
+                color=UI_ERROR_COLOR,
+            )
             return
 
         self._ensure_render_targets()
@@ -1003,8 +1017,7 @@ class LightingDebugView:
             draw_ui_text(
                 self._small,
                 "Lighting debug view: missing render targets",
-                16.0,
-                16.0,
+                Vec2(16.0, 16.0),
                 scale=UI_TEXT_SCALE,
                 color=UI_ERROR_COLOR,
             )
@@ -1071,7 +1084,13 @@ class LightingDebugView:
                 rl.WHITE,
             )
             rl.end_blend_mode()
-            rl.draw_rectangle_lines(int(dst_preview.x), int(dst_preview.y), int(dst_preview.width), int(dst_preview.height), rl.Color(255, 255, 255, 120))
+            rl.draw_rectangle_lines(
+                int(dst_preview.x),
+                int(dst_preview.y),
+                int(dst_preview.width),
+                int(dst_preview.height),
+                rl.Color(255, 255, 255, 120),
+            )
 
         _camera, view_scale = self._world.renderer._world_params()
         scale = (view_scale.x + view_scale.y) * 0.5
@@ -1081,19 +1100,31 @@ class LightingDebugView:
             rl.draw_circle_lines(
                 int(player_screen.x),
                 int(player_screen.y),
-                int(max(1.0, float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px))),
+                int(
+                    max(
+                        1.0,
+                        float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul)
+                        + float(self._occluder_radius_pad_px),
+                    )
+                ),
                 rl.Color(80, 220, 120, 180),
             )
             for creature in self._world.creatures.entries:
                 if not creature.active:
                     continue
                 creature_screen = self._world.world_to_screen(creature.pos)
-                r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
-                rl.draw_circle_lines(int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
+                r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(
+                    self._occluder_radius_pad_px
+                )
+                rl.draw_circle_lines(
+                    int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180)
+                )
 
         rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), 6, rl.Color(255, 255, 255, 220))
         if self._cursor_light_enabled:
-            rl.draw_circle_lines(int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40))
+            rl.draw_circle_lines(
+                int(light_pos.x), int(light_pos.y), int(max(1.0, self._light_radius)), rl.Color(255, 255, 255, 40)
+            )
             rl.draw_circle_lines(
                 int(light_pos.x),
                 int(light_pos.y),
@@ -1135,8 +1166,7 @@ class LightingDebugView:
                 draw_ui_text(
                     self._small,
                     line,
-                    x0,
-                    y0 + lh * float(idx),
+                    Vec2(x0, y0 + lh * float(idx)),
                     scale=UI_TEXT_SCALE,
                     color=UI_TEXT_COLOR if idx < 5 else UI_HINT_COLOR,
                 )

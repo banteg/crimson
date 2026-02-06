@@ -97,9 +97,9 @@ class SpawnPlanView:
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
         label_text = f"{label}: "
-        draw_ui_text(self._small, label_text, pos.x, pos.y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, label_text, Vec2(pos.x, pos.y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
         label_w = measure_small_text_width(self._small, label_text, UI_TEXT_SCALE) if self._small else 0.0
-        draw_ui_text(self._small, value, pos.x + label_w, pos.y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, value, Vec2(pos.x + label_w, pos.y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
@@ -251,13 +251,12 @@ class SpawnPlanView:
         draw_ui_text(
             self._small,
             f"spawn-plan view  (template 0x{spawn_id:02x})",
-            margin,
-            margin,
+            Vec2(margin, margin),
             scale=0.8,
             color=UI_TEXT_COLOR,
         )
         hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty  Space: sim  Backspace: reset"
-        draw_ui_text(self._small, hints, margin, margin + line_h, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+        draw_ui_text(self._small, hints, Vec2(margin, margin + line_h), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
         self._draw_ui_label("seed", f"0x{self._seed:08x}", Vec2(margin, y))
@@ -272,10 +271,10 @@ class SpawnPlanView:
         y += line_h
 
         if self._error is not None:
-            draw_ui_text(self._small, self._error, margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, self._error, Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._plan is None or self._plan_summary is None:
-            draw_ui_text(self._small, "No plan.", margin, y + 6.0, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, "No plan.", Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         summary = self._plan_summary
@@ -296,10 +295,10 @@ class SpawnPlanView:
             )
             y += line_h
         if self._sim_events:
-            draw_ui_text(self._small, "events:", margin, y + 2.0, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, "events:", Vec2(margin, y + 2.0), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
             y += line_h
             for ev in self._sim_events[-5:]:
-                draw_ui_text(self._small, ev, margin, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                draw_ui_text(self._small, ev, Vec2(margin, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                 y += line_h
 
         # Link lines.
@@ -330,7 +329,9 @@ class SpawnPlanView:
                 2.0,
                 OFFSET_COLOR,
             )
-            rl.draw_circle_lines(int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
+            rl.draw_circle_lines(
+                int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR
+            )
 
         # Creature dots.
         for idx, c in enumerate(self._plan.creatures):

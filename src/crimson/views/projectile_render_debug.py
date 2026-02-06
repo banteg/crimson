@@ -90,7 +90,9 @@ class ProjectileRenderDebugView:
         ring = 260.0
         for idx in range(10):
             angle = float(idx) / 10.0 * math.tau
-            target_pos = (center + Vec2.from_angle(angle) * ring).clamp_rect(40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0)
+            target_pos = (center + Vec2.from_angle(angle) * ring).clamp_rect(
+                40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0
+            )
             self._targets.append(TargetDummy(pos=target_pos, hp=260.0, size=64.0, hitbox_size=64.0))
 
     def _reset_scene(self) -> None:
@@ -231,7 +233,11 @@ class ProjectileRenderDebugView:
 
         prev_audio = None
         if self._world.audio is not None:
-            prev_audio = (int(self._player.shot_seq), bool(self._player.reload_active), float(self._player.reload_timer))
+            prev_audio = (
+                int(self._player.shot_seq),
+                bool(self._player.reload_active),
+                float(self._player.reload_timer),
+            )
 
         detail_preset = 5
         if self._world.config is not None:
@@ -281,14 +287,18 @@ class ProjectileRenderDebugView:
         warn_y = 24.0
         warn_line = float(ui_line_height(self._small))
         if self._missing_assets:
-            draw_ui_text(self._small, "Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, color=UI_ERROR)
+            draw_ui_text(
+                self._small,
+                "Missing assets (ui): " + ", ".join(self._missing_assets),
+                Vec2(warn_x, warn_y),
+                color=UI_ERROR,
+            )
             warn_y += warn_line
         if self._world.missing_assets:
             draw_ui_text(
                 self._small,
                 "Missing assets (world): " + ", ".join(self._world.missing_assets),
-                warn_x,
-                warn_y,
+                Vec2(warn_x, warn_y),
                 color=UI_ERROR,
             )
             warn_y += warn_line
@@ -326,7 +336,9 @@ class ProjectileRenderDebugView:
                 )
             else:
                 player_screen = self._world.world_to_screen(player.pos)
-                rl.draw_circle(int(player_screen.x), int(player_screen.y), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+                rl.draw_circle(
+                    int(player_screen.x), int(player_screen.y), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255)
+                )
 
         if player is not None and player.health > 0.0:
             aim = player.aim
@@ -343,16 +355,15 @@ class ProjectileRenderDebugView:
 
         weapon_id = int(player.weapon_id) if player is not None else 0
         weapon_name = next((w.name for w in WEAPON_TABLE if w.weapon_id == weapon_id), None) or f"weapon_{weapon_id}"
-        draw_ui_text(self._small, "Projectile render debug", x, y, color=UI_TEXT)
+        draw_ui_text(self._small, "Projectile render debug", Vec2(x, y), color=UI_TEXT)
         y += line
-        draw_ui_text(self._small, f"{weapon_name} (weapon_id={weapon_id})", x, y, color=UI_TEXT)
+        draw_ui_text(self._small, f"{weapon_name} (weapon_id={weapon_id})", Vec2(x, y), color=UI_TEXT)
         y += line
         if player is not None:
             draw_ui_text(
                 self._small,
                 f"ammo {player.ammo}/{player.clip_size}  reload {player.reload_timer:.2f}/{player.reload_timer_max:.2f}",
-                x,
-                y,
+                Vec2(x, y),
                 color=UI_TEXT,
             )
             y += line
@@ -360,12 +371,11 @@ class ProjectileRenderDebugView:
         draw_ui_text(
             self._small,
             "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  P screenshot",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
         y += line
-        draw_ui_text(self._small, "T reset targets  Backspace reset scene  Esc quit", x, y, color=UI_HINT)
+        draw_ui_text(self._small, "T reset targets  Backspace reset scene  Esc quit", Vec2(x, y), color=UI_HINT)
 
         mouse = rl.get_mouse_position()
         draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2(mouse.x, mouse.y))

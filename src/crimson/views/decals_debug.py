@@ -10,7 +10,11 @@ import time
 
 import pyray as rl
 
-from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
+from crimson.creatures.anim import (
+    creature_anim_advance_phase,
+    creature_anim_select_frame,
+    creature_corpse_frame_for_type,
+)
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
@@ -544,15 +548,16 @@ class DecalsDebugView:
             draw_ui_text(
                 self._small,
                 "Missing assets: " + ", ".join(self._missing_assets),
-                24,
-                24,
+                Vec2(24, 24),
                 scale=UI_TEXT_SCALE,
                 color=UI_ERROR_COLOR,
             )
             return
 
         if self._ground is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Ground renderer not initialized.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
 
         self._ground.draw(self._camera)
@@ -614,15 +619,20 @@ class DecalsDebugView:
         x = 16
         y = 12
         line = ui_line_height(self._small, scale=UI_TEXT_SCALE)
-        draw_ui_text(self._small, "Decals debug", x, y, scale=UI_TEXT_SCALE, color=text_color)
+        draw_ui_text(self._small, "Decals debug", Vec2(x, y), scale=UI_TEXT_SCALE, color=text_color)
         y += line
-        draw_ui_text(self._small, "LMB: blood / damage enemy   RMB: spawn enemy", x, y, scale=UI_TEXT_SCALE, color=hint_color)
+        draw_ui_text(
+            self._small,
+            "LMB: blood / damage enemy   RMB: spawn enemy",
+            Vec2(x, y),
+            scale=UI_TEXT_SCALE,
+            color=hint_color,
+        )
         y += line
         draw_ui_text(
             self._small,
             "WASD: pan   R: random seed   T: random terrain   G: toggle light grid   C: clear   L: stamp log",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=hint_color,
         )
@@ -630,8 +640,7 @@ class DecalsDebugView:
         draw_ui_text(
             self._small,
             f"enemies={len([c for c in self._creatures.entries if c.active])}",
-            x,
-            y,
+            Vec2(x, y),
             scale=UI_TEXT_SCALE,
             color=hint_color,
         )
@@ -641,8 +650,7 @@ class DecalsDebugView:
             draw_ui_text(
                 self._small,
                 f"stamp log ({status}): {self._stamp_log_path}",
-                x,
-                y,
+                Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=hint_color,
             )
@@ -650,7 +658,7 @@ class DecalsDebugView:
         if self._ground is not None and self._show_stamp_log:
             stamp_log = self._ground.debug_stamp_log()
             if stamp_log:
-                draw_ui_text(self._small, "stamp order:", x, y, scale=UI_TEXT_SCALE, color=hint_color)
+                draw_ui_text(self._small, "stamp order:", Vec2(x, y), scale=UI_TEXT_SCALE, color=hint_color)
                 y += line
                 for event in stamp_log[-6:]:
                     kind = str(event.get("kind", "?"))
@@ -662,7 +670,7 @@ class DecalsDebugView:
                         msg = f"{kind} draws={event.get('draws')}"
                     else:
                         msg = kind
-                    draw_ui_text(self._small, msg, x, y, scale=UI_TEXT_SCALE, color=hint_color)
+                    draw_ui_text(self._small, msg, Vec2(x, y), scale=UI_TEXT_SCALE, color=hint_color)
                     y += line
 
 

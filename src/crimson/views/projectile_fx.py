@@ -426,13 +426,15 @@ class ProjectileFxView:
 
         alpha = int(clamp(life / 0.4, 0.0, 1.0) * 255)
         tint = rl.Color(color.r, color.g, color.b, alpha)
-        self._draw_atlas_sprite(texture, grid=grid, frame=frame, pos=screen_pos, scale=0.6, rotation_rad=angle, tint=tint)
+        self._draw_atlas_sprite(
+            texture, grid=grid, frame=frame, pos=screen_pos, scale=0.6, rotation_rad=angle, tint=tint
+        )
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._missing_assets and self._projs is None:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
 
         # World bounds.
@@ -454,13 +456,11 @@ class ProjectileFxView:
         # Creatures.
         for creature in self._creatures:
             screen_pos = self._camera_world_to_screen(creature.pos)
-            color = (
-                rl.Color(220, 90, 90, 255)
-                if not creature.plague_infected
-                else rl.Color(240, 180, 90, 255)
-            )
+            color = rl.Color(220, 90, 90, 255) if not creature.plague_infected else rl.Color(240, 180, 90, 255)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), color)
-            rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), rl.Color(40, 40, 55, 255))
+            rl.draw_circle_lines(
+                int(screen_pos.x), int(screen_pos.y), float(creature.size * 0.5), rl.Color(40, 40, 55, 255)
+            )
 
         # AOE rings for ion linger types.
         for proj in self._state.projectiles.iter_active():
@@ -535,7 +535,11 @@ class ProjectileFxView:
         weapon = WEAPON_BY_ID.get(int(type_id))
         label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
         draw_ui_text(
-            self._small, f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            self._small,
+            f"{label} (type_id {type_id} / 0x{type_id:02x})",
+            Vec2(x, y),
+            scale=UI_TEXT_SCALE,
+            color=UI_TEXT_COLOR,
         )
         y += line + 4
 
@@ -546,8 +550,7 @@ class ProjectileFxView:
             draw_ui_text(
                 self._small,
                 f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}",
-                x,
-                y,
+                Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=UI_HINT_COLOR,
             )
@@ -555,42 +558,55 @@ class ProjectileFxView:
             draw_ui_text(
                 self._small,
                 f"shock_chain links {self._state.shock_chain_links_left}  proj {self._state.shock_chain_projectile_id}",
-                x,
-                y,
+                Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=UI_HINT_COLOR,
             )
             y += line + 8
 
         if self._show_help:
-            draw_ui_text(self._small, "controls:", x, y, scale=UI_TEXT_SCALE, color=UI_ACCENT_COLOR)
-            y += line + 2
-            draw_ui_text(self._small, "- left/right: select projectile type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-            y += line + 2
-            draw_ui_text(self._small, "- mouse wheel: select type", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-            y += line + 2
-            draw_ui_text(self._small, "- LMB: spawn projectile toward mouse", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-            y += line + 2
-            draw_ui_text(self._small, "- RMB: move spawn origin", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-            y += line + 2
-            draw_ui_text(self._small, "- space: spawn ring", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, "controls:", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_ACCENT_COLOR)
             y += line + 2
             draw_ui_text(
                 self._small,
-                "- F: fire-bullets volley (uses pellet_count)",
-                x,
-                y,
+                "- left/right: select projectile type",
+                Vec2(x, y),
                 scale=UI_TEXT_SCALE,
                 color=UI_HINT_COLOR,
             )
             y += line + 2
-            draw_ui_text(self._small, "- S: apply Shock Chain bonus", x, y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(
+                self._small, "- mouse wheel: select type", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+            )
+            y += line + 2
+            draw_ui_text(
+                self._small,
+                "- LMB: spawn projectile toward mouse",
+                Vec2(x, y),
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
+            y += line + 2
+            draw_ui_text(self._small, "- RMB: move spawn origin", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            y += line + 2
+            draw_ui_text(self._small, "- space: spawn ring", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            y += line + 2
+            draw_ui_text(
+                self._small,
+                "- F: fire-bullets volley (uses pellet_count)",
+                Vec2(x, y),
+                scale=UI_TEXT_SCALE,
+                color=UI_HINT_COLOR,
+            )
+            y += line + 2
+            draw_ui_text(
+                self._small, "- S: apply Shock Chain bonus", Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+            )
             y += line + 2
             draw_ui_text(
                 self._small,
                 "- R: reset  Tab: pause  H: hide help  F3: toggle debug",
-                x,
-                y,
+                Vec2(x, y),
                 scale=0.9,
                 color=UI_HINT_COLOR,
             )

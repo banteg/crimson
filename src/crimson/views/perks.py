@@ -7,7 +7,13 @@ from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..gameplay import GameplayState, PlayerState, perk_selection_current_choices, perk_selection_pick, survival_check_level_up
+from ..gameplay import (
+    GameplayState,
+    PlayerState,
+    perk_selection_current_choices,
+    perk_selection_pick,
+    survival_check_level_up,
+)
 from ..perks import PERK_BY_ID, PerkId, perk_display_description, perk_display_name
 from ..ui.menu_panel import draw_classic_menu_panel
 from ..ui.perk_menu import (
@@ -144,7 +150,9 @@ class PerkSelectionView:
             if self._player.perk_counts[int(PerkId.PERK_MASTER)] > 0:
                 self._player.perk_counts[int(PerkId.PERK_MASTER)] = 0
             else:
-                self._player.perk_counts[int(PerkId.PERK_EXPERT)] = max(1, int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]))
+                self._player.perk_counts[int(PerkId.PERK_EXPERT)] = max(
+                    1, int(self._player.perk_counts[int(PerkId.PERK_EXPERT)])
+                )
                 self._player.perk_counts[int(PerkId.PERK_MASTER)] = 1
             self._state.perk_selection.choices_dirty = True
 
@@ -218,14 +226,15 @@ class PerkSelectionView:
                     return
                 break
 
-        cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
+        cancel_w = button_width(
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
         cancel_x = computed.cancel_x
         button_y = computed.cancel_y
 
         cancel_clicked = button_update(
             self._cancel_button,
-            x=cancel_x,
-            y=button_y,
+            pos=Vec2(cancel_x, button_y),
             width=cancel_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -253,8 +262,7 @@ class PerkSelectionView:
             draw_ui_text(
                 self._small,
                 "Missing assets: " + ", ".join(self._missing_assets),
-                24.0,
-                24.0,
+                Vec2(24.0, 24.0),
                 scale=1.0,
                 color=UI_ERROR_COLOR,
             )
@@ -314,8 +322,7 @@ class PerkSelectionView:
             draw_ui_text(
                 self._small,
                 sponsor,
-                computed.sponsor_x,
-                computed.sponsor_y,
+                Vec2(computed.sponsor_x, computed.sponsor_y),
                 scale=scale,
                 color=UI_SPONSOR_COLOR,
             )
@@ -327,7 +334,7 @@ class PerkSelectionView:
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, pos=Vec2(item_x, item_y), scale=scale)
             hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
-            draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
+            draw_menu_item(self._small, label, pos=Vec2(item_x, item_y), scale=scale, hovered=hovered)
 
         selected = choices[self._perk_menu_selected]
         desc = perk_display_description(int(selected))
@@ -342,13 +349,17 @@ class PerkSelectionView:
         for line in desc_lines:
             if y + line_h > desc_y + desc_h:
                 break
-            draw_ui_text(self._small, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, line, Vec2(desc_x, y), scale=desc_scale, color=UI_TEXT_COLOR)
             y += line_h
 
-        cancel_w = button_width(self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
+        cancel_w = button_width(
+            self._small, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
         cancel_x = computed.cancel_x
         button_y = computed.cancel_y
-        button_draw(self._ui_assets, self._small, self._cancel_button, x=cancel_x, y=button_y, width=cancel_w, scale=scale)
+        button_draw(
+            self._ui_assets, self._small, self._cancel_button, pos=Vec2(cancel_x, button_y), width=cancel_w, scale=scale
+        )
 
         cursor_draw(self._ui_assets, mouse=mouse, scale=scale)
 
@@ -358,13 +369,12 @@ class PerkSelectionView:
         scale = 0.9
         line_h = float(self._small.cell_size * scale) if self._small is not None else float(20 * scale)
         perk_state = self._state.perk_selection
-        draw_ui_text(self._small, "Perk selection (debug overlay, F1)", x, y, scale=scale, color=UI_TEXT_COLOR)
+        draw_ui_text(self._small, "Perk selection (debug overlay, F1)", Vec2(x, y), scale=scale, color=UI_TEXT_COLOR)
         y += line_h
         draw_ui_text(
             self._small,
             f"mode={self._game_mode} players={self._player_count} pending={int(perk_state.pending_count)} level={self._player.level} xp={self._player.experience}",
-            x,
-            y,
+            Vec2(x, y),
             scale=scale,
             color=UI_HINT_COLOR,
         )
@@ -372,8 +382,7 @@ class PerkSelectionView:
         draw_ui_text(
             self._small,
             "Keys: C reroll  X +5000xp  E/M toggle Expert/Master  1/2 players  G mode  R reset  P reopen  Esc close",
-            x,
-            y,
+            Vec2(x, y),
             scale=scale,
             color=UI_HINT_COLOR,
         )
@@ -384,10 +393,10 @@ class PerkSelectionView:
             if int(self._player.perk_counts[int(meta.perk_id)]) > 0 and meta.perk_id != PerkId.ANTIPERK
         ]
         if owned:
-            draw_ui_text(self._small, "Owned:", x, y, scale=scale, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, "Owned:", Vec2(x, y), scale=scale, color=UI_HINT_COLOR)
             y += line_h
             for name, count in owned[:8]:
-                draw_ui_text(self._small, f"- {name} x{count}", x, y, scale=scale, color=UI_HINT_COLOR)
+                draw_ui_text(self._small, f"- {name} x{count}", Vec2(x, y), scale=scale, color=UI_HINT_COLOR)
                 y += line_h
 
 

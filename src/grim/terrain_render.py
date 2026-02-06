@@ -469,22 +469,19 @@ class GroundRenderer:
             if w <= 0.0 or h <= 0.0:
                 return
 
-            pivot_x = float(decal.pos.x)
-            pivot_y = float(decal.pos.y)
+            pivot = Vec2(float(decal.pos.x), float(decal.pos.y))
             if not decal.centered:
-                pivot_x += w * 0.5
-                pivot_y += h * 0.5
+                pivot += Vec2(w * 0.5, h * 0.5)
 
-            if pivot_x + w * 0.5 < view_x0 or pivot_x - w * 0.5 > view_x1:
+            if pivot.x + w * 0.5 < view_x0 or pivot.x - w * 0.5 > view_x1:
                 return
-            if pivot_y + h * 0.5 < view_y0 or pivot_y - h * 0.5 > view_y1:
+            if pivot.y + h * 0.5 < view_y0 or pivot.y - h * 0.5 > view_y1:
                 return
 
-            sx = (pivot_x + camera.x) * scale_x
-            sy = (pivot_y + camera.y) * scale_y
+            screen_pivot = Vec2((pivot.x + camera.x) * scale_x, (pivot.y + camera.y) * scale_y)
             sw = w * scale_x
             sh = h * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(sw), float(sh))
+            dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(
                 texture,
@@ -517,11 +514,10 @@ class GroundRenderer:
                 return
             if pivot.y + size * 0.5 < view_y0 or pivot.y - size * 0.5 > view_y1:
                 return
-            sx = (pivot.x + camera.x) * scale_x
-            sy = (pivot.y + camera.y) * scale_y
+            screen_pivot = Vec2((pivot.x + camera.x) * scale_x, (pivot.y + camera.y) * scale_y)
             sw = size * scale_x
             sh = size * scale_y
-            dst = rl.Rectangle(float(sx), float(sy), float(sw), float(sh))
+            dst = rl.Rectangle(float(screen_pivot.x), float(screen_pivot.y), float(sw), float(sh))
             origin = rl.Vector2(float(sw) * 0.5, float(sh) * 0.5)
             rl.draw_texture_pro(bodyset_texture, src, dst, origin, rotation_deg, tint)
 

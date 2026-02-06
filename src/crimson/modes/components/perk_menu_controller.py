@@ -9,7 +9,13 @@ from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.math import clamp
 
-from ...gameplay import GameplayState, PerkSelectionState, PlayerState, perk_selection_current_choices, perk_selection_pick
+from ...gameplay import (
+    GameplayState,
+    PerkSelectionState,
+    PlayerState,
+    perk_selection_current_choices,
+    perk_selection_pick,
+)
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
@@ -223,8 +229,7 @@ class PerkMenuController:
         cancel_y = computed.cancel_y
         if button_update(
             self._cancel_button,
-            x=cancel_x,
-            y=cancel_y,
+            pos=Vec2(cancel_x, cancel_y),
             width=cancel_w,
             dt_ms=float(dt_ui_ms),
             mouse=ctx.mouse,
@@ -305,7 +310,9 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(ctx.font, sponsor, computed.sponsor_x, computed.sponsor_y, scale=scale, color=UI_SPONSOR_COLOR)
+            draw_ui_text(
+                ctx.font, sponsor, Vec2(computed.sponsor_x, computed.sponsor_y), scale=scale, color=UI_SPONSOR_COLOR
+            )
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
@@ -313,7 +320,7 @@ class PerkMenuController:
             item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(ctx.font, label, pos=Vec2(item_x, item_y), scale=scale)
             hovered = rl.check_collision_point_rec(ctx.mouse, rect) or (idx == self._selected_index)
-            draw_menu_item(ctx.font, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
+            draw_menu_item(ctx.font, label, pos=Vec2(item_x, item_y), scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = perk_display_description(int(selected), fx_toggle=int(ctx.fx_toggle))
@@ -328,8 +335,17 @@ class PerkMenuController:
         for line in desc_lines:
             if y + line_h > desc_y + desc_h:
                 break
-            draw_ui_text(ctx.font, line, desc_x, y, scale=desc_scale, color=UI_TEXT_COLOR)
+            draw_ui_text(ctx.font, line, Vec2(desc_x, y), scale=desc_scale, color=UI_TEXT_COLOR)
             y += line_h
 
-        cancel_w = button_width(ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide)
-        button_draw(ctx.assets, ctx.font, self._cancel_button, x=computed.cancel_x, y=computed.cancel_y, width=cancel_w, scale=scale)
+        cancel_w = button_width(
+            ctx.font, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide
+        )
+        button_draw(
+            ctx.assets,
+            ctx.font,
+            self._cancel_button,
+            pos=Vec2(computed.cancel_x, computed.cancel_y),
+            width=cancel_w,
+            scale=scale,
+        )

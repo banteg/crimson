@@ -10,6 +10,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -71,10 +72,12 @@ class BonusIconView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if self._texture is None:
-            draw_ui_text(self._small, "No bonuses texture loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No bonuses texture loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         margin = 24
@@ -132,15 +135,21 @@ class BonusIconView:
 
         info_x = x + draw_w + panel_gap
         info_y = margin
-        draw_ui_text(self._small, "bonuses.png (grid 4x4)", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_ui_text(
+            self._small, "bonuses.png (grid 4x4)", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+        )
         info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
 
         if hovered_index is not None:
             group = BONUS_ICON_GROUPS.get(hovered_index)
-            draw_ui_text(self._small, f"icon_id {hovered_index}", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, f"icon_id {hovered_index}", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             if group is None:
-                draw_ui_text(self._small, "no bonus mapping", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+                draw_ui_text(
+                    self._small, "no bonus mapping", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR
+                )
                 info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 6
             else:
                 for entry in group.bonuses:
@@ -150,8 +159,7 @@ class BonusIconView:
                     draw_ui_text(
                         self._small,
                         f"id {bonus_id:02d} {entry.name}{amount_label}",
-                        info_x,
-                        info_y,
+                        Vec2(info_x, info_y),
                         scale=UI_TEXT_SCALE,
                         color=UI_TEXT_COLOR,
                     )
@@ -160,8 +168,7 @@ class BonusIconView:
                         draw_ui_text(
                             self._small,
                             entry.description,
-                            info_x,
-                            info_y,
+                            Vec2(info_x, info_y),
                             scale=UI_TEXT_SCALE,
                             color=UI_HINT_COLOR,
                         )
@@ -169,7 +176,9 @@ class BonusIconView:
             info_y += 8
 
         if WEAPON_BONUS is not None:
-            draw_ui_text(self._small, "Weapon bonus icon", info_x, info_y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "Weapon bonus icon", Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             info_y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 4
             weapon_id = WEAPON_BONUS.default_amount
             weapon_name = None
@@ -180,7 +189,7 @@ class BonusIconView:
                         break
             name_label = f" ({weapon_name})" if weapon_name else ""
             weapon_label = f"icon_id = -1 → ui_wicons (default weapon {weapon_id}{name_label})"
-            draw_ui_text(self._small, weapon_label, info_x, info_y, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_ui_text(self._small, weapon_label, Vec2(info_x, info_y), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
 
 @register_view("bonuses", "Bonus icon preview")

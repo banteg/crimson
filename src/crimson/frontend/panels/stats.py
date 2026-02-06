@@ -164,7 +164,7 @@ class StatisticsMenuView:
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
             w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-            return button_update(btn, x=pos.x, y=pos.y, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
+            return button_update(btn, pos=Vec2(pos.x, pos.y), width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
         x = panel_x0 + _BUTTON_X * scale
         y0 = panel_y0 + _BUTTON_Y0 * scale
@@ -226,7 +226,9 @@ class StatisticsMenuView:
             MenuView._draw_ui_quad(
                 texture=label_tex,
                 src=src,
-                dst=rl.Rectangle(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale, _TITLE_W * scale, _TITLE_H * scale),
+                dst=rl.Rectangle(
+                    panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale, _TITLE_W * scale, _TITLE_H * scale
+                ),
                 origin=rl.Vector2(0.0, 0.0),
                 rotation_deg=0.0,
                 tint=rl.WHITE,
@@ -248,7 +250,8 @@ class StatisticsMenuView:
         draw_small_text(
             font,
             playtime_text,
-            Vec2(panel_x0 + _PLAYTIME_X * scale, panel_y0 + _PLAYTIME_Y * scale), 1.0 * scale,
+            Vec2(panel_x0 + _PLAYTIME_X * scale, panel_y0 + _PLAYTIME_Y * scale),
+            1.0 * scale,
             rl.Color(255, 255, 255, int(255 * 0.8)),
         )
 
@@ -259,15 +262,21 @@ class StatisticsMenuView:
             btn_y0 = panel_y0 + _BUTTON_Y0 * scale
             for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
                 w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
-                button_draw(textures, font, btn, x=btn_x, y=btn_y0 + _BUTTON_STEP_Y * float(i) * scale, width=w, scale=scale)
+                button_draw(
+                    textures,
+                    font,
+                    btn,
+                    pos=Vec2(btn_x, btn_y0 + _BUTTON_STEP_Y * float(i) * scale),
+                    width=w,
+                    scale=scale,
+                )
 
             back_w = button_width(None, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
             button_draw(
                 textures,
                 font,
                 self._btn_back,
-                x=panel_x0 + _BACK_BUTTON_X * scale,
-                y=panel_y0 + _BACK_BUTTON_Y * scale,
+                pos=Vec2(panel_x0 + _BACK_BUTTON_X * scale, panel_y0 + _BACK_BUTTON_Y * scale),
                 width=back_w,
                 scale=scale,
             )

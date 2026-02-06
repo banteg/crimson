@@ -219,7 +219,9 @@ class QuestMode(BaseGameplayMode):
         super().close()
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
-        loader = TextureLoader(assets_root=self._assets_root, cache=self._world.texture_cache, missing=self._missing_assets)
+        loader = TextureLoader(
+            assets_root=self._assets_root, cache=self._world.texture_cache, missing=self._missing_assets
+        )
         try:
             return loader.get(name="ui_textLevComp", paq_rel="ui/ui_textLevComp.jaz", fs_rel="ui/ui_textLevComp.png")
         except FileNotFoundError:
@@ -510,7 +512,7 @@ class QuestMode(BaseGameplayMode):
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
-        draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=color)
+        draw_ui_text(self._small, label, Vec2(x, y), scale=UI_TEXT_SCALE, color=color)
 
         if self._perk_menu_assets is not None and self._perk_menu_assets.menu_item is not None:
             tex = self._perk_menu_assets.menu_item

@@ -69,6 +69,7 @@ class PerkMenuComputedLayout:
     cancel_x: float
     cancel_y: float
 
+
 def perk_menu_compute_layout(
     layout: PerkMenuLayout,
     *,
@@ -132,6 +133,7 @@ def perk_menu_compute_layout(
         cancel_x=float(cancel_x),
         cancel_y=float(cancel_y),
     )
+
 
 def ui_element_slide_x(
     t_ms: float,
@@ -225,16 +227,15 @@ def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float
 def draw_ui_text(
     font: SmallFontData | None,
     text: str,
-    x: float,
-    y: float,
+    pos: Vec2,
     *,
     scale: float,
     color: rl.Color,
 ) -> None:
     if font is not None:
-        draw_small_text(font, text, Vec2(x, y), scale, color)
+        draw_small_text(font, text, pos, scale, color)
     else:
-        rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+        rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
 
 def wrap_ui_text(font: SmallFontData | None, text: str, *, max_width: float, scale: float) -> list[str]:
@@ -272,18 +273,17 @@ def draw_menu_item(
     font: SmallFontData | None,
     label: str,
     *,
-    x: float,
-    y: float,
+    pos: Vec2,
     scale: float,
     hovered: bool,
 ) -> float:
     alpha = MENU_ITEM_ALPHA_HOVER if hovered else MENU_ITEM_ALPHA_IDLE
     r, g, b = MENU_ITEM_RGB
     color = rl.Color(int(r), int(g), int(b), int(255 * alpha))
-    draw_ui_text(font, label, x, y, scale=scale, color=color)
+    draw_ui_text(font, label, pos, scale=scale, color=color)
     width = _ui_text_width(font, label, scale)
-    line_y = y + 13.0 * scale
-    rl.draw_line(int(x), int(line_y), int(x + width), int(line_y), color)
+    line_y = pos.y + 13.0 * scale
+    rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
     return float(width)
 
 
@@ -327,8 +327,7 @@ def button_hit_rect(*, pos: Vec2, width: float) -> rl.Rectangle:
 def button_update(
     state: UiButtonState,
     *,
-    x: float,
-    y: float,
+    pos: Vec2,
     width: float,
     dt_ms: float,
     mouse: rl.Vector2,
@@ -337,7 +336,7 @@ def button_update(
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(pos=Vec2(x, y), width=width))
+        state.hovered = rl.check_collision_point_rec(mouse, button_hit_rect(pos=pos, width=width))
 
     delta = 6 if (state.enabled and state.hovered) else -4
     state.hover_t = int(clamp(float(state.hover_t + int(dt_ms) * delta), 0.0, 1000.0))
@@ -356,8 +355,7 @@ def button_draw(
     font: SmallFontData | None,
     state: UiButtonState,
     *,
-    x: float,
-    y: float,
+    pos: Vec2,
     width: float,
     scale: float,
 ) -> None:
@@ -386,8 +384,8 @@ def button_draw(
             int(255 * clamp(a, 0.0, 1.0)),
         )
         rl.draw_rectangle(
-            int(x + 12.0 * scale),
-            int(y + 5.0 * scale),
+            int(pos.x + 12.0 * scale),
+            int(pos.y + 5.0 * scale),
             int(width - 24.0 * scale),
             int(22.0 * scale),
             hl,
@@ -396,15 +394,14 @@ def button_draw(
     plate_tint = rl.Color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
 
     src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-    dst = rl.Rectangle(float(x), float(y), float(width), float(32.0 * scale))
+    dst = rl.Rectangle(float(pos.x), float(pos.y), float(width), float(32.0 * scale))
     rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
     text_tint = rl.Color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
     text_w = _ui_text_width(font, state.label, scale)
-    text_x = x + width * 0.5 - text_w * 0.5 + 1.0 * scale
-    text_y = y + 10.0 * scale
-    draw_ui_text(font, state.label, text_x, text_y, scale=scale, color=text_tint)
+    text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0 * scale, pos.y + 10.0 * scale)
+    draw_ui_text(font, state.label, text_pos, scale=scale, color=text_tint)
 
 
 def cursor_draw(assets: PerkMenuAssets, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:

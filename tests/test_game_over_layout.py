@@ -29,8 +29,8 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, tmp_pa
 
     captured_x: list[float] = []
 
-    def _button_update(_button, *, x, y, width, dt_ms, mouse, click):  # noqa: ANN001, ARG001
-        captured_x.append(float(x))
+    def _button_update(_button, *, pos, width, dt_ms, mouse, click):  # noqa: ANN001, ARG001
+        captured_x.append(float(pos.x))
         return False
 
     monkeypatch.setattr("crimson.ui.game_over.button_update", _button_update)

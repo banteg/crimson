@@ -93,22 +93,30 @@ class OptionsMenuView(PanelMenuView):
         if rect_on is None or rect_off is None:
             return
 
-        if self._update_slider("sfx", self._slider_sfx, Vec2(slider_x, base_y + 47.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider(
+            "sfx", self._slider_sfx, Vec2(slider_x, base_y + 47.0 * scale), rect_on, rect_off, scale
+        ):
             config.data["sfx_volume"] = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self._state.audio, float(config.data["sfx_volume"]))
             self._dirty = True
 
-        if self._update_slider("music", self._slider_music, Vec2(slider_x, base_y + 67.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider(
+            "music", self._slider_music, Vec2(slider_x, base_y + 67.0 * scale), rect_on, rect_off, scale
+        ):
             config.data["music_volume"] = float(self._slider_music.value) * 0.1
             set_music_volume(self._state.audio, float(config.data["music_volume"]))
             self._dirty = True
 
-        if self._update_slider("detail", self._slider_detail, Vec2(slider_x, base_y + 87.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider(
+            "detail", self._slider_detail, Vec2(slider_x, base_y + 87.0 * scale), rect_on, rect_off, scale
+        ):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
             self._dirty = True
 
-        if self._update_slider("mouse", self._slider_mouse, Vec2(slider_x, base_y + 107.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider(
+            "mouse", self._slider_mouse, Vec2(slider_x, base_y + 107.0 * scale), rect_on, rect_off, scale
+        ):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
                 sensitivity = 0.1
@@ -136,7 +144,7 @@ class OptionsMenuView(PanelMenuView):
                 scale=scale,
                 force_wide=self._controls_button.force_wide,
             )
-            if button_update(self._controls_button, x=x, y=y, width=width, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(self._controls_button, pos=Vec2(x, y), width=width, dt_ms=dt_ms, mouse=mouse, click=click):
                 self._begin_close_transition("open_controls")
 
     def draw(self) -> None:
@@ -177,7 +185,9 @@ class OptionsMenuView(PanelMenuView):
         detail_preset = int(config.data.get("detail_preset", 5))
         mouse_sensitivity = float(config.data.get("mouse_sensitivity", 1.0))
 
-        self._slider_sfx.value = max(self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0)))
+        self._slider_sfx.value = max(
+            self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0))
+        )
         self._slider_music.value = max(
             self._slider_music.min_value, min(self._slider_music.max_value, int(music_volume * 10.0))
         )
@@ -365,7 +375,8 @@ class OptionsMenuView(PanelMenuView):
             draw_small_text(
                 font,
                 "UI Info texts",
-                Vec2(check_x + check_w + 6.0 * scale, check_y + 1.0 * scale), text_scale,
+                Vec2(check_x + check_w + 6.0 * scale, check_y + 1.0 * scale),
+                text_scale,
                 text_color,
             )
 
@@ -374,8 +385,12 @@ class OptionsMenuView(PanelMenuView):
         if button is not None and textures is not None:
             button_x = base_x
             button_y = base_y + 155.0 * scale
-            button_w = button_width(font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide)
-            button_draw(textures, font, self._controls_button, x=button_x, y=button_y, width=button_w, scale=scale)
+            button_w = button_width(
+                font, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide
+            )
+            button_draw(
+                textures, font, self._controls_button, pos=Vec2(button_x, button_y), width=button_w, scale=scale
+            )
 
     def _draw_slider(
         self,

@@ -256,12 +256,14 @@ class CorpseStampDebugView:
         rl.clear_background(BG)
 
         if self._missing_assets:
-            draw_ui_text(self._small, "Missing assets: " + ", ".join(self._missing_assets), 24, 24, color=UI_ERROR)
+            draw_ui_text(
+                self._small, "Missing assets: " + ", ".join(self._missing_assets), Vec2(24, 24), color=UI_ERROR
+            )
             return
 
         ground = self._ground
         if ground is None:
-            draw_ui_text(self._small, "Ground renderer not initialized.", 24, 24, color=UI_ERROR)
+            draw_ui_text(self._small, "Ground renderer not initialized.", Vec2(24, 24), color=UI_ERROR)
             return
 
         if self._dump_requested:
@@ -279,23 +281,23 @@ class CorpseStampDebugView:
         line = float(ui_line_height(self._small))
         step = _STEPS[self._step_index]
         alpha_test = bool(getattr(ground, "alpha_test", True))
-        draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", x, y, color=UI_TEXT)
+        draw_ui_text(self._small, "Corpse stamp debug (SPIDER)", Vec2(x, y), color=UI_TEXT)
         y += line
         draw_ui_text(
             self._small,
             "N/Space: next step   R: reset   A: toggle alpha test   Q/E: rotate   P: screenshot   D: dump RT",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
         y += line
-        draw_ui_text(self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", x, y, color=UI_HINT)
+        draw_ui_text(
+            self._small, f"step {self._step_index + 1}/{len(_STEPS)}: {step.description}", Vec2(x, y), color=UI_HINT
+        )
         y += line
         draw_ui_text(
             self._small,
             f"alpha_test={'on' if alpha_test else 'off'}  size={self._corpse_size:.1f}  dump_index={self._dump_index}",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
 

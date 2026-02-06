@@ -70,25 +70,24 @@ class PlayerSpriteDebugView:
         texture: rl.Texture,
         frame_index: int,
         *,
-        x: float,
-        y: float,
+        pos: Vec2,
         size: float,
         rotation_rad: float,
         tint: rl.Color,
         shadow: bool,
-        offset_x: float = 0.0,
-        offset_y: float = 0.0,
+        offset: Vec2 = Vec2(),
     ) -> None:
         src = self._frame_src(texture, frame_index)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(rotation_rad * 57.29577951308232)
+        draw_pos = pos + offset
 
         if shadow:
             shadow_color = rl.Color(0, 0, 0, 90)
-            dst = rl.Rectangle(x + offset_x + 1.0, y + offset_y + 1.0, size, size)
+            dst = rl.Rectangle(draw_pos.x + 1.0, draw_pos.y + 1.0, size, size)
             rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, shadow_color)
 
-        dst = rl.Rectangle(x + offset_x, y + offset_y, size, size)
+        dst = rl.Rectangle(draw_pos.x, draw_pos.y, size, size)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     def open(self) -> None:
@@ -177,7 +176,9 @@ class PlayerSpriteDebugView:
     def draw(self) -> None:
         rl.clear_background(rl.Color(10, 10, 12, 255))
         if self._assets is None:
-            draw_ui_text(self._small, "Trooper sprite not loaded.", 16, 16, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(
+                self._small, "Trooper sprite not loaded.", Vec2(16, 16), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR
+            )
             return
 
         camera = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5) - self._player_pos
@@ -216,8 +217,7 @@ class PlayerSpriteDebugView:
         self._draw_sprite(
             self._assets.trooper,
             leg_frame,
-            x=px,
-            y=py,
+            pos=Vec2(px, py),
             size=self._player_size,
             rotation_rad=self._move_heading,
             tint=tint,
@@ -226,14 +226,12 @@ class PlayerSpriteDebugView:
         self._draw_sprite(
             self._assets.trooper,
             torso_frame,
-            x=px,
-            y=py,
+            pos=Vec2(px, py),
             size=self._player_size,
             rotation_rad=self._aim_heading,
             tint=tint,
             shadow=self._show_shadow,
-            offset_x=torso_offset.x,
-            offset_y=torso_offset.y,
+            offset=torso_offset,
         )
 
         # Aim/debug helpers.
@@ -247,8 +245,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"legs frame={leg_frame} (base {self._leg_base}, count {self._frame_count})",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -257,8 +254,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"torso frame={torso_frame} (base {self._torso_base}, mode {torso_label})",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -266,8 +262,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             f"move_heading={self._move_heading:.2f}  aim_heading={self._aim_heading:.2f}",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_TEXT_COLOR,
         )
@@ -275,8 +270,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             "WASD move, mouse aim, LMB recoil, F1 grid, F2 shadow, F3 torso mode",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )
@@ -284,8 +278,7 @@ class PlayerSpriteDebugView:
         draw_ui_text(
             self._small,
             "[/] torso base, ;/' legs base, ,/. frame count, R reset",
-            hud_x,
-            hud_y,
+            Vec2(hud_x, hud_y),
             scale=UI_TEXT_SCALE,
             color=UI_HINT_COLOR,
         )

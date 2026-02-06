@@ -8,6 +8,7 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.view import View, ViewContext
+from grim.geom import Vec2
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -73,10 +74,12 @@ class TerrainView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            draw_ui_text(self._small, message, 24, 24, scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+            draw_ui_text(self._small, message, Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
             return
         if not self._textures:
-            draw_ui_text(self._small, "No terrain textures loaded.", 24, 24, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(
+                self._small, "No terrain textures loaded.", Vec2(24, 24), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR
+            )
             return
 
         cols = 4
@@ -99,7 +102,7 @@ class TerrainView:
             x = margin + col * (cell_w * scale + gap_x)
             y = margin + row * (cell_h * scale + gap_y + label_height)
             label = f"{entry.terrain_id:02d} {entry.name}"
-            draw_ui_text(self._small, label, x, y, scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+            draw_ui_text(self._small, label, Vec2(x, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
             dst = rl.Rectangle(
                 float(x),
                 float(y + label_height),

@@ -103,88 +103,77 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         spawn(
-            x=128.0,
-            y=128.0,
+            Vec2(128.0, 128.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
-            x=896.0,
-            y=896.0,
+            Vec2(896.0, 896.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
-            x=896.0,
-            y=128.0,
+            Vec2(896.0, 128.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
-            x=128.0,
-            y=896.0,
+            Vec2(128.0, 896.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
-            x=-64.0,
-            y=512.0,
+            Vec2(-64.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
             trigger_ms=3000,
             count=2,
         ),
         spawn(
-            x=512.0,
-            y=512.0,
+            Vec2(512.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
             trigger_ms=18000,
             count=1,
         ),
         spawn(
-            x=448.0,
-            y=448.0,
+            Vec2(448.0, 448.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=20500,
             count=1,
         ),
         spawn(
-            x=576.0,
-            y=448.0,
+            Vec2(576.0, 448.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=26000,
             count=1,
         ),
         spawn(
-            x=1088.0,
-            y=512.0,
+            Vec2(1088.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
             trigger_ms=21000,
             count=2,
         ),
         spawn(
-            x=576.0,
-            y=576.0,
+            Vec2(576.0, 576.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=31500,
             count=1,
         ),
         spawn(
-            x=448.0,
-            y=576.0,
+            Vec2(448.0, 576.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
             trigger_ms=22000,
@@ -208,8 +197,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 256.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
-                    x=pos.x,
-                    y=pos.y,
+                    Vec2(pos.x, pos.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -221,8 +209,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 768.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
-                    x=pos.x,
-                    y=pos.y,
+                    Vec2(pos.x, pos.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -235,8 +222,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
         for pos in line_points(Vec2(256.0, 512.0), Vec2(64.0, 0.0), ctx.player_count + 7):
             entries.append(
                 spawn(
-                    x=pos.x,
-                    y=pos.y,
+                    Vec2(pos.x, pos.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
                     trigger_ms=trigger,
@@ -283,8 +269,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
             trigger = wave * 2000 + 2500
             entries.append(
                 spawn(
-                    x=256.0,
-                    y=256.0,
+                    Vec2(256.0, 256.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -293,8 +278,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
             )
             entries.append(
                 spawn(
-                    x=768.0,
-                    y=768.0,
+                    Vec2(768.0, 768.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
@@ -305,8 +289,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
             trigger = 62500
             entries.append(
                 spawn(
-                    x=768.0,
-                    y=256.0,
+                    Vec2(768.0, 256.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
@@ -315,8 +298,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
             )
             entries.append(
                 spawn(
-                    x=256.0,
-                    y=768.0,
+                    Vec2(256.0, 768.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
@@ -346,8 +328,7 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
             heading = heading_from_center(pos, center)
             entries.append(
                 spawn(
-                    x=pos.x,
-                    y=pos.y,
+                    Vec2(pos.x, pos.y),
                     heading=heading,
                     spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                     trigger_ms=trigger,
@@ -428,7 +409,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     def set_entry(idx: int, pos: Vec2, spawn_id: int, trigger: int, count: int) -> None:
         if idx < 0 or idx >= len(entries):
             return
-        entries[idx] = spawn(x=pos.x, y=pos.y, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
+        entries[idx] = spawn(Vec2(pos.x, pos.y), heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
 
     # Loop 1: x from 256 to <688, step 72
     trigger = 500
@@ -490,32 +471,28 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         spawn(
-            x=256.0,
-            y=256.0,
+            Vec2(256.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
             trigger_ms=2000,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=256.0,
+            Vec2(768.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
             trigger_ms=12000,
             count=1,
         ),
         spawn(
-            x=256.0,
-            y=768.0,
+            Vec2(256.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
             trigger_ms=22000,
             count=1,
         ),
         spawn(
-            x=768.0,
-            y=768.0,
+            Vec2(768.0, 768.0),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
             trigger_ms=32000,
@@ -535,14 +512,15 @@ def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height, offset=128.0)
-    entries.append(spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2))
+    entries.append(
+        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2)
+    )
     trigger = 2500
     for i in range(12):
         x = edges.left.x if i % 2 == 0 else edges.right.x
         entries.append(
             spawn(
-                x=x,
-                y=edges.left.y,
+                Vec2(x, edges.left.y),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_5_19,
                 trigger_ms=trigger,
@@ -553,8 +531,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     loop_count = 12
     entries.append(
         spawn(
-            x=-264.0,
-            y=edges.left.y,
+            Vec2(-264.0, edges.left.y),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=(loop_count - 1) * 2500,
@@ -564,8 +541,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     special_trigger = (5 * loop_count + 15) * 500
     entries.append(
         spawn(
-            x=edges.left.x,
-            y=edges.left.y,
+            Vec2(edges.left.x, edges.left.y),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_GRID_ALIEN_BRONZE_18,
             trigger_ms=special_trigger,
@@ -586,17 +562,15 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
-            x=1088.0,
-            y=512.0,
+            Vec2(1088.0, 512.0),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
             trigger_ms=1000,
             count=1,
         ),
-        spawn(x=-64.0, y=512.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=3000, count=1),
+        spawn(Vec2(-64.0, 512.0), heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=3000, count=1),
         spawn(
-            x=1088.0,
-            y=256.0,
+            Vec2(1088.0, 256.0),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
             trigger_ms=6000,
@@ -606,8 +580,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
     if full_version:
         entries.append(
             spawn(
-                x=1088.0,
-                y=762.0,
+                Vec2(1088.0, 762.0),
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,
@@ -616,8 +589,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
         )
         entries.append(
             spawn(
-                x=512.0,
-                y=1088.0,
+                Vec2(512.0, 1088.0),
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,
@@ -627,8 +599,7 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
     if ctx.player_count >= 2 or full_version:
         entries.append(
             spawn(
-                x=-64.0,
-                y=762.0,
+                Vec2(-64.0, 762.0),
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
                 trigger_ms=9000,

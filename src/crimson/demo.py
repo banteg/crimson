@@ -149,7 +149,11 @@ class DemoView:
         if frame_dt_ms <= 0:
             return
 
-        if (not self._purchase_active) and getattr(self._state, "demo_enabled", False) and self._purchase_screen_triggered():
+        if (
+            (not self._purchase_active)
+            and getattr(self._state, "demo_enabled", False)
+            and self._purchase_screen_triggered()
+        ):
             self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
 
         if self._purchase_active:
@@ -247,11 +251,12 @@ class DemoView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
-        button_w = button_width(font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
+        button_w = button_width(
+            font, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+        )
         if button_update(
             self._purchase_button,
-            x=float(button_x),
-            y=float(purchase_y),
+            pos=Vec2(float(button_x), float(purchase_y)),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -270,8 +275,7 @@ class DemoView:
 
         if button_update(
             self._maybe_later_button,
-            x=float(button_x),
-            y=float(maybe_y),
+            pos=Vec2(float(button_x), float(maybe_y)),
             width=float(button_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -405,9 +409,11 @@ class DemoView:
         purchase_y = button_base_y + 50.0
         maybe_y = button_base_y + 90.0
         scale = 1.0
-        button_w = button_width(small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide)
-        button_draw(textures, small, self._purchase_button, x=button_x, y=purchase_y, width=button_w, scale=scale)
-        button_draw(textures, small, self._maybe_later_button, x=button_x, y=maybe_y, width=button_w, scale=scale)
+        button_w = button_width(
+            small, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide
+        )
+        button_draw(textures, small, self._purchase_button, pos=Vec2(button_x, purchase_y), width=button_w, scale=scale)
+        button_draw(textures, small, self._maybe_later_button, pos=Vec2(button_x, maybe_y), width=button_w, scale=scale)
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
         particles = cache.get_or_load("particles", "game/particles.jaz").texture

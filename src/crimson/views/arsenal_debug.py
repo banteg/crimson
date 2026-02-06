@@ -296,9 +296,9 @@ class ArsenalDebugView:
         reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
         lines.extend(
             [
-                f"clip { _fmt_int(weapon.clip_size) }  reload { _fmt_float(weapon.reload_time) }  cooldown { _fmt_float(weapon.shot_cooldown) }",
-                f"pellets { _fmt_int(weapon.pellet_count) }  spread_inc { _fmt_float(weapon.spread_heat_inc) }  dmg_scale { _fmt_float(weapon.damage_scale) }  meta { _fmt_int(weapon.projectile_meta) }",
-                f"ammo_class { _fmt_int(weapon.ammo_class) }  flags { _fmt_hex(weapon.flags) }  icon { _fmt_int(weapon.icon_index) }",
+                f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
+                f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.projectile_meta)}",
+                f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
                 f"sfx fire {fire_sfx or '—'}  reload {reload_sfx or '—'}",
             ]
         )
@@ -378,14 +378,18 @@ class ArsenalDebugView:
         warn_y = 24.0
         warn_line = float(ui_line_height(self._small))
         if self._missing_assets:
-            draw_ui_text(self._small, "Missing assets (ui): " + ", ".join(self._missing_assets), warn_x, warn_y, color=UI_ERROR)
+            draw_ui_text(
+                self._small,
+                "Missing assets (ui): " + ", ".join(self._missing_assets),
+                Vec2(warn_x, warn_y),
+                color=UI_ERROR,
+            )
             warn_y += warn_line
         if self._world.missing_assets:
             draw_ui_text(
                 self._small,
                 "Missing assets (world): " + ", ".join(self._world.missing_assets),
-                warn_x,
-                warn_y,
+                Vec2(warn_x, warn_y),
                 color=UI_ERROR,
             )
             warn_y += warn_line
@@ -396,25 +400,24 @@ class ArsenalDebugView:
 
         weapon = WEAPON_BY_ID.get(int(self._player.weapon_id)) if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
-            draw_ui_text(self._small, text, x, y, color=UI_TEXT)
+            draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line
 
         if self._player is not None:
             alive = sum(1 for c in self._world.creatures.entries if c.active and c.hp > 0.0)
             total = sum(1 for c in self._world.creatures.entries if c.active)
-            draw_ui_text(self._small, f"creatures alive {alive}/{total}", x, y, color=UI_TEXT)
+            draw_ui_text(self._small, f"creatures alive {alive}/{total}", Vec2(x, y), color=UI_TEXT)
             y += line
 
         y += 6.0
         draw_ui_text(
             self._small,
             "WASD move  LMB fire  R reload  [/] cycle weapons  Space pause  T respawn  B spawn all bonuses  Backspace reset  Esc quit",
-            x,
-            y,
+            Vec2(x, y),
             color=UI_HINT,
         )
         y += line
-        draw_ui_text(self._small, "P screenshot", x, y, color=UI_HINT)
+        draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
         mouse = rl.get_mouse_position()
         draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2(mouse.x, mouse.y))
