@@ -385,7 +385,7 @@ class GameOverUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_again")
                 return None
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -402,7 +402,7 @@ class GameOverUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("high_scores")
                 return None
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
@@ -534,7 +534,7 @@ class GameOverUi:
             self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
 
         # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).
-        row_pos = card_origin + Vec2(0.0, 52.0 * scale)
+        row_pos = card_origin.offset(0.0, 52.0 * scale)
         self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
         self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
         if show_weapon_row and hud_assets is not None and hud_assets.wicons is not None:
@@ -740,7 +740,7 @@ class GameOverUi:
                 width=play_again_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -753,7 +753,7 @@ class GameOverUi:
                 width=high_scores_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide

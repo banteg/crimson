@@ -6,7 +6,6 @@ from typing import Callable, Sequence
 import pyray as rl
 
 from grim.fonts.small import SmallFontData
-from grim.geom import Vec2
 from grim.math import clamp
 
 from ...gameplay import (
@@ -193,7 +192,7 @@ class PerkMenuController:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            item_pos = computed.list_pos.offset(0.0, float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             if rl.check_collision_point_rec(ctx.mouse, rect):
                 self._selected_index = idx
@@ -311,7 +310,7 @@ class PerkMenuController:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id), fx_toggle=int(ctx.fx_toggle))
-            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            item_pos = computed.list_pos.offset(0.0, float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.font, label, pos=item_pos, scale=scale)
             hovered = rl.check_collision_point_rec(ctx.mouse, rect) or (idx == self._selected_index)
             draw_menu_item(ctx.font, label, pos=item_pos, scale=scale, hovered=hovered)

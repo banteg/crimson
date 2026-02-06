@@ -208,7 +208,7 @@ class PerkSelectionView:
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id))
-            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            item_pos = computed.list_pos.offset(0.0, float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             if rl.check_collision_point_rec(mouse, rect):
                 self._perk_menu_selected = idx
@@ -326,7 +326,7 @@ class PerkSelectionView:
         mouse = rl.get_mouse_position()
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(int(perk_id))
-            item_pos = computed.list_pos + Vec2(0.0, float(idx) * computed.list_step_y)
+            item_pos = computed.list_pos.offset(0.0, float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
             draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)

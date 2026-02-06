@@ -565,7 +565,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_next")
                 return None
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             play_again_w = button_width(
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
@@ -582,7 +582,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("play_again")
                 return None
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
@@ -599,7 +599,7 @@ class QuestResultsUi:
                     play_sfx("sfx_ui_buttonclick")
                 self._begin_close_transition("high_scores")
                 return None
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
 
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
@@ -804,7 +804,7 @@ class QuestResultsUi:
                 width=play_next_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
             play_again_w = button_width(
                 self.font, self._play_again_button.label, scale=scale, force_wide=self._play_again_button.force_wide
             )
@@ -816,7 +816,7 @@ class QuestResultsUi:
                 width=play_again_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
             high_scores_w = button_width(
                 self.font, self._high_scores_button.label, scale=scale, force_wide=self._high_scores_button.force_wide
             )
@@ -828,7 +828,7 @@ class QuestResultsUi:
                 width=high_scores_w,
                 scale=scale,
             )
-            button_pos = button_pos + Vec2(0.0, 32.0 * scale)
+            button_pos = button_pos.offset(0.0, 32.0 * scale)
             main_menu_w = button_width(
                 self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide
             )

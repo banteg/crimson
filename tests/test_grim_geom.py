@@ -55,6 +55,17 @@ def test_vec2_angle_helpers_round_trip() -> None:
     assert math.isclose(vec.to_angle(), angle, abs_tol=1e-9)
 
 
+def test_vec2_polar_helpers_round_trip() -> None:
+    angle = 1.2
+    radius = 3.5
+
+    vec = Vec2.from_polar(angle, radius)
+    polar_angle, polar_radius = vec.to_polar()
+
+    assert math.isclose(polar_angle, angle, abs_tol=1e-9)
+    assert math.isclose(polar_radius, radius, abs_tol=1e-9)
+
+
 def test_vec2_heading_helpers_round_trip() -> None:
     heading = 1.2
 
@@ -137,6 +148,12 @@ def test_vec2_perpendicular_helpers() -> None:
 
     assert vec.perp_left() == Vec2(2.0, 3.0)
     assert vec.perp_right() == Vec2(-2.0, -3.0)
+
+
+def test_vec2_offset_helper() -> None:
+    vec = Vec2(3.0, -2.0)
+
+    assert vec.offset(5.0, -1.5) == Vec2(8.0, -3.5)
 
 
 def test_vec2_to_vector2_uses_constructor() -> None:

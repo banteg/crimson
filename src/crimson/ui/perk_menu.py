@@ -113,11 +113,11 @@ def perk_menu_compute_layout(
         list_pos.y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale,
     )
     if choice_count > 5:
-        desc_pos += Vec2(0.0, -MENU_DESC_Y_EXTRA_TIGHTEN * scale)
+        desc_pos = desc_pos.offset(0.0, -MENU_DESC_Y_EXTRA_TIGHTEN * scale)
 
     # Keep the description within the monitor screen area and above the button.
     desc_right = panel.x + MENU_DESC_RIGHT_X * scale
-    cancel_pos = anchor_pos + Vec2(MENU_BUTTON_X * scale, MENU_BUTTON_Y * scale)
+    cancel_pos = anchor_pos.offset(MENU_BUTTON_X * scale, MENU_BUTTON_Y * scale)
     desc_size = Vec2(
         max(0.0, float(desc_right - desc_pos.x)),
         max(0.0, float(cancel_pos.y - 12.0 * scale - desc_pos.y)),
@@ -279,7 +279,7 @@ def draw_wrapped_ui_text_in_rect(
         if pos.y + line_h > max_y:
             break
         draw_ui_text(font, line, pos, scale=scale, color=color)
-        pos += Vec2(0.0, line_h)
+        pos = pos.offset(0.0, line_h)
 
 
 MENU_ITEM_RGB = (0x46, 0xB4, 0xF0)  # from ui_menu_item_update: rgb(70, 180, 240)

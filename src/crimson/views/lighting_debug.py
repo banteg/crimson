@@ -326,8 +326,7 @@ class LightingDebugView:
             rl.Color(180, 140, 255, 255),
             rl.Color(255, 160, 90, 255),
         ]
-        px = float(self._player.pos.x)
-        py = float(self._player.pos.y)
+        center = self._player.pos
         self._fly_lights.clear()
         for i in range(int(self._fly_light_count)):
             angle = rng.random() * math.tau
@@ -336,14 +335,13 @@ class LightingDebugView:
             c = palette[i % len(palette)]
             if rng.random() < 0.5:
                 c = palette[int(rng.random() * len(palette)) % len(palette)]
-            x = clamp(px + math.cos(angle) * radius, 0.0, WORLD_SIZE)
-            y = clamp(py + math.sin(angle) * radius, 0.0, WORLD_SIZE)
+            spawn_pos = (center + Vec2.from_polar(angle, radius)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
             r = float(self._fly_light_range) * (0.8 + rng.random() * 0.5)
             sr = float(self._fly_light_source_radius) * (0.7 + rng.random() * 0.7)
             self._fly_lights.append(
                 _FlyingLight(
-                    x=float(x),
-                    y=float(y),
+                    x=float(spawn_pos.x),
+                    y=float(spawn_pos.y),
                     angle=float(angle),
                     radius=float(radius),
                     omega=float(omega),
@@ -514,8 +512,7 @@ class LightingDebugView:
         rng = random.Random(int(seed))
         if self._player is None:
             return
-        center_x = float(self._player.pos.x)
-        center_y = float(self._player.pos.y)
+        center = self._player.pos
 
         self._world.creatures.reset()
         types = [
@@ -528,13 +525,10 @@ class LightingDebugView:
             t = types[idx % len(types)]
             angle = rng.random() * math.tau
             radius = 120.0 + rng.random() * 260.0
-            x = center_x + math.cos(angle) * radius
-            y = center_y + math.sin(angle) * radius
-            x = clamp(x, 40.0, WORLD_SIZE - 40.0)
-            y = clamp(y, 40.0, WORLD_SIZE - 40.0)
+            pos = (center + Vec2.from_polar(angle, radius)).clamp_rect(40.0, 40.0, WORLD_SIZE - 40.0, WORLD_SIZE - 40.0)
             init = CreatureInit(
                 origin_template_id=0,
-                pos=Vec2(float(x), float(y)),
+                pos=pos,
                 heading=float(rng.random() * math.tau),
                 phase_seed=float(rng.random() * 999.0),
                 type_id=t,
@@ -635,14 +629,14 @@ class LightingDebugView:
 
         if dt_world > 0.0:
             if self._fly_lights_enabled and self._fly_lights and self._player is not None:
-                px = float(self._player.pos.x)
-                py = float(self._player.pos.y)
+                center = self._player.pos
                 for fl in self._fly_lights:
                     fl.angle += fl.omega * dt_world
                     wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
                     r = fl.radius * wobble
-                    fl.x = clamp(px + math.cos(fl.angle) * r, 0.0, WORLD_SIZE)
-                    fl.y = clamp(py + math.sin(fl.angle) * r, 0.0, WORLD_SIZE)
+                    pos = (center + Vec2.from_polar(fl.angle, r)).clamp_rect(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
+                    fl.x = pos.x
+                    fl.y = pos.y
 
             keep: list[_EmissiveProjectile] = []
             margin = 80.0

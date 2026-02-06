@@ -549,14 +549,14 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         cos_phase = math.cos(phase)
         sin_phase = math.sin(phase)
         draw_plague_quad(
-            pos=ctx.pos + Vec2(cos_phase * cos_phase - 5.0, sin_phase * 11.0 - 5.0),
+            pos=ctx.pos.offset(cos_phase * cos_phase - 5.0, sin_phase * 11.0 - 5.0),
             size=52.0,
         )
 
         phase_120 = phase + 2.0943952
         sin_phase_120 = math.sin(phase_120)
         draw_plague_quad(
-            pos=ctx.pos + Vec2(math.cos(phase_120) * 10.0, sin_phase_120 * 10.0),
+            pos=ctx.pos + Vec2.from_polar(phase_120, 10.0),
             size=62.0,
         )
 

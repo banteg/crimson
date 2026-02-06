@@ -62,6 +62,10 @@ class Vec2:
         return cls(x=math.cos(theta), y=math.sin(theta))
 
     @classmethod
+    def from_polar(cls, theta: float, radius: float = 1.0) -> Vec2:
+        return cls.from_angle(theta) * radius
+
+    @classmethod
     def from_xy(cls, value: SupportsXY) -> Vec2:
         return cls(x=float(value.x), y=float(value.y))
 
@@ -74,6 +78,12 @@ class Vec2:
 
     def to_heading(self) -> float:
         return self.to_angle() + math.pi / 2.0
+
+    def to_polar(self) -> tuple[float, float]:
+        return self.to_angle(), self.length()
+
+    def offset(self, dx: float = 0.0, dy: float = 0.0) -> Vec2:
+        return Vec2(self.x + dx, self.y + dy)
 
     def perp_left(self) -> Vec2:
         return Vec2(-self.y, self.x)

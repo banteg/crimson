@@ -491,8 +491,7 @@ class WorldRenderer:
 
             recoil_dir = float(player.aim_heading) + math.pi / 2.0
             recoil = float(player.muzzle_flash_alpha) * 12.0 * scale
-            recoil_x = math.cos(recoil_dir) * recoil
-            recoil_y = math.sin(recoil_dir) * recoil
+            recoil_offset = Vec2.from_polar(recoil_dir, recoil)
 
             leg_shadow_scale = 1.02
             torso_shadow_scale = 1.03
@@ -501,14 +500,14 @@ class WorldRenderer:
 
             draw(
                 leg_frame,
-                pos=screen_pos + Vec2(leg_shadow_off, leg_shadow_off),
+                pos=screen_pos.offset(leg_shadow_off, leg_shadow_off),
                 scale_mul=leg_shadow_scale,
                 rotation=float(player.heading),
                 color=shadow_tint,
             )
             draw(
                 torso_frame,
-                pos=screen_pos + Vec2(recoil_x + torso_shadow_off, recoil_y + torso_shadow_off),
+                pos=screen_pos.offset(recoil_offset.x + torso_shadow_off, recoil_offset.y + torso_shadow_off),
                 scale_mul=torso_shadow_scale,
                 rotation=float(player.aim_heading),
                 color=shadow_tint,
@@ -523,7 +522,7 @@ class WorldRenderer:
             )
             draw(
                 torso_frame,
-                pos=screen_pos + Vec2(recoil_x, recoil_y),
+                pos=screen_pos + recoil_offset,
                 scale_mul=1.0,
                 rotation=float(player.aim_heading),
                 color=overlay_tint,
@@ -553,9 +552,7 @@ class WorldRenderer:
                             strength = min(1.0, strength) * alpha
                             if strength > 1e-3:
                                 offset_dir = float(player.aim_heading) - math.pi / 2.0
-                                ox = math.cos(offset_dir) * 3.0 * scale
-                                oy = math.sin(offset_dir) * 3.0 * scale
-                                center = screen_pos + Vec2(ox, oy)
+                                center = screen_pos + Vec2.from_polar(offset_dir, 3.0 * scale)
 
                                 half = math.sin(t * 3.0) + 17.5
                                 size = half * 2.0 * scale
