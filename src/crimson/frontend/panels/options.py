@@ -20,6 +20,7 @@ from ..menu import (
 from ..transitions import _draw_screen_fade
 from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .hit_test import mouse_inside_rect_with_padding
 
 
 @dataclass(slots=True)
@@ -252,10 +253,15 @@ class OptionsMenuView(PanelMenuView):
         if rect_w <= 0.0 or rect_h <= 0.0:
             return False
         bar_w = rect_w * float(slider.max_value)
-        bar_h = rect_h
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
-        bar_rect = Rect.from_top_left(pos, bar_w, bar_h)
-        hovered = bar_rect.contains(mouse_pos)
+        hovered = mouse_inside_rect_with_padding(
+            mouse_pos,
+            pos=pos,
+            width=bar_w,
+            height=18.0 * scale,
+            left_pad=3.0 * scale,
+            top_pad=1.0 * scale,
+        )
 
         changed = False
         if hovered:

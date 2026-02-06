@@ -19,6 +19,7 @@ from ..menu import (
     MenuView,
 )
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .hit_test import mouse_inside_rect_with_padding
 
 from ..types import GameState
 
@@ -412,7 +413,12 @@ class PlayGameMenuView(PanelMenuView):
         layout = self._player_count_widget_layout(pos, scale)
 
         mouse = rl.get_mouse_position()
-        hovered_header = Rect.from_top_left(layout.pos, layout.width, layout.header_h).contains(mouse)
+        hovered_header = mouse_inside_rect_with_padding(
+            mouse,
+            pos=layout.pos,
+            width=layout.width,
+            height=14.0 * scale,
+        )
         if hovered_header and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._player_list_open = not self._player_list_open
             return True
@@ -429,7 +435,12 @@ class PlayGameMenuView(PanelMenuView):
         for idx, label in enumerate(self._PLAYER_COUNT_LABELS):
             del label
             item_y = layout.rows_y0 + layout.row_h * float(idx)
-            item_hovered = Rect.from_top_left(Vec2(layout.pos.x, item_y), layout.width, layout.row_h).contains(mouse)
+            item_hovered = mouse_inside_rect_with_padding(
+                mouse,
+                pos=Vec2(layout.pos.x, item_y),
+                width=layout.width,
+                height=14.0 * scale,
+            )
             if item_hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
                 config.data["player_count"] = idx + 1
                 self._dirty = True
@@ -519,7 +530,12 @@ class PlayGameMenuView(PanelMenuView):
 
         # Arrow icon (the ui_drop* assets are 16x16 icons, not the background).
         mouse = rl.get_mouse_position()
-        hovered_header = Rect.from_top_left(layout.pos, layout.width, layout.header_h).contains(mouse)
+        hovered_header = mouse_inside_rect_with_padding(
+            mouse,
+            pos=layout.pos,
+            width=layout.width,
+            height=14.0 * scale,
+        )
         arrow_tex = drop_on if (self._player_list_open or hovered_header) else drop_off
         if self._player_list_open or hovered_header:
             line_h = max(1, int(1.0 * scale))
@@ -554,7 +570,12 @@ class PlayGameMenuView(PanelMenuView):
 
         for idx, item in enumerate(self._PLAYER_COUNT_LABELS):
             item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = Rect.from_top_left(Vec2(layout.pos.x, item_y), layout.width, layout.row_h).contains(mouse)
+            hovered = mouse_inside_rect_with_padding(
+                mouse,
+                pos=Vec2(layout.pos.x, item_y),
+                width=layout.width,
+                height=14.0 * scale,
+            )
             alpha = 153  # 0x3f19999a
             if hovered:
                 alpha = 242  # 0x3f733333
