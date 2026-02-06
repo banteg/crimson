@@ -91,6 +91,19 @@ Global bonus timers used by `player_update` and the main loop:
 - `bonus_hud_slot_label` — string label for the bonus.
 - `bonus_hud_slot_icon_id` — icon id used to select a frame from `bonuses.png`.
 
+Recovered bonus label/icon globals used by `bonus_apply`:
+
+- `bonus_label_reflex_boost` / `bonus_icon_reflex_boost`
+- `bonus_label_weapon_power_up` / `bonus_icon_weapon_power_up`
+- `bonus_label_speed` / `bonus_icon_speed`
+- `bonus_label_freeze` / `bonus_icon_freeze`
+- `bonus_label_shield` / `bonus_icon_shield`
+- `bonus_label_fire_bullets` / `bonus_icon_fire_bullets`
+- `bonus_label_energizer` / `bonus_icon_energizer`
+- `bonus_label_double_experience` / `bonus_icon_double_experience`
+- `bonus_label_points` plus `bonus_label_format_buffer` are used by
+  `bonus_label_for_entry` for dynamic “weapon” / “points” label formatting.
+
 ### Perk-triggered projectile spawns (player_update)
 
 `player_update` owns several perk timers that spawn projectiles or FX when the

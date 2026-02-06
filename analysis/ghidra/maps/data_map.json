@@ -1897,6 +1897,116 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004853e4",
+      "comment": "Bonus label string for Points (bonus id 1).",
+      "name": "bonus_label_points",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004853f8",
+      "comment": "Bonus label string for Energizer (bonus id 12).",
+      "name": "bonus_label_energizer",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485400",
+      "comment": "Bonus icon id for Energizer (bonus id 12).",
+      "name": "bonus_icon_energizer",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485420",
+      "comment": "Bonus label string for Weapon Power Up (bonus id 4).",
+      "name": "bonus_label_weapon_power_up",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485428",
+      "comment": "Bonus icon id for Weapon Power Up (bonus id 4).",
+      "name": "bonus_icon_weapon_power_up",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485448",
+      "comment": "Bonus label string for Double Experience (bonus id 6).",
+      "name": "bonus_label_double_experience",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00485450",
+      "comment": "Bonus icon id for Double Experience (bonus id 6).",
+      "name": "bonus_icon_double_experience",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485484",
+      "comment": "Bonus label string for Reflex Boost (bonus id 9).",
+      "name": "bonus_label_reflex_boost",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048548c",
+      "comment": "Bonus icon id for Reflex Boost (bonus id 9).",
+      "name": "bonus_icon_reflex_boost",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485498",
+      "comment": "Bonus label string for Shield (bonus id 10).",
+      "name": "bonus_label_shield",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854a0",
+      "comment": "Bonus icon id for Shield (bonus id 10).",
+      "name": "bonus_icon_shield",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854ac",
+      "comment": "Bonus label string for Freeze (bonus id 11).",
+      "name": "bonus_label_freeze",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854b4",
+      "comment": "Bonus icon id for Freeze (bonus id 11).",
+      "name": "bonus_icon_freeze",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854d4",
+      "comment": "Bonus label string for Speed (bonus id 13).",
+      "name": "bonus_label_speed",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854dc",
+      "comment": "Bonus icon id for Speed (bonus id 13).",
+      "name": "bonus_icon_speed",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004854e8",
+      "comment": "Bonus label string for Fire Bullets (bonus id 14).",
+      "name": "bonus_label_fire_bullets",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004854f0",
+      "comment": "Bonus icon id for Fire Bullets (bonus id 14).",
+      "name": "bonus_icon_fire_bullets",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00485540",
       "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16).",
       "name": "game_status_blob",
@@ -4528,6 +4638,12 @@
       "address": "0x0049669c",
       "comment": "Rotated FX queue rotation array",
       "name": "fx_rotated_rotation",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0049679c",
+      "comment": "Scratch text buffer used by bonus_label_for_entry for formatted bonus labels.",
+      "name": "bonus_label_format_buffer",
       "program": "crimsonland.exe"
     },
     {

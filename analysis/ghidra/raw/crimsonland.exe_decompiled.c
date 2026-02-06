@@ -6271,7 +6271,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_REFLEX_BOOST) {
     if (_bonus_reflex_boost_timer <= 0.0) {
       bonus_hud_slot_activate
-                (DAT_00485484,DAT_0048548c,(float *)&bonus_reflex_boost_timer,(float *)0x0);
+                (bonus_label_reflex_boost,bonus_icon_reflex_boost,(float *)&bonus_reflex_boost_timer
+                 ,(float *)0x0);
     }
     _bonus_reflex_boost_timer =
          (float)(bonus_entry->time).amount * local_10[0] + _bonus_reflex_boost_timer;
@@ -6310,7 +6311,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_WEAPON_POWER_UP) {
     if (_bonus_weapon_power_up_timer <= 0.0) {
       bonus_hud_slot_activate
-                (DAT_00485420,DAT_00485428,(float *)&bonus_weapon_power_up_timer,(float *)0x0);
+                (bonus_label_weapon_power_up,bonus_icon_weapon_power_up,
+                 (float *)&bonus_weapon_power_up_timer,(float *)0x0);
     }
     _bonus_weapon_power_up_timer =
          (float)(bonus_entry->time).amount * local_10[0] + _bonus_weapon_power_up_timer;
@@ -6322,7 +6324,7 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_SPEED) {
     if ((player_state_table.speed_bonus_timer <= 0.0) && (player2_speed_bonus_timer <= 0.0)) {
       bonus_hud_slot_activate
-                (DAT_004854d4,DAT_004854dc,&player_state_table.speed_bonus_timer,
+                (bonus_label_speed,bonus_icon_speed,&player_state_table.speed_bonus_timer,
                  &player2_speed_bonus_timer);
     }
     (&player_state_table)[player_index].speed_bonus_timer =
@@ -6331,7 +6333,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   }
   else if (bVar2 == BONUS_ID_FREEZE) {
     if (_bonus_freeze_timer <= 0.0) {
-      bonus_hud_slot_activate(DAT_004854ac,DAT_004854b4,(float *)&bonus_freeze_timer,(float *)0x0);
+      bonus_hud_slot_activate
+                (bonus_label_freeze,bonus_icon_freeze,(float *)&bonus_freeze_timer,(float *)0x0);
     }
     pfVar8 = &creature_pool.pos_x;
     _bonus_freeze_timer = (float)(bonus_entry->time).amount * local_10[0] + _bonus_freeze_timer;
@@ -6375,7 +6378,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_SHIELD) {
     if ((player_state_table.shield_timer <= 0.0) && (player2_shield_timer <= 0.0)) {
       bonus_hud_slot_activate
-                (DAT_00485498,DAT_004854a0,&player_state_table.shield_timer,&player2_shield_timer);
+                (bonus_label_shield,bonus_icon_shield,&player_state_table.shield_timer,
+                 &player2_shield_timer);
     }
     (&player_state_table)[player_index].shield_timer =
          (float)(bonus_entry->time).amount * local_10[0] +
@@ -6421,8 +6425,8 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_FIRE_BULLETS) {
     if ((player_state_table.fire_bullets_timer <= 0.0) && (player2_fire_bullets_timer <= 0.0)) {
       bonus_hud_slot_activate
-                (DAT_004854e8,DAT_004854f0,&player_state_table.fire_bullets_timer,
-                 &player2_fire_bullets_timer);
+                (bonus_label_fire_bullets,bonus_icon_fire_bullets,
+                 &player_state_table.fire_bullets_timer,&player2_fire_bullets_timer);
     }
     (&player_state_table)[player_index].fire_bullets_timer =
          local_10[0] * 5.0 + (&player_state_table)[player_index].fire_bullets_timer;
@@ -6434,14 +6438,16 @@ void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
   else if (bVar2 == BONUS_ID_ENERGIZER) {
     if (_bonus_energizer_timer <= 0.0) {
       bonus_hud_slot_activate
-                (DAT_004853f8,DAT_00485400,(float *)&bonus_energizer_timer,(float *)0x0);
+                (bonus_label_energizer,bonus_icon_energizer,(float *)&bonus_energizer_timer,
+                 (float *)0x0);
     }
     _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
   }
   else if (bVar2 == BONUS_ID_DOUBLE_EXPERIENCE) {
     if (_bonus_double_xp_timer <= 0.0) {
       bonus_hud_slot_activate
-                (DAT_00485448,DAT_00485450,(float *)&bonus_double_xp_timer,(float *)0x0);
+                (bonus_label_double_experience,bonus_icon_double_experience,
+                 (float *)&bonus_double_xp_timer,(float *)0x0);
     }
     _bonus_double_xp_timer = local_10[0] * 6.0 + _bonus_double_xp_timer;
   }
@@ -10956,7 +10962,7 @@ void bonus_metadata_init(void)
   void *this_11;
   void *this_12;
   
-  DAT_004853e4 = strdup_malloc(s_Points_00473604);
+  bonus_label_points = strdup_malloc(s_Points_00473604);
   _DAT_004853e8 = wrap_text_to_width_alloc(this,s_You_gain_some_experience_points__004735e0,0x100);
   _DAT_004853ec = 0xc;
   _DAT_004853f4 = 500;
@@ -10969,10 +10975,10 @@ void bonus_metadata_init(void)
   _DAT_00485438 =
        wrap_text_to_width_alloc(this_01,s_An_amazing_explosion_of_ATOMIC_p_00473590,0x100);
   _DAT_0048543c = 1;
-  DAT_00485448 = strdup_malloc(s_Double_Experience_0047357c);
+  bonus_label_double_experience = strdup_malloc(s_Double_Experience_0047357c);
   _DAT_0048544c =
        wrap_text_to_width_alloc(this_02,s_Every_experience_point_you_get_i_00473534,0x100);
-  DAT_00485450 = 4;
+  bonus_icon_double_experience = 4;
   _DAT_00485470 = strdup_malloc(s_Fireblast_00473528);
   _DAT_00485474 = wrap_text_to_width_alloc(this_03,s_Fireballs_all_over_the_place__00473508,0x100);
   _DAT_00485478 = 2;
@@ -10980,39 +10986,39 @@ void bonus_metadata_init(void)
   _DAT_00485460 =
        wrap_text_to_width_alloc(this_04,s_Chain_of_shocks_shock_the_crowd__004734d8,0x100);
   _DAT_00485464 = 3;
-  DAT_00485484 = strdup_malloc(s_Reflex_Boost_004734c8);
+  bonus_label_reflex_boost = strdup_malloc(s_Reflex_Boost_004734c8);
   _DAT_00485488 =
        wrap_text_to_width_alloc(this_05,s_You_get_more_time_to_react_as_th_00473494,0x100);
-  DAT_0048548c = 5;
+  bonus_icon_reflex_boost = 5;
   _DAT_00485494 = 3;
-  DAT_00485498 = strdup_malloc(s_Shield_0047348c);
+  bonus_label_shield = strdup_malloc(s_Shield_0047348c);
   _DAT_0048549c =
        wrap_text_to_width_alloc(this_06,s_Force_field_protects_you_for_a_w_00473464,0x100);
-  DAT_004854a0 = 6;
+  bonus_icon_shield = 6;
   _DAT_004854a8 = 7;
-  DAT_004854ac = strdup_malloc(s_Freeze_0047345c);
+  bonus_label_freeze = strdup_malloc(s_Freeze_0047345c);
   _DAT_004854b0 = wrap_text_to_width_alloc(this_07,s_Monsters_are_frozen__00473444,0x100);
-  DAT_004854b4 = 8;
+  bonus_icon_freeze = 8;
   _DAT_004854bc = 5;
-  DAT_004854d4 = strdup_malloc(s_Speed_0047343c);
+  bonus_label_speed = strdup_malloc(s_Speed_0047343c);
   _DAT_004854d8 =
        wrap_text_to_width_alloc(this_08,s_Your_movement_speed_increases_fo_00473410,0x100);
-  DAT_004854dc = 9;
+  bonus_icon_speed = 9;
   _DAT_004854e4 = 8;
-  DAT_004853f8 = strdup_malloc(s_Energizer_00473404);
+  bonus_label_energizer = strdup_malloc(s_Energizer_00473404);
   _DAT_004853fc =
        wrap_text_to_width_alloc(this_09,s_Suddenly_monsters_run_away_from_y_004733c8,0x100);
-  DAT_00485400 = 10;
+  bonus_icon_energizer = 10;
   _DAT_00485408 = 8;
-  DAT_00485420 = strdup_malloc(s_Weapon_Power_Up_004733b8);
+  bonus_label_weapon_power_up = strdup_malloc(s_Weapon_Power_Up_004733b8);
   _DAT_00485424 =
        wrap_text_to_width_alloc(this_10,s_Your_firerate_and_load_time_incr_0047337c,0x100);
-  DAT_00485428 = 7;
+  bonus_icon_weapon_power_up = 7;
   _DAT_00485430 = 10;
-  DAT_004854e8 = strdup_malloc(s_Fire_Bullets_0047336c);
+  bonus_label_fire_bullets = strdup_malloc(s_Fire_Bullets_0047336c);
   _DAT_004854ec =
        wrap_text_to_width_alloc(this_11,s_For_few_seconds____make_them_cou_00473348,0x100);
-  DAT_004854f0 = 0xb;
+  bonus_icon_fire_bullets = 0xb;
   _DAT_004854f8 = 4;
   _DAT_004854c0 = strdup_malloc(s_MediKit_00473340);
   _DAT_004854c4 =
@@ -22635,12 +22641,13 @@ char * __cdecl bonus_label_for_entry(bonus_entry_t *bonus_entry)
   bVar1 = bonus_entry->bonus_id;
   if (bVar1 == BONUS_ID_WEAPON) {
     pcVar2 = weapon_table_entry((bonus_entry->time).amount);
-    crt_sprintf(&DAT_0049679c,&s_fmt_percent_s,pcVar2);
-    return &DAT_0049679c;
+    crt_sprintf(&bonus_label_format_buffer,&s_fmt_percent_s,pcVar2);
+    return &bonus_label_format_buffer;
   }
   if (bVar1 == BONUS_ID_POINTS) {
-    crt_sprintf(&DAT_0049679c,s__s___d_00473e8c,DAT_004853e4,(bonus_entry->time).amount);
-    return &DAT_0049679c;
+    crt_sprintf(&bonus_label_format_buffer,s__s___d_00473e8c,bonus_label_points,
+                (bonus_entry->time).amount);
+    return &bonus_label_format_buffer;
   }
   return (&bonus_meta_table)[bVar1].label;
 }

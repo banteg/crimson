@@ -1444,6 +1444,18 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: initialized to `0x39` in `perks_init_database` and used as the upper bound (+1) in
     `perk_select_random` / `perks_rebuild_available`.
 
+- Labeled bonus metadata aliases used by `bonus_apply` HUD slot wiring:
+  - Label/icon pairs: `bonus_label_reflex_boost`/`bonus_icon_reflex_boost`,
+    `bonus_label_weapon_power_up`/`bonus_icon_weapon_power_up`,
+    `bonus_label_speed`/`bonus_icon_speed`,
+    `bonus_label_freeze`/`bonus_icon_freeze`,
+    `bonus_label_shield`/`bonus_icon_shield`,
+    `bonus_label_fire_bullets`/`bonus_icon_fire_bullets`,
+    `bonus_label_energizer`/`bonus_icon_energizer`,
+    `bonus_label_double_experience`/`bonus_icon_double_experience`.
+  - `bonus_label_points` and `bonus_label_format_buffer` now cover the formatted
+    `bonus_label_for_entry` text path.
+
 - Labeled perk trigger interval globals:
   - `perk_man_bomb_trigger_interval_s` (`_DAT_00473310`)
   - `perk_fire_cough_trigger_interval_s` (`_DAT_00473314`)
