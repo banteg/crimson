@@ -1262,6 +1262,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041df50",
+    "name": "demo_trial_time_limit_ms",
+    "signature": "int demo_trial_time_limit_ms(void)",
+    "comment": "returns the fixed demo trial duration in milliseconds (2400000 / 40 minutes)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041df60",
     "name": "game_sequence_get",
     "signature": "int game_sequence_get(void)",
@@ -1776,37 +1783,37 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0042f080",
-    "name": "FUN_0042f080",
-    "signature": "void * FUN_0042f080(float *arg1)",
-    "comment": "[binja] void* sub_42f080(float* arg1)"
+    "name": "effect_spawn_shrinkifier_hit",
+    "signature": "void * effect_spawn_shrinkifier_hit(float *pos)",
+    "comment": "spawns shrinkifier impact effects: one core pulse (effect id 1) plus detail-scaled debris (effect id 0)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f270",
-    "name": "FUN_0042f270",
-    "signature": "void * FUN_0042f270(float *arg1, float arg2, float arg3)",
-    "comment": "[binja] void* sub_42f270(float* arg1, float arg2, float arg3)"
+    "name": "effect_spawn_ion_hit_core",
+    "signature": "void * effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime)",
+    "comment": "spawns the ion hit core pulse (effect id 1); used by ion minigun/rifle/cannon impacts"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f330",
-    "name": "FUN_0042f330",
-    "signature": "void * FUN_0042f330(float *arg1, float arg2, int arg3)",
-    "comment": "[binja] void* sub_42f330(float* arg1, float arg2, int32_t arg3)"
+    "name": "effect_spawn_plasma_hit_core",
+    "signature": "void * effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime)",
+    "comment": "spawns the plasma cannon hit core pulse (effect id 1) with custom lifetime/age"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f3f0",
-    "name": "FUN_0042f3f0",
-    "signature": "void * FUN_0042f3f0(float *arg1, float arg2, int arg3)",
-    "comment": "[binja] void* sub_42f3f0(float* arg1, float arg2, int32_t arg3)"
+    "name": "effect_spawn_splitter_hit_burst",
+    "signature": "void * effect_spawn_splitter_hit_burst(float *pos, float radius, int count)",
+    "comment": "spawns a radial burst of effect id 0 particles around the hit point; used by splitter gun impacts"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f540",
-    "name": "FUN_0042f540",
-    "signature": "int FUN_0042f540(int arg1, float arg2)",
-    "comment": "[binja] int32_t sub_42f540(int32_t arg1, float arg2)"
+    "name": "effect_spawn_ion_hit_sparks",
+    "signature": "void * effect_spawn_ion_hit_sparks(float *pos, float scale)",
+    "comment": "spawns detail-scaled ion impact sparks (effect id 0) around the hit position"
   },
   {
     "program": "crimsonland.exe",
@@ -2849,10 +2856,17 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00444f70",
+    "name": "creature_name_pick_fragment",
+    "signature": "char * creature_name_pick_fragment(char include_extended_pool)",
+    "comment": "returns a random creature-name fragment from the static word table; include_extended_pool adds one extra entry"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004451b0",
-    "name": "FUN_004451b0",
-    "signature": "void * FUN_004451b0(void)",
-    "comment": "[binja] void* sub_4451b0()"
+    "name": "creature_name_pick_highscore_name",
+    "signature": "char * creature_name_pick_highscore_name(void)",
+    "comment": "builds a cache of unique alphabetic highscore names (once) and returns a random cached name for creature naming"
   },
   {
     "program": "crimsonland.exe",

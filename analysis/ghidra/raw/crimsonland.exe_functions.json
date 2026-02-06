@@ -429,7 +429,7 @@
     "signature": "void demo_trial_overlay_render(float * xy, float alpha)",
     "external": false,
     "calls_total": 9,
-    "calls": ["FUN_0041df50", "ShellExecuteA", "crt_atexit", "crt_sprintf", "game_is_full_version", "game_sequence_get", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update"]
+    "calls": ["ShellExecuteA", "crt_atexit", "crt_sprintf", "demo_trial_time_limit_ms", "game_is_full_version", "game_sequence_get", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update"]
   },
   {
     "name": "ui_render_keybind_help",
@@ -629,7 +629,7 @@
     "signature": "void console_hotkey_update(void)",
     "external": false,
     "calls_total": 34,
-    "calls": ["FUN_0040b630", "FUN_0041df50", "Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_render", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update", "game_is_full_version", "game_over_screen_update", "game_sequence_get", "game_update_generic_menu", "game_update_victory_screen", "gameplay_update_and_render", "perk_count_get", "perk_selection_screen_update", "quest_failed_screen_update", "quest_results_screen_update", "sfx_mute_all", "sfx_play_exclusive", "survival_gameplay_update_and_render", "terrain_generate", "terrain_generate_random", "ui_elements_max_timeline", "ui_render_loading"]
+    "calls": ["FUN_0040b630", "Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_render", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update", "demo_trial_time_limit_ms", "game_is_full_version", "game_over_screen_update", "game_sequence_get", "game_update_generic_menu", "game_update_victory_screen", "gameplay_update_and_render", "perk_count_get", "perk_selection_screen_update", "quest_failed_screen_update", "quest_results_screen_update", "sfx_mute_all", "sfx_play_exclusive", "survival_gameplay_update_and_render", "terrain_generate", "terrain_generate_random", "ui_elements_max_timeline", "ui_render_loading"]
   },
   {
     "name": "credits_line_set",
@@ -1456,9 +1456,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0041df50",
+    "name": "demo_trial_time_limit_ms",
     "address": "0041df50",
-    "signature": "undefined4 FUN_0041df50(void)",
+    "signature": "int demo_trial_time_limit_ms(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1709,7 +1709,7 @@
     "signature": "void projectile_update(void)",
     "external": false,
     "calls_total": 26,
-    "calls": ["FUN_0041e270", "FUN_0042f080", "FUN_0042f270", "FUN_0042f330", "FUN_0042f3f0", "FUN_0042f540", "__ftol", "creature_apply_damage", "creature_find_in_radius", "creature_find_nearest", "creature_handle_death", "creatures_apply_radius_damage", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get", "player_find_in_radius", "projectile_spawn", "sfx_play_exclusive", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
+    "calls": ["FUN_0041e270", "__ftol", "creature_apply_damage", "creature_find_in_radius", "creature_find_nearest", "creature_handle_death", "creatures_apply_radius_damage", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_ion_hit_core", "effect_spawn_ion_hit_sparks", "effect_spawn_plasma_hit_core", "effect_spawn_shrinkifier_hit", "effect_spawn_splitter_hit_burst", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get", "player_find_in_radius", "projectile_spawn", "sfx_play_exclusive", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
   },
   {
     "name": "projectile_render",
@@ -2064,41 +2064,41 @@
     "calls": ["crt_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042f080",
+    "name": "effect_spawn_shrinkifier_hit",
     "address": "0042f080",
-    "signature": "void * FUN_0042f080(float * arg1)",
+    "signature": "void * effect_spawn_shrinkifier_hit(float * pos)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042f270",
+    "name": "effect_spawn_ion_hit_core",
     "address": "0042f270",
-    "signature": "void * FUN_0042f270(float * arg1, float arg2, float arg3)",
+    "signature": "void * effect_spawn_ion_hit_core(float * pos, float scale_step, float lifetime)",
     "external": false,
     "calls_total": 1,
     "calls": ["effect_spawn"]
   },
   {
-    "name": "FUN_0042f330",
+    "name": "effect_spawn_plasma_hit_core",
     "address": "0042f330",
-    "signature": "void * FUN_0042f330(float * arg1, float arg2, int arg3)",
+    "signature": "void * effect_spawn_plasma_hit_core(float * pos, float scale_step, float lifetime)",
     "external": false,
     "calls_total": 1,
     "calls": ["effect_spawn"]
   },
   {
-    "name": "FUN_0042f3f0",
+    "name": "effect_spawn_splitter_hit_burst",
     "address": "0042f3f0",
-    "signature": "void * FUN_0042f3f0(float * arg1, float arg2, int arg3)",
+    "signature": "void * effect_spawn_splitter_hit_burst(float * pos, float radius, int count)",
     "external": false,
     "calls_total": 3,
     "calls": ["__ftol", "crt_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042f540",
+    "name": "effect_spawn_ion_hit_sparks",
     "address": "0042f540",
-    "signature": "int FUN_0042f540(int arg1, float arg2)",
+    "signature": "void * effect_spawn_ion_hit_sparks(float * pos, float scale)",
     "external": false,
     "calls_total": 3,
     "calls": ["__ftol", "crt_rand", "effect_spawn"]
@@ -3328,17 +3328,17 @@
     "calls": ["crt_exit", "crt_rand", "fx_spawn_sprite", "game_is_full_version", "perk_count_get", "player_start_reload", "projectile_spawn", "sfx_play_panned"]
   },
   {
-    "name": "FUN_00444f70",
+    "name": "creature_name_pick_fragment",
     "address": "00444f70",
-    "signature": "char * FUN_00444f70(char param_1)",
+    "signature": "char * creature_name_pick_fragment(char include_extended_pool)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_rand"]
   },
   {
-    "name": "FUN_004451b0",
+    "name": "creature_name_pick_highscore_name",
     "address": "004451b0",
-    "signature": "void * FUN_004451b0(void)",
+    "signature": "char * creature_name_pick_highscore_name(void)",
     "external": false,
     "calls_total": 5,
     "calls": ["console_printf", "crt_isalpha", "crt_rand", "crt_sprintf", "highscore_load_table"]
@@ -3357,7 +3357,7 @@
     "signature": "void creature_name_assign_random(int creature_id)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_00444f70", "FUN_004451b0", "creature_is_name_unique", "crt_rand", "crt_sprintf"]
+    "calls": ["creature_is_name_unique", "creature_name_pick_fragment", "creature_name_pick_highscore_name", "crt_rand", "crt_sprintf"]
   },
   {
     "name": "creature_find_by_name",

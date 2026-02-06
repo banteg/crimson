@@ -3690,7 +3690,7 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   fVar7 = *xy + 26.0;
   fVar2 = xy[1] + 80.0;
-  iVar3 = FUN_0041df50();
+  iVar3 = demo_trial_time_limit_ms();
   iVar3 = iVar3 - game_status_blob.game_sequence_id;
   if (0 < demo_trial_elapsed_ms) {
     iVar3 = 300000 - demo_trial_elapsed_ms;
@@ -7817,7 +7817,7 @@ LAB_0040c8a0:
   iVar2 = game_is_full_version();
   if ((char)iVar2 == '\0') {
     if (demo_mode_active == '\0') {
-      FUN_0041df50();
+      demo_trial_time_limit_ms();
       (*grim_interface_ptr->vtable->grim_draw_rect_filled)
                 ((float *)&stack0xffffffac,(float)config_blob.screen_width,8.0);
       (*grim_interface_ptr->vtable->grim_draw_rect_filled)
@@ -17124,9 +17124,11 @@ int game_is_full_version(void)
 
 
 
-/* FUN_0041df50 @ 0041df50 */
+/* demo_trial_time_limit_ms @ 0041df50 */
 
-undefined4 FUN_0041df50(void)
+/* returns the fixed demo trial duration in milliseconds (2400000 / 40 minutes) */
+
+int demo_trial_time_limit_ms(void)
 
 {
   return 2400000;
@@ -19195,7 +19197,7 @@ LAB_004219f8:
                     } while (iVar12 != 0);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_SPLITTER_GUN) {
-                    FUN_0042f3f0(pfVar13,26.0,3);
+                    effect_spawn_splitter_hit_burst(pfVar13,26.0,3);
                     projectile_spawn(pfVar13,projectile_pool[local_e8].angle - 1.0471976,
                                      PROJECTILE_TYPE_SPLITTER_GUN,iVar7);
                     projectile_spawn(pfVar13,projectile_pool[local_e8].angle + 1.0471976,
@@ -19296,8 +19298,8 @@ LAB_004219f8:
                   pVar4 = projectile_pool[local_e8].pos.tail.vy.type_id;
                   fVar23 = (&weapon_table)[pVar4].damage_scale;
                   if (pVar4 == PROJECTILE_TYPE_ION_MINIGUN) {
-                    FUN_0042f270(pfVar13,1.5,0.1);
-                    FUN_0042f540((int)pfVar13,0.8);
+                    effect_spawn_ion_hit_core(pfVar13,1.5,0.1);
+                    effect_spawn_ion_hit_sparks(pfVar13,0.8);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_ION_RIFLE) {
                     if ((0 < shock_chain_links_left) && (local_e8 == shock_chain_projectile_id)) {
@@ -19314,12 +19316,12 @@ LAB_004219f8:
                                             PROJECTILE_TYPE_ION_RIFLE,iVar7);
                       bonus_spawn_guard = 0;
                     }
-                    FUN_0042f270(pfVar13,1.2,0.4);
-                    FUN_0042f540((int)pfVar13,1.2);
+                    effect_spawn_ion_hit_core(pfVar13,1.2,0.4);
+                    effect_spawn_ion_hit_sparks(pfVar13,1.2);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_ION_CANNON) {
-                    FUN_0042f270(pfVar13,1.0,1.0);
-                    FUN_0042f540((int)pfVar13,2.2);
+                    effect_spawn_ion_hit_core(pfVar13,1.0,1.0);
+                    effect_spawn_ion_hit_sparks(pfVar13,2.2);
                     sfx_play_panned(sfx_shockwave);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -19339,11 +19341,11 @@ LAB_004219f8:
                     bonus_spawn_guard = 0;
                     sfx_play_panned(sfx_explosion_medium);
                     sfx_play_panned(sfx_shockwave);
-                    FUN_0042f330(pfVar13,1.5,0x3f800000);
-                    FUN_0042f330(pfVar13,1.0,0x3f800000);
+                    effect_spawn_plasma_hit_core(pfVar13,1.5,1.0);
+                    effect_spawn_plasma_hit_core(pfVar13,1.0,1.0);
                   }
                   else if (pVar4 == PROJECTILE_TYPE_SHRINKIFIER) {
-                    FUN_0042f080(pfVar13);
+                    effect_spawn_shrinkifier_hit(pfVar13);
                     fVar6 = (&creature_pool)[iVar7].size * 0.65;
                     projectile_pool[local_e8].pos.tail.vy.life_timer = 0.25;
                     (&creature_pool)[iVar7].size = fVar6;
@@ -25043,12 +25045,13 @@ void __cdecl effect_spawn_burst(float *pos,int count)
 
 
 
-/* FUN_0042f080 @ 0042f080 */
+/* effect_spawn_shrinkifier_hit @ 0042f080 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f080(float* arg1) */
+/* spawns shrinkifier impact effects: one core pulse (effect id 1) plus detail-scaled debris (effect
+   id 0) */
 
-void * __cdecl FUN_0042f080(float *arg1)
+void * __cdecl effect_spawn_shrinkifier_hit(float *pos)
 
 {
   uint uVar1;
@@ -25069,7 +25072,7 @@ void * __cdecl FUN_0042f080(float *arg1)
   effect_template_vel_x = 0.0;
   effect_template_vel_y = 0.0;
   _effect_template_scale_step = -4.0;
-  effect_spawn(1,arg1);
+  effect_spawn(1,pos);
   _effect_template_color_b = 0x3f800000;
   _effect_template_color_r = 0x3ecccccd;
   _effect_template_flags = 0x1d;
@@ -25093,26 +25096,26 @@ void * __cdecl FUN_0042f080(float *arg1)
     effect_template_vel_y = (float)(int)((uVar1 & 0x7f) - 0x40) * 1.4;
     iVar2 = crt_rand();
     _effect_template_scale_step = (float)(iVar2 % 100) * 0.01 + 0.1;
-    pvVar3 = effect_spawn(0,arg1);
+    pvVar3 = effect_spawn(0,pos);
   }
   return pvVar3;
 }
 
 
 
-/* FUN_0042f270 @ 0042f270 */
+/* effect_spawn_ion_hit_core @ 0042f270 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f270(float* arg1, float arg2, float arg3) */
+/* spawns the ion hit core pulse (effect id 1); used by ion minigun/rifle/cannon impacts */
 
-void * __cdecl FUN_0042f270(float *arg1,float arg2,float arg3)
+void * __cdecl effect_spawn_ion_hit_core(float *pos,float scale_step,float lifetime)
 
 {
   void *pvVar1;
   
-  _effect_template_lifetime = arg3 * 0.8;
+  _effect_template_lifetime = lifetime * 0.8;
   _effect_template_color_g = 0x3f19999a;
-  _effect_template_scale_step = arg2 * 45.0;
+  _effect_template_scale_step = scale_step * 45.0;
   _effect_template_color_r = 0x3f19999a;
   _effect_template_flags = 0x19;
   _effect_template_color_b = 0x3f666666;
@@ -25123,47 +25126,48 @@ void * __cdecl FUN_0042f270(float *arg1,float arg2,float arg3)
   _effect_template_rotation = 0;
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
-  pvVar1 = effect_spawn(1,arg1);
+  pvVar1 = effect_spawn(1,pos);
   return pvVar1;
 }
 
 
 
-/* FUN_0042f330 @ 0042f330 */
+/* effect_spawn_plasma_hit_core @ 0042f330 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f330(float* arg1, float arg2, int32_t arg3) */
+/* spawns the plasma cannon hit core pulse (effect id 1) with custom lifetime/age */
 
-void * __cdecl FUN_0042f330(float *arg1,float arg2,int arg3)
+void * __cdecl effect_spawn_plasma_hit_core(float *pos,float scale_step,float lifetime)
 
 {
   void *pvVar1;
   
-  _effect_template_scale_step = arg2 * 45.0;
+  _effect_template_scale_step = scale_step * 45.0;
   _effect_template_color_b = 0x3e99999a;
   _effect_template_color_r = 0x3f666666;
   _effect_template_color_g = 0x3f19999a;
   _effect_template_flags = 0x19;
   _effect_template_color_a = 0x3f800000;
   _effect_template_age = 0x3dcccccd;
-  _effect_template_lifetime = arg3;
+  _effect_template_lifetime = lifetime;
   _effect_template_half_width = 0x40800000;
   _effect_template_half_height = 0x40800000;
   _effect_template_rotation = 0;
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
-  pvVar1 = effect_spawn(1,arg1);
+  pvVar1 = effect_spawn(1,pos);
   return pvVar1;
 }
 
 
 
-/* FUN_0042f3f0 @ 0042f3f0 */
+/* effect_spawn_splitter_hit_burst @ 0042f3f0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] void* sub_42f3f0(float* arg1, float arg2, int32_t arg3) */
+/* spawns a radial burst of effect id 0 particles around the hit point; used by splitter gun impacts
+    */
 
-void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
+void * __cdecl effect_spawn_splitter_hit_burst(float *pos,float radius,int count)
 
 {
   float fVar1;
@@ -25194,7 +25198,7 @@ void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
   effect_template_vel_x = 0;
   effect_template_vel_y = 0;
   _effect_template_scale_step = 0x425c0000;
-  if (0 < arg3) {
+  if (0 < count) {
     lVar7 = __ftol();
     do {
       uVar2 = crt_rand();
@@ -25202,27 +25206,27 @@ void * __cdecl FUN_0042f3f0(float *arg1,float arg2,int arg3)
       iVar3 = crt_rand();
       fVar5 = (float10)(iVar3 % (int)lVar7);
       fVar6 = (float10)fcos((float10)fVar1);
-      local_10 = (float)(fVar6 * fVar5 + (float10)*arg1);
+      local_10 = (float)(fVar6 * fVar5 + (float10)*pos);
       fVar6 = (float10)fsin((float10)fVar1);
-      local_c = (float)(fVar6 * fVar5 + (float10)arg1[1]);
+      local_c = (float)(fVar6 * fVar5 + (float10)pos[1]);
       uVar2 = crt_rand();
       _effect_template_age = (float)(int)-(uVar2 & 0xff) * 0.0012;
       _effect_template_lifetime = 0.1 - _effect_template_age;
       pvVar4 = effect_spawn(0,&local_10);
-      arg3 = arg3 + -1;
-    } while (arg3 != 0);
+      count = count + -1;
+    } while (count != 0);
   }
   return pvVar4;
 }
 
 
 
-/* FUN_0042f540 @ 0042f540 */
+/* effect_spawn_ion_hit_sparks @ 0042f540 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* [binja] int32_t sub_42f540(int32_t arg1, float arg2) */
+/* spawns detail-scaled ion impact sparks (effect id 0) around the hit position */
 
-int __cdecl FUN_0042f540(int arg1,float arg2)
+void * __cdecl effect_spawn_ion_hit_sparks(float *pos,float scale)
 
 {
   float fVar1;
@@ -25232,7 +25236,7 @@ int __cdecl FUN_0042f540(int arg1,float arg2)
   void *pvVar5;
   longlong lVar6;
   
-  fVar1 = arg2 * 0.8;
+  fVar1 = scale * 0.8;
   _effect_template_color_r = 0x3ecccccd;
   _effect_template_lifetime = fVar1 * 0.7;
   _effect_template_color_a = 0x3f000000;
@@ -25261,11 +25265,11 @@ int __cdecl FUN_0042f540(int arg1,float arg2)
       effect_template_vel_y = (float)(int)((uVar3 & 0x7f) - 0x40) * fVar1 * 1.4;
       iVar4 = crt_rand();
       _effect_template_scale_step = ((float)(iVar4 % 100) * 0.01 + 0.1) * fVar1;
-      pvVar2 = effect_spawn(0,(float *)arg1);
+      pvVar2 = effect_spawn(0,pos);
       pvVar5 = (void *)((int)pvVar5 + -1);
     } while (pvVar5 != (void *)0x0);
   }
-  return (int)pvVar2;
+  return pvVar2;
 }
 
 
@@ -36906,16 +36910,19 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
 
 
 
-/* FUN_00444f70 @ 00444f70 */
+/* creature_name_pick_fragment @ 00444f70 */
 
-char * __cdecl FUN_00444f70(char param_1)
+/* returns a random creature-name fragment from the static word table; include_extended_pool adds
+   one extra entry */
+
+char * __cdecl creature_name_pick_fragment(char include_extended_pool)
 
 {
   int iVar1;
   int iVar2;
   
   iVar2 = 0x34;
-  if (param_1 == '\0') {
+  if (include_extended_pool == '\0') {
     iVar2 = 0x33;
   }
   iVar1 = crt_rand();
@@ -37029,11 +37036,12 @@ char * __cdecl FUN_00444f70(char param_1)
 
 
 
-/* FUN_004451b0 @ 004451b0 */
+/* creature_name_pick_highscore_name @ 004451b0 */
 
-/* [binja] void* sub_4451b0() */
+/* builds a cache of unique alphabetic highscore names (once) and returns a random cached name for
+   creature naming */
 
-void * FUN_004451b0(void)
+char * creature_name_pick_highscore_name(void)
 
 {
   byte bVar1;
@@ -37057,14 +37065,14 @@ void * FUN_004451b0(void)
   undefined4 *local_8;
   int local_4;
   
-  if (DAT_004d7580 == '\0') {
+  if (creature_name_highscore_cache_ready == '\0') {
     highscore_load_table();
     iVar9 = 0;
     phVar10 = &highscore_table;
     local_4 = 0;
-    local_8 = (undefined4 *)&DAT_004d1228;
+    local_8 = (undefined4 *)&creature_name_highscore_cache;
     do {
-      pbVar12 = &DAT_004d1228;
+      pbVar12 = &creature_name_highscore_cache;
       iVar8 = 0;
       phVar3 = phVar10;
       pbVar13 = pbVar12;
@@ -37145,17 +37153,17 @@ LAB_00445213:
 LAB_004452a7:
       phVar10 = phVar10 + 1;
     } while ((int)phVar10 < 0x484730);
-    DAT_004d7580 = '\x01';
-    DAT_004d7584 = iVar9;
+    creature_name_highscore_cache_ready = '\x01';
+    creature_name_highscore_cache_count = iVar9;
     if (iVar9 == 0) {
-      crt_sprintf(&DAT_004d1228,s_quickbrownfox_00478e04);
+      crt_sprintf(&creature_name_highscore_cache,s_quickbrownfox_00478e04);
     }
   }
-  if (DAT_004d7584 < 1) {
-    return &DAT_004d1228;
+  if (creature_name_highscore_cache_count < 1) {
+    return &creature_name_highscore_cache;
   }
   iVar9 = crt_rand();
-  return &DAT_004d1228 + (iVar9 % DAT_004d7584) * 0x20;
+  return &creature_name_highscore_cache + (iVar9 % creature_name_highscore_cache_count) * 0x20;
 }
 
 
@@ -37177,7 +37185,7 @@ int __cdecl creature_is_name_unique(char *arg1,int arg2)
   bool bVar7;
   
   iVar3 = 0;
-  pbVar4 = &DAT_004d152c;
+  pbVar4 = &creature_name_table;
   pcVar6 = &creature_pool;
   do {
     if ((pcVar6->active != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)arg1, iVar3 != arg2)) {
@@ -37244,30 +37252,30 @@ LAB_0044544d:
             (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
            (((int)highscore_active_record.score_xp < 0x15 ||
             (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
-          dst = &DAT_004d152c + creature_id * 0x40;
-          pcVar4 = FUN_00444f70('\0');
+          dst = &creature_name_table + creature_id * 0x40;
+          pcVar4 = creature_name_pick_fragment('\0');
           crt_sprintf(dst,&s_fmt_percent_s,pcVar4);
         }
         else {
-          dst = &DAT_004d152c + creature_id * 0x40;
-          pcVar4 = FUN_00444f70('\0');
-          pcVar5 = FUN_00444f70('\x01');
+          dst = &creature_name_table + creature_id * 0x40;
+          pcVar4 = creature_name_pick_fragment('\0');
+          pcVar5 = creature_name_pick_fragment('\x01');
           crt_sprintf(dst,&DAT_00477bf4,pcVar5,pcVar4);
         }
       }
       else {
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_00444f70('\0');
-        pcVar5 = FUN_00444f70('\0');
-        pcVar6 = FUN_00444f70('\x01');
+        dst = &creature_name_table + creature_id * 0x40;
+        pcVar4 = creature_name_pick_fragment('\0');
+        pcVar5 = creature_name_pick_fragment('\0');
+        pcVar6 = creature_name_pick_fragment('\x01');
         crt_sprintf(dst,s__s_s_s_00478e24,pcVar6,pcVar5,pcVar4);
       }
     }
     else {
       iVar3 = crt_rand();
       if (iVar3 % 100 < 10) {
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_004451b0();
+        dst = &creature_name_table + creature_id * 0x40;
+        pcVar4 = creature_name_pick_highscore_name();
         uVar8 = 0xffffffff;
         do {
           pcVar5 = pcVar4;
@@ -37294,11 +37302,11 @@ LAB_0044544d:
       else {
         if (((int)highscore_active_record.score_xp < 0x79) ||
            (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) goto LAB_0044544d;
-        dst = &DAT_004d152c + creature_id * 0x40;
-        pcVar4 = FUN_00444f70('\0');
-        pcVar5 = FUN_00444f70('\0');
-        pcVar6 = FUN_00444f70('\0');
-        pcVar7 = FUN_00444f70('\x01');
+        dst = &creature_name_table + creature_id * 0x40;
+        pcVar4 = creature_name_pick_fragment('\0');
+        pcVar5 = creature_name_pick_fragment('\0');
+        pcVar6 = creature_name_pick_fragment('\0');
+        pcVar7 = creature_name_pick_fragment('\x01');
         crt_sprintf(dst,s__s_s_s_s_00478e2c,pcVar7,pcVar6,pcVar5,pcVar4);
       }
     }
@@ -37337,7 +37345,7 @@ int __cdecl creature_find_by_name(char *name)
   bool bVar8;
   
   iVar2 = 0;
-  pbVar5 = &DAT_004d152c;
+  pbVar5 = &creature_name_table;
   pcVar7 = &creature_pool;
   do {
     pbVar3 = pbVar5;
@@ -37393,7 +37401,7 @@ void creature_name_draw_labels(void)
   a = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
-  text = &DAT_004d152c;
+  text = &creature_name_table;
   pfVar3 = &creature_pool.hitbox_size;
   do {
     if (((creature_t *)(pfVar3 + -4))->active != '\0') {

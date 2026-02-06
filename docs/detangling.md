@@ -148,6 +148,12 @@ grim.dll_functions.json
   - Evidence: forces the demo game state, sets `demo_mode_active`, calls `gameplay_reset_state`, selects one of
     several demo setups, and advances the demo cycle index.
 
+### Demo trial timing (high confidence)
+
+- `FUN_0041df50` -> `demo_trial_time_limit_ms`
+  - Evidence: returns constant `2400000` (40 minutes) and is used by
+    `demo_trial_overlay_render` for remaining-time math.
+
 ### UI text input (high confidence)
 
 - `FUN_0043ecf0` -> `ui_text_input_update`
@@ -157,6 +163,16 @@ grim.dll_functions.json
 - `FUN_004413a0` -> `ui_text_input_render`
   - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
     entry paths and other text input flows.
+
+### Creature debug names (high confidence)
+
+- `FUN_00444f70` -> `creature_name_pick_fragment`
+  - Evidence: returns a random word fragment from a static table; `creature_name_assign_random`
+    composes one to four fragments into a name.
+
+- `FUN_004451b0` -> `creature_name_pick_highscore_name`
+  - Evidence: lazily builds a cache of unique alphabetic names from `highscore_table` and
+    returns a random cached entry for high-XP creature naming variants.
 
 ### Audio resource packs + loaders (high confidence)
 
@@ -910,6 +926,26 @@ Init timing note:
 - `FUN_0042ee00` -> `effect_spawn_freeze_shatter`
   - Evidence: spawns four `effect_id 0xe` bursts at 90° offsets plus extra `effect_spawn_freeze_shard`
     calls.
+
+- `FUN_0042f080` -> `effect_spawn_shrinkifier_hit`
+  - Evidence: called from `projectile_update` on `PROJECTILE_TYPE_SHRINKIFIER`; spawns one
+    `effect_id 1` pulse plus detail-scaled `effect_id 0` debris.
+
+- `FUN_0042f270` -> `effect_spawn_ion_hit_core`
+  - Evidence: called on Ion projectile impacts (`PROJECTILE_TYPE_ION_MINIGUN/_RIFLE/_CANNON`);
+    writes core pulse template fields and spawns `effect_id 1`.
+
+- `FUN_0042f540` -> `effect_spawn_ion_hit_sparks`
+  - Evidence: paired with `effect_spawn_ion_hit_core` on Ion impacts; emits detail-scaled
+    `effect_id 0` spark particles around the hit point.
+
+- `FUN_0042f330` -> `effect_spawn_plasma_hit_core`
+  - Evidence: called on `PROJECTILE_TYPE_PLASMA_CANNON` impacts; emits two core pulses
+    (`scale_step` 1.5 then 1.0) with explicit lifetime.
+
+- `FUN_0042f3f0` -> `effect_spawn_splitter_hit_burst`
+  - Evidence: called on `PROJECTILE_TYPE_SPLITTER_GUN` impacts before spawning split child
+    projectiles; emits radial burst particles in a configurable radius/count.
 ### Perk database + selection (medium confidence)
 
 - `FUN_0042fd90` -> `perks_init_database`

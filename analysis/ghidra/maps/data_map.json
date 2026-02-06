@@ -4817,6 +4817,32 @@
       "type": "float"
     },
     {
+      "address": "0x004d1228",
+      "comment": "Cache of unique highscore-derived names used by creature_name_pick_highscore_name (32-byte strings).",
+      "name": "creature_name_highscore_cache",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d152c",
+      "comment": "Per-creature debug name table (0x40-byte strings indexed by creature id).",
+      "name": "creature_name_table",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d7580",
+      "comment": "Flag: creature_name_highscore_cache has been initialized.",
+      "name": "creature_name_highscore_cache_ready",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7584",
+      "comment": "Count of valid entries in creature_name_highscore_cache.",
+      "name": "creature_name_highscore_cache_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d7a28",
       "comment": "Weapon table ammo class/HUD indicator (weapon_table - 0x04, stride 0x7c).",
       "name": "weapon_ammo_class",
