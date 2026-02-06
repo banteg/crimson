@@ -5744,13 +5744,13 @@ LAB_00408b78:
   }
   tutorial_prompt_dialog(local_28[tutorial_stage_index],afStack_5c[0]);
 LAB_00408be2:
-  if (DAT_004808b0 == '\0') {
+  if (tutorial_hint_bonus_consumed_latch == '\0') {
     if ((((tutorial_hint_bonus_ptr != (char *)0x0) && (*tutorial_hint_bonus_ptr == '\0')) &&
         (*(float *)(tutorial_hint_bonus_ptr + 0x24) <= 0.0)) &&
        ((*(uint *)(tutorial_hint_bonus_ptr + 0x8c) & 0x400) != 0)) {
       _DAT_004712f4 = (int)*(short *)(tutorial_hint_bonus_ptr + 0x78);
       _DAT_004712f8 = (int)*(short *)(tutorial_hint_bonus_ptr + 0x7a);
-      DAT_004808b0 = '\x01';
+      tutorial_hint_bonus_consumed_latch = '\x01';
       afStack_5c[0] = 128.0;
       afStack_5c[1] = 128.0;
       creature_spawn_template(0x24,afStack_5c,3.1415927);
@@ -5779,7 +5779,7 @@ LAB_00408be2:
     if ((6000 < tutorial_stage_timer) && (tutorial_stage_transition_timer == -1)) {
       tutorial_repeat_spawn_count = 0;
       tutorial_hint_index = tutorial_stage_transition_timer;
-      DAT_004808b0 = '\0';
+      tutorial_hint_bonus_consumed_latch = '\0';
       tutorial_stage_transition_timer = -1000;
       return;
     }
@@ -5901,7 +5901,7 @@ LAB_00408be2:
         if ((iVar2 == 0x10) && (uVar4 = creatures_none_active(), (char)uVar4 != '\0')) {
           tutorial_repeat_spawn_count = tutorial_repeat_spawn_count + 1;
           if ((int)tutorial_repeat_spawn_count < 8) {
-            DAT_004808b0 = '\0';
+            tutorial_hint_bonus_consumed_latch = '\0';
             if ((tutorial_repeat_spawn_count & 1) == 0) {
               if ((int)tutorial_repeat_spawn_count < 6) {
                 afStack_5c[4] = 1056.0;
@@ -7517,21 +7517,21 @@ void console_hotkey_update(void)
   iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x58);
   if ((char)iVar3 != '\0') {
     do {
-      if (DAT_004808c4 < 10) {
+      if (screenshot_file_index < 10) {
         pcVar4 = s_shot_00_d_bmp_004729b8;
       }
-      else if (DAT_004808c4 < 100) {
+      else if (screenshot_file_index < 100) {
         pcVar4 = s_shot_0_d_bmp_004729a8;
       }
       else {
         pcVar4 = s_shot__d_bmp_0047299c;
       }
-      crt_sprintf(&DAT_0047f634,pcVar4);
-      fp = (FILE *)crt_fopen(&DAT_0047f634,&file_mode_read_binary);
+      crt_sprintf(&screenshot_filename_buf,pcVar4);
+      fp = (FILE *)crt_fopen(&screenshot_filename_buf,&file_mode_read_binary);
       if (fp != (FILE *)0x0) {
         crt_fclose(fp);
       }
-      DAT_004808c4 = DAT_004808c4 + 1;
+      screenshot_file_index = screenshot_file_index + 1;
     } while (fp != (FILE *)0x0);
     (*grim_interface_ptr->vtable->grim_check_device)();
   }
@@ -7592,7 +7592,7 @@ LAB_0040c4b7:
   else {
     DAT_004871cb = 1;
     ui_mouse_blocked = 0;
-    DAT_004808c8 = 0;
+    _ui_analog_cursor_active = 0;
   }
   fStack_20 = 0.0;
   fStack_1c = 0.0;
@@ -7611,10 +7611,10 @@ LAB_0040c4b7:
     fStack_1c = (float)((float10)fStack_1c + extraout_ST0_05);
   }
   if (0.2 < SQRT(fStack_20 * fStack_20 + fStack_1c * fStack_1c)) {
-    DAT_004808c8 = 1;
+    _ui_analog_cursor_active = 1;
   }
   if (game_state_id == GAME_STATE_GAMEPLAY) {
-    DAT_004808c8 = 0;
+    _ui_analog_cursor_active = 0;
 LAB_0040c71b:
     (*grim_interface_ptr->vtable->grim_get_mouse_dx)();
     ui_mouse_x = (float)(extraout_ST0_06 * (float10)config_mouse_sensitivity +
@@ -7630,7 +7630,7 @@ LAB_0040c71b:
     } while ((int)pfVar5 < 0x487204);
   }
   else {
-    if (DAT_004808c8 != 1) goto LAB_0040c71b;
+    if (_ui_analog_cursor_active != 1) goto LAB_0040c71b;
     ui_mouse_x = config_mouse_sensitivity * frame_dt * fStack_20 * 540.0 + ui_mouse_x;
     ui_mouse_y = config_mouse_sensitivity * frame_dt * fStack_1c * 540.0 + ui_mouse_y;
   }
@@ -21138,7 +21138,7 @@ LAB_00424475:
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   fVar30 = fStack_c4 * 0.9;
   (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar30);
-  (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0049bb30,0);
+  (*grim_interface_ptr->vtable->grim_bind_texture)(projectile_bullet_texture,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   ppVar7 = &projectile_pool[0].pos;
   do {
@@ -23773,7 +23773,8 @@ int load_textures_step(void)
   _terrain_render_target = (int)_iVar3;
   if (startup_texture_load_stage == 9) {
     game_state_id = GAME_STATE_MAIN_MENU;
-    DAT_0049bb30 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_bullet_i_00474534);
+    projectile_bullet_texture =
+         (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_bullet_i_00474534);
     _iVar4 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(s_aim64_0047412c);
     _iVar3 = CONCAT44((int)((ulonglong)_iVar4 >> 0x20),_terrain_render_target);
     _DAT_00496698 = (int)_iVar4;

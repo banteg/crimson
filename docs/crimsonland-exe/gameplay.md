@@ -209,6 +209,10 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   sized `32×32`. The pulse alpha is
   `alpha = (pow(2.0, sin(t)) + 2.0) * 0.32` with `t += frame_dt * 1.1`. [static]
 
+  - `ui_analog_cursor_active` (`0x004808c8`) toggles this path for non-gameplay states:
+    it is set when aim/move stick magnitude exceeds `0.2`, cleared by real mouse motion,
+    and force-cleared in gameplay state `9`. [static]
+
   - Pulse blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=ONE` (`0x14=2`). [static]
   - Cursor blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=INVSRCALPHA` (`0x14=6`). [static]
 

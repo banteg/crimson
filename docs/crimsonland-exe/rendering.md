@@ -35,6 +35,8 @@ Notes:
 
 - `DAT_004aaf0c` is used as the player index during the two overlay passes.
 - `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
+- `projectile_render` binds both `projectile_texture` (`0x0048f7d4`) and
+  `projectile_bullet_texture` (`0x0049bb30`, `bullet_i`) for distinct projectile sprite passes.
 - `gameplay_transition_latch` (`0x00487241`) is set on gameplay/Typ-o gameplay
   state entry and cleared when the HUD transition timeline reaches 1.0; while
   set, `gameplay_render_world` avoids forcing `ui_transition_alpha` to 1.0 in

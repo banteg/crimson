@@ -716,6 +716,12 @@
       "type": "char"
     },
     {
+      "address": "0x0047f634",
+      "comment": "Screenshot filename scratch buffer used by gameplay_update_and_render (e.g., shot_00%d.bmp).",
+      "name": "screenshot_filename_buf",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0048014c",
       "comment": "Scratch buffer used by game_build_path (base path + filename).",
       "name": "game_path_buf",
@@ -1429,6 +1435,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004808b0",
+      "comment": "Tutorial hint-bonus consumed latch toggled after hint bonus death/flag checks in tutorial_timeline_update.",
+      "name": "tutorial_hint_bonus_consumed_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004808b4",
       "comment": "Tutorial hint alpha timer (0..1000) for secondary overlay.",
       "name": "tutorial_hint_alpha",
@@ -1457,6 +1470,20 @@
       "comment": "UI pulse timer in ms (used for sine-based effects).",
       "name": "ui_pulse_timer_ms",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004808c4",
+      "comment": "Screenshot index counter used to probe/create shot_XX.bmp filenames from gameplay_update_and_render.",
+      "name": "screenshot_file_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004808c8",
+      "comment": "Analog-cursor active latch; set from gamepad stick magnitude and used for non-gameplay cursor movement.",
+      "name": "ui_analog_cursor_active",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00480980",
@@ -5324,6 +5351,13 @@
       "comment": "Rotated FX queue effect id array",
       "name": "fx_rotated_effect_id",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0049bb30",
+      "comment": "Texture handle for bullet_i (rendered for small projectile billboard pass in projectile_render).",
+      "name": "projectile_bullet_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bb38",
