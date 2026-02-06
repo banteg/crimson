@@ -141,16 +141,16 @@ Additional controls-rebind runtime globals:
 - `ui_list_widget_t` (`0x1c` bytes, `ui_list_widget_update` payload):
   `enabled` (+0x0), `open` (+0x4), `selected_index` (+0x8), `items` (+0xc),
   `item_count` (+0x10), `hovered` (+0x14), `active_index` (+0x18).
-- Rebind action slots passed to `ui_menu_item_update`:
-  `controls_rebind_move_primary_item`, `controls_rebind_move_secondary_item`,
+- Rebind action table passed to `ui_menu_item_update`:
+  `controls_rebind_items` (`0x004d7898`, `controls_rebind_item_table_t`)
+  with slot aliases such as `controls_rebind_move_secondary_item`,
   `controls_rebind_move_tertiary_item`, `controls_rebind_move_quaternary_item`,
   `controls_rebind_fire_item`, `controls_rebind_torso_left_item`,
   `controls_rebind_torso_right_item`,
   `controls_rebind_aim_up_down_axis_item`,
   `controls_rebind_aim_left_right_axis_item`,
   `controls_rebind_move_up_down_axis_item`,
-  `controls_rebind_move_left_right_axis_item`
-  (`0x004d7898..0x004d7958`).
+  `controls_rebind_move_left_right_axis_item` (`0x004d78a8..0x004d7958`).
 - `controls_key_pick_perk_item` (`0x004d7968`): `ui_menu_item_t` slot for
   the Level Up action; `.label` is updated from `_config_key_pick_perk`.
 - `controls_key_reload_item` (`0x004d7978`): `ui_menu_item_t` slot for the
@@ -190,8 +190,8 @@ Recovered action-button globals for this state:
 - `perk_selection_cancel_button` (`0x00480090`)
 - `perk_selection_select_button` (`0x00480820`)
 - Choice-item state table base:
-  `perk_selection_choice_item_slot0` (`0x004800a8`, `ui_menu_item_t`)
-  with stride `0x10` across perk slots.
+  `perk_selection_choice_items` (`0x004800a8`,
+  `perk_selection_choice_item_table_t`) with stride `0x10` across perk slots.
 - Perk-selection one-shot idle/hover color vectors:
   `perk_selection_choice_color_idle_*` (`0x00480298..0x004802a4`) and
   `perk_selection_choice_color_hover_*` (`0x00480310..0x0048031c`).

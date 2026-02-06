@@ -4244,7 +4244,7 @@ void perk_selection_screen_update(void)
   if (((byte)perk_selection_screen_flags & 4) == 0) {
     perk_selection_screen_flags._0_1_ = (byte)perk_selection_screen_flags | 4;
     iVar2 = 10;
-    pfVar1 = &perk_selection_choice_item_slot0.alpha;
+    pfVar1 = &perk_selection_choice_items[0].alpha;
     do {
       *(uchar *)((int)pfVar1 + -6) = '\x01';
       *pfVar1 = 1.0;
@@ -4259,7 +4259,7 @@ void perk_selection_screen_update(void)
   }
   iVar2 = 0;
   if (local_24 != 0) {
-    item = &perk_selection_choice_item_slot0;
+    item = perk_selection_choice_items;
     piVar3 = &perk_choice_ids;
     do {
       item->label = (&perk_meta_table)[*piVar3].name;
@@ -4321,7 +4321,7 @@ void perk_selection_screen_update(void)
   perk_prompt_update_and_render();
   ui_cursor_render();
   if (((cVar5 != '\0') && (-1 < perk_selection_index)) &&
-     ((&perk_selection_choice_item_slot0)[perk_selection_index].activated != '\0')) {
+     (perk_selection_choice_items[perk_selection_index].activated != '\0')) {
     sfx_play(sfx_ui_buttonclick);
     perk_apply((&perk_choice_ids)[perk_selection_index]);
     perk_pending_count = perk_pending_count + -1;
@@ -42170,7 +42170,7 @@ void controls_menu_update(void)
   if (((byte)controls_menu_init_flags & 0x40) == 0) {
     controls_menu_init_flags._0_1_ = (byte)controls_menu_init_flags | 0x40;
     iVar6 = 0xf;
-    pfVar9 = &controls_rebind_move_primary_item.alpha;
+    pfVar9 = &controls_rebind_items[0].alpha;
     do {
       *(uchar *)((int)pfVar9 + -6) = '\x01';
       *pfVar9 = 1.0;
@@ -42183,7 +42183,7 @@ void controls_menu_update(void)
     } while (iVar6 != 0);
     crt_atexit(&DAT_0044ed10);
   }
-  puVar7 = &controls_rebind_move_primary_item.activated;
+  puVar7 = &controls_rebind_items[0].activated;
   do {
     puVar7[1] = '\x01';
     *puVar7 = '\0';
@@ -42191,9 +42191,9 @@ void controls_menu_update(void)
   } while ((int)puVar7 < 0x4d798d);
   iVar6 = controls_rebind_player_index << 4;
   do {
-    puVar20 = &controls_rebind_move_primary_item + iVar13;
-    if ((&controls_rebind_move_primary_item)[iVar13].label != (char *)0x0) {
-      crt_free((&controls_rebind_move_primary_item)[iVar13].label);
+    puVar20 = controls_rebind_items + iVar13;
+    if (controls_rebind_items[iVar13].label != (char *)0x0) {
+      crt_free(controls_rebind_items[iVar13].label);
     }
     iVar22 = *(int *)(&config_p1_move_forward + iVar6 * 4);
     iVar6 = iVar6 + 1;
@@ -43478,8 +43478,8 @@ LAB_0044a2a9:
     iVar13 = iVar13 + 1;
     puVar20->label = pcVar8;
   } while (iVar13 < 0xd);
-  if ((&controls_rebind_move_primary_item)[iVar13].label != (char *)0x0) {
-    crt_free((&controls_rebind_move_primary_item)[iVar13].label);
+  if (controls_rebind_items[iVar13].label != (char *)0x0) {
+    crt_free(controls_rebind_items[iVar13].label);
   }
   iVar6 = *(int *)(&config_p1_move_forward + iVar6 * 4);
   if (iVar6 < 0x100) {
@@ -44760,9 +44760,9 @@ LAB_0044aa50:
   }
 LAB_0044b027:
   pcVar8 = strdup_malloc(pcVar8);
-  (&controls_rebind_move_primary_item)[iVar13].label = pcVar8;
-  if (controls_key_pick_perk_item.label != (char *)0x0) {
-    crt_free(controls_key_pick_perk_item.label);
+  controls_rebind_items[iVar13].label = pcVar8;
+  if (controls_rebind_items[0xd].label != (char *)0x0) {
+    crt_free(controls_rebind_items[0xd].label);
   }
   iVar13 = _config_key_pick_perk;
   if (_config_key_pick_perk < 0x100) {
@@ -46042,9 +46042,9 @@ LAB_0044b7b9:
     pcVar8 = (char *)&input_key_name_buf;
   }
 LAB_0044bd90:
-  controls_key_pick_perk_item.label = strdup_malloc(pcVar8);
-  if (controls_key_reload_item.label != (char *)0x0) {
-    crt_free(controls_key_reload_item.label);
+  controls_rebind_items[0xd].label = strdup_malloc(pcVar8);
+  if (controls_rebind_items[0xe].label != (char *)0x0) {
+    crt_free(controls_rebind_items[0xe].label);
   }
   iVar13 = _config_key_reload;
   if (_config_key_reload < 0x100) {
@@ -47324,15 +47324,15 @@ LAB_0044c524:
   }
   pcVar8 = (char *)&input_key_name_buf;
 LAB_0044cafb:
-  controls_key_reload_item.label = strdup_malloc(pcVar8);
+  controls_rebind_items[0xe].label = strdup_malloc(pcVar8);
   if (controls_rebind_slot_index != -1) {
-    if ((&controls_rebind_move_primary_item)[controls_rebind_slot_index].label != (char *)0x0) {
-      crt_free((&controls_rebind_move_primary_item)[controls_rebind_slot_index].label);
+    if (controls_rebind_items[controls_rebind_slot_index].label != (char *)0x0) {
+      crt_free(controls_rebind_items[controls_rebind_slot_index].label);
     }
     iVar13 = controls_rebind_slot_index;
     pcVar8 = strdup_malloc(&highscore_month_label_default);
-    (&controls_rebind_move_primary_item)[iVar13].label = pcVar8;
-    (&controls_rebind_move_primary_item)[iVar13].enabled = '\0';
+    controls_rebind_items[iVar13].label = pcVar8;
+    controls_rebind_items[iVar13].enabled = '\0';
   }
   fVar25 = (fVar25 - 8.0) - 14.0;
   render_tint_color_a = 0.7;
@@ -47357,7 +47357,7 @@ LAB_0044cafb:
   if (*(int *)(&config_aim_scheme + controls_rebind_player_index * 4) == 1) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Torso_left__004790d0);
-    puVar20 = &controls_rebind_torso_left_item;
+    puVar20 = controls_rebind_items + 7;
     fStack_70 = 128.0;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
@@ -47366,7 +47366,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Torso_right__004790c0);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_torso_right_item;
+    puVar20 = controls_rebind_items + 8;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47377,7 +47377,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Aim_Up_Down_Axis__004790ac);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_aim_up_down_axis_item;
+    puVar20 = controls_rebind_items + 9;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47385,7 +47385,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Aim_Left_Right_Axis__00479094);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_aim_left_right_axis_item;
+    puVar20 = controls_rebind_items + 10;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47395,7 +47395,7 @@ LAB_0044cafb:
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,fVar25,fVar24,s_Fire__00471f94);
   fStack_70 = 128.0;
-  puVar20 = &controls_rebind_fire_item;
+  puVar20 = controls_rebind_items + 4;
   fStack_6c = 0.0;
   pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
   ui_menu_item_update(pfVar9,puVar20);
@@ -47418,7 +47418,7 @@ LAB_0044cafb:
   if (*(int *)(&config_player_mode_flags + controls_rebind_player_index * 4) == 2) {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Move_Up__00479080);
-    puVar20 = &controls_rebind_move_primary_item;
+    puVar20 = controls_rebind_items;
     fStack_70 = 128.0;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
@@ -47427,7 +47427,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Move_Down__00479074);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_secondary_item;
+    puVar20 = controls_rebind_items + 1;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47436,7 +47436,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Move_Left__00479068);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_tertiary_item;
+    puVar20 = controls_rebind_items + 2;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47445,7 +47445,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Move_Right__0047905c);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_quaternary_item;
+    puVar20 = controls_rebind_items + 3;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47456,7 +47456,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Forward__00479050);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_primary_item;
+    puVar20 = controls_rebind_items;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47464,7 +47464,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Backwards__00479044);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_secondary_item;
+    puVar20 = controls_rebind_items + 1;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47473,7 +47473,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Turn_left__00479038);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_tertiary_item;
+    puVar20 = controls_rebind_items + 2;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47482,7 +47482,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Turn_right__0047902c);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_quaternary_item;
+    puVar20 = controls_rebind_items + 3;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47493,7 +47493,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Move_to_cursor__0047901c);
     fStack_70 = 128.0;
-    puVar20 = &controls_key_reload_item;
+    puVar20 = controls_rebind_items + 0xe;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47504,7 +47504,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24,s_Up_Down_Axis__0047900c);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_up_down_axis_item;
+    puVar20 = controls_rebind_items + 0xb;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47512,7 +47512,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 16.0,s_Left_Right_Axis__00478ff8);
     fStack_70 = 128.0;
-    puVar20 = &controls_rebind_move_left_right_axis_item;
+    puVar20 = controls_rebind_items + 0xc;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47538,7 +47538,7 @@ LAB_0044cafb:
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar25,fVar24 + 18.0,s_Level_Up__00471ff0);
     fStack_70 = 128.0;
-    puVar20 = &controls_key_pick_perk_item;
+    puVar20 = controls_rebind_items + 0xd;
     fStack_6c = 0.0;
     pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
     ui_menu_item_update(pfVar9,puVar20);
@@ -47548,7 +47548,7 @@ LAB_0044cafb:
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 (grim_interface_ptr,fVar25,fVar24,s_Reload__00471fc8);
       fStack_70 = 128.0;
-      puVar20 = &controls_key_reload_item;
+      puVar20 = controls_rebind_items + 0xe;
       fStack_6c = 0.0;
       pfVar9 = vec2_add_out(&stack0xffffff80,(float *)&stack0xffffff78,&fStack_70);
       ui_menu_item_update(pfVar9,puVar20);
@@ -47583,7 +47583,7 @@ LAB_0044cafb:
     }
   }
   iVar13 = 0;
-  puVar7 = &controls_rebind_move_primary_item.activated;
+  puVar7 = &controls_rebind_items[0].activated;
   do {
     if (*puVar7 != '\0') {
       controls_rebind_capture_armed = '\0';

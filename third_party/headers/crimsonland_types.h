@@ -469,6 +469,9 @@ typedef struct ui_menu_item_t {
     float alpha;
 } ui_menu_item_t;
 
+typedef ui_menu_item_t perk_selection_choice_item_table_t[10];
+typedef ui_menu_item_t controls_rebind_item_table_t[15];
+
 // 0x1c-byte dropdown/list widget state consumed by ui_list_widget_update.
 typedef struct ui_list_widget_t {
     unsigned char enabled;
