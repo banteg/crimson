@@ -218,6 +218,10 @@ grim.dll_functions.json
   - Evidence: callback always starts a UI transition and routes `game_state_pending` to state `0`
     (main menu) unless in the in-game menu context (`render_pass_mode`/`DAT_004824d1`), where it routes to state `5`.
 
+- `FUN_0043d9b0` -> `ui_segmented_slider_update`
+  - Evidence: widget updates focus/hover/drag and arrow-key input, clamps current value against
+    `[min,max]`, and renders 8x16 on/off segment strips using cached `ui_rectOn/ui_rectOff` handles.
+
 - `FUN_00447c90` -> `input_configure_for_label`
   - Evidence: returns the configure-for label set (`Mouse/Keyboard/Joystick/Mouse relative/Dual Action Pad/Computer`).
 

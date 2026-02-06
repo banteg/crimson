@@ -249,6 +249,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00478668",
+      "comment": "Texture handle cache for ui_segmented_slider_update filled segments (ui_rectOn).",
+      "name": "ui_segmented_slider_tex_on",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0047866c",
+      "comment": "Texture handle cache for ui_segmented_slider_update empty segments (ui_rectOff).",
+      "name": "ui_segmented_slider_tex_off",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00478878",
       "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
       "name": "s_fmt_highscore_date_label",

@@ -3208,9 +3208,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0043d9b0",
+    "name": "ui_segmented_slider_update",
     "address": "0043d9b0",
-    "signature": "int FUN_0043d9b0(int * arg1, int arg2)",
+    "signature": "int ui_segmented_slider_update(float * xy, int * state)",
     "external": false,
     "calls_total": 6,
     "calls": ["__ftol", "input_primary_is_down", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]

@@ -2822,9 +2822,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043d9b0",
-    "name": "FUN_0043d9b0",
-    "signature": "int FUN_0043d9b0(int *arg1, int arg2)",
-    "comment": "[binja] int32_t sub_43d9b0(int32_t* arg1, int32_t arg2)"
+    "name": "ui_segmented_slider_update",
+    "signature": "int ui_segmented_slider_update(float *xy, int *state)",
+    "comment": "updates a segmented slider widget (focus/mouse/keys), clamps value to [min..max], and renders off/on segments"
   },
   {
     "program": "crimsonland.exe",
