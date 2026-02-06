@@ -8355,18 +8355,18 @@ LAB_0040d970:
   if (credits_back_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 4;
-    FUN_00446140();
+    ui_callback_noop();
   }
   if (credits_secret_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 0x1a;
-    FUN_00446140();
+    ui_callback_noop();
   }
   iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(1);
   if ((char)iVar3 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 4;
-    FUN_00446140();
+    ui_callback_noop();
   }
   return;
 }
@@ -12636,12 +12636,12 @@ LAB_00414f2d:
           }
         }
         else {
-          bVar8 = FUN_0041e8d0();
+          bVar8 = input_aim_pov_left_active();
           if (bVar8) {
             (&player_state_table)[iVar7].aim_heading =
                  (&player_state_table)[iVar7].aim_heading - frame_dt * 4.0;
           }
-          bVar8 = FUN_0041e8f0();
+          bVar8 = input_aim_pov_right_active();
           if (bVar8) {
             (&player_state_table)[iVar7].aim_heading =
                  frame_dt * 4.0 + (&player_state_table)[iVar7].aim_heading;
@@ -17278,9 +17278,11 @@ int __cdecl fx_queue_add(int effect_id,float *pos,float w,float h,float rotation
 
 
 
-/* FUN_0041e8d0 @ 0041e8d0 */
+/* input_aim_pov_left_active @ 0041e8d0 */
 
-bool FUN_0041e8d0(void)
+/* returns true when joystick POV matches the configured aim-left direction */
+
+bool input_aim_pov_left_active(void)
 
 {
   int iVar1;
@@ -17291,9 +17293,11 @@ bool FUN_0041e8d0(void)
 
 
 
-/* FUN_0041e8f0 @ 0041e8f0 */
+/* input_aim_pov_right_active @ 0041e8f0 */
 
-bool FUN_0041e8f0(void)
+/* returns true when joystick POV matches the configured aim-right direction */
+
+bool input_aim_pov_right_active(void)
 
 {
   int iVar1;
@@ -37807,9 +37811,11 @@ int input_primary_is_down(void)
 
 
 
-/* FUN_00446140 @ 00446140 */
+/* ui_callback_noop @ 00446140 */
 
-void FUN_00446140(void)
+/* empty UI callback used as a placeholder in multiple menu/state flows */
+
+void ui_callback_noop(void)
 
 {
   return;
@@ -38105,7 +38111,7 @@ void __cdecl game_state_set(int state_id)
     _DAT_0048e858 = &LAB_0043f550;
   }
   else if (state_id == 0xd) {
-    _DAT_00489e18 = FUN_00446140;
+    _DAT_00489e18 = ui_callback_noop;
 LAB_00446764:
     DAT_00489de0._0_1_ = 1;
     ui_sign_crimson = 1;
@@ -39707,7 +39713,7 @@ void ui_menu_layout_init(void)
     } while (iVar8 < 0x70);
   }
   ui_element_init_defaults((ui_element_t *)&DAT_0048f20c);
-  _DAT_0048f240 = FUN_00446140;
+  _DAT_0048f240 = ui_callback_noop;
   puVar3 = &ui_menu_item_element;
   puVar12 = &perk_prompt_bounds_min_x;
   for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {

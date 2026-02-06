@@ -1325,6 +1325,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e8d0",
+    "name": "input_aim_pov_left_active",
+    "signature": "bool input_aim_pov_left_active(void)",
+    "comment": "returns true when joystick POV matches the configured aim-left direction"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e8f0",
+    "name": "input_aim_pov_right_active",
+    "signature": "bool input_aim_pov_right_active(void)",
+    "comment": "returns true when joystick POV matches the configured aim-right direction"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e910",
     "name": "creature_handle_death",
     "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
@@ -2965,6 +2979,13 @@
     "name": "input_primary_is_down",
     "signature": "int input_primary_is_down(void)",
     "comment": "returns true while primary action is held (mouse button 0 or primary fire keys)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446140",
+    "name": "ui_callback_noop",
+    "signature": "void ui_callback_noop(void)",
+    "comment": "empty UI callback used as a placeholder in multiple menu/state flows"
   },
   {
     "program": "crimsonland.exe",

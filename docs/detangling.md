@@ -211,6 +211,12 @@ grim.dll_functions.json
 - `FUN_004123d0` / `FUN_0042faa0` -> `bonus_meta_table_init` / `perk_meta_table_init`
   - Evidence: both are `crt_ehvec_ctor` table constructors with matching `crt_atexit` registration helpers.
 
+- `FUN_0041e8d0` / `FUN_0041e8f0` -> `input_aim_pov_left_active` / `input_aim_pov_right_active`
+  - Evidence: `player_update` uses them in POV-aim mode to decrement/increment `aim_heading`.
+
+- `FUN_00446140` -> `ui_callback_noop`
+  - Evidence: function body is empty; credits/high-score/menu paths call/install it as a placeholder callback.
+
 ### Typ-o gameplay loop (high confidence)
 
 - `FUN_004457c0` -> `typo_gameplay_update_and_render`
@@ -452,8 +458,8 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x1a4` | `DAT_004804ec` | `u32` | `100` | Seeded in config_sync_from_grim (`FUN_0041ec60`); no xrefs yet. |
 | `0x1a8` | `DAT_004804f0` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x1ac` | `DAT_004804f4` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8f0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
-| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8d0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `input_aim_pov_right_active`; used by `player_update` when control mode reads POV aim. |
+| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `input_aim_pov_left_active`; used by `player_update` when control mode reads POV aim. |
 | `0x1b8` | `DAT_00480500` | `u32` | `32` | Likely display color depth (bits‑per‑pixel); set alongside width/height via config id `0x2b` (inference from defaults and file). |
 | `0x1bc` | `DAT_00480504` | `u32` | `800` | Screen width. |
 | `0x1c0` | `DAT_00480508` | `u32` | `600` | Screen height. |
@@ -522,7 +528,7 @@ Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`
 
 Grim misc getter (vtable `+0xa4` → grim_get_joystick_pov (`FUN_100075b0`)):
 
-- Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
+- Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`input_aim_pov_left_active` / `input_aim_pov_right_active`).
 ### High score record (0x48 bytes) — name 0x00..0x1f
 
 The record begins with the player name (copied from config on load and compared

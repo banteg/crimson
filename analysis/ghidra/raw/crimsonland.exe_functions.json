@@ -661,7 +661,7 @@
     "signature": "void credits_screen_update(void)",
     "external": false,
     "calls_total": 12,
-    "calls": ["FUN_00446140", "__ftol", "_strchr", "credits_build_lines", "credits_line_clear_flag", "crt_atexit", "crt_free", "input_primary_just_pressed", "sfx_play", "strdup_malloc", "ui_button_update", "ui_mouse_inside_rect"]
+    "calls": ["__ftol", "_strchr", "credits_build_lines", "credits_line_clear_flag", "crt_atexit", "crt_free", "input_primary_just_pressed", "sfx_play", "strdup_malloc", "ui_button_update", "ui_callback_noop", "ui_mouse_inside_rect"]
   },
   {
     "name": "mod_api_init",
@@ -1157,7 +1157,7 @@
     "signature": "void player_update(void)",
     "external": false,
     "calls_total": 21,
-    "calls": ["FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_apply_move_with_spawn_avoidance", "player_heading_approach_target", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_length", "vec2_sub"]
+    "calls": ["__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_aim_pov_left_active", "input_aim_pov_right_active", "input_primary_just_pressed", "perk_count_get", "player_apply_move_with_spawn_avoidance", "player_heading_approach_target", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_length", "vec2_sub"]
   },
   {
     "name": "vec2_sub",
@@ -1504,17 +1504,17 @@
     "calls": []
   },
   {
-    "name": "FUN_0041e8d0",
+    "name": "input_aim_pov_left_active",
     "address": "0041e8d0",
-    "signature": "bool FUN_0041e8d0(void)",
+    "signature": "bool input_aim_pov_left_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_0041e8f0",
+    "name": "input_aim_pov_right_active",
     "address": "0041e8f0",
-    "signature": "bool FUN_0041e8f0(void)",
+    "signature": "bool input_aim_pov_right_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3408,9 +3408,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00446140",
+    "name": "ui_callback_noop",
     "address": "00446140",
-    "signature": "undefined FUN_00446140(void)",
+    "signature": "void ui_callback_noop(void)",
     "external": false,
     "calls_total": 0,
     "calls": []

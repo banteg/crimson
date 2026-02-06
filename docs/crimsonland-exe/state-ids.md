@@ -33,7 +33,7 @@ Runtime cross-check:
 | `10` | `0x0a` | Quit transition state | Main-menu Quit sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` and sets quit latch (`DAT_0047ea50`). | high |
 | `11` | `0x0b` | Quest select menu | Quest-failed flow queues `0x0b`; `game_state_set(0x0b)` enables quest menu UI; runtime label `state_11:#.#`. | high |
 | `12` | `0x0c` | Quest-failed screen | Dispatch calls `quest_failed_screen_update`; quest death queues `0x0c`. | high |
-| `13` | `0x0d` | High-score setup variant (legacy/unclear) | `game_state_set(0x0d)` calls `highscore_load_table()` and installs no-op callback `FUN_00446140`; no direct `game_state_pending = 0x0d` write seen in this build. | medium |
+| `13` | `0x0d` | High-score setup variant (legacy/unclear) | `game_state_set(0x0d)` calls `highscore_load_table()` and installs no-op callback `ui_callback_noop`; no direct `game_state_pending = 0x0d` write seen in this build. | medium |
 | `14` | `0x0e` | High scores screen | `game_state_set(0x0e)` installs callback `sub_4423d0`; game-over/quest-results High scores buttons queue `0x0e`; runtime labels `state_14:High scores - ...`. | high |
 | `15` | `0x0f` | Unlocked Weapons Database | `game_state_set(0x0f)` installs callback `sub_440110`; runtime label `state_15:Unlocked Weapons Database`. | high |
 | `16` | `0x10` | Unlocked Perks Database | `game_state_set(0x10)` installs callback `sub_440960`; runtime label `state_16:Unlocked Perks Database`. | high |
