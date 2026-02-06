@@ -2259,13 +2259,294 @@
       "address": "0x00487290",
       "comment": "Main menu logo sign UI element (ui_signCrimson).",
       "name": "ui_sign_crimson",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x00487292",
       "comment": "Logo sign update-disable lock (ui_sign_crimson + 0x2). When nonzero, ui_element_update early-returns so the sign stays at 0deg. Set by ui_elements_update_and_render when timeline is clamped; cleared by ui_menu_main_click_quit so the sign can pivot out on quit.",
       "name": "ui_sign_crimson_update_disabled",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004875a8",
+      "comment": "UI element storage backing pointer-table slot 1 (main menu auxiliary slot).",
+      "name": "ui_element_slot_01_main_menu_aux",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x004878c0",
+      "comment": "UI element storage backing pointer-table slot 3 (main-menu PLAY GAME entry).",
+      "name": "ui_element_slot_03_main_menu_play_game",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00487bd8",
+      "comment": "UI element storage backing pointer-table slot 4 (main-menu OPTIONS entry).",
+      "name": "ui_element_slot_04_main_menu_options",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00487ef0",
+      "comment": "UI element storage backing pointer-table slot 5 (main-menu STATISTICS entry).",
+      "name": "ui_element_slot_05_main_menu_statistics",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488208",
+      "comment": "UI element storage backing pointer-table slot 2 (main-menu primary top entry: MODS/BUY NOW).",
+      "name": "ui_element_slot_02_main_menu_primary",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488520",
+      "comment": "UI element storage for main-menu footer variant A (swapped between slots 6/7 via config var 100).",
+      "name": "ui_element_slot_footer_variant_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488838",
+      "comment": "UI element storage for main-menu footer variant B (complementary slot to ui_element_slot_footer_variant_a).",
+      "name": "ui_element_slot_footer_variant_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488b50",
+      "comment": "UI element storage backing pointer-table slot 31.",
+      "name": "ui_element_slot_31",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00488e68",
+      "comment": "UI element storage backing pointer-table slot 32 (layout group C root).",
+      "name": "ui_element_slot_32_layout_c",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489180",
+      "comment": "UI element storage backing pointer-table slot 10.",
+      "name": "ui_element_slot_10",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489498",
+      "comment": "UI element storage backing pointer-table slot 11.",
+      "name": "ui_element_slot_11",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x004897b0",
+      "comment": "UI element storage backing pointer-table slot 12 (layout group A root).",
+      "name": "ui_element_slot_12_layout_a",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489ac8",
+      "comment": "UI element storage backing pointer-table slot 8.",
+      "name": "ui_element_slot_08",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x00489de0",
+      "comment": "UI element storage backing pointer-table slot 9.",
+      "name": "ui_element_slot_09",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a0f8",
+      "comment": "UI element storage backing pointer-table slot 33.",
+      "name": "ui_element_slot_33",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a410",
+      "comment": "UI element storage backing pointer-table slot 15.",
+      "name": "ui_element_slot_15",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048a728",
+      "comment": "UI element storage backing pointer-table slot 16.",
+      "name": "ui_element_slot_16",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048aa40",
+      "comment": "UI element storage backing pointer-table slot 17.",
+      "name": "ui_element_slot_17",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ad58",
+      "comment": "UI element storage backing pointer-table slot 19.",
+      "name": "ui_element_slot_19",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b070",
+      "comment": "UI element storage backing pointer-table slot 20.",
+      "name": "ui_element_slot_20",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b388",
+      "comment": "UI element storage backing pointer-table slot 21.",
+      "name": "ui_element_slot_21",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b6a0",
+      "comment": "UI element storage backing pointer-table slot 22.",
+      "name": "ui_element_slot_22",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048b9b8",
+      "comment": "UI element storage backing pointer-table slot 23.",
+      "name": "ui_element_slot_23",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048bcd0",
+      "comment": "UI element storage backing pointer-table slot 24.",
+      "name": "ui_element_slot_24",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048bfe8",
+      "comment": "UI element storage backing pointer-table slot 25.",
+      "name": "ui_element_slot_25",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c300",
+      "comment": "UI element storage backing pointer-table slot 26.",
+      "name": "ui_element_slot_26",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c618",
+      "comment": "UI element storage backing pointer-table slot 27.",
+      "name": "ui_element_slot_27",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048c930",
+      "comment": "UI element storage backing pointer-table slot 29.",
+      "name": "ui_element_slot_29",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048cc48",
+      "comment": "UI element storage backing pointer-table slot 30.",
+      "name": "ui_element_slot_30",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048cf60",
+      "comment": "UI element storage backing pointer-table slot 13.",
+      "name": "ui_element_slot_13",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d278",
+      "comment": "UI element storage backing pointer-table slot 14.",
+      "name": "ui_element_slot_14",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d590",
+      "comment": "UI element storage backing pointer-table slot 18 (layout group B root).",
+      "name": "ui_element_slot_18_layout_b",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048d8a8",
+      "comment": "UI element storage backing pointer-table slot 34.",
+      "name": "ui_element_slot_34",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048dbc0",
+      "comment": "UI element storage backing pointer-table slot 35.",
+      "name": "ui_element_slot_35",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ded8",
+      "comment": "UI element storage backing pointer-table slot 36.",
+      "name": "ui_element_slot_36",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e1f0",
+      "comment": "UI element storage backing pointer-table slot 37.",
+      "name": "ui_element_slot_37",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e508",
+      "comment": "UI element storage backing pointer-table slot 38.",
+      "name": "ui_element_slot_38",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048e820",
+      "comment": "UI element storage backing pointer-table slot 39.",
+      "name": "ui_element_slot_39",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048eb38",
+      "comment": "UI element storage backing pointer-table slot 28.",
+      "name": "ui_element_slot_28",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
+    },
+    {
+      "address": "0x0048ee50",
+      "comment": "UI element storage backing pointer-table slot 40 (start/high anchor).",
+      "name": "ui_element_slot_40",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x0048f168",

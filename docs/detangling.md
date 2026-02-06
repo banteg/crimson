@@ -1422,3 +1422,5 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
     `ui_elements_update_and_render` (`0x0048f168 .. 0x0048f208`).
 - Corrected `ui_menu_layout_a` / `ui_menu_layout_b` / `ui_menu_layout_c` type from `char *` to `ui_element_t *`
   (they are table slot anchors used for per-element quad/offset scaling).
+- Labeled and typed backing storage blocks for those slots (`0x004875a8..0x0048ee50`) as `ui_element_slot_*`
+  (`ui_element_t`), so table assignments no longer point to anonymous `DAT_*` elements.

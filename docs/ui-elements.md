@@ -34,6 +34,15 @@ In `data_map.json` this table is now labeled as typed slot pointers:
 - `ui_element_table_slot_08..ui_element_table_slot_39` for the remaining
   state-specific slots assigned in `ui_menu_layout_init`.
 
+The pointee storage blocks are also typed/labeled as `ui_element_t` globals
+(`ui_element_slot_*`), e.g.:
+
+- `ui_element_slot_03_main_menu_play_game` (`0x004878c0`)
+- `ui_element_slot_12_layout_a` (`0x004897b0`)
+- `ui_element_slot_18_layout_b` (`0x0048d590`)
+- `ui_element_slot_32_layout_c` (`0x00488e68`)
+- `ui_element_slot_40` (`0x0048ee50`)
+
 The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.
