@@ -70,6 +70,9 @@ QUEST_COMPLETE_BANNER_BASE_W = 256.0
 QUEST_COMPLETE_BANNER_BASE_H = 32.0
 QUEST_COMPLETE_BANNER_SCALE_BASE = 0.95
 QUEST_COMPLETE_BANNER_SCALE_RATE = 0.0004 * 0.13
+QUEST_COMPLETE_BANNER_FADE_IN_MS = 500.0
+QUEST_COMPLETE_BANNER_HOLD_END_MS = 1500.0
+QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
 
 
 @dataclass(slots=True)
@@ -136,6 +139,19 @@ def _quest_level_label(level: str) -> str:
         major += 1
         minor -= 10
     return f"{major}.{minor}"
+
+
+def _quest_complete_banner_alpha(timer_ms: float) -> float:
+    t = float(timer_ms)
+    if t <= 0.0:
+        return 0.0
+    if t < QUEST_COMPLETE_BANNER_FADE_IN_MS:
+        return clamp(t / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
+    if t < QUEST_COMPLETE_BANNER_HOLD_END_MS:
+        return 1.0
+    if t < QUEST_COMPLETE_BANNER_FADE_OUT_END_MS:
+        return clamp((QUEST_COMPLETE_BANNER_FADE_OUT_END_MS - t) / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
+    return 0.0
 
 
 class QuestMode(BaseGameplayMode):
@@ -796,6 +812,9 @@ class QuestMode(BaseGameplayMode):
         timer_ms = float(self._quest.completion_transition_ms)
         if tex is None or timer_ms <= 0.0:
             return
+        alpha = _quest_complete_banner_alpha(timer_ms)
+        if alpha <= 0.0:
+            return
         scale = QUEST_COMPLETE_BANNER_SCALE_BASE + timer_ms * QUEST_COMPLETE_BANNER_SCALE_RATE
         width = QUEST_COMPLETE_BANNER_BASE_W * scale
         height = QUEST_COMPLETE_BANNER_BASE_H * scale
@@ -803,4 +822,5 @@ class QuestMode(BaseGameplayMode):
         center_y = float(rl.get_screen_height()) * 0.5
         src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
         dst = rl.Rectangle(center_x - width * 0.5, center_y - height * 0.5, width, height)
-        rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        tint = rl.Color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
+        rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
