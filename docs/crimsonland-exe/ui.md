@@ -66,6 +66,16 @@ list can be active at a time.
 
 Additional controls-rebind runtime globals:
 
+- Rebind action slots passed to `ui_menu_item_update`:
+  `controls_rebind_move_primary_item`, `controls_rebind_move_secondary_item`,
+  `controls_rebind_move_tertiary_item`, `controls_rebind_move_quaternary_item`,
+  `controls_rebind_fire_item`, `controls_rebind_torso_left_item`,
+  `controls_rebind_torso_right_item`,
+  `controls_rebind_aim_up_down_axis_item`,
+  `controls_rebind_aim_left_right_axis_item`,
+  `controls_rebind_move_up_down_axis_item`,
+  `controls_rebind_move_left_right_axis_item`
+  (`0x004d7898..0x004d7958`).
 - `controls_key_pick_perk_label` (`0x004d7968`): menu-label pointer updated
   from `_config_key_pick_perk` key-name resolution.
 - `controls_key_reload_label` (`0x004d7978`): menu-label pointer updated from

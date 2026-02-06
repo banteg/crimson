@@ -53,6 +53,19 @@ Text color/alpha (`grim->set_color_rgba` via vtable +0x114):
 - Row labels: base alpha `0x3f333333` (0.70); hovered alpha `0x3f733333` (~0.95)
 - Selected row can use alpha `0x3f75c28f` (~0.96) when focused
 
+Recovered dropdown widget globals in `play_game_menu_update`:
+
+- `play_game_player_count_list_enabled` (`0x004d79b8`)
+- `play_game_player_count_list_open` (`0x004d79bc`)
+- `play_game_player_count_list_selected_index` (`0x004d79c0`)
+- `play_game_player_count_list_items` (`0x004d79c4`)
+- `play_game_player_count_list_item_count` (`0x004d79c8`)
+- `play_game_player_count_list_hovered` (`0x004d79cc`)
+- `play_game_player_count_list_active_index` (`0x004d79d0`)
+
+`play_game_player_count_list_open` also gates mode-button enable flags in the
+same callback while the dropdown is expanded.
+
 ## Mode list ordering and spacing (from `play_game_menu_update`)
 
 ### Mode list X
