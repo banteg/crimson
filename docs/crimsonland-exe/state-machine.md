@@ -39,7 +39,7 @@ see [State id glossary](state-ids.md).
 | `0xc` | quest failed | `quest_failed_screen_update` checks `game_state_id` (`DAT_00487270`) == `0xc` |
 | `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe`; runtime labels `state_14:High scores - ...` |
 | `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits` |
-| `0x12` | Typ-o-Shooter gameplay | `survival_gameplay_update_and_render` (`FUN_004457c0`) updates when `game_state_id` (`DAT_00487270`) == `0x12` |
+| `0x12` | Typ-o-Shooter gameplay | `typo_gameplay_update_and_render` (`FUN_004457c0`) updates when `game_state_id` (`DAT_00487270`) == `0x12` |
 | `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `sub_40e9a0` (mods menu); plugin flow queues `0x14` on exit/failure |
 | `0x15` | final quest end note | dispatch routes to `game_update_victory_screen()` when `game_state_id == 0x15` |
 | `0x16` | modal/plugin flow | `FUN_0040b630` drives a DLL-backed interface (`plugin_interface_ptr` (`DAT_004824d4`)) when `0x16` |

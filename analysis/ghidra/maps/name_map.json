@@ -2857,51 +2857,51 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00444f70",
-    "name": "creature_name_pick_fragment",
-    "signature": "char * creature_name_pick_fragment(char include_extended_pool)",
-    "comment": "returns a random creature-name fragment from the static word table; include_extended_pool adds one extra entry"
+    "name": "typo_word_pick_fragment",
+    "signature": "char * typo_word_pick_fragment(char include_extended_pool)",
+    "comment": "returns a random word fragment used by Typ-o-Shooter target name generation"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004451b0",
-    "name": "creature_name_pick_highscore_name",
-    "signature": "char * creature_name_pick_highscore_name(void)",
-    "comment": "builds a cache of unique alphabetic highscore names (once) and returns a random cached name for creature naming"
+    "name": "typo_word_pick_highscore_name",
+    "signature": "char * typo_word_pick_highscore_name(void)",
+    "comment": "builds a cache of unique alphabetic highscore names and returns one for Typ-o-Shooter target naming"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445310",
-    "name": "creature_is_name_unique",
-    "signature": "int creature_is_name_unique(char *arg1, int arg2)",
-    "comment": "[binja] int32_t sub_445310(char* arg1, int32_t arg2)"
+    "name": "typo_creature_name_is_unique",
+    "signature": "int typo_creature_name_is_unique(char *name, int creature_id)",
+    "comment": "returns non-zero when the proposed Typ-o target name is unique among active creatures"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445380",
-    "name": "creature_name_assign_random",
-    "signature": "void creature_name_assign_random(int creature_id)",
-    "comment": "builds a randomized creature name string into DAT_004d152c for debug overlays"
+    "name": "typo_creature_name_assign_random",
+    "signature": "void typo_creature_name_assign_random(int creature_id)",
+    "comment": "builds a randomized Typ-o target name for a creature slot"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445590",
-    "name": "creature_find_by_name",
-    "signature": "int creature_find_by_name(char *name)",
-    "comment": "returns the first creature index whose name matches DAT_004d152c, or -1"
+    "name": "typo_creature_find_by_name",
+    "signature": "int typo_creature_find_by_name(char *name)",
+    "comment": "returns the first active creature whose Typ-o target name matches input, or -1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445600",
-    "name": "creature_name_draw_labels",
-    "signature": "void creature_name_draw_labels(void)",
-    "comment": "debug overlay: draws creature name labels over world positions"
+    "name": "typo_creature_name_draw_labels",
+    "signature": "void typo_creature_name_draw_labels(void)",
+    "comment": "draws Typ-o target names above active creatures"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004457c0",
-    "name": "survival_gameplay_update_and_render",
-    "signature": "void survival_gameplay_update_and_render(void)",
-    "comment": "survival mode frame loop: effects, spawns, death handling, world render, HUD, and debug name input"
+    "name": "typo_gameplay_update_and_render",
+    "signature": "void typo_gameplay_update_and_render(void)",
+    "comment": "Typ-o-Shooter gameplay loop: typed-name input, target matching, spawns, world render, and HUD"
   },
   {
     "program": "crimsonland.exe",

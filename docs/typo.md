@@ -2,7 +2,7 @@
 
 ## Summary
 
-The implementation in `src/crimson/modes/typo_mode.py` now matches the original game's rendering. The original uses a custom rendering path in `survival_gameplay_update_and_render` (for typoshooter mode), not the standardized `ui_text_input_update` function.
+The implementation in `src/crimson/modes/typo_mode.py` now matches the original game's rendering. The original uses a custom rendering path in `typo_gameplay_update_and_render` (for Typ-o-Shooter mode), not the standardized `ui_text_input_update` function.
 
 ## Current Implementation Status: ✅ FIXED
 

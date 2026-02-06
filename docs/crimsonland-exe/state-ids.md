@@ -38,7 +38,7 @@ Runtime cross-check:
 | `15` | `0x0f` | Unlocked Weapons Database | `game_state_set(0x0f)` installs callback `sub_440110`; runtime label `state_15:Unlocked Weapons Database`. | high |
 | `16` | `0x10` | Unlocked Perks Database | `game_state_set(0x10)` installs callback `sub_440960`; runtime label `state_16:Unlocked Perks Database`. | high |
 | `17` | `0x11` | Credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits`. | high |
-| `18` | `0x12` | Typ-o-Shooter gameplay | Dispatch calls `survival_gameplay_update_and_render`; Play Again in Typ-o paths queues `0x12`. | high |
+| `18` | `0x12` | Typ-o-Shooter gameplay | Dispatch calls `typo_gameplay_update_and_render`; Play Again in Typ-o paths queues `0x12`. | high |
 | `19` | `0x13` | Unknown menu-state variant (unused in observed flow) | `game_state_set(0x13)` toggles generic menu block flags but installs no unique update callback; no direct transition writes found. | low |
 | `20` | `0x14` | Mods browser/menu (also plugin fallback) | `game_state_set(0x14)` installs callback `sub_40e9a0` (mods list/launch UI); plugin flow queues `0x14` when plugin is missing/exits. | high |
 | `21` | `0x15` | Final-quest end note / victory screen | Dispatch calls `game_update_victory_screen`; final quest results queue `0x15`. | high |

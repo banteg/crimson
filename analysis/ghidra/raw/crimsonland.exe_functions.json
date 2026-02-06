@@ -629,7 +629,7 @@
     "signature": "void console_hotkey_update(void)",
     "external": false,
     "calls_total": 34,
-    "calls": ["FUN_0040b630", "Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_render", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update", "demo_trial_time_limit_ms", "game_is_full_version", "game_over_screen_update", "game_sequence_get", "game_update_generic_menu", "game_update_victory_screen", "gameplay_update_and_render", "perk_count_get", "perk_selection_screen_update", "quest_failed_screen_update", "quest_results_screen_update", "sfx_mute_all", "sfx_play_exclusive", "survival_gameplay_update_and_render", "terrain_generate", "terrain_generate_random", "ui_elements_max_timeline", "ui_render_loading"]
+    "calls": ["FUN_0040b630", "Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_render", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update", "demo_trial_time_limit_ms", "game_is_full_version", "game_over_screen_update", "game_sequence_get", "game_update_generic_menu", "game_update_victory_screen", "gameplay_update_and_render", "perk_count_get", "perk_selection_screen_update", "quest_failed_screen_update", "quest_results_screen_update", "sfx_mute_all", "sfx_play_exclusive", "terrain_generate", "terrain_generate_random", "typo_gameplay_update_and_render", "ui_elements_max_timeline", "ui_render_loading"]
   },
   {
     "name": "credits_line_set",
@@ -3328,60 +3328,60 @@
     "calls": ["crt_exit", "crt_rand", "fx_spawn_sprite", "game_is_full_version", "perk_count_get", "player_start_reload", "projectile_spawn", "sfx_play_panned"]
   },
   {
-    "name": "creature_name_pick_fragment",
+    "name": "typo_word_pick_fragment",
     "address": "00444f70",
-    "signature": "char * creature_name_pick_fragment(char include_extended_pool)",
+    "signature": "char * typo_word_pick_fragment(char include_extended_pool)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_rand"]
   },
   {
-    "name": "creature_name_pick_highscore_name",
+    "name": "typo_word_pick_highscore_name",
     "address": "004451b0",
-    "signature": "char * creature_name_pick_highscore_name(void)",
+    "signature": "char * typo_word_pick_highscore_name(void)",
     "external": false,
     "calls_total": 5,
     "calls": ["console_printf", "crt_isalpha", "crt_rand", "crt_sprintf", "highscore_load_table"]
   },
   {
-    "name": "creature_is_name_unique",
+    "name": "typo_creature_name_is_unique",
     "address": "00445310",
-    "signature": "int creature_is_name_unique(char * arg1, int arg2)",
+    "signature": "int typo_creature_name_is_unique(char * name, int creature_id)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "creature_name_assign_random",
+    "name": "typo_creature_name_assign_random",
     "address": "00445380",
-    "signature": "void creature_name_assign_random(int creature_id)",
+    "signature": "void typo_creature_name_assign_random(int creature_id)",
     "external": false,
     "calls_total": 5,
-    "calls": ["creature_is_name_unique", "creature_name_pick_fragment", "creature_name_pick_highscore_name", "crt_rand", "crt_sprintf"]
+    "calls": ["crt_rand", "crt_sprintf", "typo_creature_name_is_unique", "typo_word_pick_fragment", "typo_word_pick_highscore_name"]
   },
   {
-    "name": "creature_find_by_name",
+    "name": "typo_creature_find_by_name",
     "address": "00445590",
-    "signature": "int creature_find_by_name(char * name)",
+    "signature": "int typo_creature_find_by_name(char * name)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "creature_name_draw_labels",
+    "name": "typo_creature_name_draw_labels",
     "address": "00445600",
-    "signature": "void creature_name_draw_labels(void)",
+    "signature": "void typo_creature_name_draw_labels(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "survival_gameplay_update_and_render",
+    "name": "typo_gameplay_update_and_render",
     "address": "004457c0",
-    "signature": "void survival_gameplay_update_and_render(void)",
+    "signature": "void typo_gameplay_update_and_render(void)",
     "external": false,
     "calls_total": 21,
-    "calls": ["__ftol", "camera_update", "console_input_poll", "creature_find_by_name", "creature_name_assign_random", "creature_name_draw_labels", "creature_spawn_tinted", "creature_update_all", "crt_atexit", "crt_rand", "effects_update", "gameplay_render_world", "hud_update_and_render", "perk_prompt_update_and_render", "perks_update_effects", "player_fire_weapon", "projectile_update", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "ui_elements_update_and_render"]
+    "calls": ["__ftol", "camera_update", "console_input_poll", "creature_spawn_tinted", "creature_update_all", "crt_atexit", "crt_rand", "effects_update", "gameplay_render_world", "hud_update_and_render", "perk_prompt_update_and_render", "perks_update_effects", "player_fire_weapon", "projectile_update", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "typo_creature_find_by_name", "typo_creature_name_assign_random", "typo_creature_name_draw_labels", "ui_elements_update_and_render"]
   },
   {
     "name": "input_any_key_pressed",

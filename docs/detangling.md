@@ -154,6 +154,12 @@ grim.dll_functions.json
   - Evidence: returns constant `2400000` (40 minutes) and is used by
     `demo_trial_overlay_render` for remaining-time math.
 
+### Typ-o gameplay loop (high confidence)
+
+- `FUN_004457c0` -> `typo_gameplay_update_and_render`
+  - Evidence: dispatch runs it for `game_state_id == 0x12`; routine handles typed-name input
+    (`typo_input_buffer`), matches against per-creature Typ-o names, then renders world/HUD.
+
 ### UI text input (high confidence)
 
 - `FUN_0043ecf0` -> `ui_text_input_update`
@@ -164,15 +170,15 @@ grim.dll_functions.json
   - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
     entry paths and other text input flows.
 
-### Creature debug names (high confidence)
+### Typ-o name generation (high confidence)
 
-- `FUN_00444f70` -> `creature_name_pick_fragment`
-  - Evidence: returns a random word fragment from a static table; `creature_name_assign_random`
-    composes one to four fragments into a name.
+- `FUN_00444f70` -> `typo_word_pick_fragment`
+  - Evidence: returns a random word fragment from a static table; `typo_creature_name_assign_random`
+    composes one to four fragments into a Typ-o target name.
 
-- `FUN_004451b0` -> `creature_name_pick_highscore_name`
+- `FUN_004451b0` -> `typo_word_pick_highscore_name`
   - Evidence: lazily builds a cache of unique alphabetic names from `highscore_table` and
-    returns a random cached entry for high-XP creature naming variants.
+    returns a random cached entry for Typ-o target naming variants.
 
 ### Audio resource packs + loaders (high confidence)
 
