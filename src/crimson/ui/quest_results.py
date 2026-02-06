@@ -79,6 +79,9 @@ COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
 COLOR_GREEN = rl.Color(25, 200, 25, 255)
+# `sub_41e070` initializes DAT_004965f8..600 to this blue tint (149,175,198),
+# reused by quest/game-over captions and score-card separator outlines.
+COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 
 @dataclass(slots=True)
@@ -264,7 +267,7 @@ class QuestResultsUi:
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
-    def _draw_name_entry_stats(self, *, x: float, y: float, scale: float) -> None:
+    def _draw_name_entry_stats(self, *, x: float, y: float, scale: float, alpha: float, show_weapon_row: bool) -> None:
         if self.record is None:
             return
         record = self.record
@@ -275,43 +278,62 @@ class QuestResultsUi:
         score_value = f"{seconds:.2f} secs"
         xp_value = f"{int(record.score_xp)}"
 
-        col_label = rl.Color(230, 230, 230, 255)
-        col_value = rl.Color(230, 230, 255, 255)
+        alpha_f = max(0.0, min(1.0, float(alpha)))
+        col_label = rl.Color(230, 230, 230, int(255 * alpha_f * 0.8))
+        col_score_value = rl.Color(230, 230, 255, int(255 * alpha_f))
+        col_row = rl.Color(230, 230, 230, int(255 * alpha_f * 0.7))
+        col_line = rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha_f * 0.7))
+        icon_tint = rl.Color(255, 255, 255, int(255 * alpha_f))
 
-        self._draw_small("Score", x + 32.0 * scale, y, 1.0 * scale, col_label)
-        self._draw_small(score_value, x + 32.0 * scale, y + 15.0 * scale, 1.0 * scale, col_value)
-        self._draw_small(f"Rank: {rank_text}", x + 32.0 * scale, y + 30.0 * scale, 1.0 * scale, col_label)
-        self._draw_small("Experience", x + 140.0 * scale, y, 1.0 * scale, col_label)
-        self._draw_small(xp_value, x + 140.0 * scale, y + 15.0 * scale, 1.0 * scale, col_value)
+        left_center_x = x + 36.0 * scale
+        right_label_x = x + 100.0 * scale
+        right_center_x = right_label_x + 32.0 * scale
 
-        row_top = y + 48.0 * scale
-        row_y = row_top + 4.0 * scale
-        line_col = rl.Color(80, 120, 150, 255)
-        rl.draw_line(int(x - 4.0 * scale), int(row_top), int(x + 188.0 * scale), int(row_top), line_col)
-        rl.draw_line(int(x - 4.0 * scale), int(row_y + 44.0 * scale), int(x + 188.0 * scale), int(row_y + 44.0 * scale), line_col)
-        rl.draw_line(int(x + 76.0 * scale), int(y), int(x + 76.0 * scale), int(row_top - 6.0 * scale), line_col)
+        score_w = self._text_width("Score", 1.0 * scale)
+        self._draw_small("Score", left_center_x - score_w * 0.5, y, 1.0 * scale, col_label)
+        score_value_w = self._text_width(score_value, 1.0 * scale)
+        self._draw_small(score_value, left_center_x - score_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_score_value)
+        rank_label = f"Rank: {rank_text}"
+        rank_w = self._text_width(rank_label, 1.0 * scale)
+        self._draw_small(rank_label, left_center_x - rank_w * 0.5, y + 30.0 * scale, 1.0 * scale, col_label)
 
+        self._draw_small("Experience", right_label_x, y, 1.0 * scale, col_label)
+        xp_value_w = self._text_width(xp_value, 1.0 * scale)
+        self._draw_small(xp_value, right_center_x - xp_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_label)
+
+        # Native vertical separator drawn via FUN_00441220 from x+84, height 48.
+        sep_x = x + 84.0 * scale
+        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0 * scale), col_line)
+
+        row_top = y + 52.0 * scale
+        rl.draw_line(int(x - 12.0 * scale), int(row_top), int(x + 180.0 * scale), int(row_top), col_line)
+        if not show_weapon_row:
+            return
+
+        row_y = row_top
         if self.assets is not None and self.assets.wicons is not None:
             src = _weapon_icon_src(self.assets.wicons, int(record.most_used_weapon_id))
             if src is not None:
-                dst = rl.Rectangle(x, row_y, 64.0 * scale, 32.0 * scale)
-                rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+                dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
+                rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
         weapon_id = int(record.most_used_weapon_id)
         weapon_entry = WEAPON_BY_ID.get(weapon_id)
         weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id}"
         name_w = self._text_width(weapon_name, 1.0 * scale)
-        name_x = x + max(0.0, (32.0 * scale - name_w * 0.5))
-        self._draw_small(weapon_name, name_x, row_y + 32.0 * scale, 1.0 * scale, col_label)
+        name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
+        self._draw_small(weapon_name, name_x, row_y + 32.0 * scale, 1.0 * scale, col_row)
 
         frags_text = f"Frags: {int(record.creature_kill_count)}"
-        self._draw_small(frags_text, x + 110.0 * scale, row_y + 1.0 * scale, 1.0 * scale, col_label)
+        self._draw_small(frags_text, x + 114.0 * scale, row_y + 1.0 * scale, 1.0 * scale, col_row)
 
         fired = max(0, int(record.shots_fired))
-        hit = max(0, int(record.shots_hit))
+        hit = max(0, min(int(record.shots_hit), fired))
         ratio = int((hit * 100) / fired) if fired > 0 else 0
         hit_text = f"Hit %: {ratio}%"
-        self._draw_small(hit_text, x + 110.0 * scale, row_y + 15.0 * scale, 1.0 * scale, col_label)
+        self._draw_small(hit_text, x + 114.0 * scale, row_y + 15.0 * scale, 1.0 * scale, col_row)
+
+        rl.draw_line(int(x - 12.0 * scale), int(row_y + 48.0 * scale), int(x + 180.0 * scale), int(row_y + 48.0 * scale), col_line)
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
         # Match MenuView._ui_element_anim offset math (linear, with a 100ms hold hidden).
@@ -621,7 +643,7 @@ class QuestResultsUi:
         elif self.phase == 1:
             anchor_x = content_x
             text_y = top + 118.0 * scale
-            self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_TEXT)
+            self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_UI_ACCENT)
 
             input_x = anchor_x
             input_y = top + 150.0 * scale
@@ -649,7 +671,7 @@ class QuestResultsUi:
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_x = anchor_x + 26.0 * scale
             score_card_y = input_y + 46.0 * scale
-            self._draw_name_entry_stats(x=score_card_x, y=score_card_y, scale=scale)
+            self._draw_name_entry_stats(x=score_card_x, y=score_card_y, scale=scale, alpha=1.0, show_weapon_row=True)
 
         else:
             score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
@@ -663,19 +685,8 @@ class QuestResultsUi:
                     rl.Color(200, 200, 200, 255),
                 )
 
-            seconds = float(int(self.record.survival_elapsed_ms)) * 0.001
-            score_value = f"{seconds:.2f} secs"
-            xp_value = f"{int(self.record.score_xp)}"
-            rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
-
-            col_label = rl.Color(230, 230, 230, 255)
-            col_value = rl.Color(230, 230, 255, 255)
             card_y = var_c_12 + 16.0 * scale
-            self._draw_small("Score", score_card_x + 32.0 * scale, card_y, 1.0 * scale, col_label)
-            self._draw_small(score_value, score_card_x + 32.0 * scale, card_y + 15.0 * scale, 1.0 * scale, col_value)
-            self._draw_small(f"Rank: {rank_text}", score_card_x + 32.0 * scale, card_y + 30.0 * scale, 1.0 * scale, col_label)
-            self._draw_small("Experience", score_card_x + 140.0 * scale, card_y, 1.0 * scale, col_label)
-            self._draw_small(xp_value, score_card_x + 140.0 * scale, card_y + 15.0 * scale, 1.0 * scale, col_value)
+            self._draw_name_entry_stats(x=score_card_x, y=card_y, scale=scale, alpha=1.0, show_weapon_row=False)
 
             # Unlock lines (their presence shifts the buttons down in native).
             var_c_14 = var_c_12 + 84.0 * scale

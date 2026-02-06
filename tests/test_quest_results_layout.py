@@ -38,13 +38,25 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     return ui
 
 
-def _patch_draw_environment(monkeypatch, captured_text: list[str], texture_draws: list[object]) -> None:  # noqa: ANN001
+def _patch_draw_environment(  # noqa: ANN001
+    monkeypatch,
+    captured_text: list[str],
+    texture_draws: list[object],
+    *,
+    captured_draws: list[tuple[str, float, float, object]] | None = None,
+    line_draws: list[tuple[int, int, int, int, object]] | None = None,
+) -> None:
     monkeypatch.setattr("crimson.ui.quest_results.rl.get_screen_width", lambda: 640)
     monkeypatch.setattr("crimson.ui.quest_results.rl.get_screen_height", lambda: 480)
     monkeypatch.setattr("crimson.ui.quest_results.rl.get_time", lambda: 0.0)
     monkeypatch.setattr("crimson.ui.quest_results.rl.draw_rectangle_lines", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.ui.quest_results.rl.draw_rectangle", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr("crimson.ui.quest_results.rl.draw_line", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "crimson.ui.quest_results.rl.draw_line",
+        lambda x1, y1, x2, y2, color: (
+            line_draws.append((int(x1), int(y1), int(x2), int(y2), color)) if line_draws is not None else None
+        ),
+    )
     monkeypatch.setattr("crimson.ui.quest_results.button_draw", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("crimson.ui.quest_results.button_width", lambda *_args, **_kwargs: 82.0)
     monkeypatch.setattr("crimson.ui.quest_results.draw_ui_text", lambda *_args, **_kwargs: None)
@@ -52,7 +64,10 @@ def _patch_draw_environment(monkeypatch, captured_text: list[str], texture_draws
     monkeypatch.setattr("crimson.ui.quest_results.QuestResultsUi._text_width", lambda _self, text, _scale: float(len(text) * 8))
     monkeypatch.setattr(
         "crimson.ui.quest_results.QuestResultsUi._draw_small",
-        lambda _self, text, _x, _y, _scale, _color: captured_text.append(str(text)),
+        lambda _self, text, x, y, _scale, color: (
+            captured_text.append(str(text)),
+            captured_draws.append((str(text), float(x), float(y), color)) if captured_draws is not None else None,
+        ),
     )
     monkeypatch.setattr(
         "crimson.ui.quest_results.rl.draw_texture_pro",
@@ -76,6 +91,42 @@ def test_quest_results_name_entry_draws_stats_card(monkeypatch, tmp_path: Path) 
     assert "Frags: 10" in captured_text
     assert "Hit %: 23%" in captured_text
     assert len(texture_draws) == 1
+
+
+def test_quest_results_name_entry_uses_native_offsets_and_colors(monkeypatch, tmp_path: Path) -> None:
+    ui = _build_ui(tmp_path, phase=1)
+    captured_text: list[str] = []
+    texture_draws: list[object] = []
+    captured_draws: list[tuple[str, float, float, object]] = []
+    line_draws: list[tuple[int, int, int, int, object]] = []
+    _patch_draw_environment(
+        monkeypatch,
+        captured_text,
+        texture_draws,
+        captured_draws=captured_draws,
+        line_draws=line_draws,
+    )
+
+    ui.draw(mouse=SimpleNamespace(x=0.0, y=0.0))
+
+    draw_map = {text: (x, y, color) for text, x, y, color in captured_draws}
+
+    state_x, state_y, state_color = draw_map["State your name trooper!"]
+    assert (state_x, state_y) == (154.0, 147.0)
+    assert (state_color.r, state_color.g, state_color.b, state_color.a) == (149, 175, 198, 255)
+
+    score_x, score_y, _score_color = draw_map["Score"]
+    assert (score_x, score_y) == (154.0, 225.0)
+    exp_x, exp_y, _exp_color = draw_map["Experience"]
+    assert (exp_x, exp_y) == (238.0, 225.0)
+    frags_x, frags_y, _frags_color = draw_map["Frags: 10"]
+    assert (frags_x, frags_y) == (252.0, 278.0)
+    hit_x, hit_y, _hit_color = draw_map["Hit %: 23%"]
+    assert (hit_x, hit_y) == (252.0, 292.0)
+
+    assert (126, 277, 318, 277) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
+    assert (126, 325, 318, 325) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
+    assert (222, 225, 222, 273) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
 
 
 def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(monkeypatch, tmp_path: Path) -> None:
