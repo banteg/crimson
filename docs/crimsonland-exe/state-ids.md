@@ -53,3 +53,34 @@ Runtime cross-check:
 - Runtime trace labels use decimal (`state_14`, `state_17`, etc.), while decompile references are often hex (`0x0e`, `0x11`).
 - State `0x19` is only a sentinel for `game_state_pending` and should not be treated as a normal `game_state_id`.
 - States marked low/medium confidence need either a direct transition capture (Frida/WinDbg) or additional static xref evidence.
+
+## Runtime coverage update (2026-02-06)
+
+Large capture source:
+`analysis/frida/gameplay_state_capture_summary.json` (`~694s`, 475k lines).
+
+Observed `game_state_set` targets in this run:
+
+- `0,1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17,26`
+
+Notably *not* observed as committed targets in this run:
+
+- `13` (legacy high-score variant)
+- `18` (Typ-o-Shooter gameplay)
+- `19` (known pending-state sentinel; not expected as a committed state)
+- `20,21,22,23,24,25`
+
+Most frequent observed transitions:
+
+- `1 -> 9` (4 times): menu to gameplay entry.
+- `9 -> 1` (2 times): gameplay back to menu flow.
+- `9 -> 6` and `6 -> 9` (2 each): perk screen round-trips.
+- `9 -> 8` and `8 -> 9` (2 each): quest results returns.
+- `7 -> 14` and `14 -> 7` (2 each): game-over and high-score navigation.
+- `0 -> 10` (1): quit transition state.
+
+Gameplay mode ticks inside state `9` during this run:
+
+- `quest_mode_update`: 218
+- `survival_update`: 212
+- `rush_mode_update`: 56
