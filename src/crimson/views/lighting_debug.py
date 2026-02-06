@@ -846,11 +846,11 @@ class LightingDebugView:
             buf = rl.ffi.new("float[2]", [float(value.x), float(value.y)])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC2)
 
-        def set_vec4(name: str, x: float, y: float, z: float, q: float) -> None:
+        def set_vec4(name: str, value: tuple[float, float, float, float]) -> None:
             loc = locs.get(name, -1)
             if loc < 0:
                 return
-            buf = rl.ffi.new("float[4]", [float(x), float(y), float(z), float(q)])
+            buf = rl.ffi.new("float[4]", [float(value[0]), float(value[1]), float(value[2]), float(value[3])])
             rl.set_shader_value(shader, loc, rl.ffi.cast("float *", buf), rl.SHADER_UNIFORM_VEC4)
 
         def set_float(name: str, value: float) -> None:
@@ -977,7 +977,7 @@ class LightingDebugView:
         for lx, ly, lrange, lsrc, lr, lg, lb in lights:
             if lx < -lrange or lx > w + lrange or ly < -lrange or ly > h + lrange:
                 continue
-            set_vec4("u_light_color", lr, lg, lb, 1.0)
+            set_vec4("u_light_color", (lr, lg, lb, 1.0))
             set_vec2("u_light_pos", Vec2(lx, ly))
             set_float("u_light_range", lrange)
             set_float("u_light_source_radius", lsrc)

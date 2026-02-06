@@ -248,9 +248,7 @@ class StatisticsMenuView:
         draw_small_text(
             font,
             playtime_text,
-            panel_x0 + _PLAYTIME_X * scale,
-            panel_y0 + _PLAYTIME_Y * scale,
-            1.0 * scale,
+            Vec2(panel_x0 + _PLAYTIME_X * scale, panel_y0 + _PLAYTIME_Y * scale), 1.0 * scale,
             rl.Color(255, 255, 255, int(255 * 0.8)),
         )
 

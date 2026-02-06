@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.geom import Vec2
 
 import pyray as rl
 
@@ -21,7 +22,7 @@ def draw_ui_text(
     scale: float = 1.0,
 ) -> None:
     if font is not None:
-        draw_small_text(font, text, x, y, float(scale), color)
+        draw_small_text(font, text, Vec2(x, y), float(scale), color)
     else:
         rl.draw_text(text, int(x), int(y), int(20 * float(scale)), color)
 

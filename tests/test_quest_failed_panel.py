@@ -141,7 +141,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, tmp_path: P
     drawn_lines: list[tuple[int, int, int, int]] = []
     drawn_rects: list[tuple[int, int, int, int]] = []
 
-    def _draw_small_text(_font, text, x, y, scale, color):  # noqa: ANN001, ARG001
+    def _draw_small_text(_font, text, pos, scale, color):  # noqa: ANN001, ARG001
         drawn_text.append(str(text))
 
     def _draw_line(x1, y1, x2, y2, color):  # noqa: ANN001, ARG001

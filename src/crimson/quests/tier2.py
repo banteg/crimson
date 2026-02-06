@@ -10,7 +10,7 @@ from .helpers import (
     center_point,
     edge_midpoints,
     heading_from_center,
-    line_points_x,
+    line_points,
     random_angle,
     radial_points,
     spawn,
@@ -205,7 +205,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     if ctx.player_count + 4 >= 0:
         trigger = 500
-        for pos in line_points_x(256.0, 102.4, ctx.player_count + 4, 256.0):
+        for pos in line_points(Vec2(256.0, 256.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
                     x=pos.x,
@@ -218,7 +218,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
             )
             trigger += 500
         trigger = 10500
-        for pos in line_points_x(256.0, 102.4, ctx.player_count + 4, 768.0):
+        for pos in line_points(Vec2(256.0, 768.0), Vec2(102.4, 0.0), ctx.player_count + 4):
             entries.append(
                 spawn(
                     x=pos.x,
@@ -232,7 +232,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
             trigger += 500
     if ctx.player_count + 7 >= 0:
         trigger = 40500
-        for pos in line_points_x(256.0, 64.0, ctx.player_count + 7, 512.0):
+        for pos in line_points(Vec2(256.0, 512.0), Vec2(64.0, 0.0), ctx.player_count + 7):
             entries.append(
                 spawn(
                     x=pos.x,

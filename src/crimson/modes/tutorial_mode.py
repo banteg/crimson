@@ -168,7 +168,7 @@ class TutorialMode(BaseGameplayMode):
             reload_pressed=bool(reload_pressed),
         )
 
-    def _prompt_panel_rect(self, text: str, *, y: float, scale: float) -> tuple[rl.Rectangle, list[str], float]:
+    def _prompt_panel_rect(self, text: str, *, pos: Vec2, scale: float) -> tuple[rl.Rectangle, list[str], float]:
         lines = text.splitlines() if text else [""]
         line_h = float(self._ui_line_height(scale))
         max_w = 0.0
@@ -182,7 +182,7 @@ class TutorialMode(BaseGameplayMode):
 
         screen_w = float(rl.get_screen_width())
         x = (screen_w - w) * 0.5
-        rect = rl.Rectangle(float(x), float(y), float(w), float(h))
+        rect = rl.Rectangle(float(x), float(pos.y), float(w), float(h))
         return rect, lines, line_h
 
     def _update_prompt_buttons(self, *, dt_ms: float, mouse: rl.Vector2, click: bool) -> None:
@@ -202,7 +202,11 @@ class TutorialMode(BaseGameplayMode):
             self._skip_button.enabled = skip_alpha > 1e-3
 
         if stage == 8:
-            rect, _lines, _line_h = self._prompt_panel_rect(self._tutorial_actions.prompt_text, y=self._ui_layout.panel_y, scale=1.0)
+            rect, _lines, _line_h = self._prompt_panel_rect(
+                self._tutorial_actions.prompt_text,
+                pos=Vec2(0.0, self._ui_layout.panel_y),
+                scale=1.0,
+            )
             gap = 18.0
             button_y = rect.y + rect.height + 10.0
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
@@ -381,17 +385,25 @@ class TutorialMode(BaseGameplayMode):
     def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:
         actions = self._tutorial_actions
         if actions.prompt_text and actions.prompt_alpha > 1e-3:
-            self._draw_prompt_panel(actions.prompt_text, alpha=float(actions.prompt_alpha), y=self._ui_layout.panel_y)
+            self._draw_prompt_panel(
+                actions.prompt_text,
+                alpha=float(actions.prompt_alpha),
+                pos=Vec2(0.0, self._ui_layout.panel_y),
+            )
         if actions.hint_text and actions.hint_alpha > 1e-3:
             y = self._ui_layout.panel_y + 84.0
-            self._draw_prompt_panel(actions.hint_text, alpha=float(actions.hint_alpha), y=y)
+            self._draw_prompt_panel(actions.hint_text, alpha=float(actions.hint_alpha), pos=Vec2(0.0, y))
 
         if self._ui_assets is None:
             return
 
         stage = int(self._tutorial.stage_index)
         if stage == 8:
-            rect, _lines, _line_h = self._prompt_panel_rect(actions.prompt_text, y=self._ui_layout.panel_y, scale=1.0)
+            rect, _lines, _line_h = self._prompt_panel_rect(
+                actions.prompt_text,
+                pos=Vec2(0.0, self._ui_layout.panel_y),
+                scale=1.0,
+            )
             gap = 18.0
             button_y = rect.y + rect.height + 10.0
             play_w = button_width(self._small, self._play_button.label, scale=1.0, force_wide=True)
@@ -412,9 +424,9 @@ class TutorialMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
-    def _draw_prompt_panel(self, text: str, *, alpha: float, y: float) -> None:
+    def _draw_prompt_panel(self, text: str, *, alpha: float, pos: Vec2) -> None:
         alpha = clamp(float(alpha), 0.0, 1.0)
-        rect, lines, line_h = self._prompt_panel_rect(text, y=float(y), scale=1.0)
+        rect, lines, line_h = self._prompt_panel_rect(text, pos=pos, scale=1.0)
         fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
         border = rl.Color(255, 255, 255, int(255 * alpha))
         rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)

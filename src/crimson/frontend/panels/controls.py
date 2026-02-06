@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.geom import Vec2
 
 import pyray as rl
 
@@ -122,14 +123,14 @@ class ControlsMenuView(PanelMenuView):
                 tint=rl.WHITE,
             )
 
-        draw_small_text(font, "Configure for:", left_x0 + 339.0 * panel_scale, left_y0 + 41.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, f"Player {int(self._config_player)}", left_x0 + 344.0 * panel_scale, left_y0 + 57.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Configure for:", Vec2(left_x0 + 339.0 * panel_scale, left_y0 + 41.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, f"Player {int(self._config_player)}", Vec2(left_x0 + 344.0 * panel_scale, left_y0 + 57.0 * panel_scale), 1.0 * panel_scale, text_color)
 
-        draw_small_text(font, "Aiming method:", left_x0 + 213.0 * panel_scale, left_y0 + 86.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Mouse", left_x0 + 218.0 * panel_scale, left_y0 + 103.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Aiming method:", Vec2(left_x0 + 213.0 * panel_scale, left_y0 + 86.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Mouse", Vec2(left_x0 + 218.0 * panel_scale, left_y0 + 103.0 * panel_scale), 1.0 * panel_scale, text_color)
 
-        draw_small_text(font, "Moving method:", left_x0 + 213.0 * panel_scale, left_y0 + 128.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Static", left_x0 + 218.0 * panel_scale, left_y0 + 145.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Moving method:", Vec2(left_x0 + 213.0 * panel_scale, left_y0 + 128.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Static", Vec2(left_x0 + 218.0 * panel_scale, left_y0 + 145.0 * panel_scale), 1.0 * panel_scale, text_color)
 
         check_tex = self._check_on
         if check_tex is not None:
@@ -144,9 +145,7 @@ class ControlsMenuView(PanelMenuView):
         draw_small_text(
             font,
             "Show direction arrow",
-            left_x0 + 235.0 * panel_scale,
-            left_y0 + 175.0 * panel_scale,
-            1.0 * panel_scale,
+            Vec2(left_x0 + 235.0 * panel_scale, left_y0 + 175.0 * panel_scale), 1.0 * panel_scale,
             text_color,
         )
 
@@ -177,24 +176,24 @@ class ControlsMenuView(PanelMenuView):
 
         p1_up, p1_down, p1_left, p1_right, p1_fire = player_move_fire_binds(keybinds, 0)
 
-        draw_small_text(font, "Configured controls", right_x0 + 120.0 * panel_scale, right_y0 + 38.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Configured controls", Vec2(right_x0 + 120.0 * panel_scale, right_y0 + 38.0 * panel_scale), 1.0 * panel_scale, text_color)
 
-        draw_small_text(font, "Aiming", right_x0 + 44.0 * panel_scale, right_y0 + 64.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Fire:", right_x0 + 52.0 * panel_scale, right_y0 + 82.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(p1_fire), right_x0 + 180.0 * panel_scale, right_y0 + 82.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Aiming", Vec2(right_x0 + 44.0 * panel_scale, right_y0 + 64.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Fire:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 82.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(p1_fire), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 82.0 * panel_scale), 1.0 * panel_scale, text_color)
 
-        draw_small_text(font, "Moving", right_x0 + 44.0 * panel_scale, right_y0 + 106.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Move Up:", right_x0 + 52.0 * panel_scale, right_y0 + 124.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(p1_up), right_x0 + 180.0 * panel_scale, right_y0 + 124.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Move Down:", right_x0 + 52.0 * panel_scale, right_y0 + 140.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(p1_down), right_x0 + 180.0 * panel_scale, right_y0 + 140.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Move Left:", right_x0 + 52.0 * panel_scale, right_y0 + 156.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(p1_left), right_x0 + 180.0 * panel_scale, right_y0 + 156.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Move Right:", right_x0 + 52.0 * panel_scale, right_y0 + 172.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(p1_right), right_x0 + 180.0 * panel_scale, right_y0 + 172.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Moving", Vec2(right_x0 + 44.0 * panel_scale, right_y0 + 106.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Move Up:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 124.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(p1_up), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 124.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Move Down:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 140.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(p1_down), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 140.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Move Left:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 156.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(p1_left), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 156.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Move Right:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 172.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(p1_right), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 172.0 * panel_scale), 1.0 * panel_scale, text_color)
 
-        draw_small_text(font, "Misc", right_x0 + 44.0 * panel_scale, right_y0 + 196.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Level Up:", right_x0 + 52.0 * panel_scale, right_y0 + 214.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(pick_perk_key), right_x0 + 180.0 * panel_scale, right_y0 + 214.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, "Reload:", right_x0 + 52.0 * panel_scale, right_y0 + 230.0 * panel_scale, 1.0 * panel_scale, text_color)
-        draw_small_text(font, input_code_name(reload_key), right_x0 + 180.0 * panel_scale, right_y0 + 230.0 * panel_scale, 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Misc", Vec2(right_x0 + 44.0 * panel_scale, right_y0 + 196.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Level Up:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 214.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(pick_perk_key), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 214.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, "Reload:", Vec2(right_x0 + 52.0 * panel_scale, right_y0 + 230.0 * panel_scale), 1.0 * panel_scale, text_color)
+        draw_small_text(font, input_code_name(reload_key), Vec2(right_x0 + 180.0 * panel_scale, right_y0 + 230.0 * panel_scale), 1.0 * panel_scale, text_color)

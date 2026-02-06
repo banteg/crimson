@@ -377,9 +377,9 @@ class DemoView:
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
-        draw_small_text(small, _DEMO_PURCHASE_TITLE, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), text_scale, color)
         y += 28.0
-        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), text_scale, color)
 
         underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE, text_scale)
         rl.draw_rectangle_rec(rl.Rectangle(x_text, y + 15.0, underline_w, 2.0), rl.Color(255, 255, 255, 160))
@@ -387,9 +387,9 @@ class DemoView:
         y += 22.0
         x_list = x_text + 8.0
         for line, delta_y in _DEMO_PURCHASE_FEATURE_LINES:
-            draw_small_text(small, line, x_list, y, text_scale, color)
+            draw_small_text(small, line, Vec2(x_list, y), text_scale, color)
             y += delta_y
-        draw_small_text(small, _DEMO_PURCHASE_FOOTER, x_text, y, text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), text_scale, color)
 
         # Buttons on the right.
         cache = self._ensure_cache()
@@ -673,7 +673,7 @@ class DemoView:
             rl.Color(128, 26, 26, bar_alpha),
         )
 
-        draw_grim_mono_text(font, msg, text_x, text_y, scale, rl.Color(255, 255, 255, txt_alpha))
+        draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
     def _update_world(self, dt: float) -> None:
         if not self._world.players:

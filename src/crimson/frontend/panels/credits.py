@@ -163,9 +163,7 @@ class CreditsView:
         draw_small_text(
             font,
             "credits",
-            panel_x0 + _TITLE_X * scale,
-            panel_y0 + _TITLE_Y * scale,
-            1.0 * scale,
+            Vec2(panel_x0 + _TITLE_X * scale, panel_y0 + _TITLE_Y * scale), 1.0 * scale,
             rl.Color(255, 255, 255, 255),
         )
 

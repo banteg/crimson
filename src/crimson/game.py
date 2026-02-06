@@ -772,7 +772,7 @@ class QuestsMenuView:
                     0.0,
                     rl.WHITE,
                 )
-                draw_small_text(font, "Hardcore", x + float(check_tex.width) + 6.0, y + 1.0, 1.0, base_color)
+                draw_small_text(font, "Hardcore", Vec2(x + float(check_tex.width) + 6.0, y + 1.0), 1.0, base_color)
 
         # Quest list (10 rows).
         for row in range(10):
@@ -780,13 +780,13 @@ class QuestsMenuView:
             unlocked = self._quest_unlocked(stage, row)
             color = hover_color if hovered_row == row else base_color
 
-            draw_small_text(font, f"{stage}.{row + 1}", list_x, y, 1.0, color)
+            draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_x, y), 1.0, color)
 
             if unlocked:
                 title = self._quest_title(stage, row)
             else:
                 title = "???"
-            draw_small_text(font, title, list_x + QUEST_LIST_NAME_X_OFFSET, y, 1.0, color)
+            draw_small_text(font, title, Vec2(list_x + QUEST_LIST_NAME_X_OFFSET, y), 1.0, color)
             title_w = measure_small_text_width(font, title, 1.0) if unlocked else 0.0
             if unlocked:
                 line_y = y + 13.0
@@ -797,13 +797,13 @@ class QuestsMenuView:
                 if counts is not None:
                     completed, games = counts
                     counts_x = list_x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
-                    draw_small_text(font, f"({completed}/{games})", counts_x, y, 1.0, color)
+                    draw_small_text(font, f"({completed}/{games})", Vec2(counts_x, y), 1.0, color)
 
         if show_counts:
             # Header is drawn below the list, aligned with the count column.
             header_x = list_x + 96.0
             header_y = y0 + QUEST_LIST_ROW_STEP * 10.0 - 2.0
-            draw_small_text(font, "(completed/games)", header_x, header_y, 1.0, base_color)
+            draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), 1.0, base_color)
 
         # Back button.
         textures = self._button_textures
@@ -1632,16 +1632,16 @@ class EndNoteView:
         header_color = rl.Color(255, 255, 255, int(255 * 0.8))
         body_color = rl.Color(255, 255, 255, int(255 * 0.5))
 
-        draw_small_text(font, header, header_x, header_y, 1.5 * scale, header_color)
+        draw_small_text(font, header, Vec2(header_x, header_y), 1.5 * scale, header_color)
 
         body_x = panel_left + END_NOTE_BODY_X_OFFSET * scale
         body_y = header_y + END_NOTE_BODY_Y_GAP * scale
         for idx, line in enumerate(body_lines):
-            draw_small_text(font, line, body_x, body_y, 1.0 * scale, body_color)
+            draw_small_text(font, line, Vec2(body_x, body_y), 1.0 * scale, body_color)
             if idx != len(body_lines) - 1:
                 body_y += END_NOTE_LINE_STEP_Y * scale
         body_y += END_NOTE_AFTER_BODY_Y_GAP * scale
-        draw_small_text(font, "Good luck with your battles, trooper!", body_x, body_y, 1.0 * scale, body_color)
+        draw_small_text(font, "Good luck with your battles, trooper!", Vec2(body_x, body_y), 1.0 * scale, body_color)
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
@@ -1847,9 +1847,7 @@ class QuestFailedView:
         draw_small_text(
             font,
             self._failure_message(),
-            panel_left + QUEST_FAILED_MESSAGE_X_OFFSET,
-            panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET,
-            1.0,
+            Vec2(panel_left + QUEST_FAILED_MESSAGE_X_OFFSET, panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET), 1.0,
             text_color,
         )
         self._draw_score_preview(font, panel_left=panel_left, panel_top=panel_top)
@@ -2000,20 +1998,20 @@ class QuestFailedView:
 
         score_label = "Score"
         score_label_w = self._text_width(score_label, 1.0)
-        draw_small_text(font, score_label, x + 32.0 - score_label_w * 0.5, y, 1.0, label_color)
+        draw_small_text(font, score_label, Vec2(x + 32.0 - score_label_w * 0.5, y), 1.0, label_color)
 
         score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
         score_value_w = self._text_width(score_value, 1.0)
-        draw_small_text(font, score_value, x + 32.0 - score_value_w * 0.5, y + 15.0, 1.0, value_color)
+        draw_small_text(font, score_value, Vec2(x + 32.0 - score_value_w * 0.5, y + 15.0), 1.0, value_color)
 
         sep_x = x + 80.0
         rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0), separator_color)
 
         col2_x = x + 96.0
-        draw_small_text(font, "Experience", col2_x, y, 1.0, value_color)
+        draw_small_text(font, "Experience", Vec2(col2_x, y), 1.0, value_color)
         xp_value = f"{int(record.score_xp)}"
         xp_w = self._text_width(xp_value, 1.0)
-        draw_small_text(font, xp_value, col2_x + 32.0 - xp_w * 0.5, y + 15.0, 1.0, label_color)
+        draw_small_text(font, xp_value, Vec2(col2_x + 32.0 - xp_w * 0.5, y + 15.0), 1.0, label_color)
 
         # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
         rl.draw_rectangle(int(x - 16.0), int(y + 52.0), int(192.0), int(1.0), separator_color)
@@ -2295,7 +2293,7 @@ class HighScoresView:
             # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
             title_x = 266.0
         title_draw_x = left_x0 + title_x * scale
-        draw_small_text(font, title, title_draw_x, left_y0 + 41.0 * scale, 1.0 * scale, rl.Color(255, 255, 255, 255))
+        draw_small_text(font, title, Vec2(title_draw_x, left_y0 + 41.0 * scale), 1.0 * scale, rl.Color(255, 255, 255, 255))
         ul_x = title_draw_x
         ul_y = left_y0 + HS_TITLE_UNDERLINE_Y * scale
         ul_w = measure_small_text_width(font, title, 1.0 * scale)
@@ -2308,7 +2306,7 @@ class HighScoresView:
             else:
                 quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
             quest_label = f"{int(quest_major)}.{int(quest_minor)}: {self._quest_title(quest_major, quest_minor)}"
-            draw_small_text(font, quest_label, left_x0 + 236.0 * scale, left_y0 + 63.0 * scale, 1.0 * scale, quest_color)
+            draw_small_text(font, quest_label, Vec2(left_x0 + 236.0 * scale, left_y0 + 63.0 * scale), 1.0 * scale, quest_color)
             arrow = self._arrow_tex
             if arrow is not None:
                 dst_w = float(arrow.width) * scale
@@ -2320,9 +2318,9 @@ class HighScoresView:
 
         header_color = rl.Color(255, 255, 255, int(255 * 0.85))
         row_y0 = left_y0 + 84.0 * scale
-        draw_small_text(font, "Rank", left_x0 + 211.0 * scale, row_y0, 1.0 * scale, header_color)
-        draw_small_text(font, "Score", left_x0 + 246.0 * scale, row_y0, 1.0 * scale, header_color)
-        draw_small_text(font, "Player", left_x0 + 302.0 * scale, row_y0, 1.0 * scale, header_color)
+        draw_small_text(font, "Rank", Vec2(left_x0 + 211.0 * scale, row_y0), 1.0 * scale, header_color)
+        draw_small_text(font, "Score", Vec2(left_x0 + 246.0 * scale, row_y0), 1.0 * scale, header_color)
+        draw_small_text(font, "Player", Vec2(left_x0 + 302.0 * scale, row_y0), 1.0 * scale, header_color)
 
         # Score list viewport frame (white 1px border + black interior).
         frame_x = left_x0 + HS_SCORE_FRAME_X * scale
@@ -2345,7 +2343,7 @@ class HighScoresView:
         y = left_y0 + 103.0 * scale
 
         if start >= end:
-            draw_small_text(font, "No scores yet.", left_x0 + 211.0 * scale, y + 8.0 * scale, 1.0 * scale, rl.Color(190, 190, 200, 255))
+            draw_small_text(font, "No scores yet.", Vec2(left_x0 + 211.0 * scale, y + 8.0 * scale), 1.0 * scale, rl.Color(190, 190, 200, 255))
         else:
             for idx in range(start, end):
                 entry = self._records[idx]
@@ -2365,9 +2363,9 @@ class HighScoresView:
                 if highlight_rank is not None and int(highlight_rank) == idx:
                     color = rl.Color(255, 255, 255, 255)
 
-                draw_small_text(font, f"{idx + 1}", left_x0 + 216.0 * scale, y, 1.0 * scale, color)
-                draw_small_text(font, value, left_x0 + 246.0 * scale, y, 1.0 * scale, color)
-                draw_small_text(font, name, left_x0 + 304.0 * scale, y, 1.0 * scale, color)
+                draw_small_text(font, f"{idx + 1}", Vec2(left_x0 + 216.0 * scale, y), 1.0 * scale, color)
+                draw_small_text(font, value, Vec2(left_x0 + 246.0 * scale, y), 1.0 * scale, color)
+                draw_small_text(font, name, Vec2(left_x0 + 304.0 * scale, y), 1.0 * scale, color)
                 y += row_step
 
         textures = self._button_textures
@@ -2433,41 +2431,31 @@ class HighScoresView:
         draw_small_text(
             font,
             "Show internet scores",
-            right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale,
-            right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_INTERNET_X * scale, right_y0 + HS_RIGHT_SHOW_INTERNET_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Number of players",
-            right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale,
-            right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_NUMBER_PLAYERS_X * scale, right_y0 + HS_RIGHT_NUMBER_PLAYERS_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game mode",
-            right_x0 + HS_RIGHT_GAME_MODE_X * scale,
-            right_y0 + HS_RIGHT_GAME_MODE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_GAME_MODE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Show scores:",
-            right_x0 + HS_RIGHT_SHOW_SCORES_X * scale,
-            right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Selected score list:",
-            right_x0 + HS_RIGHT_SCORE_LIST_X * scale,
-            right_y0 + HS_RIGHT_SCORE_LIST_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_Y * scale), text_scale,
             text_color,
         )
 
@@ -2489,33 +2477,25 @@ class HighScoresView:
         draw_small_text(
             font,
             "1 player",
-            right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale,
-            right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_PLAYER_COUNT_VALUE_X * scale, right_y0 + HS_RIGHT_PLAYER_COUNT_VALUE_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Quests",
-            right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale,
-            right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_GAME_MODE_VALUE_X * scale, right_y0 + HS_RIGHT_GAME_MODE_VALUE_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Best of all time",
-            right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale,
-            right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_SHOW_SCORES_VALUE_X * scale, right_y0 + HS_RIGHT_SHOW_SCORES_VALUE_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "default",
-            right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale,
-            right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_RIGHT_SCORE_LIST_VALUE_X * scale, right_y0 + HS_RIGHT_SCORE_LIST_VALUE_Y * scale), text_scale,
             text_color,
         )
 
@@ -2567,13 +2547,11 @@ class HighScoresView:
             name = ""
         if not name:
             name = "???"
-        draw_small_text(font, name, right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale, text_scale, text_color)
+        draw_small_text(font, name, Vec2(right_x0 + HS_LOCAL_NAME_X * scale, right_y0 + HS_LOCAL_NAME_Y * scale), text_scale, text_color)
         draw_small_text(
             font,
             "Local score",
-            right_x0 + HS_LOCAL_LABEL_X * scale,
-            right_y0 + HS_LOCAL_LABEL_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_LABEL_X * scale, right_y0 + HS_LOCAL_LABEL_Y * scale), text_scale,
             text_color,
         )
 
@@ -2582,26 +2560,20 @@ class HighScoresView:
             draw_small_text(
                 font,
                 date_text,
-                right_x0 + HS_LOCAL_DATE_X * scale,
-                right_y0 + HS_LOCAL_DATE_Y * scale,
-                text_scale,
+                Vec2(right_x0 + HS_LOCAL_DATE_X * scale, right_y0 + HS_LOCAL_DATE_Y * scale), text_scale,
                 text_color,
             )
 
         draw_small_text(
             font,
             "Score",
-            right_x0 + HS_LOCAL_SCORE_LABEL_X * scale,
-            right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_SCORE_LABEL_X * scale, right_y0 + HS_LOCAL_SCORE_LABEL_Y * scale), text_scale,
             text_color,
         )
         draw_small_text(
             font,
             "Game time",
-            right_x0 + HS_LOCAL_TIME_LABEL_X * scale,
-            right_y0 + HS_LOCAL_TIME_LABEL_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_TIME_LABEL_X * scale, right_y0 + HS_LOCAL_TIME_LABEL_Y * scale), text_scale,
             text_color,
         )
 
@@ -2609,9 +2581,7 @@ class HighScoresView:
         draw_small_text(
             font,
             score_value,
-            right_x0 + HS_LOCAL_SCORE_VALUE_X * scale,
-            right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_SCORE_VALUE_X * scale, right_y0 + HS_LOCAL_SCORE_VALUE_Y * scale), text_scale,
             text_color,
         )
 
@@ -2619,18 +2589,14 @@ class HighScoresView:
         draw_small_text(
             font,
             self._format_elapsed_mm_ss(elapsed_ms),
-            right_x0 + HS_LOCAL_TIME_VALUE_X * scale,
-            right_y0 + HS_LOCAL_TIME_VALUE_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_TIME_VALUE_X * scale, right_y0 + HS_LOCAL_TIME_VALUE_Y * scale), text_scale,
             text_color,
         )
 
         draw_small_text(
             font,
             f"Rank: {self._ordinal(idx + 1)}",
-            right_x0 + HS_LOCAL_RANK_X * scale,
-            right_y0 + HS_LOCAL_RANK_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_RANK_X * scale, right_y0 + HS_LOCAL_RANK_Y * scale), text_scale,
             text_color,
         )
 
@@ -2638,9 +2604,7 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Frags: {frags}",
-            right_x0 + HS_LOCAL_FRAGS_X * scale,
-            right_y0 + HS_LOCAL_FRAGS_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_FRAGS_X * scale, right_y0 + HS_LOCAL_FRAGS_Y * scale), text_scale,
             text_color,
         )
 
@@ -2652,9 +2616,7 @@ class HighScoresView:
         draw_small_text(
             font,
             f"Hit %: {hit_pct}%",
-            right_x0 + HS_LOCAL_HIT_X * scale,
-            right_y0 + HS_LOCAL_HIT_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_HIT_X * scale, right_y0 + HS_LOCAL_HIT_Y * scale), text_scale,
             text_color,
         )
 
@@ -2665,9 +2627,7 @@ class HighScoresView:
         draw_small_text(
             font,
             weapon_name,
-            right_x0 + HS_LOCAL_WEAPON_X * scale,
-            right_y0 + HS_LOCAL_WEAPON_Y * scale,
-            text_scale,
+            Vec2(right_x0 + HS_LOCAL_WEAPON_X * scale, right_y0 + HS_LOCAL_WEAPON_Y * scale), text_scale,
             text_color,
         )
 

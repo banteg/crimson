@@ -91,14 +91,9 @@ def heading_from_center(point: Vec2, center: Vec2) -> float:
     return (point - center).to_angle() - (math.pi / 2.0)
 
 
-def line_points_x(start: float, step: float, count: int, y: float) -> Iterator[Vec2]:
+def line_points(start: Vec2, step: Vec2, count: int) -> Iterator[Vec2]:
     for idx in range(count):
-        yield Vec2(start + float(idx) * step, y)
-
-
-def line_points_y(start: float, step: float, count: int, x: float) -> Iterator[Vec2]:
-    for idx in range(count):
-        yield Vec2(x, start + float(idx) * step)
+        yield start + step * float(idx)
 
 
 def spawn(

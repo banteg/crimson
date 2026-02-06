@@ -332,7 +332,7 @@ class OptionsMenuView(PanelMenuView):
 
         y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
-            draw_small_text(font, label, label_x, base_y + offset * scale, text_scale, text_color)
+            draw_small_text(font, label, Vec2(label_x, base_y + offset * scale), text_scale, text_color)
 
         rect_on = self._rect_on
         rect_off = self._rect_off
@@ -365,9 +365,7 @@ class OptionsMenuView(PanelMenuView):
             draw_small_text(
                 font,
                 "UI Info texts",
-                check_x + check_w + 6.0 * scale,
-                check_y + 1.0 * scale,
-                text_scale,
+                Vec2(check_x + check_w + 6.0 * scale, check_y + 1.0 * scale), text_scale,
                 text_color,
             )
 

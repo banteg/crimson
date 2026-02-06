@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.geom import Vec2
 
 from pathlib import Path
 
@@ -101,9 +102,9 @@ class ModsMenuView(PanelMenuView):
         title_color = rl.Color(255, 255, 255, 255)
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
-        draw_small_text(font, "MODS", base_x, base_y, title_scale, title_color)
+        draw_small_text(font, "MODS", Vec2(base_x, base_y), title_scale, title_color)
         line_y = base_y + 44.0 * scale
         line_step = (font.cell_size + 4.0) * scale
         for line in self._lines:
-            draw_small_text(font, line, label_x, line_y, text_scale, text_color)
+            draw_small_text(font, line, Vec2(label_x, line_y), text_scale, text_color)
             line_y += line_step

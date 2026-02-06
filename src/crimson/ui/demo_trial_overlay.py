@@ -134,7 +134,7 @@ class DemoTrialOverlayUi:
         y_pos = float(pos.y)
         for line in lines:
             if font is not None:
-                draw_small_text(font, line, float(pos.x), y_pos, float(scale), color)
+                draw_small_text(font, line, Vec2(float(pos.x), y_pos), float(scale), color)
             else:
                 rl.draw_text(line, int(pos.x), int(y_pos), int(20 * scale), color)
             y_pos += float(line_h)
@@ -162,7 +162,7 @@ class DemoTrialOverlayUi:
         font = self._font
         header = "You have been playing the Demo version of Crimsonland."
         if font is not None:
-            draw_small_text(font, header, panel_pos.x + 28.0, panel_pos.y + 9.0, 1.0, rl.Color(220, 220, 220, 255))
+            draw_small_text(font, header, Vec2(panel_pos.x + 28.0, panel_pos.y + 9.0), 1.0, rl.Color(220, 220, 220, 255))
         else:
             rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 

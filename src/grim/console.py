@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.geom import Vec2
 
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -322,26 +323,26 @@ class ConsoleState:
 
         version_x = screen_w - CONSOLE_VERSION_OFFSET_X
         version_y = offset_y + height - CONSOLE_VERSION_OFFSET_Y
-        self._draw_version_text(version_x, version_y, _rgba(1.0, 1.0, 1.0, ratio * 0.3))
+        self._draw_version_text(Vec2(version_x, version_y), _rgba(1.0, 1.0, 1.0, ratio * 0.3))
 
         visible, visible_count = self._visible_log_block(height)
         input_y = offset_y + (visible_count + 1) * CONSOLE_LINE_HEIGHT
         text_color = _rgba(1.0, 1.0, 1.0, ratio)
         use_mono = self._use_mono_font()
         if use_mono:
-            self._draw_mono_text(CONSOLE_PROMPT_MONO, CONSOLE_TEXT_X, input_y, text_color)
-            self._draw_mono_text(self.input_buffer, CONSOLE_INPUT_X_MONO, input_y, text_color)
+            self._draw_mono_text(CONSOLE_PROMPT_MONO, Vec2(CONSOLE_TEXT_X, input_y), text_color)
+            self._draw_mono_text(self.input_buffer, Vec2(CONSOLE_INPUT_X_MONO, input_y), text_color)
         else:
             prompt = CONSOLE_PROMPT_SMALL_FMT.replace("%s", self.input_buffer)
-            self._draw_small_text(prompt, CONSOLE_TEXT_X, input_y, text_color)
+            self._draw_small_text(prompt, Vec2(CONSOLE_TEXT_X, input_y), text_color)
 
         log_color = _rgba(0.6, 0.6, 0.7, ratio)
         y = offset_y + CONSOLE_LINE_HEIGHT
         for line in visible:
             if use_mono:
-                self._draw_mono_text(line, CONSOLE_TEXT_X, y, log_color)
+                self._draw_mono_text(line, Vec2(CONSOLE_TEXT_X, y), log_color)
             else:
-                self._draw_small_text(line, CONSOLE_TEXT_X, y, log_color)
+                self._draw_small_text(line, Vec2(CONSOLE_TEXT_X, y), log_color)
             y += CONSOLE_LINE_HEIGHT
 
         caret_alpha = ratio * self._caret_blink_alpha()
@@ -349,10 +350,10 @@ class ConsoleState:
         caret_y = input_y + 2.0
         if use_mono:
             caret_x = CONSOLE_INPUT_X_MONO + float(self.input_caret) * 8.0
-            self._draw_mono_text(CONSOLE_CARET_TEXT, caret_x, caret_y, caret_color)
+            self._draw_mono_text(CONSOLE_CARET_TEXT, Vec2(caret_x, caret_y), caret_color)
         else:
             caret_x = self._small_caret_x()
-            self._draw_small_text(CONSOLE_CARET_TEXT, caret_x, caret_y, caret_color)
+            self._draw_small_text(CONSOLE_CARET_TEXT, Vec2(caret_x, caret_y), caret_color)
 
     def close(self) -> None:
         if self._mono_font is not None:
@@ -560,27 +561,27 @@ class ConsoleState:
             self._small_font = None
         return self._small_font
 
-    def _draw_mono_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
+    def _draw_mono_text(self, text: str, pos: Vec2, color: rl.Color) -> None:
         font = self._ensure_mono_font()
         if font is None:
-            rl.draw_text(text, int(x), int(y), int(16 * CONSOLE_MONO_SCALE), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(16 * CONSOLE_MONO_SCALE), color)
             return
         advance = font.advance * CONSOLE_MONO_SCALE
-        draw_grim_mono_text(font, text, x - advance, y, CONSOLE_MONO_SCALE, color)
+        draw_grim_mono_text(font, text, Vec2(pos.x - advance, pos.y), CONSOLE_MONO_SCALE, color)
 
-    def _draw_small_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
+    def _draw_small_text(self, text: str, pos: Vec2, color: rl.Color) -> None:
         font = self._ensure_small_font()
         if font is None:
-            rl.draw_text(text, int(x), int(y), int(16 * CONSOLE_SMALL_SCALE), color)
+            rl.draw_text(text, int(pos.x), int(pos.y), int(16 * CONSOLE_SMALL_SCALE), color)
             return
-        draw_small_text(font, text, x, y, CONSOLE_SMALL_SCALE, color)
+        draw_small_text(font, text, pos, CONSOLE_SMALL_SCALE, color)
 
-    def _draw_version_text(self, x: float, y: float, color: rl.Color) -> None:
+    def _draw_version_text(self, pos: Vec2, color: rl.Color) -> None:
         font = self._ensure_small_font()
         if font is None:
-            self._draw_mono_text(CONSOLE_VERSION_TEXT, x, y, color)
+            self._draw_mono_text(CONSOLE_VERSION_TEXT, pos, color)
             return
-        draw_small_text(font, CONSOLE_VERSION_TEXT, x, y, CONSOLE_SMALL_SCALE, color)
+        draw_small_text(font, CONSOLE_VERSION_TEXT, pos, CONSOLE_SMALL_SCALE, color)
 
     def _small_caret_x(self) -> float:
         font = self._ensure_small_font()

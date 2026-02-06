@@ -264,7 +264,7 @@ class QuestResultsUi:
 
     def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         if self.font is not None:
-            draw_small_text(self.font, text, pos.x, pos.y, scale, color)
+            draw_small_text(self.font, text, Vec2(pos.x, pos.y), scale, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 

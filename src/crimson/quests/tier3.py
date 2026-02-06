@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import random
 
+from grim.geom import Vec2
+
 from ..perks import PerkId
 from ..creatures.spawn import SpawnId
 from .helpers import (
     center_point,
     edge_midpoints,
-    line_points_x,
-    line_points_y,
+    line_points,
     radial_points,
     random_angle,
     ring_points,
@@ -283,7 +284,7 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
 def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
-    for pos in line_points_y(256.0, 102.4, 5, 256.0):
+    for pos in line_points(Vec2(256.0, 256.0), Vec2(0.0, 102.4), 5):
         entries.append(
             spawn(
                 x=256.0,
@@ -307,7 +308,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 800
 
     trigger = 8000
-    for pos in line_points_x(256.0, 102.4, 5, 256.0):
+    for pos in line_points(Vec2(256.0, 256.0), Vec2(102.4, 0.0), 5):
         entries.append(
             spawn(
                 x=pos.x,

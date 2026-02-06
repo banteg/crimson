@@ -1,4 +1,5 @@
 from __future__ import annotations
+from grim.geom import Vec2
 
 from dataclasses import dataclass
 
@@ -97,12 +98,10 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alp
     title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
     number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO * alpha))
 
-    draw_grim_mono_text(font, title, layout.title_x, layout.title_y, layout.title_scale, title_color)
+    draw_grim_mono_text(font, title, Vec2(layout.title_x, layout.title_y), layout.title_scale, title_color)
     draw_grim_mono_text(
         font,
         number,
-        layout.number_x,
-        layout.number_y,
-        layout.number_scale,
+        Vec2(layout.number_x, layout.number_y), layout.number_scale,
         number_color,
     )

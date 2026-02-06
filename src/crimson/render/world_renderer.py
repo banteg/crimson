@@ -260,8 +260,8 @@ class WorldRenderer:
                 x = max(0.0, screen_w - text_w)
 
             if font is not None:
-                draw_small_text(font, label, x + 1.0, y + 1.0, text_scale, shadow)
-                draw_small_text(font, label, x, y, text_scale, color)
+                draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), text_scale, shadow)
+                draw_small_text(font, label, Vec2(x, y), text_scale, color)
             else:
                 rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
                 rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)

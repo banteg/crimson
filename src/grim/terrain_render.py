@@ -512,13 +512,13 @@ class GroundRenderer:
         if bodyset_texture is None or not self._fallback_corpse_decals:
             return
 
-        def draw_corpse(size: float, pivot_x: float, pivot_y: float, rotation_deg: float, tint: rl.Color, src: rl.Rectangle) -> None:
-            if pivot_x + size * 0.5 < view_x0 or pivot_x - size * 0.5 > view_x1:
+        def draw_corpse(size: float, pivot: Vec2, rotation_deg: float, tint: rl.Color, src: rl.Rectangle) -> None:
+            if pivot.x + size * 0.5 < view_x0 or pivot.x - size * 0.5 > view_x1:
                 return
-            if pivot_y + size * 0.5 < view_y0 or pivot_y - size * 0.5 > view_y1:
+            if pivot.y + size * 0.5 < view_y0 or pivot.y - size * 0.5 > view_y1:
                 return
-            sx = (pivot_x + camera.x) * scale_x
-            sy = (pivot_y + camera.y) * scale_y
+            sx = (pivot.x + camera.x) * scale_x
+            sy = (pivot.y + camera.y) * scale_y
             sw = size * scale_x
             sh = size * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(sw), float(sh))
@@ -538,11 +538,13 @@ class GroundRenderer:
                     for decal in self._fallback_corpse_decals:
                         src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                         size = float(decal.size) * 1.064
-                        pivot_x = float(decal.top_left.x - 0.5) + size * 0.5
-                        pivot_y = float(decal.top_left.y - 0.5) + size * 0.5
+                        pivot = Vec2(
+                            float(decal.top_left.x - 0.5) + size * 0.5,
+                            float(decal.top_left.y - 0.5) + size * 0.5,
+                        )
                         tint = rl.Color(decal.tint.r, decal.tint.g, decal.tint.b, int(decal.tint.a * 0.5))
                         rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
-                        draw_corpse(size, pivot_x, pivot_y, rotation_deg, tint, src)
+                        draw_corpse(size, pivot, rotation_deg, tint, src)
 
             with _blend_custom_separate(
                 rl.RL_SRC_ALPHA,
@@ -555,10 +557,9 @@ class GroundRenderer:
                 for decal in self._fallback_corpse_decals:
                     src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
                     size = float(decal.size)
-                    pivot_x = float(decal.top_left.x) + size * 0.5
-                    pivot_y = float(decal.top_left.y) + size * 0.5
+                    pivot = Vec2(float(decal.top_left.x) + size * 0.5, float(decal.top_left.y) + size * 0.5)
                     rotation_deg = math.degrees(float(decal.rotation_rad) - (math.pi * 0.5))
-                    draw_corpse(size, pivot_x, pivot_y, rotation_deg, decal.tint, src)
+                    draw_corpse(size, pivot, rotation_deg, decal.tint, src)
 
     def draw(
         self,

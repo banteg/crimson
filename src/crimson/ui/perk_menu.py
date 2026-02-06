@@ -232,7 +232,7 @@ def draw_ui_text(
     color: rl.Color,
 ) -> None:
     if font is not None:
-        draw_small_text(font, text, x, y, scale, color)
+        draw_small_text(font, text, Vec2(x, y), scale, color)
     else:
         rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
