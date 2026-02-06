@@ -51,6 +51,22 @@ Global bonus timers used by `player_update` and the main loop:
 | `bonus_freeze_timer` | Freeze timer | Bonus id 11 |
 | `time_scale_active` / `time_scale_factor` | time-scale active + factor | driven by Reflex Boost |
 
+### Recovered gameplay helper globals
+
+- `player_alt_weapon_swap_cooldown_ms` (`DAT_0048719c`)
+  - Reload-key debounce for Alternate Weapon swapping (`200ms` lockout per swap).
+- `perk_jinxed_proc_timer_s` (`_DAT_004aaf1c`)
+  - Jinxed perk proc timer reseeded in `perks_update_effects`.
+- `perk_man_bomb_trigger_interval_s` / `perk_fire_cough_trigger_interval_s` /
+  `perk_hot_tempered_trigger_interval_s` (`_DAT_00473310/14/18`)
+  - Trigger thresholds used against `player_man_bomb_timer`, `player_fire_cough_timer`,
+    and `player_hot_tempered_timer`.
+- `survival_reward_weapon_guard_id` (`DAT_00486fb8`)
+  - Guard id used by Survival handout logic (`0x18`/`0x19`) and checked during world render to
+    revoke temporary handout weapons.
+- `quest_spawn_stall_timer_ms` (`DAT_004c3654`)
+  - Quest fallback timer in `quest_spawn_timeline_update` when creatures remain active.
+
 ### Bonus HUD slots (active bonus list)
 
 `bonus_apply` registers timed bonuses in the HUD list via `bonus_hud_slot_activate`, and

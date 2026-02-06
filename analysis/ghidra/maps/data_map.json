@@ -128,6 +128,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00473310",
+      "comment": "Perk Man Bomb trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_man_bomb_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00473314",
+      "comment": "Perk Fire Cough trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_fire_cough_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00473318",
+      "comment": "Perk Hot Tempered trigger interval threshold (seconds) used by player_update.",
+      "name": "perk_hot_tempered_trigger_interval_s",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047365c",
       "comment": "Filename for the status blob (game.cfg).",
       "name": "game_status_filename",
@@ -1816,6 +1834,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00486fb8",
+      "comment": "Survival reward weapon guard id (set to 0x18/0x19 by survival_update handouts; used by gameplay_render_world to revert temporary reward weapons).",
+      "name": "survival_reward_weapon_guard_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00486fbc",
       "comment": "Shock Chain link counter; decremented on each chained hit.",
       "name": "shock_chain_links_left",
@@ -2119,6 +2144,20 @@
       "address": "0x00487194",
       "comment": "Quest failed screen retry counter (increments on \"Play Again\"; selects variant message text).",
       "name": "quest_fail_retry_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487198",
+      "comment": "Per-frame heading turn delta produced by player_heading_approach_target before applying to player heading/aim heading.",
+      "name": "player_heading_turn_delta",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048719c",
+      "comment": "Alternate-weapon swap debounce timer in milliseconds (reload-key hold gate in player_update).",
+      "name": "player_alt_weapon_swap_cooldown_ms",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -4708,6 +4747,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004aaf1c",
+      "comment": "Perk Jinxed self-damage proc timer (seconds); decremented each frame and reseeded with randomized interval in perks_update_effects.",
+      "name": "perk_jinxed_proc_timer_s",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004aaf3c",
       "comment": "Rotated FX queue base (0x40 entries)",
       "name": "fx_queue_rotated",
@@ -5341,6 +5387,13 @@
       "name": "quest_meta_cursor",
       "program": "crimsonland.exe",
       "type": "quest_meta_t *"
+    },
+    {
+      "address": "0x004c3654",
+      "comment": "Quest spawn stall timer in milliseconds (advances while creatures remain active; used by quest_spawn_timeline_update fail-safe trigger).",
+      "name": "quest_spawn_stall_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3658",

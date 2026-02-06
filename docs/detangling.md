@@ -1379,6 +1379,30 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
     `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `crt_ci_pow()`.
 
+### Gameplay timer/guard globals (high confidence)
+
+- Labeled `player_alt_weapon_swap_cooldown_ms` (`DAT_0048719c`):
+  - Evidence: `player_update` decrements it by `frame_dt_ms`, sets it to `200` after a successful
+    alternate-weapon swap, and clears it when reload key is released.
+
+- Labeled `perk_jinxed_proc_timer_s` (`_DAT_004aaf1c`):
+  - Evidence: `perks_update_effects` decrements it each frame and, when elapsed, applies the
+    Jinxed self-damage roll then reseeds it to `2.0 + rand(0..1.9)`.
+
+- Labeled `survival_reward_weapon_guard_id` (`DAT_00486fb8`):
+  - Evidence: `survival_update` writes `0x18`/`0x19` on Survival handouts, and
+    `gameplay_render_world` uses it to revoke temporary reward weapons when the guard mismatches.
+
+- Labeled `quest_spawn_stall_timer_ms` (`DAT_004c3654`):
+  - Evidence: `quest_spawn_timeline_update` increments it while creatures are active and allows a
+    fallback trigger after `3000ms` to avoid stalled spawn progression.
+
+- Labeled perk trigger interval globals:
+  - `perk_man_bomb_trigger_interval_s` (`_DAT_00473310`)
+  - `perk_fire_cough_trigger_interval_s` (`_DAT_00473314`)
+  - `perk_hot_tempered_trigger_interval_s` (`_DAT_00473318`)
+  - Evidence: all three act as threshold/reseed intervals against their respective per-player perk timers.
+
 ### UI template/audio init helpers (high confidence)
 
 - `FUN_00417690` -> `ui_menu_template_pool_init`

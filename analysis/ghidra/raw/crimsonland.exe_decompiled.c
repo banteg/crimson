@@ -4159,10 +4159,10 @@ void gameplay_render_world(void)
   player_index = 0;
   piVar1 = &player_state_table.weapon_id;
   do {
-    if ((*piVar1 == 0x19) && (DAT_00486fb8 != 0x19)) {
+    if ((*piVar1 == 0x19) && (survival_reward_weapon_guard_id != 0x19)) {
       weapon_assign_player(player_index,1);
     }
-    if ((*piVar1 == 0x18) && (DAT_00486fb8 != 0x18)) {
+    if ((*piVar1 == 0x18) && (survival_reward_weapon_guard_id != 0x18)) {
       weapon_assign_player(player_index,1);
     }
     piVar1 = piVar1 + 0xd8;
@@ -4826,8 +4826,9 @@ void perks_update_effects(void)
   if (iVar2 == 0) {
     player_state_table.evil_eyes_target_creature = -1;
   }
-  if (((_DAT_004aaf1c < 0.0) || (_DAT_004aaf1c = _DAT_004aaf1c - frame_dt, _DAT_004aaf1c < 0.0)) &&
-     (0 < player_state_table.perk_counts[perk_id_jinxed])) {
+  if (((perk_jinxed_proc_timer_s < 0.0) ||
+      (perk_jinxed_proc_timer_s = perk_jinxed_proc_timer_s - frame_dt,
+      perk_jinxed_proc_timer_s < 0.0)) && (0 < player_state_table.perk_counts[perk_id_jinxed])) {
     iVar2 = crt_rand();
     if (iVar2 % 10 == 3) {
       player_state_table.health = player_state_table.health - 5.0;
@@ -4835,7 +4836,7 @@ void perks_update_effects(void)
       fx_queue_add_random(&player_state_table.pos_x);
     }
     iVar2 = crt_rand();
-    _DAT_004aaf1c = (float)(iVar2 % 0x14) * 0.1 + _DAT_004aaf1c + 2.0;
+    perk_jinxed_proc_timer_s = (float)(iVar2 % 0x14) * 0.1 + perk_jinxed_proc_timer_s + 2.0;
     if (_bonus_freeze_timer <= 0.0) {
       iVar2 = crt_rand();
       render_overlay_player_index = 0;
@@ -5324,7 +5325,7 @@ void survival_update(void)
        (survival_reward_handout_enabled != '\0')) {
       if (player_state_table.weapon_id == 1) {
         weapon_assign_player(0,0x18);
-        DAT_00486fb8 = 0x18;
+        survival_reward_weapon_guard_id = 0x18;
       }
       survival_reward_handout_enabled = '\0';
       survival_reward_damage_seen = '\x01';
@@ -5340,7 +5341,7 @@ void survival_update(void)
              (player_state_table.pos_y - local_44) * (player_state_table.pos_y - local_44)) < 16.0
         && (player_state_table.health < 15.0)))) {
       weapon_assign_player(0,0x19);
-      DAT_00486fb8 = 0x19;
+      survival_reward_weapon_guard_id = 0x19;
       survival_reward_fire_seen = '\x01';
       survival_reward_handout_enabled = '\0';
     }
@@ -11346,7 +11347,7 @@ void gameplay_reset_state(void)
   } while ((int)pbVar2 < 0x48f78c);
   quest_spawn_timeline = 0;
   shock_chain_links_left = 0;
-  DAT_00486fb8 = 1;
+  survival_reward_weapon_guard_id = 1;
   creature_spawned_count = 0;
   survival_recent_death_count = 0;
   survival_reward_damage_seen = 0;
@@ -11469,7 +11470,7 @@ void gameplay_reset_state(void)
   highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
-  _DAT_004aaf1c = 0;
+  perk_jinxed_proc_timer_s = 0.0;
   _DAT_004aaf2c = 0xbf800000;
   _perk_prompt_timer = 0;
   projectile_reset_pools();
@@ -11595,7 +11596,6 @@ void player_start_reload(void)
 
 /* player_heading_approach_target @ 00413540 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* wraps heading to [0,2pi], turns toward target_heading, and returns shortest angular distance */
 
 float __cdecl player_heading_approach_target(float target_heading)
@@ -11633,17 +11633,18 @@ float __cdecl player_heading_approach_target(float target_heading)
   }
   if (fVar3 <= fVar4) {
     if ((&player_state_table)[iVar2].heading < target_heading) {
-      _DAT_00487198 = frame_dt * fVar1 * 5.0;
+      player_heading_turn_delta = frame_dt * fVar1 * 5.0;
       goto LAB_00413686;
     }
   }
   else if (target_heading < (&player_state_table)[iVar2].heading) {
-    _DAT_00487198 = frame_dt * fVar1 * 5.0;
+    player_heading_turn_delta = frame_dt * fVar1 * 5.0;
     goto LAB_00413686;
   }
-  _DAT_00487198 = frame_dt * fVar1 * -5.0;
+  player_heading_turn_delta = frame_dt * fVar1 * -5.0;
 LAB_00413686:
-  (&player_state_table)[iVar2].heading = _DAT_00487198 + (&player_state_table)[iVar2].heading;
+  (&player_state_table)[iVar2].heading =
+       player_heading_turn_delta + (&player_state_table)[iVar2].heading;
   return fVar1;
 }
 
@@ -11760,7 +11761,7 @@ void player_update(void)
   else {
     fVar14 = frame_dt + (&player_state_table)[iVar7].man_bomb_timer;
     (&player_state_table)[iVar7].man_bomb_timer = fVar14;
-    if (_DAT_00473310 < fVar14) {
+    if (_perk_man_bomb_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         iVar10 = -100;
       }
@@ -11784,8 +11785,8 @@ void player_update(void)
       } while ((int)local_38 < 8);
       sfx_play_panned(sfx_explosion_small);
       (&player_state_table)[iVar7].man_bomb_timer =
-           (&player_state_table)[iVar7].man_bomb_timer - _DAT_00473310;
-      _DAT_00473310 = 4.0;
+           (&player_state_table)[iVar7].man_bomb_timer - _perk_man_bomb_trigger_interval_s;
+      _perk_man_bomb_trigger_interval_s = 4.0;
     }
   }
   iVar10 = perk_count_get(perk_id_living_fortress);
@@ -11806,7 +11807,7 @@ void player_update(void)
   else {
     fVar14 = frame_dt + (&player_state_table)[iVar7].fire_cough_timer;
     (&player_state_table)[iVar7].fire_cough_timer = fVar14;
-    if (_DAT_00473314 < fVar14) {
+    if (_perk_fire_cough_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         local_40 = -NAN;
       }
@@ -11857,13 +11858,13 @@ void player_update(void)
       (&sprite_effect_pool)[iVar10].color_b = 0.5;
       (&sprite_effect_pool)[iVar10].color_a = 0.413;
       (&player_state_table)[iVar7].fire_cough_timer =
-           (&player_state_table)[iVar7].fire_cough_timer - _DAT_00473314;
+           (&player_state_table)[iVar7].fire_cough_timer - _perk_fire_cough_trigger_interval_s;
       uVar9 = crt_rand();
       local_30[0] = (float)(uVar9 & 0x80000003);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffffc) + 1);
       }
-      _DAT_00473314 = (float)(int)local_30[0] + 2.0;
+      _perk_fire_cough_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
   iVar10 = perk_count_get(perk_id_hot_tempered);
@@ -11873,7 +11874,7 @@ void player_update(void)
   else {
     fVar14 = frame_dt + (&player_state_table)[iVar7].hot_tempered_timer;
     (&player_state_table)[iVar7].hot_tempered_timer = fVar14;
-    if (_DAT_00473318 < fVar14) {
+    if (_perk_hot_tempered_trigger_interval_s < fVar14) {
       if (*(float *)((int)cv_friendlyFire + 0xc) == 0.0) {
         iVar10 = -100;
       }
@@ -11893,13 +11894,13 @@ void player_update(void)
       } while ((int)local_38 < 8);
       sfx_play_panned(sfx_explosion_small);
       (&player_state_table)[iVar7].hot_tempered_timer =
-           (&player_state_table)[iVar7].hot_tempered_timer - _DAT_00473318;
+           (&player_state_table)[iVar7].hot_tempered_timer - _perk_hot_tempered_trigger_interval_s;
       uVar9 = crt_rand();
       local_30[0] = (float)(uVar9 & 0x80000007);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffff8) + 1);
       }
-      _DAT_00473318 = (float)(int)local_30[0] + 2.0;
+      _perk_hot_tempered_trigger_interval_s = (float)(int)local_30[0] + 2.0;
     }
   }
   if (_DAT_004aaf34 <= 0.0) {
@@ -12344,7 +12345,7 @@ LAB_00414750:
 LAB_00414aab:
         fVar20 = player_heading_approach_target(local_40);
         (&player_state_table)[iVar7].aim_heading =
-             _DAT_00487198 + (&player_state_table)[iVar7].aim_heading;
+             player_heading_turn_delta + (&player_state_table)[iVar7].aim_heading;
         if (player_state_table.perk_counts[perk_id_long_distance_runner] < 1) {
           fVar2 = frame_dt * 5.0 + (&player_state_table)[iVar7].move_speed;
           (&player_state_table)[iVar7].move_speed = fVar2;
@@ -12734,7 +12735,9 @@ LAB_0041572e:
   }
   iVar10 = perk_count_get(perk_id_alternate_weapon);
   if (iVar10 != 0) {
-    if (((DAT_0048719c < 1) || (DAT_0048719c = DAT_0048719c - frame_dt_ms, DAT_0048719c < 1)) &&
+    if (((player_alt_weapon_swap_cooldown_ms < 1) ||
+        (player_alt_weapon_swap_cooldown_ms = player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
+        player_alt_weapon_swap_cooldown_ms < 1)) &&
        (iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_reload),
        (char)iVar10 != '\0')) {
       iVar10 = (&player_state_table)[iVar7].alt_weapon_id;
@@ -12762,12 +12765,12 @@ LAB_0041572e:
       (&player_state_table)[iVar7].reload_timer_max = fVar14;
       sfx_play_panned((float)(&weapon_table)[(&player_state_table)[iVar7].weapon_id].reload_sfx_id);
       *pfVar12 = *pfVar12 + 0.1;
-      DAT_0048719c = 200;
+      player_alt_weapon_swap_cooldown_ms = 200;
     }
     else {
       iVar10 = (*grim_interface_ptr->vtable->grim_is_key_active)(config_blob.key_reload);
       if ((char)iVar10 == '\0') {
-        DAT_0048719c = 0;
+        player_alt_weapon_swap_cooldown_ms = 0;
       }
     }
   }
@@ -27894,10 +27897,10 @@ void quest_spawn_timeline_update(void)
   float local_4;
   
   if (creatures_any_active_flag == '\0') {
-    DAT_004c3654 = 0;
+    quest_spawn_stall_timer_ms = 0;
   }
   else {
-    DAT_004c3654 = DAT_004c3654 + frame_dt_ms;
+    quest_spawn_stall_timer_ms = quest_spawn_stall_timer_ms + frame_dt_ms;
   }
   iVar3 = 0;
   if (0 < quest_spawn_count) {
@@ -27905,7 +27908,7 @@ void quest_spawn_timeline_update(void)
     do {
       if ((0 < piVar1[1]) &&
          ((*piVar1 < quest_spawn_timeline ||
-          (((creatures_any_active_flag != '\0' && (3000 < DAT_004c3654)) &&
+          (((creatures_any_active_flag != '\0' && (3000 < quest_spawn_stall_timer_ms)) &&
            (0x6a4 < quest_spawn_timeline)))))) {
         pqVar4 = &quest_spawn_table + iVar3;
         iVar5 = quest_spawn_count;
