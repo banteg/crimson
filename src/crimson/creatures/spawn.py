@@ -2300,13 +2300,14 @@ def apply_tail(
     c.heading = final_heading
 
     # Difficulty modifiers.
-    has_spawn_slot = c.spawn_slot is not None and 0 <= c.spawn_slot < len(plan_spawn_slots)
+    slot_idx = c.spawn_slot
+    has_spawn_slot = slot_idx is not None and 0 <= slot_idx < len(plan_spawn_slots)
 
     if not env.hardcore:
         # This is written as a short-circuit expression in the original:
         # for flag 0x4 creatures, always bump their spawn-slot interval by +0.2 in non-hardcore.
-        if (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and has_spawn_slot:
-            plan_spawn_slots[c.spawn_slot].interval += 0.2
+        if (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and has_spawn_slot and slot_idx is not None:
+            plan_spawn_slots[slot_idx].interval += 0.2
 
         if env.difficulty_level > 0:
             d = env.difficulty_level
@@ -2337,8 +2338,8 @@ def apply_tail(
                     c.contact_damage *= 0.5
                     c.health *= 0.5
 
-            if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT):
-                plan_spawn_slots[c.spawn_slot].interval += min(3.0, float(d) * 0.35)
+            if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and slot_idx is not None:
+                plan_spawn_slots[slot_idx].interval += min(3.0, float(d) * 0.35)
     else:
         # In hardcore: difficulty level is forcibly cleared (global), and creature stats are buffed.
         if c.move_speed is not None:
@@ -2348,10 +2349,10 @@ def apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-        if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT):
-            plan_spawn_slots[c.spawn_slot].interval = max(
+        if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and slot_idx is not None:
+            plan_spawn_slots[slot_idx].interval = max(
                 0.1,
-                plan_spawn_slots[c.spawn_slot].interval - 0.2,
+                plan_spawn_slots[slot_idx].interval - 0.2,
             )
 
 
