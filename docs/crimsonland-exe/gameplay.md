@@ -66,6 +66,18 @@ Global bonus timers used by `player_update` and the main loop:
     revoke temporary handout weapons.
 - `quest_spawn_stall_timer_ms` (`DAT_004c3654`)
   - Quest fallback timer in `quest_spawn_timeline_update` when creatures remain active.
+- `perk_lean_mean_exp_tick_timer_s` (`_DAT_004808a4`)
+  - Lean Mean Exp Machine cadence timer; `perks_update_effects` resets it to `0.25s` on each tick.
+- `perk_doctor_target_creature_id` (`DAT_00487268`)
+  - Cached Doctor target creature id for the HUD target-health overlay (`-1` when inactive).
+- `quest_stage_banner_timer_ms` (`DAT_00487244`)
+  - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
+- `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`DAT_00480850` / `DAT_00480898`)
+  - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
+- `pause_keybind_help_alpha_ms` (`DAT_00487284`)
+  - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
+- `time_played_ms` (`DAT_0048718c`)
+  - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
 
 ### Bonus HUD slots (active bonus list)
 

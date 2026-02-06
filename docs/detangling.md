@@ -1404,6 +1404,29 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   - Evidence: `quest_spawn_timeline_update` increments it while creatures are active and allows a
     fallback trigger after `3000ms` to avoid stalled spawn progression.
 
+- Labeled `perk_lean_mean_exp_tick_timer_s` (`_DAT_004808a4`):
+  - Evidence: `perks_update_effects` decrements it by `frame_dt`, and on expiry it resets to `0.25`
+    and applies Lean Mean Exp Machine XP ticks.
+
+- Labeled `perk_doctor_target_creature_id` (`DAT_00487268`):
+  - Evidence: set from `creature_find_in_radius` while Doctor is active; `ui_render_aim_indicators`
+    reads it to draw the target-health HUD overlay (`-1` means inactive).
+
+- Labeled `quest_stage_banner_timer_ms` (`DAT_00487244`):
+  - Evidence: reset in `quest_start_selected`, incremented in `quest_mode_update`, and consumed by
+    quest HUD render for staged title-card fade in/out windows (`0..2000ms`).
+
+- Labeled demo/keybind overlay timers:
+  - `demo_trial_overlay_active` (`DAT_00480850`) and
+    `demo_trial_overlay_alpha_ms` (`DAT_00480898`)
+  - `pause_keybind_help_alpha_ms` (`DAT_00487284`)
+  - Evidence: gameplay render path toggles/ramps these values (all clamped to `0..1000`) before
+    calling `demo_trial_overlay_render` / `ui_render_keybind_help`.
+
+- Labeled `time_played_ms` (`DAT_0048718c`):
+  - Evidence: loaded from registry key `timePlayed` at startup, incremented during active gameplay
+    frames, and written back on shutdown.
+
 - Labeled perk trigger interval globals:
   - `perk_man_bomb_trigger_interval_s` (`_DAT_00473310`)
   - `perk_fire_cough_trigger_interval_s` (`_DAT_00473314`)

@@ -1179,6 +1179,12 @@
       "type": "int"
     },
     {
+      "address": "0x00480850",
+      "comment": "Demo trial overlay active latch set while the shareware warning panel is visible.",
+      "name": "demo_trial_overlay_active",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00480851",
       "comment": "Shareware/demo latch used to prevent repeated quit-redirect behavior; also set when opening the purchase URL.",
       "name": "shareware_offer_seen_latch",
@@ -1288,10 +1294,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480898",
+      "comment": "Demo trial overlay fade accumulator in milliseconds (clamped 0..1000).",
+      "name": "demo_trial_overlay_alpha_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048089c",
       "comment": "Currently highlighted perk in the perk selection menu. Index into perk_choice_ids; -1 when no selection.",
       "name": "perk_selection_index",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004808a4",
+      "comment": "Lean Mean Exp Machine perk tick timer in seconds (repeats every 0.25s).",
+      "name": "perk_lean_mean_exp_tick_timer_s",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004808a8",
@@ -2165,6 +2185,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048718c",
+      "comment": "Persisted registry time-played counter in milliseconds (\"timePlayed\").",
+      "name": "time_played_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487190",
       "comment": "Survival scripted spawn stage index.",
       "name": "survival_spawn_stage",
@@ -2277,6 +2304,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487244",
+      "comment": "Quest stage banner timer in milliseconds (used for fade-in/out of the stage title card).",
+      "name": "quest_stage_banner_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487248",
       "comment": "UI elements timeline accumulator.",
       "name": "ui_elements_timeline",
@@ -2301,6 +2335,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487268",
+      "comment": "Doctor perk target creature id for HUD overlay; -1 when no target.",
+      "name": "perk_doctor_target_creature_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048726c",
       "comment": "Previous game state id set before transitions.",
       "name": "game_state_prev",
@@ -2323,6 +2364,13 @@
       "comment": "UI transition alpha computed from ui_elements_timeline.",
       "name": "ui_transition_alpha",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487284",
+      "comment": "Pause keybind-help overlay alpha accumulator in milliseconds (clamped 0..1000).",
+      "name": "pause_keybind_help_alpha_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487290",
