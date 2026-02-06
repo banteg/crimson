@@ -495,7 +495,7 @@
     "address": "0x00409890",
     "name": "bonus_apply",
     "signature": "void bonus_apply(int player_index, bonus_entry_t *bonus_entry)",
-    "comment": "applies a picked bonus to the player and spawns related effects"
+    "comment": "applies a picked bonus to the player and spawns related effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play id is 62 (19/19); sfx_play_panned cluster includes ids 56/59/60."
   },
   {
     "program": "crimsonland.exe",
@@ -523,7 +523,7 @@
     "address": "0x0040aab0",
     "name": "gameplay_update_and_render",
     "signature": "void gameplay_update_and_render(void)",
-    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI)"
+    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI). Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (346/346)."
   },
   {
     "program": "crimsonland.exe",
@@ -1048,7 +1048,7 @@
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
-    "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+    "comment": "per-player gameplay update: movement, firing, status timers, and effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 34 and 37 (with secondary 30)."
   },
   {
     "program": "crimsonland.exe",
@@ -1510,7 +1510,7 @@
     "address": "0x00420b90",
     "name": "projectile_update",
     "signature": "void projectile_update(void)",
-    "comment": "updates projectile movement, collisions, and hit effects"
+    "comment": "updates projectile movement, collisions, and hit effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned cluster is 54/51/53/55/52/50."
   },
   {
     "program": "crimsonland.exe",
@@ -1531,7 +1531,7 @@
     "address": "0x00425e50",
     "name": "player_take_damage",
     "signature": "void player_take_damage(int player_index, float damage)",
-    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects"
+    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 0/2/1."
   },
   {
     "program": "crimsonland.exe",
@@ -3163,7 +3163,7 @@
     "address": "0x00452d40",
     "name": "weapon_assign_player",
     "signature": "void weapon_assign_player(int player_index, int weapon_id)",
-    "comment": "assigns a weapon to a player and resets ammo timers"
+    "comment": "assigns a weapon to a player and resets ammo timers. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_panned cluster is led by id 31 (with 35/49 as secondary)."
   },
   {
     "program": "crimsonland.exe",

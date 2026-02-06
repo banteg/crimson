@@ -6232,7 +6232,9 @@ LAB_004097e4:
 /* bonus_apply @ 00409890 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* applies a picked bonus to the player and spawns related effects */
+/* applies a picked bonus to the player and spawns related effects. Runtime capture (2026-02-06
+   gameplay_state_capture): dominant sfx_play id is 62 (19/19); sfx_play_panned cluster includes ids
+   56/59/60. */
 
 void __cdecl bonus_apply(int player_index,bonus_entry_t *bonus_entry)
 
@@ -6778,7 +6780,8 @@ LAB_0040a8dc:
 /* gameplay_update_and_render @ 0040aab0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* main gameplay frame loop for state 9 (timers, updates, renders, UI) */
+/* main gameplay frame loop for state 9 (timers, updates, renders, UI). Runtime capture (2026-02-06
+   gameplay_state_capture): dominant sfx_play_exclusive id is 1 (346/346). */
 
 void gameplay_update_and_render(void)
 
@@ -11667,7 +11670,9 @@ LAB_00413686:
 /* player_update @ 004136b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* per-player gameplay update: movement, firing, status timers, and effects */
+/* per-player gameplay update: movement, firing, status timers, and effects. Runtime capture
+   (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 34 and 37 (with secondary
+   30). */
 
 void player_update(void)
 
@@ -19031,7 +19036,8 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
 /* projectile_update @ 00420b90 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* updates projectile movement, collisions, and hit effects */
+/* updates projectile movement, collisions, and hit effects. Runtime capture (2026-02-06
+   gameplay_state_capture): dominant sfx_play_panned cluster is 54/51/53/55/52/50. */
 
 void projectile_update(void)
 
@@ -21104,7 +21110,8 @@ int __cdecl plaguebearer_spread_infection(int creature_id)
 
 /* player_take_damage @ 00425e50 */
 
-/* applies player damage with perk modifiers, SFX, and retaliation effects */
+/* applies player damage with perk modifiers, SFX, and retaliation effects. Runtime capture
+   (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 0/2/1. */
 
 void __cdecl player_take_damage(int player_index,float damage)
 
@@ -41359,7 +41366,8 @@ int weapon_pick_random_available(void)
 
 /* weapon_assign_player @ 00452d40 */
 
-/* assigns a weapon to a player and resets ammo timers */
+/* assigns a weapon to a player and resets ammo timers. Runtime capture (2026-02-06
+   gameplay_state_capture): sfx_play_panned cluster is led by id 31 (with 35/49 as secondary). */
 
 void __cdecl weapon_assign_player(int player_index,int weapon_id)
 

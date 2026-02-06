@@ -160,6 +160,8 @@ Gameplay-heavy panned clusters (same capture):
 - `projectile_update`: dominant IDs `54/51/53/55/52/50` (projectile hit/explosion family).
 - `player_take_damage`: IDs `0/2/1` (player hurt variants).
 - `player_start_reload`: mostly ID `35` (15/20).
+- `bonus_apply`: dominant `sfx_play` ID `62`; panned side effects include `56/59/60`.
+- `weapon_assign_player`: panned cluster led by `31` with secondary `35/49`.
 
 ## Unreferenced entries (in sfx.paq)
 
