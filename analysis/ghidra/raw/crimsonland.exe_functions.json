@@ -3504,12 +3504,28 @@
     "calls": ["ui_focus_update"]
   },
   {
+    "name": "ui_menu_main_click_mods",
+    "address": "00447350",
+    "signature": "void ui_menu_main_click_mods(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "ui_menu_main_click_options",
     "address": "00447370",
     "signature": "void ui_menu_main_click_options(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
+  },
+  {
+    "name": "ui_menu_main_click_statistics",
+    "address": "00447390",
+    "signature": "void ui_menu_main_click_statistics(void)",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["sfx_mute_all", "sfx_play_exclusive"]
   },
   {
     "name": "ui_menu_main_click_controls",
@@ -3544,12 +3560,36 @@
     "calls": ["sfx_mute_all"]
   },
   {
+    "name": "ui_menu_pause_click_resume",
+    "address": "00447490",
+    "signature": "void ui_menu_pause_click_resume(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "ui_menu_pause_click_main_menu",
+    "address": "004474e0",
+    "signature": "void ui_menu_pause_click_main_menu(void)",
+    "external": false,
+    "calls_total": 3,
+    "calls": ["FreeLibrary", "sfx_mute_all", "sfx_play_exclusive"]
+  },
+  {
     "name": "config_apply_detail_preset",
     "address": "00447580",
     "signature": "void config_apply_detail_preset(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
+  },
+  {
+    "name": "options_menu_update",
+    "address": "004475d0",
+    "signature": "void options_menu_update(void)",
+    "external": false,
+    "calls_total": 8,
+    "calls": ["__ftol", "config_apply_detail_preset", "crt_atexit", "ui_button_update", "ui_checkbox_update", "ui_menu_click_back_contextual", "ui_menu_main_click_controls", "ui_segmented_slider_update"]
   },
   {
     "name": "input_configure_for_label",
@@ -3568,6 +3608,14 @@
     "calls": []
   },
   {
+    "name": "quest_select_menu_update",
+    "address": "00447d40",
+    "signature": "void quest_select_menu_update(void)",
+    "external": false,
+    "calls_total": 7,
+    "calls": ["crt_atexit", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play", "ui_button_update", "ui_checkbox_update"]
+  },
+  {
     "name": "input_detect_active_analog_axis",
     "address": "00448b50",
     "signature": "int input_detect_active_analog_axis(void)",
@@ -3576,12 +3624,28 @@
     "calls": []
   },
   {
+    "name": "controls_menu_update",
+    "address": "00448cd0",
+    "signature": "void controls_menu_update(void)",
+    "external": false,
+    "calls_total": 15,
+    "calls": ["GetKeyNameTextA", "__ftol", "crt_atexit", "crt_free", "input_any_key_pressed", "input_configure_for_label", "input_detect_active_analog_axis", "input_primary_just_pressed", "input_scheme_label", "strdup_malloc", "ui_checkbox_update", "ui_draw_textured_quad", "ui_list_widget_update", "ui_menu_item_update", "vec2_add_out"]
+  },
+  {
     "name": "vec2_add_out",
     "address": "0044ecf0",
     "signature": "float * vec2_add_out(void * this, float * dst, float * lhs)",
     "external": false,
     "calls_total": 0,
     "calls": []
+  },
+  {
+    "name": "play_game_menu_update",
+    "address": "0044ed80",
+    "signature": "void play_game_menu_update(void)",
+    "external": false,
+    "calls_total": 8,
+    "calls": ["crt_atexit", "game_is_full_version", "highscore_load_table", "input_primary_just_pressed", "sfx_mute_all", "ui_button_update", "ui_list_widget_update", "ui_menu_click_back_contextual"]
   },
   {
     "name": "ui_element_init_defaults",
@@ -3595,6 +3659,22 @@
     "name": "ui_element_layout_calc",
     "address": "0044fb50",
     "signature": "float ui_element_layout_calc(float arg1)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "ui_menu_main_click_buy_full_version",
+    "address": "0044fc70",
+    "signature": "void ui_menu_main_click_buy_full_version(void)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["ShellExecuteA"]
+  },
+  {
+    "name": "ui_menu_main_click_recheck_full_version",
+    "address": "0044fca0",
+    "signature": "void ui_menu_main_click_recheck_full_version(void)",
     "external": false,
     "calls_total": 0,
     "calls": []

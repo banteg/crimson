@@ -21,17 +21,17 @@ Runtime cross-check:
 | Dec | Hex | Meaning (inferred) | Evidence | Confidence |
 | --- | --- | --- | --- | --- |
 | `0` | `0x00` | Main menu | `game_state_set(0)` seeds root menu UI; runtime label `state_0`. | high |
-| `1` | `0x01` | Play Game menu | Main-menu callback sets `game_state_pending = 1`; runtime label `state_1:Quests`. | high |
-| `2` | `0x02` | Options menu | Main-menu callback sets `game_state_pending = 2`; runtime label `state_2:Sound volume:`. | high |
-| `3` | `0x03` | Controls/config menu | Main-menu callback sets `game_state_pending = 3`; runtime label `state_3:Configure for:`. | high |
-| `4` | `0x04` | Statistics hub | `game_state_set(4)` seeds stats UI; credits/back flow returns to `4`; runtime label `state_4:played for # hours # minutes`. | high |
+| `1` | `0x01` | Play Game menu | Main-menu callback sets `game_state_pending = 1`; state callback is `play_game_menu_update`; runtime label `state_1:Quests`. | high |
+| `2` | `0x02` | Options menu | Main-menu callback sets `game_state_pending = 2`; state callback is `options_menu_update`; runtime label `state_2:Sound volume:`. | high |
+| `3` | `0x03` | Controls/config menu | Main-menu callback sets `game_state_pending = 3`; state callback is `controls_menu_update`; runtime label `state_3:Configure for:`. | high |
+| `4` | `0x04` | Statistics hub | `game_state_set(4)` seeds stats UI and installs `statistics_menu_update`; credits/back flow returns to `4`; runtime label `state_4:played for # hours # minutes`. | high |
 | `5` | `0x05` | Pause/menu overlay | `mod_api_cl_enter_menu(\"game_pause\")` sets `game_state_pending = 5`; runtime label `state_5`. | high |
 | `6` | `0x06` | Perk selection | Direct `game_state_set(6)` from perk prompt; dispatch calls `perk_selection_screen_update`; runtime label `state_6`. | high |
 | `7` | `0x07` | Game-over screen | Dispatch calls `game_over_screen_update`; non-quest death queues `7`. | high |
 | `8` | `0x08` | Quest results screen | Dispatch calls `quest_results_screen_update`; quest completion queues `8`; runtime label `state_8`. | high |
 | `9` | `0x09` | Main gameplay loop (Survival/Rush/Quest) | Dispatch calls `gameplay_update_and_render`; runtime label `state_9`. | high |
 | `10` | `0x0a` | Quit transition state | Main-menu Quit sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` and sets quit latch (`DAT_0047ea50`). | high |
-| `11` | `0x0b` | Quest select menu | Quest-failed flow queues `0x0b`; `game_state_set(0x0b)` enables quest menu UI; runtime label `state_11:#.#`. | high |
+| `11` | `0x0b` | Quest select menu | Quest-failed flow queues `0x0b`; `game_state_set(0x0b)` enables quest menu UI and installs `quest_select_menu_update`; runtime label `state_11:#.#`. | high |
 | `12` | `0x0c` | Quest-failed screen | Dispatch calls `quest_failed_screen_update`; quest death queues `0x0c`. | high |
 | `13` | `0x0d` | High-score setup variant (legacy/unclear) | `game_state_set(0x0d)` calls `highscore_load_table()` and installs no-op callback `ui_callback_noop`; no direct `game_state_pending = 0x0d` write seen in this build. | medium |
 | `14` | `0x0e` | High scores screen | `game_state_set(0x0e)` installs callback `highscore_screen_update`; game-over/quest-results High scores buttons queue `0x0e`; runtime labels `state_14:High scores - ...`. | high |

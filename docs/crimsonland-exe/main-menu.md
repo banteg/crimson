@@ -124,10 +124,10 @@ In `ui_menu_layout_init` these elements have `render_mode = 1` (element+0x4 == 1
 
 Known positions (before widescreen shift):
 
-- Play Game (state `1`, screen update `sub_44ed80`):
+- Play Game (state `1`, screen update `play_game_menu_update`):
   - panel: `(-45, 210)`
   - back: `(-55, 462)`
-- Options (state `2`, screen update `sub_4475d0`):
+- Options (state `2`, screen update `options_menu_update`):
   - panel: `(-45, 210)`
   - back: `(-55, 430)`
 

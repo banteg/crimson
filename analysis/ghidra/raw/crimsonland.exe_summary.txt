@@ -8,10 +8,10 @@ Endianness: false (big endian)
 Compiler: windows
 
 Functions:
-  Total: 928
+  Total: 938
   External: 0
   Thunks: 27
-  User-defined: 901
+  User-defined: 911
 
 Memory Sections:
   Headers: 00400000 - 00400fff (4096 bytes) [R]

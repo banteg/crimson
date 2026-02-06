@@ -164,7 +164,7 @@ These three bytes live inside the `0x000..0x0A7` “header/mixed” region of th
 
 Notes:
 
-- The options UI clamps `config_detail_preset` to 1..5, then calls `config_apply_detail_preset` (`sub_4475d0` at `0x004475d0`).
+- The options UI clamps `config_detail_preset` to 1..5, then calls `config_apply_detail_preset` (`options_menu_update` at `0x004475d0`).
 - Default init (`config_init_defaults` at `0x004028f0`) sets `flag0/1/2` to 1 and `config_detail_preset` to 5.
 
 ## Keybind Block Structure

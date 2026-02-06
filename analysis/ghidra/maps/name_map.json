@@ -3055,7 +3055,7 @@
     "address": "0x00446170",
     "name": "ui_elements_reset_state",
     "signature": "void ui_elements_reset_state(void)",
-    "comment": "clears active flags and hover timers on all UI elements"
+    "comment": "clears active flags, hover timers, and callback pointers on all UI elements"
   },
   {
     "program": "crimsonland.exe",
@@ -3087,10 +3087,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447350",
+    "name": "ui_menu_main_click_mods",
+    "signature": "void ui_menu_main_click_mods(void)",
+    "comment": "main menu MODS click callback (sets ui_transition_direction=0 and game_state_pending=0x14)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447370",
     "name": "ui_menu_main_click_options",
     "signature": "void ui_menu_main_click_options(void)",
     "comment": "main menu OPTIONS click callback (sets ui_transition_direction=0 and game_state_pending=2)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447390",
+    "name": "ui_menu_main_click_statistics",
+    "signature": "void ui_menu_main_click_statistics(void)",
+    "comment": "main menu STATISTICS click callback (queues state 4 and switches menu music to shortie)",
     "create": true
   },
   {
@@ -3125,10 +3141,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447490",
+    "name": "ui_menu_pause_click_resume",
+    "signature": "void ui_menu_pause_click_resume(void)",
+    "comment": "pause menu RESUME callback: queues gameplay/Typ-o resume, or plugin runtime when opened from plugin pause context",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004474e0",
+    "name": "ui_menu_pause_click_main_menu",
+    "signature": "void ui_menu_pause_click_main_menu(void)",
+    "comment": "pause menu MAIN MENU callback: exits plugin runtime if active, then returns to main menu/mods and restores menu music",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447580",
     "name": "config_apply_detail_preset",
     "signature": "void config_apply_detail_preset(void)",
     "comment": "Applies config_detail_preset (\"Graphics detail\" 1..5) to the config_fx_detail_flag0/1/2 bytes."
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004475d0",
+    "name": "options_menu_update",
+    "signature": "void options_menu_update(void)",
+    "comment": "options menu callback for GAME_STATE_OPTIONS_MENU: sound/music/detail controls plus controls/back navigation",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -3146,6 +3186,14 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447d40",
+    "name": "quest_select_menu_update",
+    "signature": "void quest_select_menu_update(void)",
+    "comment": "quest select menu callback for GAME_STATE_QUEST_SELECT: quest stage picker, mode toggles, and start/back actions",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00448b50",
     "name": "input_detect_active_analog_axis",
     "signature": "int input_detect_active_analog_axis(void)",
@@ -3153,10 +3201,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00448cd0",
+    "name": "controls_menu_update",
+    "signature": "void controls_menu_update(void)",
+    "comment": "controls/config menu callback for GAME_STATE_CONTROLS_MENU: device profile, aiming/movement scheme, and key/axis rebinding",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0044ecf0",
     "name": "vec2_add_out",
     "signature": "float * vec2_add_out(float *dst, float *lhs)",
     "comment": "writes this + lhs into dst and returns dst"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed80",
+    "name": "play_game_menu_update",
+    "signature": "void play_game_menu_update(void)",
+    "comment": "play game menu callback for GAME_STATE_PLAY_GAME_MENU: mode buttons, hardcore/tutorial toggles, and gameplay start routing",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -3171,6 +3235,22 @@
     "name": "ui_element_layout_calc",
     "signature": "float ui_element_layout_calc(float arg1)",
     "comment": "[binja] float sub_44fb50(float arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fc70",
+    "name": "ui_menu_main_click_buy_full_version",
+    "signature": "void ui_menu_main_click_buy_full_version(void)",
+    "comment": "shareware BUY NOW click callback: latches offer flags and opens http://buy.crimsonland.com",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fca0",
+    "name": "ui_menu_main_click_recheck_full_version",
+    "signature": "void ui_menu_main_click_recheck_full_version(void)",
+    "comment": "marks a pending full-version recheck flag processed in the frame loop",
+    "create": true
   },
   {
     "program": "crimsonland.exe",

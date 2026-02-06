@@ -29,7 +29,7 @@ see [State id glossary](state-ids.md).
 | Id | Label (inferred) | Evidence |
 | --- | --- | --- |
 | `0` | main menu / root UI | `game_state_set` (`FUN_004461c0(0)`), load step sets `game_state_id` (`DAT_00487270`) = `0` |
-| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI; runtime trace labels `state_11:#.#` |
+| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI and installs `quest_select_menu_update`; runtime trace labels `state_11:#.#` |
 | `5` | pause (console/mod pause) | `mod_api_cl_enter_menu` (`FUN_0040e690`) sets `game_state_pending` (`DAT_00487274`) = `5` on `game_pause` |
 | `6` | perk selection | direct `game_state_set` (`FUN_004461c0(6)`) when perk prompt is accepted |
 | `7` | game over / high score entry | `game_over_screen_update` checks `game_state_id` (`DAT_00487270`) == `7` |

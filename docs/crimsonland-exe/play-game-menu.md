@@ -6,7 +6,7 @@ tags:
 # Play Game menu (state 1)
 
 This page documents the classic Crimsonland.exe **Play Game** panel (game state
-`1`), updated by `sub_44ed80`.
+`1`), updated by `play_game_menu_update`.
 
 The screen is a mode selector with:
 
@@ -22,9 +22,9 @@ The screen is a mode selector with:
 
 See also: `docs/crimsonland-exe/main-menu.md` (panel animation + widescreen shift).
 
-## Content anchor coordinates (from `sub_44ed80`)
+## Content anchor coordinates (from `play_game_menu_update`)
 
-Inside the panel, `sub_44ed80` computes a base point:
+Inside the panel, `play_game_menu_update` computes a base point:
 
 - `base_x = panel_left + 266` (i.e. `330 - 64`)
 - `base_y = panel_top + 50`
@@ -33,7 +33,7 @@ All child widgets are positioned relative to this.
 
 ## Player count dropdown (from `ui_list_widget_update @ 0x0043efc0`)
 
-`sub_44ed80` places the dropdown at:
+`play_game_menu_update` places the dropdown at:
 
 - `x = base_x + 80`
 - `y = base_y + 1`
@@ -53,7 +53,7 @@ Text color/alpha (`grim->set_color_rgba` via vtable +0x114):
 - Row labels: base alpha `0x3f333333` (0.70); hovered alpha `0x3f733333` (~0.95)
 - Selected row can use alpha `0x3f75c28f` (~0.96) when focused
 
-## Mode list ordering and spacing (from `sub_44ed80`)
+## Mode list ordering and spacing (from `play_game_menu_update`)
 
 ### Mode list X
 
@@ -84,7 +84,7 @@ Tight layout:
 
 Tutorial is only shown when `player_count == 1`.
 
-`sub_44ed80` places it at the top when it thinks no relevant modes have been
+`play_game_menu_update` places it at the top when it thinks no relevant modes have been
 played yet (it uses a cheap counter check), otherwise it appends it after the
 main modes.
 
@@ -105,9 +105,9 @@ Label placement and color:
 - X is centered with a `+1` pixel nudge.
 - Y is `button_y + 10` (not perfectly centered).
 
-## Tooltip positions (from `sub_44ed80`)
+## Tooltip positions (from `play_game_menu_update`)
 
-`sub_44ed80` subtracts `55` from the base X and anchors tooltips below the mode list:
+`play_game_menu_update` subtracts `55` from the base X and anchors tooltips below the mode list:
 
 - `tooltip_x = base_x - 55`
 - `tooltip_y = y_after_last_button + 16`
@@ -122,7 +122,7 @@ Per-mode offsets (added to `tooltip_x/tooltip_y`):
 
 Tooltip alpha uses a per-mode hover timer scaled by `0.000900000043` (clamped to 1.0).
 
-## "Times played" overlay (from `sub_44ed80`)
+## "Times played" overlay (from `play_game_menu_update`)
 
 Holding `F1` (DIK `0x3B`) draws:
 
