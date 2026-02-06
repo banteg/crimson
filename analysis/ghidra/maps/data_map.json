@@ -3942,29 +3942,25 @@
       "address": "0x00490b70",
       "comment": "Per-player current weapon id (player_health + 0x29c)",
       "name": "player_weapon_id",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b74",
       "comment": "Per-player clip size (float slot; runtime capture shows values like 10.0/12.0/25.0 at player_health + 0x2a0).",
       "name": "player_clip_size",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b78",
       "comment": "Per-player reload active flag (player_health + 0x2a4)",
       "name": "player_reload_active",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b7c",
       "comment": "Per-player current ammo (float slot; runtime capture shows values like 0.0..30.0 at player_health + 0x2a8).",
       "name": "player_ammo",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b80",
@@ -3988,29 +3984,25 @@
       "address": "0x00490b8c",
       "comment": "Per-player alt weapon id (player_health + 0x2b8)",
       "name": "player_alt_weapon_id",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b90",
       "comment": "Per-player alt clip size (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_clip_size",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b94",
       "comment": "Per-player alt reload active flag (player_health + 0x2c0)",
       "name": "player_alt_reload_active",
-      "program": "crimsonland.exe",
-      "type": "int"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b98",
       "comment": "Per-player alt ammo count (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_ammo",
-      "program": "crimsonland.exe",
-      "type": "float"
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x00490b9c",
