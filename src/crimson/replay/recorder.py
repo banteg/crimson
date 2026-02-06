@@ -4,7 +4,16 @@ import struct
 from typing import Sequence
 
 from ..gameplay import PlayerInput
-from .types import PerkMenuOpenEvent, PerkPickEvent, Replay, ReplayEvent, ReplayHeader, pack_input_flags
+from .types import (
+    PackedPlayerInput,
+    PackedTickInputs,
+    PerkMenuOpenEvent,
+    PerkPickEvent,
+    Replay,
+    ReplayEvent,
+    ReplayHeader,
+    pack_input_flags,
+)
 
 _FORMAT_VERSION = 1
 
@@ -20,7 +29,7 @@ class ReplayRecorder:
         self._version = int(version)
         self._header = header
         self._tick_index = 0
-        self._inputs: list[list[list[float | int]]] = []
+        self._inputs: list[PackedTickInputs] = []
         self._events: list[ReplayEvent] = []
 
     @property
@@ -42,7 +51,7 @@ class ReplayRecorder:
             raise ValueError(f"expected {player_count} player inputs, got {len(inputs)}")
 
         quant = self._header.input_quantization
-        tick: list[list[float | int]] = []
+        tick: PackedTickInputs = []
         for inp in inputs:
             mx = inp.move.x
             my = inp.move.y
@@ -58,7 +67,8 @@ class ReplayRecorder:
                 fire_pressed=bool(inp.fire_pressed),
                 reload_pressed=bool(inp.reload_pressed),
             )
-            tick.append([mx, my, [ax, ay], flags])
+            packed_input: PackedPlayerInput = [mx, my, [ax, ay], flags]
+            tick.append(packed_input)
 
         tick_index = int(self._tick_index)
         self._inputs.append(tick)
