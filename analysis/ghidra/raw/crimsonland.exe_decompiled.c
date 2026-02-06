@@ -33025,7 +33025,7 @@ LAB_0043b67f:
     (&DAT_004c36dd)[uVar2] = 0;
   }
   if (config_blob.reserved0._128_4_ != 0) {
-    crt_sprintf(&DAT_004c365c,&DAT_00477bf4,&DAT_004c36dc,
+    crt_sprintf(&DAT_004c365c,&s_fmt_typo_target_name_2_parts,&DAT_004c36dc,
                 config_blob.reserved0._128_4_ * 0x1b + 0x4803f0);
     console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&DAT_004c365c);
     return &DAT_004c365c;
@@ -37162,7 +37162,7 @@ LAB_00445213:
         puVar11 = (undefined4 *)((int)puVar11 + 1);
         puVar15 = (undefined4 *)((int)puVar15 + 1);
       }
-      console_printf(&console_log_queue,s__d__unique___s_00478e14,local_4,phVar10);
+      console_printf(&console_log_queue,s_fmt_typo_unique_word_log,local_4,phVar10);
       iVar9 = local_4;
       local_8 = local_8 + 8;
 LAB_004452a7:
@@ -37171,7 +37171,7 @@ LAB_004452a7:
     typo_word_highscore_cache_ready = '\x01';
     typo_word_highscore_cache_count = iVar9;
     if (iVar9 == 0) {
-      crt_sprintf(&typo_word_highscore_cache,s_quickbrownfox_00478e04);
+      crt_sprintf(&typo_word_highscore_cache,s_typo_fallback_word);
     }
   }
   if (typo_word_highscore_cache_count < 1) {
@@ -37183,11 +37183,11 @@ LAB_004452a7:
 
 
 
-/* typo_creature_name_is_unique @ 00445310 */
+/* typo_target_name_is_unique @ 00445310 */
 
 /* returns non-zero when the proposed Typ-o target name is unique among active creatures */
 
-int __cdecl typo_creature_name_is_unique(char *name,int creature_id)
+int __cdecl typo_target_name_is_unique(char *name,int creature_id)
 
 {
   byte bVar1;
@@ -37200,7 +37200,7 @@ int __cdecl typo_creature_name_is_unique(char *name,int creature_id)
   bool bVar7;
   
   iVar3 = 0;
-  pbVar4 = &typo_creature_name_table;
+  pbVar4 = &typo_target_name_table;
   pcVar6 = &creature_pool;
   do {
     if ((pcVar6->active != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)name, iVar3 != creature_id))
@@ -37237,11 +37237,11 @@ LAB_0044535a:
 
 
 
-/* typo_creature_name_assign_random @ 00445380 */
+/* typo_target_name_assign_random @ 00445380 */
 
 /* builds a randomized Typ-o target name for a creature slot */
 
-void __cdecl typo_creature_name_assign_random(int creature_id)
+void __cdecl typo_target_name_assign_random(int creature_id)
 
 {
   char cVar1;
@@ -37268,29 +37268,29 @@ LAB_0044544d:
             (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
            (((int)highscore_active_record.score_xp < 0x15 ||
             (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
-          dst = &typo_creature_name_table + creature_id * 0x40;
+          dst = &typo_target_name_table + creature_id * 0x40;
           pcVar4 = typo_word_pick_fragment('\0');
           crt_sprintf(dst,&s_fmt_percent_s,pcVar4);
         }
         else {
-          dst = &typo_creature_name_table + creature_id * 0x40;
+          dst = &typo_target_name_table + creature_id * 0x40;
           pcVar4 = typo_word_pick_fragment('\0');
           pcVar5 = typo_word_pick_fragment('\x01');
-          crt_sprintf(dst,&DAT_00477bf4,pcVar5,pcVar4);
+          crt_sprintf(dst,&s_fmt_typo_target_name_2_parts,pcVar5,pcVar4);
         }
       }
       else {
-        dst = &typo_creature_name_table + creature_id * 0x40;
+        dst = &typo_target_name_table + creature_id * 0x40;
         pcVar4 = typo_word_pick_fragment('\0');
         pcVar5 = typo_word_pick_fragment('\0');
         pcVar6 = typo_word_pick_fragment('\x01');
-        crt_sprintf(dst,s__s_s_s_00478e24,pcVar6,pcVar5,pcVar4);
+        crt_sprintf(dst,s_fmt_typo_target_name_3_parts,pcVar6,pcVar5,pcVar4);
       }
     }
     else {
       iVar3 = crt_rand();
       if (iVar3 % 100 < 10) {
-        dst = &typo_creature_name_table + creature_id * 0x40;
+        dst = &typo_target_name_table + creature_id * 0x40;
         pcVar4 = typo_word_pick_highscore_name();
         uVar8 = 0xffffffff;
         do {
@@ -37318,15 +37318,15 @@ LAB_0044544d:
       else {
         if (((int)highscore_active_record.score_xp < 0x79) ||
            (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) goto LAB_0044544d;
-        dst = &typo_creature_name_table + creature_id * 0x40;
+        dst = &typo_target_name_table + creature_id * 0x40;
         pcVar4 = typo_word_pick_fragment('\0');
         pcVar5 = typo_word_pick_fragment('\0');
         pcVar6 = typo_word_pick_fragment('\0');
         pcVar7 = typo_word_pick_fragment('\x01');
-        crt_sprintf(dst,s__s_s_s_s_00478e2c,pcVar7,pcVar6,pcVar5,pcVar4);
+        crt_sprintf(dst,s_fmt_typo_target_name_4_parts,pcVar7,pcVar6,pcVar5,pcVar4);
       }
     }
-    iVar3 = typo_creature_name_is_unique(dst,creature_id);
+    iVar3 = typo_target_name_is_unique(dst,creature_id);
     if ((char)iVar3 != '\0') {
       uVar8 = 0xffffffff;
       do {
@@ -37344,11 +37344,11 @@ LAB_0044544d:
 
 
 
-/* typo_creature_find_by_name @ 00445590 */
+/* typo_target_find_by_name @ 00445590 */
 
 /* returns the first active creature whose Typ-o target name matches input, or -1 */
 
-int __cdecl typo_creature_find_by_name(char *name)
+int __cdecl typo_target_find_by_name(char *name)
 
 {
   byte bVar1;
@@ -37361,7 +37361,7 @@ int __cdecl typo_creature_find_by_name(char *name)
   bool bVar8;
   
   iVar2 = 0;
-  pbVar5 = &typo_creature_name_table;
+  pbVar5 = &typo_target_name_table;
   pcVar7 = &creature_pool;
   do {
     pbVar3 = pbVar5;
@@ -37399,12 +37399,12 @@ LAB_004455d4:
 
 
 
-/* typo_creature_name_draw_labels @ 00445600 */
+/* typo_target_name_draw_labels @ 00445600 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* draws Typ-o target names above active creatures */
 
-void typo_creature_name_draw_labels(void)
+void typo_target_name_draw_labels(void)
 
 {
   float fVar1;
@@ -37417,7 +37417,7 @@ void typo_creature_name_draw_labels(void)
   a = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
-  text = &typo_creature_name_table;
+  text = &typo_target_name_table;
   pfVar3 = &creature_pool.hitbox_size;
   do {
     if (((creature_t *)(pfVar3 + -4))->active != '\0') {
@@ -37473,9 +37473,9 @@ void typo_gameplay_update_and_render(void)
   
   local_30 = (float)((uint)local_30 & 0xffffff00);
   local_28 = (float)((uint)local_28 & 0xffffff00);
-  if (((byte)typo_runtime_init_flag & 1) == 0) {
+  if ((typo_runtime_init_flag & 1U) == 0) {
     typo_target_world_x = player_state_table.pos_x + 128.0;
-    typo_runtime_init_flag._0_1_ = (byte)typo_runtime_init_flag | 1;
+    typo_runtime_init_flag = typo_runtime_init_flag | 1;
     typo_target_world_y = player_state_table.pos_y;
     crt_atexit(&DAT_00445ff0);
   }
@@ -37492,10 +37492,10 @@ void typo_gameplay_update_and_render(void)
     sfx_play(sfx_ui_typeenter);
     typo_submit_count = typo_submit_count + 1;
     (&typo_input_buffer)[typo_input_length] = 0;
-    iVar5 = typo_creature_find_by_name(&typo_input_buffer);
+    iVar5 = typo_target_find_by_name(&typo_input_buffer);
     if (iVar5 == -1) {
       pbVar8 = &typo_input_buffer;
-      pcVar12 = s_reload_00478e38;
+      pcVar12 = s_typo_command_reload;
       do {
         bVar2 = *pcVar12;
         bVar9 = bVar2 < *pbVar8;
@@ -37628,13 +37628,13 @@ LAB_00445905:
                            (float10)0.001);
     fStack_2c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&local_30,&fStack_10,4);
-    typo_creature_name_assign_random(iVar5);
+    typo_target_name_assign_random(iVar5);
     fStack_20 = -64.0;
     fVar10 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
                            (float10)0.001);
     fStack_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar10 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&fStack_20,&fStack_10,2);
-    typo_creature_name_assign_random(iVar5);
+    typo_target_name_assign_random(iVar5);
   }
   highscore_active_record.score_xp = player_state_table.experience;
   if (console_open_flag == '\0') {
@@ -37648,7 +37648,7 @@ LAB_00445905:
   }
   camera_update();
   gameplay_render_world();
-  typo_creature_name_draw_labels();
+  typo_target_name_draw_labels();
   pbVar7 = bonus_pool;
   do {
     pbVar7->bonus_id = BONUS_ID_NONE;

@@ -221,7 +221,7 @@ grim.dll_functions.json
 
 - `FUN_004457c0` -> `typo_gameplay_update_and_render`
   - Evidence: dispatch runs it for `game_state_id == 0x12`; routine handles typed-name input
-    (`typo_input_buffer`), matches against per-creature Typ-o names, then renders world/HUD.
+    (`typo_input_buffer`), matches against Typ-o target names, then renders world/HUD.
 
 ### UI text input (high confidence)
 
@@ -236,12 +236,18 @@ grim.dll_functions.json
 ### Typ-o name generation (high confidence)
 
 - `FUN_00444f70` -> `typo_word_pick_fragment`
-  - Evidence: returns a random word fragment from a static table; `typo_creature_name_assign_random`
+  - Evidence: returns a random word fragment from a static table; `typo_target_name_assign_random`
     composes one to four fragments into a Typ-o target name.
 
 - `FUN_004451b0` -> `typo_word_pick_highscore_name`
   - Evidence: lazily builds a cache of unique alphabetic names from `highscore_table` and
     returns a random cached entry for Typ-o target naming variants.
+
+- `FUN_00445310` / `FUN_00445380` / `FUN_00445590` / `FUN_00445600` ->
+  `typo_target_name_is_unique` / `typo_target_name_assign_random` / `typo_target_find_by_name` /
+  `typo_target_name_draw_labels`
+  - Evidence: all four helpers are only used by Typ-o gameplay and read/write
+    `typo_target_name_table`; they implement target-name generation, lookup, and in-world label rendering.
 
 ### Audio resource packs + loaders (high confidence)
 

@@ -2927,29 +2927,29 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00445310",
-    "name": "typo_creature_name_is_unique",
-    "signature": "int typo_creature_name_is_unique(char *name, int creature_id)",
+    "name": "typo_target_name_is_unique",
+    "signature": "int typo_target_name_is_unique(char *name, int creature_id)",
     "comment": "returns non-zero when the proposed Typ-o target name is unique among active creatures"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445380",
-    "name": "typo_creature_name_assign_random",
-    "signature": "void typo_creature_name_assign_random(int creature_id)",
+    "name": "typo_target_name_assign_random",
+    "signature": "void typo_target_name_assign_random(int creature_id)",
     "comment": "builds a randomized Typ-o target name for a creature slot"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445590",
-    "name": "typo_creature_find_by_name",
-    "signature": "int typo_creature_find_by_name(char *name)",
+    "name": "typo_target_find_by_name",
+    "signature": "int typo_target_find_by_name(char *name)",
     "comment": "returns the first active creature whose Typ-o target name matches input, or -1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00445600",
-    "name": "typo_creature_name_draw_labels",
-    "signature": "void typo_creature_name_draw_labels(void)",
+    "name": "typo_target_name_draw_labels",
+    "signature": "void typo_target_name_draw_labels(void)",
     "comment": "draws Typ-o target names above active creatures"
   },
   {

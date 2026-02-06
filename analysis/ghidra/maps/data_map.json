@@ -237,6 +237,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00477bf4",
+      "comment": "Typ-o target name format used for two-part fragment names (\"%s%s\").",
+      "name": "s_fmt_typo_target_name_2_parts",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00477d28",
       "comment": "SFX playback rate scale (set during sfx_play; affected by Reflex Boost).",
       "name": "sfx_rate_scale",
@@ -246,6 +252,36 @@
       "address": "0x00478878",
       "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
       "name": "s_fmt_highscore_date_label",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e04",
+      "comment": "Typ-o fallback source word used when no highscore names are accepted (\"quickbrownfox\").",
+      "name": "s_typo_fallback_word",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e14",
+      "comment": "Console format used when caching unique Typ-o highscore words (\"%d. unique: %s\\n\").",
+      "name": "s_fmt_typo_unique_word_log",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e24",
+      "comment": "Typ-o target name format used for three-part fragment names (\"%s%s%s\").",
+      "name": "s_fmt_typo_target_name_3_parts",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e2c",
+      "comment": "Typ-o target name format used for four-part fragment names (\"%s%s%s%s\").",
+      "name": "s_fmt_typo_target_name_4_parts",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00478e38",
+      "comment": "Typ-o typed command that triggers manual reload behavior (\"reload\").",
+      "name": "s_typo_command_reload",
       "program": "crimsonland.exe"
     },
     {
@@ -4894,12 +4930,12 @@
       "comment": "Typ-o runtime init guard for one-time setup inside typo_gameplay_update_and_render.",
       "name": "typo_runtime_init_flag",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "char"
     },
     {
       "address": "0x004d152c",
-      "comment": "Per-creature Typ-o target name table (0x40-byte strings indexed by creature id).",
-      "name": "typo_creature_name_table",
+      "comment": "Per-creature Typ-o target-name table (0x40-byte strings indexed by creature id).",
+      "name": "typo_target_name_table",
       "program": "crimsonland.exe"
     },
     {
