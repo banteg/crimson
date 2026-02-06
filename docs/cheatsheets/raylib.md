@@ -27,6 +27,23 @@ The docs/quickstart often use `from pyray import *` for brevity, but it’s not 
 
 ---
 
+### Type-checker friendly constants (important)
+
+`pyray` exposes many module-level shorthand constants (for example `rl.BLEND_ADDITIVE`), but for typed code you should prefer enum-qualified names:
+
+* Mouse buttons: `rl.MouseButton.MOUSE_BUTTON_*`
+* Blend modes: `rl.BlendMode.BLEND_*`
+* Texture filters: `rl.TextureFilter.TEXTURE_FILTER_*`
+* Texture wraps: `rl.TextureWrap.TEXTURE_WRAP_*`
+* Shader uniforms: `rl.ShaderUniformDataType.SHADER_UNIFORM_*`
+* Shader locations: `rl.ShaderLocationIndex.SHADER_LOC_*`
+
+`SHADER_LOC_MAP_DIFFUSE` is a backward-compat alias; prefer `SHADER_LOC_MAP_ALBEDO`.
+
+Note: some low-level `RL_*` constants used by `rlgl` calls (for example `RL_FUNC_ADD`, `RL_ZERO`, `RL_ONE`, `RL_SRC_ALPHA`, `RL_ONE_MINUS_SRC_ALPHA`, `RL_QUADS`) exist at runtime but may be missing in stubs, so type checkers can still complain.
+
+---
+
 ## 1) The canonical raylib loop (Python)
 
 ### Minimal, “always correct” skeleton
