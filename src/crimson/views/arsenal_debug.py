@@ -428,7 +428,7 @@ class ArsenalDebugView:
         draw_ui_text(self._small, "P screenshot", x, y, color=UI_HINT)
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))
+        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2(mouse.x, mouse.y))
 
 
 @register_view("arsenal", "Arsenal")

@@ -9,6 +9,7 @@ import pyray as rl
 from grim.audio import AudioState, shutdown_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import View, ViewContext
 
@@ -378,7 +379,7 @@ class ProjectileRenderDebugView:
         draw_ui_text(self._small, "T reset targets  Backspace reset scene  Esc quit", x, y, color=UI_HINT)
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, x=float(mouse.x), y=float(mouse.y))
+        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2(mouse.x, mouse.y))
 
 
 @register_view("projectile-render-debug", "Projectile render debug")

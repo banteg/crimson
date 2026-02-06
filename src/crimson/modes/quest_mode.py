@@ -9,6 +9,7 @@ from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.math import clamp
 from grim.view import ViewContext
@@ -771,22 +772,22 @@ class QuestMode(BaseGameplayMode):
     def _draw_game_cursor(self) -> None:
         assets = self._perk_menu_assets
         cursor_tex = assets.cursor if assets is not None else None
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=float(self._ui_mouse_x),
-            y=float(self._ui_mouse_y),
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
         assets = self._perk_menu_assets
         aim_tex = assets.aim if assets is not None else None
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         draw_aim_cursor(
             self._world.particles_texture,
             aim_tex,
-            x=float(self._ui_mouse_x),
-            y=float(self._ui_mouse_y),
+            pos=mouse_pos,
         )
 
     def _draw_quest_title(self) -> None:

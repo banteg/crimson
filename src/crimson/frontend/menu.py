@@ -7,6 +7,7 @@ import os
 import pyray as rl
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
+from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ..ui.cursor import draw_menu_cursor
@@ -109,9 +110,7 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
 
     mouse = rl.get_mouse_position()
-    mouse_x = float(mouse.x)
-    mouse_y = float(mouse.y)
-    draw_menu_cursor(particles, cursor_tex, x=mouse_x, y=mouse_y, pulse_time=float(pulse_time))
+    draw_menu_cursor(particles, cursor_tex, pos=Vec2(mouse.x, mouse.y), pulse_time=float(pulse_time))
 
 
 @dataclass(slots=True)

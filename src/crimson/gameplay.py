@@ -5,7 +5,6 @@ import math
 from typing import TYPE_CHECKING, Callable, Protocol
 
 from grim.geom import Vec2
-from grim.math import clamp
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
@@ -298,12 +297,14 @@ class BonusPool:
         if entry is None:
             return None
 
-        x = clamp(pos.x, BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
-        y = clamp(pos.y, BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
-
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos = Vec2(x, y)
+        entry.pos = pos.clamp_rect(
+            BONUS_SPAWN_MARGIN,
+            BONUS_SPAWN_MARGIN,
+            float(world_width) - BONUS_SPAWN_MARGIN,
+            float(world_height) - BONUS_SPAWN_MARGIN,
+        )
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -525,13 +526,12 @@ class BonusPool:
 def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
     """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
 
-    aim_x = getattr(player, "aim_x", player.pos.x)
-    aim_y = getattr(player, "aim_y", player.pos.y)
+    aim_pos = Vec2(player.aim_x, player.aim_y)
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
             continue
-        if Vec2.distance_sq(Vec2(aim_x, aim_y), entry.pos) < radius_sq:
+        if Vec2.distance_sq(aim_pos, entry.pos) < radius_sq:
             return idx, entry
     return None
 
@@ -606,8 +606,6 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, r
     if start_index >= max_index:
         return -1
 
-    pos_x = pos.x
-    pos_y = pos.y
     radius = float(radius)
 
     for idx in range(start_index, max_index):
@@ -615,7 +613,7 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, r
         if not creature.active:
             continue
 
-        dist = math.hypot(creature.pos.x - pos_x, creature.pos.y - pos_y) - radius
+        dist = (creature.pos - pos).length() - radius
         threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
@@ -2651,15 +2649,13 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
             continue
         if creature.hitbox_size != 16.0:
             continue
-        d_sq = Vec2.distance_sq(origin_pos.pos, creature.pos)
+        d_sq = Vec2.distance_sq(origin, creature.pos)
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
 
     target = creatures[best_idx]
-    dx = target.pos.x - origin.x
-    dy = target.pos.y - origin.y
-    angle = Vec2(dx, dy).to_heading()
+    angle = (target.pos - origin).to_heading()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
     ctx.state.bonus_spawn_guard = True

@@ -441,11 +441,11 @@ class TutorialMode(BaseGameplayMode):
         if assets is None:
             return
         cursor_tex = assets.cursor
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=float(self._ui_mouse_x),
-            y=float(self._ui_mouse_y),
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
@@ -454,9 +454,9 @@ class TutorialMode(BaseGameplayMode):
         if assets is None:
             return
         aim_tex = assets.aim
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         draw_aim_cursor(
             self._world.particles_texture,
             aim_tex,
-            x=float(self._ui_mouse_x),
-            y=float(self._ui_mouse_y),
+            pos=mouse_pos,
         )

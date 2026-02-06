@@ -414,7 +414,7 @@ class DemoView:
         cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
         mouse = rl.get_mouse_position()
         pulse_time = float(self._upsell_pulse_ms) * 0.001
-        draw_menu_cursor(particles, cursor_tex, x=float(mouse.x), y=float(mouse.y), pulse_time=pulse_time)
+        draw_menu_cursor(particles, cursor_tex, pos=Vec2(mouse.x, mouse.y), pulse_time=pulse_time)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -468,8 +468,7 @@ class DemoView:
             player = self._world.players[idx]
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
-            player.aim_x = pos.x
-            player.aim_y = pos.y
+            player.aim_x, player.aim_y = pos.x, pos.y
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 

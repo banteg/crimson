@@ -6,6 +6,7 @@ import pyray as rl
 
 from grim.config import ensure_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -63,8 +64,8 @@ class AimDebugView:
         self._ui_mouse_x = clamp(float(mouse.x), 0.0, max(0.0, screen_w - 1.0))
         self._ui_mouse_y = clamp(float(mouse.y), 0.0, max(0.0, screen_h - 1.0))
 
-    def _draw_cursor_glow(self, *, x: float, y: float) -> None:
-        draw_cursor_glow(self._world.particles_texture, x=x, y=y)
+    def _draw_cursor_glow(self, *, pos: Vec2) -> None:
+        draw_cursor_glow(self._world.particles_texture, pos=pos)
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -193,7 +194,7 @@ class AimDebugView:
             rl.draw_circle_lines(int(cx), int(cy), int(max(1.0, self._test_circle_radius)), rl.Color(255, 80, 80, 220))
 
         if self._show_cursor_glow:
-            self._draw_cursor_glow(x=mouse_x, y=mouse_y)
+            self._draw_cursor_glow(pos=Vec2(mouse_x, mouse_y))
 
         mouse_world_x, mouse_world_y = self._world.screen_to_world(mouse_x, mouse_y)
         mouse_back_x, mouse_back_y = self._world.world_to_screen(float(mouse_world_x), float(mouse_world_y))

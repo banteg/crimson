@@ -304,22 +304,19 @@ class TypoShooterMode(BaseGameplayMode):
         # trooper death animation can play before the UI slides in.
 
     def _draw_game_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=mouse_x,
-            y=mouse_y,
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         aim_tex = self._ui_assets.aim if self._ui_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def _draw_name_labels(self) -> None:
         names = self._names.names

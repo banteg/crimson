@@ -10,6 +10,7 @@ import pyray as rl
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.geom import Vec2
 
 from ..persistence.highscores import (
     NAME_MAX_EDIT,
@@ -719,7 +720,6 @@ class QuestResultsUi:
         draw_menu_cursor(
             self.assets.particles,
             self.assets.perk_menu_assets.cursor,
-            x=float(mouse.x),
-            y=float(mouse.y),
+            pos=Vec2(mouse.x, mouse.y),
             pulse_time=float(self._cursor_pulse_time),
         )

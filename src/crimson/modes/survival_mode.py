@@ -12,6 +12,7 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -686,22 +687,19 @@ class SurvivalMode(BaseGameplayMode):
                 rl.end_blend_mode()
 
     def _draw_game_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         draw_menu_cursor(
             self._world.particles_texture,
             cursor_tex,
-            x=mouse_x,
-            y=mouse_y,
+            pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def _draw_aim_cursor(self) -> None:
-        mouse_x = float(self._ui_mouse_x)
-        mouse_y = float(self._ui_mouse_y)
+        mouse_pos = Vec2(self._ui_mouse_x, self._ui_mouse_y)
         aim_tex = self._perk_menu_assets.aim if self._perk_menu_assets is not None else None
-        draw_aim_cursor(self._world.particles_texture, aim_tex, x=mouse_x, y=mouse_y)
+        draw_aim_cursor(self._world.particles_texture, aim_tex, pos=mouse_pos)
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
