@@ -732,6 +732,7 @@ def register_core_commands(console: ConsoleState) -> None:
                 return
             console.log.log(f"Executing '{args[0]}'")
             if script_text is None:
+                assert path is not None
                 script_text = path.read_text(encoding="utf-8", errors="ignore")
             for raw_line in script_text.splitlines():
                 line = raw_line.strip()

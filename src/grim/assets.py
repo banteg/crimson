@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import io
 from pathlib import Path
+from typing import cast
 
 import pyray as rl
 from PIL import Image
@@ -171,7 +172,7 @@ def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
 
 
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
-    image = rl.load_image_from_memory(fmt, data, len(data))
+    image = rl.load_image_from_memory(fmt, cast(str, data), len(data))
     texture = rl.load_texture_from_image(image)
     rl.unload_image(image)
     rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
