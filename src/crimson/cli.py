@@ -564,7 +564,7 @@ def cmd_spawn_plan(
         primary = "*" if idx == plan.primary else " "
         typer.echo(
             f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
-            f"pos=({c.pos_x:7.1f},{c.pos_y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
+            f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
             f"slot={c.spawn_slot!s:>3s}"
         )
     if plan.spawn_slots:

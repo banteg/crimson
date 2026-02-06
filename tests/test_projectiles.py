@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import math
 
@@ -48,7 +50,7 @@ def test_projectile_pool_keeps_flight_timer_when_in_bounds() -> None:
     )
     assert proj.active
     assert proj.life_timer == 0.4
-    assert math.isclose(proj.pos_x, 10.0, abs_tol=1e-9)
+    assert math.isclose(proj.pos.x, 10.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_moves_by_projectile_meta() -> None:
@@ -67,7 +69,7 @@ def test_projectile_pool_update_moves_by_projectile_meta() -> None:
 
     assert proj.active
     assert proj.life_timer == 0.4
-    assert math.isclose(proj.pos_x, 90.0, abs_tol=1e-9)
+    assert math.isclose(proj.pos.x, 90.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
@@ -110,7 +112,7 @@ def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
 
     assert hits == [(4, 0.0, 0.0, 60.0, 0.0, 71.1428574, 0.0)]
     proj = pool.entries[idx]
-    assert math.isclose(proj.pos_x, 62.0, abs_tol=1e-9)
+    assert math.isclose(proj.pos.x, 62.0, abs_tol=1e-9)
     assert proj.life_timer == 0.25
 
     expected_damage = _expected_damage(62.0, 1.0)
@@ -211,7 +213,7 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
         detail_preset=5,
         rng=_fixed_rng(0),
         runtime_state=state,
-        players=[PlayerState(index=0, pos_x=0.0, pos_y=0.0)],
+        players=[PlayerState(index=0, pos=Vec2(0.0, 0.0))],
     )
 
     active = state.effects.iter_active()
@@ -222,8 +224,8 @@ def test_projectile_pool_update_ion_hit_spawns_ring_and_burst_effects() -> None:
 
     ring = rings[0]
     [proj] = [entry for entry in state.projectiles.entries if entry.active]
-    assert math.isclose(float(ring.pos_x), float(proj.pos_x), abs_tol=1e-9)
-    assert math.isclose(float(ring.pos_y), float(proj.pos_y), abs_tol=1e-9)
+    assert math.isclose(float(ring.pos.x), float(proj.pos.x), abs_tol=1e-9)
+    assert math.isclose(float(ring.pos.y), float(proj.pos.y), abs_tol=1e-9)
     assert math.isclose(float(ring.half_width), 4.0, abs_tol=1e-9)
     assert math.isclose(float(ring.half_height), 4.0, abs_tol=1e-9)
     assert math.isclose(float(ring.scale_step), 67.5, abs_tol=1e-9)
@@ -352,7 +354,7 @@ def test_secondary_projectile_pool_type1_accelerates_and_counts_down() -> None:
     assert entry.type_id == 1
 
     # Movement happens before acceleration in `projectile_update`.
-    assert math.isclose(entry.pos_y, -9.0, abs_tol=1e-9)
+    assert math.isclose(entry.pos.y, -9.0, abs_tol=1e-9)
 
     # Seeker Rockets (type 1): accelerate by factor (1.0 + dt * 3.0) while speed < 500.
     assert math.isclose(entry.vel_y, -117.0, abs_tol=1e-9)

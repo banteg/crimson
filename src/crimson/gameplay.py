@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 import math
 from typing import TYPE_CHECKING, Callable, Protocol
 
-from grim.math import clamp, distance_sq
+from grim.geom import Vec2
+from grim.math import clamp
 from .bonuses import BONUS_BY_ID, BonusId
 from grim.rand import Crand
 from .effects import EffectPool, FxQueue, ParticlePool, SpriteEffectPool
@@ -32,8 +33,7 @@ if TYPE_CHECKING:
 
 
 class _HasPos(Protocol):
-    pos_x: float
-    pos_y: float
+    pos: Vec2
 
 
 class _CreatureForPerks(Protocol):
@@ -67,8 +67,7 @@ WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 @dataclass(slots=True)
 class PlayerState:
     index: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     health: float = 100.0
     size: float = 50.0
 
@@ -223,8 +222,7 @@ class BonusEntry:
     picked: bool = False
     time_left: float = 0.0
     time_max: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     amount: int = 0
 
 
@@ -233,8 +231,7 @@ class BonusPickupEvent:
     player_index: int
     bonus_id: int
     amount: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
 
 
 # Native `bonus_try_spawn_on_kill` uses the bonus entry `amount` field for a weird
@@ -308,8 +305,8 @@ class BonusPool:
 
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos_x = x
-        entry.pos_y = y
+        entry.pos.x = x
+        entry.pos.y = y
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -344,7 +341,7 @@ class BonusPool:
         for entry in self._entries:
             if entry.bonus_id == 0:
                 continue
-            if distance_sq(pos_x, pos_y, entry.pos_x, entry.pos_y) < min_dist_sq:
+            if Vec2.distance_sq(Vec2(pos_x, pos_y), Vec2(entry.pos.x, entry.pos.y)) < min_dist_sq:
                 return None
 
         entry = self._alloc_slot()
@@ -354,8 +351,8 @@ class BonusPool:
         bonus_id = bonus_pick_random_type(self, state, players)
         entry.bonus_id = int(bonus_id)
         entry.picked = False
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -449,7 +446,7 @@ class BonusPool:
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
-            if players and distance_sq(pos_x, pos_y, players[0].pos_x, players[0].pos_y) < near_sq:
+            if players and Vec2.distance_sq(Vec2(pos_x, pos_y), Vec2(players[0].pos.x, players[0].pos.y)) < near_sq:
                 entry.bonus_id = int(BonusId.POINTS)
                 entry.amount = 100
 
@@ -503,7 +500,10 @@ class BonusPool:
                 continue
 
             for player in players:
-                if distance_sq(entry.pos_x, entry.pos_y, player.pos_x, player.pos_y) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
+                if (
+                    Vec2.distance_sq(Vec2(entry.pos.x, entry.pos.y), Vec2(player.pos.x, player.pos.y))
+                    < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS
+                ):
                     bonus_apply(
                         state,
                         player,
@@ -522,8 +522,7 @@ class BonusPool:
                             player_index=player.index,
                             bonus_id=entry.bonus_id,
                             amount=entry.amount,
-                            pos_x=entry.pos_x,
-                            pos_y=entry.pos_y,
+                            pos=Vec2(entry.pos.x, entry.pos.y),
                         )
                     )
                     break
@@ -534,13 +533,13 @@ class BonusPool:
 def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
     """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
 
-    aim_x = float(getattr(player, "aim_x", player.pos_x))
-    aim_y = float(getattr(player, "aim_y", player.pos_y))
+    aim_x = float(getattr(player, "aim_x", player.pos.x))
+    aim_y = float(getattr(player, "aim_y", player.pos.y))
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
             continue
-        if distance_sq(aim_x, aim_y, entry.pos_x, entry.pos_y) < radius_sq:
+        if Vec2.distance_sq(Vec2(aim_x, aim_y), Vec2(entry.pos.x, entry.pos.y)) < radius_sq:
             return idx, entry
     return None
 
@@ -747,8 +746,8 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
     if int(ctx.state.rng.rand()) % 10 == 3:
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
-            ctx.fx_queue.add_random(pos_x=player.pos_x, pos_y=player.pos_y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos_x=player.pos.x, pos_y=player.pos.y, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos_x=player.pos.x, pos_y=player.pos.y, rand=ctx.state.rng.rand)
 
     ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
 
@@ -1185,8 +1184,8 @@ def _perk_apply_bandage(ctx: _PerkApplyCtx) -> None:
             scale = float(ctx.state.rng.rand() % 50 + 1)
             player.health = min(100.0, player.health * scale)
             ctx.state.effects.spawn_burst(
-                pos_x=float(player.pos_x),
-                pos_y=float(player.pos_y),
+                pos_x=float(player.pos.x),
+                pos_y=float(player.pos.y),
                 count=8,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1807,8 +1806,8 @@ def _spawn_projectile_ring(
         _projectile_spawn(
             state,
             players=players,
-            pos_x=float(origin.pos_x),
-            pos_y=float(origin.pos_y),
+            pos_x=float(origin.pos.x),
+            pos_y=float(origin.pos.y),
             angle=float(idx) * step + float(angle_offset),
             type_id=int(type_id),
             owner_id=int(owner_id),
@@ -1872,8 +1871,8 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState, 
         _projectile_spawn(
             state,
             players=players,
-            pos_x=player.pos_x,
-            pos_y=player.pos_y,
+            pos_x=player.pos.x,
+            pos_y=player.pos.y,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
@@ -1896,8 +1895,8 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
         _projectile_spawn(
             state,
             players=players,
-            pos_x=player.pos_x,
-            pos_y=player.pos_y,
+            pos_x=player.pos.x,
+            pos_y=player.pos.y,
             angle=angle,
             type_id=type_id,
             owner_id=owner_id,
@@ -1918,22 +1917,21 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     state.sfx_queue.append("sfx_plasmaminigun_fire")
 
     aim_heading = float(player.aim_heading)
-    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
-    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    muzzle = Vec2(player.pos.x, player.pos.y) + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle_x = muzzle.x
+    muzzle_y = muzzle.y
 
     aim_x = float(player.aim_x)
     aim_y = float(player.aim_y)
-    dx = aim_x - float(player.pos_x)
-    dy = aim_y - float(player.pos_y)
+    dx = aim_x - float(player.pos.x)
+    dy = aim_y - float(player.pos.y)
     dist = math.hypot(dx, dy)
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    jitter_x = aim_x + math.cos(dir_angle) * offset
-    jitter_y = aim_y + math.sin(dir_angle) * offset
-    angle = math.atan2(jitter_y - float(player.pos_y), jitter_x - float(player.pos_x)) + math.pi / 2.0
+    jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
+    angle = (jitter - Vec2(player.pos.x, player.pos.y)).to_heading()
     _projectile_spawn(
         state,
         players=[player],
@@ -1944,8 +1942,9 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         owner_id=owner_id,
     )
 
-    vel_x = math.cos(aim_heading) * 25.0
-    vel_y = math.sin(aim_heading) * 25.0
+    vel = Vec2.from_angle(aim_heading) * 25.0
+    vel_x = vel.x
+    vel_y = vel.y
     sprite_id = state.sprite_effects.spawn(pos_x=muzzle_x, pos_y=muzzle_y, vel_x=vel_x, vel_y=vel_y, scale=1.0)
     sprite = state.sprite_effects.entries[int(sprite_id)]
     sprite.color_r = 0.5
@@ -2082,13 +2081,13 @@ def player_fire_weapon(
 
     aim_x = float(input_state.aim_x)
     aim_y = float(input_state.aim_y)
-    dx = aim_x - float(player.pos_x)
-    dy = aim_y - float(player.pos_y)
-    aim_heading = math.atan2(dy, dx) + math.pi / 2.0
+    dx = aim_x - float(player.pos.x)
+    dy = aim_y - float(player.pos.y)
+    aim_heading = Vec2(dx, dy).to_heading()
 
-    muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    muzzle_x = player.pos_x + math.cos(muzzle_dir) * 16.0
-    muzzle_y = player.pos_y + math.sin(muzzle_dir) * 16.0
+    muzzle = Vec2(player.pos.x, player.pos.y) + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle_x = muzzle.x
+    muzzle_y = muzzle.y
     state.effects.spawn_shell_casing(
         pos_x=muzzle_x,
         pos_y=muzzle_y,
@@ -2103,12 +2102,11 @@ def player_fire_weapon(
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
-    aim_jitter_x = aim_x + math.cos(dir_angle) * offset
-    aim_jitter_y = aim_y + math.sin(dir_angle) * offset
-    shot_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x)) + math.pi / 2.0
-    particle_angle = shot_angle - math.pi / 2.0
+    aim_jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
+    shot_angle = (aim_jitter - Vec2(player.pos.x, player.pos.y)).to_heading()
+    particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
-        particle_angle = aim_heading - math.pi / 2.0
+        particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
@@ -2202,7 +2200,12 @@ def player_fire_weapon(
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
         # Bubblegun -> slow particle weapon (style 8), fractional ammo drain.
-        state.particles.spawn_particle_slow(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle - math.pi / 2.0, owner_id=owner_id)
+        state.particles.spawn_particle_slow(
+            pos_x=muzzle_x,
+            pos_y=muzzle_y,
+            angle=Vec2.from_heading(shot_angle).to_angle(),
+            owner_id=owner_id,
+        )
         ammo_cost = 0.15
     elif weapon_id == WeaponId.MULTI_PLASMA:
         # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
@@ -2336,8 +2339,8 @@ def player_update(
     if dt <= 0.0:
         return
 
-    prev_x = player.pos_x
-    prev_y = player.pos_y
+    prev_x = player.pos.x
+    prev_y = player.pos.y
 
     if player.health <= 0.0:
         player.death_timer -= dt * 20.0
@@ -2362,13 +2365,13 @@ def player_update(
     # Aim: compute direction from (player -> aim point).
     player.aim_x = float(input_state.aim_x)
     player.aim_y = float(input_state.aim_y)
-    aim_dx = player.aim_x - player.pos_x
-    aim_dy = player.aim_y - player.pos_y
+    aim_dx = player.aim_x - player.pos.x
+    aim_dy = player.aim_y - player.pos.y
     aim_dir_x, aim_dir_y = _normalize(aim_dx, aim_dy)
     if aim_dir_x != 0.0 or aim_dir_y != 0.0:
         player.aim_dir_x = aim_dir_x
         player.aim_dir_y = aim_dir_y
-        player.aim_heading = math.atan2(aim_dir_y, aim_dir_x) + math.pi / 2.0
+        player.aim_heading = Vec2(aim_dir_x, aim_dir_y).to_heading()
 
     # Movement.
     raw_move_x = float(input_state.move_x)
@@ -2382,7 +2385,7 @@ def player_update(
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move_x = raw_move_x * inv
         move_y = raw_move_y * inv
-        player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
+        player.heading = Vec2(move_x, move_y).to_heading()
         if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
             if player.move_speed < 2.0:
                 player.move_speed = float(player.move_speed + dt * 4.0)
@@ -2397,8 +2400,9 @@ def player_update(
         player.move_speed = float(player.move_speed - dt * 15.0)
         if player.move_speed < 0.0:
             player.move_speed = 0.0
-        move_x = math.cos(player.heading - math.pi / 2.0)
-        move_y = math.sin(player.heading - math.pi / 2.0)
+        move = Vec2.from_heading(player.heading)
+        move_x = move.x
+        move_y = move.y
 
     if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
         player.move_speed = 0.8
@@ -2413,12 +2417,12 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
-    player.pos_x = clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
-    player.pos_y = clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
+    player.pos.x = clamp(player.pos.x + move_x * speed * dt, 0.0, float(world_size))
+    player.pos.y = clamp(player.pos.y + move_y * speed * dt, 0.0, float(world_size))
 
     player.move_phase += dt * player.move_speed * 19.0
 
-    stationary = abs(player.pos_x - prev_x) <= 1e-9 and abs(player.pos_y - prev_y) <= 1e-9
+    stationary = abs(player.pos.x - prev_x) <= 1e-9 and abs(player.pos.y - prev_y) <= 1e-9
     reload_scale = 1.0
     if stationary and perk_active(player, PerkId.STATIONARY_RELOADER):
         reload_scale = 3.0
@@ -2681,8 +2685,8 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     # - requires `hitbox_size == 16.0` (alive sentinel)
     # - no HP gate
     # - falls back to index 0 if nothing qualifies
-    origin_x = float(origin_pos.pos_x)
-    origin_y = float(origin_pos.pos_y)
+    origin_x = float(origin_pos.pos.x)
+    origin_y = float(origin_pos.pos.y)
     best_idx = 0
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
@@ -2690,7 +2694,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
             continue
         if creature.hitbox_size != 16.0:
             continue
-        d_sq = distance_sq(origin_x, origin_y, creature.x, creature.y)
+        d_sq = Vec2.distance_sq(Vec2(origin_x, origin_y), Vec2(creature.x, creature.y))
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
@@ -2698,7 +2702,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     target = creatures[best_idx]
     dx = target.x - origin_x
     dy = target.y - origin_y
-    angle = math.atan2(dy, dx) + math.pi / 2.0
+    angle = Vec2(dx, dy).to_heading()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
     ctx.state.bonus_spawn_guard = True
@@ -2760,8 +2764,8 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
     ctx.state.camera_shake_timer = 0.2
 
     origin_pos = ctx.origin_pos()
-    ox = float(origin_pos.pos_x)
-    oy = float(origin_pos.pos_y)
+    ox = float(origin_pos.pos.x)
+    oy = float(origin_pos.pos.y)
     rand = ctx.state.rng.rand
 
     bullet_count = int(rand()) & 3
@@ -3005,8 +3009,7 @@ def bonus_telekinetic_update(
                 player_index=int(player.index),
                 bonus_id=int(entry.bonus_id),
                 amount=int(entry.amount),
-                pos_x=float(entry.pos_x),
-                pos_y=float(entry.pos_y),
+                pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
             )
         )
 

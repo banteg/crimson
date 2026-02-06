@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
@@ -28,7 +30,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     )
     world.state.rng = _FixedRng(1)  # rand & 7 == 1
 
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
     world.players.append(player)
 
@@ -75,7 +77,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     )
     world.state.rng = _FixedRng(0)  # rand & 7 != 1
 
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
     world.players.append(player)
 
@@ -122,19 +124,19 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
     )
     world.state.rng = _FixedRng(1)  # rand & 7 == 1
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     player.perk_counts[int(PerkId.POISON_BULLETS)] = 1
     world.players.append(player)
 
     creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = player.pos_x + 100.0
-    creature.y = player.pos_y
+    creature.x = player.pos.x + 100.0
+    creature.y = player.pos.y
     creature.hp = 2000.0
     creature.max_hp = 2000.0
 
-    assert world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE), state=world.state) is not None
+    assert world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.NUKE), state=world.state) is not None
 
     world.step(
         0.016,

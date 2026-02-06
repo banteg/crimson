@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CreaturePool
@@ -13,7 +15,7 @@ def _wrap_angle(angle: float) -> float:
 
 def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=200.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 200.0))
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -35,14 +37,14 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     assert int(proj.type_id) == 9
     assert math.isclose(proj.angle, creature.heading, abs_tol=1e-9)
 
-    direct_aim = math.atan2(player.pos_y - creature.y, player.pos_x - creature.x) + math.pi / 2.0
+    direct_aim = math.atan2(player.pos.y - creature.y, player.pos.x - creature.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
     assert result.sfx == ("sfx_shock_fire",)
 
 
 def test_ranged_creature_does_not_fire_when_too_close() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=64.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 64.0))
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -64,7 +66,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
 
 def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=200.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 200.0))
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -94,8 +96,7 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
     pool = CreaturePool()
     init = CreatureInit(
         origin_template_id=0,
-        pos_x=0.0,
-        pos_y=0.0,
+        pos=Vec2(0.0, 0.0),
         heading=0.0,
         phase_seed=0.0,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
@@ -108,7 +109,7 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
 
 def test_ranged_projectile_can_damage_player() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=4.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(4.0, 0.0))
 
     state.projectiles.spawn(
         pos_x=0.0,
@@ -139,7 +140,7 @@ def test_ranged_projectile_can_damage_player() -> None:
 
 def test_ranged_projectile_can_damage_creature_before_player() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=4.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(4.0, 0.0))
 
     pool = CreaturePool()
     shooter = pool.entries[0]

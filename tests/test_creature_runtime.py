@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 
 import pytest
@@ -99,7 +101,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
 
 def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -142,7 +144,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     # - points amount: (rand & 7) < 3 => 1000
     state.rng = _StubRand([1, 0, 0])  # type: ignore[assignment]
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
 
     creature = pool.entries[0]

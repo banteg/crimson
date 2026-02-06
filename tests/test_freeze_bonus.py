@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
@@ -10,7 +12,7 @@ from crimson.sim.world_state import WorldState
 
 def test_freeze_pickup_shatters_existing_corpses() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     pool = CreaturePool()
     corpse = pool.entries[0]
@@ -51,7 +53,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     world.players.append(player)
 
     creature = world.creatures.entries[0]

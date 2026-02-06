@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.creatures.damage import creature_apply_damage
@@ -11,7 +13,7 @@ from crimson.projectiles import ProjectilePool, ProjectileTypeId
 
 def test_ion_gun_master_increases_ion_damage() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.perk_counts[int(PerkId.ION_GUN_MASTER)] = 1
 
     killed = creature_apply_damage(
@@ -44,7 +46,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         pool.entries[proj_idx].life_timer = 0.39
 
         creature = CreatureState(active=True, hp=10.0, x=105.0, y=0.0, size=50.0)
-        players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+        players = [PlayerState(index=0, pos=Vec2(0.0, 0.0))]
         if perk_active:
             players[0].perk_counts[int(PerkId.ION_GUN_MASTER)] = 1
 

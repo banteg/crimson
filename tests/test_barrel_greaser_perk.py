@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 import pytest
@@ -14,7 +16,7 @@ from crimson.weapons import WEAPON_BY_ID
 
 def test_barrel_greaser_increases_bullet_damage() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
     killed = creature_apply_damage(
@@ -46,7 +48,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         base_damage=base_damage,
     )
 
-    players = [PlayerState(index=0, pos_x=0.0, pos_y=0.0)]
+    players = [PlayerState(index=0, pos=Vec2(0.0, 0.0))]
     if barrel_greaser_active:
         players[0].perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
@@ -58,7 +60,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         players=players,
     )
 
-    return float(pool.entries[0].pos_x)
+    return float(pool.entries[0].pos.x)
 
 
 def test_barrel_greaser_doubles_projectile_speed_steps() -> None:

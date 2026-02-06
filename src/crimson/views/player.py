@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 
 import pyray as rl
@@ -55,7 +57,7 @@ class PlayerSandboxView:
         self._small: SmallFontData | None = None
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures: list[DummyCreature] = []
 
         self._hud_assets: HudAssets | None = None
@@ -128,8 +130,8 @@ class PlayerSandboxView:
         self._weapon_index = 0
         self._set_weapon(self._weapon_id())
 
-        self._player.pos_x = WORLD_SIZE * 0.5
-        self._player.pos_y = WORLD_SIZE * 0.5
+        self._player.pos.x = WORLD_SIZE * 0.5
+        self._player.pos.y = WORLD_SIZE * 0.5
         self._player.health = 100.0
         self._elapsed_ms = 0.0
 
@@ -200,8 +202,8 @@ class PlayerSandboxView:
         if screen_h > WORLD_SIZE:
             screen_h = WORLD_SIZE
 
-        focus_x = self._player.pos_x
-        focus_y = self._player.pos_y
+        focus_x = self._player.pos.x
+        focus_y = self._player.pos.y
 
         desired_x = (screen_w * 0.5) - focus_x
         desired_y = (screen_h * 0.5) - focus_y
@@ -309,16 +311,16 @@ class PlayerSandboxView:
 
         # Projectiles.
         for proj in self._state.projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
+            sx, sy = self._camera_world_to_screen(proj.pos.x, proj.pos.y)
             rl.draw_circle(int(sx), int(sy), 2.0, rl.Color(240, 220, 160, 255))
 
         for proj in self._state.secondary_projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
+            sx, sy = self._camera_world_to_screen(proj.pos.x, proj.pos.y)
             color = rl.Color(120, 200, 240, 255) if proj.type_id != 3 else rl.Color(200, 240, 160, 255)
             rl.draw_circle(int(sx), int(sy), 3.0, color)
 
         # Player.
-        px, py = self._camera_world_to_screen(self._player.pos_x, self._player.pos_y)
+        px, py = self._camera_world_to_screen(self._player.pos.x, self._player.pos.y)
         rl.draw_circle(int(px), int(py), 14.0, rl.Color(90, 190, 120, 255))
         rl.draw_circle_lines(int(px), int(py), 14.0, rl.Color(40, 80, 50, 255))
 

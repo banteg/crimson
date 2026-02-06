@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState, PlayerState
@@ -8,7 +10,7 @@ from crimson.perks import PerkId
 
 def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.VEINS_OF_POISON)] = 1
 
     pool = CreaturePool()
@@ -29,7 +31,7 @@ def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
 
 def test_veins_of_poison_skips_when_player_shielded() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, shield_timer=1.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shield_timer=1.0)
     player.perk_counts[int(PerkId.VEINS_OF_POISON)] = 1
 
     pool = CreaturePool()

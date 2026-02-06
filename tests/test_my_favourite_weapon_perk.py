@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.gameplay import GameplayState, PlayerState, perk_apply, weapon_assign_player
@@ -9,7 +11,7 @@ from crimson.projectiles import ProjectileTypeId
 
 def test_my_favourite_weapon_increases_clip_size() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=int(ProjectileTypeId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=int(ProjectileTypeId.PISTOL))
     weapon_assign_player(player, int(player.weapon_id))
 
     base_clip = int(player.clip_size)

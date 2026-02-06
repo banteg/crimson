@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
@@ -45,7 +47,7 @@ class PerkSelectionView:
         self._debug_overlay = False
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+        self._player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 
@@ -62,7 +64,7 @@ class PerkSelectionView:
     def _reset(self) -> None:
         self._state = GameplayState()
         self._state.rng.srand(0xBEEF)
-        self._player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+        self._player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
         self._game_mode = GameMode.SURVIVAL
         self._player_count = 1
 

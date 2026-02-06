@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass, field
 import math
 import random
@@ -165,7 +167,7 @@ class GameWorld:
             y = base_y + float(offset_y)
             x = max(0.0, min(float(self.world_size), x))
             y = max(0.0, min(float(self.world_size), y))
-            player = PlayerState(index=idx, pos_x=x, pos_y=y)
+            player = PlayerState(index=idx, pos=Vec2(x, y))
             weapon_assign_player(player, 1)
             self.players.append(player)
         self.camera_x = -1.0
@@ -653,8 +655,8 @@ class GameWorld:
 
         alive = [player for player in self.players if player.health > 0.0]
         if alive:
-            focus_x = sum(player.pos_x for player in alive) / float(len(alive))
-            focus_y = sum(player.pos_y for player in alive) / float(len(alive))
+            focus_x = sum(player.pos.x for player in alive) / float(len(alive))
+            focus_y = sum(player.pos.y for player in alive) / float(len(alive))
             cam_x = (screen_w * 0.5) - focus_x
             cam_y = (screen_h * 0.5) - focus_y
         else:

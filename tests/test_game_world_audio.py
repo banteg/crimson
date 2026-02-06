@@ -41,8 +41,8 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(monkeypatch) -> None:
 
     input_state = PlayerInput(
         fire_down=True,
-        aim_x=player.pos_x + 10.0,
-        aim_y=player.pos_y,
+        aim_x=player.pos.x + 10.0,
+        aim_y=player.pos.y,
     )
     player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
 
@@ -88,8 +88,8 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(monkeypatch) -> None:
 
     input_state = PlayerInput(
         fire_down=True,
-        aim_x=player.pos_x + 10.0,
-        aim_y=player.pos_y,
+        aim_x=player.pos.x + 10.0,
+        aim_y=player.pos.y,
     )
     player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
 
@@ -143,7 +143,7 @@ def test_bonus_pickup_plays_bonus_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.POINTS), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.POINTS), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -166,7 +166,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.FIREBLAST), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.FIREBLAST), state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -189,7 +189,7 @@ def test_perk_bursts_play_explosion_small_sfx(monkeypatch) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    aim = PlayerInput(aim_x=player.pos_x + 1.0, aim_y=player.pos_y)
+    aim = PlayerInput(aim_x=player.pos.x + 1.0, aim_y=player.pos.y)
 
     played.clear()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1

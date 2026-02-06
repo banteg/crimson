@@ -17,12 +17,12 @@ def test_tick_typo_spawns_basic_pair() -> None:
     )
 
     assert cooldown == 3499
-    assert [(s.type_id, s.pos_x) for s in spawns] == [
+    assert [(s.type_id, s.pos.x) for s in spawns] == [
         (CreatureTypeId.SPIDER_SP2, 1088.0),
         (CreatureTypeId.ALIEN, -64.0),
     ]
-    assert spawns[0].pos_y == spawns[1].pos_y
-    assert spawns[0].pos_y == 256.0 + 1024.0 * 0.5
+    assert spawns[0].pos.y == spawns[1].pos.y
+    assert spawns[0].pos.y == 256.0 + 1024.0 * 0.5
 
 
 def test_tick_typo_spawns_multiple_steps() -> None:
@@ -41,5 +41,5 @@ def test_tick_typo_spawns_multiple_steps() -> None:
     assert {s.type_id for s in spawns} == {CreatureTypeId.SPIDER_SP2, CreatureTypeId.ALIEN}
 
     y_expected = math.cos(8000 * 0.001) * 256.0 + 1000.0 * 0.5
-    assert spawns[0].pos_y == y_expected
+    assert spawns[0].pos.y == y_expected
 

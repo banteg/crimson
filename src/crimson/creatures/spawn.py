@@ -19,6 +19,7 @@ from enum import IntEnum, IntFlag
 import math
 from typing import Callable, SupportsInt
 
+from grim.geom import Vec2
 from ..bonuses import BonusId
 from grim.rand import Crand
 
@@ -1366,8 +1367,7 @@ class CreatureInit:
     # Template id that produced this creature (not necessarily unique per creature in formations).
     origin_template_id: int
 
-    pos_x: float
-    pos_y: float
+    pos: Vec2
 
     # Headings are in radians. The original seeds a random heading early, then overwrites it
     # at the end with the function argument (or a randomized argument for `RANDOM_HEADING_SENTINEL`).
@@ -1560,8 +1560,8 @@ def spawn_ring_children(
         child.target_offset_x = float(math.cos(angle) * radius)
         child.target_offset_y = float(math.sin(angle) * radius)
         if set_position:
-            child.pos_x = pos_x + (child.target_offset_x or 0.0)
-            child.pos_y = pos_y + (child.target_offset_y or 0.0)
+            child.pos.x = pos_x + (child.target_offset_x or 0.0)
+            child.pos.y = pos_y + (child.target_offset_y or 0.0)
         if heading_override is not None:
             child.heading = heading_override
         apply_child_spec(child, child_spec)
@@ -1591,8 +1591,8 @@ def spawn_grid_children(
             child.ai_link_parent = link_parent
             child.target_offset_x = float(x_offset)
             child.target_offset_y = float(y_offset)
-            child.pos_x = float(pos_x + x_offset)
-            child.pos_y = float(pos_y + y_offset)
+            child.pos.x = float(pos_x + x_offset)
+            child.pos.y = float(pos_y + y_offset)
             apply_child_spec(child, child_spec)
             creatures.append(child)
             last_idx = len(creatures) - 1
@@ -1627,8 +1627,7 @@ def spawn_chain_children(
 @dataclass(slots=True)
 class PlanBuilder:
     template_id: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     rng: Crand
     env: SpawnEnv
     creatures: list[CreatureInit]
@@ -1662,8 +1661,7 @@ class PlanBuilder:
 
         return cls(
             template_id=template_id,
-            pos_x=pos_x,
-            pos_y=pos_y,
+            pos=Vec2(pos_x, pos_y),
             rng=rng,
             env=env,
             creatures=creatures,
@@ -1690,8 +1688,8 @@ class PlanBuilder:
         return spawn_ring_children(
             self.creatures,
             self.template_id,
-            self.pos_x,
-            self.pos_y,
+            self.pos.x,
+            self.pos.y,
             self.rng,
             **kwargs,
         )
@@ -1700,8 +1698,8 @@ class PlanBuilder:
         return spawn_grid_children(
             self.creatures,
             self.template_id,
-            self.pos_x,
-            self.pos_y,
+            self.pos.x,
+            self.pos.y,
             self.rng,
             **kwargs,
         )
@@ -1710,8 +1708,8 @@ class PlanBuilder:
         return spawn_chain_children(
             self.creatures,
             self.template_id,
-            self.pos_x,
-            self.pos_y,
+            self.pos.x,
+            self.pos.y,
             self.rng,
             **kwargs,
         )
@@ -1774,7 +1772,7 @@ def alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) -> 
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
     phase_seed = float(rng.rand() & 0x17F)
-    return CreatureInit(origin_template_id=template_id, pos_x=pos_x, pos_y=pos_y, heading=0.0, phase_seed=phase_seed)
+    return CreatureInit(origin_template_id=template_id, pos=Vec2(pos_x, pos_y), heading=0.0, phase_seed=phase_seed)
 
 
 def clamp01(value: float) -> float:
@@ -2261,10 +2259,10 @@ def apply_tail(
     # Demo-burst effect (skipped when demo_mode_active != 0).
     if (
         not env.demo_mode_active
-        and 0.0 < c.pos_x < env.terrain_width
-        and 0.0 < c.pos_y < env.terrain_height
+        and 0.0 < c.pos.x < env.terrain_width
+        and 0.0 < c.pos.y < env.terrain_height
     ):
-        plan_effects.append(BurstEffect(x=c.pos_x, y=c.pos_y, count=8))
+        plan_effects.append(BurstEffect(x=c.pos.x, y=c.pos.y, count=8))
 
     if c.health is not None:
         c.max_health = c.health
@@ -2521,15 +2519,15 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
         contact_damage=14.0,
         tint=(0.6, 0.6, 0.31, 1.0),
     )
-    pos_x = ctx.pos_x
-    pos_y = ctx.pos_y
+    pos_x = ctx.pos.x
+    pos_y = ctx.pos.y
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset_x = -256.0 + float(idx) * 64.0
         child.target_offset_y = -256.0
         angle = float(2 + idx * 2) * (math.pi / 8.0)
-        child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
-        child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+        child.pos.x = float(math.cos(angle) * 256.0 + pos_x)
+        child.pos.y = float(math.sin(angle) * 256.0 + pos_y)
 
     chain_prev = ctx.chain_children(
         count=4,
@@ -2548,8 +2546,8 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     parent.ai_mode = 6
-    parent.pos_x = ctx.pos_x + 256.0
-    parent.pos_y = ctx.pos_y
+    parent.pos.x = ctx.pos.x + 256.0
+    parent.pos.y = ctx.pos.y
     apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
     parent.health = 200.0
     parent.max_health = 200.0
@@ -2569,14 +2567,14 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
         orbit_angle=math.pi,
         orbit_radius=10.0,
     )
-    pos_x = ctx.pos_x
-    pos_y = ctx.pos_y
+    pos_x = ctx.pos.x
+    pos_y = ctx.pos.y
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
         angle = float(angle_idx) * math.radians(20.0)
-        child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
-        child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+        child.pos.x = float(math.cos(angle) * 256.0 + pos_x)
+        child.pos.y = float(math.sin(angle) * 256.0 + pos_y)
 
     chain_prev = ctx.chain_children(
         count=10,

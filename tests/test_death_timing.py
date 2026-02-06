@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
@@ -17,7 +19,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     world.players.append(player)
 
     creature = world.creatures.entries[0]

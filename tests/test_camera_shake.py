@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -94,7 +96,7 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
 
 def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     creatures = [_Creature(x=100.0, y=100.0, hp=100.0), _Creature(x=500.0, y=500.0, hp=100.0)]
 
     bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures)
@@ -110,7 +112,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.NUKE), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.NUKE), state=world.state)
     assert entry is not None
 
     world.update(1.0 / 60.0, perk_progression_enabled=False)

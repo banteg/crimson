@@ -811,8 +811,8 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
     assert parent.type_id == CreatureTypeId.ALIEN
     assert parent.ai_mode == 6
     assert parent.ai_link_parent == 10
-    assert parent.pos_x == 356.0
-    assert parent.pos_y == 200.0
+    assert parent.pos.x == 356.0
+    assert parent.pos.y == 200.0
     assert parent.health == 200.0
     assert parent.max_health == 200.0
     assert parent.move_speed == 2.0
@@ -838,8 +838,8 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
         angle = float(2 + 2 * i) * math.radians(20.0)
-        assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -882,8 +882,8 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
         assert child.ai_link_parent == 0
         assert child.target_offset_x == x_offset
         assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -935,8 +935,8 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
         assert child.ai_link_parent == 0
         assert child.target_offset_x == x_offset
         assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -989,8 +989,8 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
         assert child.ai_link_parent == 0
         assert child.target_offset_x == x_offset
         assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -1043,8 +1043,8 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
         assert child.ai_link_parent == 0
         assert child.target_offset_x == x_offset
         assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 20.0 if idx == 80 else 40.0
         assert child.health == expected_health
@@ -1096,8 +1096,8 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.ai_link_parent == 0
         assert child.target_offset_x == x_offset
         assert child.target_offset_y == y_offset
-        assert child.pos_x == 100.0 + x_offset
-        assert child.pos_y == 200.0 + y_offset
+        assert child.pos.x == 100.0 + x_offset
+        assert child.pos.y == 200.0 + y_offset
 
         expected_health = 260.0
         assert child.health == expected_health
@@ -1152,8 +1152,8 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         angle = float(i) * (math.tau / 5.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
         assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
-        assert child.pos_x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + (child.target_offset_y or 0.0), abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + (child.target_offset_y or 0.0), abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -2799,8 +2799,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        assert child.pos_x == 100.0
-        assert child.pos_y == 200.0
+        assert child.pos.x == 100.0
+        assert child.pos.y == 200.0
         assert child.phase_seed == float(r_phase_seed & 0x17F)
         assert child.health == 40.0
         assert child.max_health == 40.0
@@ -2860,8 +2860,8 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert child.tint == (0.6, 0.6, 0.31, 1.0)
 
         angle = float(2 + 2 * i) * (math.pi / 8.0)
-        assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
-        assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
     # The original falls into the "Unhandled creatureType.\n" block after the loop, which overwrites
     # the return creature (last child).

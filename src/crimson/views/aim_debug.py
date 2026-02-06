@@ -199,7 +199,7 @@ class AimDebugView:
         mouse_back_x, mouse_back_y = self._world.world_to_screen(float(mouse_world_x), float(mouse_world_y))
 
         if self._draw_expected_overlay and self._player is not None:
-            dist = math.hypot(float(self._player.aim_x) - float(self._player.pos_x), float(self._player.aim_y) - float(self._player.pos_y))
+            dist = math.hypot(float(self._player.aim_x) - float(self._player.pos.x), float(self._player.aim_y) - float(self._player.pos.y))
             radius = max(6.0, dist * float(self._player.spread_heat) * 0.5)
             cam_x, cam_y, scale_x, scale_y = self._world._world_params()
             scale = (scale_x + scale_y) * 0.5
@@ -233,7 +233,7 @@ class AimDebugView:
                 ),
                 f"player_aim_world=({float(self._player.aim_x):.1f},{float(self._player.aim_y):.1f})  "
                 f"player_aim_screen=({aim_screen_x:.1f},{aim_screen_y:.1f})",
-                f"player=({float(self._player.pos_x):.1f},{float(self._player.pos_y):.1f})  dist={dist:.1f}",
+                f"player=({float(self._player.pos.x):.1f},{float(self._player.pos.y):.1f})  dist={dist:.1f}",
                 f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
                 f"cam=({cam_x:.2f},{cam_y:.2f})  scale=({scale_x:.3f},{scale_y:.3f})  demo_mode={self._world.demo_mode_active}",
                 f"bulletTrail={'yes' if self._world.bullet_trail_texture is not None else 'no'}  "

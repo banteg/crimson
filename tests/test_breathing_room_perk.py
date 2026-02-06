@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureState
@@ -13,7 +15,7 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
     state = GameplayState()
     state.bonus_spawn_guard = True
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=90.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=90.0)
 
     creatures = [CreatureState() for _ in range(3)]
     creatures[0].active = True

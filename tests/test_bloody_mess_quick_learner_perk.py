@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.perks import PerkId, perk_display_description, perk_display_name
@@ -9,7 +11,7 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
     state = GameplayState()
     state.bonus_spawn_guard = True
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=100)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=100)
     player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
 
     pool = CreaturePool()

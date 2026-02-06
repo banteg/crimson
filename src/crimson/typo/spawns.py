@@ -3,14 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from grim.geom import Vec2
 from grim.math import clamp
 
 from ..creatures.spawn import CreatureTypeId
 
 @dataclass(frozen=True, slots=True)
 class TypoSpawnCall:
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     type_id: CreatureTypeId
     tint_rgba: tuple[float, float, float, float]
 
@@ -47,16 +47,14 @@ def tick_typo_spawns(
 
         spawns.append(
             TypoSpawnCall(
-                pos_x=float(world_width) + 64.0,
-                pos_y=y,
+                pos=Vec2(float(world_width) + 64.0, y),
                 type_id=CreatureTypeId.SPIDER_SP2,
                 tint_rgba=tint,
             )
         )
         spawns.append(
             TypoSpawnCall(
-                pos_x=-64.0,
-                pos_y=y,
+                pos=Vec2(-64.0, y),
                 type_id=CreatureTypeId.ALIEN,
                 tint_rgba=tint,
             )

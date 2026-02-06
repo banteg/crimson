@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState, PlayerState, perk_apply
 from crimson.perks import PerkId
@@ -15,7 +17,7 @@ class _FixedRng:
 
 def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slot() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
 
     creatures = [CreatureState() for _ in range(8)]
     for idx, creature in enumerate(creatures):

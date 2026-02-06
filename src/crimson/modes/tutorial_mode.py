@@ -100,8 +100,8 @@ class TutorialMode(BaseGameplayMode):
         self._state.perk_selection.choices.clear()
         self._state.perk_selection.choices_dirty = True
 
-        self._player.pos_x = float(self._world.world_size) * 0.5
-        self._player.pos_y = float(self._world.world_size) * 0.5
+        self._player.pos.x = float(self._world.world_size) * 0.5
+        self._player.pos.y = float(self._world.world_size) * 0.5
         weapon_assign_player(self._player, 1)
 
     def close(self) -> None:
@@ -315,8 +315,8 @@ class TutorialMode(BaseGameplayMode):
             )
             if spawned is not None:
                 self._state.effects.spawn_burst(
-                    pos_x=float(spawned.pos_x),
-                    pos_y=float(spawned.pos_y),
+                    pos_x=float(spawned.pos.x),
+                    pos_y=float(spawned.pos.y),
                     count=12,
                     rand=self._state.rng.rand,
                     detail_preset=detail_preset,

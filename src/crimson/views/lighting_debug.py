@@ -321,8 +321,8 @@ class LightingDebugView:
             rl.Color(180, 140, 255, 255),
             rl.Color(255, 160, 90, 255),
         ]
-        px = float(self._player.pos_x)
-        py = float(self._player.pos_y)
+        px = float(self._player.pos.x)
+        py = float(self._player.pos.y)
         self._fly_lights.clear()
         for i in range(int(self._fly_light_count)):
             angle = rng.random() * math.tau
@@ -502,8 +502,8 @@ class LightingDebugView:
         rng = random.Random(int(seed))
         if self._player is None:
             return
-        center_x = float(self._player.pos_x)
-        center_y = float(self._player.pos_y)
+        center_x = float(self._player.pos.x)
+        center_y = float(self._player.pos.y)
 
         self._world.creatures.reset()
         types = [
@@ -634,8 +634,8 @@ class LightingDebugView:
 
         if dt_world > 0.0:
             if self._fly_lights_enabled and self._fly_lights and self._player is not None:
-                px = float(self._player.pos_x)
-                py = float(self._player.pos_y)
+                px = float(self._player.pos.x)
+                py = float(self._player.pos.y)
                 for fl in self._fly_lights:
                     fl.angle += fl.omega * dt_world
                     wobble = 1.0 + 0.10 * math.sin(fl.angle * 0.7)
@@ -659,8 +659,8 @@ class LightingDebugView:
     def _spawn_projectile(self, *, aim_x: float, aim_y: float) -> None:
         if self._player is None:
             return
-        px = float(self._player.pos_x)
-        py = float(self._player.pos_y)
+        px = float(self._player.pos.x)
+        py = float(self._player.pos.y)
         dx = float(aim_x) - px
         dy = float(aim_y) - py
         d = math.hypot(dx, dy)
@@ -840,7 +840,7 @@ class LightingDebugView:
         circles: list[tuple[float, float, float]] = []
 
         if self._player is not None:
-            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
+            px, py = self._world.world_to_screen(float(self._player.pos.x), float(self._player.pos.y))
             pr = occ_radius(float(self._player.size))
             circles.append((float(px), float(py), float(pr)))
 
@@ -1094,7 +1094,7 @@ class LightingDebugView:
         scale = (scale_x + scale_y) * 0.5
 
         if self._draw_occluders:
-            px, py = self._world.world_to_screen(float(self._player.pos_x), float(self._player.pos_y))
+            px, py = self._world.world_to_screen(float(self._player.pos.x), float(self._player.pos.y))
             rl.draw_circle_lines(
                 int(px),
                 int(py),

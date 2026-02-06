@@ -55,8 +55,8 @@ def bake_fx_queues(
             GroundDecal(
                 texture=textures.particles,
                 src=rl.Rectangle(*src),
-                x=entry.pos_x,
-                y=entry.pos_y,
+                x=entry.pos.x,
+                y=entry.pos.y,
                 width=entry.width,
                 height=entry.height,
                 rotation_rad=entry.rotation,

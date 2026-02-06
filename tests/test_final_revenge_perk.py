@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE
@@ -19,7 +21,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, health=0.5)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.5)
     player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
     world.players.append(player)
 

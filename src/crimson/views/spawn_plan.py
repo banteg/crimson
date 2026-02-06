@@ -310,22 +310,22 @@ class SpawnPlanView:
             if not (0 <= c.ai_link_parent < len(self._plan.creatures)):
                 continue
             p = self._plan.creatures[c.ai_link_parent]
-            x0, y0 = self._world_to_screen(c.pos_x, c.pos_y)
-            x1, y1 = self._world_to_screen(p.pos_x, p.pos_y)
+            x0, y0 = self._world_to_screen(c.pos.x, c.pos.y)
+            x1, y1 = self._world_to_screen(p.pos.x, p.pos.y)
             rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, LINK_COLOR)
 
         # Offset hints.
         for c in self._plan.creatures:
             if c.target_offset_x is None or c.target_offset_y is None:
                 continue
-            x0, y0 = self._world_to_screen(c.pos_x, c.pos_y)
-            x1, y1 = self._world_to_screen(c.pos_x + c.target_offset_x, c.pos_y + c.target_offset_y)
+            x0, y0 = self._world_to_screen(c.pos.x, c.pos.y)
+            x1, y1 = self._world_to_screen(c.pos.x + c.target_offset_x, c.pos.y + c.target_offset_y)
             rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, OFFSET_COLOR)
             rl.draw_circle_lines(int(x1), int(y1), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
 
         # Creature dots.
         for idx, c in enumerate(self._plan.creatures):
-            x, y = self._world_to_screen(c.pos_x, c.pos_y)
+            x, y = self._world_to_screen(c.pos.x, c.pos.y)
             radius = max(3.0, 6.0 * math.sqrt(max(1.0, (c.size or 50.0) / 50.0)))
             radius = min(radius, 24.0)
             color = _type_color(c.type_id)
@@ -338,7 +338,7 @@ class SpawnPlanView:
             if not (0 <= slot.owner_creature < len(self._plan.creatures)):
                 continue
             owner = self._plan.creatures[slot.owner_creature]
-            x, y = self._world_to_screen(owner.pos_x, owner.pos_y)
+            x, y = self._world_to_screen(owner.pos.x, owner.pos.y)
             rl.draw_circle_lines(int(x), int(y), max(8.0, 12.0 * self._world_scale), rl.Color(120, 255, 180, 200))
 
 

@@ -473,8 +473,8 @@ class DemoView:
             if idx >= len(self._world.players):
                 continue
             player = self._world.players[idx]
-            player.pos_x = float(x)
-            player.pos_y = float(y)
+            player.pos.x = float(x)
+            player.pos.y = float(y)
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim_x = float(x)
             player.aim_y = float(y)
@@ -741,27 +741,27 @@ class DemoView:
                     aim_y = float(target.y)
                 auto_fire = aim_dist < 128.0
             else:
-                ax, ay, amag = _normalize(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                ax, ay, amag = _normalize(float(player.pos.x) - center_x, float(player.pos.y) - center_y)
                 if amag <= 1e-6:
                     ax, ay = 0.0, -1.0
-                aim_x = float(player.pos_x) + ax * 60.0
-                aim_y = float(player.pos_y) + ay * 60.0
+                aim_x = float(player.pos.x) + ax * 60.0
+                aim_y = float(player.pos.y) + ay * 60.0
 
             # Movement:
             # - orbit center if no target
             # - chase target when near center
             # - return to center when too far
             if target is None:
-                move_dx = -(float(player.pos_y) - center_y)
-                move_dy = float(player.pos_x) - center_x
+                move_dx = -(float(player.pos.y) - center_y)
+                move_dy = float(player.pos.x) - center_x
             else:
-                center_dist = math.hypot(float(player.pos_x) - center_x, float(player.pos_y) - center_y)
+                center_dist = math.hypot(float(player.pos.x) - center_x, float(player.pos.y) - center_y)
                 if center_dist <= 300.0:
-                    move_dx = float(target.x) - float(player.pos_x)
-                    move_dy = float(target.y) - float(player.pos_y)
+                    move_dx = float(target.x) - float(player.pos.x)
+                    move_dy = float(target.y) - float(player.pos.y)
                 else:
-                    move_dx = center_x - float(player.pos_x)
-                    move_dy = center_y - float(player.pos_y)
+                    move_dx = center_x - float(player.pos.x)
+                    move_dy = center_y - float(player.pos.y)
 
             desired_x, desired_y, desired_mag = _normalize(move_dx, move_dy)
             if desired_mag <= 1e-6:
@@ -801,7 +801,7 @@ class DemoView:
         return best_idx
 
     def _select_demo_target(self, player_index: int, player: PlayerState, creatures: list) -> int | None:
-        candidate = self._nearest_world_creature_index(player.pos_x, player.pos_y)
+        candidate = self._nearest_world_creature_index(player.pos.x, player.pos.y)
         current = self._demo_targets[player_index] if player_index < len(self._demo_targets) else None
         if current is None:
             self._demo_targets[player_index] = candidate
@@ -818,8 +818,8 @@ class DemoView:
         cand_creature = creatures[candidate]
         if not cand_creature.active or cand_creature.hp <= 0.0:
             return current
-        cur_d = math.hypot(current_creature.x - player.pos_x, current_creature.y - player.pos_y)
-        cand_d = math.hypot(cand_creature.x - player.pos_x, cand_creature.y - player.pos_y)
+        cur_d = math.hypot(current_creature.x - player.pos.x, current_creature.y - player.pos.y)
+        cand_d = math.hypot(cand_creature.x - player.pos.x, cand_creature.y - player.pos.y)
         if cand_d + 64.0 < cur_d:
             self._demo_targets[player_index] = candidate
             return candidate

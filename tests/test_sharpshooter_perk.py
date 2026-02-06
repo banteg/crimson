@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, player_update
@@ -13,8 +15,7 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     state = GameplayState(projectiles=pool)
     player = PlayerState(
         index=0,
-        pos_x=100.0,
-        pos_y=100.0,
+        pos=Vec2(100.0, 100.0),
         weapon_id=int(ProjectileTypeId.ASSAULT_RIFLE),
         clip_size=10,
         ammo=10,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
@@ -10,8 +12,8 @@ from crimson.perks import PerkId
 
 def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:
     state = GameplayState()
-    owner = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
-    other = PlayerState(index=1, pos_x=0.0, pos_y=0.0)
+    owner = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    other = PlayerState(index=1, pos=Vec2(0.0, 0.0))
 
     perk_apply(state, [owner, other], PerkId.PLAGUEBEARER)
 
@@ -21,7 +23,7 @@ def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:
 
 def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     player.plaguebearer_active = True
 
     pool = CreaturePool()
@@ -41,7 +43,7 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
 def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     dt = 0.2
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=500.0, pos_y=500.0)
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -62,7 +64,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
 def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=500.0, pos_y=500.0)
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
     player.perk_counts[int(PerkId.PLAGUEBEARER)] = 1
 
     pool = CreaturePool()
@@ -93,7 +95,7 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     dt = 0.2
     state = GameplayState()
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos_x=500.0, pos_y=500.0)
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
 
     pool = CreaturePool()
     creature = pool.entries[0]

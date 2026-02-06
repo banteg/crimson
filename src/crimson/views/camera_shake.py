@@ -90,8 +90,8 @@ class CameraShakeView:
         self._world.state.camera_shake_pulses = 0
 
         player = self._world.players[0]
-        player.pos_x = WORLD_SIZE * 0.5
-        player.pos_y = WORLD_SIZE * 0.5
+        player.pos.x = WORLD_SIZE * 0.5
+        player.pos.y = WORLD_SIZE * 0.5
 
         spawn = [
             _SpawnSpec(r=140.0, angle_rad=0.0, type_id=CreatureTypeId.ZOMBIE, hp=50.0),
@@ -102,8 +102,8 @@ class CameraShakeView:
             _SpawnSpec(r=460.0, angle_rad=math.pi * 1.25, type_id=CreatureTypeId.ZOMBIE, hp=100.0),
         ]
         for entry in spawn:
-            x = player.pos_x + math.cos(entry.angle_rad) * entry.r
-            y = player.pos_y + math.sin(entry.angle_rad) * entry.r
+            x = player.pos.x + math.cos(entry.angle_rad) * entry.r
+            y = player.pos.y + math.sin(entry.angle_rad) * entry.r
             self._spawn_creature(world_x=x, world_y=y, type_id=entry.type_id, hp=entry.hp)
 
     def open(self) -> None:

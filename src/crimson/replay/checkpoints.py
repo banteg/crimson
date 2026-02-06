@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..gameplay import PlayerState
 from ..sim.world_state import WorldState
@@ -21,8 +22,7 @@ class ReplayCheckpointsError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class ReplayPlayerCheckpoint:
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     health: float
     weapon_id: int
     ammo: float
@@ -129,8 +129,7 @@ def build_checkpoint(
     for player in players:
         player_ckpts.append(
             ReplayPlayerCheckpoint(
-                pos_x=round(float(player.pos_x), 4),
-                pos_y=round(float(player.pos_y), 4),
+                pos=Vec2(round(float(player.pos.x), 4), round(float(player.pos.y), 4)),
                 health=round(float(player.health), 4),
                 weapon_id=int(player.weapon_id),
                 ammo=round(float(player.ammo), 4),
@@ -288,10 +287,16 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
         for p in players_in:
             if not isinstance(p, dict):
                 raise ReplayCheckpointsError(f"checkpoint player must be an object: {p!r}")
+            pos_raw = p.get("pos")
+            if isinstance(pos_raw, dict):
+                px = float(pos_raw.get("x", 0.0))
+                py = float(pos_raw.get("y", 0.0))
+            else:
+                px = float(p.get("pos_x", 0.0))
+                py = float(p.get("pos_y", 0.0))
             players.append(
                 ReplayPlayerCheckpoint(
-                    pos_x=float(p.get("pos_x", 0.0)),
-                    pos_y=float(p.get("pos_y", 0.0)),
+                    pos=Vec2(px, py),
                     health=float(p.get("health", 0.0)),
                     weapon_id=int(p.get("weapon_id", 0)),
                     ammo=float(p.get("ammo", 0.0)),

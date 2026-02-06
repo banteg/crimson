@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.gameplay import (
     GameplayState,
     PlayerInput,
@@ -12,7 +14,7 @@ from crimson.gameplay import (
 
 def test_weapon_usage_tracks_most_used_weapon() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
     player.spread_heat = 0.0

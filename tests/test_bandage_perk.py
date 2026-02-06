@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.gameplay import GameplayState, PlayerState, perk_apply
 from crimson.perks import PerkId
 
@@ -16,7 +18,7 @@ def test_bandage_clamps_health_and_spawns_burst() -> None:
     state = GameplayState()
     state.rng = _FixedRng(49)  # (rand % 50) + 1 == 50
 
-    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0, health=3.0)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
     perk_apply(state, [player], PerkId.BANDAGE)
 
     assert player.health == 100.0

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.gameplay import GameplayState, PlayerState
 
@@ -9,7 +11,7 @@ def test_creature_handle_death_doubles_xp_when_double_xp_bonus_active() -> None:
     state.bonus_spawn_guard = True
     state.bonuses.double_experience = 5.0
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=100)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=100)
 
     pool = CreaturePool()
     creature = pool.entries[0]

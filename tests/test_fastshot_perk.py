@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon
@@ -13,11 +15,11 @@ def _fire_once(state: GameplayState, player: PlayerState) -> float:
 
 def test_fastshot_scales_shot_cooldown() -> None:
     base_state = GameplayState()
-    base_player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=1, ammo=2)
+    base_player = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=1, ammo=2)
     base_cd = _fire_once(base_state, base_player)
 
     perk_state = GameplayState()
-    perk_player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=1, ammo=2)
+    perk_player = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=1, ammo=2)
     perk_player.perk_counts[int(PerkId.FASTSHOT)] = 1
     perk_cd = _fire_once(perk_state, perk_player)
 

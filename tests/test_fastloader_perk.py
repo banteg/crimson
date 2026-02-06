@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.gameplay import GameplayState, PlayerState, player_start_reload
@@ -13,8 +15,8 @@ def test_fastloader_scales_reload_timer() -> None:
     reload_time = float(WEAPON_BY_ID[weapon_id].reload_time or 0.0)
     assert reload_time > 0.0
 
-    base = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=weapon_id)
-    perk = PlayerState(index=0, pos_x=0.0, pos_y=0.0, weapon_id=weapon_id)
+    base = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=weapon_id)
+    perk = PlayerState(index=0, pos=Vec2(0.0, 0.0), weapon_id=weapon_id)
     perk.perk_counts[int(PerkId.FASTLOADER)] = 1
 
     base_state = GameplayState()

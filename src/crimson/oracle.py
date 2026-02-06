@@ -6,6 +6,8 @@ and emits game state to stdout each frame for comparison with other implementati
 
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import hashlib
 import json
 from dataclasses import dataclass
@@ -85,8 +87,8 @@ def export_player_state(player: PlayerState) -> dict[str, Any]:
     """Export player state to JSON-serializable dict."""
     return {
         "index": int(player.index),
-        "pos_x": round(float(player.pos_x), 4),
-        "pos_y": round(float(player.pos_y), 4),
+        "pos_x": round(float(player.pos.x), 4),
+        "pos_y": round(float(player.pos.y), 4),
         "health": round(float(player.health), 4),
         "weapon_id": int(player.weapon_id),
         "ammo": round(float(player.ammo), 4),
@@ -114,8 +116,8 @@ def export_bonus_state(bonus: Any) -> dict[str, Any]:
     """Export bonus state to JSON-serializable dict."""
     return {
         "bonus_id": int(bonus.bonus_id),
-        "pos_x": round(float(bonus.pos_x), 4),
-        "pos_y": round(float(bonus.pos_y), 4),
+        "pos_x": round(float(bonus.pos.x), 4),
+        "pos_y": round(float(bonus.pos.y), 4),
         "time_left": round(float(bonus.time_left), 4),
         "picked": bool(bonus.picked),
     }
@@ -201,8 +203,8 @@ def export_game_state_summary(
         "creature_count": creature_count,
         "players": [
             {
-                "pos_x": round(float(p.pos_x), 2),
-                "pos_y": round(float(p.pos_y), 2),
+                "pos_x": round(float(p.pos.x), 2),
+                "pos_y": round(float(p.pos.y), 2),
                 "health": round(float(p.health), 2),
                 "weapon_id": int(p.weapon_id),
                 "level": int(p.level),
@@ -295,7 +297,7 @@ def run_headless(config: OracleConfig) -> None:
     if not players:
         from .gameplay import PlayerState, weapon_assign_player
 
-        player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+        player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
         weapon_assign_player(player, 1)
         players.append(player)
 

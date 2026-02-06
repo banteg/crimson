@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
@@ -13,7 +15,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     dt = 0.2
     state = GameplayState()
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
 
     pool = CreaturePool()
@@ -41,7 +43,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     state = GameplayState()
     state.bonuses.double_experience = 5.0
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=100)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=100)
     player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
     player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
 
@@ -70,7 +72,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     dt = 0.2
     state = GameplayState()
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, experience=100)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), experience=100)
     player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
 
     pool = CreaturePool()

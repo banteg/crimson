@@ -7,6 +7,7 @@ __all__ = [
     "config",
     "console",
     "fonts",
+    "geom",
     "input",
     "jaz",
     "math",

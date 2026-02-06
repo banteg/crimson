@@ -18,12 +18,12 @@ def test_projectile_decals_do_not_consume_sim_rng() -> None:
     player = world.players[0]
     hit = (
         int(ProjectileTypeId.PISTOL),
-        float(player.pos_x - 10.0),
-        float(player.pos_y - 10.0),
-        float(player.pos_x),
-        float(player.pos_y),
-        float(player.pos_x),
-        float(player.pos_y),
+        float(player.pos.x - 10.0),
+        float(player.pos.y - 10.0),
+        float(player.pos.x),
+        float(player.pos.y),
+        float(player.pos.x),
+        float(player.pos.y),
     )
     world._queue_projectile_decals([hit])
 

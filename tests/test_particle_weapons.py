@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CreatureState
@@ -39,7 +41,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
     for weapon_id, expected_style, ammo_cost in cases:
         state = GameplayState(rng=_FixedRng(1))
-        player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+        player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
         player.aim_dir_x = 1.0
         player.aim_dir_y = 0.0
         player.spread_heat = 0.0
@@ -64,7 +66,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     state = GameplayState(rng=_FixedRng(0))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.aim_dir_x = 0.0
     player.aim_dir_y = 1.0
     player.spread_heat = 0.0
@@ -79,15 +81,15 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     assert len(particles) == 1
     particle = particles[0]
 
-    dx = aim_x - float(player.pos_x)
-    dy = aim_y - float(player.pos_y)
+    dx = aim_x - float(player.pos.x)
+    dy = aim_y - float(player.pos.y)
     aim_heading = math.atan2(dy, dx) + math.pi / 2.0
     muzzle_dir = (aim_heading - math.pi / 2.0) - 0.150915
-    expected_x = float(player.pos_x) + math.cos(muzzle_dir) * 16.0
-    expected_y = float(player.pos_y) + math.sin(muzzle_dir) * 16.0
+    expected_x = float(player.pos.x) + math.cos(muzzle_dir) * 16.0
+    expected_y = float(player.pos.y) + math.sin(muzzle_dir) * 16.0
 
-    assert math.isclose(float(particle.pos_x), expected_x, abs_tol=1e-9)
-    assert math.isclose(float(particle.pos_y), expected_y, abs_tol=1e-9)
+    assert math.isclose(float(particle.pos.x), expected_x, abs_tol=1e-9)
+    assert math.isclose(float(particle.pos.y), expected_y, abs_tol=1e-9)
 
 
 def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
@@ -97,7 +99,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
     # The third value is consumed by `spawn_particle` (spin).
     state = GameplayState(rng=_SequenceRng([128, 511, 0]))  # type: ignore[arg-type]
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
     player.spread_heat = 0.48
@@ -110,14 +112,14 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     particle = particles[0]
 
     # Recompute the actual jittered aim direction the weapon code would have used.
-    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+    dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(128) * (math.tau / 512.0)
     mag = float(511) * (1.0 / 512.0)
     offset = max_offset * mag
     aim_jitter_x = aim_x + math.cos(dir_angle) * offset
     aim_jitter_y = aim_y + math.sin(dir_angle) * offset
-    jittered_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x))
+    jittered_angle = math.atan2(aim_jitter_y - float(player.pos.y), aim_jitter_x - float(player.pos.x))
 
     assert jittered_angle > 0.1
     assert math.isclose(float(particle.angle), 0.0, abs_tol=1e-9)
@@ -126,7 +128,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
 
 def test_particle_hits_damage_creatures() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
     player.spread_heat = 0.0
@@ -152,7 +154,7 @@ def test_particle_hits_damage_creatures() -> None:
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     state = GameplayState(rng=_FixedRng(0))
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
     player.spread_heat = 0.0

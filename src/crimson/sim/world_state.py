@@ -76,8 +76,8 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
 
-    px = float(player.pos_x)
-    py = float(player.pos_y)
+    px = float(player.pos.x)
+    py = float(player.pos.y)
     rand = ctx.state.rng.rand
     ctx.state.effects.spawn_explosion_burst(
         pos_x=px,
@@ -204,7 +204,7 @@ class WorldState:
         if inputs is None:
             inputs = [PlayerInput() for _ in self.players]
 
-        prev_positions = [(player.pos_x, player.pos_y) for player in self.players]
+        prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
 
         # Native runs `perks_update_effects` early in the frame loop and relies on the current aim position
@@ -399,8 +399,8 @@ class WorldState:
             for pickup in pickups:
                 if pickup.bonus_id != int(BonusId.NUKE):
                     self.state.effects.spawn_burst(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos_x=float(pickup.pos.x),
+                        pos_y=float(pickup.pos.y),
                         count=12,
                         rand=self.state.rng.rand,
                         detail_preset=detail_preset,
@@ -413,8 +413,8 @@ class WorldState:
                     )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos_x=float(pickup.pos.x),
+                        pos_y=float(pickup.pos.y),
                         detail_preset=detail_preset,
                         color_r=0.6,
                         color_g=0.6,
@@ -423,8 +423,8 @@ class WorldState:
                     )
                 elif pickup.bonus_id == int(BonusId.FREEZE):
                     self.state.effects.spawn_ring(
-                        pos_x=float(pickup.pos_x),
-                        pos_y=float(pickup.pos_y),
+                        pos_x=float(pickup.pos.x),
+                        pos_y=float(pickup.pos.y),
                         detail_preset=detail_preset,
                         color_r=0.3,
                         color_g=0.5,
@@ -503,7 +503,7 @@ class WorldState:
             if idx >= len(prev_positions):
                 continue
             prev_x, prev_y = prev_positions[idx]
-            speed = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
+            speed = math.hypot(player.pos.x - prev_x, player.pos.y - prev_y)
             move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
             player.move_phase, _ = creature_anim_advance_phase(
                 player.move_phase,

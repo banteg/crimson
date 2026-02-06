@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import math
 
@@ -108,7 +110,7 @@ class ProjectileFxView:
         self._show_debug = True
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures: list[DummyCreature] = []
 
         self._camera_x = -1.0
@@ -317,8 +319,8 @@ class ProjectileFxView:
             self._spawn_fire_bullets_volley(angle=angle)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
-            self._player.pos_x = self._origin_x
-            self._player.pos_y = self._origin_y
+            self._player.pos.x = self._origin_x
+            self._player.pos.y = self._origin_y
             bonus_apply(self._state, self._player, BonusId.SHOCK_CHAIN, origin=self._player, creatures=self._creatures)
 
     def update(self, dt: float) -> None:
@@ -493,7 +495,7 @@ class ProjectileFxView:
                 color = rl.Color(120, 200, 255, 40)
             else:
                 continue
-            px, py = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
+            px, py = self._camera_world_to_screen(proj.pos.x, proj.pos.y)
             rl.draw_circle(int(px), int(py), radius, color)
             rl.draw_circle_lines(int(px), int(py), radius, rl.Color(120, 200, 255, 120))
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.effects import FxQueue, FxQueueRotated
@@ -17,7 +19,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    player = PlayerState(index=0, pos_x=300.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(300.0, 100.0))
     player.perk_counts[int(PerkId.EVIL_EYES)] = 1
     world.players.append(player)
 

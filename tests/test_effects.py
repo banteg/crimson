@@ -75,8 +75,8 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
     assert fx.rotation == 0.0
 
     pool.update(0.5)
-    assert math.isclose(fx.pos_x, 11.0, abs_tol=1e-9)
-    assert math.isclose(fx.pos_y, 18.5, abs_tol=1e-9)
+    assert math.isclose(fx.pos.x, 11.0, abs_tol=1e-9)
+    assert math.isclose(fx.pos.y, 18.5, abs_tol=1e-9)
     assert math.isclose(fx.rotation, 1.5, abs_tol=1e-9)
     assert math.isclose(fx.color_a, 0.5, abs_tol=1e-9)
     assert math.isclose(fx.scale, 31.0, abs_tol=1e-9)
@@ -182,8 +182,8 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
 
     first = q.iter_active()[0]
     assert first.effect_id == 7
-    assert math.isclose(first.pos_x, 0.0, abs_tol=1e-9)
-    assert math.isclose(first.pos_y, 20.0, abs_tol=1e-9)
+    assert math.isclose(first.pos.x, 0.0, abs_tol=1e-9)
+    assert math.isclose(first.pos.y, 20.0, abs_tol=1e-9)
     assert math.isclose(first.width, 2.0, abs_tol=1e-9)
     assert math.isclose(first.height, 2.0, abs_tol=1e-9)
     assert math.isclose(first.color_r, 1.0, abs_tol=1e-9)
@@ -261,7 +261,7 @@ def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
     entry = active[0]
     assert entry.effect_id == 1
     assert entry.flags == 0x19
-    assert math.isclose(entry.pos_x, 3.0, abs_tol=1e-9)
-    assert math.isclose(entry.pos_y, 4.0, abs_tol=1e-9)
+    assert math.isclose(entry.pos.x, 3.0, abs_tol=1e-9)
+    assert math.isclose(entry.pos.y, 4.0, abs_tol=1e-9)
     assert math.isclose(entry.lifetime, 0.25, abs_tol=1e-9)
     assert math.isclose(entry.scale_step, 50.0, abs_tol=1e-9)

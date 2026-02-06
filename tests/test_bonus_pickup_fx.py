@@ -11,7 +11,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(player.pos_x, player.pos_y, int(BonusId.POINTS), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(player.pos.x, player.pos.y, int(BonusId.POINTS), state=world.state)
     assert entry is not None
 
     assert not world.state.effects.iter_active()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 
 from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_fire_weapon, weapon_assign_player
@@ -15,7 +17,7 @@ class _DummyCreature:
 
 def test_shots_fired_and_hit_increment() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     weapon_assign_player(player, 1)
     player.spread_heat = 0.0
     player.aim_dir_x = 1.0

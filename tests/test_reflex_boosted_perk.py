@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated
@@ -18,7 +20,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.move_speed = 2.0
     player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
@@ -36,4 +38,4 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         perk_progression_enabled=False,
     )
 
-    assert player.pos_x == pytest.approx(90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)
+    assert player.pos.x == pytest.approx(90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)

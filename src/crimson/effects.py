@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from typing import Callable, Protocol
 
+from grim.geom import Vec2
 from grim.math import clamp
 
 from .effects_atlas import EffectId
@@ -64,8 +65,7 @@ CreatureKillHandler = Callable[[int, int], None]
 class Particle:
     active: bool = False
     render_flag: bool = False
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     vel_x: float = 0.0
     vel_y: float = 0.0
     scale_x: float = 1.0
@@ -117,8 +117,8 @@ class ParticlePool:
         entry = self._entries[idx]
         entry.active = True
         entry.render_flag = True
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.vel_x = math.cos(angle) * 90.0
         entry.vel_y = math.sin(angle) * 90.0
         entry.scale_x = 1.0
@@ -147,8 +147,8 @@ class ParticlePool:
         entry = self._entries[idx]
         entry.active = True
         entry.render_flag = True
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.vel_x = math.cos(angle) * 30.0
         entry.vel_y = math.sin(angle) * 30.0
         entry.scale_x = 1.0
@@ -229,14 +229,14 @@ class ParticlePool:
                 move_scale = entry.intensity
                 if move_scale <= 0.15:
                     move_scale *= 0.55
-                entry.pos_x += entry.vel_x * dt * move_scale
-                entry.pos_y += entry.vel_y * dt * move_scale
+                entry.pos.x += entry.vel_x * dt * move_scale
+                entry.pos.y += entry.vel_y * dt * move_scale
             else:
                 entry.intensity -= dt * 0.9
                 entry.spin += dt
                 move_scale = max(entry.intensity, 0.15) * 2.5
-                entry.pos_x += entry.vel_x * dt * move_scale
-                entry.pos_y += entry.vel_y * dt * move_scale
+                entry.pos.x += entry.vel_x * dt * move_scale
+                entry.pos.y += entry.vel_y * dt * move_scale
 
             if entry.render_flag:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
@@ -278,25 +278,25 @@ class ParticlePool:
             if style == 8 and (not entry.render_flag) and entry.target_id != -1 and creatures is not None:
                 target_id = int(entry.target_id)
                 if 0 <= target_id < len(creatures) and bool(getattr(creatures[target_id], "active", False)):
-                    entry.pos_x = float(getattr(creatures[target_id], "x", entry.pos_x))
-                    entry.pos_y = float(getattr(creatures[target_id], "y", entry.pos_y))
+                    entry.pos.x = float(getattr(creatures[target_id], "x", entry.pos.x))
+                    entry.pos.y = float(getattr(creatures[target_id], "y", entry.pos.y))
 
             if entry.render_flag and creatures is not None:
-                hit_idx = _creature_find_in_radius(pos_x=entry.pos_x, pos_y=entry.pos_y, radius=max(entry.intensity, 0.0) * 8.0)
+                hit_idx = _creature_find_in_radius(pos_x=entry.pos.x, pos_y=entry.pos.y, radius=max(entry.intensity, 0.0) * 8.0)
                 if hit_idx != -1:
                     entry.render_flag = False
                     creature = creatures[hit_idx]
                     if style == 8:
                         entry.target_id = int(hit_idx)
-                        entry.pos_x = float(getattr(creature, "x", entry.pos_x))
-                        entry.pos_y = float(getattr(creature, "y", entry.pos_y))
+                        entry.pos.x = float(getattr(creature, "x", entry.pos.x))
+                        entry.pos.y = float(getattr(creature, "y", entry.pos.y))
                         entry.vel_x = 0.0
                         entry.vel_y = 0.0
                     else:
                         entry.angle = float(entry.angle) % math.tau
                         hit_angle = math.atan2(
-                            (float(entry.pos_y) - float(entry.vel_y) * dt) - float(getattr(creature, "y", entry.pos_y)),
-                            (float(entry.pos_x) - float(entry.vel_x) * dt) - float(getattr(creature, "x", entry.pos_x)),
+                            (float(entry.pos.y) - float(entry.vel_y) * dt) - float(getattr(creature, "y", entry.pos.y)),
+                            (float(entry.pos.x) - float(entry.vel_x) * dt) - float(getattr(creature, "x", entry.pos.x)),
                         )
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
@@ -330,8 +330,8 @@ class ParticlePool:
                             sprite_vel_x = float(int(rand()) % 0x3C - 0x1E)
                             sprite_vel_y = float(int(rand()) % 0x3C - 0x1E)
                             sprite_id = sprite_effects.spawn(
-                                pos_x=float(getattr(creature, "x", entry.pos_x)),
-                                pos_y=float(getattr(creature, "y", entry.pos_y)),
+                                pos_x=float(getattr(creature, "x", entry.pos.x)),
+                                pos_y=float(getattr(creature, "y", entry.pos.y)),
                                 vel_x=sprite_vel_x,
                                 vel_y=sprite_vel_y,
                                 scale=13.0,
@@ -340,8 +340,8 @@ class ParticlePool:
 
                         if fx_queue is not None:
                             fx_queue.add_random(
-                                pos_x=float(getattr(creature, "x", entry.pos_x)),
-                                pos_y=float(getattr(creature, "y", entry.pos_y)),
+                                pos_x=float(getattr(creature, "x", entry.pos.x)),
+                                pos_y=float(getattr(creature, "y", entry.pos.y)),
                                 rand=rand,
                             )
 
@@ -359,8 +359,7 @@ class SpriteEffect:
     color_b: float = 1.0
     color_a: float = 0.0
     rotation: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     vel_x: float = 0.0
     vel_y: float = 0.0
     scale: float = 1.0
@@ -399,8 +398,8 @@ class SpriteEffectPool:
         entry.color_b = 1.0
         entry.color_a = 1.0
         entry.rotation = float(int(self._rand()) % 0x274) * 0.01
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.vel_x = float(vel_x)
         entry.vel_y = float(vel_y)
         entry.scale = float(scale)
@@ -417,8 +416,8 @@ class SpriteEffectPool:
         for idx, entry in enumerate(self._entries):
             if not entry.active:
                 continue
-            entry.pos_x += dt * entry.vel_x
-            entry.pos_y += dt * entry.vel_y
+            entry.pos.x += dt * entry.vel_x
+            entry.pos.y += dt * entry.vel_y
             entry.rotation += dt * 3.0
             entry.color_a -= dt
             entry.scale += dt * 60.0
@@ -432,8 +431,7 @@ class SpriteEffectPool:
 class FxQueueEntry:
     effect_id: int = 0
     rotation: float = 0.0
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     height: float = 0.0
     width: float = 0.0
     color_r: float = 1.0
@@ -485,8 +483,8 @@ class FxQueue:
         entry = self._entries[self._count]
         entry.effect_id = int(effect_id)
         entry.rotation = float(rotation)
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.height = float(height)
         entry.width = float(width)
         entry.color_r = float(rgba[0])
@@ -596,8 +594,7 @@ class FxQueueRotated:
 
 @dataclass(slots=True)
 class EffectEntry:
-    pos_x: float = 0.0
-    pos_y: float = 0.0
+    pos: Vec2 = field(default_factory=Vec2)
     effect_id: int = 0
     vel_x: float = 0.0
     vel_y: float = 0.0
@@ -690,8 +687,8 @@ class EffectPool:
             return None
 
         entry = self._entries[idx]
-        entry.pos_x = float(pos_x)
-        entry.pos_y = float(pos_y)
+        entry.pos.x = float(pos_x)
+        entry.pos.y = float(pos_y)
         entry.effect_id = int(effect_id)
         entry.vel_x = float(vel_x)
         entry.vel_y = float(vel_y)
@@ -734,8 +731,8 @@ class EffectPool:
 
             if age < lifetime:
                 if age >= 0.0:
-                    entry.pos_x += float(entry.vel_x) * float(dt)
-                    entry.pos_y += float(entry.vel_y) * float(dt)
+                    entry.pos.x += float(entry.vel_x) * float(dt)
+                    entry.pos.y += float(entry.vel_y) * float(dt)
                     if flags & 0x4:
                         entry.rotation += float(entry.rotation_step) * float(dt)
                     if flags & 0x8:
@@ -749,8 +746,8 @@ class EffectPool:
                 alpha = 0.35 if (flags & 0x100) else 0.8
                 fx_queue.add(
                     effect_id=int(entry.effect_id),
-                    pos_x=float(entry.pos_x),
-                    pos_y=float(entry.pos_y),
+                    pos_x=float(entry.pos.x),
+                    pos_y=float(entry.pos.y),
                     width=float(entry.half_width) * 2.0,
                     height=float(entry.half_height) * 2.0,
                     rotation=float(entry.rotation),

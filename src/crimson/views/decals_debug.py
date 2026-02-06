@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from dataclasses import dataclass
 import json
 import math
@@ -102,7 +104,7 @@ class DecalsDebugView:
         self._stamp_log_file = None
 
         self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._player = PlayerState(index=0, pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._creatures = CreaturePool()
         self._env = SpawnEnv(
             terrain_width=WORLD_SIZE,
@@ -552,8 +554,8 @@ class DecalsDebugView:
                 )
 
         # Keep the player fixed; creatures use it as a target for heading/movement.
-        self._player.pos_x = WORLD_SIZE * 0.5
-        self._player.pos_y = WORLD_SIZE * 0.5
+        self._player.pos.x = WORLD_SIZE * 0.5
+        self._player.pos.y = WORLD_SIZE * 0.5
         self._player.health = 1e9
 
         creature_result = self._creatures.update(

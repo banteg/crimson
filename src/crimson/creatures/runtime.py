@@ -220,7 +220,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.player.health) <= 0.0:
         return
 
-    eat_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    eat_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos.x, ctx.player.pos.y)
     if eat_dist_sq >= 20.0 * 20.0:
         return
 
@@ -261,7 +261,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    ctx.contact_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos_x, ctx.player.pos_y)
+    ctx.contact_dist_sq = distance_sq(creature.x, creature.y, ctx.player.pos.x, ctx.player.pos.y)
     contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
     in_contact = ctx.contact_dist_sq <= contact_r * contact_r
     if not in_contact:
@@ -301,8 +301,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
 
     if ctx.fx_queue is not None:
-        dx = float(ctx.player.pos_x) - float(creature.x)
-        dy = float(ctx.player.pos_y) - float(creature.y)
+        dx = float(ctx.player.pos.x) - float(creature.x)
+        dy = float(ctx.player.pos.y) - float(creature.y)
         dist = math.hypot(dx, dy)
         if dist > 1e-9:
             dx /= dist
@@ -311,8 +311,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             dx = 0.0
             dy = 0.0
         ctx.fx_queue.add_random(
-            pos_x=float(ctx.player.pos_x) + dx * 3.0,
-            pos_y=float(ctx.player.pos_y) + dy * 3.0,
+            pos_x=float(ctx.player.pos.x) + dx * 3.0,
+            pos_y=float(ctx.player.pos.y) + dy * 3.0,
             rand=ctx.rand,
         )
 
@@ -708,8 +708,8 @@ class CreaturePool:
             if players and perk_active(players[0], PerkId.RADIOACTIVE):
                 radioactive_player = players[0]
                 dist = math.hypot(
-                    float(creature.x) - float(radioactive_player.pos_x),
-                    float(creature.y) - float(radioactive_player.pos_y),
+                    float(creature.x) - float(radioactive_player.pos.x),
+                    float(creature.y) - float(radioactive_player.pos.y),
                 )
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
@@ -738,8 +738,8 @@ class CreaturePool:
                 creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 ai = creature_ai_update_target(
                     creature,
-                    player_x=player.pos_x,
-                    player_y=player.pos_y,
+                    player_x=player.pos.x,
+                    player_y=player.pos.y,
                     creatures=self._entries,
                     dt=dt,
                 )
@@ -840,7 +840,7 @@ class CreaturePool:
                 else:
                     creature.attack_cooldown -= dt
 
-                dist = math.hypot(creature.x - player.pos_x, creature.y - player.pos_y)
+                dist = math.hypot(creature.x - player.pos.x, creature.y - player.pos.y)
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = int(ProjectileTypeId.PLASMA_RIFLE)
@@ -963,12 +963,12 @@ class CreaturePool:
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
         entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
-        entry.x = float(init.pos_x)
-        entry.y = float(init.pos_y)
+        entry.x = float(init.pos.x)
+        entry.y = float(init.pos.y)
         entry.heading = float(init.heading)
         entry.target_heading = float(init.heading)
-        entry.target_x = float(init.pos_x)
-        entry.target_y = float(init.pos_y)
+        entry.target_x = float(init.pos.x)
+        entry.target_y = float(init.pos.y)
         entry.phase_seed = float(init.phase_seed)
 
         entry.flags = init.flags or CreatureFlags(0)
@@ -1161,8 +1161,8 @@ class CreaturePool:
                 )
             if spawned_bonus is not None:
                 state.effects.spawn_burst(
-                    pos_x=float(spawned_bonus.pos_x),
-                    pos_y=float(spawned_bonus.pos_y),
+                    pos_x=float(spawned_bonus.pos.x),
+                    pos_y=float(spawned_bonus.pos.y),
                     count=16,
                     rand=rand,
                     detail_preset=int(detail_preset),

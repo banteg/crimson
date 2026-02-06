@@ -163,8 +163,8 @@ class ArsenalDebugView:
             return
 
         count = max(1, len(self._spawn_ids))
-        base_x = float(player.pos_x)
-        base_y = float(player.pos_y)
+        base_x = float(player.pos.x)
+        base_y = float(player.pos.y)
         for idx in range(count):
             spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
             angle = float(idx) / float(count) * math.tau
@@ -190,8 +190,8 @@ class ArsenalDebugView:
         bonus_ids = [int(entry.bonus_id) for entry in BONUS_TABLE if int(entry.bonus_id) != int(BonusId.UNUSED)]
         count = max(1, len(bonus_ids))
 
-        base_x = float(player.pos_x)
-        base_y = float(player.pos_y)
+        base_x = float(player.pos.x)
+        base_y = float(player.pos.y)
         rng = self._world.state.rng.rand
         current_weapon_id = int(player.weapon_id)
 

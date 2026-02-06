@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.terrain_render import _maybe_alpha_test
@@ -146,8 +147,8 @@ class WorldRenderer:
             for bonus in self.state.bonus_pool.entries:
                 if bonus.bonus_id == 0:
                     continue
-                sx = (bonus.pos_x + cam_x) * scale_x
-                sy = (bonus.pos_y + cam_y) * scale_y
+                sx = (bonus.pos.x + cam_x) * scale_x
+                sy = (bonus.pos.y + cam_y) * scale_y
                 tint = rl.Color(220, 220, 90, int(255 * alpha + 0.5))
                 rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), tint)
             return
@@ -162,8 +163,8 @@ class WorldRenderer:
             fade = self._bonus_fade(float(bonus.time_left), float(bonus.time_max))
             bubble_alpha = clamp(fade * 0.9, 0.0, 1.0) * alpha
 
-            sx = (bonus.pos_x + cam_x) * scale_x
-            sy = (bonus.pos_y + cam_y) * scale_y
+            sx = (bonus.pos.x + cam_x) * scale_x
+            sy = (bonus.pos.y + cam_y) * scale_y
             bubble_dst = rl.Rectangle(float(sx), float(sy), float(bubble_size), float(bubble_size))
             bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
             tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
@@ -253,8 +254,8 @@ class WorldRenderer:
             if not label:
                 continue
 
-            aim_x = float(getattr(player, "aim_x", player.pos_x))
-            aim_y = float(getattr(player, "aim_y", player.pos_y))
+            aim_x = float(getattr(player, "aim_x", player.pos.x))
+            aim_y = float(getattr(player, "aim_y", player.pos.y))
             x = (aim_x + cam_x) * scale_x + 16.0
             y = (aim_y + cam_y) * scale_y - 7.0
 
@@ -440,8 +441,8 @@ class WorldRenderer:
         if cell <= 0.0:
             return
 
-        sx = (player.pos_x + cam_x) * scale_x
-        sy = (player.pos_y + cam_y) * scale_y
+        sx = (player.pos.x + cam_x) * scale_x
+        sy = (player.pos.y + cam_y) * scale_y
         base_size = float(player.size) * scale
         base_scale = base_size / cell
 
@@ -656,8 +657,13 @@ class WorldRenderer:
             return
         texture = self.projs_texture
         type_id = int(getattr(proj, "type_id", 0))
-        pos_x = float(getattr(proj, "pos_x", 0.0))
-        pos_y = float(getattr(proj, "pos_y", 0.0))
+        proj_pos = getattr(proj, "pos", None)
+        if isinstance(proj_pos, Vec2):
+            pos_x = float(proj_pos.x)
+            pos_y = float(proj_pos.y)
+        else:
+            pos_x = float(getattr(proj, "pos_x", 0.0))
+            pos_y = float(getattr(proj, "pos_y", 0.0))
         sx, sy = self.world_to_screen(pos_x, pos_y)
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
@@ -966,8 +972,8 @@ class WorldRenderer:
                 size = max(0.0, radius * 2.0 * scale)
                 if size <= 0.0:
                     continue
-                sx = (float(entry.pos_x) + cam_x) * scale_x
-                sy = (float(entry.pos_y) + cam_y) * scale_y
+                sx = (float(entry.pos.x) + cam_x) * scale_x
+                sy = (float(entry.pos.y) + cam_y) * scale_y
                 dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
                 origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
                 rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
@@ -982,8 +988,8 @@ class WorldRenderer:
             size = max(0.0, radius * 2.0 * scale)
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
+            sx = (float(entry.pos.x) + cam_x) * scale_x
+            sy = (float(entry.pos.y) + cam_y) * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
             origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
             rotation_deg = float(entry.spin) * _RAD_TO_DEG
@@ -1001,8 +1007,8 @@ class WorldRenderer:
             h = max(0.0, half_h * 2.0 * scale)
             if w <= 0.0 or h <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
+            sx = (float(entry.pos.x) + cam_x) * scale_x
+            sy = (float(entry.pos.y) + cam_y) * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(w), float(h))
             origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
             tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
@@ -1053,8 +1059,8 @@ class WorldRenderer:
             size = float(entry.scale) * scale
             if size <= 0.0:
                 continue
-            sx = (float(entry.pos_x) + cam_x) * scale_x
-            sy = (float(entry.pos_y) + cam_y) * scale_y
+            sx = (float(entry.pos.x) + cam_x) * scale_x
+            sy = (float(entry.pos.y) + cam_y) * scale_y
             dst = rl.Rectangle(float(sx), float(sy), float(size), float(size))
             origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
             rotation_deg = float(entry.rotation) * _RAD_TO_DEG
@@ -1240,8 +1246,8 @@ class WorldRenderer:
                     )
                     return
 
-                sx = (player.pos_x + cam_x) * scale_x
-                sy = (player.pos_y + cam_y) * scale_y
+                sx = (player.pos.x + cam_x) * scale_x
+                sy = (player.pos.y + cam_y) * scale_y
                 tint = rl.Color(90, 190, 120, int(255 * entity_alpha + 0.5))
                 rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), tint)
 
@@ -1440,9 +1446,9 @@ class WorldRenderer:
                 for player in self.players:
                     if player.health <= 0.0:
                         continue
-                    aim_x = float(getattr(player, "aim_x", player.pos_x))
-                    aim_y = float(getattr(player, "aim_y", player.pos_y))
-                    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+                    aim_x = float(getattr(player, "aim_x", player.pos.x))
+                    aim_y = float(getattr(player, "aim_y", player.pos.y))
+                    dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
                     radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
                     sx = (aim_x + cam_x) * scale_x
                     sy = (aim_y + cam_y) * scale_y

@@ -98,8 +98,8 @@ class TypoShooterMode(BaseGameplayMode):
             if words:
                 self._unique_words = words
 
-        self._aim_target_x = float(self._player.pos_x) + 128.0
-        self._aim_target_y = float(self._player.pos_y)
+        self._aim_target_x = float(self._player.pos.x) + 128.0
+        self._aim_target_y = float(self._player.pos.y)
 
         enforce_typo_player_frame(self._player)
 
@@ -290,8 +290,8 @@ class TypoShooterMode(BaseGameplayMode):
         for call in spawns:
             creature_idx = self._spawn_tinted_creature(
                 type_id=call.type_id,
-                pos_x=float(call.pos_x),
-                pos_y=float(call.pos_y),
+                pos_x=float(call.pos.x),
+                pos_y=float(call.pos.y),
                 tint_rgba=call.tint_rgba,
             )
             self._names.assign_random(

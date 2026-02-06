@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 import math
 
 from crimson.creatures.runtime import CreaturePool
@@ -19,7 +21,7 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
     state = GameplayState()
     state.bonuses.energizer = 1.0
 
-    player = PlayerState(index=0, pos_x=300.0, pos_y=100.0)
+    player = PlayerState(index=0, pos=Vec2(300.0, 100.0))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -32,7 +34,7 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
 
     pool.update(0.016, state=state, players=[player])
 
-    base_heading = math.atan2(player.pos_y - creature.y, player.pos_x - creature.x) + math.pi / 2.0
+    base_heading = math.atan2(player.pos.y - creature.y, player.pos.x - creature.x) + math.pi / 2.0
     expected = _wrap_angle(base_heading + math.pi)
     assert abs(_angle_delta(float(creature.target_heading), expected)) < 1e-6
 
@@ -41,14 +43,14 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     state = GameplayState()
     state.bonuses.energizer = 1.0
 
-    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     pool = CreaturePool()
 
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
-    creature.x = player.pos_x + 1.0
-    creature.y = player.pos_y
+    creature.x = player.pos.x + 1.0
+    creature.y = player.pos.y
     creature.hp = 10.0
     creature.max_hp = 300.0
     creature.reward_value = 10.0

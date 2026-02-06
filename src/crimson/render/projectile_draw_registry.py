@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import pyray as rl
 
+from grim.geom import Vec2
 from grim.math import clamp
 
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
@@ -21,6 +22,13 @@ if TYPE_CHECKING:
 _RAD_TO_DEG = 57.29577951308232
 
 
+def _proj_origin_xy(proj: object, fallback: Vec2) -> tuple[float, float]:
+    origin = getattr(proj, "origin", None)
+    if isinstance(origin, Vec2):
+        return float(origin.x), float(origin.y)
+    return float(getattr(proj, "origin_x", fallback.x)), float(getattr(proj, "origin_y", fallback.y))
+
+
 @dataclass(frozen=True, slots=True)
 class ProjectileDrawCtx:
     renderer: WorldRenderer
@@ -28,8 +36,7 @@ class ProjectileDrawCtx:
     proj_index: int
     texture: rl.Texture | None
     type_id: int
-    pos_x: float
-    pos_y: float
+    pos: Vec2
     sx: float
     sy: float
     life: float
@@ -49,8 +56,7 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     drawn = False
 
     if renderer.bullet_trail_texture is not None:
-        ox = float(getattr(ctx.proj, "origin_x", ctx.pos_x))
-        oy = float(getattr(ctx.proj, "origin_y", ctx.pos_y))
+        ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
         sx0, sy0 = renderer.world_to_screen(ox, oy)
         drawn = renderer._draw_bullet_trail(
             sx0,
@@ -143,8 +149,8 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             step_x = dir_x * float(spacing)
             step_y = dir_y * float(spacing)
             for idx in range(int(seg_count)):
-                px = float(ctx.pos_x) + float(idx) * step_x
-                py = float(ctx.pos_y) + float(idx) * step_y
+                px = float(ctx.pos.x) + float(idx) * step_x
+                py = float(ctx.pos.y) + float(idx) * step_y
                 psx, psy = renderer.world_to_screen(px, py)
                 dst = rl.Rectangle(float(psx), float(psy), float(size), float(size))
                 rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tail_tint)
@@ -193,10 +199,9 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     is_fire_bullets = type_id == int(ProjectileTypeId.FIRE_BULLETS)
     is_ion = type_id in ION_TYPES
 
-    ox = float(getattr(ctx.proj, "origin_x", ctx.pos_x))
-    oy = float(getattr(ctx.proj, "origin_y", ctx.pos_y))
-    dx = float(ctx.pos_x) - ox
-    dy = float(ctx.pos_y) - oy
+    ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
+    dx = float(ctx.pos.x) - ox
+    dy = float(ctx.pos.y) - oy
     dist = math.hypot(dx, dy)
     if dist <= 1e-6:
         return True
@@ -319,7 +324,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                     continue
                 if float(getattr(creature, "hitbox_size", 0.0)) <= 5.0:
                     continue
-                d = math.hypot(float(creature.x) - float(ctx.pos_x), float(creature.y) - float(ctx.pos_y))
+                d = math.hypot(float(creature.x) - float(ctx.pos.x), float(creature.y) - float(ctx.pos.y))
                 threshold = float(creature.size) * 0.14285715 + 3.0
                 if d - radius < threshold:
                     targets.append(creature)
@@ -433,9 +438,8 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     alpha = float(ctx.alpha)
     life = float(ctx.life)
     if life >= 0.4:
-        ox = float(getattr(ctx.proj, "origin_x", ctx.pos_x))
-        oy = float(getattr(ctx.proj, "origin_y", ctx.pos_y))
-        dist = math.hypot(float(ctx.pos_x) - ox, float(ctx.pos_y) - oy)
+        ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
+        dist = math.hypot(float(ctx.pos.x) - ox, float(ctx.pos.y) - oy)
 
         desired_size = dist * 0.16 * float(ctx.scale)
         if desired_size <= 1e-3:
@@ -502,9 +506,8 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     if float(ctx.life) < 0.4:
         return True
 
-    ox = float(getattr(ctx.proj, "origin_x", ctx.pos_x))
-    oy = float(getattr(ctx.proj, "origin_y", ctx.pos_y))
-    dist = math.hypot(float(ctx.pos_x) - ox, float(ctx.pos_y) - oy)
+    ox, oy = _proj_origin_xy(ctx.proj, ctx.pos)
+    dist = math.hypot(float(ctx.pos.x) - ox, float(ctx.pos.y) - oy)
 
     desired_size = min(dist, 20.0) * float(ctx.scale)
     if desired_size <= 1e-3:
@@ -570,12 +573,12 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
                 tint=tint,
             )
 
-        draw_plague_quad(px=float(ctx.pos_x), py=float(ctx.pos_y), size=60.0)
+        draw_plague_quad(px=float(ctx.pos.x), py=float(ctx.pos.y), size=60.0)
 
         offset_angle = float(ctx.angle) + math.pi / 2.0
         draw_plague_quad(
-            px=float(ctx.pos_x) + math.cos(offset_angle) * 15.0,
-            py=float(ctx.pos_y) + math.sin(offset_angle) * 15.0,
+            px=float(ctx.pos.x) + math.cos(offset_angle) * 15.0,
+            py=float(ctx.pos.y) + math.sin(offset_angle) * 15.0,
             size=60.0,
         )
 
@@ -583,23 +586,23 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         cos_phase = math.cos(phase)
         sin_phase = math.sin(phase)
         draw_plague_quad(
-            px=float(ctx.pos_x) + cos_phase * cos_phase - 5.0,
-            py=float(ctx.pos_y) + sin_phase * 11.0 - 5.0,
+            px=float(ctx.pos.x) + cos_phase * cos_phase - 5.0,
+            py=float(ctx.pos.y) + sin_phase * 11.0 - 5.0,
             size=52.0,
         )
 
         phase_120 = phase + 2.0943952
         sin_phase_120 = math.sin(phase_120)
         draw_plague_quad(
-            px=float(ctx.pos_x) + math.cos(phase_120) * 10.0,
-            py=float(ctx.pos_y) + sin_phase_120 * 10.0,
+            px=float(ctx.pos.x) + math.cos(phase_120) * 10.0,
+            py=float(ctx.pos.y) + sin_phase_120 * 10.0,
             size=62.0,
         )
 
         phase_240 = phase + 4.1887903
         draw_plague_quad(
-            px=float(ctx.pos_x) + math.cos(phase_240) * 10.0,
-            py=float(ctx.pos_y) + math.sin(phase_240) * sin_phase_120,
+            px=float(ctx.pos.x) + math.cos(phase_240) * 10.0,
+            py=float(ctx.pos.y) + math.sin(phase_240) * sin_phase_120,
             size=62.0,
         )
         return True
