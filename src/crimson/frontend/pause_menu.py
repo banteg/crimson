@@ -5,7 +5,7 @@ import math
 import pyray as rl
 
 from grim.audio import play_sfx, update_audio
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 
 from .assets import MenuAssets, load_menu_assets
 from .menu import (
@@ -230,10 +230,10 @@ class PauseMenuView:
             angle = -abs(angle)
         return angle, offset_x
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[Vec2, Vec2]:
+    def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
         if assets is None or assets.item is None:
-            return Vec2(), Vec2()
+            return Rect()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -249,7 +249,7 @@ class PauseMenuView:
         pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
         top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
         bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
-        return top_left, bottom_right
+        return Rect.from_pos_size(top_left, bottom_right - top_left)
 
     def _hovered_entry_index(self) -> int | None:
         if not self._menu_entries:
@@ -259,8 +259,7 @@ class PauseMenuView:
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue
-            top_left, bottom_right = self._menu_item_bounds(entry)
-            if top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y:
+            if self._menu_item_bounds(entry).contains(mouse_pos):
                 return idx
         return None
 

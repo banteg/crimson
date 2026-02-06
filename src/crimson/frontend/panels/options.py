@@ -7,7 +7,7 @@ import pyray as rl
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import (
@@ -253,8 +253,9 @@ class OptionsMenuView(PanelMenuView):
             return False
         bar_w = rect_w * float(slider.max_value)
         bar_h = rect_h
-        mouse = rl.get_mouse_position()
-        hovered = pos.x <= mouse.x <= pos.x + bar_w and pos.y <= mouse.y <= pos.y + bar_h
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        bar_rect = Rect.from_top_left(pos, bar_w, bar_h)
+        hovered = bar_rect.contains(mouse_pos)
 
         changed = False
         if hovered:
@@ -268,7 +269,7 @@ class OptionsMenuView(PanelMenuView):
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             self._active_slider = slider_id
         if self._active_slider == slider_id and mouse_down:
-            relative = mouse.x - pos.x
+            relative = mouse_pos.x - pos.x
             idx = int(relative // rect_w) + 1
             if idx < slider.min_value:
                 idx = slider.min_value
@@ -293,8 +294,8 @@ class OptionsMenuView(PanelMenuView):
         label_w = measure_small_text_width(font, label, text_scale)
         rect_w = float(check_on.width) * scale + 6.0 * scale + label_w
         rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
-        mouse = rl.get_mouse_position()
-        hovered = pos.x <= mouse.x <= pos.x + rect_w and pos.y <= mouse.y <= pos.y + rect_h
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             self._ui_info_texts = not self._ui_info_texts
             return True

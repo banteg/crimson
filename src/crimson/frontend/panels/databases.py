@@ -170,11 +170,11 @@ class _DatabaseBaseView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
 
-        bx, by = self._back_button_pos()
+        back_pos = self._back_button_pos()
         back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            pos=left_top_left + Vec2(float(bx) * scale, float(by) * scale),
+            pos=left_top_left + back_pos * scale,
             width=back_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -241,13 +241,13 @@ class _DatabaseBaseView:
 
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
-            bx, by = self._back_button_pos()
+            back_pos = self._back_button_pos()
             back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
                 self._back_button,
-                pos=Vec2(left_panel_top_left.x + float(bx) * scale, left_panel_top_left.y + float(by) * scale),
+                pos=left_panel_top_left + back_pos * scale,
                 width=back_w,
                 scale=scale,
             )
@@ -255,7 +255,7 @@ class _DatabaseBaseView:
         self._draw_sign()
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
-    def _back_button_pos(self) -> tuple[float, float]:
+    def _back_button_pos(self) -> Vec2:
         raise NotImplementedError
 
     def _draw_contents(
@@ -294,9 +294,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             self._wicons_tex = None
         super().close()
 
-    def _back_button_pos(self) -> tuple[float, float]:
+    def _back_button_pos(self) -> Vec2:
         # state_15: ui_buttonSm bbox [270,507]..[352,539] => relative to left panel (-98,194): (368, 313)
-        return (368.0, 313.0)
+        return Vec2(368.0, 313.0)
 
     def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
         left = left_top_left
@@ -471,9 +471,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._perk_ids = self._build_perk_database_ids()
         self._selected_perk_id = 4 if 4 in self._perk_ids else (self._perk_ids[0] if self._perk_ids else 4)
 
-    def _back_button_pos(self) -> tuple[float, float]:
+    def _back_button_pos(self) -> Vec2:
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
-        return (356.0, 315.0)
+        return Vec2(356.0, 315.0)
 
     def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
         left = left_top_left

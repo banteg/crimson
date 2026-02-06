@@ -7,7 +7,7 @@ import os
 import pyray as rl
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
 
 from ..ui.cursor import draw_menu_cursor
@@ -480,8 +480,7 @@ class MenuView:
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue
-            top_left, bottom_right = self._menu_item_bounds(entry)
-            if top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y:
+            if self._menu_item_bounds(entry).contains(mouse_pos):
                 return idx
         return None
 
@@ -518,11 +517,11 @@ class MenuView:
             return 0.9, float(slot) * 11.0
         return 1.0, 0.0
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[Vec2, Vec2]:
+    def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
         assets = self._assets
         if assets is None or assets.item is None:
-            return Vec2(), Vec2()
+            return Rect()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -538,7 +537,7 @@ class MenuView:
         pos = Vec2(self._menu_slot_pos_x(entry.slot), entry.y)
         top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
         bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
-        return top_left, bottom_right
+        return Rect.from_pos_size(top_left, bottom_right - top_left)
 
     @staticmethod
     def _menu_slot_pos_x(slot: int) -> float:

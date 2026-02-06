@@ -4,7 +4,7 @@ import pyray as rl
 
 from grim.assets import PaqTextureCache
 from grim.audio import play_sfx, update_audio
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.terrain_render import GroundRenderer
 
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -367,20 +367,19 @@ class PanelMenuView:
         return self._timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
-        top_left, bottom_right = self._menu_item_bounds(entry)
         mouse = rl.get_mouse_position()
         mouse_pos = Vec2.from_xy(mouse)
-        return top_left.x <= mouse_pos.x <= bottom_right.x and top_left.y <= mouse_pos.y <= bottom_right.y
+        return self._menu_item_bounds(entry).contains(mouse_pos)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
         if self._menu_screen_width < 641:
             return 0.9, float(slot) * 11.0
         return 1.0, 0.0
 
-    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[Vec2, Vec2]:
+    def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         assets = self._assets
         if assets is None or assets.item is None:
-            return Vec2(), Vec2()
+            return Rect()
         item_w = float(assets.item.width)
         item_h = float(assets.item.height)
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
@@ -409,4 +408,4 @@ class PanelMenuView:
             offset_max.x - size.x * 0.05,
             offset_max.y - size.y * 0.10,
         )
-        return top_left, bottom_right
+        return Rect.from_pos_size(top_left, bottom_right - top_left)

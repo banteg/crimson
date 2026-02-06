@@ -107,14 +107,14 @@ class PerkMenuDebugView:
         return f"Press Mouse2 to pick a perk{suffix}"
 
     @staticmethod
-    def _perk_prompt_hinge() -> tuple[float, float]:
+    def _perk_prompt_hinge() -> Vec2:
         screen_w = float(rl.get_screen_width())
         hinge_x = screen_w + PERK_PROMPT_OUTSET_X
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
-        return hinge_x, hinge_y
+        return Vec2(hinge_x, hinge_y)
 
     def _perk_prompt_rect(self, label: str) -> Rect:
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+        hinge = self._perk_prompt_hinge()
         if self._assets is not None and self._assets.menu_item is not None:
             tex = self._assets.menu_item
             bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE
@@ -122,7 +122,7 @@ class PerkMenuDebugView:
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
             return Rect.from_top_left(
-                Vec2(hinge_x + local_x, hinge_y + local_y),
+                hinge.offset(dx=local_x, dy=local_y),
                 bar_w,
                 bar_h,
             )
@@ -130,7 +130,7 @@ class PerkMenuDebugView:
         text_w = float(_ui_text_width(self._small, label, 1.0))
         text_h = 20.0
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
+        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         return Rect.from_top_left(Vec2(x, y), text_w, text_h)
 
     def _draw_perk_prompt(self) -> None:
@@ -145,13 +145,13 @@ class PerkMenuDebugView:
         if alpha <= 1e-3:
             return
 
-        hinge_x, hinge_y = self._perk_prompt_hinge()
+        hinge = self._perk_prompt_hinge()
         rot_deg = (1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
         text_w = float(_ui_text_width(self._small, label, 1.0))
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge_y + PERK_PROMPT_TEXT_OFFSET_Y
+        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha))
         draw_ui_text(self._small, label, Vec2(x, y), scale=1.0, color=color)
 
@@ -162,7 +162,7 @@ class PerkMenuDebugView:
             local_x = (PERK_PROMPT_BAR_BASE_OFFSET_X + PERK_PROMPT_BAR_SHIFT_X) * PERK_PROMPT_BAR_SCALE
             local_y = PERK_PROMPT_BAR_BASE_OFFSET_Y * PERK_PROMPT_BAR_SCALE
             src = rl.Rectangle(float(tex.width), 0.0, -float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(bar_w), float(bar_h))
+            dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
@@ -177,7 +177,7 @@ class PerkMenuDebugView:
             label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
             pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
             src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-            dst = rl.Rectangle(float(hinge_x), float(hinge_y), float(w), float(h))
+            dst = rl.Rectangle(hinge.x, hinge.y, w, h)
             origin = rl.Vector2(float(-local_x), float(-local_y))
             rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
             if label_alpha > 0.0:

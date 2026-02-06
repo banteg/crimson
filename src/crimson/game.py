@@ -32,7 +32,7 @@ from grim.console import (
     register_boot_commands,
     register_core_cvars,
 )
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.app import run_view
 from grim.terrain_render import GroundRenderer
 from grim.view import View, ViewContext
@@ -524,11 +524,12 @@ class QuestsMenuView:
     def _hovered_stage(self, layout: _QuestMenuLayout) -> int | None:
         title_y = layout.title_pos.y
         x0 = layout.icons_start_pos.x
-        mouse = rl.get_mouse_position()
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         for stage in range(1, 6):
             x = x0 + float(stage - 1) * QUEST_STAGE_ICON_STEP
             # Hover bounds are fixed 32x32, anchored at (x, title_y) (not icons_y).
-            if (x <= mouse.x <= x + QUEST_STAGE_ICON_SIZE) and (title_y <= mouse.y <= title_y + QUEST_STAGE_ICON_SIZE):
+            stage_rect = Rect.from_top_left(Vec2(x, title_y), QUEST_STAGE_ICON_SIZE, QUEST_STAGE_ICON_SIZE)
+            if stage_rect.contains(mouse_pos):
                 return stage
         return None
 
@@ -552,8 +553,8 @@ class QuestsMenuView:
         rect_w = float(check_on.width) + 6.0 + label_w
         rect_h = max(float(check_on.height), font.cell_size * text_scale)
 
-        mouse = rl.get_mouse_position()
-        hovered = check_pos.x <= mouse.x <= check_pos.x + rect_w and check_pos.y <= mouse.y <= check_pos.y + rect_h
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
             config.data["hardcore_flag"] = 0 if hardcore else 1
             self._dirty = True
@@ -592,14 +593,15 @@ class QuestsMenuView:
     def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
         list_x = layout.list_pos.x
         y0 = self._rows_y0(layout)
-        mouse = rl.get_mouse_position()
+        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         for row in range(10):
             y = y0 + float(row) * QUEST_LIST_ROW_STEP
             left = list_x - QUEST_LIST_HOVER_LEFT_PAD
             top = y - QUEST_LIST_HOVER_TOP_PAD
             right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
             bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
-            if left <= mouse.x <= right and top <= mouse.y <= bottom:
+            row_rect = Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
+            if row_rect.contains(mouse_pos):
                 return row
         return None
 
