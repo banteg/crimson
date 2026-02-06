@@ -1228,16 +1228,30 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041cfe0",
-    "name": "FUN_0041cfe0",
-    "signature": "int FUN_0041cfe0(int *arg1, int *arg2, char *arg3)",
-    "comment": "[binja] int32_t sub_41cfe0(int32_t* arg1, int32_t* arg2, char* arg3)"
+    "name": "dx_get_version_fallback_from_files",
+    "signature": "int dx_get_version_fallback_from_files(int *major, int *minor, char *letter)",
+    "comment": "fallback DirectX version probe: reads version info from system DLLs when dxdiag COM query is unavailable"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041db50",
-    "name": "FUN_0041db50",
-    "signature": "int FUN_0041db50(uint arg1, int *arg2)",
-    "comment": "[binja] int32_t sub_41db50(uint32_t arg1, int32_t* arg2)"
+    "name": "win32_file_get_version_words",
+    "signature": "int win32_file_get_version_words(char *file_path, uint *out_version_words)",
+    "comment": "reads VS_FIXEDFILEINFO from a PE file; writes {LS,MS} version dwords to out_version_words[0..1]"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc10",
+    "name": "dx_version_pack_4x16",
+    "signature": "unsigned long long dx_version_pack_4x16(int major, uint minor, int patch_major, uint patch_minor)",
+    "comment": "packs four 16-bit version components into {MS,LS} dwords for comparison"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc50",
+    "name": "dx_version_compare_4x16",
+    "signature": "int dx_version_compare_4x16(uint current_ls, uint current_ms, uint required_ls, uint required_ms)",
+    "comment": "compares packed {MS,LS} versions; returns 1 when current is newer, -1 when older, 0 when equal"
   },
   {
     "program": "crimsonland.exe",

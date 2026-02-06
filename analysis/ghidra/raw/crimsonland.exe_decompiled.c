@@ -15915,7 +15915,7 @@ int __cdecl dx_get_version(int *version,char *out,int out_len)
   out = (char *)CONCAT31(out._1_3_,0x20);
   iVar2 = FUN_0041cdb0();
   if (iVar2 < 0) {
-    iVar2 = FUN_0041cfe0(&out_len,&local_4,(char *)&out);
+    iVar2 = dx_get_version_fallback_from_files(&out_len,&local_4,(char *)&out);
     if (iVar2 < 0) {
       return -0x7fffbffb;
     }
@@ -16071,11 +16071,12 @@ LAB_0041cfb6:
 
 
 
-/* FUN_0041cfe0 @ 0041cfe0 */
+/* dx_get_version_fallback_from_files @ 0041cfe0 */
 
-/* [binja] int32_t sub_41cfe0(int32_t* arg1, int32_t* arg2, char* arg3) */
+/* fallback DirectX version probe: reads version info from system DLLs when dxdiag COM query is
+   unavailable */
 
-int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
+int __cdecl dx_get_version_fallback_from_files(int *major,int *minor,char *letter)
 
 {
   char cVar1;
@@ -16087,7 +16088,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
   char *pcVar7;
   char *pcVar8;
   char *pcVar9;
-  undefined8 uVar10;
+  ulonglong uVar10;
   uint local_408;
   uint local_404;
   char local_400 [512];
@@ -16122,7 +16123,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__ddraw_dll_004739ac;
+  pcVar7 = dx_dll_path_ddraw;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16154,47 +16155,47 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,2,0,0x5f);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,2,0,0x5f);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 1;
+      if (major != (int *)0x0) {
+        *major = 1;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
-    uVar10 = FUN_0041dc10(4,3,0,0x448);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,3,0,0x448);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 2;
+      if (major != (int *)0x0) {
+        *major = 2;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
-    uVar10 = FUN_0041dc10(4,4,0,0x44);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,4,0,0x44);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 3;
+      if (major != (int *)0x0) {
+        *major = 3;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
@@ -16223,7 +16224,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = &DAT_0047399c;
+  pcVar7 = &dx_dll_path_d3drg8x;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16255,19 +16256,19 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,4,0,0x46);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,4,0,0x46);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 3;
+      if (major != (int *)0x0) {
+        *major = 3;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = 'a';
+      if (letter != (char *)0x0) {
+        *letter = 'a';
       }
       bVar2 = true;
     }
@@ -16296,7 +16297,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__ddraw_dll_004739ac;
+  pcVar7 = dx_dll_path_ddraw;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16328,47 +16329,47 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,5,0,0x9b);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,5,0,0x9b);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 5;
+      if (major != (int *)0x0) {
+        *major = 5;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
-    uVar10 = FUN_0041dc10(4,6,0,0x13e);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,6,0,0x13e);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 6;
+      if (major != (int *)0x0) {
+        *major = 6;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
-    uVar10 = FUN_0041dc10(4,6,0,0x1b4);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,6,0,0x1b4);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 6;
+      if (major != (int *)0x0) {
+        *major = 6;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 1;
+      if (minor != (int *)0x0) {
+        *minor = 1;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
@@ -16397,7 +16398,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = &DAT_00473990;
+  pcVar7 = &dx_dll_path_dplayx;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16429,19 +16430,19 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,6,3,0x206);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,6,3,0x206);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 6;
+      if (major != (int *)0x0) {
+        *major = 6;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 1;
+      if (minor != (int *)0x0) {
+        *minor = 1;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = 'a';
+      if (letter != (char *)0x0) {
+        *letter = 'a';
       }
       bVar2 = true;
     }
@@ -16470,7 +16471,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__ddraw_dll_004739ac;
+  pcVar7 = dx_dll_path_ddraw;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16502,19 +16503,19 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,7,0,700);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,7,0,700);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 7;
+      if (major != (int *)0x0) {
+        *major = 7;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
@@ -16543,7 +16544,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__dinput_dll_00473984;
+  pcVar7 = dx_dll_path_dinput;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16575,19 +16576,19 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(4,7,0,0x2cc);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(4,7,0,0x2cc);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 7;
+      if (major != (int *)0x0) {
+        *major = 7;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = 'a';
+      if (letter != (char *)0x0) {
+        *letter = 'a';
       }
       bVar2 = true;
     }
@@ -16616,7 +16617,7 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__ddraw_dll_004739ac;
+  pcVar7 = dx_dll_path_ddraw;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16648,29 +16649,29 @@ int __cdecl FUN_0041cfe0(int *arg1,int *arg2,char *arg3)
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
     if (local_404 >> 0x10 == 4) {
-      uVar10 = FUN_0041dc10(4,8,0,400);
-      iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+      uVar10 = dx_version_pack_4x16(4,8,0,400);
+      iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
       if (iVar6 < 0) goto LAB_0041d692;
 LAB_0041d6c4:
-      if (arg1 != (int *)0x0) {
-        *arg1 = 8;
+      if (major != (int *)0x0) {
+        *major = 8;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 0;
+      if (minor != (int *)0x0) {
+        *minor = 0;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
     else {
 LAB_0041d692:
       if (local_404 >> 0x10 == 5) {
-        uVar10 = FUN_0041dc10(5,1,0x8d2,400);
-        iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+        uVar10 = dx_version_pack_4x16(5,1,0x8d2,400);
+        iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
         if (-1 < iVar6) goto LAB_0041d6c4;
       }
     }
@@ -16699,7 +16700,7 @@ LAB_0041d692:
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = &DAT_00473978;
+  pcVar7 = &dx_dll_path_d3d8;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16731,53 +16732,53 @@ LAB_0041d692:
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
     if (local_404 >> 0x10 == 4) {
-      uVar10 = FUN_0041dc10(4,8,1,0x371);
-      iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+      uVar10 = dx_version_pack_4x16(4,8,1,0x371);
+      iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
       if (iVar6 < 0) goto LAB_0041d79c;
 LAB_0041d7d0:
-      if (arg1 != (int *)0x0) {
-        *arg1 = 8;
+      if (major != (int *)0x0) {
+        *major = 8;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 1;
+      if (minor != (int *)0x0) {
+        *minor = 1;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
     else {
 LAB_0041d79c:
       if (local_404 >> 0x10 == 5) {
-        uVar10 = FUN_0041dc10(5,1,0xa28,0x371);
-        iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+        uVar10 = dx_version_pack_4x16(5,1,0xa28,0x371);
+        iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
         if (-1 < iVar6) goto LAB_0041d7d0;
       }
     }
     if (local_404 >> 0x10 == 4) {
-      uVar10 = FUN_0041dc10(4,8,1,0x385);
-      iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+      uVar10 = dx_version_pack_4x16(4,8,1,0x385);
+      iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
       if (iVar6 < 0) goto LAB_0041d84c;
 LAB_0041d87e:
-      if (arg1 != (int *)0x0) {
-        *arg1 = 8;
+      if (major != (int *)0x0) {
+        *major = 8;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 1;
+      if (minor != (int *)0x0) {
+        *minor = 1;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = 'a';
+      if (letter != (char *)0x0) {
+        *letter = 'a';
       }
       bVar2 = true;
     }
     else {
 LAB_0041d84c:
       if (local_404 >> 0x10 == 5) {
-        uVar10 = FUN_0041dc10(5,1,0xa28,0x385);
-        iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+        uVar10 = dx_version_pack_4x16(5,1,0xa28,0x385);
+        iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
         if (-1 < iVar6) goto LAB_0041d87e;
       }
     }
@@ -16806,7 +16807,7 @@ LAB_0041d84c:
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = &DAT_00473968;
+  pcVar7 = &dx_filter_path_mpg2splt;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16838,19 +16839,19 @@ LAB_0041d84c:
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    uVar10 = FUN_0041dc10(6,3,1,0x375);
-    iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+    uVar10 = dx_version_pack_4x16(6,3,1,0x375);
+    iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
     if (-1 < iVar6) {
-      if (arg1 != (int *)0x0) {
-        *arg1 = 8;
+      if (major != (int *)0x0) {
+        *major = 8;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 1;
+      if (minor != (int *)0x0) {
+        *minor = 1;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = 'b';
+      if (letter != (char *)0x0) {
+        *letter = 'b';
       }
       bVar2 = true;
     }
@@ -16879,7 +16880,7 @@ LAB_0041d84c:
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = s__dpnet_dll_0047395c;
+  pcVar7 = dx_dll_path_dpnet;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16911,29 +16912,29 @@ LAB_0041d84c:
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
     if (local_404 >> 0x10 == 4) {
-      uVar10 = FUN_0041dc10(4,9,0,0x86);
-      iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+      uVar10 = dx_version_pack_4x16(4,9,0,0x86);
+      iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
       if (iVar6 < 0) goto LAB_0041da0b;
 LAB_0041da3d:
-      if (arg1 != (int *)0x0) {
-        *arg1 = 8;
+      if (major != (int *)0x0) {
+        *major = 8;
       }
-      if (arg2 != (int *)0x0) {
-        *arg2 = 2;
+      if (minor != (int *)0x0) {
+        *minor = 2;
       }
-      if (arg3 != (char *)0x0) {
-        *arg3 = ' ';
+      if (letter != (char *)0x0) {
+        *letter = ' ';
       }
       bVar2 = true;
     }
     else {
 LAB_0041da0b:
       if (local_404 >> 0x10 == 5) {
-        uVar10 = FUN_0041dc10(5,2,0xe5d,0x86);
-        iVar6 = FUN_0041dc50(local_408,local_404,(uint)uVar10,(uint)((ulonglong)uVar10 >> 0x20));
+        uVar10 = dx_version_pack_4x16(5,2,0xe5d,0x86);
+        iVar6 = dx_version_compare_4x16(local_408,local_404,(uint)uVar10,(uint)(uVar10 >> 0x20));
         if (-1 < iVar6) goto LAB_0041da3d;
       }
     }
@@ -16962,7 +16963,7 @@ LAB_0041da0b:
     pcVar9 = pcVar9 + 1;
   }
   uVar4 = 0xffffffff;
-  pcVar7 = &DAT_00473950;
+  pcVar7 = &dx_dll_path_d3d9;
   do {
     pcVar9 = pcVar7;
     if (uVar4 == 0) break;
@@ -16994,69 +16995,71 @@ LAB_0041da0b:
     pcVar7 = pcVar7 + 1;
     pcVar9 = pcVar9 + 1;
   }
-  iVar6 = FUN_0041db50((uint)local_400,(int *)&local_408);
+  iVar6 = win32_file_get_version_words(local_400,&local_408);
   if (-1 < iVar6) {
-    if (arg1 != (int *)0x0) {
-      *arg1 = 9;
+    if (major != (int *)0x0) {
+      *major = 9;
     }
-    if (arg2 != (int *)0x0) {
-      *arg2 = 0;
+    if (minor != (int *)0x0) {
+      *minor = 0;
     }
-    if (arg3 == (char *)0x0) {
+    if (letter == (char *)0x0) {
       return 0;
     }
-    *arg3 = ' ';
+    *letter = ' ';
     return 0;
   }
   if (bVar2) {
     return 0;
   }
 LAB_0041db13:
-  if (arg1 != (int *)0x0) {
-    *arg1 = 0;
+  if (major != (int *)0x0) {
+    *major = 0;
   }
-  if (arg2 != (int *)0x0) {
-    *arg2 = 0;
+  if (minor != (int *)0x0) {
+    *minor = 0;
   }
-  if (arg3 != (char *)0x0) {
-    *arg3 = ' ';
+  if (letter != (char *)0x0) {
+    *letter = ' ';
   }
   return 0;
 }
 
 
 
-/* FUN_0041db50 @ 0041db50 */
+/* win32_file_get_version_words @ 0041db50 */
 
-/* [binja] int32_t sub_41db50(uint32_t arg1, int32_t* arg2) */
+/* reads VS_FIXEDFILEINFO from a PE file; writes {LS,MS} version dwords to out_version_words[0..1]
+    */
 
-int __cdecl FUN_0041db50(uint arg1,int *arg2)
+int __cdecl win32_file_get_version_words(char *file_path,uint *out_version_words)
 
 {
-  uint lptstrFilename;
-  int *piVar1;
+  char *lptstrFilename;
+  uint *puVar1;
   void *lpData;
   WINBOOL WVar2;
   DWORD local_4;
   
-  piVar1 = arg2;
-  lptstrFilename = arg1;
-  if ((arg1 == 0) || (arg2 == (int *)0x0)) {
+  puVar1 = out_version_words;
+  lptstrFilename = file_path;
+  if ((file_path == (char *)0x0) || (out_version_words == (uint *)0x0)) {
     return -0x7ff8ffa9;
   }
-  arg1 = GetFileVersionInfoSizeA((LPCSTR)arg1,&local_4);
-  if (arg1 != 0) {
-    lpData = operator_new(arg1);
+  file_path = (char *)GetFileVersionInfoSizeA(file_path,&local_4);
+  if (file_path != (char *)0x0) {
+    lpData = operator_new((uint)file_path);
     if (lpData == (void *)0x0) {
       return -0x7ff8fff2;
     }
-    WVar2 = GetFileVersionInfoA((LPCSTR)lptstrFilename,0,arg1,lpData);
+    WVar2 = GetFileVersionInfoA(lptstrFilename,0,(DWORD)file_path,lpData);
     if (WVar2 != 0) {
-      arg2 = (int *)0x0;
-      WVar2 = VerQueryValueA(lpData,&DAT_004739b8,&arg2,&arg1);
-      if ((WVar2 != 0) && (arg2 != (int *)0x0)) {
-        piVar1[1] = arg2[2];
-        *piVar1 = arg2[3];
+      out_version_words = (uint *)0x0;
+      WVar2 = VerQueryValueA(lpData,&dx_version_query_root_path,&out_version_words,(PUINT)&file_path
+                            );
+      if ((WVar2 != 0) && (out_version_words != (uint *)0x0)) {
+        puVar1[1] = out_version_words[2];
+        *puVar1 = out_version_words[3];
         crt_free(lpData);
         return 0;
       }
@@ -17068,31 +17071,36 @@ int __cdecl FUN_0041db50(uint arg1,int *arg2)
 
 
 
-/* FUN_0041dc10 @ 0041dc10 */
+/* dx_version_pack_4x16 @ 0041dc10 */
 
-undefined8 __cdecl FUN_0041dc10(int param_1,uint param_2,int param_3,uint param_4)
+/* packs four 16-bit version components into {MS,LS} dwords for comparison */
+
+ulonglong __cdecl dx_version_pack_4x16(int major,uint minor,int patch_major,uint patch_minor)
 
 {
-  return CONCAT44(param_1 << 0x10 | param_2 & 0xffff,param_3 << 0x10 | param_4 & 0xffff);
+  return CONCAT44(major << 0x10 | minor & 0xffff,patch_major << 0x10 | patch_minor & 0xffff);
 }
 
 
 
-/* FUN_0041dc50 @ 0041dc50 */
+/* dx_version_compare_4x16 @ 0041dc50 */
 
-int __cdecl FUN_0041dc50(uint param_1,uint param_2,uint param_3,uint param_4)
+/* compares packed {MS,LS} versions; returns 1 when current is newer, -1 when older, 0 when equal */
+
+int __cdecl
+dx_version_compare_4x16(uint current_ls,uint current_ms,uint required_ls,uint required_ms)
 
 {
-  if (param_4 < param_2) {
+  if (required_ms < current_ms) {
     return 1;
   }
-  if (param_2 < param_4) {
+  if (current_ms < required_ms) {
     return -1;
   }
-  if (param_3 < param_1) {
+  if (required_ls < current_ls) {
     return 1;
   }
-  return -(uint)(param_1 < param_3);
+  return -(uint)(current_ls < required_ls);
 }
 
 

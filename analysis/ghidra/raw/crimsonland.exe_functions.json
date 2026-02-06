@@ -1357,7 +1357,7 @@
     "signature": "int dx_get_version(int * version, char * out, int out_len)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_0041cdb0", "FUN_0041cfe0", "crt_snprintf", "crt_tolower"]
+    "calls": ["FUN_0041cdb0", "crt_snprintf", "crt_tolower", "dx_get_version_fallback_from_files"]
   },
   {
     "name": "FUN_0041cdb0",
@@ -1368,33 +1368,33 @@
     "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "Ordinal_8", "Ordinal_9", "WideCharToMultiByte"]
   },
   {
-    "name": "FUN_0041cfe0",
+    "name": "dx_get_version_fallback_from_files",
     "address": "0041cfe0",
-    "signature": "int FUN_0041cfe0(int * arg1, int * arg2, char * arg3)",
+    "signature": "int dx_get_version_fallback_from_files(int * major, int * minor, char * letter)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_0041db50", "FUN_0041dc10", "FUN_0041dc50", "GetSystemDirectoryA"]
+    "calls": ["GetSystemDirectoryA", "dx_version_compare_4x16", "dx_version_pack_4x16", "win32_file_get_version_words"]
   },
   {
-    "name": "FUN_0041db50",
+    "name": "win32_file_get_version_words",
     "address": "0041db50",
-    "signature": "int FUN_0041db50(uint arg1, int * arg2)",
+    "signature": "int win32_file_get_version_words(char * file_path, uint * out_version_words)",
     "external": false,
     "calls_total": 5,
     "calls": ["GetFileVersionInfoA", "GetFileVersionInfoSizeA", "VerQueryValueA", "crt_free", "operator_new"]
   },
   {
-    "name": "FUN_0041dc10",
+    "name": "dx_version_pack_4x16",
     "address": "0041dc10",
-    "signature": "undefined8 FUN_0041dc10(int param_1, uint param_2, int param_3, uint param_4)",
+    "signature": "ulonglong dx_version_pack_4x16(int major, uint minor, int patch_major, uint patch_minor)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_0041dc50",
+    "name": "dx_version_compare_4x16",
     "address": "0041dc50",
-    "signature": "int FUN_0041dc50(uint param_1, uint param_2, uint param_3, uint param_4)",
+    "signature": "int dx_version_compare_4x16(uint current_ls, uint current_ms, uint required_ls, uint required_ms)",
     "external": false,
     "calls_total": 0,
     "calls": []

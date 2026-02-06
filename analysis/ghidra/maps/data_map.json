@@ -206,6 +206,60 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00473950",
+      "name": "dx_dll_path_d3d9",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\d3d9.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x0047395c",
+      "name": "dx_dll_path_dpnet",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\dpnet.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x00473968",
+      "name": "dx_filter_path_mpg2splt",
+      "program": "crimsonland.exe",
+      "comment": "System path suffix \\mpg2splt.ax used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x00473978",
+      "name": "dx_dll_path_d3d8",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\d3d8.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x00473984",
+      "name": "dx_dll_path_dinput",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\dinput.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x00473990",
+      "name": "dx_dll_path_dplayx",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\dplayx.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x0047399c",
+      "name": "dx_dll_path_d3drg8x",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\d3drg8x.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x004739ac",
+      "name": "dx_dll_path_ddraw",
+      "program": "crimsonland.exe",
+      "comment": "System DLL suffix \\ddraw.dll used by dx_get_version_fallback_from_files."
+    },
+    {
+      "address": "0x004739b8",
+      "name": "dx_version_query_root_path",
+      "program": "crimsonland.exe",
+      "comment": "VerQueryValueA root path \"\\\" used by win32_file_get_version_words."
+    },
+    {
       "address": "0x00473a40",
       "comment": "Player weapon spread damping scalar used by player fire/update logic (clamped to 0.3..1.0).",
       "name": "player_spread_damping_scalar",
