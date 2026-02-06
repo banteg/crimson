@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
+
 from crimson.gameplay import GameplayState, PlayerState
-from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import SpawnEnv, SpawnSlotInit, build_spawn_plan
 from crimson.weapons import WeaponId
 from grim.rand import Crand
@@ -93,6 +95,28 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     active = state.effects.iter_active()
     assert len(active) == 8
     assert all(int(entry.effect_id) == 0 for entry in active)
+
+
+def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=512.0, pos_y=512.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.hitbox_size = CREATURE_HITBOX_ALIVE
+    creature.flags = 0
+    creature.ai_mode = 0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.x = -64.0
+    creature.y = 1088.0
+
+    pool.update(1.0 / 60.0, state=state, players=[player])
+
+    assert creature.x == pytest.approx(-64.0)
+    assert creature.y == pytest.approx(1088.0)
 
 
 @dataclass

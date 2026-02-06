@@ -784,8 +784,10 @@ class CreaturePool:
                         dir_y = math.sin(creature.heading - math.pi / 2.0)
                         creature.vel_x = dir_x * speed
                         creature.vel_y = dir_y * speed
-                        creature.x = clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
-                        creature.y = clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
+                        # Native path (flags without 0x4): no bounds clamp here; offscreen spawns
+                        # remain offscreen until their own velocity moves them in.
+                        creature.x = creature.x + creature.vel_x * dt
+                        creature.y = creature.y + creature.vel_y * dt
                 else:
                     # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
                     # unless ANIM_LONG_STRIP is set (see creature_update_all).
