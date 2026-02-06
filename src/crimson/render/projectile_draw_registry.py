@@ -134,9 +134,9 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         direction = Vec2.from_heading(ctx.angle + math.pi) * speed_scale
 
         alpha = float(ctx.alpha)
-        tail_tint = renderer._color_from_rgba(RGBA(rgb[0], rgb[1], rgb[2], alpha * 0.4))
-        head_tint = renderer._color_from_rgba(RGBA(rgb[0], rgb[1], rgb[2], alpha * head_alpha_mul))
-        aura_tint = renderer._color_from_rgba(RGBA(aura_rgb[0], aura_rgb[1], aura_rgb[2], alpha * aura_alpha_mul))
+        tail_tint = RGBA(rgb[0], rgb[1], rgb[2], alpha * 0.4).to_rl()
+        head_tint = RGBA(rgb[0], rgb[1], rgb[2], alpha * head_alpha_mul).to_rl()
+        aura_tint = RGBA(aura_rgb[0], aura_rgb[1], aura_rgb[2], alpha * aura_alpha_mul).to_rl()
 
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
 
@@ -167,7 +167,7 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     fade = clamp(float(ctx.life) * 2.5, 0.0, 1.0)
     fade_alpha = fade * float(ctx.alpha)
     if fade_alpha > 1e-3:
-        tint = renderer._color_from_rgba(RGBA(1.0, 1.0, 1.0, fade_alpha))
+        tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
         size = 56.0 * ctx.scale
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
         origin = rl.Vector2(size * 0.5, size * 0.5)
@@ -240,7 +240,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         if seg_alpha > 1e-3:
             pos = origin + direction * s
             pos_screen = renderer.world_to_screen(pos)
-            tint = renderer._color_from_rgba(RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha))
+            tint = RGBA(streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha).to_rl()
             renderer._draw_atlas_sprite(
                 texture,
                 grid=grid,
@@ -253,7 +253,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         s += step
 
     if life >= 0.4:
-        head_tint = renderer._color_from_rgba(RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha))
+        head_tint = RGBA(head_rgb[0], head_rgb[1], head_rgb[2], base_alpha).to_rl()
         renderer._draw_atlas_sprite(
             texture,
             grid=grid,
@@ -282,14 +282,14 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                         max(0.0, cell_w - 2.0),
                         max(0.0, cell_h - 2.0),
                     )
-                    tint = renderer._color_from_rgba(RGBA(1.0, 1.0, 1.0, alpha))
+                    tint = RGBA(1.0, 1.0, 1.0, alpha).to_rl()
                     size = 64.0 * ctx.scale
                     dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
                     origin = rl.Vector2(size * 0.5, size * 0.5)
                     rl.draw_texture_pro(particles_texture, src, dst, origin, ctx.angle * _RAD_TO_DEG, tint)
     else:
         # Native draws a small blue "core" at the head during the fade stage (life_timer < 0.4).
-        core_tint = renderer._color_from_rgba(RGBA(0.5, 0.6, 1.0, base_alpha))
+        core_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
         renderer._draw_atlas_sprite(
             texture,
             grid=grid,
@@ -342,7 +342,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 p2 = target_screen + side_offset
                 p3 = target_screen - side_offset
 
-                outer_tint = renderer._color_from_rgba(RGBA(0.5, 0.6, 1.0, base_alpha))
+                outer_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
                 rl.rl_color4ub(outer_tint.r, outer_tint.g, outer_tint.b, outer_tint.a)
                 rl.rl_tex_coord2f(u, v0)
                 rl.rl_vertex2f(p0.x, p0.y)
@@ -360,7 +360,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
                 p2 = target_screen + side_offset
                 p3 = target_screen - side_offset
 
-                inner_tint = renderer._color_from_rgba(RGBA(0.5, 0.6, 1.0, base_alpha))
+                inner_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
                 rl.rl_color4ub(inner_tint.r, inner_tint.g, inner_tint.b, inner_tint.a)
                 rl.rl_tex_coord2f(u, v0)
                 rl.rl_vertex2f(p0.x, p0.y)
@@ -376,7 +376,7 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
             for creature in glow_targets:
                 target_screen = renderer.world_to_screen(creature.pos)
-                target_tint = renderer._color_from_rgba(RGBA(0.5, 0.6, 1.0, base_alpha))
+                target_tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
                 renderer._draw_atlas_sprite(
                     texture,
                     grid=grid,
@@ -417,7 +417,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
         if sprite_scale <= 1e-6:
             return True
 
-        tint = renderer._color_from_rgba(RGBA(0.1, 0.6, 0.2, alpha * 0.7))
+        tint = RGBA(0.1, 0.6, 0.2, alpha * 0.7).to_rl()
         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
         renderer._draw_atlas_sprite(
             ctx.texture,
@@ -441,7 +441,7 @@ def _draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     if sprite_scale <= 1e-6:
         return True
 
-    tint = renderer._color_from_rgba(RGBA(1.0, 1.0, 1.0, fade_alpha))
+    tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
     rl.begin_blend_mode(rl.BLEND_ADDITIVE)
     renderer._draw_atlas_sprite(
         ctx.texture,
@@ -490,7 +490,7 @@ def _draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
         rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer._elapsed_ms) * 0.1
         rgb = (0.8, 0.8, 0.8)
 
-    tint = renderer._color_from_rgba(RGBA(rgb[0], rgb[1], rgb[2], float(ctx.alpha)))
+    tint = RGBA(rgb[0], rgb[1], rgb[2], float(ctx.alpha)).to_rl()
     renderer._draw_atlas_sprite(
         ctx.texture,
         grid=grid,
@@ -517,7 +517,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     alpha = float(ctx.alpha)
     life = float(ctx.life)
     if life >= 0.4:
-        tint = renderer._color_from_rgba(RGBA(1.0, 1.0, 1.0, alpha))
+        tint = RGBA(1.0, 1.0, 1.0, alpha).to_rl()
 
         def draw_plague_quad(*, pos: Vec2, size: float) -> None:
             size = float(size)
@@ -578,7 +578,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     if sprite_scale <= 1e-6:
         return True
 
-    tint = renderer._color_from_rgba(RGBA(1.0, 1.0, 1.0, fade_alpha))
+    tint = RGBA(1.0, 1.0, 1.0, fade_alpha).to_rl()
     renderer._draw_atlas_sprite(
         ctx.texture,
         grid=grid,

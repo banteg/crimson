@@ -42,7 +42,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
 
     alpha = ctx.alpha
     base_alpha = clamp(alpha * 0.9, 0.0, 1.0)
-    base_tint = renderer._color_from_rgba(RGBA(0.8, 0.8, 0.8, base_alpha))
+    base_tint = RGBA(0.8, 0.8, 0.8, base_alpha).to_rl()
     base_size = 14.0
     if proj_type == 2:
         base_size = 10.0
@@ -82,7 +82,7 @@ def _draw_secondary_rocket_like(ctx: SecondaryProjectileDrawCtx) -> bool:
                     fx_alpha = rgba.a
                     if fx_alpha <= 1e-3:
                         return
-                    tint = renderer._color_from_rgba(rgba)
+                    tint = rgba.to_rl()
                     fx_pos = ctx.screen_pos - direction * (offset * scale)
                     dst_size = size * scale
                     dst = rl.Rectangle(fx_pos.x, fx_pos.y, dst_size, dst_size)
@@ -171,7 +171,7 @@ def _draw_secondary_detonation(ctx: SecondaryProjectileDrawCtx) -> bool:
         dst_size = size * scale
         if dst_size <= 1e-3:
             return
-        tint = renderer._color_from_rgba(RGBA(1.0, 0.6, 0.1, a))
+        tint = RGBA(1.0, 0.6, 0.1, a).to_rl()
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, dst_size, dst_size)
         origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
         rl.draw_texture_pro(renderer.particles_texture, src, dst, origin, 0.0, tint)
