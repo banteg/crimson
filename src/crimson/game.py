@@ -165,6 +165,7 @@ from .assets_fetch import download_missing_paqs
 
 if TYPE_CHECKING:
     from .modes.quest_mode import QuestRunOutcome
+    from .persistence.highscores import HighScoreRecord
 
 @dataclass(frozen=True, slots=True)
 class GameConfig:
@@ -274,6 +275,29 @@ END_NOTE_AFTER_BODY_Y_GAP = 22.0  # 14 + 8 in the decompile
 END_NOTE_BUTTON_X_OFFSET = 266.0  # (v11 + 44 + 20) - 4 + 26, relative to panel-left
 END_NOTE_BUTTON_Y_OFFSET = 210.0  # (base_y + 40) + 170 in the decompile, relative to panel-top
 END_NOTE_BUTTON_STEP_Y = 32.0
+
+# `quest_failed_screen_update` panel geometry/anchors:
+# - panel is the classic ui_menuPanel at (-45, 110) with geom x0/y0 (-63, -81)
+# - reaper banner X = panel-left + 214; message/buttons are derived from that anchor.
+QUEST_FAILED_PANEL_POS_X = -45.0
+QUEST_FAILED_PANEL_POS_Y = 110.0
+QUEST_FAILED_PANEL_GEOM_X0 = -63.0
+QUEST_FAILED_PANEL_GEOM_Y0 = -81.0
+QUEST_FAILED_PANEL_W = 510.0
+QUEST_FAILED_PANEL_H = 378.0
+
+QUEST_FAILED_BANNER_X_OFFSET = 214.0
+QUEST_FAILED_BANNER_Y_OFFSET = 40.0
+QUEST_FAILED_BANNER_W = 256.0
+QUEST_FAILED_BANNER_H = 64.0
+
+QUEST_FAILED_MESSAGE_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 30.0
+QUEST_FAILED_MESSAGE_Y_OFFSET = 126.0  # (base_y + 40) + 70 + 16
+QUEST_FAILED_SCORE_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 40.0
+QUEST_FAILED_SCORE_Y_OFFSET = 152.0  # message_y + 16 + 10 in native
+QUEST_FAILED_BUTTON_X_OFFSET = QUEST_FAILED_BANNER_X_OFFSET + 52.0
+QUEST_FAILED_BUTTON_Y_OFFSET = 240.0  # score_y baseline + 98 in native
+QUEST_FAILED_BUTTON_STEP_Y = 32.0
 
 
 class QuestsMenuView:
@@ -1649,11 +1673,17 @@ class QuestFailedView:
         self._state = state
         self._ground: GroundRenderer | None = None
         self._outcome: QuestRunOutcome | None = None
+        self._record: HighScoreRecord | None = None
         self._quest_title: str = ""
         self._action: str | None = None
         self._cursor_pulse_time = 0.0
         self._small_font: SmallFontData | None = None
-        self._button_tex: rl.Texture2D | None = None
+        self._panel_tex: rl.Texture2D | None = None
+        self._reaper_tex: rl.Texture2D | None = None
+        self._button_textures: UiButtonTextureSet | None = None
+        self._retry_button = UiButtonState("Play Again", force_wide=True)
+        self._quest_list_button = UiButtonState("Play Another", force_wide=True)
+        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def open(self) -> None:
         self._action = None
@@ -1662,12 +1692,14 @@ class QuestFailedView:
         self._outcome = self._state.quest_outcome
         self._state.quest_outcome = None
         self._quest_title = ""
+        self._record = None
         self._small_font = None
-        self._button_tex = None
+        self._panel_tex = None
+        self._reaper_tex = None
         self._button_textures = None
-        self._retry_button = UiButtonState("Retry", force_wide=True)
-        self._quest_list_button = UiButtonState("Quest list", force_wide=True)
-        self._main_menu_button = UiButtonState("Main menu", force_wide=True)
+        self._retry_button = UiButtonState("Play Again", force_wide=True)
+        self._quest_list_button = UiButtonState("Play Another", force_wide=True)
+        self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
         outcome = self._outcome
         if outcome is not None:
             try:
@@ -1678,17 +1710,23 @@ class QuestFailedView:
             except Exception:
                 self._quest_title = ""
 
+        self._build_score_preview(outcome)
+
         cache = _ensure_texture_cache(self._state)
-        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        self._reaper_tex = cache.get_or_load("ui_textReaper", "ui/ui_textReaper.jaz").texture
+        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
         button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
+        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
     def close(self) -> None:
         self._ground = None
         self._outcome = None
+        self._record = None
         self._quest_title = ""
         self._small_font = None
-        self._button_tex = None
+        self._panel_tex = None
+        self._reaper_tex = None
         self._button_textures = None
 
     def update(self, dt: float) -> None:
@@ -1700,61 +1738,70 @@ class QuestFailedView:
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._state.quest_fail_retry_count = 0
-            self._action = "back_to_menu"
+            self._activate_main_menu()
             return
         if outcome is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
-            self._state.pending_quest_level = outcome.level
-            self._action = "start_quest"
+            self._activate_retry()
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
-            self._state.quest_fail_retry_count = 0
-            self._action = "open_quests"
+            self._activate_play_another()
             return
 
+        panel_left, panel_top = self._panel_origin()
         textures = self._button_textures
         if outcome is None or textures is None or (textures.button_sm is None and textures.button_md is None):
             return
-        scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        button_w = button_width(None, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
-        button_h = 32.0 * scale
-        gap_x = 18.0 * scale
-        x0 = 32.0
-        y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
+        scale = 1.0
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
-        if button_update(self._retry_button, x=x0, y=y0, width=button_w, dt_ms=dt_ms, mouse=mouse, click=click):
-            self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
-            self._state.pending_quest_level = outcome.level
-            self._action = "start_quest"
+        font = self._ensure_small_font()
+        button_x = panel_left + QUEST_FAILED_BUTTON_X_OFFSET * scale
+        button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET * scale
+
+        retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+        if button_update(self._retry_button, x=button_x, y=button_y, width=retry_w, dt_ms=dt_ms, mouse=mouse, click=click):
+            self._activate_retry()
             return
+        button_y += QUEST_FAILED_BUTTON_STEP_Y * scale
+
+        play_another_w = button_width(
+            font,
+            self._quest_list_button.label,
+            scale=scale,
+            force_wide=self._quest_list_button.force_wide,
+        )
         if button_update(
             self._quest_list_button,
-            x=x0 + button_w + gap_x,
-            y=y0,
-            width=button_w,
+            x=button_x,
+            y=button_y,
+            width=play_another_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
         ):
-            self._state.quest_fail_retry_count = 0
-            self._action = "open_quests"
+            self._activate_play_another()
             return
+        button_y += QUEST_FAILED_BUTTON_STEP_Y * scale
+
+        main_menu_w = button_width(
+            font,
+            self._main_menu_button.label,
+            scale=scale,
+            force_wide=self._main_menu_button.force_wide,
+        )
         if button_update(
             self._main_menu_button,
-            x=x0 + (button_w + gap_x) * 2.0,
-            y=y0,
-            width=button_w,
+            x=button_x,
+            y=button_y,
+            width=main_menu_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
         ):
-            self._state.quest_fail_retry_count = 0
-            self._action = "back_to_menu"
+            self._activate_main_menu()
             return
 
     def draw(self) -> None:
@@ -1766,84 +1813,204 @@ class QuestFailedView:
             self._ground.draw(0.0, 0.0)
         _draw_screen_fade(self._state)
 
-        outcome = self._outcome
-        level = outcome.level if outcome is not None else (self._state.pending_quest_level or "unknown")
-        subtitle = self._quest_title
-        rl.draw_text(f"Quest {level} failed", 32, 120, 28, rl.Color(235, 235, 235, 255))
-        if subtitle:
-            rl.draw_text(subtitle, 32, 154, 18, rl.Color(190, 190, 200, 255))
+        panel_left, panel_top = self._panel_origin()
+        panel_tex = self._panel_tex
+        if panel_tex is not None:
+            panel = rl.Rectangle(
+                float(panel_left),
+                float(panel_top),
+                float(QUEST_FAILED_PANEL_W),
+                float(QUEST_FAILED_PANEL_H),
+            )
+            fx_detail = bool(int(self._state.config.data.get("fx_detail_0", 0) or 0))
+            draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+
+        reaper_tex = self._reaper_tex
+        if reaper_tex is not None:
+            src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
+            dst = rl.Rectangle(
+                float(panel_left + QUEST_FAILED_BANNER_X_OFFSET),
+                float(panel_top + QUEST_FAILED_BANNER_Y_OFFSET),
+                float(QUEST_FAILED_BANNER_W),
+                float(QUEST_FAILED_BANNER_H),
+            )
+            rl.draw_texture_pro(reaper_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = self._ensure_small_font()
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
-        retry_count = int(self._state.quest_fail_retry_count)
-        message = "Quest failed, try again."
-        if retry_count == 1:
-            message = "You didn't make it, do try again."
-        elif retry_count == 2:
-            message = "Third time no good."
-        elif retry_count == 3:
-            message = "No luck this time, have another go?"
-        elif retry_count == 4:
-            message = "Persistence will be rewarded."
-        elif retry_count == 5:
-            message = "Try one more time?"
-
-        y = 196.0
-        draw_small_text(font, message, 32.0, y, 1.0, text_color)
-        y += 22.0
-        if outcome is not None:
-            total_seconds = max(0, int(outcome.base_time_ms) // 1000)
-            minutes = total_seconds // 60
-            seconds = total_seconds % 60
-            time_text = f"{minutes:02d}:{seconds:02d}"
-            draw_small_text(font, f"Time: {time_text}", 32.0, y, 1.0, text_color)
-            y += 18.0
-            draw_small_text(font, f"Kills: {int(outcome.kill_count)}", 32.0, y, 1.0, text_color)
-            y += 18.0
-            draw_small_text(font, f"XP: {int(outcome.experience)}", 32.0, y, 1.0, text_color)
+        text_color = rl.Color(235, 235, 235, 255)
+        draw_small_text(
+            font,
+            self._failure_message(),
+            panel_left + QUEST_FAILED_MESSAGE_X_OFFSET,
+            panel_top + QUEST_FAILED_MESSAGE_Y_OFFSET,
+            1.0,
+            text_color,
+        )
+        self._draw_score_preview(font, panel_left=panel_left, panel_top=panel_top)
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
-            scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-            button_w = button_width(None, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
-            button_h = 32.0 * scale
-            gap_x = 18.0 * scale
-            x0 = 32.0
-            y0 = float(rl.get_screen_height()) - button_h - 56.0 * scale
-            button_draw(textures, font, self._retry_button, x=x0, y=y0, width=button_w, scale=scale)
+            scale = 1.0
+            button_x = panel_left + QUEST_FAILED_BUTTON_X_OFFSET
+            button_y = panel_top + QUEST_FAILED_BUTTON_Y_OFFSET
+
+            retry_w = button_width(font, self._retry_button.label, scale=scale, force_wide=self._retry_button.force_wide)
+            button_draw(textures, font, self._retry_button, x=button_x, y=button_y, width=retry_w, scale=scale)
+            button_y += QUEST_FAILED_BUTTON_STEP_Y
+
+            play_another_w = button_width(
+                font,
+                self._quest_list_button.label,
+                scale=scale,
+                force_wide=self._quest_list_button.force_wide,
+            )
             button_draw(
                 textures,
                 font,
                 self._quest_list_button,
-                x=x0 + button_w + gap_x,
-                y=y0,
-                width=button_w,
+                x=button_x,
+                y=button_y,
+                width=play_another_w,
                 scale=scale,
+            )
+            button_y += QUEST_FAILED_BUTTON_STEP_Y
+
+            main_menu_w = button_width(
+                font,
+                self._main_menu_button.label,
+                scale=scale,
+                force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
                 textures,
                 font,
                 self._main_menu_button,
-                x=x0 + (button_w + gap_x) * 2.0,
-                y=y0,
-                width=button_w,
+                x=button_x,
+                y=button_y,
+                width=main_menu_w,
                 scale=scale,
             )
 
-        draw_small_text(
-            font,
-            "ENTER: Retry    Q: Quest list    ESC: Menu",
-            32.0,
-            float(rl.get_screen_height()) - 28.0,
-            1.0,
-            rl.Color(190, 190, 200, 255),
-        )
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> str | None:
         action = self._action
         self._action = None
         return action
+
+    def _panel_origin(self) -> tuple[float, float]:
+        screen_w = float(rl.get_screen_width())
+        widescreen_shift_y = MenuView._menu_widescreen_y_shift(screen_w)
+        panel_left = QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X
+        panel_top = QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y
+        return float(panel_left), float(panel_top)
+
+    def _failure_message(self) -> str:
+        retry_count = int(self._state.quest_fail_retry_count)
+        if retry_count == 1:
+            return "You didn't make it, do try again."
+        if retry_count == 2:
+            return "Third time no good."
+        if retry_count == 3:
+            return "No luck this time, have another go?"
+        if retry_count == 4:
+            return "Persistence will be rewarded."
+        if retry_count == 5:
+            return "Try one more time?"
+        return "Quest failed, try again."
+
+    def _build_score_preview(self, outcome: QuestRunOutcome | None) -> None:
+        from .persistence.highscores import HighScoreRecord
+
+        self._record = None
+        if outcome is None:
+            return
+
+        major = 0
+        minor = 0
+        try:
+            major_text, minor_text = str(outcome.level).split(".", 1)
+            major = int(major_text)
+            minor = int(minor_text)
+        except Exception:
+            pass
+
+        record = HighScoreRecord.blank()
+        record.set_name(_player_name_default(self._state.config) or "Player")
+        record.game_mode_id = 3
+        record.quest_stage_major = major
+        record.quest_stage_minor = minor
+        record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))
+        record.score_xp = int(outcome.experience)
+        record.creature_kill_count = int(outcome.kill_count)
+        record.most_used_weapon_id = int(outcome.most_used_weapon_id)
+        fired = max(0, int(outcome.shots_fired))
+        hit = max(0, min(int(outcome.shots_hit), fired))
+        record.shots_fired = fired
+        record.shots_hit = hit
+
+        self._record = record
+
+    def _activate_retry(self) -> None:
+        outcome = self._outcome
+        if outcome is None:
+            return
+        self._state.quest_fail_retry_count = int(self._state.quest_fail_retry_count) + 1
+        self._state.pending_quest_level = outcome.level
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._action = "start_quest"
+
+    def _activate_play_another(self) -> None:
+        self._state.quest_fail_retry_count = 0
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._action = "open_quests"
+
+    def _activate_main_menu(self) -> None:
+        self._state.quest_fail_retry_count = 0
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
+        self._action = "back_to_menu"
+
+    def _text_width(self, text: str, scale: float) -> float:
+        font = self._small_font
+        if font is None:
+            return float(rl.measure_text(text, int(20 * scale)))
+        return float(measure_small_text_width(font, text, scale))
+
+    def _draw_score_preview(self, font: SmallFontData, *, panel_left: float, panel_top: float) -> None:
+        record = self._record
+        if record is None:
+            return
+
+        x = panel_left + QUEST_FAILED_SCORE_X_OFFSET
+        y = panel_top + QUEST_FAILED_SCORE_Y_OFFSET
+
+        label_color = rl.Color(230, 230, 230, int(255 * 0.8))
+        value_color = rl.Color(230, 230, 255, 255)
+        # `ui_text_input_render`: data_4965f8/5fc/600 = (149,175,198)/255.
+        separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
+
+        score_label = "Score"
+        score_label_w = self._text_width(score_label, 1.0)
+        draw_small_text(font, score_label, x + 32.0 - score_label_w * 0.5, y, 1.0, label_color)
+
+        score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
+        score_value_w = self._text_width(score_value, 1.0)
+        draw_small_text(font, score_value, x + 32.0 - score_value_w * 0.5, y + 15.0, 1.0, value_color)
+
+        sep_x = x + 80.0
+        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0), separator_color)
+
+        col2_x = x + 96.0
+        draw_small_text(font, "Experience", col2_x, y, 1.0, value_color)
+        xp_value = f"{int(record.score_xp)}"
+        xp_w = self._text_width(xp_value, 1.0)
+        draw_small_text(font, xp_value, col2_x + 32.0 - xp_w * 0.5, y + 15.0, 1.0, label_color)
+
+        # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
+        rl.draw_rectangle(int(x - 16.0), int(y + 52.0), int(192.0), int(1.0), separator_color)
 
     def _ensure_small_font(self) -> SmallFontData:
         if self._small_font is not None:
