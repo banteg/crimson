@@ -78,8 +78,8 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
 
-    px = float(player.pos.x)
-    py = float(player.pos.y)
+    px = player.pos.x
+    py = player.pos.y
     rand = ctx.state.rng.rand
     ctx.state.effects.spawn_explosion_burst(
         pos=Vec2(px, py),
@@ -96,8 +96,8 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
         if float(creature.hp) <= 0.0:
             continue
 
-        dx = float(creature.pos.x) - px
-        dy = float(creature.pos.y) - py
+        dx = creature.pos.x - px
+        dy = creature.pos.y - py
         if abs(dx) > 512.0 or abs(dy) > 512.0:
             continue
 
@@ -397,7 +397,7 @@ class WorldState:
             for pickup in pickups:
                 if pickup.bonus_id != int(BonusId.NUKE):
                     self.state.effects.spawn_burst(
-                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
+                        pos=pickup.pos,
                         count=12,
                         rand=self.state.rng.rand,
                         detail_preset=detail_preset,
@@ -410,7 +410,7 @@ class WorldState:
                     )
                 if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
                     self.state.effects.spawn_ring(
-                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
+                        pos=pickup.pos,
                         detail_preset=detail_preset,
                         color_r=0.6,
                         color_g=0.6,
@@ -419,7 +419,7 @@ class WorldState:
                     )
                 elif pickup.bonus_id == int(BonusId.FREEZE):
                     self.state.effects.spawn_ring(
-                        pos=Vec2(float(pickup.pos.x), float(pickup.pos.y)),
+                        pos=pickup.pos,
                         detail_preset=detail_preset,
                         color_r=0.3,
                         color_g=0.5,

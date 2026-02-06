@@ -187,8 +187,8 @@ class ParticlePool:
             if creatures is None:
                 return -1
             max_index = min(len(creatures), 0x180)
-            pos_x = float(pos.x)
-            pos_y = float(pos.y)
+            pos_x = pos.x
+            pos_y = pos.y
             radius = float(radius)
 
             for creature_idx in range(max_index):
@@ -201,7 +201,7 @@ class ParticlePool:
                     continue
 
                 size = float(creature.size)
-                dist = math.hypot(float(creature.pos.x) - pos_x, float(creature.pos.y) - pos_y) - radius
+                dist = math.hypot(creature.pos.x - pos_x, creature.pos.y - pos_y) - radius
                 threshold = size * 0.14285715 + 3.0
                 if threshold < dist:
                     continue
@@ -286,8 +286,8 @@ class ParticlePool:
                     else:
                         entry.angle = float(entry.angle) % math.tau
                         hit_angle = math.atan2(
-                            (float(entry.pos.y) - float(entry.vel_y) * dt) - float(creature.pos.y),
-                            (float(entry.pos.x) - float(entry.vel_x) * dt) - float(creature.pos.x),
+                            (entry.pos.y - entry.vel_y * dt) - creature.pos.y,
+                            (entry.pos.x - entry.vel_x * dt) - creature.pos.x,
                         )
                         hit_angle = float(hit_angle) % math.tau
                         deflect_step = math.tau * 0.2
@@ -321,10 +321,7 @@ class ParticlePool:
                             sprite_vel_x = float(int(rand()) % 0x3C - 0x1E)
                             sprite_vel_y = float(int(rand()) % 0x3C - 0x1E)
                             sprite_id = sprite_effects.spawn(
-                                pos=Vec2(
-                                    float(creature.pos.x),
-                                    float(creature.pos.y),
-                                ),
+                                pos=creature.pos,
                                 vel_x=sprite_vel_x,
                                 vel_y=sprite_vel_y,
                                 scale=13.0,
@@ -333,14 +330,11 @@ class ParticlePool:
 
                         if fx_queue is not None:
                             fx_queue.add_random(
-                                pos=Vec2(
-                                    float(creature.pos.x),
-                                    float(creature.pos.y),
-                                ),
+                                pos=creature.pos,
                                 rand=rand,
                             )
 
-                        creature.pos = creature.pos + Vec2(float(entry.vel_x), float(entry.vel_y)) * dt
+                        creature.pos = creature.pos + Vec2(entry.vel_x, entry.vel_y) * dt
 
         return expired
 

@@ -352,7 +352,7 @@ def _spawn_splitter_hit_effects(
         offset = Vec2.from_angle(angle) * radius
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos=Vec2(float(pos.x) + offset.x, float(pos.y) + offset.y),
+            pos=pos + offset,
             vel_x=0.0,
             vel_y=0.0,
             rotation=0.0,
@@ -962,12 +962,12 @@ class ProjectilePool:
                                 continue
 
                             type_id = proj.type_id
-                            hit_x = float(proj.pos.x)
-                            hit_y = float(proj.pos.y)
+                            hit_x = proj.pos.x
+                            hit_y = proj.pos.y
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            target_x = float(player.pos.x)
-                            target_y = float(player.pos.y)
+                            target_x = player.pos.x
+                            target_y = player.pos.y
                             hits.append((type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, target_x, target_y))
 
                             proj.life_timer = 0.25
@@ -1006,10 +1006,10 @@ class ProjectilePool:
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
-                    hit_x = float(proj.pos.x)
-                    hit_y = float(proj.pos.y)
-                    target_x = float(creature.pos.x)
-                    target_y = float(creature.pos.y)
+                    hit_x = proj.pos.x
+                    hit_y = proj.pos.y
+                    target_x = creature.pos.x
+                    target_y = creature.pos.y
                     hits.append((type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, target_x, target_y))
 
                     if proj.life_timer != 0.25 and type_id not in (
@@ -1172,10 +1172,10 @@ class ProjectilePool:
             if hit_idx is None:
                 continue
 
-            hit_x = float(proj.pos.x)
-            hit_y = float(proj.pos.y)
+            hit_x = proj.pos.x
+            hit_y = proj.pos.y
             creature = creatures[hit_idx]
-            hits.append((proj.type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, float(creature.pos.x), float(creature.pos.y)))
+            hits.append((proj.type_id, proj.origin.x, proj.origin.y, hit_x, hit_y, creature.pos.x, creature.pos.y))
 
             creature = creatures[hit_idx]
             creature.hp -= damage_by_type.get(proj.type_id, 10.0)
@@ -1245,7 +1245,7 @@ class SecondaryProjectilePool:
 
         if entry.type_id == SecondaryProjectileTypeId.HOMING_ROCKET and target_hint is not None:
             entry.target_hint_active = True
-            entry.target_hint = Vec2(float(target_hint.x), float(target_hint.y))
+            entry.target_hint = target_hint
 
         return index
 
@@ -1328,8 +1328,8 @@ class SecondaryProjectilePool:
                         continue
                     d_sq = Vec2.distance_sq(entry.pos, creature.pos)
                     if d_sq < radius_sq:
-                        dx = float(creature.pos.x) - float(entry.pos.x)
-                        dy = float(creature.pos.y) - float(entry.pos.y)
+                        dx = creature.pos.x - entry.pos.x
+                        dy = creature.pos.y - entry.pos.y
                         dist = math.hypot(dx, dy)
                         if dist > 1e-6:
                             inv = 0.1 / dist
@@ -1411,8 +1411,8 @@ class SecondaryProjectilePool:
             if entry.trail_timer < 0.0:
                 dir_x = math.cos(float(entry.angle) - math.pi / 2.0)
                 dir_y = math.sin(float(entry.angle) - math.pi / 2.0)
-                spawn_x = float(entry.pos.x) - dir_x * 9.0
-                spawn_y = float(entry.pos.y) - dir_y * 9.0
+                spawn_x = entry.pos.x - dir_x * 9.0
+                spawn_y = entry.pos.y - dir_y * 9.0
                 vel_x = math.cos(float(entry.angle) + math.pi / 2.0) * 90.0
                 vel_y = math.sin(float(entry.angle) + math.pi / 2.0) * 90.0
                 if sprite_effects is not None and hasattr(sprite_effects, "spawn"):
@@ -1476,7 +1476,7 @@ class SecondaryProjectilePool:
                         off_x = float(int(rand()) % 0x14 - 10)
                         off_y = float(int(rand()) % 0x14 - 10)
                         fx_queue.add_random(
-                            pos=Vec2(float(creatures[hit_idx].pos.x) + off_x, float(creatures[hit_idx].pos.y) + off_y),
+                            pos=creatures[hit_idx].pos + Vec2(off_x, off_y),
                             rand=rand,
                         )
 
@@ -1501,11 +1501,11 @@ class SecondaryProjectilePool:
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
                     if effects is not None and hasattr(effects, "spawn_freeze_shard"):
-                        shard_x = float(entry.pos.x)
-                        shard_y = float(entry.pos.y)
+                        shard_x = entry.pos.x
+                        shard_y = entry.pos.y
                         if hit_type_id == SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                            shard_x = float(creatures[hit_idx].pos.x)
-                            shard_y = float(creatures[hit_idx].pos.y)
+                            shard_x = creatures[hit_idx].pos.x
+                            shard_y = creatures[hit_idx].pos.y
                         for _ in range(8):
                             shard_angle = float(int(rand()) % 0x264) * 0.01
                             effects.spawn_freeze_shard(
@@ -1529,8 +1529,8 @@ class SecondaryProjectilePool:
                             extra_decals = 3
                             extra_radius = 44.0
                     if fx_queue is not None and extra_decals > 0:
-                        cx = float(creatures[hit_idx].pos.x)
-                        cy = float(creatures[hit_idx].pos.y)
+                        cx = creatures[hit_idx].pos.x
+                        cy = creatures[hit_idx].pos.y
                         for _ in range(int(extra_decals)):
                             angle = float(int(rand()) % 0x274) * 0.01
                             if det_scale == 0.35:

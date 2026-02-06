@@ -298,8 +298,8 @@ class BonusPool:
         if entry is None:
             return None
 
-        x = clamp(float(pos.x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
-        y = clamp(float(pos.y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
+        x = clamp(pos.x, BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
+        y = clamp(pos.y, BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
 
         entry.bonus_id = int(bonus_id)
         entry.picked = False
@@ -525,13 +525,13 @@ class BonusPool:
 def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tuple[int, BonusEntry] | None:
     """Return the first bonus entry within the aim hover radius, matching the exe scan order."""
 
-    aim_x = float(getattr(player, "aim_x", player.pos.x))
-    aim_y = float(getattr(player, "aim_y", player.pos.y))
+    aim_x = getattr(player, "aim_x", player.pos.x)
+    aim_y = getattr(player, "aim_y", player.pos.y)
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
         if entry.bonus_id == 0 or entry.picked:
             continue
-        if Vec2.distance_sq(Vec2(aim_x, aim_y), Vec2(entry.pos.x, entry.pos.y)) < radius_sq:
+        if Vec2.distance_sq(Vec2(aim_x, aim_y), entry.pos) < radius_sq:
             return idx, entry
     return None
 
@@ -606,8 +606,8 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, r
     if start_index >= max_index:
         return -1
 
-    pos_x = float(pos.x)
-    pos_y = float(pos.y)
+    pos_x = pos.x
+    pos_y = pos.y
     radius = float(radius)
 
     for idx in range(start_index, max_index):
@@ -615,7 +615,7 @@ def _creature_find_in_radius(creatures: list[_CreatureForPerks], *, pos: Vec2, r
         if not creature.active:
             continue
 
-        dist = math.hypot(float(creature.pos.x) - pos_x, float(creature.pos.y) - pos_y) - radius
+        dist = math.hypot(creature.pos.x - pos_x, creature.pos.y - pos_y) - radius
         threshold = float(creature.size) * 0.14285715 + 3.0
         if threshold < dist:
             continue
@@ -711,13 +711,11 @@ def _perks_update_pyrokinetic(ctx: _PerksUpdateEffectsCtx) -> None:
     creature.collision_timer = float(creature.collision_timer) - ctx.dt
     if creature.collision_timer < 0.0:
         creature.collision_timer = 0.5
-        pos_x = float(creature.pos.x)
-        pos_y = float(creature.pos.y)
         for intensity in (0.8, 0.6, 0.4, 0.3, 0.2):
             angle = float(int(ctx.state.rng.rand()) % 0x274) * 0.01
-            ctx.state.particles.spawn_particle(pos=Vec2(pos_x, pos_y), angle=angle, intensity=float(intensity))
+            ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos=Vec2(pos_x, pos_y), rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=creature.pos, rand=ctx.state.rng.rand)
 
 
 def _perks_update_jinxed_timer(ctx: _PerksUpdateEffectsCtx) -> None:
@@ -737,8 +735,8 @@ def _perks_update_jinxed(ctx: _PerksUpdateEffectsCtx) -> None:
     if int(ctx.state.rng.rand()) % 10 == 3:
         player.health = float(player.health) - 5.0
         if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(pos=Vec2(player.pos.x, player.pos.y), rand=ctx.state.rng.rand)
-            ctx.fx_queue.add_random(pos=Vec2(player.pos.x, player.pos.y), rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=player.pos, rand=ctx.state.rng.rand)
+            ctx.fx_queue.add_random(pos=player.pos, rand=ctx.state.rng.rand)
 
     ctx.state.jinxed_timer = float(int(ctx.state.rng.rand()) % 0x14) * 0.1 + float(ctx.state.jinxed_timer) + 2.0
 
@@ -1101,7 +1099,7 @@ def _perk_apply_lifeline_50_50(ctx: _PerkApplyCtx) -> None:
         if kill_toggle and creature.active and float(creature.hp) <= 500.0 and (int(creature.flags) & 0x04) == 0:
             creature.active = False
             ctx.state.effects.spawn_burst(
-                pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
+                pos=creature.pos,
                 count=4,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1174,7 +1172,7 @@ def _perk_apply_bandage(ctx: _PerkApplyCtx) -> None:
             scale = float(ctx.state.rng.rand() % 50 + 1)
             player.health = min(100.0, player.health * scale)
             ctx.state.effects.spawn_burst(
-                pos=Vec2(float(player.pos.x), float(player.pos.y)),
+                pos=player.pos,
                 count=8,
                 rand=ctx.state.rng.rand,
                 detail_preset=5,
@@ -1828,7 +1826,7 @@ def _projectile_spawn(
 
     meta = _projectile_meta_for_type_id(type_id)
     return state.projectiles.spawn(
-        pos=Vec2(float(pos.x), float(pos.y)),
+        pos=pos,
         angle=float(angle),
         type_id=int(type_id),
         owner_id=int(owner_id),
@@ -1893,21 +1891,21 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     state.sfx_queue.append("sfx_plasmaminigun_fire")
 
     aim_heading = float(player.aim_heading)
-    muzzle = Vec2(player.pos.x, player.pos.y) + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     muzzle_x = muzzle.x
     muzzle_y = muzzle.y
 
     aim_x = float(player.aim_x)
     aim_y = float(player.aim_y)
-    dx = aim_x - float(player.pos.x)
-    dy = aim_y - float(player.pos.y)
+    dx = aim_x - player.pos.x
+    dy = aim_y - player.pos.y
     dist = math.hypot(dx, dy)
     max_offset = dist * float(player.spread_heat) * 0.5
     dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
-    angle = (jitter - Vec2(player.pos.x, player.pos.y)).to_heading()
+    angle = (jitter - player.pos).to_heading()
     _projectile_spawn(
         state,
         players=[player],
@@ -2056,11 +2054,11 @@ def player_fire_weapon(
 
     aim_x = float(input_state.aim_x)
     aim_y = float(input_state.aim_y)
-    dx = aim_x - float(player.pos.x)
-    dy = aim_y - float(player.pos.y)
+    dx = aim_x - player.pos.x
+    dy = aim_y - player.pos.y
     aim_heading = Vec2(dx, dy).to_heading()
 
-    muzzle = Vec2(player.pos.x, player.pos.y) + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     muzzle_x = muzzle.x
     muzzle_y = muzzle.y
     state.effects.spawn_shell_casing(
@@ -2077,7 +2075,7 @@ def player_fire_weapon(
     mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
     offset = max_offset * mag
     aim_jitter = Vec2(aim_x, aim_y) + Vec2.from_angle(dir_angle) * offset
-    shot_angle = (aim_jitter - Vec2(player.pos.x, player.pos.y)).to_heading()
+    shot_angle = (aim_jitter - player.pos).to_heading()
     particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
         particle_angle = Vec2.from_heading(aim_heading).to_angle()
@@ -2645,8 +2643,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     # - requires `hitbox_size == 16.0` (alive sentinel)
     # - no HP gate
     # - falls back to index 0 if nothing qualifies
-    origin_x = float(origin_pos.pos.x)
-    origin_y = float(origin_pos.pos.y)
+    origin = origin_pos.pos
     best_idx = 0
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
@@ -2654,14 +2651,14 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
             continue
         if creature.hitbox_size != 16.0:
             continue
-        d_sq = Vec2.distance_sq(Vec2(origin_x, origin_y), Vec2(creature.pos.x, creature.pos.y))
+        d_sq = Vec2.distance_sq(origin_pos.pos, creature.pos)
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
 
     target = creatures[best_idx]
-    dx = target.pos.x - origin_x
-    dy = target.pos.y - origin_y
+    dx = target.pos.x - origin.x
+    dy = target.pos.y - origin.y
     angle = Vec2(dx, dy).to_heading()
     owner_id = _owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
 
@@ -2670,7 +2667,7 @@ def _bonus_apply_shock_chain(ctx: _BonusApplyCtx) -> None:
     ctx.state.shock_chain_projectile_id = _projectile_spawn(
         ctx.state,
         players=ctx.players,
-        pos=Vec2(origin_x, origin_y),
+        pos=origin,
         angle=angle,
         type_id=int(ProjectileTypeId.ION_RIFLE),
         owner_id=int(owner_id),
@@ -2723,8 +2720,8 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
     ctx.state.camera_shake_timer = 0.2
 
     origin_pos = ctx.origin_pos()
-    ox = float(origin_pos.pos.x)
-    oy = float(origin_pos.pos.y)
+    ox = origin_pos.pos.x
+    oy = origin_pos.pos.y
     rand = ctx.state.rng.rand
 
     bullet_count = int(rand()) & 3
@@ -2771,8 +2768,8 @@ def _bonus_apply_nuke(ctx: _BonusApplyCtx) -> None:
             # faster via the hp<=0 path in creature_apply_damage).
             if not creature.active:
                 continue
-            dx = float(creature.pos.x) - ox
-            dy = float(creature.pos.y) - oy
+            dx = creature.pos.x - ox
+            dy = creature.pos.y - oy
             if abs(dx) > 256.0 or abs(dy) > 256.0:
                 continue
             dist = math.hypot(dx, dy)
@@ -2964,7 +2961,7 @@ def bonus_telekinetic_update(
                 player_index=int(player.index),
                 bonus_id=int(entry.bonus_id),
                 amount=int(entry.amount),
-                pos=Vec2(float(entry.pos.x), float(entry.pos.y)),
+                pos=entry.pos,
             )
         )
 

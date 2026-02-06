@@ -466,10 +466,10 @@ class DemoView:
             if idx >= len(self._world.players):
                 continue
             player = self._world.players[idx]
-            player.pos = Vec2(float(pos.x), float(pos.y))
+            player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
-            player.aim_x = float(pos.x)
-            player.aim_y = float(pos.y)
+            player.aim_x = pos.x
+            player.aim_y = pos.y
             weapon_assign_player(player, int(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
