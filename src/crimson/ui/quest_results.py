@@ -21,6 +21,7 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
+from ..weapons import WEAPON_BY_ID
 from .formatting import format_ordinal, format_time_mm_ss
 from .layout import menu_widescreen_y_shift, ui_origin, ui_scale
 from .menu_panel import draw_classic_menu_panel
@@ -78,6 +79,9 @@ COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
 COLOR_GREEN = rl.Color(25, 200, 25, 255)
+# `sub_41e070` initializes DAT_004965f8..600 to this blue tint (149,175,198),
+# reused by quest/game-over captions and score-card separator outlines.
+COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 
 @dataclass(slots=True)
@@ -85,8 +89,24 @@ class QuestResultsAssets:
     menu_panel: rl.Texture | None
     text_well_done: rl.Texture | None
     particles: rl.Texture | None
+    wicons: rl.Texture | None
     perk_menu_assets: PerkMenuAssets
     missing: list[str]
+
+
+def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
+    weapon_id = int(weapon_id_native)
+    entry = WEAPON_BY_ID.get(weapon_id)
+    icon_index = entry.icon_index if entry is not None else None
+    if icon_index is None or icon_index < 0 or icon_index > 31:
+        return None
+    grid = 8
+    cell_w = float(texture.width) / grid
+    cell_h = float(texture.height) / grid
+    frame = int(icon_index) * 2
+    col = frame % grid
+    row = frame // grid
+    return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
 
 
 def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
@@ -98,12 +118,14 @@ def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
         fs_rel="ui/ui_textWellDone.png",
     )
     particles = loader.get(name="particles", paq_rel="game/particles.jaz", fs_rel="game/particles.png")
+    wicons = loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz", fs_rel="ui/ui_wicons.png")
     missing: list[str] = list(perk_menu_assets.missing)
     missing.extend(loader.missing)
     return QuestResultsAssets(
         menu_panel=perk_menu_assets.menu_panel,
         text_well_done=text_well_done,
         particles=particles,
+        wicons=wicons,
         perk_menu_assets=perk_menu_assets,
         missing=missing,
     )
@@ -244,6 +266,76 @@ class QuestResultsUi:
             draw_small_text(self.font, text, x, y, scale, color)
         else:
             rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+
+    def _draw_name_entry_stats(self, *, x: float, y: float, scale: float, alpha: float, show_weapon_row: bool) -> None:
+        if self.record is None:
+            return
+        record = self.record
+        qualifies = int(self.rank) < TABLE_MAX
+        rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
+
+        seconds = float(int(record.survival_elapsed_ms)) * 0.001
+        score_value = f"{seconds:.2f} secs"
+        xp_value = f"{int(record.score_xp)}"
+
+        alpha_f = max(0.0, min(1.0, float(alpha)))
+        col_label = rl.Color(230, 230, 230, int(255 * alpha_f * 0.8))
+        col_score_value = rl.Color(230, 230, 255, int(255 * alpha_f))
+        col_row = rl.Color(230, 230, 230, int(255 * alpha_f * 0.7))
+        col_line = rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha_f * 0.7))
+        icon_tint = rl.Color(255, 255, 255, int(255 * alpha_f))
+
+        left_center_x = x + 36.0 * scale
+        right_label_x = x + 100.0 * scale
+        right_center_x = right_label_x + 32.0 * scale
+
+        score_w = self._text_width("Score", 1.0 * scale)
+        self._draw_small("Score", left_center_x - score_w * 0.5, y, 1.0 * scale, col_label)
+        score_value_w = self._text_width(score_value, 1.0 * scale)
+        self._draw_small(score_value, left_center_x - score_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_score_value)
+        rank_label = f"Rank: {rank_text}"
+        rank_w = self._text_width(rank_label, 1.0 * scale)
+        self._draw_small(rank_label, left_center_x - rank_w * 0.5, y + 30.0 * scale, 1.0 * scale, col_label)
+
+        # Native path: FUN_00441220 sets current color from DAT_004ccca8 just before
+        # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
+        self._draw_small("Experience", right_label_x, y, 1.0 * scale, col_line)
+        xp_value_w = self._text_width(xp_value, 1.0 * scale)
+        self._draw_small(xp_value, right_center_x - xp_value_w * 0.5, y + 15.0 * scale, 1.0 * scale, col_label)
+
+        # Native vertical separator drawn via FUN_00441220 from x+84, height 48.
+        sep_x = x + 84.0 * scale
+        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0 * scale), col_line)
+
+        row_top = y + 52.0 * scale
+        rl.draw_line(int(x - 12.0 * scale), int(row_top), int(x + 180.0 * scale), int(row_top), col_line)
+        if not show_weapon_row:
+            return
+
+        row_y = row_top
+        if self.assets is not None and self.assets.wicons is not None:
+            src = _weapon_icon_src(self.assets.wicons, int(record.most_used_weapon_id))
+            if src is not None:
+                dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
+                rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
+
+        weapon_id = int(record.most_used_weapon_id)
+        weapon_entry = WEAPON_BY_ID.get(weapon_id)
+        weapon_name = weapon_entry.name if weapon_entry is not None and weapon_entry.name else f"weapon_{weapon_id}"
+        name_w = self._text_width(weapon_name, 1.0 * scale)
+        name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
+        self._draw_small(weapon_name, name_x, row_y + 32.0 * scale, 1.0 * scale, col_row)
+
+        frags_text = f"Frags: {int(record.creature_kill_count)}"
+        self._draw_small(frags_text, x + 114.0 * scale, row_y + 1.0 * scale, 1.0 * scale, col_row)
+
+        fired = max(0, int(record.shots_fired))
+        hit = max(0, min(int(record.shots_hit), fired))
+        ratio = int((hit * 100) / fired) if fired > 0 else 0
+        hit_text = f"Hit %: {ratio}%"
+        self._draw_small(hit_text, x + 114.0 * scale, row_y + 15.0 * scale, 1.0 * scale, col_row)
+
+        rl.draw_line(int(x - 12.0 * scale), int(row_y + 48.0 * scale), int(x + 180.0 * scale), int(row_y + 48.0 * scale), col_line)
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> tuple[rl.Rectangle, float, float]:
         # Match MenuView._ui_element_anim offset math (linear, with a 100ms hold hidden).
@@ -553,7 +645,7 @@ class QuestResultsUi:
         elif self.phase == 1:
             anchor_x = content_x
             text_y = top + 118.0 * scale
-            self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_TEXT)
+            self._draw_small("State your name trooper!", anchor_x + 42.0 * scale, text_y, 1.0 * scale, COLOR_UI_ACCENT)
 
             input_x = anchor_x
             input_y = top + 150.0 * scale
@@ -578,6 +670,11 @@ class QuestResultsUi:
             ok_w = button_width(self.font, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
             button_draw(self.assets.perk_menu_assets, self.font, self._ok_button, x=ok_x, y=ok_y, width=ok_w, scale=scale)
 
+            # Native phase 1 still renders the quest score card while entering the name.
+            score_card_x = anchor_x + 26.0 * scale
+            score_card_y = input_y + 46.0 * scale
+            self._draw_name_entry_stats(x=score_card_x, y=score_card_y, scale=scale, alpha=1.0, show_weapon_row=True)
+
         else:
             score_card_x = content_x + QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale
             var_c_12 = top + (96.0 if qualifies else 108.0) * scale
@@ -590,19 +687,8 @@ class QuestResultsUi:
                     rl.Color(200, 200, 200, 255),
                 )
 
-            seconds = float(int(self.record.survival_elapsed_ms)) * 0.001
-            score_value = f"{seconds:.2f} secs"
-            xp_value = f"{int(self.record.score_xp)}"
-            rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
-
-            col_label = rl.Color(230, 230, 230, 255)
-            col_value = rl.Color(230, 230, 255, 255)
             card_y = var_c_12 + 16.0 * scale
-            self._draw_small("Score", score_card_x + 32.0 * scale, card_y, 1.0 * scale, col_label)
-            self._draw_small(score_value, score_card_x + 32.0 * scale, card_y + 15.0 * scale, 1.0 * scale, col_value)
-            self._draw_small(f"Rank: {rank_text}", score_card_x + 32.0 * scale, card_y + 30.0 * scale, 1.0 * scale, col_label)
-            self._draw_small("Experience", score_card_x + 140.0 * scale, card_y, 1.0 * scale, col_label)
-            self._draw_small(xp_value, score_card_x + 140.0 * scale, card_y + 15.0 * scale, 1.0 * scale, col_value)
+            self._draw_name_entry_stats(x=score_card_x, y=card_y, scale=scale, alpha=1.0, show_weapon_row=False)
 
             # Unlock lines (their presence shifts the buttons down in native).
             var_c_14 = var_c_12 + 84.0 * scale

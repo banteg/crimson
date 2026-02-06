@@ -5,8 +5,8 @@ import random
 
 import pyray as rl
 
-from grim.assets import PaqTextureCache
-from grim.audio import AudioState
+from grim.assets import PaqTextureCache, TextureLoader
+from grim.audio import AudioState, play_music
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
@@ -66,6 +66,13 @@ PERK_PROMPT_TEXT_MARGIN_X = 16.0
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
+QUEST_COMPLETE_BANNER_BASE_W = 256.0
+QUEST_COMPLETE_BANNER_BASE_H = 32.0
+QUEST_COMPLETE_BANNER_SCALE_BASE = 0.95
+QUEST_COMPLETE_BANNER_SCALE_RATE = 0.0004 * 0.13
+QUEST_COMPLETE_BANNER_FADE_IN_MS = 500.0
+QUEST_COMPLETE_BANNER_HOLD_END_MS = 1500.0
+QUEST_COMPLETE_BANNER_FADE_OUT_END_MS = 2000.0
 
 
 @dataclass(slots=True)
@@ -134,6 +141,19 @@ def _quest_level_label(level: str) -> str:
     return f"{major}.{minor}"
 
 
+def _quest_complete_banner_alpha(timer_ms: float) -> float:
+    t = float(timer_ms)
+    if t <= 0.0:
+        return 0.0
+    if t < QUEST_COMPLETE_BANNER_FADE_IN_MS:
+        return clamp(t / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
+    if t < QUEST_COMPLETE_BANNER_HOLD_END_MS:
+        return 1.0
+    if t < QUEST_COMPLETE_BANNER_FADE_OUT_END_MS:
+        return clamp((QUEST_COMPLETE_BANNER_FADE_OUT_END_MS - t) / QUEST_COMPLETE_BANNER_FADE_IN_MS, 0.0, 1.0)
+    return 0.0
+
+
 class QuestMode(BaseGameplayMode):
     def __init__(
         self,
@@ -164,6 +184,7 @@ class QuestMode(BaseGameplayMode):
         self._outcome: QuestRunOutcome | None = None
         self._perk_menu_assets: PerkMenuAssets | None = None
         self._grim_mono: GrimMonoFont | None = None
+        self._quest_complete_texture: rl.Texture | None = None
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -177,6 +198,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
         if self._perk_menu_assets.missing:
             self._missing_assets.extend(self._perk_menu_assets.missing)
+        self._quest_complete_texture = self._load_quest_complete_texture()
         try:
             self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
         except Exception:
@@ -191,8 +213,18 @@ class QuestMode(BaseGameplayMode):
         if self._grim_mono is not None:
             rl.unload_texture(self._grim_mono.texture)
             self._grim_mono = None
+        self._quest_complete_texture = None
         self._perk_menu_assets = None
         super().close()
+
+    def _load_quest_complete_texture(self) -> rl.Texture | None:
+        loader = TextureLoader(assets_root=self._assets_root, cache=self._world.texture_cache, missing=self._missing_assets)
+        try:
+            return loader.get(name="ui_textLevComp", paq_rel="ui/ui_textLevComp.jaz", fs_rel="ui/ui_textLevComp.png")
+        except FileNotFoundError:
+            if "ui/ui_textLevComp.jaz" not in self._missing_assets:
+                self._missing_assets.append("ui/ui_textLevComp.jaz")
+            return None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -619,13 +651,24 @@ class QuestMode(BaseGameplayMode):
                 rand=self._state.rng.rand,
             )
 
-        completion_ms, completed = tick_quest_completion_transition(
+        completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
             float(self._quest.completion_transition_ms),
             frame_dt_ms=dt_world * 1000.0,
             creatures_none_active=bool(creatures_none_active),
             spawn_table_empty=quest_spawn_table_empty(self._quest.spawn_entries),
         )
         self._quest.completion_transition_ms = float(completion_ms)
+        if play_hit_sfx:
+            self._world.audio_router.play_sfx("sfx_questhit")
+        if play_completion_music and self._world.audio is not None:
+            play_music(self._world.audio, "crimsonquest")
+            playback = self._world.audio.music.playbacks.get("crimsonquest")
+            if playback is not None:
+                playback.volume = 0.0
+                try:
+                    rl.set_music_volume(playback.music, 0.0)
+                except Exception:
+                    pass
         if completed:
             if self._outcome is None:
                 fired = 0
@@ -699,6 +742,7 @@ class QuestMode(BaseGameplayMode):
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", x, y, UI_HINT_COLOR, scale=0.9)
 
         self._draw_quest_title()
+        self._draw_quest_complete_banner()
 
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
@@ -762,3 +806,21 @@ class QuestMode(BaseGameplayMode):
             alpha = max(0.0, 1.0 - (t / max(1e-3, QUEST_TITLE_FADE_OUT_MS)))
 
         draw_quest_title_overlay(font, quest.title, _quest_level_label(self._quest.level), alpha=alpha)
+
+    def _draw_quest_complete_banner(self) -> None:
+        tex = self._quest_complete_texture
+        timer_ms = float(self._quest.completion_transition_ms)
+        if tex is None or timer_ms <= 0.0:
+            return
+        alpha = _quest_complete_banner_alpha(timer_ms)
+        if alpha <= 0.0:
+            return
+        scale = QUEST_COMPLETE_BANNER_SCALE_BASE + timer_ms * QUEST_COMPLETE_BANNER_SCALE_RATE
+        width = QUEST_COMPLETE_BANNER_BASE_W * scale
+        height = QUEST_COMPLETE_BANNER_BASE_H * scale
+        center_x = float(rl.get_screen_width()) * 0.5
+        center_y = float(rl.get_screen_height()) * 0.5
+        src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+        dst = rl.Rectangle(center_x - width * 0.5, center_y - height * 0.5, width, height)
+        tint = rl.Color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
+        rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
