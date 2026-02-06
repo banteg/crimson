@@ -25,7 +25,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     weapon_assign_player(player, 17)
     assert player.ammo == player.clip_size
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
     assert len(spawned) == player.clip_size

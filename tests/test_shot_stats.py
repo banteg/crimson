@@ -28,7 +28,7 @@ def test_shots_fired_and_hit_increment() -> None:
 
     player_fire_weapon(
         player,
-        PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0),
+        PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
         dt=0.016,
         state=state,
     )

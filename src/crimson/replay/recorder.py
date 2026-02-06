@@ -46,8 +46,8 @@ class ReplayRecorder:
         for inp in inputs:
             mx = float(inp.move_x)
             my = float(inp.move_y)
-            ax = float(inp.aim_x)
-            ay = float(inp.aim_y)
+            ax = float(inp.aim.x)
+            ay = float(inp.aim.y)
             if quant == "f32":
                 mx = _quantize_f32(mx)
                 my = _quantize_f32(my)
@@ -58,7 +58,7 @@ class ReplayRecorder:
                 fire_pressed=bool(inp.fire_pressed),
                 reload_pressed=bool(inp.reload_pressed),
             )
-            tick.append([mx, my, ax, ay, flags])
+            tick.append([mx, my, [ax, ay], flags])
 
         tick_index = int(self._tick_index)
         self._inputs.append(tick)

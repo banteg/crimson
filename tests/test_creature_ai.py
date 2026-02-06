@@ -16,8 +16,7 @@ class StubCreature:
     flags: CreatureFlags = CreatureFlags(0)
     ai_mode: int = 0
     link_index: int = 0
-    target_offset_x: float | None = None
-    target_offset_y: float | None = None
+    target_offset: Vec2 | None = None
     phase_seed: float = 0.0
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
@@ -51,7 +50,7 @@ def test_ai_mode_0_orbits_when_close() -> None:
 
 def test_ai_mode_5_scales_down_near_link() -> None:
     link = StubCreature(pos=Vec2(100.0, 100.0), hp=10.0)
-    c = StubCreature(pos=Vec2(100.0, 50.0), ai_mode=5, link_index=0, target_offset_x=0.0, target_offset_y=0.0)
+    c = StubCreature(pos=Vec2(100.0, 50.0), ai_mode=5, link_index=0, target_offset=Vec2())
     ai = creature_ai_update_target(c, player_pos=Vec2(0.0, 0.0), creatures=[link, c], dt=1.0 / 60.0)
     assert c.force_target == 0
     assert (c.target.x, c.target.y) == (pytest.approx(100.0, abs=1e-6), pytest.approx(100.0, abs=1e-6))

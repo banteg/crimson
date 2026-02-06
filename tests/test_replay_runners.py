@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
@@ -18,7 +19,7 @@ def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str 
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim_x=512.0, aim_y=512.0)])
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
     return header, rec
 
 
@@ -32,7 +33,7 @@ def _blank_rush_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str = "0
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim_x=512.0, aim_y=512.0)])
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
     return header, rec
 
 

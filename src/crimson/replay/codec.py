@@ -160,7 +160,7 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
         raise ReplayCodecError("replay inputs must be a list")
 
     # Keep inputs in compact array form:
-    # inputs[tick][player] == [move_x, move_y, aim_x, aim_y, flags]
+    # inputs[tick][player] == [move_x, move_y, [aim_x, aim_y], flags]
     inputs: list[list[list[float | int]]] = []
     for tick_idx, tick in enumerate(inputs_in):
         if not isinstance(tick, list):
@@ -173,11 +173,16 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
         for player_idx, packed in enumerate(tick):
             if not isinstance(packed, list):
                 raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must be a list")
-            if len(packed) < 5:
+            if len(packed) < 4:
                 raise ReplayCodecError(
-                    f"replay input tick {tick_idx} player {player_idx} must have 5 fields"
+                    f"replay input tick {tick_idx} player {player_idx} must have 4 fields"
                 )
-            mx, my, ax, ay, flags = packed[:5]
+            mx, my, aim_vec, flags = packed[:4]
+            if not isinstance(aim_vec, list) or len(aim_vec) < 2:
+                raise ReplayCodecError(
+                    f"replay input tick {tick_idx} player {player_idx} must encode aim as [x, y]"
+                )
+            ax, ay = aim_vec[:2]
             mx_f = float(mx)
             my_f = float(my)
             ax_f = float(ax)
@@ -188,7 +193,7 @@ def replay_from_obj(obj: dict[str, Any]) -> Replay:
                 my_f = _quantize_f32(my_f)
                 ax_f = _quantize_f32(ax_f)
                 ay_f = _quantize_f32(ay_f)
-            packed_tick.append([mx_f, my_f, ax_f, ay_f, flags_i])
+            packed_tick.append([mx_f, my_f, [ax_f, ay_f], flags_i])
         inputs.append(packed_tick)
 
     events_in = obj.get("events") or []

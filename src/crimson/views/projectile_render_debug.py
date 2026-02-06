@@ -164,7 +164,7 @@ class ProjectileRenderDebugView:
             move_y += 1.0
 
         mouse = rl.get_mouse_position()
-        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -173,8 +173,7 @@ class ProjectileRenderDebugView:
         return PlayerInput(
             move_x=move_x,
             move_y=move_y,
-            aim_x=float(aim_x),
-            aim_y=float(aim_y),
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -307,10 +306,10 @@ class ProjectileRenderDebugView:
 
         # Targets.
         for target in self._targets:
-            sx, sy = self._world.world_to_screen(float(target.pos.x), float(target.pos.y))
+            target_screen = self._world.world_to_screen(target.pos)
             radius = max(2.0, float(target.size) * 0.5 * scale)
-            rl.draw_circle(int(sx), int(sy), radius, TARGET_FILL)
-            rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, radius)), TARGET_OUTLINE)
+            rl.draw_circle(int(target_screen.x), int(target_screen.y), radius, TARGET_FILL)
+            rl.draw_circle_lines(int(target_screen.x), int(target_screen.y), int(max(1.0, radius)), TARGET_OUTLINE)
 
         # Projectiles.
         for proj_index, proj in enumerate(self._world.state.projectiles.entries):
@@ -335,17 +334,16 @@ class ProjectileRenderDebugView:
                     scale=scale,
                 )
             else:
-                px, py = self._world.world_to_screen(float(player.pos.x), float(player.pos.y))
-                rl.draw_circle(int(px), int(py), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+                player_screen = self._world.world_to_screen(player.pos)
+                rl.draw_circle(int(player_screen.x), int(player_screen.y), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
 
         if player is not None and player.health > 0.0:
-            aim_x = float(player.aim.x)
-            aim_y = float(player.aim.y)
-            dist = math.hypot(aim_x - float(player.pos.x), aim_y - float(player.pos.y))
+            aim = player.aim
+            dist = (aim - player.pos).length()
             radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
             screen_radius = max(1.0, radius * scale)
-            aim_screen_x, aim_screen_y = self._world.world_to_screen(aim_x, aim_y)
-            self._world._draw_aim_circle(x=aim_screen_x, y=aim_screen_y, radius=screen_radius)
+            aim_screen = self._world.world_to_screen(aim)
+            self._world._draw_aim_circle(x=aim_screen.x, y=aim_screen.y, radius=screen_radius)
 
         # UI.
         x = 16.0

@@ -4,6 +4,7 @@ import gzip
 import json
 
 import pytest
+from grim.geom import Vec2
 
 from crimson.gameplay import PlayerInput
 from crimson.replay import (
@@ -36,15 +37,15 @@ def test_replay_codec_roundtrip() -> None:
     rec = ReplayRecorder(header)
     rec.record_tick(
         [
-            PlayerInput(move_x=1.0, aim_x=10.25, aim_y=20.5, fire_down=True),
-            PlayerInput(move_y=-1.0, aim_x=99.0, aim_y=42.75, reload_pressed=True),
+            PlayerInput(move_x=1.0, aim=Vec2(10.25, 20.5), fire_down=True),
+            PlayerInput(move_y=-1.0, aim=Vec2(99.0, 42.75), reload_pressed=True),
         ]
     )
     rec.record_perk_pick(player_index=0, choice_index=2, tick_index=1)
     rec.record_tick(
         [
-            PlayerInput(move_x=0.0, move_y=0.0, aim_x=11.0, aim_y=21.0, fire_pressed=True),
-            PlayerInput(move_x=-1.0, move_y=0.0, aim_x=100.0, aim_y=43.0),
+            PlayerInput(move_x=0.0, move_y=0.0, aim=Vec2(11.0, 21.0), fire_pressed=True),
+            PlayerInput(move_x=-1.0, move_y=0.0, aim=Vec2(100.0, 43.0)),
         ]
     )
     replay = rec.finish()
@@ -74,7 +75,7 @@ def test_replay_codec_validates_event_tick_index_bounds() -> None:
     replay_obj = {
         "v": 1,
         "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
-        "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
+        "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
         "events": [[2, "perk_menu_open", 0]],
     }
     with pytest.raises(ReplayCodecError, match="out of bounds"):
@@ -85,7 +86,7 @@ def test_replay_codec_rejects_negative_event_tick_index() -> None:
     replay_obj = {
         "v": 1,
         "header": {"game_mode_id": 1, "seed": 1, "player_count": 1},
-        "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
+        "inputs": [[[0.0, 0.0, [0.0, 0.0], 0]]],
         "events": [[-1, "perk_menu_open", 0]],
     }
     with pytest.raises(ReplayCodecError, match="non-negative"):
@@ -95,7 +96,7 @@ def test_replay_codec_rejects_negative_event_tick_index() -> None:
 def test_replay_dump_is_stable() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)
-    rec.record_tick([PlayerInput(move_x=1.0, aim_x=123.0, aim_y=456.0)])
+    rec.record_tick([PlayerInput(move_x=1.0, aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
 
     assert dump_replay(replay) == dump_replay(replay)
@@ -104,7 +105,7 @@ def test_replay_dump_is_stable() -> None:
 def test_replay_load_accepts_plain_json_bytes() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
     rec = ReplayRecorder(header)
-    rec.record_tick([PlayerInput(move_x=1.0, aim_x=123.0, aim_y=456.0)])
+    rec.record_tick([PlayerInput(move_x=1.0, aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
 
     blob = dump_replay(replay)

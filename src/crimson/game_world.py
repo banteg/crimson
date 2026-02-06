@@ -659,8 +659,10 @@ class GameWorld:
 
         self.camera_x, self.camera_y = self.renderer._clamp_camera(cam_x, cam_y, screen_w, screen_h)
 
-    def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self.renderer.world_to_screen(x, y)
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        x, y = self.renderer.world_to_screen(float(pos.x), float(pos.y))
+        return Vec2(x, y)
 
-    def screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return self.renderer.screen_to_world(x, y)
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        x, y = self.renderer.screen_to_world(float(pos.x), float(pos.y))
+        return Vec2(x, y)

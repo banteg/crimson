@@ -29,8 +29,7 @@ def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
 
 def test_build_typo_player_input_pulses_fire() -> None:
     input_state = build_typo_player_input(
-        aim_x=123.0,
-        aim_y=456.0,
+        aim=Vec2(123.0, 456.0),
         fire_requested=True,
         reload_requested=False,
     )
@@ -39,8 +38,7 @@ def test_build_typo_player_input_pulses_fire() -> None:
     assert input_state.reload_pressed is False
 
     input_state = build_typo_player_input(
-        aim_x=0.0,
-        aim_y=0.0,
+        aim=Vec2(0.0, 0.0),
         fire_requested=False,
         reload_requested=True,
     )

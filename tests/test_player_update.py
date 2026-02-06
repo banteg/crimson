@@ -42,7 +42,7 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     state.bonuses.weapon_power_up = 1.0
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.5, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
 
     assert math.isclose(player.shot_cooldown, 0.25, abs_tol=1e-9)
 
@@ -60,7 +60,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     )
     player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
 
-    player_update(player, PlayerInput(aim_x=51.0, aim_y=50.0), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
     assert math.isclose(player.reload_timer, 0.7, abs_tol=1e-9)
 
@@ -79,7 +79,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     )
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
 
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
@@ -94,7 +94,7 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
 
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
     assert state.bonus_spawn_guard
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
@@ -111,7 +111,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
     player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
 
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
@@ -126,7 +126,7 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -154,7 +154,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
         player.fire_bullets_timer = 1.0
 
-        player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+        player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
         weapon = WEAPON_BY_ID.get(int(weapon_id))
         assert weapon is not None
@@ -173,7 +173,7 @@ def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     assert math.isclose(player.ammo, 10.0, abs_tol=1e-9)
 
@@ -185,7 +185,7 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -210,7 +210,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     assert math.isclose(player.spread_heat, expected, abs_tol=1e-9)
 
@@ -232,7 +232,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     assert math.isclose(player.spread_heat, expected, abs_tol=1e-9)
 
@@ -244,7 +244,7 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     player.aim_dir_x = 1.0
     player.aim_dir_y = 0.0
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -254,7 +254,7 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
 def test_player_update_tracks_aim_point() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0))
-    input_state = PlayerInput(aim_x=123.0, aim_y=456.0)
+    input_state = PlayerInput(aim=Vec2(123.0, 456.0))
 
     player_update(player, input_state, 0.1, state)
 
@@ -292,7 +292,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     jitter_y = aim_y + math.sin(dir_angle) * offset
     expected_angle = math.atan2(jitter_y - player.pos.y, jitter_x - player.pos.x) + math.pi / 2.0
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=aim_x, aim_y=aim_y), 0.0, state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.0, state)
 
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
@@ -305,7 +305,7 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}
@@ -321,7 +321,7 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95, fire_bullets_timer=1.0)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state, players=[player])
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state, players=[player])
 
     owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
     assert owner_ids == {-100}

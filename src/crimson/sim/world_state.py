@@ -211,7 +211,7 @@ class WorldState:
         # Our aim is otherwise updated inside `player_update`, so stage it here.
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player.aim = Vec2(input_state.aim_x, input_state.aim_y)
+            player.aim = input_state.aim
 
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         _mark("ws_after_perk_effects")

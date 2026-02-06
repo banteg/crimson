@@ -590,9 +590,9 @@ class LightingDebugView:
         self._update_ui_mouse()
         self._handle_debug_input()
 
-        aim_x, aim_y = self._world.screen_to_world(self._ui_mouse_x, self._ui_mouse_y)
+        aim = self._world.screen_to_world(Vec2(self._ui_mouse_x, self._ui_mouse_y))
         if self._player is not None:
-            self._player.aim = Vec2(aim_x, aim_y)
+            self._player.aim = aim
 
         move_x = 0.0
         move_y = 0.0
@@ -612,8 +612,7 @@ class LightingDebugView:
                 PlayerInput(
                     move_x=move_x,
                     move_y=move_y,
-                    aim_x=float(aim_x),
-                    aim_y=float(aim_y),
+                    aim=aim,
                     fire_down=False,
                     fire_pressed=False,
                     reload_pressed=False,
@@ -626,7 +625,7 @@ class LightingDebugView:
         if not self._debug_auto_dump and rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._proj_fire_cd -= dt_frame
             while self._proj_fire_cd <= 0.0:
-                self._spawn_projectile(aim_x=float(aim_x), aim_y=float(aim_y))
+                self._spawn_projectile(aim=aim)
                 self._proj_fire_cd += float(self._proj_fire_interval)
         else:
             self._proj_fire_cd = max(0.0, self._proj_fire_cd - dt_frame)
@@ -655,30 +654,23 @@ class LightingDebugView:
                 keep.append(proj)
             self._projectiles = keep[-self._max_projectiles :]
 
-    def _spawn_projectile(self, *, aim_x: float, aim_y: float) -> None:
+    def _spawn_projectile(self, *, aim: Vec2) -> None:
         if self._player is None:
             return
-        px = float(self._player.pos.x)
-        py = float(self._player.pos.y)
-        dx = float(aim_x) - px
-        dy = float(aim_y) - py
-        d = math.hypot(dx, dy)
-        if d <= 1e-3:
-            dx = 1.0
-            dy = 0.0
-            d = 1.0
-        dx /= d
-        dy /= d
+        origin = self._player.pos
+        direction, distance = (aim - origin).normalized_with_length()
+        if distance <= 1e-3:
+            direction = Vec2(1.0, 0.0)
         muzzle = 18.0
-        x = px + dx * muzzle
-        y = py + dy * muzzle
+        spawn_pos = origin + direction * muzzle
         speed = float(self._proj_speed)
+        velocity = direction * speed
         self._projectiles.append(
             _EmissiveProjectile(
-                x=float(x),
-                y=float(y),
-                vx=float(dx) * speed,
-                vy=float(dy) * speed,
+                x=float(spawn_pos.x),
+                y=float(spawn_pos.y),
+                vx=float(velocity.x),
+                vy=float(velocity.y),
                 age=0.0,
                 ttl=float(self._proj_ttl),
             )
@@ -839,16 +831,16 @@ class LightingDebugView:
         circles: list[tuple[float, float, float]] = []
 
         if self._player is not None:
-            px, py = self._world.world_to_screen(float(self._player.pos.x), float(self._player.pos.y))
+            player_screen = self._world.world_to_screen(self._player.pos)
             pr = occ_radius(float(self._player.size))
-            circles.append((float(px), float(py), float(pr)))
+            circles.append((float(player_screen.x), float(player_screen.y), float(pr)))
 
         for creature in self._world.creatures.entries:
             if not creature.active:
                 continue
-            sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
+            creature_screen = self._world.world_to_screen(creature.pos)
             cr = occ_radius(float(creature.size))
-            circles.append((float(sx), float(sy), float(cr)))
+            circles.append((float(creature_screen.x), float(creature_screen.y), float(cr)))
 
         if len(circles) > _SDF_SHADOW_MAX_CIRCLES:
             circles = circles[:_SDF_SHADOW_MAX_CIRCLES]
@@ -923,12 +915,12 @@ class LightingDebugView:
             )
 
         def proj_light(proj: _EmissiveProjectile) -> tuple[float, float, float, float, float, float, float]:
-            sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+            screen = self._world.world_to_screen(Vec2(float(proj.x), float(proj.y)))
             fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
             pr = self._proj_light_tint
             return (
-                float(sx),
-                float(sy),
+                float(screen.x),
+                float(screen.y),
                 float(self._proj_light_range),
                 float(self._proj_light_source_radius),
                 float(pr.r) / 255.0 * fade,
@@ -943,12 +935,12 @@ class LightingDebugView:
                 lights.append(proj_light(self._projectiles[-1]))
             elif self._fly_lights_enabled and self._fly_lights:
                 fl = self._fly_lights[0]
-                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
                 c = fl.color
                 lights.append(
                     (
-                        float(sx),
-                        float(sy),
+                        float(screen.x),
+                        float(screen.y),
                         float(fl.range),
                         float(fl.source_radius),
                         float(c.r) / 255.0,
@@ -967,12 +959,12 @@ class LightingDebugView:
                     lights.append(proj_light(proj))
             if self._fly_lights_enabled and self._fly_lights:
                 for fl in self._fly_lights[:12]:
-                    sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                    screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
                     c = fl.color
                     lights.append(
                         (
-                            float(sx),
-                            float(sy),
+                            float(screen.x),
+                            float(screen.y),
                             float(fl.range),
                             float(fl.source_radius),
                             float(c.r) / 255.0,
@@ -1046,12 +1038,12 @@ class LightingDebugView:
         if self._projectiles:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for proj in self._projectiles:
-                sx, sy = self._world.world_to_screen(float(proj.x), float(proj.y))
+                screen = self._world.world_to_screen(Vec2(float(proj.x), float(proj.y)))
                 fade = clamp(1.0 - float(proj.age) / max(0.001, float(proj.ttl)), 0.0, 1.0)
                 c = self._proj_light_tint
                 rl.draw_circle(
-                    int(sx),
-                    int(sy),
+                    int(screen.x),
+                    int(screen.y),
                     float(self._proj_radius_px),
                     rl.Color(int(c.r), int(c.g), int(c.b), int(220.0 * fade)),
                 )
@@ -1060,11 +1052,11 @@ class LightingDebugView:
         if self._fly_lights_enabled and self._fly_lights:
             rl.begin_blend_mode(rl.BLEND_ADDITIVE)
             for fl in self._fly_lights:
-                sx, sy = self._world.world_to_screen(float(fl.x), float(fl.y))
+                screen = self._world.world_to_screen(Vec2(float(fl.x), float(fl.y)))
                 c = fl.color
                 rl.draw_circle(
-                    int(sx),
-                    int(sy),
+                    int(screen.x),
+                    int(screen.y),
                     4.0,
                     rl.Color(int(c.r), int(c.g), int(c.b), 220),
                 )
@@ -1093,19 +1085,19 @@ class LightingDebugView:
         scale = (scale_x + scale_y) * 0.5
 
         if self._draw_occluders:
-            px, py = self._world.world_to_screen(float(self._player.pos.x), float(self._player.pos.y))
+            player_screen = self._world.world_to_screen(self._player.pos)
             rl.draw_circle_lines(
-                int(px),
-                int(py),
+                int(player_screen.x),
+                int(player_screen.y),
                 int(max(1.0, float(self._player.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px))),
                 rl.Color(80, 220, 120, 180),
             )
             for creature in self._world.creatures.entries:
                 if not creature.active:
                     continue
-                sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
+                creature_screen = self._world.world_to_screen(creature.pos)
                 r = float(creature.size) * 0.5 * scale * float(self._occluder_radius_mul) + float(self._occluder_radius_pad_px)
-                rl.draw_circle_lines(int(sx), int(sy), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
+                rl.draw_circle_lines(int(creature_screen.x), int(creature_screen.y), int(max(1.0, r)), rl.Color(220, 80, 80, 180))
 
         rl.draw_circle_lines(int(light_x), int(light_y), 6, rl.Color(255, 255, 255, 220))
         if self._cursor_light_enabled:

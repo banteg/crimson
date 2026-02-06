@@ -5,6 +5,7 @@ import math
 import pytest
 
 from crimson.bonuses import BonusId
+from grim.geom import Vec2
 from grim.rand import Crand
 from crimson.creatures.spawn import (
     CreatureFlags,
@@ -782,8 +783,8 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.tint == (0.32, 0.588, 0.426, 1.0)
 
         angle = float(i) * (math.pi / 4.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -880,8 +881,7 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 5
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
         assert child.pos.x == 100.0 + x_offset
         assert child.pos.y == 200.0 + y_offset
 
@@ -933,8 +933,7 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
         assert child.pos.x == 100.0 + x_offset
         assert child.pos.y == 200.0 + y_offset
 
@@ -987,8 +986,7 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
         assert child.type_id == expected_type
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
         assert child.pos.x == 100.0 + x_offset
         assert child.pos.y == 200.0 + y_offset
 
@@ -1041,8 +1039,7 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
         assert child.type_id == expected_type
         assert child.ai_mode == 4
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
         assert child.pos.x == 100.0 + x_offset
         assert child.pos.y == 200.0 + y_offset
 
@@ -1094,8 +1091,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        assert child.target_offset_x == x_offset
-        assert child.target_offset_y == y_offset
+        assert child.target_offset == Vec2(x_offset, y_offset)
         assert child.pos.x == 100.0 + x_offset
         assert child.pos.y == 200.0 + y_offset
 
@@ -1150,10 +1146,10 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)
 
         angle = float(i) * (math.tau / 5.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
-        assert child.pos.x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
-        assert child.pos.y == pytest.approx(200.0 + (child.target_offset_y or 0.0), abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
+        assert child.pos.x == pytest.approx(100.0 + (child.target_offset.x if child.target_offset is not None else 0.0), abs=1e-4)
+        assert child.pos.y == pytest.approx(200.0 + (child.target_offset.y if child.target_offset is not None else 0.0), abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -2810,8 +2806,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.tint == (1.0, 0.3, 0.3, 1.0)
 
         angle = float(i) * (math.pi / 12.0)
-        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
-        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.x if child.target_offset is not None else 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset.y if child.target_offset is not None else 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -2851,8 +2847,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
     for i, child in enumerate(plan.creatures[1:], start=0):
         assert child.ai_mode == 3
         assert child.ai_link_parent == i
-        assert child.target_offset_x == offset_xs[i]
-        assert child.target_offset_y == -256.0
+        assert child.target_offset == Vec2(offset_xs[i], -256.0)
         assert child.reward_value == 60.0
         assert child.move_speed == 2.4
         assert child.size == 50.0

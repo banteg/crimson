@@ -25,7 +25,7 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(9.0)
     assert player.experience == 1
@@ -42,7 +42,7 @@ def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> N
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(9.0)
     assert player.experience == 1
@@ -59,7 +59,7 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(10.0)
     assert not any(entry.active for entry in state.projectiles.entries)
@@ -74,7 +74,7 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(9.85)
     assert any(entry.active for entry in state.particles.entries)
@@ -89,7 +89,7 @@ def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_amm
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.health == pytest.approx(9.85)
     assert any(entry.active for entry in state.particles.entries)

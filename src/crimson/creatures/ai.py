@@ -32,8 +32,7 @@ class CreatureAIStateLike(CreatureLinkLike, Protocol):
     flags: CreatureFlags
     ai_mode: int
     link_index: int
-    target_offset_x: float | None
-    target_offset_y: float | None
+    target_offset: Vec2 | None
     phase_seed: float
     orbit_angle: float
     orbit_radius: float
@@ -119,19 +118,13 @@ def creature_ai_update_target(
     elif ai_mode == 3:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
-            creature.target = link.pos + Vec2(
-                float(creature.target_offset_x or 0.0),
-                float(creature.target_offset_y or 0.0),
-            )
+            creature.target = link.pos + (creature.target_offset or Vec2())
         else:
             creature.ai_mode = 0
     elif ai_mode == 5:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
-            creature.target = link.pos + Vec2(
-                float(creature.target_offset_x or 0.0),
-                float(creature.target_offset_y or 0.0),
-            )
+            creature.target = link.pos + (creature.target_offset or Vec2())
             dist_to_target = (creature.target - creature.pos).length()
             if dist_to_target <= 64.0:
                 move_scale = dist_to_target * 0.015625

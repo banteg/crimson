@@ -25,7 +25,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
@@ -41,7 +41,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.experience == 760  # int(1000 - (pistol.reload_time=1.2) * 200)
     assert any(entry.active for entry in state.projectiles.entries)
@@ -57,7 +57,7 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert not any(entry.active for entry in state.projectiles.entries)
 
@@ -71,7 +71,7 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
     player.reload_active = True
     player.reload_timer = 0.5
 
-    player_fire_weapon(player, PlayerInput(aim_x=10.0, aim_y=0.0, fire_down=True), 0.016, state)
+    player_fire_weapon(player, PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016, state)
 
     assert player.experience == 992  # int(1000 - (flamethrower.reload_time=2.0) * 4)
     assert any(entry.active for entry in state.particles.entries)

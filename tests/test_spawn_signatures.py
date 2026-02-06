@@ -42,7 +42,7 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
         ammo=0,
     )
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
     assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_MINIGUN): 15})
 
     pool.reset()
@@ -50,7 +50,7 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     # Man Bomb.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
     assert _signature(pool) == Counter({int(ProjectileTypeId.ION_RIFLE): 4, int(ProjectileTypeId.ION_MINIGUN): 4})
 
     pool.reset()
@@ -58,5 +58,5 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     # Hot Tempered.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
-    player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
     assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_MINIGUN): 4, int(ProjectileTypeId.PLASMA_RIFLE): 4})

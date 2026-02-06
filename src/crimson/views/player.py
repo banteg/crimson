@@ -236,6 +236,7 @@ class PlayerSandboxView:
 
         mouse = rl.get_mouse_position()
         aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
+        aim = Vec2(aim_x, aim_y)
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -244,8 +245,7 @@ class PlayerSandboxView:
         return PlayerInput(
             move_x=move_x,
             move_y=move_y,
-            aim_x=aim_x,
-            aim_y=aim_y,
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,

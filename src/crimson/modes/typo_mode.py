@@ -258,8 +258,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         enforce_typo_player_frame(self._player)
         input_state = build_typo_player_input(
-            aim_x=float(self._aim_target_x),
-            aim_y=float(self._aim_target_y),
+            aim=Vec2(float(self._aim_target_x), float(self._aim_target_y)),
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )
@@ -339,11 +338,11 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            sx, sy = self._world.world_to_screen(float(creature.pos.x), float(creature.pos.y))
-            y = float(sy) - 50.0
+            screen_pos = self._world.world_to_screen(creature.pos)
+            y = float(screen_pos.y) - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
-            x = float(sx) - text_w * 0.5
+            x = float(screen_pos.x) - text_w * 0.5
 
             bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
             bg = rl.Color(0, 0, 0, int(255 * bg_alpha))

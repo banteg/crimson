@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 from ..gameplay import PlayerInput, PlayerState, weapon_assign_player
 
 TYPO_WEAPON_ID = 4
@@ -26,8 +28,7 @@ def enforce_typo_player_frame(player: PlayerState) -> None:
 
 def build_typo_player_input(
     *,
-    aim_x: float,
-    aim_y: float,
+    aim: Vec2,
     fire_requested: bool,
     reload_requested: bool,
 ) -> PlayerInput:
@@ -35,8 +36,7 @@ def build_typo_player_input(
     return PlayerInput(
         move_x=0.0,
         move_y=0.0,
-        aim_x=float(aim_x),
-        aim_y=float(aim_y),
+        aim=aim,
         fire_down=fire,
         fire_pressed=fire,
         reload_pressed=bool(reload_requested),

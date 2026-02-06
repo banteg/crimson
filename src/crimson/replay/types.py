@@ -40,7 +40,7 @@ def unpack_input_flags(flags: int) -> tuple[bool, bool, bool]:
     )
 
 
-PackedPlayerInput: TypeAlias = list[float | int]
+PackedPlayerInput: TypeAlias = list[float | int | list[float]]
 PackedTickInputs: TypeAlias = list[PackedPlayerInput]
 
 

@@ -12,7 +12,7 @@ def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
     dt = 0.1
     steps = 12  # reaches move_speed cap (2.8)
 
-    input_state = PlayerInput(move_x=1.0, move_y=0.0, aim_x=101.0, aim_y=100.0)
+    input_state = PlayerInput(move_x=1.0, move_y=0.0, aim=Vec2(101.0, 100.0))
 
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
@@ -31,6 +31,6 @@ def test_long_distance_runner_ramps_speed_above_base_cap() -> None:
 
     # With no movement input, the player coasts while decelerating.
     prev_x = perk_player.pos.x
-    player_update(perk_player, PlayerInput(aim_x=perk_player.pos.x + 1.0, aim_y=perk_player.pos.y), dt, perk_state)
+    player_update(perk_player, PlayerInput(aim=Vec2(perk_player.pos.x + 1.0, perk_player.pos.y)), dt, perk_state)
     assert perk_player.move_speed == pytest.approx(1.3)  # 2.8 - (dt * 15.0)
     assert perk_player.pos.x > prev_x

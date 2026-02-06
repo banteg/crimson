@@ -1398,8 +1398,7 @@ class CreatureInit:
     ai_link_parent: int | None = None
     ai_timer: int | None = None
 
-    target_offset_x: float | None = None
-    target_offset_y: float | None = None
+    target_offset: Vec2 | None = None
 
     # Spawn slot reference (stored in link_index in the original when flags include HAS_SPAWN_SLOT).
     spawn_slot: int | None = None
@@ -1555,13 +1554,9 @@ def spawn_ring_children(
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
         angle = float(i) * angle_step
-        child.target_offset_x = float(math.cos(angle) * radius)
-        child.target_offset_y = float(math.sin(angle) * radius)
+        child.target_offset = Vec2(float(math.cos(angle) * radius), float(math.sin(angle) * radius))
         if set_position:
-            child.pos = Vec2(
-                pos.x + (child.target_offset_x or 0.0),
-                pos.y + (child.target_offset_y or 0.0),
-            )
+            child.pos = pos + (child.target_offset or Vec2())
         if heading_override is not None:
             child.heading = heading_override
         apply_child_spec(child, child_spec)
@@ -1588,8 +1583,7 @@ def spawn_grid_children(
             child = alloc_creature(template_id, pos, rng)
             child.ai_mode = ai_mode
             child.ai_link_parent = link_parent
-            child.target_offset_x = float(x_offset)
-            child.target_offset_y = float(y_offset)
+            child.target_offset = Vec2(float(x_offset), float(y_offset))
             child.pos = Vec2(pos.x + float(x_offset), pos.y + float(y_offset))
             apply_child_spec(child, child_spec)
             creatures.append(child)
@@ -2514,8 +2508,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
         tint=(0.6, 0.6, 0.31, 1.0),
     )
     def setup_child(child: CreatureInit, idx: int) -> None:
-        child.target_offset_x = -256.0 + float(idx) * 64.0
-        child.target_offset_y = -256.0
+        child.target_offset = Vec2(-256.0 + float(idx) * 64.0, -256.0)
         angle = float(2 + idx * 2) * (math.pi / 8.0)
         child.pos = Vec2(math.cos(angle), math.sin(angle)) * 256.0 + ctx.pos
 

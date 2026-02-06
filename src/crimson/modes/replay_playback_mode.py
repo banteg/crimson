@@ -6,6 +6,7 @@ from pathlib import Path
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.geom import Vec2
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
@@ -208,14 +209,14 @@ class ReplayPlaybackMode:
         packed_tick = replay.inputs[int(tick_index)]
         inputs: list[PlayerInput] = []
         for packed in packed_tick:
-            mx, my, ax, ay, flags = packed[:5]
+            mx, my, aim_vec, flags = packed[:4]
+            ax, ay = aim_vec[:2]
             fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
             inputs.append(
                 PlayerInput(
                     move_x=float(mx),
                     move_y=float(my),
-                    aim_x=float(ax),
-                    aim_y=float(ay),
+                    aim=Vec2(float(ax), float(ay)),
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=reload_pressed,

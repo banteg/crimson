@@ -316,10 +316,10 @@ class SpawnPlanView:
 
         # Offset hints.
         for c in self._plan.creatures:
-            if c.target_offset_x is None or c.target_offset_y is None:
+            if c.target_offset is None:
                 continue
             x0, y0 = self._world_to_screen(c.pos.x, c.pos.y)
-            x1, y1 = self._world_to_screen(c.pos.x + c.target_offset_x, c.pos.y + c.target_offset_y)
+            x1, y1 = self._world_to_screen(c.pos.x + c.target_offset.x, c.pos.y + c.target_offset.y)
             rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0, OFFSET_COLOR)
             rl.draw_circle_lines(int(x1), int(y1), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR)
 

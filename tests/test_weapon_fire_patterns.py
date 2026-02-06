@@ -28,7 +28,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 10)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
@@ -59,7 +59,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 14)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
@@ -84,7 +84,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     weapon_assign_player(player, 14)
     start_ammo = float(player.ammo)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
     assert math.isclose(float(player.ammo), start_ammo - 1.0, abs_tol=1e-9)
 
 
@@ -96,7 +96,7 @@ def test_jackhammer_spawns_4_shotgun_pellets_with_jitter_and_speed_scale() -> No
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 20)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 4
@@ -117,7 +117,7 @@ def test_gauss_shotgun_fires_6_gauss_pellets() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 30)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 6
@@ -138,7 +138,7 @@ def test_ion_shotgun_fires_8_ion_minigun_pellets() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 31)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 8

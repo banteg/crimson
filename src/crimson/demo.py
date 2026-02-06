@@ -754,8 +754,7 @@ class DemoView:
                 PlayerInput(
                     move_x=move.x,
                     move_y=move.y,
-                    aim_x=aim.x,
-                    aim_y=aim.y,
+                    aim=aim,
                     fire_down=auto_fire,
                     fire_pressed=auto_fire,
                     reload_pressed=False,

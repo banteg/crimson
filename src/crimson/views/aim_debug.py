@@ -137,9 +137,9 @@ class AimDebugView:
         self._handle_debug_input()
         self._cursor_pulse_time += dt_frame * 1.1
 
-        aim_x, aim_y = self._world.screen_to_world(self._ui_mouse_x, self._ui_mouse_y)
+        aim = self._world.screen_to_world(Vec2(self._ui_mouse_x, self._ui_mouse_y))
         if self._player is not None:
-            self._player.aim = Vec2(aim_x, aim_y)
+            self._player.aim = aim
             if self._force_heat:
                 self._player.spread_heat = float(self._forced_heat)
 
@@ -161,8 +161,7 @@ class AimDebugView:
                 PlayerInput(
                     move_x=move_x,
                     move_y=move_y,
-                    aim_x=float(aim_x),
-                    aim_y=float(aim_y),
+                    aim=aim,
                     fire_down=False,
                     fire_pressed=False,
                     reload_pressed=False,
@@ -193,8 +192,8 @@ class AimDebugView:
         if self._show_cursor_glow:
             self._draw_cursor_glow(pos=Vec2(mouse_x, mouse_y))
 
-        mouse_world_x, mouse_world_y = self._world.screen_to_world(mouse_x, mouse_y)
-        mouse_back_x, mouse_back_y = self._world.world_to_screen(float(mouse_world_x), float(mouse_world_y))
+        mouse_world = self._world.screen_to_world(Vec2(mouse_x, mouse_y))
+        mouse_back = self._world.world_to_screen(mouse_world)
 
         if self._draw_expected_overlay and self._player is not None:
             aim_pos = self._player.aim
@@ -203,19 +202,19 @@ class AimDebugView:
             cam_x, cam_y, scale_x, scale_y = self._world._world_params()
             scale = (scale_x + scale_y) * 0.5
             screen_radius = max(1.0, radius * scale)
-            aim_screen_x, aim_screen_y = self._world.world_to_screen(float(aim_pos.x), float(aim_pos.y))
+            aim_screen = self._world.world_to_screen(aim_pos)
 
             rl.draw_circle_lines(
-                int(aim_screen_x),
-                int(aim_screen_y),
+                int(aim_screen.x),
+                int(aim_screen.y),
                 int(max(1.0, screen_radius)),
                 rl.Color(80, 220, 120, 240),
             )
             rl.draw_line(
                 int(mouse_x),
                 int(mouse_y),
-                int(aim_screen_x),
-                int(aim_screen_y),
+                int(aim_screen.x),
+                int(aim_screen.y),
                 rl.Color(80, 220, 120, 200),
             )
 
@@ -227,11 +226,11 @@ class AimDebugView:
                 f"test_circle_radius={self._test_circle_radius:.0f}  -/+ adjust",
                 (
                     f"mouse=({mouse_x:.1f},{mouse_y:.1f}) -> "
-                    f"world=({mouse_world_x:.1f},{mouse_world_y:.1f}) -> "
-                    f"screen=({mouse_back_x:.1f},{mouse_back_y:.1f})"
+                    f"world=({mouse_world.x:.1f},{mouse_world.y:.1f}) -> "
+                    f"screen=({mouse_back.x:.1f},{mouse_back.y:.1f})"
                 ),
                 f"player_aim_world=({float(aim_pos.x):.1f},{float(aim_pos.y):.1f})  "
-                f"player_aim_screen=({aim_screen_x:.1f},{aim_screen_y:.1f})",
+                f"player_aim_screen=({aim_screen.x:.1f},{aim_screen.y:.1f})",
                 f"player=({float(self._player.pos.x):.1f},{float(self._player.pos.y):.1f})  dist={dist:.1f}",
                 f"spread_heat={float(self._player.spread_heat):.3f}  r_world={radius:.2f}  r_screen={screen_radius:.2f}",
                 f"cam=({cam_x:.2f},{cam_y:.2f})  scale=({scale_x:.3f},{scale_y:.3f})  demo_mode={self._world.demo_mode_active}",

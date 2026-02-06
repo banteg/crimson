@@ -258,7 +258,7 @@ class ArsenalDebugView:
             move_y += 1.0
 
         mouse = rl.get_mouse_position()
-        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -267,8 +267,7 @@ class ArsenalDebugView:
         return PlayerInput(
             move_x=move_x,
             move_y=move_y,
-            aim_x=float(aim_x),
-            aim_y=float(aim_y),
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,

@@ -124,8 +124,7 @@ class CreatureState:
     flags: CreatureFlags = CreatureFlags(0)
 
     link_index: int = 0
-    target_offset_x: float | None = None
-    target_offset_y: float | None = None
+    target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
     phase_seed: float = 0.0
@@ -948,8 +947,7 @@ class CreaturePool:
         entry.size = float(init.size or 50.0)
         entry.contact_damage = float(init.contact_damage or 0.0)
 
-        entry.target_offset_x = init.target_offset_x
-        entry.target_offset_y = init.target_offset_y
+        entry.target_offset = init.target_offset
         entry.orbit_angle = float(init.orbit_angle or 0.0)
         if init.orbit_radius is not None:
             orbit_radius = float(init.orbit_radius)

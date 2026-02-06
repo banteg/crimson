@@ -50,8 +50,7 @@ class _CreatureForPerks(Protocol):
 class PlayerInput:
     move_x: float = 0.0
     move_y: float = 0.0
-    aim_x: float = 0.0
-    aim_y: float = 0.0
+    aim: Vec2 = field(default_factory=Vec2)
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
@@ -2046,7 +2045,7 @@ def player_fire_weapon(
         shot_cooldown *= 1.05
     player.shot_cooldown = max(0.0, shot_cooldown)
 
-    aim = Vec2(input_state.aim_x, input_state.aim_y)
+    aim = input_state.aim
     aim_delta = aim - player.pos
     aim_heading = aim_delta.to_heading()
 
@@ -2314,7 +2313,7 @@ def player_update(
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
     # Aim: compute direction from (player -> aim point).
-    player.aim = Vec2(input_state.aim_x, input_state.aim_y)
+    player.aim = input_state.aim
     aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
         player.aim_dir_x = aim_dir.x

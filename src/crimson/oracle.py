@@ -10,7 +10,7 @@ from grim.geom import Vec2
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -46,8 +46,7 @@ class FrameInput:
     frame: int
     move_x: float = 0.0
     move_y: float = 0.0
-    aim_x: float = 0.0
-    aim_y: float = 0.0
+    aim: Vec2 = field(default_factory=Vec2)
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
@@ -59,7 +58,7 @@ def load_inputs(path: Path) -> list[FrameInput]:
     Expected format:
     {
         "frames": [
-            {"frame": 0, "move_x": 1.0, "move_y": 0.0, "aim_x": 100, "aim_y": 200, "fire_down": true},
+            {"frame": 0, "move_x": 1.0, "move_y": 0.0, "aim": [100, 200], "fire_down": true},
             {"frame": 60, "move_x": 0.0, "move_y": -1.0, "fire_pressed": true},
             ...
         ]
@@ -68,13 +67,16 @@ def load_inputs(path: Path) -> list[FrameInput]:
     data = json.loads(path.read_text())
     inputs: list[FrameInput] = []
     for entry in data.get("frames", []):
+        raw_aim = entry.get("aim", [0.0, 0.0])
+        aim = raw_aim if isinstance(raw_aim, list) else [0.0, 0.0]
+        aim_x = float(aim[0]) if len(aim) > 0 else 0.0
+        aim_y = float(aim[1]) if len(aim) > 1 else 0.0
         inputs.append(
             FrameInput(
                 frame=int(entry.get("frame", 0)),
                 move_x=float(entry.get("move_x", 0.0)),
                 move_y=float(entry.get("move_y", 0.0)),
-                aim_x=float(entry.get("aim_x", 0.0)),
-                aim_y=float(entry.get("aim_y", 0.0)),
+                aim=Vec2(aim_x, aim_y),
                 fire_down=bool(entry.get("fire_down", False)),
                 fire_pressed=bool(entry.get("fire_pressed", False)),
                 reload_pressed=bool(entry.get("reload_pressed", False)),
@@ -336,8 +338,7 @@ def run_headless(config: OracleConfig) -> None:
             PlayerInput(
                 move_x=current_input.move_x,
                 move_y=current_input.move_y,
-                aim_x=current_input.aim_x,
-                aim_y=current_input.aim_y,
+                aim=current_input.aim,
                 fire_down=current_input.fire_down,
                 fire_pressed=current_input.fire_pressed,
                 reload_pressed=current_input.reload_pressed,

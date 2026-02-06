@@ -157,7 +157,7 @@ class TutorialMode(BaseGameplayMode):
             move_y += 1.0
 
         mouse = self._ui_mouse_pos()
-        aim_x, aim_y = self._world.screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._world.screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -169,8 +169,7 @@ class TutorialMode(BaseGameplayMode):
         return PlayerInput(
             move_x=move_x,
             move_y=move_y,
-            aim_x=float(aim_x),
-            aim_y=float(aim_y),
+            aim=aim,
             fire_down=bool(fire_down),
             fire_pressed=bool(fire_pressed),
             reload_pressed=bool(reload_pressed),

@@ -49,7 +49,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         weapon_assign_player(player, weapon_id)
         start_ammo = float(player.ammo)
 
-        player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+        player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
         particles = [entry for entry in state.particles.entries if entry.active]
         assert len(particles) == 1
@@ -75,7 +75,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
 
     aim_x = 200.0
     aim_y = 0.0
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=aim_x, aim_y=aim_y), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state)
 
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 1
@@ -105,7 +105,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     player.spread_heat = 0.48
 
     weapon_assign_player(player, 8)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=aim_x, aim_y=aim_y), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state)
 
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 1
@@ -134,7 +134,7 @@ def test_particle_hits_damage_creatures() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 8)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()
     creature.active = True
@@ -159,7 +159,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, 42)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=200.0, aim_y=0.0), dt=0.016, state=state)
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()
     creature.active = True

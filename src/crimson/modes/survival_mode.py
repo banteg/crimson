@@ -247,11 +247,11 @@ class SurvivalMode(BaseGameplayMode):
                 lines.append(current)
         return lines
 
-    def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self._world.world_to_screen(x, y)
+    def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._world.world_to_screen(pos)
 
-    def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return self._world.screen_to_world(x, y)
+    def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
+        return self._world.screen_to_world(pos)
 
     def open(self) -> None:
         super().open()
@@ -376,7 +376,7 @@ class SurvivalMode(BaseGameplayMode):
             move_y += 1.0
 
         mouse = self._ui_mouse_pos()
-        aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
+        aim = self._camera_screen_to_world(Vec2(float(mouse.x), float(mouse.y)))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -388,8 +388,7 @@ class SurvivalMode(BaseGameplayMode):
         return PlayerInput(
             move_x=move_x,
             move_y=move_y,
-            aim_x=aim_x,
-            aim_y=aim_y,
+            aim=aim,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -553,8 +552,7 @@ class SurvivalMode(BaseGameplayMode):
                 input_tick = PlayerInput(
                     move_x=float(input_frame.move_x),
                     move_y=float(input_frame.move_y),
-                    aim_x=float(input_frame.aim_x),
-                    aim_y=float(input_frame.aim_y),
+                    aim=input_frame.aim,
                     fire_down=bool(input_frame.fire_down),
                     fire_pressed=False,
                     reload_pressed=False,

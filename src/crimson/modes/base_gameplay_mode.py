@@ -11,6 +11,7 @@ from grim.audio import AudioState, update_audio
 from grim.console import ConsoleState
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.geom import Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
@@ -144,14 +145,14 @@ class BaseGameplayMode:
         if ratio > 1.0:
             ratio = 1.0
 
-        x0, y0 = self._world.world_to_screen(float(creature.pos.x) - 32.0, float(creature.pos.y) + 32.0)
-        x1, _y1 = self._world.world_to_screen(float(creature.pos.x) + 32.0, float(creature.pos.y) + 32.0)
-        width = float(x1) - float(x0)
+        screen_left = self._world.world_to_screen(Vec2(float(creature.pos.x) - 32.0, float(creature.pos.y) + 32.0))
+        screen_right = self._world.world_to_screen(Vec2(float(creature.pos.x) + 32.0, float(creature.pos.y) + 32.0))
+        width = float(screen_right.x) - float(screen_left.x)
         if width <= 1e-3:
             return
         draw_target_health_bar(
-            x=float(x0),
-            y=float(y0),
+            x=float(screen_left.x),
+            y=float(screen_left.y),
             width=width,
             ratio=ratio,
             alpha=float(alpha),

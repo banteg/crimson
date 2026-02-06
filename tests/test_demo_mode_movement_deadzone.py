@@ -6,7 +6,7 @@ from crimson.gameplay import GameplayState, PlayerInput, PlayerState, player_upd
 
 
 def test_demo_mode_does_not_apply_movement_deadzone() -> None:
-    input_state = PlayerInput(move_x=0.1, move_y=0.0, aim_x=512.0, aim_y=512.0)
+    input_state = PlayerInput(move_x=0.1, move_y=0.0, aim=Vec2(512.0, 512.0))
 
     normal = GameplayState()
     normal.demo_mode_active = False
