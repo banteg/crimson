@@ -154,6 +154,28 @@ grim.dll_functions.json
   - Evidence: returns constant `2400000` (40 minutes) and is used by
     `demo_trial_overlay_render` for remaining-time math.
 
+### Gameplay helpers (high confidence)
+
+- `FUN_0040ff50` -> `time_format_mm_ss`
+  - Evidence: formats `total_seconds` as `m:ss` into static buffer `time_format_mm_ss_buffer`;
+    callsites feed Base/Life/Perk/Final time rows in quest/game-over result panels.
+
+- `FUN_00413540` -> `player_heading_approach_target` (signature fix: `float` return)
+  - Evidence: normalizes heading wrap, turns toward target by `frame_dt * shortest_delta * 5`,
+    and callers use returned shortest angular distance to scale movement while turning.
+
+- `FUN_0041a810` -> `bonus_hud_slot_activate`
+  - Evidence: allocates a free entry in the 16-slot `bonus_hud_slot_table`, wiring label/icon
+    and timer pointers; called from timed-bonus branches in `bonus_apply`.
+
+- `FUN_00425d80` -> `plaguebearer_spread_infection`
+  - Evidence: only called in the Plaguebearer path of `creature_update_all`; checks nearby
+    creatures (`<45` units) and propagates `collision_flag` for targets under `150` HP.
+
+- `FUN_004281e0` -> `creature_reset_all` (signature fix: `void`)
+  - Evidence: called at quest start before spawn setup; clears active creature slots and
+    detaches any occupied `creature_spawn_slot_table[].owner` links.
+
 ### Typ-o gameplay loop (high confidence)
 
 - `FUN_004457c0` -> `typo_gameplay_update_and_render`

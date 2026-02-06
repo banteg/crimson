@@ -565,7 +565,7 @@
     "signature": "void bonus_apply(int player_index, bonus_entry_t * bonus_entry)",
     "external": false,
     "calls_total": 13,
-    "calls": ["FUN_0041a810", "creature_apply_damage", "creature_find_nearest", "crt_rand", "effect_spawn", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
+    "calls": ["bonus_hud_slot_activate", "creature_apply_damage", "creature_find_nearest", "crt_rand", "effect_spawn", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
   },
   {
     "name": "bonus_update",
@@ -984,9 +984,9 @@
     "calls": ["credits_secret_match3_find", "crt_atexit", "crt_rand", "input_primary_just_pressed", "sfx_play", "ui_button_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0040ff50",
+    "name": "time_format_mm_ss",
     "address": "0040ff50",
-    "signature": "int FUN_0040ff50(int arg1)",
+    "signature": "char * time_format_mm_ss(int total_seconds)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_sprintf"]
@@ -1013,7 +1013,7 @@
     "signature": "void quest_results_screen_update(void)",
     "external": false,
     "calls_total": 21,
-    "calls": ["FUN_0040ff50", "__ftol", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "highscore_record_init", "highscore_save_active", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update", "weapon_table_entry"]
+    "calls": ["__ftol", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "highscore_record_init", "highscore_save_active", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "time_format_mm_ss", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update", "weapon_table_entry"]
   },
   {
     "name": "FUN_004120b0",
@@ -1144,9 +1144,9 @@
     "calls": ["perk_count_get", "sfx_play_panned"]
   },
   {
-    "name": "FUN_00413540",
+    "name": "player_heading_approach_target",
     "address": "00413540",
-    "signature": "undefined FUN_00413540(float param_1)",
+    "signature": "float player_heading_approach_target(float target_heading)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1157,7 +1157,7 @@
     "signature": "void player_update(void)",
     "external": false,
     "calls_total": 21,
-    "calls": ["FUN_00413540", "FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_apply_move_with_spawn_avoidance", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_length", "vec2_sub"]
+    "calls": ["FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_apply_move_with_spawn_avoidance", "player_heading_approach_target", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_length", "vec2_sub"]
   },
   {
     "name": "vec2_sub",
@@ -1312,9 +1312,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0041a810",
+    "name": "bonus_hud_slot_activate",
     "address": "0041a810",
-    "signature": "undefined FUN_0041a810(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
+    "signature": "void bonus_hud_slot_activate(char * label, int icon_id, float * timer_ptr, float * alt_timer_ptr)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1472,9 +1472,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0041e270",
+    "name": "vec2_add",
     "address": "0041e270",
-    "signature": "int FUN_0041e270(float * arg1, float * arg2)",
+    "signature": "void vec2_add(float * dst, float * delta)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1709,7 +1709,7 @@
     "signature": "void projectile_update(void)",
     "external": false,
     "calls_total": 26,
-    "calls": ["FUN_0041e270", "__ftol", "creature_apply_damage", "creature_find_in_radius", "creature_find_nearest", "creature_handle_death", "creatures_apply_radius_damage", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_ion_hit_core", "effect_spawn_ion_hit_sparks", "effect_spawn_plasma_hit_core", "effect_spawn_shrinkifier_hit", "effect_spawn_splitter_hit_burst", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get", "player_find_in_radius", "projectile_spawn", "sfx_play_exclusive", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
+    "calls": ["__ftol", "creature_apply_damage", "creature_find_in_radius", "creature_find_nearest", "creature_handle_death", "creatures_apply_radius_damage", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_ion_hit_core", "effect_spawn_ion_hit_sparks", "effect_spawn_plasma_hit_core", "effect_spawn_shrinkifier_hit", "effect_spawn_splitter_hit_burst", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get", "player_find_in_radius", "projectile_spawn", "sfx_play_exclusive", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add", "vec2_add_inplace"]
   },
   {
     "name": "projectile_render",
@@ -1720,9 +1720,9 @@
     "calls": ["__ftol", "creature_find_in_radius", "effect_select_texture", "perk_count_get", "thunk_FUN_00452f1d"]
   },
   {
-    "name": "FUN_00425d80",
+    "name": "plaguebearer_spread_infection",
     "address": "00425d80",
-    "signature": "int FUN_00425d80(int param_1)",
+    "signature": "int plaguebearer_spread_infection(int creature_id)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1741,7 +1741,7 @@
     "signature": "void creature_update_all(void)",
     "external": false,
     "calls_total": 17,
-    "calls": ["FUN_00425d80", "__ftol", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_burst", "fx_queue_add_random", "fx_queue_add_rotated", "perk_count_get", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
+    "calls": ["__ftol", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "crt_rand", "effect_spawn_blood_splatter", "effect_spawn_burst", "fx_queue_add_random", "fx_queue_add_rotated", "perk_count_get", "plaguebearer_spread_infection", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
   },
   {
     "name": "fx_queue_add_random",
@@ -1776,9 +1776,9 @@
     "calls": ["console_printf", "crt_rand"]
   },
   {
-    "name": "FUN_004281e0",
+    "name": "creature_reset_all",
     "address": "004281e0",
-    "signature": "void * FUN_004281e0(void)",
+    "signature": "void creature_reset_all(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2645,7 +2645,7 @@
     "signature": "void quest_start_selected(int tier, int index)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_004281e0", "console_printf", "crt_rand", "projectile_reset_pools", "quest_build_fallback", "terrain_generate", "weapon_assign_player"]
+    "calls": ["console_printf", "creature_reset_all", "crt_rand", "projectile_reset_pools", "quest_build_fallback", "terrain_generate", "weapon_assign_player"]
   },
   {
     "name": "highscore_date_checksum",

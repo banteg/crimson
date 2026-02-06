@@ -892,9 +892,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0040ff50",
-    "name": "FUN_0040ff50",
-    "signature": "int FUN_0040ff50(int arg1)",
-    "comment": "[binja] int32_t sub_40ff50(int32_t arg1)"
+    "name": "time_format_mm_ss",
+    "signature": "char * time_format_mm_ss(int total_seconds)",
+    "comment": "formats total seconds as m:ss into a static buffer and returns it"
   },
   {
     "program": "crimsonland.exe",
@@ -1031,6 +1031,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00413540",
+    "name": "player_heading_approach_target",
+    "signature": "float player_heading_approach_target(float target_heading)",
+    "comment": "wraps heading to [0,2pi], turns toward target_heading, and returns shortest angular distance"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
@@ -1164,6 +1171,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041a810",
+    "name": "bonus_hud_slot_activate",
+    "signature": "void bonus_hud_slot_activate(char *label, int icon_id, float *timer_ptr, float *alt_timer_ptr)",
+    "comment": "allocates a free bonus HUD slot and binds timer pointers + icon/label metadata"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041a8b0",
     "name": "bonus_hud_slot_update_and_render",
     "signature": "void bonus_hud_slot_update_and_render(float *xy, int slot)",
@@ -1277,9 +1291,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041e270",
-    "name": "FUN_0041e270",
-    "signature": "int FUN_0041e270(float *arg1, float *arg2)",
-    "comment": "[binja] int32_t sub_41e270(float* arg1, float* arg2)"
+    "name": "vec2_add",
+    "signature": "void vec2_add(float *dst, float *delta)",
+    "comment": "adds delta xy into dst"
   },
   {
     "program": "crimsonland.exe",
@@ -1479,6 +1493,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00425d80",
+    "name": "plaguebearer_spread_infection",
+    "signature": "int plaguebearer_spread_infection(int creature_id)",
+    "comment": "propagates collision_flag infection between nearby creatures (radius 45, hp < 150)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00425e50",
     "name": "player_take_damage",
     "signature": "void player_take_damage(int player_index, float damage)",
@@ -1522,9 +1543,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004281e0",
-    "name": "FUN_004281e0",
-    "signature": "void * FUN_004281e0(void)",
-    "comment": "[binja] void* sub_4281e0()"
+    "name": "creature_reset_all",
+    "signature": "void creature_reset_all(void)",
+    "comment": "clears active creatures and detaches occupied creature_spawn_slot owners"
   },
   {
     "program": "crimsonland.exe",

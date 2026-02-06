@@ -53,7 +53,7 @@ Global bonus timers used by `player_update` and the main loop:
 
 ### Bonus HUD slots (active bonus list)
 
-`bonus_apply` registers timed bonuses in the HUD list via `FUN_0041a810`, and
+`bonus_apply` registers timed bonuses in the HUD list via `bonus_hud_slot_activate`, and
 `bonus_hud_slot_update_and_render` renders up to 16 active slots using the following fields:
 
 - `bonus_hud_slot_active` — per-slot active flag (stride `0x20` bytes).

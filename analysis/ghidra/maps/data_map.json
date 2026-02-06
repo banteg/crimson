@@ -1221,6 +1221,12 @@
       "type": "int"
     },
     {
+      "address": "0x00482624",
+      "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
+      "name": "time_format_mm_ss_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00482708",
       "comment": "Quest results screen animation timer/counter used for fade effects.",
       "name": "quest_results_anim_timer",

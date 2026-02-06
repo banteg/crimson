@@ -56,6 +56,7 @@ Interesting Functions and Patterns
 [READ related]
   vorbis_mem_read @ 0041dce0
   vorbis_read_pcm16 @ 0041df00
+  plaguebearer_spread_infection @ 00425d80
   reg_read_dword_default @ 0042a980
   highscore_read_record @ 0043ab10
   buffer_reader_init @ 0043b850
