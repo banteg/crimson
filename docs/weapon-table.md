@@ -101,6 +101,12 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
+- Fire Bullets fallback helpers (initialized in `weapon_table_init` and consumed
+  by `player_fire_weapon` / `player_update`):
+  `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
+  `fire_bullets_fallback_spread_heat` (`0x004d9048`),
+  `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
+  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
 
 - Several weapons bypass the main projectile pool and use particle or secondary
   projectile pools instead (Flamethrower `0x08`, Blow Torch `0x0f`, HR Flamer

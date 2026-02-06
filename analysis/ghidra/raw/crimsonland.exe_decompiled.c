@@ -11572,7 +11572,7 @@ void gameplay_reset_state(void)
   undefined4 *puVar13;
   
   pbVar1 = &bonus_hud_slot_table[0].slide;
-  DAT_0048727c = 0;
+  player_overlay_suppressed_latch = '\0';
   do {
     pbVar1->field_0x1c = 5.0;
     *(undefined1 *)((int)(pbVar1 + -1) + 0x18) = 0;
@@ -12059,8 +12059,8 @@ void player_update(void)
       else {
         local_40 = (float)(-1 - render_overlay_player_index);
       }
-      sfx_play_panned(DAT_004d9050);
-      sfx_play_panned(DAT_004d7fd8);
+      sfx_play_panned((float)fire_bullets_primary_shot_sfx_id);
+      sfx_play_panned((float)fire_bullets_secondary_shot_sfx_id);
       iVar10 = render_overlay_player_index;
       fVar14 = (&player_state_table)[iVar7].aim_heading;
       fVar17 = ((float10)fVar14 - (float10)1.5707964) - (float10)0.150915;
@@ -12149,15 +12149,15 @@ void player_update(void)
     }
   }
   if (_DAT_004aaf34 <= 0.0) {
-    _DAT_00473a40 = frame_dt * 0.8 + _DAT_00473a40;
-    if (1.0 < _DAT_00473a40) {
-      _DAT_00473a40 = 1.0;
+    player_spread_damping_scalar = frame_dt * 0.8 + player_spread_damping_scalar;
+    if (1.0 < player_spread_damping_scalar) {
+      player_spread_damping_scalar = 1.0;
     }
   }
   else {
-    _DAT_00473a40 = _DAT_00473a40 - frame_dt;
-    if (_DAT_00473a40 < 0.3) {
-      _DAT_00473a40 = 0.3;
+    player_spread_damping_scalar = player_spread_damping_scalar - frame_dt;
+    if (player_spread_damping_scalar < 0.3) {
+      player_spread_damping_scalar = 0.3;
     }
   }
   fVar14 = (&player_state_table)[iVar7].speed_multiplier;
@@ -13649,11 +13649,11 @@ LAB_0041600e:
     }
   }
   else {
-    sfx_play_panned(DAT_004d9050);
-    sfx_play_panned(DAT_004d7fd8);
+    sfx_play_panned((float)fire_bullets_primary_shot_sfx_id);
+    sfx_play_panned((float)fire_bullets_secondary_shot_sfx_id);
     if ((&weapon_table)[(&player_state_table)[iVar7].weapon_id].pellet_count == 1) {
-      (&player_state_table)[iVar7].shot_cooldown = DAT_004d9040;
-      fVar20 = _DAT_004d9048;
+      (&player_state_table)[iVar7].shot_cooldown = fire_bullets_fallback_shot_cooldown;
+      fVar20 = fire_bullets_fallback_spread_heat;
     }
     else {
       (&player_state_table)[iVar7].shot_cooldown =
@@ -13687,7 +13687,7 @@ LAB_0041600e:
     iVar10 = perk_count_get(iVar10);
     if (iVar10 == 0) {
       (&player_state_table)[iVar7].spread_heat =
-           _DAT_004d9048 * 1.3 + (&player_state_table)[iVar7].spread_heat;
+           fire_bullets_fallback_spread_heat * 1.3 + (&player_state_table)[iVar7].spread_heat;
     }
   }
   if (0.48 < (&player_state_table)[iVar7].spread_heat) {
@@ -22543,7 +22543,7 @@ void player_render_overlays(void)
   float fVar14;
   float fStack_5c;
   
-  if (((((DAT_0048727c != '\0') || (ui_transition_alpha <= 0.0)) ||
+  if (((((player_overlay_suppressed_latch != '\0') || (ui_transition_alpha <= 0.0)) ||
        (game_state_id == GAME_STATE_MODS_MENU)) ||
       ((game_state_id == GAME_STATE_PLUGIN_RUNTIME || (game_state_prev == GAME_STATE_MODS_MENU))))
      || (game_state_prev == GAME_STATE_PLUGIN_RUNTIME)) {
@@ -38556,7 +38556,7 @@ LAB_0044300c:
       _quest_stage_major = highscore_return_quest_stage_major;
       game_state_pending = (highscore_return_game_mode_id == GAME_MODE_QUEST) + GAME_STATE_GAME_OVER
       ;
-      DAT_0048727c = 1;
+      player_overlay_suppressed_latch = '\x01';
       config_game_mode = highscore_return_game_mode_id;
       config_hardcore = highscore_return_hardcore_flag;
       ui_transition_direction = '\0';
@@ -39447,15 +39447,17 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
         iVar5 = render_overlay_player_index;
         if (player_state_table.perk_counts[perk_id_sharpshooter] < 1) {
           (&player_state_table)[render_overlay_player_index].spread_heat =
-               _DAT_00473a40 * frame_dt * 150.0 +
+               player_spread_damping_scalar * frame_dt * 150.0 +
                (&player_state_table)[render_overlay_player_index].spread_heat;
         }
-        if (_DAT_00473a40 + _DAT_00473a40 < (&player_state_table)[iVar5].spread_heat) {
-          (&player_state_table)[iVar5].spread_heat = _DAT_00473a40 + _DAT_00473a40;
+        if (player_spread_damping_scalar + player_spread_damping_scalar <
+            (&player_state_table)[iVar5].spread_heat) {
+          (&player_state_table)[iVar5].spread_heat =
+               player_spread_damping_scalar + player_spread_damping_scalar;
         }
         iVar9 = perk_id_fastshot;
         (&player_state_table)[iVar5].spread_heat =
-             _DAT_00473a40 * (&player_state_table)[iVar5].spread_heat;
+             player_spread_damping_scalar * (&player_state_table)[iVar5].spread_heat;
         if (0 < player_state_table.perk_counts[iVar9]) {
           (&player_state_table)[iVar5].shot_cooldown =
                (&player_state_table)[iVar5].shot_cooldown * 0.88;
@@ -49485,10 +49487,10 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   _DAT_004d9060 = 1;
   _DAT_004d903c = 0x70;
-  DAT_004d9040 = 0x3e0f5c29;
+  fire_bullets_fallback_shot_cooldown = 0.14;
   _DAT_004d9044 = 0x3f99999a;
-  _DAT_004d9048 = 0x3e6147ae;
-  DAT_004d9050 = _DAT_004d7b7c;
+  fire_bullets_fallback_spread_heat = 0.22;
+  fire_bullets_primary_shot_sfx_id = _DAT_004d7b7c;
   _DAT_004d9058 = sfx_pistol_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7aa8;
@@ -49773,7 +49775,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  DAT_004d7fd8 = sfx_plasmaminigun_fire;
+  fire_bullets_secondary_shot_sfx_id = sfx_plasmaminigun_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Gauss_Gun_004794f0;
   do {

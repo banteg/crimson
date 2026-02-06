@@ -39,6 +39,8 @@ Notes:
   state entry and cleared when the HUD transition timeline reaches 1.0; while
   set, `gameplay_render_world` avoids forcing `ui_transition_alpha` to 1.0 in
   branch paths that normally suppress transition fades.
+- `player_overlay_suppressed_latch` (`0x0048727c`) is an additional hard gate
+  for `player_render_overlays` during highscore-return/result-flow transitions.
 
 ## HUD render (ui_render_hud / FUN_0041aed0)
 
@@ -101,7 +103,8 @@ matching the quest metadata and `terrain_ids_for` logic.
 
 `player_render_overlays` draws per-player indicators (aim reticles, shields,
 weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not drawn in modal
-states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition alpha).
+states like `0x14/0x16`), `ui_transition_alpha` (`DAT_00487278`) (transition alpha),
+and `player_overlay_suppressed_latch` (`0x0048727c`).
 
 ### Runtime evidence (2026-01-26)
 

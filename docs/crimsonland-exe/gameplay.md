@@ -72,10 +72,16 @@ Global bonus timers used by `player_update` and the main loop:
   - Cached Doctor target creature id for the HUD target-health overlay (`-1` when inactive).
 - `quest_stage_banner_timer_ms` (`DAT_00487244`)
   - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
+- `player_spread_damping_scalar` (`0x00473a40`)
+  - Shared spread-recovery multiplier used by both `player_update` and
+    `player_fire_weapon` (eased/clamped between `0.3` and `1.0`).
 - `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`DAT_00480850` / `DAT_00480898`)
   - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
 - `pause_keybind_help_alpha_ms` (`DAT_00487284`)
   - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
+- `player_overlay_suppressed_latch` (`0x0048727c`)
+  - Overlay suppression gate checked by `player_render_overlays`; set on
+    highscore-return path and cleared by `gameplay_reset_state`.
 - `time_played_ms` (`DAT_0048718c`)
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
 
@@ -230,6 +236,11 @@ shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 - **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`DAT_00490bcc`) > 0, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
   the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
+  Fire cadence/spread fallback and paired SFX come from:
+  `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
+  `fire_bullets_fallback_spread_heat` (`0x004d9048`),
+  `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
+  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
 
 - **Spawn guard:** `bonus_spawn_guard` is set while bonus/perk effects spawn
   projectiles to prevent bonus drops from chaining during those effect bursts.

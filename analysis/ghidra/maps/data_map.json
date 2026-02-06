@@ -190,6 +190,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00473a40",
+      "comment": "Player weapon spread damping scalar used by player fire/update logic (clamped to 0.3..1.0).",
+      "name": "player_spread_damping_scalar",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x00473a8c",
       "comment": "Secret-hint string: \"Brave little haxx0r aren't you?\"",
       "name": "secret_hint_haxx0r",
@@ -2997,6 +3004,13 @@
       "comment": "UI transition alpha computed from ui_elements_timeline.",
       "name": "ui_transition_alpha",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048727c",
+      "comment": "Latch that suppresses player overlay rendering while returning from highscores into gameplay result flows.",
+      "name": "player_overlay_suppressed_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00487284",
@@ -7524,6 +7538,34 @@
       "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)",
       "name": "weapon_projectile_pellet_count",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d7fd8",
+      "comment": "Perk fire-bullets helper: secondary shot SFX id used by player_fire_weapon/player_update.",
+      "name": "fire_bullets_secondary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d9040",
+      "comment": "Perk fire-bullets helper: fallback single-pellet shot cooldown.",
+      "name": "fire_bullets_fallback_shot_cooldown",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d9048",
+      "comment": "Perk fire-bullets helper: fallback spread-heat increment scalar.",
+      "name": "fire_bullets_fallback_spread_heat",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d9050",
+      "comment": "Perk fire-bullets helper: primary shot SFX id used by player_fire_weapon/player_update.",
+      "name": "fire_bullets_primary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d99a0",
