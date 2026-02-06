@@ -97,6 +97,7 @@ def creature_ai_update_target(
     dist_to_player = (player_pos - creature.pos).length()
 
     orbit_phase = float(int(creature.phase_seed)) * 3.7 * math.pi
+    orbit_offset = Vec2.from_angle(orbit_phase)
     move_scale = 1.0
     self_damage: float | None = None
 
@@ -107,14 +108,14 @@ def creature_ai_update_target(
         if dist_to_player > 800.0:
             creature.target = player_pos
         else:
-            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.85)
+            creature.target = player_pos + orbit_offset * (dist_to_player * 0.85)
     elif ai_mode == 8:
-        creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.9)
+        creature.target = player_pos + orbit_offset * (dist_to_player * 0.9)
     elif ai_mode == 1:
         if dist_to_player > 800.0:
             creature.target = player_pos
         else:
-            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.55)
+            creature.target = player_pos + orbit_offset * (dist_to_player * 0.55)
     elif ai_mode == 3:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
@@ -141,7 +142,7 @@ def creature_ai_update_target(
         elif dist_to_player > 800.0:
             creature.target = player_pos
         else:
-            creature.target = player_pos + Vec2(math.cos(orbit_phase), math.sin(orbit_phase)) * (dist_to_player * 0.85)
+            creature.target = player_pos + orbit_offset * (dist_to_player * 0.85)
     elif ai_mode == 7:
         if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
             creature.target = creature.pos
@@ -156,10 +157,7 @@ def creature_ai_update_target(
             creature.ai_mode = 0
         else:
             angle = float(creature.orbit_angle) + float(creature.heading)
-            creature.target = link.pos + Vec2(
-                math.cos(angle) * float(creature.orbit_radius),
-                math.sin(angle) * float(creature.orbit_radius),
-            )
+            creature.target = link.pos + Vec2.from_angle(angle) * float(creature.orbit_radius)
 
     dist_to_target = (creature.target - creature.pos).length()
     if dist_to_target < 40.0 or dist_to_target > 400.0:

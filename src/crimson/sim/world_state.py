@@ -76,11 +76,10 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
     if not perk_active(player, PerkId.FINAL_REVENGE):
         return
 
-    px = player.pos.x
-    py = player.pos.y
+    player_pos = player.pos
     rand = ctx.state.rng.rand
     ctx.state.effects.spawn_explosion_burst(
-        pos=Vec2(px, py),
+        pos=player_pos,
         scale=1.8,
         rand=rand,
         detail_preset=int(ctx.detail_preset),
@@ -94,12 +93,11 @@ def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
         if float(creature.hp) <= 0.0:
             continue
 
-        dx = creature.pos.x - px
-        dy = creature.pos.y - py
-        if abs(dx) > 512.0 or abs(dy) > 512.0:
+        delta = creature.pos - player_pos
+        if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:
             continue
 
-        remaining = 512.0 - Vec2(dx, dy).length()
+        remaining = 512.0 - delta.length()
         if remaining <= 0.0:
             continue
 

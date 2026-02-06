@@ -185,7 +185,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         init = CreatureInit(
             origin_template_id=0,
-            pos=Vec2(float(pos.x), float(pos.y)),
+            pos=pos,
             heading=float(heading),
             phase_seed=0.0,
             type_id=type_id,
@@ -284,7 +284,7 @@ class TypoShooterMode(BaseGameplayMode):
         for call in spawns:
             creature_idx = self._spawn_tinted_creature(
                 type_id=call.type_id,
-                pos=Vec2(float(call.pos.x), float(call.pos.y)),
+                pos=call.pos,
                 tint_rgba=call.tint_rgba,
             )
             self._names.assign_random(

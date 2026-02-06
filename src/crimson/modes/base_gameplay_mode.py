@@ -145,8 +145,8 @@ class BaseGameplayMode:
         if ratio > 1.0:
             ratio = 1.0
 
-        screen_left = self._world.world_to_screen(Vec2(float(creature.pos.x) - 32.0, float(creature.pos.y) + 32.0))
-        screen_right = self._world.world_to_screen(Vec2(float(creature.pos.x) + 32.0, float(creature.pos.y) + 32.0))
+        screen_left = self._world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
+        screen_right = self._world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
         width = float(screen_right.x) - float(screen_left.x)
         if width <= 1e-3:
             return

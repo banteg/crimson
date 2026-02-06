@@ -306,7 +306,7 @@ class TutorialMode(BaseGameplayMode):
             )
             if spawned is not None:
                 self._state.effects.spawn_burst(
-                    pos=Vec2(float(spawned.pos.x), float(spawned.pos.y)),
+                    pos=spawned.pos,
                     count=12,
                     rand=self._state.rng.rand,
                     detail_preset=detail_preset,

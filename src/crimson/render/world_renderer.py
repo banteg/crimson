@@ -254,10 +254,9 @@ class WorldRenderer:
             if not label:
                 continue
 
-            aim_x = float(player.aim.x)
-            aim_y = float(player.aim.y)
-            x = (aim_x + cam_x) * scale_x + 16.0
-            y = (aim_y + cam_y) * scale_y - 7.0
+            aim = player.aim
+            x = (aim.x + cam_x) * scale_x + 16.0
+            y = (aim.y + cam_y) * scale_y - 7.0
 
             if font is not None:
                 text_w = measure_small_text_width(font, label, text_scale)
@@ -371,8 +370,7 @@ class WorldRenderer:
         phase: float,
         mirror_long: bool | None = None,
         shadow_alpha: int | None = None,
-        world_x: float,
-        world_y: float,
+        pos: Vec2,
         rotation_rad: float,
         scale: float,
         size_scale: float,
@@ -393,7 +391,8 @@ class WorldRenderer:
         if index < 0:
             return
 
-        sx, sy = self.world_to_screen(world_x, world_y)
+        screen = self.world_to_screen(pos)
+        sx, sy = screen.x, screen.y
         width = float(texture.width) / 8.0 * size_scale * scale
         height = float(texture.height) / 8.0 * size_scale * scale
         src_x = float((index % 8) * (texture.width // 8))
@@ -606,15 +605,14 @@ class WorldRenderer:
                         size = base_size * (0.5 if (flags & 0x4) else 1.0)
                         heading = float(player.aim_heading) + math.pi / 2.0
                         offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
-                        pos_x = sx + math.cos(heading) * offset
-                        pos_y = sy + math.sin(heading) * offset
+                        flash_pos = Vec2(sx, sy) + Vec2.from_angle(heading) * offset
                         src = rl.Rectangle(
                             0.0,
                             0.0,
                             float(self.muzzle_flash_texture.width),
                             float(self.muzzle_flash_texture.height),
                         )
-                        dst = rl.Rectangle(pos_x, pos_y, size, size)
+                        dst = rl.Rectangle(float(flash_pos.x), float(flash_pos.y), size, size)
                         origin = rl.Vector2(size * 0.5, size * 0.5)
                         tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                         rl.begin_blend_mode(rl.BLEND_ADDITIVE)
@@ -660,7 +658,8 @@ class WorldRenderer:
         proj_pos = getattr(proj, "pos", None)
         if not isinstance(proj_pos, Vec2):
             return
-        sx, sy = self.world_to_screen(proj_pos.x, proj_pos.y)
+        screen = self.world_to_screen(proj_pos)
+        sx, sy = screen.x, screen.y
         life = float(getattr(proj, "life_timer", 0.0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -883,7 +882,8 @@ class WorldRenderer:
         proj_pos = getattr(proj, "pos", None)
         if not isinstance(proj_pos, Vec2):
             return
-        sx, sy = self.world_to_screen(proj_pos.x, proj_pos.y)
+        screen = self.world_to_screen(proj_pos)
+        sx, sy = screen.x, screen.y
         proj_type = int(getattr(proj, "type_id", 0))
         angle = float(getattr(proj, "angle", 0.0))
 
@@ -1102,10 +1102,8 @@ class WorldRenderer:
             pos = getattr(entry, "pos", None)
             if not isinstance(pos, Vec2):
                 return
-            pos_x = float(pos.x)
-            pos_y = float(pos.y)
-            sx = (pos_x + cam_x) * scale_x
-            sy = (pos_y + cam_y) * scale_y
+            sx = (pos.x + cam_x) * scale_x
+            sy = (pos.y + cam_y) * scale_y
 
             half_w = float(getattr(entry, "half_width", 0.0))
             half_h = float(getattr(entry, "half_height", 0.0))
@@ -1352,8 +1350,7 @@ class WorldRenderer:
                     phase=phase,
                     mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
                     shadow_alpha=shadow_alpha,
-                    world_x=float(creature.pos.x),
-                    world_y=float(creature.pos.y),
+                    pos=creature.pos,
                     rotation_rad=float(creature.heading) - math.pi / 2.0,
                     scale=scale,
                     size_scale=size_scale,
@@ -1432,12 +1429,11 @@ class WorldRenderer:
                 for player in self.players:
                     if player.health <= 0.0:
                         continue
-                    aim_x = float(player.aim.x)
-                    aim_y = float(player.aim.y)
+                    aim = player.aim
                     dist = player.pos.distance_to(player.aim)
                     radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
-                    sx = (aim_x + cam_x) * scale_x
-                    sy = (aim_y + cam_y) * scale_y
+                    sx = (aim.x + cam_x) * scale_x
+                    sy = (aim.y + cam_y) * scale_y
                     screen_radius = max(1.0, radius * scale)
                     self._draw_aim_circle(x=sx, y=sy, radius=screen_radius, alpha=entity_alpha)
                     reload_timer = float(getattr(player, "reload_timer", 0.0))
@@ -1448,12 +1444,12 @@ class WorldRenderer:
                             ms = int(progress * 60000.0)
                             self._draw_clock_gauge(x=float(int(sx)), y=float(int(sy)), ms=ms, scale=scale, alpha=entity_alpha)
 
-    def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
+    def world_to_screen(self, pos: Vec2) -> Vec2:
         cam_x, cam_y, scale_x, scale_y = self._world_params()
-        return (x + cam_x) * scale_x, (y + cam_y) * scale_y
+        return Vec2((pos.x + cam_x) * scale_x, (pos.y + cam_y) * scale_y)
 
-    def screen_to_world(self, x: float, y: float) -> tuple[float, float]:
+    def screen_to_world(self, pos: Vec2) -> Vec2:
         cam_x, cam_y, scale_x, scale_y = self._world_params()
         inv_x = 1.0 / scale_x if scale_x > 0 else 1.0
         inv_y = 1.0 / scale_y if scale_y > 0 else 1.0
-        return x * inv_x - cam_x, y * inv_y - cam_y
+        return Vec2(pos.x * inv_x - cam_x, pos.y * inv_y - cam_y)

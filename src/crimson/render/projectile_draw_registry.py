@@ -57,7 +57,8 @@ def _draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
 
     if renderer.bullet_trail_texture is not None:
         origin = _proj_origin(ctx.proj, ctx.pos)
-        sx0, sy0 = renderer.world_to_screen(origin.x, origin.y)
+        origin_screen = renderer.world_to_screen(origin)
+        sx0, sy0 = origin_screen.x, origin_screen.y
         drawn = renderer._draw_bullet_trail(
             sx0,
             sy0,
@@ -148,10 +149,8 @@ def _draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             step = direction * float(spacing)
             for idx in range(int(seg_count)):
                 pos = ctx.pos + step * float(idx)
-                px = pos.x
-                py = pos.y
-                psx, psy = renderer.world_to_screen(px, py)
-                dst = rl.Rectangle(float(psx), float(psy), float(size), float(size))
+                pos_screen = renderer.world_to_screen(pos)
+                dst = rl.Rectangle(float(pos_screen.x), float(pos_screen.y), float(size), float(size))
                 rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tail_tint)
 
         size = float(head_size) * float(ctx.scale)
@@ -243,16 +242,14 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
         seg_alpha = t * base_alpha
         if seg_alpha > 1e-3:
             pos = origin + direction * s
-            px = pos.x
-            py = pos.y
-            psx, psy = renderer.world_to_screen(px, py)
+            pos_screen = renderer.world_to_screen(pos)
             tint = renderer._color_from_rgba((streak_rgb[0], streak_rgb[1], streak_rgb[2], seg_alpha))
             renderer._draw_atlas_sprite(
                 texture,
                 grid=grid,
                 frame=frame,
-                x=psx,
-                y=psy,
+                x=float(pos_screen.x),
+                y=float(pos_screen.y),
                 scale=sprite_scale,
                 rotation_rad=float(ctx.angle),
                 tint=tint,
@@ -336,8 +333,10 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             rl.rl_begin(rl.RL_QUADS)
 
             for creature in targets:
-                tx, ty = renderer.world_to_screen(float(creature.pos.x), float(creature.pos.y))
-                segment = Vec2(float(tx) - float(ctx.sx), float(ty) - float(ctx.sy))
+                target_screen = renderer.world_to_screen(creature.pos)
+                tx = float(target_screen.x)
+                ty = float(target_screen.y)
+                segment = Vec2(tx - float(ctx.sx), ty - float(ctx.sy))
                 direction_screen, dlen = segment.normalized_with_length()
                 if dlen <= 1e-3:
                     continue
@@ -398,14 +397,14 @@ def _draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             rl.rl_set_texture(0)
 
             for creature in glow_targets:
-                tx, ty = renderer.world_to_screen(float(creature.pos.x), float(creature.pos.y))
+                target_screen = renderer.world_to_screen(creature.pos)
                 target_tint = renderer._color_from_rgba((0.5, 0.6, 1.0, base_alpha))
                 renderer._draw_atlas_sprite(
                     texture,
                     grid=grid,
                     frame=frame,
-                    x=float(tx),
-                    y=float(ty),
+                    x=float(target_screen.x),
+                    y=float(target_screen.y),
                     scale=sprite_scale,
                     rotation_rad=0.0,
                     tint=target_tint,
@@ -546,7 +545,7 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     if life >= 0.4:
         tint = renderer._color_from_rgba((1.0, 1.0, 1.0, alpha))
 
-        def draw_plague_quad(*, px: float, py: float, size: float) -> None:
+        def draw_plague_quad(*, pos: Vec2, size: float) -> None:
             size = float(size)
             if size <= 1e-3:
                 return
@@ -554,24 +553,23 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
             sprite_scale = desired_size / cell_w if cell_w > 1e-6 else 0.0
             if sprite_scale <= 1e-6:
                 return
-            psx, psy = renderer.world_to_screen(float(px), float(py))
+            pos_screen = renderer.world_to_screen(pos)
             renderer._draw_atlas_sprite(
                 ctx.texture,
                 grid=grid,
                 frame=frame,
-                x=float(psx),
-                y=float(psy),
+                x=float(pos_screen.x),
+                y=float(pos_screen.y),
                 scale=sprite_scale,
                 rotation_rad=0.0,
                 tint=tint,
             )
 
-        draw_plague_quad(px=float(ctx.pos.x), py=float(ctx.pos.y), size=60.0)
+        draw_plague_quad(pos=ctx.pos, size=60.0)
 
         offset = Vec2.from_heading(float(ctx.angle) + math.pi) * 15.0
         draw_plague_quad(
-            px=float(ctx.pos.x) + offset.x,
-            py=float(ctx.pos.y) + offset.y,
+            pos=ctx.pos + offset,
             size=60.0,
         )
 
@@ -579,23 +577,20 @@ def _draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
         cos_phase = math.cos(phase)
         sin_phase = math.sin(phase)
         draw_plague_quad(
-            px=float(ctx.pos.x) + cos_phase * cos_phase - 5.0,
-            py=float(ctx.pos.y) + sin_phase * 11.0 - 5.0,
+            pos=ctx.pos + Vec2(cos_phase * cos_phase - 5.0, sin_phase * 11.0 - 5.0),
             size=52.0,
         )
 
         phase_120 = phase + 2.0943952
         sin_phase_120 = math.sin(phase_120)
         draw_plague_quad(
-            px=float(ctx.pos.x) + math.cos(phase_120) * 10.0,
-            py=float(ctx.pos.y) + sin_phase_120 * 10.0,
+            pos=ctx.pos + Vec2(math.cos(phase_120) * 10.0, sin_phase_120 * 10.0),
             size=62.0,
         )
 
         phase_240 = phase + 4.1887903
         draw_plague_quad(
-            px=float(ctx.pos.x) + math.cos(phase_240) * 10.0,
-            py=float(ctx.pos.y) + math.sin(phase_240) * sin_phase_120,
+            pos=ctx.pos + Vec2(math.cos(phase_240) * 10.0, math.sin(phase_240) * sin_phase_120),
             size=62.0,
         )
         return True

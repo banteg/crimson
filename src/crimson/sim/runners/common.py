@@ -79,19 +79,15 @@ def reset_players(
     base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
     count = max(1, int(player_count))
     if count <= 1:
-        offsets = [(0.0, 0.0)]
+        offsets = [Vec2()]
     else:
         radius = 32.0
         step = math.tau / float(count)
-        offsets = [(math.cos(float(idx) * step) * radius, math.sin(float(idx) * step) * radius) for idx in range(count)]
+        offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
 
     for idx in range(count):
-        offset_x, offset_y = offsets[idx]
-        x = float(base.x) + float(offset_x)
-        y = float(base.y) + float(offset_y)
-        x = max(0.0, min(float(world_size), x))
-        y = max(0.0, min(float(world_size), y))
-        player = PlayerState(index=idx, pos=Vec2(x, y))
+        pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
+        player = PlayerState(index=idx, pos=pos)
         weapon_assign_player(player, 1)
         players.append(player)
 

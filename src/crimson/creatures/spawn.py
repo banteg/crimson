@@ -1554,7 +1554,7 @@ def spawn_ring_children(
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
         angle = float(i) * angle_step
-        child.target_offset = Vec2(float(math.cos(angle) * radius), float(math.sin(angle) * radius))
+        child.target_offset = Vec2.from_angle(angle) * radius
         if set_position:
             child.pos = pos + (child.target_offset or Vec2())
         if heading_override is not None:
@@ -1760,7 +1760,7 @@ def alloc_creature(template_id: int, pos: Vec2, rng: Crand) -> CreatureInit:
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
     phase_seed = float(rng.rand() & 0x17F)
-    return CreatureInit(origin_template_id=template_id, pos=Vec2(pos.x, pos.y), heading=0.0, phase_seed=phase_seed)
+    return CreatureInit(origin_template_id=template_id, pos=pos, heading=0.0, phase_seed=phase_seed)
 
 
 def clamp01(value: float) -> float:
@@ -2250,7 +2250,7 @@ def apply_tail(
         and 0.0 < c.pos.x < env.terrain_width
         and 0.0 < c.pos.y < env.terrain_height
     ):
-        plan_effects.append(BurstEffect(pos=Vec2(c.pos.x, c.pos.y), count=8))
+        plan_effects.append(BurstEffect(pos=c.pos, count=8))
 
     if c.health is not None:
         c.max_health = c.health
@@ -2510,7 +2510,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset = Vec2(-256.0 + float(idx) * 64.0, -256.0)
         angle = float(2 + idx * 2) * (math.pi / 8.0)
-        child.pos = Vec2(math.cos(angle), math.sin(angle)) * 256.0 + ctx.pos
+        child.pos = Vec2.from_angle(angle) * 256.0 + ctx.pos
 
     chain_prev = ctx.chain_children(
         count=4,
@@ -2552,7 +2552,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
         angle = float(angle_idx) * math.radians(20.0)
-        child.pos = Vec2(math.cos(angle), math.sin(angle)) * 256.0 + ctx.pos
+        child.pos = Vec2.from_angle(angle) * 256.0 + ctx.pos
 
     chain_prev = ctx.chain_children(
         count=10,

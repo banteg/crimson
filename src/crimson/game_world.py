@@ -151,21 +151,15 @@ class GameWorld:
         base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
         count = max(1, int(player_count))
         if count <= 1:
-            offsets = [(0.0, 0.0)]
+            offsets = [Vec2()]
         else:
             radius = 32.0
             step = math.tau / float(count)
-            offsets = [
-                (math.cos(float(idx) * step) * radius, math.sin(float(idx) * step) * radius) for idx in range(count)
-            ]
+            offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
 
         for idx in range(count):
-            offset_x, offset_y = offsets[idx]
-            x = float(base.x) + float(offset_x)
-            y = float(base.y) + float(offset_y)
-            x = max(0.0, min(float(self.world_size), x))
-            y = max(0.0, min(float(self.world_size), y))
-            player = PlayerState(index=idx, pos=Vec2(x, y))
+            pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
+            player = PlayerState(index=idx, pos=pos)
             weapon_assign_player(player, 1)
             self.players.append(player)
         self.camera_x = -1.0
@@ -519,8 +513,7 @@ class GameWorld:
 
             # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
             if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
-                dir_x = math.cos(base_angle)
-                dir_y = math.sin(base_angle)
+                direction = Vec2.from_angle(base_angle)
                 for _ in range(6):
                     dist = float(int(rand()) % 100) * 0.1
                     if dist > 4.0:
@@ -528,7 +521,7 @@ class GameWorld:
                     if dist > 7.0:
                         dist = float(int(rand()) % 0x50 + 0x14) * 0.1
                     self.fx_queue.add_random(
-                        pos=hit.target + Vec2(dir_x, dir_y) * (dist * 20.0),
+                        pos=hit.target + direction * (dist * 20.0),
                         rand=rand,
                     )
             elif type_id in ION_TYPES:
@@ -537,19 +530,18 @@ class GameWorld:
                 for _ in range(3):
                     spread = float(int(rand()) % 0x14 - 10) * 0.1
                     angle = base_angle + spread
-                    dir_x = math.cos(angle) * 20.0
-                    dir_y = math.sin(angle) * 20.0
+                    direction = Vec2.from_angle(angle) * 20.0
                     self.fx_queue.add_random(pos=hit.target, rand=rand)
                     self.fx_queue.add_random(
-                        pos=hit.target + Vec2(dir_x, dir_y) * 1.5,
+                        pos=hit.target + direction * 1.5,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos=hit.target + Vec2(dir_x, dir_y) * 2.0,
+                        pos=hit.target + direction * 2.0,
                         rand=rand,
                     )
                     self.fx_queue.add_random(
-                        pos=hit.target + Vec2(dir_x, dir_y) * 2.5,
+                        pos=hit.target + direction * 2.5,
                         rand=rand,
                     )
 
@@ -658,9 +650,7 @@ class GameWorld:
         self.camera_x, self.camera_y = self.renderer._clamp_camera(cam_x, cam_y, screen_w, screen_h)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        x, y = self.renderer.world_to_screen(float(pos.x), float(pos.y))
-        return Vec2(x, y)
+        return self.renderer.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        x, y = self.renderer.screen_to_world(float(pos.x), float(pos.y))
-        return Vec2(x, y)
+        return self.renderer.screen_to_world(pos)
