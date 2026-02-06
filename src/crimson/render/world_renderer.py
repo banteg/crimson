@@ -16,7 +16,7 @@ from ..bonuses import BONUS_BY_ID, BonusId
 from ..creatures.anim import creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId
 from ..effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId, SIZE_CODE_GRID
-from ..gameplay import bonus_find_aim_hover_entry, perk_active
+from ..gameplay import bonus_find_aim_hover_entry, bonus_label_for_entry, perk_active
 from ..perks import PerkId
 from ..projectiles import ProjectileTypeId
 from ..sim.world_defs import (
@@ -198,20 +198,6 @@ class WorldRenderer:
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(self.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
-    def _bonus_hover_label(self, bonus_id: int, amount: int) -> str:
-        bonus_id = int(bonus_id)
-        if bonus_id == int(BonusId.WEAPON):
-            weapon = WEAPON_BY_ID.get(int(amount))
-            if weapon is not None and weapon.name is not None:
-                return str(weapon.name)
-            return "Weapon"
-        if bonus_id == int(BonusId.POINTS):
-            return f"Score: {int(amount)}"
-        meta = BONUS_BY_ID.get(int(bonus_id))
-        if meta is not None:
-            return str(meta.name)
-        return "Bonus"
-
     def _draw_bonus_hover_labels(
         self,
         *,
@@ -237,7 +223,7 @@ class WorldRenderer:
             if hovered is None:
                 continue
             _idx, entry = hovered
-            label = self._bonus_hover_label(int(entry.bonus_id), int(entry.amount))
+            label = bonus_label_for_entry(entry)
             if not label:
                 continue
 

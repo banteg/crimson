@@ -12,7 +12,14 @@ from ..menu import (
 )
 from ...ui.menu_panel import draw_classic_menu_panel
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-from ...input_codes import config_keybinds, input_code_name, player_move_fire_binds
+from .controls_labels import (
+    PICK_PERK_BIND_SLOT,
+    RELOAD_BIND_SLOT,
+    controls_method_labels,
+    controls_method_values,
+    controls_rebind_slot_plan,
+)
+from ...input_codes import INPUT_CODE_UNBOUND, config_keybinds, input_code_name
 from ..types import GameState
 
 
@@ -197,6 +204,9 @@ class ControlsMenuView(PanelMenuView):
 
         font = self._ensure_small_font()
         text_color = rl.Color(255, 255, 255, 255)
+        config = self._state.config
+        player_idx = max(0, min(3, int(self._config_player) - 1))
+        aim_label, move_label = controls_method_labels(config.data, player_index=player_idx)
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
         if self._text_controls is not None:
@@ -238,7 +248,7 @@ class ControlsMenuView(PanelMenuView):
         )
         draw_small_text(
             font,
-            "Mouse",
+            aim_label,
             Vec2(left_top_left.x + 218.0 * panel_scale, left_top_left.y + 103.0 * panel_scale),
             1.0 * panel_scale,
             text_color,
@@ -253,7 +263,7 @@ class ControlsMenuView(PanelMenuView):
         )
         draw_small_text(
             font,
-            "Static",
+            move_label,
             Vec2(left_top_left.x + 218.0 * panel_scale, left_top_left.y + 145.0 * panel_scale),
             1.0 * panel_scale,
             text_color,
@@ -304,15 +314,100 @@ class ControlsMenuView(PanelMenuView):
                 )
 
         # --- Right panel: configured bindings list ---
-        config = self._state.config
         pick_perk_key = int(config.data.get("keybind_pick_perk", 0x101) or 0x101)
         reload_key = int(config.data.get("keybind_reload", 0x102) or 0x102)
 
         keybinds = config_keybinds(config)
         if not keybinds:
-            keybinds = (0x11, 0x1F, 0x1E, 0x20, 0x100) + (0x17E,) * 11 + (0xC8, 0xD0, 0xCB, 0xCD, 0x9D)
+            keybinds = (
+                0x11,
+                0x1F,
+                0x1E,
+                0x20,
+                0x100,
+                0x17E,
+                0x17E,
+                0x10,
+                0x12,
+                0x13F,
+                0x140,
+                0x141,
+                0x153,
+                0x17E,
+                0x17E,
+                0x17E,
+                0xC8,
+                0xD0,
+                0xCB,
+                0xCD,
+                0x9D,
+                0x17E,
+                0x17E,
+                0xD3,
+                0xD1,
+                0x13F,
+                0x140,
+                0x141,
+                0x153,
+                0x17E,
+                0x17E,
+                0x17E,
+            )
 
-        p1_up, p1_down, p1_left, p1_right, p1_fire = player_move_fire_binds(keybinds, 0)
+        def _slot_key(slot: int) -> int:
+            if slot == PICK_PERK_BIND_SLOT:
+                return int(pick_perk_key)
+            if slot == RELOAD_BIND_SLOT:
+                return int(reload_key)
+            base = int(player_idx) * 0x10
+            idx = base + int(slot)
+            if 0 <= idx < len(keybinds):
+                return int(keybinds[idx])
+            return int(INPUT_CODE_UNBOUND)
+
+        def _draw_section_heading(title: str, *, y: float) -> None:
+            x_heading = right_top_left.x + 44.0 * panel_scale
+            draw_small_text(
+                font,
+                title,
+                Vec2(x_heading, y),
+                1.0 * panel_scale,
+                text_color,
+            )
+            line = rl.Rectangle(
+                x_heading,
+                y + 13.0 * panel_scale,
+                228.0 * panel_scale,
+                max(1.0, panel_scale),
+            )
+            rl.draw_rectangle_lines_ex(line, max(1.0, panel_scale), rl.Color(255, 255, 255, 178))
+
+        def _draw_section_rows(rows: tuple[tuple[str, int], ...], *, y: float) -> float:
+            row_y = y
+            for label, slot in rows:
+                draw_small_text(
+                    font,
+                    label,
+                    Vec2(right_top_left.x + 52.0 * panel_scale, row_y),
+                    1.0 * panel_scale,
+                    rl.Color(255, 255, 255, 178),
+                )
+                draw_small_text(
+                    font,
+                    input_code_name(_slot_key(slot)),
+                    Vec2(right_top_left.x + 180.0 * panel_scale, row_y),
+                    1.0 * panel_scale,
+                    rl.Color(255, 255, 255, 178),
+                )
+                row_y += 16.0 * panel_scale
+            return row_y
+
+        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
+            aim_scheme=aim_scheme,
+            move_mode=move_mode,
+            player_index=player_idx,
+        )
 
         draw_small_text(
             font,
@@ -321,125 +416,24 @@ class ControlsMenuView(PanelMenuView):
             1.0 * panel_scale,
             text_color,
         )
+        header_w = measure_small_text_width(font, "Configured controls", 1.0 * panel_scale)
+        header_line = rl.Rectangle(
+            right_top_left.x + 120.0 * panel_scale,
+            right_top_left.y + 51.0 * panel_scale,
+            header_w,
+            max(1.0, panel_scale),
+        )
+        rl.draw_rectangle_lines_ex(header_line, max(1.0, panel_scale), rl.Color(255, 255, 255, 204))
 
-        draw_small_text(
-            font,
-            "Aiming",
-            Vec2(right_top_left.x + 44.0 * panel_scale, right_top_left.y + 64.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Fire:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 82.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(p1_fire),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 82.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
+        y = right_top_left.y + 64.0 * panel_scale
+        _draw_section_heading("Aiming", y=y)
+        y = _draw_section_rows(aim_rows, y=y + 18.0 * panel_scale)
+        y += 8.0 * panel_scale
 
-        draw_small_text(
-            font,
-            "Moving",
-            Vec2(right_top_left.x + 44.0 * panel_scale, right_top_left.y + 106.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Move Up:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 124.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(p1_up),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 124.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Move Down:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 140.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(p1_down),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 140.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Move Left:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 156.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(p1_left),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 156.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Move Right:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 172.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(p1_right),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 172.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
+        _draw_section_heading("Moving", y=y)
+        y = _draw_section_rows(move_rows, y=y + 18.0 * panel_scale)
+        y += 8.0 * panel_scale
 
-        draw_small_text(
-            font,
-            "Misc",
-            Vec2(right_top_left.x + 44.0 * panel_scale, right_top_left.y + 196.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Level Up:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 214.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(pick_perk_key),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 214.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            "Reload:",
-            Vec2(right_top_left.x + 52.0 * panel_scale, right_top_left.y + 230.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            input_code_name(reload_key),
-            Vec2(right_top_left.x + 180.0 * panel_scale, right_top_left.y + 230.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
-        )
+        if misc_rows:
+            _draw_section_heading("Misc", y=y)
+            _draw_section_rows(misc_rows, y=y + 18.0 * panel_scale)

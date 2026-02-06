@@ -196,6 +196,65 @@ def _apply_damage_to_creature(
         creatures[idx].hp -= float(damage)
 
 
+def _spawn_shrinkifier_hit_effects(
+    effects: object | None,
+    *,
+    pos: Vec2,
+    rng: Callable[[], int],
+    detail_preset: int,
+) -> None:
+    """Port of `effect_spawn_shrinkifier_hit` (0x0042f080)."""
+
+    if effects is None or not hasattr(effects, "spawn"):
+        return
+
+    detail = int(detail_preset)
+
+    # Core pulse (effect_id=1).
+    effects.spawn(
+        effect_id=int(EffectId.RING),
+        pos=pos,
+        vel=Vec2(),
+        rotation=0.0,
+        scale=1.0,
+        half_width=36.0,
+        half_height=36.0,
+        age=0.0,
+        lifetime=0.3,
+        flags=0x19,
+        color=RGBA(0.3, 0.6, 0.9, 1.0),
+        rotation_step=0.0,
+        scale_step=-4.0,
+        detail_preset=detail,
+    )
+
+    # Debris puffs (effect_id=0), detail-scaled count.
+    count = 2 if detail < 3 else 4
+    for _ in range(count):
+        rotation = float(int(rng()) & 0x7F) * 0.049087387
+        velocity = Vec2(
+            float((int(rng()) & 0x7F) - 0x40) * 1.4,
+            float((int(rng()) & 0x7F) - 0x40) * 1.4,
+        )
+        scale_step = float(int(rng()) % 100) * 0.01 + 0.1
+        effects.spawn(
+            effect_id=int(EffectId.BURST),
+            pos=pos,
+            vel=velocity,
+            rotation=rotation,
+            scale=1.0,
+            half_width=32.0,
+            half_height=32.0,
+            age=0.0,
+            lifetime=0.3,
+            flags=0x1D,
+            color=RGBA(0.4, 0.5, 1.0, 0.5),
+            rotation_step=0.0,
+            scale_step=scale_step,
+            detail_preset=detail,
+        )
+
+
 def _spawn_ion_hit_effects(
     effects: object | None,
     sfx_queue: object | None,
@@ -621,6 +680,13 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
 
 
 def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
+    _spawn_shrinkifier_hit_effects(
+        ctx.effects,
+        pos=hit.proj.pos,
+        rng=ctx.rng,
+        detail_preset=ctx.detail_preset,
+    )
+
     creature = ctx.creatures[int(hit.hit_idx)]
     new_size = float(creature.size) * 0.65
     creature.size = new_size
