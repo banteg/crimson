@@ -2427,7 +2427,9 @@ def player_update(
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move = raw_move * inv
-        target_heading = move.to_heading()
+        # Native normalizes this heading into [0, 2pi] before calling
+        # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
+        target_heading = _normalize_heading_0_2pi(move.to_heading())
         angle_diff = _player_heading_approach_target(player, target_heading, dt)
         move = Vec2.from_heading(player.heading)
         turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
@@ -2562,6 +2564,15 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
     player.heading = heading + turn_sign * dt * diff * 5.0
     return diff
+
+
+def _normalize_heading_0_2pi(heading: float) -> float:
+    out = float(heading)
+    while out < 0.0:
+        out += math.tau
+    while out > math.tau:
+        out -= math.tau
+    return out
 
 
 @dataclass(slots=True)
