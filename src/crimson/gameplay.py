@@ -67,7 +67,7 @@ class PlayerState:
     index: int
     pos: Vec2
     health: float = 100.0
-    size: float = 50.0
+    size: float = 48.0
 
     speed_multiplier: float = 2.0
     move_speed: float = 0.0
@@ -1885,7 +1885,8 @@ def _perk_update_man_bomb(
     if player.man_bomb_timer <= state.perk_intervals.man_bomb:
         return
 
-    owner_id = _owner_id_for_player_projectiles(state, player.index)
+    owner_id = _owner_id_for_player(player.index)
+    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
     for idx in range(8):
         type_id = ProjectileTypeId.ION_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.ION_RIFLE
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
@@ -1933,7 +1934,8 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
     if player.fire_cough_timer <= state.perk_intervals.fire_cough:
         return
 
-    owner_id = _owner_id_for_player_projectiles(state, player.index)
+    owner_id = _owner_id_for_player(player.index)
+    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
     state.sfx_queue.append("sfx_autorifle_fire")
     state.sfx_queue.append("sfx_plasmaminigun_fire")
 
@@ -2163,6 +2165,7 @@ def player_fire_weapon(
         state.rng.rand()
 
     owner_id = _owner_id_for_player(player.index)
+    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
     shot_count = 1
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
     if not spawn_muzzle_after_projectile:
@@ -2196,7 +2199,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
@@ -2281,7 +2284,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=_projectile_meta_for_type_id(type_id),
             )
     elif weapon_id == WeaponId.PLASMA_SHOTGUN:
@@ -2295,7 +2298,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
@@ -2310,7 +2313,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -2325,7 +2328,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -2345,7 +2348,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).
@@ -2474,11 +2477,12 @@ def player_update(
     if perk_active(player, PerkId.ALTERNATE_WEAPON):
         speed *= 0.8
 
+    half_size = max(0.0, float(player.size) * 0.5)
     player.pos = (player.pos + move * (speed * dt)).clamp_rect(
-        0.0,
-        0.0,
-        float(world_size),
-        float(world_size),
+        half_size,
+        half_size,
+        float(world_size) - half_size,
+        float(world_size) - half_size,
     )
 
     player.move_phase += dt * player.move_speed * 19.0
