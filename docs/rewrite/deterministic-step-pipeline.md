@@ -12,6 +12,7 @@ This page defines the current per-tick contract used by:
 - replay playback mode (`modes/replay_playback_mode.py`)
 
 The shared implementation lives in `src/crimson/sim/step_pipeline.py`.
+Mode/session orchestration lives in `src/crimson/sim/sessions.py`.
 
 ## Tick contract
 
@@ -28,6 +29,17 @@ Output is a `DeterministicStepResult` with:
 - `presentation`: deterministic presentation commands (`trigger_game_tune`, ordered `sfx_keys`)
 - `command_hash`: stable checksum of the presentation command stream
 - optional presentation-phase RNG draw trace (for debugging)
+
+For Survival/Rush orchestration, the reusable wrappers are:
+
+- `SurvivalDeterministicSession.step_tick(...)`
+- `RushDeterministicSession.step_tick(...)`
+
+These session adapters own mode-level elapsed timers and spawn pacing, and are now used by:
+
+- replay runners (`run_survival_replay`, `run_rush_replay`)
+- replay playback mode
+- interactive Survival/Rush mode loops
 
 ## Why this matters
 
@@ -64,6 +76,14 @@ Verification order is:
 2. compare deep `state_hash` and detailed checkpoint fields (slow diagnosis)
 
 This keeps replay verification focused on the same command stream that feeds both presentation and headless validation.
+
+There is also a sidecar-to-sidecar comparator path:
+
+```bash
+uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz
+```
+
+It reports first divergence tick with command/state/rng context.
 
 ## Differential testing path
 

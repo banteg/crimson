@@ -169,10 +169,12 @@ Per sampled tick (minimum viable set):
 
 ## Phase 2: Headless-First Runtime API
 
-- [ ] Define explicit headless session API for stepping ticks and collecting outputs.
-- [ ] Refactor interactive/replay entrypoints to use headless session adapter directly.
-- [ ] Ensure render/audio layers consume commands only.
+- [x] Define explicit headless session API for stepping ticks and collecting outputs.
+- [x] Refactor interactive/replay entrypoints to use headless session adapter directly.
+- [x] Ensure render/audio layers consume commands only.
 - [ ] Add smoke tests for all three runtime modes calling the same tick API.
+
+Current scope for the checked items is Survival/Rush deterministic loops (interactive + playback + replay verification).
 
 ## Phase 2.5: Studyability-First Module Refactor
 
@@ -184,8 +186,8 @@ Per sampled tick (minimum viable set):
 ## Phase 3: Differential Testing with Original Captures
 
 - [ ] Define original capture schema and conversion pipeline.
-- [ ] Add comparator that reports first divergence tick with command/state/rng context.
-- [ ] Add tooling command to run diff quickly on replay + sidecar pairs.
+- [x] Add comparator that reports first divergence tick with command/state/rng context.
+- [x] Add tooling command to run diff quickly on replay + sidecar pairs.
 - [ ] Add at least one golden differential fixture from original capture.
 
 ## Phase 4: Multiplayer Determinism Readiness

@@ -88,6 +88,12 @@ under `docs/crimsonland-exe/`.
   - Tests: `tests/test_spawn_plan.py`, `tests/test_survival_wave.py`, `tests/test_quest_spawn_timeline.py`, …
 - Deterministic tick pipeline parity (live `GameWorld.update` vs headless replay runners) is covered with command-hash checks:
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
+- Survival/Rush deterministic orchestration now flows through shared session adapters:
+  - Code: `src/crimson/sim/sessions.py`
+  - Consumers: `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/sim/runners/*.py`
+- Replay sidecar differential tooling now has a reusable first-divergence comparator and CLI:
+  - Code: `src/crimson/replay/diff.py`
+  - Command: `uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
