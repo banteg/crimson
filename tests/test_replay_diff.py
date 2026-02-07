@@ -5,7 +5,12 @@ from dataclasses import replace
 from grim.geom import Vec2
 
 from crimson.gameplay import PlayerState
-from crimson.replay.checkpoints import build_checkpoint
+from crimson.replay.checkpoints import (
+    ReplayDeathLedgerEntry,
+    ReplayEventSummary,
+    ReplayPerkSnapshot,
+    build_checkpoint,
+)
 from crimson.replay.diff import compare_checkpoints
 from crimson.sim.world_state import WorldState
 
@@ -110,3 +115,55 @@ def test_compare_checkpoints_tracks_rng_only_drift() -> None:
     assert result.ok is True
     assert result.failure is None
     assert result.first_rng_only_tick == 2
+
+
+def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
+    world = _base_world()
+    base = build_checkpoint(
+        tick_index=5,
+        world=world,
+        elapsed_ms=80.0,
+    )
+    actual = replace(
+        base,
+        state_hash="1111111111111111",
+        kills=9,
+        deaths=[
+            ReplayDeathLedgerEntry(
+                creature_index=3,
+                type_id=12,
+                reward_value=100.0,
+                xp_awarded=50,
+                owner_id=0,
+            )
+        ],
+        perk=ReplayPerkSnapshot(
+            pending_count=0,
+            choices_dirty=True,
+            choices=[14, 33, 41],
+            player_nonzero_counts=[[[14, 1], [33, 2]]],
+        ),
+        events=ReplayEventSummary(hit_count=7, pickup_count=2, sfx_count=3, sfx_head=["a", "b"]),
+    )
+    expected = replace(
+        actual,
+        state_hash="",
+        kills=-1,
+        deaths=[
+            ReplayDeathLedgerEntry(
+                creature_index=-1,
+                type_id=-1,
+                reward_value=0.0,
+                xp_awarded=-1,
+                owner_id=-1,
+            )
+        ],
+        perk=ReplayPerkSnapshot(pending_count=-1),
+        events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
+    )
+
+    result = compare_checkpoints([expected], [actual])
+
+    assert result.ok is True
+    assert result.failure is None
+    assert result.first_rng_only_tick == 5

@@ -468,14 +468,17 @@ def cmd_replay_diff_checkpoints(
 
 @replay_app.command("convert-original-capture")
 def cmd_replay_convert_original_capture(
-    capture_file: Path = typer.Argument(..., help="original capture sidecar (.json or .json.gz)"),
+    capture_file: Path = typer.Argument(
+        ...,
+        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+    ),
     output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
     replay_sha256: str = typer.Option(
         "",
         help="optional replay sha256 to store in the converted sidecar",
     ),
 ) -> None:
-    """Convert an original-capture sidecar into replay-checkpoint format."""
+    """Convert original-capture data into replay-checkpoint format."""
     from .replay.checkpoints import dump_checkpoints_file
     from .replay.original_capture import convert_original_capture_to_checkpoints, load_original_capture_sidecar
 

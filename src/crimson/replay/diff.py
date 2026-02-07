@@ -58,6 +58,41 @@ def _without_hash_and_rng(checkpoint: ReplayCheckpoint) -> dict[str, object]:
     return obj
 
 
+def _int_is_unknown(value: object) -> bool:
+    return isinstance(value, int) and int(value) < 0
+
+
+def _normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
+    for key in ("elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending"):
+        if _int_is_unknown(exp.get(key)):
+            exp[key] = act.get(key)
+
+    exp_bonus = exp.get("bonus_timers")
+    act_bonus = act.get("bonus_timers")
+    if isinstance(exp_bonus, dict) and isinstance(act_bonus, dict):
+        for key, value in list(exp_bonus.items()):
+            if _int_is_unknown(value):
+                exp_bonus[key] = act_bonus.get(key)
+
+    exp_perk = exp.get("perk")
+    act_perk = act.get("perk")
+    if isinstance(exp_perk, dict) and isinstance(act_perk, dict):
+        if _int_is_unknown(exp_perk.get("pending_count")):
+            exp["perk"] = act_perk
+
+    exp_deaths = exp.get("deaths")
+    if isinstance(exp_deaths, list) and len(exp_deaths) == 1:
+        row = exp_deaths[0]
+        if isinstance(row, dict):
+            is_unknown_death = (
+                _int_is_unknown(row.get("creature_index"))
+                and _int_is_unknown(row.get("type_id"))
+                and _int_is_unknown(row.get("xp_awarded"))
+            )
+            if is_unknown_death:
+                exp["deaths"] = act.get("deaths")
+
+
 def compare_checkpoints(
     expected: Sequence[ReplayCheckpoint],
     actual: Sequence[ReplayCheckpoint],
@@ -103,6 +138,7 @@ def compare_checkpoints(
 
         exp_no_rng = _without_hash_and_rng(exp)
         act_no_rng = _without_hash_and_rng(act)
+        _normalize_unknown_fields(exp_no_rng, act_no_rng)
         # Legacy sidecars (without `events`) store unknown sentinel values.
         if int(exp.events.hit_count) < 0:
             exp_no_rng["events"] = act_no_rng.get("events")
