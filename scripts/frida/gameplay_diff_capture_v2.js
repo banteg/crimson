@@ -104,6 +104,7 @@ const CONFIG = {
   enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SFX", true),
   enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE", true),
   enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SPAWNS", true),
+  enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK", true),
 };
 
 const FN = {
@@ -118,6 +119,7 @@ const FN = {
   bonus_apply: 0x00409890,
   projectile_spawn: 0x00420440,
   player_take_damage: 0x00425e50,
+  creature_spawn: 0x00428240,
   creature_spawn_template: 0x00430af0,
   perks_update_effects: 0x00406b40,
   quest_spawn_timeline_update: 0x00434250,
@@ -271,6 +273,8 @@ const outState = {
   rngCallsOutsideTick: 0,
   rngHashState: fnvInit(),
   lastSeed: null,
+  lastTickElapsedMs: null,
+  lastTickGameplayFrame: null,
 };
 
 const UNKNOWN_DEATH = {
@@ -911,6 +915,7 @@ function makeTickContext() {
       projectile_spawn: 0,
       player_damage: 0,
       creature_spawn: 0,
+      creature_spawn_low: 0,
       sfx: 0,
       perk_delta: 0,
       quest_timeline_delta: 0,
@@ -927,6 +932,7 @@ function makeTickContext() {
       projectile_spawn: [],
       player_damage: [],
       creature_spawn: [],
+      creature_spawn_low: [],
       sfx: [],
       perk_delta: [],
       quest_timeline_delta: [],
@@ -959,6 +965,9 @@ function makeTickContext() {
     ],
     sfx_ids: [],
     fire_by_player: {},
+    spawn_callers_template: {},
+    spawn_callers_low: {},
+    mode_samples: [],
     mode_hint: null,
     overflow: false,
   };
@@ -967,6 +976,26 @@ function makeTickContext() {
 function pushHead(head, item) {
   if (!head || head.length >= CONFIG.maxHeadPerKind) return;
   head.push(item);
+}
+
+function bumpCounterMap(mapObj, key) {
+  if (!mapObj || key == null) return;
+  if (mapObj[key] != null) {
+    mapObj[key] += 1;
+    return;
+  }
+  mapObj[key] = 1;
+}
+
+function topCounterPairs(mapObj, limit) {
+  if (!mapObj) return [];
+  const entries = Object.keys(mapObj).map(function (k) {
+    return { key: k, count: mapObj[k] };
+  });
+  entries.sort(function (a, b) {
+    return b.count - a.count;
+  });
+  return entries.slice(0, Math.max(1, limit | 0));
 }
 
 function feedCommandToken(tick, token) {
@@ -1134,6 +1163,8 @@ function finalizeTick() {
   if (!tick) return;
   updateCurrentStateFromMemory();
   const after = makeCoreSnapshot();
+  const beforeGlobals = tick.before && tick.before.globals ? tick.before.globals : {};
+  const beforePlayers = tick.before && tick.before.players ? tick.before.players : [];
   const focused = tick.focus_tick || isFocusTick(tick.tick_index);
   const tsLeave = nowMs();
   const afterPlayers = after.players;
@@ -1158,6 +1189,34 @@ function finalizeTick() {
   }
   if (tick.rng.calls > 0) {
     addPhaseMarker("rng_activity", { calls: tick.rng.calls });
+  }
+
+  const beforeCreatureCount =
+    beforeGlobals.creature_active_count == null ? null : beforeGlobals.creature_active_count;
+  const afterCreatureCount =
+    globals.creature_active_count == null ? null : globals.creature_active_count;
+  const beforeElapsedMs = beforeGlobals.time_played_ms == null ? null : beforeGlobals.time_played_ms;
+  const afterElapsedMs = globals.time_played_ms == null ? null : globals.time_played_ms;
+  const elapsedDeltaInTick =
+    beforeElapsedMs != null && afterElapsedMs != null ? afterElapsedMs - beforeElapsedMs : null;
+  const elapsedDeltaFromPrevTick =
+    outState.lastTickElapsedMs != null && afterElapsedMs != null
+      ? afterElapsedMs - outState.lastTickElapsedMs
+      : null;
+  const gameplayFrameDeltaFromPrevTick =
+    outState.lastTickGameplayFrame != null ? tick.gameplay_frame - outState.lastTickGameplayFrame : null;
+  const creatureCountDeltaInTick =
+    beforeCreatureCount != null && afterCreatureCount != null
+      ? afterCreatureCount - beforeCreatureCount
+      : null;
+  const spawnHookEventCount =
+    (tick.event_counts.creature_spawn || 0) + (tick.event_counts.creature_spawn_low || 0);
+  if (creatureCountDeltaInTick != null && creatureCountDeltaInTick > 0 && spawnHookEventCount <= 0) {
+    addPhaseMarker("creature_count_increase_without_spawn_hook", {
+      before: beforeCreatureCount,
+      after: afterCreatureCount,
+      delta: creatureCountDeltaInTick,
+    });
   }
 
   const bonusTimers = {
@@ -1198,6 +1257,31 @@ function finalizeTick() {
     input_true_count: inputTrueCount,
   };
 
+  const timing = {
+    gameplay_frame: tick.gameplay_frame,
+    gameplay_frame_delta_prev_tick: gameplayFrameDeltaFromPrevTick,
+    elapsed_ms_before: beforeElapsedMs,
+    elapsed_ms_after: afterElapsedMs,
+    elapsed_delta_in_tick_ms: elapsedDeltaInTick,
+    elapsed_delta_prev_tick_ms: elapsedDeltaFromPrevTick,
+    frame_dt_before: beforeGlobals.frame_dt == null ? null : round4(beforeGlobals.frame_dt),
+    frame_dt_after: globals.frame_dt == null ? null : round4(globals.frame_dt),
+    frame_dt_ms_before_i32: beforeGlobals.frame_dt_ms_i32 == null ? null : beforeGlobals.frame_dt_ms_i32,
+    frame_dt_ms_after_i32: globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32,
+    frame_dt_ms_before_f32: beforeGlobals.frame_dt_ms_f32 == null ? null : round4(beforeGlobals.frame_dt_ms_f32),
+    frame_dt_ms_after_f32: globals.frame_dt_ms_f32 == null ? null : round4(globals.frame_dt_ms_f32),
+  };
+  const spawnDiagnostics = {
+    before_creature_count: beforeCreatureCount,
+    after_creature_count: afterCreatureCount,
+    creature_count_delta: creatureCountDeltaInTick,
+    event_count_template: tick.event_counts.creature_spawn || 0,
+    event_count_low_level: tick.event_counts.creature_spawn_low || 0,
+    top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
+    top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
+    mode_samples: tick.mode_samples,
+  };
+
   const checkpoint = {
     tick_index: tick.tick_index,
     state_hash: String(hashHex(stateHashSeed)),
@@ -1226,6 +1310,12 @@ function finalizeTick() {
       player_nonzero_counts: [],
     },
     events: eventSummary,
+    debug: {
+      sampling_phase: "post_gameplay_update_and_render",
+      timing: timing,
+      spawn: spawnDiagnostics,
+      before_players: checkpointPlayersFromCompact(beforePlayers),
+    },
   };
 
   const out = {
@@ -1260,6 +1350,11 @@ function finalizeTick() {
       callers: rngCallers,
       caller_overflow: tick.rng.caller_overflow,
     },
+    diagnostics: {
+      sampling_phase: "post_gameplay_update_and_render",
+      timing: timing,
+      spawn: spawnDiagnostics,
+    },
     input_approx: buildInputApprox(afterPlayers, tick),
   };
 
@@ -1277,6 +1372,8 @@ function finalizeTick() {
   }
 
   writeLine(out);
+  if (afterElapsedMs != null) outState.lastTickElapsedMs = afterElapsedMs;
+  outState.lastTickGameplayFrame = tick.gameplay_frame;
   outState.currentTick = null;
 }
 
@@ -1348,9 +1445,53 @@ function installHooks() {
       onEnter() {
         const tick = outState.currentTick;
         if (!tick) return;
+        const beforeGlobals = readGameplayGlobalsCompact();
+        this._modeCtx = {
+          mode_fn: name,
+          before: {
+            creature_active_count: beforeGlobals.creature_active_count,
+            time_played_ms: beforeGlobals.time_played_ms,
+            frame_dt_ms_i32: beforeGlobals.frame_dt_ms_i32,
+            frame_dt_ms_f32: beforeGlobals.frame_dt_ms_f32,
+            quest_spawn_timeline: beforeGlobals.quest_spawn_timeline,
+            quest_spawn_stall_timer_ms: beforeGlobals.quest_spawn_stall_timer_ms,
+          },
+        };
         if (!tick.mode_hint) addPhaseMarker("mode_enter", { mode_fn: name });
         tick.mode_hint = tick.mode_hint || name;
         addTickEvent("mode_tick", { mode_fn: name }, "m:" + name);
+      },
+      onLeave() {
+        const tick = outState.currentTick;
+        const modeCtx = this._modeCtx;
+        this._modeCtx = null;
+        if (!tick || !modeCtx) return;
+        const afterGlobals = readGameplayGlobalsCompact();
+        const sample = {
+          mode_fn: modeCtx.mode_fn,
+          before: modeCtx.before,
+          after: {
+            creature_active_count: afterGlobals.creature_active_count,
+            time_played_ms: afterGlobals.time_played_ms,
+            frame_dt_ms_i32: afterGlobals.frame_dt_ms_i32,
+            frame_dt_ms_f32: afterGlobals.frame_dt_ms_f32,
+            quest_spawn_timeline: afterGlobals.quest_spawn_timeline,
+            quest_spawn_stall_timer_ms: afterGlobals.quest_spawn_stall_timer_ms,
+          },
+        };
+        sample.delta = {
+          creature_active_count:
+            sample.before.creature_active_count != null && sample.after.creature_active_count != null
+              ? sample.after.creature_active_count - sample.before.creature_active_count
+              : null,
+          time_played_ms:
+            sample.before.time_played_ms != null && sample.after.time_played_ms != null
+              ? sample.after.time_played_ms - sample.before.time_played_ms
+              : null,
+        };
+        if (tick.mode_samples.length < CONFIG.maxHeadPerKind) {
+          tick.mode_samples.push(sample);
+        }
       },
     });
   }
@@ -1725,6 +1866,7 @@ function installHooks() {
   if (CONFIG.enableSpawnHooks) {
     attachHook("creature_spawn_template", fnPtrs.creature_spawn_template, {
       onEnter(args) {
+        const callerStatic = runtimeToStatic(this.returnAddress);
         creatureSpawnContextByTid[this.threadId] = {
           template_id: args[0].toInt32(),
           pos: {
@@ -1733,6 +1875,7 @@ function installHooks() {
           },
           heading: round4(argAsF32(args[2])),
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
         };
       },
       onLeave(retval) {
@@ -1745,7 +1888,12 @@ function installHooks() {
           heading: ctx.heading,
           ret_ptr: retval ? retval.toString() : null,
           caller: ctx.caller,
+          caller_static: ctx.caller_static,
         };
+        const tick = outState.currentTick;
+        if (tick && payload.caller_static) {
+          bumpCounterMap(tick.spawn_callers_template, payload.caller_static);
+        }
         addTickEvent(
           "creature_spawn",
           payload,
@@ -1754,6 +1902,57 @@ function installHooks() {
         emitRawEvent(Object.assign({ event: "creature_spawn_template" }, payload));
       },
     });
+
+    if (CONFIG.enableCreatureSpawnHook) {
+      attachHook("creature_spawn", fnPtrs.creature_spawn, {
+        onEnter(args) {
+          const posPtr = args[0];
+          const rgbaPtr = args[1];
+          const callerStatic = runtimeToStatic(this.returnAddress);
+          this._spawnCtx = {
+            type_id: args[2].toInt32(),
+            pos: {
+              x: round4(safeReadF32(posPtr)),
+              y: round4(safeReadF32(posPtr.add(4))),
+            },
+            tint: {
+              r: round4(safeReadF32(rgbaPtr)),
+              g: round4(safeReadF32(rgbaPtr.add(4))),
+              b: round4(safeReadF32(rgbaPtr.add(8))),
+              a: round4(safeReadF32(rgbaPtr.add(12))),
+            },
+            caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+            caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+          };
+        },
+        onLeave(retval) {
+          const ctx = this._spawnCtx;
+          this._spawnCtx = null;
+          if (!ctx) return;
+          const idx = retval.toInt32();
+          const spawned = readCreatureEntry(idx);
+          const payload = {
+            index: idx,
+            type_id: ctx.type_id,
+            pos: ctx.pos,
+            tint: ctx.tint,
+            spawned: spawned,
+            caller: ctx.caller,
+            caller_static: ctx.caller_static,
+          };
+          const tick = outState.currentTick;
+          if (tick && payload.caller_static) {
+            bumpCounterMap(tick.spawn_callers_low, payload.caller_static);
+          }
+          addTickEvent(
+            "creature_spawn_low",
+            payload,
+            "csl:" + (payload.type_id == null ? -1 : payload.type_id)
+          );
+          emitRawEvent(Object.assign({ event: "creature_spawn" }, payload));
+        },
+      });
+    }
   }
 
   attachHook("perks_update_effects", fnPtrs.perks_update_effects, {
@@ -1939,6 +2138,7 @@ function main() {
       enable_sfx_hooks: CONFIG.enableSfxHooks,
       enable_damage_hooks: CONFIG.enableDamageHooks,
       enable_spawn_hooks: CONFIG.enableSpawnHooks,
+      enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
     },
     session_fingerprint: outState.sessionFingerprint,
     process: {
