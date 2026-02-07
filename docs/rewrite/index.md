@@ -116,6 +116,7 @@ Available via `uv run crimson view <name>`:
 See also:
 
 - [Module map (Grim vs Crimson)](module-map.md)
+- [Deterministic simulation PRD](deterministic-sim-prd.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Terrain (rewrite)](terrain.md)
 - [Bonus pickups (rewrite)](bonuses.md)
