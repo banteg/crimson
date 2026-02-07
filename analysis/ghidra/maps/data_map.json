@@ -9077,6 +9077,20 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10053054",
+      "comment": "Config-dialog selected display width parsed from the mode combo string.",
+      "name": "grim_config_selected_width",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x10053058",
+      "comment": "Config-dialog selected display height parsed from the mode combo string.",
+      "name": "grim_config_selected_height",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x1005305c",
       "comment": "Highest texture handle index currently in use (updated by grim_create_texture/load/destroy).",
       "name": "grim_texture_slot_max_index",
@@ -9088,6 +9102,20 @@
       "comment": "Currently bound texture handle (set by grim_bind_texture).",
       "name": "grim_bound_texture_handle",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10053064",
+      "comment": "Config-dialog capability flag from D3D caps (Caps2 bit 0x80000: can render windowed).",
+      "name": "grim_caps_can_render_windowed",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x10053065",
+      "comment": "Config-dialog capability flag indicating X8R8G8B8 check passed (32-bit mode list enabled).",
+      "name": "grim_caps_x8r8g8b8_supported",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x10053070",
@@ -9251,6 +9279,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005b280",
+      "comment": "Config-dialog parsed windowed-selection flag (true when selected mode string contains \"window\").",
+      "name": "grim_config_dialog_windowed_selected",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005b290",
       "comment": "Current UV u0 for quad draws.",
       "name": "grim_uv_u0",
@@ -9273,6 +9308,20 @@
       "comment": "Current UV v1 for quad draws.",
       "name": "grim_uv_v1",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2b0",
+      "comment": "Active Grim2D config-dialog window handle.",
+      "name": "grim_config_dialog_hwnd",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x1005b2b8",
+      "comment": "Config-dialog selected BPP16 flag (low byte; used to choose 16 vs 32 bpp apply path).",
+      "name": "grim_config_dialog_bpp16_selected",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005b2bc",
@@ -9460,6 +9509,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005cc08",
+      "comment": "Windowed-mode config flag used by grim_window_create and D3D present-parameter setup.",
+      "name": "grim_windowed_mode_enabled",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005cc58",
       "comment": "Input cache flag (uses cached mouse state when nonzero).",
       "name": "grim_input_cached",
@@ -9470,6 +9526,20 @@
       "comment": "Font texture bound flag (nonzero skips SetTexture in draw_text).",
       "name": "grim_font_texture_bound",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d0c8",
+      "comment": "Config-dialog checkbox state latched from control id 0x3ef (later copied to grim_config_option_54_value).",
+      "name": "grim_config_dialog_option_3ef_checked",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d400",
+      "comment": "Applied value for Grim config var id 0x54 (copied from grim_config_dialog_option_3ef_checked).",
+      "name": "grim_config_option_54_value",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005d388",
