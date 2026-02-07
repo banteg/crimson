@@ -22,7 +22,7 @@ from .checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from .types import Replay, ReplayHeader, UnknownEvent, pack_input_flags
+from .types import Replay, ReplayHeader, ReplayStatusSnapshot, UnknownEvent, WEAPON_USAGE_COUNT, pack_input_flags
 
 ORIGINAL_CAPTURE_FORMAT_VERSION = 1
 ORIGINAL_CAPTURE_UNKNOWN_INT = -1
@@ -72,6 +72,9 @@ class OriginalCaptureTick:
     input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
     frame_dt_ms: float | None = None
     rng_head: list[int] = field(default_factory=list)
+    status_quest_unlock_index: int = -1
+    status_quest_unlock_index_full: int = -1
+    status_weapon_usage_counts: tuple[int, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,6 +282,27 @@ def _parse_rng_head(raw_rng_marks: object) -> list[int]:
     return out
 
 
+def _parse_status_snapshot(raw: object) -> tuple[int, int, tuple[int, ...]]:
+    if not isinstance(raw, dict):
+        return (-1, -1, ())
+
+    unlock_index = _coerce_int_like(raw.get("quest_unlock_index"))
+    unlock_index_full = _coerce_int_like(raw.get("quest_unlock_index_full"))
+
+    counts_out: list[int] = []
+    counts_raw = raw.get("weapon_usage_counts")
+    if isinstance(counts_raw, list):
+        for value in counts_raw[:WEAPON_USAGE_COUNT]:
+            coerced = _coerce_int_like(value)
+            counts_out.append(0 if coerced is None else int(coerced) & 0xFFFFFFFF)
+
+    return (
+        -1 if unlock_index is None else int(unlock_index),
+        -1 if unlock_index_full is None else int(unlock_index_full),
+        tuple(counts_out),
+    )
+
+
 def _parse_tick(raw: object) -> OriginalCaptureTick:
     if not isinstance(raw, dict):
         raise OriginalCaptureError(f"tick must be an object: {raw!r}")
@@ -297,6 +321,7 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     raw_rng_marks = raw.get("rng_marks") or {}
     rng_marks = _parse_int_map(raw_rng_marks, "tick.rng_marks")
     rng_head = _parse_rng_head(raw_rng_marks)
+    status_unlock_index, status_unlock_index_full, status_weapon_usage_counts = _parse_status_snapshot(raw.get("status"))
     mode_hint = str(raw.get("mode_hint", ""))
     game_mode_id = _int_or(raw.get("game_mode_id"), -1)
     input_primary_edge_true_calls = _int_or(raw.get("input_primary_edge_true_calls"), 0)
@@ -345,6 +370,9 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         input_approx=input_approx,
         frame_dt_ms=frame_dt_ms,
         rng_head=rng_head,
+        status_quest_unlock_index=int(status_unlock_index),
+        status_quest_unlock_index_full=int(status_unlock_index_full),
+        status_weapon_usage_counts=tuple(status_weapon_usage_counts),
     )
 
 
@@ -682,6 +710,9 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
             frame_dt_ms=float(frame_dt_ms) if frame_dt_ms is not None else parsed.frame_dt_ms,
             rng_head=list(parsed.rng_head),
+            status_quest_unlock_index=int(parsed.status_quest_unlock_index),
+            status_quest_unlock_index_full=int(parsed.status_quest_unlock_index_full),
+            status_weapon_usage_counts=tuple(parsed.status_weapon_usage_counts),
         )
 
     if not saw_tick_rows:
@@ -763,6 +794,32 @@ def _infer_player_count(capture: OriginalCaptureSidecar) -> int:
         for sample in tick.input_approx:
             player_count = max(player_count, int(sample.player_index) + 1)
     return max(1, int(player_count))
+
+
+def _infer_status_snapshot(capture: OriginalCaptureSidecar) -> ReplayStatusSnapshot:
+    unlock_index = -1
+    unlock_index_full = -1
+    usage_counts: tuple[int, ...] = ()
+
+    for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
+        if int(unlock_index) < 0 and int(tick.status_quest_unlock_index) >= 0:
+            unlock_index = int(tick.status_quest_unlock_index)
+        if int(unlock_index_full) < 0 and int(tick.status_quest_unlock_index_full) >= 0:
+            unlock_index_full = int(tick.status_quest_unlock_index_full)
+        if not usage_counts and tick.status_weapon_usage_counts:
+            usage_counts = tuple(int(value) & 0xFFFFFFFF for value in tick.status_weapon_usage_counts)
+        if int(unlock_index) >= 0 and int(unlock_index_full) >= 0 and usage_counts:
+            break
+
+    counts = list(usage_counts[:WEAPON_USAGE_COUNT])
+    if len(counts) < WEAPON_USAGE_COUNT:
+        counts.extend([0] * (WEAPON_USAGE_COUNT - len(counts)))
+
+    return ReplayStatusSnapshot(
+        quest_unlock_index=max(0, int(unlock_index)),
+        quest_unlock_index_full=max(0, int(unlock_index_full)),
+        weapon_usage_counts=tuple(int(value) & 0xFFFFFFFF for value in counts),
+    )
 
 
 def _crt_rand_step(state: int) -> tuple[int, int]:
@@ -1142,6 +1199,7 @@ def convert_original_capture_to_replay(
     resolved_seed = infer_original_capture_seed(capture) if seed is None else int(seed)
     player_count = _infer_player_count(capture)
     resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
+    status_snapshot = _infer_status_snapshot(capture)
 
     if capture.ticks:
         max_tick_index = max(max(0, int(tick.tick_index)) for tick in capture.ticks)
@@ -1242,6 +1300,7 @@ def convert_original_capture_to_replay(
             tick_rate=max(1, int(tick_rate)),
             player_count=int(player_count),
             world_size=float(world_size),
+            status=status_snapshot,
         ),
         inputs=inputs,
         events=list(events),
