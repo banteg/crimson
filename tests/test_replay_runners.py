@@ -82,6 +82,7 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
+        assert len(ckpt.command_hash) == 16
         assert {
             "before_world_step",
             "gw_begin",
@@ -106,6 +107,24 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
         assert isinstance(ckpt.events.pickup_count, int)
         assert isinstance(ckpt.events.sfx_count, int)
         assert isinstance(ckpt.deaths, list)
+
+
+def test_survival_runner_trace_rng_captures_presentation_marks() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=False,
+            trace_rng=True,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0]
+    assert checkpoints[0].rng_marks["ps_draws_total"] >= 0
 
 
 def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
@@ -197,6 +216,7 @@ def test_rush_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
+        assert len(ckpt.command_hash) == 16
         assert {
             "before_world_step",
             "gw_begin",
@@ -220,3 +240,20 @@ def test_rush_runner_checkpoints_capture_rng_marks() -> None:
         assert isinstance(ckpt.events.pickup_count, int)
         assert isinstance(ckpt.events.sfx_count, int)
         assert isinstance(ckpt.deaths, list)
+
+
+def test_rush_runner_trace_rng_captures_presentation_marks() -> None:
+    _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    checkpoints = []
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_rush_replay(
+            replay,
+            trace_rng=True,
+            checkpoints_out=checkpoints,
+            checkpoint_ticks={0},
+        )
+
+    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0]
+    assert checkpoints[0].rng_marks["ps_draws_total"] >= 0
