@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from functools import partial
 
 from grim.geom import Vec2
 
@@ -25,6 +26,7 @@ from ..gameplay import (
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
 from .input_frame import normalize_input_frame
+from .presentation_step import plan_hit_sfx_keys, queue_projectile_decals
 from .world_defs import CREATURE_ANIM
 
 
@@ -34,6 +36,8 @@ class WorldEvents:
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
     sfx: list[str]
+    trigger_game_tune: bool = False
+    hit_sfx: list[str] = field(default_factory=list)
 
 
 _WORLD_DT_STEPS = WORLD_DT_STEPS
@@ -85,11 +89,13 @@ class WorldState:
         world_size: float,
         damage_scale_by_type: dict[int, float],
         detail_preset: int,
+        fx_toggle: int = 0,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         auto_pick_perks: bool,
         game_mode: int,
         perk_progression_enabled: bool,
+        game_tune_started: bool = False,
         rng_marks: dict[str, int] | None = None,
     ) -> WorldEvents:
         def _mark(name: str) -> None:
@@ -101,7 +107,6 @@ class WorldState:
         for step in _WORLD_DT_STEPS:
             dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
-
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
 
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
@@ -179,6 +184,13 @@ class WorldState:
                     )
                 )
 
+        on_projectile_hit = partial(
+            self._consume_projectile_hit_presentation,
+            fx_queue=fx_queue,
+            detail_preset=int(detail_preset),
+            fx_toggle=int(fx_toggle),
+        )
+
         hits = self.state.projectiles.update(
             dt,
             self.creatures.entries,
@@ -190,8 +202,15 @@ class WorldState:
             players=self.players,
             apply_player_damage=_apply_projectile_damage_to_player,
             apply_creature_damage=_apply_projectile_damage_to_creature,
+            on_hit=on_projectile_hit,
         )
         _mark("ws_after_projectiles")
+        trigger_game_tune, hit_sfx = self._plan_projectile_hit_audio(
+            hits=hits,
+            game_mode=int(game_mode),
+            game_tune_started=bool(game_tune_started),
+        )
+        _mark("ws_after_hit_sfx")
         self.state.secondary_projectiles.update_pulse_gun(
             dt,
             self.creatures.entries,
@@ -334,7 +353,47 @@ class WorldState:
         _mark("ws_after_player_damage_sfx")
         _mark("ws_after_sfx")
 
-        return WorldEvents(hits=hits, deaths=tuple(deaths), pickups=pickups, sfx=sfx)
+        return WorldEvents(
+            hits=hits,
+            deaths=tuple(deaths),
+            pickups=pickups,
+            sfx=sfx,
+            trigger_game_tune=bool(trigger_game_tune),
+            hit_sfx=hit_sfx,
+        )
+
+    def _consume_projectile_hit_presentation(
+        self,
+        hit: ProjectileHit,
+        *,
+        fx_queue: FxQueue,
+        detail_preset: int,
+        fx_toggle: int,
+    ) -> None:
+        queue_projectile_decals(
+            state=self.state,
+            players=self.players,
+            fx_queue=fx_queue,
+            hits=[hit],
+            rand=self.state.rng.rand,
+            detail_preset=int(detail_preset),
+            fx_toggle=int(fx_toggle),
+        )
+
+    def _plan_projectile_hit_audio(
+        self,
+        *,
+        hits: list[ProjectileHit],
+        game_mode: int,
+        game_tune_started: bool,
+    ) -> tuple[bool, list[str]]:
+        return plan_hit_sfx_keys(
+            hits,
+            game_mode=int(game_mode),
+            demo_mode_active=bool(self.state.demo_mode_active),
+            game_tune_started=bool(game_tune_started),
+            rand=self.state.rng.rand,
+        )
 
     def _advance_creature_anim(self, dt: float) -> None:
         if float(self.state.bonuses.freeze) > 0.0:

@@ -100,11 +100,13 @@ def run_deterministic_step(
         world_size=float(world_size),
         damage_scale_by_type=damage_scale_by_type,
         detail_preset=int(detail_preset),
+        fx_toggle=int(fx_toggle),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         auto_pick_perks=bool(auto_pick_perks),
         game_mode=int(game_mode),
         perk_progression_enabled=bool(perk_progression_enabled),
+        game_tune_started=bool(game_tune_started),
         rng_marks=rng_marks_out,
     )
 
@@ -140,6 +142,8 @@ def run_deterministic_step(
         detail_preset=int(detail_preset),
         fx_toggle=int(fx_toggle),
         game_tune_started=bool(game_tune_started),
+        trigger_game_tune=bool(events.trigger_game_tune),
+        hit_sfx=events.hit_sfx,
     )
 
     command_hash = presentation_commands_hash(presentation)
