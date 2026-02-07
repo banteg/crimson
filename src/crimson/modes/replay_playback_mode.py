@@ -26,6 +26,11 @@ from ..replay import (
     unpack_input_flags,
     warn_on_game_version_mismatch,
 )
+from ..replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_original_capture_bootstrap_payload,
+    original_capture_bootstrap_payload_from_event_payload,
+)
 from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot
 from ..sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
 from ..weapons import WeaponId
@@ -131,7 +136,10 @@ class ReplayPlaybackMode:
             )
             self._rush = None
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
-            if replay.events:
+            if any(
+                not (isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND)
+                for event in replay.events
+            ):
                 raise ValueError("rush replay does not support events")
             self._survival = None
             self._rush = RushDeterministicSession(
@@ -204,6 +212,19 @@ class ReplayPlaybackMode:
                     raise ValueError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
             if isinstance(event, UnknownEvent):
+                if str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+                    payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                    if payload is None:
+                        raise ValueError(f"invalid bootstrap payload at tick={tick_index}")
+                    elapsed = apply_original_capture_bootstrap_payload(
+                        payload,
+                        state=world.state,
+                        players=list(world.players),
+                    )
+                    if elapsed is not None:
+                        elapsed_f = float(elapsed)
+                        world._elapsed_ms = elapsed_f
+                    continue
                 raise ValueError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             raise ValueError(f"unsupported replay event type: {type(event).__name__}")
 
@@ -257,6 +278,8 @@ class ReplayPlaybackMode:
         session = self._rush
         if replay is None or world is None or session is None:
             return 0.0
+
+        self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
 
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
         tick = session.step_tick(

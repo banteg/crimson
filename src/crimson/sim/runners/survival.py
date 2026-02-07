@@ -18,6 +18,11 @@ from ...replay import (
     warn_on_game_version_mismatch,
 )
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_original_capture_bootstrap_payload,
+    original_capture_bootstrap_payload_from_event_payload,
+)
 from ..sessions import SurvivalDeterministicSession
 from ..world_state import WorldEvents, WorldState
 from .common import (
@@ -39,10 +44,11 @@ def _apply_tick_events(
     dt_frame: float,
     world: WorldState,
     strict_events: bool,
-) -> None:
+) -> int | None:
     state = world.state
     players = world.players
     perk_state = state.perk_selection
+    bootstrap_elapsed_ms: int | None = None
 
     for event in events:
         if isinstance(event, PerkMenuOpenEvent):
@@ -80,11 +86,22 @@ def _apply_tick_events(
             )
             continue
         if isinstance(event, UnknownEvent):
+            if str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+                payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                if payload is None:
+                    if strict_events:
+                        raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
+                    continue
+                elapsed = apply_original_capture_bootstrap_payload(payload, state=state, players=list(players))
+                if elapsed is not None:
+                    bootstrap_elapsed_ms = int(elapsed)
+                continue
             if strict_events:
                 raise ReplayRunnerError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             continue
         if strict_events:
             raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
+    return bootstrap_elapsed_ms
 
 
 def run_survival_replay(

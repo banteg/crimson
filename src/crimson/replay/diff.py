@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
@@ -51,10 +52,26 @@ class ReplayDiffResult:
     failure: ReplayDiffFailure | None = None
 
 
-def _without_hash_and_rng(checkpoint: ReplayCheckpoint) -> dict[str, object]:
+@dataclass(frozen=True, slots=True)
+class ReplayFieldDiff:
+    field: str
+    expected: object
+    actual: object
+
+
+def _checkpoint_to_obj(
+    checkpoint: ReplayCheckpoint,
+    *,
+    include_hash_fields: bool,
+    include_rng_fields: bool,
+) -> dict[str, object]:
     obj = asdict(checkpoint)
-    for key in ("state_hash", "rng_state", "rng_marks", "command_hash"):
-        obj.pop(key, None)
+    if not include_hash_fields:
+        for key in ("state_hash", "command_hash"):
+            obj.pop(key, None)
+    if not include_rng_fields:
+        for key in ("rng_state", "rng_marks"):
+            obj.pop(key, None)
     return obj
 
 
@@ -62,7 +79,7 @@ def _int_is_unknown(value: object) -> bool:
     return isinstance(value, int) and int(value) < 0
 
 
-def _normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
+def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
     for key in ("elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending"):
         if _int_is_unknown(exp.get(key)):
             exp[key] = act.get(key)
@@ -91,6 +108,148 @@ def _normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) ->
             )
             if is_unknown_death:
                 exp["deaths"] = act.get("deaths")
+
+
+def _path_join(path: str, suffix: str) -> str:
+    if not path:
+        return suffix
+    return f"{path}.{suffix}"
+
+
+def _values_equal(expected: object, actual: object, *, float_abs_tol: float) -> bool:
+    if isinstance(expected, float) and isinstance(actual, (int, float)):
+        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=float_abs_tol)
+    if isinstance(actual, float) and isinstance(expected, (int, float)):
+        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=float_abs_tol)
+    return expected == actual
+
+
+def _collect_field_diffs(
+    *,
+    path: str,
+    expected: object,
+    actual: object,
+    out: list[ReplayFieldDiff],
+    max_diffs: int | None,
+    float_abs_tol: float,
+) -> None:
+    if max_diffs is not None and len(out) >= int(max_diffs):
+        return
+
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        keys = sorted({*expected.keys(), *actual.keys()})
+        for key in keys:
+            key_str = str(key)
+            exp_value = expected.get(key_str, expected.get(key))
+            act_value = actual.get(key_str, actual.get(key))
+            has_exp = key in expected or key_str in expected
+            has_act = key in actual or key_str in actual
+            if not has_exp or not has_act:
+                out.append(
+                    ReplayFieldDiff(
+                        field=_path_join(path, key_str),
+                        expected=exp_value if has_exp else "<missing>",
+                        actual=act_value if has_act else "<missing>",
+                    )
+                )
+                if max_diffs is not None and len(out) >= int(max_diffs):
+                    return
+                continue
+            _collect_field_diffs(
+                path=_path_join(path, key_str),
+                expected=exp_value,
+                actual=act_value,
+                out=out,
+                max_diffs=max_diffs,
+                float_abs_tol=float_abs_tol,
+            )
+            if max_diffs is not None and len(out) >= int(max_diffs):
+                return
+        return
+
+    if isinstance(expected, list) and isinstance(actual, list):
+        if len(expected) != len(actual):
+            out.append(
+                ReplayFieldDiff(
+                    field=_path_join(path, "_len"),
+                    expected=int(len(expected)),
+                    actual=int(len(actual)),
+                )
+            )
+            if max_diffs is not None and len(out) >= int(max_diffs):
+                return
+        for idx, (exp_value, act_value) in enumerate(zip(expected, actual)):
+            _collect_field_diffs(
+                path=f"{path}[{idx}]" if path else f"[{idx}]",
+                expected=exp_value,
+                actual=act_value,
+                out=out,
+                max_diffs=max_diffs,
+                float_abs_tol=float_abs_tol,
+            )
+            if max_diffs is not None and len(out) >= int(max_diffs):
+                return
+        return
+
+    if not _values_equal(expected, actual, float_abs_tol=float_abs_tol):
+        out.append(
+            ReplayFieldDiff(
+                field=path or "<root>",
+                expected=expected,
+                actual=actual,
+            )
+        )
+
+
+def checkpoint_field_diffs(
+    expected: ReplayCheckpoint,
+    actual: ReplayCheckpoint,
+    *,
+    include_hash_fields: bool = True,
+    include_rng_fields: bool = True,
+    normalize_unknown: bool = True,
+    unknown_events_wildcard: bool = True,
+    elapsed_baseline: tuple[int, int] | None = None,
+    max_diffs: int | None = None,
+    float_abs_tol: float = 0.0001,
+) -> list[ReplayFieldDiff]:
+    exp_obj = _checkpoint_to_obj(
+        expected,
+        include_hash_fields=bool(include_hash_fields),
+        include_rng_fields=bool(include_rng_fields),
+    )
+    act_obj = _checkpoint_to_obj(
+        actual,
+        include_hash_fields=bool(include_hash_fields),
+        include_rng_fields=bool(include_rng_fields),
+    )
+
+    if elapsed_baseline is not None:
+        exp_base, act_base = elapsed_baseline
+        exp_elapsed = exp_obj.get("elapsed_ms")
+        act_elapsed = act_obj.get("elapsed_ms")
+        if isinstance(exp_elapsed, int) and isinstance(act_elapsed, int):
+            if int(exp_elapsed) >= 0 and int(act_elapsed) >= 0:
+                exp_obj["elapsed_ms"] = int(exp_elapsed) - int(exp_base)
+                act_obj["elapsed_ms"] = int(act_elapsed) - int(act_base)
+
+    if normalize_unknown:
+        normalize_unknown_fields(exp_obj, act_obj)
+
+    # Legacy sidecars (without `events`) store unknown sentinel values.
+    if unknown_events_wildcard and int(expected.events.hit_count) < 0:
+        exp_obj["events"] = act_obj.get("events")
+
+    diffs: list[ReplayFieldDiff] = []
+    _collect_field_diffs(
+        path="",
+        expected=exp_obj,
+        actual=act_obj,
+        out=diffs,
+        max_diffs=max_diffs,
+        float_abs_tol=float_abs_tol,
+    )
+    return diffs
 
 
 def compare_checkpoints(
@@ -136,9 +295,9 @@ def compare_checkpoints(
         if str(exp.state_hash) == str(act.state_hash):
             continue
 
-        exp_no_rng = _without_hash_and_rng(exp)
-        act_no_rng = _without_hash_and_rng(act)
-        _normalize_unknown_fields(exp_no_rng, act_no_rng)
+        exp_no_rng = _checkpoint_to_obj(exp, include_hash_fields=False, include_rng_fields=False)
+        act_no_rng = _checkpoint_to_obj(act, include_hash_fields=False, include_rng_fields=False)
+        normalize_unknown_fields(exp_no_rng, act_no_rng)
         # Legacy sidecars (without `events`) store unknown sentinel values.
         if int(exp.events.hit_count) < 0:
             exp_no_rng["events"] = act_no_rng.get("events")

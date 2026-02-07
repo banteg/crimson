@@ -4,11 +4,15 @@ import gzip
 import json
 from pathlib import Path
 
+from crimson.replay import unpack_input_flags
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     ORIGINAL_CAPTURE_FORMAT_VERSION,
     ORIGINAL_CAPTURE_UNKNOWN_INT,
     convert_original_capture_to_checkpoints,
+    convert_original_capture_to_replay,
+    default_original_capture_replay_path,
     load_original_capture_sidecar,
 )
 
@@ -68,6 +72,112 @@ def test_convert_original_capture_to_checkpoints_roundtrip(tmp_path: Path) -> No
 
     loaded = load_checkpoints(dump_checkpoints(checkpoints))
     assert loaded == checkpoints
+
+
+def test_convert_original_capture_to_replay_from_sidecar_ticks(tmp_path: Path) -> None:
+    capture_obj = {
+        "v": ORIGINAL_CAPTURE_FORMAT_VERSION,
+        "sample_rate": 1,
+        "ticks": [
+            {
+                "tick_index": 1,
+                "state_hash": "hash-1",
+                "command_hash": "cmd-1",
+                "game_mode_id": 2,
+                "input_queries": {
+                    "stats": {
+                        "primary_edge": {"true_calls": 1},
+                        "primary_down": {"true_calls": 1},
+                    }
+                },
+                "input_approx": [
+                    {
+                        "player_index": 0,
+                        "move_dx": 1.0,
+                        "move_dy": -1.0,
+                        "aim_x": 400.0,
+                        "aim_y": 300.0,
+                        "fired_events": 1,
+                    }
+                ],
+                "players": [
+                    {
+                        "pos": {"x": 512.0, "y": 512.0},
+                        "health": 100.0,
+                        "weapon_id": 1,
+                        "ammo": 12.0,
+                        "experience": 10,
+                        "level": 1,
+                    }
+                ],
+            },
+            {
+                "tick_index": 3,
+                "state_hash": "hash-3",
+                "command_hash": "cmd-3",
+                "input_approx": [
+                    {
+                        "player_index": 1,
+                        "move_dx": -0.5,
+                        "move_dy": 0.75,
+                        "aim_x": 200.0,
+                        "aim_y": 100.0,
+                        "fired_events": 0,
+                    }
+                ],
+                "players": [
+                    {
+                        "pos": {"x": 100.0, "y": 150.0},
+                        "health": 100.0,
+                        "weapon_id": 1,
+                        "ammo": 12.0,
+                        "experience": 10,
+                        "level": 1,
+                    },
+                    {
+                        "pos": {"x": 200.0, "y": 250.0},
+                        "health": 100.0,
+                        "weapon_id": 1,
+                        "ammo": 12.0,
+                        "experience": 10,
+                        "level": 1,
+                    },
+                ],
+            },
+        ],
+    }
+
+    path = tmp_path / "capture.json"
+    path.write_text(json.dumps(capture_obj, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture, seed=0xBEEF, tick_rate=75)
+
+    assert replay.header.game_mode_id == 2
+    assert replay.header.seed == 0xBEEF
+    assert replay.header.tick_rate == 75
+    assert replay.header.player_count == 2
+    assert len(replay.inputs) == 4
+    assert len(replay.events) == 1
+    assert replay.events[0].kind == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
+    assert replay.events[0].tick_index == 1
+
+    tick1_p0 = replay.inputs[1][0]
+    assert tick1_p0[0] == 1.0
+    assert tick1_p0[1] == -1.0
+    assert tick1_p0[2] == [400.0, 300.0]
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(tick1_p0[3]))
+    assert fire_down is True
+    assert fire_pressed is True
+    assert reload_pressed is False
+
+    tick3_p1 = replay.inputs[3][1]
+    assert tick3_p1[0] == -0.5
+    assert tick3_p1[1] == 0.75
+    assert tick3_p1[2] == [200.0, 100.0]
+    fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(tick3_p1[3]))
+    assert fire_down is False
+    assert fire_pressed is False
+    assert reload_pressed is False
 
 
 def test_load_original_capture_sidecar_supports_plain_json(tmp_path: Path) -> None:
@@ -188,6 +298,57 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
         {
             "event": "tick",
             "tick_index": 42,
+            "mode_hint": "survival_update",
+            "event_heads": {
+                "input_any_key": [
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 31},
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 30},
+                ],
+                "input_primary_down": [
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 18},
+                ],
+                "input_primary_edge": [],
+            },
+            "input_queries": {
+                "stats": {
+                    "primary_edge": {"calls": 2, "true_calls": 1},
+                    "primary_down": {"calls": 2, "true_calls": 2},
+                    "any_key": {"calls": 2, "true_calls": 2},
+                }
+            },
+            "before": {
+                "input_bindings": {
+                    "players": [
+                        {
+                            "player_index": 0,
+                            "move_forward": 17,
+                            "move_backward": 31,
+                            "turn_left": 30,
+                            "turn_right": 32,
+                            "fire": 18,
+                        }
+                    ]
+                }
+            },
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 1.0,
+                    "move_dy": 0.0,
+                    "aim_x": 333.0,
+                    "aim_y": 444.0,
+                    "fired_events": 2,
+                    "reload_active": False,
+                }
+            ],
+            "after": {
+                "globals": {"config_game_mode": 1},
+                "players": [
+                    {
+                        "aim_heading": -0.75,
+                    }
+                ],
+            },
             "checkpoint": {
                 "tick_index": 42,
                 "state_hash": "deadbeef",
@@ -246,3 +407,130 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.rng_marks["rand_last"] == 14224
     assert "rand_head" not in tick.rng_marks
     assert tick.events.sfx_count == 3
+    assert tick.mode_hint == "survival_update"
+    assert tick.game_mode_id == 1
+    assert tick.input_primary_edge_true_calls == 1
+    assert tick.input_primary_down_true_calls == 2
+    assert len(tick.input_approx) == 1
+    assert tick.input_approx[0].move_dx == 1.0
+    assert tick.input_approx[0].aim_y == 444.0
+    assert tick.input_approx[0].aim_heading == -0.75
+    assert tick.input_approx[0].move_forward_pressed is False
+    assert tick.input_approx[0].move_backward_pressed is True
+    assert tick.input_approx[0].turn_left_pressed is True
+    assert tick.input_approx[0].turn_right_pressed is False
+    assert tick.input_approx[0].fire_down is True
+
+
+def test_default_original_capture_replay_path_derives_expected_name() -> None:
+    checkpoints = Path("/tmp/original_capture_v2.checkpoints.json.gz")
+    replay = default_original_capture_replay_path(checkpoints)
+    assert replay.name == "original_capture_v2.crdemo.gz"
+
+
+def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_heading(tmp_path: Path) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "event_heads": {
+                "input_any_key": [
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 32},
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 17},
+                ],
+                "input_primary_down": [
+                    {"query": "grim_is_key_active", "pressed": True, "arg0": 18},
+                ],
+                "input_primary_edge": [],
+            },
+            "input_queries": {
+                "stats": {
+                    "primary_edge": {"calls": 0, "true_calls": 0},
+                    "primary_down": {"calls": 1, "true_calls": 1},
+                    "any_key": {"calls": 2, "true_calls": 2},
+                }
+            },
+            "before": {
+                "input_bindings": {
+                    "players": [
+                        {
+                            "player_index": 0,
+                            "move_forward": 17,
+                            "move_backward": 31,
+                            "turn_left": 30,
+                            "turn_right": 32,
+                            "fire": 18,
+                        }
+                    ]
+                }
+            },
+            "after": {
+                "globals": {"config_game_mode": 1},
+                "players": [{"aim_heading": -0.5}],
+            },
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+        {
+            "event": "tick",
+            "tick_index": 1,
+            "event_heads": {"input_any_key": [], "input_primary_down": [], "input_primary_edge": []},
+            "input_queries": {
+                "stats": {
+                    "primary_edge": {"calls": 0, "true_calls": 0},
+                    "primary_down": {"calls": 1, "true_calls": 0},
+                    "any_key": {"calls": 0, "true_calls": 0},
+                }
+            },
+            "before": {
+                "input_bindings": {
+                    "players": [
+                        {
+                            "player_index": 0,
+                            "move_forward": 17,
+                            "move_backward": 31,
+                            "turn_left": 30,
+                            "turn_right": 32,
+                            "fire": 18,
+                        }
+                    ]
+                }
+            },
+            "after": {
+                "globals": {"config_game_mode": 1},
+                "players": [{"aim_heading": -0.5}],
+            },
+            "checkpoint": {
+                "tick_index": 1,
+                "state_hash": "h1",
+                "command_hash": "c1",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 1, "ammo": 10.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    assert len(replay.inputs) == 2
+    tick0 = replay.inputs[0][0]
+    assert tick0[0] == 1.0  # turn_right pressed
+    assert tick0[1] == -1.0  # move_forward pressed
+    fire_down0, fire_pressed0, _reload0 = unpack_input_flags(int(tick0[3]))
+    assert fire_down0 is True
+    assert fire_pressed0 is True
+    assert tick0[2] != [0.0, 0.0]
+
+    tick1 = replay.inputs[1][0]
+    assert tick1[0] == 0.0
+    assert tick1[1] == 0.0
+    fire_down1, fire_pressed1, _reload1 = unpack_input_flags(int(tick1[3]))
+    assert fire_down1 is False
+    assert fire_pressed1 is False

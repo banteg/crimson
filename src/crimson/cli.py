@@ -466,6 +466,115 @@ def cmd_replay_diff_checkpoints(
     typer.echo(message)
 
 
+@replay_app.command("verify-original-capture")
+def cmd_replay_verify_original_capture(
+    capture_file: Path = typer.Argument(
+        ...,
+        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full capture)"),
+    seed: int = typer.Option(
+        0,
+        help="seed for replay reconstruction from capture input telemetry",
+    ),
+    strict_events: bool = typer.Option(
+        False,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: lenient)",
+    ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="include presentation RNG draw marks in generated checkpoints",
+    ),
+    max_field_diffs: int = typer.Option(
+        16,
+        "--max-field-diffs",
+        min=1,
+        help="max field-level diffs to print for first mismatching tick",
+    ),
+) -> None:
+    """Verify original-capture ticks directly against rewrite simulation state."""
+    from .replay.original_capture import load_original_capture_sidecar
+    from .replay.original_capture_verify import (
+        OriginalCaptureVerifyError,
+        verify_original_capture,
+    )
+    from .sim.runners import ReplayRunnerError
+
+    capture = load_original_capture_sidecar(Path(capture_file))
+
+    try:
+        result, run_result = verify_original_capture(
+            capture,
+            seed=int(seed),
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            max_field_diffs=int(max_field_diffs),
+        )
+    except (ReplayRunnerError, OriginalCaptureVerifyError) as exc:
+        typer.echo(f"original-capture verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    if not result.ok:
+        failure = result.failure
+        assert failure is not None
+        typer.echo(f"capture mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(
+            "  note: compared checkpoint state fields only "
+            "(ignoring command_hash/state_hash/rng_state/rng_marks domains)",
+            err=True,
+        )
+        if result.elapsed_baseline_tick is not None and result.elapsed_offset_ms is not None:
+            typer.echo(
+                "  elapsed baseline "
+                f"tick={result.elapsed_baseline_tick} offset_ms(actual-expected)={result.elapsed_offset_ms}",
+                err=True,
+            )
+
+        if failure.kind == "missing_checkpoint":
+            typer.echo("  checkpoint missing in rewrite output", err=True)
+            typer.echo(
+                f"  checked={result.checked_count}/{result.expected_count} actual_samples={result.actual_count}",
+                err=True,
+            )
+            typer.echo(
+                "  run_result "
+                f"ticks={run_result.ticks} score_xp={run_result.score_xp} kills={run_result.creature_kill_count}",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        assert failure.actual is not None
+        if not failure.field_diffs:
+            typer.echo("  mismatch detected but no detailed field diff was collected", err=True)
+        else:
+            for field_diff in failure.field_diffs:
+                typer.echo(
+                    f"  {field_diff.field}: expected={field_diff.expected!r} actual={field_diff.actual!r}",
+                    err=True,
+                )
+        typer.echo(
+            "  run_result "
+            f"ticks={run_result.ticks} score_xp={run_result.score_xp} kills={run_result.creature_kill_count}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    message = (
+        f"ok: {result.checked_count} capture checkpoints match "
+        f"(state fields); ticks={run_result.ticks} score_xp={run_result.score_xp} "
+        f"kills={run_result.creature_kill_count}"
+    )
+    if result.elapsed_baseline_tick is not None and result.elapsed_offset_ms is not None:
+        message += (
+            f"; elapsed baseline tick={result.elapsed_baseline_tick} "
+            f"offset_ms(actual-expected)={result.elapsed_offset_ms}"
+        )
+    typer.echo(message)
+
+
 @replay_app.command("convert-original-capture")
 def cmd_replay_convert_original_capture(
     capture_file: Path = typer.Argument(
@@ -473,22 +582,45 @@ def cmd_replay_convert_original_capture(
         help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
     ),
     output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
+    replay_file: Path | None = typer.Option(
+        None,
+        "--replay",
+        help="output replay path (.crdemo.gz); default: derive from checkpoints path",
+    ),
     replay_sha256: str = typer.Option(
         "",
         help="optional replay sha256 to store in the converted sidecar",
     ),
 ) -> None:
-    """Convert original-capture data into replay-checkpoint format."""
+    """Convert original-capture data into replay + checkpoint artifacts."""
+    import hashlib
+
+    from .replay import dump_replay
     from .replay.checkpoints import dump_checkpoints_file
-    from .replay.original_capture import convert_original_capture_to_checkpoints, load_original_capture_sidecar
+    from .replay.original_capture import (
+        convert_original_capture_to_checkpoints,
+        convert_original_capture_to_replay,
+        default_original_capture_replay_path,
+        load_original_capture_sidecar,
+    )
 
     capture = load_original_capture_sidecar(Path(capture_file))
+    replay = convert_original_capture_to_replay(capture)
+    replay_path = (
+        Path(replay_file) if replay_file is not None else default_original_capture_replay_path(Path(output_file))
+    )
+    replay_blob = dump_replay(replay)
+    replay_path.write_bytes(replay_blob)
+    digest = hashlib.sha256(replay_blob).hexdigest()
+
     checkpoints = convert_original_capture_to_checkpoints(
         capture,
-        replay_sha256=str(replay_sha256),
+        replay_sha256=str(replay_sha256 or digest),
     )
     dump_checkpoints_file(Path(output_file), checkpoints)
+    typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
     typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
+    typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
 
 
 @app.callback(invoke_without_command=True)

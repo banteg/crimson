@@ -48,6 +48,23 @@ uv run crimson replay convert-original-capture \
   analysis/frida/original_capture_v2.checkpoints.json.gz
 ```
 
+This also writes `analysis/frida/original_capture_v2.crdemo.gz` by default (override with `--replay`).
+The replay file is best-effort (rebuilt from input telemetry) and useful for
+visual inspection; it bootstraps from the first captured tick but still does
+not guarantee sidecar-level parity. Checkpoint sidecars are the source of truth
+for diffing.
+
+## Verify capture directly against rewrite sim
+
+```text
+uv run crimson replay verify-original-capture \
+  artifacts/frida/share/gameplay_diff_capture_v2.jsonl
+```
+
+This path does not depend on replay playback parity. It reconstructs inputs from
+capture telemetry, runs headless sim, then compares checkpoint state fields at
+captured ticks and prints first divergent fields.
+
 ## Useful env knobs
 
 - `CRIMSON_FRIDA_V2_STATES=6,9,10` (override tracked game states)

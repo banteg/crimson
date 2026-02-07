@@ -69,6 +69,21 @@ uv run crimson replay convert-original-capture \
   analysis/frida/original_capture.checkpoints.json.gz
 ```
 
+This also writes `analysis/frida/original_capture.crdemo.gz` by default (override with `--replay`).
+That replay is best-effort (rebuilt from telemetry) and mainly for visual
+inspection. It bootstraps from the first captured tick but is not a strict
+verification artifact. Checkpoint sidecars remain the verification target.
+
+Verify the capture directly against rewrite simulation checkpoints:
+
+```text
+uv run crimson replay verify-original-capture \
+  artifacts/frida/share/gameplay_state_capture.jsonl
+```
+
+This command compares checkpoint state fields at captured ticks and reports the
+first mismatch with field-level details.
+
 Notes:
 
 - The converter uses sparse `snapshot_compact` / `snapshot_full` entries with
