@@ -33,8 +33,12 @@ just frida-gameplay-diff-capture-v2
   `replay convert-original-capture`.
 - Captures per-tick command/event summary (`projectile_spawn`, SFX, bonus apply,
   weapon assign, damage, creature spawns, state transitions).
+- Captures both template-level and low-level creature spawn paths
+  (`creature_spawn_template`, `creature_spawn`) with caller buckets.
 - Captures input-query telemetry (`input_primary_*`, `input_any_key_pressed`) and
   RNG usage (`crt_rand`) per tick, including hashes/callers.
+- Emits per-tick diagnostics for timing/sampling analysis:
+  `diagnostics.timing`, `diagnostics.spawn`, plus `checkpoint.debug`.
 - Emits session fingerprint metadata (`session_id`, module hash, pointer hash) for
   run-to-run provenance.
 - Emits compact `before`/`after` snapshots (including input + bindings) and
@@ -78,6 +82,7 @@ captured ticks and prints first divergent fields.
 - `CRIMSON_FRIDA_V2_INCLUDE_RAW_EVENTS=1`
 - `CRIMSON_FRIDA_V2_INPUT_HOOKS=0` (disable input query hooks)
 - `CRIMSON_FRIDA_V2_RNG_HOOKS=0` (disable rng hooks)
+- `CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK=0` (disable low-level `creature_spawn` hook)
 - `CRIMSON_FRIDA_V2_RNG_HEAD=24` (per-tick RNG sample head size)
 - `CRIMSON_FRIDA_V2_RNG_CALLERS=12` (per-tick caller buckets)
 - `CRIMSON_FRIDA_PLAYER_COUNT=2` (optional override; default uses `config_player_count` from memory)
