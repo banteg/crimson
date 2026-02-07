@@ -930,6 +930,10 @@ class CreaturePool:
         entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
+        # Native spawn paths zero velocity and a few per-frame state fields on every
+        # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
+        entry.vel = Vec2()
+        entry.force_target = 0
 
         entry.flags = init.flags or CreatureFlags(0)
         entry.ai_mode = int(init.ai_mode)
@@ -957,6 +961,7 @@ class CreaturePool:
 
         entry.spawn_slot_index = None
         entry.link_index = 0
+        entry.attack_cooldown = 0.0
 
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
         entry.bonus_duration_override = int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
@@ -964,8 +969,11 @@ class CreaturePool:
         entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
         entry.plague_infected = False
-        entry.collision_timer = CONTACT_DAMAGE_PERIOD
+        entry.collision_timer = 0.0
         entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.hit_flash_timer = 0.0
+        entry.anim_phase = 0.0
+        entry.last_hit_owner_id = -100
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
