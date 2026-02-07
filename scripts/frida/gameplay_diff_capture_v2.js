@@ -800,12 +800,15 @@ function readCreatureEntry(index) {
   const pool = dataPtrs.creature_pool;
   if (!pool || index < 0) return null;
   const base = pool.add(index * STRIDES.creature);
+  const activeFlag = safeReadU8(base);
+  if (!activeFlag) return null;
   const stateFlag = safeReadU8(base.add(0x08));
-  if (!stateFlag) return null;
   return {
     index: index,
+    active: activeFlag,
     state_flag: stateFlag,
     collision_flag: safeReadU8(base.add(0x09)),
+    hitbox_size: round4(safeReadF32(base.add(0x10))),
     pos: {
       x: round4(safeReadF32(base.add(0x14))),
       y: round4(safeReadF32(base.add(0x18))),
@@ -834,14 +837,17 @@ function readCreatureLifecycleEntry(index) {
   const pool = dataPtrs.creature_pool;
   if (!pool || index < 0) return null;
   const base = pool.add(index * STRIDES.creature);
+  const activeFlag = safeReadU8(base);
   const stateFlag = safeReadU8(base.add(0x08));
-  const active = !!stateFlag;
+  const active = activeFlag == null ? !!stateFlag : !!activeFlag;
   return {
     index: index,
     active: active,
+    active_flag: activeFlag == null ? null : activeFlag,
     state_flag: stateFlag == null ? null : stateFlag,
     type_id: safeReadS32(base.add(0x6c)),
     hp: round4(safeReadF32(base.add(0x24))),
+    hitbox_size: round4(safeReadF32(base.add(0x10))),
     pos: {
       x: round4(safeReadF32(base.add(0x14))),
       y: round4(safeReadF32(base.add(0x18))),
