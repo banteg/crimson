@@ -693,7 +693,7 @@ def test_convert_original_capture_to_replay_v2_prefers_aim_xy_over_heading(tmp_p
     assert tick0[2] == [700.0, 200.0]
 
 
-def test_convert_original_capture_to_replay_v2_emits_reload_edge(tmp_path: Path) -> None:
+def test_convert_original_capture_to_replay_v2_ignores_reload_active_edge_with_primary_down(tmp_path: Path) -> None:
     path = tmp_path / "gameplay_diff_capture_v2_reload.jsonl"
     rows = [
         {"event": "start"},
@@ -721,6 +721,7 @@ def test_convert_original_capture_to_replay_v2_emits_reload_edge(tmp_path: Path)
         {
             "event": "tick",
             "tick_index": 1,
+            "input_queries": {"stats": {"primary_down": {"calls": 1, "true_calls": 1}}},
             "input_approx": [
                 {
                     "player_index": 0,
@@ -771,8 +772,129 @@ def test_convert_original_capture_to_replay_v2_emits_reload_edge(tmp_path: Path)
     _fd2, _fp2, reload2 = unpack_input_flags(int(replay.inputs[2][0][3]))
 
     assert reload0 is False
-    assert reload1 is True
+    assert reload1 is False
     assert reload2 is False
+
+
+def test_convert_original_capture_to_replay_v2_emits_reload_from_reload_active_edge_without_primary_down(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_reload_edge.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": False,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+        {
+            "event": "tick",
+            "tick_index": 1,
+            "input_queries": {"stats": {"primary_down": {"calls": 1, "true_calls": 0}}},
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": True,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 1,
+                "state_hash": "h1",
+                "command_hash": "c1",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    _fd0, _fp0, reload0 = unpack_input_flags(int(replay.inputs[0][0][3]))
+    _fd1, _fp1, reload1 = unpack_input_flags(int(replay.inputs[1][0][3]))
+
+    assert reload0 is False
+    assert reload1 is True
+
+
+def test_convert_original_capture_to_replay_v2_emits_explicit_reload_pressed(tmp_path: Path) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_reload_explicit.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": False,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+        {
+            "event": "tick",
+            "tick_index": 1,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_pressed": True,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 1,
+                "state_hash": "h1",
+                "command_hash": "c1",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    _fd0, _fp0, reload0 = unpack_input_flags(int(replay.inputs[0][0][3]))
+    _fd1, _fp1, reload1 = unpack_input_flags(int(replay.inputs[1][0][3]))
+
+    assert reload0 is False
+    assert reload1 is True
 
 
 def test_convert_original_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:

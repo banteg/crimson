@@ -93,6 +93,7 @@ class OriginalCaptureInputApprox:
     turn_right_pressed: bool | None = None
     fire_down: bool | None = None
     fire_pressed: bool | None = None
+    reload_pressed: bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -441,6 +442,7 @@ def _parse_input_approx(raw: object) -> list[OriginalCaptureInputApprox]:
             ),
             fire_down=bool(item.get("fire_down")) if item.get("fire_down") is not None else None,
             fire_pressed=bool(item.get("fire_pressed")) if item.get("fire_pressed") is not None else None,
+            reload_pressed=bool(item.get("reload_pressed")) if item.get("reload_pressed") is not None else None,
         )
     return [samples_by_player[idx] for idx in sorted(samples_by_player)]
 
@@ -530,6 +532,7 @@ def _parse_v2_player_keybinds(raw: dict[str, object]) -> list[dict[str, int | No
                 "turn_left": _coerce_int_like(item.get("turn_left")),
                 "turn_right": _coerce_int_like(item.get("turn_right")),
                 "fire": _coerce_int_like(item.get("fire")),
+                "reload": _coerce_int_like(item.get("reload")),
             }
         )
     return out
@@ -582,12 +585,14 @@ def _enrich_v2_input_approx(
         turn_left_key = keybind.get("turn_left")
         turn_right_key = keybind.get("turn_right")
         fire_key = keybind.get("fire")
+        reload_key = keybind.get("reload")
 
         move_forward_pressed = existing.move_forward_pressed
         move_backward_pressed = existing.move_backward_pressed
         turn_left_pressed = existing.turn_left_pressed
         turn_right_pressed = existing.turn_right_pressed
         fire_down = existing.fire_down
+        reload_pressed = existing.reload_pressed
         aim_heading = existing.aim_heading
 
         if move_forward_key is not None:
@@ -600,6 +605,8 @@ def _enrich_v2_input_approx(
             turn_right_pressed = bool(int(turn_right_key) in pressed_key_codes)
         if fire_key is not None:
             fire_down = bool(int(fire_key) in pressed_key_codes)
+        if reload_key is not None:
+            reload_pressed = bool(int(reload_key) in pressed_key_codes)
         if int(player_index) in aim_heading_by_player:
             aim_heading = float(aim_heading_by_player[int(player_index)])
 
@@ -618,6 +625,7 @@ def _enrich_v2_input_approx(
             turn_right_pressed=turn_right_pressed,
             fire_down=fire_down,
             fire_pressed=existing.fire_pressed,
+            reload_pressed=reload_pressed,
         )
 
     return [by_player[idx] for idx in sorted(by_player)]
@@ -1259,6 +1267,7 @@ def convert_original_capture_to_replay(
                     int(sample.fired_events) > 0
                 )
                 reload_active = bool(sample.reload_active)
+                reload_pressed = bool(sample.reload_pressed) if sample.reload_pressed is not None else False
             else:
                 move_x = 0.0
                 move_y = 0.0
@@ -1272,6 +1281,7 @@ def convert_original_capture_to_replay(
                 fire_pressed = False
                 fire_down = False
                 reload_active = False
+                reload_pressed = False
 
             if player_index == 0:
                 fire_down = bool(
@@ -1282,9 +1292,17 @@ def convert_original_capture_to_replay(
             if not fire_pressed:
                 fire_pressed = bool(fire_down and not previous_fire_down[player_index])
 
-            reload_pressed = bool(
-                int(tick_index) > 0 and bool(reload_active) and not bool(previous_reload_active[player_index])
-            )
+            if sample is not None and sample.reload_pressed is None:
+                synth_reload_edge = bool(
+                    int(tick_index) > 0 and bool(reload_active) and not bool(previous_reload_active[player_index])
+                )
+                if player_index == 0 and synth_reload_edge:
+                    # Auto-reload after clip empty toggles `reload_active` too; suppress the
+                    # synthetic reload key when primary fire was active on this tick.
+                    if int(tick.input_primary_down_true_calls) > 0 or int(tick.input_primary_edge_true_calls) > 0:
+                        synth_reload_edge = False
+                reload_pressed = bool(synth_reload_edge)
+
             previous_fire_down[player_index] = bool(fire_down)
             previous_reload_active[player_index] = bool(reload_active)
 
