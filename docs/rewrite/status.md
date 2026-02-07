@@ -86,6 +86,8 @@ under `docs/crimsonland-exe/`.
   - Test: `tests/test_ground_dump_fixtures.py`
 - There is broad unit test coverage for deterministic subsystems (spawn plans, timelines, perks, config, etc):
   - Tests: `tests/test_spawn_plan.py`, `tests/test_survival_wave.py`, `tests/test_quest_spawn_timeline.py`, …
+- Deterministic tick pipeline parity (live `GameWorld.update` vs headless replay runners) is covered with command-hash checks:
+  - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
