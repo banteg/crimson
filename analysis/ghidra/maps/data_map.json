@@ -486,6 +486,72 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004718f0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn5 (0x17b).",
+      "name": "input_key_name_rim2_btn5",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471908",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn3 (0x179).",
+      "name": "input_key_name_rim2_btn3",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471920",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn1 (0x177).",
+      "name": "input_key_name_rim2_btn1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471938",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1Btn4 (0x175).",
+      "name": "input_key_name_rim1_btn4",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471950",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1Btn2 (0x173).",
+      "name": "input_key_name_rim1_btn2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471968",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn5 (0x171).",
+      "name": "input_key_name_rim0_btn5",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471980",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn3 (0x16f).",
+      "name": "input_key_name_rim0_btn3",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471998",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn1 (0x16d).",
+      "name": "input_key_name_rim0_btn1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719b0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1YAxis (0x169).",
+      "name": "input_key_name_rim1_y_axis",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719c8",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2XAxis (0x165).",
+      "name": "input_key_name_rim2_x_axis",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719e0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0XAxis (0x163).",
+      "name": "input_key_name_rim0_x_axis",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004719f4",
       "comment": "Fallback key label string returned by input_key_name() for JoyRotZ (0x155).",
       "name": "input_key_name_joy_rot_z",
