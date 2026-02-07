@@ -8350,11 +8350,95 @@
       "type": "ui_segmented_slider_t"
     },
     {
+      "address": "0x004d75a0",
+      "comment": "Play-game menu Rush mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_rush",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75a5",
+      "comment": "Activated flag for play_game_menu_button_rush (consumed to start Rush mode).",
+      "name": "play_game_menu_rush_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75a8",
+      "comment": "Rush description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_rush_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d75d0",
+      "comment": "Play-game menu Tutorial mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_tutorial",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75d5",
+      "comment": "Activated flag for play_game_menu_button_tutorial (consumed to start Tutorial mode).",
+      "name": "play_game_menu_tutorial_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75d8",
+      "comment": "Tutorial description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_tutorial_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d75e8",
       "comment": "Options menu music-volume segmented slider state block.",
       "name": "options_music_volume_slider",
       "program": "crimsonland.exe",
       "type": "ui_segmented_slider_t"
+    },
+    {
+      "address": "0x004d75f8",
+      "comment": "Play-game menu Quests mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_quests",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75fd",
+      "comment": "Activated flag for play_game_menu_button_quests (consumed to open quest selection).",
+      "name": "play_game_menu_quests_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7600",
+      "comment": "Quest description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_quests_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7610",
+      "comment": "Play-game menu Typ-o Shooter mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_typo",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d7615",
+      "comment": "Activated flag for play_game_menu_button_typo (consumed to start Typ-o mode).",
+      "name": "play_game_menu_typo_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7618",
+      "comment": "Typ-o description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_typo_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7680",
@@ -8390,6 +8474,27 @@
       "name": "controls_aim_method_list",
       "program": "crimsonland.exe",
       "type": "ui_list_widget_t"
+    },
+    {
+      "address": "0x004d76c8",
+      "comment": "Play-game menu Survival mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_survival",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d76cd",
+      "comment": "Activated flag for play_game_menu_button_survival (consumed to start Survival mode).",
+      "name": "play_game_menu_survival_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76d0",
+      "comment": "Survival description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_survival_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7700",
