@@ -82,14 +82,37 @@ def _wrap_angle(angle: float) -> float:
 
 
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
-    delta = _wrap_angle(target - current)
-    step_scale = min(1.0, abs(delta))
-    step = float(dt) * step_scale * float(rate)
-    if delta >= 0.0:
-        current += step
+    # Native parity (`angle_approach`, 0x0041f430):
+    # - normalize to [0, 2*pi]
+    # - choose shortest arc using direct/wrap distances
+    # - advance by `frame_dt * min(1, dist) * rate`
+    # - do not re-wrap after the step (next call normalizes again)
+    angle = float(current)
+    target = float(target)
+    tau = 6.2831855
+
+    while angle < 0.0:
+        angle += tau
+    while angle > tau:
+        angle -= tau
+
+    direct = abs(target - angle)
+    hi = target if angle < target else angle
+    lo = target if target < angle else angle
+    wrap = abs((tau - hi) + lo)
+
+    step_scale = direct if direct < wrap else wrap
+    if step_scale > 1.0:
+        step_scale = 1.0
+    step = float(dt) * float(step_scale) * float(rate)
+
+    if direct <= wrap:
+        if angle < target:
+            return angle + step
     else:
-        current -= step
-    return _wrap_angle(current)
+        if target < angle:
+            return angle + step
+    return angle - step
 
 
 def _owner_id_to_player_index(owner_id: int) -> int | None:
@@ -1057,8 +1080,6 @@ class CreaturePool:
         world_width: float,
         world_height: float,
     ) -> CreatureDeath:
-        creature.hp = 0.0
-
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
 
