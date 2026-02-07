@@ -8,7 +8,7 @@ import pytest
 
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
-from crimson.creatures.spawn import SpawnEnv, SpawnSlotInit, build_spawn_plan
+from crimson.creatures.spawn import CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
 from crimson.weapons import WeaponId
 from grim.rand import Crand
 
@@ -164,3 +164,34 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+
+
+def test_spawn_inits_resets_native_spawn_state_fields() -> None:
+    pool = CreaturePool()
+    (idx,) = pool.spawn_inits(
+        [
+            CreatureInit(
+                origin_template_id=0x99,
+                pos=Vec2(100.0, 200.0),
+                heading=0.75,
+                phase_seed=10.0,
+                type_id=CreatureTypeId.ALIEN,
+                health=40.0,
+                max_health=40.0,
+                move_speed=2.0,
+                reward_value=12.0,
+                size=45.0,
+                contact_damage=6.0,
+            )
+        ]
+    )
+    entry = pool.entries[idx]
+
+    assert entry.active is True
+    assert entry.vel == Vec2()
+    assert entry.force_target == 0
+    assert entry.attack_cooldown == pytest.approx(0.0, abs=1e-9)
+    assert entry.collision_timer == pytest.approx(0.0, abs=1e-9)
+    assert entry.hit_flash_timer == pytest.approx(0.0, abs=1e-9)
+    assert entry.anim_phase == pytest.approx(0.0, abs=1e-9)
+    assert entry.last_hit_owner_id == -100
