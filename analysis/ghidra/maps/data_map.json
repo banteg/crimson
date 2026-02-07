@@ -21,6 +21,13 @@
       "type": "float"
     },
     {
+      "address": "0x0047115c",
+      "comment": "Console open/close animation blend factor clamped to [0,1] and eased with sin().",
+      "name": "console_open_anim_t",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004711f8",
       "comment": "Console command string: \"exec\".",
       "name": "console_cmd_exec",
@@ -673,6 +680,12 @@
       "address": "0x0047e448",
       "comment": "Console input text buffer (0x400 bytes; null-terminated).",
       "name": "console_input_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047e848",
+      "comment": "Scratch line buffer used by console_cmd_exec when reading script files with fgets().",
+      "name": "console_exec_line_buf",
       "program": "crimsonland.exe"
     },
     {
@@ -6779,11 +6792,43 @@
       "type": "quest_meta_t *"
     },
     {
+      "address": "0x004c365c",
+      "comment": "High score filename buffer for named profile variants (returned by highscore_build_path when name slot != 0).",
+      "name": "highscore_named_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c36dc",
+      "comment": "Base high score filename buffer assembled by highscore_build_path.",
+      "name": "highscore_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c375c",
+      "comment": "Cached working-directory prefix used when composing high score file paths.",
+      "name": "highscore_cwd_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c395b",
+      "comment": "Forced NUL terminator for highscore_cwd_buf after crt_getcwd.",
+      "name": "highscore_cwd_buf_tail_nul",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004c395c",
       "comment": "High score table record count (number of loaded entries; loop bound for ranking).",
       "name": "highscore_table_count",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004c3960",
+      "comment": "Latch set after caching highscore_cwd_buf once (guards repeated getcwd calls).",
+      "name": "highscore_cwd_cached",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004c3964",
