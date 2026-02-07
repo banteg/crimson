@@ -345,7 +345,7 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
                 }
             ],
             "after": {
-                "globals": {"config_game_mode": 1},
+                "globals": {"config_game_mode": 1, "frame_dt_ms_i32": 7},
                 "players": [
                     {
                         "aim_heading": -0.75,
@@ -423,6 +423,7 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.input_approx[0].turn_left_pressed is True
     assert tick.input_approx[0].turn_right_pressed is False
     assert tick.input_approx[0].fire_down is True
+    assert tick.frame_dt_ms == 7.0
 
 
 def test_default_original_capture_replay_path_derives_expected_name() -> None:
@@ -468,6 +469,24 @@ def test_build_original_capture_dt_frame_overrides_skips_non_monotonic_elapsed()
 
     assert 1 not in overrides
     assert overrides[2] == 0.017
+
+
+def test_build_original_capture_dt_frame_overrides_prefers_explicit_tick_frame_dt() -> None:
+    capture = OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=1,
+        ticks=[
+            OriginalCaptureTick(tick_index=0, state_hash="", command_hash="", elapsed_ms=1000, frame_dt_ms=100.0),
+            OriginalCaptureTick(tick_index=1, state_hash="", command_hash="", elapsed_ms=1012, frame_dt_ms=12.0),
+            OriginalCaptureTick(tick_index=2, state_hash="", command_hash="", elapsed_ms=1016, frame_dt_ms=4.0),
+        ],
+    )
+
+    overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=60)
+
+    assert overrides[0] == 0.1
+    assert overrides[1] == 0.012
+    assert overrides[2] == 0.004
 
 
 def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_heading(tmp_path: Path) -> None:
