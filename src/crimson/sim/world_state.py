@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import partial
 
 from grim.geom import Vec2
 
@@ -26,7 +25,12 @@ from ..gameplay import (
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
 from .input_frame import normalize_input_frame
-from .presentation_step import plan_hit_sfx_keys, queue_projectile_decals
+from .presentation_step import (
+    ProjectileDecalPostCtx,
+    plan_hit_sfx_keys,
+    queue_projectile_decals_post_hit,
+    queue_projectile_decals_pre_hit,
+)
 from .world_defs import CREATURE_ANIM
 
 
@@ -184,12 +188,21 @@ class WorldState:
                     )
                 )
 
-        on_projectile_hit = partial(
-            self._consume_projectile_hit_presentation,
-            fx_queue=fx_queue,
-            detail_preset=int(detail_preset),
-            fx_toggle=int(fx_toggle),
-        )
+        def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
+            return self._prepare_projectile_hit_presentation(
+                hit=hit,
+                fx_queue=fx_queue,
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+            )
+
+        def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
+            if not isinstance(post_ctx, ProjectileDecalPostCtx):
+                return
+            self._finalize_projectile_hit_presentation(
+                post_ctx=post_ctx,
+                fx_queue=fx_queue,
+            )
 
         hits = self.state.projectiles.update(
             dt,
@@ -202,7 +215,8 @@ class WorldState:
             players=self.players,
             apply_player_damage=_apply_projectile_damage_to_player,
             apply_creature_damage=_apply_projectile_damage_to_creature,
-            on_hit=on_projectile_hit,
+            on_hit=_on_projectile_hit_pre,
+            on_hit_post=_on_projectile_hit_post,
         )
         _mark("ws_after_projectiles")
         trigger_game_tune, hit_sfx = self._plan_projectile_hit_audio(
@@ -362,22 +376,34 @@ class WorldState:
             hit_sfx=hit_sfx,
         )
 
-    def _consume_projectile_hit_presentation(
+    def _prepare_projectile_hit_presentation(
         self,
         hit: ProjectileHit,
         *,
         fx_queue: FxQueue,
         detail_preset: int,
         fx_toggle: int,
-    ) -> None:
-        queue_projectile_decals(
+    ) -> ProjectileDecalPostCtx:
+        return queue_projectile_decals_pre_hit(
             state=self.state,
             players=self.players,
             fx_queue=fx_queue,
-            hits=[hit],
+            hit=hit,
             rand=self.state.rng.rand,
             detail_preset=int(detail_preset),
             fx_toggle=int(fx_toggle),
+        )
+
+    def _finalize_projectile_hit_presentation(
+        self,
+        *,
+        post_ctx: ProjectileDecalPostCtx,
+        fx_queue: FxQueue,
+    ) -> None:
+        queue_projectile_decals_post_hit(
+            fx_queue=fx_queue,
+            post_ctx=post_ctx,
+            rand=self.state.rng.rand,
         )
 
     def _plan_projectile_hit_audio(

@@ -872,7 +872,8 @@ class ProjectilePool:
         players: Sequence[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
-        on_hit: Callable[[ProjectileHit], None] | None = None,
+        on_hit: Callable[[ProjectileHit], object | None] | None = None,
+        on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None,
     ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
@@ -1009,26 +1010,18 @@ class ProjectilePool:
                     acc = Vec2()
 
                     hit_idx = None
-                    ion_hit_test = int(proj.type_id) in (
-                        int(ProjectileTypeId.ION_RIFLE),
-                        int(ProjectileTypeId.ION_MINIGUN),
-                        int(ProjectileTypeId.ION_CANNON),
-                    )
                     for idx, creature in enumerate(creatures):
-                        if idx == proj.owner_id:
+                        if not creature.active:
                             continue
-                        if ion_hit_test:
-                            if not creature.active:
-                                continue
-                            if creature.hitbox_size <= 5.0:
-                                continue
-                        elif creature.hp <= 0.0:
+                        if creature.hitbox_size <= 5.0:
                             continue
                         creature_radius = _hit_radius_for(creature)
                         hit_r = proj.hit_radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             hit_idx = idx
                             break
+                    if hit_idx is not None and int(hit_idx) == int(proj.owner_id):
+                        hit_idx = None
 
                     if hit_idx is None:
                         if proj.hits_players:
@@ -1064,8 +1057,9 @@ class ProjectilePool:
                                 target=player.pos,
                             )
                             hits.append(hit)
+                            hit_ctx: object | None = None
                             if on_hit is not None:
-                                on_hit(hit)
+                                hit_ctx = on_hit(hit)
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
@@ -1073,6 +1067,9 @@ class ProjectilePool:
                             else:
                                 if float(player.shield_timer) <= 0.0:
                                     player.health -= 10.0
+
+                            if on_hit_post is not None:
+                                on_hit_post(hit, hit_ctx)
 
                             break
 
@@ -1111,8 +1108,9 @@ class ProjectilePool:
                         target=target,
                     )
                     hits.append(hit)
+                    hit_ctx: object | None = None
                     if on_hit is not None:
-                        on_hit(hit)
+                        hit_ctx = on_hit(hit)
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -1142,7 +1140,7 @@ class ProjectilePool:
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
 
-                    if damage_amount > 0.0 and (creature.hp > 0.0 or ion_hit_test):
+                    if damage_amount > 0.0 and creature.hp > 0.0:
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
                         impulse = direction * float(proj.speed_scale)
@@ -1160,7 +1158,6 @@ class ProjectilePool:
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
-                            hp_before = float(creature.hp)
                             _apply_damage_to_creature(
                                 creatures,
                                 int(hit_idx),
@@ -1170,7 +1167,7 @@ class ProjectilePool:
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
-                            proj.damage_pool -= hp_before
+                            proj.damage_pool -= float(creature.hp)
 
                     if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
                         proj.damage_pool = 0.0
@@ -1181,10 +1178,17 @@ class ProjectilePool:
                         ProjectileTypeId.GAUSS_GUN,
                         ProjectileTypeId.BLADE_GUN,
                     ):
+                        if on_hit_post is not None:
+                            on_hit_post(hit, hit_ctx)
                         break
 
                     if proj.damage_pool <= 0.0:
+                        if on_hit_post is not None:
+                            on_hit_post(hit, hit_ctx)
                         break
+
+                    if on_hit_post is not None:
+                        on_hit_post(hit, hit_ctx)
 
                 step += 3
 

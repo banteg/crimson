@@ -193,6 +193,15 @@ def plan_death_sfx_keys(
     return keys
 
 
+@dataclass(frozen=True, slots=True)
+class ProjectileDecalPostCtx:
+    hit: ProjectileHit
+    base_angle: float
+    type_id: int
+    hook_handled: bool
+    freeze_active: bool
+
+
 def queue_projectile_decals(
     *,
     state: GameplayState,
@@ -203,101 +212,145 @@ def queue_projectile_decals(
     detail_preset: int,
     fx_toggle: int,
 ) -> None:
+    for hit in hits:
+        post_ctx = queue_projectile_decals_pre_hit(
+            state=state,
+            players=players,
+            fx_queue=fx_queue,
+            hit=hit,
+            rand=rand,
+            detail_preset=detail_preset,
+            fx_toggle=fx_toggle,
+        )
+        queue_projectile_decals_post_hit(
+            fx_queue=fx_queue,
+            post_ctx=post_ctx,
+            rand=rand,
+        )
+
+
+def queue_projectile_decals_pre_hit(
+    *,
+    state: GameplayState,
+    players: Sequence[PlayerState],
+    fx_queue: FxQueue,
+    hit: ProjectileHit,
+    rand: Callable[[], int],
+    detail_preset: int,
+    fx_toggle: int,
+) -> ProjectileDecalPostCtx:
     freeze_active = freeze_bonus_active(state=state)
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
 
-    for hit in hits:
-        type_id = int(hit.type_id)
+    type_id = int(hit.type_id)
 
-        base_angle = (hit.hit - hit.origin).to_angle()
+    base_angle = (hit.hit - hit.origin).to_angle()
 
-        hook_handled = run_projectile_decal_hooks(
-            ProjectileDecalCtx(
-                hit=hit,
-                base_angle=float(base_angle),
-                fx_queue=fx_queue,
-                rand=rand,
-            )
+    hook_handled = run_projectile_decal_hooks(
+        ProjectileDecalCtx(
+            hit=hit,
+            base_angle=float(base_angle),
+            fx_queue=fx_queue,
+            rand=rand,
         )
+    )
 
-        # Native `projectile_update` spawns blood splatter before terrain decals.
-        if bloody:
-            for _ in range(8):
-                spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
-                state.effects.spawn_blood_splatter(
-                    pos=hit.hit,
-                    angle=base_angle + spread,
-                    age=0.0,
-                    rand=rand,
-                    detail_preset=detail_preset,
-                    fx_toggle=fx_toggle,
-                )
+    # Native `projectile_update` spawns blood splatter before terrain decals.
+    if bloody:
+        for _ in range(8):
+            spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=base_angle + math.pi,
+                angle=base_angle + spread,
                 age=0.0,
                 rand=rand,
                 detail_preset=detail_preset,
                 fx_toggle=fx_toggle,
             )
+        state.effects.spawn_blood_splatter(
+            pos=hit.hit,
+            angle=base_angle + math.pi,
+            age=0.0,
+            rand=rand,
+            detail_preset=detail_preset,
+            fx_toggle=fx_toggle,
+        )
 
-            lo = -30
-            hi = 30
-            while lo > -60:
-                span = hi - lo
-                for _ in range(2):
-                    dx = float(int(rand()) % span + lo)
-                    dy = float(int(rand()) % span + lo)
-                    fx_queue.add_random(
-                        pos=hit.target + Vec2(dx, dy),
-                        rand=rand,
-                    )
-                lo -= 10
-                hi += 10
-        elif not freeze_active:
+        lo = -30
+        hi = 30
+        while lo > -60:
+            span = hi - lo
             for _ in range(2):
+                dx = float(int(rand()) % span + lo)
+                dy = float(int(rand()) % span + lo)
+                fx_queue.add_random(
+                    pos=hit.target + Vec2(dx, dy),
+                    rand=rand,
+                )
+            lo -= 10
+            hi += 10
+    elif not freeze_active:
+        for _ in range(2):
+            state.effects.spawn_blood_splatter(
+                pos=hit.hit,
+                angle=base_angle,
+                age=0.0,
+                rand=rand,
+                detail_preset=detail_preset,
+                fx_toggle=fx_toggle,
+            )
+            if (int(rand()) & 7) == 2:
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
-                    angle=base_angle,
+                    angle=base_angle + math.pi,
                     age=0.0,
                     rand=rand,
                     detail_preset=detail_preset,
                     fx_toggle=fx_toggle,
                 )
-                if (int(rand()) & 7) == 2:
-                    state.effects.spawn_blood_splatter(
-                        pos=hit.hit,
-                        angle=base_angle + math.pi,
-                        age=0.0,
-                        rand=rand,
-                        detail_preset=detail_preset,
-                        fx_toggle=fx_toggle,
-                    )
 
-        # Native consumes one extra `crt_rand()` per creature hit before the
-        # post-hit terrain decal burst branch.
-        rand()
+    return ProjectileDecalPostCtx(
+        hit=hit,
+        base_angle=float(base_angle),
+        type_id=int(type_id),
+        hook_handled=bool(hook_handled),
+        freeze_active=bool(freeze_active),
+    )
 
-        if hook_handled or type_id in ION_TYPES or freeze_active:
-            continue
 
-        for _ in range(3):
-            spread = float(int(rand()) % 0x14 - 10) * 0.1
-            angle = base_angle + spread
-            direction = Vec2.from_angle(angle) * 20.0
-            fx_queue.add_random(pos=hit.target, rand=rand)
-            fx_queue.add_random(
-                pos=hit.target + direction * 1.5,
-                rand=rand,
-            )
-            fx_queue.add_random(
-                pos=hit.target + direction * 2.0,
-                rand=rand,
-            )
-            fx_queue.add_random(
-                pos=hit.target + direction * 2.5,
-                rand=rand,
-            )
+def queue_projectile_decals_post_hit(
+    *,
+    fx_queue: FxQueue,
+    post_ctx: ProjectileDecalPostCtx,
+    rand: Callable[[], int],
+) -> None:
+    hit = post_ctx.hit
+    base_angle = float(post_ctx.base_angle)
+
+    # Native consumes one extra `crt_rand()` per creature hit before the
+    # post-hit terrain decal burst branch.
+    rand()
+
+    if post_ctx.hook_handled or int(post_ctx.type_id) in ION_TYPES or bool(post_ctx.freeze_active):
+        return
+
+    for _ in range(3):
+        spread = float(int(rand()) % 0x14 - 10) * 0.1
+        angle = base_angle + spread
+        direction = Vec2.from_angle(angle) * 20.0
+        fx_queue.add_random(pos=hit.target, rand=rand)
+        fx_queue.add_random(
+            pos=hit.target + direction * 1.5,
+            rand=rand,
+        )
+        fx_queue.add_random(
+            pos=hit.target + direction * 2.0,
+            rand=rand,
+        )
+        fx_queue.add_random(
+            pos=hit.target + direction * 2.5,
+            rand=rand,
+        )
 
 
 def apply_world_presentation_step(
