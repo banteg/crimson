@@ -21,6 +21,13 @@
       "type": "float"
     },
     {
+      "address": "0x0047115c",
+      "comment": "Console open/close animation blend factor clamped to [0,1] and eased with sin().",
+      "name": "console_open_anim_t",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004711f8",
       "comment": "Console command string: \"exec\".",
       "name": "console_cmd_exec",
@@ -75,6 +82,18 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047125c",
+      "comment": "Shared default cvar string used for \"enabled\"/true-like console vars.",
+      "name": "console_cvar_default_true",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471260",
+      "comment": "Shared scalar cvar default string (used by cv_aimEnhancementFade and console_init seed state).",
+      "name": "console_cvar_default_scalar",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004712c0",
       "comment": "Console prompt string used for input rendering.",
       "name": "console_prompt_string",
@@ -110,6 +129,504 @@
       "address": "0x00471314",
       "comment": "Default player name string copied into config on load.",
       "name": "default_player_name",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004713f8",
+      "comment": "Shared default cvar string used for disabled/false-like console vars.",
+      "name": "console_cvar_default_false",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471340",
+      "comment": "Default cvar string for cv_padAimDistMul (gamepad aiming distance multiplier).",
+      "name": "console_cvar_default_pad_aim_dist_mul",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004714b4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_MAIL (0xec).",
+      "name": "input_key_name_mail",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047150c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_WAKE (0xe3).",
+      "name": "input_key_name_wake",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471524",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_APPS (0xdd).",
+      "name": "input_key_name_apps",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047152c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_RWIN (0xdc).",
+      "name": "input_key_name_rwin",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471534",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_LWIN (0xdb).",
+      "name": "input_key_name_lwin",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047154c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_NEXT/PageDown (0xd1).",
+      "name": "input_key_name_next",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471554",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_DOWN (0xd0).",
+      "name": "input_key_name_down",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047155c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_END (0xcf).",
+      "name": "input_key_name_end",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471568",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_LEFT (0xcb).",
+      "name": "input_key_name_left",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471578",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_UP (0xc8).",
+      "name": "input_key_name_up",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047157c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_HOME (0xc7).",
+      "name": "input_key_name_home",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004715f4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_MUTE (0xa0).",
+      "name": "input_key_name_mute",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047162c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_AX (0x96).",
+      "name": "input_key_name_ax",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471630",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_STOP (0x95).",
+      "name": "input_key_name_stop",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471654",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_AT (0x91).",
+      "name": "input_key_name_at",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047167c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_YEN (0x7d).",
+      "name": "input_key_name_yen",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047169c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_KANA (0x70).",
+      "name": "input_key_name_kana",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716a4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F15 (0x66).",
+      "name": "input_key_name_f15",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716a8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F14 (0x65).",
+      "name": "input_key_name_f14",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716ac",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F13 (0x64).",
+      "name": "input_key_name_f13",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716b0",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F12 (0x58).",
+      "name": "input_key_name_f12",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716b4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F11 (0x57).",
+      "name": "input_key_name_f11",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716e8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_ADD (0x4e).",
+      "name": "input_key_name_add",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471738",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F10 (0x44).",
+      "name": "input_key_name_f10",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047173c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F9 (0x43).",
+      "name": "input_key_name_f9",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471740",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F8 (0x42).",
+      "name": "input_key_name_f8",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471744",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F7 (0x41).",
+      "name": "input_key_name_f7",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471748",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F6 (0x40).",
+      "name": "input_key_name_f6",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047174c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F5 (0x3f).",
+      "name": "input_key_name_f5",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471750",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F4 (0x3e).",
+      "name": "input_key_name_f4",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471754",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F3 (0x3d).",
+      "name": "input_key_name_f3",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471758",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F2 (0x3c).",
+      "name": "input_key_name_f2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047175c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F1 (0x3b).",
+      "name": "input_key_name_f1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717a4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_M (0x32).",
+      "name": "input_key_name_m",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717a8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_N (0x31).",
+      "name": "input_key_name_n",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717ac",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_B (0x30).",
+      "name": "input_key_name_b",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717b0",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_V (0x2f).",
+      "name": "input_key_name_v",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717b4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_C (0x2e).",
+      "name": "input_key_name_c",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717b8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_X (0x2d).",
+      "name": "input_key_name_x",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717bc",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_Z (0x2c).",
+      "name": "input_key_name_z",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717f4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_L (0x26).",
+      "name": "input_key_name_l",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717f8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_K (0x25).",
+      "name": "input_key_name_k",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004717fc",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_J (0x24).",
+      "name": "input_key_name_j",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471800",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_H (0x23).",
+      "name": "input_key_name_h",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471804",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_G (0x22).",
+      "name": "input_key_name_g",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471808",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F (0x21).",
+      "name": "input_key_name_f",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047180c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_D (0x20).",
+      "name": "input_key_name_d",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471810",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_S (0x1f).",
+      "name": "input_key_name_s",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471814",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_A (0x1e).",
+      "name": "input_key_name_a",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471844",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_P (0x19).",
+      "name": "input_key_name_p",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471848",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_O (0x18).",
+      "name": "input_key_name_o",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047184c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_I (0x17).",
+      "name": "input_key_name_i",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471850",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_U (0x16).",
+      "name": "input_key_name_u",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471854",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_Y (0x15).",
+      "name": "input_key_name_y",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471858",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_T (0x14).",
+      "name": "input_key_name_t",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047185c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_R (0x13).",
+      "name": "input_key_name_r",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471860",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_E (0x12).",
+      "name": "input_key_name_e",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471864",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_W (0x11).",
+      "name": "input_key_name_w",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471868",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_Q (0x10).",
+      "name": "input_key_name_q",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047186c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_TAB (0x0f).",
+      "name": "input_key_name_tab",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471870",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_BACKSPACE (0x0e).",
+      "name": "input_key_name_backspace",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004718f0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn5 (0x17b).",
+      "name": "input_key_name_rim2_btn5",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471908",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn3 (0x179).",
+      "name": "input_key_name_rim2_btn3",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471920",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2Btn1 (0x177).",
+      "name": "input_key_name_rim2_btn1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471938",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1Btn4 (0x175).",
+      "name": "input_key_name_rim1_btn4",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471950",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1Btn2 (0x173).",
+      "name": "input_key_name_rim1_btn2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471968",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn5 (0x171).",
+      "name": "input_key_name_rim0_btn5",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471980",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn3 (0x16f).",
+      "name": "input_key_name_rim0_btn3",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471998",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0Btn1 (0x16d).",
+      "name": "input_key_name_rim0_btn1",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719b0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM1YAxis (0x169).",
+      "name": "input_key_name_rim1_y_axis",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719c8",
+      "comment": "Fallback key label string returned by input_key_name() for RIM2XAxis (0x165).",
+      "name": "input_key_name_rim2_x_axis",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719e0",
+      "comment": "Fallback key label string returned by input_key_name() for RIM0XAxis (0x163).",
+      "name": "input_key_name_rim0_x_axis",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719f4",
+      "comment": "Fallback key label string returned by input_key_name() for JoyRotZ (0x155).",
+      "name": "input_key_name_joy_rot_z",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a04",
+      "comment": "Fallback key label string returned by input_key_name() for JoyRotX (0x153).",
+      "name": "input_key_name_joy_rot_x",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a5c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys12 (0x12a).",
+      "name": "input_key_name_joys12",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a6c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys10 (0x128).",
+      "name": "input_key_name_joys10",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a7c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys8 (0x126).",
+      "name": "input_key_name_joys8",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a8c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys6 (0x124).",
+      "name": "input_key_name_joys6",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a9c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys4 (0x122).",
+      "name": "input_key_name_joys4",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471aac",
+      "comment": "Fallback key label string returned by input_key_name() for Joys2 (0x120).",
+      "name": "input_key_name_joys2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471ad4",
+      "comment": "Fallback key label string returned by input_key_name() for Mouse5 (0x104).",
+      "name": "input_key_name_mouse5",
       "program": "crimsonland.exe"
     },
     {
@@ -676,6 +1193,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047e848",
+      "comment": "Scratch line buffer used by console_cmd_exec when reading script files with fgets().",
+      "name": "console_exec_line_buf",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047ea4c",
       "comment": "Global time accumulator (seconds) used for UI/FX sine/rotation animations; incremented by frame_dt.",
       "name": "game_time_s",
@@ -724,6 +1247,12 @@
       "type": "char*"
     },
     {
+      "address": "0x0047eaa0",
+      "comment": "Scratch line buffer copied by console_tokenize_line before strtok() token parsing.",
+      "name": "console_tokenize_buf",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047eea0",
       "comment": "Console log/list head used by console_printf.",
       "name": "console_log_queue",
@@ -765,6 +1294,12 @@
       "name": "console_cmd_argc",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x0047f4d0",
+      "comment": "Console cvar handle for con_monoFont (queried when drawing console text).",
+      "name": "cv_con_mono_font",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x0047f4d4",
@@ -2406,6 +2941,27 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00484914",
+      "comment": "Quest metadata entry used by demo_setup_variant_1 terrain_generate(desc) and by terrain_generate_random when quest_unlock_index > 0x13.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x13",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
+      "address": "0x00484acc",
+      "comment": "Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x1d.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x1d",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
+      "address": "0x00484c84",
+      "comment": "Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x27.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x27",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
       "address": "0x00484fc8",
       "comment": "Camera offset X applied to world positions for rendering.",
       "name": "camera_offset_x",
@@ -2453,6 +3009,13 @@
       "comment": "Spawn slot template id (creature_spawn_slot_table + 0x14).",
       "name": "creature_spawn_slot_template",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004852d0",
+      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to game_sequence_load/game_save_status.",
+      "name": "registry_key_status_root_path",
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004853d0",
@@ -2609,11 +3172,46 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00485544",
+      "comment": "Status blob weapon usage counters (u32[53], indexed by weapon id). Updated by weapon_assign_player and used by weapon_pick_random_available biasing.",
+      "name": "weapon_usage_counts",
+      "program": "crimsonland.exe",
+      "type": "weapon_usage_counts_t"
+    },
+    {
       "address": "0x00485618",
       "comment": "Quest play/attempt counters (u32[?]); indexed by quest_stage_major * 10 + quest_stage_minor.",
       "name": "quest_play_counts",
       "program": "crimsonland.exe",
       "type": "quest_play_counts_t"
+    },
+    {
+      "address": "0x00485784",
+      "comment": "Status blob mode-play counter for Survival sessions.",
+      "name": "mode_play_survival",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485788",
+      "comment": "Status blob mode-play counter for Rush sessions.",
+      "name": "mode_play_rush",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048578c",
+      "comment": "Status blob mode-play counter for Typ-o-Shooter sessions.",
+      "name": "mode_play_typo",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485790",
+      "comment": "Status blob mode-play counter for other gameplay modes (for example tutorial/legacy paths).",
+      "name": "mode_play_other",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00485794",
@@ -2705,6 +3303,13 @@
       "address": "0x00486fd0",
       "comment": "Quest spawn timeline (elapsed ms for quest triggers).",
       "name": "quest_spawn_timeline",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00486fd4",
+      "comment": "Total creature count across quest_spawn_table entries (sum of entry.count), recomputed in quest_start_selected.",
+      "name": "quest_spawn_total_creatures",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -2852,6 +3457,13 @@
       "type": "char"
     },
     {
+      "address": "0x00487030",
+      "comment": "Latest spawn timestamp among quest_spawn_table entries (max entry.time_ms), recomputed in quest_start_selected.",
+      "name": "quest_spawn_last_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487034",
       "comment": "Max quest unlock index (u16). Updated on quest completion; used to unlock perks/weapons; saved in game_status_blob.",
       "name": "quest_unlock_index",
@@ -2931,6 +3543,13 @@
       "address": "0x00487074",
       "comment": "Total creature kills (incremented on creature death paths); stored in high score record offset 0x34.",
       "name": "creature_kill_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487078",
+      "comment": "High score record random tag at offset 0x38 (seeded from crt_rand with masks/offsets in gameplay_run_state_init/gameplay_reset_state/highscore_record_init).",
+      "name": "highscore_record_random_tag",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -3171,6 +3790,20 @@
       "type": "int"
     },
     {
+      "address": "0x00487238",
+      "comment": "UI hover/focus ordinal among enabled elements with callbacks; rebuilt in ui_element_update and consumed by ui_focus_update.",
+      "name": "ui_element_hover_focus_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048723c",
+      "comment": "Pointer to the currently hovered/clickable ui_element_t focus candidate (set in ui_element_update; cleared in ui_menu_layout_init).",
+      "name": "ui_element_hover_focus_ptr",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
+    },
+    {
       "address": "0x00487240",
       "comment": "Render pass mode gate; 0 triggers terrain-only pass.",
       "name": "render_pass_mode",
@@ -3289,6 +3922,20 @@
       "name": "pause_keybind_help_alpha_ms",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x00487288",
+      "comment": "UI layout X scale factor computed as config_screen_width / 640.0 during ui_menu_layout_init.",
+      "name": "ui_layout_scale_x",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048728c",
+      "comment": "UI layout Y scale factor computed as config_screen_height / 480.0 during ui_menu_layout_init.",
+      "name": "ui_layout_scale_y",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487290",
@@ -6246,6 +6893,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004c2b38",
+      "comment": "Low-detail effect throttle counter used by effect_spawn; increments each call and skips every other spawn when config_detail_preset < 3.",
+      "name": "effect_spawn_detail_skip_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004c2b40",
       "comment": "Perk ID constant for AntiPerk.",
       "name": "perk_id_antiperk",
@@ -6639,6 +7293,34 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004c3640",
+      "comment": "Wrapped perk name string for \"Bloody Mess\" (or selected variant for perk slot 1).",
+      "name": "perk_slot_1_name_wrapped_primary",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c3644",
+      "comment": "Wrapped perk name string for \"Quick Learner\" (alternate for perk slot 1 when config_fx_toggle != 0).",
+      "name": "perk_slot_1_name_wrapped_alternate",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c3648",
+      "comment": "Wrapped perk description string paired with perk_slot_1_name_wrapped_primary.",
+      "name": "perk_slot_1_desc_wrapped_primary",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c364c",
+      "comment": "Wrapped perk description string paired with perk_slot_1_name_wrapped_alternate.",
+      "name": "perk_slot_1_desc_wrapped_alternate",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x004c3650",
       "comment": "Pointer to the quest metadata entry last written by quest_meta_init_entry.",
       "name": "quest_meta_cursor",
@@ -6660,6 +7342,31 @@
       "type": "quest_meta_t *"
     },
     {
+      "address": "0x004c365c",
+      "comment": "High score filename buffer for named profile variants (returned by highscore_build_path when name slot != 0).",
+      "name": "highscore_named_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c36dc",
+      "comment": "Base high score filename buffer assembled by highscore_build_path.",
+      "name": "highscore_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c375c",
+      "comment": "Cached working-directory prefix used when composing high score file paths.",
+      "name": "highscore_cwd_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c395b",
+      "comment": "Forced NUL terminator for highscore_cwd_buf after crt_getcwd.",
+      "name": "highscore_cwd_buf_tail_nul",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004c395c",
       "comment": "High score table record count (number of loaded entries; loop bound for ranking).",
       "name": "highscore_table_count",
@@ -6667,11 +7374,30 @@
       "type": "int"
     },
     {
+      "address": "0x004c3960",
+      "comment": "Latch set after caching highscore_cwd_buf once (guards repeated getcwd calls).",
+      "name": "highscore_cwd_cached",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004c3964",
       "comment": "DirectSound interface pointer (released by dsound_shutdown; used to create the primary buffer).",
       "name": "dsound_iface",
       "program": "crimsonland.exe",
       "type": "int *"
+    },
+    {
+      "address": "0x004c3968",
+      "comment": "Active resource pack path string used by resource_open_read/resource_pack_set.",
+      "name": "resource_pack_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c3a68",
+      "comment": "Scratch buffer for resource pack entry names read by resource_pack_read_cstring.",
+      "name": "resource_pack_entry_name_buf",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004c3c68",
@@ -7263,6 +7989,13 @@
       "type": "char"
     },
     {
+      "address": "0x004cc8d5",
+      "comment": "Audio resource-pack available flag set by audio_init_music/audio_init_sfx via resource_pack_set.",
+      "name": "audio_resource_pack_available",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004cc8d8",
       "comment": "Audio asset-load counter incremented by sfx_load_sample and music_load_track; shown on startup loading screen.",
       "name": "audio_assets_loaded_count",
@@ -7700,11 +8433,109 @@
       "type": "ui_segmented_slider_t"
     },
     {
+      "address": "0x004d75a0",
+      "comment": "Play-game menu Rush mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_rush",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75a5",
+      "comment": "Activated flag for play_game_menu_button_rush (consumed to start Rush mode).",
+      "name": "play_game_menu_rush_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75a6",
+      "comment": "Enabled flag for play_game_menu_button_rush (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_rush_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75a8",
+      "comment": "Rush description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_rush_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d75d0",
+      "comment": "Play-game menu Tutorial mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_tutorial",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75d5",
+      "comment": "Activated flag for play_game_menu_button_tutorial (consumed to start Tutorial mode).",
+      "name": "play_game_menu_tutorial_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75d8",
+      "comment": "Tutorial description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_tutorial_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d75e8",
       "comment": "Options menu music-volume segmented slider state block.",
       "name": "options_music_volume_slider",
       "program": "crimsonland.exe",
       "type": "ui_segmented_slider_t"
+    },
+    {
+      "address": "0x004d75f8",
+      "comment": "Play-game menu Quests mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_quests",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d75fd",
+      "comment": "Activated flag for play_game_menu_button_quests (consumed to open quest selection).",
+      "name": "play_game_menu_quests_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75fe",
+      "comment": "Enabled flag for play_game_menu_button_quests (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_quests_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7600",
+      "comment": "Quest description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_quests_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d7610",
+      "comment": "Play-game menu Typ-o Shooter mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_typo",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d7615",
+      "comment": "Activated flag for play_game_menu_button_typo (consumed to start Typ-o mode).",
+      "name": "play_game_menu_typo_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7618",
+      "comment": "Typ-o description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_typo_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7680",
@@ -7740,6 +8571,34 @@
       "name": "controls_aim_method_list",
       "program": "crimsonland.exe",
       "type": "ui_list_widget_t"
+    },
+    {
+      "address": "0x004d76c8",
+      "comment": "Play-game menu Survival mode button state block (overlay alias in shared UI scratch memory).",
+      "name": "play_game_menu_button_survival",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d76cd",
+      "comment": "Activated flag for play_game_menu_button_survival (consumed to start Survival mode).",
+      "name": "play_game_menu_survival_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76ce",
+      "comment": "Enabled flag for play_game_menu_button_survival (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_survival_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76d0",
+      "comment": "Survival description fade counter used by play_game_menu_update hint text rendering.",
+      "name": "play_game_menu_survival_hint_fade_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7700",
@@ -7991,9 +8850,30 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004d7b7c",
+      "comment": "Weapon-table SFX anchor initialized to sfx_autorifle_fire; reused by fire-bullets helper and multiple weapon rows.",
+      "name": "weapon_sfx_anchor_autorifle_fire",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d7fd8",
       "comment": "Perk fire-bullets helper: secondary shot SFX id used by player_fire_weapon/player_update.",
       "name": "fire_bullets_secondary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d83c0",
+      "comment": "Weapon-table SFX anchor initialized to sfx_autorifle_reload; reused as reload/equip SFX by multiple weapon rows.",
+      "name": "weapon_sfx_anchor_autorifle_reload",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d86a8",
+      "comment": "Weapon-table SFX anchor initialized to sfx_shock_reload; reused by ion/shock weapon rows.",
+      "name": "weapon_sfx_anchor_shock_reload",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -8015,6 +8895,27 @@
       "address": "0x004d9050",
       "comment": "Perk fire-bullets helper: primary shot SFX id used by player_fire_weapon/player_update.",
       "name": "fire_bullets_primary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d92bc",
+      "comment": "Weapon-table SFX anchor initialized to sfx_bloodspill_01; reused by biological/late weapon rows.",
+      "name": "weapon_sfx_anchor_bloodspill_01",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d93b4",
+      "comment": "Weapon-table SFX anchor initialized to sfx_explosion_large; reused by heavy explosive weapon rows.",
+      "name": "weapon_sfx_anchor_explosion_large",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d93bc",
+      "comment": "Weapon-table SFX anchor initialized to sfx_shotgun_reload; reused by multiple weapon rows and fire-bullets fallback reload assignments.",
+      "name": "weapon_sfx_anchor_shotgun_reload",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -8176,10 +9077,52 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10053044",
+      "comment": "Base key-repeat delay used by grim_was_key_pressed (held repeat uses 20% of this value).",
+      "name": "grim_key_repeat_delay",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x10053054",
+      "comment": "Config-dialog selected display width parsed from the mode combo string.",
+      "name": "grim_config_selected_width",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x10053058",
+      "comment": "Config-dialog selected display height parsed from the mode combo string.",
+      "name": "grim_config_selected_height",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005305c",
+      "comment": "Highest texture handle index currently in use (updated by grim_create_texture/load/destroy).",
+      "name": "grim_texture_slot_max_index",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x10053060",
       "comment": "Currently bound texture handle (set by grim_bind_texture).",
       "name": "grim_bound_texture_handle",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10053064",
+      "comment": "Config-dialog capability flag from D3D caps (Caps2 bit 0x80000: can render windowed).",
+      "name": "grim_caps_can_render_windowed",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x10053065",
+      "comment": "Config-dialog capability flag indicating X8R8G8B8 check passed (32-bit mode list enabled).",
+      "name": "grim_caps_x8r8g8b8_supported",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x10053070",
@@ -8200,6 +9143,60 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059770",
+      "comment": "Device-restore callback (set via config var id 6; called after restore/reacquire paths).",
+      "name": "grim_on_device_restore",
+      "program": "grim.dll",
+      "type": "void (*)(void)"
+    },
+    {
+      "address": "0x10059778",
+      "comment": "Window/dialog icon handle loaded from Grim resources (icon id 0x72).",
+      "name": "grim_window_icon_handle",
+      "program": "grim.dll",
+      "type": "HICON"
+    },
+    {
+      "address": "0x1005977c",
+      "comment": "Per-frame callback (set via config var id 0x2d; returning 0 exits the main loop).",
+      "name": "grim_frame_callback",
+      "program": "grim.dll",
+      "type": "int (*)(void)"
+    },
+    {
+      "address": "0x10059780",
+      "comment": "Process module handle used as hInstance for window class/creation calls.",
+      "name": "grim_process_hinstance",
+      "program": "grim.dll",
+      "type": "HMODULE"
+    },
+    {
+      "address": "0x10059788",
+      "comment": "Scratch D3D adapter identifier populated by GetAdapterIdentifier in the config dialog.",
+      "name": "grim_adapter_identifier",
+      "program": "grim.dll",
+      "type": "D3DADAPTER_IDENTIFIER8"
+    },
+    {
+      "address": "0x10059988",
+      "comment": "Adapter description text field inside grim_adapter_identifier (used for combo labels).",
+      "name": "grim_adapter_description",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059bb4",
+      "comment": "One-time flag used by grim_draw_line to register its shutdown hook.",
+      "name": "grim_draw_line_init_flag",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059bb8",
+      "comment": "Dynamic index buffer (IDirect3DIndexBuffer8) bound for quad batching.",
+      "name": "grim_index_buffer",
+      "program": "grim.dll",
+      "type": "LPDIRECT3DINDEXBUFFER8"
+    },
+    {
       "address": "0x10059dbc",
       "comment": "Primary IDirect3DDevice8 pointer.",
       "name": "grim_d3d_device",
@@ -8213,6 +9210,34 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059dc4",
+      "comment": "Previous timeGetTime sample used to compute frame delta milliseconds.",
+      "name": "grim_tick_prev_ms",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
+      "address": "0x10059dc8",
+      "comment": "WNDCLASSEXA instance used for RegisterClassExA/UnregisterClassA.",
+      "name": "grim_window_class",
+      "program": "grim.dll",
+      "type": "WNDCLASSEXA"
+    },
+    {
+      "address": "0x10059ddc",
+      "comment": "hInstance field in grim_window_class (mirrors grim_process_hinstance).",
+      "name": "grim_window_class_hinstance",
+      "program": "grim.dll",
+      "type": "HINSTANCE"
+    },
+    {
+      "address": "0x10059df0",
+      "comment": "Window class name pointer used by CreateWindowExA and UnregisterClassA.",
+      "name": "grim_window_class_name",
+      "program": "grim.dll",
+      "type": "LPCSTR"
+    },
+    {
       "address": "0x10059df8",
       "comment": "D3D present parameters width.",
       "name": "grim_present_width",
@@ -8223,6 +9248,78 @@
       "comment": "D3D present parameters height.",
       "name": "grim_present_height",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e00",
+      "comment": "D3DPRESENT_PARAMETERS.BackBufferFormat.",
+      "name": "grim_present_backbuffer_format",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e04",
+      "comment": "D3DPRESENT_PARAMETERS.BackBufferCount.",
+      "name": "grim_present_backbuffer_count",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e08",
+      "comment": "D3DPRESENT_PARAMETERS.MultiSampleType (D3D8).",
+      "name": "grim_present_multisample_type",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e0c",
+      "comment": "D3DPRESENT_PARAMETERS.SwapEffect.",
+      "name": "grim_present_swap_effect",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e10",
+      "comment": "D3DPRESENT_PARAMETERS.hDeviceWindow.",
+      "name": "grim_present_device_window",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x10059e14",
+      "comment": "D3DPRESENT_PARAMETERS.Windowed flag.",
+      "name": "grim_present_windowed",
+      "program": "grim.dll",
+      "type": "BOOL"
+    },
+    {
+      "address": "0x10059e18",
+      "comment": "D3DPRESENT_PARAMETERS.EnableAutoDepthStencil flag.",
+      "name": "grim_present_enable_auto_depth_stencil",
+      "program": "grim.dll",
+      "type": "BOOL"
+    },
+    {
+      "address": "0x10059e1c",
+      "comment": "D3DPRESENT_PARAMETERS.AutoDepthStencilFormat.",
+      "name": "grim_present_auto_depth_stencil_format",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e20",
+      "comment": "D3DPRESENT_PARAMETERS.Flags.",
+      "name": "grim_present_flags",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
+      "address": "0x10059e24",
+      "comment": "D3DPRESENT_PARAMETERS.FullScreen_RefreshRateInHz.",
+      "name": "grim_present_refresh_rate_hz",
+      "program": "grim.dll",
+      "type": "UINT"
+    },
+    {
+      "address": "0x10059e28",
+      "comment": "D3DPRESENT_PARAMETERS.FullScreen_PresentationInterval.",
+      "name": "grim_present_interval",
+      "program": "grim.dll",
+      "type": "UINT"
     },
     {
       "address": "0x10059e2c",
@@ -8243,16 +9340,86 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059e3c",
+      "comment": "Current working-directory buffer populated by _getcwd (0x104 chars).",
+      "name": "grim_working_dir",
+      "program": "grim.dll",
+      "type": "char[260]"
+    },
+    {
+      "address": "0x10059f40",
+      "comment": "Sine term for the precomputed 2x2 rotation matrix used by rotated-quad draws.",
+      "name": "grim_rotation_sin",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x10059f44",
+      "comment": "Per-key first-press latch flags used by grim_was_key_pressed repeat behavior.",
+      "name": "grim_key_repeat_first_press",
+      "program": "grim.dll",
+      "type": "char[256]"
+    },
+    {
       "address": "0x1005a044",
       "comment": "Cached mouse button state array.",
       "name": "grim_mouse_button_cache",
       "program": "grim.dll"
     },
     {
+      "address": "0x1005a058",
+      "comment": "Per-key repeat cooldown timers used by grim_was_key_pressed.",
+      "name": "grim_key_repeat_timers",
+      "program": "grim.dll",
+      "type": "float[256]"
+    },
+    {
       "address": "0x1005a054",
       "comment": "Grim2D millisecond counter.",
       "name": "grim_time_ms",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005a458",
+      "comment": "Byte size of the external lookup blob loaded by FUN_10005a40.",
+      "name": "grim_lookup_blob_size",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005a460",
+      "comment": "Rotation matrix m00 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m00",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a464",
+      "comment": "Rotation matrix m01 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m01",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a468",
+      "comment": "Rotation matrix m10 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m10",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a46c",
+      "comment": "Rotation matrix m11 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m11",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a470",
+      "comment": "Frame-timing freeze flag (when nonzero, grim_frame_dt is forced to 0).",
+      "name": "grim_timing_frozen",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005a488",
@@ -8280,6 +9447,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005a498",
+      "comment": "D3D capability block populated by GetDeviceCaps in config probe and device init paths.",
+      "name": "grim_device_caps",
+      "program": "grim.dll",
+      "type": "D3DCAPS8"
+    },
+    {
       "address": "0x1005a56c",
       "comment": "Preferred texture format if supported.",
       "name": "grim_preferred_texture_format",
@@ -8290,6 +9464,13 @@
       "comment": "Small-font character map (char -> glyph index).",
       "name": "grim_font2_char_map",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005a670",
+      "comment": "Heap buffer containing the lookup blob loaded by FUN_10005a40.",
+      "name": "grim_lookup_blob",
+      "program": "grim.dll",
+      "type": "void *"
     },
     {
       "address": "0x1005a678",
@@ -8322,6 +9503,27 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005b280",
+      "comment": "Config-dialog parsed windowed-selection flag (true when selected mode string contains \"window\").",
+      "name": "grim_config_dialog_windowed_selected",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005b288",
+      "comment": "Transformed-vertex Z value written for batched quad vertices (default 0.5).",
+      "name": "grim_vertex_z",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005b28c",
+      "comment": "Transformed-vertex RHW value written for batched quad vertices (default 1.0).",
+      "name": "grim_vertex_rhw",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1005b290",
       "comment": "Current UV u0 for quad draws.",
       "name": "grim_uv_u0",
@@ -8346,10 +9548,61 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005b2a0",
+      "comment": "Current UV u2 for quad draws.",
+      "name": "grim_uv_u2",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2a4",
+      "comment": "Current UV v2 for quad draws.",
+      "name": "grim_uv_v2",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2a8",
+      "comment": "Current UV u3 for quad draws.",
+      "name": "grim_uv_u3",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2ac",
+      "comment": "Current UV v3 for quad draws.",
+      "name": "grim_uv_v3",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2b0",
+      "comment": "Active Grim2D config-dialog window handle.",
+      "name": "grim_config_dialog_hwnd",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x1005b2b4",
+      "comment": "Selected D3D device type for CreateDevice (HAL/REF).",
+      "name": "grim_d3d_device_type",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2b8",
+      "comment": "Config-dialog selected BPP16 flag (low byte; used to choose 16 vs 32 bpp apply path).",
+      "name": "grim_config_dialog_bpp16_selected",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005b2bc",
       "comment": "Computed frames-per-second value.",
       "name": "grim_fps",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2c0",
+      "comment": "Scratch WORD pointer returned by index-buffer Lock() while writing quad indices.",
+      "name": "grim_index_write_ptr",
+      "program": "grim.dll",
+      "type": "WORD *"
     },
     {
       "address": "0x1005b2c4",
@@ -8371,6 +9624,20 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005bac8",
+      "comment": "Heap-allocated window title string (default \"Grim - No Title\"; updated via config var id 7).",
+      "name": "grim_window_title",
+      "program": "grim.dll",
+      "type": "char *"
+    },
+    {
+      "address": "0x1005bad0",
+      "comment": "Current timeGetTime sample captured by the frame-timing step.",
+      "name": "grim_tick_now_ms",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
       "address": "0x1005bacc",
       "comment": "Grim2D module handle (HINSTANCE).",
       "name": "grim_module_handle",
@@ -8389,10 +9656,29 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005bc08",
+      "comment": "Packed RGBA color slot 1.",
+      "name": "grim_color_slot1",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bc0c",
+      "comment": "Packed RGBA color slot 2.",
+      "name": "grim_color_slot2",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x1005bc10",
       "comment": "Packed RGBA color slot 3.",
       "name": "grim_color_slot3",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bc14",
+      "comment": "Lookup-blob availability flag set from FUN_10005a40 return value.",
+      "name": "grim_lookup_blob_loaded",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005bc78",
@@ -8425,6 +9711,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005befc",
+      "comment": "Config-dialog flag set once any adapter passes the required CheckDeviceType checks.",
+      "name": "grim_config_dialog_has_supported_adapter",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005bf00",
       "comment": "Grim2D scratch int slot table.",
       "name": "grim_slot_ints",
@@ -8443,11 +9736,25 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005c408",
+      "comment": "SYSTEMTIME scratch written by GetLocalTime during config-dialog initialization.",
+      "name": "grim_config_dialog_system_time",
+      "program": "grim.dll",
+      "type": "SYSTEMTIME"
+    },
+    {
       "address": "0x1005c418",
       "comment": "Raw crimson_cfg config blob (0x480 bytes read/write).",
       "name": "grim_config_blob",
       "type": "crimson_cfg_t",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005c898",
+      "comment": "Device-ready/cooperative flag (true when TestCooperativeLevel succeeds and rendering is allowed).",
+      "name": "grim_device_ready",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005c8dc",
@@ -8524,6 +9831,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005cc08",
+      "comment": "Windowed-mode config flag used by grim_window_create and D3D present-parameter setup.",
+      "name": "grim_windowed_mode_enabled",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005cc58",
       "comment": "Input cache flag (uses cached mouse state when nonzero).",
       "name": "grim_input_cached",
@@ -8534,6 +9848,118 @@
       "comment": "Font texture bound flag (nonzero skips SetTexture in draw_text).",
       "name": "grim_font_texture_bound",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005ce18",
+      "comment": "Display-mode width staging value used to preselect and apply config-dialog mode choices.",
+      "name": "grim_config_mode_width",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005ce28",
+      "comment": "Display-mode height staging value used to preselect and apply config-dialog mode choices.",
+      "name": "grim_config_mode_height",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005ce38",
+      "comment": "Display-mode color depth staging value (bits per pixel: 16 or 32).",
+      "name": "grim_config_mode_bpp",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005ceb8",
+      "comment": "Requested backbuffer count used to seed D3DPRESENT_PARAMETERS.BackBufferCount.",
+      "name": "grim_config_backbuffer_count",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005cec8",
+      "comment": "Reference-device toggle (nonzero selects D3DDEVTYPE_REF in grim_d3d_init; mirrored by config dialog checkbox 0x3ed).",
+      "name": "grim_use_ref_device",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005ced8",
+      "comment": "Auto depth-stencil enable flag (feeds D3DPRESENT_PARAMETERS.EnableAutoDepthStencil).",
+      "name": "grim_enable_auto_depth_stencil",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d0c8",
+      "comment": "Config-dialog checkbox state latched from control id 0x3ef (later copied to grim_config_option_54_value).",
+      "name": "grim_config_dialog_option_3ef_checked",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d138",
+      "comment": "Joystick axis deadzone threshold used by directional helper checks (default 100.0).",
+      "name": "grim_joystick_deadzone",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d148",
+      "comment": "Joystick X-axis center offset used by directional helper checks.",
+      "name": "grim_joystick_center_x",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d158",
+      "comment": "Joystick Y-axis center offset used by directional helper checks.",
+      "name": "grim_joystick_center_y",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d400",
+      "comment": "Applied value for Grim config var id 0x54 (copied from grim_config_dialog_option_3ef_checked).",
+      "name": "grim_config_option_54_value",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d3b0",
+      "comment": "Millisecond-to-seconds scale constant (0.001f) used for frame dt and FPS calculations.",
+      "name": "grim_ms_to_seconds_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d3a8",
+      "comment": "Device-lost callback (set via config var id 5; called before backup/release paths).",
+      "name": "grim_on_device_lost",
+      "program": "grim.dll",
+      "type": "void (*)(void)"
+    },
+    {
+      "address": "0x1005d3b8",
+      "comment": "Cached mouse wheel delta used when input-cached mode is enabled.",
+      "name": "grim_mouse_wheel_delta_cached",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d3c4",
+      "comment": "Buffered key-char FIFO storage used by grim_get_key_char (up to 7 pending entries).",
+      "name": "grim_key_char_queue",
+      "program": "grim.dll",
+      "type": "int[8]"
+    },
+    {
+      "address": "0x1005d3e4",
+      "comment": "Current count of buffered key chars in grim_key_char_queue.",
+      "name": "grim_key_char_queue_count",
+      "program": "grim.dll",
+      "type": "int"
     },
     {
       "address": "0x1005d388",
@@ -8554,6 +9980,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d3e8",
+      "comment": "Selected display adapter index used by GetDeviceCaps/CreateDevice.",
+      "name": "grim_selected_adapter_index",
+      "program": "grim.dll",
+      "type": "UINT"
+    },
+    {
       "address": "0x1005d3ec",
       "comment": "Font texture (IDirect3DTexture8) used for text rendering.",
       "name": "grim_font_texture",
@@ -8566,10 +9999,59 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d3f8",
+      "comment": "Primary Grim2D game window handle (created by grim_window_create).",
+      "name": "grim_main_window_hwnd",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x1005d3fc",
+      "comment": "Optional override window handle used for D3D device window selection.",
+      "name": "grim_device_window_override",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
       "address": "0x1005d404",
       "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle).",
       "name": "grim_texture_slots",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d808",
+      "comment": "Retry counter for device Reset/restore attempts after device loss.",
+      "name": "grim_device_reset_retry_count",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005d810",
+      "comment": "Texture backup/restore pending flag (set after backup, cleared after restore).",
+      "name": "grim_texture_backup_pending",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d811",
+      "comment": "Pending flag to invoke grim_on_device_restore once the main loop regains a ready device.",
+      "name": "grim_device_restore_callback_pending",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d814",
+      "comment": "Frame counter accumulated for the rolling FPS sample window.",
+      "name": "grim_fps_sample_frames",
+      "program": "grim.dll",
+      "type": "uint"
+    },
+    {
+      "address": "0x1005d818",
+      "comment": "Elapsed milliseconds accumulated for the rolling FPS sample window.",
+      "name": "grim_fps_sample_elapsed_ms",
+      "program": "grim.dll",
+      "type": "uint"
     },
     {
       "address": "0x1005d81c",
@@ -8698,6 +10180,19 @@
       "address": "0x1005db54",
       "comment": "Mouse delta Y (pixels) accumulated per poll.",
       "name": "grim_mouse_dy",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005db58",
+      "comment": "Mouse wheel delta accumulated during the current DirectInput poll.",
+      "name": "grim_mouse_wheel_delta",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005db6c",
+      "comment": "Saved x87 FPU control word used by fpu_set_round_trunc/ftol helpers.",
+      "name": "fpu_control_word_saved_ftol",
       "program": "grim.dll"
     },
     {

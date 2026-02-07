@@ -44,6 +44,7 @@ public class ApplyNameMap extends GhidraScript {
     private static final Pattern FUNCTION_POINTER_RE = Pattern.compile(
         "\\b(?<ret>[A-Za-z_][A-Za-z0-9_\\s]*?)\\(\\s*\\*\\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\\s*\\)\\s*\\([^)]*\\)"
     );
+    private static final Pattern FILE_POINTER_RE = Pattern.compile("\\bFILE\\s*\\*");
 
     private static String defaultMapPath() {
         String jsonPath = "analysis" + File.separator + "ghidra" + File.separator + "maps"
@@ -301,23 +302,39 @@ public class ApplyNameMap extends GhidraScript {
             }
 
             if (row.signature != null && !row.signature.isBlank()) {
+                String normalized = normalizeSignature(row.signature);
+                String parseError = null;
+                FunctionDefinitionDataType sig = null;
                 try {
-                    String normalized = normalizeSignature(row.signature);
-                    FunctionDefinitionDataType sig = parser.parse(function.getSignature(), normalized);
-                    if (sig == null) {
-                        printerr("Signature parse failed for " + row.name + ": " + row.signature);
-                    } else {
-                        ApplyFunctionSignatureCmd cmd =
-                            new ApplyFunctionSignatureCmd(function.getEntryPoint(), sig, SourceType.USER_DEFINED);
-                        if (cmd.applyTo(currentProgram, monitor)) {
-                            signatures++;
-                            changed = true;
-                        } else {
-                            printerr("Signature apply failed for " + row.name + ": " + row.signature);
+                    sig = parser.parse(function.getSignature(), normalized);
+                } catch (Exception e) {
+                    parseError = e.getMessage();
+                }
+                if (sig == null) {
+                    String fallback = normalizeKnownTypeFallback(normalized);
+                    if (!fallback.equals(normalized)) {
+                        try {
+                            sig = parser.parse(function.getSignature(), fallback);
+                            normalized = fallback;
+                        } catch (Exception e) {
+                            parseError = e.getMessage();
                         }
                     }
-                } catch (Exception e) {
-                    printerr("Signature parse failed for " + row.name + ": " + e.getMessage());
+                }
+                if (sig == null) {
+                    if (parseError == null || parseError.isBlank()) {
+                        parseError = row.signature;
+                    }
+                    printerr("Signature parse failed for " + row.name + ": " + parseError);
+                } else {
+                    ApplyFunctionSignatureCmd cmd =
+                        new ApplyFunctionSignatureCmd(function.getEntryPoint(), sig, SourceType.USER_DEFINED);
+                    if (cmd.applyTo(currentProgram, monitor)) {
+                        signatures++;
+                        changed = true;
+                    } else {
+                        printerr("Signature apply failed for " + row.name + ": " + normalized);
+                    }
                 }
             }
 
@@ -348,5 +365,12 @@ public class ApplyNameMap extends GhidraScript {
             .replaceAll(match -> match.group("ret").trim() + " *" + match.group("name"));
         normalized = normalized.replaceAll("\\s+", " ").trim();
         return normalized;
+    }
+
+    private static String normalizeKnownTypeFallback(String signature) {
+        if (signature == null || signature.isBlank()) {
+            return "";
+        }
+        return FILE_POINTER_RE.matcher(signature).replaceAll("void *");
     }
 }

@@ -228,21 +228,22 @@ void console_cmd_exec(void)
     console_printf(&console_log_queue,s_exec_<script>_0047118c);
     return;
   }
-  fp = (FILE *)crt_fopen(console_cmd_arg1,&DAT_00471160);
+  fp = crt_fopen(console_cmd_arg1,&DAT_00471160);
   if (fp != (FILE *)0x0) {
     console_printf(&console_log_queue,s_Executing___s__00471164,console_cmd_arg1);
-    pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,(undefined4 *)fp);
+    pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,fp);
     while (pcVar1 != (char *)0x0) {
-      pcVar1 = _strchr(&DAT_0047e848,10);
+      pcVar1 = _strchr(&console_exec_line_buf,10);
       if (pcVar1 != (char *)0x0) {
         *pcVar1 = '\0';
       }
       DAT_0047ea47 = 0;
-      if ((((DAT_0047e848 != '/') && (DAT_0047e849 != '/')) && (DAT_0047e848 != '\n')) &&
-         ((DAT_0047e848 != '\0' && (DAT_0047e848 != '#')))) {
-        console_exec_line(&console_log_queue,&DAT_0047e848);
+      if ((((console_exec_line_buf != '/') && (DAT_0047e849 != '/')) &&
+          (console_exec_line_buf != '\n')) &&
+         ((console_exec_line_buf != '\0' && (console_exec_line_buf != '#')))) {
+        console_exec_line(&console_log_queue,&console_exec_line_buf);
       }
-      pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,(undefined4 *)fp);
+      pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,fp);
     }
     crt_fclose(fp);
     return;
@@ -470,11 +471,12 @@ int * __fastcall console_init(int *console_state)
   }
   *console_state = (int)puVar1;
   puVar1[3] = 0x3f800000;
-  pcVar2 = strdup_malloc(&DAT_00471260);
+  pcVar2 = strdup_malloc(&console_cvar_default_scalar);
   *(char **)(*console_state + 0x10) = pcVar2;
   *(undefined4 *)(*console_state + 0x14) = 1;
-  DAT_0047f4d0 = console_register_cvar(console_state,s_con_monoFont_0047124c,&DAT_0047125c);
-  DAT_0047eaa0 = 0;
+  cv_con_mono_font =
+       console_register_cvar(console_state,s_con_monoFont_0047124c,&console_cvar_default_true);
+  console_tokenize_buf = 0;
   _DAT_0047eaa4 = 0;
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
@@ -803,21 +805,21 @@ void __fastcall console_update(int console_state)
   float10 fVar13;
   
   if (*(char *)(console_state + 0x28) == '\0') {
-    _DAT_0047115c = _DAT_0047ea48 * 3.5 + _DAT_0047115c;
-    if (1.0 < _DAT_0047115c) {
-      _DAT_0047115c = 1.0;
+    console_open_anim_t = _DAT_0047ea48 * 3.5 + console_open_anim_t;
+    if (1.0 < console_open_anim_t) {
+      console_open_anim_t = 1.0;
     }
-    fVar13 = (float10)fsin(((float10)1.0 - (float10)_DAT_0047115c) * (float10)1.5707964);
+    fVar13 = (float10)fsin(((float10)1.0 - (float10)console_open_anim_t) * (float10)1.5707964);
     *(float *)(console_state + 0x1c) =
          (float)(fVar13 * (float10)*(int *)(console_state + 0x18) -
                 (float10)*(int *)(console_state + 0x18));
     return;
   }
-  _DAT_0047115c = _DAT_0047115c - _DAT_0047ea48 * 3.5;
-  if (_DAT_0047115c < 0.0) {
-    _DAT_0047115c = 0.0;
+  console_open_anim_t = console_open_anim_t - _DAT_0047ea48 * 3.5;
+  if (console_open_anim_t < 0.0) {
+    console_open_anim_t = 0.0;
   }
-  fVar13 = (float10)fsin(((float10)1.0 - (float10)_DAT_0047115c) * (float10)1.5707964);
+  fVar13 = (float10)fsin(((float10)1.0 - (float10)console_open_anim_t) * (float10)1.5707964);
   *(float *)(console_state + 0x1c) =
        (float)(fVar13 * (float10)*(int *)(console_state + 0x18) -
               (float10)*(int *)(console_state + 0x18));
@@ -1095,7 +1097,7 @@ int __fastcall console_render(void *arg1)
               (1.0,1.0,1.0,
                ((float)*(int *)((int)arg1 + 0x18) + *(float *)((int)arg1 + 0x1c)) /
                (float)*(int *)((int)arg1 + 0x18));
-    if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+    if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
       pIVar1 = grim_interface_ptr->vtable;
       pcVar4 = console_input_buffer();
       (*pIVar1->grim_draw_text_small_fmt)
@@ -1123,7 +1125,7 @@ int __fastcall console_render(void *arg1)
       do {
         if (iVar3 < 0) break;
         fVar9 = (float)iVar5 + *(float *)((int)arg1 + 0x1c);
-        if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+        if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
           (*grim_interface_ptr->vtable->grim_draw_text_small)(10.0,fVar9,(char *)*puVar7);
         }
         else {
@@ -1158,7 +1160,7 @@ LAB_004021ca:
       fStack_4c = 1.0;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_4c);
-    if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+    if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
       pIVar1 = grim_interface_ptr->vtable;
       text = &DAT_004712b8;
       fVar9 = (float)((iVar3 + 1) * 0x10) + *(float *)((int)arg1 + 0x1c) + 2.0;
@@ -1408,7 +1410,7 @@ void console_tokenize_line(char *line)
       } while (cVar1 != '\0');
       uVar3 = ~uVar3;
       pcVar2 = pcVar2 + -uVar3;
-      pcVar6 = (char *)&DAT_0047eaa0;
+      pcVar6 = (char *)&console_tokenize_buf;
       for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
         *(undefined4 *)pcVar6 = *(undefined4 *)pcVar2;
         pcVar2 = pcVar2 + 4;
@@ -1419,7 +1421,7 @@ void console_tokenize_line(char *line)
         pcVar2 = pcVar2 + 1;
         pcVar6 = pcVar6 + 1;
       }
-      pcVar2 = crt_strtok((char *)&DAT_0047eaa0,&DAT_004712d8);
+      pcVar2 = crt_strtok((char *)&console_tokenize_buf,&DAT_004712d8);
       iVar7 = console_cmd_argc;
       if (pcVar2 != (char *)0x0) {
         iVar7 = 1;
@@ -1674,11 +1676,11 @@ int __fastcall console_flush_log(void *console_state,char *filename)
   int iVar5;
   uint uVar6;
   char *in_stack_00000004;
-  char *pcVar7;
+  char *mode;
   
-  pcVar7 = &DAT_004712dc;
+  mode = &DAT_004712dc;
   pcVar2 = game_build_path(in_stack_00000004);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar7);
+  fp = crt_fopen(pcVar2,mode);
   if (fp == (FILE *)0x0) {
     return 0;
   }
@@ -1686,7 +1688,7 @@ int __fastcall console_flush_log(void *console_state,char *filename)
   do {
     iVar4 = iVar4 + -1;
     if (iVar4 < 0) {
-      crt_fflush((int *)fp);
+      crt_fflush(fp);
       iVar4 = crt_fclose(fp);
       return CONCAT31((int3)((uint)iVar4 >> 8),1);
     }
@@ -1706,7 +1708,7 @@ int __fastcall console_flush_log(void *console_state,char *filename)
       cVar1 = *pcVar2;
       pcVar2 = pcVar2 + 1;
     } while (cVar1 != '\0');
-    crt_fwrite((char *)*puVar3,~uVar6 - 1,1,(int *)fp);
+    crt_fwrite((char *)*puVar3,~uVar6 - 1,1,fp);
   } while( true );
 }
 
@@ -1893,31 +1895,46 @@ char * game_build_path(char *filename)
 void register_core_cvars(void)
 
 {
-  cv_silentloads = console_register_cvar(&console_log_queue,s_cv_silentloads_00471434,&DAT_0047125c)
-  ;
+  cv_silentloads =
+       console_register_cvar
+                 (&console_log_queue,s_cv_silentloads_00471434,&console_cvar_default_true);
   cv_terrainFilter =
-       console_register_cvar(&console_log_queue,s_cv_terrainFilter_00471420,&DAT_0047125c);
-  cv_bodiesFade = console_register_cvar(&console_log_queue,s_cv_bodiesFade_00471410,&DAT_0047125c);
+       console_register_cvar
+                 (&console_log_queue,s_cv_terrainFilter_00471420,&console_cvar_default_true);
+  cv_bodiesFade =
+       console_register_cvar(&console_log_queue,s_cv_bodiesFade_00471410,&console_cvar_default_true)
+  ;
   cv_uiTransparency =
-       console_register_cvar(&console_log_queue,s_cv_uiTransparency_004713fc,&DAT_0047125c);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiTransparency_004713fc,&console_cvar_default_true);
   cv_uiPointFilterPanels =
-       console_register_cvar(&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&console_cvar_default_false);
   cv_enableMousePointAndClickMovement =
        console_register_cvar
-                 (&console_log_queue,s_cv_enableMousePointAndClickMovem_004713bc,&DAT_004713f8);
-  cv_verbose = console_register_cvar(&console_log_queue,s_cv_verbose_004713b0,&DAT_004713f8);
+                 (&console_log_queue,s_cv_enableMousePointAndClickMovem_004713bc,
+                  &console_cvar_default_false);
+  cv_verbose = console_register_cvar
+                         (&console_log_queue,s_cv_verbose_004713b0,&console_cvar_default_false);
   cv_terrainBodiesTransparency =
        console_register_cvar
-                 (&console_log_queue,s_cv_terrainBodiesTransparency_00471390,&DAT_004713f8);
+                 (&console_log_queue,s_cv_terrainBodiesTransparency_00471390,
+                  &console_cvar_default_false);
   cv_uiSmallIndicators =
-       console_register_cvar(&console_log_queue,s_cv_uiSmallIndicators_00471378,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiSmallIndicators_00471378,&console_cvar_default_false);
   cv_aimEnhancementFade =
-       console_register_cvar(&console_log_queue,s_cv_aimEnhancementFade_00471360,&DAT_00471260);
+       console_register_cvar
+                 (&console_log_queue,s_cv_aimEnhancementFade_00471360,&console_cvar_default_scalar);
   cv_friendlyFire =
-       console_register_cvar(&console_log_queue,s_cv_friendlyFire_00471350,&DAT_004713f8);
-  cv_showFPS = console_register_cvar(&console_log_queue,s_cv_showFPS_00471344,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_friendlyFire_00471350,&console_cvar_default_false);
+  cv_showFPS = console_register_cvar
+                         (&console_log_queue,s_cv_showFPS_00471344,&console_cvar_default_false);
   cv_padAimDistMul =
-       console_register_cvar(&console_log_queue,s_cv_padAimDistMul_0047132c,&DAT_00471340);
+       console_register_cvar
+                 (&console_log_queue,s_cv_padAimDistMul_0047132c,
+                  &console_cvar_default_pad_aim_dist_mul);
   return;
 }
 
@@ -2075,7 +2092,7 @@ void demo_setup_variant_1(void)
   float local_4;
   
   _config_player_count = 2;
-  terrain_generate(&DAT_00484914);
+  terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13);
   demo_time_limit_ms = 5000;
   iVar3 = 0;
   do {
@@ -2361,29 +2378,29 @@ char * __cdecl input_key_name(int key_code)
     case 0xd:
       return s_EQUALS_00471878;
     case 0xe:
-      return &DAT_00471870;
+      return &input_key_name_backspace;
     case 0xf:
-      return &DAT_0047186c;
+      return &input_key_name_tab;
     case 0x10:
-      return &DAT_00471868;
+      return &input_key_name_q;
     case 0x11:
-      return &DAT_00471864;
+      return &input_key_name_w;
     case 0x12:
-      return &DAT_00471860;
+      return &input_key_name_e;
     case 0x13:
-      return &DAT_0047185c;
+      return &input_key_name_r;
     case 0x14:
-      return &DAT_00471858;
+      return &input_key_name_t;
     case 0x15:
-      return &DAT_00471854;
+      return &input_key_name_y;
     case 0x16:
-      return &DAT_00471850;
+      return &input_key_name_u;
     case 0x17:
-      return &DAT_0047184c;
+      return &input_key_name_i;
     case 0x18:
-      return &DAT_00471848;
+      return &input_key_name_o;
     case 0x19:
-      return &DAT_00471844;
+      return &input_key_name_p;
     case 0x1a:
       return s_LBRACKET_00471838;
     case 0x1b:
@@ -2393,23 +2410,23 @@ char * __cdecl input_key_name(int key_code)
     case 0x1d:
       return s_LCONTROL_00471818;
     case 0x1e:
-      return &DAT_00471814;
+      return &input_key_name_a;
     case 0x1f:
-      return &DAT_00471810;
+      return &input_key_name_s;
     case 0x20:
-      return &DAT_0047180c;
+      return &input_key_name_d;
     case 0x21:
-      return &DAT_00471808;
+      return &input_key_name_f;
     case 0x22:
-      return &DAT_00471804;
+      return &input_key_name_g;
     case 0x23:
-      return &DAT_00471800;
+      return &input_key_name_h;
     case 0x24:
-      return &DAT_004717fc;
+      return &input_key_name_j;
     case 0x25:
-      return &DAT_004717f8;
+      return &input_key_name_k;
     case 0x26:
-      return &DAT_004717f4;
+      return &input_key_name_l;
     case 0x27:
       return s_SEMICOLON_004717e8;
     case 0x28:
@@ -2421,19 +2438,19 @@ char * __cdecl input_key_name(int key_code)
     case 0x2b:
       return s_BACKSLASH_004717c0;
     case 0x2c:
-      return &DAT_004717bc;
+      return &input_key_name_z;
     case 0x2d:
-      return &DAT_004717b8;
+      return &input_key_name_x;
     case 0x2e:
-      return &DAT_004717b4;
+      return &input_key_name_c;
     case 0x2f:
-      return &DAT_004717b0;
+      return &input_key_name_v;
     case 0x30:
-      return &DAT_004717ac;
+      return &input_key_name_b;
     case 0x31:
-      return &DAT_004717a8;
+      return &input_key_name_n;
     case 0x32:
-      return &DAT_004717a4;
+      return &input_key_name_m;
     case 0x33:
       return s_COMMA_0047179c;
     case 0x34:
@@ -2451,25 +2468,25 @@ char * __cdecl input_key_name(int key_code)
     case 0x3a:
       return s_CAPITAL_00471760;
     case 0x3b:
-      return &DAT_0047175c;
+      return &input_key_name_f1;
     case 0x3c:
-      return &DAT_00471758;
+      return &input_key_name_f2;
     case 0x3d:
-      return &DAT_00471754;
+      return &input_key_name_f3;
     case 0x3e:
-      return &DAT_00471750;
+      return &input_key_name_f4;
     case 0x3f:
-      return &DAT_0047174c;
+      return &input_key_name_f5;
     case 0x40:
-      return &DAT_00471748;
+      return &input_key_name_f6;
     case 0x41:
-      return &DAT_00471744;
+      return &input_key_name_f7;
     case 0x42:
-      return &DAT_00471740;
+      return &input_key_name_f8;
     case 0x43:
-      return &DAT_0047173c;
+      return &input_key_name_f9;
     case 0x44:
-      return &DAT_00471738;
+      return &input_key_name_f10;
     case 0x45:
       return s_NUMLOCK_00471730;
     case 0x46:
@@ -2489,7 +2506,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x4d:
       return s_NUMPAD6_004716ec;
     case 0x4e:
-      return &DAT_004716e8;
+      return &input_key_name_add;
     case 0x4f:
       return s_NUMPAD1_004716e0;
     case 0x50:
@@ -2505,17 +2522,17 @@ char * __cdecl input_key_name(int key_code)
     case 0x56:
       return s_OEM_102_004716b8;
     case 0x57:
-      return &DAT_004716b4;
+      return &input_key_name_f11;
     case 0x58:
-      return &DAT_004716b0;
+      return &input_key_name_f12;
     case 100:
-      return &DAT_004716ac;
+      return &input_key_name_f13;
     case 0x65:
-      return &DAT_004716a8;
+      return &input_key_name_f14;
     case 0x66:
-      return &DAT_004716a4;
+      return &input_key_name_f15;
     case 0x70:
-      return &DAT_0047169c;
+      return &input_key_name_kana;
     case 0x73:
       return s_ABNT_C1_00471694;
     case 0x79:
@@ -2523,7 +2540,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x7b:
       return s_NOCONVERT_00471680;
     case 0x7d:
-      return &DAT_0047167c;
+      return &input_key_name_yen;
     case 0x7e:
       return s_ABNT_C2_00471674;
     case 0x8d:
@@ -2531,7 +2548,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x90:
       return s_PREVTRACK_00471658;
     case 0x91:
-      return &DAT_00471654;
+      return &input_key_name_at;
     case 0x92:
       return s_COLON_0047164c;
     case 0x93:
@@ -2539,9 +2556,9 @@ char * __cdecl input_key_name(int key_code)
     case 0x94:
       return s_KANJI_00471638;
     case 0x95:
-      return &DAT_00471630;
+      return &input_key_name_stop;
     case 0x96:
-      return &DAT_0047162c;
+      return &input_key_name_ax;
     case 0x97:
       return s_UNLABELED_00471620;
     case 0x99:
@@ -2551,7 +2568,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x9d:
       return s_RCONTROL_004715fc;
     case 0xa0:
-      return &DAT_004715f4;
+      return &input_key_name_mute;
     case 0xa1:
       return s_CALCULATOR_004715e8;
     case 0xa2:
@@ -2575,37 +2592,37 @@ char * __cdecl input_key_name(int key_code)
     case 0xc5:
       return s_PAUSE_00471584;
     case 199:
-      return &DAT_0047157c;
+      return &input_key_name_home;
     case 200:
-      return &DAT_00471578;
+      return &input_key_name_up;
     case 0xc9:
       return s_PRIOR_00471570;
     case 0xcb:
-      return &DAT_00471568;
+      return &input_key_name_left;
     case 0xcd:
       return s_RIGHT_00471560;
     case 0xcf:
-      return &DAT_0047155c;
+      return &input_key_name_end;
     case 0xd0:
-      return &DAT_00471554;
+      return &input_key_name_down;
     case 0xd1:
-      return &DAT_0047154c;
+      return &input_key_name_next;
     case 0xd2:
       return s_INSERT_00471544;
     case 0xd3:
       return s_DELETE_0047153c;
     case 0xdb:
-      return &DAT_00471534;
+      return &input_key_name_lwin;
     case 0xdc:
-      return &DAT_0047152c;
+      return &input_key_name_rwin;
     case 0xdd:
-      return &DAT_00471524;
+      return &input_key_name_apps;
     case 0xde:
       return s_POWER_0047151c;
     case 0xdf:
       return s_SLEEP_00471514;
     case 0xe3:
-      return &DAT_0047150c;
+      return &input_key_name_wake;
     case 0xe5:
       return s_WEBSEARCH_00471500;
     case 0xe6:
@@ -2621,7 +2638,7 @@ char * __cdecl input_key_name(int key_code)
     case 0xeb:
       return s_MYCOMPUTER_004714bc;
     case 0xec:
-      return &DAT_004714b4;
+      return &input_key_name_mail;
     case 0xed:
       return s_MEDIASELECT_004714a8;
     }
@@ -2688,7 +2705,7 @@ char * __cdecl input_key_name(int key_code)
     else {
       if (key_code == 0x104) {
         uVar3 = 0xffffffff;
-        pcVar5 = &DAT_00471ad4;
+        pcVar5 = &input_key_name_mouse5;
         do {
           pcVar6 = pcVar5;
           if (uVar3 == 0) break;
@@ -2748,7 +2765,7 @@ char * __cdecl input_key_name(int key_code)
         else {
           if (key_code == 0x120) {
             uVar3 = 0xffffffff;
-            pcVar5 = &DAT_00471aac;
+            pcVar5 = &input_key_name_joys2;
             do {
               pcVar6 = pcVar5;
               if (uVar3 == 0) break;
@@ -2778,7 +2795,7 @@ char * __cdecl input_key_name(int key_code)
           else {
             if (key_code == 0x122) {
               uVar3 = 0xffffffff;
-              pcVar5 = &DAT_00471a9c;
+              pcVar5 = &input_key_name_joys4;
               do {
                 pcVar6 = pcVar5;
                 if (uVar3 == 0) break;
@@ -2808,7 +2825,7 @@ char * __cdecl input_key_name(int key_code)
             else {
               if (key_code == 0x124) {
                 uVar3 = 0xffffffff;
-                pcVar5 = &DAT_00471a8c;
+                pcVar5 = &input_key_name_joys6;
                 do {
                   pcVar6 = pcVar5;
                   if (uVar3 == 0) break;
@@ -2838,7 +2855,7 @@ char * __cdecl input_key_name(int key_code)
               else {
                 if (key_code == 0x126) {
                   uVar3 = 0xffffffff;
-                  pcVar5 = &DAT_00471a7c;
+                  pcVar5 = &input_key_name_joys8;
                   do {
                     pcVar6 = pcVar5;
                     if (uVar3 == 0) break;
@@ -2868,7 +2885,7 @@ char * __cdecl input_key_name(int key_code)
                 else {
                   if (key_code == 0x128) {
                     uVar3 = 0xffffffff;
-                    pcVar5 = &DAT_00471a6c;
+                    pcVar5 = &input_key_name_joys10;
                     do {
                       pcVar6 = pcVar5;
                       if (uVar3 == 0) break;
@@ -2898,7 +2915,7 @@ char * __cdecl input_key_name(int key_code)
                   else {
                     if (key_code == 0x12a) {
                       uVar3 = 0xffffffff;
-                      pcVar5 = &DAT_00471a5c;
+                      pcVar5 = &input_key_name_joys12;
                       do {
                         pcVar6 = pcVar5;
                         if (uVar3 == 0) break;
@@ -3018,7 +3035,7 @@ char * __cdecl input_key_name(int key_code)
                           else {
                             if (key_code == 0x153) {
                               uVar3 = 0xffffffff;
-                              pcVar5 = &DAT_00471a04;
+                              pcVar5 = &input_key_name_joy_rot_x;
                               do {
                                 pcVar6 = pcVar5;
                                 if (uVar3 == 0) break;
@@ -3048,7 +3065,7 @@ char * __cdecl input_key_name(int key_code)
                             else {
                               if (key_code == 0x155) {
                                 uVar3 = 0xffffffff;
-                                pcVar5 = &DAT_004719f4;
+                                pcVar5 = &input_key_name_joy_rot_z;
                                 do {
                                   pcVar6 = pcVar5;
                                   if (uVar3 == 0) break;
@@ -3078,7 +3095,7 @@ char * __cdecl input_key_name(int key_code)
                               else {
                                 if (key_code == 0x163) {
                                   uVar3 = 0xffffffff;
-                                  pcVar5 = &DAT_004719e0;
+                                  pcVar5 = &input_key_name_rim0_x_axis;
                                   do {
                                     pcVar6 = pcVar5;
                                     if (uVar3 == 0) break;
@@ -3108,7 +3125,7 @@ char * __cdecl input_key_name(int key_code)
                                 else {
                                   if (key_code == 0x165) {
                                     uVar3 = 0xffffffff;
-                                    pcVar5 = &DAT_004719c8;
+                                    pcVar5 = &input_key_name_rim2_x_axis;
                                     do {
                                       pcVar6 = pcVar5;
                                       if (uVar3 == 0) break;
@@ -3138,7 +3155,7 @@ char * __cdecl input_key_name(int key_code)
                                   else {
                                     if (key_code == 0x169) {
                                       uVar3 = 0xffffffff;
-                                      pcVar5 = &DAT_004719b0;
+                                      pcVar5 = &input_key_name_rim1_y_axis;
                                       do {
                                         pcVar6 = pcVar5;
                                         if (uVar3 == 0) break;
@@ -3168,7 +3185,7 @@ char * __cdecl input_key_name(int key_code)
                                     else {
                                       if (key_code == 0x16d) {
                                         uVar3 = 0xffffffff;
-                                        pcVar5 = &DAT_00471998;
+                                        pcVar5 = &input_key_name_rim0_btn1;
                                         do {
                                           pcVar6 = pcVar5;
                                           if (uVar3 == 0) break;
@@ -3198,7 +3215,7 @@ char * __cdecl input_key_name(int key_code)
                                       else {
                                         if (key_code == 0x16f) {
                                           uVar3 = 0xffffffff;
-                                          pcVar5 = &DAT_00471980;
+                                          pcVar5 = &input_key_name_rim0_btn3;
                                           do {
                                             pcVar6 = pcVar5;
                                             if (uVar3 == 0) break;
@@ -3228,7 +3245,7 @@ char * __cdecl input_key_name(int key_code)
                                         else {
                                           if (key_code == 0x171) {
                                             uVar3 = 0xffffffff;
-                                            pcVar5 = &DAT_00471968;
+                                            pcVar5 = &input_key_name_rim0_btn5;
                                             do {
                                               pcVar6 = pcVar5;
                                               if (uVar3 == 0) break;
@@ -3259,7 +3276,7 @@ char * __cdecl input_key_name(int key_code)
                                           else {
                                             if (key_code == 0x173) {
                                               uVar3 = 0xffffffff;
-                                              pcVar5 = &DAT_00471950;
+                                              pcVar5 = &input_key_name_rim1_btn2;
                                               do {
                                                 pcVar6 = pcVar5;
                                                 if (uVar3 == 0) break;
@@ -3291,7 +3308,7 @@ char * __cdecl input_key_name(int key_code)
                                             else {
                                               if (key_code == 0x175) {
                                                 uVar3 = 0xffffffff;
-                                                pcVar5 = &DAT_00471938;
+                                                pcVar5 = &input_key_name_rim1_btn4;
                                                 do {
                                                   pcVar6 = pcVar5;
                                                   if (uVar3 == 0) break;
@@ -3323,7 +3340,7 @@ char * __cdecl input_key_name(int key_code)
                                               else {
                                                 if (key_code == 0x177) {
                                                   uVar3 = 0xffffffff;
-                                                  pcVar5 = &DAT_00471920;
+                                                  pcVar5 = &input_key_name_rim2_btn1;
                                                   do {
                                                     pcVar6 = pcVar5;
                                                     if (uVar3 == 0) break;
@@ -3355,7 +3372,7 @@ char * __cdecl input_key_name(int key_code)
                                                 else {
                                                   if (key_code == 0x179) {
                                                     uVar3 = 0xffffffff;
-                                                    pcVar5 = &DAT_00471908;
+                                                    pcVar5 = &input_key_name_rim2_btn3;
                                                     do {
                                                       pcVar6 = pcVar5;
                                                       if (uVar3 == 0) break;
@@ -3387,7 +3404,7 @@ char * __cdecl input_key_name(int key_code)
                                                   else {
                                                     if (key_code == 0x17b) {
                                                       uVar3 = 0xffffffff;
-                                                      pcVar5 = &DAT_004718f0;
+                                                      pcVar5 = &input_key_name_rim2_btn5;
                                                       do {
                                                         pcVar6 = pcVar5;
                                                         if (uVar3 == 0) break;
@@ -7518,7 +7535,7 @@ void console_hotkey_update(void)
         pcVar4 = s_shot__d_bmp_0047299c;
       }
       crt_sprintf(&screenshot_filename_buf,pcVar4);
-      fp = (FILE *)crt_fopen(&screenshot_filename_buf,&file_mode_read_binary);
+      fp = crt_fopen(&screenshot_filename_buf,&file_mode_read_binary);
       if (fp != (FILE *)0x0) {
         crt_fclose(fp);
       }
@@ -8351,7 +8368,7 @@ mod_var_t * mod_api_core_get_var(char *id)
   
   puVar1 = console_cvar_find(&console_log_queue,id);
   if (puVar1 == (undefined4 *)0x0) {
-    puVar1 = console_register_cvar(&console_log_queue,id,&DAT_0047125c);
+    puVar1 = console_register_cvar(&console_log_queue,id,&console_cvar_default_true);
   }
   puVar1[8] = puVar1 + 3;
   ((mod_var_t *)(puVar1 + 6))->id = (char *)*puVar1;
@@ -10886,7 +10903,7 @@ int gameplay_run_state_init(void)
   DAT_00487086 = 0x7c;
   DAT_00487087 = 0xff;
   uVar3 = crt_rand();
-  _DAT_00487078 = uVar3 & 0xfee050f;
+  highscore_record_random_tag = uVar3 & 0xfee050f;
   bonus_energizer_timer = 0.0;
   survival_spawn_stage = 0;
   _DAT_00487028 = 0;
@@ -11369,8 +11386,8 @@ void game_sequence_load(void)
   HKEY local_8;
   uint local_4;
   
-  LVar1 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&DAT_004852d0,0,(LPSTR)0x0,0,0xf003f,
-                          (LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
+  LVar1 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&registry_key_status_root_path,0,(LPSTR)0x0,0,
+                          0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
   if (LVar1 == 0) {
     reg_read_dword_default(local_8,s_sequence_0047361c,&local_4,0);
     if (_game_sequence_id < local_4) {
@@ -11393,45 +11410,45 @@ void game_save_status(void)
 {
   char cVar1;
   LONG LVar2;
-  char *pcVar3;
+  char *path;
   FILE *fp;
-  char cVar4;
+  char cVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
-  uint uVar7;
-  char *pcVar8;
+  uint uVar6;
+  char *mode;
   HKEY local_8;
   int local_4;
   
-  LVar2 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&DAT_004852d0,0,(LPSTR)0x0,0,0xf003f,
-                          (LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
-  uVar7 = _game_sequence_id;
+  LVar2 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&registry_key_status_root_path,0,(LPSTR)0x0,0,
+                          0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
+  uVar6 = _game_sequence_id;
   if (LVar2 == 0) {
     reg_write_dword(local_8,s_sequence_0047361c,_game_sequence_id);
-    reg_write_dword(local_8,s_dataPathId_0047367c,uVar7 * 0xd + 3 >> 1);
+    reg_write_dword(local_8,s_dataPathId_0047367c,uVar6 * 0xd + 3 >> 1);
     reg_write_dword(local_8,s_transferFailed_0047366c,0);
     RegCloseKey((HKEY)local_8);
   }
-  pcVar8 = &file_mode_write_binary;
-  pcVar3 = game_build_path(game_status_filename);
-  fp = (FILE *)crt_fopen(pcVar3,pcVar8);
+  mode = &file_mode_write_binary;
+  path = game_build_path(game_status_filename);
+  fp = crt_fopen(path,mode);
   if (fp != (FILE *)0x0) {
     _game_status_blob = quest_unlock_index;
     local_4 = 0;
-    iVar5 = 0;
+    iVar4 = 0;
     _DAT_00485542 = quest_unlock_index_full;
-    uVar7 = 0;
+    uVar6 = 0;
     do {
-      cVar1 = (&game_status_blob)[iVar5];
-      iVar6 = (cVar1 * 7 + iVar5) * (int)cVar1 + uVar7;
-      cVar4 = (char)iVar5;
-      uVar7 = uVar7 + 0x6f;
-      local_4 = local_4 + 0xd + iVar6;
-      (&game_status_blob)[iVar5] = ((cVar4 * '\a' + '\x0f') * cVar4 + '\x03') * cVar4 + cVar1 + 'o';
-      iVar5 = iVar5 + 1;
-    } while (uVar7 < 0x10b18);
-    crt_fwrite(&game_status_blob,0x268,1,(int *)fp);
-    crt_fwrite((char *)&local_4,4,1,(int *)fp);
+      cVar1 = (&game_status_blob)[iVar4];
+      iVar5 = (cVar1 * 7 + iVar4) * (int)cVar1 + uVar6;
+      cVar3 = (char)iVar4;
+      uVar6 = uVar6 + 0x6f;
+      local_4 = local_4 + 0xd + iVar5;
+      (&game_status_blob)[iVar4] = ((cVar3 * '\a' + '\x0f') * cVar3 + '\x03') * cVar3 + cVar1 + 'o';
+      iVar4 = iVar4 + 1;
+    } while (uVar6 < 0x10b18);
+    crt_fwrite(&game_status_blob,0x268,1,fp);
+    crt_fwrite(&local_4,4,1,fp);
     crt_fclose(fp);
     if (*(float *)((int)cv_verbose + 0xc) != 0.0) {
       console_printf(&console_log_queue,s_GAME_SaveStatus_OK__00473644);
@@ -11457,19 +11474,20 @@ void game_load_status(void)
 
 {
   char cVar1;
-  char *pcVar2;
+  char *path;
   FILE *fp;
+  long lVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
-  char *pcVar7;
+  uint uVar5;
+  int iVar6;
+  char *mode;
   int local_4;
   
-  pcVar7 = &file_mode_read_binary;
-  pcVar2 = game_build_path(game_status_filename);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar7);
-  uVar6 = 0;
+  mode = &file_mode_read_binary;
+  path = game_build_path(game_status_filename);
+  fp = crt_fopen(path,mode);
+  uVar5 = 0;
   if (fp == (FILE *)0x0) {
     console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__004736a0);
     console_printf(&console_log_queue,s_Generating_new_file___00473688);
@@ -11479,31 +11497,31 @@ void game_load_status(void)
     game_sequence_load();
   }
   else {
-    crt_fseek((int *)fp,0,2);
-    iVar3 = crt_ftell((char *)fp);
-    if (iVar3 != 0x26c) {
+    crt_fseek(fp,0,2);
+    lVar2 = crt_ftell(fp);
+    if (lVar2 != 0x26c) {
       crt_fclose(fp);
       console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__invalid_f_00473700);
       game_sequence_load();
       return;
     }
-    crt_fseek((int *)fp,0,0);
-    crt_fread(&game_status_blob,0x268,1,(int *)fp);
+    crt_fseek(fp,0,0);
+    crt_fread(&game_status_blob,0x268,1,fp);
     local_4 = 0;
-    crt_fread((char *)&local_4,4,1,(int *)fp);
+    crt_fread(&local_4,4,1,fp);
+    iVar6 = 0;
     iVar3 = 0;
-    iVar4 = 0;
     do {
-      cVar1 = (char)iVar4;
-      cVar1 = (&game_status_blob)[iVar4] +
+      cVar1 = (char)iVar3;
+      cVar1 = (&game_status_blob)[iVar3] +
               (-0x6f - ((cVar1 * '\a' + '\x0f') * cVar1 + '\x03') * cVar1);
-      (&game_status_blob)[iVar4] = cVar1;
-      iVar5 = (cVar1 * 7 + iVar4) * (int)cVar1 + uVar6;
-      uVar6 = uVar6 + 0x6f;
-      iVar4 = iVar4 + 1;
-      iVar3 = iVar3 + 0xd + iVar5;
-    } while (uVar6 < 0x10b18);
-    if (iVar3 != local_4) {
+      (&game_status_blob)[iVar3] = cVar1;
+      iVar4 = (cVar1 * 7 + iVar3) * (int)cVar1 + uVar5;
+      uVar5 = uVar5 + 0x6f;
+      iVar3 = iVar3 + 1;
+      iVar6 = iVar6 + 0xd + iVar4;
+    } while (uVar5 < 0x10b18);
+    if (iVar6 != local_4) {
       crt_fclose(fp);
       console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__check_su_004736d4);
       game_sequence_load();
@@ -11531,17 +11549,18 @@ void gameplay_reset_state(void)
 
 {
   bonus_hud_slot_slide_x_block_t *pbVar1;
-  float *pfVar2;
-  bonus_entry_t *pbVar3;
-  projectile_t *ppVar4;
-  sprite_effect_t *psVar5;
-  secondary_projectile_t *psVar6;
-  int iVar7;
-  creature_spawn_slot_t *pcVar8;
-  int iVar9;
-  int *piVar10;
+  uint uVar2;
+  float *pfVar3;
+  bonus_entry_t *pbVar4;
+  projectile_t *ppVar5;
+  sprite_effect_t *psVar6;
+  secondary_projectile_t *psVar7;
+  int iVar8;
+  creature_spawn_slot_t *pcVar9;
+  int iVar10;
   int *piVar11;
-  uint *puVar12;
+  int *piVar12;
+  uint *puVar13;
   
   pbVar1 = &bonus_hud_slot_table[0].slide;
   player_overlay_suppressed_latch = '\0';
@@ -11645,10 +11664,10 @@ void gameplay_reset_state(void)
   _camera_offset_x = (float)_terrain_texture_width * 0.5;
   perk_choices_dirty._0_1_ = 1;
   bonus_spawn_guard._0_1_ = 0;
-  puVar12 = weapon_usage_time;
-  for (iVar9 = 0x40; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *puVar12 = 0;
-    puVar12 = puVar12 + 1;
+  puVar13 = weapon_usage_time;
+  for (iVar10 = 0x40; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *puVar13 = 0;
+    puVar13 = puVar13 + 1;
   }
   _camera_offset_y = (float)_terrain_texture_height * 0.5;
   weapon_table_init();
@@ -11680,8 +11699,8 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_record_random_tag = uVar2 & 0xfee050f;
   _DAT_004aaf24 = 0;
   bonus_freeze_timer = 0.0;
   perk_jinxed_proc_timer_s = 0.0;
@@ -11691,59 +11710,59 @@ void gameplay_reset_state(void)
   player_reset_all();
   player_aux_timer[0] = 0.0;
   player_aux_timer[1] = 0.0;
-  pfVar2 = &player_state_table.low_health_timer;
+  pfVar3 = &player_state_table.low_health_timer;
   do {
-    pfVar2[5] = -1.0;
-    pfVar2[6] = -1.0;
-    *pfVar2 = 100.0;
-    pfVar2[3] = 0.0;
-    pfVar2 = pfVar2 + 0xd8;
-  } while ((int)pfVar2 < 0x491280);
-  pbVar3 = bonus_pool;
+    pfVar3[5] = -1.0;
+    pfVar3[6] = -1.0;
+    *pfVar3 = 100.0;
+    pfVar3[3] = 0.0;
+    pfVar3 = pfVar3 + 0xd8;
+  } while ((int)pfVar3 < 0x491280);
+  pbVar4 = bonus_pool;
   do {
-    pbVar3->bonus_id = BONUS_ID_NONE;
-    pbVar3 = pbVar3 + 1;
-  } while ((int)pbVar3 < 0x482b08);
-  ppVar4 = projectile_pool;
+    pbVar4->bonus_id = BONUS_ID_NONE;
+    pbVar4 = pbVar4 + 1;
+  } while ((int)pbVar4 < 0x482b08);
+  ppVar5 = projectile_pool;
   do {
-    ppVar4->active = '\0';
-    ppVar4 = ppVar4 + 1;
-  } while ((int)ppVar4 < 0x493eb8);
-  psVar5 = &sprite_effect_pool;
+    ppVar5->active = '\0';
+    ppVar5 = ppVar5 + 1;
+  } while ((int)ppVar5 < 0x493eb8);
+  psVar6 = &sprite_effect_pool;
   do {
-    *(undefined1 *)&psVar5->active = 0;
-    psVar5 = psVar5 + 1;
-  } while ((int)psVar5 < 0x49aa20);
-  psVar6 = secondary_projectile_pool;
-  do {
-    psVar6->active = '\0';
+    *(undefined1 *)&psVar6->active = 0;
     psVar6 = psVar6 + 1;
-  } while ((int)psVar6 < 0x4965d8);
-  iVar9 = 0;
-  piVar10 = &creature_pool.target_player;
+  } while ((int)psVar6 < 0x49aa20);
+  psVar7 = secondary_projectile_pool;
   do {
-    iVar7 = _config_player_count;
-    piVar10[-0xe] = 0;
-    ((creature_t *)(piVar10 + -0x1c))->active = '\0';
-    if (iVar7 == 0) {
-      *(undefined1 *)piVar10 = 0;
+    psVar7->active = '\0';
+    psVar7 = psVar7 + 1;
+  } while ((int)psVar7 < 0x4965d8);
+  iVar10 = 0;
+  piVar11 = &creature_pool.target_player;
+  do {
+    iVar8 = _config_player_count;
+    piVar11[-0xe] = 0;
+    ((creature_t *)(piVar11 + -0x1c))->active = '\0';
+    if (iVar8 == 0) {
+      *(undefined1 *)piVar11 = 0;
     }
     else {
-      *(char *)piVar10 = (char)(iVar9 % iVar7);
+      *(char *)piVar11 = (char)(iVar10 % iVar8);
     }
-    *(uchar *)(piVar10 + -0x1a) = '\x01';
-    piVar10[7] = 0;
-    iVar7 = crt_rand();
-    piVar11 = piVar10 + 0x26;
-    iVar9 = iVar9 + 1;
-    piVar10[9] = (int)(float)(iVar7 % 0x1f);
-    piVar10 = piVar11;
-  } while ((int)piVar11 < 0x4aa3a8);
-  pcVar8 = &creature_spawn_slot_table;
+    *(uchar *)(piVar11 + -0x1a) = '\x01';
+    piVar11[7] = 0;
+    iVar8 = crt_rand();
+    piVar12 = piVar11 + 0x26;
+    iVar10 = iVar10 + 1;
+    piVar11[9] = (int)(float)(iVar8 % 0x1f);
+    piVar11 = piVar12;
+  } while ((int)piVar12 < 0x4aa3a8);
+  pcVar9 = &creature_spawn_slot_table;
   do {
-    pcVar8->owner = (creature_t *)0x0;
-    pcVar8 = pcVar8 + 1;
-  } while ((int)pcVar8 < 0x4852d0);
+    pcVar9->owner = (creature_t *)0x0;
+    pcVar9 = pcVar9 + 1;
+  } while ((int)pcVar9 < 0x4852d0);
   fx_queue_rotated = 0;
   fx_queue_count = 0;
   highscore_full_version_marker = 0;
@@ -11761,8 +11780,8 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_record_random_tag = uVar2 & 0xfee050f;
   terrain_generate_random();
   return;
 }
@@ -14034,15 +14053,15 @@ void terrain_generate_random(void)
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
   if ((0x27 < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484c84);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x27);
     return;
   }
   if ((0x1d < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484acc);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x1d);
     return;
   }
   if ((0x13 < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484914);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13);
     return;
   }
   _camera_offset_y = 0;
@@ -17664,14 +17683,19 @@ int config_sync_from_grim(void)
   undefined4 *puVar3;
   char *pcVar4;
   FILE *pFVar5;
-  uint uVar6;
+  long lVar6;
   uint uVar7;
-  int iVar8;
-  int *piVar9;
-  char *pcVar10;
+  uint uVar8;
+  int iVar9;
+  int *piVar10;
+  char *pcVar11;
   char *pcStack_494;
   uint local_490 [4];
-  char acStack_480 [14];
+  undefined1 uStack_480;
+  undefined1 uStack_47f;
+  undefined1 uStack_47e;
+  undefined1 uStack_47d;
+  undefined2 uStack_47c;
   undefined1 uStack_472;
   undefined1 uStack_471;
   undefined1 uStack_470;
@@ -17759,28 +17783,28 @@ int config_sync_from_grim(void)
   puVar2 = (undefined1 *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_490,0x54);
   _config_player_name_length = player_name_length;
   DAT_004807b6 = *puVar2;
-  uVar6 = 0xffffffff;
+  uVar7 = 0xffffffff;
   pcVar4 = &highscore_active_record;
   do {
-    pcVar10 = pcVar4;
-    if (uVar6 == 0) break;
-    uVar6 = uVar6 - 1;
-    pcVar10 = pcVar4 + 1;
+    pcVar11 = pcVar4;
+    if (uVar7 == 0) break;
+    uVar7 = uVar7 - 1;
+    pcVar11 = pcVar4 + 1;
     cVar1 = *pcVar4;
-    pcVar4 = pcVar10;
+    pcVar4 = pcVar11;
   } while (cVar1 != '\0');
-  uVar6 = ~uVar6;
-  pcVar4 = pcVar10 + -uVar6;
-  pcVar10 = &config_player_name;
-  for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-    *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+  uVar7 = ~uVar7;
+  pcVar4 = pcVar11 + -uVar7;
+  pcVar11 = &config_player_name;
+  for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+    *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
     pcVar4 = pcVar4 + 4;
-    pcVar10 = pcVar10 + 4;
+    pcVar11 = pcVar11 + 4;
   }
-  for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-    *pcVar10 = *pcVar4;
+  for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+    *pcVar11 = *pcVar4;
     pcVar4 = pcVar4 + 1;
-    pcVar10 = pcVar10 + 1;
+    pcVar11 = pcVar11 + 1;
   }
   if (grim_config_invoked != '\0') {
     pcStack_494 = acStack_3d8;
@@ -17803,69 +17827,69 @@ int config_sync_from_grim(void)
     uStack_410 = 0x3f800000;
     uStack_13 = 0;
     acStack_40c[8] = 0;
-    iVar8 = 0;
-    piVar9 = aiStack_3f8;
+    iVar9 = 0;
+    piVar10 = aiStack_3f8;
     do {
-      uVar6 = 0xffffffff;
-      *piVar9 = iVar8;
+      uVar7 = 0xffffffff;
+      *piVar10 = iVar9;
       pcVar4 = s_default_0047131c;
       do {
-        pcVar10 = pcVar4;
-        if (uVar6 == 0) break;
-        uVar6 = uVar6 - 1;
-        pcVar10 = pcVar4 + 1;
+        pcVar11 = pcVar4;
+        if (uVar7 == 0) break;
+        uVar7 = uVar7 - 1;
+        pcVar11 = pcVar4 + 1;
         cVar1 = *pcVar4;
-        pcVar4 = pcVar10;
+        pcVar4 = pcVar11;
       } while (cVar1 != '\0');
-      uVar6 = ~uVar6;
-      piVar9 = piVar9 + 1;
-      pcVar4 = pcVar10 + -uVar6;
-      pcVar10 = pcStack_494;
-      for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-        *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+      uVar7 = ~uVar7;
+      piVar10 = piVar10 + 1;
+      pcVar4 = pcVar11 + -uVar7;
+      pcVar11 = pcStack_494;
+      for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+        *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
         pcVar4 = pcVar4 + 4;
-        pcVar10 = pcVar10 + 4;
+        pcVar11 = pcVar11 + 4;
       }
-      iVar8 = iVar8 + 1;
-      for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-        *pcVar10 = *pcVar4;
+      iVar9 = iVar9 + 1;
+      for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+        *pcVar11 = *pcVar4;
         pcVar4 = pcVar4 + 1;
-        pcVar10 = pcVar10 + 1;
+        pcVar11 = pcVar11 + 1;
       }
       pcStack_494 = pcStack_494 + 0x1b;
-    } while (iVar8 < 8);
-    acStack_480[3] = 0;
-    acStack_480[2] = 0;
+    } while (iVar9 < 8);
+    uStack_47d = 0;
+    uStack_47e = 0;
     pcVar4 = acStack_300;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
+    for (iVar9 = 8; iVar9 != 0; iVar9 = iVar9 + -1) {
       pcVar4[0] = '\0';
       pcVar4[1] = '\0';
       pcVar4[2] = '\0';
       pcVar4[3] = '\0';
       pcVar4 = pcVar4 + 4;
     }
-    uVar6 = 0xffffffff;
+    uVar7 = 0xffffffff;
     pcVar4 = &default_player_name;
     do {
-      pcVar10 = pcVar4;
-      if (uVar6 == 0) break;
-      uVar6 = uVar6 - 1;
-      pcVar10 = pcVar4 + 1;
+      pcVar11 = pcVar4;
+      if (uVar7 == 0) break;
+      uVar7 = uVar7 - 1;
+      pcVar11 = pcVar4 + 1;
       cVar1 = *pcVar4;
-      pcVar4 = pcVar10;
+      pcVar4 = pcVar11;
     } while (cVar1 != '\0');
-    uVar6 = ~uVar6;
-    pcVar4 = pcVar10 + -uVar6;
-    pcVar10 = acStack_300;
-    for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-      *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+    uVar7 = ~uVar7;
+    pcVar4 = pcVar11 + -uVar7;
+    pcVar11 = acStack_300;
+    for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+      *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
       pcVar4 = pcVar4 + 4;
-      pcVar10 = pcVar10 + 4;
+      pcVar11 = pcVar11 + 4;
     }
-    for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-      *pcVar10 = *pcVar4;
+    for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+      *pcVar11 = *pcVar4;
       pcVar4 = pcVar4 + 1;
-      pcVar10 = pcVar10 + 1;
+      pcVar11 = pcVar11 + 1;
     }
     uStack_3fc = 1;
     uStack_20 = 1;
@@ -17878,8 +17902,8 @@ int config_sync_from_grim(void)
     uStack_2ac = 0x20;
     uStack_400 = 0;
     uStack_10 = 5;
-    acStack_480[0] = '\0';
-    acStack_480[1] = 0;
+    uStack_480 = 0;
+    uStack_47f = 0;
     uStack_14 = 0;
     uStack_2d8 = 0;
     uStack_2d4 = 0;
@@ -17920,7 +17944,7 @@ int config_sync_from_grim(void)
     uStack_264 = 0x17e;
     uStack_260 = 0x17e;
     uStack_25c = 0xd3;
-    pcVar10 = &file_mode_read_binary;
+    pcVar11 = &file_mode_read_binary;
     uStack_258 = 0xd1;
     uStack_254 = 0x13f;
     uStack_250 = 0x140;
@@ -17929,53 +17953,52 @@ int config_sync_from_grim(void)
     uStack_244 = 0x17e;
     uStack_240 = 0x17e;
     uStack_23c = 0x17e;
-    acStack_480[4] = '\x01';
-    acStack_480[5] = '\x01';
+    uStack_47c = 0x101;
     pcVar4 = game_build_path(config_filename);
-    pFVar5 = (FILE *)crt_fopen(pcVar4,pcVar10);
+    pFVar5 = crt_fopen(pcVar4,pcVar11);
     if (pFVar5 != (FILE *)0x0) {
-      crt_fseek((int *)pFVar5,0,2);
-      iVar8 = crt_ftell((char *)pFVar5);
-      if (iVar8 == 0x480) {
-        crt_fseek((int *)pFVar5,0,0);
-        crt_fread(acStack_480,0x480,1,(int *)pFVar5);
-        uVar6 = 0xffffffff;
+      crt_fseek(pFVar5,0,2);
+      lVar6 = crt_ftell(pFVar5);
+      if (lVar6 == 0x480) {
+        crt_fseek(pFVar5,0,0);
+        crt_fread(&uStack_480,0x480,1,pFVar5);
+        uVar7 = 0xffffffff;
         pcVar4 = acStack_40c;
         do {
-          pcVar10 = pcVar4;
-          if (uVar6 == 0) break;
-          uVar6 = uVar6 - 1;
-          pcVar10 = pcVar4 + 1;
+          pcVar11 = pcVar4;
+          if (uVar7 == 0) break;
+          uVar7 = uVar7 - 1;
+          pcVar11 = pcVar4 + 1;
           cVar1 = *pcVar4;
-          pcVar4 = pcVar10;
+          pcVar4 = pcVar11;
         } while (cVar1 != '\0');
-        uVar6 = ~uVar6;
+        uVar7 = ~uVar7;
         config_fx_toggle = uStack_14;
-        pcVar4 = pcVar10 + -uVar6;
-        pcVar10 = &config_player_name_buf;
-        for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-          *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+        pcVar4 = pcVar11 + -uVar7;
+        pcVar11 = &config_player_name_buf;
+        for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
           pcVar4 = pcVar4 + 4;
-          pcVar10 = pcVar10 + 4;
+          pcVar11 = pcVar11 + 4;
         }
-        for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-          *pcVar10 = *pcVar4;
+        for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+          *pcVar11 = *pcVar4;
           pcVar4 = pcVar4 + 1;
-          pcVar10 = pcVar10 + 1;
+          pcVar11 = pcVar11 + 1;
         }
       }
       crt_fclose(pFVar5);
     }
   }
-  pcVar10 = &file_mode_write_binary;
+  pcVar11 = &file_mode_write_binary;
   pcVar4 = game_build_path(config_filename);
-  pFVar5 = (FILE *)crt_fopen(pcVar4,pcVar10);
-  iVar8 = 0;
+  pFVar5 = crt_fopen(pcVar4,pcVar11);
+  iVar9 = 0;
   if (pFVar5 != (FILE *)0x0) {
-    crt_fwrite(&config_blob,0x480,1,(int *)pFVar5);
-    iVar8 = crt_fclose(pFVar5);
+    crt_fwrite(&config_blob,0x480,1,pFVar5);
+    iVar9 = crt_fclose(pFVar5);
   }
-  return CONCAT31((int3)((uint)iVar8 >> 8),1);
+  return CONCAT31((int3)((uint)iVar9 >> 8),1);
 }
 
 
@@ -17993,7 +18016,7 @@ void config_ensure_file(void)
   
   pcVar3 = &file_mode_read_binary;
   pcVar1 = game_build_path(config_filename);
-  pFVar2 = (FILE *)crt_fopen(pcVar1,pcVar3);
+  pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
     crt_fclose(pFVar2);
     return;
@@ -18001,9 +18024,9 @@ void config_ensure_file(void)
   pcVar3 = &file_mode_write_binary;
   config_fx_toggle = 1;
   pcVar1 = game_build_path(config_filename);
-  pFVar2 = (FILE *)crt_fopen(pcVar1,pcVar3);
+  pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
-    crt_fwrite(&config_blob,0x480,1,(int *)pFVar2);
+    crt_fwrite(&config_blob,0x480,1,pFVar2);
     crt_fclose(pFVar2);
   }
   return;
@@ -18021,7 +18044,7 @@ uint config_load_presets(void)
 {
   char *pcVar1;
   FILE *fp;
-  int iVar2;
+  long lVar2;
   uint uVar3;
   int *piVar4;
   int *piVar5;
@@ -18053,20 +18076,20 @@ uint config_load_presets(void)
   player_alt_key_reserved_2 = 0xd3;
   player_alt_key_reserved_3 = 0xc9;
   pcVar1 = game_build_path(config_filename);
-  fp = (FILE *)crt_fopen(pcVar1,pcVar10);
+  fp = crt_fopen(pcVar1,pcVar10);
   if (fp == (FILE *)0x0) {
     return 0;
   }
-  crt_fseek((int *)fp,0,2);
-  iVar2 = crt_ftell((char *)fp);
-  if (iVar2 != 0x480) {
+  crt_fseek(fp,0,2);
+  lVar2 = crt_ftell(fp);
+  if (lVar2 != 0x480) {
     crt_fclose(fp);
     uVar3 = config_sync_from_grim();
     return uVar3 & 0xffffff00;
   }
   cVar9 = '\0';
-  crt_fseek((int *)fp,0,0);
-  crt_fread(&config_blob,0x480,1,(int *)fp);
+  crt_fseek(fp,0,0);
+  crt_fread(&config_blob,0x480,1,fp);
   uVar8 = 0x41f2ba;
   crt_fclose(fp);
   piVar6 = &player_state_table.input.move_key_backward;
@@ -23371,16 +23394,16 @@ void console_cmd_set_resource_paq(void)
   char *pcVar2;
   FILE *fp;
   uint in_stack_ffffffec;
-  char *pcVar3;
+  char *mode;
   
   iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_setresourcepaq_<resourcepaq>_00473f44);
     return;
   }
-  pcVar3 = &file_mode_read_binary;
+  mode = &file_mode_read_binary;
   pcVar2 = console_cmd_arg_get(1);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar3);
+  fp = crt_fopen(pcVar2,mode);
   if (fp == (FILE *)0x0) {
     pcVar2 = console_cmd_arg_get(1);
     console_printf(&console_log_queue,s_File___s__not_found__00473f2c,pcVar2);
@@ -24304,9 +24327,10 @@ int crimsonland_main(void)
   char *extraout_EDX_05;
   char *extraout_EDX_06;
   char *extraout_EDX_07;
-  undefined4 *puVar14;
+  char **ppcVar14;
+  undefined4 *puVar15;
   HKEY key;
-  undefined4 uVar15;
+  undefined4 uVar16;
   uint in_stack_fffffad0;
   undefined4 uStack_52c;
   undefined4 in_stack_fffffb20;
@@ -24377,17 +24401,17 @@ int crimsonland_main(void)
   console_register_command(&console_log_queue,s_openurl_00474c38,console_cmd_open_url);
   console_register_command
             (&console_log_queue,s_sndfreqadjustment_00474c24,console_cmd_snd_freq_adjustment);
-  puVar14 = &DAT_004852d0;
+  ppcVar14 = &registry_key_status_root_path;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar14 = 0;
-    puVar14 = puVar14 + 1;
+    *ppcVar14 = (char *)0x0;
+    ppcVar14 = ppcVar14 + 1;
   }
-  *(undefined2 *)puVar14 = 0;
-  *(undefined1 *)((int)puVar14 + 2) = 0;
-  DAT_004852d0._0_1_ = 0x53;
-  DAT_004852d0._1_1_ = 0x6f;
-  DAT_004852d0._2_1_ = 0x66;
-  DAT_004852d0._3_1_ = 0x74;
+  *(undefined2 *)ppcVar14 = 0;
+  *(undefined1 *)((int)ppcVar14 + 2) = 0;
+  registry_key_status_root_path._0_1_ = 0x53;
+  registry_key_status_root_path._1_1_ = 0x6f;
+  registry_key_status_root_path._2_1_ = 0x66;
+  registry_key_status_root_path._3_1_ = 0x74;
   DAT_004852d4._0_1_ = 0x77;
   DAT_004852d4._1_1_ = 0x61;
   DAT_004852d6 = 0x72;
@@ -24558,24 +24582,24 @@ int crimsonland_main(void)
   texture_get_or_load(s_logo_esrb_004746d8,s_load_esrb_mature_jaz_004748bc);
   texture_get_or_load(s_loading_004746e4,s_load_loading_jaz_004748a8);
   texture_get_or_load(s_cl_logo_00471f70,s_load_logo_crimsonland_tga_0047488c);
-  uVar15 = 0;
+  uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar15 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   key = (HKEY)0x0;
-  uVar15 = 0;
+  uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar15 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
   uVar2 = DAT_00473a30;
   _key_char_count = 0;
-  puVar14 = &key_char_buffer;
+  puVar15 = &key_char_buffer;
   for (uVar12 = DAT_00473a30 >> 2; uVar12 != 0; uVar12 = uVar12 - 1) {
-    *puVar14 = 0;
-    puVar14 = puVar14 + 1;
+    *puVar15 = 0;
+    puVar15 = puVar15 + 1;
   }
   for (uVar12 = uVar2 & 3; uVar12 != 0; uVar12 = uVar12 - 1) {
-    *(undefined1 *)puVar14 = 0;
-    puVar14 = (undefined4 *)((int)puVar14 + 1);
+    *(undefined1 *)puVar15 = 0;
+    puVar15 = (undefined4 *)((int)puVar15 + 1);
   }
   (*grim_interface_ptr->vtable->grim_set_key_char_buffer)
             ((uchar *)&key_char_buffer,(int *)&key_char_count,uVar2);
@@ -24631,12 +24655,12 @@ int crimsonland_main(void)
      (update_notice_url != (char *)0x0)) {
     Sleep(200);
     uStack_52c = uStack_52c & 0xffff0000;
-    puVar14 = (undefined4 *)((int)&uStack_52c + 2);
+    puVar15 = (undefined4 *)((int)&uStack_52c + 2);
     for (iVar3 = 0xff; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar14 = 0;
-      puVar14 = puVar14 + 1;
+      *puVar15 = 0;
+      puVar15 = puVar15 + 1;
     }
-    *(undefined2 *)puVar14 = 0;
+    *(undefined2 *)puVar15 = 0;
     uVar2 = 0xffffffff;
     pcVar5 = update_notice_url;
     do {
@@ -25563,8 +25587,8 @@ void * __cdecl effect_spawn(int effect_id,float *pos)
   float *pfVar8;
   
   if (_config_detail_preset < 3) {
-    uVar4 = DAT_004c2b38 & 1;
-    DAT_004c2b38 = DAT_004c2b38 + 1;
+    uVar4 = effect_spawn_detail_skip_counter & 1;
+    effect_spawn_detail_skip_counter = effect_spawn_detail_skip_counter + 1;
     if (uVar4 != 0) {
       return &DAT_004ab270;
     }
@@ -26706,22 +26730,23 @@ void __fastcall perks_init_database(void)
   perk_meta_table.description =
        wrap_text_to_width_alloc(this,s_You_shouldn_t_be_seeing_this___00477708,0x100);
   perk_id_bloody_mess_quick_learner = 1;
-  DAT_004c3640 = wrap_text_to_width_alloc(this_00,s_Bloody_Mess_004776fc,0x100);
-  DAT_004c3648 = wrap_text_to_width_alloc(this_01,s_More_the_merrier__More_blood_gua_00477684,0x100)
-  ;
-  DAT_004c3644 = wrap_text_to_width_alloc(this_02,s_Quick_Learner_00477674,0x100);
+  perk_slot_1_name_wrapped_primary = wrap_text_to_width_alloc(this_00,s_Bloody_Mess_004776fc,0x100);
+  perk_slot_1_desc_wrapped_primary =
+       wrap_text_to_width_alloc(this_01,s_More_the_merrier__More_blood_gua_00477684,0x100);
+  perk_slot_1_name_wrapped_alternate =
+       wrap_text_to_width_alloc(this_02,s_Quick_Learner_00477674,0x100);
   pcVar3 = wrap_text_to_width_alloc(this_03,s_You_learn_things_faster_than_a_r_00477600,0x100);
-  pcVar2 = DAT_004c3648;
-  this_04 = DAT_004c3640;
+  pcVar2 = perk_slot_1_desc_wrapped_primary;
+  this_04 = perk_slot_1_name_wrapped_primary;
   iVar1 = perk_id_bloody_mess_quick_learner;
-  DAT_004c364c = pcVar3;
+  perk_slot_1_desc_wrapped_alternate = pcVar3;
   if (config_fx_toggle == '\0') {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3640;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
     (&perk_meta_table)[iVar1].description = pcVar2;
   }
   else {
     this_04 = (char *)(perk_id_bloody_mess_quick_learner * 0x14);
-    *(char **)(this_04 + 0x4c2c40) = DAT_004c3644;
+    *(char **)(this_04 + 0x4c2c40) = perk_slot_1_name_wrapped_alternate;
     *(char **)(this_04 + 0x4c2c44) = pcVar3;
   }
   perk_id_sharpshooter = 2;
@@ -32849,7 +32874,7 @@ void quest_database_init(void)
   _DAT_004848b4 = 0;
   _DAT_004848e0 = 0xc;
   _DAT_0048490c = 0;
-  _DAT_00484938 = 9;
+  quest_meta_terrain_desc_unlock_gt_0x13.unlock_weapon_id = 9;
   _DAT_00484964 = 0;
   _DAT_00484990 = 0x15;
   _DAT_004849bc = 0;
@@ -32859,7 +32884,7 @@ void quest_database_init(void)
   _DAT_00484a6c = 0;
   _DAT_00484a98 = 0xb;
   _DAT_00484ac4 = 0;
-  _DAT_00484af0 = 10;
+  quest_meta_terrain_desc_unlock_gt_0x1d.unlock_weapon_id = 10;
   _DAT_00484b1c = 0;
   _DAT_00484b48 = 0xd;
   _DAT_00484b74 = 0;
@@ -32869,7 +32894,7 @@ void quest_database_init(void)
   _DAT_00484c24 = 0;
   _DAT_00484c50 = 0x14;
   _DAT_00484c7c = 0;
-  _DAT_00484ca8 = 0x13;
+  quest_meta_terrain_desc_unlock_gt_0x27.unlock_weapon_id = 0x13;
   _DAT_00484cd4 = 0;
   _DAT_00484d00 = 0xe;
   _DAT_00484d2c = 0;
@@ -32889,7 +32914,7 @@ void quest_database_init(void)
   _DAT_004848b0 = 0x1f;
   _DAT_004848dc = perk_id_antiperk;
   _DAT_00484908 = 0x20;
-  _DAT_00484934 = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x13.unlock_perk_id = perk_id_antiperk;
   _DAT_00484960 = 0x21;
   _DAT_0048498c = perk_id_antiperk;
   _DAT_004849b8 = 0x22;
@@ -32899,7 +32924,7 @@ void quest_database_init(void)
   _DAT_00484a68 = 0x24;
   _DAT_00484a94 = perk_id_antiperk;
   _DAT_00484ac0 = 0x25;
-  _DAT_00484aec = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x1d.unlock_perk_id = perk_id_antiperk;
   _DAT_00484b18 = 0x26;
   _DAT_00484b44 = perk_id_antiperk;
   _DAT_00484b70 = 0x27;
@@ -32909,7 +32934,7 @@ void quest_database_init(void)
   _DAT_00484c20 = 0x29;
   _DAT_00484c4c = perk_id_antiperk;
   _DAT_00484c78 = 0x2a;
-  _DAT_00484ca4 = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x27.unlock_perk_id = perk_id_antiperk;
   _DAT_00484cd0 = 0x2b;
   _DAT_00484cfc = perk_id_antiperk;
   _DAT_00484d28 = 0x2c;
@@ -32951,11 +32976,12 @@ void quest_database_init(void)
 void __cdecl quest_start_selected(int tier,int index)
 
 {
-  int *piVar1;
-  int iVar2;
+  uint uVar1;
+  int *piVar2;
   int iVar3;
   int iVar4;
   int iVar5;
+  int iVar6;
   
   creature_reset_all();
   quest_spawn_count = 0;
@@ -32978,48 +33004,48 @@ void __cdecl quest_start_selected(int tier,int index)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar1 = crt_rand();
+  highscore_record_random_tag = uVar1 & 0xfee050f;
   projectile_reset_pools();
   player_state_table.pos_x = (float)_terrain_texture_width * 0.5;
   player_state_table.pos_y = (float)_terrain_texture_height * 0.5;
-  iVar3 = index + -0xb + tier * 10;
-  terrain_generate(&quest_selected_meta + iVar3);
-  weapon_assign_player(0,(&quest_selected_meta)[iVar3].start_weapon_id);
-  weapon_assign_player(1,(&quest_selected_meta)[iVar3].start_weapon_id);
+  iVar4 = index + -0xb + tier * 10;
+  terrain_generate(&quest_selected_meta + iVar4);
+  weapon_assign_player(0,(&quest_selected_meta)[iVar4].start_weapon_id);
+  weapon_assign_player(1,(&quest_selected_meta)[iVar4].start_weapon_id);
   console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
-  if ((&quest_selected_meta)[iVar3].builder == (quest_builder_fn_t)0x0) {
+  if ((&quest_selected_meta)[iVar4].builder == (quest_builder_fn_t)0x0) {
     quest_build_fallback(&quest_spawn_table,&quest_spawn_count);
   }
   else {
-    (*(&quest_selected_meta)[iVar3].builder)(&quest_spawn_table,&quest_spawn_count);
+    (*(&quest_selected_meta)[iVar4].builder)(&quest_spawn_table,&quest_spawn_count);
   }
-  iVar5 = 0;
-  iVar3 = 0;
-  _DAT_00486fd4 = 0;
-  _DAT_00487030 = 0;
+  iVar6 = 0;
+  iVar4 = 0;
+  quest_spawn_total_creatures = 0;
+  quest_spawn_last_time_ms = 0;
   if (0 < quest_spawn_count) {
-    piVar1 = &quest_spawn_table.pos_y_block.heading_block.count;
-    iVar2 = quest_spawn_count;
+    piVar2 = &quest_spawn_table.pos_y_block.heading_block.count;
+    iVar3 = quest_spawn_count;
     do {
-      if (((config_hardcore != '\0') && (iVar4 = *piVar1, 1 < iVar4)) && (piVar1[-2] != 0x3c)) {
-        if (piVar1[-2] == 0x2b) {
-          iVar4 = iVar4 + 2;
+      if (((config_hardcore != '\0') && (iVar5 = *piVar2, 1 < iVar5)) && (piVar2[-2] != 0x3c)) {
+        if (piVar2[-2] == 0x2b) {
+          iVar5 = iVar5 + 2;
         }
         else {
-          iVar4 = iVar4 + 8;
+          iVar5 = iVar5 + 8;
         }
-        *piVar1 = iVar4;
+        *piVar2 = iVar5;
       }
-      iVar5 = iVar5 + *piVar1;
-      if (iVar3 < piVar1[-1]) {
-        iVar3 = piVar1[-1];
+      iVar6 = iVar6 + *piVar2;
+      if (iVar4 < piVar2[-1]) {
+        iVar4 = piVar2[-1];
       }
-      piVar1 = piVar1 + 6;
-      iVar2 = iVar2 + -1;
-      _DAT_00486fd4 = iVar5;
-      _DAT_00487030 = iVar3;
-    } while (iVar2 != 0);
+      piVar2 = piVar2 + 6;
+      iVar3 = iVar3 + -1;
+      quest_spawn_total_creatures = iVar6;
+      quest_spawn_last_time_ms = iVar4;
+    } while (iVar3 != 0);
   }
   return;
 }
@@ -33128,7 +33154,7 @@ highscore_record_pack_for_submit(highscore_record_t *src,highscore_record_t *dst
 
 /* reads and validates a high score record from a file */
 
-char * __cdecl highscore_read_record(char *param_1,int *param_2)
+char * __cdecl highscore_read_record(char *buffer,void *fp)
 
 {
   uint uVar1;
@@ -33139,29 +33165,29 @@ char * __cdecl highscore_read_record(char *param_1,int *param_2)
   
   iVar3 = 0;
   local_4 = 0;
-  crt_fread(param_1,0x48,1,param_2);
-  if ((*(byte *)(param_2 + 3) & 0x10) != 0) {
+  crt_fread(buffer,0x48,1,fp);
+  if ((*(byte *)((int)fp + 0xc) & 0x10) != 0) {
     return (char *)0x0;
   }
-  crt_fread((char *)&local_4,4,1,param_2);
+  crt_fread(&local_4,4,1,fp);
   uVar1 = 0;
   do {
-    param_1[uVar1] = param_1[uVar1] + (-6 - ((char)uVar1 * '\x05' + '\x01') * (char)uVar1);
+    buffer[uVar1] = buffer[uVar1] + (-6 - ((char)uVar1 * '\x05' + '\x01') * (char)uVar1);
     uVar1 = uVar1 + 1;
   } while (uVar1 < 0x48);
   iVar4 = 0x48;
-  pcVar2 = param_1;
+  pcVar2 = buffer;
   do {
-    iVar3 = iVar3 + (int)(pcVar2 + (3 - (int)param_1)) * (int)*pcVar2 * 7;
+    iVar3 = iVar3 + (int)(pcVar2 + (3 - (int)buffer)) * (int)*pcVar2 * 7;
     pcVar2 = pcVar2 + 1;
     iVar4 = iVar4 + -1;
   } while (iVar4 != 0);
   if (local_4 != iVar3) {
-    param_1[0x1f] = '\0';
-    console_printf(&console_log_queue,s_WARN__checksum_failure_on_score_b_00477b40,param_1);
+    buffer[0x1f] = '\0';
+    console_printf(&console_log_queue,s_WARN__checksum_failure_on_score_b_00477b40,buffer);
     return (char *)0x0;
   }
-  return param_1;
+  return buffer;
 }
 
 
@@ -33278,12 +33304,12 @@ int __cdecl highscore_update_record(char *path,byte *record)
   local_1 = 0xff;
   local_10 = crt_rand();
   local_10 = local_10 & 0xfee050f;
-  fp = (FILE *)crt_fopen(path,&DAT_00477b68);
+  fp = crt_fopen(path,&DAT_00477b68);
   uVar5 = 0;
   if (fp != (FILE *)0x0) {
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
-      pcVar3 = highscore_read_record((char *)local_48,(int *)fp);
+      pcVar3 = highscore_read_record((char *)local_48,fp);
       if ((pcVar3 != (char *)0x0) &&
          (iVar4 = highscore_record_equals(record,local_48), (char)iVar4 != '\0')) {
         if ((local_4 & 2) != 0) {
@@ -33293,15 +33319,15 @@ int __cdecl highscore_update_record(char *path,byte *record)
         if (local_4 == 0) {
           record[0x44] = 2;
         }
-        crt_fseek((int *)fp,-0x4c,1);
-        highscore_write_record((undefined4 *)record,(int *)fp);
-        crt_fflush((int *)fp);
+        crt_fseek(fp,-0x4c,1);
+        highscore_write_record(record,fp);
+        crt_fflush(fp);
         iVar4 = crt_fclose(fp);
         return CONCAT31((int3)((uint)iVar4 >> 8),1);
       }
       bVar2 = (byte)fp->_flag;
     }
-    crt_fflush((int *)fp);
+    crt_fflush(fp);
     uVar5 = crt_fclose(fp);
   }
   return uVar5 & 0xffffff00;
@@ -33313,7 +33339,7 @@ int __cdecl highscore_update_record(char *path,byte *record)
 
 /* writes a high score record with date + checksum */
 
-void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
+void __cdecl highscore_write_record(byte *record,void *fp)
 
 {
   char cVar1;
@@ -33367,18 +33393,18 @@ void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
   local_1 = 0xff;
   uVar3 = crt_rand();
   local_10 = uVar3 & 0xfee050f;
-  if (*(char *)(param_1 + 0x10) == '\0') {
-    *(undefined1 *)(param_1 + 0x10) = (undefined1)local_system_day;
-    *(undefined1 *)((int)param_1 + 0x42) = local_system_time._2_1_;
-    *(char *)((int)param_1 + 0x43) = (char)local_system_time + '0';
+  if (record[0x40] == 0) {
+    record[0x40] = (byte)local_system_day;
+    record[0x42] = local_system_time._2_1_;
+    record[0x43] = (char)local_system_time + 0x30;
     iVar2 = highscore_date_checksum
                       (local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day);
-    *(char *)((int)param_1 + 0x41) = (char)iVar2;
+    record[0x41] = (byte)iVar2;
   }
   pcVar5 = local_48;
   for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)pcVar5 = *param_1;
-    param_1 = param_1 + 1;
+    *(undefined4 *)pcVar5 = *(undefined4 *)record;
+    record = record + 4;
     pcVar5 = pcVar5 + 4;
   }
   uVar3 = 0;
@@ -33391,8 +33417,8 @@ void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
     local_48[uVar3] = local_48[uVar3] + ((char)uVar3 * '\x05' + '\x01') * (char)uVar3 + '\x06';
     uVar3 = uVar3 + 1;
   } while (uVar3 < 0x48);
-  crt_fwrite(local_48,0x48,1,param_2);
-  crt_fwrite((char *)&local_4c,4,1,param_2);
+  crt_fwrite(local_48,0x48,1,fp);
+  crt_fwrite(&local_4c,4,1,fp);
   return;
 }
 
@@ -33635,13 +33661,13 @@ void highscore_load_table(void)
     puVar12 = puVar12 + 0x48;
   } while ((int)puVar12 < 0x484776);
   iVar8 = 0;
-  fp = (FILE *)crt_fopen(pcVar3,&file_mode_read_binary);
+  fp = crt_fopen(pcVar3,&file_mode_read_binary);
   if (fp != (FILE *)0x0) {
     uVar9 = highscore_date_checksum
                       (local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day);
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
-      pcVar3 = highscore_read_record((char *)local_48,(int *)fp);
+      pcVar3 = highscore_read_record((char *)local_48,fp);
       if ((pcVar3 == (char *)0x0) || ((local_20 & 0xff) != config_game_mode)) goto LAB_0043b2ba;
       if (config_game_mode == GAME_MODE_QUEST) {
         if (config_hardcore == '\0') {
@@ -33871,12 +33897,12 @@ void __cdecl highscore_save_record(byte *record)
   }
   if (((record[0x44] & 1) == 0) ||
      (iVar3 = highscore_update_record(path,record), (char)iVar3 == '\0')) {
-    fp = (FILE *)crt_fopen(path,&DAT_00477ba0);
+    fp = crt_fopen(path,&DAT_00477ba0);
     if (fp == (FILE *)0x0) {
       console_printf(&console_log_queue,s_Unable_to_save_score__disk_full_o_00477b6c);
       return;
     }
-    highscore_write_record((undefined4 *)record,(int *)fp);
+    highscore_write_record(record,fp);
     crt_fclose(fp);
   }
   return;
@@ -33967,27 +33993,27 @@ char * highscore_build_path(void)
   char *pcVar3;
   undefined *puVar4;
   
-  if (DAT_004c3960 == '\0') {
-    crt_getcwd(&DAT_004c375c,0x1ff);
-    DAT_004c395b = 0;
-    DAT_004c3960 = '\x01';
+  if (highscore_cwd_cached == '\0') {
+    crt_getcwd(&highscore_cwd_buf,0x1ff);
+    highscore_cwd_buf_tail_nul = '\0';
+    highscore_cwd_cached = '\x01';
   }
   if (config_game_mode == GAME_MODE_RUSH) {
-    puVar4 = &DAT_004c375c;
+    puVar4 = &highscore_cwd_buf;
     pcVar3 = s__s_scores5_rush_hi_00477c60;
   }
   else if (config_game_mode == GAME_MODE_SURVIVAL) {
-    puVar4 = &DAT_004c375c;
+    puVar4 = &highscore_cwd_buf;
     pcVar3 = s__s_scores5_survival_hi_00477c48;
   }
   else {
     if (config_game_mode == GAME_MODE_QUEST) {
       if (config_hardcore == '\0') {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_questhc_d__d_hi_00477c10,&DAT_004c375c,
+        crt_sprintf(&highscore_path_buf,s__s_scores5_questhc_d__d_hi_00477c10,&highscore_cwd_buf,
                     quest_stage_major,quest_stage_minor);
       }
       else {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_quest_d__d_hi_00477c2c,&DAT_004c375c,
+        crt_sprintf(&highscore_path_buf,s__s_scores5_quest_d__d_hi_00477c2c,&highscore_cwd_buf,
                     quest_stage_major,quest_stage_minor);
       }
       goto LAB_0043b67f;
@@ -33995,11 +34021,11 @@ char * highscore_build_path(void)
     puVar4 = &config_saved_name_0 + _config_name_slot_selected * 0x1b;
     pcVar3 = s_scores5_unknown_hi_00477bfc;
   }
-  crt_sprintf(&DAT_004c36dc,pcVar3,puVar4);
+  crt_sprintf(&highscore_path_buf,pcVar3,puVar4);
 LAB_0043b67f:
   if (_config_player_count == 2) {
     uVar2 = 0xffffffff;
-    pcVar3 = &DAT_004c36dc;
+    pcVar3 = &highscore_path_buf;
     do {
       if (uVar2 == 0) break;
       uVar2 = uVar2 - 1;
@@ -34011,19 +34037,20 @@ LAB_0043b67f:
     (&DAT_004c36d9)[uVar2] = 0x32;
     (&DAT_004c36da)[uVar2] = 0x2e;
     (&DAT_004c36db)[uVar2] = 0x68;
-    (&DAT_004c36dc)[uVar2] = 0x69;
+    (&highscore_path_buf)[uVar2] = 0x69;
     (&DAT_004c36dd)[uVar2] = 0;
   }
   if (_config_name_slot_selected != 0) {
-    crt_sprintf(&DAT_004c365c,&s_fmt_typo_target_name_2_parts,&DAT_004c36dc,
+    crt_sprintf(&highscore_named_path_buf,&s_fmt_typo_target_name_2_parts,&highscore_path_buf,
                 &config_saved_name_0 + _config_name_slot_selected * 0x1b);
-    console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&DAT_004c365c);
-    return &DAT_004c365c;
+    console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&highscore_named_path_buf)
+    ;
+    return &highscore_named_path_buf;
   }
   if (*(float *)((int)cv_verbose + 0xc) != 0.0) {
-    console_printf(&console_log_queue,s_Opening___s__00477bc8,&DAT_004c36dc);
+    console_printf(&console_log_queue,s_Opening___s__00477bc8,&highscore_path_buf);
   }
-  return &DAT_004c36dc;
+  return &highscore_path_buf;
 }
 
 
@@ -34064,7 +34091,7 @@ void highscore_record_init(void)
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
   }
-  _DAT_00487078 = uVar2 + 0x310;
+  highscore_record_random_tag = uVar2 + 0x310;
   highscore_full_version_marker = -(config_hardcore != '\0') & 0x75;
   return;
 }
@@ -34211,22 +34238,22 @@ int __cdecl buffer_reader_find_tag(char *tag,int tag_len)
 
 /* reads a NUL-terminated pack entry name into DAT_004c3a68 */
 
-uint __cdecl resource_pack_read_cstring(undefined4 *param_1)
+int __cdecl resource_pack_read_cstring(void *fp)
 
 {
   byte bVar1;
-  uint uVar2;
+  int iVar2;
   int iVar3;
   
   iVar3 = 0;
-  bVar1 = *(byte *)(param_1 + 3);
-  while (((bVar1 & 0x10) == 0 && (uVar2 = crt_getc(param_1), uVar2 != 0))) {
-    (&DAT_004c3a68)[iVar3] = (char)uVar2;
-    bVar1 = *(byte *)(param_1 + 3);
+  bVar1 = *(byte *)((int)fp + 0xc);
+  while (((bVar1 & 0x10) == 0 && (iVar2 = crt_getc(fp), iVar2 != 0))) {
+    (&resource_pack_entry_name_buf)[iVar3] = (char)iVar2;
+    bVar1 = *(byte *)((int)fp + 0xc);
     iVar3 = iVar3 + 1;
   }
-  (&DAT_004c3a68)[iVar3] = 0;
-  return (uint)~param_1[3] >> 4 & 1;
+  (&resource_pack_entry_name_buf)[iVar3] = 0;
+  return ~*(uint *)((int)fp + 0xc) >> 4 & 1;
 }
 
 
@@ -34246,9 +34273,9 @@ int __cdecl resource_pack_set(char *path)
   char *pcVar5;
   char *pcVar6;
   
-  fp = (FILE *)crt_fopen(path,&file_mode_read_binary);
+  fp = crt_fopen(path,&file_mode_read_binary);
   if (fp == (FILE *)0x0) {
-    DAT_004c3968._0_1_ = 0;
+    resource_pack_path_buf._0_1_ = 0;
     resource_pack_enabled = 0;
     return 0;
   }
@@ -34263,7 +34290,7 @@ int __cdecl resource_pack_set(char *path)
   } while (cVar1 != '\0');
   uVar3 = ~uVar3;
   pcVar5 = pcVar5 + -uVar3;
-  pcVar6 = (char *)&DAT_004c3968;
+  pcVar6 = (char *)&resource_pack_path_buf;
   for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
     *(undefined4 *)pcVar6 = *(undefined4 *)pcVar5;
     pcVar5 = pcVar5 + 4;
@@ -34291,41 +34318,42 @@ int __cdecl resource_open_read(byte *path,int *size_out)
   int *piVar1;
   char cVar2;
   FILE *fp;
-  uint uVar3;
-  int iVar4;
+  int iVar3;
+  uint uVar4;
+  long lVar5;
   
   piVar1 = size_out;
   if (resource_pack_enabled != '\0') {
-    fp = (FILE *)crt_fopen((LPCSTR)&DAT_004c3968,&file_mode_read_binary);
+    fp = crt_fopen((char *)&resource_pack_path_buf,&file_mode_read_binary);
     resource_fp = (FILE *)fp;
     if (fp == (FILE *)0x0) {
       return 0;
     }
-    crt_fseek((int *)fp,4,0);
-    uVar3 = resource_pack_read_cstring((undefined4 *)fp);
-    cVar2 = (char)uVar3;
+    crt_fseek(fp,4,0);
+    iVar3 = resource_pack_read_cstring(fp);
+    cVar2 = (char)iVar3;
     while (cVar2 != '\0') {
-      crt_fread((char *)&size_out,4,1,(int *)fp);
+      crt_fread(&size_out,4,1,fp);
       *piVar1 = (int)size_out;
-      uVar3 = FUN_00462de0(size_out,&DAT_004c3a68,path);
-      iVar4 = 0;
-      if (uVar3 == 0) goto LAB_0043bac3;
-      crt_fseek((int *)fp,(int)size_out,1);
-      uVar3 = resource_pack_read_cstring((undefined4 *)fp);
-      cVar2 = (char)uVar3;
+      uVar4 = FUN_00462de0(size_out,&resource_pack_entry_name_buf,path);
+      iVar3 = 0;
+      if (uVar4 == 0) goto LAB_0043bac3;
+      crt_fseek(fp,(long)size_out,1);
+      iVar3 = resource_pack_read_cstring(fp);
+      cVar2 = (char)iVar3;
     }
     crt_fclose(fp);
   }
-  resource_fp = (FILE *)crt_fopen((LPCSTR)path,&file_mode_read_binary);
+  resource_fp = crt_fopen((char *)path,&file_mode_read_binary);
   if (resource_fp == (FILE *)0x0) {
     return 0;
   }
-  crt_fseek((int *)resource_fp,0,2);
-  iVar4 = crt_ftell((char *)resource_fp);
-  *piVar1 = iVar4;
-  iVar4 = crt_fseek((int *)resource_fp,0,0);
+  crt_fseek(resource_fp,0,2);
+  lVar5 = crt_ftell(resource_fp);
+  *piVar1 = lVar5;
+  iVar3 = crt_fseek(resource_fp,0,0);
 LAB_0043bac3:
-  return CONCAT31((int3)((uint)iVar4 >> 8),1);
+  return CONCAT31((int3)((uint)iVar3 >> 8),1);
 }
 
 
@@ -34476,19 +34504,19 @@ int __cdecl dsound_restore_buffer(void *buffer)
 int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
 
 {
-  FILE *pFVar1;
-  int iVar2;
-  char *pcVar3;
+  FILE *fp;
+  int iVar1;
+  void *ptr;
   
-  iVar2 = resource_open_read(path,(int *)out_size);
-  pFVar1 = resource_fp;
-  if ((char)iVar2 == '\0') {
-    return iVar2;
+  iVar1 = resource_open_read(path,(int *)out_size);
+  fp = resource_fp;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  pcVar3 = operator_new(*out_size);
-  crt_fread(pcVar3,*out_size,1,(int *)pFVar1);
+  ptr = operator_new(*out_size);
+  crt_fread(ptr,*out_size,1,fp);
   resource_close();
-  *out_data = pcVar3;
+  *out_data = ptr;
   return CONCAT31((int3)((uint)out_data >> 8),1);
 }
 
@@ -34501,10 +34529,10 @@ int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
 int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 
 {
-  FILE *pFVar1;
-  int iVar2;
-  void *pvVar3;
-  uint uVar4;
+  FILE *fp;
+  int iVar1;
+  void *pvVar2;
+  uint uVar3;
   uint unaff_EDI;
   char *dst;
   void *local_314;
@@ -34513,16 +34541,16 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
   uint local_1c;
   int local_18;
   
-  iVar2 = resource_open_read(path,(int *)&local_314);
-  pFVar1 = resource_fp;
-  if ((char)iVar2 == '\0') {
-    return iVar2;
+  iVar1 = resource_open_read(path,(int *)&local_314);
+  fp = resource_fp;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  pvVar3 = operator_new((int)local_314 + 8);
-  crt_fread((char *)((int)pvVar3 + 8),(uint)local_314,1,(int *)pFVar1);
+  pvVar2 = operator_new((int)local_314 + 8);
+  crt_fread((void *)((int)pvVar2 + 8),(uint)local_314,1,fp);
   resource_close();
-  iVar2 = vorbis_mem_open(local_310,pvVar3,local_314,unaff_EDI);
-  if ((char)iVar2 != '\0') {
+  iVar1 = vorbis_mem_open(local_310,pvVar2,local_314,unaff_EDI);
+  if ((char)iVar1 != '\0') {
     *(undefined4 *)entry = 0;
     *(undefined4 *)((int)entry + 4) = 0;
     *(undefined4 *)((int)entry + 8) = 0;
@@ -34530,28 +34558,28 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
     *(undefined2 *)((int)entry + 0x10) = 0;
     *(short *)((int)entry + 2) = (short)local_1c;
     *(undefined2 *)entry = 1;
-    uVar4 = (int)((local_1c & 0xffff) * 0x10) >> 3;
-    *(short *)((int)entry + 0xc) = (short)uVar4;
-    *(uint *)((int)entry + 8) = (uVar4 & 0xffff) * local_18;
+    uVar3 = (int)((local_1c & 0xffff) * 0x10) >> 3;
+    *(short *)((int)entry + 0xc) = (short)uVar3;
+    *(uint *)((int)entry + 8) = (uVar3 & 0xffff) * local_18;
     *(int *)((int)entry + 4) = local_18;
     *(undefined2 *)((int)entry + 0xe) = 0x10;
     *(undefined2 *)((int)entry + 0x10) = 0;
     *(uint *)((int)entry + 0x18) = local_2c;
-    pvVar3 = operator_new(local_2c);
+    pvVar2 = operator_new(local_2c);
     dst = *(char **)((int)entry + 0x18);
-    *(void **)((int)entry + 0x14) = pvVar3;
-    iVar2 = 1;
-    while ((dst != (char *)0x0 && (iVar2 != 0))) {
-      iVar2 = vorbis_read_pcm16(local_310,
+    *(void **)((int)entry + 0x14) = pvVar2;
+    iVar1 = 1;
+    while ((dst != (char *)0x0 && (iVar1 != 0))) {
+      iVar1 = vorbis_read_pcm16(local_310,
                                 (void *)((*(int *)((int)entry + 0x18) - (int)dst) +
                                         *(int *)((int)entry + 0x14)),dst,unaff_EDI);
-      dst = dst + -iVar2;
+      dst = dst + -iVar1;
     }
     vorbis_mem_close(local_310);
-    iVar2 = sfx_entry_create_buffers((int)entry);
-    return CONCAT31((int3)((uint)iVar2 >> 8),(char)iVar2 != '\0');
+    iVar1 = sfx_entry_create_buffers((int)entry);
+    return CONCAT31((int3)((uint)iVar1 >> 8),(char)iVar1 != '\0');
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -34983,14 +35011,14 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
 
 {
   ushort uVar1;
-  FILE *pFVar2;
-  int iVar3;
+  FILE *fp;
+  int iVar2;
   void *stream;
   void *this;
-  uint uVar4;
-  undefined4 *puVar5;
-  uint3 uVar6;
-  uint uVar7;
+  uint uVar3;
+  undefined4 *puVar4;
+  uint3 uVar5;
+  uint uVar6;
   uint unaff_EDI;
   undefined4 local_24 [4];
   void *local_14;
@@ -34999,19 +35027,19 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   undefined4 local_8;
   undefined4 local_4;
   
-  iVar3 = resource_open_read(path,(int *)&path);
-  pFVar2 = resource_fp;
-  if ((char)iVar3 == '\0') {
-    return iVar3;
+  iVar2 = resource_open_read(path,(int *)&path);
+  fp = resource_fp;
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
   stream = operator_new((uint)(path + 8));
-  crt_fread((char *)((int)stream + 8),(uint)path,1,(int *)pFVar2);
+  crt_fread((void *)((int)stream + 8),(uint)path,1,fp);
   resource_close();
   this = operator_new(0x310);
   *(void **)((int)entry + 0x74) = this;
-  iVar3 = vorbis_mem_open(this,stream,path,unaff_EDI);
-  if ((char)iVar3 == '\0') {
-    return iVar3;
+  iVar2 = vorbis_mem_open(this,stream,path,unaff_EDI);
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
   *(undefined4 *)entry = 0;
   *(undefined4 *)((int)entry + 4) = 0;
@@ -35024,27 +35052,27 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   *(undefined4 *)((int)entry + 4) = *(undefined4 *)(*(int *)((int)entry + 0x74) + 0x2f8);
   *(undefined2 *)((int)entry + 0xe) = 0x10;
   *(undefined2 *)((int)entry + 0x10) = 0;
-  uVar4 = (int)((uint)uVar1 * 0x10) >> 3;
-  *(short *)((int)entry + 0xc) = (short)uVar4;
-  iVar3 = (uVar4 & 0xffff) * *(int *)((int)entry + 4);
-  *(int *)((int)entry + 8) = iVar3;
-  uVar4 = iVar3 * 2;
-  *(uint *)((int)entry + 0x18) = uVar4;
-  puVar5 = operator_new(uVar4);
-  uVar4 = *(uint *)((int)entry + 0x18);
-  *(undefined4 **)((int)entry + 0x14) = puVar5;
-  for (uVar7 = uVar4 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  uVar3 = (int)((uint)uVar1 * 0x10) >> 3;
+  *(short *)((int)entry + 0xc) = (short)uVar3;
+  iVar2 = (uVar3 & 0xffff) * *(int *)((int)entry + 4);
+  *(int *)((int)entry + 8) = iVar2;
+  uVar3 = iVar2 * 2;
+  *(uint *)((int)entry + 0x18) = uVar3;
+  puVar4 = operator_new(uVar3);
+  uVar3 = *(uint *)((int)entry + 0x18);
+  *(undefined4 **)((int)entry + 0x14) = puVar4;
+  for (uVar6 = uVar3 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
-  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *(undefined1 *)puVar5 = 0;
-    puVar5 = (undefined4 *)((int)puVar5 + 1);
+  for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *(undefined1 *)puVar4 = 0;
+    puVar4 = (undefined4 *)((int)puVar4 + 1);
   }
-  puVar5 = local_24;
-  for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  puVar4 = local_24;
+  for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
   local_24[2] = *(undefined4 *)((int)entry + 0x18);
   local_10 = 0;
@@ -35054,13 +35082,13 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   local_24[1] = 0x180c0;
   local_c = 0;
   local_14 = entry;
-  iVar3 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,local_24,(int)entry + 0x24,0);
-  uVar6 = (uint3)((uint)iVar3 >> 8);
-  if (iVar3 < 0) {
-    return (uint)uVar6 << 8;
+  iVar2 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,local_24,(int)entry + 0x24,0);
+  uVar5 = (uint3)((uint)iVar2 >> 8);
+  if (iVar2 < 0) {
+    return (uint)uVar5 << 8;
   }
   *(undefined4 *)((int)entry + 0x80) = 0;
-  return CONCAT31(uVar6,1);
+  return CONCAT31(uVar5,1);
 }
 
 
@@ -35225,7 +35253,7 @@ LAB_0043c7ca:
       pcVar5 = s____loading_wav_sample___s__faile_00477d48;
     }
     else {
-      if (DAT_004cc8d5 == '\0') {
+      if (audio_resource_pack_available == '\0') {
         pcVar5 = s_sfx__s_00477d90;
       }
       else {
@@ -35347,8 +35375,8 @@ void audio_init_music(void)
       pfVar2 = pfVar2 + 1;
     }
     iVar1 = resource_pack_set(s_music_paq_00477eec);
-    DAT_004cc8d5 = (char)iVar1;
-    if (DAT_004cc8d5 == '\0') {
+    audio_resource_pack_available = (char)iVar1;
+    if (audio_resource_pack_available == '\0') {
       pcVar3 = s____resource_paq__music_paq__not_f_00477e84;
     }
     else {
@@ -35385,8 +35413,8 @@ void audio_init_sfx(void)
   
   if (config_blob == '\0') {
     iVar1 = resource_pack_set(s_sfx_paq_004784f4);
-    DAT_004cc8d5 = (char)iVar1;
-    if (DAT_004cc8d5 == '\0') {
+    audio_resource_pack_available = (char)iVar1;
+    if (audio_resource_pack_available == '\0') {
       fmt = s____failed_to_set_sound_resource_p_0047849c;
     }
     else {
@@ -40440,7 +40468,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
   game_paused_flag = 0;
   game_state_prev = game_state_id;
   game_state_id = state_id;
-  _DAT_00487238 = 0;
+  ui_element_hover_focus_index = 0;
   gameplay_transition_latch = '\0';
   (*grim_interface_ptr->vtable->grim_flush_input)();
   console_input_poll();
@@ -40578,22 +40606,22 @@ void __cdecl game_state_set(game_state_id_t state_id)
       }
       else if (config_game_mode == GAME_MODE_RUSH) {
         render_pass_mode = '\x01';
-        _DAT_00485788 = _DAT_00485788 + 1;
+        mode_play_rush = mode_play_rush + 1;
         gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_SURVIVAL) {
         render_pass_mode = '\x01';
-        _DAT_00485784 = _DAT_00485784 + 1;
+        mode_play_survival = mode_play_survival + 1;
         gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
         render_pass_mode = '\x01';
-        _DAT_0048578c = _DAT_0048578c + 1;
+        mode_play_typo = mode_play_typo + 1;
         gameplay_transition_latch = '\x01';
       }
       else {
         render_pass_mode = '\x01';
-        _DAT_00485790 = _DAT_00485790 + 1;
+        mode_play_other = mode_play_other + 1;
         gameplay_transition_latch = '\x01';
       }
     }
@@ -40733,7 +40761,6 @@ LAB_004468da:
 
 /* ui_element_update @ 00446900 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* updates hover/click/animation for a UI element and fires callbacks. Runtime capture (2026-02-06
    gameplay_state_capture): mostly emits sfx_play id 64 (95/108), with id 63 as secondary. */
 
@@ -40765,8 +40792,8 @@ void __cdecl ui_element_update(ui_element_t *element)
       uVar1 = element->enabled;
       element->_pad5[0xec] = '\x01';
       if ((uVar1 != '\0') && (element->on_activate != (ui_element_callback_t)0x0)) {
-        _DAT_0048723c = element;
-        _DAT_00487238 = 0;
+        ui_element_hover_focus_ptr = element;
+        ui_element_hover_focus_index = 0;
         ppuVar9 = &ui_element_table_end;
         do {
           puVar2 = *ppuVar9;
@@ -40774,7 +40801,7 @@ void __cdecl ui_element_update(ui_element_t *element)
              ((game_state_id != GAME_STATE_MAIN_MENU ||
               (puVar2->on_activate != (ui_element_callback_t)0x0)))) {
             if (element == puVar2) break;
-            _DAT_00487238 = _DAT_00487238 + 1;
+            ui_element_hover_focus_index = ui_element_hover_focus_index + 1;
           }
           ppuVar9 = ppuVar9 + 1;
         } while ((int)ppuVar9 < 0x48f20c);
@@ -41390,14 +41417,14 @@ void options_menu_update(void)
   }
   _DAT_004d7988 = s_Controls_00478e68;
   ui_button_update((float *)&stack0xffffffd0,(ui_button_t *)&DAT_004d7988);
-  pcVar4 = DAT_004c364c;
-  pcVar6 = DAT_004c3648;
+  pcVar4 = perk_slot_1_desc_wrapped_alternate;
+  pcVar6 = perk_slot_1_desc_wrapped_primary;
   iVar5 = perk_id_bloody_mess_quick_learner;
   if (config_fx_toggle == '\0') {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3640;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
   }
   else {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3644;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_alternate;
     pcVar6 = pcVar4;
   }
   (&perk_meta_table)[iVar5].description = pcVar6;
@@ -42205,40 +42232,40 @@ void controls_menu_update(void)
           pcVar8 = s_EQUALS_00471878;
           break;
         case 0xe:
-          pcVar8 = &DAT_00471870;
+          pcVar8 = &input_key_name_backspace;
           break;
         case 0xf:
-          pcVar8 = &DAT_0047186c;
+          pcVar8 = &input_key_name_tab;
           break;
         case 0x10:
-          pcVar8 = &DAT_00471868;
+          pcVar8 = &input_key_name_q;
           break;
         case 0x11:
-          pcVar8 = &DAT_00471864;
+          pcVar8 = &input_key_name_w;
           break;
         case 0x12:
-          pcVar8 = &DAT_00471860;
+          pcVar8 = &input_key_name_e;
           break;
         case 0x13:
-          pcVar8 = &DAT_0047185c;
+          pcVar8 = &input_key_name_r;
           break;
         case 0x14:
-          pcVar8 = &DAT_00471858;
+          pcVar8 = &input_key_name_t;
           break;
         case 0x15:
-          pcVar8 = &DAT_00471854;
+          pcVar8 = &input_key_name_y;
           break;
         case 0x16:
-          pcVar8 = &DAT_00471850;
+          pcVar8 = &input_key_name_u;
           break;
         case 0x17:
-          pcVar8 = &DAT_0047184c;
+          pcVar8 = &input_key_name_i;
           break;
         case 0x18:
-          pcVar8 = &DAT_00471848;
+          pcVar8 = &input_key_name_o;
           break;
         case 0x19:
-          pcVar8 = &DAT_00471844;
+          pcVar8 = &input_key_name_p;
           break;
         case 0x1a:
           pcVar8 = s_LBRACKET_00471838;
@@ -42253,31 +42280,31 @@ void controls_menu_update(void)
           pcVar8 = s_LCONTROL_00471818;
           break;
         case 0x1e:
-          pcVar8 = &DAT_00471814;
+          pcVar8 = &input_key_name_a;
           break;
         case 0x1f:
-          pcVar8 = &DAT_00471810;
+          pcVar8 = &input_key_name_s;
           break;
         case 0x20:
-          pcVar8 = &DAT_0047180c;
+          pcVar8 = &input_key_name_d;
           break;
         case 0x21:
-          pcVar8 = &DAT_00471808;
+          pcVar8 = &input_key_name_f;
           break;
         case 0x22:
-          pcVar8 = &DAT_00471804;
+          pcVar8 = &input_key_name_g;
           break;
         case 0x23:
-          pcVar8 = &DAT_00471800;
+          pcVar8 = &input_key_name_h;
           break;
         case 0x24:
-          pcVar8 = &DAT_004717fc;
+          pcVar8 = &input_key_name_j;
           break;
         case 0x25:
-          pcVar8 = &DAT_004717f8;
+          pcVar8 = &input_key_name_k;
           break;
         case 0x26:
-          pcVar8 = &DAT_004717f4;
+          pcVar8 = &input_key_name_l;
           break;
         case 0x27:
           pcVar8 = s_SEMICOLON_004717e8;
@@ -42295,25 +42322,25 @@ void controls_menu_update(void)
           pcVar8 = s_BACKSLASH_004717c0;
           break;
         case 0x2c:
-          pcVar8 = &DAT_004717bc;
+          pcVar8 = &input_key_name_z;
           break;
         case 0x2d:
-          pcVar8 = &DAT_004717b8;
+          pcVar8 = &input_key_name_x;
           break;
         case 0x2e:
-          pcVar8 = &DAT_004717b4;
+          pcVar8 = &input_key_name_c;
           break;
         case 0x2f:
-          pcVar8 = &DAT_004717b0;
+          pcVar8 = &input_key_name_v;
           break;
         case 0x30:
-          pcVar8 = &DAT_004717ac;
+          pcVar8 = &input_key_name_b;
           break;
         case 0x31:
-          pcVar8 = &DAT_004717a8;
+          pcVar8 = &input_key_name_n;
           break;
         case 0x32:
-          pcVar8 = &DAT_004717a4;
+          pcVar8 = &input_key_name_m;
           break;
         case 0x33:
           pcVar8 = s_COMMA_0047179c;
@@ -42340,34 +42367,34 @@ void controls_menu_update(void)
           pcVar8 = s_CAPITAL_00471760;
           break;
         case 0x3b:
-          pcVar8 = &DAT_0047175c;
+          pcVar8 = &input_key_name_f1;
           break;
         case 0x3c:
-          pcVar8 = &DAT_00471758;
+          pcVar8 = &input_key_name_f2;
           break;
         case 0x3d:
-          pcVar8 = &DAT_00471754;
+          pcVar8 = &input_key_name_f3;
           break;
         case 0x3e:
-          pcVar8 = &DAT_00471750;
+          pcVar8 = &input_key_name_f4;
           break;
         case 0x3f:
-          pcVar8 = &DAT_0047174c;
+          pcVar8 = &input_key_name_f5;
           break;
         case 0x40:
-          pcVar8 = &DAT_00471748;
+          pcVar8 = &input_key_name_f6;
           break;
         case 0x41:
-          pcVar8 = &DAT_00471744;
+          pcVar8 = &input_key_name_f7;
           break;
         case 0x42:
-          pcVar8 = &DAT_00471740;
+          pcVar8 = &input_key_name_f8;
           break;
         case 0x43:
-          pcVar8 = &DAT_0047173c;
+          pcVar8 = &input_key_name_f9;
           break;
         case 0x44:
-          pcVar8 = &DAT_00471738;
+          pcVar8 = &input_key_name_f10;
           break;
         case 0x45:
           pcVar8 = s_NUMLOCK_00471730;
@@ -42397,7 +42424,7 @@ void controls_menu_update(void)
           pcVar8 = s_NUMPAD6_004716ec;
           break;
         case 0x4e:
-          pcVar8 = &DAT_004716e8;
+          pcVar8 = &input_key_name_add;
           break;
         case 0x4f:
           pcVar8 = s_NUMPAD1_004716e0;
@@ -42421,22 +42448,22 @@ void controls_menu_update(void)
           pcVar8 = s_OEM_102_004716b8;
           break;
         case 0x57:
-          pcVar8 = &DAT_004716b4;
+          pcVar8 = &input_key_name_f11;
           break;
         case 0x58:
-          pcVar8 = &DAT_004716b0;
+          pcVar8 = &input_key_name_f12;
           break;
         case 100:
-          pcVar8 = &DAT_004716ac;
+          pcVar8 = &input_key_name_f13;
           break;
         case 0x65:
-          pcVar8 = &DAT_004716a8;
+          pcVar8 = &input_key_name_f14;
           break;
         case 0x66:
-          pcVar8 = &DAT_004716a4;
+          pcVar8 = &input_key_name_f15;
           break;
         case 0x70:
-          pcVar8 = &DAT_0047169c;
+          pcVar8 = &input_key_name_kana;
           break;
         case 0x73:
           pcVar8 = s_ABNT_C1_00471694;
@@ -42448,7 +42475,7 @@ void controls_menu_update(void)
           pcVar8 = s_NOCONVERT_00471680;
           break;
         case 0x7d:
-          pcVar8 = &DAT_0047167c;
+          pcVar8 = &input_key_name_yen;
           break;
         case 0x7e:
           pcVar8 = s_ABNT_C2_00471674;
@@ -42460,7 +42487,7 @@ void controls_menu_update(void)
           pcVar8 = s_PREVTRACK_00471658;
           break;
         case 0x91:
-          pcVar8 = &DAT_00471654;
+          pcVar8 = &input_key_name_at;
           break;
         case 0x92:
           pcVar8 = s_COLON_0047164c;
@@ -42472,10 +42499,10 @@ void controls_menu_update(void)
           pcVar8 = s_KANJI_00471638;
           break;
         case 0x95:
-          pcVar8 = &DAT_00471630;
+          pcVar8 = &input_key_name_stop;
           break;
         case 0x96:
-          pcVar8 = &DAT_0047162c;
+          pcVar8 = &input_key_name_ax;
           break;
         case 0x97:
           pcVar8 = s_UNLABELED_00471620;
@@ -42490,7 +42517,7 @@ void controls_menu_update(void)
           pcVar8 = s_RCONTROL_004715fc;
           break;
         case 0xa0:
-          pcVar8 = &DAT_004715f4;
+          pcVar8 = &input_key_name_mute;
           break;
         case 0xa1:
           pcVar8 = s_CALCULATOR_004715e8;
@@ -42526,28 +42553,28 @@ void controls_menu_update(void)
           pcVar8 = s_PAUSE_00471584;
           break;
         case 199:
-          pcVar8 = &DAT_0047157c;
+          pcVar8 = &input_key_name_home;
           break;
         case 200:
-          pcVar8 = &DAT_00471578;
+          pcVar8 = &input_key_name_up;
           break;
         case 0xc9:
           pcVar8 = s_PRIOR_00471570;
           break;
         case 0xcb:
-          pcVar8 = &DAT_00471568;
+          pcVar8 = &input_key_name_left;
           break;
         case 0xcd:
           pcVar8 = s_RIGHT_00471560;
           break;
         case 0xcf:
-          pcVar8 = &DAT_0047155c;
+          pcVar8 = &input_key_name_end;
           break;
         case 0xd0:
-          pcVar8 = &DAT_00471554;
+          pcVar8 = &input_key_name_down;
           break;
         case 0xd1:
-          pcVar8 = &DAT_0047154c;
+          pcVar8 = &input_key_name_next;
           break;
         case 0xd2:
           pcVar8 = s_INSERT_00471544;
@@ -42556,13 +42583,13 @@ void controls_menu_update(void)
           pcVar8 = s_DELETE_0047153c;
           break;
         case 0xdb:
-          pcVar8 = &DAT_00471534;
+          pcVar8 = &input_key_name_lwin;
           break;
         case 0xdc:
-          pcVar8 = &DAT_0047152c;
+          pcVar8 = &input_key_name_rwin;
           break;
         case 0xdd:
-          pcVar8 = &DAT_00471524;
+          pcVar8 = &input_key_name_apps;
           break;
         case 0xde:
           pcVar8 = s_POWER_0047151c;
@@ -42571,7 +42598,7 @@ void controls_menu_update(void)
           pcVar8 = s_SLEEP_00471514;
           break;
         case 0xe3:
-          pcVar8 = &DAT_0047150c;
+          pcVar8 = &input_key_name_wake;
           break;
         case 0xe5:
           pcVar8 = s_WEBSEARCH_00471500;
@@ -42595,7 +42622,7 @@ void controls_menu_update(void)
           pcVar8 = s_MYCOMPUTER_004714bc;
           break;
         case 0xec:
-          pcVar8 = &DAT_004714b4;
+          pcVar8 = &input_key_name_mail;
           break;
         case 0xed:
           pcVar8 = s_MEDIASELECT_004714a8;
@@ -42692,7 +42719,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x104) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471ad4;
+          pcVar8 = &input_key_name_mouse5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42754,7 +42781,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x120) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471aac;
+          pcVar8 = &input_key_name_joys2;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42785,7 +42812,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x122) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a9c;
+          pcVar8 = &input_key_name_joys4;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42816,7 +42843,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x124) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a8c;
+          pcVar8 = &input_key_name_joys6;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42847,7 +42874,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x126) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a7c;
+          pcVar8 = &input_key_name_joys8;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42878,7 +42905,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x128) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a6c;
+          pcVar8 = &input_key_name_joys10;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42909,7 +42936,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x12a) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a5c;
+          pcVar8 = &input_key_name_joys12;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43033,7 +43060,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x153) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a04;
+          pcVar8 = &input_key_name_joy_rot_x;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43064,7 +43091,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x155) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719f4;
+          pcVar8 = &input_key_name_joy_rot_z;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43095,7 +43122,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x163) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719e0;
+          pcVar8 = &input_key_name_rim0_x_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43126,7 +43153,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x165) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719c8;
+          pcVar8 = &input_key_name_rim2_x_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43157,7 +43184,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x169) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719b0;
+          pcVar8 = &input_key_name_rim1_y_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43188,7 +43215,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x16d) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471998;
+          pcVar8 = &input_key_name_rim0_btn1;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43219,7 +43246,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x16f) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471980;
+          pcVar8 = &input_key_name_rim0_btn3;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43250,7 +43277,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x171) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471968;
+          pcVar8 = &input_key_name_rim0_btn5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43281,7 +43308,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x173) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471950;
+          pcVar8 = &input_key_name_rim1_btn2;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43312,7 +43339,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x175) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471938;
+          pcVar8 = &input_key_name_rim1_btn4;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43343,7 +43370,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x177) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471920;
+          pcVar8 = &input_key_name_rim2_btn1;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43374,7 +43401,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x179) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471908;
+          pcVar8 = &input_key_name_rim2_btn3;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43405,7 +43432,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x17b) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004718f0;
+          pcVar8 = &input_key_name_rim2_btn5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43490,40 +43517,40 @@ LAB_0044a2a9:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -43538,31 +43565,31 @@ LAB_0044a2a9:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -43580,25 +43607,25 @@ LAB_0044a2a9:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -43625,34 +43652,34 @@ LAB_0044a2a9:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -43682,7 +43709,7 @@ LAB_0044a2a9:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -43706,22 +43733,22 @@ LAB_0044a2a9:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -43733,7 +43760,7 @@ LAB_0044a2a9:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -43745,7 +43772,7 @@ LAB_0044a2a9:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -43757,10 +43784,10 @@ LAB_0044a2a9:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -43775,7 +43802,7 @@ LAB_0044a2a9:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -43811,28 +43838,28 @@ LAB_0044a2a9:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -43841,13 +43868,13 @@ LAB_0044a2a9:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -43856,7 +43883,7 @@ LAB_0044a2a9:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -43880,7 +43907,7 @@ LAB_0044a2a9:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -43977,7 +44004,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x104) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471ad4;
+        pcVar8 = &input_key_name_mouse5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44039,7 +44066,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x120) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471aac;
+        pcVar8 = &input_key_name_joys2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44070,7 +44097,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x122) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a9c;
+        pcVar8 = &input_key_name_joys4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44101,7 +44128,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x124) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a8c;
+        pcVar8 = &input_key_name_joys6;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44132,7 +44159,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x126) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a7c;
+        pcVar8 = &input_key_name_joys8;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44163,7 +44190,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x128) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a6c;
+        pcVar8 = &input_key_name_joys10;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44194,7 +44221,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x12a) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a5c;
+        pcVar8 = &input_key_name_joys12;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44318,7 +44345,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x153) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a04;
+        pcVar8 = &input_key_name_joy_rot_x;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44349,7 +44376,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x155) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719f4;
+        pcVar8 = &input_key_name_joy_rot_z;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44380,7 +44407,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x163) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719e0;
+        pcVar8 = &input_key_name_rim0_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44411,7 +44438,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x165) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719c8;
+        pcVar8 = &input_key_name_rim2_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44442,7 +44469,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x169) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719b0;
+        pcVar8 = &input_key_name_rim1_y_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44473,7 +44500,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x16d) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471998;
+        pcVar8 = &input_key_name_rim0_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44504,7 +44531,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x16f) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471980;
+        pcVar8 = &input_key_name_rim0_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44535,7 +44562,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x171) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471968;
+        pcVar8 = &input_key_name_rim0_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44566,7 +44593,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x173) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471950;
+        pcVar8 = &input_key_name_rim1_btn2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44597,7 +44624,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x175) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471938;
+        pcVar8 = &input_key_name_rim1_btn4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44628,7 +44655,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x177) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471920;
+        pcVar8 = &input_key_name_rim2_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44659,7 +44686,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x179) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471908;
+        pcVar8 = &input_key_name_rim2_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44690,7 +44717,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x17b) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004718f0;
+        pcVar8 = &input_key_name_rim2_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44773,40 +44800,40 @@ LAB_0044b027:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -44821,31 +44848,31 @@ LAB_0044b027:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -44863,25 +44890,25 @@ LAB_0044b027:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -44908,34 +44935,34 @@ LAB_0044b027:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -44965,7 +44992,7 @@ LAB_0044b027:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -44989,22 +45016,22 @@ LAB_0044b027:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -45016,7 +45043,7 @@ LAB_0044b027:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -45028,7 +45055,7 @@ LAB_0044b027:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -45040,10 +45067,10 @@ LAB_0044b027:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -45058,7 +45085,7 @@ LAB_0044b027:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -45094,28 +45121,28 @@ LAB_0044b027:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -45124,13 +45151,13 @@ LAB_0044b027:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -45139,7 +45166,7 @@ LAB_0044b027:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -45163,7 +45190,7 @@ LAB_0044b027:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -45260,7 +45287,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x104) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471ad4;
+        pcVar8 = &input_key_name_mouse5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45322,7 +45349,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x120) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471aac;
+        pcVar8 = &input_key_name_joys2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45353,7 +45380,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x122) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a9c;
+        pcVar8 = &input_key_name_joys4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45384,7 +45411,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x124) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a8c;
+        pcVar8 = &input_key_name_joys6;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45415,7 +45442,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x126) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a7c;
+        pcVar8 = &input_key_name_joys8;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45446,7 +45473,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x128) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a6c;
+        pcVar8 = &input_key_name_joys10;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45477,7 +45504,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x12a) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a5c;
+        pcVar8 = &input_key_name_joys12;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45601,7 +45628,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x153) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a04;
+        pcVar8 = &input_key_name_joy_rot_x;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45632,7 +45659,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x155) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719f4;
+        pcVar8 = &input_key_name_joy_rot_z;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45663,7 +45690,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x163) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719e0;
+        pcVar8 = &input_key_name_rim0_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45694,7 +45721,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x165) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719c8;
+        pcVar8 = &input_key_name_rim2_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45725,7 +45752,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x169) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719b0;
+        pcVar8 = &input_key_name_rim1_y_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45756,7 +45783,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x16d) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471998;
+        pcVar8 = &input_key_name_rim0_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45787,7 +45814,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x16f) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471980;
+        pcVar8 = &input_key_name_rim0_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45818,7 +45845,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x171) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471968;
+        pcVar8 = &input_key_name_rim0_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45849,7 +45876,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x173) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471950;
+        pcVar8 = &input_key_name_rim1_btn2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45880,7 +45907,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x175) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471938;
+        pcVar8 = &input_key_name_rim1_btn4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45911,7 +45938,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x177) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471920;
+        pcVar8 = &input_key_name_rim2_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45942,7 +45969,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x179) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471908;
+        pcVar8 = &input_key_name_rim2_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45973,7 +46000,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x17b) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004718f0;
+        pcVar8 = &input_key_name_rim2_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -46055,40 +46082,40 @@ LAB_0044bd90:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -46103,31 +46130,31 @@ LAB_0044bd90:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -46145,25 +46172,25 @@ LAB_0044bd90:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -46190,34 +46217,34 @@ LAB_0044bd90:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -46247,7 +46274,7 @@ LAB_0044bd90:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -46271,22 +46298,22 @@ LAB_0044bd90:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -46298,7 +46325,7 @@ LAB_0044bd90:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -46310,7 +46337,7 @@ LAB_0044bd90:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -46322,10 +46349,10 @@ LAB_0044bd90:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -46340,7 +46367,7 @@ LAB_0044bd90:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -46376,28 +46403,28 @@ LAB_0044bd90:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -46406,13 +46433,13 @@ LAB_0044bd90:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -46421,7 +46448,7 @@ LAB_0044bd90:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -46445,7 +46472,7 @@ LAB_0044bd90:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -46543,7 +46570,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x104) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471ad4;
+      pcVar8 = &input_key_name_mouse5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46605,7 +46632,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x120) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471aac;
+      pcVar8 = &input_key_name_joys2;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46636,7 +46663,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x122) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a9c;
+      pcVar8 = &input_key_name_joys4;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46667,7 +46694,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x124) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a8c;
+      pcVar8 = &input_key_name_joys6;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46698,7 +46725,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x126) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a7c;
+      pcVar8 = &input_key_name_joys8;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46729,7 +46756,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x128) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a6c;
+      pcVar8 = &input_key_name_joys10;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46760,7 +46787,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x12a) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a5c;
+      pcVar8 = &input_key_name_joys12;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46884,7 +46911,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x153) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a04;
+      pcVar8 = &input_key_name_joy_rot_x;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46915,7 +46942,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x155) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719f4;
+      pcVar8 = &input_key_name_joy_rot_z;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46946,7 +46973,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x163) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719e0;
+      pcVar8 = &input_key_name_rim0_x_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46977,7 +47004,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x165) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719c8;
+      pcVar8 = &input_key_name_rim2_x_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47008,7 +47035,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x169) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719b0;
+      pcVar8 = &input_key_name_rim1_y_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47039,7 +47066,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x16d) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471998;
+      pcVar8 = &input_key_name_rim0_btn1;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47070,7 +47097,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x16f) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471980;
+      pcVar8 = &input_key_name_rim0_btn3;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47101,7 +47128,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x171) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471968;
+      pcVar8 = &input_key_name_rim0_btn5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47132,7 +47159,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x173) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471950;
+      pcVar8 = &input_key_name_rim1_btn2;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47163,7 +47190,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x175) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471938;
+      pcVar8 = &input_key_name_rim1_btn4;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47194,7 +47221,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x177) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471920;
+      pcVar8 = &input_key_name_rim2_btn1;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47225,7 +47252,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x179) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471908;
+      pcVar8 = &input_key_name_rim2_btn3;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47256,7 +47283,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x17b) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004718f0;
+      pcVar8 = &input_key_name_rim2_btn5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47821,46 +47848,46 @@ void play_game_menu_update(void)
   
   if (((byte)play_game_menu_init_flags & 1) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 1;
-    DAT_004d75fe = 1;
+    play_game_menu_quests_enabled = '\x01';
     DAT_004d760d = 0;
     DAT_004d760c = 0;
     _DAT_004d7608 = 0x3f800000;
     _DAT_004d7604 = 0;
-    _DAT_004d75f8 = (char *)0x0;
+    _play_game_menu_button_quests = (char *)0x0;
     DAT_004d75fc = 0;
-    DAT_004d75fd = '\0';
-    DAT_004d7600 = 0;
+    play_game_menu_quests_activated = '\0';
+    play_game_menu_quests_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa90);
   }
-  _DAT_004d75f8 = s_Quests_00479280;
+  _play_game_menu_button_quests = s_Quests_00479280;
   if (((byte)play_game_menu_init_flags & 2) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 2;
-    DAT_004d75a6 = 1;
+    play_game_menu_rush_enabled = '\x01';
     DAT_004d75b5 = 0;
     DAT_004d75b4 = 0;
     _DAT_004d75b0 = 0x3f800000;
     _DAT_004d75ac = 0;
-    _DAT_004d75a0 = (char *)0x0;
+    _play_game_menu_button_rush = (char *)0x0;
     DAT_004d75a4 = 0;
-    DAT_004d75a5 = '\0';
-    DAT_004d75a8 = 0;
+    play_game_menu_rush_activated = '\0';
+    play_game_menu_rush_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa80);
   }
-  _DAT_004d75a0 = s_Rush_004720a0;
+  _play_game_menu_button_rush = s_Rush_004720a0;
   if (((byte)play_game_menu_init_flags & 4) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 4;
-    DAT_004d76ce = 1;
+    play_game_menu_survival_enabled = '\x01';
     DAT_004d76dd = 0;
     DAT_004d76dc = 0;
     _DAT_004d76d8 = 0x3f800000;
     _DAT_004d76d4 = 0;
-    _DAT_004d76c8 = (char *)0x0;
+    _play_game_menu_button_survival = (char *)0x0;
     DAT_004d76cc = 0;
-    DAT_004d76cd = '\0';
-    DAT_004d76d0 = 0;
+    play_game_menu_survival_activated = '\0';
+    play_game_menu_survival_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa70);
   }
-  _DAT_004d76c8 = s_Survival_004720ac;
+  _play_game_menu_button_survival = s_Survival_004720ac;
   if (((byte)play_game_menu_init_flags & 8) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 8;
     DAT_004d7616 = 1;
@@ -47868,13 +47895,13 @@ void play_game_menu_update(void)
     DAT_004d7624 = 0;
     _DAT_004d7620 = 0x3f800000;
     _DAT_004d761c = 0;
-    _DAT_004d7610 = (char *)0x0;
+    _play_game_menu_button_typo = (char *)0x0;
     DAT_004d7614 = 0;
-    DAT_004d7615 = '\0';
-    DAT_004d7618 = 0;
+    play_game_menu_typo_activated = '\0';
+    play_game_menu_typo_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa60);
   }
-  _DAT_004d7610 = s_Typ_o_Shooter_00472090;
+  _play_game_menu_button_typo = s_Typ_o_Shooter_00472090;
   if (((byte)play_game_menu_init_flags & 0x10) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x10;
     DAT_004d7658 = 0;
@@ -47891,13 +47918,13 @@ void play_game_menu_update(void)
     DAT_004d75e4 = 0;
     _DAT_004d75e0 = 0x3f800000;
     _DAT_004d75dc = 0;
-    _DAT_004d75d0 = (char *)0x0;
+    _play_game_menu_button_tutorial = (char *)0x0;
     DAT_004d75d4 = 0;
-    DAT_004d75d5 = '\0';
-    DAT_004d75d8 = 0;
+    play_game_menu_tutorial_activated = '\0';
+    play_game_menu_tutorial_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa40);
   }
-  _DAT_004d75d0 = s_Tutorial_00479274;
+  _play_game_menu_button_tutorial = s_Tutorial_00479274;
   (*grim_interface_ptr->vtable->grim_bind_texture)(ui_item_texts_texture,0);
   pcVar8 = (char *)0x3e800000;
   fVar7 = 1.0;
@@ -47918,13 +47945,13 @@ void play_game_menu_update(void)
   }
   if ((_quest_unlock_index < 0x28) || (1 < _config_player_count)) {
     fVar7 = fVar7 + 32.0;
-    if ((int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788) < 1) {
+    if ((int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush) < 1) {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
       }
       fVar7 = fVar7 + 32.0;
     }
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75f8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_quests);
     if (cVar5 != '\0') {
       iVar2 = 0;
       puVar3 = quest_play_counts + 0xb;
@@ -47937,31 +47964,32 @@ void play_game_menu_update(void)
                 (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 32.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_rush);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485788);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_rush);
     }
     fVar7 = fVar7 + 32.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_survival);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485784);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_survival)
+      ;
     }
-    if ((0 < (int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788)) &&
+    if ((0 < (int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush)) &&
        (_config_player_count == 1)) {
-      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
     }
   }
   else {
     fVar7 = fVar7 + 26.0;
-    if ((int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788) < 1) {
+    if ((int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush) < 1) {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
       }
       fVar7 = fVar7 + 28.0;
     }
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75f8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_quests);
     if (cVar5 != '\0') {
       iVar2 = 0;
       puVar3 = quest_play_counts + 0xb;
@@ -47974,30 +48002,31 @@ void play_game_menu_update(void)
                 (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 28.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_rush);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485788);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_rush);
     }
     fVar7 = fVar7 + 28.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_survival);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485784);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_survival)
+      ;
     }
     fVar7 = fVar7 + 28.0;
     iVar2 = game_is_full_version();
     if ((char)iVar2 != '\0') {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d7610);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_typo);
       }
       if (cVar5 != '\0') {
         (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_0048578c);
+                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_typo);
       }
     }
-    if (0 < (int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788)) {
-      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+    if (0 < (int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush)) {
+      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
     }
   }
   if (((byte)play_game_menu_init_flags & 0x40) == 0) {
@@ -48036,36 +48065,41 @@ void play_game_menu_update(void)
     }
   }
 LAB_0044f676:
-  DAT_004d75a6 = play_game_player_count_list.open == 0;
-  DAT_004d75fe = DAT_004d75a6;
-  DAT_004d76ce = DAT_004d75a6;
+  play_game_menu_rush_enabled = play_game_player_count_list.open == 0;
+  play_game_menu_quests_enabled = play_game_menu_rush_enabled;
+  play_game_menu_survival_enabled = play_game_menu_rush_enabled;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
-  if (0 < DAT_004d7600) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7600 * 0.00090000004);
+  if (0 < play_game_menu_quests_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_quests_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy - 8.0,(float)y,s_Unlock_new_weapons_and_perks_in_Q_00479220);
   }
-  if (0 < DAT_004d75a8) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75a8 * 0.00090000004);
+  if (0 < play_game_menu_rush_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_rush_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 32.0,(float)y,s_Face_a_rush_of_aliens_in_Rush_mo_004791fc);
   }
-  if (0 < DAT_004d76d0) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d76d0 * 0.00090000004);
+  if (0 < play_game_menu_survival_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_survival_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 20.0,(float)y,s_Gain_perks_and_weapons_and_fight_004791d4);
   }
-  if (0 < DAT_004d7618) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7618 * 0.00090000004);
+  if (0 < play_game_menu_typo_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_typo_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy,(float)y - 12.0,s_Use_your_typing_skills_as_the_we_0047919c);
   }
-  if (0 < DAT_004d75d8) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75d8 * 0.00090000004);
+  if (0 < play_game_menu_tutorial_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_tutorial_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 38.0,(float)y,s_Learn_how_to_play_Crimsonland__0047917c);
   }
-  if (DAT_004d7615 != '\0') {
+  if (play_game_menu_typo_activated != '\0') {
     render_pass_mode = 0;
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
@@ -48076,11 +48110,11 @@ LAB_0044f676:
     sfx_mute_all(music_track_extra_0);
     screen_fade_ramp_flag = '\x01';
   }
-  if (DAT_004d75fd != '\0') {
+  if (play_game_menu_quests_activated != '\0') {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_QUEST_SELECT;
   }
-  if (DAT_004d75a5 != '\0') {
+  if (play_game_menu_rush_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48090,7 +48124,7 @@ LAB_0044f676:
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_004d76cd != '\0') {
+  if (play_game_menu_survival_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48100,7 +48134,7 @@ LAB_0044f676:
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_004d75d5 != '\0') {
+  if (play_game_menu_tutorial_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48298,10 +48332,10 @@ void ui_menu_layout_init(void)
   uint local_20 [8];
   
   screen_fade_alpha = 0;
-  _DAT_00487288 = (float)_config_screen_width * 0.0015625;
-  _DAT_0048723c = 0;
+  ui_layout_scale_x = (float)_config_screen_width * 0.0015625;
+  ui_element_hover_focus_ptr = (ui_element_t *)0x0;
   screen_fade_ramp_flag = '\0';
-  _DAT_0048728c = (float)_config_screen_height * 0.0020833334;
+  ui_layout_scale_y = (float)_config_screen_height * 0.0020833334;
   ppuVar13 = &ui_element_table_end;
   for (iVar10 = 0x29; iVar10 != 0; iVar10 = iVar10 + -1) {
     *ppuVar13 = (ui_element_t *)0x0;
@@ -49408,7 +49442,8 @@ void weapon_table_init(void)
   _DAT_004d863c = 0;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8ff8;
-  for (uVar6 = uVar5 >> 2; _DAT_004d7b7c = sfx_autorifle_fire, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; weapon_sfx_anchor_autorifle_fire = sfx_autorifle_fire, uVar6 != 0;
+      uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
@@ -49434,7 +49469,7 @@ void weapon_table_init(void)
   fire_bullets_fallback_shot_cooldown = 0.14;
   _DAT_004d9044 = 0x3f99999a;
   fire_bullets_fallback_spread_heat = 0.22;
-  fire_bullets_primary_shot_sfx_id = _DAT_004d7b7c;
+  fire_bullets_primary_shot_sfx_id = weapon_sfx_anchor_autorifle_fire;
   _DAT_004d9058 = sfx_pistol_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7aa8;
@@ -49467,12 +49502,14 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7b24;
-  for (uVar6 = uVar5 >> 2; _DAT_004d93bc = sfx_shotgun_reload, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; weapon_sfx_anchor_shotgun_reload = sfx_shotgun_reload, uVar6 != 0;
+      uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d83c0 = sfx_autorifle_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_autorifle_reload = sfx_autorifle_reload, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -49524,7 +49561,7 @@ void weapon_table_init(void)
   _DAT_004d7bec = 0x3ff33333;
   _DAT_004d7bf0 = 0x3e8a3d71;
   _DAT_004d7bf8 = sfx_shotgun_fire;
-  _DAT_004d7c00 = _DAT_004d93bc;
+  _DAT_004d7c00 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7c1c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49555,7 +49592,7 @@ void weapon_table_init(void)
   _DAT_004d7c68 = 0x3ff33333;
   _DAT_004d7c6c = 0x3e051eb8;
   _DAT_004d7c74 = _DAT_004d8434;
-  _DAT_004d7c7c = _DAT_004d93bc;
+  _DAT_004d7c7c = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d83dc;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49585,7 +49622,7 @@ void weapon_table_init(void)
   _DAT_004d8428 = 0x40400000;
   _DAT_004d842c = 0x3e23d70a;
   _DAT_004d8450 = 4;
-  _DAT_004d843c = _DAT_004d93bc;
+  _DAT_004d843c = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7c98;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49615,7 +49652,7 @@ void weapon_table_init(void)
   _DAT_004d7ce0 = 0x3db476b0;
   _DAT_004d7ce4 = 0x3f99999a;
   _DAT_004d7ce8 = 0x3da7ef9e;
-  _DAT_004d7cf8 = _DAT_004d83c0;
+  _DAT_004d7cf8 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7e0c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49647,7 +49684,7 @@ void weapon_table_init(void)
   _DAT_004d7e58 = 0x40000000;
   _DAT_004d7e5c = 0x3c75c28f;
   _DAT_004d7e08 = 1;
-  _DAT_004d7e6c = _DAT_004d83c0;
+  _DAT_004d7e6c = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7e88;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49666,7 +49703,7 @@ void weapon_table_init(void)
   _DAT_004d7ed0 = 0x3e94e545;
   _DAT_004d7ed4 = 0x3f99999a;
   _DAT_004d7ed8 = 0x3e3a5e35;
-  _DAT_004d7ee8 = _DAT_004d83c0;
+  _DAT_004d7ee8 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = s_Multi_Plasma_0047950c;
   do {
     pcVar8 = pcVar7;
@@ -49706,7 +49743,7 @@ void weapon_table_init(void)
   _DAT_004d7f50 = 0x3fb33333;
   _DAT_004d7f54 = 0x3ea3d70a;
   _DAT_004d7f78 = 3;
-  _DAT_004d7f64 = _DAT_004d83c0;
+  _DAT_004d7f64 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7f80;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49735,7 +49772,7 @@ void weapon_table_init(void)
   _DAT_004d7fc8 = 0x3de147ae;
   _DAT_004d7fcc = 0x3fa66666;
   _DAT_004d7fd0 = 0x3dc6a7f0;
-  _DAT_004d7fe0 = _DAT_004d83c0;
+  _DAT_004d7fe0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7d14;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49765,7 +49802,7 @@ void weapon_table_init(void)
   _DAT_004d7d5c = 0x3f19999a;
   _DAT_004d7d60 = 0x3fcccccd;
   _DAT_004d7d64 = 0x3ed70a3d;
-  _DAT_004d7d74 = _DAT_004d93bc;
+  _DAT_004d7d74 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7ffc;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49857,7 +49894,7 @@ void weapon_table_init(void)
   _DAT_004d7dd8 = 0x3db851ec;
   _DAT_004d7ddc = 0x40800000;
   _DAT_004d7de0 = 0x3d7df3b6;
-  _DAT_004d7df0 = _DAT_004d83c0;
+  _DAT_004d7df0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d80f4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49887,7 +49924,7 @@ void weapon_table_init(void)
   _DAT_004d8140 = 0x40466666;
   _DAT_004d8144 = 0x3de147ae;
   _DAT_004d8168 = 0xe;
-  _DAT_004d8154 = _DAT_004d93bc;
+  _DAT_004d8154 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8170;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49919,7 +49956,7 @@ void weapon_table_init(void)
   _DAT_004d81bc = 0x3fc00000;
   _DAT_004d81c0 = 0x3c23d70a;
   _DAT_004d816c = 1;
-  _DAT_004d81d0 = _DAT_004d83c0;
+  _DAT_004d81d0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d81ec;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49951,7 +49988,7 @@ void weapon_table_init(void)
   _DAT_004d8238 = 0x3fe66666;
   _DAT_004d823c = 0x3c23d70a;
   _DAT_004d81e8 = 1;
-  _DAT_004d824c = _DAT_004d83c0;
+  _DAT_004d824c = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8268;
   for (uVar6 = uVar5 >> 2; _DAT_004d82c8 = sfx_autorifle_reload_alt, uVar6 != 0; uVar6 = uVar6 - 1)
@@ -50021,7 +50058,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d86a8 = sfx_shock_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_shock_reload = sfx_shock_reload, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50074,7 +50112,7 @@ void weapon_table_init(void)
   _DAT_004d84a4 = 0x3faccccd;
   _DAT_004d84a8 = 0x3de56042;
   _DAT_004d8454 = 4;
-  _DAT_004d84b8 = _DAT_004d86a8;
+  _DAT_004d84b8 = weapon_sfx_anchor_shock_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d84d4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50095,7 +50133,7 @@ void weapon_table_init(void)
   _DAT_004d8520 = 0x3fe66666;
   _DAT_004d8524 = 0x3db851ec;
   _DAT_004d84d0 = 4;
-  _DAT_004d8534 = _DAT_004d86a8;
+  _DAT_004d8534 = weapon_sfx_anchor_shock_reload;
   pcVar7 = s_Ion_Cannon_00479440;
   do {
     pcVar8 = pcVar7;
@@ -50135,7 +50173,7 @@ void weapon_table_init(void)
   _DAT_004d859c = 0x40400000;
   _DAT_004d85a0 = 0x3f2e147b;
   _DAT_004d854c = 4;
-  _DAT_004d85b0 = _DAT_004d86a8;
+  _DAT_004d85b0 = weapon_sfx_anchor_shock_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8930;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50167,7 +50205,7 @@ void weapon_table_init(void)
   _DAT_004d8980 = 0x3e8a3d71;
   _DAT_004d89a4 = 8;
   _DAT_004d892c = 4;
-  _DAT_004d8990 = _DAT_004d86a8;
+  _DAT_004d8990 = weapon_sfx_anchor_shock_reload;
   _DAT_004d8994 = 0x1f;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d88b4;
@@ -50199,7 +50237,7 @@ void weapon_table_init(void)
   _DAT_004d8900 = 0x40066666;
   _DAT_004d8904 = 0x3e8a3d71;
   _DAT_004d88b0 = 0;
-  _DAT_004d8914 = _DAT_004d93bc;
+  _DAT_004d8914 = weapon_sfx_anchor_shotgun_reload;
   _DAT_004d8918 = 0x1e;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d87bc;
@@ -50229,7 +50267,7 @@ void weapon_table_init(void)
   _DAT_004d8804 = 0x3f666666;
   _DAT_004d8808 = 0x402ccccd;
   _DAT_004d880c = 0x3f19999a;
-  _DAT_004d881c = _DAT_004d86a8;
+  _DAT_004d881c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8820 = 0x19;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8740;
@@ -50260,7 +50298,7 @@ void weapon_table_init(void)
   _DAT_004d878c = 0x40400000;
   _DAT_004d8790 = 0x3f2e147b;
   _DAT_004d873c = 4;
-  _DAT_004d87a0 = _DAT_004d86a8;
+  _DAT_004d87a0 = weapon_sfx_anchor_shock_reload;
   _DAT_004d87a4 = 0x19;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d89ac;
@@ -50291,7 +50329,7 @@ void weapon_table_init(void)
   _DAT_004d89f8 = 0x40400000;
   _DAT_004d89fc = 0x3e3851ec;
   _DAT_004d89a8 = 4;
-  _DAT_004d8a0c = _DAT_004d86a8;
+  _DAT_004d8a0c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8a10 = 0x1d;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8a28;
@@ -50312,7 +50350,7 @@ void weapon_table_init(void)
   _DAT_004d8a74 = 0x40000000;
   _DAT_004d8a78 = 0x3ec28f5c;
   _DAT_004d8a24 = 4;
-  _DAT_004d8a88 = _DAT_004d86a8;
+  _DAT_004d8a88 = weapon_sfx_anchor_shock_reload;
   _DAT_004d8a8c = 0x1e;
   pcVar7 = s_Splitter_Gun_004793e4;
   do {
@@ -50353,7 +50391,7 @@ void weapon_table_init(void)
   _DAT_004d8884 = 0x400ccccd;
   _DAT_004d8888 = 0x3e8f5c29;
   _DAT_004d8834 = 0;
-  _DAT_004d8898 = _DAT_004d86a8;
+  _DAT_004d8898 = weapon_sfx_anchor_shock_reload;
   _DAT_004d88a8 = 0x40c00000;
   _DAT_004d88a4 = 0x41f00000;
   pcVar7 = pcVar8 + -uVar5;
@@ -50385,7 +50423,7 @@ void weapon_table_init(void)
   _DAT_004d8614 = 0x3e570a3d;
   _DAT_004d8618 = 0x3f9c28f6;
   _DAT_004d861c = 0x3d23d70a;
-  _DAT_004d862c = _DAT_004d86a8;
+  _DAT_004d862c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8630 = 0x17;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8648;
@@ -50424,7 +50462,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d92bc = sfx_bloodspill_01, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_bloodspill_01 = sfx_bloodspill_01, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50446,7 +50485,7 @@ void weapon_table_init(void)
   _DAT_004d8e54 = 0x3f99999a;
   _DAT_004d8e58 = 0x3d23d70a;
   _DAT_004d8e60 = sfx_bloodspill_01;
-  _DAT_004d8e68 = _DAT_004d93bc;
+  _DAT_004d8e68 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8f00;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50475,8 +50514,8 @@ void weapon_table_init(void)
   _DAT_004d8f48 = 0x3e4ccccd;
   _DAT_004d8f4c = 0x3f99999a;
   _DAT_004d8f50 = 0x3db851ec;
-  _DAT_004d8f58 = _DAT_004d92bc;
-  _DAT_004d8f60 = _DAT_004d93bc;
+  _DAT_004d8f58 = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8f60 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8f7c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50504,8 +50543,8 @@ void weapon_table_init(void)
   _DAT_004d8fc4 = 0x3f000000;
   _DAT_004d8fc8 = 0x3f99999a;
   _DAT_004d8fcc = 0x3ecccccd;
-  _DAT_004d8fd4 = _DAT_004d92bc;
-  _DAT_004d8fdc = _DAT_004d93bc;
+  _DAT_004d8fd4 = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8fdc = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8e84;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50534,8 +50573,8 @@ void weapon_table_init(void)
   _DAT_004d8ecc = 0x3e252bd4;
   _DAT_004d8ed0 = 0x3f99999a;
   _DAT_004d8ed4 = 0x3d4ccccd;
-  _DAT_004d8edc = _DAT_004d92bc;
-  _DAT_004d8ee4 = _DAT_004d93bc;
+  _DAT_004d8edc = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8ee4 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d86c4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50564,8 +50603,8 @@ void weapon_table_init(void)
   _DAT_004d870c = 0x3e4ccccd;
   _DAT_004d8710 = 0x3f99999a;
   _DAT_004d8714 = 0x3d23d70a;
-  _DAT_004d871c = _DAT_004d92bc;
-  _DAT_004d8724 = _DAT_004d93bc;
+  _DAT_004d871c = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8724 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d9264;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50573,7 +50612,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d93b4 = sfx_explosion_large, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_explosion_large = sfx_explosion_large, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50594,7 +50634,7 @@ void weapon_table_init(void)
   _DAT_004d92ac = 0x3d23d70a;
   _DAT_004d92b0 = 0x40a00000;
   _DAT_004d92b4 = 0x3d23d70a;
-  _DAT_004d92c4 = _DAT_004d93bc;
+  _DAT_004d92c4 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d92e0;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50624,7 +50664,7 @@ void weapon_table_init(void)
   _DAT_004d9328 = 0x3da3d70a;
   _DAT_004d932c = 0x40000000;
   _DAT_004d9330 = 0x3d4ccccd;
-  _DAT_004d9340 = _DAT_004d93bc;
+  _DAT_004d9340 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d93d8;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50653,8 +50693,8 @@ void weapon_table_init(void)
   _DAT_004d9420 = 0x40800000;
   _DAT_004d9424 = 0x41000000;
   _DAT_004d9428 = 0x3f800000;
-  _DAT_004d9430 = _DAT_004d93b4;
-  _DAT_004d9438 = _DAT_004d93bc;
+  _DAT_004d9430 = weapon_sfx_anchor_explosion_large;
+  _DAT_004d9438 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d935c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50690,7 +50730,7 @@ int weapon_pick_random_available(void)
   do {
     iVar1 = crt_rand();
     iVar1 = iVar1 % 0x21 + 1;
-    if (*(int *)(&DAT_00485544 + iVar1 * 4) != 0) {
+    if (weapon_usage_counts[iVar1] != 0) {
       uVar2 = crt_rand();
       if ((uVar2 & 1) == 0) {
         iVar1 = crt_rand();
@@ -50720,7 +50760,7 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
   
   iVar1 = weapon_id;
   if (demo_mode_active == '\0') {
-    *(int *)(&DAT_00485544 + weapon_id * 4) = *(int *)(&DAT_00485544 + weapon_id * 4) + 1;
+    weapon_usage_counts[weapon_id] = weapon_usage_counts[weapon_id] + 1;
   }
   (&player_state_table)[player_index].weapon_id = weapon_id;
   iVar2 = perk_id_ammo_maniac;
@@ -57196,9 +57236,9 @@ int __cdecl crt_fclose(FILE *fp)
   
   iVar1 = -1;
   if ((fp->_flag & 0x40) == 0) {
-    crt_lock_file((uint)fp);
+    crt_lock_file(fp);
     iVar1 = __fclose_lk(fp);
-    crt_unlock_file((uint)fp);
+    crt_unlock_file(fp);
   }
   else {
     fp->_flag = 0;
@@ -57215,19 +57255,19 @@ int __cdecl crt_fclose(FILE *fp)
    
    Library: Visual Studio 2003 Release */
 
-undefined4 __cdecl __fclose_lk(FILE *param_1)
+int __cdecl __fclose_lk(FILE *param_1)
 
 {
   int iVar1;
-  undefined4 uVar2;
+  int iVar2;
   
-  uVar2 = 0xffffffff;
+  iVar2 = -1;
   if ((param_1->_flag & 0x83) != 0) {
-    uVar2 = crt_flushbuf((int *)param_1);
+    iVar2 = crt_flushbuf(param_1);
     __freebuf(param_1);
     iVar1 = crt_close(param_1->_file);
     if (iVar1 < 0) {
-      uVar2 = 0xffffffff;
+      iVar2 = -1;
     }
     else if (param_1->_tmpfname != (char *)0x0) {
       crt_free_base(param_1->_tmpfname);
@@ -57235,7 +57275,7 @@ undefined4 __cdecl __fclose_lk(FILE *param_1)
     }
   }
   param_1->_flag = 0;
-  return uVar2;
+  return iVar2;
 }
 
 
@@ -57320,34 +57360,34 @@ char * __cdecl _strchr(char *_Str,int _Val)
 
 /* CRT fgets wrapper with file lock/unlock (reads until newline or size-1) */
 
-char * __cdecl crt_fgets(char *param_1,int param_2,undefined4 *param_3)
+char * __cdecl crt_fgets(char *dst,int dst_len,void *fp)
 
 {
   int *piVar1;
   uint uVar2;
   char *pcVar3;
   
-  if (param_2 < 1) {
-    param_1 = (char *)0x0;
+  if (dst_len < 1) {
+    dst = (char *)0x0;
   }
   else {
-    crt_lock_file((uint)param_3);
-    pcVar3 = param_1;
+    crt_lock_file(fp);
+    pcVar3 = dst;
     do {
-      param_2 = param_2 + -1;
-      if (param_2 == 0) break;
-      piVar1 = param_3 + 1;
+      dst_len = dst_len + -1;
+      if (dst_len == 0) break;
+      piVar1 = (int *)((int)fp + 4);
       *piVar1 = *piVar1 + -1;
       if (*piVar1 < 0) {
-        uVar2 = crt_filbuf(param_3);
+        uVar2 = crt_filbuf(fp);
       }
       else {
-        uVar2 = (uint)*(byte *)*param_3;
-        *param_3 = (byte *)*param_3 + 1;
+        uVar2 = (uint)**(byte **)fp;
+        *(byte **)fp = *(byte **)fp + 1;
       }
       if (uVar2 == 0xffffffff) {
-        if (pcVar3 == param_1) {
-          param_1 = (char *)0x0;
+        if (pcVar3 == dst) {
+          dst = (char *)0x0;
           goto LAB_00461000;
         }
         break;
@@ -57357,9 +57397,9 @@ char * __cdecl crt_fgets(char *param_1,int param_2,undefined4 *param_3)
     } while ((char)uVar2 != '\n');
     *pcVar3 = '\0';
 LAB_00461000:
-    crt_unlock_file((uint)param_3);
+    crt_unlock_file(fp);
   }
-  return param_1;
+  return dst;
 }
 
 
@@ -57368,19 +57408,19 @@ LAB_00461000:
 
 /* opens file with explicit share mode (fopen uses share=0x40) */
 
-undefined4 * __cdecl crt_fsopen(LPCSTR param_1,char *param_2,uint param_3)
+void * __cdecl crt_fsopen(char *path,char *mode,uint share)
 
 {
-  undefined4 *puVar1;
-  undefined4 *puVar2;
+  void *stream;
+  void *pvVar1;
   
-  puVar1 = crt_getstream();
-  if (puVar1 == (undefined4 *)0x0) {
-    return (undefined4 *)0x0;
+  stream = crt_getstream();
+  if (stream == (void *)0x0) {
+    return (void *)0x0;
   }
-  puVar2 = crt_openfile(param_1,param_2,param_3,puVar1);
-  crt_unlock_file((uint)puVar1);
-  return puVar2;
+  pvVar1 = crt_openfile(path,mode,share,stream);
+  crt_unlock_file(stream);
+  return pvVar1;
 }
 
 
@@ -57389,11 +57429,13 @@ undefined4 * __cdecl crt_fsopen(LPCSTR param_1,char *param_2,uint param_3)
 
 /* fopen wrapper (calls crt_fsopen with share=0x40) */
 
-void __cdecl crt_fopen(LPCSTR param_1,char *param_2)
+void * __cdecl crt_fopen(char *path,char *mode)
 
 {
-  crt_fsopen(param_1,param_2,0x40);
-  return;
+  void *pvVar1;
+  
+  pvVar1 = crt_fsopen(path,mode,0x40);
+  return pvVar1;
 }
 
 
@@ -57450,10 +57492,10 @@ int __cdecl crt_vsprintf(char *dst,char *fmt,void *args)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = 0x7fffffff;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,args);
+  iVar1 = crt_output(&local_24,fmt,args);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -57641,18 +57683,18 @@ int __cdecl _strncmp(char *_Str1,char *_Str2,size_t _MaxCount)
 
 /* CRT: fflush wrapper (NULL flushes all) */
 
-int __cdecl crt_fflush(int *param_1)
+int __cdecl crt_fflush(void *fp)
 
 {
   int iVar1;
   
-  if (param_1 == (int *)0x0) {
+  if (fp == (void *)0x0) {
     iVar1 = crt_flushall(0);
     return iVar1;
   }
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_fflush_nolock(param_1);
-  crt_unlock_file((uint)param_1);
+  crt_lock_file(fp);
+  iVar1 = crt_fflush_nolock(fp);
+  crt_unlock_file(fp);
   return iVar1;
 }
 
@@ -57662,17 +57704,17 @@ int __cdecl crt_fflush(int *param_1)
 
 /* CRT: fflush without lock */
 
-int __cdecl crt_fflush_nolock(int *param_1)
+int __cdecl crt_fflush_nolock(void *fp)
 
 {
   int iVar1;
   
-  iVar1 = crt_flushbuf(param_1);
+  iVar1 = crt_flushbuf(fp);
   if (iVar1 != 0) {
     return -1;
   }
-  if ((*(byte *)((int)param_1 + 0xd) & 0x40) != 0) {
-    iVar1 = crt_commit(param_1[4]);
+  if ((*(byte *)((int)fp + 0xd) & 0x40) != 0) {
+    iVar1 = crt_commit(*(int *)((int)fp + 0x10));
     return -(uint)(iVar1 != 0);
   }
   return 0;
@@ -57684,32 +57726,32 @@ int __cdecl crt_fflush_nolock(int *param_1)
 
 /* CRT: flush write buffer */
 
-undefined4 __cdecl crt_flushbuf(int *param_1)
+int __cdecl crt_flushbuf(void *fp)
 
 {
   uint uVar1;
-  undefined4 uVar2;
+  int iVar2;
   uint count;
   
-  uVar2 = 0;
-  if ((((byte)param_1[3] & 3) == 2) && ((param_1[3] & 0x108U) != 0)) {
-    count = *param_1 - param_1[2];
+  iVar2 = 0;
+  if ((((byte)*(uint *)((int)fp + 0xc) & 3) == 2) && ((*(uint *)((int)fp + 0xc) & 0x108) != 0)) {
+    count = *(int *)fp - (int)*(char **)((int)fp + 8);
     if (0 < (int)count) {
-      uVar1 = crt_write(param_1[4],(char *)param_1[2],count);
+      uVar1 = crt_write(*(int *)((int)fp + 0x10),*(char **)((int)fp + 8),count);
       if (uVar1 == count) {
-        if ((param_1[3] & 0x80U) != 0) {
-          param_1[3] = param_1[3] & 0xfffffffd;
+        if ((*(uint *)((int)fp + 0xc) & 0x80) != 0) {
+          *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) & 0xfffffffd;
         }
       }
       else {
-        param_1[3] = param_1[3] | 0x20;
-        uVar2 = 0xffffffff;
+        *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 0x20;
+        iVar2 = -1;
       }
     }
   }
-  param_1[1] = 0;
-  *param_1 = param_1[2];
-  return uVar2;
+  *(undefined4 *)((int)fp + 4) = 0;
+  *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
+  return iVar2;
 }
 
 
@@ -57724,41 +57766,41 @@ int __cdecl crt_flushall(int mode)
   FILE *pFVar1;
   int iVar2;
   int iVar3;
+  int stream_index;
   int iVar4;
-  int iVar5;
   
   iVar3 = 0;
-  iVar5 = 0;
-  crt_lock(2);
   iVar4 = 0;
+  crt_lock(2);
+  stream_index = 0;
   if (0 < crt_stream_count) {
     do {
-      pFVar1 = crt_stream_table[iVar4];
+      pFVar1 = crt_stream_table[stream_index];
       if ((pFVar1 != (FILE *)0x0) && (((byte)pFVar1[0xc] & 0x83) != 0)) {
-        crt_lock_file2(iVar4,(int)pFVar1);
-        pFVar1 = crt_stream_table[iVar4];
+        crt_lock_file2(stream_index,pFVar1);
+        pFVar1 = crt_stream_table[stream_index];
         if ((*(uint *)(pFVar1 + 0xc) & 0x83) != 0) {
           if (mode == 1) {
-            iVar2 = crt_fflush_nolock((int *)pFVar1);
+            iVar2 = crt_fflush_nolock(pFVar1);
             if (iVar2 != -1) {
               iVar3 = iVar3 + 1;
             }
           }
           else if ((mode == 0) && ((*(uint *)(pFVar1 + 0xc) & 2) != 0)) {
-            iVar2 = crt_fflush_nolock((int *)pFVar1);
+            iVar2 = crt_fflush_nolock(pFVar1);
             if (iVar2 == -1) {
-              iVar5 = -1;
+              iVar4 = -1;
             }
           }
         }
-        crt_unlock_file2(iVar4,(int)crt_stream_table[iVar4]);
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
-      iVar4 = iVar4 + 1;
-    } while (iVar4 < crt_stream_count);
+      stream_index = stream_index + 1;
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
   if (mode != 1) {
-    iVar3 = iVar5;
+    iVar3 = iVar4;
   }
   return iVar3;
 }
@@ -57769,14 +57811,14 @@ int __cdecl crt_flushall(int mode)
 
 /* fwrite wrapper with CRT lock/unlock */
 
-uint __cdecl crt_fwrite(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fwrite(void *ptr,uint size,uint count,void *fp)
 
 {
   uint uVar1;
   
-  crt_lock_file((uint)param_4);
-  uVar1 = crt_fwrite_nolock(param_1,param_2,param_3,param_4);
-  crt_unlock_file((uint)param_4);
+  crt_lock_file(fp);
+  uVar1 = crt_fwrite_nolock(ptr,size,count,fp);
+  crt_unlock_file(fp);
   return uVar1;
 }
 
@@ -57786,73 +57828,74 @@ uint __cdecl crt_fwrite(char *param_1,uint param_2,uint param_3,int *param_4)
 
 /* fwrite implementation (no locking) */
 
-uint __cdecl crt_fwrite_nolock(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fwrite_nolock(void *ptr,uint size,uint count,void *fp)
 
 {
-  int *piVar1;
-  int iVar2;
-  int *size;
-  uint uVar3;
-  int *piVar4;
-  int *piVar5;
-  int *piVar6;
+  void *fp_00;
+  int iVar1;
+  void *size_00;
+  uint uVar2;
+  void *pvVar3;
+  void *pvVar4;
+  void *pvVar5;
   
-  piVar1 = param_4;
-  piVar5 = (int *)(param_2 * param_3);
-  if (piVar5 == (int *)0x0) {
-    param_3 = 0;
+  fp_00 = fp;
+  pvVar4 = (void *)(size * count);
+  if (pvVar4 == (void *)0x0) {
+    count = 0;
   }
   else {
-    piVar4 = piVar5;
-    if ((*(ushort *)(param_4 + 3) & 0x10c) == 0) {
-      param_4 = (int *)0x1000;
+    pvVar3 = pvVar4;
+    if ((*(ushort *)((int)fp + 0xc) & 0x10c) == 0) {
+      fp = (void *)0x1000;
     }
     else {
-      param_4 = (int *)param_4[6];
+      fp = *(void **)((int)fp + 0x18);
     }
     do {
-      if (((piVar1[3] & 0x108U) == 0) || (piVar6 = (int *)piVar1[1], piVar6 == (int *)0x0)) {
-        if (param_4 <= piVar4) {
-          if (((piVar1[3] & 0x108U) != 0) && (iVar2 = crt_flushbuf(piVar1), iVar2 != 0)) {
+      uVar2 = *(uint *)((int)fp_00 + 0xc) & 0x108;
+      if ((uVar2 == 0) || (pvVar5 = *(void **)((int)fp_00 + 4), pvVar5 == (void *)0x0)) {
+        if (fp <= pvVar3) {
+          if ((uVar2 != 0) && (iVar1 = crt_flushbuf(fp_00), iVar1 != 0)) {
 LAB_004616de:
-            return (uint)((int)piVar5 - (int)piVar4) / param_2;
+            return (uint)((int)pvVar4 - (int)pvVar3) / size;
           }
-          piVar6 = piVar4;
-          if (param_4 != (int *)0x0) {
-            piVar6 = (int *)((int)piVar4 - (uint)piVar4 % (uint)param_4);
+          pvVar5 = pvVar3;
+          if (fp != (void *)0x0) {
+            pvVar5 = (void *)((int)pvVar3 - (uint)pvVar3 % (uint)fp);
           }
-          size = (int *)crt_write(piVar1[4],param_1,(uint)piVar6);
-          if ((size == (int *)0xffffffff) ||
-             (piVar4 = (int *)((int)piVar4 - (int)size), size < piVar6)) {
-            piVar1[3] = piVar1[3] | 0x20;
+          size_00 = (void *)crt_write(*(int *)((int)fp_00 + 0x10),ptr,(uint)pvVar5);
+          if ((size_00 == (void *)0xffffffff) ||
+             (pvVar3 = (void *)((int)pvVar3 - (int)size_00), size_00 < pvVar5)) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
             goto LAB_004616de;
           }
           goto LAB_00461695;
         }
-        uVar3 = crt_flsbuf((int)*param_1,piVar1);
-        if (uVar3 == 0xffffffff) goto LAB_004616de;
-        param_1 = param_1 + 1;
-        param_4 = (int *)piVar1[6];
-        piVar4 = (int *)((int)piVar4 - 1);
-        if ((int)param_4 < 1) {
-          param_4 = (int *)0x1;
+        iVar1 = crt_flsbuf((int)*(char *)ptr,fp_00);
+        if (iVar1 == -1) goto LAB_004616de;
+        ptr = (void *)((int)ptr + 1);
+        fp = *(void **)((int)fp_00 + 0x18);
+        pvVar3 = (void *)((int)pvVar3 - 1);
+        if ((int)fp < 1) {
+          fp = (void *)0x1;
         }
       }
       else {
-        size = piVar4;
-        if (piVar6 <= piVar4) {
-          size = piVar6;
+        size_00 = pvVar3;
+        if (pvVar5 <= pvVar3) {
+          size_00 = pvVar5;
         }
-        crt_bufcpy((void *)*piVar1,param_1,(size_t)size);
-        piVar1[1] = piVar1[1] - (int)size;
-        *piVar1 = *piVar1 + (int)size;
-        piVar4 = (int *)((int)piVar4 - (int)size);
+        crt_bufcpy(*(void **)fp_00,ptr,(size_t)size_00);
+        *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 4) - (int)size_00;
+        *(int *)fp_00 = *(int *)fp_00 + (int)size_00;
+        pvVar3 = (void *)((int)pvVar3 - (int)size_00);
 LAB_00461695:
-        param_1 = param_1 + (int)size;
+        ptr = (void *)((int)ptr + (int)size_00);
       }
-    } while (piVar4 != (int *)0x0);
+    } while (pvVar3 != (void *)0x0);
   }
-  return param_3;
+  return count;
 }
 
 
@@ -57874,10 +57917,10 @@ int __cdecl crt_sprintf(char *dst,char *fmt,...)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = 0x7fffffff;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,(undefined4 *)&stack0x0000000c);
+  iVar1 = crt_output(&local_24,fmt,&stack0x0000000c);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -58194,14 +58237,14 @@ void crt_array_unwind(void *ptr,uint size,int count,void *dtor)
 
 /* fread wrapper with CRT lock/unlock */
 
-uint __cdecl crt_fread(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fread(void *ptr,uint size,uint count,void *fp)
 
 {
   uint uVar1;
   
-  crt_lock_file((uint)param_4);
-  uVar1 = crt_fread_nolock(param_1,param_2,param_3,param_4);
-  crt_unlock_file((uint)param_4);
+  crt_lock_file(fp);
+  uVar1 = crt_fread_nolock(ptr,size,count,fp);
+  crt_unlock_file(fp);
   return uVar1;
 }
 
@@ -58211,75 +58254,74 @@ uint __cdecl crt_fread(char *param_1,uint param_2,uint param_3,int *param_4)
 
 /* fread implementation (no locking) */
 
-uint __cdecl crt_fread_nolock(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fread_nolock(void *ptr,uint size,uint count,void *fp)
 
 {
-  int *piVar1;
-  char *pcVar2;
-  int iVar3;
-  uint uVar4;
-  char *pcVar5;
-  char *pcVar6;
-  char *size;
+  void *fp_00;
+  void *pvVar1;
+  int iVar2;
+  char *pcVar3;
+  void *pvVar4;
+  void *size_00;
   
-  piVar1 = param_4;
-  pcVar6 = (char *)(param_2 * param_3);
-  if (pcVar6 == (char *)0x0) {
-    param_3 = 0;
+  fp_00 = fp;
+  pvVar4 = (void *)(size * count);
+  if (pvVar4 == (void *)0x0) {
+    count = 0;
   }
   else {
-    pcVar5 = param_1;
-    param_1 = pcVar6;
-    if ((*(ushort *)(param_4 + 3) & 0x10c) == 0) {
-      param_4 = (int *)0x1000;
+    pcVar3 = ptr;
+    ptr = pvVar4;
+    if ((*(ushort *)((int)fp + 0xc) & 0x10c) == 0) {
+      fp = (void *)0x1000;
     }
     else {
-      param_4 = (int *)param_4[6];
+      fp = *(void **)((int)fp + 0x18);
     }
     do {
-      if (((*(ushort *)(piVar1 + 3) & 0x10c) == 0) ||
-         (pcVar2 = (char *)piVar1[1], pcVar2 == (char *)0x0)) {
-        if (param_1 < param_4) {
-          uVar4 = crt_filbuf(piVar1);
-          if (uVar4 == 0xffffffff) goto LAB_00461c02;
-          *pcVar5 = (char)uVar4;
-          param_4 = (int *)piVar1[6];
-          pcVar5 = pcVar5 + 1;
-          param_1 = param_1 + -1;
+      if (((*(ushort *)((int)fp_00 + 0xc) & 0x10c) == 0) ||
+         (pvVar1 = *(void **)((int)fp_00 + 4), pvVar1 == (void *)0x0)) {
+        if (ptr < fp) {
+          iVar2 = crt_filbuf(fp_00);
+          if (iVar2 == -1) goto LAB_00461c02;
+          *pcVar3 = (char)iVar2;
+          fp = *(void **)((int)fp_00 + 0x18);
+          pcVar3 = pcVar3 + 1;
+          ptr = (void *)((int)ptr + -1);
         }
         else {
-          pcVar2 = param_1;
-          if (param_4 != (int *)0x0) {
-            pcVar2 = param_1 + -((uint)param_1 % (uint)param_4);
+          pvVar1 = ptr;
+          if (fp != (void *)0x0) {
+            pvVar1 = (void *)((int)ptr - (uint)ptr % (uint)fp);
           }
-          iVar3 = crt_read(piVar1[4],pcVar5,(uint)pcVar2);
-          if (iVar3 == 0) {
-            piVar1[3] = piVar1[3] | 0x10;
+          iVar2 = crt_read(*(int *)((int)fp_00 + 0x10),pcVar3,(uint)pvVar1);
+          if (iVar2 == 0) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x10;
 LAB_00461c02:
-            return (uint)((int)pcVar6 - (int)param_1) / param_2;
+            return (uint)((int)pvVar4 - (int)ptr) / size;
           }
-          if (iVar3 == -1) {
-            piVar1[3] = piVar1[3] | 0x20;
+          if (iVar2 == -1) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
             goto LAB_00461c02;
           }
-          param_1 = param_1 + -iVar3;
-          pcVar5 = pcVar5 + iVar3;
+          ptr = (void *)((int)ptr - iVar2);
+          pcVar3 = pcVar3 + iVar2;
         }
       }
       else {
-        size = param_1;
-        if (pcVar2 <= param_1) {
-          size = pcVar2;
+        size_00 = ptr;
+        if (pvVar1 <= ptr) {
+          size_00 = pvVar1;
         }
-        crt_bufcpy(pcVar5,(void *)*piVar1,(size_t)size);
-        param_1 = param_1 + -(int)size;
-        piVar1[1] = piVar1[1] - (int)size;
-        *piVar1 = (int)(size + *piVar1);
-        pcVar5 = pcVar5 + (int)size;
+        crt_bufcpy(pcVar3,*(void **)fp_00,(size_t)size_00);
+        ptr = (void *)((int)ptr - (int)size_00);
+        *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 4) - (int)size_00;
+        *(int *)fp_00 = *(int *)fp_00 + (int)size_00;
+        pcVar3 = pcVar3 + (int)size_00;
       }
-    } while (param_1 != (char *)0x0);
+    } while (ptr != (void *)0x0);
   }
-  return param_3;
+  return count;
 }
 
 
@@ -58288,15 +58330,15 @@ LAB_00461c02:
 
 /* CRT: ftell with file lock */
 
-int __cdecl crt_ftell(char *param_1)
+long __cdecl crt_ftell(void *fp)
 
 {
-  int iVar1;
+  long lVar1;
   
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_ftell_nolock(param_1);
-  crt_unlock_file((uint)param_1);
-  return iVar1;
+  crt_lock_file(fp);
+  lVar1 = crt_ftell_nolock(fp);
+  crt_unlock_file(fp);
+  return lVar1;
 }
 
 
@@ -58305,7 +58347,7 @@ int __cdecl crt_ftell(char *param_1)
 
 /* CRT: ftell without lock */
 
-int __cdecl crt_ftell_nolock(char *param_1)
+long __cdecl crt_ftell_nolock(void *fp)
 
 {
   uint fd;
@@ -58315,18 +58357,15 @@ int __cdecl crt_ftell_nolock(char *param_1)
   char *pcVar4;
   long lVar5;
   char *pcVar6;
-  char *pcVar7;
+  void *pvVar7;
   char *pcVar8;
   int local_c;
   int local_8;
   
-  pcVar7 = param_1;
-  fd = *(uint *)(param_1 + 0x10);
-  if (*(int *)(param_1 + 4) < 0) {
-    param_1[4] = '\0';
-    param_1[5] = '\0';
-    param_1[6] = '\0';
-    param_1[7] = '\0';
+  pvVar7 = fp;
+  fd = *(uint *)((int)fp + 0x10);
+  if (*(int *)((int)fp + 4) < 0) {
+    *(undefined4 *)((int)fp + 4) = 0;
   }
   local_8 = crt_lseek(fd,0,1);
   if (local_8 < 0) {
@@ -58334,12 +58373,12 @@ LAB_00461cbe:
     local_c = -1;
   }
   else {
-    uVar1 = *(uint *)(param_1 + 0xc);
+    uVar1 = *(uint *)((int)fp + 0xc);
     if ((uVar1 & 0x108) == 0) {
-      return local_8 - *(int *)(param_1 + 4);
+      return local_8 - *(int *)((int)fp + 4);
     }
-    pcVar4 = *(char **)param_1;
-    pcVar6 = *(char **)(param_1 + 8);
+    pcVar4 = *(char **)fp;
+    pcVar6 = *(char **)((int)fp + 8);
     local_c = (int)pcVar4 - (int)pcVar6;
     if ((uVar1 & 3) == 0) {
       if ((uVar1 & 0x80) == 0) {
@@ -58359,42 +58398,42 @@ LAB_00461cbe:
       }
     }
     if (local_8 != 0) {
-      if ((param_1[0xc] & 1U) != 0) {
-        if (*(int *)(param_1 + 4) == 0) {
+      if ((*(byte *)((int)fp + 0xc) & 1) != 0) {
+        if (*(int *)((int)fp + 4) == 0) {
           local_c = 0;
         }
         else {
-          pcVar4 = pcVar4 + (*(int *)(param_1 + 4) - (int)pcVar6);
+          pcVar4 = pcVar4 + (*(int *)((int)fp + 4) - (int)pcVar6);
           if (((uint)(&crt_pioinfo_table)[(int)fd >> 5][(fd & 0x1f) * 9 + 1] & 0x80) != 0) {
             lVar5 = crt_lseek(fd,0,2);
             if (lVar5 == local_8) {
-              pcVar6 = *(char **)(param_1 + 8);
+              pcVar6 = *(char **)((int)fp + 8);
               pcVar8 = pcVar4 + (int)pcVar6;
-              param_1 = pcVar4;
+              fp = pcVar4;
               for (; pcVar6 < pcVar8; pcVar6 = pcVar6 + 1) {
                 if (*pcVar6 == '\n') {
-                  param_1 = param_1 + 1;
+                  fp = (void *)((int)fp + 1);
                 }
               }
-              bVar2 = pcVar7[0xd] & 0x20;
+              bVar2 = *(byte *)((int)pvVar7 + 0xd) & 0x20;
             }
             else {
               crt_lseek(fd,local_8,0);
-              pcVar7 = (char *)0x200;
-              if ((((char *)0x200 < pcVar4) || ((*(uint *)(param_1 + 0xc) & 8) == 0)) ||
-                 ((*(uint *)(param_1 + 0xc) & 0x400) != 0)) {
-                pcVar7 = *(char **)(param_1 + 0x18);
+              pvVar7 = (void *)0x200;
+              if ((((char *)0x200 < pcVar4) || ((*(uint *)((int)fp + 0xc) & 8) == 0)) ||
+                 ((*(uint *)((int)fp + 0xc) & 0x400) != 0)) {
+                pvVar7 = *(void **)((int)fp + 0x18);
               }
               bVar2 = *(byte *)((&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 1) & 4;
-              param_1 = pcVar7;
+              fp = pvVar7;
             }
-            pcVar4 = param_1;
+            pcVar4 = fp;
             if (bVar2 != 0) {
-              pcVar4 = param_1 + 1;
+              pcVar4 = (void *)((int)fp + 1);
             }
           }
-          param_1 = pcVar4;
-          local_8 = local_8 - (int)param_1;
+          fp = pcVar4;
+          local_8 = local_8 - (int)fp;
         }
       }
       local_c = local_c + local_8;
@@ -58409,14 +58448,14 @@ LAB_00461cbe:
 
 /* fseek wrapper with CRT lock/unlock */
 
-int __cdecl crt_fseek(int *param_1,int param_2,DWORD param_3)
+int __cdecl crt_fseek(void *fp,long offset,int origin)
 
 {
   int iVar1;
   
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_fseek_nolock(param_1,param_2,param_3);
-  crt_unlock_file((uint)param_1);
+  crt_lock_file(fp);
+  iVar1 = crt_fseek_nolock(fp,offset,origin);
+  crt_unlock_file(fp);
   return iVar1;
 }
 
@@ -58426,40 +58465,41 @@ int __cdecl crt_fseek(int *param_1,int param_2,DWORD param_3)
 
 /* fseek implementation (uses crt_lseek) */
 
-int __cdecl crt_fseek_nolock(int *param_1,int param_2,DWORD param_3)
+int __cdecl crt_fseek_nolock(void *fp,long offset,int origin)
 
 {
   uint uVar1;
-  int iVar2;
-  long lVar3;
-  int *piVar4;
+  long lVar2;
+  int *piVar3;
+  int iVar4;
   
-  if (((param_1[3] & 0x83U) == 0) || (((param_3 != 0 && (param_3 != 1)) && (param_3 != 2)))) {
-    piVar4 = crt_errno_ptr();
-    *piVar4 = 0x16;
-    iVar2 = -1;
+  if (((*(uint *)((int)fp + 0xc) & 0x83) == 0) ||
+     (((origin != 0 && (origin != 1)) && (origin != 2)))) {
+    piVar3 = crt_errno_ptr();
+    *piVar3 = 0x16;
+    iVar4 = -1;
   }
   else {
-    param_1[3] = param_1[3] & 0xffffffef;
-    if (param_3 == 1) {
-      iVar2 = crt_ftell_nolock((char *)param_1);
-      param_2 = param_2 + iVar2;
-      param_3 = 0;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) & 0xffffffef;
+    if (origin == 1) {
+      lVar2 = crt_ftell_nolock(fp);
+      offset = offset + lVar2;
+      origin = 0;
     }
-    crt_flushbuf(param_1);
-    uVar1 = param_1[3];
+    crt_flushbuf(fp);
+    uVar1 = *(uint *)((int)fp + 0xc);
     if ((uVar1 & 0x80) == 0) {
       if ((((uVar1 & 1) != 0) && ((uVar1 & 8) != 0)) && ((uVar1 & 0x400) == 0)) {
-        param_1[6] = 0x200;
+        *(undefined4 *)((int)fp + 0x18) = 0x200;
       }
     }
     else {
-      param_1[3] = uVar1 & 0xfffffffc;
+      *(uint *)((int)fp + 0xc) = uVar1 & 0xfffffffc;
     }
-    lVar3 = crt_lseek(param_1[4],param_2,param_3);
-    iVar2 = (lVar3 != -1) - 1;
+    lVar2 = crt_lseek(*(int *)((int)fp + 0x10),offset,origin);
+    iVar4 = (lVar2 != -1) - 1;
   }
-  return iVar2;
+  return iVar4;
 }
 
 
@@ -58481,10 +58521,10 @@ int __cdecl crt_snprintf(char *dst,int size,char *fmt,...)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = size;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,(undefined4 *)&stack0x00000010);
+  iVar1 = crt_output(&local_24,fmt,&stack0x00000010);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -58597,11 +58637,11 @@ int __cdecl FUN_00461fd5(byte *param_1)
   int iVar1;
   int iVar2;
   
-  crt_lock_file2(1,0x47b3f8);
+  crt_lock_file2(1,&DAT_0047b3f8);
   iVar1 = FUN_004666f5((int *)&DAT_0047b3f8);
-  iVar2 = crt_output((int *)&DAT_0047b3f8,param_1,(undefined4 *)&stack0x00000008);
+  iVar2 = crt_output(&DAT_0047b3f8,(char *)param_1,&stack0x00000008);
   FUN_00466782(iVar1,(int *)&DAT_0047b3f8);
-  crt_unlock_file2(1,0x47b3f8);
+  crt_unlock_file2(1,&DAT_0047b3f8);
   return iVar2;
 }
 
@@ -59807,23 +59847,23 @@ void __cdecl crt_swap(char *a,char *b,size_t width)
 
 /* CRT: get character with stream lock */
 
-uint __cdecl crt_getc(undefined4 *param_1)
+int __cdecl crt_getc(void *fp)
 
 {
   int *piVar1;
   uint uVar2;
   
-  crt_lock_file((uint)param_1);
-  piVar1 = param_1 + 1;
+  crt_lock_file(fp);
+  piVar1 = (int *)((int)fp + 4);
   *piVar1 = *piVar1 + -1;
   if (*piVar1 < 0) {
-    uVar2 = crt_filbuf(param_1);
+    uVar2 = crt_filbuf(fp);
   }
   else {
-    uVar2 = (uint)*(byte *)*param_1;
-    *param_1 = (byte *)*param_1 + 1;
+    uVar2 = (uint)**(byte **)fp;
+    *(byte **)fp = *(byte **)fp + 1;
   }
-  crt_unlock_file((uint)param_1);
+  crt_unlock_file(fp);
   return uVar2;
 }
 
@@ -61119,14 +61159,14 @@ uint __thiscall crt_isctype(void *this,int c,uint mask)
 
 /* lock a FILE stream (CRT lock or critical section) */
 
-void __cdecl crt_lock_file(uint param_1)
+void __cdecl crt_lock_file(void *fp)
 
 {
-  if ((0x47b3d7 < param_1) && (param_1 < 0x47b639)) {
-    crt_lock(((int)(param_1 - 0x47b3d8) >> 5) + 0x1c);
+  if (((void *)0x47b3d7 < fp) && (fp < (void *)0x47b639)) {
+    crt_lock(((int)fp + -0x47b3d8 >> 5) + 0x1c);
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(param_1 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61136,14 +61176,14 @@ void __cdecl crt_lock_file(uint param_1)
 
 /* CRT: lock FILE by index or per-stream critical section */
 
-void __cdecl crt_lock_file2(int param_1,int param_2)
+void __cdecl crt_lock_file2(int stream_index,void *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_lock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_lock(stream_index + 0x1c);
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61153,14 +61193,14 @@ void __cdecl crt_lock_file2(int param_1,int param_2)
 
 /* unlock a FILE stream (CRT lock or critical section) */
 
-void __cdecl crt_unlock_file(uint param_1)
+void __cdecl crt_unlock_file(void *fp)
 
 {
-  if ((0x47b3d7 < param_1) && (param_1 < 0x47b639)) {
-    crt_unlock(((int)(param_1 - 0x47b3d8) >> 5) + 0x1c);
+  if (((void *)0x47b3d7 < fp) && (fp < (void *)0x47b639)) {
+    crt_unlock(((int)fp + -0x47b3d8 >> 5) + 0x1c);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_1 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61170,14 +61210,14 @@ void __cdecl crt_unlock_file(uint param_1)
 
 /* CRT: unlock FILE by index or per-stream critical section */
 
-void __cdecl crt_unlock_file2(int param_1,int param_2)
+void __cdecl crt_unlock_file2(int stream_index,void *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_unlock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_unlock(stream_index + 0x1c);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61280,7 +61320,7 @@ void __cdecl __freebuf(FILE *_File)
 
 /* CRT: fill read buffer */
 
-uint __cdecl crt_filbuf(undefined4 *param_1)
+int __cdecl crt_filbuf(void *fp)
 
 {
   byte bVar1;
@@ -61288,21 +61328,21 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
   int iVar3;
   void **ppvVar4;
   
-  uVar2 = param_1[3];
+  uVar2 = *(uint *)((int)fp + 0xc);
   if (((uVar2 & 0x83) != 0) && ((uVar2 & 0x40) == 0)) {
     if ((uVar2 & 2) == 0) {
-      param_1[3] = uVar2 | 1;
+      *(uint *)((int)fp + 0xc) = uVar2 | 1;
       if ((uVar2 & 0x10c) == 0) {
-        crt_file_buffer_init(param_1);
+        crt_file_buffer_init(fp);
       }
       else {
-        *param_1 = param_1[2];
+        *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
       }
-      iVar3 = crt_read(param_1[4],(char *)param_1[2],param_1[6]);
-      param_1[1] = iVar3;
+      iVar3 = crt_read(*(int *)((int)fp + 0x10),*(char **)((int)fp + 8),*(uint *)((int)fp + 0x18));
+      *(int *)((int)fp + 4) = iVar3;
       if ((iVar3 != 0) && (iVar3 != -1)) {
-        if ((param_1[3] & 0x82) == 0) {
-          uVar2 = param_1[4];
+        if ((*(uint *)((int)fp + 0xc) & 0x82) == 0) {
+          uVar2 = *(uint *)((int)fp + 0x10);
           if (uVar2 == 0xffffffff) {
             ppvVar4 = (void **)&DAT_0047b930;
           }
@@ -61310,25 +61350,26 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
             ppvVar4 = (&crt_pioinfo_table)[(int)uVar2 >> 5] + (uVar2 & 0x1f) * 9;
           }
           if (((uint)ppvVar4[1] & 0x82) == 0x82) {
-            param_1[3] = param_1[3] | 0x2000;
+            *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 0x2000;
           }
         }
-        if (((param_1[6] == 0x200) && ((param_1[3] & 8) != 0)) && ((param_1[3] & 0x400) == 0)) {
-          param_1[6] = 0x1000;
+        if (((*(int *)((int)fp + 0x18) == 0x200) && ((*(uint *)((int)fp + 0xc) & 8) != 0)) &&
+           ((*(uint *)((int)fp + 0xc) & 0x400) == 0)) {
+          *(undefined4 *)((int)fp + 0x18) = 0x1000;
         }
-        param_1[1] = iVar3 + -1;
-        bVar1 = *(byte *)*param_1;
-        *param_1 = (byte *)*param_1 + 1;
+        *(int *)((int)fp + 4) = iVar3 + -1;
+        bVar1 = **(byte **)fp;
+        *(byte **)fp = *(byte **)fp + 1;
         return (uint)bVar1;
       }
-      param_1[3] = param_1[3] | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
-      param_1[1] = 0;
+      *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
+      *(undefined4 *)((int)fp + 4) = 0;
     }
     else {
-      param_1[3] = uVar2 | 0x20;
+      *(uint *)((int)fp + 0xc) = uVar2 | 0x20;
     }
   }
-  return 0xffffffff;
+  return -1;
 }
 
 
@@ -61338,7 +61379,7 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* CRT: open file with mode string parsing */
 
-undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,undefined4 *param_4)
+void * __cdecl crt_openfile(char *filename,char *mode,int shflag,void *stream)
 
 {
   char cVar1;
@@ -61351,7 +61392,7 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
   
   bVar4 = false;
   bVar3 = false;
-  cVar1 = *param_2;
+  cVar1 = *mode;
   if (cVar1 == 'a') {
     oflag = 0x109;
   }
@@ -61362,7 +61403,7 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
       goto LAB_00464071;
     }
     if (cVar1 != 'w') {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     oflag = 0x301;
   }
@@ -61370,21 +61411,21 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
 LAB_00464071:
   bVar2 = true;
 LAB_00464074:
-  cVar1 = param_2[1];
-  param_2 = param_2 + 1;
+  cVar1 = mode[1];
+  mode = mode + 1;
   if ((cVar1 == '\0') || (!bVar2)) {
-    iVar5 = crt_sopen(param_1,oflag,param_3,0x1a4);
+    iVar5 = crt_sopen(filename,oflag,shflag,0x1a4);
     if (iVar5 < 0) {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     _DAT_004d99d0 = _DAT_004d99d0 + 1;
-    param_4[3] = uVar6;
-    param_4[1] = 0;
-    *param_4 = 0;
-    param_4[2] = 0;
-    param_4[7] = 0;
-    param_4[4] = iVar5;
-    return param_4;
+    *(uint *)((int)stream + 0xc) = uVar6;
+    *(undefined4 *)((int)stream + 4) = 0;
+    *(undefined4 *)stream = 0;
+    *(undefined4 *)((int)stream + 8) = 0;
+    *(undefined4 *)((int)stream + 0x1c) = 0;
+    *(int *)((int)stream + 0x10) = iVar5;
+    return stream;
   }
   if (cVar1 < 'U') {
     if (cVar1 == 'T') {
@@ -61456,51 +61497,51 @@ LAB_00464154:
 
 /* CRT: allocate FILE struct from pool */
 
-undefined4 * crt_getstream(void)
+void * crt_getstream(void)
 
 {
   FILE *pFVar1;
-  int iVar2;
-  FILE *pFVar3;
+  int stream_index;
+  FILE *pFVar2;
   
-  pFVar3 = (FILE *)0x0;
+  pFVar2 = (FILE *)0x0;
   crt_lock(2);
-  iVar2 = 0;
+  stream_index = 0;
   if (0 < crt_stream_count) {
     do {
-      pFVar1 = crt_stream_table[iVar2];
+      pFVar1 = crt_stream_table[stream_index];
       if (pFVar1 == (FILE *)0x0) {
         pFVar1 = _malloc(0x38);
-        crt_stream_table[iVar2] = pFVar1;
-        if (crt_stream_table[iVar2] != (FILE *)0x0) {
-          InitializeCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[iVar2] + 0x20));
-          EnterCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[iVar2] + 0x20));
-          pFVar3 = crt_stream_table[iVar2];
+        crt_stream_table[stream_index] = pFVar1;
+        if (crt_stream_table[stream_index] != (FILE *)0x0) {
+          InitializeCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 0x20));
+          EnterCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 0x20));
+          pFVar2 = crt_stream_table[stream_index];
 LAB_00464244:
-          if (pFVar3 != (FILE *)0x0) {
-            *(undefined4 *)(pFVar3 + 0x10) = 0xffffffff;
-            *(undefined4 *)(pFVar3 + 4) = 0;
-            *(undefined4 *)(pFVar3 + 0xc) = 0;
-            *(undefined4 *)(pFVar3 + 8) = 0;
-            *(undefined4 *)pFVar3 = 0;
-            *(undefined4 *)(pFVar3 + 0x1c) = 0;
+          if (pFVar2 != (FILE *)0x0) {
+            *(undefined4 *)(pFVar2 + 0x10) = 0xffffffff;
+            *(undefined4 *)(pFVar2 + 4) = 0;
+            *(undefined4 *)(pFVar2 + 0xc) = 0;
+            *(undefined4 *)(pFVar2 + 8) = 0;
+            *(undefined4 *)pFVar2 = 0;
+            *(undefined4 *)(pFVar2 + 0x1c) = 0;
           }
         }
         break;
       }
       if (((byte)pFVar1[0xc] & 0x83) == 0) {
-        crt_lock_file2(iVar2,(int)pFVar1);
-        if (((byte)crt_stream_table[iVar2][0xc] & 0x83) == 0) {
-          pFVar3 = crt_stream_table[iVar2];
+        crt_lock_file2(stream_index,pFVar1);
+        if (((byte)crt_stream_table[stream_index][0xc] & 0x83) == 0) {
+          pFVar2 = crt_stream_table[stream_index];
           goto LAB_00464244;
         }
-        crt_unlock_file2(iVar2,(int)crt_stream_table[iVar2]);
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
-      iVar2 = iVar2 + 1;
-    } while (iVar2 < crt_stream_count);
+      stream_index = stream_index + 1;
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
-  return (undefined4 *)pFVar3;
+  return pFVar2;
 }
 
 
@@ -61509,72 +61550,72 @@ LAB_00464244:
 
 /* flush buffer or write single char (fputc core) */
 
-uint __cdecl crt_flsbuf(uint param_1,int *param_2)
+int __cdecl crt_flsbuf(int ch,void *fp)
 
 {
   uint uVar1;
   uint fd;
   char *buf;
-  int *piVar2;
-  byte bVar3;
+  void *fp_00;
+  byte bVar2;
   undefined3 extraout_var;
-  void **ppvVar4;
-  int *count;
+  void **ppvVar3;
+  void *count;
   
-  piVar2 = param_2;
-  uVar1 = param_2[3];
-  fd = param_2[4];
+  fp_00 = fp;
+  uVar1 = *(uint *)((int)fp + 0xc);
+  fd = *(uint *)((int)fp + 0x10);
   if (((uVar1 & 0x82) == 0) || ((uVar1 & 0x40) != 0)) {
 LAB_00464374:
-    param_2[3] = uVar1 | 0x20;
+    *(uint *)((int)fp + 0xc) = uVar1 | 0x20;
   }
   else {
     if ((uVar1 & 1) != 0) {
-      param_2[1] = 0;
+      *(undefined4 *)((int)fp + 4) = 0;
       if ((uVar1 & 0x10) == 0) goto LAB_00464374;
-      *param_2 = param_2[2];
-      param_2[3] = uVar1 & 0xfffffffe;
+      *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
+      *(uint *)((int)fp + 0xc) = uVar1 & 0xfffffffe;
     }
-    uVar1 = param_2[3];
-    param_2[1] = 0;
-    param_2 = (int *)0x0;
-    piVar2[3] = uVar1 & 0xffffffef | 2;
+    uVar1 = *(uint *)((int)fp + 0xc);
+    *(undefined4 *)((int)fp + 4) = 0;
+    fp = (void *)0x0;
+    *(uint *)((int)fp_00 + 0xc) = uVar1 & 0xffffffef | 2;
     if (((uVar1 & 0x10c) == 0) &&
-       (((piVar2 != (int *)&DAT_0047b3f8 && (piVar2 != (int *)&DAT_0047b418)) ||
-        (bVar3 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar3) == 0)))) {
-      crt_file_buffer_init(piVar2);
+       (((fp_00 != &DAT_0047b3f8 && (fp_00 != &DAT_0047b418)) ||
+        (bVar2 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar2) == 0)))) {
+      crt_file_buffer_init(fp_00);
     }
-    if ((*(ushort *)(piVar2 + 3) & 0x108) == 0) {
-      count = (int *)0x1;
-      param_2 = (int *)crt_write(fd,(char *)&param_1,1);
+    if ((*(ushort *)((int)fp_00 + 0xc) & 0x108) == 0) {
+      count = (void *)0x1;
+      fp = (void *)crt_write(fd,(char *)&ch,1);
     }
     else {
-      buf = (char *)piVar2[2];
-      count = (int *)(*piVar2 - (int)buf);
-      *piVar2 = (int)(buf + 1);
-      piVar2[1] = piVar2[6] + -1;
+      buf = *(char **)((int)fp_00 + 8);
+      count = (void *)(*(int *)fp_00 - (int)buf);
+      *(char **)fp_00 = buf + 1;
+      *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 0x18) + -1;
       if ((int)count < 1) {
         if (fd == 0xffffffff) {
-          ppvVar4 = (void **)&DAT_0047b930;
+          ppvVar3 = (void **)&DAT_0047b930;
         }
         else {
-          ppvVar4 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9;
+          ppvVar3 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9;
         }
-        if (((uint)ppvVar4[1] & 0x20) != 0) {
+        if (((uint)ppvVar3[1] & 0x20) != 0) {
           crt_lseek(fd,0,2);
         }
       }
       else {
-        param_2 = (int *)crt_write(fd,buf,(uint)count);
+        fp = (void *)crt_write(fd,buf,(uint)count);
       }
-      *(undefined1 *)piVar2[2] = (undefined1)param_1;
+      **(undefined1 **)((int)fp_00 + 8) = (undefined1)ch;
     }
-    if (param_2 == count) {
-      return param_1 & 0xff;
+    if (fp == count) {
+      return ch & 0xff;
     }
-    piVar2[3] = piVar2[3] | 0x20;
+    *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
   }
-  return 0xffffffff;
+  return -1;
 }
 
 
@@ -61583,10 +61624,10 @@ LAB_00464374:
 
 /* CRT: core printf formatter */
 
-int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
+int __cdecl crt_output(void *stream,char *format,void *args)
 
 {
-  byte *pbVar1;
+  char *pcVar1;
   uint uVar2;
   WCHAR *pWVar3;
   void *pvVar4;
@@ -61623,12 +61664,12 @@ int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
   
   local_40 = 0;
   local_14 = (undefined1 *)0x0;
-  bVar8 = *param_2;
+  bVar8 = *format;
   local_18 = 0;
   local_34 = (WCHAR *)0x0;
-  pbVar1 = param_2;
+  pcVar1 = format;
   do {
-    if ((bVar8 == 0) || (param_2 = pbVar1 + 1, local_18 < 0)) {
+    if ((bVar8 == 0) || (format = pcVar1 + 1, local_18 < 0)) {
       return local_18;
     }
     if (((char)bVar8 < ' ') || ('x' < (char)bVar8)) {
@@ -61643,11 +61684,11 @@ int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
 switchD_004643fc_caseD_0:
       local_30 = 0;
       if ((crt_ctype_table[(uint)bVar8 * 2 + 1] & 0x80) != 0) {
-        crt_putc_nolock((int)(char)bVar8,param_1,&local_18);
-        bVar8 = *param_2;
-        param_2 = pbVar1 + 2;
+        crt_putc_nolock((int)(char)bVar8,stream,&local_18);
+        bVar8 = *format;
+        format = pcVar1 + 2;
       }
-      crt_putc_nolock((int)(char)bVar8,param_1,&local_18);
+      crt_putc_nolock((int)(char)bVar8,stream,&local_18);
       break;
     case 1:
       local_c = -1;
@@ -61677,7 +61718,7 @@ switchD_004643fc_caseD_0:
       break;
     case 3:
       if (bVar8 == 0x2a) {
-        local_2c = FUN_00464bbc((int *)&param_3);
+        local_2c = FUN_00464bbc((int *)&args);
         if (local_2c < 0) {
           local_8 = local_8 | 4;
           local_2c = -local_2c;
@@ -61692,7 +61733,7 @@ switchD_004643fc_caseD_0:
       break;
     case 5:
       if (bVar8 == 0x2a) {
-        local_c = FUN_00464bbc((int *)&param_3);
+        local_c = FUN_00464bbc((int *)&args);
         if (local_c < 0) {
           local_c = -1;
         }
@@ -61703,11 +61744,11 @@ switchD_004643fc_caseD_0:
       break;
     case 6:
       if (bVar8 == 0x49) {
-        if ((*param_2 != 0x36) || (pbVar1[2] != 0x34)) {
+        if ((*format != 0x36) || (pcVar1[2] != '4')) {
           local_40 = 0;
           goto switchD_004643fc_caseD_0;
         }
-        param_2 = pbVar1 + 3;
+        format = pcVar1 + 3;
         local_8 = local_8 | 0x8000;
       }
       else if (bVar8 == 0x68) {
@@ -61757,7 +61798,7 @@ LAB_00464837:
             goto LAB_004648a0;
           }
           if (bVar8 == 0x5a) {
-            psVar5 = (short *)FUN_00464bbc((int *)&param_3);
+            psVar5 = (short *)FUN_00464bbc((int *)&args);
             if ((psVar5 == (short *)0x0) ||
                (pWVar10 = *(WCHAR **)(psVar5 + 2), pWVar10 == (WCHAR *)0x0)) {
               local_10 = (WCHAR *)PTR_DAT_0047b658;
@@ -61776,12 +61817,12 @@ LAB_00464837:
           else if (bVar8 == 99) {
 LAB_00464651:
             if ((local_8 & 0x810) == 0) {
-              iVar9 = FUN_00464bbc((int *)&param_3);
+              iVar9 = FUN_00464bbc((int *)&args);
               local_250[0]._0_1_ = (undefined1)iVar9;
               local_14 = (undefined1 *)0x1;
             }
             else {
-              pvVar4 = FUN_00464bd9((int *)&param_3);
+              pvVar4 = FUN_00464bd9((int *)&args);
               local_14 = (undefined1 *)FUN_0046b0b5((LPSTR)local_250,(WCHAR)pvVar4);
               if ((int)local_14 < 0) {
                 local_3c = 1;
@@ -61817,9 +61858,9 @@ LAB_00464623:
             }
           }
           local_10 = pWVar3;
-          local_50 = *param_3;
-          local_4c = param_3[1];
-          param_3 = param_3 + 2;
+          local_50 = *(undefined4 *)args;
+          local_4c = *(undefined4 *)((int)args + 4);
+          args = (void *)((int)args + 8);
           (*(code *)PTR_FUN_0047b1a8)(&local_50,pWVar10,(int)(char)bVar8,local_c,local_44);
           uVar2 = local_8 & 0x80;
           if ((uVar2 != 0) && (local_c == 0)) {
@@ -61859,26 +61900,26 @@ LAB_004649d4:
 LAB_00464a0c:
           iVar9 = (local_2c - local_28) - (int)local_14;
           if ((local_8 & 0xc) == 0) {
-            crt_putc_repeat_nolock(0x20,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x20,iVar9,stream,&local_18);
           }
-          crt_putc_buffer_nolock(&local_1a,local_28,param_1,&local_18);
+          crt_putc_buffer_nolock(&local_1a,local_28,stream,&local_18);
           if (((uVar2 & 8) != 0) && ((uVar2 & 4) == 0)) {
-            crt_putc_repeat_nolock(0x30,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x30,iVar9,stream,&local_18);
           }
           if ((local_30 == 0) || (puVar11 = local_14, pWVar10 = local_10, (int)local_14 < 1)) {
-            crt_putc_buffer_nolock((char *)local_10,(int)local_14,param_1,&local_18);
+            crt_putc_buffer_nolock((char *)local_10,(int)local_14,stream,&local_18);
           }
           else {
             do {
               puVar11 = puVar11 + -1;
               iVar7 = FUN_0046b0b5(local_48,*pWVar10);
               if (iVar7 < 1) break;
-              crt_putc_buffer_nolock(local_48,iVar7,param_1,&local_18);
+              crt_putc_buffer_nolock(local_48,iVar7,stream,&local_18);
               pWVar10 = pWVar10 + 1;
             } while (puVar11 != (undefined1 *)0x0);
           }
           if ((local_8 & 4) != 0) {
-            crt_putc_repeat_nolock(0x20,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x20,iVar9,stream,&local_18);
           }
         }
       }
@@ -61892,24 +61933,24 @@ LAB_004648a0:
           if ((local_8 & 0x8000) == 0) {
             if ((local_8 & 0x20) == 0) {
               if ((local_8 & 0x40) == 0) {
-                uVar2 = FUN_00464bbc((int *)&param_3);
+                uVar2 = FUN_00464bbc((int *)&args);
                 iVar9 = 0;
                 goto LAB_004648f3;
               }
-              uVar2 = FUN_00464bbc((int *)&param_3);
+              uVar2 = FUN_00464bbc((int *)&args);
             }
             else if ((local_8 & 0x40) == 0) {
-              uVar2 = FUN_00464bbc((int *)&param_3);
+              uVar2 = FUN_00464bbc((int *)&args);
               uVar2 = uVar2 & 0xffff;
             }
             else {
-              iVar9 = FUN_00464bbc((int *)&param_3);
+              iVar9 = FUN_00464bbc((int *)&args);
               uVar2 = (uint)(short)iVar9;
             }
             iVar9 = (int)uVar2 >> 0x1f;
           }
           else {
-            uVar2 = FUN_00464bc9((int *)&param_3);
+            uVar2 = FUN_00464bc9((int *)&args);
             iVar9 = extraout_EDX;
           }
 LAB_004648f3:
@@ -61982,7 +62023,7 @@ LAB_004645c1:
             if (local_c != -1) {
               iVar9 = local_c;
             }
-            pWVar3 = (WCHAR *)FUN_00464bbc((int *)&param_3);
+            pWVar3 = (WCHAR *)FUN_00464bbc((int *)&args);
             if ((local_8 & 0x810) == 0) {
               pWVar10 = pWVar3;
               if (pWVar3 == (WCHAR *)0x0) {
@@ -62014,7 +62055,7 @@ LAB_004645c1:
           }
           goto LAB_00464899;
         }
-        piVar6 = (int *)FUN_00464bbc((int *)&param_3);
+        piVar6 = (int *)FUN_00464bbc((int *)&args);
         if ((local_8 & 0x20) == 0) {
           *piVar6 = local_18;
         }
@@ -62028,8 +62069,8 @@ LAB_004645c1:
         local_34 = (WCHAR *)0x0;
       }
     }
-    bVar8 = *param_2;
-    pbVar1 = param_2;
+    bVar8 = *format;
+    pcVar1 = format;
   } while( true );
 }
 
@@ -62039,27 +62080,27 @@ LAB_004645c1:
 
 /* putc_nolock-style helper (increments count or sets -1 on error) */
 
-void __cdecl crt_putc_nolock(uint param_1,int *param_2,int *param_3)
+void __cdecl crt_putc_nolock(int ch,void *fp,int *count)
 
 {
   int *piVar1;
   uint uVar2;
   
-  piVar1 = param_2 + 1;
+  piVar1 = (int *)((int)fp + 4);
   *piVar1 = *piVar1 + -1;
   if (*piVar1 < 0) {
-    uVar2 = crt_flsbuf(param_1,param_2);
+    uVar2 = crt_flsbuf(ch,fp);
   }
   else {
-    *(undefined1 *)*param_2 = (undefined1)param_1;
-    *param_2 = *param_2 + 1;
-    uVar2 = param_1 & 0xff;
+    **(undefined1 **)fp = (undefined1)ch;
+    *(int *)fp = *(int *)fp + 1;
+    uVar2 = ch & 0xff;
   }
   if (uVar2 == 0xffffffff) {
-    *param_3 = -1;
+    *count = -1;
     return;
   }
-  *param_3 = *param_3 + 1;
+  *count = *count + 1;
   return;
 }
 
@@ -62069,16 +62110,16 @@ void __cdecl crt_putc_nolock(uint param_1,int *param_2,int *param_3)
 
 /* emit repeated chars via crt_putc_nolock (printf padding helper) */
 
-void __cdecl crt_putc_repeat_nolock(uint param_1,int param_2,int *param_3,int *param_4)
+void __cdecl crt_putc_repeat_nolock(int ch,int count,void *fp,int *out_count)
 
 {
   do {
-    if (param_2 < 1) {
+    if (count < 1) {
       return;
     }
-    param_2 = param_2 + -1;
-    crt_putc_nolock(param_1,param_3,param_4);
-  } while (*param_4 != -1);
+    count = count + -1;
+    crt_putc_nolock(ch,fp,out_count);
+  } while (*out_count != -1);
   return;
 }
 
@@ -62088,20 +62129,20 @@ void __cdecl crt_putc_repeat_nolock(uint param_1,int param_2,int *param_3,int *p
 
 /* emit buffer chars via crt_putc_nolock (printf string helper) */
 
-void __cdecl crt_putc_buffer_nolock(char *param_1,int param_2,int *param_3,int *param_4)
+void __cdecl crt_putc_buffer_nolock(char *buf,int count,void *fp,int *out_count)
 
 {
   char cVar1;
   
   do {
-    if (param_2 < 1) {
+    if (count < 1) {
       return;
     }
-    param_2 = param_2 + -1;
-    cVar1 = *param_1;
-    param_1 = param_1 + 1;
-    crt_putc_nolock((int)cVar1,param_3,param_4);
-  } while (*param_4 != -1);
+    count = count + -1;
+    cVar1 = *buf;
+    buf = buf + 1;
+    crt_putc_nolock((int)cVar1,fp,out_count);
+  } while (*out_count != -1);
   return;
 }
 
@@ -69025,25 +69066,25 @@ void __cdecl crt_unlock_fh(uint fd)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* CRT: allocate/init FILE buffer (4KB or fallback small buffer) */
 
-void __cdecl crt_file_buffer_init(undefined4 *param_1)
+void __cdecl crt_file_buffer_init(void *fp)
 
 {
   void *pvVar1;
   
   _DAT_004d99d0 = _DAT_004d99d0 + 1;
   pvVar1 = _malloc(0x1000);
-  param_1[2] = pvVar1;
+  *(void **)((int)fp + 8) = pvVar1;
   if (pvVar1 == (void *)0x0) {
-    param_1[3] = param_1[3] | 4;
-    param_1[2] = param_1 + 5;
-    param_1[6] = 2;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 4;
+    *(int *)((int)fp + 8) = (int)fp + 0x14;
+    *(undefined4 *)((int)fp + 0x18) = 2;
   }
   else {
-    param_1[3] = param_1[3] | 8;
-    param_1[6] = 0x1000;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 8;
+    *(undefined4 *)((int)fp + 0x18) = 0x1000;
   }
-  param_1[1] = 0;
-  *param_1 = param_1[2];
+  *(undefined4 *)((int)fp + 4) = 0;
+  *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
   return;
 }
 

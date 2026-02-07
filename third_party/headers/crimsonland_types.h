@@ -64,6 +64,7 @@ typedef float sfx_volume_table_t[0x80];
 typedef char sfx_mute_flags_t[0x80];
 typedef int music_playlist_t[0x80];
 
+typedef unsigned int weapon_usage_counts_t[53];
 typedef unsigned int quest_play_counts_t[91];
 typedef unsigned int weapon_usage_time_t[64];
 typedef float player_aux_timer_t[2];
