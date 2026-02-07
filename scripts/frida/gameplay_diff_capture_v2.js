@@ -41,6 +41,17 @@ function parseBoolEnv(key, fallback) {
   return fallback;
 }
 
+function parseLimitEnv(key, fallback, minValue) {
+  const raw = getEnv(key);
+  const fallbackInt = Number.isFinite(fallback) ? fallback | 0 : -1;
+  if (!raw) return fallbackInt;
+  const parsed = parseInt(String(raw).trim(), 0);
+  if (!Number.isFinite(parsed)) return fallbackInt;
+  if (parsed < 0) return -1;
+  const min = Number.isFinite(minValue) ? minValue | 0 : 0;
+  return Math.max(min, parsed | 0);
+}
+
 function parseStateSet(raw, fallbackCsv) {
   const csv = raw && String(raw).trim() ? String(raw) : fallbackCsv;
   const out = new Set();
@@ -94,8 +105,8 @@ const CONFIG = {
   heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_V2_HEARTBEAT_MS", 1000)),
   maxHeadPerKind: Math.max(4, parseIntEnv("CRIMSON_FRIDA_V2_MAX_HEAD", 16)),
   maxEventsPerTick: Math.max(32, parseIntEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", 512)),
-  maxRngHeadPerTick: Math.max(0, parseIntEnv("CRIMSON_FRIDA_V2_RNG_HEAD", 12)),
-  maxRngCallerKinds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", 8)),
+  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_HEAD", -1, 0),
+  maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", -1, 1),
   maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
   creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT", -1),
   projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT", -1),
@@ -1361,7 +1372,7 @@ function registerRngRoll(value, callerStaticHex, callerLabel) {
   tick.rng.hash_state = fnvMixString(tick.rng.hash_state, String(value) + "@" + String(callerStaticHex || "na"));
   tick.rng.hash_state = fnvMixByte(tick.rng.hash_state, 0x0a);
 
-  if (tick.rng.head.length < CONFIG.maxRngHeadPerTick) {
+  if (CONFIG.maxRngHeadPerTick < 0 || tick.rng.head.length < CONFIG.maxRngHeadPerTick) {
     tick.rng.head.push({
       value: value,
       caller_static: callerStaticHex,
@@ -1370,9 +1381,10 @@ function registerRngRoll(value, callerStaticHex, callerLabel) {
   }
 
   const key = callerStaticHex || "unknown";
+  const callerKindCap = CONFIG.maxRngCallerKinds;
   if (tick.rng.caller_counts[key] != null) {
     tick.rng.caller_counts[key] += 1;
-  } else if (Object.keys(tick.rng.caller_counts).length < CONFIG.maxRngCallerKinds) {
+  } else if (callerKindCap < 0 || Object.keys(tick.rng.caller_counts).length < callerKindCap) {
     tick.rng.caller_counts[key] = 1;
   } else {
     tick.rng.caller_overflow += 1;
@@ -1540,10 +1552,13 @@ function finalizeTick() {
     bonus_timers: bonusTimers,
   };
 
-  const rngCallers = Object.keys(tick.rng.caller_counts)
+  const rngCallersSorted = Object.keys(tick.rng.caller_counts)
     .map((k) => ({ caller_static: k, calls: tick.rng.caller_counts[k] }))
-    .sort((a, b) => b.calls - a.calls)
-    .slice(0, CONFIG.maxRngCallerKinds);
+    .sort((a, b) => b.calls - a.calls);
+  const rngCallers =
+    CONFIG.maxRngCallerKinds < 0
+      ? rngCallersSorted
+      : rngCallersSorted.slice(0, CONFIG.maxRngCallerKinds);
   const inputTrueCount =
     (tick.input_queries.primary_edge.true_calls || 0) +
     (tick.input_queries.primary_down.true_calls || 0) +

@@ -85,8 +85,8 @@ captured ticks and prints first divergent fields.
 - `CRIMSON_FRIDA_V2_INPUT_HOOKS=0` (disable input query hooks)
 - `CRIMSON_FRIDA_V2_RNG_HOOKS=0` (disable rng hooks)
 - `CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK=0` (disable low-level `creature_spawn` hook)
-- `CRIMSON_FRIDA_V2_RNG_HEAD=24` (per-tick RNG sample head size)
-- `CRIMSON_FRIDA_V2_RNG_CALLERS=12` (per-tick caller buckets)
+- `CRIMSON_FRIDA_V2_RNG_HEAD=-1` (per-tick RNG sample head size; default unlimited, `0` disables head samples)
+- `CRIMSON_FRIDA_V2_RNG_CALLERS=-1` (per-tick RNG caller buckets; default unlimited)
 - `CRIMSON_FRIDA_PLAYER_COUNT=2` (optional override; default uses `config_player_count` from memory)
 
 Default sample limits are unlimited (`-1`), and `0` disables that sample stream.
