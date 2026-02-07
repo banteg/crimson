@@ -88,6 +88,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471260",
+      "comment": "Shared scalar cvar default string (used by cv_aimEnhancementFade and console_init seed state).",
+      "name": "console_cvar_default_scalar",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004712c0",
       "comment": "Console prompt string used for input rendering.",
       "name": "console_prompt_string",
@@ -129,6 +135,12 @@
       "address": "0x004713f8",
       "comment": "Shared default cvar string used for disabled/false-like console vars.",
       "name": "console_cvar_default_false",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471340",
+      "comment": "Default cvar string for cv_padAimDistMul (gamepad aiming distance multiplier).",
+      "name": "console_cvar_default_pad_aim_dist_mul",
       "program": "crimsonland.exe"
     },
     {
