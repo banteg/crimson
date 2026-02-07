@@ -2609,6 +2609,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00485544",
+      "comment": "Status blob weapon usage counters (u32[53], indexed by weapon id). Updated by weapon_assign_player and used by weapon_pick_random_available biasing.",
+      "name": "weapon_usage_counts",
+      "program": "crimsonland.exe",
+      "type": "weapon_usage_counts_t"
+    },
+    {
       "address": "0x00485618",
       "comment": "Quest play/attempt counters (u32[?]); indexed by quest_stage_major * 10 + quest_stage_minor.",
       "name": "quest_play_counts",
@@ -2705,6 +2712,13 @@
       "address": "0x00486fd0",
       "comment": "Quest spawn timeline (elapsed ms for quest triggers).",
       "name": "quest_spawn_timeline",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00486fd4",
+      "comment": "Total creature count across quest_spawn_table entries (sum of entry.count), recomputed in quest_start_selected.",
+      "name": "quest_spawn_total_creatures",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -2850,6 +2864,13 @@
       "name": "screen_fade_ramp_flag",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x00487030",
+      "comment": "Latest spawn timestamp among quest_spawn_table entries (max entry.time_ms), recomputed in quest_start_selected.",
+      "name": "quest_spawn_last_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487034",
@@ -3169,6 +3190,20 @@
       "name": "ui_screen_phase",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x00487238",
+      "comment": "UI hover/focus ordinal among enabled elements with callbacks; rebuilt in ui_element_update and consumed by ui_focus_update.",
+      "name": "ui_element_hover_focus_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048723c",
+      "comment": "Pointer to the currently hovered/clickable ui_element_t focus candidate (set in ui_element_update; cleared in ui_menu_layout_init).",
+      "name": "ui_element_hover_focus_ptr",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *"
     },
     {
       "address": "0x00487240",
@@ -6244,6 +6279,13 @@
       "comment": "Effect pool free list head pointer",
       "name": "effect_free_list_head",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c2b38",
+      "comment": "Low-detail effect throttle counter used by effect_spawn; increments each call and skips every other spawn when config_detail_preset < 3.",
+      "name": "effect_spawn_detail_skip_counter",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c2b40",
