@@ -15,6 +15,7 @@ const DEFAULT_LOG_DIR = "C:\\share\\frida";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
+const GRIM_MODULE = "grim.dll";
 
 function getEnv(key) {
   try {
@@ -130,6 +131,13 @@ const FN = {
   sfx_play_exclusive: 0x0043d460,
 };
 
+const FN_GRIM_RVA = {
+  grim_is_key_active: 0x00006fe0,
+  grim_was_key_pressed: 0x00007390,
+  grim_is_mouse_button_down: 0x00007410,
+  grim_was_mouse_button_pressed: 0x00007440,
+};
+
 const DATA = {
   config_player_count: 0x0048035c,
   config_game_mode: 0x00480360,
@@ -235,6 +243,7 @@ const COUNTS = {
 };
 
 const fnPtrs = {};
+const grimFnPtrs = {};
 const dataPtrs = {};
 const fireContextByTid = {};
 const assignContextByTid = {};
@@ -570,12 +579,19 @@ function makeSessionFingerprint(exeModule, ptrs) {
   };
 }
 
-function resolvePointers(exeModule) {
+function resolvePointers(exeModule, grimModule) {
   for (const key in FN) {
     try {
       fnPtrs[key] = exeModule.base.add(ptr(FN[key]).sub(LINK_BASE));
     } catch (_) {
       fnPtrs[key] = null;
+    }
+  }
+  for (const key in FN_GRIM_RVA) {
+    try {
+      grimFnPtrs[key] = grimModule ? grimModule.base.add(FN_GRIM_RVA[key]) : null;
+    } catch (_) {
+      grimFnPtrs[key] = null;
     }
   }
   for (const key in DATA) {
@@ -992,6 +1008,34 @@ function addPhaseMarker(kind, payload) {
   pushHead(tick.phase_markers, Object.assign({ kind: kind }, payload || {}));
 }
 
+function pushInputContext(threadId, ctx) {
+  let stack = inputContextByTid[threadId];
+  if (!stack) {
+    stack = [];
+    inputContextByTid[threadId] = stack;
+  }
+  stack.push(ctx);
+}
+
+function popInputContext(threadId) {
+  const stack = inputContextByTid[threadId];
+  if (!stack || stack.length === 0) return null;
+  const ctx = stack.pop();
+  if (stack.length === 0) delete inputContextByTid[threadId];
+  return ctx;
+}
+
+function isPrimaryFireKeyCode(keyCode) {
+  if (!Number.isFinite(keyCode)) return false;
+  resolvePlayerCount();
+  const playerCount = Math.max(1, outState.playerCountResolved | 0);
+  for (let i = 0; i < playerCount; i++) {
+    const fireKey = readPlayerI32("player_fire_key", i);
+    if (fireKey != null && fireKey === keyCode) return true;
+  }
+  return false;
+}
+
 function registerInputQuery(kind, pressed, token, payload) {
   const tick = outState.currentTick;
   if (!tick) return;
@@ -1320,17 +1364,18 @@ function installHooks() {
       attachHook(name, fnPtrs[name], {
         onEnter() {
           const callerStatic = runtimeToStatic(this.returnAddress);
-          inputContextByTid[this.threadId] = {
+          pushInputContext(this.threadId, {
             query_key: queryKey,
             token: token,
+            query: name,
+            arg0: null,
             caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
             caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
             backtrace: maybeBacktrace(this.context),
-          };
+          });
         },
         onLeave(retval) {
-          const ctx = inputContextByTid[this.threadId];
-          delete inputContextByTid[this.threadId];
+          const ctx = popInputContext(this.threadId);
           if (!ctx) return;
           let pressed = false;
           try {
@@ -1341,6 +1386,7 @@ function installHooks() {
           const payload = {
             query: name,
             pressed: pressed,
+            arg0: null,
             caller: ctx.caller,
             caller_static: ctx.caller_static,
             backtrace: ctx.backtrace,
@@ -1356,6 +1402,96 @@ function installHooks() {
     addInputQueryHook("input_primary_just_pressed", "primary_edge", "ipj");
     addInputQueryHook("input_primary_is_down", "primary_down", "ipd");
     addInputQueryHook("input_any_key_pressed", "any_key", "iak");
+
+    function addGrimInputQueryHook(name, ptrVal, classifyKind, tokenPrefix) {
+      attachHook(name, ptrVal, {
+        onEnter(args) {
+          let arg0 = null;
+          try {
+            arg0 = args[0] ? args[0].toInt32() : null;
+          } catch (_) {
+            arg0 = null;
+          }
+          const callerStatic = runtimeToStatic(this.returnAddress);
+          pushInputContext(this.threadId, {
+            query_key: null,
+            token: null,
+            query: name,
+            arg0: arg0,
+            caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+            caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+            backtrace: maybeBacktrace(this.context),
+          });
+        },
+        onLeave(retval) {
+          const ctx = popInputContext(this.threadId);
+          if (!ctx) return;
+          let pressed = false;
+          try {
+            pressed = retval.toInt32() !== 0;
+          } catch (_) {
+            pressed = false;
+          }
+          const queryKey = classifyKind(ctx.arg0);
+          if (!queryKey) return;
+          const payload = {
+            query: name,
+            pressed: pressed,
+            arg0: ctx.arg0,
+            caller: ctx.caller,
+            caller_static: ctx.caller_static,
+            backtrace: ctx.backtrace,
+            console_open: readDataU32("console_open_flag"),
+            primary_latch: readDataU32("input_primary_latch"),
+          };
+          const token = tokenPrefix + ":" + String(ctx.arg0 == null ? "na" : ctx.arg0);
+          registerInputQuery(queryKey, pressed, token, payload);
+          emitRawEvent(Object.assign({ event: name }, payload));
+        },
+      });
+    }
+
+    addGrimInputQueryHook(
+      "grim_is_key_active",
+      grimFnPtrs.grim_is_key_active,
+      function (keyCode) {
+        if (keyCode === 0x100) return "primary_down";
+        if (isPrimaryFireKeyCode(keyCode)) return "primary_down";
+        if (Number.isFinite(keyCode)) return "any_key";
+        return null;
+      },
+      "gika"
+    );
+    addGrimInputQueryHook(
+      "grim_was_key_pressed",
+      grimFnPtrs.grim_was_key_pressed,
+      function (keyCode) {
+        if (isPrimaryFireKeyCode(keyCode)) return "primary_edge";
+        if (Number.isFinite(keyCode)) return "any_key";
+        return null;
+      },
+      "gwkp"
+    );
+    addGrimInputQueryHook(
+      "grim_is_mouse_button_down",
+      grimFnPtrs.grim_is_mouse_button_down,
+      function (button) {
+        if (button === 0) return "primary_down";
+        if (Number.isFinite(button)) return "any_key";
+        return null;
+      },
+      "gmbd"
+    );
+    addGrimInputQueryHook(
+      "grim_was_mouse_button_pressed",
+      grimFnPtrs.grim_was_mouse_button_pressed,
+      function (button) {
+        if (button === 0) return "primary_edge";
+        if (Number.isFinite(button)) return "any_key";
+        return null;
+      },
+      "gmwp"
+    );
   }
 
   if (CONFIG.enableRngHooks) {
@@ -1746,10 +1882,16 @@ function startHeartbeat() {
 
 function main() {
   let exeModule = null;
+  let grimModule = null;
   try {
     exeModule = Process.getModuleByName(GAME_MODULE);
   } catch (_) {
     exeModule = null;
+  }
+  try {
+    grimModule = Process.getModuleByName(GRIM_MODULE);
+  } catch (_) {
+    grimModule = null;
   }
 
   if (!exeModule) {
@@ -1757,11 +1899,12 @@ function main() {
     return;
   }
 
-  resolvePointers(exeModule);
+  resolvePointers(exeModule, grimModule);
   updateCurrentStateFromMemory();
 
   const ptrs = {};
   for (const key in fnPtrs) ptrs[key] = !!fnPtrs[key];
+  for (const key in grimFnPtrs) ptrs[key] = !!grimFnPtrs[key];
   for (const key in dataPtrs) ptrs["data_" + key] = !!dataPtrs[key];
   outState.sessionFingerprint = makeSessionFingerprint(exeModule, ptrs);
   outState.sessionId = outState.sessionFingerprint.session_id;
@@ -1810,6 +1953,13 @@ function main() {
       size: exeModule.size,
       path: exeModule.path,
     },
+    grim: grimModule
+      ? {
+          base: grimModule.base.toString(),
+          size: grimModule.size,
+          path: grimModule.path,
+        }
+      : null,
     pointers_resolved: ptrs,
   });
 
