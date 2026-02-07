@@ -9077,6 +9077,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10053044",
+      "comment": "Base key-repeat delay used by grim_was_key_pressed (held repeat uses 20% of this value).",
+      "name": "grim_key_repeat_delay",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x10053054",
       "comment": "Config-dialog selected display width parsed from the mode combo string.",
       "name": "grim_config_selected_width",
@@ -9326,10 +9333,31 @@
       "type": "char[260]"
     },
     {
+      "address": "0x10059f40",
+      "comment": "Sine term for the precomputed 2x2 rotation matrix used by rotated-quad draws.",
+      "name": "grim_rotation_sin",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x10059f44",
+      "comment": "Per-key first-press latch flags used by grim_was_key_pressed repeat behavior.",
+      "name": "grim_key_repeat_first_press",
+      "program": "grim.dll",
+      "type": "char[256]"
+    },
+    {
       "address": "0x1005a044",
       "comment": "Cached mouse button state array.",
       "name": "grim_mouse_button_cache",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005a058",
+      "comment": "Per-key repeat cooldown timers used by grim_was_key_pressed.",
+      "name": "grim_key_repeat_timers",
+      "program": "grim.dll",
+      "type": "float[256]"
     },
     {
       "address": "0x1005a054",
@@ -9343,6 +9371,41 @@
       "name": "grim_lookup_blob_size",
       "program": "grim.dll",
       "type": "int"
+    },
+    {
+      "address": "0x1005a460",
+      "comment": "Rotation matrix m00 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m00",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a464",
+      "comment": "Rotation matrix m01 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m01",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a468",
+      "comment": "Rotation matrix m10 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m10",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a46c",
+      "comment": "Rotation matrix m11 term used by grim_draw_quad_rotated_matrix.",
+      "name": "grim_rotation_m11",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005a470",
+      "comment": "Frame-timing freeze flag (when nonzero, grim_frame_dt is forced to 0).",
+      "name": "grim_timing_frozen",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005a488",
@@ -9471,6 +9534,30 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005b2a0",
+      "comment": "Current UV u2 for quad draws.",
+      "name": "grim_uv_u2",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2a4",
+      "comment": "Current UV v2 for quad draws.",
+      "name": "grim_uv_v2",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2a8",
+      "comment": "Current UV u3 for quad draws.",
+      "name": "grim_uv_u3",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005b2ac",
+      "comment": "Current UV v3 for quad draws.",
+      "name": "grim_uv_v3",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x1005b2b0",
       "comment": "Active Grim2D config-dialog window handle.",
       "name": "grim_config_dialog_hwnd",
@@ -9571,6 +9658,13 @@
       "comment": "Packed RGBA color slot 3.",
       "name": "grim_color_slot3",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bc14",
+      "comment": "Lookup-blob availability flag set from FUN_10005a40 return value.",
+      "name": "grim_lookup_blob_loaded",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005bc78",
@@ -9895,6 +9989,13 @@
       "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle).",
       "name": "grim_texture_slots",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d810",
+      "comment": "Texture backup/restore pending flag (set after backup, cleared after restore).",
+      "name": "grim_texture_backup_pending",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005d814",
