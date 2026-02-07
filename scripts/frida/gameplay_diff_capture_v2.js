@@ -96,6 +96,7 @@ const CONFIG = {
   maxEventsPerTick: Math.max(32, parseIntEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", 512)),
   maxRngHeadPerTick: Math.max(0, parseIntEnv("CRIMSON_FRIDA_V2_RNG_HEAD", 12)),
   maxRngCallerKinds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", 8)),
+  maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
   creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT", -1),
   projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT", -1),
   bonusSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_BONUS_SAMPLE_LIMIT", -1),
@@ -105,6 +106,8 @@ const CONFIG = {
   enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE", true),
   enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SPAWNS", true),
   enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK", true),
+  enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_DEATH_HOOK", true),
+  enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_LIFECYCLE", true),
 };
 
 const FN = {
@@ -121,6 +124,7 @@ const FN = {
   projectile_spawn: 0x00420440,
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
+  creature_handle_death: 0x0041e910,
   creature_spawn_template: 0x00430af0,
   creature_spawn_tinted: 0x00444810,
   perks_update_effects: 0x00406b40,
@@ -254,6 +258,7 @@ const assignContextByTid = {};
 const bonusContextByTid = {};
 const damageContextByTid = {};
 const creatureSpawnContextByTid = {};
+const creatureDeathContextByTid = {};
 const inputContextByTid = {};
 const rngContextByTid = {};
 const srandContextByTid = {};
@@ -277,6 +282,7 @@ const outState = {
   lastSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
+  lastCreatureDigest: null,
 };
 
 const UNKNOWN_DEATH = {
@@ -824,6 +830,119 @@ function readActiveCreatureSample(limit) {
   return out;
 }
 
+function readCreatureLifecycleEntry(index) {
+  const pool = dataPtrs.creature_pool;
+  if (!pool || index < 0) return null;
+  const base = pool.add(index * STRIDES.creature);
+  const stateFlag = safeReadU8(base.add(0x08));
+  const active = !!stateFlag;
+  return {
+    index: index,
+    active: active,
+    state_flag: stateFlag == null ? null : stateFlag,
+    type_id: safeReadS32(base.add(0x6c)),
+    hp: round4(safeReadF32(base.add(0x24))),
+    pos: {
+      x: round4(safeReadF32(base.add(0x14))),
+      y: round4(safeReadF32(base.add(0x18))),
+    },
+    flags: safeReadS32(base.add(0x8c)),
+  };
+}
+
+function captureCreatureDigest() {
+  if (!dataPtrs.creature_pool) {
+    return {
+      active_count: null,
+      active_hash: null,
+      active_ids: [],
+      active_entries: {},
+    };
+  }
+
+  let activeCount = 0;
+  let hashState = fnvInit();
+  const activeIds = [];
+  const activeEntries = {};
+
+  for (let i = 0; i < COUNTS.creatures; i++) {
+    const entry = readCreatureLifecycleEntry(i);
+    if (!entry || !entry.active) continue;
+    activeCount += 1;
+    activeIds.push(i);
+    activeEntries[i] = entry;
+    hashState = fnvMixString(
+      hashState,
+      String(i) +
+        ":" +
+        String(entry.type_id == null ? -1 : entry.type_id) +
+        ":" +
+        String(entry.hp == null ? "na" : entry.hp)
+    );
+    hashState = fnvMixByte(hashState, 0x0a);
+  }
+
+  return {
+    active_count: activeCount,
+    active_hash: toHex(hashState >>> 0, 8),
+    active_ids: activeIds,
+    active_entries: activeEntries,
+  };
+}
+
+function diffCreatureDigest(beforeDigest, afterDigest) {
+  if (!beforeDigest || !afterDigest) return null;
+  const beforeIds = Array.isArray(beforeDigest.active_ids) ? beforeDigest.active_ids : [];
+  const afterIds = Array.isArray(afterDigest.active_ids) ? afterDigest.active_ids : [];
+
+  const beforeSet = {};
+  for (let i = 0; i < beforeIds.length; i++) beforeSet[beforeIds[i]] = 1;
+  const afterSet = {};
+  for (let i = 0; i < afterIds.length; i++) afterSet[afterIds[i]] = 1;
+
+  const addedIds = [];
+  for (let i = 0; i < afterIds.length; i++) {
+    const id = afterIds[i];
+    if (!beforeSet[id]) addedIds.push(id);
+  }
+
+  const removedIds = [];
+  for (let i = 0; i < beforeIds.length; i++) {
+    const id = beforeIds[i];
+    if (!afterSet[id]) removedIds.push(id);
+  }
+
+  const addedHead = [];
+  const removedHead = [];
+  const maxHead = Math.max(1, CONFIG.maxCreatureDeltaIds | 0);
+  const afterEntries = afterDigest.active_entries || {};
+  const beforeEntries = beforeDigest.active_entries || {};
+
+  for (let i = 0; i < addedIds.length && addedHead.length < maxHead; i++) {
+    const id = addedIds[i];
+    if (afterEntries[id]) addedHead.push(afterEntries[id]);
+  }
+  for (let i = 0; i < removedIds.length && removedHead.length < maxHead; i++) {
+    const id = removedIds[i];
+    if (beforeEntries[id]) removedHead.push(beforeEntries[id]);
+  }
+
+  return {
+    before_count: beforeDigest.active_count,
+    after_count: afterDigest.active_count,
+    before_hash: beforeDigest.active_hash,
+    after_hash: afterDigest.active_hash,
+    added_total: addedIds.length,
+    removed_total: removedIds.length,
+    added_ids: addedIds.slice(0, maxHead),
+    removed_ids: removedIds.slice(0, maxHead),
+    added_overflow: Math.max(0, addedIds.length - maxHead),
+    removed_overflow: Math.max(0, removedIds.length - maxHead),
+    added_head: addedHead,
+    removed_head: removedHead,
+  };
+}
+
 function readBonusEntry(index) {
   const pool = dataPtrs.bonus_pool;
   if (!pool || index < 0) return null;
@@ -898,6 +1017,7 @@ function makeCoreSnapshot() {
 
 function makeTickContext() {
   const before = makeCoreSnapshot();
+  const creatureDigestBefore = CONFIG.enableCreatureLifecycleDigest ? captureCreatureDigest() : null;
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
   return {
     tick_index: tickIndex,
@@ -918,6 +1038,8 @@ function makeTickContext() {
       player_damage: 0,
       creature_spawn: 0,
       creature_spawn_low: 0,
+      creature_death: 0,
+      creature_lifecycle: 0,
       sfx: 0,
       perk_delta: 0,
       quest_timeline_delta: 0,
@@ -935,6 +1057,8 @@ function makeTickContext() {
       player_damage: [],
       creature_spawn: [],
       creature_spawn_low: [],
+      creature_death: [],
+      creature_lifecycle: [],
       sfx: [],
       perk_delta: [],
       quest_timeline_delta: [],
@@ -970,7 +1094,9 @@ function makeTickContext() {
     spawn_callers_template: {},
     spawn_callers_low: {},
     spawn_sources_low: {},
+    death_callers: {},
     mode_samples: [],
+    creature_digest_before: creatureDigestBefore,
     mode_hint: null,
     overflow: false,
   };
@@ -1214,12 +1340,45 @@ function finalizeTick() {
       : null;
   const spawnHookEventCount =
     (tick.event_counts.creature_spawn || 0) + (tick.event_counts.creature_spawn_low || 0);
+  const deathHookEventCount = tick.event_counts.creature_death || 0;
   if (creatureCountDeltaInTick != null && creatureCountDeltaInTick > 0 && spawnHookEventCount <= 0) {
     addPhaseMarker("creature_count_increase_without_spawn_hook", {
       before: beforeCreatureCount,
       after: afterCreatureCount,
       delta: creatureCountDeltaInTick,
     });
+  }
+  if (creatureCountDeltaInTick != null && creatureCountDeltaInTick < 0 && deathHookEventCount <= 0) {
+    addPhaseMarker("creature_count_drop_without_death_hook", {
+      before: beforeCreatureCount,
+      after: afterCreatureCount,
+      delta: creatureCountDeltaInTick,
+    });
+  }
+
+  let creatureLifecycle = null;
+  if (CONFIG.enableCreatureLifecycleDigest) {
+    const beforeDigest = tick.creature_digest_before || outState.lastCreatureDigest || captureCreatureDigest();
+    const afterDigest = captureCreatureDigest();
+    creatureLifecycle = diffCreatureDigest(beforeDigest, afterDigest);
+    outState.lastCreatureDigest = afterDigest;
+    if (creatureLifecycle) {
+      const lifecycleDelta =
+        (creatureLifecycle.added_total || 0) - (creatureLifecycle.removed_total || 0);
+      if (lifecycleDelta !== 0 && creatureCountDeltaInTick != null && lifecycleDelta !== creatureCountDeltaInTick) {
+        addPhaseMarker("creature_lifecycle_delta_mismatch", {
+          count_delta: creatureCountDeltaInTick,
+          lifecycle_delta: lifecycleDelta,
+        });
+      }
+      if ((creatureLifecycle.added_total || 0) > 0 || (creatureLifecycle.removed_total || 0) > 0) {
+        addTickEvent(
+          "creature_lifecycle",
+          creatureLifecycle,
+          "cl:" + String(creatureLifecycle.added_total || 0) + ":" + String(creatureLifecycle.removed_total || 0)
+        );
+      }
+    }
   }
 
   const bonusTimers = {
@@ -1280,11 +1439,14 @@ function finalizeTick() {
     creature_count_delta: creatureCountDeltaInTick,
     event_count_template: tick.event_counts.creature_spawn || 0,
     event_count_low_level: tick.event_counts.creature_spawn_low || 0,
+    event_count_death: deathHookEventCount,
     top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
     top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
+    top_death_callers: topCounterPairs(tick.death_callers, 8),
     mode_samples: tick.mode_samples,
   };
+  const creatureLifecycleDiagnostics = creatureLifecycle || null;
 
   const checkpoint = {
     tick_index: tick.tick_index,
@@ -1318,6 +1480,7 @@ function finalizeTick() {
       sampling_phase: "post_gameplay_update_and_render",
       timing: timing,
       spawn: spawnDiagnostics,
+      creature_lifecycle: creatureLifecycleDiagnostics,
       before_players: checkpointPlayersFromCompact(beforePlayers),
     },
   };
@@ -1358,9 +1521,13 @@ function finalizeTick() {
       sampling_phase: "post_gameplay_update_and_render",
       timing: timing,
       spawn: spawnDiagnostics,
+      creature_lifecycle: creatureLifecycleDiagnostics,
     },
     input_approx: buildInputApprox(afterPlayers, tick),
   };
+  if (creatureLifecycleDiagnostics) {
+    out.creature_lifecycle = creatureLifecycleDiagnostics;
+  }
 
   if (CONFIG.includeTickSnapshots && focused) {
     out.before = tick.before;
@@ -1867,6 +2034,55 @@ function installHooks() {
     });
   }
 
+  if (CONFIG.enableCreatureDeathHook) {
+    attachHook("creature_handle_death", fnPtrs.creature_handle_death, {
+      onEnter(args) {
+        const creatureIndex = args[0] ? args[0].toInt32() : -1;
+        const keepCorpse = args[1] ? args[1].toInt32() !== 0 : null;
+        const before = readCreatureLifecycleEntry(creatureIndex);
+        const callerStatic = runtimeToStatic(this.returnAddress);
+        creatureDeathContextByTid[this.threadId] = {
+          creature_index: creatureIndex,
+          keep_corpse: keepCorpse,
+          before: before,
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+          backtrace: maybeBacktrace(this.context),
+        };
+      },
+      onLeave() {
+        const ctx = creatureDeathContextByTid[this.threadId];
+        delete creatureDeathContextByTid[this.threadId];
+        if (!ctx) return;
+        const after = readCreatureLifecycleEntry(ctx.creature_index);
+        const payload = {
+          creature_index: ctx.creature_index,
+          keep_corpse: ctx.keep_corpse,
+          active_before: ctx.before ? ctx.before.active : null,
+          active_after: after ? after.active : null,
+          before: ctx.before,
+          after: after,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+          backtrace: ctx.backtrace,
+        };
+        const tick = outState.currentTick;
+        if (tick && payload.caller_static) {
+          bumpCounterMap(tick.death_callers, payload.caller_static);
+        }
+        addTickEvent(
+          "creature_death",
+          payload,
+          "cd:" +
+            String(payload.creature_index == null ? -1 : payload.creature_index) +
+            ":" +
+            String(payload.keep_corpse ? 1 : 0)
+        );
+        emitRawEvent(Object.assign({ event: "creature_handle_death" }, payload));
+      },
+    });
+  }
+
   if (CONFIG.enableSpawnHooks) {
     attachHook("creature_spawn_template", fnPtrs.creature_spawn_template, {
       onEnter(args) {
@@ -2206,6 +2422,9 @@ function main() {
 
   resolvePointers(exeModule, grimModule);
   updateCurrentStateFromMemory();
+  if (CONFIG.enableCreatureLifecycleDigest) {
+    outState.lastCreatureDigest = captureCreatureDigest();
+  }
 
   const ptrs = {};
   for (const key in fnPtrs) ptrs[key] = !!fnPtrs[key];
@@ -2236,6 +2455,7 @@ function main() {
       max_events_per_tick: CONFIG.maxEventsPerTick,
       max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
       max_rng_caller_kinds: CONFIG.maxRngCallerKinds,
+      max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
       creature_sample_limit: CONFIG.creatureSampleLimit,
       projectile_sample_limit: CONFIG.projectileSampleLimit,
       bonus_sample_limit: CONFIG.bonusSampleLimit,
@@ -2245,6 +2465,8 @@ function main() {
       enable_damage_hooks: CONFIG.enableDamageHooks,
       enable_spawn_hooks: CONFIG.enableSpawnHooks,
       enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
+      enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
+      enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
     },
     session_fingerprint: outState.sessionFingerprint,
     process: {
