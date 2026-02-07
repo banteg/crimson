@@ -97,6 +97,11 @@ under `docs/crimsonland-exe/`.
 - Oracle headless output now steps through the deterministic session pipeline and emits `command_hash` per frame:
   - Code: `src/crimson/oracle.py`
   - Test: `tests/test_oracle_session_pipeline.py`
+- Studyability-first feature hook extraction is now in place for key deterministic paths:
+  - Perk hook registry: `src/crimson/features/perks/registry.py`
+  - Bonus pickup hook registry: `src/crimson/features/bonuses/pickup_fx.py`
+  - Presentation projectile-decal hook registry: `src/crimson/features/presentation/projectile_decals.py`
+  - Architecture guard tests: `tests/test_feature_hook_registries.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 

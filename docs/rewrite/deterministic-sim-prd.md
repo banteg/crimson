@@ -165,7 +165,7 @@ Per sampled tick (minimum viable set):
 - [x] Feed presentation planning from the authoritative simulation RNG.
 - [x] Preserve deterministic command order and existing parity behavior.
 - [x] Update RNG tests to assert single-stream invariants.
-- [ ] Document any intentional fidelity deviations discovered during migration.
+- [x] Document any intentional fidelity deviations discovered during migration (none introduced in this migration slice; parity guarded by deterministic command/state hash tests).
 
 ## Phase 2: Headless-First Runtime API
 
@@ -178,10 +178,10 @@ Current scope for the checked items is Survival/Rush deterministic loops (intera
 
 ## Phase 2.5: Studyability-First Module Refactor
 
-- [ ] Define module conventions for feature files (`behavior`, `intent/spec`, `config/constants`, `hooks`).
-- [ ] Introduce hook registries per subsystem (bonuses/perks/weapons/effects presentation hooks).
-- [ ] Migrate high-churn features first (for example Fire Bullets, Freeze, key perk bursts) into dedicated modules.
-- [ ] Add lightweight architecture tests/checks that prevent growth of monolithic tick functions.
+- [x] Define module conventions for feature files (`behavior`, `intent/spec`, `config/constants`, `hooks`).
+- [x] Introduce hook registries per subsystem (perks world-step hooks, bonus pickup FX hooks, presentation projectile-decal hooks).
+- [x] Migrate high-churn features first (Fire Bullets impact decals, Freeze pickup/presentation helpers, Reflex Boosted and Final Revenge perk hooks) into dedicated modules.
+- [x] Add lightweight architecture tests/checks that prevent growth of monolithic tick functions.
 
 ## Phase 3: Differential Testing with Original Captures
 

@@ -14,6 +14,7 @@ This page defines the current per-tick contract used by:
 
 The shared implementation lives in `src/crimson/sim/step_pipeline.py`.
 Mode/session orchestration lives in `src/crimson/sim/sessions.py`.
+Feature hook registries now live under `src/crimson/features/`.
 
 ## Tick contract
 
@@ -49,6 +50,22 @@ Before this refactor, live gameplay and headless replay paths duplicated parts o
 That made divergence easier (different ordering, missing presentation planning, different RNG consumption windows).
 
 Now, all major paths execute the same step planner and emit the same command stream shape.
+
+## Studyability hook topology
+
+The deterministic tick/presentation flow now dispatches selected behavior through explicit feature hooks:
+
+- Perk world-step hooks:
+  - registry: `src/crimson/features/perks/registry.py`
+  - hooks: Reflex Boosted dt scaling, Final Revenge death burst
+- Bonus pickup presentation hooks:
+  - registry: `src/crimson/features/bonuses/pickup_fx.py`
+  - hooks: Freeze/Reflex Boost pickup ring effects (+ shared burst behavior)
+- Projectile decal presentation hooks:
+  - registry: `src/crimson/features/presentation/projectile_decals.py`
+  - hooks: Fire Bullets/Gauss large streak decals
+
+This keeps `WorldState.step` and `apply_world_presentation_step` focused on orchestration while feature intent lives in dedicated modules.
 
 ## RNG policy
 
