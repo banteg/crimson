@@ -127,6 +127,11 @@ def test_convert_original_capture_to_replay_from_sidecar_ticks(tmp_path: Path) -
                 "state_hash": "hash-1",
                 "command_hash": "cmd-1",
                 "game_mode_id": 2,
+                "status": {
+                    "quest_unlock_index": 12,
+                    "quest_unlock_index_full": 34,
+                    "weapon_usage_counts": [0, 5, 7],
+                },
                 "input_queries": {
                     "stats": {
                         "primary_edge": {"true_calls": 1},
@@ -199,6 +204,12 @@ def test_convert_original_capture_to_replay_from_sidecar_ticks(tmp_path: Path) -
     assert replay.header.seed == 0xBEEF
     assert replay.header.tick_rate == 75
     assert replay.header.player_count == 2
+    assert replay.header.status.quest_unlock_index == 12
+    assert replay.header.status.quest_unlock_index_full == 34
+    assert len(replay.header.status.weapon_usage_counts) == 53
+    assert replay.header.status.weapon_usage_counts[0] == 0
+    assert replay.header.status.weapon_usage_counts[1] == 5
+    assert replay.header.status.weapon_usage_counts[2] == 7
     assert len(replay.inputs) == 4
     assert len(replay.events) == 1
     assert replay.events[0].kind == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
@@ -412,6 +423,11 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
                         "level": 5,
                     }
                 ],
+                "status": {
+                    "quest_unlock_index": 9,
+                    "quest_unlock_index_full": 31,
+                    "weapon_usage_counts": [0, 1, 2],
+                },
                 "bonus_timers": {"4": 2500, "11": 3000},
                 "rng_marks": {
                     "rand_calls": 16,
@@ -465,6 +481,9 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.input_approx[0].turn_right_pressed is False
     assert tick.input_approx[0].fire_down is True
     assert tick.frame_dt_ms == 7.0
+    assert tick.status_quest_unlock_index == 9
+    assert tick.status_quest_unlock_index_full == 31
+    assert tick.status_weapon_usage_counts[:3] == (0, 1, 2)
 
 
 def test_default_original_capture_replay_path_derives_expected_name() -> None:
