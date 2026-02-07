@@ -9941,6 +9941,13 @@
       "type": "void (*)(void)"
     },
     {
+      "address": "0x1005d3b8",
+      "comment": "Cached mouse wheel delta used when input-cached mode is enabled.",
+      "name": "grim_mouse_wheel_delta_cached",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1005d3c4",
       "comment": "Buffered key-char FIFO storage used by grim_get_key_char (up to 7 pending entries).",
       "name": "grim_key_char_queue",
@@ -10173,6 +10180,19 @@
       "address": "0x1005db54",
       "comment": "Mouse delta Y (pixels) accumulated per poll.",
       "name": "grim_mouse_dy",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005db58",
+      "comment": "Mouse wheel delta accumulated during the current DirectInput poll.",
+      "name": "grim_mouse_wheel_delta",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005db6c",
+      "comment": "Saved x87 FPU control word used by fpu_set_round_trunc/ftol helpers.",
+      "name": "fpu_control_word_saved_ftol",
       "program": "grim.dll"
     },
     {
