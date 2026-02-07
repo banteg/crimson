@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from grim.geom import Vec2
 
-from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
 from ...gameplay import PlayerInput, weapon_assign_player
 from ...replay import Replay, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapons import WeaponId
-from ..step_pipeline import run_deterministic_step
+from ..sessions import RushDeterministicSession
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -24,12 +21,6 @@ from .common import (
 )
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-
-
-@dataclass(slots=True)
-class RushRunState:
-    elapsed_ms: float = 0.0
-    spawn_cooldown_ms: float = 0.0
 
 
 def _enforce_rush_loadout(world: WorldState) -> None:
@@ -64,7 +55,6 @@ def run_rush_replay(
     if tick_rate <= 0:
         raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
     dt_frame = 1.0 / float(tick_rate)
-    dt_frame_ms = dt_frame * 1000.0
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -85,26 +75,31 @@ def run_rush_replay(
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
     world.state.rng.srand(int(replay.header.seed))
-    game_tune_started = False
 
     _enforce_rush_loadout(world)
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
-
-    run = RushRunState()
+    session = RushDeterministicSession(
+        world=world,
+        world_size=float(world_size),
+        damage_scale_by_type=damage_scale_by_type,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        detail_preset=5,
+        fx_toggle=0,
+        game_tune_started=False,
+        clear_fx_queues_each_tick=True,
+        enforce_loadout=lambda: _enforce_rush_loadout(world),
+    )
 
     inputs = replay.inputs
     tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
 
     for tick_index in range(tick_limit):
-        run.elapsed_ms += float(dt_frame_ms)
-
         state = world.state
         state.game_mode = int(GameMode.RUSH)
         state.demo_mode_active = False
-
-        _enforce_rush_loadout(world)
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
@@ -121,59 +116,21 @@ def run_rush_replay(
                 )
             )
 
-        rng_before_world_step = int(state.rng.state)
-        world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
-        step = run_deterministic_step(
-            world=world,
+        tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
-            world_size=float(world_size),
-            damage_scale_by_type=damage_scale_by_type,
-            detail_preset=5,
-            fx_toggle=0,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            demo_mode_active=False,
-            perk_progression_enabled=False,
-            game_tune_started=bool(game_tune_started),
-            rng_marks_out=world_step_marks,
-            trace_presentation_rng=bool(trace_rng),
+            trace_rng=bool(trace_rng),
         )
+        step = tick.step
         events = step.events
-        rng_after_world_step = int(state.rng.state)
-        if step.presentation.trigger_game_tune:
-            game_tune_started = True
-        # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
-        # Headless verification has no render pass, so clear explicitly per simulated tick.
-        fx_queue.clear()
-        fx_queue_rotated.clear()
-
-        cooldown, spawns = tick_rush_mode_spawns(
-            run.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=int(run.elapsed_ms),
-            terrain_width=float(world_size),
-            terrain_height=float(world_size),
-        )
-        run.spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(spawns)
-        rng_after_rush_spawns = int(state.rng.state)
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
-                    elapsed_ms=float(run.elapsed_ms),
-                    rng_marks={
-                        **world_step_marks,
-                        "after_world_step": int(rng_after_world_step),
-                        "after_rush_spawns": int(rng_after_rush_spawns),
-                    },
+                    elapsed_ms=float(tick.elapsed_ms),
+                    rng_marks=tick.rng_marks,
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
@@ -194,7 +151,7 @@ def run_rush_replay(
         game_mode_id=int(GameMode.RUSH),
         tick_rate=tick_rate,
         ticks=int(tick_index),
-        elapsed_ms=int(run.elapsed_ms),
+        elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
         most_used_weapon_id=int(most_used_weapon_id),

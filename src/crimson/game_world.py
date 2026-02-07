@@ -32,7 +32,7 @@ from .sim.presentation_step import (
     PresentationStepCommands,
     queue_projectile_decals,
 )
-from .sim.step_pipeline import run_deterministic_step
+from .sim.step_pipeline import DeterministicStepResult, run_deterministic_step
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .weapons import WEAPON_TABLE
@@ -440,7 +440,22 @@ class GameWorld:
             game_tune_started=bool(self._game_tune_started),
             rng_marks_out=rng_marks_out,
         )
+        self.apply_step_result(
+            step,
+            game_tune_started=bool(self._game_tune_started or step.presentation.trigger_game_tune),
+            apply_audio=True,
+            update_camera=True,
+        )
+        return step.events.hits
 
+    def apply_step_result(
+        self,
+        step: DeterministicStepResult,
+        *,
+        game_tune_started: bool,
+        apply_audio: bool = True,
+        update_camera: bool = True,
+    ) -> None:
         self.last_events = step.events
         self.last_presentation = step.presentation
         self.last_command_hash = step.command_hash
@@ -449,14 +464,16 @@ class GameWorld:
             self._elapsed_ms += float(step.dt_sim) * 1000.0
             self._bonus_anim_phase += float(step.dt_sim) * 1.3
 
-        if step.presentation.trigger_game_tune:
-            self._game_tune_started = True
-            self.audio_router.trigger_game_tune()
-        for key in step.presentation.sfx_keys:
-            self.audio_router.play_sfx_resolved(key)
+        self._game_tune_started = bool(game_tune_started)
 
-        self.update_camera(step.dt_sim)
-        return step.events.hits
+        if apply_audio and step.presentation.trigger_game_tune:
+            self.audio_router.trigger_game_tune()
+        if apply_audio:
+            for key in step.presentation.sfx_keys:
+                self.audio_router.play_sfx_resolved(key)
+
+        if update_camera:
+            self.update_camera(step.dt_sim)
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
         fx_toggle = 0
