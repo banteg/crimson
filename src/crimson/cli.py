@@ -473,9 +473,9 @@ def cmd_replay_verify_original_capture(
         help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full capture)"),
-    seed: int = typer.Option(
-        0,
-        help="seed for replay reconstruction from capture input telemetry",
+    seed: int | None = typer.Option(
+        None,
+        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
     ),
     strict_events: bool = typer.Option(
         False,
@@ -507,7 +507,7 @@ def cmd_replay_verify_original_capture(
     try:
         result, run_result = verify_original_capture(
             capture,
-            seed=int(seed),
+            seed=seed,
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
@@ -591,6 +591,10 @@ def cmd_replay_convert_original_capture(
         "",
         help="optional replay sha256 to store in the converted sidecar",
     ),
+    seed: int | None = typer.Option(
+        None,
+        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
+    ),
 ) -> None:
     """Convert original-capture data into replay + checkpoint artifacts."""
     import hashlib
@@ -605,7 +609,7 @@ def cmd_replay_convert_original_capture(
     )
 
     capture = load_original_capture_sidecar(Path(capture_file))
-    replay = convert_original_capture_to_replay(capture)
+    replay = convert_original_capture_to_replay(capture, seed=seed)
     replay_path = (
         Path(replay_file) if replay_file is not None else default_original_capture_replay_path(Path(output_file))
     )

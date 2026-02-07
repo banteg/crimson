@@ -20,6 +20,46 @@ from crimson.replay.original_capture import (
 )
 
 
+def _crt_rand_outputs(seed: int, calls: int) -> list[int]:
+    state = int(seed) & 0xFFFFFFFF
+    out: list[int] = []
+    for _ in range(int(calls)):
+        state = (state * 214013 + 2531011) & 0xFFFFFFFF
+        out.append((state >> 16) & 0x7FFF)
+    return out
+
+
+def _rng_head_v2_rows(seed: int, *, calls: int = 16, head_count: int = 8) -> list[dict[str, object]]:
+    outputs = _crt_rand_outputs(seed, calls)
+    return [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [
+                    {
+                        "pos": {"x": 512.0, "y": 512.0},
+                        "health": 100.0,
+                        "weapon_id": 1,
+                        "ammo": 12.0,
+                        "experience": 0,
+                        "level": 1,
+                    }
+                ],
+                "rng_marks": {
+                    "rand_calls": int(calls),
+                    "rand_last": int(outputs[-1]),
+                    "rand_head": [{"value": int(value)} for value in outputs[:head_count]],
+                },
+            },
+        },
+    ]
+
+
 def test_convert_original_capture_to_checkpoints_roundtrip(tmp_path: Path) -> None:
     capture_obj = {
         "v": ORIGINAL_CAPTURE_FORMAT_VERSION,
@@ -408,6 +448,7 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.rng_marks["rand_calls"] == 16
     assert tick.rng_marks["rand_hash"] == int("0xfce2bde6", 16)
     assert tick.rng_marks["rand_last"] == 14224
+    assert tick.rng_head == [1]
     assert "rand_head" not in tick.rng_marks
     assert tick.events.sfx_count == 3
     assert tick.mode_hint == "survival_update"
@@ -595,3 +636,26 @@ def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_headin
     fire_down1, fire_pressed1, _reload1 = unpack_input_flags(int(tick1[3]))
     assert fire_down1 is False
     assert fire_pressed1 is False
+
+
+def test_convert_original_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:
+    source_seed = 0xF386B3D2
+    rows = _rng_head_v2_rows(source_seed)
+    path = tmp_path / "gameplay_diff_capture_v2.jsonl"
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    assert replay.header.seed == (source_seed & 0x7FFFFFFF)
+
+
+def test_convert_original_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_path: Path) -> None:
+    rows = _rng_head_v2_rows(0xF386B3D2)
+    path = tmp_path / "gameplay_diff_capture_v2.jsonl"
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture, seed=0xBEEF)
+
+    assert replay.header.seed == 0xBEEF
