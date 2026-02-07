@@ -267,6 +267,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             state=ctx.state,
             players=ctx.players,
             rand=ctx.rand,
+            dt=float(ctx.dt),
             detail_preset=int(ctx.detail_preset),
             world_width=float(ctx.world_width),
             world_height=float(ctx.world_height),
@@ -336,6 +337,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                 state=ctx.state,
                 players=ctx.players,
                 rand=ctx.rand,
+                dt=float(ctx.dt),
                 detail_preset=int(ctx.detail_preset),
                 world_width=float(ctx.world_width),
                 world_height=float(ctx.world_height),
@@ -663,6 +665,7 @@ class CreaturePool:
                         state=state,
                         players=players,
                         rand=rand,
+                        dt=float(dt),
                         detail_preset=int(detail_preset),
                         world_width=world_width,
                         world_height=world_height,
@@ -695,6 +698,7 @@ class CreaturePool:
                                 state=state,
                                 players=players,
                                 rand=rand,
+                                dt=float(dt),
                                 detail_preset=int(detail_preset),
                                 world_width=world_width,
                                 world_height=world_height,
@@ -760,6 +764,7 @@ class CreaturePool:
                                 state=state,
                                 players=players,
                                 rand=rand,
+                                dt=float(dt),
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
@@ -902,6 +907,7 @@ class CreaturePool:
         state: GameplayState,
         players: list[PlayerState],
         rand: Callable[[], int],
+        dt: float = 0.0,
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
@@ -923,8 +929,9 @@ class CreaturePool:
         )
 
         if keep_corpse:
-            if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
+            # Native `creature_handle_death` always decrements hitbox_size by
+            # frame_dt for corpse-keeping deaths, independent of current value.
+            creature.hitbox_size = float(creature.hitbox_size) - float(dt)
         else:
             creature.active = False
 
