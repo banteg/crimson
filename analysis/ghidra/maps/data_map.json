@@ -9163,6 +9163,12 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059bb4",
+      "comment": "One-time flag used by grim_draw_line to register its shutdown hook.",
+      "name": "grim_draw_line_init_flag",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x10059bb8",
       "comment": "Dynamic index buffer (IDirect3DIndexBuffer8) bound for quad batching.",
       "name": "grim_index_buffer",
@@ -9181,6 +9187,13 @@
       "comment": "Backbuffer/viewport height.",
       "name": "grim_backbuffer_height",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10059dc4",
+      "comment": "Previous timeGetTime sample used to compute frame delta milliseconds.",
+      "name": "grim_tick_prev_ms",
+      "program": "grim.dll",
+      "type": "DWORD"
     },
     {
       "address": "0x10059dc8",
@@ -9306,6 +9319,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059e3c",
+      "comment": "Current working-directory buffer populated by _getcwd (0x104 chars).",
+      "name": "grim_working_dir",
+      "program": "grim.dll",
+      "type": "char[260]"
+    },
+    {
       "address": "0x1005a044",
       "comment": "Cached mouse button state array.",
       "name": "grim_mouse_button_cache",
@@ -9316,6 +9336,13 @@
       "comment": "Grim2D millisecond counter.",
       "name": "grim_time_ms",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005a458",
+      "comment": "Byte size of the external lookup blob loaded by FUN_10005a40.",
+      "name": "grim_lookup_blob_size",
+      "program": "grim.dll",
+      "type": "int"
     },
     {
       "address": "0x1005a488",
@@ -9362,6 +9389,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005a670",
+      "comment": "Heap buffer containing the lookup blob loaded by FUN_10005a40.",
+      "name": "grim_lookup_blob",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
       "address": "0x1005a678",
       "comment": "Atlas sub-rect table referenced by pointer table.",
       "name": "grim_subrect_table",
@@ -9397,6 +9431,20 @@
       "name": "grim_config_dialog_windowed_selected",
       "program": "grim.dll",
       "type": "char"
+    },
+    {
+      "address": "0x1005b288",
+      "comment": "Transformed-vertex Z value written for batched quad vertices (default 0.5).",
+      "name": "grim_vertex_z",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005b28c",
+      "comment": "Transformed-vertex RHW value written for batched quad vertices (default 1.0).",
+      "name": "grim_vertex_rhw",
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005b290",
@@ -9449,6 +9497,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005b2c0",
+      "comment": "Scratch WORD pointer returned by index-buffer Lock() while writing quad indices.",
+      "name": "grim_index_write_ptr",
+      "program": "grim.dll",
+      "type": "WORD *"
+    },
+    {
       "address": "0x1005b2c4",
       "comment": "Temporary IDirect3D8 pointer used to sanity-check Direct3DCreate8.",
       "name": "grim_d3d8_probe",
@@ -9475,6 +9530,13 @@
       "type": "char *"
     },
     {
+      "address": "0x1005bad0",
+      "comment": "Current timeGetTime sample captured by the frame-timing step.",
+      "name": "grim_tick_now_ms",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
       "address": "0x1005bacc",
       "comment": "Grim2D module handle (HINSTANCE).",
       "name": "grim_module_handle",
@@ -9490,6 +9552,18 @@
       "address": "0x1005bc04",
       "comment": "Packed RGBA color slot 0.",
       "name": "grim_color_slot0",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bc08",
+      "comment": "Packed RGBA color slot 1.",
+      "name": "grim_color_slot1",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bc0c",
+      "comment": "Packed RGBA color slot 2.",
+      "name": "grim_color_slot2",
       "program": "grim.dll"
     },
     {
@@ -9717,11 +9791,53 @@
       "type": "char"
     },
     {
+      "address": "0x1005d138",
+      "comment": "Joystick axis deadzone threshold used by directional helper checks (default 100.0).",
+      "name": "grim_joystick_deadzone",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d148",
+      "comment": "Joystick X-axis center offset used by directional helper checks.",
+      "name": "grim_joystick_center_x",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d158",
+      "comment": "Joystick Y-axis center offset used by directional helper checks.",
+      "name": "grim_joystick_center_y",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1005d400",
       "comment": "Applied value for Grim config var id 0x54 (copied from grim_config_dialog_option_3ef_checked).",
       "name": "grim_config_option_54_value",
       "program": "grim.dll",
       "type": "char"
+    },
+    {
+      "address": "0x1005d3b0",
+      "comment": "Millisecond-to-seconds scale constant (0.001f) used for frame dt and FPS calculations.",
+      "name": "grim_ms_to_seconds_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1005d3c4",
+      "comment": "Buffered key-char FIFO storage used by grim_get_key_char (up to 7 pending entries).",
+      "name": "grim_key_char_queue",
+      "program": "grim.dll",
+      "type": "int[8]"
+    },
+    {
+      "address": "0x1005d3e4",
+      "comment": "Current count of buffered key chars in grim_key_char_queue.",
+      "name": "grim_key_char_queue_count",
+      "program": "grim.dll",
+      "type": "int"
     },
     {
       "address": "0x1005d388",
@@ -9779,6 +9895,20 @@
       "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle).",
       "name": "grim_texture_slots",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d814",
+      "comment": "Frame counter accumulated for the rolling FPS sample window.",
+      "name": "grim_fps_sample_frames",
+      "program": "grim.dll",
+      "type": "uint"
+    },
+    {
+      "address": "0x1005d818",
+      "comment": "Elapsed milliseconds accumulated for the rolling FPS sample window.",
+      "name": "grim_fps_sample_elapsed_ms",
+      "program": "grim.dll",
+      "type": "uint"
     },
     {
       "address": "0x1005d81c",
