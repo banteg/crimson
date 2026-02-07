@@ -281,21 +281,20 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
+    ctx.contact_dist_sq = Vec2.distance_sq(creature.pos, ctx.player.pos)
+    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+        return
+    if float(creature.size) <= 16.0:
+        return
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    creature_pos = creature.pos
-    ctx.contact_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
-    contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
-    in_contact = ctx.contact_dist_sq <= contact_r * contact_r
-    if not in_contact:
+    if ctx.contact_dist_sq >= 30.0 * 30.0:
         return
-
-    creature.collision_timer -= ctx.dt
-    if creature.collision_timer >= 0.0:
+    if float(ctx.player.health) <= 0.0:
         return
-
-    creature.collision_timer += CONTACT_DAMAGE_PERIOD
+    if float(creature.attack_cooldown) > 0.0:
+        return
 
     mr_melee_killed = False
     mr_melee_death_start_needed = False
@@ -322,9 +321,10 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
+    creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
 
     if ctx.fx_queue is not None:
-        push_dir = (ctx.player.pos - creature_pos).normalized()
+        push_dir = (ctx.player.pos - creature.pos).normalized()
         ctx.fx_queue.add_random(
             pos=ctx.player.pos + push_dir * 3.0,
             rand=ctx.rand,
@@ -833,14 +833,14 @@ class CreaturePool:
             if interaction_ctx.skip_creature:
                 continue
 
+            if creature.attack_cooldown <= 0.0:
+                creature.attack_cooldown = 0.0
+            else:
+                creature.attack_cooldown -= dt
+
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
                 # around the 0x004276xx ranged-fire branch).
-                if creature.attack_cooldown <= 0.0:
-                    creature.attack_cooldown = 0.0
-                else:
-                    creature.attack_cooldown -= dt
-
                 dist = (creature.pos - player.pos).length()
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
