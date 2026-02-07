@@ -1247,6 +1247,12 @@
       "type": "char*"
     },
     {
+      "address": "0x0047eaa0",
+      "comment": "Scratch line buffer copied by console_tokenize_line before strtok() token parsing.",
+      "name": "console_tokenize_buf",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047eea0",
       "comment": "Console log/list head used by console_printf.",
       "name": "console_log_queue",
