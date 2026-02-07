@@ -209,6 +209,12 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
                     }
                 ],
                 "bonus_timers": {"4": 2500, "11": 3000},
+                "rng_marks": {
+                    "rand_calls": 16,
+                    "rand_hash": "0xfce2bde6",
+                    "rand_last": 14224,
+                    "rand_head": [{"value": 1}],
+                },
                 "events": {"hit_count": -1, "pickup_count": -1, "sfx_count": 3, "sfx_head": ["101", "102"]},
                 "deaths": [
                     {
@@ -235,4 +241,8 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
     assert tick.command_hash == "cafebabe"
     assert tick.score_xp == 1234
     assert tick.players[0].weapon_id == 7
+    assert tick.rng_marks["rand_calls"] == 16
+    assert tick.rng_marks["rand_hash"] == int("0xfce2bde6", 16)
+    assert tick.rng_marks["rand_last"] == 14224
+    assert "rand_head" not in tick.rng_marks
     assert tick.events.sfx_count == 3

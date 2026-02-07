@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import math
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -155,6 +156,39 @@ def _parse_events(raw: object) -> ReplayEventSummary:
     )
 
 
+def _coerce_int_like(value: object) -> int | None:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return int(value)
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            return None
+        return int(value)
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            return int(text, 0)
+        except ValueError:
+            return None
+    return None
+
+
+def _parse_int_map(raw: object, name: str) -> dict[str, int]:
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise OriginalCaptureError(f"{name} must be an object")
+    out: dict[str, int] = {}
+    for key, value in raw.items():
+        coerced = _coerce_int_like(value)
+        if coerced is not None:
+            out[str(key)] = coerced
+    return out
+
+
 def _parse_tick(raw: object) -> OriginalCaptureTick:
     if not isinstance(raw, dict):
         raise OriginalCaptureError(f"tick must be an object: {raw!r}")
@@ -169,15 +203,8 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         raise OriginalCaptureError("tick.deaths must be a list")
     deaths = [_parse_death(item) for item in deaths_raw]
 
-    bonus_timers_raw = raw.get("bonus_timers") or {}
-    if not isinstance(bonus_timers_raw, dict):
-        raise OriginalCaptureError("tick.bonus_timers must be an object")
-    bonus_timers = {str(key): int(value) for key, value in bonus_timers_raw.items()}
-
-    rng_marks_raw = raw.get("rng_marks") or {}
-    if not isinstance(rng_marks_raw, dict):
-        raise OriginalCaptureError("tick.rng_marks must be an object")
-    rng_marks = {str(key): int(value) for key, value in rng_marks_raw.items()}
+    bonus_timers = _parse_int_map(raw.get("bonus_timers") or {}, "tick.bonus_timers")
+    rng_marks = _parse_int_map(raw.get("rng_marks") or {}, "tick.rng_marks")
 
     return OriginalCaptureTick(
         tick_index=int(raw.get("tick_index", 0)),
