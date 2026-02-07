@@ -231,6 +231,9 @@ const DATA = {
   player_alt_turn_key_right: 0x00490f48,
   player_alt_fire_key: 0x00490f4c,
 
+  game_status_blob: 0x00485540,
+  status_weapon_usage_counts: 0x00485544,
+
   projectile_pool: 0x004926b8,
   creature_pool: 0x0049bf38,
   bonus_pool: 0x00482948,
@@ -251,6 +254,8 @@ const COUNTS = {
   creatures: 0x180,
   bonuses: 0x10,
 };
+
+const STATUS_WEAPON_USAGE_COUNT = 53;
 
 const fnPtrs = {};
 const grimFnPtrs = {};
@@ -416,6 +421,25 @@ function readDataF32Stride(name, index, strideBytes) {
   const p = dataPtrs[name];
   if (!p) return null;
   return safeReadF32(p.add(index * strideBytes));
+}
+
+function readStatusSnapshotCompact() {
+  const packed = readDataU32("game_status_blob");
+  const questUnlock = packed == null ? null : packed & 0xffff;
+  const questUnlockFull = packed == null ? null : (packed >>> 16) & 0xffff;
+  const counts = [];
+  const base = dataPtrs.status_weapon_usage_counts;
+  if (base) {
+    for (let i = 0; i < STATUS_WEAPON_USAGE_COUNT; i++) {
+      const value = safeReadU32(base.add(i * 4));
+      counts.push(value == null ? 0 : value >>> 0);
+    }
+  }
+  return {
+    quest_unlock_index: questUnlock,
+    quest_unlock_index_full: questUnlockFull,
+    weapon_usage_counts: counts,
+  };
 }
 
 function readPlayerI32(name, playerIndex) {
@@ -1117,6 +1141,7 @@ function makeCoreSnapshot() {
   resolvePlayerCount();
   return {
     globals: readGameplayGlobalsCompact(),
+    status: readStatusSnapshotCompact(),
     player_count: outState.playerCountResolved,
     players: readPlayersCompact(),
     input: readInputTelemetryCompact(),
@@ -1405,11 +1430,13 @@ function finalizeTick() {
   updateCurrentStateFromMemory();
   const after = makeCoreSnapshot();
   const beforeGlobals = tick.before && tick.before.globals ? tick.before.globals : {};
+  const beforeStatus = tick.before && tick.before.status ? tick.before.status : {};
   const beforePlayers = tick.before && tick.before.players ? tick.before.players : [];
   const focused = tick.focus_tick || isFocusTick(tick.tick_index);
   const tsLeave = nowMs();
   const afterPlayers = after.players;
   const globals = after.globals;
+  const status = after.status || {};
   let scoreXp = 0;
   for (let i = 0; i < afterPlayers.length; i++) {
     scoreXp += afterPlayers[i].experience == null ? 0 : afterPlayers[i].experience;
@@ -1573,6 +1600,17 @@ function finalizeTick() {
     creature_count: globals.creature_active_count == null ? -1 : globals.creature_active_count,
     perk_pending: globals.perk_pending_count == null ? -1 : globals.perk_pending_count,
     players: checkpointPlayersFromCompact(afterPlayers),
+    status: {
+      quest_unlock_index:
+        status.quest_unlock_index == null ? -1 : status.quest_unlock_index,
+      quest_unlock_index_full:
+        status.quest_unlock_index_full == null ? -1 : status.quest_unlock_index_full,
+      weapon_usage_counts: Array.isArray(status.weapon_usage_counts)
+        ? status.weapon_usage_counts
+            .slice(0, STATUS_WEAPON_USAGE_COUNT)
+            .map((value) => (value == null ? 0 : value >>> 0))
+        : [],
+    },
     bonus_timers: bonusTimers,
     rng_marks: {
       rand_calls: tick.rng.calls,
@@ -1596,6 +1634,12 @@ function finalizeTick() {
       spawn: spawnDiagnostics,
       creature_lifecycle: creatureLifecycleDiagnostics,
       before_players: checkpointPlayersFromCompact(beforePlayers),
+      before_status: {
+        quest_unlock_index:
+          beforeStatus.quest_unlock_index == null ? -1 : beforeStatus.quest_unlock_index,
+        quest_unlock_index_full:
+          beforeStatus.quest_unlock_index_full == null ? -1 : beforeStatus.quest_unlock_index_full,
+      },
     },
   };
 
