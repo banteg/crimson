@@ -116,6 +116,7 @@ def build_checkpoint(
     tick_index: int,
     world: WorldState,
     elapsed_ms: float,
+    creature_count_override: int | None = None,
     rng_marks: dict[str, int] | None = None,
     deaths: Sequence[object] | None = None,
     events: object | None = None,
@@ -125,7 +126,10 @@ def build_checkpoint(
     players: list[PlayerState] = list(world.players)
     score_xp = sum(int(player.experience) for player in players)
     kills = int(world.creatures.kill_count)
-    creature_count = sum(1 for creature in world.creatures.entries if creature.active)
+    if creature_count_override is None:
+        creature_count = sum(1 for creature in world.creatures.entries if creature.active)
+    else:
+        creature_count = int(creature_count_override)
 
     player_ckpts: list[ReplayPlayerCheckpoint] = []
     for player in players:

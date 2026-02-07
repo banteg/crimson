@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..game_modes import GameMode
 from ..sim.runners import RunResult, run_rush_replay, run_survival_replay
@@ -62,6 +62,7 @@ def verify_original_capture(
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
+            checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
         )
@@ -70,6 +71,7 @@ def verify_original_capture(
             replay,
             max_ticks=max_ticks,
             trace_rng=bool(trace_rng),
+            checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
         )
@@ -110,8 +112,12 @@ def verify_original_capture(
             elapsed_baseline_tick = int(tick)
             elapsed_offset_ms = int(act.elapsed_ms) - int(exp.elapsed_ms)
 
+        # Raw original captures carry wall-clock deltas from variable frame pacing.
+        # Current replay reconstruction drives a fixed simulation step, so elapsed
+        # values are not yet authoritative for divergence detection.
+        exp_for_diff = replace(exp, elapsed_ms=-1)
         field_diffs = checkpoint_field_diffs(
-            exp,
+            exp_for_diff,
             act,
             include_hash_fields=False,
             include_rng_fields=False,

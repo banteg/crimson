@@ -16,6 +16,7 @@ class DeterministicSessionTick:
     step: DeterministicStepResult
     elapsed_ms: float
     rng_marks: dict[str, int]
+    creature_count_world_step: int
 
 
 @dataclass(slots=True)
@@ -79,6 +80,7 @@ class SurvivalDeterministicSession:
             self.fx_queue.clear()
             self.fx_queue_rotated.clear()
 
+        creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
 
         stage, milestone_calls = advance_survival_spawn_stage(self.stage, player_level=int(player_level))
@@ -111,6 +113,7 @@ class SurvivalDeterministicSession:
             step=step,
             elapsed_ms=float(self.elapsed_ms),
             rng_marks=rng_marks,
+            creature_count_world_step=int(creature_count_world_step),
         )
 
 
@@ -172,6 +175,7 @@ class RushDeterministicSession:
             self.fx_queue.clear()
             self.fx_queue_rotated.clear()
 
+        creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
 
         cooldown, spawns = tick_rush_mode_spawns(
@@ -191,4 +195,5 @@ class RushDeterministicSession:
             step=step,
             elapsed_ms=float(self.elapsed_ms),
             rng_marks=rng_marks,
+            creature_count_world_step=int(creature_count_world_step),
         )
