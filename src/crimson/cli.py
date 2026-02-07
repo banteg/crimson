@@ -493,6 +493,12 @@ def cmd_replay_verify_original_capture(
         min=1,
         help="max field-level diffs to print for first mismatching tick",
     ),
+    float_abs_tol: float = typer.Option(
+        0.001,
+        "--float-abs-tol",
+        min=0.0,
+        help="absolute tolerance for float field comparisons",
+    ),
 ) -> None:
     """Verify original-capture ticks directly against rewrite simulation state."""
     from .replay.original_capture import load_original_capture_sidecar
@@ -512,6 +518,7 @@ def cmd_replay_verify_original_capture(
             strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
             max_field_diffs=int(max_field_diffs),
+            float_abs_tol=float(float_abs_tol),
         )
     except (ReplayRunnerError, OriginalCaptureVerifyError) as exc:
         typer.echo(f"original-capture verification failed: {exc}", err=True)
