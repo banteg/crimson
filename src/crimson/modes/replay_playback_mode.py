@@ -250,7 +250,6 @@ class ReplayPlaybackMode:
             game_mode=int(GameMode.SURVIVAL),
             demo_mode_active=False,
             perk_progression_enabled=True,
-            presentation_rand=world.presentation_rng.rand,
             game_tune_started=bool(world._game_tune_started),
         )
         world.last_events = step.events
@@ -317,7 +316,6 @@ class ReplayPlaybackMode:
             game_mode=int(GameMode.RUSH),
             demo_mode_active=False,
             perk_progression_enabled=False,
-            presentation_rand=world.presentation_rng.rand,
             game_tune_started=bool(world._game_tune_started),
         )
         world.last_events = step.events

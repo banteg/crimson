@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import json
-from typing import Callable
 
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import PlayerInput, perks_rebuild_available, weapon_refresh_available
@@ -65,12 +64,12 @@ def run_deterministic_step(
     game_mode: int,
     demo_mode_active: bool,
     perk_progression_enabled: bool,
-    presentation_rand: Callable[[], int],
     game_tune_started: bool,
     rng_marks_out: dict[str, int] | None = None,
     trace_presentation_rng: bool = False,
 ) -> DeterministicStepResult:
     state = world.state
+    rand = state.rng.rand
 
     def _mark(name: str) -> None:
         if rng_marks_out is None:
@@ -111,12 +110,12 @@ def run_deterministic_step(
 
     trace = PresentationRngTrace()
 
-    def _rand_for(label: str) -> Callable[[], int]:
+    def _rand_for(label: str):
         if not trace_presentation_rng:
-            return presentation_rand
+            return rand
 
         def _draw() -> int:
-            value = int(presentation_rand())
+            value = int(rand())
             trace.draws_total += 1
             trace.draws_by_consumer[str(label)] = int(trace.draws_by_consumer.get(str(label), 0)) + 1
             return value
@@ -136,7 +135,7 @@ def run_deterministic_step(
         game_mode=int(game_mode),
         demo_mode_active=bool(demo_mode_active),
         perk_progression_enabled=bool(perk_progression_enabled),
-        rand=presentation_rand,
+        rand=rand,
         rand_for=_rand_for if trace_presentation_rng else None,
         detail_preset=int(detail_preset),
         fx_toggle=int(fx_toggle),

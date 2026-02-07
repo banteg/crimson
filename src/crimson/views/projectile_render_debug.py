@@ -263,7 +263,7 @@ class ProjectileRenderDebugView:
             self._world.audio_router.play_hit_sfx(
                 hits,
                 game_mode=1,
-                rand=self._world.presentation_rng.rand,
+                rand=self._world.state.rng.rand,
                 beam_types=BEAM_TYPES,
             )
         self._targets = [target for target in self._targets if target.hp > 0.0]
