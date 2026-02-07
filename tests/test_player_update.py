@@ -290,6 +290,24 @@ def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
     assert end_diff < 0.4
 
 
+def test_player_update_wraps_negative_target_heading_before_turning() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(796.2267, 538.7482),
+        move_speed=2.0,
+        heading=-0.011166,
+    )
+    input_state = PlayerInput(move=Vec2(-1.0, -1.0), aim=Vec2(972.364, 723.654))
+
+    player_update(player, input_state, 0.011, state)
+
+    # Native normalizes movement target headings into [0, 2pi] before
+    # `player_heading_approach_target`; x movement should continue left here.
+    assert player.pos.x < 796.2267
+    assert player.heading < math.tau
+
+
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)

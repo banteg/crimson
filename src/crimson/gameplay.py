@@ -2427,6 +2427,8 @@ def player_update(
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move = raw_move * inv
+        # Native normalizes this heading into [0, 2pi] before calling
+        # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
         target_heading = _normalize_heading_angle(move.to_heading())
         angle_diff = _player_heading_approach_target(player, target_heading, dt)
         move = Vec2.from_heading(player.heading)
@@ -2558,7 +2560,6 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
     player.heading = heading + turn_sign * dt * diff * 5.0
     return diff
-
 
 def _normalize_heading_angle(value: float) -> float:
     while value < 0.0:
