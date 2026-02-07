@@ -26,6 +26,32 @@ except Exception:  # pragma: no cover - only runs inside Binary Ninja
 _SEEDED_TYPES = False
 _SEEDED_REPO_HEADERS = False
 
+_TYPE_REPLACEMENTS = {
+    "IGrim2D": "void",
+    "LPDIRECT3D8": "void *",
+    "LPDIRECT3DDEVICE8": "void *",
+    "LPDIRECT3DSURFACE8": "void *",
+    "LPDIRECTSOUNDBUFFER": "void *",
+    "OggVorbis_File": "void",
+    "ogg_int64_t": "long long",
+    "ov_callbacks": "void *",
+    "png_bytep": "unsigned char *",
+    "png_structp": "void *",
+    "png_voidp": "void *",
+    "png_uint_32": "unsigned int",
+    "uInt": "unsigned int",
+    "uLong": "unsigned long",
+    "uLongf": "unsigned long",
+    "ulonglong": "unsigned long long",
+    "uint": "unsigned int",
+    "undefined1": "unsigned char",
+    "undefined4": "unsigned int",
+    "voidp": "void *",
+    "voidpf": "void *",
+    "vorbis_info": "void",
+    "z_streamp": "void *",
+}
+
 
 def _log_info(message: str) -> None:
     if bn and hasattr(bn, "log_info"):
@@ -445,6 +471,13 @@ def _extract_parsed_types(parsed) -> dict:
     return {}
 
 
+def _sanitize_header_source(source: str) -> str:
+    if not source:
+        return source
+    lines = [line for line in source.splitlines() if not line.lstrip().startswith("#")]
+    return _rewrite_type_tokens("\n".join(lines))
+
+
 def _seed_repo_headers(bv) -> None:
     global _SEEDED_REPO_HEADERS
     if _SEEDED_REPO_HEADERS or not bn:
@@ -488,6 +521,7 @@ def _seed_repo_headers(bv) -> None:
             _log_warn(f"failed to read header {header_path}: {exc}")
             continue
 
+        source = _sanitize_header_source(source)
         parsed = _parse_types_from_source(bv, source, filename=str(header_path), include_dirs=include_dirs)
         types = _extract_parsed_types(parsed)
         if not types:
@@ -588,13 +622,50 @@ def _type_keywords() -> set[str]:
     }
 
 
+def _rewrite_type_tokens(text: str) -> str:
+    import re
+
+    if not text:
+        return text
+    parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", text)
+    for idx in range(1, len(parts), 2):
+        token = parts[idx]
+        replacement = _TYPE_REPLACEMENTS.get(token)
+        if replacement:
+            parts[idx] = replacement
+    return "".join(parts)
+
+
+def _rewrite_unknown_type_tokens(text: str) -> str:
+    import re
+
+    if not text:
+        return text
+    keywords = _type_keywords()
+    parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", text)
+    for idx in range(1, len(parts), 2):
+        token = parts[idx]
+        if token in keywords:
+            continue
+        if token.startswith("_func_"):
+            parts[idx] = "void"
+            continue
+        if token.endswith("_vtbl"):
+            parts[idx] = "void *"
+            continue
+        if token.endswith("_t"):
+            parts[idx] = "int"
+    return "".join(parts)
+
+
 def _sanitize_signature(signature: str) -> str:
     # Ghidra-derived signatures sometimes use C++ keywords for parameter names (e.g. `this`).
     # Binja's parser may treat these as reserved depending on the language mode.
     try:
         import re
 
-        return re.sub(r"\bthis\b", "self", signature)
+        signature = re.sub(r"\bthis\b", "self", signature)
+        return _rewrite_type_tokens(signature)
     except Exception:
         return signature
 
@@ -737,7 +808,14 @@ def _ensure_types_for_decl(bv, decl: str) -> None:
 def _resolve_data_type(bv, type_text: str):
     _seed_common_types(bv)
 
+    type_text = _rewrite_type_tokens(type_text)
     parsed = _parse_type_string(bv, type_text)
+    if parsed is None:
+        rewritten = _rewrite_unknown_type_tokens(type_text)
+        if rewritten != type_text:
+            parsed = _parse_type_string(bv, rewritten)
+            if parsed is not None:
+                type_text = rewritten
     if parsed is not None:
         if isinstance(parsed, tuple):
             return parsed[0]
@@ -766,6 +844,16 @@ def _apply_function_signature(bv, func, signature: str) -> bool:
             if stripped != signature:
                 _ensure_types_for_decl(bv, stripped)
                 parsed = _parse_type_string(bv, stripped)
+                if parsed is None:
+                    rewritten = _rewrite_unknown_type_tokens(stripped)
+                    if rewritten != stripped:
+                        _ensure_types_for_decl(bv, rewritten)
+                        parsed = _parse_type_string(bv, rewritten)
+            elif parsed is None:
+                rewritten = _rewrite_unknown_type_tokens(signature)
+                if rewritten != signature:
+                    _ensure_types_for_decl(bv, rewritten)
+                    parsed = _parse_type_string(bv, rewritten)
         if parsed is None:
             return False
     func_type = parsed[0] if isinstance(parsed, tuple) else parsed
