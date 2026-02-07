@@ -120,6 +120,198 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004714b4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_MAIL (0xec).",
+      "name": "input_key_name_mail",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047150c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_WAKE (0xe3).",
+      "name": "input_key_name_wake",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471524",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_APPS (0xdd).",
+      "name": "input_key_name_apps",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047152c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_RWIN (0xdc).",
+      "name": "input_key_name_rwin",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471534",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_LWIN (0xdb).",
+      "name": "input_key_name_lwin",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047154c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_NEXT/PageDown (0xd1).",
+      "name": "input_key_name_next",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471554",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_DOWN (0xd0).",
+      "name": "input_key_name_down",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047155c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_END (0xcf).",
+      "name": "input_key_name_end",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471568",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_LEFT (0xcb).",
+      "name": "input_key_name_left",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471578",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_UP (0xc8).",
+      "name": "input_key_name_up",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047157c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_HOME (0xc7).",
+      "name": "input_key_name_home",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004715f4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_MUTE (0xa0).",
+      "name": "input_key_name_mute",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047162c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_AX (0x96).",
+      "name": "input_key_name_ax",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471630",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_STOP (0x95).",
+      "name": "input_key_name_stop",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471654",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_AT (0x91).",
+      "name": "input_key_name_at",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047167c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_YEN (0x7d).",
+      "name": "input_key_name_yen",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047169c",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_KANA (0x70).",
+      "name": "input_key_name_kana",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716a4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F15 (0x66).",
+      "name": "input_key_name_f15",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716a8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F14 (0x65).",
+      "name": "input_key_name_f14",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716ac",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F13 (0x64).",
+      "name": "input_key_name_f13",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716b0",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F12 (0x58).",
+      "name": "input_key_name_f12",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716b4",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_F11 (0x57).",
+      "name": "input_key_name_f11",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004716e8",
+      "comment": "Fallback key label string returned by input_key_name() for DIK_ADD (0x4e).",
+      "name": "input_key_name_add",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004719f4",
+      "comment": "Fallback key label string returned by input_key_name() for JoyRotZ (0x155).",
+      "name": "input_key_name_joy_rot_z",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a04",
+      "comment": "Fallback key label string returned by input_key_name() for JoyRotX (0x153).",
+      "name": "input_key_name_joy_rot_x",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a5c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys12 (0x12a).",
+      "name": "input_key_name_joys12",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a6c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys10 (0x128).",
+      "name": "input_key_name_joys10",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a7c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys8 (0x126).",
+      "name": "input_key_name_joys8",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a8c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys6 (0x124).",
+      "name": "input_key_name_joys6",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471a9c",
+      "comment": "Fallback key label string returned by input_key_name() for Joys4 (0x122).",
+      "name": "input_key_name_joys4",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471aac",
+      "comment": "Fallback key label string returned by input_key_name() for Joys2 (0x120).",
+      "name": "input_key_name_joys2",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00471ad4",
+      "comment": "Fallback key label string returned by input_key_name() for Mouse5 (0x104).",
+      "name": "input_key_name_mouse5",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00471b38",
       "comment": "ShellExecute operation string \"open\" used by demo purchase/browser-launch paths.",
       "name": "shell_execute_operation_open",
