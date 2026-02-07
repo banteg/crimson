@@ -2406,6 +2406,27 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00484914",
+      "comment": "Quest metadata entry used by demo_setup_variant_1 terrain_generate(desc) and by terrain_generate_random when quest_unlock_index > 0x13.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x13",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
+      "address": "0x00484acc",
+      "comment": "Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x1d.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x1d",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
+      "address": "0x00484c84",
+      "comment": "Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x27.",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x27",
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
+    },
+    {
       "address": "0x00484fc8",
       "comment": "Camera offset X applied to world positions for rendering.",
       "name": "camera_offset_x",
@@ -2453,6 +2474,13 @@
       "comment": "Spawn slot template id (creature_spawn_slot_table + 0x14).",
       "name": "creature_spawn_slot_template",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004852d0",
+      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to game_sequence_load/game_save_status.",
+      "name": "registry_key_status_root_path",
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004853d0",
@@ -3359,6 +3387,20 @@
       "name": "pause_keybind_help_alpha_ms",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x00487288",
+      "comment": "UI layout X scale factor computed as config_screen_width / 640.0 during ui_menu_layout_init.",
+      "name": "ui_layout_scale_x",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x0048728c",
+      "comment": "UI layout Y scale factor computed as config_screen_height / 480.0 during ui_menu_layout_init.",
+      "name": "ui_layout_scale_y",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487290",
