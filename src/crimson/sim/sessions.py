@@ -46,11 +46,9 @@ class SurvivalDeterministicSession:
     ) -> DeterministicSessionTick:
         dt_frame = float(dt_frame)
         dt_frame_ms = float(dt_frame) * 1000.0
-        self.elapsed_ms += float(dt_frame_ms)
+        elapsed_before_ms = float(self.elapsed_ms)
 
         state = self.world.state
-        player_level = self.world.players[0].level if self.world.players else 1
-        player_xp = self.world.players[0].experience if self.world.players else 0
 
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
         step = run_deterministic_step(
@@ -83,6 +81,10 @@ class SurvivalDeterministicSession:
         creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
         rng_marks["after_world_step"] = int(state.rng.state)
 
+        # Native `survival_update` runs after gameplay world updates:
+        # - it observes current player XP/level (post-kill award),
+        # - it computes spawn interval from the pre-increment survival elapsed timer.
+        player_level = self.world.players[0].level if self.world.players else 1
         stage, milestone_calls = advance_survival_spawn_stage(self.stage, player_level=int(player_level))
         self.stage = stage
         for call in milestone_calls:
@@ -95,12 +97,13 @@ class SurvivalDeterministicSession:
             )
         rng_marks["after_stage_spawns"] = int(state.rng.state)
 
+        player_xp = self.world.players[0].experience if self.world.players else 0
         cooldown, wave_spawns = tick_survival_wave_spawns(
             self.spawn_cooldown_ms,
             dt_frame_ms,
             state.rng,
             player_count=len(self.world.players),
-            survival_elapsed_ms=float(self.elapsed_ms),
+            survival_elapsed_ms=float(elapsed_before_ms),
             player_experience=int(player_xp),
             terrain_width=int(self.world_size),
             terrain_height=int(self.world_size),
@@ -108,6 +111,7 @@ class SurvivalDeterministicSession:
         self.spawn_cooldown_ms = cooldown
         self.world.creatures.spawn_inits(wave_spawns)
         rng_marks["after_wave_spawns"] = int(state.rng.state)
+        self.elapsed_ms = float(elapsed_before_ms) + float(dt_frame_ms)
 
         return DeterministicSessionTick(
             step=step,
