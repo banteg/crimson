@@ -897,7 +897,6 @@ class CreaturePool:
             detail_preset=int(detail_preset),
             world_width=world_width,
             world_height=world_height,
-            fx_queue=fx_queue,
         )
 
         if keep_corpse:
@@ -923,6 +922,8 @@ class CreaturePool:
                 rand=rand,
                 detail_preset=int(detail_preset),
             )
+            if fx_queue is not None:
+                fx_queue.add_random(pos=creature_pos, rand=rand)
             self.kill_count += 1
             creature.active = False
 
@@ -1055,7 +1056,6 @@ class CreaturePool:
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
-        fx_queue: FxQueue | None,
     ) -> CreatureDeath:
         creature.hp = 0.0
 
@@ -1126,9 +1126,6 @@ class CreaturePool:
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
-
-        if fx_queue is not None:
-            fx_queue.add_random(pos=creature.pos, rand=rand)
 
         return CreatureDeath(
             index=int(idx),
