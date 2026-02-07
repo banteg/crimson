@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 import pytest
 
+from crimson.effects import FxQueue
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
@@ -164,6 +166,75 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+
+
+def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
+    state = GameplayState()
+    state.game_mode = int(GameMode.RUSH)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 0.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    fx_queue = FxQueue()
+    calls = 0
+    orig_add_random = fx_queue.add_random
+
+    def _add_random(**kwargs):  # noqa: ANN003
+        nonlocal calls
+        calls += 1
+        return orig_add_random(**kwargs)
+
+    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=fx_queue,
+    )
+
+    assert calls == 0
+
+
+def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
+    state = GameplayState()
+    state.game_mode = int(GameMode.RUSH)
+    state.bonuses.freeze = 1.0
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 0.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    fx_queue = FxQueue()
+    calls = 0
+    orig_add_random = fx_queue.add_random
+
+    def _add_random(**kwargs):  # noqa: ANN003
+        nonlocal calls
+        calls += 1
+        return orig_add_random(**kwargs)
+
+    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=fx_queue,
+    )
+
+    assert calls == 1
 
 
 def test_spawn_inits_resets_native_spawn_state_fields() -> None:
