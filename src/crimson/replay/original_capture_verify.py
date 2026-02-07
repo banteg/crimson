@@ -46,6 +46,7 @@ def verify_original_capture(
     strict_events: bool = False,
     trace_rng: bool = False,
     max_field_diffs: int = 16,
+    float_abs_tol: float = 0.001,
 ) -> tuple[OriginalCaptureVerifyResult, RunResult]:
     expected = convert_original_capture_to_checkpoints(capture).checkpoints
     if max_ticks is not None:
@@ -137,6 +138,7 @@ def verify_original_capture(
             unknown_events_wildcard=True,
             elapsed_baseline=elapsed_baseline,
             max_diffs=max_field_diffs,
+            float_abs_tol=float(float_abs_tol),
         )
         if field_diffs:
             return (

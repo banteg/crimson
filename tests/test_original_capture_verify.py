@@ -119,3 +119,56 @@ def test_verify_original_capture_surfaces_first_field_mismatch() -> None:
     assert result.failure.kind == "state_mismatch"
     assert result.failure.tick_index == 0
     assert any(diff.field == "creature_count" for diff in result.failure.field_diffs)
+
+
+def test_verify_original_capture_float_tolerance_defaults_to_1e3_abs() -> None:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=0xBEEF,
+        tick_rate=60,
+        player_count=1,
+    )
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    replay = rec.finish()
+
+    checkpoints: list[ReplayCheckpoint] = []
+    run_survival_replay(
+        replay,
+        strict_events=True,
+        checkpoint_use_world_step_creature_count=True,
+        checkpoints_out=checkpoints,
+        checkpoint_ticks={0, 1},
+    )
+    assert len(checkpoints) == 2
+
+    capture0 = _capture_from_checkpoint(checkpoint=checkpoints[0]).ticks[0]
+    capture1 = _capture_from_checkpoint(checkpoint=checkpoints[1]).ticks[0]
+    capture = OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=1,
+        ticks=[capture0, capture1],
+    )
+
+    player0 = capture.ticks[1].players[0]
+    adjusted_player0 = replace(player0, health=float(player0.health) + 0.0005)
+    adjusted_tick1 = replace(capture.ticks[1], players=[adjusted_player0])
+    adjusted_capture = replace(capture, ticks=[capture.ticks[0], adjusted_tick1])
+
+    relaxed, _ = verify_original_capture(
+        adjusted_capture,
+        seed=0xBEEF,
+        strict_events=True,
+    )
+    strict, _ = verify_original_capture(
+        adjusted_capture,
+        seed=0xBEEF,
+        strict_events=True,
+        float_abs_tol=0.0001,
+    )
+
+    assert relaxed.ok is True
+    assert strict.ok is False
+    assert strict.failure is not None
+    assert any(diff.field == "players[0].health" for diff in strict.failure.field_diffs)
