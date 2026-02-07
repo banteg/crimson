@@ -121,3 +121,67 @@ def test_queue_projectile_decals_consumes_rand() -> None:
 
     assert draws["count"] > 0
     assert fx_queue.count > 0
+
+
+def test_queue_projectile_decals_native_default_draw_count() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+
+    draws = {"count": 0}
+
+    def rand() -> int:
+        draws["count"] += 1
+        return 0
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1),
+        rand=rand,
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    # Native `projectile_update` default creature-hit path consumes:
+    # - 2x blood splatter calls + 2 branch rolls,
+    # - 1 extra throwaway rand,
+    # - 3x decal spread rolls + 12x `fx_queue_add_random` draws.
+    assert draws["count"] == 74
+    assert fx_queue.count == 12
+
+
+def test_queue_projectile_decals_orders_blood_before_decals() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    fx_queue = FxQueue()
+    events: list[str] = []
+
+    orig_spawn_blood = state.effects.spawn_blood_splatter
+    orig_add_random = fx_queue.add_random
+
+    def _spawn_blood_splatter(**kwargs):
+        events.append("blood")
+        return orig_spawn_blood(**kwargs)
+
+    def _add_random(**kwargs):
+        events.append("decal")
+        return orig_add_random(**kwargs)
+
+    state.effects.spawn_blood_splatter = _spawn_blood_splatter  # type: ignore[method-assign]
+    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+
+    queue_projectile_decals(
+        state=state,
+        players=[player],
+        fx_queue=fx_queue,
+        hits=_hits(1),
+        rand=lambda: 0,
+        detail_preset=5,
+        fx_toggle=0,
+    )
+
+    assert "blood" in events
+    assert "decal" in events
+    assert events.index("blood") < events.index("decal")

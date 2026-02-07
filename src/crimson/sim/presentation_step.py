@@ -211,53 +211,16 @@ def queue_projectile_decals(
 
         base_angle = (hit.hit - hit.origin).to_angle()
 
-        if run_projectile_decal_hooks(
+        hook_handled = run_projectile_decal_hooks(
             ProjectileDecalCtx(
                 hit=hit,
                 base_angle=float(base_angle),
                 fx_queue=fx_queue,
                 rand=rand,
             )
-        ):
-            pass
-        elif type_id in ION_TYPES:
-            pass
-        elif not freeze_active:
-            for _ in range(3):
-                spread = float(int(rand()) % 0x14 - 10) * 0.1
-                angle = base_angle + spread
-                direction = Vec2.from_angle(angle) * 20.0
-                fx_queue.add_random(pos=hit.target, rand=rand)
-                fx_queue.add_random(
-                    pos=hit.target + direction * 1.5,
-                    rand=rand,
-                )
-                fx_queue.add_random(
-                    pos=hit.target + direction * 2.0,
-                    rand=rand,
-                )
-                fx_queue.add_random(
-                    pos=hit.target + direction * 2.5,
-                    rand=rand,
-                )
+        )
 
-        if bloody:
-            lo = -30
-            hi = 30
-            while lo > -60:
-                span = hi - lo
-                for _ in range(2):
-                    dx = float(int(rand()) % span + lo)
-                    dy = float(int(rand()) % span + lo)
-                    fx_queue.add_random(
-                        pos=hit.target + Vec2(dx, dy),
-                        rand=rand,
-                    )
-                lo -= 10
-                hi += 10
-
-        # Native hit path: spawn transient blood splatter particles and only
-        # bake decals into the terrain once those particles expire.
+        # Native `projectile_update` spawns blood splatter before terrain decals.
         if bloody:
             for _ in range(8):
                 spread = float((int(rand()) & 0x1F) - 0x10) * 0.0625
@@ -277,29 +240,64 @@ def queue_projectile_decals(
                 detail_preset=detail_preset,
                 fx_toggle=fx_toggle,
             )
-            continue
 
-        if freeze_active:
-            continue
-
-        for _ in range(2):
-            state.effects.spawn_blood_splatter(
-                pos=hit.hit,
-                angle=base_angle,
-                age=0.0,
-                rand=rand,
-                detail_preset=detail_preset,
-                fx_toggle=fx_toggle,
-            )
-            if (int(rand()) & 7) == 2:
+            lo = -30
+            hi = 30
+            while lo > -60:
+                span = hi - lo
+                for _ in range(2):
+                    dx = float(int(rand()) % span + lo)
+                    dy = float(int(rand()) % span + lo)
+                    fx_queue.add_random(
+                        pos=hit.target + Vec2(dx, dy),
+                        rand=rand,
+                    )
+                lo -= 10
+                hi += 10
+        elif not freeze_active:
+            for _ in range(2):
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
-                    angle=base_angle + math.pi,
+                    angle=base_angle,
                     age=0.0,
                     rand=rand,
                     detail_preset=detail_preset,
                     fx_toggle=fx_toggle,
                 )
+                if (int(rand()) & 7) == 2:
+                    state.effects.spawn_blood_splatter(
+                        pos=hit.hit,
+                        angle=base_angle + math.pi,
+                        age=0.0,
+                        rand=rand,
+                        detail_preset=detail_preset,
+                        fx_toggle=fx_toggle,
+                    )
+
+        # Native consumes one extra `crt_rand()` per creature hit before the
+        # post-hit terrain decal burst branch.
+        rand()
+
+        if hook_handled or type_id in ION_TYPES or freeze_active:
+            continue
+
+        for _ in range(3):
+            spread = float(int(rand()) % 0x14 - 10) * 0.1
+            angle = base_angle + spread
+            direction = Vec2.from_angle(angle) * 20.0
+            fx_queue.add_random(pos=hit.target, rand=rand)
+            fx_queue.add_random(
+                pos=hit.target + direction * 1.5,
+                rand=rand,
+            )
+            fx_queue.add_random(
+                pos=hit.target + direction * 2.0,
+                rand=rand,
+            )
+            fx_queue.add_random(
+                pos=hit.target + direction * 2.5,
+                rand=rand,
+            )
 
 
 def apply_world_presentation_step(
