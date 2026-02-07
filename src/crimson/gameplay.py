@@ -256,6 +256,9 @@ def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> in
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
+        # Native bonus code uses a writable sentinel entry when allocation/spacing
+        # checks fail. Some callers still mutate it, which affects RNG consumption.
+        self._sentinel = BonusEntry()
 
     @property
     def entries(self) -> list[BonusEntry]:
@@ -277,6 +280,15 @@ class BonusPool:
             if entry.bonus_id == 0:
                 return entry
         return None
+
+    def _alloc_slot_or_sentinel(self) -> BonusEntry:
+        entry = self._alloc_slot()
+        if entry is not None:
+            return entry
+        return self._sentinel
+
+    def _is_sentinel_entry(self, entry: BonusEntry) -> bool:
+        return entry is self._sentinel
 
     def _clear_entry(self, entry: BonusEntry) -> None:
         entry.bonus_id = 0
@@ -329,29 +341,28 @@ class BonusPool:
         players: list["PlayerState"],
         world_width: float = 1024.0,
         world_height: float = 1024.0,
-    ) -> BonusEntry | None:
+    ) -> BonusEntry:
         if int(state.game_mode) == int(GameMode.RUSH):
-            return None
+            return self._sentinel
         if (
             pos.x < BONUS_SPAWN_MARGIN
             or pos.y < BONUS_SPAWN_MARGIN
             or pos.x > world_width - BONUS_SPAWN_MARGIN
             or pos.y > world_height - BONUS_SPAWN_MARGIN
         ):
-            return None
+            return self._sentinel
 
-        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
-        for entry in self._entries:
-            if entry.bonus_id == 0:
-                continue
-            if Vec2.distance_sq(pos, entry.pos) < min_dist_sq:
-                return None
-
-        entry = self._alloc_slot()
-        if entry is None:
-            return None
+        entry = self._alloc_slot_or_sentinel()
 
         bonus_id = bonus_pick_random_type(self, state, players)
+        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
+        for active_entry in self._entries:
+            if active_entry.bonus_id == 0:
+                continue
+            if Vec2.distance_sq(pos, active_entry.pos) < min_dist_sq:
+                entry = self._sentinel
+                break
+
         entry.bonus_id = int(bonus_id)
         entry.picked = False
         entry.pos = pos
@@ -400,8 +411,6 @@ class BonusPool:
                     world_width=world_width,
                     world_height=world_height,
                 )
-                if entry is None:
-                    return None
 
                 entry.bonus_id = int(BonusId.WEAPON)
                 weapon_id = int(weapon_pick_random_available(state))
@@ -421,6 +430,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+                if self._is_sentinel_entry(entry):
+                    return None
                 return entry
 
         base_roll = int(rng.rand())
@@ -442,8 +453,6 @@ class BonusPool:
             world_width=world_width,
             world_height=world_height,
         )
-        if entry is None:
-            return None
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
@@ -469,6 +478,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+        if self._is_sentinel_entry(entry):
+            return None
         return entry
 
     def update(
