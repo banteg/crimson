@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from grim.geom import Vec2
 
-from ...creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ...game_modes import GameMode
 from ...gameplay import (
     PlayerInput,
@@ -21,8 +18,8 @@ from ...replay import (
     warn_on_game_version_mismatch,
 )
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from ..step_pipeline import run_deterministic_step
-from ..world_state import WorldState
+from ..sessions import SurvivalDeterministicSession
+from ..world_state import WorldEvents, WorldState
 from .common import (
     ReplayRunnerError,
     RunResult,
@@ -33,13 +30,6 @@ from .common import (
     reset_players,
     status_from_snapshot,
 )
-
-
-@dataclass(slots=True)
-class SurvivalRunState:
-    elapsed_ms: float = 0.0
-    stage: int = 0
-    spawn_cooldown_ms: float = 0.0
 
 
 def _apply_tick_events(
@@ -119,7 +109,6 @@ def run_survival_replay(
     if tick_rate <= 0:
         raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
     dt_frame = 1.0 / float(tick_rate)
-    dt_frame_ms = dt_frame * 1000.0
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -140,12 +129,20 @@ def run_survival_replay(
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
     world.state.rng.srand(int(replay.header.seed))
-    game_tune_started = False
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
-
-    run = SurvivalRunState()
+    session = SurvivalDeterministicSession(
+        world=world,
+        world_size=float(world_size),
+        damage_scale_by_type=damage_scale_by_type,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        detail_preset=5,
+        fx_toggle=0,
+        game_tune_started=False,
+        clear_fx_queues_each_tick=True,
+    )
 
     events_by_tick: dict[int, list[object]] = {}
     for event in replay.events:
@@ -155,9 +152,6 @@ def run_survival_replay(
     tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
 
     for tick_index in range(tick_limit):
-        # Mode state uses real dt (pre time-scale) for score timing + spawns.
-        run.elapsed_ms += float(dt_frame_ms)
-
         state = world.state
         state.game_mode = int(GameMode.SURVIVAL)
         state.demo_mode_active = False
@@ -185,77 +179,21 @@ def run_survival_replay(
                 )
             )
 
-        rng_before_world_step = int(state.rng.state)
-        world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
-        step = run_deterministic_step(
-            world=world,
+        tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=player_inputs,
-            world_size=float(world_size),
-            damage_scale_by_type=damage_scale_by_type,
-            detail_preset=5,
-            fx_toggle=0,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            demo_mode_active=False,
-            perk_progression_enabled=True,
-            game_tune_started=bool(game_tune_started),
-            rng_marks_out=world_step_marks,
-            trace_presentation_rng=bool(trace_rng),
+            trace_rng=bool(trace_rng),
         )
+        step = tick.step
         events = step.events
-        rng_after_world_step = int(state.rng.state)
-        if step.presentation.trigger_game_tune:
-            game_tune_started = True
-        # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
-        # Headless verification has no render pass, so clear explicitly per simulated tick.
-        fx_queue.clear()
-        fx_queue_rotated.clear()
-
-        # Scripted milestone spawns based on level.
-        player_level = world.players[0].level if world.players else 1
-        stage, milestone_calls = advance_survival_spawn_stage(run.stage, player_level=int(player_level))
-        run.stage = stage
-        for call in milestone_calls:
-            world.creatures.spawn_template(
-                int(call.template_id),
-                call.pos,
-                float(call.heading),
-                state.rng,
-                rand=state.rng.rand,
-            )
-        rng_after_stage_spawns = int(state.rng.state)
-
-        # Regular wave spawns based on elapsed time.
-        player_xp = world.players[0].experience if world.players else 0
-        cooldown, wave_spawns = tick_survival_wave_spawns(
-            run.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=run.elapsed_ms,
-            player_experience=int(player_xp),
-            terrain_width=int(world_size),
-            terrain_height=int(world_size),
-        )
-        run.spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(wave_spawns)
-        rng_after_wave_spawns = int(state.rng.state)
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
-                    elapsed_ms=float(run.elapsed_ms),
-                    rng_marks={
-                        **world_step_marks,
-                        "after_world_step": int(rng_after_world_step),
-                        "after_stage_spawns": int(rng_after_stage_spawns),
-                        "after_wave_spawns": int(rng_after_wave_spawns),
-                    },
+                    elapsed_ms=float(tick.elapsed_ms),
+                    rng_marks=tick.rng_marks,
                     deaths=events.deaths,
                     events=events,
                     command_hash=str(step.command_hash),
@@ -283,7 +221,11 @@ def run_survival_replay(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
-                    elapsed_ms=float(run.elapsed_ms),
+                    elapsed_ms=float(session.elapsed_ms),
+                    rng_marks={},
+                    deaths=[],
+                    events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+                    command_hash="",
                 )
             )
 
@@ -295,7 +237,7 @@ def run_survival_replay(
         game_mode_id=int(GameMode.SURVIVAL),
         tick_rate=tick_rate,
         ticks=int(tick_index),
-        elapsed_ms=int(run.elapsed_ms),
+        elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
         most_used_weapon_id=int(most_used_weapon_id),
