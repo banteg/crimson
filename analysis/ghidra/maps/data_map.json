@@ -9077,6 +9077,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005305c",
+      "comment": "Highest texture handle index currently in use (updated by grim_create_texture/load/destroy).",
+      "name": "grim_texture_slot_max_index",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x10053060",
       "comment": "Currently bound texture handle (set by grim_bind_texture).",
       "name": "grim_bound_texture_handle",
@@ -9099,6 +9106,27 @@
       "comment": "Vertex/index capacity used for dynamic buffers.",
       "name": "grim_vertex_capacity",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10059778",
+      "comment": "Window/dialog icon handle loaded from Grim resources (icon id 0x72).",
+      "name": "grim_window_icon_handle",
+      "program": "grim.dll",
+      "type": "HICON"
+    },
+    {
+      "address": "0x10059780",
+      "comment": "Process module handle used as hInstance for window class/creation calls.",
+      "name": "grim_process_hinstance",
+      "program": "grim.dll",
+      "type": "HMODULE"
+    },
+    {
+      "address": "0x10059bb8",
+      "comment": "Dynamic index buffer (IDirect3DIndexBuffer8) bound for quad batching.",
+      "name": "grim_index_buffer",
+      "program": "grim.dll",
+      "type": "LPDIRECT3DINDEXBUFFER8"
     },
     {
       "address": "0x10059dbc",
@@ -9351,6 +9379,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005c898",
+      "comment": "Device-ready/cooperative flag (true when TestCooperativeLevel succeeds and rendering is allowed).",
+      "name": "grim_device_ready",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005c8dc",
       "comment": "Current vertex count in the dynamic batch (16-bit).",
       "name": "grim_vertex_count",
@@ -9465,6 +9500,13 @@
       "comment": "Batch active/locked flag for vertex buffer usage.",
       "name": "grim_batch_active",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d3f8",
+      "comment": "Primary Grim2D game window handle (created by grim_window_create).",
+      "name": "grim_main_window_hwnd",
+      "program": "grim.dll",
+      "type": "HWND"
     },
     {
       "address": "0x1005d404",
