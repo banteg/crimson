@@ -185,16 +185,16 @@ Current scope for the checked items is Survival/Rush deterministic loops (intera
 
 ## Phase 3: Differential Testing with Original Captures
 
-- [ ] Define original capture schema and conversion pipeline.
+- [x] Define original capture schema and conversion pipeline.
 - [x] Add comparator that reports first divergence tick with command/state/rng context.
 - [x] Add tooling command to run diff quickly on replay + sidecar pairs.
 - [ ] Add at least one golden differential fixture from original capture.
 
 ## Phase 4: Multiplayer Determinism Readiness
 
-- [ ] Promote per-player input frame contract as first-class (deterministic ordering).
-- [ ] Add lockstep-oriented tick validation tests for multi-player input streams.
-- [ ] Ensure replay and checkpoint formats remain compatible with multiplayer expansion.
+- [x] Promote per-player input frame contract as first-class (deterministic ordering).
+- [x] Add lockstep-oriented tick validation tests for multi-player input streams.
+- [x] Ensure replay and checkpoint formats remain compatible with multiplayer expansion.
 
 ## Acceptance Criteria
 
