@@ -107,6 +107,7 @@ const CONFIG = {
   enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SPAWNS", true),
   enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK", true),
   enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_DEATH_HOOK", true),
+  enableBonusSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_BONUS_SPAWN_HOOK", true),
   enableCreatureLifecycleDigest: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_LIFECYCLE", true),
 };
 
@@ -121,6 +122,7 @@ const FN = {
   player_fire_weapon: 0x00444980,
   weapon_assign_player: 0x00452d40,
   bonus_apply: 0x00409890,
+  bonus_try_spawn_on_kill: 0x0041f8d0,
   projectile_spawn: 0x00420440,
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
@@ -259,6 +261,7 @@ const bonusContextByTid = {};
 const damageContextByTid = {};
 const creatureSpawnContextByTid = {};
 const creatureDeathContextByTid = {};
+const bonusSpawnContextByTid = {};
 const inputContextByTid = {};
 const rngContextByTid = {};
 const srandContextByTid = {};
@@ -950,13 +953,17 @@ function diffCreatureDigest(beforeDigest, afterDigest) {
 }
 
 function readBonusEntry(index) {
+  const slot = readBonusSlotRaw(index);
+  if (!bonusSlotIsLive(slot)) return null;
+  return slot;
+}
+
+function readBonusSlotRaw(index) {
   const pool = dataPtrs.bonus_pool;
   if (!pool || index < 0) return null;
   const base = pool.add(index * STRIDES.bonus);
   const bonusId = safeReadS32(base);
   const state = safeReadS32(base.add(0x04));
-  if (bonusId == null || bonusId <= 0) return null;
-  if (state == null || state <= 0) return null;
   return {
     index: index,
     bonus_id: bonusId,
@@ -969,6 +976,102 @@ function readBonusEntry(index) {
     },
     amount_f32: round4(safeReadF32(base.add(0x18))),
     amount_i32: safeReadS32(base.add(0x18)),
+  };
+}
+
+function bonusSlotIsLive(slot) {
+  if (!slot) return false;
+  if (slot.bonus_id == null || slot.bonus_id <= 0) return false;
+  // Native keeps unpicked bonus entries in state == 0.
+  if (slot.state == null || slot.state < 0) return false;
+  return true;
+}
+
+function snapshotBonusPoolRaw() {
+  const out = [];
+  if (!dataPtrs.bonus_pool) return out;
+  for (let i = 0; i < COUNTS.bonuses; i++) {
+    out.push(readBonusSlotRaw(i));
+  }
+  return out;
+}
+
+function bonusSlotFingerprint(slot) {
+  if (!slot) return "null";
+  const pos = slot.pos || {};
+  return [
+    slot.bonus_id == null ? "na" : String(slot.bonus_id),
+    slot.state == null ? "na" : String(slot.state),
+    slot.time_left == null ? "na" : String(slot.time_left),
+    slot.time_max == null ? "na" : String(slot.time_max),
+    pos.x == null ? "na" : String(pos.x),
+    pos.y == null ? "na" : String(pos.y),
+    slot.amount_i32 == null ? "na" : String(slot.amount_i32),
+    slot.amount_f32 == null ? "na" : String(slot.amount_f32),
+  ].join("|");
+}
+
+function summarizeBonusPoolDelta(beforeSlots, afterSlots) {
+  const before = Array.isArray(beforeSlots) ? beforeSlots : [];
+  const after = Array.isArray(afterSlots) ? afterSlots : [];
+  const changedSlots = [];
+  const spawnedSlots = [];
+  const removedSlots = [];
+  const beforeLiveHead = [];
+  const afterLiveHead = [];
+  const spawnedHead = [];
+  let beforeActiveCount = 0;
+  let afterActiveCount = 0;
+
+  for (let i = 0; i < COUNTS.bonuses; i++) {
+    const beforeSlot = before[i] || null;
+    const afterSlot = after[i] || null;
+    const beforeLive = bonusSlotIsLive(beforeSlot);
+    const afterLive = bonusSlotIsLive(afterSlot);
+    if (beforeLive) {
+      beforeActiveCount += 1;
+      if (beforeLiveHead.length < CONFIG.maxHeadPerKind) beforeLiveHead.push(beforeSlot);
+    }
+    if (afterLive) {
+      afterActiveCount += 1;
+      if (afterLiveHead.length < CONFIG.maxHeadPerKind) afterLiveHead.push(afterSlot);
+    }
+
+    if (bonusSlotFingerprint(beforeSlot) === bonusSlotFingerprint(afterSlot)) continue;
+
+    const changed = {
+      index: i,
+      before: beforeLive ? beforeSlot : null,
+      after: afterLive ? afterSlot : null,
+      before_bonus_id: beforeSlot && beforeSlot.bonus_id != null ? beforeSlot.bonus_id : null,
+      after_bonus_id: afterSlot && afterSlot.bonus_id != null ? afterSlot.bonus_id : null,
+      before_state: beforeSlot && beforeSlot.state != null ? beforeSlot.state : null,
+      after_state: afterSlot && afterSlot.state != null ? afterSlot.state : null,
+    };
+    changedSlots.push(changed);
+    if (!beforeLive && afterLive) {
+      spawnedSlots.push(i);
+      if (spawnedHead.length < CONFIG.maxHeadPerKind) spawnedHead.push(afterSlot);
+    }
+    if (beforeLive && !afterLive) removedSlots.push(i);
+  }
+
+  return {
+    before_active_count: beforeActiveCount,
+    after_active_count: afterActiveCount,
+    active_delta: afterActiveCount - beforeActiveCount,
+    changed_slots_total: changedSlots.length,
+    changed_slots_head: changedSlots.slice(0, CONFIG.maxHeadPerKind),
+    changed_slots_overflow: Math.max(0, changedSlots.length - CONFIG.maxHeadPerKind),
+    spawned_slots_total: spawnedSlots.length,
+    spawned_slots: spawnedSlots.slice(0, CONFIG.maxHeadPerKind),
+    spawned_slots_overflow: Math.max(0, spawnedSlots.length - CONFIG.maxHeadPerKind),
+    removed_slots_total: removedSlots.length,
+    removed_slots: removedSlots.slice(0, CONFIG.maxHeadPerKind),
+    removed_slots_overflow: Math.max(0, removedSlots.length - CONFIG.maxHeadPerKind),
+    before_live_head: beforeLiveHead,
+    after_live_head: afterLiveHead,
+    spawned_head: spawnedHead,
   };
 }
 
@@ -1040,6 +1143,7 @@ function makeTickContext() {
       player_fire: 0,
       weapon_assign: 0,
       bonus_apply: 0,
+      bonus_spawn: 0,
       projectile_spawn: 0,
       player_damage: 0,
       creature_spawn: 0,
@@ -1059,6 +1163,7 @@ function makeTickContext() {
       player_fire: [],
       weapon_assign: [],
       bonus_apply: [],
+      bonus_spawn: [],
       projectile_spawn: [],
       player_damage: [],
       creature_spawn: [],
@@ -1101,6 +1206,7 @@ function makeTickContext() {
     spawn_callers_low: {},
     spawn_sources_low: {},
     death_callers: {},
+    bonus_spawn_callers: {},
     mode_samples: [],
     creature_digest_before: creatureDigestBefore,
     mode_hint: null,
@@ -1450,6 +1556,8 @@ function finalizeTick() {
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
     top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
     top_death_callers: topCounterPairs(tick.death_callers, 8),
+    event_count_bonus_spawn: tick.event_counts.bonus_spawn || 0,
+    top_bonus_spawn_callers: topCounterPairs(tick.bonus_spawn_callers, 8),
     mode_samples: tick.mode_samples,
   };
   const creatureLifecycleDiagnostics = creatureLifecycle || null;
@@ -1959,6 +2067,66 @@ function installHooks() {
       emitRawEvent(Object.assign({ event: "bonus_apply" }, payload));
     },
   });
+
+  if (CONFIG.enableBonusSpawnHook) {
+    attachHook("bonus_try_spawn_on_kill", fnPtrs.bonus_try_spawn_on_kill, {
+      onEnter(args) {
+        const posPtr = args[0];
+        const callerStatic = runtimeToStatic(this.returnAddress);
+        bonusSpawnContextByTid[this.threadId] = {
+          pos: {
+            x: round4(posPtr ? safeReadF32(posPtr) : null),
+            y: round4(posPtr ? safeReadF32(posPtr.add(4)) : null),
+          },
+          before_slots: snapshotBonusPoolRaw(),
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+          backtrace: maybeBacktrace(this.context),
+        };
+      },
+      onLeave() {
+        const ctx = bonusSpawnContextByTid[this.threadId];
+        delete bonusSpawnContextByTid[this.threadId];
+        if (!ctx) return;
+        const afterSlots = snapshotBonusPoolRaw();
+        const summary = summarizeBonusPoolDelta(ctx.before_slots, afterSlots);
+        const payload = {
+          pos: ctx.pos,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+          backtrace: ctx.backtrace,
+          before_active_count: summary.before_active_count,
+          after_active_count: summary.after_active_count,
+          active_delta: summary.active_delta,
+          changed_slots_total: summary.changed_slots_total,
+          changed_slots_head: summary.changed_slots_head,
+          changed_slots_overflow: summary.changed_slots_overflow,
+          spawned_slots_total: summary.spawned_slots_total,
+          spawned_slots: summary.spawned_slots,
+          spawned_slots_overflow: summary.spawned_slots_overflow,
+          removed_slots_total: summary.removed_slots_total,
+          removed_slots: summary.removed_slots,
+          removed_slots_overflow: summary.removed_slots_overflow,
+          before_live_head: summary.before_live_head,
+          after_live_head: summary.after_live_head,
+          spawned_head: summary.spawned_head,
+        };
+        const tick = outState.currentTick;
+        if (tick && payload.caller_static) {
+          bumpCounterMap(tick.bonus_spawn_callers, payload.caller_static);
+        }
+        addTickEvent(
+          "bonus_spawn",
+          payload,
+          "bs:" +
+            String(payload.spawned_slots_total > 0 ? 1 : 0) +
+            ":" +
+            String(payload.active_delta == null ? 0 : payload.active_delta)
+        );
+        emitRawEvent(Object.assign({ event: "bonus_try_spawn_on_kill" }, payload));
+      },
+    });
+  }
 
   attachHook("projectile_spawn", fnPtrs.projectile_spawn, {
     onEnter(args) {
@@ -2472,6 +2640,7 @@ function main() {
       enable_spawn_hooks: CONFIG.enableSpawnHooks,
       enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
       enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
+      enable_bonus_spawn_hook: CONFIG.enableBonusSpawnHook,
       enable_creature_lifecycle_digest: CONFIG.enableCreatureLifecycleDigest,
     },
     session_fingerprint: outState.sessionFingerprint,
