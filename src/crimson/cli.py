@@ -264,6 +264,11 @@ def cmd_replay_verify(
         "--strict-events/--lenient-events",
         help="fail on unsupported replay events/perk picks (default: lenient)",
     ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="include presentation RNG draw marks in verification checkpoints",
+    ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
     from dataclasses import asdict
@@ -302,6 +307,7 @@ def cmd_replay_verify(
                 replay,
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
                 checkpoints_out=actual,
                 checkpoint_ticks=checkpoint_ticks,
             )
@@ -309,6 +315,7 @@ def cmd_replay_verify(
             result = run_rush_replay(
                 replay,
                 max_ticks=max_ticks,
+                trace_rng=bool(trace_rng),
                 checkpoints_out=actual,
                 checkpoint_ticks=checkpoint_ticks,
             )
@@ -353,10 +360,21 @@ def cmd_replay_verify(
         if act is None:
             typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
             raise typer.Exit(code=1)
+        if str(exp.command_hash) and str(exp.command_hash) != str(act.command_hash):
+            typer.echo(f"checkpoint command mismatch at tick={int(exp.tick_index)}", err=True)
+            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
+            if int(exp.events.hit_count) >= 0:
+                typer.echo(
+                    "  events "
+                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                    err=True,
+                )
+            raise typer.Exit(code=1)
         if str(exp.state_hash) != str(act.state_hash):
             exp_no_rng = asdict(exp)
             act_no_rng = asdict(act)
-            for key in ("state_hash", "rng_state", "rng_marks"):
+            for key in ("state_hash", "rng_state", "rng_marks", "command_hash"):
                 exp_no_rng.pop(key, None)
                 act_no_rng.pop(key, None)
             # Legacy sidecars (without `events`) store unknown sentinel values.
