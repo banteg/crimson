@@ -8364,6 +8364,13 @@
       "type": "char"
     },
     {
+      "address": "0x004d75a6",
+      "comment": "Enabled flag for play_game_menu_button_rush (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_rush_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004d75a8",
       "comment": "Rush description fade counter used by play_game_menu_update hint text rendering.",
       "name": "play_game_menu_rush_hint_fade_counter",
@@ -8409,6 +8416,13 @@
       "address": "0x004d75fd",
       "comment": "Activated flag for play_game_menu_button_quests (consumed to open quest selection).",
       "name": "play_game_menu_quests_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d75fe",
+      "comment": "Enabled flag for play_game_menu_button_quests (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_quests_enabled",
       "program": "crimsonland.exe",
       "type": "char"
     },
@@ -8486,6 +8500,13 @@
       "address": "0x004d76cd",
       "comment": "Activated flag for play_game_menu_button_survival (consumed to start Survival mode).",
       "name": "play_game_menu_survival_activated",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d76ce",
+      "comment": "Enabled flag for play_game_menu_button_survival (disabled while player-count dropdown is open).",
+      "name": "play_game_menu_survival_enabled",
       "program": "crimsonland.exe",
       "type": "char"
     },
