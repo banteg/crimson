@@ -10,6 +10,9 @@ from crimson.replay.original_capture import (
     ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
     ORIGINAL_CAPTURE_FORMAT_VERSION,
     ORIGINAL_CAPTURE_UNKNOWN_INT,
+    OriginalCaptureSidecar,
+    OriginalCaptureTick,
+    build_original_capture_dt_frame_overrides,
     convert_original_capture_to_checkpoints,
     convert_original_capture_to_replay,
     default_original_capture_replay_path,
@@ -426,6 +429,45 @@ def test_default_original_capture_replay_path_derives_expected_name() -> None:
     checkpoints = Path("/tmp/original_capture_v2.checkpoints.json.gz")
     replay = default_original_capture_replay_path(checkpoints)
     assert replay.name == "original_capture_v2.crdemo.gz"
+
+
+def test_build_original_capture_dt_frame_overrides_distributes_gaps() -> None:
+    capture = OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=3,
+        ticks=[
+            OriginalCaptureTick(tick_index=10, state_hash="", command_hash="", elapsed_ms=1000),
+            OriginalCaptureTick(tick_index=13, state_hash="", command_hash="", elapsed_ms=1060),
+            OriginalCaptureTick(tick_index=16, state_hash="", command_hash="", elapsed_ms=1180),
+        ],
+    )
+
+    overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=60)
+
+    assert overrides[11] == 0.02
+    assert overrides[12] == 0.02
+    assert overrides[13] == 0.02
+    assert overrides[14] == 0.04
+    assert overrides[15] == 0.04
+    assert overrides[16] == 0.04
+    assert 10 not in overrides
+
+
+def test_build_original_capture_dt_frame_overrides_skips_non_monotonic_elapsed() -> None:
+    capture = OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=1,
+        ticks=[
+            OriginalCaptureTick(tick_index=0, state_hash="", command_hash="", elapsed_ms=16),
+            OriginalCaptureTick(tick_index=1, state_hash="", command_hash="", elapsed_ms=16),
+            OriginalCaptureTick(tick_index=2, state_hash="", command_hash="", elapsed_ms=33),
+        ],
+    )
+
+    overrides = build_original_capture_dt_frame_overrides(capture, tick_rate=60)
+
+    assert 1 not in overrides
+    assert overrides[2] == 0.017
 
 
 def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_heading(tmp_path: Path) -> None:

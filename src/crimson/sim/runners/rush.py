@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 from grim.geom import Vec2
 
 from ...game_modes import GameMode
@@ -36,6 +38,23 @@ def _enforce_rush_loadout(world: WorldState) -> None:
         player.ammo = float(max(0, int(player.clip_size)))
 
 
+def _resolve_dt_frame(
+    *,
+    tick_index: int,
+    default_dt_frame: float,
+    dt_frame_overrides: dict[int, float] | None,
+) -> float:
+    if not dt_frame_overrides:
+        return float(default_dt_frame)
+    override = dt_frame_overrides.get(int(tick_index))
+    if override is None:
+        return float(default_dt_frame)
+    dt_frame = float(override)
+    if not math.isfinite(dt_frame) or dt_frame <= 0.0:
+        return float(default_dt_frame)
+    return float(dt_frame)
+
+
 def run_rush_replay(
     replay: Replay,
     *,
@@ -45,6 +64,7 @@ def run_rush_replay(
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
+    dt_frame_overrides: dict[int, float] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -110,6 +130,11 @@ def run_rush_replay(
         state = world.state
         state.game_mode = int(GameMode.RUSH)
         state.demo_mode_active = False
+        dt_tick = _resolve_dt_frame(
+            tick_index=int(tick_index),
+            default_dt_frame=float(dt_frame),
+            dt_frame_overrides=dt_frame_overrides,
+        )
 
         for event in events_by_tick.get(int(tick_index), []):
             payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
@@ -137,7 +162,7 @@ def run_rush_replay(
             )
 
         tick = session.step_tick(
-            dt_frame=float(dt_frame),
+            dt_frame=float(dt_tick),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )

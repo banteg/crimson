@@ -676,6 +676,57 @@ def _infer_player_count(capture: OriginalCaptureSidecar) -> int:
     return max(1, int(player_count))
 
 
+def build_original_capture_dt_frame_overrides(
+    capture: OriginalCaptureSidecar,
+    *,
+    tick_rate: int = 60,
+) -> dict[int, float]:
+    """Build per-tick frame dt overrides (seconds) from capture elapsed deltas.
+
+    The returned mapping is sparse:
+    - keys are replay tick indices,
+    - values are `dt_frame` seconds to use for that tick.
+
+    Deltas are distributed across gaps so sampled captures (e.g. every Nth frame)
+    still produce per-frame timing overrides for intermediate ticks.
+    """
+
+    nominal_tick_rate = max(1, int(tick_rate))
+    nominal_dt = 1.0 / float(nominal_tick_rate)
+    if not capture.ticks:
+        return {}
+
+    sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
+    out: dict[int, float] = {}
+    last_timed_tick: int | None = None
+    last_timed_elapsed_ms: int | None = None
+
+    for tick in sorted_ticks:
+        tick_index = int(tick.tick_index)
+        elapsed_ms = int(tick.elapsed_ms)
+        if elapsed_ms < 0:
+            continue
+
+        if last_timed_tick is not None and last_timed_elapsed_ms is not None:
+            gap = int(tick_index) - int(last_timed_tick)
+            delta_ms = int(elapsed_ms) - int(last_timed_elapsed_ms)
+            if gap > 0 and delta_ms > 0:
+                dt_frame = float(delta_ms) / float(gap) / 1000.0
+                if math.isfinite(dt_frame) and dt_frame > 0.0:
+                    for step_tick in range(int(last_timed_tick) + 1, int(tick_index) + 1):
+                        out[int(step_tick)] = float(dt_frame)
+
+        last_timed_tick = int(tick_index)
+        last_timed_elapsed_ms = int(elapsed_ms)
+
+    # Trim values that are effectively nominal to keep sparse overrides compact.
+    for tick_index in list(out.keys()):
+        if math.isclose(float(out[tick_index]), float(nominal_dt), rel_tol=1e-9, abs_tol=1e-9):
+            del out[tick_index]
+
+    return out
+
+
 def _capture_bootstrap_payload(tick: OriginalCaptureTick) -> dict[str, object]:
     players: list[dict[str, object]] = []
     for player in tick.players:
