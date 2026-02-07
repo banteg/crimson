@@ -1290,6 +1290,12 @@
       "type": "int"
     },
     {
+      "address": "0x0047f4d0",
+      "comment": "Console cvar handle for con_monoFont (queried when drawing console text).",
+      "name": "cv_con_mono_font",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0047f4d4",
       "comment": "Console input enable flag (gates grim_get_key_char).",
       "name": "console_input_enabled",
@@ -7281,6 +7287,34 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004c3640",
+      "comment": "Wrapped perk name string for \"Bloody Mess\" (or selected variant for perk slot 1).",
+      "name": "perk_slot_1_name_wrapped_primary",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c3644",
+      "comment": "Wrapped perk name string for \"Quick Learner\" (alternate for perk slot 1 when config_fx_toggle != 0).",
+      "name": "perk_slot_1_name_wrapped_alternate",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c3648",
+      "comment": "Wrapped perk description string paired with perk_slot_1_name_wrapped_primary.",
+      "name": "perk_slot_1_desc_wrapped_primary",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004c364c",
+      "comment": "Wrapped perk description string paired with perk_slot_1_name_wrapped_alternate.",
+      "name": "perk_slot_1_desc_wrapped_alternate",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x004c3650",
       "comment": "Pointer to the quest metadata entry last written by quest_meta_init_entry.",
       "name": "quest_meta_cursor",
@@ -7346,6 +7380,18 @@
       "name": "dsound_iface",
       "program": "crimsonland.exe",
       "type": "int *"
+    },
+    {
+      "address": "0x004c3968",
+      "comment": "Active resource pack path string used by resource_open_read/resource_pack_set.",
+      "name": "resource_pack_path_buf",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c3a68",
+      "comment": "Scratch buffer for resource pack entry names read by resource_pack_read_cstring.",
+      "name": "resource_pack_entry_name_buf",
+      "program": "crimsonland.exe"
     },
     {
       "address": "0x004c3c68",
@@ -7933,6 +7979,13 @@
       "address": "0x004cc8d4",
       "comment": "Random playlist selection latch used by sfx_play_exclusive(music_track_extra_0).",
       "name": "music_playlist_randomized_latch",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004cc8d5",
+      "comment": "Audio resource-pack available flag set by audio_init_music/audio_init_sfx via resource_pack_set.",
+      "name": "audio_resource_pack_available",
       "program": "crimsonland.exe",
       "type": "char"
     },
