@@ -66,6 +66,7 @@ undefined4 FUN_10001a30(void)
 
 /* FUN_10001e90 @ 10001e90 */
 
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 
 void FUN_10001e90(void)
@@ -79,114 +80,114 @@ void FUN_10001e90(void)
   UINT UVar5;
   LPARAM LVar6;
   
-  wParam = DAT_1005cec8 & 0xff;
+  wParam = _grim_use_ref_device & 0xff;
   LVar6 = 0;
   UVar5 = 0xf1;
-  DAT_10053064 = (byte)(DAT_1005a4a4 >> 0x13) & 1;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3ed);
+  grim_caps_can_render_windowed = (byte)(grim_device_caps.Caps2 >> 0x13) & 1;
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3ed);
   SendMessageA(pHVar1,UVar5,wParam,LVar6);
-  DAT_1005d400 = DAT_1005d0c8;
+  grim_config_option_54_value = grim_config_dialog_option_3ef_checked;
   HVar2 = (*grim_d3d8_probe->lpVtbl->CheckDeviceType)
                     (grim_d3d8_probe,0,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,0);
   LVar6 = 0;
   WVar3 = 0;
-  DAT_10053065 = -1 < HVar2;
+  grim_caps_x8r8g8b8_supported = -1 < HVar2;
   UVar5 = 0x14b;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,LVar6);
-  if (DAT_10053064 != 0) {
+  if (grim_caps_can_render_windowed != '\0') {
     pcVar4 = s_640x480__windowed__10053440;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_800x600__windowed__1005342c;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_960x600__wide_window__10053414;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_1024x768__windowed__10053400;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
   }
   pcVar4 = s_640x480x16_100533f4;
   WVar3 = 0;
   UVar5 = 0x143;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
   pcVar4 = s_800x600x16_100533e8;
   WVar3 = 0;
   UVar5 = 0x143;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
   pcVar4 = s_960x600x16__wide__100533d4;
   WVar3 = 0;
   UVar5 = 0x143;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
   pcVar4 = s_1024x768x16_100533c8;
   WVar3 = 0;
   UVar5 = 0x143;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
-  if (DAT_10053065 != '\0') {
+  if (grim_caps_x8r8g8b8_supported != '\0') {
     pcVar4 = s_640x480x32_100533bc;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_800x600x32_100533b0;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_960x600x32__wide__1005339c;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
     pcVar4 = s_1024x768x32_10053390;
     WVar3 = 0;
     UVar5 = 0x143;
-    pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+    pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
     SendMessageA(pHVar1,UVar5,WVar3,(LPARAM)pcVar4);
   }
-  if (DAT_1005ce18 == 0x280) {
+  if (grim_config_mode_width == 0x280) {
     WVar3 = 0;
   }
-  else if (DAT_1005ce18 == 800) {
+  else if (grim_config_mode_width == 800) {
     WVar3 = 1;
   }
-  else if (DAT_1005ce18 == 0x3c0) {
+  else if (grim_config_mode_width == 0x3c0) {
     WVar3 = 2;
   }
-  else if (DAT_1005ce18 == 0x400) {
+  else if (grim_config_mode_width == 0x400) {
     WVar3 = 3;
   }
   else {
-    WVar3 = (-(uint)(DAT_1005ce18 != 0x690) & 0xfffffffd) + 4;
+    WVar3 = (-(uint)(grim_config_mode_width != 0x690) & 0xfffffffd) + 4;
   }
-  if ((DAT_1005cc08 != '\x01') || (DAT_10053064 == 0)) {
-    if (DAT_1005ce38 == 0x10) {
+  if ((grim_windowed_mode_enabled != '\x01') || (grim_caps_can_render_windowed == '\0')) {
+    if (grim_config_mode_bpp == 0x10) {
       WVar3 = WVar3 + 4;
     }
-    else if (DAT_1005ce38 == 0x20) {
+    else if (grim_config_mode_bpp == 0x20) {
       WVar3 = WVar3 + 8;
     }
-    if (DAT_10053064 == 0) {
+    if (grim_caps_can_render_windowed == '\0') {
       WVar3 = WVar3 - 4;
     }
   }
   LVar6 = 0;
   UVar5 = 0x14e;
-  pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
+  pHVar1 = GetDlgItem((HWND)grim_config_dialog_hwnd,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,LVar6);
   return;
 }
@@ -216,6 +217,7 @@ int grim_config_dialog_proc(int hwnd,uint msg,uint wparam,int lparam)
   UINT UVar10;
   char *pcVar11;
   WPARAM WVar12;
+  UINT wParam;
   int iVar13;
   LPARAM LVar14;
   char *pcStack_404;
@@ -232,29 +234,29 @@ LAB_10002631:
   else {
     if (msg == 0x110) {
       iVar13 = 5;
-      DAT_1005b2b0 = hwnd;
+      grim_config_dialog_hwnd = (HWND)hwnd;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f2);
       ShowWindow(pHVar5,iVar13);
       iVar13 = 0;
       pHVar5 = GetDlgItem((HWND)hwnd,0x40b);
       ShowWindow(pHVar5,iVar13);
-      SendMessageA((HWND)hwnd,0x80,1,DAT_10059778);
-      SendMessageA((HWND)hwnd,0x80,0,DAT_10059778);
-      GetLocalTime((LPSYSTEMTIME)&DAT_1005c408);
+      SendMessageA((HWND)hwnd,0x80,1,(LPARAM)grim_window_icon_handle);
+      SendMessageA((HWND)hwnd,0x80,0,(LPARAM)grim_window_icon_handle);
+      GetLocalTime((LPSYSTEMTIME)&grim_config_dialog_system_time);
       UVar6 = (*grim_d3d8_probe->lpVtbl->GetAdapterCount)(grim_d3d8_probe);
       Adapter = 0;
-      DAT_1005befc = '\0';
+      grim_config_dialog_has_supported_adapter = '\0';
       if (0 < (int)UVar6) {
         do {
           (*grim_d3d8_probe->lpVtbl->GetAdapterIdentifier)
-                    (grim_d3d8_probe,Adapter,2,(D3DADAPTER_IDENTIFIER8 *)&DAT_10059788);
+                    (grim_d3d8_probe,Adapter,2,&grim_adapter_identifier);
           if (Adapter == 0) {
             pcVar11 = s__s__default__1005330c;
           }
           else {
             pcVar11 = &DAT_10053308;
           }
-          sprintf(acStack_200,pcVar11,&DAT_10059988);
+          sprintf(acStack_200,pcVar11,0x10059988);
           HVar7 = (*grim_d3d8_probe->lpVtbl->CheckDeviceType)
                             (grim_d3d8_probe,Adapter,D3DDEVTYPE_HAL,D3DFMT_R5G6B5,D3DFMT_R5G6B5,0);
           if ((-1 < HVar7) ||
@@ -266,23 +268,23 @@ LAB_10002631:
             UVar10 = 0x143;
             pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
             SendMessageA(pHVar5,UVar10,WVar12,(LPARAM)pcVar11);
-            DAT_1005befc = '\x01';
+            grim_config_dialog_has_supported_adapter = '\x01';
           }
           Adapter = Adapter + 1;
         } while ((int)Adapter < (int)UVar6);
       }
       LVar14 = 0;
       UVar10 = 0x14e;
-      WVar12 = DAT_1005d3e8;
+      wParam = grim_selected_adapter_index;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      SendMessageA(pHVar5,UVar10,wParam,LVar14);
       LVar14 = 0;
       WVar12 = 0;
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      grim_selected_adapter_index = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       FUN_10001e90();
-      if (DAT_1005befc == '\0') {
+      if (grim_config_dialog_has_supported_adapter == '\0') {
         pcVar11 = s_No_supported_display_adapters_de_10053454;
         WVar12 = 0;
         UVar10 = 0x143;
@@ -309,7 +311,7 @@ LAB_10002631:
       LVar3 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       LVar14 = 0;
       WVar12 = 0;
-      DAT_1005d0c8 = LVar3 != 0;
+      grim_config_dialog_option_3ef_checked = LVar3 != 0;
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f9);
       WVar12 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
@@ -326,7 +328,7 @@ LAB_10002631:
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f9);
       SendMessageA(pHVar5,UVar10,WVar12,(LPARAM)pcVar11);
       pcVar11 = strstr(&cStack_400,s_window_10053494);
-      DAT_1005b280 = pcVar11 != (char *)0x0;
+      grim_config_dialog_windowed_selected = pcVar11 != (char *)0x0;
       pcVar11 = strchr(&cStack_400,0x78);
       *pcVar11 = '\0';
       pcVar4 = strchr(pcVar11 + 1,0x78);
@@ -338,21 +340,22 @@ LAB_10002631:
         pcStack_404 = pcVar4 + 1;
         pcVar4[4] = '\0';
       }
-      DAT_10053054 = atoi(&cStack_400);
-      DAT_10053058 = atoi(pcVar11 + 1);
-      DAT_1005ce18 = DAT_10053054;
-      _DAT_1005ce28 = DAT_10053058;
+      grim_config_selected_width = atoi(&cStack_400);
+      grim_config_selected_height = atoi(pcVar11 + 1);
+      grim_config_mode_width = grim_config_selected_width;
+      grim_config_mode_height = grim_config_selected_height;
       iVar13 = atoi(pcStack_404);
       bVar9 = iVar13 == 0x10;
-      DAT_1005b2b8 = CONCAT31(DAT_1005b2b8._1_3_,bVar9);
-      DAT_1005ce38 = (-(uint)bVar9 & 0xfffffff0) + 0x20;
-      sprintf(&cStack_400,s_w___d_h__d_bpp__d_1005347c,DAT_10053054,DAT_10053058,bVar9);
+      _grim_config_dialog_bpp16_selected = CONCAT31(grim_config_dialog_bpp16_selected_1,bVar9);
+      grim_config_mode_bpp = (-(uint)bVar9 & 0xfffffff0) + 0x20;
+      sprintf(&cStack_400,s_w___d_h__d_bpp__d_1005347c,grim_config_selected_width,
+              grim_config_selected_height,bVar9);
       grim_config_dialog_canceled = 0;
       LVar14 = 0;
       WVar12 = 0;
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      grim_selected_adapter_index = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       goto LAB_10002631;
     case 0x3e9:
       goto LAB_10002629;
@@ -361,7 +364,7 @@ LAB_10002631:
       WVar12 = 0;
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      grim_selected_adapter_index = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       FUN_10001e90();
       return 0;
     case 0x3f2:
@@ -394,7 +397,7 @@ LAB_10002631:
       WVar12 = 0;
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      grim_selected_adapter_index = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       DialogBoxParamA(grim_module_handle,(LPCSTR)0x8a,(HWND)hwnd,(DLGPROC)&LAB_10001170,0);
       return 0;
     }
@@ -426,26 +429,26 @@ BOOL grim_window_create(void)
   LPVOID lpParam;
   tagRECT local_10;
   
-  if (DAT_10059780 == (HMODULE)0x0) {
-    DAT_10059780 = GetModuleHandleA((LPCSTR)0x0);
+  if (grim_process_hinstance == (HMODULE)0x0) {
+    grim_process_hinstance = (HMODULE)GetModuleHandleA((LPCSTR)0x0);
   }
-  _DAT_10059dc8 = 0x30;
+  _grim_window_class = 0x30;
   _DAT_10059dcc = 3;
   _DAT_10059dd0 = &LAB_100033b0;
   _DAT_10059dd4 = 0;
   _DAT_10059dd8 = 0;
-  _DAT_10059de0 = DAT_10059778;
-  DAT_10059ddc = DAT_10059780;
+  _DAT_10059de0 = grim_window_icon_handle;
+  grim_window_class_hinstance = grim_process_hinstance;
   _DAT_10059de4 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
   _DAT_10059de8 = GetStockObject(4);
   _DAT_10059dec = 0;
-  DAT_10059df0 = s_Crimson_100535dc;
-  _DAT_10059df4 = DAT_10059778;
-  RegisterClassExA((WNDCLASSEXA *)&DAT_10059dc8);
+  grim_window_class_name = s_Crimson_100535dc;
+  _DAT_10059df4 = grim_window_icon_handle;
+  RegisterClassExA((WNDCLASSEXA *)&grim_window_class);
   lpParam = (LPVOID)0x0;
-  if (DAT_1005cc08 == '\0') {
+  if (grim_windowed_mode_enabled == '\0') {
     hMenu = (HMENU)0x0;
-    hInstance = DAT_10059780;
+    hInstance = grim_process_hinstance;
     hWndParent = GetDesktopWindow();
     nHeight = GetSystemMetrics(1);
     nWidth = GetSystemMetrics(0);
@@ -464,7 +467,7 @@ BOOL grim_window_create(void)
     AdjustWindowRectEx(&local_10,0xcb0000,0,0x40000);
     lpParam = (LPVOID)0x0;
     hMenu = (HMENU)0x0;
-    hInstance = DAT_10059780;
+    hInstance = grim_process_hinstance;
     hWndParent = GetDesktopWindow();
     nHeight = local_10.bottom - local_10.top;
     nWidth = local_10.right - local_10.left;
@@ -473,18 +476,19 @@ BOOL grim_window_create(void)
     iVar1 = local_10.left;
     iVar2 = local_10.top;
   }
-  DAT_1005d3f8 = CreateWindowExA(dwExStyle,DAT_10059df0,DAT_1005bac8,dwStyle,iVar1,iVar2,nWidth,
-                                 nHeight,hWndParent,hMenu,hInstance,lpParam);
-  if (DAT_1005d3f8 == (HWND)0x0) {
+  grim_main_window_hwnd =
+       (HWND)CreateWindowExA(dwExStyle,grim_window_class_name,grim_window_title,dwStyle,iVar1,iVar2,
+                             nWidth,nHeight,hWndParent,hMenu,(HINSTANCE)hInstance,lpParam);
+  if (grim_main_window_hwnd == (HWND)0x0) {
     grim_error_text = s_WIN__Could_not_create_the_main_w_100535b4;
     uVar3 = grim_window_destroy();
     return uVar3 & 0xffffff00;
   }
-  ShowWindow(DAT_1005d3f8,1);
-  UpdateWindow(DAT_1005d3f8);
-  SetFocus(DAT_1005d3f8);
-  ShowWindow(DAT_1005d3f8,1);
-  WVar4 = UpdateWindow(DAT_1005d3f8);
+  ShowWindow((HWND)grim_main_window_hwnd,1);
+  UpdateWindow((HWND)grim_main_window_hwnd);
+  SetFocus((HWND)grim_main_window_hwnd);
+  ShowWindow((HWND)grim_main_window_hwnd,1);
+  WVar4 = UpdateWindow((HWND)grim_main_window_hwnd);
   return CONCAT31((int3)((uint)WVar4 >> 8),1);
 }
 
@@ -500,13 +504,13 @@ BOOL grim_window_destroy(void)
   WINBOOL WVar1;
   
   PostQuitMessage(0);
-  if (DAT_1005d3f8 != (HWND)0x0) {
-    DestroyWindow(DAT_1005d3f8);
+  if (grim_main_window_hwnd != (HWND)0x0) {
+    DestroyWindow((HWND)grim_main_window_hwnd);
   }
-  if (DAT_1005d3fc != 0) {
-    DestroyWindow(DAT_1005d3f8);
+  if (grim_device_window_override != (HWND)0x0) {
+    DestroyWindow((HWND)grim_main_window_hwnd);
   }
-  WVar1 = UnregisterClassA(DAT_10059df0,DAT_10059ddc);
+  WVar1 = UnregisterClassA(grim_window_class_name,(HINSTANCE)grim_window_class_hinstance);
   return WVar1;
 }
 
@@ -539,15 +543,15 @@ int grim_backup_textures(void)
   undefined4 uStack_4;
   
   grim_noop();
-  if (DAT_1005d810 != '\0') {
+  if (grim_texture_backup_pending != '\0') {
     grim_noop();
-    if (DAT_1005d810 != '\0') {
+    if (grim_texture_backup_pending != '\0') {
       return CONCAT31((int3)((uint)extraout_EAX >> 8),1);
     }
   }
   iVar5 = 0;
   local_14 = (IDirect3DSurface8 *)0x0;
-  if (-1 < DAT_1005305c) {
+  if (-1 < grim_texture_slot_max_index) {
     piVar4 = &grim_texture_slots;
     do {
       if ((*piVar4 != 0) && (*(char *)(*piVar4 + 8) != '\0')) {
@@ -620,10 +624,10 @@ int grim_backup_textures(void)
       }
       iVar5 = iVar5 + 1;
       piVar4 = piVar4 + 1;
-    } while (iVar5 <= DAT_1005305c);
+    } while (iVar5 <= grim_texture_slot_max_index);
   }
-  DAT_1005d810 = '\x01';
-  return CONCAT31((int3)((uint)DAT_1005305c >> 8),1);
+  grim_texture_backup_pending = '\x01';
+  return CONCAT31((int3)((uint)grim_texture_slot_max_index >> 8),1);
 }
 
 
@@ -657,15 +661,15 @@ int grim_restore_textures(void)
     return in_EAX & 0xffffff00;
   }
   grim_noop();
-  if (DAT_1005d810 == '\0') {
+  if (grim_texture_backup_pending == '\0') {
     grim_noop();
-    if (DAT_1005d810 == '\0') {
+    if (grim_texture_backup_pending == '\0') {
       return extraout_EAX & 0xffffff00;
     }
   }
   iVar6 = 0;
   local_14 = (IDirect3DSurface8 *)0x0;
-  if (-1 < DAT_1005305c) {
+  if (-1 < grim_texture_slot_max_index) {
     piVar5 = &grim_texture_slots;
     do {
       iVar2 = *piVar5;
@@ -699,7 +703,7 @@ int grim_restore_textures(void)
           }
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
           _DAT_1005d0f8 = uStack_10;
-          DAT_1005d810 = 0;
+          grim_texture_backup_pending = '\0';
           grim_error_text = s_D3D__Unable_to_restore_texture____100536d8;
           _DAT_1005d0fc = uStack_c;
           _DAT_1005d100 = uStack_8;
@@ -723,10 +727,10 @@ int grim_restore_textures(void)
       }
       iVar6 = iVar6 + 1;
       piVar5 = piVar5 + 1;
-    } while (iVar6 <= DAT_1005305c);
+    } while (iVar6 <= grim_texture_slot_max_index);
   }
-  DAT_1005d810 = 0;
-  return CONCAT31((int3)((uint)DAT_1005305c >> 8),1);
+  grim_texture_backup_pending = '\0';
+  return CONCAT31((int3)((uint)grim_texture_slot_max_index >> 8),1);
 }
 
 
@@ -761,7 +765,7 @@ undefined4 FUN_10002cf0(void)
     grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
   }
   iVar6 = 0;
-  if (-1 < DAT_1005305c) {
+  if (-1 < grim_texture_slot_max_index) {
     piVar5 = &grim_texture_slots;
     do {
       iVar3 = *piVar5;
@@ -772,7 +776,7 @@ undefined4 FUN_10002cf0(void)
       }
       iVar6 = iVar6 + 1;
       piVar5 = piVar5 + 1;
-    } while (iVar6 <= DAT_1005305c);
+    } while (iVar6 <= grim_texture_slot_max_index);
   }
   iVar6 = (*grim_d3d_device->lpVtbl->Reset)
                     (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&grim_present_width);
@@ -780,7 +784,7 @@ undefined4 FUN_10002cf0(void)
     if (iVar6 == 0) {
       FUN_10004520();
       iVar6 = 0;
-      if (-1 < DAT_1005305c) {
+      if (-1 < grim_texture_slot_max_index) {
         piVar5 = &grim_texture_slots;
         do {
           iVar3 = *piVar5;
@@ -796,27 +800,28 @@ undefined4 FUN_10002cf0(void)
           }
           iVar6 = iVar6 + 1;
           piVar5 = piVar5 + 1;
-        } while (iVar6 <= DAT_1005305c);
+        } while (iVar6 <= grim_texture_slot_max_index);
       }
       iVar6 = grim_restore_textures();
       if ((char)iVar6 == '\0') {
         grim_noop();
       }
       grim_noop();
-      DAT_1005d808 = 0;
+      grim_device_reset_retry_count = 0;
       return 0;
     }
-    DAT_1005d808 = DAT_1005d808 + 1;
+    grim_device_reset_retry_count = grim_device_reset_retry_count + 1;
     Sleep(500);
-    if (3 < DAT_1005d808) {
+    if (3 < grim_device_reset_retry_count) {
       grim_error_text = s_D3D__Unable_to_restore_device__10053804;
-      iVar6 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
+      iVar6 = MessageBoxA((HWND)grim_main_window_hwnd,s_D3D__Unable_to_restore_device__10053804,
+                          &DAT_10053824,5);
       if (iVar6 == 2) {
         grim_noop();
         return 0x88760869;
       }
       iVar6 = 0;
-      if (-1 < DAT_1005305c) {
+      if (-1 < grim_texture_slot_max_index) {
         piVar5 = &grim_texture_slots;
         do {
           iVar3 = *piVar5;
@@ -839,7 +844,7 @@ undefined4 FUN_10002cf0(void)
           }
           iVar6 = iVar6 + 1;
           piVar5 = piVar5 + 1;
-        } while (iVar6 <= DAT_1005305c);
+        } while (iVar6 <= grim_texture_slot_max_index);
       }
     }
     iVar6 = (*grim_d3d_device->lpVtbl->Reset)
@@ -935,17 +940,17 @@ int __fastcall FUN_10002fc0(char *arg1)
   arg1[0x15] = '\0';
   arg1[0x16] = '\0';
   arg1[0x17] = '\0';
-  GetClientRect(DAT_1005d3f8,&local_10);
+  GetClientRect((HWND)grim_main_window_hwnd,&local_10);
   *(LONG *)(arg1 + 0x10) = local_10.right;
   *(LONG *)(arg1 + 0xc) = local_10.bottom;
   *(undefined4 *)(arg1 + 0x10) = grim_backbuffer_width;
   *(undefined4 *)(arg1 + 0xc) = grim_backbuffer_height;
-  puVar2 = &DAT_10059e3c;
+  puVar2 = &grim_working_dir;
   for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
-  _getcwd((char *)&DAT_10059e3c,0x104);
+  _getcwd((char *)&grim_working_dir,0x104);
   local_10.left = local_10.left & 0xffffff00;
   _DAT_1005d1c8 = local_10.left;
   _DAT_1005d1cc = local_10.top;
@@ -1004,8 +1009,8 @@ LAB_100033a0:
     return uVar5 & 0xffffff00;
   }
   HVar2 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
-  DAT_1005c898 = HVar2 == 0;
-  if ((!(bool)DAT_1005c898) && (HVar2 == -0x7789f797)) {
+  grim_device_ready = HVar2 == 0;
+  if ((!(bool)grim_device_ready) && (HVar2 == -0x7789f797)) {
     Sleep(100);
     if ((grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) &&
        (UVar3 = (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface),
@@ -1017,7 +1022,7 @@ LAB_100033a0:
       grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
     }
     iVar7 = 0;
-    if (-1 < DAT_1005305c) {
+    if (-1 < grim_texture_slot_max_index) {
       piVar6 = &grim_texture_slots;
       do {
         iVar4 = *piVar6;
@@ -1028,14 +1033,14 @@ LAB_100033a0:
         }
         iVar7 = iVar7 + 1;
         piVar6 = piVar6 + 1;
-      } while (iVar7 <= DAT_1005305c);
+      } while (iVar7 <= grim_texture_slot_max_index);
     }
     HVar2 = (*grim_d3d_device->lpVtbl->Reset)
                       (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&grim_present_width);
     if (HVar2 == 0) {
       FUN_10004520();
       iVar7 = 0;
-      if (-1 < DAT_1005305c) {
+      if (-1 < grim_texture_slot_max_index) {
         piVar6 = &grim_texture_slots;
         do {
           iVar4 = *piVar6;
@@ -1051,19 +1056,19 @@ LAB_100033a0:
           }
           iVar7 = iVar7 + 1;
           piVar6 = piVar6 + 1;
-        } while (iVar7 <= DAT_1005305c);
+        } while (iVar7 <= grim_texture_slot_max_index);
       }
       iVar7 = grim_restore_textures();
-      DAT_1005d808 = 0;
+      grim_device_reset_retry_count = 0;
       return CONCAT31((int3)((uint)iVar7 >> 8),1);
     }
-    DAT_1005d808 = DAT_1005d808 + 1;
+    grim_device_reset_retry_count = grim_device_reset_retry_count + 1;
     Sleep(500);
     HVar2 = extraout_EAX;
-    if (DAT_1005d808 == 5) {
+    if (grim_device_reset_retry_count == 5) {
       iVar7 = 0;
-      HVar2 = DAT_1005305c;
-      if (DAT_1005305c < 0) goto LAB_10003396;
+      HVar2 = grim_texture_slot_max_index;
+      if (grim_texture_slot_max_index < 0) goto LAB_10003396;
       piVar6 = &grim_texture_slots;
       do {
         iVar4 = *piVar6;
@@ -1084,16 +1089,17 @@ LAB_100033a0:
         }
         iVar7 = iVar7 + 1;
         piVar6 = piVar6 + 1;
-        HVar2 = DAT_1005305c;
-      } while (iVar7 <= DAT_1005305c);
+        HVar2 = grim_texture_slot_max_index;
+      } while (iVar7 <= grim_texture_slot_max_index);
     }
-    if (6 < DAT_1005d808) {
+    if (6 < grim_device_reset_retry_count) {
       grim_error_text = s_D3D__Unable_to_restore_device__10053804;
-      uVar5 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
+      uVar5 = MessageBoxA((HWND)grim_main_window_hwnd,s_D3D__Unable_to_restore_device__10053804,
+                          &DAT_10053824,5);
       if (uVar5 == 2) goto LAB_100033a0;
       iVar7 = 0;
-      HVar2 = DAT_1005305c;
-      if (-1 < DAT_1005305c) {
+      HVar2 = grim_texture_slot_max_index;
+      if (-1 < grim_texture_slot_max_index) {
         piVar6 = &grim_texture_slots;
         do {
           iVar4 = *piVar6;
@@ -1116,8 +1122,8 @@ LAB_100033a0:
           }
           iVar7 = iVar7 + 1;
           piVar6 = piVar6 + 1;
-          HVar2 = DAT_1005305c;
-        } while (iVar7 <= DAT_1005305c);
+          HVar2 = grim_texture_slot_max_index;
+        } while (iVar7 <= grim_texture_slot_max_index);
       }
     }
   }
@@ -1156,9 +1162,9 @@ undefined4 FUN_10003c00(void)
   FUN_10004970();
   FUN_10004970();
   FUN_10002fc0(&DAT_1005bbd8);
-  SetFocus(DAT_1005d3f8);
-  SetForegroundWindow(DAT_1005d3f8);
-  if (DAT_1005d3f8 != (HWND)0x0) {
+  SetFocus((HWND)grim_main_window_hwnd);
+  SetForegroundWindow((HWND)grim_main_window_hwnd);
+  if (grim_main_window_hwnd != (HWND)0x0) {
     do {
       while( true ) {
         do {
@@ -1173,11 +1179,11 @@ undefined4 FUN_10003c00(void)
             if (DAT_1005d804 == '\0') {
               FUN_10004970();
             }
-            if ((((grim_paused_flag == '\0') && (DAT_1005d804 == '\0')) && (DAT_1005c898 != '\0'))
-               && (DAT_1005a470 == '\0')) {
+            if ((((grim_paused_flag == '\0') && (DAT_1005d804 == '\0')) &&
+                (grim_device_ready != '\0')) && (grim_timing_frozen == '\0')) {
               if (DAT_1005cc38 != '\0') {
                 grim_keyboard_poll();
-                pfVar6 = (float *)&DAT_1005a058;
+                pfVar6 = (float *)&grim_key_repeat_timers;
                 do {
                   fVar1 = *pfVar6 - _grim_frame_dt;
                   *pfVar6 = fVar1;
@@ -1195,25 +1201,25 @@ undefined4 FUN_10003c00(void)
                 grim_mouse_poll();
               }
             }
-            DAT_1005c898 = '\0';
+            grim_device_ready = '\0';
             if (DAT_1005d804 != '\0') {
-              DAT_1005a470 = '\x01';
+              grim_timing_frozen = '\x01';
               FUN_10003090();
             }
-            if (DAT_1005a470 == '\0') break;
+            if (grim_timing_frozen == '\0') break;
             if (DAT_1005d804 == '\0') {
               Sleep(0x32);
             }
           }
         } while ((DAT_1005d804 != '\0') || (grim_d3d_device == (LPDIRECT3DDEVICE8)0x0));
         HVar4 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
-        DAT_1005c898 = HVar4 == 0;
-        if (!(bool)DAT_1005c898) break;
-        if (DAT_1005d811 != '\0') {
-          (*DAT_10059770)();
-          DAT_1005d811 = '\0';
+        grim_device_ready = HVar4 == 0;
+        if (!(bool)grim_device_ready) break;
+        if (grim_device_restore_callback_pending != '\0') {
+          (*grim_on_device_restore)();
+          grim_device_restore_callback_pending = '\0';
         }
-        cVar2 = (*DAT_1005977c)();
+        cVar2 = (*grim_frame_callback)();
         if (cVar2 == '\0') goto LAB_10003e30;
         if (DAT_1005d3b4 != (int *)0x0) {
           (**(code **)(*DAT_1005d3b4 + 0x14))();
@@ -1225,7 +1231,7 @@ undefined4 FUN_10003c00(void)
       }
       Sleep(500);
       HVar4 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
-      DAT_1005c898 = HVar4 == 0;
+      grim_device_ready = HVar4 == 0;
     } while ((HVar4 != -0x7789f797) || (iVar5 = FUN_10002cf0(), iVar5 != -0x7789f797));
   }
 LAB_10003e30:
@@ -1260,26 +1266,27 @@ int grim_d3d_init(void)
   LPVOID pvVar9;
   int *piVar10;
   int iVar11;
-  undefined4 *puVar12;
+  int iVar12;
+  undefined4 *puVar13;
   D3DDISPLAYMODE DStack_43c;
   D3DADAPTER_IDENTIFIER8 DStack_42c;
   
-  DAT_1005c898 = 0;
+  grim_device_ready = '\0';
   grim_d3d8 = (LPDIRECT3D8)0x0;
   grim_d3d_device = (LPDIRECT3DDEVICE8)0x0;
-  DAT_1005b2b4 = D3DDEVTYPE_HAL;
-  if ((char)DAT_1005cec8 == '\x01') {
-    DAT_1005b2b4 = D3DDEVTYPE_REF;
+  grim_d3d_device_type = D3DDEVTYPE_HAL;
+  if (grim_use_ref_device == '\x01') {
+    grim_d3d_device_type = D3DDEVTYPE_REF;
   }
   grim_d3d8 = Direct3DCreate8(0xdc);
   if (grim_d3d8 == (IDirect3D8 *)0x0) {
     grim_error_text = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     return 0;
   }
-  (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
-  ;
+  (*grim_d3d8->lpVtbl->GetDeviceCaps)
+            (grim_d3d8,grim_selected_adapter_index,grim_d3d_device_type,&grim_device_caps);
   bVar1 = 0;
-  (*grim_d3d8->lpVtbl->GetAdapterIdentifier)(grim_d3d8,DAT_1005d3e8,2,&DStack_42c);
+  (*grim_d3d8->lpVtbl->GetAdapterIdentifier)(grim_d3d8,grim_selected_adapter_index,2,&DStack_42c);
   pcVar2 = strchr(DStack_42c.Description,0x56);
   if (((((pcVar2 != (char *)0x0) && (pcVar2[1] == 'o')) && (pcVar2[2] == 'o')) &&
       ((pcVar2[3] == 'd' && (pcVar2[4] == 'o')))) && ((pcVar2[5] == 'o' && (pcVar2[6] == '3')))) {
@@ -1296,40 +1303,41 @@ int grim_d3d_init(void)
     return uVar4 & 0xffffff00;
   }
   BVar5 = grim_window_create();
-  uVar6 = DAT_1005ceb8;
+  iVar12 = grim_config_backbuffer_count;
   if ((char)BVar5 == '\0') {
     return BVar5;
   }
-  puVar12 = &grim_present_width;
+  puVar13 = &grim_present_width;
   for (iVar11 = 0xd; iVar11 != 0; iVar11 = iVar11 + -1) {
-    *puVar12 = 0;
-    puVar12 = puVar12 + 1;
+    *puVar13 = 0;
+    puVar13 = puVar13 + 1;
   }
-  _DAT_10059e04 = uVar6;
-  if (DAT_1005cc08 != '\x01') {
-    _DAT_10059e0c = bVar1 + 1;
-    _DAT_10059e24 = 0;
-    _DAT_10059e28 = 0x80000000;
+  _grim_present_backbuffer_count = iVar12;
+  if (grim_windowed_mode_enabled != '\x01') {
+    _grim_present_swap_effect = bVar1 + 1;
+    grim_present_refresh_rate_hz = 0;
+    grim_present_interval = 0x80000000;
   }
   else {
-    _DAT_10059e0c = 1;
+    _grim_present_swap_effect = 1;
     grim_texture_format = (IDirect3D8 *)DStack_43c.Format;
   }
-  _DAT_10059e14 = (uint)(DAT_1005cc08 == '\x01');
+  grim_present_windowed = (BOOL)(grim_windowed_mode_enabled == '\x01');
   grim_present_height = grim_backbuffer_height;
   grim_present_width = grim_backbuffer_width;
-  _DAT_10059e00 = grim_texture_format;
-  _DAT_10059e08 = 0;
-  _DAT_10059e20 = 1;
-  _DAT_10059e18 = (uint)(DAT_1005ced8 != '\0');
-  _DAT_10059e1c = 0x50;
-  _DAT_10059e10 = DAT_1005d3fc;
-  if (DAT_1005d3fc == (HWND)0x0) {
-    _DAT_10059e10 = DAT_1005d3f8;
+  _grim_present_backbuffer_format = grim_texture_format;
+  _grim_present_multisample_type = 0;
+  grim_present_flags = 1;
+  grim_present_enable_auto_depth_stencil = (BOOL)(grim_enable_auto_depth_stencil != '\0');
+  _grim_present_auto_depth_stencil_format = 0x50;
+  grim_present_device_window = grim_device_window_override;
+  if (grim_device_window_override == (HWND)0x0) {
+    grim_present_device_window = grim_main_window_hwnd;
   }
   HVar3 = (*grim_d3d8->lpVtbl->CreateDevice)
-                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
-                     (D3DPRESENT_PARAMETERS *)&grim_present_width,&grim_d3d_device);
+                    (grim_d3d8,grim_selected_adapter_index,grim_d3d_device_type,
+                     grim_main_window_hwnd,0x20,(D3DPRESENT_PARAMETERS *)&grim_present_width,
+                     &grim_d3d_device);
   if (HVar3 < 0) {
     grim_error_text = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
@@ -1337,28 +1345,28 @@ int grim_d3d_init(void)
     uVar4 = grim_window_destroy();
     return uVar4 & 0xffffff00;
   }
-  (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
-  ;
+  (*grim_d3d8->lpVtbl->GetDeviceCaps)
+            (grim_d3d8,grim_selected_adapter_index,grim_d3d_device_type,&grim_device_caps);
   uVar6 = FUN_10004350();
   if ((char)uVar6 == '\0') {
     FUN_10004280();
     uVar4 = grim_window_destroy();
     return uVar4 & 0xffffff00;
   }
-  puVar12 = &grim_texture_slots;
-  for (iVar11 = 0x100; iVar11 != 0; iVar11 = iVar11 + -1) {
-    *puVar12 = 0;
-    puVar12 = puVar12 + 1;
+  puVar13 = &grim_texture_slots;
+  for (iVar12 = 0x100; iVar12 != 0; iVar12 = iVar12 + -1) {
+    *puVar13 = 0;
+    puVar13 = puVar13 + 1;
   }
   if (grim_preferred_texture_format != (void *)0x0) {
-    iVar11 = grim_is_texture_format_supported((uint)grim_preferred_texture_format);
-    if ((char)iVar11 == '\0') {
+    iVar12 = grim_is_texture_format_supported((uint)grim_preferred_texture_format);
+    if ((char)iVar12 == '\0') {
       grim_preferred_texture_format = (void *)0x0;
     }
     else if (grim_preferred_texture_format != (void *)0x0) goto LAB_10004142;
   }
-  iVar11 = grim_select_texture_format();
-  if ((char)iVar11 == '\0') {
+  iVar12 = grim_select_texture_format();
+  if ((char)iVar12 == '\0') {
     grim_error_text = s_D3D__Could_not_find_any_compatib_100539d0;
     FUN_10004280();
     grim_window_destroy();
@@ -1389,7 +1397,7 @@ LAB_10004142:
   grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
   _DAT_1005d094 = grim_d3d8;
   _DAT_1005d0a4 = grim_d3d_device;
-  DAT_1005c898 = 1;
+  grim_device_ready = '\x01';
   return CONCAT31((int3)((uint)grim_d3d8 >> 8),1);
 }
 
@@ -1463,7 +1471,7 @@ uint FUN_10004350(void)
 
 {
   ushort uVar1;
-  short sVar2;
+  WORD WVar2;
   uint uVar3;
   HRESULT HVar4;
   
@@ -1476,35 +1484,36 @@ uint FUN_10004350(void)
   }
   HVar4 = (*grim_d3d_device->lpVtbl->CreateIndexBuffer)
                     (grim_d3d_device,grim_vertex_capacity * 0xc,0x218,D3DFMT_INDEX16,
-                     D3DPOOL_SYSTEMMEM,&DAT_10059bb8);
+                     D3DPOOL_SYSTEMMEM,&grim_index_buffer);
   if (-1 < HVar4) {
-    uVar3 = (*DAT_10059bb8->lpVtbl->Lock)(DAT_10059bb8,0,0,(BYTE **)&DAT_1005b2c0,0x2000);
+    uVar3 = (*grim_index_buffer->lpVtbl->Lock)
+                      (grim_index_buffer,0,0,(BYTE **)&grim_index_write_ptr,0x2000);
     if (-1 < (int)uVar3) {
       if (grim_vertex_capacity != 0) {
-        sVar2 = 2;
+        WVar2 = 2;
         do {
-          *DAT_1005b2c0 = sVar2 + -2;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          *DAT_1005b2c0 = sVar2 + -1;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          *DAT_1005b2c0 = sVar2;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          *DAT_1005b2c0 = sVar2;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          *DAT_1005b2c0 = sVar2 + 1;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          *DAT_1005b2c0 = sVar2 + -2;
-          DAT_1005b2c0 = DAT_1005b2c0 + 1;
-          uVar1 = sVar2 + 2;
-          sVar2 = sVar2 + 4;
+          *grim_index_write_ptr = WVar2 - 2;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          *grim_index_write_ptr = WVar2 - 1;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          *grim_index_write_ptr = WVar2;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          *grim_index_write_ptr = WVar2;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          *grim_index_write_ptr = WVar2 + 1;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          *grim_index_write_ptr = WVar2 - 2;
+          grim_index_write_ptr = grim_index_write_ptr + 1;
+          uVar1 = WVar2 + 2;
+          WVar2 = WVar2 + 4;
         } while (uVar1 < grim_vertex_capacity);
       }
-      (*DAT_10059bb8->lpVtbl->Unlock)(DAT_10059bb8);
+      (*grim_index_buffer->lpVtbl->Unlock)(grim_index_buffer);
       (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,grim_vertex_buffer,0x1c);
-      HVar4 = (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
+      HVar4 = (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,grim_index_buffer,0);
       return CONCAT31((int3)((uint)HVar4 >> 8),1);
     }
-    DAT_1005c898 = 0;
+    grim_device_ready = '\0';
     return uVar3 & 0xffffff00;
   }
   grim_error_text = s_D3D__Internal__Could_not_create_i_10053a94;
@@ -1516,6 +1525,8 @@ uint FUN_10004350(void)
 
 /* FUN_100044e0 @ 100044e0 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 void FUN_100044e0(void)
 
 {
@@ -1523,10 +1534,10 @@ void FUN_100044e0(void)
     (**(code **)(*grim_vertex_buffer + 8))(grim_vertex_buffer);
   }
   grim_vertex_buffer = (int *)0x0;
-  if (DAT_10059bb8 != (int *)0x0) {
-    (**(code **)(*DAT_10059bb8 + 8))(DAT_10059bb8);
+  if (grim_index_buffer != (LPDIRECT3DINDEXBUFFER8)0x0) {
+    (*grim_index_buffer->lpVtbl->Release)(grim_index_buffer);
   }
-  DAT_10059bb8 = (int *)0x0;
+  grim_index_buffer = (LPDIRECT3DINDEXBUFFER8)0x0;
   return;
 }
 
@@ -1571,7 +1582,7 @@ void FUN_10004520(void)
   (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP2,0);
   (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP3,0);
   (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,grim_vertex_buffer,0x1c);
-  (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
+  (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,grim_index_buffer,0);
   (*grim_d3d_device->lpVtbl->SetVertexShader)(grim_d3d_device,0x144);
   (*grim_d3d_device->lpVtbl->SetRenderState)
             (grim_d3d_device,D3DRS_ALPHABLENDENABLE,DAT_1005cca8 & 0xff);
@@ -1593,8 +1604,8 @@ int __cdecl grim_is_texture_format_supported(uint format)
   HRESULT HVar1;
   
   HVar1 = (*grim_d3d8->lpVtbl->CheckDeviceFormat)
-                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,grim_texture_format,0,D3DRTYPE_TEXTURE,
-                     format);
+                    (grim_d3d8,grim_selected_adapter_index,grim_d3d_device_type,grim_texture_format,
+                     0,D3DRTYPE_TEXTURE,format);
   return CONCAT31((int3)((uint)HVar1 >> 8),-1 < HVar1);
 }
 
@@ -1664,14 +1675,14 @@ int grim_select_texture_format(void)
 void FUN_10004920(void)
 
 {
-  _DAT_1005d3b0 = 0x3a83126f;
-  DAT_10059dc4 = timeGetTime();
+  grim_ms_to_seconds_scale = 0.001;
+  grim_tick_prev_ms = timeGetTime();
   _grim_fps = 0;
   _grim_frame_dt = 0;
   grim_time_ms = 0;
-  DAT_1005a470 = 0;
-  DAT_1005bad0 = DAT_10059dc4;
-  DAT_1005bad4 = DAT_10059dc4;
+  grim_timing_frozen = '\0';
+  grim_tick_now_ms = grim_tick_prev_ms;
+  DAT_1005bad4 = grim_tick_prev_ms;
   timeBeginPeriod(1);
   return;
 }
@@ -1688,27 +1699,27 @@ void FUN_10004970(void)
   ulonglong uVar1;
   uint uVar2;
   
-  DAT_10059dc4 = DAT_1005bad0;
+  grim_tick_prev_ms = grim_tick_now_ms;
   do {
-    DAT_1005bad0 = timeGetTime();
-    uVar2 = DAT_1005bad0 - DAT_10059dc4;
+    grim_tick_now_ms = timeGetTime();
+    uVar2 = grim_tick_now_ms - grim_tick_prev_ms;
   } while (uVar2 < 2);
-  if (DAT_1005a470 == '\0') {
+  if (grim_timing_frozen == '\0') {
     grim_time_ms = grim_time_ms + uVar2;
-    DAT_1005d814 = DAT_1005d814 + 1;
-    _grim_frame_dt = (float)uVar2 * _DAT_1005d3b0;
-    DAT_1005d818 = DAT_1005d818 + uVar2;
+    grim_fps_sample_frames = grim_fps_sample_frames + 1;
+    _grim_frame_dt = (float)uVar2 * grim_ms_to_seconds_scale;
+    grim_fps_sample_elapsed_ms = grim_fps_sample_elapsed_ms + uVar2;
   }
   else {
     _grim_frame_dt = 0.0;
     DAT_1005bad4 = DAT_1005bad4 + uVar2;
   }
-  uVar2 = DAT_1005d814;
-  if (500 < DAT_1005d818) {
-    DAT_1005d814 = 0;
-    uVar1 = (ulonglong)DAT_1005d818;
-    DAT_1005d818 = DAT_1005d818 - 500;
-    _grim_fps = (float)uVar2 / ((float)uVar1 * _DAT_1005d3b0);
+  uVar2 = grim_fps_sample_frames;
+  if (500 < grim_fps_sample_elapsed_ms) {
+    grim_fps_sample_frames = 0;
+    uVar1 = (ulonglong)grim_fps_sample_elapsed_ms;
+    grim_fps_sample_elapsed_ms = grim_fps_sample_elapsed_ms - 500;
+    _grim_fps = (float)uVar2 / ((float)uVar1 * grim_ms_to_seconds_scale);
   }
   return;
 }
@@ -2029,13 +2040,13 @@ int __thiscall grim_texture_load_file(void *this,void *texture,ushort *path)
   *arg14 = 0;
   pcVar6 = (char *)0x0;
   bVar7 = false;
-  if (DAT_1005bc14 != '\0') {
+  if (grim_lookup_blob_loaded != '\0') {
     pcVar6 = (char *)FUN_10005ae0(texture);
     bVar7 = pcVar6 != (char *)0x0;
   }
   bVar1 = FUN_10004b00(texture,&DAT_10053b20);
   if (!bVar1) {
-    if ((DAT_1005bc14 != '\0') && (bVar7)) {
+    if ((grim_lookup_blob_loaded != '\0') && (bVar7)) {
       piVar3 = (int *)FUN_10005b80(texture);
       iVar4 = FUN_1000cb5c((int **)grim_d3d_device,pcVar6,piVar3,-1,-1,1,0,
                            grim_preferred_texture_format,1,-1,(int **)0xffffffff,0,(int)&uStack_1c,0
@@ -2059,7 +2070,7 @@ int __thiscall grim_texture_load_file(void *this,void *texture,ushort *path)
     *arg14 = 0;
     return uVar2 & 0xffffff00;
   }
-  if ((DAT_1005bc14 == '\0') || (!bVar7)) {
+  if ((grim_lookup_blob_loaded == '\0') || (!bVar7)) {
     _File = fopen(texture,&DAT_10053244);
     if (_File == (FILE *)0x0) {
       return 0;
@@ -2143,7 +2154,7 @@ int __cdecl grim_find_texture_by_name(char *name)
   undefined4 *puVar3;
   
   iVar2 = 0;
-  if (0 < DAT_1005305c + 1) {
+  if (0 < grim_texture_slot_max_index + 1) {
     puVar3 = &grim_texture_slots;
     do {
       if ((void *)*puVar3 != (void *)0x0) {
@@ -2154,7 +2165,7 @@ int __cdecl grim_find_texture_by_name(char *name)
       }
       iVar2 = iVar2 + 1;
       puVar3 = puVar3 + 1;
-    } while (iVar2 < DAT_1005305c + 1);
+    } while (iVar2 < grim_texture_slot_max_index + 1);
   }
   return -1;
 }
@@ -2229,7 +2240,7 @@ int grim_load_texture_internal(char *name,ushort *path)
   }
   local_4 = 0xffffffff;
   uVar3 = grim_texture_load_file(pvVar4,path,unaff_EDI);
-  iVar1 = DAT_1005305c;
+  iVar1 = grim_texture_slot_max_index;
   if ((char)uVar3 == '\0') {
     grim_error_text = s_D3D__Could_not_load_a_texture__10053b24;
     if (pvVar4 != (void *)0x0) {
@@ -2242,7 +2253,7 @@ int grim_load_texture_internal(char *name,ushort *path)
   }
   (&grim_texture_slots)[iVar2] = pvVar4;
   if (iVar1 < iVar2) {
-    DAT_1005305c = iVar2;
+    grim_texture_slot_max_index = iVar2;
   }
   ExceptionList = local_c;
   return CONCAT31((int3)((uint)iVar1 >> 8),1);
@@ -2306,17 +2317,17 @@ void FUN_100052f0(void)
   uVar5 = local_10 >> 8;
   local_10 = uVar5 << 8;
   _DAT_1005cbe0 = local_8;
-  _DAT_1005cc08 = local_10;
+  _grim_windowed_mode_enabled = local_10;
   _DAT_1005cbfc = local_c;
   _DAT_1005cc00 = local_8;
   _DAT_1005cc14 = local_4;
   _DAT_1005cc0c = local_c;
   _DAT_1005cc10 = local_8;
-  _DAT_1005ce28 = 0x1e0;
+  grim_config_mode_height = 0x1e0;
   _DAT_1005ce2c = local_c;
   _DAT_1005ce30 = local_8;
   _DAT_1005ce34 = local_4;
-  DAT_1005ce18 = 0x10;
+  grim_config_mode_width = 0x10;
   _DAT_1005ce1c = local_c;
   _DAT_1005ce20 = local_8;
   local_10 = uVar5 << 8;
@@ -2362,7 +2373,7 @@ void FUN_100052f0(void)
   _DAT_1005cd00 = local_8;
   _DAT_1005cd04 = local_4;
   DAT_1005cd08 = 0x3f800000;
-  DAT_1005ceb8 = 1;
+  grim_config_backbuffer_count = 1;
   _DAT_1005cd0c = local_c;
   _DAT_1005cd10 = local_8;
   _DAT_1005cd14 = local_4;
@@ -2381,35 +2392,35 @@ void FUN_100052f0(void)
   _DAT_1005cccc = local_c;
   _DAT_1005ccd0 = local_8;
   _DAT_1005ccc4 = local_4;
-  DAT_1005b288 = 0x3f000000;
-  DAT_1005b28c = 0x3f800000;
+  grim_vertex_z = 0.5;
+  grim_vertex_rhw = 1.0;
   _DAT_1005ccd4 = local_4;
   grim_uv_v0 = 0;
   grim_uv_u1 = 0x3f800000;
-  DAT_1005d138 = 0x42c80000;
-  DAT_1005d148 = 0;
-  DAT_1005d158 = 0;
+  grim_joystick_deadzone = 100.0;
+  grim_joystick_center_x = 0.0;
+  grim_joystick_center_y = 0.0;
   grim_error_text = &DAT_1005d828;
   DAT_1005d3ac = 0;
-  DAT_1005bc14 = 0;
-  DAT_1005a670 = 0;
-  DAT_1005a458 = 0;
+  grim_lookup_blob_loaded = '\0';
+  grim_lookup_blob = (void *)0x0;
+  grim_lookup_blob_size = 0;
   grim_backbuffer_width = 0x280;
   grim_backbuffer_height = 0x1e0;
   grim_texture_format = 0x17;
   grim_preferred_texture_format = 0;
-  DAT_1005d3f8 = 0;
+  grim_main_window_hwnd = (HWND)0x0;
   grim_color_slot0 = 0xffffffff;
   grim_color_slot3 = 0xffffffff;
-  DAT_1005bc0c = 0xffffffff;
-  DAT_1005bc08 = 0xffffffff;
+  grim_color_slot2 = 0xffffffff;
+  grim_color_slot1 = 0xffffffff;
   grim_uv_u0 = 0;
   grim_uv_v1 = 0;
-  DAT_1005b2a0 = 0x3f800000;
-  DAT_1005b2a4 = 0x3f800000;
-  DAT_1005b2a8 = 0;
+  grim_uv_u2 = 0x3f800000;
+  grim_uv_v2 = 0x3f800000;
+  grim_uv_u3 = 0;
   _grim_mouse_button_latch = 0;
-  DAT_1005b2ac = 0x3f800000;
+  grim_uv_v3 = 0x3f800000;
   _DAT_1005c8ec = 0;
   uVar5 = 0xffffffff;
   pcVar10 = s_Grim___No_Title_10053b7c;
@@ -2419,7 +2430,7 @@ void FUN_100052f0(void)
     cVar1 = *pcVar10;
     pcVar10 = pcVar10 + 1;
   } while (cVar1 != '\0');
-  DAT_1005bac8 = operator_new(~uVar5);
+  grim_window_title = operator_new(~uVar5);
   uVar5 = 0xffffffff;
   pcVar10 = s_Grim___No_Title_10053b7c;
   do {
@@ -2432,7 +2443,7 @@ void FUN_100052f0(void)
   } while (cVar1 != '\0');
   uVar5 = ~uVar5;
   pcVar10 = pcVar12 + -uVar5;
-  pcVar12 = DAT_1005bac8;
+  pcVar12 = grim_window_title;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar12 = *(undefined4 *)pcVar10;
     pcVar10 = pcVar10 + 4;
@@ -2443,14 +2454,14 @@ void FUN_100052f0(void)
     pcVar10 = pcVar10 + 1;
     pcVar12 = pcVar12 + 1;
   }
-  puVar9 = &DAT_1005a058;
+  puVar9 = &grim_key_repeat_timers;
   for (iVar4 = 0x100; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
   }
-  DAT_1005977c = &LAB_10001140;
-  DAT_10059770 = &LAB_10001150;
-  DAT_1005d3a8 = &LAB_10001150;
+  grim_frame_callback = &LAB_10001140;
+  grim_on_device_restore = &LAB_10001150;
+  grim_on_device_lost = &LAB_10001150;
   _DAT_1005cc94 = _strdup(&DAT_1005d828);
   puVar9 = &grim_font2_glyph_widths;
   for (iVar4 = 0x40; iVar4 != 0; iVar4 = iVar4 + -1) {
@@ -2569,20 +2580,20 @@ uint __cdecl FUN_10005a40(char *param_1)
   
   _File = fopen(param_1,&DAT_10053244);
   if (_File == (FILE *)0x0) {
-    DAT_1005bc14 = 0;
+    grim_lookup_blob_loaded = '\0';
     uVar1 = 0;
-    if (DAT_1005a670 != (void *)0x0) {
-      operator_delete(DAT_1005a670);
+    if (grim_lookup_blob != (void *)0x0) {
+      operator_delete(grim_lookup_blob);
       uVar1 = extraout_EAX;
     }
-    DAT_1005a670 = (void *)0x0;
+    grim_lookup_blob = (void *)0x0;
     return uVar1 & 0xffffff00;
   }
   fseek(_File,0,2);
-  DAT_1005a458 = ftell(_File);
+  grim_lookup_blob_size = ftell(_File);
   fseek(_File,0,0);
-  DAT_1005a670 = operator_new(DAT_1005a458 + 1);
-  fread(DAT_1005a670,DAT_1005a458,1,_File);
+  grim_lookup_blob = operator_new(grim_lookup_blob_size + 1);
+  fread(grim_lookup_blob,grim_lookup_blob_size,1,_File);
   iVar2 = fclose(_File);
   return CONCAT31((int3)((uint)iVar2 >> 8),1);
 }
@@ -2600,56 +2611,55 @@ int __cdecl FUN_10005ae0(byte *param_1)
   int iVar4;
   uint uVar5;
   uint uVar6;
-  int iVar7;
-  byte *pbVar8;
-  char *pcVar9;
-  bool bVar10;
+  byte *pbVar7;
+  char *pcVar8;
+  bool bVar9;
   
   uVar5 = 0xffffffff;
-  pcVar9 = PTR_DAT_10053040;
+  pcVar8 = PTR_DAT_10053040;
   do {
     if (uVar5 == 0) break;
     uVar5 = uVar5 - 1;
-    cVar1 = *pcVar9;
-    pcVar9 = pcVar9 + 1;
+    cVar1 = *pcVar8;
+    pcVar8 = pcVar8 + 1;
   } while (cVar1 != '\0');
   uVar5 = ~uVar5;
   do {
-    if (DAT_1005a458 <= (int)uVar5) {
+    if (grim_lookup_blob_size <= (int)uVar5) {
       return 0;
     }
-    pbVar3 = (byte *)(DAT_1005a670 + uVar5);
+    pbVar3 = (byte *)((int)grim_lookup_blob + uVar5);
     uVar6 = 0xffffffff;
-    pbVar8 = pbVar3;
+    pbVar7 = pbVar3;
     do {
       if (uVar6 == 0) break;
       uVar6 = uVar6 - 1;
-      bVar2 = *pbVar8;
-      pbVar8 = pbVar8 + 1;
+      bVar2 = *pbVar7;
+      pbVar7 = pbVar7 + 1;
     } while (bVar2 != 0);
-    iVar7 = ~uVar6 - 1;
-    pbVar8 = param_1;
+    uVar6 = ~uVar6;
+    pbVar7 = param_1;
     do {
       bVar2 = *pbVar3;
-      bVar10 = bVar2 < *pbVar8;
-      if (bVar2 != *pbVar8) {
+      bVar9 = bVar2 < *pbVar7;
+      if (bVar2 != *pbVar7) {
 LAB_10005b41:
-        iVar4 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+        iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
         goto LAB_10005b46;
       }
       if (bVar2 == 0) break;
       bVar2 = pbVar3[1];
-      bVar10 = bVar2 < pbVar8[1];
-      if (bVar2 != pbVar8[1]) goto LAB_10005b41;
+      bVar9 = bVar2 < pbVar7[1];
+      if (bVar2 != pbVar7[1]) goto LAB_10005b41;
       pbVar3 = pbVar3 + 2;
-      pbVar8 = pbVar8 + 2;
+      pbVar7 = pbVar7 + 2;
     } while (bVar2 != 0);
     iVar4 = 0;
 LAB_10005b46:
     if (iVar4 == 0) {
-      return DAT_1005a670 + iVar7 + 5 + uVar5;
+      return (int)grim_lookup_blob + uVar5 + uVar6 + 4;
     }
-    uVar5 = *(int *)(DAT_1005a670 + iVar7 + 1 + uVar5) + iVar7 + 5 + uVar5;
+    uVar5 = *(int *)((int)grim_lookup_blob + uVar5 + uVar6) + uVar6 + 4 + uVar5;
   } while( true );
 }
 
@@ -2666,56 +2676,55 @@ undefined4 __cdecl FUN_10005b80(byte *param_1)
   int iVar4;
   uint uVar5;
   uint uVar6;
-  int iVar7;
-  byte *pbVar8;
-  char *pcVar9;
-  bool bVar10;
+  byte *pbVar7;
+  char *pcVar8;
+  bool bVar9;
   
   uVar5 = 0xffffffff;
-  pcVar9 = PTR_DAT_10053040;
+  pcVar8 = PTR_DAT_10053040;
   do {
     if (uVar5 == 0) break;
     uVar5 = uVar5 - 1;
-    cVar1 = *pcVar9;
-    pcVar9 = pcVar9 + 1;
+    cVar1 = *pcVar8;
+    pcVar8 = pcVar8 + 1;
   } while (cVar1 != '\0');
   uVar5 = ~uVar5;
   do {
-    if (DAT_1005a458 <= (int)uVar5) {
+    if (grim_lookup_blob_size <= (int)uVar5) {
       return 0;
     }
-    pbVar3 = (byte *)(DAT_1005a670 + uVar5);
+    pbVar3 = (byte *)((int)grim_lookup_blob + uVar5);
     uVar6 = 0xffffffff;
-    pbVar8 = pbVar3;
+    pbVar7 = pbVar3;
     do {
       if (uVar6 == 0) break;
       uVar6 = uVar6 - 1;
-      bVar2 = *pbVar8;
-      pbVar8 = pbVar8 + 1;
+      bVar2 = *pbVar7;
+      pbVar7 = pbVar7 + 1;
     } while (bVar2 != 0);
-    iVar7 = ~uVar6 - 1;
-    pbVar8 = param_1;
+    uVar6 = ~uVar6;
+    pbVar7 = param_1;
     do {
       bVar2 = *pbVar3;
-      bVar10 = bVar2 < *pbVar8;
-      if (bVar2 != *pbVar8) {
+      bVar9 = bVar2 < *pbVar7;
+      if (bVar2 != *pbVar7) {
 LAB_10005be1:
-        iVar4 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+        iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
         goto LAB_10005be6;
       }
       if (bVar2 == 0) break;
       bVar2 = pbVar3[1];
-      bVar10 = bVar2 < pbVar8[1];
-      if (bVar2 != pbVar8[1]) goto LAB_10005be1;
+      bVar9 = bVar2 < pbVar7[1];
+      if (bVar2 != pbVar7[1]) goto LAB_10005be1;
       pbVar3 = pbVar3 + 2;
-      pbVar8 = pbVar8 + 2;
+      pbVar7 = pbVar7 + 2;
     } while (bVar2 != 0);
     iVar4 = 0;
 LAB_10005be6:
     if (iVar4 == 0) {
-      return *(undefined4 *)(DAT_1005a670 + iVar7 + 1 + uVar5);
+      return *(undefined4 *)((int)grim_lookup_blob + uVar5 + uVar6);
     }
-    uVar5 = *(int *)(DAT_1005a670 + iVar7 + 1 + uVar5) + iVar7 + 5 + uVar5;
+    uVar5 = *(int *)((int)grim_lookup_blob + uVar5 + uVar6) + uVar6 + 4 + uVar5;
   } while( true );
 }
 
@@ -2746,21 +2755,21 @@ int grim_get_key_char(void)
 
 {
   int iVar1;
-  undefined4 *puVar2;
+  int *piVar2;
   int iVar3;
   
-  if (DAT_1005d3e4 != 0) {
-    iVar1 = DAT_1005d3c4;
-    if (0 < DAT_1005d3e4) {
-      puVar2 = &DAT_1005d3c4;
-      iVar3 = DAT_1005d3e4;
+  if (grim_key_char_queue_count != 0) {
+    iVar1 = grim_key_char_queue[0];
+    if (0 < grim_key_char_queue_count) {
+      piVar2 = grim_key_char_queue;
+      iVar3 = grim_key_char_queue_count;
       do {
-        *puVar2 = puVar2[1];
-        puVar2 = puVar2 + 1;
+        *piVar2 = piVar2[1];
+        piVar2 = piVar2 + 1;
         iVar3 = iVar3 + -1;
       } while (iVar3 != 0);
     }
-    DAT_1005d3e4 = DAT_1005d3e4 + -1;
+    grim_key_char_queue_count = grim_key_char_queue_count + -1;
     return iVar1;
   }
   return 0;
@@ -2866,8 +2875,8 @@ int grim_apply_config(void)
   uint uVar1;
   int *in_ECX;
   
-  if (DAT_10059778 == (HICON)0x0) {
-    DAT_10059778 = LoadIconA(grim_module_handle,(LPCSTR)0x72);
+  if (grim_window_icon_handle == (HICON)0x0) {
+    grim_window_icon_handle = (HICON)LoadIconA(grim_module_handle,(LPCSTR)0x72);
   }
   grim_config_dialog_canceled = '\0';
   grim_d3d8_probe = Direct3DCreate8(0xdc);
@@ -2876,24 +2885,23 @@ int grim_apply_config(void)
     uVar1 = MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return uVar1 & 0xffffff00;
   }
-  (*grim_d3d8_probe->lpVtbl->GetDeviceCaps)
-            (grim_d3d8_probe,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
+  (*grim_d3d8_probe->lpVtbl->GetDeviceCaps)(grim_d3d8_probe,0,D3DDEVTYPE_HAL,&grim_device_caps);
   DialogBoxParamA(grim_module_handle,(LPCSTR)0x74,(HWND)0x0,grim_config_dialog_proc,0);
   (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   if (grim_config_dialog_canceled == '\0') {
-    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
-    if ((char)DAT_1005b2b8 == '\0') {
+    (**(code **)(*in_ECX + 0x20))(0x54,grim_config_option_54_value);
+    if (grim_config_dialog_bpp16_selected == '\0') {
       (**(code **)(*in_ECX + 0x20))(0x2b,0x20);
     }
     else {
       (**(code **)(*in_ECX + 0x20))(0x2b,0x10);
     }
-    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
-    (**(code **)(*in_ECX + 0x20))(8,DAT_1005b280);
+    (**(code **)(*in_ECX + 0x20))(0x54,grim_config_option_54_value);
+    (**(code **)(*in_ECX + 0x20))(8,grim_config_dialog_windowed_selected);
     (**(code **)(*in_ECX + 0x20))(0x34,0);
-    (**(code **)(*in_ECX + 0x20))(8,DAT_1005b280);
-    (**(code **)(*in_ECX + 0x20))(0x29,DAT_10053054);
-    (**(code **)(*in_ECX + 0x20))(0x2a,DAT_10053058);
+    (**(code **)(*in_ECX + 0x20))(8,grim_config_dialog_windowed_selected);
+    (**(code **)(*in_ECX + 0x20))(0x29,grim_config_selected_width);
+    (**(code **)(*in_ECX + 0x20))(0x2a,grim_config_selected_height);
   }
   return (uint)(grim_config_dialog_canceled == '\0');
 }
@@ -2915,12 +2923,12 @@ int __fastcall grim_init_system(void)
   undefined4 *puVar4;
   undefined4 *puVar5;
   
-  puVar2 = &DAT_10059e3c;
+  puVar2 = &grim_working_dir;
   for (iVar3 = 0x41; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
-  _getcwd((char *)&DAT_10059e3c,0x104);
+  _getcwd((char *)&grim_working_dir,0x104);
   iVar3 = grim_d3d_init();
   if ((char)iVar3 == '\0') {
     return iVar3;
@@ -2936,7 +2944,7 @@ int __fastcall grim_init_system(void)
     }
   }
   if (DAT_1005cc38 == '\x01') {
-    iVar3 = grim_keyboard_init(DAT_1005d3f8);
+    iVar3 = grim_keyboard_init((int)grim_main_window_hwnd);
     if ((char)iVar3 == '\0') {
       grim_error_text = s_DI8__Could_not_initialize_keyboa_10053bd0;
       grim_mouse_shutdown();
@@ -2947,7 +2955,7 @@ int __fastcall grim_init_system(void)
     }
   }
   if (DAT_1005cc68 == '\x01') {
-    iVar3 = grim_joystick_init(DAT_1005d3f8);
+    iVar3 = grim_joystick_init((int)grim_main_window_hwnd);
     if ((char)iVar3 == '\0') {
       grim_error_text = s_DI8__Could_not_initialize_joysti_10053bac;
       DAT_1005cc68 = '\0';
@@ -2956,7 +2964,7 @@ int __fastcall grim_init_system(void)
   FUN_10004920();
   FUN_10004970();
   (**(code **)(*in_ECX + 0x20))(0x15,2);
-  _DAT_1005d0b4 = &DAT_1005d3f8;
+  _DAT_1005d0b4 = &grim_main_window_hwnd;
   (**(code **)(*in_ECX + 0x20))(0x10);
   puVar2 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
   if (puVar2 != (undefined4 *)0x0) {
@@ -3136,14 +3144,14 @@ void grim_set_config_var(uint id,uint value)
   
   switch(id) {
   case 5:
-    DAT_1005d3a8 = in_stack_00000014;
+    grim_on_device_lost = in_stack_00000014;
     return;
   case 6:
-    DAT_10059770 = in_stack_00000014;
+    grim_on_device_restore = in_stack_00000014;
     return;
   case 7:
-    if (DAT_1005bac8 != (byte *)0x0) {
-      operator_delete(DAT_1005bac8);
+    if (grim_window_title != (char *)0x0) {
+      operator_delete(grim_window_title);
     }
     uVar6 = 0xffffffff;
     pbVar13 = in_stack_00000014;
@@ -3153,7 +3161,7 @@ void grim_set_config_var(uint id,uint value)
       bVar1 = *pbVar13;
       pbVar13 = pbVar13 + 1;
     } while (bVar1 != 0);
-    DAT_1005bac8 = operator_new(~uVar6);
+    grim_window_title = operator_new(~uVar6);
     uVar6 = 0xffffffff;
     do {
       pbVar13 = in_stack_00000014;
@@ -3165,7 +3173,7 @@ void grim_set_config_var(uint id,uint value)
     } while (bVar1 != 0);
     uVar6 = ~uVar6;
     pbVar13 = pbVar13 + -uVar6;
-    pbVar15 = DAT_1005bac8;
+    pbVar15 = (byte *)grim_window_title;
     for (uVar10 = uVar6 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
       *(undefined4 *)pbVar15 = *(undefined4 *)pbVar13;
       pbVar13 = pbVar13 + 4;
@@ -3176,7 +3184,7 @@ void grim_set_config_var(uint id,uint value)
       pbVar13 = pbVar13 + 1;
       pbVar15 = pbVar15 + 1;
     }
-    *(byte **)(&grim_config_var3_table + id * 0x10) = DAT_1005bac8;
+    *(char **)(&grim_config_var3_table + id * 0x10) = grim_window_title;
     return;
   default:
     puVar11 = &grim_config_var0_table + id * 4;
@@ -3220,16 +3228,16 @@ LAB_10006887:
         operator_delete(*(void **)(&grim_config_var3_table + id * 0x10));
       }
       _DAT_1005cc94 = _strdup(&DAT_1005d828);
-      DAT_1005bc14 = 0;
+      grim_lookup_blob_loaded = '\0';
     }
     uVar8 = FUN_10005a40((char *)in_stack_00000014);
-    DAT_1005bc14 = (undefined1)uVar8;
+    grim_lookup_blob_loaded = (char)uVar8;
     if (*(void **)(&grim_config_var3_table + id * 0x10) != (void *)0x0) {
       operator_delete(*(void **)(&grim_config_var3_table + id * 0x10));
     }
     pcVar9 = _strdup((char *)in_stack_00000014);
     *(char **)(&grim_config_var3_table + id * 0x10) = pcVar9;
-    *(undefined1 *)(&grim_config_var0_table + id * 4) = DAT_1005bc14;
+    *(char *)(&grim_config_var0_table + id * 4) = grim_lookup_blob_loaded;
     return;
   case 0x12:
     if (*(char *)(&grim_config_var0_table + id * 4) != (char)value) {
@@ -3335,7 +3343,7 @@ LAB_10006b54:
     grim_texture_format = (value != 0x20) + 0x16;
     return;
   case 0x2d:
-    DAT_1005977c = in_stack_00000014;
+    grim_frame_callback = in_stack_00000014;
     return;
   case 0x34:
     *(char *)(&grim_config_var0_table + id * 4) = (char)value;
@@ -3349,7 +3357,7 @@ LAB_10006b54:
     (&grim_config_var1_table)[id * 4] = in_stack_0000000c;
     *(uint *)(&grim_config_var2_table + id * 0x10) = in_stack_00000010;
     *(byte **)(&grim_config_var3_table + id * 0x10) = in_stack_00000014;
-    DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
+    grim_device_window_override = *(HWND *)in_stack_00000014;
     return;
   case 0x55:
     grim_render_disabled = (char)value;
@@ -3416,7 +3424,7 @@ void grim_clear_color(float r,float g,float b,float a)
   DWORD stencil;
   
   This = grim_d3d_device;
-  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_device_ready != '\0')) {
     stencil = 0;
     z = 0.0;
     pIVar1 = grim_d3d_device->lpVtbl;
@@ -3564,8 +3572,8 @@ undefined4 FUN_10006ea0(void)
   float fVar2;
   int iVar3;
   
-  fVar2 = DAT_1005d158;
-  fVar1 = DAT_1005d138;
+  fVar2 = grim_joystick_center_y;
+  fVar1 = grim_joystick_deadzone;
   iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
@@ -3584,8 +3592,8 @@ undefined4 FUN_10006ef0(void)
   float fVar2;
   int iVar3;
   
-  fVar2 = DAT_1005d158;
-  fVar1 = DAT_1005d138;
+  fVar2 = grim_joystick_center_y;
+  fVar1 = grim_joystick_deadzone;
   iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
@@ -3604,8 +3612,8 @@ undefined4 FUN_10006f40(void)
   float fVar2;
   int iVar3;
   
-  fVar2 = DAT_1005d148;
-  fVar1 = DAT_1005d138;
+  fVar2 = grim_joystick_center_x;
+  fVar1 = grim_joystick_deadzone;
   iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
@@ -3624,8 +3632,8 @@ undefined4 FUN_10006f90(void)
   float fVar2;
   int iVar3;
   
-  fVar2 = DAT_1005d148;
-  fVar1 = DAT_1005d138;
+  fVar2 = grim_joystick_center_x;
+  fVar1 = grim_joystick_deadzone;
   iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
@@ -3900,7 +3908,7 @@ void grim_flush_input(void)
     if (99 < iVar1) break;
     iVar1 = iVar1 + 1;
   } while (DStack_4 != 0);
-  DAT_1005d3e4 = 0;
+  grim_key_char_queue_count = 0;
   puVar2 = &grim_keyboard_state;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
@@ -3913,7 +3921,6 @@ void grim_flush_input(void)
 
 /* grim_was_key_pressed @ 10007390 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* Grim2D vtable 0x48 (provisional) */
 
 int grim_was_key_pressed(uint key)
@@ -3927,22 +3934,22 @@ int grim_was_key_pressed(uint key)
   iVar2 = grim_keyboard_key_down(key);
   if ((char)iVar2 == '\0') {
     uVar3 = key & 0xff;
-    (&DAT_1005a058)[uVar3] = 0;
-    (&DAT_10059f44)[uVar3] = 1;
+    (&grim_key_repeat_timers)[uVar3] = 0;
+    (&grim_key_repeat_first_press)[uVar3] = 1;
   }
   else {
     uVar4 = key & 0xff;
-    fVar1 = (float)(&DAT_1005a058)[uVar4];
+    fVar1 = (float)(&grim_key_repeat_timers)[uVar4];
     uVar3 = CONCAT22((short)((uint)iVar2 >> 0x10),
                      (ushort)(fVar1 < 0.0) << 8 | (ushort)NAN(fVar1) << 10 |
                      (ushort)(fVar1 == 0.0) << 0xe);
     if ((fVar1 == 0.0) != 0) {
-      fVar1 = _DAT_10053044;
-      if ((&DAT_10059f44)[uVar4] == '\0') {
-        fVar1 = _DAT_10053044 * 0.2;
+      fVar1 = grim_key_repeat_delay;
+      if ((&grim_key_repeat_first_press)[uVar4] == '\0') {
+        fVar1 = grim_key_repeat_delay * 0.2;
       }
-      (&DAT_1005a058)[uVar4] = fVar1;
-      (&DAT_10059f44)[uVar4] = 0;
+      (&grim_key_repeat_timers)[uVar4] = fVar1;
+      (&grim_key_repeat_first_press)[uVar4] = 0;
       return CONCAT31((int3)(uVar3 >> 8),1);
     }
   }
@@ -4119,7 +4126,6 @@ void grim_set_mouse_pos(float x,float y)
 
 /* grim_get_mouse_wheel_delta @ 10007560 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0x60 (provisional) */
 
@@ -4127,9 +4133,9 @@ float grim_get_mouse_wheel_delta(void)
 
 {
   if (grim_input_cached != '\0') {
-    return _DAT_1005d3b8;
+    return grim_mouse_wheel_delta_cached;
   }
-  return _DAT_1005db58;
+  return grim_mouse_wheel_delta;
 }
 
 
@@ -4211,13 +4217,14 @@ int grim_is_joystick_button_down(int button)
 int grim_create_texture(char *name,int width,int height)
 
 {
-  uint uVar1;
+  int iVar1;
   uint uVar2;
-  void *pvVar3;
+  uint uVar3;
+  void *pvVar4;
   void *unaff_EDI;
   LPDIRECT3DDEVICE8 name_00;
-  undefined4 uVar4;
-  void *pvVar5;
+  undefined4 uVar5;
+  void *pvVar6;
   IDirect3DTexture8 *local_10;
   void *local_c;
   undefined1 *puStack_8;
@@ -4227,40 +4234,40 @@ int grim_create_texture(char *name,int width,int height)
   puStack_8 = &LAB_1004b82b;
   local_c = ExceptionList;
   ExceptionList = &local_c;
-  uVar1 = grim_find_free_texture_slot();
-  if ((int)uVar1 < 0) {
-    ExceptionList = local_c;
-    return uVar1 & 0xffffff00;
-  }
-  pvVar5 = (void *)0x1;
-  uVar4 = 1;
-  name_00 = grim_d3d_device;
-  uVar2 = (*grim_d3d_device->lpVtbl->CreateTexture)
-                    (grim_d3d_device,width,height,1,1,grim_texture_format,D3DPOOL_DEFAULT,&local_10)
-  ;
+  uVar2 = grim_find_free_texture_slot();
   if ((int)uVar2 < 0) {
-    grim_error_text = s_D3D__Could_not_create_a_texture__10053c18;
-    ExceptionList = pvVar5;
+    ExceptionList = local_c;
     return uVar2 & 0xffffff00;
   }
-  pvVar3 = operator_new(0x18);
-  if (pvVar3 == (void *)0x0) {
-    pvVar3 = (void *)0x0;
+  pvVar6 = (void *)0x1;
+  uVar5 = 1;
+  name_00 = grim_d3d_device;
+  uVar3 = (*grim_d3d_device->lpVtbl->CreateTexture)
+                    (grim_d3d_device,width,height,1,1,grim_texture_format,D3DPOOL_DEFAULT,&local_10)
+  ;
+  if ((int)uVar3 < 0) {
+    grim_error_text = s_D3D__Could_not_create_a_texture__10053c18;
+    ExceptionList = pvVar6;
+    return uVar3 & 0xffffff00;
+  }
+  pvVar4 = operator_new(0x18);
+  if (pvVar4 == (void *)0x0) {
+    pvVar4 = (void *)0x0;
   }
   else {
-    pvVar3 = grim_texture_init(pvVar3,unaff_EDI,(char *)name_00);
+    pvVar4 = grim_texture_init(pvVar4,unaff_EDI,(char *)name_00);
   }
-  (&grim_texture_slots)[uVar1] = pvVar3;
-  *(undefined4 *)((int)pvVar3 + 4) = uVar4;
-  *(undefined1 *)((&grim_texture_slots)[uVar1] + 8) = 1;
-  *(int *)((&grim_texture_slots)[uVar1] + 0xc) = width;
-  *(int *)((&grim_texture_slots)[uVar1] + 0x10) = height;
-  uVar2 = DAT_1005305c;
-  if ((int)DAT_1005305c < (int)uVar1) {
-    DAT_1005305c = uVar1;
+  (&grim_texture_slots)[uVar2] = pvVar4;
+  *(undefined4 *)((int)pvVar4 + 4) = uVar5;
+  *(undefined1 *)((&grim_texture_slots)[uVar2] + 8) = 1;
+  *(int *)((&grim_texture_slots)[uVar2] + 0xc) = width;
+  *(int *)((&grim_texture_slots)[uVar2] + 0x10) = height;
+  iVar1 = grim_texture_slot_max_index;
+  if (grim_texture_slot_max_index < (int)uVar2) {
+    grim_texture_slot_max_index = uVar2;
   }
-  ExceptionList = pvVar5;
-  return CONCAT31((int3)(uVar2 >> 8),1);
+  ExceptionList = pvVar6;
+  return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
 
 
@@ -4297,11 +4304,11 @@ void grim_destroy_texture(int handle)
   if (texture != (void *)0x0) {
     grim_texture_release(texture);
     operator_delete(texture);
-    iVar1 = DAT_1005305c;
-    bVar2 = handle == DAT_1005305c;
+    iVar1 = grim_texture_slot_max_index;
+    bVar2 = handle == grim_texture_slot_max_index;
     (&grim_texture_slots)[handle] = 0;
     if (bVar2) {
-      DAT_1005305c = iVar1 + -1;
+      grim_texture_slot_max_index = iVar1 + -1;
     }
   }
   return;
@@ -4503,12 +4510,12 @@ void grim_begin_batch(void)
   int iVar1;
   
   if (((grim_render_disabled == '\0') && (grim_batch_active == '\0')) &&
-     (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
+     (grim_batch_active = '\x01', grim_device_ready != '\0')) {
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))
                       (grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
+      grim_device_ready = '\0';
     }
     grim_vertex_count._0_2_ = 0;
   }
@@ -4528,7 +4535,7 @@ void grim_end_batch(void)
 {
   if ((grim_render_disabled == '\0') && (grim_batch_active != '\0')) {
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
-    if (DAT_1005c898 != '\0') {
+    if (grim_device_ready != '\0') {
       if ((short)grim_vertex_count != 0) {
         (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
                   (grim_d3d_device,D3DPT_TRIANGLELIST,0,grim_vertex_count & 0xffff,0,
@@ -4565,14 +4572,14 @@ void grim_draw_circle_filled(float x,float y,float radius)
   float fStack_c;
   float fStack_8;
   
-  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
+  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', grim_device_ready != '\0')) {
     ppuStack_2c = (undefined4 **)0x10007bc2;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     ppuStack_2c = &grim_vertex_write_ptr;
     fStack_30 = 0.0;
     iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))(grim_vertex_buffer,0);
     if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
+      grim_device_ready = '\0';
     }
     grim_vertex_count = grim_vertex_count & 0xffff0000;
     (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
@@ -4610,7 +4617,7 @@ void grim_draw_circle_filled(float x,float y,float radius)
       } while (iVar7 <= iVar1);
     }
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
-    if (DAT_1005c898 != '\0') {
+    if (grim_device_ready != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
                 (grim_d3d_device,D3DPT_TRIANGLEFAN,0,(grim_vertex_count & 0xffff) - 2);
       (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
@@ -4644,14 +4651,14 @@ void grim_draw_circle_outline(float x,float y,float radius)
   float fStack_c;
   float fStack_8;
   
-  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
+  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', grim_device_ready != '\0')) {
     ppfStack_2c = (float **)0x10007d72;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     ppfStack_2c = &grim_vertex_write_ptr;
     fStack_30 = 0.0;
     iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))(grim_vertex_buffer,0);
     if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
+      grim_device_ready = '\0';
     }
     grim_vertex_count = grim_vertex_count & 0xffff0000;
     iVar1 = ftol();
@@ -4690,7 +4697,7 @@ void grim_draw_circle_outline(float x,float y,float radius)
       } while (iVar7 <= iVar1);
     }
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
-    if (DAT_1005c898 != '\0') {
+    if (grim_device_ready != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
                 (grim_d3d_device,D3DPT_TRIANGLESTRIP,0,(grim_vertex_count & 0xffff) - 2);
       (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
@@ -4717,11 +4724,11 @@ void grim_set_rotation(float radians)
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
   grim_rotation_cos = (float)fVar1;
   fVar1 = (float10)fsin((float10)radians + (float10)0.7853982);
-  _DAT_1005a460 = grim_rotation_cos;
-  _DAT_1005a46c = grim_rotation_cos;
-  DAT_10059f40 = (float)fVar1;
-  _DAT_1005a468 = -DAT_10059f40;
-  _DAT_1005a464 = DAT_10059f40;
+  grim_rotation_m00 = grim_rotation_cos;
+  grim_rotation_m11 = grim_rotation_cos;
+  grim_rotation_sin = (float)fVar1;
+  grim_rotation_m10 = -grim_rotation_sin;
+  grim_rotation_m01 = grim_rotation_sin;
   return;
 }
 
@@ -4746,8 +4753,8 @@ void grim_set_color(float r,float g,float b,float a)
   uVar4 = ftol();
   grim_color_slot0 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
   grim_color_slot3 = grim_color_slot0;
-  DAT_1005bc0c = grim_color_slot0;
-  DAT_1005bc08 = grim_color_slot0;
+  grim_color_slot2 = grim_color_slot0;
+  grim_color_slot1 = grim_color_slot0;
   return;
 }
 
@@ -4772,8 +4779,8 @@ void grim_set_color_ptr(float *rgba)
   rgba = (float *)CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
   grim_color_slot0 = rgba;
   grim_color_slot3 = rgba;
-  DAT_1005bc0c = rgba;
-  DAT_1005bc08 = rgba;
+  grim_color_slot2 = rgba;
+  grim_color_slot1 = rgba;
   return;
 }
 
@@ -4792,8 +4799,8 @@ void grim_draw_line(float *p0,float *p1,float thickness)
   undefined *puVar1;
   undefined *puVar2;
   
-  if ((DAT_10059bb4 & 1) == 0) {
-    DAT_10059bb4 = DAT_10059bb4 | 1;
+  if ((grim_draw_line_init_flag & 1) == 0) {
+    grim_draw_line_init_flag = grim_draw_line_init_flag | 1;
     FUN_1000a92c((_onexit_t)&DAT_10008140);
   }
   puVar2 = &grim_line_dx;
@@ -4862,14 +4869,14 @@ void grim_set_atlas_frame(int atlas_size,int frame)
   float fVar1;
   
   fVar1 = 1.0 / (float)atlas_size;
-  DAT_1005b2a8 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
+  grim_uv_u3 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
   grim_uv_v1 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + 4 + frame * 8);
-  grim_uv_u0 = DAT_1005b2a8;
+  grim_uv_u0 = grim_uv_u3;
   grim_uv_v0 = grim_uv_v1;
-  grim_uv_u1 = DAT_1005b2a8 + fVar1;
-  DAT_1005b2a0 = DAT_1005b2a8 + fVar1;
-  DAT_1005b2a4 = grim_uv_v1 + fVar1;
-  DAT_1005b2ac = grim_uv_v1 + fVar1;
+  grim_uv_u1 = grim_uv_u3 + fVar1;
+  grim_uv_u2 = grim_uv_u3 + fVar1;
+  grim_uv_v2 = grim_uv_v1 + fVar1;
+  grim_uv_v3 = grim_uv_v1 + fVar1;
   return;
 }
 
@@ -4885,15 +4892,15 @@ void grim_set_sub_rect(int atlas_size,int width,int height,int frame)
 {
   float fVar1;
   
-  DAT_1005b2a8 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
+  grim_uv_u3 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
   grim_uv_v1 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + 4 + frame * 8);
-  grim_uv_u0 = DAT_1005b2a8;
+  grim_uv_u0 = grim_uv_u3;
   grim_uv_v0 = grim_uv_v1;
-  grim_uv_u1 = (float)width * (1.0 / (float)atlas_size) + DAT_1005b2a8;
-  DAT_1005b2a0 = grim_uv_u1;
+  grim_uv_u1 = (float)width * (1.0 / (float)atlas_size) + grim_uv_u3;
+  grim_uv_u2 = grim_uv_u1;
   fVar1 = (1.0 / (float)atlas_size) * (float)height;
-  DAT_1005b2a4 = fVar1 + grim_uv_v1;
-  DAT_1005b2ac = fVar1 + grim_uv_v1;
+  grim_uv_v2 = fVar1 + grim_uv_v1;
+  grim_uv_v3 = fVar1 + grim_uv_v1;
   return;
 }
 
@@ -4911,10 +4918,10 @@ void grim_set_uv(float u0,float v0,float u1,float v1)
   grim_uv_v0 = v0;
   grim_uv_u1 = u1;
   grim_uv_v1 = v0;
-  DAT_1005b2a0 = u1;
-  DAT_1005b2a4 = v1;
-  DAT_1005b2a8 = u0;
-  DAT_1005b2ac = v1;
+  grim_uv_u2 = u1;
+  grim_uv_v2 = v1;
+  grim_uv_u3 = u0;
+  grim_uv_v3 = v1;
   return;
 }
 
@@ -5208,7 +5215,7 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
   float fStack_8;
   float fStack_4;
   
-  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_device_ready != '\0')) {
     if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
@@ -5229,46 +5236,46 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
       fStack_4 = fVar1 + y;
       fVar2 = w * -0.5;
       fVar4 = h * -0.5;
-      fStack_20 = _DAT_1005a460 * fVar2 + _DAT_1005a464 * fVar4 + fStack_8;
-      fStack_1c = fStack_4 + _DAT_1005a468 * fVar2 + fVar4 * _DAT_1005a46c;
-      fStack_18 = _DAT_1005a460 * fVar3 + _DAT_1005a464 * fVar4 + fStack_8;
-      fStack_14 = fStack_4 + _DAT_1005a468 * fVar3 + fVar4 * _DAT_1005a46c;
-      fStack_10 = _DAT_1005a460 * fVar3 + _DAT_1005a464 * fVar1 + fStack_8;
-      fStack_c = fStack_4 + _DAT_1005a468 * fVar3 + _DAT_1005a46c * fVar1;
-      fStack_8 = _DAT_1005a460 * fVar2 + _DAT_1005a464 * fVar1 + fStack_8;
-      fStack_4 = fStack_4 + _DAT_1005a468 * fVar2 + _DAT_1005a46c * fVar1;
+      fStack_20 = grim_rotation_m00 * fVar2 + grim_rotation_m01 * fVar4 + fStack_8;
+      fStack_1c = fStack_4 + grim_rotation_m10 * fVar2 + fVar4 * grim_rotation_m11;
+      fStack_18 = grim_rotation_m00 * fVar3 + grim_rotation_m01 * fVar4 + fStack_8;
+      fStack_14 = fStack_4 + grim_rotation_m10 * fVar3 + fVar4 * grim_rotation_m11;
+      fStack_10 = grim_rotation_m00 * fVar3 + grim_rotation_m01 * fVar1 + fStack_8;
+      fStack_c = fStack_4 + grim_rotation_m10 * fVar3 + grim_rotation_m11 * fVar1;
+      fStack_8 = grim_rotation_m00 * fVar2 + grim_rotation_m01 * fVar1 + fStack_8;
+      fStack_4 = fStack_4 + grim_rotation_m10 * fVar2 + grim_rotation_m11 * fVar1;
     }
     *grim_vertex_write_ptr = fStack_20;
     grim_vertex_write_ptr[1] = fStack_1c;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot0;
     grim_vertex_write_ptr[5] = grim_uv_u0;
     grim_vertex_write_ptr[6] = grim_uv_v0;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_18;
     grim_vertex_write_ptr[1] = fStack_14;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot1;
     grim_vertex_write_ptr[5] = grim_uv_u1;
     grim_vertex_write_ptr[6] = grim_uv_v1;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_10;
     grim_vertex_write_ptr[1] = fStack_c;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc0c;
-    grim_vertex_write_ptr[5] = DAT_1005b2a0;
-    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot2;
+    grim_vertex_write_ptr[5] = grim_uv_u2;
+    grim_vertex_write_ptr[6] = grim_uv_v2;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_8;
     grim_vertex_write_ptr[1] = fStack_4;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot3;
-    grim_vertex_write_ptr[5] = DAT_1005b2a8;
-    grim_vertex_write_ptr[6] = DAT_1005b2ac;
+    grim_vertex_write_ptr[5] = grim_uv_u3;
+    grim_vertex_write_ptr[6] = grim_uv_v3;
     grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
@@ -5301,7 +5308,7 @@ void grim_draw_quad(float x,float y,float w,float h)
   float fStack_14;
   float fStack_10;
   
-  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_device_ready != '\0')) {
     if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
@@ -5322,7 +5329,7 @@ void grim_draw_quad(float x,float y,float w,float h)
       fVar3 = (float)(0x5f3759df - ((int)fVar2 >> 1));
       fVar2 = (1.5 - fVar2 * 0.5 * fVar3 * fVar3) * fVar3 * fVar2 * 0.5;
       fVar3 = grim_rotation_cos * fVar2;
-      fVar2 = fVar2 * DAT_10059f40;
+      fVar2 = fVar2 * grim_rotation_sin;
       fStack_28 = fStack_10 - fVar3;
       fStack_24 = fVar1 - fVar2;
       fStack_20 = fStack_10 + fVar2;
@@ -5334,35 +5341,35 @@ void grim_draw_quad(float x,float y,float w,float h)
     }
     *grim_vertex_write_ptr = fStack_28;
     grim_vertex_write_ptr[1] = fStack_24;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot0;
     grim_vertex_write_ptr[5] = grim_uv_u0;
     grim_vertex_write_ptr[6] = grim_uv_v0;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_20;
     grim_vertex_write_ptr[1] = fStack_1c;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot1;
     grim_vertex_write_ptr[5] = grim_uv_u1;
     grim_vertex_write_ptr[6] = grim_uv_v1;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_18;
     grim_vertex_write_ptr[1] = fStack_14;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc0c;
-    grim_vertex_write_ptr[5] = DAT_1005b2a0;
-    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot2;
+    grim_vertex_write_ptr[5] = grim_uv_u2;
+    grim_vertex_write_ptr[6] = grim_uv_v2;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = fStack_10;
     grim_vertex_write_ptr[1] = fVar1;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot3;
-    grim_vertex_write_ptr[5] = DAT_1005b2a8;
-    grim_vertex_write_ptr[6] = DAT_1005b2ac;
+    grim_vertex_write_ptr[5] = grim_uv_u3;
+    grim_vertex_write_ptr[6] = grim_uv_v3;
     grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
@@ -5386,7 +5393,7 @@ void grim_submit_vertex_raw(float *vertex)
   int iVar1;
   float *pfVar2;
   
-  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_device_ready != '\0')) {
     if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
@@ -5497,41 +5504,41 @@ void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2
 {
   int *in_ECX;
   
-  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_device_ready != '\0')) {
     if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
     *grim_vertex_write_ptr = x0;
     grim_vertex_write_ptr[1] = y0;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot0;
     grim_vertex_write_ptr[5] = grim_uv_u0;
     grim_vertex_write_ptr[6] = grim_uv_v0;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = x1;
     grim_vertex_write_ptr[1] = y1;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot1;
     grim_vertex_write_ptr[5] = grim_uv_u1;
     grim_vertex_write_ptr[6] = grim_uv_v1;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = x2;
     grim_vertex_write_ptr[1] = y2;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
-    grim_vertex_write_ptr[4] = DAT_1005bc0c;
-    grim_vertex_write_ptr[5] = DAT_1005b2a0;
-    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
+    grim_vertex_write_ptr[4] = grim_color_slot2;
+    grim_vertex_write_ptr[5] = grim_uv_u2;
+    grim_vertex_write_ptr[6] = grim_uv_v2;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     *grim_vertex_write_ptr = x3;
     grim_vertex_write_ptr[1] = y3;
-    grim_vertex_write_ptr[2] = DAT_1005b288;
-    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[2] = grim_vertex_z;
+    grim_vertex_write_ptr[3] = grim_vertex_rhw;
     grim_vertex_write_ptr[4] = grim_color_slot3;
-    grim_vertex_write_ptr[5] = DAT_1005b2a8;
-    grim_vertex_write_ptr[6] = DAT_1005b2ac;
+    grim_vertex_write_ptr[5] = grim_uv_u3;
+    grim_vertex_write_ptr[6] = grim_uv_v3;
     grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
@@ -5862,7 +5869,7 @@ BOOL DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
   if (fdwReason == 1) {
     grim_module_handle = hinstDLL;
-    DAT_10059778 = LoadIconA((HINSTANCE)hinstDLL,(LPCSTR)0x72);
+    grim_window_icon_handle = (HICON)LoadIconA((HINSTANCE)hinstDLL,(LPCSTR)0x72);
   }
   return 1;
 }
@@ -6584,8 +6591,9 @@ int grim_mouse_init(void)
   LPDIRECTINPUT8A *ppIVar7;
   LPDIRECTINPUT8A pIVar8;
   
-  hwnd = DAT_1005d3f8;
-  if ((DAT_1005d3f8 == (HWND)0x0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
+  hwnd = grim_main_window_hwnd;
+  if ((grim_main_window_hwnd == (HWND)0x0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0))
+  {
     GetDesktopWindow();
   }
   if (grim_dinput_mouse == (LPDIRECTINPUT8A)0x0) {
@@ -6642,7 +6650,7 @@ int grim_mouse_poll(void)
   iVar2 = 0;
   if (grim_mouse_device != (LPDIRECTINPUTDEVICE8A)0x0) {
     grim_mouse_state.lX = 0;
-    _DAT_1005db58 = 0.0;
+    grim_mouse_wheel_delta = 0.0;
     grim_mouse_state.lY = 0;
     _grim_mouse_dy = 0.0;
     grim_mouse_state.lZ = 0;
@@ -6661,7 +6669,7 @@ int grim_mouse_poll(void)
       iVar4 = iVar2 + 1;
       _grim_mouse_dx = (float)grim_mouse_state.lX + _grim_mouse_dx;
       _grim_mouse_dy = (float)grim_mouse_state.lY + _grim_mouse_dy;
-      _DAT_1005db58 = (float)grim_mouse_state.lZ + _DAT_1005db58;
+      grim_mouse_wheel_delta = (float)grim_mouse_state.lZ + grim_mouse_wheel_delta;
       if ((99 < iVar2) ||
          (((grim_mouse_state.lX == 0 && (grim_mouse_state.lY == 0)) &&
           (iVar2 = 0, grim_mouse_state.lZ == 0)))) {
@@ -6671,7 +6679,7 @@ int grim_mouse_poll(void)
         }
         grim_mouse_x = grim_mouse_x + _grim_mouse_dx;
         grim_mouse_y = grim_mouse_y + _grim_mouse_dy;
-        _DAT_1005db4c = _DAT_1005db4c + _DAT_1005db58;
+        _DAT_1005db4c = _DAT_1005db4c + grim_mouse_wheel_delta;
         goto LAB_1000a7cb;
       }
       grim_mouse_state.lX = 0;
@@ -17250,7 +17258,7 @@ void __fastcall fpu_set_round_trunc(void)
   undefined4 local_8;
   
   local_8 = CONCAT22((short)((uint)in_ECX >> 0x10),in_FPUControlWord);
-  DAT_1005db6c = local_8;
+  fpu_control_word_saved_ftol = local_8;
   return;
 }
 
@@ -17533,7 +17541,7 @@ short __thiscall FUN_10017518(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar3 = iVar3 + 0x10;
     } while (uVar5 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17580,7 +17588,7 @@ short __thiscall FUN_10017604(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17624,7 +17632,7 @@ short __thiscall FUN_10017727(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17668,7 +17676,7 @@ short __thiscall FUN_10017828(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17712,7 +17720,7 @@ short __thiscall FUN_10017929(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17759,7 +17767,7 @@ short __thiscall FUN_10017a2a(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17806,7 +17814,7 @@ short __thiscall FUN_10017b47(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17849,7 +17857,7 @@ short __thiscall FUN_10017c6a(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar7 = uVar7 + 1;
     } while (uVar7 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17885,7 +17893,7 @@ short __thiscall FUN_10017d68(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar4 = iVar4 + 0x10;
     } while (uVar2 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17932,7 +17940,7 @@ short __thiscall FUN_10017e11(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -17976,7 +17984,7 @@ short __thiscall FUN_10017f34(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18023,7 +18031,7 @@ short __thiscall FUN_10018035(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18060,7 +18068,7 @@ short __thiscall FUN_10018158(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar3 = iVar3 + 0x10;
     } while (uVar5 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18116,7 +18124,7 @@ short __thiscall FUN_10018228(void *this,void *arg1,int arg2,int arg3,float *arg
       uVar7 = uVar7 + 1;
     } while (uVar7 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18208,7 +18216,7 @@ short __thiscall FUN_10018405(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar3 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18250,7 +18258,7 @@ short __thiscall FUN_100184ca(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar7 = uVar7 + 1;
     } while (uVar7 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18290,7 +18298,7 @@ short __thiscall FUN_100185c0(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar6 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18331,7 +18339,7 @@ short __thiscall FUN_100186ab(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar5 = uVar5 + 1;
     } while (uVar5 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18369,7 +18377,7 @@ short __thiscall FUN_10018780(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar4 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18414,7 +18422,7 @@ short __thiscall FUN_10018885(void *this,void *arg1,int arg2,int arg3,void *arg4
       uVar6 = uVar6 + 1;
     } while (uVar6 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18453,7 +18461,7 @@ short __thiscall FUN_10018990(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar3 = iVar3 + 0x10;
     } while (local_c < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18490,7 +18498,7 @@ short __thiscall FUN_10018aca(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar4 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18528,7 +18536,7 @@ short __thiscall FUN_10018ba0(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar3 = iVar3 + 0x10;
     } while (uVar5 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18569,7 +18577,7 @@ short __thiscall FUN_10018caa(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar4 = iVar4 + 0x10;
     } while (local_c < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18608,7 +18616,7 @@ short __thiscall FUN_10018de0(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar3 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18647,7 +18655,7 @@ short __thiscall FUN_10018ea7(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar5 = iVar5 + 0x10;
     } while (uVar3 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18687,7 +18695,7 @@ short __thiscall FUN_10018f6e(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar4 = iVar4 + 0x10;
     } while (uVar6 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18725,7 +18733,7 @@ short __thiscall FUN_1001905c(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar3 = iVar3 + 0x10;
     } while (uVar5 < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -18772,7 +18780,7 @@ short __thiscall FUN_1001914b(void *this,void *arg1,int arg2,int arg3,void *arg4
       iVar7 = iVar7 + 0x10;
     } while (local_c < *(uint *)((int)this + 0x1058));
   }
-  return (short)DAT_1005db6c;
+  return (short)fpu_control_word_saved_ftol;
 }
 
 
@@ -20613,7 +20621,7 @@ void grim_pixel_format_read_dxt_cache(void *this,uint x,uint y,float *out)
       }
       *(int *)(unaff_EBP + 0x10) = *(int *)(unaff_EBP + 0x10) + 0x10;
     }
-    *(undefined4 *)(unaff_EBP + -0x24) = DAT_1005db6c;
+    *(undefined4 *)(unaff_EBP + -0x24) = fpu_control_word_saved_ftol;
   }
 LAB_1001b396:
   ExceptionList = *(void **)(unaff_EBP + -0xc);

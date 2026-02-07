@@ -231,18 +231,19 @@ void console_cmd_exec(void)
   fp = (FILE *)crt_fopen(console_cmd_arg1,&DAT_00471160);
   if (fp != (FILE *)0x0) {
     console_printf(&console_log_queue,s_Executing___s__00471164,console_cmd_arg1);
-    pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,(undefined4 *)fp);
+    pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,(undefined4 *)fp);
     while (pcVar1 != (char *)0x0) {
-      pcVar1 = _strchr(&DAT_0047e848,10);
+      pcVar1 = _strchr(&console_exec_line_buf,10);
       if (pcVar1 != (char *)0x0) {
         *pcVar1 = '\0';
       }
       DAT_0047ea47 = 0;
-      if ((((DAT_0047e848 != '/') && (DAT_0047e849 != '/')) && (DAT_0047e848 != '\n')) &&
-         ((DAT_0047e848 != '\0' && (DAT_0047e848 != '#')))) {
-        console_exec_line(&console_log_queue,&DAT_0047e848);
+      if ((((console_exec_line_buf != '/') && (DAT_0047e849 != '/')) &&
+          (console_exec_line_buf != '\n')) &&
+         ((console_exec_line_buf != '\0' && (console_exec_line_buf != '#')))) {
+        console_exec_line(&console_log_queue,&console_exec_line_buf);
       }
-      pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,(undefined4 *)fp);
+      pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,(undefined4 *)fp);
     }
     crt_fclose(fp);
     return;
@@ -470,11 +471,12 @@ int * __fastcall console_init(int *console_state)
   }
   *console_state = (int)puVar1;
   puVar1[3] = 0x3f800000;
-  pcVar2 = strdup_malloc(&DAT_00471260);
+  pcVar2 = strdup_malloc(&console_cvar_default_scalar);
   *(char **)(*console_state + 0x10) = pcVar2;
   *(undefined4 *)(*console_state + 0x14) = 1;
-  DAT_0047f4d0 = console_register_cvar(console_state,s_con_monoFont_0047124c,&DAT_0047125c);
-  DAT_0047eaa0 = 0;
+  cv_con_mono_font =
+       console_register_cvar(console_state,s_con_monoFont_0047124c,&console_cvar_default_true);
+  console_tokenize_buf = 0;
   _DAT_0047eaa4 = 0;
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
@@ -803,21 +805,21 @@ void __fastcall console_update(int console_state)
   float10 fVar13;
   
   if (*(char *)(console_state + 0x28) == '\0') {
-    _DAT_0047115c = _DAT_0047ea48 * 3.5 + _DAT_0047115c;
-    if (1.0 < _DAT_0047115c) {
-      _DAT_0047115c = 1.0;
+    console_open_anim_t = _DAT_0047ea48 * 3.5 + console_open_anim_t;
+    if (1.0 < console_open_anim_t) {
+      console_open_anim_t = 1.0;
     }
-    fVar13 = (float10)fsin(((float10)1.0 - (float10)_DAT_0047115c) * (float10)1.5707964);
+    fVar13 = (float10)fsin(((float10)1.0 - (float10)console_open_anim_t) * (float10)1.5707964);
     *(float *)(console_state + 0x1c) =
          (float)(fVar13 * (float10)*(int *)(console_state + 0x18) -
                 (float10)*(int *)(console_state + 0x18));
     return;
   }
-  _DAT_0047115c = _DAT_0047115c - _DAT_0047ea48 * 3.5;
-  if (_DAT_0047115c < 0.0) {
-    _DAT_0047115c = 0.0;
+  console_open_anim_t = console_open_anim_t - _DAT_0047ea48 * 3.5;
+  if (console_open_anim_t < 0.0) {
+    console_open_anim_t = 0.0;
   }
-  fVar13 = (float10)fsin(((float10)1.0 - (float10)_DAT_0047115c) * (float10)1.5707964);
+  fVar13 = (float10)fsin(((float10)1.0 - (float10)console_open_anim_t) * (float10)1.5707964);
   *(float *)(console_state + 0x1c) =
        (float)(fVar13 * (float10)*(int *)(console_state + 0x18) -
               (float10)*(int *)(console_state + 0x18));
@@ -1095,7 +1097,7 @@ int __fastcall console_render(void *arg1)
               (1.0,1.0,1.0,
                ((float)*(int *)((int)arg1 + 0x18) + *(float *)((int)arg1 + 0x1c)) /
                (float)*(int *)((int)arg1 + 0x18));
-    if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+    if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
       pIVar1 = grim_interface_ptr->vtable;
       pcVar4 = console_input_buffer();
       (*pIVar1->grim_draw_text_small_fmt)
@@ -1123,7 +1125,7 @@ int __fastcall console_render(void *arg1)
       do {
         if (iVar3 < 0) break;
         fVar9 = (float)iVar5 + *(float *)((int)arg1 + 0x1c);
-        if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+        if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
           (*grim_interface_ptr->vtable->grim_draw_text_small)(10.0,fVar9,(char *)*puVar7);
         }
         else {
@@ -1158,7 +1160,7 @@ LAB_004021ca:
       fStack_4c = 1.0;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_4c);
-    if (*(float *)(DAT_0047f4d0 + 0xc) == 0.0) {
+    if (*(float *)(cv_con_mono_font + 0xc) == 0.0) {
       pIVar1 = grim_interface_ptr->vtable;
       text = &DAT_004712b8;
       fVar9 = (float)((iVar3 + 1) * 0x10) + *(float *)((int)arg1 + 0x1c) + 2.0;
@@ -1408,7 +1410,7 @@ void console_tokenize_line(char *line)
       } while (cVar1 != '\0');
       uVar3 = ~uVar3;
       pcVar2 = pcVar2 + -uVar3;
-      pcVar6 = (char *)&DAT_0047eaa0;
+      pcVar6 = (char *)&console_tokenize_buf;
       for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
         *(undefined4 *)pcVar6 = *(undefined4 *)pcVar2;
         pcVar2 = pcVar2 + 4;
@@ -1419,7 +1421,7 @@ void console_tokenize_line(char *line)
         pcVar2 = pcVar2 + 1;
         pcVar6 = pcVar6 + 1;
       }
-      pcVar2 = crt_strtok((char *)&DAT_0047eaa0,&DAT_004712d8);
+      pcVar2 = crt_strtok((char *)&console_tokenize_buf,&DAT_004712d8);
       iVar7 = console_cmd_argc;
       if (pcVar2 != (char *)0x0) {
         iVar7 = 1;
@@ -1893,31 +1895,46 @@ char * game_build_path(char *filename)
 void register_core_cvars(void)
 
 {
-  cv_silentloads = console_register_cvar(&console_log_queue,s_cv_silentloads_00471434,&DAT_0047125c)
-  ;
+  cv_silentloads =
+       console_register_cvar
+                 (&console_log_queue,s_cv_silentloads_00471434,&console_cvar_default_true);
   cv_terrainFilter =
-       console_register_cvar(&console_log_queue,s_cv_terrainFilter_00471420,&DAT_0047125c);
-  cv_bodiesFade = console_register_cvar(&console_log_queue,s_cv_bodiesFade_00471410,&DAT_0047125c);
+       console_register_cvar
+                 (&console_log_queue,s_cv_terrainFilter_00471420,&console_cvar_default_true);
+  cv_bodiesFade =
+       console_register_cvar(&console_log_queue,s_cv_bodiesFade_00471410,&console_cvar_default_true)
+  ;
   cv_uiTransparency =
-       console_register_cvar(&console_log_queue,s_cv_uiTransparency_004713fc,&DAT_0047125c);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiTransparency_004713fc,&console_cvar_default_true);
   cv_uiPointFilterPanels =
-       console_register_cvar(&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&console_cvar_default_false);
   cv_enableMousePointAndClickMovement =
        console_register_cvar
-                 (&console_log_queue,s_cv_enableMousePointAndClickMovem_004713bc,&DAT_004713f8);
-  cv_verbose = console_register_cvar(&console_log_queue,s_cv_verbose_004713b0,&DAT_004713f8);
+                 (&console_log_queue,s_cv_enableMousePointAndClickMovem_004713bc,
+                  &console_cvar_default_false);
+  cv_verbose = console_register_cvar
+                         (&console_log_queue,s_cv_verbose_004713b0,&console_cvar_default_false);
   cv_terrainBodiesTransparency =
        console_register_cvar
-                 (&console_log_queue,s_cv_terrainBodiesTransparency_00471390,&DAT_004713f8);
+                 (&console_log_queue,s_cv_terrainBodiesTransparency_00471390,
+                  &console_cvar_default_false);
   cv_uiSmallIndicators =
-       console_register_cvar(&console_log_queue,s_cv_uiSmallIndicators_00471378,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_uiSmallIndicators_00471378,&console_cvar_default_false);
   cv_aimEnhancementFade =
-       console_register_cvar(&console_log_queue,s_cv_aimEnhancementFade_00471360,&DAT_00471260);
+       console_register_cvar
+                 (&console_log_queue,s_cv_aimEnhancementFade_00471360,&console_cvar_default_scalar);
   cv_friendlyFire =
-       console_register_cvar(&console_log_queue,s_cv_friendlyFire_00471350,&DAT_004713f8);
-  cv_showFPS = console_register_cvar(&console_log_queue,s_cv_showFPS_00471344,&DAT_004713f8);
+       console_register_cvar
+                 (&console_log_queue,s_cv_friendlyFire_00471350,&console_cvar_default_false);
+  cv_showFPS = console_register_cvar
+                         (&console_log_queue,s_cv_showFPS_00471344,&console_cvar_default_false);
   cv_padAimDistMul =
-       console_register_cvar(&console_log_queue,s_cv_padAimDistMul_0047132c,&DAT_00471340);
+       console_register_cvar
+                 (&console_log_queue,s_cv_padAimDistMul_0047132c,
+                  &console_cvar_default_pad_aim_dist_mul);
   return;
 }
 
@@ -2075,7 +2092,7 @@ void demo_setup_variant_1(void)
   float local_4;
   
   _config_player_count = 2;
-  terrain_generate(&DAT_00484914);
+  terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13);
   demo_time_limit_ms = 5000;
   iVar3 = 0;
   do {
@@ -2361,29 +2378,29 @@ char * __cdecl input_key_name(int key_code)
     case 0xd:
       return s_EQUALS_00471878;
     case 0xe:
-      return &DAT_00471870;
+      return &input_key_name_backspace;
     case 0xf:
-      return &DAT_0047186c;
+      return &input_key_name_tab;
     case 0x10:
-      return &DAT_00471868;
+      return &input_key_name_q;
     case 0x11:
-      return &DAT_00471864;
+      return &input_key_name_w;
     case 0x12:
-      return &DAT_00471860;
+      return &input_key_name_e;
     case 0x13:
-      return &DAT_0047185c;
+      return &input_key_name_r;
     case 0x14:
-      return &DAT_00471858;
+      return &input_key_name_t;
     case 0x15:
-      return &DAT_00471854;
+      return &input_key_name_y;
     case 0x16:
-      return &DAT_00471850;
+      return &input_key_name_u;
     case 0x17:
-      return &DAT_0047184c;
+      return &input_key_name_i;
     case 0x18:
-      return &DAT_00471848;
+      return &input_key_name_o;
     case 0x19:
-      return &DAT_00471844;
+      return &input_key_name_p;
     case 0x1a:
       return s_LBRACKET_00471838;
     case 0x1b:
@@ -2393,23 +2410,23 @@ char * __cdecl input_key_name(int key_code)
     case 0x1d:
       return s_LCONTROL_00471818;
     case 0x1e:
-      return &DAT_00471814;
+      return &input_key_name_a;
     case 0x1f:
-      return &DAT_00471810;
+      return &input_key_name_s;
     case 0x20:
-      return &DAT_0047180c;
+      return &input_key_name_d;
     case 0x21:
-      return &DAT_00471808;
+      return &input_key_name_f;
     case 0x22:
-      return &DAT_00471804;
+      return &input_key_name_g;
     case 0x23:
-      return &DAT_00471800;
+      return &input_key_name_h;
     case 0x24:
-      return &DAT_004717fc;
+      return &input_key_name_j;
     case 0x25:
-      return &DAT_004717f8;
+      return &input_key_name_k;
     case 0x26:
-      return &DAT_004717f4;
+      return &input_key_name_l;
     case 0x27:
       return s_SEMICOLON_004717e8;
     case 0x28:
@@ -2421,19 +2438,19 @@ char * __cdecl input_key_name(int key_code)
     case 0x2b:
       return s_BACKSLASH_004717c0;
     case 0x2c:
-      return &DAT_004717bc;
+      return &input_key_name_z;
     case 0x2d:
-      return &DAT_004717b8;
+      return &input_key_name_x;
     case 0x2e:
-      return &DAT_004717b4;
+      return &input_key_name_c;
     case 0x2f:
-      return &DAT_004717b0;
+      return &input_key_name_v;
     case 0x30:
-      return &DAT_004717ac;
+      return &input_key_name_b;
     case 0x31:
-      return &DAT_004717a8;
+      return &input_key_name_n;
     case 0x32:
-      return &DAT_004717a4;
+      return &input_key_name_m;
     case 0x33:
       return s_COMMA_0047179c;
     case 0x34:
@@ -2451,25 +2468,25 @@ char * __cdecl input_key_name(int key_code)
     case 0x3a:
       return s_CAPITAL_00471760;
     case 0x3b:
-      return &DAT_0047175c;
+      return &input_key_name_f1;
     case 0x3c:
-      return &DAT_00471758;
+      return &input_key_name_f2;
     case 0x3d:
-      return &DAT_00471754;
+      return &input_key_name_f3;
     case 0x3e:
-      return &DAT_00471750;
+      return &input_key_name_f4;
     case 0x3f:
-      return &DAT_0047174c;
+      return &input_key_name_f5;
     case 0x40:
-      return &DAT_00471748;
+      return &input_key_name_f6;
     case 0x41:
-      return &DAT_00471744;
+      return &input_key_name_f7;
     case 0x42:
-      return &DAT_00471740;
+      return &input_key_name_f8;
     case 0x43:
-      return &DAT_0047173c;
+      return &input_key_name_f9;
     case 0x44:
-      return &DAT_00471738;
+      return &input_key_name_f10;
     case 0x45:
       return s_NUMLOCK_00471730;
     case 0x46:
@@ -2489,7 +2506,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x4d:
       return s_NUMPAD6_004716ec;
     case 0x4e:
-      return &DAT_004716e8;
+      return &input_key_name_add;
     case 0x4f:
       return s_NUMPAD1_004716e0;
     case 0x50:
@@ -2505,17 +2522,17 @@ char * __cdecl input_key_name(int key_code)
     case 0x56:
       return s_OEM_102_004716b8;
     case 0x57:
-      return &DAT_004716b4;
+      return &input_key_name_f11;
     case 0x58:
-      return &DAT_004716b0;
+      return &input_key_name_f12;
     case 100:
-      return &DAT_004716ac;
+      return &input_key_name_f13;
     case 0x65:
-      return &DAT_004716a8;
+      return &input_key_name_f14;
     case 0x66:
-      return &DAT_004716a4;
+      return &input_key_name_f15;
     case 0x70:
-      return &DAT_0047169c;
+      return &input_key_name_kana;
     case 0x73:
       return s_ABNT_C1_00471694;
     case 0x79:
@@ -2523,7 +2540,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x7b:
       return s_NOCONVERT_00471680;
     case 0x7d:
-      return &DAT_0047167c;
+      return &input_key_name_yen;
     case 0x7e:
       return s_ABNT_C2_00471674;
     case 0x8d:
@@ -2531,7 +2548,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x90:
       return s_PREVTRACK_00471658;
     case 0x91:
-      return &DAT_00471654;
+      return &input_key_name_at;
     case 0x92:
       return s_COLON_0047164c;
     case 0x93:
@@ -2539,9 +2556,9 @@ char * __cdecl input_key_name(int key_code)
     case 0x94:
       return s_KANJI_00471638;
     case 0x95:
-      return &DAT_00471630;
+      return &input_key_name_stop;
     case 0x96:
-      return &DAT_0047162c;
+      return &input_key_name_ax;
     case 0x97:
       return s_UNLABELED_00471620;
     case 0x99:
@@ -2551,7 +2568,7 @@ char * __cdecl input_key_name(int key_code)
     case 0x9d:
       return s_RCONTROL_004715fc;
     case 0xa0:
-      return &DAT_004715f4;
+      return &input_key_name_mute;
     case 0xa1:
       return s_CALCULATOR_004715e8;
     case 0xa2:
@@ -2575,37 +2592,37 @@ char * __cdecl input_key_name(int key_code)
     case 0xc5:
       return s_PAUSE_00471584;
     case 199:
-      return &DAT_0047157c;
+      return &input_key_name_home;
     case 200:
-      return &DAT_00471578;
+      return &input_key_name_up;
     case 0xc9:
       return s_PRIOR_00471570;
     case 0xcb:
-      return &DAT_00471568;
+      return &input_key_name_left;
     case 0xcd:
       return s_RIGHT_00471560;
     case 0xcf:
-      return &DAT_0047155c;
+      return &input_key_name_end;
     case 0xd0:
-      return &DAT_00471554;
+      return &input_key_name_down;
     case 0xd1:
-      return &DAT_0047154c;
+      return &input_key_name_next;
     case 0xd2:
       return s_INSERT_00471544;
     case 0xd3:
       return s_DELETE_0047153c;
     case 0xdb:
-      return &DAT_00471534;
+      return &input_key_name_lwin;
     case 0xdc:
-      return &DAT_0047152c;
+      return &input_key_name_rwin;
     case 0xdd:
-      return &DAT_00471524;
+      return &input_key_name_apps;
     case 0xde:
       return s_POWER_0047151c;
     case 0xdf:
       return s_SLEEP_00471514;
     case 0xe3:
-      return &DAT_0047150c;
+      return &input_key_name_wake;
     case 0xe5:
       return s_WEBSEARCH_00471500;
     case 0xe6:
@@ -2621,7 +2638,7 @@ char * __cdecl input_key_name(int key_code)
     case 0xeb:
       return s_MYCOMPUTER_004714bc;
     case 0xec:
-      return &DAT_004714b4;
+      return &input_key_name_mail;
     case 0xed:
       return s_MEDIASELECT_004714a8;
     }
@@ -2688,7 +2705,7 @@ char * __cdecl input_key_name(int key_code)
     else {
       if (key_code == 0x104) {
         uVar3 = 0xffffffff;
-        pcVar5 = &DAT_00471ad4;
+        pcVar5 = &input_key_name_mouse5;
         do {
           pcVar6 = pcVar5;
           if (uVar3 == 0) break;
@@ -2748,7 +2765,7 @@ char * __cdecl input_key_name(int key_code)
         else {
           if (key_code == 0x120) {
             uVar3 = 0xffffffff;
-            pcVar5 = &DAT_00471aac;
+            pcVar5 = &input_key_name_joys2;
             do {
               pcVar6 = pcVar5;
               if (uVar3 == 0) break;
@@ -2778,7 +2795,7 @@ char * __cdecl input_key_name(int key_code)
           else {
             if (key_code == 0x122) {
               uVar3 = 0xffffffff;
-              pcVar5 = &DAT_00471a9c;
+              pcVar5 = &input_key_name_joys4;
               do {
                 pcVar6 = pcVar5;
                 if (uVar3 == 0) break;
@@ -2808,7 +2825,7 @@ char * __cdecl input_key_name(int key_code)
             else {
               if (key_code == 0x124) {
                 uVar3 = 0xffffffff;
-                pcVar5 = &DAT_00471a8c;
+                pcVar5 = &input_key_name_joys6;
                 do {
                   pcVar6 = pcVar5;
                   if (uVar3 == 0) break;
@@ -2838,7 +2855,7 @@ char * __cdecl input_key_name(int key_code)
               else {
                 if (key_code == 0x126) {
                   uVar3 = 0xffffffff;
-                  pcVar5 = &DAT_00471a7c;
+                  pcVar5 = &input_key_name_joys8;
                   do {
                     pcVar6 = pcVar5;
                     if (uVar3 == 0) break;
@@ -2868,7 +2885,7 @@ char * __cdecl input_key_name(int key_code)
                 else {
                   if (key_code == 0x128) {
                     uVar3 = 0xffffffff;
-                    pcVar5 = &DAT_00471a6c;
+                    pcVar5 = &input_key_name_joys10;
                     do {
                       pcVar6 = pcVar5;
                       if (uVar3 == 0) break;
@@ -2898,7 +2915,7 @@ char * __cdecl input_key_name(int key_code)
                   else {
                     if (key_code == 0x12a) {
                       uVar3 = 0xffffffff;
-                      pcVar5 = &DAT_00471a5c;
+                      pcVar5 = &input_key_name_joys12;
                       do {
                         pcVar6 = pcVar5;
                         if (uVar3 == 0) break;
@@ -3018,7 +3035,7 @@ char * __cdecl input_key_name(int key_code)
                           else {
                             if (key_code == 0x153) {
                               uVar3 = 0xffffffff;
-                              pcVar5 = &DAT_00471a04;
+                              pcVar5 = &input_key_name_joy_rot_x;
                               do {
                                 pcVar6 = pcVar5;
                                 if (uVar3 == 0) break;
@@ -3048,7 +3065,7 @@ char * __cdecl input_key_name(int key_code)
                             else {
                               if (key_code == 0x155) {
                                 uVar3 = 0xffffffff;
-                                pcVar5 = &DAT_004719f4;
+                                pcVar5 = &input_key_name_joy_rot_z;
                                 do {
                                   pcVar6 = pcVar5;
                                   if (uVar3 == 0) break;
@@ -3078,7 +3095,7 @@ char * __cdecl input_key_name(int key_code)
                               else {
                                 if (key_code == 0x163) {
                                   uVar3 = 0xffffffff;
-                                  pcVar5 = &DAT_004719e0;
+                                  pcVar5 = &input_key_name_rim0_x_axis;
                                   do {
                                     pcVar6 = pcVar5;
                                     if (uVar3 == 0) break;
@@ -3108,7 +3125,7 @@ char * __cdecl input_key_name(int key_code)
                                 else {
                                   if (key_code == 0x165) {
                                     uVar3 = 0xffffffff;
-                                    pcVar5 = &DAT_004719c8;
+                                    pcVar5 = &input_key_name_rim2_x_axis;
                                     do {
                                       pcVar6 = pcVar5;
                                       if (uVar3 == 0) break;
@@ -3138,7 +3155,7 @@ char * __cdecl input_key_name(int key_code)
                                   else {
                                     if (key_code == 0x169) {
                                       uVar3 = 0xffffffff;
-                                      pcVar5 = &DAT_004719b0;
+                                      pcVar5 = &input_key_name_rim1_y_axis;
                                       do {
                                         pcVar6 = pcVar5;
                                         if (uVar3 == 0) break;
@@ -3168,7 +3185,7 @@ char * __cdecl input_key_name(int key_code)
                                     else {
                                       if (key_code == 0x16d) {
                                         uVar3 = 0xffffffff;
-                                        pcVar5 = &DAT_00471998;
+                                        pcVar5 = &input_key_name_rim0_btn1;
                                         do {
                                           pcVar6 = pcVar5;
                                           if (uVar3 == 0) break;
@@ -3198,7 +3215,7 @@ char * __cdecl input_key_name(int key_code)
                                       else {
                                         if (key_code == 0x16f) {
                                           uVar3 = 0xffffffff;
-                                          pcVar5 = &DAT_00471980;
+                                          pcVar5 = &input_key_name_rim0_btn3;
                                           do {
                                             pcVar6 = pcVar5;
                                             if (uVar3 == 0) break;
@@ -3228,7 +3245,7 @@ char * __cdecl input_key_name(int key_code)
                                         else {
                                           if (key_code == 0x171) {
                                             uVar3 = 0xffffffff;
-                                            pcVar5 = &DAT_00471968;
+                                            pcVar5 = &input_key_name_rim0_btn5;
                                             do {
                                               pcVar6 = pcVar5;
                                               if (uVar3 == 0) break;
@@ -3259,7 +3276,7 @@ char * __cdecl input_key_name(int key_code)
                                           else {
                                             if (key_code == 0x173) {
                                               uVar3 = 0xffffffff;
-                                              pcVar5 = &DAT_00471950;
+                                              pcVar5 = &input_key_name_rim1_btn2;
                                               do {
                                                 pcVar6 = pcVar5;
                                                 if (uVar3 == 0) break;
@@ -3291,7 +3308,7 @@ char * __cdecl input_key_name(int key_code)
                                             else {
                                               if (key_code == 0x175) {
                                                 uVar3 = 0xffffffff;
-                                                pcVar5 = &DAT_00471938;
+                                                pcVar5 = &input_key_name_rim1_btn4;
                                                 do {
                                                   pcVar6 = pcVar5;
                                                   if (uVar3 == 0) break;
@@ -3323,7 +3340,7 @@ char * __cdecl input_key_name(int key_code)
                                               else {
                                                 if (key_code == 0x177) {
                                                   uVar3 = 0xffffffff;
-                                                  pcVar5 = &DAT_00471920;
+                                                  pcVar5 = &input_key_name_rim2_btn1;
                                                   do {
                                                     pcVar6 = pcVar5;
                                                     if (uVar3 == 0) break;
@@ -3355,7 +3372,7 @@ char * __cdecl input_key_name(int key_code)
                                                 else {
                                                   if (key_code == 0x179) {
                                                     uVar3 = 0xffffffff;
-                                                    pcVar5 = &DAT_00471908;
+                                                    pcVar5 = &input_key_name_rim2_btn3;
                                                     do {
                                                       pcVar6 = pcVar5;
                                                       if (uVar3 == 0) break;
@@ -3387,7 +3404,7 @@ char * __cdecl input_key_name(int key_code)
                                                   else {
                                                     if (key_code == 0x17b) {
                                                       uVar3 = 0xffffffff;
-                                                      pcVar5 = &DAT_004718f0;
+                                                      pcVar5 = &input_key_name_rim2_btn5;
                                                       do {
                                                         pcVar6 = pcVar5;
                                                         if (uVar3 == 0) break;
@@ -8351,7 +8368,7 @@ mod_var_t * mod_api_core_get_var(char *id)
   
   puVar1 = console_cvar_find(&console_log_queue,id);
   if (puVar1 == (undefined4 *)0x0) {
-    puVar1 = console_register_cvar(&console_log_queue,id,&DAT_0047125c);
+    puVar1 = console_register_cvar(&console_log_queue,id,&console_cvar_default_true);
   }
   puVar1[8] = puVar1 + 3;
   ((mod_var_t *)(puVar1 + 6))->id = (char *)*puVar1;
@@ -10886,7 +10903,7 @@ int gameplay_run_state_init(void)
   DAT_00487086 = 0x7c;
   DAT_00487087 = 0xff;
   uVar3 = crt_rand();
-  _DAT_00487078 = uVar3 & 0xfee050f;
+  highscore_record_random_tag = uVar3 & 0xfee050f;
   bonus_energizer_timer = 0.0;
   survival_spawn_stage = 0;
   _DAT_00487028 = 0;
@@ -11369,8 +11386,8 @@ void game_sequence_load(void)
   HKEY local_8;
   uint local_4;
   
-  LVar1 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&DAT_004852d0,0,(LPSTR)0x0,0,0xf003f,
-                          (LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
+  LVar1 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&registry_key_status_root_path,0,(LPSTR)0x0,0,
+                          0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
   if (LVar1 == 0) {
     reg_read_dword_default(local_8,s_sequence_0047361c,&local_4,0);
     if (_game_sequence_id < local_4) {
@@ -11403,8 +11420,8 @@ void game_save_status(void)
   HKEY local_8;
   int local_4;
   
-  LVar2 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&DAT_004852d0,0,(LPSTR)0x0,0,0xf003f,
-                          (LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
+  LVar2 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&registry_key_status_root_path,0,(LPSTR)0x0,0,
+                          0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
   uVar7 = _game_sequence_id;
   if (LVar2 == 0) {
     reg_write_dword(local_8,s_sequence_0047361c,_game_sequence_id);
@@ -11531,17 +11548,18 @@ void gameplay_reset_state(void)
 
 {
   bonus_hud_slot_slide_x_block_t *pbVar1;
-  float *pfVar2;
-  bonus_entry_t *pbVar3;
-  projectile_t *ppVar4;
-  sprite_effect_t *psVar5;
-  secondary_projectile_t *psVar6;
-  int iVar7;
-  creature_spawn_slot_t *pcVar8;
-  int iVar9;
-  int *piVar10;
+  uint uVar2;
+  float *pfVar3;
+  bonus_entry_t *pbVar4;
+  projectile_t *ppVar5;
+  sprite_effect_t *psVar6;
+  secondary_projectile_t *psVar7;
+  int iVar8;
+  creature_spawn_slot_t *pcVar9;
+  int iVar10;
   int *piVar11;
-  uint *puVar12;
+  int *piVar12;
+  uint *puVar13;
   
   pbVar1 = &bonus_hud_slot_table[0].slide;
   player_overlay_suppressed_latch = '\0';
@@ -11645,10 +11663,10 @@ void gameplay_reset_state(void)
   _camera_offset_x = (float)_terrain_texture_width * 0.5;
   perk_choices_dirty._0_1_ = 1;
   bonus_spawn_guard._0_1_ = 0;
-  puVar12 = weapon_usage_time;
-  for (iVar9 = 0x40; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *puVar12 = 0;
-    puVar12 = puVar12 + 1;
+  puVar13 = weapon_usage_time;
+  for (iVar10 = 0x40; iVar10 != 0; iVar10 = iVar10 + -1) {
+    *puVar13 = 0;
+    puVar13 = puVar13 + 1;
   }
   _camera_offset_y = (float)_terrain_texture_height * 0.5;
   weapon_table_init();
@@ -11680,8 +11698,8 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_record_random_tag = uVar2 & 0xfee050f;
   _DAT_004aaf24 = 0;
   bonus_freeze_timer = 0.0;
   perk_jinxed_proc_timer_s = 0.0;
@@ -11691,59 +11709,59 @@ void gameplay_reset_state(void)
   player_reset_all();
   player_aux_timer[0] = 0.0;
   player_aux_timer[1] = 0.0;
-  pfVar2 = &player_state_table.low_health_timer;
+  pfVar3 = &player_state_table.low_health_timer;
   do {
-    pfVar2[5] = -1.0;
-    pfVar2[6] = -1.0;
-    *pfVar2 = 100.0;
-    pfVar2[3] = 0.0;
-    pfVar2 = pfVar2 + 0xd8;
-  } while ((int)pfVar2 < 0x491280);
-  pbVar3 = bonus_pool;
+    pfVar3[5] = -1.0;
+    pfVar3[6] = -1.0;
+    *pfVar3 = 100.0;
+    pfVar3[3] = 0.0;
+    pfVar3 = pfVar3 + 0xd8;
+  } while ((int)pfVar3 < 0x491280);
+  pbVar4 = bonus_pool;
   do {
-    pbVar3->bonus_id = BONUS_ID_NONE;
-    pbVar3 = pbVar3 + 1;
-  } while ((int)pbVar3 < 0x482b08);
-  ppVar4 = projectile_pool;
+    pbVar4->bonus_id = BONUS_ID_NONE;
+    pbVar4 = pbVar4 + 1;
+  } while ((int)pbVar4 < 0x482b08);
+  ppVar5 = projectile_pool;
   do {
-    ppVar4->active = '\0';
-    ppVar4 = ppVar4 + 1;
-  } while ((int)ppVar4 < 0x493eb8);
-  psVar5 = &sprite_effect_pool;
+    ppVar5->active = '\0';
+    ppVar5 = ppVar5 + 1;
+  } while ((int)ppVar5 < 0x493eb8);
+  psVar6 = &sprite_effect_pool;
   do {
-    *(undefined1 *)&psVar5->active = 0;
-    psVar5 = psVar5 + 1;
-  } while ((int)psVar5 < 0x49aa20);
-  psVar6 = secondary_projectile_pool;
-  do {
-    psVar6->active = '\0';
+    *(undefined1 *)&psVar6->active = 0;
     psVar6 = psVar6 + 1;
-  } while ((int)psVar6 < 0x4965d8);
-  iVar9 = 0;
-  piVar10 = &creature_pool.target_player;
+  } while ((int)psVar6 < 0x49aa20);
+  psVar7 = secondary_projectile_pool;
   do {
-    iVar7 = _config_player_count;
-    piVar10[-0xe] = 0;
-    ((creature_t *)(piVar10 + -0x1c))->active = '\0';
-    if (iVar7 == 0) {
-      *(undefined1 *)piVar10 = 0;
+    psVar7->active = '\0';
+    psVar7 = psVar7 + 1;
+  } while ((int)psVar7 < 0x4965d8);
+  iVar10 = 0;
+  piVar11 = &creature_pool.target_player;
+  do {
+    iVar8 = _config_player_count;
+    piVar11[-0xe] = 0;
+    ((creature_t *)(piVar11 + -0x1c))->active = '\0';
+    if (iVar8 == 0) {
+      *(undefined1 *)piVar11 = 0;
     }
     else {
-      *(char *)piVar10 = (char)(iVar9 % iVar7);
+      *(char *)piVar11 = (char)(iVar10 % iVar8);
     }
-    *(uchar *)(piVar10 + -0x1a) = '\x01';
-    piVar10[7] = 0;
-    iVar7 = crt_rand();
-    piVar11 = piVar10 + 0x26;
-    iVar9 = iVar9 + 1;
-    piVar10[9] = (int)(float)(iVar7 % 0x1f);
-    piVar10 = piVar11;
-  } while ((int)piVar11 < 0x4aa3a8);
-  pcVar8 = &creature_spawn_slot_table;
+    *(uchar *)(piVar11 + -0x1a) = '\x01';
+    piVar11[7] = 0;
+    iVar8 = crt_rand();
+    piVar12 = piVar11 + 0x26;
+    iVar10 = iVar10 + 1;
+    piVar11[9] = (int)(float)(iVar8 % 0x1f);
+    piVar11 = piVar12;
+  } while ((int)piVar12 < 0x4aa3a8);
+  pcVar9 = &creature_spawn_slot_table;
   do {
-    pcVar8->owner = (creature_t *)0x0;
-    pcVar8 = pcVar8 + 1;
-  } while ((int)pcVar8 < 0x4852d0);
+    pcVar9->owner = (creature_t *)0x0;
+    pcVar9 = pcVar9 + 1;
+  } while ((int)pcVar9 < 0x4852d0);
   fx_queue_rotated = 0;
   fx_queue_count = 0;
   highscore_full_version_marker = 0;
@@ -11761,8 +11779,8 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_record_random_tag = uVar2 & 0xfee050f;
   terrain_generate_random();
   return;
 }
@@ -14034,15 +14052,15 @@ void terrain_generate_random(void)
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
   if ((0x27 < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484c84);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x27);
     return;
   }
   if ((0x1d < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484acc);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x1d);
     return;
   }
   if ((0x13 < _game_status_blob) && (iVar2 = crt_rand(), ((byte)iVar2 & 7) == 3)) {
-    terrain_generate(&DAT_00484914);
+    terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13);
     return;
   }
   _camera_offset_y = 0;
@@ -24304,9 +24322,10 @@ int crimsonland_main(void)
   char *extraout_EDX_05;
   char *extraout_EDX_06;
   char *extraout_EDX_07;
-  undefined4 *puVar14;
+  char **ppcVar14;
+  undefined4 *puVar15;
   HKEY key;
-  undefined4 uVar15;
+  undefined4 uVar16;
   uint in_stack_fffffad0;
   undefined4 uStack_52c;
   undefined4 in_stack_fffffb20;
@@ -24377,17 +24396,17 @@ int crimsonland_main(void)
   console_register_command(&console_log_queue,s_openurl_00474c38,console_cmd_open_url);
   console_register_command
             (&console_log_queue,s_sndfreqadjustment_00474c24,console_cmd_snd_freq_adjustment);
-  puVar14 = &DAT_004852d0;
+  ppcVar14 = &registry_key_status_root_path;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar14 = 0;
-    puVar14 = puVar14 + 1;
+    *ppcVar14 = (char *)0x0;
+    ppcVar14 = ppcVar14 + 1;
   }
-  *(undefined2 *)puVar14 = 0;
-  *(undefined1 *)((int)puVar14 + 2) = 0;
-  DAT_004852d0._0_1_ = 0x53;
-  DAT_004852d0._1_1_ = 0x6f;
-  DAT_004852d0._2_1_ = 0x66;
-  DAT_004852d0._3_1_ = 0x74;
+  *(undefined2 *)ppcVar14 = 0;
+  *(undefined1 *)((int)ppcVar14 + 2) = 0;
+  registry_key_status_root_path._0_1_ = 0x53;
+  registry_key_status_root_path._1_1_ = 0x6f;
+  registry_key_status_root_path._2_1_ = 0x66;
+  registry_key_status_root_path._3_1_ = 0x74;
   DAT_004852d4._0_1_ = 0x77;
   DAT_004852d4._1_1_ = 0x61;
   DAT_004852d6 = 0x72;
@@ -24558,24 +24577,24 @@ int crimsonland_main(void)
   texture_get_or_load(s_logo_esrb_004746d8,s_load_esrb_mature_jaz_004748bc);
   texture_get_or_load(s_loading_004746e4,s_load_loading_jaz_004748a8);
   texture_get_or_load(s_cl_logo_00471f70,s_load_logo_crimsonland_tga_0047488c);
-  uVar15 = 0;
+  uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar15 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   key = (HKEY)0x0;
-  uVar15 = 0;
+  uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar15 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
   uVar2 = DAT_00473a30;
   _key_char_count = 0;
-  puVar14 = &key_char_buffer;
+  puVar15 = &key_char_buffer;
   for (uVar12 = DAT_00473a30 >> 2; uVar12 != 0; uVar12 = uVar12 - 1) {
-    *puVar14 = 0;
-    puVar14 = puVar14 + 1;
+    *puVar15 = 0;
+    puVar15 = puVar15 + 1;
   }
   for (uVar12 = uVar2 & 3; uVar12 != 0; uVar12 = uVar12 - 1) {
-    *(undefined1 *)puVar14 = 0;
-    puVar14 = (undefined4 *)((int)puVar14 + 1);
+    *(undefined1 *)puVar15 = 0;
+    puVar15 = (undefined4 *)((int)puVar15 + 1);
   }
   (*grim_interface_ptr->vtable->grim_set_key_char_buffer)
             ((uchar *)&key_char_buffer,(int *)&key_char_count,uVar2);
@@ -24631,12 +24650,12 @@ int crimsonland_main(void)
      (update_notice_url != (char *)0x0)) {
     Sleep(200);
     uStack_52c = uStack_52c & 0xffff0000;
-    puVar14 = (undefined4 *)((int)&uStack_52c + 2);
+    puVar15 = (undefined4 *)((int)&uStack_52c + 2);
     for (iVar3 = 0xff; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar14 = 0;
-      puVar14 = puVar14 + 1;
+      *puVar15 = 0;
+      puVar15 = puVar15 + 1;
     }
-    *(undefined2 *)puVar14 = 0;
+    *(undefined2 *)puVar15 = 0;
     uVar2 = 0xffffffff;
     pcVar5 = update_notice_url;
     do {
@@ -25563,8 +25582,8 @@ void * __cdecl effect_spawn(int effect_id,float *pos)
   float *pfVar8;
   
   if (_config_detail_preset < 3) {
-    uVar4 = DAT_004c2b38 & 1;
-    DAT_004c2b38 = DAT_004c2b38 + 1;
+    uVar4 = effect_spawn_detail_skip_counter & 1;
+    effect_spawn_detail_skip_counter = effect_spawn_detail_skip_counter + 1;
     if (uVar4 != 0) {
       return &DAT_004ab270;
     }
@@ -26706,22 +26725,23 @@ void __fastcall perks_init_database(void)
   perk_meta_table.description =
        wrap_text_to_width_alloc(this,s_You_shouldn_t_be_seeing_this___00477708,0x100);
   perk_id_bloody_mess_quick_learner = 1;
-  DAT_004c3640 = wrap_text_to_width_alloc(this_00,s_Bloody_Mess_004776fc,0x100);
-  DAT_004c3648 = wrap_text_to_width_alloc(this_01,s_More_the_merrier__More_blood_gua_00477684,0x100)
-  ;
-  DAT_004c3644 = wrap_text_to_width_alloc(this_02,s_Quick_Learner_00477674,0x100);
+  perk_slot_1_name_wrapped_primary = wrap_text_to_width_alloc(this_00,s_Bloody_Mess_004776fc,0x100);
+  perk_slot_1_desc_wrapped_primary =
+       wrap_text_to_width_alloc(this_01,s_More_the_merrier__More_blood_gua_00477684,0x100);
+  perk_slot_1_name_wrapped_alternate =
+       wrap_text_to_width_alloc(this_02,s_Quick_Learner_00477674,0x100);
   pcVar3 = wrap_text_to_width_alloc(this_03,s_You_learn_things_faster_than_a_r_00477600,0x100);
-  pcVar2 = DAT_004c3648;
-  this_04 = DAT_004c3640;
+  pcVar2 = perk_slot_1_desc_wrapped_primary;
+  this_04 = perk_slot_1_name_wrapped_primary;
   iVar1 = perk_id_bloody_mess_quick_learner;
-  DAT_004c364c = pcVar3;
+  perk_slot_1_desc_wrapped_alternate = pcVar3;
   if (config_fx_toggle == '\0') {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3640;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
     (&perk_meta_table)[iVar1].description = pcVar2;
   }
   else {
     this_04 = (char *)(perk_id_bloody_mess_quick_learner * 0x14);
-    *(char **)(this_04 + 0x4c2c40) = DAT_004c3644;
+    *(char **)(this_04 + 0x4c2c40) = perk_slot_1_name_wrapped_alternate;
     *(char **)(this_04 + 0x4c2c44) = pcVar3;
   }
   perk_id_sharpshooter = 2;
@@ -32849,7 +32869,7 @@ void quest_database_init(void)
   _DAT_004848b4 = 0;
   _DAT_004848e0 = 0xc;
   _DAT_0048490c = 0;
-  _DAT_00484938 = 9;
+  quest_meta_terrain_desc_unlock_gt_0x13.unlock_weapon_id = 9;
   _DAT_00484964 = 0;
   _DAT_00484990 = 0x15;
   _DAT_004849bc = 0;
@@ -32859,7 +32879,7 @@ void quest_database_init(void)
   _DAT_00484a6c = 0;
   _DAT_00484a98 = 0xb;
   _DAT_00484ac4 = 0;
-  _DAT_00484af0 = 10;
+  quest_meta_terrain_desc_unlock_gt_0x1d.unlock_weapon_id = 10;
   _DAT_00484b1c = 0;
   _DAT_00484b48 = 0xd;
   _DAT_00484b74 = 0;
@@ -32869,7 +32889,7 @@ void quest_database_init(void)
   _DAT_00484c24 = 0;
   _DAT_00484c50 = 0x14;
   _DAT_00484c7c = 0;
-  _DAT_00484ca8 = 0x13;
+  quest_meta_terrain_desc_unlock_gt_0x27.unlock_weapon_id = 0x13;
   _DAT_00484cd4 = 0;
   _DAT_00484d00 = 0xe;
   _DAT_00484d2c = 0;
@@ -32889,7 +32909,7 @@ void quest_database_init(void)
   _DAT_004848b0 = 0x1f;
   _DAT_004848dc = perk_id_antiperk;
   _DAT_00484908 = 0x20;
-  _DAT_00484934 = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x13.unlock_perk_id = perk_id_antiperk;
   _DAT_00484960 = 0x21;
   _DAT_0048498c = perk_id_antiperk;
   _DAT_004849b8 = 0x22;
@@ -32899,7 +32919,7 @@ void quest_database_init(void)
   _DAT_00484a68 = 0x24;
   _DAT_00484a94 = perk_id_antiperk;
   _DAT_00484ac0 = 0x25;
-  _DAT_00484aec = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x1d.unlock_perk_id = perk_id_antiperk;
   _DAT_00484b18 = 0x26;
   _DAT_00484b44 = perk_id_antiperk;
   _DAT_00484b70 = 0x27;
@@ -32909,7 +32929,7 @@ void quest_database_init(void)
   _DAT_00484c20 = 0x29;
   _DAT_00484c4c = perk_id_antiperk;
   _DAT_00484c78 = 0x2a;
-  _DAT_00484ca4 = perk_id_antiperk;
+  quest_meta_terrain_desc_unlock_gt_0x27.unlock_perk_id = perk_id_antiperk;
   _DAT_00484cd0 = 0x2b;
   _DAT_00484cfc = perk_id_antiperk;
   _DAT_00484d28 = 0x2c;
@@ -32951,11 +32971,12 @@ void quest_database_init(void)
 void __cdecl quest_start_selected(int tier,int index)
 
 {
-  int *piVar1;
-  int iVar2;
+  uint uVar1;
+  int *piVar2;
   int iVar3;
   int iVar4;
   int iVar5;
+  int iVar6;
   
   creature_reset_all();
   quest_spawn_count = 0;
@@ -32978,48 +32999,48 @@ void __cdecl quest_start_selected(int tier,int index)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  uVar1 = crt_rand();
+  highscore_record_random_tag = uVar1 & 0xfee050f;
   projectile_reset_pools();
   player_state_table.pos_x = (float)_terrain_texture_width * 0.5;
   player_state_table.pos_y = (float)_terrain_texture_height * 0.5;
-  iVar3 = index + -0xb + tier * 10;
-  terrain_generate(&quest_selected_meta + iVar3);
-  weapon_assign_player(0,(&quest_selected_meta)[iVar3].start_weapon_id);
-  weapon_assign_player(1,(&quest_selected_meta)[iVar3].start_weapon_id);
+  iVar4 = index + -0xb + tier * 10;
+  terrain_generate(&quest_selected_meta + iVar4);
+  weapon_assign_player(0,(&quest_selected_meta)[iVar4].start_weapon_id);
+  weapon_assign_player(1,(&quest_selected_meta)[iVar4].start_weapon_id);
   console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
-  if ((&quest_selected_meta)[iVar3].builder == (quest_builder_fn_t)0x0) {
+  if ((&quest_selected_meta)[iVar4].builder == (quest_builder_fn_t)0x0) {
     quest_build_fallback(&quest_spawn_table,&quest_spawn_count);
   }
   else {
-    (*(&quest_selected_meta)[iVar3].builder)(&quest_spawn_table,&quest_spawn_count);
+    (*(&quest_selected_meta)[iVar4].builder)(&quest_spawn_table,&quest_spawn_count);
   }
-  iVar5 = 0;
-  iVar3 = 0;
-  _DAT_00486fd4 = 0;
-  _DAT_00487030 = 0;
+  iVar6 = 0;
+  iVar4 = 0;
+  quest_spawn_total_creatures = 0;
+  quest_spawn_last_time_ms = 0;
   if (0 < quest_spawn_count) {
-    piVar1 = &quest_spawn_table.pos_y_block.heading_block.count;
-    iVar2 = quest_spawn_count;
+    piVar2 = &quest_spawn_table.pos_y_block.heading_block.count;
+    iVar3 = quest_spawn_count;
     do {
-      if (((config_hardcore != '\0') && (iVar4 = *piVar1, 1 < iVar4)) && (piVar1[-2] != 0x3c)) {
-        if (piVar1[-2] == 0x2b) {
-          iVar4 = iVar4 + 2;
+      if (((config_hardcore != '\0') && (iVar5 = *piVar2, 1 < iVar5)) && (piVar2[-2] != 0x3c)) {
+        if (piVar2[-2] == 0x2b) {
+          iVar5 = iVar5 + 2;
         }
         else {
-          iVar4 = iVar4 + 8;
+          iVar5 = iVar5 + 8;
         }
-        *piVar1 = iVar4;
+        *piVar2 = iVar5;
       }
-      iVar5 = iVar5 + *piVar1;
-      if (iVar3 < piVar1[-1]) {
-        iVar3 = piVar1[-1];
+      iVar6 = iVar6 + *piVar2;
+      if (iVar4 < piVar2[-1]) {
+        iVar4 = piVar2[-1];
       }
-      piVar1 = piVar1 + 6;
-      iVar2 = iVar2 + -1;
-      _DAT_00486fd4 = iVar5;
-      _DAT_00487030 = iVar3;
-    } while (iVar2 != 0);
+      piVar2 = piVar2 + 6;
+      iVar3 = iVar3 + -1;
+      quest_spawn_total_creatures = iVar6;
+      quest_spawn_last_time_ms = iVar4;
+    } while (iVar3 != 0);
   }
   return;
 }
@@ -33967,27 +33988,27 @@ char * highscore_build_path(void)
   char *pcVar3;
   undefined *puVar4;
   
-  if (DAT_004c3960 == '\0') {
-    crt_getcwd(&DAT_004c375c,0x1ff);
-    DAT_004c395b = 0;
-    DAT_004c3960 = '\x01';
+  if (highscore_cwd_cached == '\0') {
+    crt_getcwd(&highscore_cwd_buf,0x1ff);
+    highscore_cwd_buf_tail_nul = '\0';
+    highscore_cwd_cached = '\x01';
   }
   if (config_game_mode == GAME_MODE_RUSH) {
-    puVar4 = &DAT_004c375c;
+    puVar4 = &highscore_cwd_buf;
     pcVar3 = s__s_scores5_rush_hi_00477c60;
   }
   else if (config_game_mode == GAME_MODE_SURVIVAL) {
-    puVar4 = &DAT_004c375c;
+    puVar4 = &highscore_cwd_buf;
     pcVar3 = s__s_scores5_survival_hi_00477c48;
   }
   else {
     if (config_game_mode == GAME_MODE_QUEST) {
       if (config_hardcore == '\0') {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_questhc_d__d_hi_00477c10,&DAT_004c375c,
+        crt_sprintf(&highscore_path_buf,s__s_scores5_questhc_d__d_hi_00477c10,&highscore_cwd_buf,
                     quest_stage_major,quest_stage_minor);
       }
       else {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_quest_d__d_hi_00477c2c,&DAT_004c375c,
+        crt_sprintf(&highscore_path_buf,s__s_scores5_quest_d__d_hi_00477c2c,&highscore_cwd_buf,
                     quest_stage_major,quest_stage_minor);
       }
       goto LAB_0043b67f;
@@ -33995,11 +34016,11 @@ char * highscore_build_path(void)
     puVar4 = &config_saved_name_0 + _config_name_slot_selected * 0x1b;
     pcVar3 = s_scores5_unknown_hi_00477bfc;
   }
-  crt_sprintf(&DAT_004c36dc,pcVar3,puVar4);
+  crt_sprintf(&highscore_path_buf,pcVar3,puVar4);
 LAB_0043b67f:
   if (_config_player_count == 2) {
     uVar2 = 0xffffffff;
-    pcVar3 = &DAT_004c36dc;
+    pcVar3 = &highscore_path_buf;
     do {
       if (uVar2 == 0) break;
       uVar2 = uVar2 - 1;
@@ -34011,19 +34032,20 @@ LAB_0043b67f:
     (&DAT_004c36d9)[uVar2] = 0x32;
     (&DAT_004c36da)[uVar2] = 0x2e;
     (&DAT_004c36db)[uVar2] = 0x68;
-    (&DAT_004c36dc)[uVar2] = 0x69;
+    (&highscore_path_buf)[uVar2] = 0x69;
     (&DAT_004c36dd)[uVar2] = 0;
   }
   if (_config_name_slot_selected != 0) {
-    crt_sprintf(&DAT_004c365c,&s_fmt_typo_target_name_2_parts,&DAT_004c36dc,
+    crt_sprintf(&highscore_named_path_buf,&s_fmt_typo_target_name_2_parts,&highscore_path_buf,
                 &config_saved_name_0 + _config_name_slot_selected * 0x1b);
-    console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&DAT_004c365c);
-    return &DAT_004c365c;
+    console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&highscore_named_path_buf)
+    ;
+    return &highscore_named_path_buf;
   }
   if (*(float *)((int)cv_verbose + 0xc) != 0.0) {
-    console_printf(&console_log_queue,s_Opening___s__00477bc8,&DAT_004c36dc);
+    console_printf(&console_log_queue,s_Opening___s__00477bc8,&highscore_path_buf);
   }
-  return &DAT_004c36dc;
+  return &highscore_path_buf;
 }
 
 
@@ -34064,7 +34086,7 @@ void highscore_record_init(void)
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
   }
-  _DAT_00487078 = uVar2 + 0x310;
+  highscore_record_random_tag = uVar2 + 0x310;
   highscore_full_version_marker = -(config_hardcore != '\0') & 0x75;
   return;
 }
@@ -34221,11 +34243,11 @@ uint __cdecl resource_pack_read_cstring(undefined4 *param_1)
   iVar3 = 0;
   bVar1 = *(byte *)(param_1 + 3);
   while (((bVar1 & 0x10) == 0 && (uVar2 = crt_getc(param_1), uVar2 != 0))) {
-    (&DAT_004c3a68)[iVar3] = (char)uVar2;
+    (&resource_pack_entry_name_buf)[iVar3] = (char)uVar2;
     bVar1 = *(byte *)(param_1 + 3);
     iVar3 = iVar3 + 1;
   }
-  (&DAT_004c3a68)[iVar3] = 0;
+  (&resource_pack_entry_name_buf)[iVar3] = 0;
   return (uint)~param_1[3] >> 4 & 1;
 }
 
@@ -34248,7 +34270,7 @@ int __cdecl resource_pack_set(char *path)
   
   fp = (FILE *)crt_fopen(path,&file_mode_read_binary);
   if (fp == (FILE *)0x0) {
-    DAT_004c3968._0_1_ = 0;
+    resource_pack_path_buf._0_1_ = 0;
     resource_pack_enabled = 0;
     return 0;
   }
@@ -34263,7 +34285,7 @@ int __cdecl resource_pack_set(char *path)
   } while (cVar1 != '\0');
   uVar3 = ~uVar3;
   pcVar5 = pcVar5 + -uVar3;
-  pcVar6 = (char *)&DAT_004c3968;
+  pcVar6 = (char *)&resource_pack_path_buf;
   for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
     *(undefined4 *)pcVar6 = *(undefined4 *)pcVar5;
     pcVar5 = pcVar5 + 4;
@@ -34296,7 +34318,7 @@ int __cdecl resource_open_read(byte *path,int *size_out)
   
   piVar1 = size_out;
   if (resource_pack_enabled != '\0') {
-    fp = (FILE *)crt_fopen((LPCSTR)&DAT_004c3968,&file_mode_read_binary);
+    fp = (FILE *)crt_fopen((LPCSTR)&resource_pack_path_buf,&file_mode_read_binary);
     resource_fp = (FILE *)fp;
     if (fp == (FILE *)0x0) {
       return 0;
@@ -34307,7 +34329,7 @@ int __cdecl resource_open_read(byte *path,int *size_out)
     while (cVar2 != '\0') {
       crt_fread((char *)&size_out,4,1,(int *)fp);
       *piVar1 = (int)size_out;
-      uVar3 = FUN_00462de0(size_out,&DAT_004c3a68,path);
+      uVar3 = FUN_00462de0(size_out,&resource_pack_entry_name_buf,path);
       iVar4 = 0;
       if (uVar3 == 0) goto LAB_0043bac3;
       crt_fseek((int *)fp,(int)size_out,1);
@@ -35225,7 +35247,7 @@ LAB_0043c7ca:
       pcVar5 = s____loading_wav_sample___s__faile_00477d48;
     }
     else {
-      if (DAT_004cc8d5 == '\0') {
+      if (audio_resource_pack_available == '\0') {
         pcVar5 = s_sfx__s_00477d90;
       }
       else {
@@ -35347,8 +35369,8 @@ void audio_init_music(void)
       pfVar2 = pfVar2 + 1;
     }
     iVar1 = resource_pack_set(s_music_paq_00477eec);
-    DAT_004cc8d5 = (char)iVar1;
-    if (DAT_004cc8d5 == '\0') {
+    audio_resource_pack_available = (char)iVar1;
+    if (audio_resource_pack_available == '\0') {
       pcVar3 = s____resource_paq__music_paq__not_f_00477e84;
     }
     else {
@@ -35385,8 +35407,8 @@ void audio_init_sfx(void)
   
   if (config_blob == '\0') {
     iVar1 = resource_pack_set(s_sfx_paq_004784f4);
-    DAT_004cc8d5 = (char)iVar1;
-    if (DAT_004cc8d5 == '\0') {
+    audio_resource_pack_available = (char)iVar1;
+    if (audio_resource_pack_available == '\0') {
       fmt = s____failed_to_set_sound_resource_p_0047849c;
     }
     else {
@@ -40440,7 +40462,7 @@ void __cdecl game_state_set(game_state_id_t state_id)
   game_paused_flag = 0;
   game_state_prev = game_state_id;
   game_state_id = state_id;
-  _DAT_00487238 = 0;
+  ui_element_hover_focus_index = 0;
   gameplay_transition_latch = '\0';
   (*grim_interface_ptr->vtable->grim_flush_input)();
   console_input_poll();
@@ -40578,22 +40600,22 @@ void __cdecl game_state_set(game_state_id_t state_id)
       }
       else if (config_game_mode == GAME_MODE_RUSH) {
         render_pass_mode = '\x01';
-        _DAT_00485788 = _DAT_00485788 + 1;
+        mode_play_rush = mode_play_rush + 1;
         gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_SURVIVAL) {
         render_pass_mode = '\x01';
-        _DAT_00485784 = _DAT_00485784 + 1;
+        mode_play_survival = mode_play_survival + 1;
         gameplay_transition_latch = '\x01';
       }
       else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
         render_pass_mode = '\x01';
-        _DAT_0048578c = _DAT_0048578c + 1;
+        mode_play_typo = mode_play_typo + 1;
         gameplay_transition_latch = '\x01';
       }
       else {
         render_pass_mode = '\x01';
-        _DAT_00485790 = _DAT_00485790 + 1;
+        mode_play_other = mode_play_other + 1;
         gameplay_transition_latch = '\x01';
       }
     }
@@ -40733,7 +40755,6 @@ LAB_004468da:
 
 /* ui_element_update @ 00446900 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* updates hover/click/animation for a UI element and fires callbacks. Runtime capture (2026-02-06
    gameplay_state_capture): mostly emits sfx_play id 64 (95/108), with id 63 as secondary. */
 
@@ -40765,8 +40786,8 @@ void __cdecl ui_element_update(ui_element_t *element)
       uVar1 = element->enabled;
       element->_pad5[0xec] = '\x01';
       if ((uVar1 != '\0') && (element->on_activate != (ui_element_callback_t)0x0)) {
-        _DAT_0048723c = element;
-        _DAT_00487238 = 0;
+        ui_element_hover_focus_ptr = element;
+        ui_element_hover_focus_index = 0;
         ppuVar9 = &ui_element_table_end;
         do {
           puVar2 = *ppuVar9;
@@ -40774,7 +40795,7 @@ void __cdecl ui_element_update(ui_element_t *element)
              ((game_state_id != GAME_STATE_MAIN_MENU ||
               (puVar2->on_activate != (ui_element_callback_t)0x0)))) {
             if (element == puVar2) break;
-            _DAT_00487238 = _DAT_00487238 + 1;
+            ui_element_hover_focus_index = ui_element_hover_focus_index + 1;
           }
           ppuVar9 = ppuVar9 + 1;
         } while ((int)ppuVar9 < 0x48f20c);
@@ -41390,14 +41411,14 @@ void options_menu_update(void)
   }
   _DAT_004d7988 = s_Controls_00478e68;
   ui_button_update((float *)&stack0xffffffd0,(ui_button_t *)&DAT_004d7988);
-  pcVar4 = DAT_004c364c;
-  pcVar6 = DAT_004c3648;
+  pcVar4 = perk_slot_1_desc_wrapped_alternate;
+  pcVar6 = perk_slot_1_desc_wrapped_primary;
   iVar5 = perk_id_bloody_mess_quick_learner;
   if (config_fx_toggle == '\0') {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3640;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_primary;
   }
   else {
-    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = DAT_004c3644;
+    (&perk_meta_table)[perk_id_bloody_mess_quick_learner].name = perk_slot_1_name_wrapped_alternate;
     pcVar6 = pcVar4;
   }
   (&perk_meta_table)[iVar5].description = pcVar6;
@@ -42205,40 +42226,40 @@ void controls_menu_update(void)
           pcVar8 = s_EQUALS_00471878;
           break;
         case 0xe:
-          pcVar8 = &DAT_00471870;
+          pcVar8 = &input_key_name_backspace;
           break;
         case 0xf:
-          pcVar8 = &DAT_0047186c;
+          pcVar8 = &input_key_name_tab;
           break;
         case 0x10:
-          pcVar8 = &DAT_00471868;
+          pcVar8 = &input_key_name_q;
           break;
         case 0x11:
-          pcVar8 = &DAT_00471864;
+          pcVar8 = &input_key_name_w;
           break;
         case 0x12:
-          pcVar8 = &DAT_00471860;
+          pcVar8 = &input_key_name_e;
           break;
         case 0x13:
-          pcVar8 = &DAT_0047185c;
+          pcVar8 = &input_key_name_r;
           break;
         case 0x14:
-          pcVar8 = &DAT_00471858;
+          pcVar8 = &input_key_name_t;
           break;
         case 0x15:
-          pcVar8 = &DAT_00471854;
+          pcVar8 = &input_key_name_y;
           break;
         case 0x16:
-          pcVar8 = &DAT_00471850;
+          pcVar8 = &input_key_name_u;
           break;
         case 0x17:
-          pcVar8 = &DAT_0047184c;
+          pcVar8 = &input_key_name_i;
           break;
         case 0x18:
-          pcVar8 = &DAT_00471848;
+          pcVar8 = &input_key_name_o;
           break;
         case 0x19:
-          pcVar8 = &DAT_00471844;
+          pcVar8 = &input_key_name_p;
           break;
         case 0x1a:
           pcVar8 = s_LBRACKET_00471838;
@@ -42253,31 +42274,31 @@ void controls_menu_update(void)
           pcVar8 = s_LCONTROL_00471818;
           break;
         case 0x1e:
-          pcVar8 = &DAT_00471814;
+          pcVar8 = &input_key_name_a;
           break;
         case 0x1f:
-          pcVar8 = &DAT_00471810;
+          pcVar8 = &input_key_name_s;
           break;
         case 0x20:
-          pcVar8 = &DAT_0047180c;
+          pcVar8 = &input_key_name_d;
           break;
         case 0x21:
-          pcVar8 = &DAT_00471808;
+          pcVar8 = &input_key_name_f;
           break;
         case 0x22:
-          pcVar8 = &DAT_00471804;
+          pcVar8 = &input_key_name_g;
           break;
         case 0x23:
-          pcVar8 = &DAT_00471800;
+          pcVar8 = &input_key_name_h;
           break;
         case 0x24:
-          pcVar8 = &DAT_004717fc;
+          pcVar8 = &input_key_name_j;
           break;
         case 0x25:
-          pcVar8 = &DAT_004717f8;
+          pcVar8 = &input_key_name_k;
           break;
         case 0x26:
-          pcVar8 = &DAT_004717f4;
+          pcVar8 = &input_key_name_l;
           break;
         case 0x27:
           pcVar8 = s_SEMICOLON_004717e8;
@@ -42295,25 +42316,25 @@ void controls_menu_update(void)
           pcVar8 = s_BACKSLASH_004717c0;
           break;
         case 0x2c:
-          pcVar8 = &DAT_004717bc;
+          pcVar8 = &input_key_name_z;
           break;
         case 0x2d:
-          pcVar8 = &DAT_004717b8;
+          pcVar8 = &input_key_name_x;
           break;
         case 0x2e:
-          pcVar8 = &DAT_004717b4;
+          pcVar8 = &input_key_name_c;
           break;
         case 0x2f:
-          pcVar8 = &DAT_004717b0;
+          pcVar8 = &input_key_name_v;
           break;
         case 0x30:
-          pcVar8 = &DAT_004717ac;
+          pcVar8 = &input_key_name_b;
           break;
         case 0x31:
-          pcVar8 = &DAT_004717a8;
+          pcVar8 = &input_key_name_n;
           break;
         case 0x32:
-          pcVar8 = &DAT_004717a4;
+          pcVar8 = &input_key_name_m;
           break;
         case 0x33:
           pcVar8 = s_COMMA_0047179c;
@@ -42340,34 +42361,34 @@ void controls_menu_update(void)
           pcVar8 = s_CAPITAL_00471760;
           break;
         case 0x3b:
-          pcVar8 = &DAT_0047175c;
+          pcVar8 = &input_key_name_f1;
           break;
         case 0x3c:
-          pcVar8 = &DAT_00471758;
+          pcVar8 = &input_key_name_f2;
           break;
         case 0x3d:
-          pcVar8 = &DAT_00471754;
+          pcVar8 = &input_key_name_f3;
           break;
         case 0x3e:
-          pcVar8 = &DAT_00471750;
+          pcVar8 = &input_key_name_f4;
           break;
         case 0x3f:
-          pcVar8 = &DAT_0047174c;
+          pcVar8 = &input_key_name_f5;
           break;
         case 0x40:
-          pcVar8 = &DAT_00471748;
+          pcVar8 = &input_key_name_f6;
           break;
         case 0x41:
-          pcVar8 = &DAT_00471744;
+          pcVar8 = &input_key_name_f7;
           break;
         case 0x42:
-          pcVar8 = &DAT_00471740;
+          pcVar8 = &input_key_name_f8;
           break;
         case 0x43:
-          pcVar8 = &DAT_0047173c;
+          pcVar8 = &input_key_name_f9;
           break;
         case 0x44:
-          pcVar8 = &DAT_00471738;
+          pcVar8 = &input_key_name_f10;
           break;
         case 0x45:
           pcVar8 = s_NUMLOCK_00471730;
@@ -42397,7 +42418,7 @@ void controls_menu_update(void)
           pcVar8 = s_NUMPAD6_004716ec;
           break;
         case 0x4e:
-          pcVar8 = &DAT_004716e8;
+          pcVar8 = &input_key_name_add;
           break;
         case 0x4f:
           pcVar8 = s_NUMPAD1_004716e0;
@@ -42421,22 +42442,22 @@ void controls_menu_update(void)
           pcVar8 = s_OEM_102_004716b8;
           break;
         case 0x57:
-          pcVar8 = &DAT_004716b4;
+          pcVar8 = &input_key_name_f11;
           break;
         case 0x58:
-          pcVar8 = &DAT_004716b0;
+          pcVar8 = &input_key_name_f12;
           break;
         case 100:
-          pcVar8 = &DAT_004716ac;
+          pcVar8 = &input_key_name_f13;
           break;
         case 0x65:
-          pcVar8 = &DAT_004716a8;
+          pcVar8 = &input_key_name_f14;
           break;
         case 0x66:
-          pcVar8 = &DAT_004716a4;
+          pcVar8 = &input_key_name_f15;
           break;
         case 0x70:
-          pcVar8 = &DAT_0047169c;
+          pcVar8 = &input_key_name_kana;
           break;
         case 0x73:
           pcVar8 = s_ABNT_C1_00471694;
@@ -42448,7 +42469,7 @@ void controls_menu_update(void)
           pcVar8 = s_NOCONVERT_00471680;
           break;
         case 0x7d:
-          pcVar8 = &DAT_0047167c;
+          pcVar8 = &input_key_name_yen;
           break;
         case 0x7e:
           pcVar8 = s_ABNT_C2_00471674;
@@ -42460,7 +42481,7 @@ void controls_menu_update(void)
           pcVar8 = s_PREVTRACK_00471658;
           break;
         case 0x91:
-          pcVar8 = &DAT_00471654;
+          pcVar8 = &input_key_name_at;
           break;
         case 0x92:
           pcVar8 = s_COLON_0047164c;
@@ -42472,10 +42493,10 @@ void controls_menu_update(void)
           pcVar8 = s_KANJI_00471638;
           break;
         case 0x95:
-          pcVar8 = &DAT_00471630;
+          pcVar8 = &input_key_name_stop;
           break;
         case 0x96:
-          pcVar8 = &DAT_0047162c;
+          pcVar8 = &input_key_name_ax;
           break;
         case 0x97:
           pcVar8 = s_UNLABELED_00471620;
@@ -42490,7 +42511,7 @@ void controls_menu_update(void)
           pcVar8 = s_RCONTROL_004715fc;
           break;
         case 0xa0:
-          pcVar8 = &DAT_004715f4;
+          pcVar8 = &input_key_name_mute;
           break;
         case 0xa1:
           pcVar8 = s_CALCULATOR_004715e8;
@@ -42526,28 +42547,28 @@ void controls_menu_update(void)
           pcVar8 = s_PAUSE_00471584;
           break;
         case 199:
-          pcVar8 = &DAT_0047157c;
+          pcVar8 = &input_key_name_home;
           break;
         case 200:
-          pcVar8 = &DAT_00471578;
+          pcVar8 = &input_key_name_up;
           break;
         case 0xc9:
           pcVar8 = s_PRIOR_00471570;
           break;
         case 0xcb:
-          pcVar8 = &DAT_00471568;
+          pcVar8 = &input_key_name_left;
           break;
         case 0xcd:
           pcVar8 = s_RIGHT_00471560;
           break;
         case 0xcf:
-          pcVar8 = &DAT_0047155c;
+          pcVar8 = &input_key_name_end;
           break;
         case 0xd0:
-          pcVar8 = &DAT_00471554;
+          pcVar8 = &input_key_name_down;
           break;
         case 0xd1:
-          pcVar8 = &DAT_0047154c;
+          pcVar8 = &input_key_name_next;
           break;
         case 0xd2:
           pcVar8 = s_INSERT_00471544;
@@ -42556,13 +42577,13 @@ void controls_menu_update(void)
           pcVar8 = s_DELETE_0047153c;
           break;
         case 0xdb:
-          pcVar8 = &DAT_00471534;
+          pcVar8 = &input_key_name_lwin;
           break;
         case 0xdc:
-          pcVar8 = &DAT_0047152c;
+          pcVar8 = &input_key_name_rwin;
           break;
         case 0xdd:
-          pcVar8 = &DAT_00471524;
+          pcVar8 = &input_key_name_apps;
           break;
         case 0xde:
           pcVar8 = s_POWER_0047151c;
@@ -42571,7 +42592,7 @@ void controls_menu_update(void)
           pcVar8 = s_SLEEP_00471514;
           break;
         case 0xe3:
-          pcVar8 = &DAT_0047150c;
+          pcVar8 = &input_key_name_wake;
           break;
         case 0xe5:
           pcVar8 = s_WEBSEARCH_00471500;
@@ -42595,7 +42616,7 @@ void controls_menu_update(void)
           pcVar8 = s_MYCOMPUTER_004714bc;
           break;
         case 0xec:
-          pcVar8 = &DAT_004714b4;
+          pcVar8 = &input_key_name_mail;
           break;
         case 0xed:
           pcVar8 = s_MEDIASELECT_004714a8;
@@ -42692,7 +42713,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x104) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471ad4;
+          pcVar8 = &input_key_name_mouse5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42754,7 +42775,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x120) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471aac;
+          pcVar8 = &input_key_name_joys2;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42785,7 +42806,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x122) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a9c;
+          pcVar8 = &input_key_name_joys4;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42816,7 +42837,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x124) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a8c;
+          pcVar8 = &input_key_name_joys6;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42847,7 +42868,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x126) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a7c;
+          pcVar8 = &input_key_name_joys8;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42878,7 +42899,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x128) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a6c;
+          pcVar8 = &input_key_name_joys10;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -42909,7 +42930,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x12a) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a5c;
+          pcVar8 = &input_key_name_joys12;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43033,7 +43054,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x153) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471a04;
+          pcVar8 = &input_key_name_joy_rot_x;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43064,7 +43085,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x155) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719f4;
+          pcVar8 = &input_key_name_joy_rot_z;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43095,7 +43116,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x163) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719e0;
+          pcVar8 = &input_key_name_rim0_x_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43126,7 +43147,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x165) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719c8;
+          pcVar8 = &input_key_name_rim2_x_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43157,7 +43178,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x169) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004719b0;
+          pcVar8 = &input_key_name_rim1_y_axis;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43188,7 +43209,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x16d) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471998;
+          pcVar8 = &input_key_name_rim0_btn1;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43219,7 +43240,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x16f) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471980;
+          pcVar8 = &input_key_name_rim0_btn3;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43250,7 +43271,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x171) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471968;
+          pcVar8 = &input_key_name_rim0_btn5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43281,7 +43302,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x173) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471950;
+          pcVar8 = &input_key_name_rim1_btn2;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43312,7 +43333,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x175) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471938;
+          pcVar8 = &input_key_name_rim1_btn4;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43343,7 +43364,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x177) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471920;
+          pcVar8 = &input_key_name_rim2_btn1;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43374,7 +43395,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x179) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_00471908;
+          pcVar8 = &input_key_name_rim2_btn3;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43405,7 +43426,7 @@ LAB_00449cce:
         }
         if (iVar22 == 0x17b) {
           uVar11 = 0xffffffff;
-          pcVar8 = &DAT_004718f0;
+          pcVar8 = &input_key_name_rim2_btn5;
           do {
             pcVar14 = pcVar8;
             if (uVar11 == 0) break;
@@ -43490,40 +43511,40 @@ LAB_0044a2a9:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -43538,31 +43559,31 @@ LAB_0044a2a9:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -43580,25 +43601,25 @@ LAB_0044a2a9:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -43625,34 +43646,34 @@ LAB_0044a2a9:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -43682,7 +43703,7 @@ LAB_0044a2a9:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -43706,22 +43727,22 @@ LAB_0044a2a9:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -43733,7 +43754,7 @@ LAB_0044a2a9:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -43745,7 +43766,7 @@ LAB_0044a2a9:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -43757,10 +43778,10 @@ LAB_0044a2a9:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -43775,7 +43796,7 @@ LAB_0044a2a9:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -43811,28 +43832,28 @@ LAB_0044a2a9:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -43841,13 +43862,13 @@ LAB_0044a2a9:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -43856,7 +43877,7 @@ LAB_0044a2a9:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -43880,7 +43901,7 @@ LAB_0044a2a9:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -43977,7 +43998,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x104) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471ad4;
+        pcVar8 = &input_key_name_mouse5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44039,7 +44060,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x120) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471aac;
+        pcVar8 = &input_key_name_joys2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44070,7 +44091,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x122) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a9c;
+        pcVar8 = &input_key_name_joys4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44101,7 +44122,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x124) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a8c;
+        pcVar8 = &input_key_name_joys6;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44132,7 +44153,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x126) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a7c;
+        pcVar8 = &input_key_name_joys8;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44163,7 +44184,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x128) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a6c;
+        pcVar8 = &input_key_name_joys10;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44194,7 +44215,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x12a) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a5c;
+        pcVar8 = &input_key_name_joys12;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44318,7 +44339,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x153) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a04;
+        pcVar8 = &input_key_name_joy_rot_x;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44349,7 +44370,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x155) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719f4;
+        pcVar8 = &input_key_name_joy_rot_z;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44380,7 +44401,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x163) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719e0;
+        pcVar8 = &input_key_name_rim0_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44411,7 +44432,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x165) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719c8;
+        pcVar8 = &input_key_name_rim2_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44442,7 +44463,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x169) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719b0;
+        pcVar8 = &input_key_name_rim1_y_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44473,7 +44494,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x16d) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471998;
+        pcVar8 = &input_key_name_rim0_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44504,7 +44525,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x16f) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471980;
+        pcVar8 = &input_key_name_rim0_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44535,7 +44556,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x171) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471968;
+        pcVar8 = &input_key_name_rim0_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44566,7 +44587,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x173) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471950;
+        pcVar8 = &input_key_name_rim1_btn2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44597,7 +44618,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x175) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471938;
+        pcVar8 = &input_key_name_rim1_btn4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44628,7 +44649,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x177) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471920;
+        pcVar8 = &input_key_name_rim2_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44659,7 +44680,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x179) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471908;
+        pcVar8 = &input_key_name_rim2_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44690,7 +44711,7 @@ LAB_0044aa50:
       }
       if (iVar6 == 0x17b) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004718f0;
+        pcVar8 = &input_key_name_rim2_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -44773,40 +44794,40 @@ LAB_0044b027:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -44821,31 +44842,31 @@ LAB_0044b027:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -44863,25 +44884,25 @@ LAB_0044b027:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -44908,34 +44929,34 @@ LAB_0044b027:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -44965,7 +44986,7 @@ LAB_0044b027:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -44989,22 +45010,22 @@ LAB_0044b027:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -45016,7 +45037,7 @@ LAB_0044b027:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -45028,7 +45049,7 @@ LAB_0044b027:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -45040,10 +45061,10 @@ LAB_0044b027:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -45058,7 +45079,7 @@ LAB_0044b027:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -45094,28 +45115,28 @@ LAB_0044b027:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -45124,13 +45145,13 @@ LAB_0044b027:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -45139,7 +45160,7 @@ LAB_0044b027:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -45163,7 +45184,7 @@ LAB_0044b027:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -45260,7 +45281,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x104) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471ad4;
+        pcVar8 = &input_key_name_mouse5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45322,7 +45343,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x120) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471aac;
+        pcVar8 = &input_key_name_joys2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45353,7 +45374,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x122) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a9c;
+        pcVar8 = &input_key_name_joys4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45384,7 +45405,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x124) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a8c;
+        pcVar8 = &input_key_name_joys6;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45415,7 +45436,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x126) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a7c;
+        pcVar8 = &input_key_name_joys8;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45446,7 +45467,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x128) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a6c;
+        pcVar8 = &input_key_name_joys10;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45477,7 +45498,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x12a) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a5c;
+        pcVar8 = &input_key_name_joys12;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45601,7 +45622,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x153) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471a04;
+        pcVar8 = &input_key_name_joy_rot_x;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45632,7 +45653,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x155) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719f4;
+        pcVar8 = &input_key_name_joy_rot_z;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45663,7 +45684,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x163) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719e0;
+        pcVar8 = &input_key_name_rim0_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45694,7 +45715,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x165) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719c8;
+        pcVar8 = &input_key_name_rim2_x_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45725,7 +45746,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x169) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004719b0;
+        pcVar8 = &input_key_name_rim1_y_axis;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45756,7 +45777,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x16d) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471998;
+        pcVar8 = &input_key_name_rim0_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45787,7 +45808,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x16f) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471980;
+        pcVar8 = &input_key_name_rim0_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45818,7 +45839,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x171) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471968;
+        pcVar8 = &input_key_name_rim0_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45849,7 +45870,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x173) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471950;
+        pcVar8 = &input_key_name_rim1_btn2;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45880,7 +45901,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x175) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471938;
+        pcVar8 = &input_key_name_rim1_btn4;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45911,7 +45932,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x177) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471920;
+        pcVar8 = &input_key_name_rim2_btn1;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45942,7 +45963,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x179) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_00471908;
+        pcVar8 = &input_key_name_rim2_btn3;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -45973,7 +45994,7 @@ LAB_0044b7b9:
       }
       if (_config_key_pick_perk == 0x17b) {
         uVar11 = 0xffffffff;
-        pcVar8 = &DAT_004718f0;
+        pcVar8 = &input_key_name_rim2_btn5;
         do {
           pcVar14 = pcVar8;
           if (uVar11 == 0) break;
@@ -46055,40 +46076,40 @@ LAB_0044bd90:
         pcVar8 = s_EQUALS_00471878;
         break;
       case 0xe:
-        pcVar8 = &DAT_00471870;
+        pcVar8 = &input_key_name_backspace;
         break;
       case 0xf:
-        pcVar8 = &DAT_0047186c;
+        pcVar8 = &input_key_name_tab;
         break;
       case 0x10:
-        pcVar8 = &DAT_00471868;
+        pcVar8 = &input_key_name_q;
         break;
       case 0x11:
-        pcVar8 = &DAT_00471864;
+        pcVar8 = &input_key_name_w;
         break;
       case 0x12:
-        pcVar8 = &DAT_00471860;
+        pcVar8 = &input_key_name_e;
         break;
       case 0x13:
-        pcVar8 = &DAT_0047185c;
+        pcVar8 = &input_key_name_r;
         break;
       case 0x14:
-        pcVar8 = &DAT_00471858;
+        pcVar8 = &input_key_name_t;
         break;
       case 0x15:
-        pcVar8 = &DAT_00471854;
+        pcVar8 = &input_key_name_y;
         break;
       case 0x16:
-        pcVar8 = &DAT_00471850;
+        pcVar8 = &input_key_name_u;
         break;
       case 0x17:
-        pcVar8 = &DAT_0047184c;
+        pcVar8 = &input_key_name_i;
         break;
       case 0x18:
-        pcVar8 = &DAT_00471848;
+        pcVar8 = &input_key_name_o;
         break;
       case 0x19:
-        pcVar8 = &DAT_00471844;
+        pcVar8 = &input_key_name_p;
         break;
       case 0x1a:
         pcVar8 = s_LBRACKET_00471838;
@@ -46103,31 +46124,31 @@ LAB_0044bd90:
         pcVar8 = s_LCONTROL_00471818;
         break;
       case 0x1e:
-        pcVar8 = &DAT_00471814;
+        pcVar8 = &input_key_name_a;
         break;
       case 0x1f:
-        pcVar8 = &DAT_00471810;
+        pcVar8 = &input_key_name_s;
         break;
       case 0x20:
-        pcVar8 = &DAT_0047180c;
+        pcVar8 = &input_key_name_d;
         break;
       case 0x21:
-        pcVar8 = &DAT_00471808;
+        pcVar8 = &input_key_name_f;
         break;
       case 0x22:
-        pcVar8 = &DAT_00471804;
+        pcVar8 = &input_key_name_g;
         break;
       case 0x23:
-        pcVar8 = &DAT_00471800;
+        pcVar8 = &input_key_name_h;
         break;
       case 0x24:
-        pcVar8 = &DAT_004717fc;
+        pcVar8 = &input_key_name_j;
         break;
       case 0x25:
-        pcVar8 = &DAT_004717f8;
+        pcVar8 = &input_key_name_k;
         break;
       case 0x26:
-        pcVar8 = &DAT_004717f4;
+        pcVar8 = &input_key_name_l;
         break;
       case 0x27:
         pcVar8 = s_SEMICOLON_004717e8;
@@ -46145,25 +46166,25 @@ LAB_0044bd90:
         pcVar8 = s_BACKSLASH_004717c0;
         break;
       case 0x2c:
-        pcVar8 = &DAT_004717bc;
+        pcVar8 = &input_key_name_z;
         break;
       case 0x2d:
-        pcVar8 = &DAT_004717b8;
+        pcVar8 = &input_key_name_x;
         break;
       case 0x2e:
-        pcVar8 = &DAT_004717b4;
+        pcVar8 = &input_key_name_c;
         break;
       case 0x2f:
-        pcVar8 = &DAT_004717b0;
+        pcVar8 = &input_key_name_v;
         break;
       case 0x30:
-        pcVar8 = &DAT_004717ac;
+        pcVar8 = &input_key_name_b;
         break;
       case 0x31:
-        pcVar8 = &DAT_004717a8;
+        pcVar8 = &input_key_name_n;
         break;
       case 0x32:
-        pcVar8 = &DAT_004717a4;
+        pcVar8 = &input_key_name_m;
         break;
       case 0x33:
         pcVar8 = s_COMMA_0047179c;
@@ -46190,34 +46211,34 @@ LAB_0044bd90:
         pcVar8 = s_CAPITAL_00471760;
         break;
       case 0x3b:
-        pcVar8 = &DAT_0047175c;
+        pcVar8 = &input_key_name_f1;
         break;
       case 0x3c:
-        pcVar8 = &DAT_00471758;
+        pcVar8 = &input_key_name_f2;
         break;
       case 0x3d:
-        pcVar8 = &DAT_00471754;
+        pcVar8 = &input_key_name_f3;
         break;
       case 0x3e:
-        pcVar8 = &DAT_00471750;
+        pcVar8 = &input_key_name_f4;
         break;
       case 0x3f:
-        pcVar8 = &DAT_0047174c;
+        pcVar8 = &input_key_name_f5;
         break;
       case 0x40:
-        pcVar8 = &DAT_00471748;
+        pcVar8 = &input_key_name_f6;
         break;
       case 0x41:
-        pcVar8 = &DAT_00471744;
+        pcVar8 = &input_key_name_f7;
         break;
       case 0x42:
-        pcVar8 = &DAT_00471740;
+        pcVar8 = &input_key_name_f8;
         break;
       case 0x43:
-        pcVar8 = &DAT_0047173c;
+        pcVar8 = &input_key_name_f9;
         break;
       case 0x44:
-        pcVar8 = &DAT_00471738;
+        pcVar8 = &input_key_name_f10;
         break;
       case 0x45:
         pcVar8 = s_NUMLOCK_00471730;
@@ -46247,7 +46268,7 @@ LAB_0044bd90:
         pcVar8 = s_NUMPAD6_004716ec;
         break;
       case 0x4e:
-        pcVar8 = &DAT_004716e8;
+        pcVar8 = &input_key_name_add;
         break;
       case 0x4f:
         pcVar8 = s_NUMPAD1_004716e0;
@@ -46271,22 +46292,22 @@ LAB_0044bd90:
         pcVar8 = s_OEM_102_004716b8;
         break;
       case 0x57:
-        pcVar8 = &DAT_004716b4;
+        pcVar8 = &input_key_name_f11;
         break;
       case 0x58:
-        pcVar8 = &DAT_004716b0;
+        pcVar8 = &input_key_name_f12;
         break;
       case 100:
-        pcVar8 = &DAT_004716ac;
+        pcVar8 = &input_key_name_f13;
         break;
       case 0x65:
-        pcVar8 = &DAT_004716a8;
+        pcVar8 = &input_key_name_f14;
         break;
       case 0x66:
-        pcVar8 = &DAT_004716a4;
+        pcVar8 = &input_key_name_f15;
         break;
       case 0x70:
-        pcVar8 = &DAT_0047169c;
+        pcVar8 = &input_key_name_kana;
         break;
       case 0x73:
         pcVar8 = s_ABNT_C1_00471694;
@@ -46298,7 +46319,7 @@ LAB_0044bd90:
         pcVar8 = s_NOCONVERT_00471680;
         break;
       case 0x7d:
-        pcVar8 = &DAT_0047167c;
+        pcVar8 = &input_key_name_yen;
         break;
       case 0x7e:
         pcVar8 = s_ABNT_C2_00471674;
@@ -46310,7 +46331,7 @@ LAB_0044bd90:
         pcVar8 = s_PREVTRACK_00471658;
         break;
       case 0x91:
-        pcVar8 = &DAT_00471654;
+        pcVar8 = &input_key_name_at;
         break;
       case 0x92:
         pcVar8 = s_COLON_0047164c;
@@ -46322,10 +46343,10 @@ LAB_0044bd90:
         pcVar8 = s_KANJI_00471638;
         break;
       case 0x95:
-        pcVar8 = &DAT_00471630;
+        pcVar8 = &input_key_name_stop;
         break;
       case 0x96:
-        pcVar8 = &DAT_0047162c;
+        pcVar8 = &input_key_name_ax;
         break;
       case 0x97:
         pcVar8 = s_UNLABELED_00471620;
@@ -46340,7 +46361,7 @@ LAB_0044bd90:
         pcVar8 = s_RCONTROL_004715fc;
         break;
       case 0xa0:
-        pcVar8 = &DAT_004715f4;
+        pcVar8 = &input_key_name_mute;
         break;
       case 0xa1:
         pcVar8 = s_CALCULATOR_004715e8;
@@ -46376,28 +46397,28 @@ LAB_0044bd90:
         pcVar8 = s_PAUSE_00471584;
         break;
       case 199:
-        pcVar8 = &DAT_0047157c;
+        pcVar8 = &input_key_name_home;
         break;
       case 200:
-        pcVar8 = &DAT_00471578;
+        pcVar8 = &input_key_name_up;
         break;
       case 0xc9:
         pcVar8 = s_PRIOR_00471570;
         break;
       case 0xcb:
-        pcVar8 = &DAT_00471568;
+        pcVar8 = &input_key_name_left;
         break;
       case 0xcd:
         pcVar8 = s_RIGHT_00471560;
         break;
       case 0xcf:
-        pcVar8 = &DAT_0047155c;
+        pcVar8 = &input_key_name_end;
         break;
       case 0xd0:
-        pcVar8 = &DAT_00471554;
+        pcVar8 = &input_key_name_down;
         break;
       case 0xd1:
-        pcVar8 = &DAT_0047154c;
+        pcVar8 = &input_key_name_next;
         break;
       case 0xd2:
         pcVar8 = s_INSERT_00471544;
@@ -46406,13 +46427,13 @@ LAB_0044bd90:
         pcVar8 = s_DELETE_0047153c;
         break;
       case 0xdb:
-        pcVar8 = &DAT_00471534;
+        pcVar8 = &input_key_name_lwin;
         break;
       case 0xdc:
-        pcVar8 = &DAT_0047152c;
+        pcVar8 = &input_key_name_rwin;
         break;
       case 0xdd:
-        pcVar8 = &DAT_00471524;
+        pcVar8 = &input_key_name_apps;
         break;
       case 0xde:
         pcVar8 = s_POWER_0047151c;
@@ -46421,7 +46442,7 @@ LAB_0044bd90:
         pcVar8 = s_SLEEP_00471514;
         break;
       case 0xe3:
-        pcVar8 = &DAT_0047150c;
+        pcVar8 = &input_key_name_wake;
         break;
       case 0xe5:
         pcVar8 = s_WEBSEARCH_00471500;
@@ -46445,7 +46466,7 @@ LAB_0044bd90:
         pcVar8 = s_MYCOMPUTER_004714bc;
         break;
       case 0xec:
-        pcVar8 = &DAT_004714b4;
+        pcVar8 = &input_key_name_mail;
         break;
       case 0xed:
         pcVar8 = s_MEDIASELECT_004714a8;
@@ -46543,7 +46564,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x104) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471ad4;
+      pcVar8 = &input_key_name_mouse5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46605,7 +46626,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x120) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471aac;
+      pcVar8 = &input_key_name_joys2;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46636,7 +46657,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x122) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a9c;
+      pcVar8 = &input_key_name_joys4;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46667,7 +46688,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x124) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a8c;
+      pcVar8 = &input_key_name_joys6;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46698,7 +46719,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x126) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a7c;
+      pcVar8 = &input_key_name_joys8;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46729,7 +46750,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x128) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a6c;
+      pcVar8 = &input_key_name_joys10;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46760,7 +46781,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x12a) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a5c;
+      pcVar8 = &input_key_name_joys12;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46884,7 +46905,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x153) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471a04;
+      pcVar8 = &input_key_name_joy_rot_x;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46915,7 +46936,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x155) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719f4;
+      pcVar8 = &input_key_name_joy_rot_z;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46946,7 +46967,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x163) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719e0;
+      pcVar8 = &input_key_name_rim0_x_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -46977,7 +46998,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x165) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719c8;
+      pcVar8 = &input_key_name_rim2_x_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47008,7 +47029,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x169) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004719b0;
+      pcVar8 = &input_key_name_rim1_y_axis;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47039,7 +47060,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x16d) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471998;
+      pcVar8 = &input_key_name_rim0_btn1;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47070,7 +47091,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x16f) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471980;
+      pcVar8 = &input_key_name_rim0_btn3;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47101,7 +47122,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x171) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471968;
+      pcVar8 = &input_key_name_rim0_btn5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47132,7 +47153,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x173) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471950;
+      pcVar8 = &input_key_name_rim1_btn2;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47163,7 +47184,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x175) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471938;
+      pcVar8 = &input_key_name_rim1_btn4;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47194,7 +47215,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x177) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471920;
+      pcVar8 = &input_key_name_rim2_btn1;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47225,7 +47246,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x179) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_00471908;
+      pcVar8 = &input_key_name_rim2_btn3;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47256,7 +47277,7 @@ LAB_0044c524:
     }
     if (_config_key_reload == 0x17b) {
       uVar11 = 0xffffffff;
-      pcVar8 = &DAT_004718f0;
+      pcVar8 = &input_key_name_rim2_btn5;
       do {
         pcVar14 = pcVar8;
         if (uVar11 == 0) break;
@@ -47821,46 +47842,46 @@ void play_game_menu_update(void)
   
   if (((byte)play_game_menu_init_flags & 1) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 1;
-    DAT_004d75fe = 1;
+    play_game_menu_quests_enabled = '\x01';
     DAT_004d760d = 0;
     DAT_004d760c = 0;
     _DAT_004d7608 = 0x3f800000;
     _DAT_004d7604 = 0;
-    _DAT_004d75f8 = (char *)0x0;
+    _play_game_menu_button_quests = (char *)0x0;
     DAT_004d75fc = 0;
-    DAT_004d75fd = '\0';
-    DAT_004d7600 = 0;
+    play_game_menu_quests_activated = '\0';
+    play_game_menu_quests_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa90);
   }
-  _DAT_004d75f8 = s_Quests_00479280;
+  _play_game_menu_button_quests = s_Quests_00479280;
   if (((byte)play_game_menu_init_flags & 2) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 2;
-    DAT_004d75a6 = 1;
+    play_game_menu_rush_enabled = '\x01';
     DAT_004d75b5 = 0;
     DAT_004d75b4 = 0;
     _DAT_004d75b0 = 0x3f800000;
     _DAT_004d75ac = 0;
-    _DAT_004d75a0 = (char *)0x0;
+    _play_game_menu_button_rush = (char *)0x0;
     DAT_004d75a4 = 0;
-    DAT_004d75a5 = '\0';
-    DAT_004d75a8 = 0;
+    play_game_menu_rush_activated = '\0';
+    play_game_menu_rush_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa80);
   }
-  _DAT_004d75a0 = s_Rush_004720a0;
+  _play_game_menu_button_rush = s_Rush_004720a0;
   if (((byte)play_game_menu_init_flags & 4) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 4;
-    DAT_004d76ce = 1;
+    play_game_menu_survival_enabled = '\x01';
     DAT_004d76dd = 0;
     DAT_004d76dc = 0;
     _DAT_004d76d8 = 0x3f800000;
     _DAT_004d76d4 = 0;
-    _DAT_004d76c8 = (char *)0x0;
+    _play_game_menu_button_survival = (char *)0x0;
     DAT_004d76cc = 0;
-    DAT_004d76cd = '\0';
-    DAT_004d76d0 = 0;
+    play_game_menu_survival_activated = '\0';
+    play_game_menu_survival_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa70);
   }
-  _DAT_004d76c8 = s_Survival_004720ac;
+  _play_game_menu_button_survival = s_Survival_004720ac;
   if (((byte)play_game_menu_init_flags & 8) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 8;
     DAT_004d7616 = 1;
@@ -47868,13 +47889,13 @@ void play_game_menu_update(void)
     DAT_004d7624 = 0;
     _DAT_004d7620 = 0x3f800000;
     _DAT_004d761c = 0;
-    _DAT_004d7610 = (char *)0x0;
+    _play_game_menu_button_typo = (char *)0x0;
     DAT_004d7614 = 0;
-    DAT_004d7615 = '\0';
-    DAT_004d7618 = 0;
+    play_game_menu_typo_activated = '\0';
+    play_game_menu_typo_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa60);
   }
-  _DAT_004d7610 = s_Typ_o_Shooter_00472090;
+  _play_game_menu_button_typo = s_Typ_o_Shooter_00472090;
   if (((byte)play_game_menu_init_flags & 0x10) == 0) {
     play_game_menu_init_flags._0_1_ = (byte)play_game_menu_init_flags | 0x10;
     DAT_004d7658 = 0;
@@ -47891,13 +47912,13 @@ void play_game_menu_update(void)
     DAT_004d75e4 = 0;
     _DAT_004d75e0 = 0x3f800000;
     _DAT_004d75dc = 0;
-    _DAT_004d75d0 = (char *)0x0;
+    _play_game_menu_button_tutorial = (char *)0x0;
     DAT_004d75d4 = 0;
-    DAT_004d75d5 = '\0';
-    DAT_004d75d8 = 0;
+    play_game_menu_tutorial_activated = '\0';
+    play_game_menu_tutorial_hint_fade_counter = 0;
     crt_atexit(&DAT_0044fa40);
   }
-  _DAT_004d75d0 = s_Tutorial_00479274;
+  _play_game_menu_button_tutorial = s_Tutorial_00479274;
   (*grim_interface_ptr->vtable->grim_bind_texture)(ui_item_texts_texture,0);
   pcVar8 = (char *)0x3e800000;
   fVar7 = 1.0;
@@ -47918,13 +47939,13 @@ void play_game_menu_update(void)
   }
   if ((_quest_unlock_index < 0x28) || (1 < _config_player_count)) {
     fVar7 = fVar7 + 32.0;
-    if ((int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788) < 1) {
+    if ((int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush) < 1) {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
       }
       fVar7 = fVar7 + 32.0;
     }
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75f8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_quests);
     if (cVar5 != '\0') {
       iVar2 = 0;
       puVar3 = quest_play_counts + 0xb;
@@ -47937,31 +47958,32 @@ void play_game_menu_update(void)
                 (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 32.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_rush);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485788);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_rush);
     }
     fVar7 = fVar7 + 32.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_survival);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485784);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_survival)
+      ;
     }
-    if ((0 < (int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788)) &&
+    if ((0 < (int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush)) &&
        (_config_player_count == 1)) {
-      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
     }
   }
   else {
     fVar7 = fVar7 + 26.0;
-    if ((int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788) < 1) {
+    if ((int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush) < 1) {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
       }
       fVar7 = fVar7 + 28.0;
     }
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75f8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_quests);
     if (cVar5 != '\0') {
       iVar2 = 0;
       puVar3 = quest_play_counts + 0xb;
@@ -47974,30 +47996,31 @@ void play_game_menu_update(void)
                 (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,iVar2);
     }
     fVar7 = fVar7 + 28.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75a0);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_rush);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485788);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_rush);
     }
     fVar7 = fVar7 + 28.0;
-    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d76c8);
+    ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_survival);
     if (cVar5 != '\0') {
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_00485784);
+                (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_survival)
+      ;
     }
     fVar7 = fVar7 + 28.0;
     iVar2 = game_is_full_version();
     if ((char)iVar2 != '\0') {
       if (_config_player_count == 1) {
-        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d7610);
+        ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_typo);
       }
       if (cVar5 != '\0') {
         (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,_DAT_0048578c);
+                  (grim_interface_ptr,fVar6 + 158.0,fVar7 + 8.0,&s_fmt_decimal_int,mode_play_typo);
       }
     }
-    if (0 < (int)(_DAT_00485784 + quest_play_counts[0xb] + _DAT_00485788)) {
-      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&DAT_004d75d0);
+    if (0 < (int)(mode_play_survival + quest_play_counts[0xb] + mode_play_rush)) {
+      ui_button_update((float *)&stack0xffffffb0,(ui_button_t *)&play_game_menu_button_tutorial);
     }
   }
   if (((byte)play_game_menu_init_flags & 0x40) == 0) {
@@ -48036,36 +48059,41 @@ void play_game_menu_update(void)
     }
   }
 LAB_0044f676:
-  DAT_004d75a6 = play_game_player_count_list.open == 0;
-  DAT_004d75fe = DAT_004d75a6;
-  DAT_004d76ce = DAT_004d75a6;
+  play_game_menu_rush_enabled = play_game_player_count_list.open == 0;
+  play_game_menu_quests_enabled = play_game_menu_rush_enabled;
+  play_game_menu_survival_enabled = play_game_menu_rush_enabled;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
-  if (0 < DAT_004d7600) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7600 * 0.00090000004);
+  if (0 < play_game_menu_quests_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_quests_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy - 8.0,(float)y,s_Unlock_new_weapons_and_perks_in_Q_00479220);
   }
-  if (0 < DAT_004d75a8) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75a8 * 0.00090000004);
+  if (0 < play_game_menu_rush_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_rush_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 32.0,(float)y,s_Face_a_rush_of_aliens_in_Rush_mo_004791fc);
   }
-  if (0 < DAT_004d76d0) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d76d0 * 0.00090000004);
+  if (0 < play_game_menu_survival_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_survival_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 20.0,(float)y,s_Gain_perks_and_weapons_and_fight_004791d4);
   }
-  if (0 < DAT_004d7618) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d7618 * 0.00090000004);
+  if (0 < play_game_menu_typo_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_typo_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy,(float)y - 12.0,s_Use_your_typing_skills_as_the_we_0047919c);
   }
-  if (0 < DAT_004d75d8) {
-    (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)DAT_004d75d8 * 0.00090000004);
+  if (0 < play_game_menu_tutorial_hint_fade_counter) {
+    (*grim_interface_ptr->vtable->grim_set_color)
+              (1.0,1.0,1.0,(float)play_game_menu_tutorial_hint_fade_counter * 0.00090000004);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((float)xy + 38.0,(float)y,s_Learn_how_to_play_Crimsonland__0047917c);
   }
-  if (DAT_004d7615 != '\0') {
+  if (play_game_menu_typo_activated != '\0') {
     render_pass_mode = 0;
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
@@ -48076,11 +48104,11 @@ LAB_0044f676:
     sfx_mute_all(music_track_extra_0);
     screen_fade_ramp_flag = '\x01';
   }
-  if (DAT_004d75fd != '\0') {
+  if (play_game_menu_quests_activated != '\0') {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_QUEST_SELECT;
   }
-  if (DAT_004d75a5 != '\0') {
+  if (play_game_menu_rush_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48090,7 +48118,7 @@ LAB_0044f676:
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_004d76cd != '\0') {
+  if (play_game_menu_survival_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48100,7 +48128,7 @@ LAB_0044f676:
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
   }
-  if (DAT_004d75d5 != '\0') {
+  if (play_game_menu_tutorial_activated != '\0') {
     ui_sign_crimson._pad0[0] = '\0';
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
@@ -48298,10 +48326,10 @@ void ui_menu_layout_init(void)
   uint local_20 [8];
   
   screen_fade_alpha = 0;
-  _DAT_00487288 = (float)_config_screen_width * 0.0015625;
-  _DAT_0048723c = 0;
+  ui_layout_scale_x = (float)_config_screen_width * 0.0015625;
+  ui_element_hover_focus_ptr = (ui_element_t *)0x0;
   screen_fade_ramp_flag = '\0';
-  _DAT_0048728c = (float)_config_screen_height * 0.0020833334;
+  ui_layout_scale_y = (float)_config_screen_height * 0.0020833334;
   ppuVar13 = &ui_element_table_end;
   for (iVar10 = 0x29; iVar10 != 0; iVar10 = iVar10 + -1) {
     *ppuVar13 = (ui_element_t *)0x0;
@@ -49408,7 +49436,8 @@ void weapon_table_init(void)
   _DAT_004d863c = 0;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8ff8;
-  for (uVar6 = uVar5 >> 2; _DAT_004d7b7c = sfx_autorifle_fire, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; weapon_sfx_anchor_autorifle_fire = sfx_autorifle_fire, uVar6 != 0;
+      uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
@@ -49434,7 +49463,7 @@ void weapon_table_init(void)
   fire_bullets_fallback_shot_cooldown = 0.14;
   _DAT_004d9044 = 0x3f99999a;
   fire_bullets_fallback_spread_heat = 0.22;
-  fire_bullets_primary_shot_sfx_id = _DAT_004d7b7c;
+  fire_bullets_primary_shot_sfx_id = weapon_sfx_anchor_autorifle_fire;
   _DAT_004d9058 = sfx_pistol_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7aa8;
@@ -49467,12 +49496,14 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7b24;
-  for (uVar6 = uVar5 >> 2; _DAT_004d93bc = sfx_shotgun_reload, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; weapon_sfx_anchor_shotgun_reload = sfx_shotgun_reload, uVar6 != 0;
+      uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d83c0 = sfx_autorifle_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_autorifle_reload = sfx_autorifle_reload, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -49524,7 +49555,7 @@ void weapon_table_init(void)
   _DAT_004d7bec = 0x3ff33333;
   _DAT_004d7bf0 = 0x3e8a3d71;
   _DAT_004d7bf8 = sfx_shotgun_fire;
-  _DAT_004d7c00 = _DAT_004d93bc;
+  _DAT_004d7c00 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7c1c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49555,7 +49586,7 @@ void weapon_table_init(void)
   _DAT_004d7c68 = 0x3ff33333;
   _DAT_004d7c6c = 0x3e051eb8;
   _DAT_004d7c74 = _DAT_004d8434;
-  _DAT_004d7c7c = _DAT_004d93bc;
+  _DAT_004d7c7c = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d83dc;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49585,7 +49616,7 @@ void weapon_table_init(void)
   _DAT_004d8428 = 0x40400000;
   _DAT_004d842c = 0x3e23d70a;
   _DAT_004d8450 = 4;
-  _DAT_004d843c = _DAT_004d93bc;
+  _DAT_004d843c = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7c98;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49615,7 +49646,7 @@ void weapon_table_init(void)
   _DAT_004d7ce0 = 0x3db476b0;
   _DAT_004d7ce4 = 0x3f99999a;
   _DAT_004d7ce8 = 0x3da7ef9e;
-  _DAT_004d7cf8 = _DAT_004d83c0;
+  _DAT_004d7cf8 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7e0c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49647,7 +49678,7 @@ void weapon_table_init(void)
   _DAT_004d7e58 = 0x40000000;
   _DAT_004d7e5c = 0x3c75c28f;
   _DAT_004d7e08 = 1;
-  _DAT_004d7e6c = _DAT_004d83c0;
+  _DAT_004d7e6c = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7e88;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49666,7 +49697,7 @@ void weapon_table_init(void)
   _DAT_004d7ed0 = 0x3e94e545;
   _DAT_004d7ed4 = 0x3f99999a;
   _DAT_004d7ed8 = 0x3e3a5e35;
-  _DAT_004d7ee8 = _DAT_004d83c0;
+  _DAT_004d7ee8 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = s_Multi_Plasma_0047950c;
   do {
     pcVar8 = pcVar7;
@@ -49706,7 +49737,7 @@ void weapon_table_init(void)
   _DAT_004d7f50 = 0x3fb33333;
   _DAT_004d7f54 = 0x3ea3d70a;
   _DAT_004d7f78 = 3;
-  _DAT_004d7f64 = _DAT_004d83c0;
+  _DAT_004d7f64 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7f80;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49735,7 +49766,7 @@ void weapon_table_init(void)
   _DAT_004d7fc8 = 0x3de147ae;
   _DAT_004d7fcc = 0x3fa66666;
   _DAT_004d7fd0 = 0x3dc6a7f0;
-  _DAT_004d7fe0 = _DAT_004d83c0;
+  _DAT_004d7fe0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7d14;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49765,7 +49796,7 @@ void weapon_table_init(void)
   _DAT_004d7d5c = 0x3f19999a;
   _DAT_004d7d60 = 0x3fcccccd;
   _DAT_004d7d64 = 0x3ed70a3d;
-  _DAT_004d7d74 = _DAT_004d93bc;
+  _DAT_004d7d74 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7ffc;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49857,7 +49888,7 @@ void weapon_table_init(void)
   _DAT_004d7dd8 = 0x3db851ec;
   _DAT_004d7ddc = 0x40800000;
   _DAT_004d7de0 = 0x3d7df3b6;
-  _DAT_004d7df0 = _DAT_004d83c0;
+  _DAT_004d7df0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d80f4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49887,7 +49918,7 @@ void weapon_table_init(void)
   _DAT_004d8140 = 0x40466666;
   _DAT_004d8144 = 0x3de147ae;
   _DAT_004d8168 = 0xe;
-  _DAT_004d8154 = _DAT_004d93bc;
+  _DAT_004d8154 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8170;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49919,7 +49950,7 @@ void weapon_table_init(void)
   _DAT_004d81bc = 0x3fc00000;
   _DAT_004d81c0 = 0x3c23d70a;
   _DAT_004d816c = 1;
-  _DAT_004d81d0 = _DAT_004d83c0;
+  _DAT_004d81d0 = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d81ec;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -49951,7 +49982,7 @@ void weapon_table_init(void)
   _DAT_004d8238 = 0x3fe66666;
   _DAT_004d823c = 0x3c23d70a;
   _DAT_004d81e8 = 1;
-  _DAT_004d824c = _DAT_004d83c0;
+  _DAT_004d824c = weapon_sfx_anchor_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8268;
   for (uVar6 = uVar5 >> 2; _DAT_004d82c8 = sfx_autorifle_reload_alt, uVar6 != 0; uVar6 = uVar6 - 1)
@@ -50021,7 +50052,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d86a8 = sfx_shock_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_shock_reload = sfx_shock_reload, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50074,7 +50106,7 @@ void weapon_table_init(void)
   _DAT_004d84a4 = 0x3faccccd;
   _DAT_004d84a8 = 0x3de56042;
   _DAT_004d8454 = 4;
-  _DAT_004d84b8 = _DAT_004d86a8;
+  _DAT_004d84b8 = weapon_sfx_anchor_shock_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d84d4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50095,7 +50127,7 @@ void weapon_table_init(void)
   _DAT_004d8520 = 0x3fe66666;
   _DAT_004d8524 = 0x3db851ec;
   _DAT_004d84d0 = 4;
-  _DAT_004d8534 = _DAT_004d86a8;
+  _DAT_004d8534 = weapon_sfx_anchor_shock_reload;
   pcVar7 = s_Ion_Cannon_00479440;
   do {
     pcVar8 = pcVar7;
@@ -50135,7 +50167,7 @@ void weapon_table_init(void)
   _DAT_004d859c = 0x40400000;
   _DAT_004d85a0 = 0x3f2e147b;
   _DAT_004d854c = 4;
-  _DAT_004d85b0 = _DAT_004d86a8;
+  _DAT_004d85b0 = weapon_sfx_anchor_shock_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8930;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50167,7 +50199,7 @@ void weapon_table_init(void)
   _DAT_004d8980 = 0x3e8a3d71;
   _DAT_004d89a4 = 8;
   _DAT_004d892c = 4;
-  _DAT_004d8990 = _DAT_004d86a8;
+  _DAT_004d8990 = weapon_sfx_anchor_shock_reload;
   _DAT_004d8994 = 0x1f;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d88b4;
@@ -50199,7 +50231,7 @@ void weapon_table_init(void)
   _DAT_004d8900 = 0x40066666;
   _DAT_004d8904 = 0x3e8a3d71;
   _DAT_004d88b0 = 0;
-  _DAT_004d8914 = _DAT_004d93bc;
+  _DAT_004d8914 = weapon_sfx_anchor_shotgun_reload;
   _DAT_004d8918 = 0x1e;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d87bc;
@@ -50229,7 +50261,7 @@ void weapon_table_init(void)
   _DAT_004d8804 = 0x3f666666;
   _DAT_004d8808 = 0x402ccccd;
   _DAT_004d880c = 0x3f19999a;
-  _DAT_004d881c = _DAT_004d86a8;
+  _DAT_004d881c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8820 = 0x19;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8740;
@@ -50260,7 +50292,7 @@ void weapon_table_init(void)
   _DAT_004d878c = 0x40400000;
   _DAT_004d8790 = 0x3f2e147b;
   _DAT_004d873c = 4;
-  _DAT_004d87a0 = _DAT_004d86a8;
+  _DAT_004d87a0 = weapon_sfx_anchor_shock_reload;
   _DAT_004d87a4 = 0x19;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d89ac;
@@ -50291,7 +50323,7 @@ void weapon_table_init(void)
   _DAT_004d89f8 = 0x40400000;
   _DAT_004d89fc = 0x3e3851ec;
   _DAT_004d89a8 = 4;
-  _DAT_004d8a0c = _DAT_004d86a8;
+  _DAT_004d8a0c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8a10 = 0x1d;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8a28;
@@ -50312,7 +50344,7 @@ void weapon_table_init(void)
   _DAT_004d8a74 = 0x40000000;
   _DAT_004d8a78 = 0x3ec28f5c;
   _DAT_004d8a24 = 4;
-  _DAT_004d8a88 = _DAT_004d86a8;
+  _DAT_004d8a88 = weapon_sfx_anchor_shock_reload;
   _DAT_004d8a8c = 0x1e;
   pcVar7 = s_Splitter_Gun_004793e4;
   do {
@@ -50353,7 +50385,7 @@ void weapon_table_init(void)
   _DAT_004d8884 = 0x400ccccd;
   _DAT_004d8888 = 0x3e8f5c29;
   _DAT_004d8834 = 0;
-  _DAT_004d8898 = _DAT_004d86a8;
+  _DAT_004d8898 = weapon_sfx_anchor_shock_reload;
   _DAT_004d88a8 = 0x40c00000;
   _DAT_004d88a4 = 0x41f00000;
   pcVar7 = pcVar8 + -uVar5;
@@ -50385,7 +50417,7 @@ void weapon_table_init(void)
   _DAT_004d8614 = 0x3e570a3d;
   _DAT_004d8618 = 0x3f9c28f6;
   _DAT_004d861c = 0x3d23d70a;
-  _DAT_004d862c = _DAT_004d86a8;
+  _DAT_004d862c = weapon_sfx_anchor_shock_reload;
   _DAT_004d8630 = 0x17;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8648;
@@ -50424,7 +50456,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d92bc = sfx_bloodspill_01, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_bloodspill_01 = sfx_bloodspill_01, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50446,7 +50479,7 @@ void weapon_table_init(void)
   _DAT_004d8e54 = 0x3f99999a;
   _DAT_004d8e58 = 0x3d23d70a;
   _DAT_004d8e60 = sfx_bloodspill_01;
-  _DAT_004d8e68 = _DAT_004d93bc;
+  _DAT_004d8e68 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8f00;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50475,8 +50508,8 @@ void weapon_table_init(void)
   _DAT_004d8f48 = 0x3e4ccccd;
   _DAT_004d8f4c = 0x3f99999a;
   _DAT_004d8f50 = 0x3db851ec;
-  _DAT_004d8f58 = _DAT_004d92bc;
-  _DAT_004d8f60 = _DAT_004d93bc;
+  _DAT_004d8f58 = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8f60 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8f7c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50504,8 +50537,8 @@ void weapon_table_init(void)
   _DAT_004d8fc4 = 0x3f000000;
   _DAT_004d8fc8 = 0x3f99999a;
   _DAT_004d8fcc = 0x3ecccccd;
-  _DAT_004d8fd4 = _DAT_004d92bc;
-  _DAT_004d8fdc = _DAT_004d93bc;
+  _DAT_004d8fd4 = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8fdc = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8e84;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50534,8 +50567,8 @@ void weapon_table_init(void)
   _DAT_004d8ecc = 0x3e252bd4;
   _DAT_004d8ed0 = 0x3f99999a;
   _DAT_004d8ed4 = 0x3d4ccccd;
-  _DAT_004d8edc = _DAT_004d92bc;
-  _DAT_004d8ee4 = _DAT_004d93bc;
+  _DAT_004d8edc = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8ee4 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d86c4;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50564,8 +50597,8 @@ void weapon_table_init(void)
   _DAT_004d870c = 0x3e4ccccd;
   _DAT_004d8710 = 0x3f99999a;
   _DAT_004d8714 = 0x3d23d70a;
-  _DAT_004d871c = _DAT_004d92bc;
-  _DAT_004d8724 = _DAT_004d93bc;
+  _DAT_004d871c = weapon_sfx_anchor_bloodspill_01;
+  _DAT_004d8724 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d9264;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50573,7 +50606,8 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d93b4 = sfx_explosion_large, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; weapon_sfx_anchor_explosion_large = sfx_explosion_large, uVar5 != 0;
+      uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -50594,7 +50628,7 @@ void weapon_table_init(void)
   _DAT_004d92ac = 0x3d23d70a;
   _DAT_004d92b0 = 0x40a00000;
   _DAT_004d92b4 = 0x3d23d70a;
-  _DAT_004d92c4 = _DAT_004d93bc;
+  _DAT_004d92c4 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d92e0;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50624,7 +50658,7 @@ void weapon_table_init(void)
   _DAT_004d9328 = 0x3da3d70a;
   _DAT_004d932c = 0x40000000;
   _DAT_004d9330 = 0x3d4ccccd;
-  _DAT_004d9340 = _DAT_004d93bc;
+  _DAT_004d9340 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d93d8;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50653,8 +50687,8 @@ void weapon_table_init(void)
   _DAT_004d9420 = 0x40800000;
   _DAT_004d9424 = 0x41000000;
   _DAT_004d9428 = 0x3f800000;
-  _DAT_004d9430 = _DAT_004d93b4;
-  _DAT_004d9438 = _DAT_004d93bc;
+  _DAT_004d9430 = weapon_sfx_anchor_explosion_large;
+  _DAT_004d9438 = weapon_sfx_anchor_shotgun_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d935c;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -50690,7 +50724,7 @@ int weapon_pick_random_available(void)
   do {
     iVar1 = crt_rand();
     iVar1 = iVar1 % 0x21 + 1;
-    if (*(int *)(&DAT_00485544 + iVar1 * 4) != 0) {
+    if (*(int *)(&weapon_usage_counts + iVar1 * 4) != 0) {
       uVar2 = crt_rand();
       if ((uVar2 & 1) == 0) {
         iVar1 = crt_rand();
@@ -50720,7 +50754,8 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
   
   iVar1 = weapon_id;
   if (demo_mode_active == '\0') {
-    *(int *)(&DAT_00485544 + weapon_id * 4) = *(int *)(&DAT_00485544 + weapon_id * 4) + 1;
+    *(int *)(&weapon_usage_counts + weapon_id * 4) =
+         *(int *)(&weapon_usage_counts + weapon_id * 4) + 1;
   }
   (&player_state_table)[player_index].weapon_id = weapon_id;
   iVar2 = perk_id_ammo_maniac;
