@@ -124,7 +124,10 @@ class CreatureState:
     ai_mode: int = 0
     flags: CreatureFlags = CreatureFlags(0)
 
-    link_index: int = 0
+    # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
+    # leave it untouched (notably survival_spawn_creature AI7 spiders), so stale
+    # values can affect early AI7 timer phase.
+    link_index: int = -1
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
@@ -409,7 +412,9 @@ class CreaturePool:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
         idx = self._alloc_slot(rand=rand)
-        entry = CreatureState()
+        # Reuse the allocated slot so fields that native spawn paths do not touch
+        # (e.g. link_index for survival AI7 spiders) retain stale values.
+        entry = self._entries[idx]
         self._apply_init(entry, init)
 
         # Direct init does not have plan-local indices; preserve any raw linkage.
@@ -451,7 +456,8 @@ class CreaturePool:
         # 1) Allocate pool slots for every creature.
         for init in plan.creatures:
             pool_idx = self._alloc_slot(rand=rand)
-            entry = CreatureState()
+            # Reuse the allocated slot so untouched fields keep native-like stale state.
+            entry = self._entries[pool_idx]
             self._apply_init(entry, init)
             self._entries[pool_idx] = entry
             self.spawned_count += 1
@@ -960,7 +966,6 @@ class CreaturePool:
         entry.orbit_radius = orbit_radius
 
         entry.spawn_slot_index = None
-        entry.link_index = 0
         entry.attack_cooldown = 0.0
 
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
