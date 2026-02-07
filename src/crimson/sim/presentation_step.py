@@ -9,10 +9,12 @@ from grim.geom import Vec2
 from ..creatures.runtime import CreatureDeath
 from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue
+from ..features.bonuses.freeze import freeze_bonus_active
+from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hooks
 from ..game_modes import GameMode
 from ..gameplay import BonusPickupEvent, GameplayState, PlayerState, perk_active
 from ..perks import PerkId
-from ..projectiles import ProjectileHit, ProjectileTypeId
+from ..projectiles import ProjectileHit
 from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .world_defs import BEAM_TYPES, ION_TYPES
@@ -201,7 +203,7 @@ def queue_projectile_decals(
     detail_preset: int,
     fx_toggle: int,
 ) -> None:
-    freeze_active = state.bonuses.freeze > 0.0
+    freeze_active = freeze_bonus_active(state=state)
     bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
 
     for hit in hits:
@@ -209,19 +211,15 @@ def queue_projectile_decals(
 
         base_angle = (hit.hit - hit.origin).to_angle()
 
-        # Native: Gauss Gun + Fire Bullets spawn a distinct "streak" of large terrain decals.
-        if type_id in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
-            direction = Vec2.from_angle(base_angle)
-            for _ in range(6):
-                dist = float(int(rand()) % 100) * 0.1
-                if dist > 4.0:
-                    dist = float(int(rand()) % 0x5A + 10) * 0.1
-                if dist > 7.0:
-                    dist = float(int(rand()) % 0x50 + 0x14) * 0.1
-                fx_queue.add_random(
-                    pos=hit.target + direction * (dist * 20.0),
-                    rand=rand,
-                )
+        if run_projectile_decal_hooks(
+            ProjectileDecalCtx(
+                hit=hit,
+                base_angle=float(base_angle),
+                fx_queue=fx_queue,
+                rand=rand,
+            )
+        ):
+            pass
         elif type_id in ION_TYPES:
             pass
         elif not freeze_active:

@@ -1,31 +1,27 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable
 
-from grim.color import RGBA
 from grim.geom import Vec2
 
-from ..bonuses import BonusId
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
-from ..creatures.runtime import CreatureDeath, CreaturePool
-from ..creatures.runtime import CREATURE_HITBOX_ALIVE
+from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
+from ..features.bonuses import emit_bonus_pickup_effects
+from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..gameplay import (
     BonusPickupEvent,
     GameplayState,
     PlayerInput,
     PlayerState,
     bonus_update,
-    perk_active,
     perks_update_effects,
     player_update,
     survival_progression_update,
 )
-from ..perks import PerkId
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
 from .world_defs import CREATURE_ANIM
@@ -39,101 +35,8 @@ class WorldEvents:
     sfx: list[str]
 
 
-@dataclass(slots=True)
-class _WorldDtCtx:
-    dt: float
-    players: list[PlayerState]
-
-
-_WorldDtStep = Callable[[_WorldDtCtx], None]
-
-
-def _world_dt_reflex_boosted(ctx: _WorldDtCtx) -> None:
-    if ctx.dt > 0.0 and ctx.players and perk_active(ctx.players[0], PerkId.REFLEX_BOOSTED):
-        ctx.dt *= 0.9
-
-
-_WORLD_DT_STEPS: tuple[_WorldDtStep, ...] = (_world_dt_reflex_boosted,)
-
-
-@dataclass(slots=True)
-class _PlayerDeathCtx:
-    state: GameplayState
-    creatures: CreaturePool
-    players: list[PlayerState]
-    player_index: int
-    player: PlayerState
-    dt: float
-    world_size: float
-    detail_preset: int
-    fx_queue: FxQueue
-    deaths: list[CreatureDeath]
-
-
-_PlayerDeathHook = Callable[[_PlayerDeathCtx], None]
-
-
-def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
-    player = ctx.player
-    if not perk_active(player, PerkId.FINAL_REVENGE):
-        return
-
-    player_pos = player.pos
-    rand = ctx.state.rng.rand
-    ctx.state.effects.spawn_explosion_burst(
-        pos=player_pos,
-        scale=1.8,
-        rand=rand,
-        detail_preset=int(ctx.detail_preset),
-    )
-
-    prev_guard = bool(ctx.state.bonus_spawn_guard)
-    ctx.state.bonus_spawn_guard = True
-    for creature_idx, creature in enumerate(ctx.creatures.entries):
-        if not creature.active:
-            continue
-        if float(creature.hp) <= 0.0:
-            continue
-
-        delta = creature.pos - player_pos
-        if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:
-            continue
-
-        remaining = 512.0 - delta.length()
-        if remaining <= 0.0:
-            continue
-
-        damage = remaining * 5.0
-        death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
-        killed = creature_apply_damage(
-            creature,
-            damage_amount=damage,
-            damage_type=3,
-            impulse=Vec2(),
-            owner_id=-1 - int(player.index),
-            dt=float(ctx.dt),
-            players=ctx.players,
-            rand=rand,
-        )
-        if killed and death_start_needed:
-            ctx.deaths.append(
-                ctx.creatures.handle_death(
-                    int(creature_idx),
-                    state=ctx.state,
-                    players=ctx.players,
-                    rand=rand,
-                    detail_preset=int(ctx.detail_preset),
-                    world_width=float(ctx.world_size),
-                    world_height=float(ctx.world_size),
-                    fx_queue=ctx.fx_queue,
-                )
-            )
-    ctx.state.bonus_spawn_guard = prev_guard
-    ctx.state.sfx_queue.append("sfx_explosion_large")
-    ctx.state.sfx_queue.append("sfx_shockwave")
-
-
-_PLAYER_DEATH_HOOKS: tuple[_PlayerDeathHook, ...] = (_player_death_final_revenge,)
+_WORLD_DT_STEPS = WORLD_DT_STEPS
+_PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
 @dataclass(slots=True)
@@ -193,10 +96,9 @@ class WorldState:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
 
-        dt_ctx = _WorldDtCtx(dt=float(dt), players=self.players)
+        dt = float(dt)
         for step in _WORLD_DT_STEPS:
-            step(dt_ctx)
-        dt = float(dt_ctx.dt)
+            dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
 
         if inputs is None:
@@ -307,20 +209,18 @@ class WorldState:
                 continue
             if float(player.health) >= 0.0:
                 continue
-            death_ctx = _PlayerDeathCtx(
-                state=self.state,
-                creatures=self.creatures,
-                players=self.players,
-                player_index=int(idx),
-                player=player,
-                dt=float(dt),
-                world_size=float(world_size),
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                deaths=deaths,
-            )
             for hook in _PLAYER_DEATH_HOOKS:
-                hook(death_ctx)
+                hook(
+                    state=self.state,
+                    creatures=self.creatures,
+                    players=self.players,
+                    player=player,
+                    dt=float(dt),
+                    world_size=float(world_size),
+                    detail_preset=int(detail_preset),
+                    fx_queue=fx_queue,
+                    deaths=deaths,
+                )
 
         def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
             idx = int(creature_index)
@@ -391,29 +291,11 @@ class WorldState:
             detail_preset=int(detail_preset),
         )
         if pickups:
-            for pickup in pickups:
-                if pickup.bonus_id != int(BonusId.NUKE):
-                    self.state.effects.spawn_burst(
-                        pos=pickup.pos,
-                        count=12,
-                        rand=self.state.rng.rand,
-                        detail_preset=detail_preset,
-                        lifetime=0.4,
-                        scale_step=0.1,
-                        color=RGBA(0.4, 0.5, 1.0, 0.5),
-                    )
-                if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
-                    self.state.effects.spawn_ring(
-                        pos=pickup.pos,
-                        detail_preset=detail_preset,
-                        color=RGBA(0.6, 0.6, 1.0, 1.0),
-                    )
-                elif pickup.bonus_id == int(BonusId.FREEZE):
-                    self.state.effects.spawn_ring(
-                        pos=pickup.pos,
-                        detail_preset=detail_preset,
-                        color=RGBA(0.3, 0.5, 0.8, 1.0),
-                    )
+            emit_bonus_pickup_effects(
+                state=self.state,
+                pickups=pickups,
+                detail_preset=int(detail_preset),
+            )
         _mark("ws_after_bonus_update")
 
         if perk_progression_enabled:
