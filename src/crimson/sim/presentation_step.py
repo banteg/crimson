@@ -152,14 +152,12 @@ def plan_hit_sfx_keys(
         return False, []
 
     trigger_game_tune = False
-    start_idx = 0
     if (not demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not game_tune_started):
         trigger_game_tune = True
-        start_idx = 1
 
-    end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)
+    end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
     keys: list[str] = []
-    for idx in range(start_idx, end):
+    for idx in range(0, end):
         type_id = int(hits[idx].type_id)
         key = _hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand)
         if key is not None:

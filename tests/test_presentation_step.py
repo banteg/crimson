@@ -26,7 +26,7 @@ def _hits(count: int, *, type_id: int = int(ProjectileTypeId.PISTOL)) -> list[Pr
     return hits
 
 
-def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
+def test_plan_hit_sfx_includes_first_hit_when_tune_not_started() -> None:
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
         game_mode=int(GameMode.SURVIVAL),
@@ -36,7 +36,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     )
 
     assert trigger_game_tune is True
-    assert keys == ["sfx_bullet_hit_01"]
+    assert keys == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
 
 
 def test_plan_hit_sfx_no_skip_when_tune_started() -> None:

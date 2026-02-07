@@ -158,13 +158,11 @@ class AudioRouter:
         if self.audio is None or not hits:
             return
 
-        start_idx = 0
         if (not self.demo_mode_active) and int(game_mode) != int(GameMode.RUSH):
-            if trigger_game_tune(self.audio, rand=rand) is not None:
-                start_idx = 1
+            trigger_game_tune(self.audio, rand=rand)
 
-        end = min(len(hits), start_idx + _MAX_HIT_SFX_PER_FRAME)
-        for idx in range(start_idx, end):
+        end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
+        for idx in range(0, end):
             type_id = int(hits[idx].type_id)
             self.play_sfx(self._hit_sfx_for_type(type_id, beam_types=beam_types, rand=rand))
 
