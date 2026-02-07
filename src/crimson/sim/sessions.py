@@ -28,6 +28,9 @@ class SurvivalDeterministicSession:
     detail_preset: int = 5
     fx_toggle: int = 0
     game_tune_started: bool = False
+    auto_pick_perks: bool = False
+    demo_mode_active: bool = False
+    perk_progression_enabled: bool = True
     clear_fx_queues_each_tick: bool = False
     elapsed_ms: float = 0.0
     stage: int = 0
@@ -59,10 +62,10 @@ class SurvivalDeterministicSession:
             fx_toggle=int(self.fx_toggle),
             fx_queue=self.fx_queue,
             fx_queue_rotated=self.fx_queue_rotated,
-            auto_pick_perks=False,
+            auto_pick_perks=bool(self.auto_pick_perks),
             game_mode=int(GameMode.SURVIVAL),
-            demo_mode_active=False,
-            perk_progression_enabled=True,
+            demo_mode_active=bool(self.demo_mode_active),
+            perk_progression_enabled=bool(self.perk_progression_enabled),
             game_tune_started=bool(self.game_tune_started),
             rng_marks_out=rng_marks,
             trace_presentation_rng=bool(trace_rng),
