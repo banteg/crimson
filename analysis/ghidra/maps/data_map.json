@@ -9143,11 +9143,25 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059770",
+      "comment": "Device-restore callback (set via config var id 6; called after restore/reacquire paths).",
+      "name": "grim_on_device_restore",
+      "program": "grim.dll",
+      "type": "void (*)(void)"
+    },
+    {
       "address": "0x10059778",
       "comment": "Window/dialog icon handle loaded from Grim resources (icon id 0x72).",
       "name": "grim_window_icon_handle",
       "program": "grim.dll",
       "type": "HICON"
+    },
+    {
+      "address": "0x1005977c",
+      "comment": "Per-frame callback (set via config var id 0x2d; returning 0 exits the main loop).",
+      "name": "grim_frame_callback",
+      "program": "grim.dll",
+      "type": "int (*)(void)"
     },
     {
       "address": "0x10059780",
@@ -9920,6 +9934,13 @@
       "type": "float"
     },
     {
+      "address": "0x1005d3a8",
+      "comment": "Device-lost callback (set via config var id 5; called before backup/release paths).",
+      "name": "grim_on_device_lost",
+      "program": "grim.dll",
+      "type": "void (*)(void)"
+    },
+    {
       "address": "0x1005d3c4",
       "comment": "Buffered key-char FIFO storage used by grim_get_key_char (up to 7 pending entries).",
       "name": "grim_key_char_queue",
@@ -9991,9 +10012,23 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d808",
+      "comment": "Retry counter for device Reset/restore attempts after device loss.",
+      "name": "grim_device_reset_retry_count",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x1005d810",
       "comment": "Texture backup/restore pending flag (set after backup, cleared after restore).",
       "name": "grim_texture_backup_pending",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005d811",
+      "comment": "Pending flag to invoke grim_on_device_restore once the main loop regains a ready device.",
+      "name": "grim_device_restore_callback_pending",
       "program": "grim.dll",
       "type": "char"
     },
