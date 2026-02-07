@@ -23,9 +23,7 @@ from .gameplay import (
     GameplayState,
     PlayerInput,
     PlayerState,
-    perks_rebuild_available,
     weapon_assign_player,
-    weapon_refresh_available,
 )
 from .render.terrain_fx import FxQueueTextures, bake_fx_queues
 from .render.frame import RenderFrame
@@ -33,9 +31,9 @@ from .render.world_renderer import WorldRenderer
 from .audio_router import AudioRouter
 from .sim.presentation_step import (
     PresentationStepCommands,
-    apply_world_presentation_step,
     queue_projectile_decals,
 )
+from .sim.step_pipeline import run_deterministic_step
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .weapons import WEAPON_TABLE
@@ -88,6 +86,7 @@ class GameWorld:
     _texture_loader: TextureLoader | None = field(init=False, default=None)
     last_events: WorldEvents = field(init=False)
     last_presentation: PresentationStepCommands = field(init=False)
+    last_command_hash: str = field(init=False, default="")
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(
@@ -105,6 +104,7 @@ class GameWorld:
         self.fx_queue_rotated = FxQueueRotated()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
         self.camera = Vec2(-1.0, -1.0)
         self.audio_router = AudioRouter(
             audio=self.audio,
@@ -152,6 +152,7 @@ class GameWorld:
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
         self._elapsed_ms = 0.0
         self._bonus_anim_phase = 0.0
         self._game_tune_started = False
@@ -398,6 +399,7 @@ class GameWorld:
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
         self._game_tune_started = False
 
     def update(
@@ -410,42 +412,10 @@ class GameWorld:
         perk_progression_enabled: bool = False,
         rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
-        def _mark(name: str) -> None:
-            if rng_marks_out is None:
-                return
-            rng_marks_out[str(name)] = int(self.state.rng.state)
-
-        if inputs is None:
-            inputs = [PlayerInput() for _ in self.players]
-
-        _mark("gw_begin")
-        self.state.game_mode = int(game_mode)
-        self.state.demo_mode_active = bool(self.demo_mode_active)
-        weapon_refresh_available(self.state)
-        _mark("gw_after_weapon_refresh")
-        perks_rebuild_available(self.state)
-        _mark("gw_after_perks_rebuild")
-
         if self.audio_router is not None:
             self.audio_router.audio = self.audio
             self.audio_router.audio_rng = self.audio_rng
             self.audio_router.demo_mode_active = self.demo_mode_active
-
-        # Time scale (Reflex Boost): gameplay_update_and_render @ 0x0040AAB0.
-        # When active, `frame_dt` is scaled by `time_scale_factor`, with a linear
-        # ramp from 0.3 -> 1.0 over the final second of the timer.
-        time_scale_active = self.state.bonuses.reflex_boost > 0.0
-        if time_scale_active:
-            time_scale_factor = 0.3
-            timer = float(self.state.bonuses.reflex_boost)
-            if timer < 1.0:
-                time_scale_factor = (1.0 - timer) * 0.7 + 0.3
-            dt = float(dt) * float(time_scale_factor)
-        _mark("gw_after_time_scale")
-
-        if dt > 0.0:
-            self._elapsed_ms += float(dt) * 1000.0
-            self._bonus_anim_phase += float(dt) * 1.3
 
         detail_preset = 5
         fx_toggle = 0
@@ -457,51 +427,41 @@ class GameWorld:
             self._sync_ground_settings()
             self.ground.process_pending()
 
-        prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in self.players]
-        prev_perk_pending = int(self.state.perk_selection.pending_count)
-
-        events = self.world_state.step(
-            dt,
+        step = run_deterministic_step(
+            world=self.world_state,
+            dt_frame=float(dt),
             inputs=inputs,
             world_size=float(self.world_size),
             damage_scale_by_type=self._damage_scale_by_type,
-            detail_preset=detail_preset,
+            detail_preset=int(detail_preset),
+            fx_toggle=int(fx_toggle),
             fx_queue=self.fx_queue,
             fx_queue_rotated=self.fx_queue_rotated,
-            auto_pick_perks=auto_pick_perks,
-            game_mode=game_mode,
-            perk_progression_enabled=bool(perk_progression_enabled),
-            rng_marks=rng_marks_out,
-        )
-        self.last_events = events
-
-        presentation = apply_world_presentation_step(
-            state=self.state,
-            players=self.players,
-            fx_queue=self.fx_queue,
-            hits=events.hits,
-            deaths=events.deaths,
-            pickups=events.pickups,
-            event_sfx=events.sfx,
-            prev_audio=prev_audio,
-            prev_perk_pending=int(prev_perk_pending),
+            auto_pick_perks=bool(auto_pick_perks),
             game_mode=int(game_mode),
             demo_mode_active=bool(self.demo_mode_active),
             perk_progression_enabled=bool(perk_progression_enabled),
-            rand=self.presentation_rng.rand,
-            detail_preset=int(detail_preset),
-            fx_toggle=int(fx_toggle),
+            presentation_rand=self.presentation_rng.rand,
             game_tune_started=bool(self._game_tune_started),
+            rng_marks_out=rng_marks_out,
         )
-        self.last_presentation = presentation
-        if presentation.trigger_game_tune:
+
+        self.last_events = step.events
+        self.last_presentation = step.presentation
+        self.last_command_hash = step.command_hash
+
+        if float(step.dt_sim) > 0.0:
+            self._elapsed_ms += float(step.dt_sim) * 1000.0
+            self._bonus_anim_phase += float(step.dt_sim) * 1.3
+
+        if step.presentation.trigger_game_tune:
             self._game_tune_started = True
             self.audio_router.trigger_game_tune()
-        for key in presentation.sfx_keys:
+        for key in step.presentation.sfx_keys:
             self.audio_router.play_sfx_resolved(key)
 
-        self.update_camera(dt)
-        return events.hits
+        self.update_camera(step.dt_sim)
+        return step.events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit]) -> None:
         fx_toggle = 0

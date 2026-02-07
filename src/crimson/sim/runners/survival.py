@@ -5,15 +5,12 @@ from dataclasses import dataclass
 from grim.geom import Vec2
 from grim.rand import Crand
 
-from ...camera import camera_shake_update
 from ...creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ...game_modes import GameMode
 from ...gameplay import (
     PlayerInput,
     perk_selection_current_choices,
     perk_selection_pick,
-    perks_rebuild_available,
-    weapon_refresh_available,
 )
 from ...replay import (
     PerkMenuOpenEvent,
@@ -25,7 +22,7 @@ from ...replay import (
     warn_on_game_version_mismatch,
 )
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from ..presentation_step import apply_world_presentation_step
+from ..step_pipeline import run_deterministic_step
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -36,7 +33,6 @@ from .common import (
     player0_shots,
     reset_players,
     status_from_snapshot,
-    time_scale_reflex_boost_bonus,
 )
 
 
@@ -108,6 +104,7 @@ def run_survival_replay(
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
     strict_events: bool = True,
+    trace_rng: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
@@ -191,51 +188,29 @@ def run_survival_replay(
             )
 
         rng_before_world_step = int(state.rng.state)
-        world_step_marks: dict[str, int] = {"gw_begin": int(rng_before_world_step)}
-        prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in world.players]
-        prev_perk_pending = int(state.perk_selection.pending_count)
-        weapon_refresh_available(state)
-        world_step_marks["gw_after_weapon_refresh"] = int(state.rng.state)
-        perks_rebuild_available(state)
-        world_step_marks["gw_after_perks_rebuild"] = int(state.rng.state)
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
-        world_step_marks["gw_after_time_scale"] = int(state.rng.state)
-        events = world.step(
-            dt_sim,
+        world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
+        step = run_deterministic_step(
+            world=world,
+            dt_frame=float(dt_frame),
             inputs=player_inputs,
-            world_size=world_size,
+            world_size=float(world_size),
             damage_scale_by_type=damage_scale_by_type,
             detail_preset=5,
+            fx_toggle=0,
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=True,
-            rng_marks=world_step_marks,
-        )
-        # `GameWorld.update` runs `camera_shake_update` after world simulation and
-        # before replay checkpoints are sampled in live recording paths.
-        camera_shake_update(state, dt_sim)
-        rng_after_world_step = int(state.rng.state)
-        presentation = apply_world_presentation_step(
-            state=state,
-            players=world.players,
-            fx_queue=fx_queue,
-            hits=events.hits,
-            deaths=events.deaths,
-            pickups=events.pickups,
-            event_sfx=events.sfx,
-            prev_audio=prev_audio,
-            prev_perk_pending=prev_perk_pending,
-            game_mode=int(GameMode.SURVIVAL),
             demo_mode_active=False,
             perk_progression_enabled=True,
-            rand=presentation_rng.rand,
-            detail_preset=5,
-            fx_toggle=0,
+            presentation_rand=presentation_rng.rand,
             game_tune_started=bool(game_tune_started),
+            rng_marks_out=world_step_marks,
+            trace_presentation_rng=bool(trace_rng),
         )
-        if presentation.trigger_game_tune:
+        events = step.events
+        rng_after_world_step = int(state.rng.state)
+        if step.presentation.trigger_game_tune:
             game_tune_started = True
         # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
         # Headless verification has no render pass, so clear explicitly per simulated tick.
@@ -279,7 +254,6 @@ def run_survival_replay(
                     world=world,
                     elapsed_ms=float(run.elapsed_ms),
                     rng_marks={
-                        "before_world_step": int(rng_before_world_step),
                         **world_step_marks,
                         "after_world_step": int(rng_after_world_step),
                         "after_stage_spawns": int(rng_after_stage_spawns),
@@ -287,6 +261,7 @@ def run_survival_replay(
                     },
                     deaths=events.deaths,
                     events=events,
+                    command_hash=str(step.command_hash),
                 )
             )
 

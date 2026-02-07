@@ -10,6 +10,7 @@ from ...effects import FxQueue, FxQueueRotated
 from ...gameplay import GameplayState, PlayerState, most_used_weapon_id_for_player, weapon_assign_player
 from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
 from ...weapons import WEAPON_TABLE
+from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 
 
 class ReplayRunnerError(ValueError):
@@ -116,14 +117,4 @@ def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]
 
 def time_scale_reflex_boost_bonus(state: GameplayState, dt: float) -> float:
     """Time scale (Reflex Boost bonus), mirroring `GameWorld.update`."""
-
-    if not (float(dt) > 0.0):
-        return float(dt)
-    if not (float(state.bonuses.reflex_boost) > 0.0):
-        return float(dt)
-
-    time_scale_factor = 0.3
-    timer = float(state.bonuses.reflex_boost)
-    if timer < 1.0:
-        time_scale_factor = (1.0 - timer) * 0.7 + 0.3
-    return float(dt) * float(time_scale_factor)
+    return _time_scale_reflex_boost_bonus(reflex_boost_timer=float(state.bonuses.reflex_boost), dt=float(dt))

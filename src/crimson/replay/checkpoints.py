@@ -42,6 +42,7 @@ class ReplayCheckpoint:
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
     state_hash: str
+    command_hash: str = ""
     rng_marks: dict[str, int] = field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = field(default_factory=list)
     perk: "ReplayPerkSnapshot" = field(default_factory=lambda: ReplayPerkSnapshot())
@@ -118,6 +119,7 @@ def build_checkpoint(
     rng_marks: dict[str, int] | None = None,
     deaths: Sequence[object] | None = None,
     events: object | None = None,
+    command_hash: str | None = None,
 ) -> ReplayCheckpoint:
     state = world.state
     players: list[PlayerState] = list(world.players)
@@ -243,6 +245,7 @@ def build_checkpoint(
         players=player_ckpts,
         bonus_timers=bonus_timers,
         state_hash=str(state_hash),
+        command_hash=str(command_hash or ""),
         rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,
@@ -391,6 +394,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
                 players=players,
                 bonus_timers={str(k): int(v) for k, v in bonus_timers_in.items()},
                 state_hash=str(item.get("state_hash", "")),
+                command_hash=str(item.get("command_hash", "")),
                 rng_marks={str(k): int(v) for k, v in rng_marks_in.items()},
                 deaths=deaths,
                 perk=perk,
