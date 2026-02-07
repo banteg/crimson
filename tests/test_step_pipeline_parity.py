@@ -82,7 +82,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     spawn_cooldown_ms = 0.0
 
     for tick_index in range(len(replay.inputs)):
-        elapsed_ms += float(dt_frame_ms)
+        elapsed_before_ms = float(elapsed_ms)
         rng_before_world_step = int(world.state.rng.state)
         world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
         world.update(
@@ -114,7 +114,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             dt_frame_ms,
             world.state.rng,
             player_count=len(world.players),
-            survival_elapsed_ms=elapsed_ms,
+            survival_elapsed_ms=elapsed_before_ms,
             player_experience=int(player_xp),
             terrain_width=int(world.world_size),
             terrain_height=int(world.world_size),
@@ -122,6 +122,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(wave_spawns)
         rng_after_wave_spawns = int(world.state.rng.state)
+        elapsed_ms += float(dt_frame_ms)
 
         checkpoints.append(
             build_checkpoint(
