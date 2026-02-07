@@ -9,6 +9,10 @@ tags:
 `scripts/frida/gameplay_state_capture.js` is the default "large run" capture for
 gameplay-focused mapping work.
 
+For deterministic replay-side differential work, prefer
+`scripts/frida/gameplay_diff_capture_v2.js` (see
+`docs/frida/gameplay-diff-capture-v2.md`).
+
 It runs fully automatically after attach:
 
 - Periodic compact/full snapshots of gameplay globals + player state.
@@ -55,6 +59,22 @@ uv run scripts/gameplay_state_capture_reduce.py \
 The reducer also emits `gameplay_state_capture_sfx_candidates.json` containing
 high-confidence `event|function -> id` mappings for promotion into
 `name_map.json` comments/docs.
+
+Convert raw trace snapshots into replay-checkpoint sidecar format for
+differential replay checks:
+
+```text
+uv run crimson replay convert-original-capture \
+  artifacts/frida/share/gameplay_state_capture.jsonl \
+  analysis/frida/original_capture.checkpoints.json.gz
+```
+
+Notes:
+
+- The converter uses sparse `snapshot_compact` / `snapshot_full` entries with
+  `gameplay_frame > 0` and maps them to replay ticks.
+- Fields that are not currently captured in raw trace snapshots are marked as
+  unknown sentinels and ignored during checkpoint diffing.
 
 Recommended session:
 
