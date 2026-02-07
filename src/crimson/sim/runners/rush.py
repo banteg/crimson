@@ -4,8 +4,13 @@ from grim.geom import Vec2
 
 from ...game_modes import GameMode
 from ...gameplay import PlayerInput, weapon_assign_player
-from ...replay import Replay, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
+from ...replay import Replay, UnknownEvent, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_original_capture_bootstrap_payload,
+    original_capture_bootstrap_payload_from_event_payload,
+)
 from ...weapons import WeaponId
 from ..sessions import RushDeterministicSession
 from ..world_state import WorldState
@@ -48,7 +53,11 @@ def run_rush_replay(
     if warn_on_version_mismatch:
         warn_on_game_version_mismatch(replay, action="verification")
 
-    if replay.events:
+    events_by_tick: dict[int, list[UnknownEvent]] = {}
+    for event in replay.events:
+        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+            events_by_tick.setdefault(int(event.tick_index), []).append(event)
+            continue
         raise ReplayRunnerError("rush replay does not support events")
 
     tick_rate = int(replay.header.tick_rate)
@@ -101,6 +110,12 @@ def run_rush_replay(
         state.game_mode = int(GameMode.RUSH)
         state.demo_mode_active = False
 
+        for event in events_by_tick.get(int(tick_index), []):
+            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            if payload is None:
+                raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
+            apply_original_capture_bootstrap_payload(payload, state=state, players=list(world.players))
+
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
         for packed in packed_tick:
@@ -142,6 +157,12 @@ def run_rush_replay(
             break
     else:
         tick_index = tick_limit
+
+    for event in events_by_tick.get(int(tick_index), []):
+        payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+        if payload is None:
+            raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
+        apply_original_capture_bootstrap_payload(payload, state=world.state, players=list(world.players))
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)

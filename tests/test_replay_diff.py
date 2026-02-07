@@ -11,7 +11,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     build_checkpoint,
 )
-from crimson.replay.diff import compare_checkpoints
+from crimson.replay.diff import checkpoint_field_diffs, compare_checkpoints
 from crimson.sim.world_state import WorldState
 
 
@@ -167,3 +167,82 @@ def test_compare_checkpoints_treats_unknown_sentinels_as_wildcards() -> None:
     assert result.ok is True
     assert result.failure is None
     assert result.first_rng_only_tick == 5
+
+
+def test_checkpoint_field_diffs_can_ignore_hash_rng_domains() -> None:
+    world = _base_world()
+    expected = build_checkpoint(
+        tick_index=4,
+        world=world,
+        elapsed_ms=80.0,
+        command_hash="aaaaaaaaaaaaaaaa",
+        rng_marks={"before_world_step": 100},
+    )
+    actual = replace(
+        expected,
+        state_hash="ffffffffffffffff",
+        command_hash="bbbbbbbbbbbbbbbb",
+        rng_state=int(expected.rng_state) + 500,
+        rng_marks={"before_world_step": 9999},
+    )
+
+    diffs = checkpoint_field_diffs(
+        expected,
+        actual,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+
+    assert diffs == []
+
+
+def test_checkpoint_field_diffs_normalizes_elapsed_to_baseline() -> None:
+    world = _base_world()
+    expected = build_checkpoint(
+        tick_index=9,
+        world=world,
+        elapsed_ms=250.0,
+    )
+    actual = replace(
+        expected,
+        state_hash="1234567890abcdef",
+        elapsed_ms=int(expected.elapsed_ms) + 1000,
+    )
+
+    diffs = checkpoint_field_diffs(
+        expected,
+        actual,
+        include_hash_fields=False,
+        include_rng_fields=False,
+        elapsed_baseline=(int(expected.elapsed_ms), int(actual.elapsed_ms)),
+    )
+
+    assert diffs == []
+
+
+def test_checkpoint_field_diffs_reports_nested_paths() -> None:
+    world = _base_world()
+    expected = build_checkpoint(
+        tick_index=1,
+        world=world,
+        elapsed_ms=16.0,
+    )
+    actual = replace(
+        expected,
+        players=[
+            replace(
+                expected.players[0],
+                health=float(expected.players[0].health) - 5.0,
+            )
+        ],
+    )
+
+    diffs = checkpoint_field_diffs(
+        expected,
+        actual,
+        include_hash_fields=False,
+        include_rng_fields=False,
+    )
+
+    assert diffs
+    assert diffs[0].field == "players[0].health"

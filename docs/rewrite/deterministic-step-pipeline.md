@@ -107,13 +107,15 @@ It reports first divergence tick with command/state/rng context.
 
 ## Differential testing path
 
-For original-game capture comparison, prefer matching at command/checksum level first:
+For original-game capture comparison, use capture-native verification first:
 
-1. tick index + command hash
-2. event counters and SFX heads
-3. deep state hashes / focused state diffs
+```bash
+uv run crimson replay verify-original-capture capture.jsonl
+```
 
-This gives a stable coarse-to-fine pipeline while data mapping from the original continues to improve.
+This compares checkpoint state fields at captured ticks and reports first
+divergence with field-level context. By default it ignores command/state hash
+domains from the original executable and rewrite RNG mark/state domains.
 
 Original-capture sidecars now have a dedicated schema + converter:
 
@@ -124,6 +126,12 @@ uv run crimson replay convert-original-capture capture.json.gz expected.checkpoi
 `convert-original-capture` also accepts raw Frida traces from
 `gameplay_state_capture.js` (`.jsonl` / `.jsonl.gz`) and derives sparse
 checkpoints from `snapshot_compact` / `snapshot_full` events.
+
+The same command now also writes a replay file next to the checkpoints
+(default: `expected.crdemo.gz`, override with `--replay`).
+This replay is reconstructed from captured input telemetry and is intended for
+inspection/debugging. It also bootstraps initial state from the first captured
+tick, but checkpoint sidecars remain the authoritative verification artifact.
 
 Unavailable fields in raw traces (for example kill ledger/perk detail) are
 stored as explicit "unknown" sentinels so differential comparison can focus on

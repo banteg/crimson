@@ -5,7 +5,8 @@ from grim.geom import Vec2
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
+from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
+from crimson.replay.original_capture import ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND
 from crimson.sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
 
@@ -172,6 +173,40 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
     assert checkpoints[0].rng_marks == {}
 
 
+def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "elapsed_ms": 2000,
+                    "perk_pending": 2,
+                    "bonus_timers_ms": {"4": 1500},
+                    "players": [
+                        {
+                            "pos": {"x": 600.0, "y": 600.0},
+                            "health": 75.0,
+                            "weapon_id": 9,
+                            "ammo": 4.0,
+                            "experience": 321,
+                            "level": 5,
+                        }
+                    ],
+                }
+            ],
+        )
+    )
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(replay, strict_events=True, max_ticks=1)
+
+    assert result.ticks == 1
+    assert result.score_xp == 321
+
+
 def test_rush_runner_is_deterministic() -> None:
     _header, rec = _blank_rush_replay(ticks=10, seed=0x1234, game_version="0.0.0")
     replay = rec.finish()
@@ -200,6 +235,38 @@ def test_rush_runner_rejects_events() -> None:
     with pytest.warns(ReplayGameVersionWarning):
         with pytest.raises(ReplayRunnerError, match="does not support events"):
             run_rush_replay(replay)
+
+
+def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
+    _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    replay.events.append(
+        UnknownEvent(
+            tick_index=0,
+            kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+            payload=[
+                {
+                    "elapsed_ms": 3000,
+                    "players": [
+                        {
+                            "pos": {"x": 400.0, "y": 450.0},
+                            "health": 90.0,
+                            "weapon_id": 2,
+                            "ammo": 8.0,
+                            "experience": 77,
+                            "level": 3,
+                        }
+                    ],
+                }
+            ],
+        )
+    )
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_rush_replay(replay, max_ticks=1)
+
+    assert result.ticks == 1
+    assert result.score_xp == 77
 
 
 def test_rush_runner_checkpoints_capture_rng_marks() -> None:

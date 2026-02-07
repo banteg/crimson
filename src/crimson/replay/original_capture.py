@@ -12,6 +12,7 @@ from pathlib import Path
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
+from ..game_modes import GameMode
 from .checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoint,
@@ -21,9 +22,11 @@ from .checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
+from .types import Replay, ReplayHeader, UnknownEvent, pack_input_flags
 
 ORIGINAL_CAPTURE_FORMAT_VERSION = 1
 ORIGINAL_CAPTURE_UNKNOWN_INT = -1
+ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap_v1"
 
 _RAW_TRACE_UNKNOWN_DEATH = ReplayDeathLedgerEntry(
     creature_index=-1,
@@ -57,6 +60,29 @@ class OriginalCaptureTick:
     events: ReplayEventSummary = field(
         default_factory=lambda: ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1)
     )
+    game_mode_id: int = -1
+    mode_hint: str = ""
+    input_primary_edge_true_calls: int = 0
+    input_primary_down_true_calls: int = 0
+    input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class OriginalCaptureInputApprox:
+    player_index: int
+    move_dx: float = 0.0
+    move_dy: float = 0.0
+    aim_x: float = 0.0
+    aim_y: float = 0.0
+    aim_heading: float | None = None
+    fired_events: int = 0
+    reload_active: bool = False
+    move_forward_pressed: bool | None = None
+    move_backward_pressed: bool | None = None
+    turn_left_pressed: bool | None = None
+    turn_right_pressed: bool | None = None
+    fire_down: bool | None = None
+    fire_pressed: bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -205,6 +231,27 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
 
     bonus_timers = _parse_int_map(raw.get("bonus_timers") or {}, "tick.bonus_timers")
     rng_marks = _parse_int_map(raw.get("rng_marks") or {}, "tick.rng_marks")
+    mode_hint = str(raw.get("mode_hint", ""))
+    game_mode_id = _int_or(raw.get("game_mode_id"), -1)
+    input_primary_edge_true_calls = _int_or(raw.get("input_primary_edge_true_calls"), 0)
+    input_primary_down_true_calls = _int_or(raw.get("input_primary_down_true_calls"), 0)
+    input_approx = _parse_input_approx(raw.get("input_approx"))
+    input_queries_raw = raw.get("input_queries")
+    if isinstance(input_queries_raw, dict):
+        stats_raw = input_queries_raw.get("stats")
+        if isinstance(stats_raw, dict):
+            input_primary_edge_true_calls = _int_or(
+                (stats_raw.get("primary_edge") or {}).get("true_calls")
+                if isinstance(stats_raw.get("primary_edge"), dict)
+                else None,
+                input_primary_edge_true_calls,
+            )
+            input_primary_down_true_calls = _int_or(
+                (stats_raw.get("primary_down") or {}).get("true_calls")
+                if isinstance(stats_raw.get("primary_down"), dict)
+                else None,
+                input_primary_down_true_calls,
+            )
 
     return OriginalCaptureTick(
         tick_index=int(raw.get("tick_index", 0)),
@@ -222,6 +269,11 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         deaths=deaths,
         perk=_parse_perk(raw.get("perk")),
         events=_parse_events(raw.get("events")),
+        game_mode_id=game_mode_id,
+        mode_hint=mode_hint,
+        input_primary_edge_true_calls=input_primary_edge_true_calls,
+        input_primary_down_true_calls=input_primary_down_true_calls,
+        input_approx=input_approx,
     )
 
 
@@ -257,6 +309,205 @@ def _bonus_timer_ms_or_unknown(value: object) -> int:
     if ms < 0:
         return 0
     return ms
+
+
+def _parse_input_approx(raw: object) -> list[OriginalCaptureInputApprox]:
+    if not isinstance(raw, list):
+        return []
+    samples_by_player: dict[int, OriginalCaptureInputApprox] = {}
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        player_index = _int_or(item.get("player_index"), len(samples_by_player))
+        if player_index < 0:
+            continue
+        samples_by_player[int(player_index)] = OriginalCaptureInputApprox(
+            player_index=int(player_index),
+            move_dx=_float_or(item.get("move_dx"), 0.0),
+            move_dy=_float_or(item.get("move_dy"), 0.0),
+            aim_x=_float_or(item.get("aim_x"), 0.0),
+            aim_y=_float_or(item.get("aim_y"), 0.0),
+            aim_heading=_float_or(item.get("aim_heading"), 0.0) if item.get("aim_heading") is not None else None,
+            fired_events=_int_or(item.get("fired_events"), 0),
+            reload_active=bool(item.get("reload_active", False)),
+            move_forward_pressed=(
+                bool(item.get("move_forward_pressed")) if item.get("move_forward_pressed") is not None else None
+            ),
+            move_backward_pressed=(
+                bool(item.get("move_backward_pressed")) if item.get("move_backward_pressed") is not None else None
+            ),
+            turn_left_pressed=bool(item.get("turn_left_pressed")) if item.get("turn_left_pressed") is not None else None,
+            turn_right_pressed=(
+                bool(item.get("turn_right_pressed")) if item.get("turn_right_pressed") is not None else None
+            ),
+            fire_down=bool(item.get("fire_down")) if item.get("fire_down") is not None else None,
+            fire_pressed=bool(item.get("fire_pressed")) if item.get("fire_pressed") is not None else None,
+        )
+    return [samples_by_player[idx] for idx in sorted(samples_by_player)]
+
+
+def _parse_v2_game_mode_id(raw: dict[str, object]) -> int:
+    for scope_name in ("after", "before"):
+        scope_raw = raw.get(scope_name)
+        if not isinstance(scope_raw, dict):
+            continue
+        globals_raw = scope_raw.get("globals")
+        if not isinstance(globals_raw, dict):
+            continue
+        mode = globals_raw.get("config_game_mode")
+        mode_id = _coerce_int_like(mode)
+        if mode_id is not None and int(mode_id) >= 0:
+            return int(mode_id)
+    return -1
+
+
+def _parse_v2_input_query_true_calls(raw: dict[str, object], key: str) -> int:
+    input_queries = raw.get("input_queries")
+    if not isinstance(input_queries, dict):
+        return 0
+    stats_raw = input_queries.get("stats")
+    if not isinstance(stats_raw, dict):
+        return 0
+    stat_raw = stats_raw.get(key)
+    if not isinstance(stat_raw, dict):
+        return 0
+    return _int_or(stat_raw.get("true_calls"), 0)
+
+
+def _parse_v2_pressed_key_codes(raw: dict[str, object]) -> set[int]:
+    event_heads = raw.get("event_heads")
+    if not isinstance(event_heads, dict):
+        return set()
+    pressed: set[int] = set()
+    for kind in ("input_any_key", "input_primary_down", "input_primary_edge"):
+        entries = event_heads.get(kind)
+        if not isinstance(entries, list):
+            continue
+        for item in entries:
+            if not isinstance(item, dict):
+                continue
+            query = str(item.get("query", ""))
+            if not query.startswith("grim_"):
+                continue
+            key_code = _coerce_int_like(item.get("arg0"))
+            if key_code is None:
+                continue
+            pressed.add(int(key_code))
+    return pressed
+
+
+def _parse_v2_player_keybinds(raw: dict[str, object]) -> list[dict[str, int | None]]:
+    before_raw = raw.get("before")
+    if not isinstance(before_raw, dict):
+        return []
+    input_bindings = before_raw.get("input_bindings")
+    if not isinstance(input_bindings, dict):
+        return []
+    players_raw = input_bindings.get("players")
+    if not isinstance(players_raw, list):
+        return []
+    out: list[dict[str, int | None]] = []
+    for item in players_raw:
+        if not isinstance(item, dict):
+            continue
+        out.append(
+            {
+                "move_forward": _coerce_int_like(item.get("move_forward")),
+                "move_backward": _coerce_int_like(item.get("move_backward")),
+                "turn_left": _coerce_int_like(item.get("turn_left")),
+                "turn_right": _coerce_int_like(item.get("turn_right")),
+                "fire": _coerce_int_like(item.get("fire")),
+            }
+        )
+    return out
+
+
+def _parse_v2_aim_heading_by_player(raw: dict[str, object]) -> dict[int, float]:
+    after_raw = raw.get("after")
+    if not isinstance(after_raw, dict):
+        return {}
+    players_raw = after_raw.get("players")
+    if not isinstance(players_raw, list):
+        return {}
+    out: dict[int, float] = {}
+    for idx, item in enumerate(players_raw):
+        if not isinstance(item, dict):
+            continue
+        heading_raw = item.get("aim_heading")
+        if not isinstance(heading_raw, (int, float)):
+            continue
+        heading = float(heading_raw)
+        if not math.isfinite(heading):
+            continue
+        out[int(idx)] = heading
+    return out
+
+
+def _enrich_v2_input_approx(
+    raw: dict[str, object],
+    *,
+    samples: list[OriginalCaptureInputApprox],
+) -> list[OriginalCaptureInputApprox]:
+    by_player: dict[int, OriginalCaptureInputApprox] = {int(sample.player_index): sample for sample in samples}
+    pressed_key_codes = _parse_v2_pressed_key_codes(raw)
+    keybinds = _parse_v2_player_keybinds(raw)
+    aim_heading_by_player = _parse_v2_aim_heading_by_player(raw)
+    player_count = max(
+        len(keybinds),
+        len(aim_heading_by_player),
+        (max(by_player) + 1) if by_player else 0,
+    )
+
+    for player_index in range(int(player_count)):
+        existing = by_player.get(int(player_index))
+        if existing is None:
+            existing = OriginalCaptureInputApprox(player_index=int(player_index))
+
+        keybind = keybinds[player_index] if player_index < len(keybinds) else {}
+        move_forward_key = keybind.get("move_forward")
+        move_backward_key = keybind.get("move_backward")
+        turn_left_key = keybind.get("turn_left")
+        turn_right_key = keybind.get("turn_right")
+        fire_key = keybind.get("fire")
+
+        move_forward_pressed = existing.move_forward_pressed
+        move_backward_pressed = existing.move_backward_pressed
+        turn_left_pressed = existing.turn_left_pressed
+        turn_right_pressed = existing.turn_right_pressed
+        fire_down = existing.fire_down
+        aim_heading = existing.aim_heading
+
+        if move_forward_key is not None:
+            move_forward_pressed = bool(int(move_forward_key) in pressed_key_codes)
+        if move_backward_key is not None:
+            move_backward_pressed = bool(int(move_backward_key) in pressed_key_codes)
+        if turn_left_key is not None:
+            turn_left_pressed = bool(int(turn_left_key) in pressed_key_codes)
+        if turn_right_key is not None:
+            turn_right_pressed = bool(int(turn_right_key) in pressed_key_codes)
+        if fire_key is not None:
+            fire_down = bool(int(fire_key) in pressed_key_codes)
+        if int(player_index) in aim_heading_by_player:
+            aim_heading = float(aim_heading_by_player[int(player_index)])
+
+        by_player[int(player_index)] = OriginalCaptureInputApprox(
+            player_index=int(player_index),
+            move_dx=float(existing.move_dx),
+            move_dy=float(existing.move_dy),
+            aim_x=float(existing.aim_x),
+            aim_y=float(existing.aim_y),
+            aim_heading=aim_heading,
+            fired_events=int(existing.fired_events),
+            reload_active=bool(existing.reload_active),
+            move_forward_pressed=move_forward_pressed,
+            move_backward_pressed=move_backward_pressed,
+            turn_left_pressed=turn_left_pressed,
+            turn_right_pressed=turn_right_pressed,
+            fire_down=fire_down,
+            fire_pressed=existing.fire_pressed,
+        )
+
+    return [by_player[idx] for idx in sorted(by_player)]
 
 
 def _parse_trace_players(raw: object) -> list[ReplayPlayerCheckpoint]:
@@ -306,6 +557,14 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
         checkpoint_obj = raw_checkpoint if isinstance(raw_checkpoint, dict) else obj
         parsed = _parse_tick(checkpoint_obj)
         tick_index = _int_or(checkpoint_obj.get("tick_index"), _int_or(obj.get("tick_index"), parsed.tick_index))
+        mode_hint = str(obj.get("mode_hint", parsed.mode_hint))
+        game_mode_id = _parse_v2_game_mode_id(obj)
+        input_primary_edge_true_calls = _parse_v2_input_query_true_calls(obj, "primary_edge")
+        input_primary_down_true_calls = _parse_v2_input_query_true_calls(obj, "primary_down")
+        input_approx = _enrich_v2_input_approx(
+            obj,
+            samples=_parse_input_approx(obj.get("input_approx")),
+        )
         ticks_by_index[int(tick_index)] = OriginalCaptureTick(
             tick_index=int(tick_index),
             state_hash=parsed.state_hash,
@@ -322,6 +581,19 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             deaths=list(parsed.deaths),
             perk=parsed.perk,
             events=parsed.events,
+            game_mode_id=game_mode_id if game_mode_id >= 0 else int(parsed.game_mode_id),
+            mode_hint=mode_hint,
+            input_primary_edge_true_calls=(
+                int(input_primary_edge_true_calls)
+                if input_primary_edge_true_calls > 0
+                else int(parsed.input_primary_edge_true_calls)
+            ),
+            input_primary_down_true_calls=(
+                int(input_primary_down_true_calls)
+                if input_primary_down_true_calls > 0
+                else int(parsed.input_primary_down_true_calls)
+            ),
+            input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
         )
 
     if not saw_tick_rows:
@@ -375,6 +647,146 @@ def _tick_from_trace_snapshot(frame: int, raw_snapshot: dict[str, object]) -> Or
         perk=ReplayPerkSnapshot(pending_count=ORIGINAL_CAPTURE_UNKNOWN_INT),
         events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
     )
+
+
+def _infer_game_mode_id(capture: OriginalCaptureSidecar) -> int:
+    for tick in capture.ticks:
+        if int(tick.game_mode_id) >= 0:
+            return int(tick.game_mode_id)
+
+    mode_hint_to_game_mode = {
+        "survival_update": int(GameMode.SURVIVAL),
+        "rush_mode_update": int(GameMode.RUSH),
+        "quest_mode_update": int(GameMode.QUESTS),
+        "typo_gameplay_update_and_render": int(GameMode.TYPO),
+    }
+    for tick in capture.ticks:
+        mode_hint = str(tick.mode_hint)
+        if mode_hint in mode_hint_to_game_mode:
+            return int(mode_hint_to_game_mode[mode_hint])
+    return int(GameMode.SURVIVAL)
+
+
+def _infer_player_count(capture: OriginalCaptureSidecar) -> int:
+    player_count = 1
+    for tick in capture.ticks:
+        player_count = max(player_count, int(len(tick.players)))
+        for sample in tick.input_approx:
+            player_count = max(player_count, int(sample.player_index) + 1)
+    return max(1, int(player_count))
+
+
+def _capture_bootstrap_payload(tick: OriginalCaptureTick) -> dict[str, object]:
+    players: list[dict[str, object]] = []
+    for player in tick.players:
+        players.append(
+            {
+                "pos": {"x": float(player.pos.x), "y": float(player.pos.y)},
+                "health": float(player.health),
+                "weapon_id": int(player.weapon_id),
+                "ammo": float(player.ammo),
+                "experience": int(player.experience),
+                "level": int(player.level),
+            }
+        )
+    return {
+        "tick_index": int(tick.tick_index),
+        "elapsed_ms": int(tick.elapsed_ms),
+        "score_xp": int(tick.score_xp),
+        "perk_pending": int(tick.perk_pending),
+        "bonus_timers_ms": dict(tick.bonus_timers),
+        "players": players,
+    }
+
+
+def original_capture_bootstrap_payload_from_event_payload(payload: list[object]) -> dict[str, object] | None:
+    if not payload:
+        return None
+    first = payload[0]
+    if not isinstance(first, dict):
+        return None
+    return first
+
+
+def apply_original_capture_bootstrap_payload(
+    payload: dict[str, object],
+    *,
+    state: object,
+    players: list[object],
+) -> int | None:
+    from ..gameplay import weapon_assign_player
+
+    elapsed_ms: int | None = None
+    elapsed_raw = _coerce_int_like(payload.get("elapsed_ms"))
+    if elapsed_raw is not None and int(elapsed_raw) >= 0:
+        elapsed_ms = int(elapsed_raw)
+
+    players_raw = payload.get("players")
+    if isinstance(players_raw, list):
+        for idx, raw_player in enumerate(players_raw):
+            if idx >= len(players):
+                break
+            if not isinstance(raw_player, dict):
+                continue
+            player = players[idx]
+
+            weapon_id = _coerce_int_like(raw_player.get("weapon_id"))
+            if weapon_id is not None and int(weapon_id) > 0:
+                try:
+                    if int(getattr(player, "weapon_id", 0)) != int(weapon_id):
+                        weapon_assign_player(player, int(weapon_id), state=state)
+                except Exception:
+                    pass
+
+            pos_raw = raw_player.get("pos")
+            if isinstance(pos_raw, dict):
+                px = _float_or(pos_raw.get("x"), float(getattr(player, "pos").x))
+                py = _float_or(pos_raw.get("y"), float(getattr(player, "pos").y))
+                if math.isfinite(px) and math.isfinite(py):
+                    setattr(player, "pos", Vec2(float(px), float(py)))
+
+            health = _float_or(raw_player.get("health"), float(getattr(player, "health")))
+            ammo = _float_or(raw_player.get("ammo"), float(getattr(player, "ammo")))
+            experience = _coerce_int_like(raw_player.get("experience"))
+            level = _coerce_int_like(raw_player.get("level"))
+
+            setattr(player, "health", float(health))
+            setattr(player, "ammo", float(ammo))
+            if experience is not None:
+                setattr(player, "experience", int(experience))
+            if level is not None and int(level) > 0:
+                setattr(player, "level", int(level))
+
+    pending = _coerce_int_like(payload.get("perk_pending"))
+    if pending is not None and int(pending) >= 0:
+        try:
+            state.perk_selection.pending_count = int(pending)
+            state.perk_selection.choices_dirty = True
+        except Exception:
+            pass
+
+    timers_raw = payload.get("bonus_timers_ms")
+    if isinstance(timers_raw, dict):
+        try:
+            weapon_power_up_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.WEAPON_POWER_UP))))
+            reflex_boost_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.REFLEX_BOOST))))
+            energizer_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.ENERGIZER))))
+            double_xp_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE))))
+            freeze_ms = _coerce_int_like(timers_raw.get(str(int(BonusId.FREEZE))))
+            if weapon_power_up_ms is not None:
+                state.bonuses.weapon_power_up = max(0.0, float(weapon_power_up_ms) / 1000.0)
+            if reflex_boost_ms is not None:
+                state.bonuses.reflex_boost = max(0.0, float(reflex_boost_ms) / 1000.0)
+            if energizer_ms is not None:
+                state.bonuses.energizer = max(0.0, float(energizer_ms) / 1000.0)
+            if double_xp_ms is not None:
+                state.bonuses.double_experience = max(0.0, float(double_xp_ms) / 1000.0)
+            if freeze_ms is not None:
+                state.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)
+        except Exception:
+            pass
+
+    return elapsed_ms
 
 
 def _load_original_capture_gameplay_trace(path: Path) -> OriginalCaptureSidecar:
@@ -481,3 +893,133 @@ def convert_original_capture_to_checkpoints(
         sample_rate=max(1, int(capture.sample_rate)),
         checkpoints=checkpoints,
     )
+
+
+def convert_original_capture_to_replay(
+    capture: OriginalCaptureSidecar,
+    *,
+    seed: int = 0,
+    tick_rate: int = 60,
+    world_size: float = 1024.0,
+    game_mode_id: int | None = None,
+) -> Replay:
+    player_count = _infer_player_count(capture)
+    resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
+
+    if capture.ticks:
+        max_tick_index = max(max(0, int(tick.tick_index)) for tick in capture.ticks)
+        total_ticks = int(max_tick_index) + 1
+    else:
+        total_ticks = 0
+
+    inputs: list[list[list[float | int | list[float]]]] = [
+        [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
+    ]
+    previous_fire_down: list[bool] = [False for _ in range(player_count)]
+
+    for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
+        tick_index = int(tick.tick_index)
+        if tick_index < 0 or tick_index >= total_ticks:
+            continue
+        approx_by_player = {int(sample.player_index): sample for sample in tick.input_approx}
+        for player_index in range(player_count):
+            sample = approx_by_player.get(int(player_index))
+            if sample is not None:
+                has_digital_move = (
+                    sample.move_forward_pressed is not None
+                    or sample.move_backward_pressed is not None
+                    or sample.turn_left_pressed is not None
+                    or sample.turn_right_pressed is not None
+                )
+                if has_digital_move:
+                    move_x = float(bool(sample.turn_right_pressed)) - float(bool(sample.turn_left_pressed))
+                    move_y = float(bool(sample.move_backward_pressed)) - float(bool(sample.move_forward_pressed))
+                else:
+                    move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                    move_y = max(-1.0, min(1.0, float(sample.move_dy)))
+
+                if sample.aim_heading is not None:
+                    if player_index < len(tick.players):
+                        player_pos = tick.players[player_index].pos
+                    else:
+                        player_pos = Vec2()
+                    aim_pos = player_pos + Vec2.from_heading(float(sample.aim_heading)) * 256.0
+                    aim_x = float(aim_pos.x)
+                    aim_y = float(aim_pos.y)
+                else:
+                    aim_x = float(sample.aim_x)
+                    aim_y = float(sample.aim_y)
+
+                fire_down = bool(sample.fire_down) if sample.fire_down is not None else int(sample.fired_events) > 0
+                fire_pressed = bool(sample.fire_pressed) if sample.fire_pressed is not None else bool(
+                    int(sample.fired_events) > 0
+                )
+            else:
+                move_x = 0.0
+                move_y = 0.0
+                if player_index < len(tick.players):
+                    player = tick.players[player_index]
+                    aim_x = float(player.pos.x)
+                    aim_y = float(player.pos.y)
+                else:
+                    aim_x = 0.0
+                    aim_y = 0.0
+                fire_pressed = False
+                fire_down = False
+
+            if player_index == 0:
+                fire_down = bool(
+                    fire_down or int(tick.input_primary_down_true_calls) > 0 or int(tick.input_primary_edge_true_calls) > 0
+                )
+                fire_pressed = bool(fire_pressed or int(tick.input_primary_edge_true_calls) > 0)
+
+            if not fire_pressed:
+                fire_pressed = bool(fire_down and not previous_fire_down[player_index])
+
+            previous_fire_down[player_index] = bool(fire_down)
+
+            flags = pack_input_flags(
+                fire_down=bool(fire_down),
+                fire_pressed=bool(fire_pressed),
+                reload_pressed=False,
+            )
+            inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
+
+    events: list[UnknownEvent] = []
+    if capture.ticks:
+        first_tick = min(capture.ticks, key=lambda item: int(item.tick_index))
+        bootstrap_tick = max(0, int(first_tick.tick_index))
+        events.append(
+            UnknownEvent(
+                tick_index=int(bootstrap_tick),
+                kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+                payload=[_capture_bootstrap_payload(first_tick)],
+            )
+        )
+
+    return Replay(
+        version=FORMAT_VERSION,
+        header=ReplayHeader(
+            game_mode_id=int(resolved_mode_id),
+            seed=int(seed),
+            tick_rate=max(1, int(tick_rate)),
+            player_count=int(player_count),
+            world_size=float(world_size),
+        ),
+        inputs=inputs,
+        events=list(events),
+    )
+
+
+def default_original_capture_replay_path(checkpoints_path: Path) -> Path:
+    checkpoints_path = Path(checkpoints_path)
+    name = checkpoints_path.name
+    if name.endswith(".checkpoints.json.gz"):
+        stem = name[: -len(".checkpoints.json.gz")]
+    elif name.endswith(".json.gz"):
+        stem = name[: -len(".json.gz")]
+    elif name.endswith(".json"):
+        stem = name[: -len(".json")]
+    else:
+        stem = name
+    return checkpoints_path.with_name(f"{stem}.crdemo.gz")
