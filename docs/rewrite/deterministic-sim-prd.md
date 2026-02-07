@@ -10,7 +10,7 @@ Last updated: 2026-02-07
 ## Context
 
 We are porting the original game with high fidelity.
-The original uses a single RNG stream, while the rewrite currently separates simulation and presentation RNG.
+The original uses a single RNG stream; the rewrite historically separated simulation/presentation RNG and is migrating to single-stream behavior.
 We need an architecture that supports:
 
 - deterministic interactive play
@@ -159,12 +159,12 @@ Per sampled tick (minimum viable set):
 - [x] Optional RNG trace mode added (`--trace-rng`).
 - [x] Live-vs-headless parity tests for Survival/Rush added.
 
-## Phase 1: Single RNG Stream Migration (Next)
+## Phase 1: Single RNG Stream Migration (In Progress)
 
-- [ ] Remove separate presentation RNG usage from runtime/replay code paths.
-- [ ] Feed presentation planning from the authoritative simulation RNG.
-- [ ] Preserve deterministic command order and existing parity behavior.
-- [ ] Update RNG tests to assert single-stream invariants.
+- [x] Remove separate presentation RNG usage from runtime/replay code paths.
+- [x] Feed presentation planning from the authoritative simulation RNG.
+- [x] Preserve deterministic command order and existing parity behavior.
+- [x] Update RNG tests to assert single-stream invariants.
 - [ ] Document any intentional fidelity deviations discovered during migration.
 
 ## Phase 2: Headless-First Runtime API

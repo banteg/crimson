@@ -27,7 +27,7 @@ Output is a `DeterministicStepResult` with:
 - `events`: sim events (`hits`, `deaths`, `pickups`, `sfx`)
 - `presentation`: deterministic presentation commands (`trigger_game_tune`, ordered `sfx_keys`)
 - `command_hash`: stable checksum of the presentation command stream
-- optional presentation RNG draw trace (for debugging)
+- optional presentation-phase RNG draw trace (for debugging)
 
 ## Why this matters
 
@@ -38,12 +38,11 @@ Now, all major paths execute the same step planner and emit the same command str
 
 ## RNG policy
 
-We currently keep:
+The pipeline now uses one authoritative RNG stream:
 
-- simulation RNG: `state.rng`
-- presentation RNG: `presentation_rng`
+- simulation + presentation RNG: `state.rng`
 
-The deterministic pipeline keeps their usage ordering stable across live/headless/playback and can optionally trace presentation RNG draws per consumer label.
+`WorldState.step` and `apply_world_presentation_step` consume this same stream in a stable per-tick order across live/headless/playback paths. Replay verification can still trace presentation-phase draw counts per consumer label.
 
 ### RNG trace mode
 
