@@ -847,12 +847,12 @@ LABEL_33:
   SendMessageA((HWND)hwnd, 0x80u, 1u, ::lParam);
   SendMessageA((HWND)hwnd, 0x80u, 0, ::lParam);
   GetLocalTime(&SystemTime);
-  v17 = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8_probe + 16))(grim_d3d8_probe);
+  v17 = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_d3d8_probe + 16))(grim_d3d8_probe);
   v18 = 0;
   byte_1005BDFC[256] = 0;
   for ( i = v17; v18 < i; ++v18 )
   {
-    (*(void (__stdcall **)(int, int, int, void *, int))(*(_DWORD *)grim_d3d8_probe + 20))(
+    (*(void (__stdcall **)(void *, int, int, void *, int))(*(_DWORD *)grim_d3d8_probe + 20))(
       grim_d3d8_probe,
       v18,
       2,
@@ -863,13 +863,13 @@ LABEL_33:
     else
       sprintf(Buffer, "%s (default)", &unk_10059988);
     v26 = 0;
-    if ( (*(int (__stdcall **)(int, int, int, int, int))(*(_DWORD *)grim_d3d8_probe + 36))(
+    if ( (*(int (__stdcall **)(void *, int, int, int, int))(*(_DWORD *)grim_d3d8_probe + 36))(
            grim_d3d8_probe,
            v18,
            1,
            23,
            23) >= 0
-      || (*(int (__stdcall **)(int, int, int, int, int, _DWORD))(*(_DWORD *)grim_d3d8_probe + 36))(
+      || (*(int (__stdcall **)(void *, int, int, int, int, _DWORD))(*(_DWORD *)grim_d3d8_probe + 36))(
            grim_d3d8_probe,
            v18,
            1,
@@ -1051,12 +1051,12 @@ LABEL_15:
     if ( !*v2 || !*((_BYTE *)*v2 + 8) )
       goto LABEL_14;
     grim_noop();
-    if ( ((int (__stdcall *)(int **, _DWORD, _DWORD, int, char *))(*grim_d3d_device)[27])(
+    if ( (*(int (__stdcall **)(void *, _DWORD, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 108))(
            grim_d3d_device,
            *((_DWORD *)*v2 + 3),
            *((_DWORD *)*v2 + 4),
            grim_texture_format,
-           (char *)*v2 + 20) < 0 )
+           (int)*v2 + 20) < 0 )
     {
       grim_error_text = (int)aD3dUnableToBac;
       grim_noop();
@@ -1066,7 +1066,7 @@ LABEL_15:
     }
     if ( (*(int (__stdcall **)(_DWORD, _DWORD, int *))(**((_DWORD **)*v2 + 1) + 60))(*((_DWORD *)*v2 + 1), 0, &v8) < 0 )
       break;
-    v3 = ((int (__stdcall *)(int **, int, _DWORD, _DWORD, _DWORD, _DWORD))(*grim_d3d_device)[28])(
+    v3 = (*(int (__stdcall **)(void *, int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 112))(
            grim_d3d_device,
            v8,
            0,
@@ -1181,7 +1181,7 @@ LABEL_20:
     LOBYTE(result) = 0;
     return result;
   }
-  if ( ((int (__stdcall *)(int **, _DWORD, _DWORD, _DWORD, int, _DWORD))(*grim_d3d_device)[28])(
+  if ( (*(int (__stdcall **)(void *, _DWORD, _DWORD, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 112))(
          grim_d3d_device,
          *((_DWORD *)*v2 + 5),
          0,
@@ -1952,11 +1952,11 @@ int __usercall sub_10003C00@<eax>(char *a1@<edi>)
             while ( (int)v1 < (int)&ElementSize );
           }
           grim_joystick_poll();
-          dword_1005CF14 = (int)&String[8];
+          dword_1005CF14 = (int)&grim_joystick_state;
           if ( !(_BYTE)grim_input_cached )
           {
-            grim_mouse_x_cached = *(float *)&String[796];
-            grim_mouse_y_cached = *(float *)&String[800];
+            LODWORD(grim_mouse_x_cached) = grim_mouse_x;
+            LODWORD(grim_mouse_y_cached) = grim_mouse_y;
             grim_mouse_poll();
           }
         }
@@ -1973,12 +1973,12 @@ int __usercall sub_10003C00@<eax>(char *a1@<edi>)
         }
         else if ( !byte_1005D804 && grim_d3d_device )
         {
-          v3 = ((int (__stdcall *)(int **))(*grim_d3d_device)[3])(grim_d3d_device);
+          v3 = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 12))(grim_d3d_device);
           byte_1005C898 = v3 == 0;
           if ( v3 )
           {
             Sleep(0x1F4u);
-            v4 = ((int (__stdcall *)(int **))(*grim_d3d_device)[3])(grim_d3d_device);
+            v4 = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 12))(grim_d3d_device);
             byte_1005C898 = v4 == 0;
             if ( v4 == -2005530519 && sub_10002CF0() == -2005530519 )
               break;
@@ -1995,7 +1995,7 @@ int __usercall sub_10003C00@<eax>(char *a1@<edi>)
             if ( dword_1005D3B4 )
               (*(void (__thiscall **)(int))(*(_DWORD *)dword_1005D3B4 + 20))(dword_1005D3B4);
             if ( !grim_render_disabled )
-              ((void (__stdcall *)(int **, _DWORD, _DWORD, _DWORD, _DWORD))(*grim_d3d_device)[15])(
+              (*(void (__stdcall **)(void *, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 60))(
                 grim_d3d_device,
                 0,
                 0,
@@ -2042,7 +2042,7 @@ int grim_d3d_init()
   if ( (_BYTE)dword_1005CEC8 == 1 )
     dword_1005B2B4 = 2;
   result = Direct3DCreate8(220);
-  grim_d3d8 = result;
+  grim_d3d8 = (void *)result;
   if ( !result )
   {
     grim_error_text = (int)Text;
@@ -2055,11 +2055,11 @@ int grim_d3d_init()
     dword_1005B2B4,
     &unk_1005A498);
   v1 = 0;
-  (*(void (__stdcall **)(int, WPARAM, int, char *))(*(_DWORD *)grim_d3d8 + 20))(grim_d3d8, wParam, 2, v13);
+  (*(void (__stdcall **)(void *, WPARAM, int, char *))(*(_DWORD *)grim_d3d8 + 20))(grim_d3d8, wParam, 2, v13);
   v2 = strchr(Str, 86);
   if ( v2 && v2[1] == 111 && v2[2] == 111 && v2[3] == 100 && v2[4] == 111 && v2[5] == 111 )
     v1 = v2[6] == 51;
-  if ( (*(int (__stdcall **)(int, _DWORD, _BYTE *))(*(_DWORD *)grim_d3d8 + 32))(grim_d3d8, 0, v11) >= 0 )
+  if ( (*(int (__stdcall **)(void *, _DWORD, _BYTE *))(*(_DWORD *)grim_d3d8 + 32))(grim_d3d8, 0, v11) >= 0 )
   {
     result = grim_window_create();
     if ( !(_BYTE)result )
@@ -2089,7 +2089,7 @@ int grim_d3d_init()
     dword_10059E10 = dword_1005D3FC;
     if ( !dword_1005D3FC )
       dword_10059E10 = (int)hwnd;
-    if ( (*(int (__stdcall **)(int, WPARAM, int, HWND, int, int *, int ***))(*(_DWORD *)grim_d3d8 + 60))(
+    if ( (*(int (__stdcall **)(void *, WPARAM, int, HWND, int, int *, void **))(*(_DWORD *)grim_d3d8 + 60))(
            grim_d3d8,
            wParam,
            dword_1005B2B4,
@@ -2105,7 +2105,7 @@ int grim_d3d_init()
       LOBYTE(result) = 0;
       return result;
     }
-    (*(void (__stdcall **)(int, WPARAM, int, void *))(*(_DWORD *)grim_d3d8 + 52))(
+    (*(void (__stdcall **)(void *, WPARAM, int, void *))(*(_DWORD *)grim_d3d8 + 52))(
       grim_d3d8,
       wParam,
       dword_1005B2B4,
@@ -2131,7 +2131,7 @@ LABEL_33:
           v5 = LockResource(Resource);
           v6 = (int *)SizeofResource(grim_module_handle, ResourceA);
           result = FUN_1000cb5c(
-                     grim_d3d_device,
+                     (int **)grim_d3d_device,
                      v5,
                      v6,
                      -1,
@@ -2153,7 +2153,7 @@ LABEL_33:
             v9 = LockResource(v8);
             v10 = (int *)SizeofResource(grim_module_handle, v7);
             result = FUN_1000cb5c(
-                       grim_d3d_device,
+                       (int **)grim_d3d_device,
                        v9,
                        v10,
                        -1,
@@ -2170,10 +2170,10 @@ LABEL_33:
                        (int)&dword_1005D3F0);
             if ( result >= 0 )
             {
-              result = grim_d3d8;
+              result = (int)grim_d3d8;
               grim_backbuffer_surface = 0;
               grim_render_target_surface = 0;
-              dword_1005D094 = grim_d3d8;
+              dword_1005D094 = (int)grim_d3d8;
               dword_1005D0A4 = (int)grim_d3d_device;
               byte_1005C898 = 1;
               LOBYTE(result) = 1;
@@ -2205,11 +2205,11 @@ LABEL_33:
     }
     goto LABEL_33;
   }
-  result = grim_d3d8;
+  result = (int)grim_d3d8;
   grim_error_text = (int)aD3dErrorGettin;
   if ( grim_d3d8 )
   {
-    result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8);
+    result = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8);
     if ( !result )
       grim_d3d8 = 0;
   }
@@ -2218,20 +2218,20 @@ LABEL_33:
 }
 
 // sub_10004280 @ 0x10004280
-int __usercall sub_10004280@<eax>(void *a1@<edi>)
+void *__usercall sub_10004280@<eax>(void *a1@<edi>)
 {
   void **v1; // edi
   void *v2; // esi
-  int result; // eax
+  void *result; // eax
   void *v4; // [esp-8h] [ebp-Ch]
 
   if ( grim_backbuffer_surface
-    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface) )
+    && !(*(int (__stdcall **)(void *))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface) )
   {
     grim_backbuffer_surface = 0;
   }
   if ( grim_render_target_surface
-    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface) )
+    && !(*(int (__stdcall **)(void *))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface) )
   {
     grim_render_target_surface = 0;
   }
@@ -2255,11 +2255,11 @@ int __usercall sub_10004280@<eax>(void *a1@<edi>)
   while ( (int)v1 < (int)&byte_1005D804 );
   sub_100044E0();
   if ( grim_d3d_device )
-    ((void (__stdcall *)(int **))(*grim_d3d_device)[2])(grim_d3d_device);
+    (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 8))(grim_d3d_device);
   result = grim_d3d8;
   grim_d3d_device = 0;
   if ( grim_d3d8 )
-    result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8);
+    result = (void *)(*(int (__stdcall **)(void *))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8);
   grim_d3d8 = 0;
   return result;
 }
@@ -2418,7 +2418,7 @@ int grim_is_texture_format_supported(unsigned int format)
 {
   int result; // eax
 
-  result = (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, unsigned int))(*(_DWORD *)grim_d3d8 + 40))(
+  result = (*(int (__stdcall **)(void *, WPARAM, int, int, _DWORD, int, unsigned int))(*(_DWORD *)grim_d3d8 + 40))(
              grim_d3d8,
              wParam,
              dword_1005B2B4,
@@ -2899,7 +2899,7 @@ int grim_texture_load_file(void *texture, ushort *path)
           *(_DWORD *)(v16 + 12) = arg4,
           *(_DWORD *)(v10 + 16) = v17,
           result = FUN_1000cb5c(
-                     grim_d3d_device,
+                     (int **)grim_d3d_device,
                      (void *)result,
                      (int *)arg3,
                      -1,
@@ -2928,7 +2928,7 @@ int grim_texture_load_file(void *texture, ushort *path)
   {
     v11 = (int *)sub_10005B80((const char *)texture);
     result = FUN_1000cb5c(
-               grim_d3d_device,
+               (int **)grim_d3d_device,
                v7,
                v11,
                -1,
@@ -2959,7 +2959,7 @@ int grim_texture_load_file(void *texture, ushort *path)
   else
   {
     result = FUN_1000cb9c(
-               grim_d3d_device,
+               (int **)grim_d3d_device,
                (int *)texture,
                -1,
                -1,
@@ -3536,7 +3536,7 @@ int grim_check_device()
   LPCWCH lpWideCharStr; // [esp+28h] [ebp+8h]
 
   v1 = 0;
-  result = ((int (__stdcall *)(int **, int, int, int, int *))(*grim_d3d_device)[27])(
+  result = (*(int (__stdcall **)(void *, int, int, int, int *))(*(_DWORD *)grim_d3d_device + 108))(
              grim_d3d_device,
              grim_present_width,
              grim_present_height,
@@ -3544,7 +3544,7 @@ int grim_check_device()
              &v1);
   if ( result >= 0 )
   {
-    if ( ((int (__stdcall *)(int **, int, int))(*grim_d3d_device)[30])(grim_d3d_device, v1, v1) < 0
+    if ( (*(int (__stdcall **)(void *, int, int))(*(_DWORD *)grim_d3d_device + 120))(grim_d3d_device, v1, v1) < 0
       || FUN_1000ae52((int)lpWideCharStr, 0, retaddr, 0, 0) < 0 )
     {
       result = (*(int (__cdecl **)(int *))(*retaddr + 8))(retaddr);
@@ -3569,7 +3569,7 @@ int grim_apply_config()
 {
   int v0; // ecx
   int v1; // esi
-  int v2; // eax
+  void *v2; // eax
   int result; // eax
   int v4; // [esp-10h] [ebp-14h]
   int v5; // [esp-10h] [ebp-14h]
@@ -3605,13 +3605,13 @@ int grim_apply_config()
   if ( !lParam )
     lParam = (LPARAM)LoadIconA(grim_module_handle, (LPCSTR)0x72);
   grim_config_dialog_canceled = 0;
-  v2 = Direct3DCreate8(220);
+  v2 = (void *)Direct3DCreate8(220);
   grim_d3d8_probe = v2;
   if ( v2 )
   {
-    (*(void (__stdcall **)(int, _DWORD, int, void *))(*(_DWORD *)v2 + 52))(v2, 0, 1, &unk_1005A498);
+    (*(void (__stdcall **)(void *, _DWORD, int, void *))(*(_DWORD *)v2 + 52))(v2, 0, 1, &unk_1005A498);
     DialogBoxParamA(grim_module_handle, (LPCSTR)0x74, 0, (DLGPROC)grim_config_dialog_proc, 0);
-    (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d8_probe + 8))(grim_d3d8_probe);
+    (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d8_probe + 8))(grim_d3d8_probe);
     if ( !grim_config_dialog_canceled )
     {
       LOBYTE(v4) = byte_1005D400;
@@ -3736,88 +3736,116 @@ uint grim_set_texture_stage_ops(uint mode)
   switch ( mode )
   {
     case 0u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 3);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 3);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 1,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 1u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 1,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 2u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 4);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 4);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 5, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 6, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 2,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 3u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 7);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 7);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 6, 0);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 4);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 4);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 5, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 6, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 7);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 7);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 2,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 4u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 24);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 3);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 5, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 3);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 1,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 5u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 24);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, _DWORD))(*grim_d3d_device)[63])(grim_d3d_device, 0, 3, 0);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 1,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     case 6u:
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 2, 2);
-      ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 1, 24);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 2, 2);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 3, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 1, 4, 1);
-      ((void (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 1, 1);
-      result = ((int (__stdcall *)(int **, int, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 2, 4, 1);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 24);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      result = (*(int (__stdcall **)(void *, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                 grim_d3d_device,
+                 2,
+                 4,
+                 1);
       LOBYTE(result) = 1;
       break;
     default:
@@ -3889,21 +3917,30 @@ void grim_set_config_var(unsigned int id, unsigned int value)
     case 0x12u:
       if ( LOBYTE(grim_config_var0_table[4 * id]) != (_BYTE)value )
       {
-        ((void (__stdcall *)(int **, int, _DWORD))(*grim_d3d_device)[50])(grim_d3d_device, 27, (unsigned __int8)value);
+        (*(void (__stdcall **)(void *, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(
+          grim_d3d_device,
+          27,
+          (unsigned __int8)value);
         LOBYTE(grim_config_var0_table[4 * id]) = value;
       }
       return;
     case 0x13u:
       if ( grim_config_var0_table[4 * id] != value )
       {
-        ((void (__stdcall *)(int **, int, unsigned int))(*grim_d3d_device)[50])(grim_d3d_device, 19, value);
+        (*(void (__stdcall **)(void *, int, unsigned int))(*(_DWORD *)grim_d3d_device + 200))(
+          grim_d3d_device,
+          19,
+          value);
         grim_config_var0_table[4 * id] = value;
       }
       return;
     case 0x14u:
       if ( grim_config_var0_table[4 * id] != value )
       {
-        ((void (__stdcall *)(int **, int, unsigned int))(*grim_d3d_device)[50])(grim_d3d_device, 20, value);
+        (*(void (__stdcall **)(void *, int, unsigned int))(*(_DWORD *)grim_d3d_device + 200))(
+          grim_d3d_device,
+          20,
+          value);
         grim_config_var0_table[4 * id] = value;
       }
       return;
@@ -3915,12 +3952,28 @@ void grim_set_config_var(unsigned int id, unsigned int value)
       if ( value == 3 )
       {
         if ( grim_config_var0_table[4 * id] != 3 )
-          ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 21, 3);
+          (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+            grim_d3d_device,
+            0,
+            21,
+            3);
 LABEL_44:
         if ( grim_config_var0_table[4 * id] == 3 )
-          ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 21, 1);
-        ((void (__stdcall *)(int **, _DWORD, int, unsigned int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 17, value);
-        ((void (__stdcall *)(int **, _DWORD, int, unsigned int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 16, value);
+          (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+            grim_d3d_device,
+            0,
+            21,
+            1);
+        (*(void (__stdcall **)(void *, _DWORD, int, unsigned int))(*(_DWORD *)grim_d3d_device + 252))(
+          grim_d3d_device,
+          0,
+          17,
+          value);
+        (*(void (__stdcall **)(void *, _DWORD, int, unsigned int))(*(_DWORD *)grim_d3d_device + 252))(
+          grim_d3d_device,
+          0,
+          16,
+          value);
         grim_config_var0_table[4 * id] = value;
       }
       return;
@@ -3941,7 +3994,7 @@ LABEL_44:
       HIWORD(v9) = (unsigned __int8)(__int64)(*(float *)&value * 127.0 + 128.0);
       BYTE1(v9) = (__int64)(v13 * 127.0 + 128.0);
       LOBYTE(v9) = (__int64)(v14 * 127.0 + 128.0);
-      ((void (__stdcall *)(int **, int, int))(*grim_d3d_device)[50])(grim_d3d_device, 60, v9);
+      (*(void (__stdcall **)(void *, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 60, v9);
       return;
     case 0x1Cu:
       v4 = 0;
@@ -3967,7 +4020,7 @@ LABEL_44:
         v10 = v4;
       }
       while ( v4 < 256 );
-      ((void (__stdcall *)(int **, int, _BYTE *))(*grim_d3d_device)[18])(grim_d3d_device, 1, v11);
+      (*(void (__stdcall **)(void *, int, _BYTE *))(*(_DWORD *)grim_d3d_device + 72))(grim_d3d_device, 1, v11);
       v7 = &grim_config_var0_table[4 * id];
       *v7 = value;
       *((float *)v7 + 1) = v13;
@@ -3993,7 +4046,12 @@ LABEL_44:
       LOBYTE(grim_config_var0_table[4 * id]) = value;
       return;
     case 0x36u:
-      ((void (__stdcall *)(int **, _DWORD, _DWORD, _DWORD, _DWORD))(*grim_d3d_device)[15])(grim_d3d_device, 0, 0, 0, 0);
+      (*(void (__stdcall **)(void *, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 60))(
+        grim_d3d_device,
+        0,
+        0,
+        0,
+        0);
       return;
     case 0x52u:
       v8 = &grim_config_var0_table[4 * id];
@@ -4054,7 +4112,7 @@ void grim_clear_color(float r, float g, float b, float a)
   if ( !grim_render_disabled )
   {
     if ( byte_1005C898 )
-      ((void (__stdcall *)(int **, _DWORD, _DWORD, int, unsigned int, _DWORD, _DWORD))(*grim_d3d_device)[36])(
+      (*(void (__stdcall **)(void *, _DWORD, _DWORD, int, unsigned int, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 144))(
         grim_d3d_device,
         0,
         0,
@@ -4081,9 +4139,9 @@ int grim_set_render_target(int target_index)
     if ( grim_backbuffer_surface )
     {
       if ( grim_render_target_surface )
-        (*(void (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+        (*(void (__stdcall **)(void *))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
       grim_render_target_surface = 0;
-      result = ((int (__stdcall *)(int **, int, _DWORD))(*grim_d3d_device)[31])(
+      result = (*(int (__stdcall **)(void *, void *, _DWORD))(*(_DWORD *)grim_d3d_device + 124))(
                  grim_d3d_device,
                  grim_backbuffer_surface,
                  0);
@@ -4092,28 +4150,30 @@ int grim_set_render_target(int target_index)
         LOBYTE(result) = 0;
         return result;
       }
-      result = grim_backbuffer_surface;
+      result = (int)grim_backbuffer_surface;
       if ( grim_backbuffer_surface )
-        result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface);
+        result = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface);
       grim_backbuffer_surface = 0;
     }
     goto LABEL_11;
   }
   if ( grim_render_target_surface )
   {
-    (*(void (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+    (*(void (__stdcall **)(void *))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
     grim_render_target_surface = 0;
   }
   if ( !grim_backbuffer_surface )
-    ((void (__stdcall *)(int **, int *))(*grim_d3d_device)[32])(grim_d3d_device, &grim_backbuffer_surface);
+    (*(void (__stdcall **)(void *, void **))(*(_DWORD *)grim_d3d_device + 128))(
+      grim_d3d_device,
+      &grim_backbuffer_surface);
   v2 = *((_DWORD *)*(&grim_texture_slots + target_index) + 1);
-  result = (*(int (__stdcall **)(int, _DWORD, int *))(*(_DWORD *)v2 + 60))(v2, 0, &grim_render_target_surface);
+  result = (*(int (__stdcall **)(int, _DWORD, void **))(*(_DWORD *)v2 + 60))(v2, 0, &grim_render_target_surface);
   if ( result < 0 )
   {
     LOBYTE(result) = 0;
     return result;
   }
-  result = ((int (__stdcall *)(int **, int, _DWORD))(*grim_d3d_device)[31])(
+  result = (*(int (__stdcall **)(void *, void *, _DWORD))(*(_DWORD *)grim_d3d_device + 124))(
              grim_d3d_device,
              grim_render_target_surface,
              0);
@@ -4123,9 +4183,9 @@ LABEL_11:
     LOBYTE(result) = 1;
     return result;
   }
-  result = grim_render_target_surface;
+  result = (int)grim_render_target_surface;
   if ( grim_render_target_surface )
-    result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+    result = (*(int (__stdcall **)(void *))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
   grim_render_target_surface = 0;
   LOBYTE(result) = 0;
   return result;
@@ -4214,7 +4274,7 @@ int grim_is_key_active(int key)
 {
   int v1; // ecx
   int result; // eax
-  double v3; // st7
+  double lX; // st7
   int v4; // ebx
   int v5; // esi
   int v6; // edx
@@ -4250,23 +4310,23 @@ int grim_is_key_active(int key)
     case 308:
       return sub_10006F90();
     case 319:
-      v3 = (double)*(int *)&String[8];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lX;
+      return fabs(lX * 0.001) > 0.5;
     case 320:
-      v3 = (double)*(int *)&String[12];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lY;
+      return fabs(lX * 0.001) > 0.5;
     case 321:
-      v3 = (double)*(int *)&String[16];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lZ;
+      return fabs(lX * 0.001) > 0.5;
     case 339:
-      v3 = (double)*(int *)&String[20];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lRx;
+      return fabs(lX * 0.001) > 0.5;
     case 340:
-      v3 = (double)*(int *)&String[24];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lRy;
+      return fabs(lX * 0.001) > 0.5;
     case 341:
-      v3 = (double)*(int *)&String[28];
-      return fabs(v3 * 0.001) > 0.5;
+      lX = (double)grim_joystick_state.lRz;
+      return fabs(lX * 0.001) > 0.5;
   }
   if ( dword_1005D3B4 )
   {
@@ -4316,17 +4376,17 @@ float grim_get_config_float(int id)
     switch ( id )
     {
       case 319:
-        return (double)*(int *)&String[8] * 0.001;
+        return (double)grim_joystick_state.lX * 0.001;
       case 320:
-        return (double)*(int *)&String[12] * 0.001;
+        return (double)grim_joystick_state.lY * 0.001;
       case 321:
-        return (double)*(int *)&String[16] * 0.001;
+        return (double)grim_joystick_state.lZ * 0.001;
       case 339:
-        return (double)*(int *)&String[20] * 0.001;
+        return (double)grim_joystick_state.lRx * 0.001;
       case 340:
-        return (double)*(int *)&String[24] * 0.001;
+        return (double)grim_joystick_state.lRy * 0.001;
       case 341:
-        return (double)*(int *)&String[28] * 0.001;
+        return (double)grim_joystick_state.lRz * 0.001;
       case 351:
         return (*(float (**)(void))(*(_DWORD *)v1 + 112))();
       case 352:
@@ -4393,21 +4453,21 @@ void grim_flush_input()
   int v2; // [esp+14h] [ebp-4h] BYREF
 
   v2 = 10;
-  memset(&String[512], 0, 0x100u);
+  memset(grim_keyboard_state, 0, sizeof(grim_keyboard_state));
   v0 = 0;
   do
   {
-    (*(void (__stdcall **)(_DWORD, int, char *, int *, _DWORD))(**(_DWORD **)&String[508] + 40))(
-      *(_DWORD *)&String[508],
+    grim_keyboard_device->lpVtbl->GetDeviceData(
+      grim_keyboard_device,
       20,
-      &String[304],
-      &v2,
+      (LPDIDEVICEOBJECTDATA)&grim_keyboard_event_buffer,
+      (LPDWORD)&v2,
       0);
     v1 = v0++;
   }
   while ( v1 < 100 && v2 );
   dword_1005D3E4 = 0;
-  memset(&String[512], 0, 0x100u);
+  memset(grim_keyboard_state, 0, sizeof(grim_keyboard_state));
 }
 
 // grim_was_key_pressed @ 0x10007390
@@ -4503,14 +4563,14 @@ int grim_was_mouse_button_pressed(int button)
 // Grim2D vtable 0x70: cached mouse delta X
 float grim_get_mouse_dx()
 {
-  return *(float *)&String[808];
+  return grim_mouse_dx;
 }
 
 // grim_get_mouse_dy @ 0x100074E0
 // Grim2D vtable 0x74: cached mouse delta Y
 float grim_get_mouse_dy()
 {
-  return *(float *)&String[812];
+  return grim_mouse_dy;
 }
 
 // grim_get_mouse_dx_indexed @ 0x100074F0
@@ -4549,8 +4609,8 @@ float grim_get_mouse_y()
 // Grim2D vtable 0x64: set cached mouse position
 void grim_set_mouse_pos(float x, float y)
 {
-  *(float *)&String[796] = x;
-  *(float *)&String[800] = y;
+  grim_mouse_x = LODWORD(x);
+  grim_mouse_y = LODWORD(y);
   grim_mouse_x_cached = x;
   grim_mouse_y_cached = y;
 }
@@ -4562,35 +4622,35 @@ float grim_get_mouse_wheel_delta()
   if ( (_BYTE)grim_input_cached )
     return flt_1005D3B8;
   else
-    return *(float *)&String[816];
+    return flt_1005DB58;
 }
 
 // grim_get_joystick_x @ 0x10007580
 // Grim2D vtable 0x98 (provisional): joystick axis X
 int grim_get_joystick_x()
 {
-  return *(_DWORD *)&String[8];
+  return grim_joystick_state.lX;
 }
 
 // grim_get_joystick_y @ 0x10007590
 // Grim2D vtable 0x9c (provisional): joystick axis Y
 int grim_get_joystick_y()
 {
-  return *(_DWORD *)&String[12];
+  return grim_joystick_state.lY;
 }
 
 // grim_get_joystick_z @ 0x100075A0
 // Grim2D vtable 0xa0 (provisional): joystick axis Z
 int grim_get_joystick_z()
 {
-  return *(_DWORD *)&String[16];
+  return grim_joystick_state.lZ;
 }
 
 // grim_get_joystick_pov @ 0x100075B0
 // Grim2D vtable 0xa4 (provisional): joystick POV hat value
 int grim_get_joystick_pov(int index)
 {
-  return *(_DWORD *)&String[4 * index + 40];
+  return grim_joystick_state.rgdwPOV[index];
 }
 
 // grim_is_joystick_button_down @ 0x100075C0
@@ -4619,7 +4679,7 @@ int grim_create_texture(char *name, int width, int height)
   v4 = result;
   if ( result >= 0 )
   {
-    result = ((int (__stdcall *)(int **, int, int, int, int, int, _DWORD, _DWORD *))(*grim_d3d_device)[20])(
+    result = (*(int (__stdcall **)(void *, int, int, int, int, int, _DWORD, _DWORD *))(*(_DWORD *)grim_d3d_device + 80))(
                grim_d3d_device,
                width,
                height,
@@ -4726,7 +4786,7 @@ int grim_recreate_texture(int handle)
   result = (int)*(&grim_texture_slots + handle);
   if ( result )
   {
-    result = FUN_1000b297(grim_d3d_device, *(_DWORD *)(result + 12), *(_DWORD *)(result + 16), 1);
+    result = FUN_1000b297((int **)grim_d3d_device, *(_DWORD *)(result + 12), *(_DWORD *)(result + 16), 1);
     if ( result >= 0 )
     {
       if ( FUN_1000b3fe((int *)handle, *((int **)*(&grim_texture_slots + handle) + 1), 0, 0, COERCE_FLOAT(16)) >= 0 )
@@ -4770,7 +4830,7 @@ void grim_bind_texture(int handle, int stage)
       v3 = *(_DWORD *)(v2 + 4);
       if ( v3 )
       {
-        ((void (__stdcall *)(int **, int, int))(*grim_d3d_device)[61])(grim_d3d_device, stage, v3);
+        (*(void (__stdcall **)(void *, int, int))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, stage, v3);
         grim_bound_texture_handle = handle;
       }
     }
@@ -4811,9 +4871,9 @@ void grim_draw_rect_filled(float *xy, float w, float h)
   v4 = v3;
   if ( *(float *)(v5 + 12) > 0.0 )
   {
-    ((void (__stdcall *)(int **, _DWORD, _DWORD))(*grim_d3d_device)[61])(grim_d3d_device, 0, 0);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 3);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 3);
+    (*(void (__stdcall **)(void *, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
     (*(void (__thiscall **)(int, int))(*(_DWORD *)v4 + 272))(v4, v5);
     (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)v4 + 252))(v4, 0);
     (*(void (__thiscall **)(int))(*(_DWORD *)v4 + 232))(v4);
@@ -4824,8 +4884,8 @@ void grim_draw_rect_filled(float *xy, float w, float h)
       LODWORD(w),
       LODWORD(h));
     (*(void (__thiscall **)(int))(*(_DWORD *)v4 + 240))(v4);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
   }
 }
 
@@ -4841,9 +4901,9 @@ void grim_draw_fullscreen_color(float r, float g, float b, float a)
   v5 = v4;
   if ( a > 0.0 )
   {
-    ((void (__stdcall *)(int **, _DWORD, _DWORD))(*grim_d3d_device)[61])(grim_d3d_device, 0, 0);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 3);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 3);
+    (*(void (__stdcall **)(void *, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
     (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v5 + 276))(
       v5,
       LODWORD(r),
@@ -4861,8 +4921,8 @@ void grim_draw_fullscreen_color(float r, float g, float b, float a)
       LODWORD(v6),
       LODWORD(v7));
     (*(void (__thiscall **)(int))(*(_DWORD *)v5 + 240))(v5);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
-    ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+    (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
   }
 }
 
@@ -4875,7 +4935,7 @@ void grim_begin_batch()
     grim_batch_active = 1;
     if ( byte_1005C898 )
     {
-      ((void (__stdcall *)(int **))(*grim_d3d_device)[34])(grim_d3d_device);
+      (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
       if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
              grim_vertex_buffer,
              0,
@@ -4900,14 +4960,14 @@ void grim_end_batch()
       if ( byte_1005C898 )
       {
         if ( (_WORD)grim_vertex_count )
-          ((void (__stdcall *)(int **, int, _DWORD, _DWORD, _DWORD, int))(*grim_d3d_device)[71])(
+          (*(void (__stdcall **)(void *, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_d3d_device + 284))(
             grim_d3d_device,
             4,
             0,
             (unsigned __int16)grim_vertex_count,
             0,
             (unsigned __int16)grim_vertex_count >> 1);
-        ((void (__stdcall *)(int **))(*grim_d3d_device)[35])(grim_d3d_device);
+        (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
         grim_batch_active = 0;
       }
     }
@@ -4932,7 +4992,7 @@ void grim_draw_circle_filled(float x, float y, float radius)
     grim_batch_active = 1;
     if ( byte_1005C898 )
     {
-      ((void (__stdcall *)(int **))(*grim_d3d_device)[34])(grim_d3d_device);
+      (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
       if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
              grim_vertex_buffer,
              0,
@@ -4945,9 +5005,9 @@ void grim_draw_circle_filled(float x, float y, float radius)
       LOWORD(grim_vertex_count) = 0;
       *(_DWORD *)&v9[8] = dword_1005B28C;
       *(_DWORD *)&v9[12] = grim_color_slot0[0];
-      v4 = (int)*grim_d3d_device;
+      v4 = *(_DWORD *)grim_d3d_device;
       *(_DWORD *)&v9[20] = grim_uv_v0[0];
-      (*(void (__stdcall **)(int **, _DWORD, _DWORD, int))(v4 + 244))(grim_d3d_device, 0, 0, v3);
+      (*(void (__stdcall **)(void *, _DWORD, _DWORD, int))(v4 + 244))(grim_d3d_device, 0, 0, v3);
       *(float *)&v9[4] = radius;
       *(float *)v9 = y;
       v5 = v10 * 0.125 + 12.0;
@@ -4975,12 +5035,12 @@ void grim_draw_circle_filled(float x, float y, float radius)
       (*(void (__cdecl **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
       if ( byte_1005C898 )
       {
-        ((void (__stdcall *)(int **, int, _DWORD, int))(*grim_d3d_device)[70])(
+        (*(void (__stdcall **)(void *, int, _DWORD, int))(*(_DWORD *)grim_d3d_device + 280))(
           grim_d3d_device,
           6,
           0,
           (unsigned __int16)grim_vertex_count - 2);
-        ((void (__stdcall *)(int **))(*grim_d3d_device)[35])(grim_d3d_device);
+        (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
         grim_batch_active = 0;
       }
     }
@@ -5005,7 +5065,7 @@ void grim_draw_circle_outline(float x, float y, float radius)
     grim_batch_active = 1;
     if ( byte_1005C898 )
     {
-      ((void (__stdcall *)(int **))(*grim_d3d_device)[34])(grim_d3d_device);
+      (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
       if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
              grim_vertex_buffer,
              0,
@@ -5051,12 +5111,12 @@ void grim_draw_circle_outline(float x, float y, float radius)
       (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
       if ( byte_1005C898 )
       {
-        ((void (__stdcall *)(int **, int, _DWORD, int))(*grim_d3d_device)[70])(
+        (*(void (__stdcall **)(void *, int, _DWORD, int))(*(_DWORD *)grim_d3d_device + 280))(
           grim_d3d_device,
           5,
           0,
           (unsigned __int16)grim_vertex_count - 2);
-        ((void (__stdcall *)(int **))(*grim_d3d_device)[35])(grim_d3d_device);
+        (*(void (__stdcall **)(void *))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
         grim_batch_active = 0;
       }
     }
@@ -5269,7 +5329,7 @@ void grim_flush_batch()
   if ( !grim_render_disabled && grim_batch_active )
   {
     (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
-    ((void (__stdcall *)(int **, int, _DWORD, _DWORD, _DWORD, int))(*grim_d3d_device)[71])(
+    (*(void (__stdcall **)(void *, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_d3d_device + 284))(
       grim_d3d_device,
       4,
       0,
@@ -5693,9 +5753,9 @@ void grim_draw_rect_outline(float *xy, float w, float h)
   float v7; // [esp+68h] [ebp-14h]
 
   v4 = v3;
-  ((void (__stdcall *)(int **, _DWORD, _DWORD))(*grim_d3d_device)[61])(grim_d3d_device, 0, 0);
-  ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 3);
-  ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 3);
+  (*(void (__stdcall **)(void *, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+  (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+  (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
   (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)v4 + 252))(v4, 0);
   (*(void (__thiscall **)(int))(*(_DWORD *)v4 + 232))(v4);
   if ( h == 1.0 )
@@ -5747,8 +5807,8 @@ void grim_draw_rect_outline(float *xy, float w, float h)
       LODWORD(h));
   }
   (*(void (__thiscall **)(int))(*(_DWORD *)v4 + 240))(v4);
-  ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 1, 4);
-  ((void (__stdcall *)(int **, _DWORD, int, int))(*grim_d3d_device)[63])(grim_d3d_device, 0, 4, 4);
+  (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+  (*(void (__stdcall **)(void *, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
 }
 
 // grim_draw_quad_points @ 0x10009080
@@ -5848,7 +5908,10 @@ void grim_draw_text_mono(float x, float y, char *text)
     if ( text )
     {
       if ( !(_BYTE)grim_font_texture_bound )
-        ((void (__stdcall *)(int **, _DWORD, int))(*grim_d3d_device)[61])(grim_d3d_device, 0, grim_font_texture);
+        (*(void (__stdcall **)(void *, _DWORD, int))(*(_DWORD *)grim_d3d_device + 244))(
+          grim_d3d_device,
+          0,
+          grim_font_texture);
       v19 = *(float *)&dword_1005CD08;
       v15 = v4;
       v14 = v5;
@@ -6175,20 +6238,20 @@ void grim_draw_text_small_fmt(void *self, float x, float y, char *fmt, ...)
 // export: constructs (singleton) Grim2D interface instance backed by grim_interface_vtable
 void *GRIM__GetInterface()
 {
-  int v0; // eax
+  void *v0; // eax
   void *result; // eax
 
-  v0 = Direct3DCreate8(220);
+  v0 = (void *)Direct3DCreate8(220);
   grim_d3d8_probe = v0;
   if ( v0 )
   {
-    (*(void (__stdcall **)(int))(*(_DWORD *)v0 + 8))(v0);
+    (*(void (__stdcall **)(void *))(*(_DWORD *)v0 + 8))(v0);
     sub_100052F0();
     result = operator new(4u);
     if ( result )
     {
       *(_DWORD *)result = &grim_interface_vtable;
-      grim_interface_instance = (int)result;
+      grim_interface_instance = result;
     }
     else
     {
@@ -6702,69 +6765,62 @@ BOOL __stdcall sub_1000A150(int a1, int a2)
 // initializes DirectInput joystick device and acquires it
 int grim_joystick_init(int hwnd)
 {
-  int v1; // eax
+  LPDIRECTINPUT8A v1; // eax
   HMODULE ModuleHandleA; // eax
   int result; // eax
 
   if ( !hwnd && !GetForegroundWindow() )
     GetDesktopWindow();
-  v1 = *(_DWORD *)&String[280];
-  if ( !*(_DWORD *)&String[280] )
+  v1 = grim_dinput_joystick;
+  if ( !grim_dinput_joystick )
   {
     ModuleHandleA = GetModuleHandleA(0);
-    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&String[280], 0);
+    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&grim_dinput_joystick, 0);
     if ( result < 0 )
     {
-      *(_DWORD *)&String[280] = 0;
+      grim_dinput_joystick = 0;
       LOBYTE(result) = 0;
       return result;
     }
-    v1 = *(_DWORD *)&String[280];
+    v1 = grim_dinput_joystick;
   }
-  if ( !*(_DWORD *)&String[284] )
+  if ( !grim_joystick_device )
   {
-    result = (*(int (__stdcall **)(int, int, int (__stdcall *)(int, int), _DWORD, int))(*(_DWORD *)v1 + 16))(
-               v1,
-               4,
-               sub_1000A110,
-               0,
-               1);
+    result = v1->lpVtbl->EnumDevices(v1, 4, (LPDIENUMDEVICESCALLBACKA)sub_1000A110, 0, 1);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    if ( !String[288] )
+    if ( !unk_1005D948 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, void *))(**(_DWORD **)&String[284] + 44))(
-               *(_DWORD *)&String[284],
-               &unk_1004FE74);
+    result = grim_joystick_device->lpVtbl->SetDataFormat(grim_joystick_device, (LPCDIDATAFORMAT)&unk_1004FE74);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, int, int))(**(_DWORD **)&String[284] + 52))(*(_DWORD *)&String[284], hwnd, 5);
+    result = grim_joystick_device->lpVtbl->SetCooperativeLevel(grim_joystick_device, (HWND)hwnd, 5);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, BOOL (__stdcall *)(int, int), int, _DWORD))(**(_DWORD **)&String[284] + 16))(
-               *(_DWORD *)&String[284],
-               sub_1000A150,
-               hwnd,
+    result = grim_joystick_device->lpVtbl->EnumObjects(
+               grim_joystick_device,
+               (LPDIENUMDEVICEOBJECTSCALLBACKA)sub_1000A150,
+               (LPVOID)hwnd,
                0);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    if ( *(_DWORD *)&String[284] )
-      (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[284] + 28))(*(_DWORD *)&String[284]);
+    if ( grim_joystick_device )
+      grim_joystick_device->lpVtbl->Acquire(grim_joystick_device);
   }
   result = grim_joystick_poll();
   LOBYTE(result) = 1;
@@ -6777,28 +6833,28 @@ int grim_joystick_poll()
 {
   int result; // eax
   bool v1; // sf
-  int v2; // edx
+  struct IDirectInputDevice8AVtbl *lpVtbl; // edx
 
-  result = *(_DWORD *)&String[280];
-  if ( !*(_DWORD *)&String[280] || (result = *(_DWORD *)&String[284]) == 0 )
+  result = (int)grim_dinput_joystick;
+  if ( !grim_dinput_joystick || (result = (int)grim_joystick_device) == 0 )
   {
 LABEL_6:
     LOBYTE(result) = 0;
     return result;
   }
-  v1 = (*(int (__stdcall **)(_DWORD))(**(_DWORD **)&String[284] + 100))(*(_DWORD *)&String[284]) < 0;
-  v2 = **(_DWORD **)&String[284];
+  v1 = grim_joystick_device->lpVtbl->Poll(grim_joystick_device) < 0;
+  lpVtbl = grim_joystick_device->lpVtbl;
   if ( v1 )
   {
-    for ( result = (*(int (__stdcall **)(_DWORD))(v2 + 28))(*(_DWORD *)&String[284]);
+    for ( result = lpVtbl->Acquire(grim_joystick_device);
           result == -2147024866;
-          result = (*(int (__stdcall **)(_DWORD))(**(_DWORD **)&String[284] + 28))(*(_DWORD *)&String[284]) )
+          result = grim_joystick_device->lpVtbl->Acquire(grim_joystick_device) )
     {
       ;
     }
     goto LABEL_6;
   }
-  result = (*(int (__stdcall **)(_DWORD, int, char *))(v2 + 36))(*(_DWORD *)&String[284], 272, &String[8]);
+  result = lpVtbl->GetDeviceState(grim_joystick_device, 272, &grim_joystick_state);
   LOBYTE(result) = result >= 0;
   return result;
 }
@@ -6836,7 +6892,7 @@ int grim_keyboard_key_down(unsigned int key)
   int result; // eax
 
   result = (unsigned __int8)key;
-  LOBYTE(result) = (unsigned __int8)String[(unsigned __int8)key + 512] >> 7;
+  LOBYTE(result) = grim_keyboard_state[(unsigned __int8)key] >> 7;
   return result;
 }
 
@@ -6844,50 +6900,41 @@ int grim_keyboard_key_down(unsigned int key)
 // initializes DirectInput keyboard device and acquires it
 int grim_keyboard_init(int hwnd)
 {
-  int v1; // eax
+  LPDIRECTINPUT8A v1; // eax
   HMODULE ModuleHandleA; // eax
   int result; // eax
   _DWORD v4[5]; // [esp+24h] [ebp-14h] BYREF
 
   if ( !hwnd && !GetForegroundWindow() )
     GetDesktopWindow();
-  v1 = *(_DWORD *)&String[504];
-  if ( !*(_DWORD *)&String[504] )
+  v1 = grim_dinput_keyboard;
+  if ( !grim_dinput_keyboard )
   {
     ModuleHandleA = GetModuleHandleA(0);
-    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&String[504], 0);
+    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&grim_dinput_keyboard, 0);
     if ( result < 0 )
     {
-      *(_DWORD *)&String[504] = 0;
+      grim_dinput_keyboard = 0;
       LOBYTE(result) = 0;
       return result;
     }
-    v1 = *(_DWORD *)&String[504];
+    v1 = grim_dinput_keyboard;
   }
-  if ( !*(_DWORD *)&String[508] )
+  if ( !grim_keyboard_device )
   {
-    result = (*(int (__stdcall **)(int, void *, char *, _DWORD))(*(_DWORD *)v1 + 12))(
-               v1,
-               &unk_1005029C,
-               &String[508],
-               0);
+    result = v1->lpVtbl->CreateDevice(v1, &stru_1005029C, &grim_keyboard_device, 0);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, void *))(**(_DWORD **)&String[508] + 44))(
-               *(_DWORD *)&String[508],
-               &unk_1005007C);
+    result = grim_keyboard_device->lpVtbl->SetDataFormat(grim_keyboard_device, (LPCDIDATAFORMAT)&unk_1005007C);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, int, int))(**(_DWORD **)&String[508] + 52))(
-               *(_DWORD *)&String[508],
-               hwnd,
-               22);
+    result = grim_keyboard_device->lpVtbl->SetCooperativeLevel(grim_keyboard_device, (HWND)hwnd, 22);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
@@ -6898,9 +6945,9 @@ int grim_keyboard_init(int hwnd)
     v4[2] = 0;
     v4[3] = 0;
     v4[4] = 10;
-    (*(void (__stdcall **)(_DWORD, int, _DWORD *))(**(_DWORD **)&String[508] + 24))(*(_DWORD *)&String[508], 1, v4);
-    if ( *(_DWORD *)&String[508] )
-      (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 28))(*(_DWORD *)&String[508]);
+    grim_keyboard_device->lpVtbl->SetProperty(grim_keyboard_device, (const GUID *const)1, (LPCDIPROPHEADER)v4);
+    if ( grim_keyboard_device )
+      grim_keyboard_device->lpVtbl->Acquire(grim_keyboard_device);
   }
   result = grim_keyboard_poll();
   LOBYTE(result) = 1;
@@ -6919,43 +6966,40 @@ int grim_keyboard_poll()
   int v5; // [esp+24h] [ebp-4h] BYREF
 
   v5 = v0;
-  result = *(_DWORD *)&String[508];
-  if ( !*(_DWORD *)&String[508] )
+  result = (int)grim_keyboard_device;
+  if ( !grim_keyboard_device )
     goto LABEL_11;
   do
   {
     do
-      result = (*(int (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 28))(*(_DWORD *)&String[508]);
+      result = grim_keyboard_device->lpVtbl->Acquire(grim_keyboard_device);
     while ( result == -2147024866 );
   }
   while ( result == -2147024891 );
   if ( result >= 0 )
   {
-    memset(&String[512], 0, 0x100u);
-    (*(void (__stdcall **)(_DWORD, int, char *))(**(_DWORD **)&String[508] + 36))(
-      *(_DWORD *)&String[508],
-      256,
-      &String[512]);
+    memset(grim_keyboard_state, 0, sizeof(grim_keyboard_state));
+    grim_keyboard_device->lpVtbl->GetDeviceState(grim_keyboard_device, 256, grim_keyboard_state);
     v5 = 10;
-    result = (*(int (__stdcall **)(_DWORD, int, char *, int *, _DWORD))(**(_DWORD **)&String[508] + 40))(
-               *(_DWORD *)&String[508],
+    result = grim_keyboard_device->lpVtbl->GetDeviceData(
+               grim_keyboard_device,
                20,
-               &String[304],
-               &v5,
+               (LPDIDEVICEOBJECTDATA)&grim_keyboard_event_buffer,
+               (LPDWORD)&v5,
                0);
     if ( result >= 0 )
     {
       v2 = v5;
       if ( v5 > 0 )
       {
-        result = (int)&String[304];
+        result = (int)&grim_keyboard_event_buffer;
         do
         {
           v3 = *(_DWORD *)result;
           v4 = *(_BYTE *)(result + 4);
           result += 20;
           --v2;
-          String[v3 + 512] = v4;
+          grim_keyboard_state[v3] = v4;
         }
         while ( v2 );
       }
@@ -6974,16 +7018,16 @@ LABEL_11:
 // releases DirectInput keyboard objects
 void grim_keyboard_shutdown()
 {
-  if ( *(_DWORD *)&String[508] )
+  if ( grim_keyboard_device )
   {
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 32))(*(_DWORD *)&String[508]);
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 8))(*(_DWORD *)&String[508]);
-    *(_DWORD *)&String[508] = 0;
+    grim_keyboard_device->lpVtbl->Unacquire(grim_keyboard_device);
+    grim_keyboard_device->lpVtbl->Release(grim_keyboard_device);
+    grim_keyboard_device = 0;
   }
-  if ( *(_DWORD *)&String[504] )
+  if ( grim_dinput_keyboard )
   {
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[504] + 8))(*(_DWORD *)&String[504]);
-    *(_DWORD *)&String[504] = 0;
+    grim_dinput_keyboard->lpVtbl->Release(grim_dinput_keyboard);
+    grim_dinput_keyboard = 0;
   }
 }
 
@@ -6994,7 +7038,7 @@ int grim_mouse_button_down(int button)
   int result; // eax
 
   result = button;
-  LOBYTE(result) = (unsigned __int8)String[button + 788] >> 7;
+  LOBYTE(result) = grim_mouse_state.rgbButtons[button] >> 7;
   return result;
 }
 
@@ -7003,54 +7047,48 @@ int grim_mouse_button_down(int button)
 int grim_mouse_init()
 {
   HWND v0; // esi
-  int v1; // eax
+  LPDIRECTINPUT8A v1; // eax
   HMODULE ModuleHandleA; // eax
   int result; // eax
 
   v0 = hwnd;
   if ( !hwnd && !GetForegroundWindow() )
     GetDesktopWindow();
-  v1 = *(_DWORD *)&String[768];
-  if ( !*(_DWORD *)&String[768] )
+  v1 = grim_dinput_mouse;
+  if ( !grim_dinput_mouse )
   {
     ModuleHandleA = GetModuleHandleA(0);
-    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&String[768], 0);
+    result = DirectInput8Create(ModuleHandleA, 0x800u, &riidltf, (LPVOID *)&grim_dinput_mouse, 0);
     if ( result < 0 )
     {
-      *(_DWORD *)&String[768] = 0;
+      grim_dinput_mouse = 0;
       LOBYTE(result) = 0;
       return result;
     }
-    v1 = *(_DWORD *)&String[768];
+    v1 = grim_dinput_mouse;
   }
-  if ( !*(_DWORD *)&String[772] )
+  if ( !grim_mouse_device )
   {
-    result = (*(int (__stdcall **)(int, void *, char *, _DWORD))(*(_DWORD *)v1 + 12))(
-               v1,
-               &unk_100502AC,
-               &String[772],
-               0);
+    result = v1->lpVtbl->CreateDevice(v1, &stru_100502AC, &grim_mouse_device, 0);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, void *))(**(_DWORD **)&String[772] + 44))(
-               *(_DWORD *)&String[772],
-               &unk_10050284);
+    result = grim_mouse_device->lpVtbl->SetDataFormat(grim_mouse_device, (LPCDIDATAFORMAT)&unk_10050284);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    result = (*(int (__stdcall **)(_DWORD, HWND, int))(**(_DWORD **)&String[772] + 52))(*(_DWORD *)&String[772], v0, 5);
+    result = grim_mouse_device->lpVtbl->SetCooperativeLevel(grim_mouse_device, v0, 5);
     if ( result < 0 )
     {
       LOBYTE(result) = 0;
       return result;
     }
-    if ( *(_DWORD *)&String[772] )
-      (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 28))(*(_DWORD *)&String[772]);
+    if ( grim_mouse_device )
+      grim_mouse_device->lpVtbl->Acquire(grim_mouse_device);
   }
   result = grim_mouse_poll();
   LOBYTE(result) = 1;
@@ -7064,57 +7102,51 @@ int grim_mouse_poll()
   int result; // eax
   int v1; // esi
 
-  result = *(_DWORD *)&String[772];
-  if ( !*(_DWORD *)&String[772] )
+  result = (int)grim_mouse_device;
+  if ( !grim_mouse_device )
     goto LABEL_14;
   v1 = 0;
-  *(_DWORD *)&String[776] = 0;
-  *(_DWORD *)&String[816] = 0;
-  *(_DWORD *)&String[780] = 0;
-  *(_DWORD *)&String[812] = 0;
-  *(_DWORD *)&String[784] = 0;
-  *(_DWORD *)&String[808] = 0;
-  *(_DWORD *)&String[788] = 0;
-  *(_DWORD *)&String[792] = 0;
-  if ( (*(int (__stdcall **)(_DWORD, int, char *))(**(_DWORD **)&String[772] + 36))(
-         *(_DWORD *)&String[772],
-         20,
-         &String[776]) >= 0 )
+  grim_mouse_state.lX = 0;
+  flt_1005DB58 = 0.0;
+  grim_mouse_state.lY = 0;
+  grim_mouse_dy = 0.0;
+  grim_mouse_state.lZ = 0;
+  grim_mouse_dx = 0.0;
+  *(_DWORD *)grim_mouse_state.rgbButtons = 0;
+  *(_DWORD *)&grim_mouse_state.rgbButtons[4] = 0;
+  if ( grim_mouse_device->lpVtbl->GetDeviceState(grim_mouse_device, 20, &grim_mouse_state) >= 0 )
   {
     while ( 1 )
     {
       result = v1++;
-      *(float *)&String[808] = (double)*(int *)&String[776] + *(float *)&String[808];
-      *(float *)&String[812] = (double)*(int *)&String[780] + *(float *)&String[812];
-      *(float *)&String[816] = (double)*(int *)&String[784] + *(float *)&String[816];
+      grim_mouse_dx = (double)grim_mouse_state.lX + grim_mouse_dx;
+      grim_mouse_dy = (double)grim_mouse_state.lY + grim_mouse_dy;
+      flt_1005DB58 = (double)grim_mouse_state.lZ + flt_1005DB58;
       if ( result >= 100 )
         break;
-      if ( !*(_DWORD *)&String[776] && !*(_DWORD *)&String[780] )
+      if ( !grim_mouse_state.lX && !grim_mouse_state.lY )
       {
-        result = *(_DWORD *)&String[784];
-        if ( !*(_DWORD *)&String[784] )
+        result = grim_mouse_state.lZ;
+        if ( !grim_mouse_state.lZ )
           break;
       }
-      *(_DWORD *)&String[776] = 0;
-      *(_DWORD *)&String[780] = 0;
-      *(_DWORD *)&String[784] = 0;
-      *(_DWORD *)&String[788] = 0;
-      *(_DWORD *)&String[792] = 0;
-      if ( (*(int (__stdcall **)(_DWORD, int, char *))(**(_DWORD **)&String[772] + 36))(
-             *(_DWORD *)&String[772],
-             20,
-             &String[776]) < 0 )
+      grim_mouse_state.lX = 0;
+      grim_mouse_state.lY = 0;
+      grim_mouse_state.lZ = 0;
+      *(_DWORD *)grim_mouse_state.rgbButtons = 0;
+      *(_DWORD *)&grim_mouse_state.rgbButtons[4] = 0;
+      if ( grim_mouse_device->lpVtbl->GetDeviceState(grim_mouse_device, 20, &grim_mouse_state) < 0 )
         goto LABEL_8;
     }
     if ( v1 > 2 )
       grim_noop();
-    *(float *)&String[796] = *(float *)&String[796] + *(float *)&String[808];
-    *(float *)&String[800] = *(float *)&String[800] + *(float *)&String[812];
-    *(float *)&String[804] = *(float *)&String[804] + *(float *)&String[816];
+    grim_mouse_x = grim_mouse_x + grim_mouse_dx;
+    grim_mouse_y = grim_mouse_y + grim_mouse_dy;
+    unk_1005DB4C = unk_1005DB4C + flt_1005DB58;
     goto LABEL_14;
   }
 LABEL_8:
-  result = (*(int (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 28))(*(_DWORD *)&String[772]);
+  result = grim_mouse_device->lpVtbl->Acquire(grim_mouse_device);
   if ( result != -2147024866 )
   {
 LABEL_14:
@@ -7122,7 +7154,7 @@ LABEL_14:
     return result;
   }
   do
-    result = (*(int (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 28))(*(_DWORD *)&String[772]);
+    result = grim_mouse_device->lpVtbl->Acquire(grim_mouse_device);
   while ( result == -2147024866 );
   LOBYTE(result) = 1;
   return result;
@@ -7132,16 +7164,16 @@ LABEL_14:
 // releases DirectInput mouse objects
 void grim_mouse_shutdown()
 {
-  if ( *(_DWORD *)&String[772] )
+  if ( grim_mouse_device )
   {
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 32))(*(_DWORD *)&String[772]);
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 8))(*(_DWORD *)&String[772]);
-    *(_DWORD *)&String[772] = 0;
+    grim_mouse_device->lpVtbl->Unacquire(grim_mouse_device);
+    grim_mouse_device->lpVtbl->Release(grim_mouse_device);
+    grim_mouse_device = 0;
   }
-  if ( *(_DWORD *)&String[768] )
+  if ( grim_dinput_mouse )
   {
-    (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[768] + 8))(*(_DWORD *)&String[768]);
-    *(_DWORD *)&String[768] = 0;
+    grim_dinput_mouse->lpVtbl->Release(grim_dinput_mouse);
+    grim_dinput_mouse = 0;
   }
 }
 
