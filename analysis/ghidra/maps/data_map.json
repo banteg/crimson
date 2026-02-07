@@ -9182,6 +9182,78 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10059e00",
+      "comment": "D3DPRESENT_PARAMETERS.BackBufferFormat.",
+      "name": "grim_present_backbuffer_format",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e04",
+      "comment": "D3DPRESENT_PARAMETERS.BackBufferCount.",
+      "name": "grim_present_backbuffer_count",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e08",
+      "comment": "D3DPRESENT_PARAMETERS.MultiSampleType (D3D8).",
+      "name": "grim_present_multisample_type",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e0c",
+      "comment": "D3DPRESENT_PARAMETERS.SwapEffect.",
+      "name": "grim_present_swap_effect",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e10",
+      "comment": "D3DPRESENT_PARAMETERS.hDeviceWindow.",
+      "name": "grim_present_device_window",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x10059e14",
+      "comment": "D3DPRESENT_PARAMETERS.Windowed flag.",
+      "name": "grim_present_windowed",
+      "program": "grim.dll",
+      "type": "BOOL"
+    },
+    {
+      "address": "0x10059e18",
+      "comment": "D3DPRESENT_PARAMETERS.EnableAutoDepthStencil flag.",
+      "name": "grim_present_enable_auto_depth_stencil",
+      "program": "grim.dll",
+      "type": "BOOL"
+    },
+    {
+      "address": "0x10059e1c",
+      "comment": "D3DPRESENT_PARAMETERS.AutoDepthStencilFormat.",
+      "name": "grim_present_auto_depth_stencil_format",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10059e20",
+      "comment": "D3DPRESENT_PARAMETERS.Flags.",
+      "name": "grim_present_flags",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
+      "address": "0x10059e24",
+      "comment": "D3DPRESENT_PARAMETERS.FullScreen_RefreshRateInHz.",
+      "name": "grim_present_refresh_rate_hz",
+      "program": "grim.dll",
+      "type": "UINT"
+    },
+    {
+      "address": "0x10059e28",
+      "comment": "D3DPRESENT_PARAMETERS.FullScreen_PresentationInterval.",
+      "name": "grim_present_interval",
+      "program": "grim.dll",
+      "type": "UINT"
+    },
+    {
       "address": "0x10059e2c",
       "comment": "Dynamic vertex buffer object (IDirect3DVertexBuffer8).",
       "name": "grim_vertex_buffer",
@@ -9315,6 +9387,12 @@
       "name": "grim_config_dialog_hwnd",
       "program": "grim.dll",
       "type": "HWND"
+    },
+    {
+      "address": "0x1005b2b4",
+      "comment": "Selected D3D device type for CreateDevice (HAL/REF).",
+      "name": "grim_d3d_device_type",
+      "program": "grim.dll"
     },
     {
       "address": "0x1005b2b8",
@@ -9528,6 +9606,27 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005ceb8",
+      "comment": "Requested backbuffer count used to seed D3DPRESENT_PARAMETERS.BackBufferCount.",
+      "name": "grim_config_backbuffer_count",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005cec8",
+      "comment": "Reference-device toggle (nonzero selects D3DDEVTYPE_REF in grim_d3d_init; mirrored by config dialog checkbox 0x3ed).",
+      "name": "grim_use_ref_device",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
+      "address": "0x1005ced8",
+      "comment": "Auto depth-stencil enable flag (feeds D3DPRESENT_PARAMETERS.EnableAutoDepthStencil).",
+      "name": "grim_enable_auto_depth_stencil",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005d0c8",
       "comment": "Config-dialog checkbox state latched from control id 0x3ef (later copied to grim_config_option_54_value).",
       "name": "grim_config_dialog_option_3ef_checked",
@@ -9560,6 +9659,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d3e8",
+      "comment": "Selected display adapter index used by GetDeviceCaps/CreateDevice.",
+      "name": "grim_selected_adapter_index",
+      "program": "grim.dll",
+      "type": "UINT"
+    },
+    {
       "address": "0x1005d3ec",
       "comment": "Font texture (IDirect3DTexture8) used for text rendering.",
       "name": "grim_font_texture",
@@ -9575,6 +9681,13 @@
       "address": "0x1005d3f8",
       "comment": "Primary Grim2D game window handle (created by grim_window_create).",
       "name": "grim_main_window_hwnd",
+      "program": "grim.dll",
+      "type": "HWND"
+    },
+    {
+      "address": "0x1005d3fc",
+      "comment": "Optional override window handle used for D3D device window selection.",
+      "name": "grim_device_window_override",
       "program": "grim.dll",
       "type": "HWND"
     },
