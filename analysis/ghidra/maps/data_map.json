@@ -8033,9 +8033,30 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004d7b7c",
+      "comment": "Weapon-table SFX anchor initialized to sfx_autorifle_fire; reused by fire-bullets helper and multiple weapon rows.",
+      "name": "weapon_sfx_anchor_autorifle_fire",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d7fd8",
       "comment": "Perk fire-bullets helper: secondary shot SFX id used by player_fire_weapon/player_update.",
       "name": "fire_bullets_secondary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d83c0",
+      "comment": "Weapon-table SFX anchor initialized to sfx_autorifle_reload; reused as reload/equip SFX by multiple weapon rows.",
+      "name": "weapon_sfx_anchor_autorifle_reload",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d86a8",
+      "comment": "Weapon-table SFX anchor initialized to sfx_shock_reload; reused by ion/shock weapon rows.",
+      "name": "weapon_sfx_anchor_shock_reload",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -8057,6 +8078,27 @@
       "address": "0x004d9050",
       "comment": "Perk fire-bullets helper: primary shot SFX id used by player_fire_weapon/player_update.",
       "name": "fire_bullets_primary_shot_sfx_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d92bc",
+      "comment": "Weapon-table SFX anchor initialized to sfx_bloodspill_01; reused by biological/late weapon rows.",
+      "name": "weapon_sfx_anchor_bloodspill_01",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d93b4",
+      "comment": "Weapon-table SFX anchor initialized to sfx_explosion_large; reused by heavy explosive weapon rows.",
+      "name": "weapon_sfx_anchor_explosion_large",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d93bc",
+      "comment": "Weapon-table SFX anchor initialized to sfx_shotgun_reload; reused by multiple weapon rows and fire-bullets fallback reload assignments.",
+      "name": "weapon_sfx_anchor_shotgun_reload",
       "program": "crimsonland.exe",
       "type": "int"
     },
