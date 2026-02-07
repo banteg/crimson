@@ -61,6 +61,9 @@ def verify_original_capture(
     actual: list[ReplayCheckpoint] = []
 
     mode = int(replay.header.game_mode_id)
+    # Ghidra decompile (`console_hotkey_update`) shows one unconditional
+    # `crt_rand()` draw outside `gameplay_update_and_render` each frame.
+    inter_tick_rand_draws = 1
     if mode == int(GameMode.SURVIVAL):
         run_result = run_survival_replay(
             replay,
@@ -71,6 +74,7 @@ def verify_original_capture(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            inter_tick_rand_draws=int(inter_tick_rand_draws),
         )
     elif mode == int(GameMode.RUSH):
         run_result = run_rush_replay(
@@ -81,6 +85,7 @@ def verify_original_capture(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
+            inter_tick_rand_draws=int(inter_tick_rand_draws),
         )
     else:
         raise OriginalCaptureVerifyError(f"unsupported game mode for original capture verification: {mode}")

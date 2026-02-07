@@ -71,6 +71,22 @@ def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
+def test_survival_runner_inter_tick_rand_draws_shift_rng_state() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        baseline = run_survival_replay(replay)
+    with pytest.warns(ReplayGameVersionWarning):
+        shifted = run_survival_replay(replay, inter_tick_rand_draws=1)
+    with pytest.warns(ReplayGameVersionWarning):
+        shifted_again = run_survival_replay(replay, inter_tick_rand_draws=1)
+
+    assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
+    assert shifted == shifted_again
+    assert shifted.rng_state != baseline.rng_state
+
+
 def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
     rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
@@ -251,6 +267,22 @@ def test_rush_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
         )
 
     assert result.elapsed_ms == 500
+
+
+def test_rush_runner_inter_tick_rand_draws_shift_rng_state() -> None:
+    _header, rec = _blank_rush_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        baseline = run_rush_replay(replay)
+    with pytest.warns(ReplayGameVersionWarning):
+        shifted = run_rush_replay(replay, inter_tick_rand_draws=1)
+    with pytest.warns(ReplayGameVersionWarning):
+        shifted_again = run_rush_replay(replay, inter_tick_rand_draws=1)
+
+    assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
+    assert shifted == shifted_again
+    assert shifted.rng_state != baseline.rng_state
 
 
 def test_rush_runner_rejects_events() -> None:
