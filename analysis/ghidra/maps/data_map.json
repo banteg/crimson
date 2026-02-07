@@ -82,6 +82,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047125c",
+      "comment": "Shared default cvar string used for \"enabled\"/true-like console vars.",
+      "name": "console_cvar_default_true",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004712c0",
       "comment": "Console prompt string used for input rendering.",
       "name": "console_prompt_string",
@@ -117,6 +123,12 @@
       "address": "0x00471314",
       "comment": "Default player name string copied into config on load.",
       "name": "default_player_name",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004713f8",
+      "comment": "Shared default cvar string used for disabled/false-like console vars.",
+      "name": "console_cvar_default_false",
       "program": "crimsonland.exe"
     },
     {
