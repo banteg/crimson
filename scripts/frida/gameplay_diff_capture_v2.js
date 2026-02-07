@@ -112,6 +112,7 @@ const FN = {
   quest_mode_update: 0x004070e0,
   rush_mode_update: 0x004072b0,
   survival_update: 0x00407cd0,
+  survival_spawn_creature: 0x00407510,
   typo_gameplay_update_and_render: 0x004457c0,
   game_state_set: 0x004461c0,
   player_fire_weapon: 0x00444980,
@@ -121,6 +122,7 @@ const FN = {
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
   creature_spawn_template: 0x00430af0,
+  creature_spawn_tinted: 0x00444810,
   perks_update_effects: 0x00406b40,
   quest_spawn_timeline_update: 0x00434250,
   input_any_key_pressed: 0x00446000,
@@ -967,6 +969,7 @@ function makeTickContext() {
     fire_by_player: {},
     spawn_callers_template: {},
     spawn_callers_low: {},
+    spawn_sources_low: {},
     mode_samples: [],
     mode_hint: null,
     overflow: false,
@@ -1279,6 +1282,7 @@ function finalizeTick() {
     event_count_low_level: tick.event_counts.creature_spawn_low || 0,
     top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
+    top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
     mode_samples: tick.mode_samples,
   };
 
@@ -1903,6 +1907,103 @@ function installHooks() {
       },
     });
 
+    attachHook("survival_spawn_creature", fnPtrs.survival_spawn_creature, {
+      onEnter(args) {
+        const callerStatic = runtimeToStatic(this.returnAddress);
+        this._spawnCtx = {
+          source: "survival_spawn_creature",
+          pos: {
+            x: round4(safeReadF32(args[0])),
+            y: round4(safeReadF32(args[0].add(4))),
+          },
+          creature_count_before: readDataI32("creature_active_count"),
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+        };
+      },
+      onLeave() {
+        const ctx = this._spawnCtx;
+        this._spawnCtx = null;
+        if (!ctx) return;
+        const creatureCountAfter = readDataI32("creature_active_count");
+        const payload = {
+          source: ctx.source,
+          pos: ctx.pos,
+          creature_count_before: ctx.creature_count_before,
+          creature_count_after: creatureCountAfter,
+          creature_count_delta:
+            ctx.creature_count_before != null && creatureCountAfter != null
+              ? creatureCountAfter - ctx.creature_count_before
+              : null,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+        };
+        const tick = outState.currentTick;
+        if (tick) {
+          if (payload.caller_static) {
+            bumpCounterMap(tick.spawn_callers_low, payload.caller_static);
+          }
+          bumpCounterMap(tick.spawn_sources_low, payload.source);
+        }
+        addTickEvent("creature_spawn_low", payload, "csl:ssc");
+        emitRawEvent(Object.assign({ event: "survival_spawn_creature" }, payload));
+      },
+    });
+
+    attachHook("creature_spawn_tinted", fnPtrs.creature_spawn_tinted, {
+      onEnter(args) {
+        const posPtr = args[0];
+        const rgbaPtr = args[1];
+        const callerStatic = runtimeToStatic(this.returnAddress);
+        this._spawnCtx = {
+          source: "creature_spawn_tinted",
+          type_id: args[2].toInt32(),
+          pos: {
+            x: round4(safeReadF32(posPtr)),
+            y: round4(safeReadF32(posPtr.add(4))),
+          },
+          tint: {
+            r: round4(safeReadF32(rgbaPtr)),
+            g: round4(safeReadF32(rgbaPtr.add(4))),
+            b: round4(safeReadF32(rgbaPtr.add(8))),
+            a: round4(safeReadF32(rgbaPtr.add(12))),
+          },
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+        };
+      },
+      onLeave(retval) {
+        const ctx = this._spawnCtx;
+        this._spawnCtx = null;
+        if (!ctx) return;
+        const idx = retval.toInt32();
+        const spawned = readCreatureEntry(idx);
+        const payload = {
+          source: ctx.source,
+          index: idx,
+          type_id: ctx.type_id,
+          pos: ctx.pos,
+          tint: ctx.tint,
+          spawned: spawned,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+        };
+        const tick = outState.currentTick;
+        if (tick) {
+          if (payload.caller_static) {
+            bumpCounterMap(tick.spawn_callers_low, payload.caller_static);
+          }
+          bumpCounterMap(tick.spawn_sources_low, payload.source);
+        }
+        addTickEvent(
+          "creature_spawn_low",
+          payload,
+          "csl:cst:" + (payload.type_id == null ? -1 : payload.type_id)
+        );
+        emitRawEvent(Object.assign({ event: "creature_spawn_tinted" }, payload));
+      },
+    });
+
     if (CONFIG.enableCreatureSpawnHook) {
       attachHook("creature_spawn", fnPtrs.creature_spawn, {
         onEnter(args) {
@@ -1910,6 +2011,7 @@ function installHooks() {
           const rgbaPtr = args[1];
           const callerStatic = runtimeToStatic(this.returnAddress);
           this._spawnCtx = {
+            source: "creature_spawn",
             type_id: args[2].toInt32(),
             pos: {
               x: round4(safeReadF32(posPtr)),
@@ -1932,6 +2034,7 @@ function installHooks() {
           const idx = retval.toInt32();
           const spawned = readCreatureEntry(idx);
           const payload = {
+            source: ctx.source,
             index: idx,
             type_id: ctx.type_id,
             pos: ctx.pos,
@@ -1941,8 +2044,11 @@ function installHooks() {
             caller_static: ctx.caller_static,
           };
           const tick = outState.currentTick;
-          if (tick && payload.caller_static) {
-            bumpCounterMap(tick.spawn_callers_low, payload.caller_static);
+          if (tick) {
+            if (payload.caller_static) {
+              bumpCounterMap(tick.spawn_callers_low, payload.caller_static);
+            }
+            bumpCounterMap(tick.spawn_sources_low, payload.source);
           }
           addTickEvent(
             "creature_spawn_low",

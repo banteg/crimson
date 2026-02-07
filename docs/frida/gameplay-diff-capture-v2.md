@@ -34,11 +34,13 @@ just frida-gameplay-diff-capture-v2
 - Captures per-tick command/event summary (`projectile_spawn`, SFX, bonus apply,
   weapon assign, damage, creature spawns, state transitions).
 - Captures both template-level and low-level creature spawn paths
-  (`creature_spawn_template`, `creature_spawn`) with caller buckets.
+  (`creature_spawn_template`, `creature_spawn`, `survival_spawn_creature`,
+  `creature_spawn_tinted`) with caller buckets.
 - Captures input-query telemetry (`input_primary_*`, `input_any_key_pressed`) and
   RNG usage (`crt_rand`) per tick, including hashes/callers.
 - Emits per-tick diagnostics for timing/sampling analysis:
   `diagnostics.timing`, `diagnostics.spawn`, plus `checkpoint.debug`.
+  Spawn diagnostics include low-level source buckets (`top_low_level_sources`).
 - Emits session fingerprint metadata (`session_id`, module hash, pointer hash) for
   run-to-run provenance.
 - Emits compact `before`/`after` snapshots (including input + bindings) and
