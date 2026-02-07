@@ -6,6 +6,7 @@ import json
 
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import PlayerInput, perks_rebuild_available, weapon_refresh_available
+from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, apply_world_presentation_step
 from .world_state import WorldEvents, WorldState
 
@@ -76,8 +77,7 @@ def run_deterministic_step(
             return
         rng_marks_out[str(name)] = int(state.rng.state)
 
-    if inputs is None:
-        inputs = [PlayerInput() for _ in world.players]
+    inputs = normalize_input_frame(inputs, player_count=len(world.players)).as_list()
 
     _mark("gw_begin")
     state.game_mode = int(game_mode)
