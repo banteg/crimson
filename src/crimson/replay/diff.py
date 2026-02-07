@@ -117,10 +117,11 @@ def _path_join(path: str, suffix: str) -> str:
 
 
 def _values_equal(expected: object, actual: object, *, float_abs_tol: float) -> bool:
+    abs_tol = max(0.0, float(float_abs_tol)) + 1e-12
     if isinstance(expected, float) and isinstance(actual, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=float_abs_tol)
+        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
     if isinstance(actual, float) and isinstance(expected, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=float_abs_tol)
+        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
     return expected == actual
 
 

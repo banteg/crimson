@@ -1211,6 +1211,7 @@ def convert_original_capture_to_replay(
         [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(player_count)] for _ in range(total_ticks)
     ]
     previous_fire_down: list[bool] = [False for _ in range(player_count)]
+    previous_reload_active: list[bool] = [False for _ in range(player_count)]
 
     for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
         tick_index = int(tick.tick_index)
@@ -1233,7 +1234,15 @@ def convert_original_capture_to_replay(
                     move_x = max(-1.0, min(1.0, float(sample.move_dx)))
                     move_y = max(-1.0, min(1.0, float(sample.move_dy)))
 
-                if sample.aim_heading is not None:
+                aim_x_raw = float(sample.aim_x)
+                aim_y_raw = float(sample.aim_y)
+                has_aim_xy = math.isfinite(aim_x_raw) and math.isfinite(aim_y_raw)
+                use_heading_fallback = (
+                    (not has_aim_xy or (aim_x_raw == 0.0 and aim_y_raw == 0.0))
+                    and sample.aim_heading is not None
+                )
+
+                if use_heading_fallback:
                     if player_index < len(tick.players):
                         player_pos = tick.players[player_index].pos
                     else:
@@ -1249,6 +1258,7 @@ def convert_original_capture_to_replay(
                 fire_pressed = bool(sample.fire_pressed) if sample.fire_pressed is not None else bool(
                     int(sample.fired_events) > 0
                 )
+                reload_active = bool(sample.reload_active)
             else:
                 move_x = 0.0
                 move_y = 0.0
@@ -1261,6 +1271,7 @@ def convert_original_capture_to_replay(
                     aim_y = 0.0
                 fire_pressed = False
                 fire_down = False
+                reload_active = False
 
             if player_index == 0:
                 fire_down = bool(
@@ -1271,12 +1282,16 @@ def convert_original_capture_to_replay(
             if not fire_pressed:
                 fire_pressed = bool(fire_down and not previous_fire_down[player_index])
 
+            reload_pressed = bool(
+                int(tick_index) > 0 and bool(reload_active) and not bool(previous_reload_active[player_index])
+            )
             previous_fire_down[player_index] = bool(fire_down)
+            previous_reload_active[player_index] = bool(reload_active)
 
             flags = pack_input_flags(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
-                reload_pressed=False,
+                reload_pressed=bool(reload_pressed),
             )
             inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
 

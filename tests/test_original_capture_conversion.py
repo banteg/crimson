@@ -657,6 +657,124 @@ def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_headin
     assert fire_pressed1 is False
 
 
+def test_convert_original_capture_to_replay_v2_prefers_aim_xy_over_heading(tmp_path: Path) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_aim.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 700.0,
+                    "aim_y": 200.0,
+                    "aim_heading": -0.5,
+                    "fired_events": 0,
+                    "reload_active": False,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    tick0 = replay.inputs[0][0]
+    assert tick0[2] == [700.0, 200.0]
+
+
+def test_convert_original_capture_to_replay_v2_emits_reload_edge(tmp_path: Path) -> None:
+    path = tmp_path / "gameplay_diff_capture_v2_reload.jsonl"
+    rows = [
+        {"event": "start"},
+        {
+            "event": "tick",
+            "tick_index": 0,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": False,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 0,
+                "state_hash": "h0",
+                "command_hash": "c0",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+        {
+            "event": "tick",
+            "tick_index": 1,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": True,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 1,
+                "state_hash": "h1",
+                "command_hash": "c1",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+        {
+            "event": "tick",
+            "tick_index": 2,
+            "input_approx": [
+                {
+                    "player_index": 0,
+                    "move_dx": 0.0,
+                    "move_dy": 0.0,
+                    "aim_x": 512.0,
+                    "aim_y": 512.0,
+                    "fired_events": 0,
+                    "reload_active": True,
+                }
+            ],
+            "checkpoint": {
+                "tick_index": 2,
+                "state_hash": "h2",
+                "command_hash": "c2",
+                "players": [{"pos": {"x": 512.0, "y": 512.0}, "health": 100.0, "weapon_id": 5, "ammo": 17.0}],
+            },
+        },
+    ]
+    path.write_text("\n".join(json.dumps(row, separators=(",", ":"), sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    capture = load_original_capture_sidecar(path)
+    replay = convert_original_capture_to_replay(capture)
+
+    _fd0, _fp0, reload0 = unpack_input_flags(int(replay.inputs[0][0][3]))
+    _fd1, _fp1, reload1 = unpack_input_flags(int(replay.inputs[1][0][3]))
+    _fd2, _fp2, reload2 = unpack_input_flags(int(replay.inputs[2][0][3]))
+
+    assert reload0 is False
+    assert reload1 is True
+    assert reload2 is False
+
+
 def test_convert_original_capture_to_replay_infers_seed_from_rng_head(tmp_path: Path) -> None:
     source_seed = 0xF386B3D2
     rows = _rng_head_v2_rows(source_seed)
