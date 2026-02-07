@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from grim.geom import Vec2
-from grim.rand import Crand
 
 from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
@@ -86,7 +85,6 @@ def run_rush_replay(
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
     world.state.rng.srand(int(replay.header.seed))
-    presentation_rng = Crand(int(replay.header.seed) ^ 0xA5A5A5A5)
     game_tune_started = False
 
     _enforce_rush_loadout(world)
@@ -139,7 +137,6 @@ def run_rush_replay(
             game_mode=int(GameMode.RUSH),
             demo_mode_active=False,
             perk_progression_enabled=False,
-            presentation_rand=presentation_rng.rand,
             game_tune_started=bool(game_tune_started),
             rng_marks_out=world_step_marks,
             trace_presentation_rng=bool(trace_rng),

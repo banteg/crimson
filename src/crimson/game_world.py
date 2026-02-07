@@ -12,7 +12,6 @@ import pyray as rl
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
-from grim.rand import Crand
 from grim.terrain_render import GroundRenderer
 
 from .creatures.anim import creature_corpse_frame_for_type
@@ -79,7 +78,6 @@ class GameWorld:
     clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
     muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
     wicons_texture: rl.Texture | None = field(init=False, default=None)
-    presentation_rng: Crand = field(init=False)
     _elapsed_ms: float = field(init=False, default=0.0)
     _bonus_anim_phase: float = field(init=False, default=0.0)
     _game_tune_started: bool = field(init=False, default=False)
@@ -111,7 +109,6 @@ class GameWorld:
             audio_rng=self.audio_rng,
             demo_mode_active=self.demo_mode_active,
         )
-        self.presentation_rng = Crand(0xBEEF)
         self.renderer = WorldRenderer(self)
         self._damage_scale_by_type = {}
         # Native `projectile_spawn` indexes the weapon table by `type_id`, so
@@ -147,7 +144,6 @@ class GameWorld:
         self.players = self.world_state.players
         self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
-        self.presentation_rng.srand(int(seed) ^ 0xA5A5A5A5)
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
@@ -441,7 +437,6 @@ class GameWorld:
             game_mode=int(game_mode),
             demo_mode_active=bool(self.demo_mode_active),
             perk_progression_enabled=bool(perk_progression_enabled),
-            presentation_rand=self.presentation_rng.rand,
             game_tune_started=bool(self._game_tune_started),
             rng_marks_out=rng_marks_out,
         )
@@ -474,7 +469,7 @@ class GameWorld:
             players=self.players,
             fx_queue=self.fx_queue,
             hits=hits,
-            rand=self.presentation_rng.rand,
+            rand=self.state.rng.rand,
             detail_preset=detail_preset,
             fx_toggle=fx_toggle,
         )
