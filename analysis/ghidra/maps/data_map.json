@@ -9150,6 +9150,19 @@
       "type": "HMODULE"
     },
     {
+      "address": "0x10059788",
+      "comment": "Scratch D3D adapter identifier populated by GetAdapterIdentifier in the config dialog.",
+      "name": "grim_adapter_identifier",
+      "program": "grim.dll",
+      "type": "D3DADAPTER_IDENTIFIER8"
+    },
+    {
+      "address": "0x10059988",
+      "comment": "Adapter description text field inside grim_adapter_identifier (used for combo labels).",
+      "name": "grim_adapter_description",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x10059bb8",
       "comment": "Dynamic index buffer (IDirect3DIndexBuffer8) bound for quad batching.",
       "name": "grim_index_buffer",
@@ -9168,6 +9181,27 @@
       "comment": "Backbuffer/viewport height.",
       "name": "grim_backbuffer_height",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x10059dc8",
+      "comment": "WNDCLASSEXA instance used for RegisterClassExA/UnregisterClassA.",
+      "name": "grim_window_class",
+      "program": "grim.dll",
+      "type": "WNDCLASSEXA"
+    },
+    {
+      "address": "0x10059ddc",
+      "comment": "hInstance field in grim_window_class (mirrors grim_process_hinstance).",
+      "name": "grim_window_class_hinstance",
+      "program": "grim.dll",
+      "type": "HINSTANCE"
+    },
+    {
+      "address": "0x10059df0",
+      "comment": "Window class name pointer used by CreateWindowExA and UnregisterClassA.",
+      "name": "grim_window_class_name",
+      "program": "grim.dll",
+      "type": "LPCSTR"
     },
     {
       "address": "0x10059df8",
@@ -9309,6 +9343,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005a498",
+      "comment": "D3D capability block populated by GetDeviceCaps in config probe and device init paths.",
+      "name": "grim_device_caps",
+      "program": "grim.dll",
+      "type": "D3DCAPS8"
+    },
+    {
       "address": "0x1005a56c",
       "comment": "Preferred texture format if supported.",
       "name": "grim_preferred_texture_format",
@@ -9427,6 +9468,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005bac8",
+      "comment": "Heap-allocated window title string (default \"Grim - No Title\"; updated via config var id 7).",
+      "name": "grim_window_title",
+      "program": "grim.dll",
+      "type": "char *"
+    },
+    {
       "address": "0x1005bacc",
       "comment": "Grim2D module handle (HINSTANCE).",
       "name": "grim_module_handle",
@@ -9481,6 +9529,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005befc",
+      "comment": "Config-dialog flag set once any adapter passes the required CheckDeviceType checks.",
+      "name": "grim_config_dialog_has_supported_adapter",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005bf00",
       "comment": "Grim2D scratch int slot table.",
       "name": "grim_slot_ints",
@@ -9497,6 +9552,13 @@
       "comment": "Backbuffer/viewport width.",
       "name": "grim_backbuffer_width",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005c408",
+      "comment": "SYSTEMTIME scratch written by GetLocalTime during config-dialog initialization.",
+      "name": "grim_config_dialog_system_time",
+      "program": "grim.dll",
+      "type": "SYSTEMTIME"
     },
     {
       "address": "0x1005c418",
@@ -9604,6 +9666,27 @@
       "comment": "Font texture bound flag (nonzero skips SetTexture in draw_text).",
       "name": "grim_font_texture_bound",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005ce18",
+      "comment": "Display-mode width staging value used to preselect and apply config-dialog mode choices.",
+      "name": "grim_config_mode_width",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005ce28",
+      "comment": "Display-mode height staging value used to preselect and apply config-dialog mode choices.",
+      "name": "grim_config_mode_height",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005ce38",
+      "comment": "Display-mode color depth staging value (bits per pixel: 16 or 32).",
+      "name": "grim_config_mode_bpp",
+      "program": "grim.dll",
+      "type": "int"
     },
     {
       "address": "0x1005ceb8",
