@@ -18,6 +18,7 @@ We need an architecture that supports:
 - deterministic headless verification
 - eventual differential testing against captures from the original game
 - future multiplayer (LAN first, then networked lockstep improvements)
+- highly studyable code that reads like an executable reference spec
 
 ## Problem Statement
 
@@ -35,6 +36,7 @@ Current deterministic infrastructure is strong but still has split-brain risk:
 4. Verify deterministic parity via replay + sidecar checkpoints and command hashes.
 5. Enable differential testing against original memory-hook captures and first-divergence investigation.
 6. Keep architecture compatible with future multiplayer lockstep.
+7. Organize gameplay features into small intent-focused modules (for example `crimson/bonuses/fire_bullets.py`) with explicit hook entrypoints.
 
 ## Non-Goals (for this PRD scope)
 
@@ -49,6 +51,7 @@ Current deterministic infrastructure is strong but still has split-brain risk:
 3. Presentation commands are deterministic outputs of simulation tick processing.
 4. Rendering/audio are side-effect consumers, not simulation participants.
 5. Determinism diagnostics must identify first divergence quickly.
+6. Code should prioritize readability and traceability over clever abstraction.
 
 ## Target Architecture
 
@@ -84,6 +87,26 @@ Where:
 Simulation emits data commands (no texture handles, no raylib objects).
 Renderer/audio layer maps commands to concrete assets/effects.
 
+## Feature Module Topology and Hooks
+
+Simulation behavior should be split into small feature modules with clear ownership.
+
+Examples:
+
+- `crimson/bonuses/fire_bullets.py`
+- `crimson/bonuses/freeze.py`
+- `crimson/perks/hot_tempered.py`
+- `crimson/weapons/rocket_launcher.py`
+
+Each feature module should contain:
+
+- behavior: deterministic update/apply logic
+- intent/spec notes: short docstring/comments describing original intent/parity caveats
+- config/constants: local constants close to logic
+- hook functions: explicit entrypoints used by the main tick pipeline
+
+The tick pipeline should dispatch through registries or ordered hook lists rather than large mode-specific god functions.
+
 ## Functional Requirements
 
 1. Single RNG stream is used for both gameplay and presentation command planning.
@@ -99,6 +122,8 @@ Renderer/audio layer maps commands to concrete assets/effects.
    - detailed field diffs
 5. Differential runner can compare rewrite outputs against original-capture sidecars and report first mismatch tick.
 6. Input contract supports N players with deterministic ordering by player index.
+7. Feature hooks are deterministic and side-effect-bounded (no hidden renderer/audio coupling).
+8. Core tick orchestration module remains small and delegates feature logic to dedicated modules.
 
 ## Data Contracts
 
@@ -149,6 +174,13 @@ Per sampled tick (minimum viable set):
 - [ ] Ensure render/audio layers consume commands only.
 - [ ] Add smoke tests for all three runtime modes calling the same tick API.
 
+## Phase 2.5: Studyability-First Module Refactor
+
+- [ ] Define module conventions for feature files (`behavior`, `intent/spec`, `config/constants`, `hooks`).
+- [ ] Introduce hook registries per subsystem (bonuses/perks/weapons/effects presentation hooks).
+- [ ] Migrate high-churn features first (for example Fire Bullets, Freeze, key perk bursts) into dedicated modules.
+- [ ] Add lightweight architecture tests/checks that prevent growth of monolithic tick functions.
+
 ## Phase 3: Differential Testing with Original Captures
 
 - [ ] Define original capture schema and conversion pipeline.
@@ -168,6 +200,7 @@ Per sampled tick (minimum viable set):
 2. Only one RNG state exists for simulation tick processing and presentation planning.
 3. Diff tool reports first divergence tick and includes enough context to debug without manual binary tracing.
 4. Multiplayer input schema is deterministic and replay-compatible.
+5. Feature behavior is discoverable by file path and hook name (engineers can locate behavior quickly without tracing giant modules).
 
 ## Risks and Mitigations
 
