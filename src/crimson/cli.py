@@ -271,12 +271,12 @@ def cmd_replay_verify(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    from dataclasses import asdict
     import hashlib
 
     from .game_modes import GameMode
     from .replay import load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
+    from .replay.diff import compare_checkpoints
     from .sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
     replay_bytes = Path(replay_file).read_bytes()
@@ -326,42 +326,20 @@ def cmd_replay_verify(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
-    first_rng_only_tick: int | None = None
-    rng_mark_order = (
-        "before_world_step",
-        "gw_begin",
-        "gw_after_weapon_refresh",
-        "gw_after_perks_rebuild",
-        "gw_after_time_scale",
-        "ws_begin",
-        "ws_after_perk_effects",
-        "ws_after_effects_update",
-        "ws_after_creatures",
-        "ws_after_projectiles",
-        "ws_after_secondary_projectiles",
-        "ws_after_particles_update",
-        "ws_after_sprite_effects",
-        "ws_after_particles",
-        "ws_after_player_update_p0",
-        "ws_after_player_update",
-        "ws_after_bonus_update",
-        "ws_after_progression",
-        "ws_after_sfx_queue_merge",
-        "ws_after_player_damage_sfx",
-        "ws_after_sfx",
-        "after_world_step",
-        "after_stage_spawns",
-        "after_wave_spawns",
-        "after_rush_spawns",
-    )
-    for exp in expected.checkpoints:
-        act = actual_by_tick.get(int(exp.tick_index))
-        if act is None:
-            typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
+    diff = compare_checkpoints(expected.checkpoints, actual)
+    if not diff.ok:
+        failure = diff.failure
+        assert failure is not None
+        exp = failure.expected
+        act = failure.actual
+
+        if failure.kind == "missing_checkpoint":
+            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
             raise typer.Exit(code=1)
-        if str(exp.command_hash) and str(exp.command_hash) != str(act.command_hash):
-            typer.echo(f"checkpoint command mismatch at tick={int(exp.tick_index)}", err=True)
+
+        if failure.kind == "command_mismatch":
+            assert act is not None
+            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
             typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
             if int(exp.events.hit_count) >= 0:
                 typer.echo(
@@ -371,38 +349,75 @@ def cmd_replay_verify(
                     err=True,
                 )
             raise typer.Exit(code=1)
-        if str(exp.state_hash) != str(act.state_hash):
-            exp_no_rng = asdict(exp)
-            act_no_rng = asdict(act)
-            for key in ("state_hash", "rng_state", "rng_marks", "command_hash"):
-                exp_no_rng.pop(key, None)
-                act_no_rng.pop(key, None)
-            # Legacy sidecars (without `events`) store unknown sentinel values.
-            if int(exp.events.hit_count) < 0:
-                exp_no_rng["events"] = act_no_rng.get("events")
-            if exp_no_rng == act_no_rng:
-                if first_rng_only_tick is None:
-                    first_rng_only_tick = int(exp.tick_index)
-                continue
 
-            typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
-            typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
-            typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
-            typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
-            typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
-            typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
-            typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-            mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
-            mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
-            if mark_mismatch:
-                first = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0])
-                typer.echo(
-                    f"  rng_mark[{first}] expected={exp.rng_marks.get(first)} actual={act.rng_marks.get(first)}",
-                    err=True,
-                )
-            typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
-            if exp.deaths or act.deaths:
-                typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        assert act is not None
+        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+        if failure.first_rng_mark is not None:
+            key = str(failure.first_rng_mark)
+            typer.echo(
+                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
+                err=True,
+            )
+        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+        if exp.deaths or act.deaths:
+            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        if int(exp.events.hit_count) >= 0:
+            typer.echo(
+                "  events "
+                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                err=True,
+            )
+        if exp.perk != act.perk:
+            typer.echo(
+                "  perk snapshot differs "
+                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                err=True,
+            )
+        raise typer.Exit(code=1)
+
+    message = (
+        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
+        f"score_xp={result.score_xp} kills={result.creature_kill_count}"
+    )
+    if diff.first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
+    typer.echo(message)
+
+
+@replay_app.command("diff-checkpoints")
+def cmd_replay_diff_checkpoints(
+    expected_file: Path = typer.Argument(..., help="expected checkpoints sidecar (.json.gz)"),
+    actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.json.gz)"),
+) -> None:
+    """Compare two checkpoint sidecars and report the first divergence."""
+    from .replay.checkpoints import load_checkpoints_file
+    from .replay.diff import compare_checkpoints
+
+    expected = load_checkpoints_file(Path(expected_file))
+    actual = load_checkpoints_file(Path(actual_file))
+    diff = compare_checkpoints(expected.checkpoints, actual.checkpoints)
+    if not diff.ok:
+        failure = diff.failure
+        assert failure is not None
+        exp = failure.expected
+        act = failure.actual
+
+        if failure.kind == "missing_checkpoint":
+            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
+            raise typer.Exit(code=1)
+
+        if failure.kind == "command_mismatch":
+            assert act is not None
+            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
+            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
             if int(exp.events.hit_count) >= 0:
                 typer.echo(
                     "  events "
@@ -410,21 +425,44 @@ def cmd_replay_verify(
                     f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
                     err=True,
                 )
-            if exp.perk != act.perk:
-                typer.echo(
-                    "  perk snapshot differs "
-                    f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
-                    f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
-                    err=True,
-                )
             raise typer.Exit(code=1)
 
-    message = (
-        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
-        f"score_xp={result.score_xp} kills={result.creature_kill_count}"
-    )
-    if first_rng_only_tick is not None:
-        message += f"; rng-only drift starts at tick={first_rng_only_tick}"
+        assert act is not None
+        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+        if failure.first_rng_mark is not None:
+            key = str(failure.first_rng_mark)
+            typer.echo(
+                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
+                err=True,
+            )
+        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+        if exp.deaths or act.deaths:
+            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        if int(exp.events.hit_count) >= 0:
+            typer.echo(
+                "  events "
+                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                err=True,
+            )
+        if exp.perk != act.perk:
+            typer.echo(
+                "  perk snapshot differs "
+                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                err=True,
+            )
+        raise typer.Exit(code=1)
+
+    message = f"ok: {len(expected.checkpoints)} checkpoints match"
+    if diff.first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
     typer.echo(message)
 
 
