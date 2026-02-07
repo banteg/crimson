@@ -17,19 +17,39 @@ except Exception:  # pragma: no cover - handled at runtime in IDA
 
 _FAILED_SIGNATURES = set()
 
-_SHARED_HEADER_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h")
+_HEADER_PATHS = (
+    os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h")
+    ),
+    os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_types.h")
+    ),
 )
+
+_HEADER_PRELUDE = """
+typedef void *LPDIRECTSOUNDBUFFER;
+typedef void *LPDIRECT3D8;
+typedef void *LPDIRECT3DDEVICE8;
+typedef void *LPDIRECT3DSURFACE8;
+""".strip()
 
 _TYPE_REPLACEMENTS = {
     "IGrim2D": "void",
+    "LPDIRECTSOUNDBUFFER": "void *",
+    "LPDIRECT3D8": "void *",
+    "LPDIRECT3DDEVICE8": "void *",
+    "LPDIRECT3DSURFACE8": "void *",
+    "OggVorbis_File": "void",
     "Byte": "unsigned char",
     "Bytef": "unsigned char *",
     "byte": "unsigned char",
+    "ogg_int64_t": "long long",
+    "ov_callbacks": "void *",
     "png_bytep": "unsigned char *",
     "png_structp": "void *",
     "png_uint_32": "unsigned int",
     "png_voidp": "void *",
+    "ulonglong": "unsigned long long",
     "uInt": "unsigned int",
     "uLong": "unsigned long",
     "uLongf": "unsigned long",
@@ -38,7 +58,28 @@ _TYPE_REPLACEMENTS = {
     "undefined4": "unsigned int",
     "voidp": "void *",
     "voidpf": "void *",
+    "vorbis_info": "void",
     "z_streamp": "void *",
+}
+
+_C_TOKENS = {
+    "char",
+    "const",
+    "double",
+    "enum",
+    "extern",
+    "float",
+    "int",
+    "long",
+    "short",
+    "signed",
+    "static",
+    "struct",
+    "typedef",
+    "union",
+    "unsigned",
+    "void",
+    "volatile",
 }
 
 
@@ -88,13 +129,66 @@ def _rewrite_signature(signature):
     return "".join(parts)
 
 
+def _rewrite_unknown_types(signature):
+    parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", signature)
+    for i in range(1, len(parts), 2):
+        token = parts[i]
+        if token in _C_TOKENS:
+            continue
+        if token.startswith("_func_"):
+            parts[i] = "void"
+            continue
+        if token.endswith("_vtbl"):
+            parts[i] = "void *"
+            continue
+        if token.endswith("_t"):
+            parts[i] = "int"
+    return "".join(parts)
+
+
 def _load_shared_header():
-    try:
-        with open(_SHARED_HEADER_PATH, "r", encoding="utf-8") as f:
-            lines = [line for line in f if not line.lstrip().startswith("#")]
-        return "".join(lines).strip()
-    except Exception:
-        return ""
+    chunks = [_HEADER_PRELUDE]
+    for path in _HEADER_PATHS:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                lines = [line for line in f if not line.lstrip().startswith("#")]
+            text = "".join(lines).strip()
+            if text:
+                chunks.append(text)
+        except Exception:
+            continue
+    return "\n\n".join(chunks).strip()
+
+
+def _split_declarations(type_text):
+    # Fallback parser: split top-level C declarations while preserving struct/enum bodies.
+    text = re.sub(r"/\*.*?\*/", "", type_text, flags=re.DOTALL)
+    text = re.sub(r"//.*", "", text)
+    declarations = []
+    chunk = []
+    depth = 0
+    for ch in text:
+        chunk.append(ch)
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth = max(0, depth - 1)
+        elif ch == ";" and depth == 0:
+            decl = "".join(chunk).strip()
+            if decl:
+                declarations.append(decl)
+            chunk = []
+    tail = "".join(chunk).strip()
+    if tail:
+        declarations.append(tail if tail.endswith(";") else tail + ";")
+    return declarations
+
+
+def _apply_data_type(ea, type_name):
+    name = (type_name or "").strip()
+    if not name:
+        return False
+    return _apply_type_signature(ea, "%s __ida_data;" % name)
 
 
 def _install_typedefs():
@@ -119,12 +213,14 @@ def _install_typedefs():
         except Exception:
             parsed = False
     if not parsed:
-        for line in type_text.splitlines():
-            decl = line.strip()
+        for decl in _split_declarations(type_text):
             if not decl:
                 continue
             tinfo = ida_typeinf.tinfo_t()
-            ida_typeinf.parse_decl(tinfo, None, decl, flags)
+            try:
+                ida_typeinf.parse_decl(tinfo, None, decl, flags)
+            except Exception:
+                continue
 
 
 def _log_parse_failure(ea, sig, reason, rewritten=None):
@@ -145,6 +241,7 @@ def _apply_type_signature(ea, signature):
     flags = _ida_parse_decl_flags()
     tinfo = ida_typeinf.tinfo_t()
     ok = ida_typeinf.parse_decl(tinfo, None, sig, flags)
+    rewritten = None
     if not ok:
         rewritten = _rewrite_signature(sig)
         if rewritten != sig:
@@ -152,6 +249,14 @@ def _apply_type_signature(ea, signature):
             ok = ida_typeinf.parse_decl(tinfo, None, rewritten, flags)
             if ok:
                 sig = rewritten
+    if not ok:
+        fallback = _rewrite_unknown_types(rewritten or sig)
+        if fallback != (rewritten or sig):
+            tinfo = ida_typeinf.tinfo_t()
+            ok = ida_typeinf.parse_decl(tinfo, None, fallback, flags)
+            if ok:
+                sig = fallback
+                rewritten = fallback
         if not ok:
             _log_parse_failure(ea, sig, "parse_decl", rewritten)
             return False
@@ -213,6 +318,7 @@ def _apply_data_map(path, program_name):
         comment = entry.get("comment") or ""
         if comment:
             idc.set_cmt(ea, comment, 0)
+        _apply_data_type(ea, entry.get("type", ""))
 
 
 def main():
