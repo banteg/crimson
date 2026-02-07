@@ -8,6 +8,7 @@ from .checkpoints import ReplayCheckpoint
 from .diff import ReplayFieldDiff, checkpoint_field_diffs
 from .original_capture import (
     OriginalCaptureSidecar,
+    build_original_capture_dt_frame_overrides,
     convert_original_capture_to_checkpoints,
     convert_original_capture_to_replay,
 )
@@ -52,6 +53,10 @@ def verify_original_capture(
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
     replay = convert_original_capture_to_replay(capture, seed=int(seed))
+    dt_frame_overrides = build_original_capture_dt_frame_overrides(
+        capture,
+        tick_rate=int(replay.header.tick_rate),
+    )
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected}
     actual: list[ReplayCheckpoint] = []
 
@@ -65,6 +70,7 @@ def verify_original_capture(
             checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
+            dt_frame_overrides=dt_frame_overrides,
         )
     elif mode == int(GameMode.RUSH):
         run_result = run_rush_replay(
@@ -74,6 +80,7 @@ def verify_original_capture(
             checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
+            dt_frame_overrides=dt_frame_overrides,
         )
     else:
         raise OriginalCaptureVerifyError(f"unsupported game mode for original capture verification: {mode}")

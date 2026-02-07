@@ -58,6 +58,19 @@ def test_survival_runner_is_deterministic() -> None:
     assert result0.shots_hit == 0
 
 
+def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_survival_replay(
+            replay,
+            dt_frame_overrides={0: 0.5},
+        )
+
+    assert result.elapsed_ms == 500
+
+
 def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234, game_version="0.0.0")
     rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
@@ -225,6 +238,19 @@ def test_rush_runner_is_deterministic() -> None:
     assert result0.most_used_weapon_id == 2
     assert result0.shots_fired == 0
     assert result0.shots_hit == 0
+
+
+def test_rush_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
+    _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning):
+        result = run_rush_replay(
+            replay,
+            dt_frame_overrides={0: 0.5},
+        )
+
+    assert result.elapsed_ms == 500
 
 
 def test_rush_runner_rejects_events() -> None:
