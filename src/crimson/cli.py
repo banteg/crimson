@@ -466,6 +466,28 @@ def cmd_replay_diff_checkpoints(
     typer.echo(message)
 
 
+@replay_app.command("convert-original-capture")
+def cmd_replay_convert_original_capture(
+    capture_file: Path = typer.Argument(..., help="original capture sidecar (.json or .json.gz)"),
+    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
+    replay_sha256: str = typer.Option(
+        "",
+        help="optional replay sha256 to store in the converted sidecar",
+    ),
+) -> None:
+    """Convert an original-capture sidecar into replay-checkpoint format."""
+    from .replay.checkpoints import dump_checkpoints_file
+    from .replay.original_capture import convert_original_capture_to_checkpoints, load_original_capture_sidecar
+
+    capture = load_original_capture_sidecar(Path(capture_file))
+    checkpoints = convert_original_capture_to_checkpoints(
+        capture,
+        replay_sha256=str(replay_sha256),
+    )
+    dump_checkpoints_file(Path(output_file), checkpoints)
+    typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
+
+
 @app.callback(invoke_without_command=True)
 def cmd_game(
     ctx: typer.Context,

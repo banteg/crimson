@@ -24,6 +24,7 @@ from ..gameplay import (
 )
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
+from .input_frame import normalize_input_frame
 from .world_defs import CREATURE_ANIM
 
 
@@ -101,8 +102,7 @@ class WorldState:
             dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
 
-        if inputs is None:
-            inputs = [PlayerInput() for _ in self.players]
+        inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
 
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
