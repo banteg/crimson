@@ -319,6 +319,8 @@ def apply_world_presentation_step(
     detail_preset: int,
     fx_toggle: int,
     game_tune_started: bool,
+    trigger_game_tune: bool | None = None,
+    hit_sfx: Sequence[str] | None = None,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
     if rand_for is None:
@@ -328,24 +330,30 @@ def apply_world_presentation_step(
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")
 
-    if hits:
-        queue_projectile_decals(
-            state=state,
-            players=players,
-            fx_queue=fx_queue,
-            hits=hits,
-            rand=rand_for("projectile_decals"),
-            detail_preset=int(detail_preset),
-            fx_toggle=int(fx_toggle),
-        )
-        commands.trigger_game_tune, hit_sfx = plan_hit_sfx_keys(
-            hits,
-            game_mode=int(game_mode),
-            demo_mode_active=bool(demo_mode_active),
-            game_tune_started=bool(game_tune_started),
-            rand=rand_for("hit_sfx"),
-        )
-        commands.sfx_keys.extend(hit_sfx)
+    if trigger_game_tune is None and hit_sfx is None:
+        if hits:
+            queue_projectile_decals(
+                state=state,
+                players=players,
+                fx_queue=fx_queue,
+                hits=hits,
+                rand=rand_for("projectile_decals"),
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+            )
+            commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx_keys(
+                hits,
+                game_mode=int(game_mode),
+                demo_mode_active=bool(demo_mode_active),
+                game_tune_started=bool(game_tune_started),
+                rand=rand_for("hit_sfx"),
+            )
+            commands.sfx_keys.extend(planned_hit_sfx)
+    else:
+        if trigger_game_tune is not None:
+            commands.trigger_game_tune = bool(trigger_game_tune)
+        if hit_sfx is not None:
+            commands.sfx_keys.extend(str(key) for key in hit_sfx)
 
     for idx, player in enumerate(players):
         if idx >= len(prev_audio):

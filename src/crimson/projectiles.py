@@ -872,6 +872,7 @@ class ProjectilePool:
         players: Sequence[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
+        on_hit: Callable[[ProjectileHit], None] | None = None,
     ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
@@ -1056,14 +1057,15 @@ class ProjectilePool:
                             type_id = proj.type_id
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            hits.append(
-                                ProjectileHit(
-                                    type_id=int(type_id),
-                                    origin=proj.origin,
-                                    hit=proj.pos,
-                                    target=player.pos,
-                                )
+                            hit = ProjectileHit(
+                                type_id=int(type_id),
+                                origin=proj.origin,
+                                hit=proj.pos,
+                                target=player.pos,
                             )
+                            hits.append(hit)
+                            if on_hit is not None:
+                                on_hit(hit)
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
@@ -1102,14 +1104,15 @@ class ProjectilePool:
                                 shots_hit[player_index] += 1
 
                     target = creature.pos
-                    hits.append(
-                        ProjectileHit(
-                            type_id=int(type_id),
-                            origin=proj.origin,
-                            hit=proj.pos,
-                            target=target,
-                        )
+                    hit = ProjectileHit(
+                        type_id=int(type_id),
+                        origin=proj.origin,
+                        hit=proj.pos,
+                        target=target,
                     )
+                    hits.append(hit)
+                    if on_hit is not None:
+                        on_hit(hit)
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,

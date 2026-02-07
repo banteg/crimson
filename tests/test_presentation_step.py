@@ -185,3 +185,38 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     assert "blood" in events
     assert "decal" in events
     assert events.index("blood") < events.index("decal")
+
+
+def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
+    draws = {"count": 0}
+
+    def rand() -> int:
+        draws["count"] += 1
+        return 0
+
+    commands = apply_world_presentation_step(
+        state=state,
+        players=[player],
+        fx_queue=FxQueue(),
+        hits=_hits(1),
+        deaths=(),
+        pickups=[],
+        event_sfx=[],
+        prev_audio=[(0, False, 0.0)],
+        prev_perk_pending=0,
+        game_mode=int(GameMode.SURVIVAL),
+        demo_mode_active=False,
+        perk_progression_enabled=True,
+        rand=rand,
+        detail_preset=5,
+        fx_toggle=0,
+        game_tune_started=False,
+        trigger_game_tune=True,
+        hit_sfx=["sfx_bullet_hit_01"],
+    )
+
+    assert draws["count"] == 0
+    assert commands.trigger_game_tune is True
+    assert commands.sfx_keys == ["sfx_bullet_hit_01"]
