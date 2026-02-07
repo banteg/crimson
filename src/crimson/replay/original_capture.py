@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import gzip
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from grim.geom import Vec2
 
+from ..bonuses import BonusId
 from .checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoint,
@@ -20,6 +22,15 @@ from .checkpoints import (
 )
 
 ORIGINAL_CAPTURE_FORMAT_VERSION = 1
+ORIGINAL_CAPTURE_UNKNOWN_INT = -1
+
+_RAW_TRACE_UNKNOWN_DEATH = ReplayDeathLedgerEntry(
+    creature_index=-1,
+    type_id=-1,
+    reward_value=0.0,
+    xp_awarded=-1,
+    owner_id=-1,
+)
 
 
 class OriginalCaptureError(ValueError):
@@ -53,6 +64,24 @@ class OriginalCaptureSidecar:
     sample_rate: int
     ticks: list[OriginalCaptureTick]
     replay_sha256: str = ""
+
+
+def _int_or(value: object, default: int) -> int:
+    if value is None:
+        return int(default)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
+def _float_or(value: object, default: float) -> float:
+    if value is None:
+        return float(default)
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float(default)
 
 
 def _parse_player(raw: object) -> ReplayPlayerCheckpoint:
@@ -169,11 +198,208 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     )
 
 
+def _iter_jsonl_objects(path: Path) -> Iterator[dict[str, object]]:
+    if str(path).lower().endswith(".gz"):
+        handle = gzip.open(path, mode="rt", encoding="utf-8")
+    else:
+        handle = path.open(mode="rt", encoding="utf-8")
+    with handle:
+        for line in handle:
+            row = line.strip()
+            if not row:
+                continue
+            try:
+                obj = json.loads(row)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(obj, dict):
+                yield obj
+
+
+def _round4(value: float) -> float:
+    return round(float(value), 4)
+
+
+def _bonus_timer_ms_or_unknown(value: object) -> int:
+    if value is None:
+        return ORIGINAL_CAPTURE_UNKNOWN_INT
+    try:
+        ms = int(round(float(value) * 1000.0))
+    except (TypeError, ValueError):
+        return ORIGINAL_CAPTURE_UNKNOWN_INT
+    if ms < 0:
+        return 0
+    return ms
+
+
+def _parse_trace_players(raw: object) -> list[ReplayPlayerCheckpoint]:
+    if not isinstance(raw, list):
+        return []
+    out: list[ReplayPlayerCheckpoint] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        ammo = item.get("ammo_f32")
+        if ammo is None:
+            ammo = item.get("ammo_i32")
+        out.append(
+            ReplayPlayerCheckpoint(
+                pos=Vec2(
+                    _round4(_float_or(item.get("pos_x"), 0.0)),
+                    _round4(_float_or(item.get("pos_y"), 0.0)),
+                ),
+                health=_round4(_float_or(item.get("health"), 0.0)),
+                weapon_id=_int_or(item.get("weapon_id"), 0),
+                ammo=_round4(_float_or(ammo, 0.0)),
+                experience=_int_or(item.get("experience"), 0),
+                level=_int_or(item.get("level"), 0),
+            )
+        )
+    return out
+
+
+def _estimate_sample_rate(frames: list[int]) -> int:
+    if len(frames) < 2:
+        return 1
+    deltas = [next_frame - frame for frame, next_frame in zip(frames, frames[1:]) if int(next_frame) > int(frame)]
+    if not deltas:
+        return 1
+    deltas.sort()
+    return max(1, int(deltas[len(deltas) // 2]))
+
+
+def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None:
+    ticks_by_index: dict[int, OriginalCaptureTick] = {}
+    saw_tick_rows = False
+    for obj in _iter_jsonl_objects(path):
+        if obj.get("event") != "tick":
+            continue
+        saw_tick_rows = True
+        raw_checkpoint = obj.get("checkpoint")
+        checkpoint_obj = raw_checkpoint if isinstance(raw_checkpoint, dict) else obj
+        parsed = _parse_tick(checkpoint_obj)
+        tick_index = _int_or(checkpoint_obj.get("tick_index"), _int_or(obj.get("tick_index"), parsed.tick_index))
+        ticks_by_index[int(tick_index)] = OriginalCaptureTick(
+            tick_index=int(tick_index),
+            state_hash=parsed.state_hash,
+            command_hash=parsed.command_hash,
+            rng_state=parsed.rng_state,
+            elapsed_ms=parsed.elapsed_ms,
+            score_xp=parsed.score_xp,
+            kills=parsed.kills,
+            creature_count=parsed.creature_count,
+            perk_pending=parsed.perk_pending,
+            players=list(parsed.players),
+            bonus_timers=dict(parsed.bonus_timers),
+            rng_marks=dict(parsed.rng_marks),
+            deaths=list(parsed.deaths),
+            perk=parsed.perk,
+            events=parsed.events,
+        )
+
+    if not saw_tick_rows:
+        return None
+    if not ticks_by_index:
+        raise OriginalCaptureError(f"raw trace has tick events but no parseable checkpoints: {path}")
+
+    tick_indices = sorted(ticks_by_index)
+    ticks = [ticks_by_index[idx] for idx in tick_indices]
+    return OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=_estimate_sample_rate(tick_indices),
+        ticks=ticks,
+        replay_sha256="",
+    )
+
+
+def _tick_from_trace_snapshot(frame: int, raw_snapshot: dict[str, object]) -> OriginalCaptureTick:
+    globals_raw = raw_snapshot.get("globals")
+    globals_obj = globals_raw if isinstance(globals_raw, dict) else {}
+
+    players = _parse_trace_players(raw_snapshot.get("players"))
+    score_xp = (
+        int(sum(int(player.experience) for player in players))
+        if players
+        else ORIGINAL_CAPTURE_UNKNOWN_INT
+    )
+
+    return OriginalCaptureTick(
+        # gameplay_frame increments before gameplay_update_and_render executes.
+        tick_index=max(0, int(frame) - 1),
+        state_hash="",
+        command_hash="",
+        rng_state=ORIGINAL_CAPTURE_UNKNOWN_INT,
+        elapsed_ms=_int_or(globals_obj.get("time_played_ms"), ORIGINAL_CAPTURE_UNKNOWN_INT),
+        score_xp=score_xp,
+        kills=ORIGINAL_CAPTURE_UNKNOWN_INT,
+        creature_count=_int_or(globals_obj.get("creature_active_count"), ORIGINAL_CAPTURE_UNKNOWN_INT),
+        perk_pending=_int_or(globals_obj.get("perk_pending_count"), ORIGINAL_CAPTURE_UNKNOWN_INT),
+        players=players,
+        bonus_timers={
+            str(BonusId.WEAPON_POWER_UP): _bonus_timer_ms_or_unknown(
+                globals_obj.get("bonus_weapon_power_up_timer")
+            ),
+            str(BonusId.REFLEX_BOOST): _bonus_timer_ms_or_unknown(globals_obj.get("bonus_reflex_boost_timer")),
+            str(BonusId.ENERGIZER): _bonus_timer_ms_or_unknown(globals_obj.get("bonus_energizer_timer")),
+            str(BonusId.DOUBLE_EXPERIENCE): _bonus_timer_ms_or_unknown(globals_obj.get("bonus_double_xp_timer")),
+            str(BonusId.FREEZE): _bonus_timer_ms_or_unknown(globals_obj.get("bonus_freeze_timer")),
+        },
+        deaths=[_RAW_TRACE_UNKNOWN_DEATH],
+        perk=ReplayPerkSnapshot(pending_count=ORIGINAL_CAPTURE_UNKNOWN_INT),
+        events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
+    )
+
+
+def _load_original_capture_gameplay_trace(path: Path) -> OriginalCaptureSidecar:
+    v2 = _load_original_capture_v2_ticks(path)
+    if v2 is not None:
+        return v2
+
+    snapshots_by_frame: dict[int, dict[str, object]] = {}
+    saw_snapshots = False
+    for obj in _iter_jsonl_objects(path):
+        event = obj.get("event")
+        if event not in ("snapshot_compact", "snapshot_full"):
+            continue
+        saw_snapshots = True
+        frame = _int_or(obj.get("gameplay_frame"), -1)
+        if int(frame) <= 0:
+            continue
+        globals_raw = obj.get("globals")
+        globals_obj = globals_raw if isinstance(globals_raw, dict) else {}
+        if _int_or(globals_obj.get("game_state_id"), -1) < 0:
+            continue
+        snapshots_by_frame[int(frame)] = obj
+
+    if not saw_snapshots:
+        raise OriginalCaptureError(f"raw trace has no snapshot events: {path}")
+    if not snapshots_by_frame:
+        raise OriginalCaptureError(f"raw trace has no gameplay snapshots with gameplay_frame>0: {path}")
+
+    frames = sorted(snapshots_by_frame)
+    ticks = [_tick_from_trace_snapshot(frame, snapshots_by_frame[frame]) for frame in frames]
+    return OriginalCaptureSidecar(
+        version=ORIGINAL_CAPTURE_FORMAT_VERSION,
+        sample_rate=_estimate_sample_rate(frames),
+        ticks=ticks,
+        replay_sha256="",
+    )
+
+
 def load_original_capture_sidecar(path: Path) -> OriginalCaptureSidecar:
-    raw = Path(path).read_bytes()
+    path = Path(path)
+    lower_name = str(path).lower()
+    if lower_name.endswith(".jsonl") or lower_name.endswith(".jsonl.gz"):
+        return _load_original_capture_gameplay_trace(path)
+
+    raw = path.read_bytes()
     if raw.startswith(b"\x1f\x8b"):
         raw = gzip.decompress(raw)
-    obj = json.loads(raw.decode("utf-8"))
+    try:
+        obj = json.loads(raw.decode("utf-8"))
+    except json.JSONDecodeError:
+        # Allow accidental .json extension for line-delimited gameplay traces.
+        return _load_original_capture_gameplay_trace(path)
     if not isinstance(obj, dict):
         raise OriginalCaptureError("original capture root must be an object")
 

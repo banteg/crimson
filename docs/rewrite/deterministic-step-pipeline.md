@@ -121,4 +121,12 @@ Original-capture sidecars now have a dedicated schema + converter:
 uv run crimson replay convert-original-capture capture.json.gz expected.checkpoints.json.gz
 ```
 
+`convert-original-capture` also accepts raw Frida traces from
+`gameplay_state_capture.js` (`.jsonl` / `.jsonl.gz`) and derives sparse
+checkpoints from `snapshot_compact` / `snapshot_full` events.
+
+Unavailable fields in raw traces (for example kill ledger/perk detail) are
+stored as explicit "unknown" sentinels so differential comparison can focus on
+captured fields without false mismatches.
+
 The converted file can be compared directly with rewrite checkpoints using `replay diff-checkpoints`.
