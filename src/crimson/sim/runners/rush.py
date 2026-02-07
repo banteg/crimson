@@ -42,6 +42,7 @@ def run_rush_replay(
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
     trace_rng: bool = False,
+    checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
@@ -114,7 +115,11 @@ def run_rush_replay(
             payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
             if payload is None:
                 raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
-            apply_original_capture_bootstrap_payload(payload, state=state, players=list(world.players))
+            apply_original_capture_bootstrap_payload(
+                payload,
+                state=state,
+                players=list(world.players),
+            )
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
@@ -145,6 +150,9 @@ def run_rush_replay(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(tick.elapsed_ms),
+                    creature_count_override=(
+                        int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
+                    ),
                     rng_marks=tick.rng_marks,
                     deaths=events.deaths,
                     events=events,
@@ -162,7 +170,11 @@ def run_rush_replay(
         payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
         if payload is None:
             raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
-        apply_original_capture_bootstrap_payload(payload, state=world.state, players=list(world.players))
+        apply_original_capture_bootstrap_payload(
+            payload,
+            state=world.state,
+            players=list(world.players),
+        )
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)

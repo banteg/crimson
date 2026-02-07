@@ -32,6 +32,7 @@ def _single_tick_survival_checkpoint(*, seed: int = 0xBEEF):
     run_survival_replay(
         replay,
         strict_events=True,
+        checkpoint_use_world_step_creature_count=True,
         checkpoints_out=checkpoints,
         checkpoint_ticks={0},
     )
@@ -84,6 +85,21 @@ def test_verify_original_capture_matches_state_ignoring_hash_domains() -> None:
     assert result.elapsed_baseline_tick == 0
     assert result.elapsed_offset_ms is not None
     assert run_result.ticks == 1
+
+
+def test_verify_original_capture_accepts_world_step_latched_creature_count() -> None:
+    checkpoint = _single_tick_survival_checkpoint(seed=0xB00B)
+    capture = _capture_from_checkpoint(checkpoint=checkpoint)
+    capture = replace(capture, ticks=[replace(capture.ticks[0], creature_count=0)])
+
+    result, _run_result = verify_original_capture(
+        capture,
+        seed=0xB00B,
+        strict_events=True,
+    )
+
+    assert result.ok is True
+    assert result.failure is None
 
 
 def test_verify_original_capture_surfaces_first_field_mismatch() -> None:

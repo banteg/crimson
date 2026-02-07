@@ -111,6 +111,7 @@ def run_survival_replay(
     warn_on_version_mismatch: bool = True,
     strict_events: bool = True,
     trace_rng: bool = False,
+    checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
 ) -> RunResult:
@@ -210,6 +211,9 @@ def run_survival_replay(
                     tick_index=int(tick_index),
                     world=world,
                     elapsed_ms=float(tick.elapsed_ms),
+                    creature_count_override=(
+                        int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
+                    ),
                     rng_marks=tick.rng_marks,
                     deaths=events.deaths,
                     events=events,
