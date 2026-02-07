@@ -2001,6 +2001,54 @@ _PLAYER_PERK_TICK_STEPS: tuple[_PlayerPerkTickStep, ...] = (
 )
 
 
+_NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
+    int(WeaponId.PISTOL): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.ASSAULT_RIFLE): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.SHOTGUN): ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
+    int(WeaponId.SAWED_OFF_SHOTGUN): ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
+    int(WeaponId.SUBMACHINE_GUN): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_GUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+    int(WeaponId.ROCKET_LAUNCHER): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.SEEKER_ROCKETS): ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
+    int(WeaponId.MINI_ROCKET_SWARMERS): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.ROCKET_MINIGUN): ((25.0, 1.0, 0.34),),
+    int(WeaponId.JACKHAMMER): ((15.0, 2.0, 0.223),),
+    int(WeaponId.SHRINKIFIER_5K): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_SHOTGUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+}
+
+_NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
+    {
+        int(WeaponId.PISTOL),
+        int(WeaponId.SHRINKIFIER_5K),
+    }
+)
+
+
+def _spawn_native_fire_muzzle_sprites(
+    *,
+    state: GameplayState,
+    weapon_id: int,
+    muzzle: Vec2,
+    aim_heading: float,
+    fire_bullets_active: bool,
+) -> None:
+    if fire_bullets_active:
+        specs: tuple[tuple[float, float, float], ...] = ((25.0, 1.0, 0.413),)
+    else:
+        specs = _NATIVE_FIRE_MUZZLE_SPRITES.get(int(weapon_id), ())
+    if not specs:
+        return
+
+    for speed, scale, alpha in specs:
+        state.sprite_effects.spawn(
+            pos=muzzle,
+            vel=Vec2.from_heading(aim_heading) * float(speed),
+            scale=float(scale),
+            color=RGBA(0.5, 0.5, 0.5, float(alpha)),
+        )
+
+
 def player_fire_weapon(
     player: PlayerState,
     input_state: PlayerInput,
@@ -2098,8 +2146,22 @@ def player_fire_weapon(
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
         particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
+    # Native `player_fire_weapon` consumes one RNG draw for shot SFX variant
+    # selection on every non-Fire-Bullets shot.
+    if not is_fire_bullets:
+        state.rng.rand()
+
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
+    spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
+    if not spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
 
     # `player_fire_weapon` (crimsonland.exe) uses weapon-specific extra angular jitter for pellet
     # weapons. This is separate from aim-point jitter driven by `player.spread_heat`.
@@ -2283,6 +2345,15 @@ def player_fire_weapon(
         state.shots_fired[int(player.index)] += int(shot_count)
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
+
+    if spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
