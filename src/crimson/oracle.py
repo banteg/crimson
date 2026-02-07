@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import Any
 
 from .gameplay import PlayerInput, PlayerState
+from .sim.runners.common import build_damage_scale_by_type
+from .sim.sessions import SurvivalDeterministicSession
 from .sim.world_state import WorldState
 
 
@@ -136,6 +138,7 @@ def export_game_state_full(
     players: list[PlayerState],
     rng_state: int,
     elapsed_ms: float,
+    command_hash: str,
 ) -> dict[str, Any]:
     """Export complete game state for a frame."""
     state = world_state.state
@@ -164,6 +167,7 @@ def export_game_state_full(
     return {
         "frame": frame,
         "rng_state": rng_state,
+        "command_hash": str(command_hash),
         "elapsed_ms": round(elapsed_ms, 4),
         "score": int(total_experience),
         "kills": int(kill_count),
@@ -185,6 +189,7 @@ def export_game_state_summary(
     players: list[PlayerState],
     rng_state: int,
     elapsed_ms: float,
+    command_hash: str,
 ) -> dict[str, Any]:
     """Export minimal game state for fast comparison."""
     total_experience = sum(p.experience for p in players)
@@ -194,6 +199,7 @@ def export_game_state_summary(
     return {
         "frame": frame,
         "rng_state": rng_state,
+        "command_hash": str(command_hash),
         "elapsed_ms": round(elapsed_ms, 4),
         "score": int(total_experience),
         "kills": int(kill_count),
@@ -216,10 +222,11 @@ def export_game_state_hash(
     players: list[PlayerState],
     rng_state: int,
     elapsed_ms: float,
+    command_hash: str,
 ) -> dict[str, Any]:
     """Export hash of game state for ultra-fast comparison."""
     # Get full state and hash it
-    full_state = export_game_state_full(frame, world_state, players, rng_state, elapsed_ms)
+    full_state = export_game_state_full(frame, world_state, players, rng_state, elapsed_ms, command_hash)
     # Remove frame from hash computation (it's metadata)
     hashable = {k: v for k, v in full_state.items() if k != "frame"}
     state_bytes = json.dumps(hashable, sort_keys=True).encode()
@@ -228,6 +235,7 @@ def export_game_state_hash(
     return {
         "frame": frame,
         "hash": state_hash,
+        "command_hash": str(command_hash),
         "score": full_state["score"],
         "kills": full_state["kills"],
     }
@@ -271,9 +279,7 @@ class CheckpointTracker:
 
 def run_headless(config: OracleConfig) -> None:
     """Run the game in headless mode, emitting state JSON each frame."""
-    from .sim.world_state import WorldState
     from .effects import FxQueue, FxQueueRotated
-    from .game_modes import GameMode
 
     # Build world state
     world_state = WorldState.build(
@@ -304,11 +310,25 @@ def run_headless(config: OracleConfig) -> None:
 
     dt = 1.0 / float(config.frame_rate)
     current_input = FrameInput(frame=0)
-    elapsed_ms = 0.0
 
-    # Create dummy FX queues (not used in headless mode)
+    # Headless deterministic step still routes through sim/presentation queues.
     fx_queue = FxQueue()
     fx_queue_rotated = FxQueueRotated()
+    session = SurvivalDeterministicSession(
+        world=world_state,
+        world_size=1024.0,
+        damage_scale_by_type=build_damage_scale_by_type(),
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        detail_preset=5,
+        fx_toggle=0,
+        game_tune_started=False,
+        auto_pick_perks=True,
+        demo_mode_active=False,
+        perk_progression_enabled=True,
+        clear_fx_queues_each_tick=True,
+    )
+    last_command_hash = ""
 
     # Checkpoint tracker for event-driven output
     checkpoint_tracker = CheckpointTracker()
@@ -337,21 +357,9 @@ def run_headless(config: OracleConfig) -> None:
             )
         ]
 
-        # Step simulation
-        world_state.step(
-            dt,
-            inputs=player_inputs,
-            world_size=1024.0,
-            damage_scale_by_type={},
-            detail_preset=5,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            auto_pick_perks=True,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=True,
-        )
-
-        elapsed_ms += dt * 1000.0
+        tick = session.step_tick(dt_frame=dt, inputs=player_inputs)
+        last_command_hash = str(tick.step.command_hash)
+        elapsed_ms = float(session.elapsed_ms)
 
         # Determine if we should emit state this frame
         should_emit = False
@@ -372,6 +380,7 @@ def run_headless(config: OracleConfig) -> None:
                 players=players,
                 rng_state=world_state.state.rng.state,
                 elapsed_ms=elapsed_ms,
+                command_hash=str(last_command_hash),
             )
             print(json.dumps(state_json), flush=True)
 
@@ -385,6 +394,7 @@ def run_headless(config: OracleConfig) -> None:
                     players=players,
                     rng_state=world_state.state.rng.state,
                     elapsed_ms=elapsed_ms,
+                    command_hash=str(last_command_hash),
                 )
                 print(json.dumps(state_json), flush=True)
             break

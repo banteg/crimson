@@ -124,7 +124,10 @@ class CreatureState:
     ai_mode: int = 0
     flags: CreatureFlags = CreatureFlags(0)
 
-    link_index: int = 0
+    # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
+    # leave it untouched (notably survival_spawn_creature AI7 spiders), so stale
+    # values can affect early AI7 timer phase.
+    link_index: int = -1
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
@@ -409,7 +412,9 @@ class CreaturePool:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
         idx = self._alloc_slot(rand=rand)
-        entry = CreatureState()
+        # Reuse the allocated slot so fields that native spawn paths do not touch
+        # (e.g. link_index for survival AI7 spiders) retain stale values.
+        entry = self._entries[idx]
         self._apply_init(entry, init)
 
         # Direct init does not have plan-local indices; preserve any raw linkage.
@@ -451,7 +456,8 @@ class CreaturePool:
         # 1) Allocate pool slots for every creature.
         for init in plan.creatures:
             pool_idx = self._alloc_slot(rand=rand)
-            entry = CreatureState()
+            # Reuse the allocated slot so untouched fields keep native-like stale state.
+            entry = self._entries[pool_idx]
             self._apply_init(entry, init)
             self._entries[pool_idx] = entry
             self.spawned_count += 1
@@ -891,7 +897,6 @@ class CreaturePool:
             detail_preset=int(detail_preset),
             world_width=world_width,
             world_height=world_height,
-            fx_queue=fx_queue,
         )
 
         if keep_corpse:
@@ -917,6 +922,8 @@ class CreaturePool:
                 rand=rand,
                 detail_preset=int(detail_preset),
             )
+            if fx_queue is not None:
+                fx_queue.add_random(pos=creature_pos, rand=rand)
             self.kill_count += 1
             creature.active = False
 
@@ -930,6 +937,10 @@ class CreaturePool:
         entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
+        # Native spawn paths zero velocity and a few per-frame state fields on every
+        # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
+        entry.vel = Vec2()
+        entry.force_target = 0
 
         entry.flags = init.flags or CreatureFlags(0)
         entry.ai_mode = int(init.ai_mode)
@@ -956,7 +967,7 @@ class CreaturePool:
         entry.orbit_radius = orbit_radius
 
         entry.spawn_slot_index = None
-        entry.link_index = 0
+        entry.attack_cooldown = 0.0
 
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
         entry.bonus_duration_override = int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
@@ -964,8 +975,11 @@ class CreaturePool:
         entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
         entry.plague_infected = False
-        entry.collision_timer = CONTACT_DAMAGE_PERIOD
+        entry.collision_timer = 0.0
         entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.hit_flash_timer = 0.0
+        entry.anim_phase = 0.0
+        entry.last_hit_owner_id = -100
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
@@ -1042,7 +1056,6 @@ class CreaturePool:
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
-        fx_queue: FxQueue | None,
     ) -> CreatureDeath:
         creature.hp = 0.0
 
@@ -1113,9 +1126,6 @@ class CreaturePool:
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
-
-        if fx_queue is not None:
-            fx_queue.add_random(pos=creature.pos, rand=rand)
 
         return CreatureDeath(
             index=int(idx),

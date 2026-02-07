@@ -256,6 +256,9 @@ def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> in
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
+        # Native bonus code uses a writable sentinel entry when allocation/spacing
+        # checks fail. Some callers still mutate it, which affects RNG consumption.
+        self._sentinel = BonusEntry()
 
     @property
     def entries(self) -> list[BonusEntry]:
@@ -277,6 +280,15 @@ class BonusPool:
             if entry.bonus_id == 0:
                 return entry
         return None
+
+    def _alloc_slot_or_sentinel(self) -> BonusEntry:
+        entry = self._alloc_slot()
+        if entry is not None:
+            return entry
+        return self._sentinel
+
+    def _is_sentinel_entry(self, entry: BonusEntry) -> bool:
+        return entry is self._sentinel
 
     def _clear_entry(self, entry: BonusEntry) -> None:
         entry.bonus_id = 0
@@ -329,29 +341,28 @@ class BonusPool:
         players: list["PlayerState"],
         world_width: float = 1024.0,
         world_height: float = 1024.0,
-    ) -> BonusEntry | None:
+    ) -> BonusEntry:
         if int(state.game_mode) == int(GameMode.RUSH):
-            return None
+            return self._sentinel
         if (
             pos.x < BONUS_SPAWN_MARGIN
             or pos.y < BONUS_SPAWN_MARGIN
             or pos.x > world_width - BONUS_SPAWN_MARGIN
             or pos.y > world_height - BONUS_SPAWN_MARGIN
         ):
-            return None
+            return self._sentinel
 
-        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
-        for entry in self._entries:
-            if entry.bonus_id == 0:
-                continue
-            if Vec2.distance_sq(pos, entry.pos) < min_dist_sq:
-                return None
-
-        entry = self._alloc_slot()
-        if entry is None:
-            return None
+        entry = self._alloc_slot_or_sentinel()
 
         bonus_id = bonus_pick_random_type(self, state, players)
+        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
+        for active_entry in self._entries:
+            if active_entry.bonus_id == 0:
+                continue
+            if Vec2.distance_sq(pos, active_entry.pos) < min_dist_sq:
+                entry = self._sentinel
+                break
+
         entry.bonus_id = int(bonus_id)
         entry.picked = False
         entry.pos = pos
@@ -400,8 +411,6 @@ class BonusPool:
                     world_width=world_width,
                     world_height=world_height,
                 )
-                if entry is None:
-                    return None
 
                 entry.bonus_id = int(BonusId.WEAPON)
                 weapon_id = int(weapon_pick_random_available(state))
@@ -421,6 +430,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+                if self._is_sentinel_entry(entry):
+                    return None
                 return entry
 
         base_roll = int(rng.rand())
@@ -442,8 +453,6 @@ class BonusPool:
             world_width=world_width,
             world_height=world_height,
         )
-        if entry is None:
-            return None
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
@@ -469,6 +478,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+        if self._is_sentinel_entry(entry):
+            return None
         return entry
 
     def update(
@@ -2001,6 +2012,54 @@ _PLAYER_PERK_TICK_STEPS: tuple[_PlayerPerkTickStep, ...] = (
 )
 
 
+_NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
+    int(WeaponId.PISTOL): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.ASSAULT_RIFLE): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.SHOTGUN): ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
+    int(WeaponId.SAWED_OFF_SHOTGUN): ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
+    int(WeaponId.SUBMACHINE_GUN): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_GUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+    int(WeaponId.ROCKET_LAUNCHER): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.SEEKER_ROCKETS): ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
+    int(WeaponId.MINI_ROCKET_SWARMERS): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.ROCKET_MINIGUN): ((25.0, 1.0, 0.34),),
+    int(WeaponId.JACKHAMMER): ((15.0, 2.0, 0.223),),
+    int(WeaponId.SHRINKIFIER_5K): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_SHOTGUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+}
+
+_NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
+    {
+        int(WeaponId.PISTOL),
+        int(WeaponId.SHRINKIFIER_5K),
+    }
+)
+
+
+def _spawn_native_fire_muzzle_sprites(
+    *,
+    state: GameplayState,
+    weapon_id: int,
+    muzzle: Vec2,
+    aim_heading: float,
+    fire_bullets_active: bool,
+) -> None:
+    if fire_bullets_active:
+        specs: tuple[tuple[float, float, float], ...] = ((25.0, 1.0, 0.413),)
+    else:
+        specs = _NATIVE_FIRE_MUZZLE_SPRITES.get(int(weapon_id), ())
+    if not specs:
+        return
+
+    for speed, scale, alpha in specs:
+        state.sprite_effects.spawn(
+            pos=muzzle,
+            vel=Vec2.from_heading(aim_heading) * float(speed),
+            scale=float(scale),
+            color=RGBA(0.5, 0.5, 0.5, float(alpha)),
+        )
+
+
 def player_fire_weapon(
     player: PlayerState,
     input_state: PlayerInput,
@@ -2098,8 +2157,22 @@ def player_fire_weapon(
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
         particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
+    # Native `player_fire_weapon` consumes one RNG draw for shot SFX variant
+    # selection on every non-Fire-Bullets shot.
+    if not is_fire_bullets:
+        state.rng.rand()
+
     owner_id = _owner_id_for_player(player.index)
     shot_count = 1
+    spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
+    if not spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
 
     # `player_fire_weapon` (crimsonland.exe) uses weapon-specific extra angular jitter for pellet
     # weapons. This is separate from aim-point jitter driven by `player.spread_heat`.
@@ -2284,6 +2357,15 @@ def player_fire_weapon(
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
 
+    if spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
+
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
 
@@ -2356,7 +2438,9 @@ def player_update(
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move = raw_move * inv
-        target_heading = move.to_heading()
+        # Native normalizes this heading into [0, 2pi] before calling
+        # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
+        target_heading = _normalize_heading_0_2pi(move.to_heading())
         angle_diff = _player_heading_approach_target(player, target_heading, dt)
         move = Vec2.from_heading(player.heading)
         turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
@@ -2491,6 +2575,15 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
     player.heading = heading + turn_sign * dt * diff * 5.0
     return diff
+
+
+def _normalize_heading_0_2pi(heading: float) -> float:
+    out = float(heading)
+    while out < 0.0:
+        out += math.tau
+    while out > math.tau:
+        out -= math.tau
+    return out
 
 
 @dataclass(slots=True)

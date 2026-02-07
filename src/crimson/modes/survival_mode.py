@@ -16,7 +16,6 @@ from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.view import ViewContext
 
-from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import (
@@ -41,6 +40,7 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.sessions import SurvivalDeterministicSession
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -124,6 +124,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
+        self._sim_session: SurvivalDeterministicSession | None = None
 
     def _reset_perk_prompt(self) -> None:
         if int(self._state.perk_selection.pending_count) > 0:
@@ -146,6 +147,7 @@ class SurvivalMode(BaseGameplayMode):
         rng_marks: dict[str, int] | None = None,
         deaths: Sequence[object] | None = None,
         events: object | None = None,
+        command_hash: str | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
@@ -164,6 +166,7 @@ class SurvivalMode(BaseGameplayMode):
                 rng_marks=rng_marks,
                 deaths=deaths,
                 events=events,
+                command_hash=command_hash,
             )
         )
         self._replay_checkpoints_last_tick = int(tick_index)
@@ -264,6 +267,17 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_pulse_time = 0.0
         self._sim_clock.reset()
         self._survival = _SurvivalState()
+        self._sim_session = SurvivalDeterministicSession(
+            world=self._world.world_state,
+            world_size=float(self._world.world_size),
+            damage_scale_by_type=self._world._damage_scale_by_type,
+            fx_queue=self._world.fx_queue,
+            fx_queue_rotated=self._world.fx_queue_rotated,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=bool(self._world._game_tune_started),
+            clear_fx_queues_each_tick=False,
+        )
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -314,6 +328,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
+        self._sim_session = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -542,6 +557,23 @@ class SurvivalMode(BaseGameplayMode):
         dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_input()
         input_tick = input_frame
+        session = self._sim_session
+        if session is None:
+            return
+        if self._world.audio_router is not None:
+            self._world.audio_router.audio = self._world.audio
+            self._world.audio_router.audio_rng = self._world.audio_rng
+            self._world.audio_router.demo_mode_active = self._world.demo_mode_active
+        if self._world.ground is not None:
+            self._world._sync_ground_settings()
+            self._world.ground.process_pending()
+        detail_preset = 5
+        fx_toggle = 0
+        if self._config is not None:
+            detail_preset = int(self._config.data.get("detail_preset", 5) or 5)
+            fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0)
+        session.detail_preset = int(detail_preset)
+        session.fx_toggle = int(fx_toggle)
 
         for tick_offset in range(int(ticks_to_run)):
             if tick_offset:
@@ -559,61 +591,28 @@ class SurvivalMode(BaseGameplayMode):
                 tick_index = recorder.record_tick(inputs)
             else:
                 tick_index = None
-
-            self._survival.elapsed_ms += dt_tick * 1000.0
-            rng_before_world_step = int(self._state.rng.state)
-            world_step_marks: dict[str, int] = {}
-            self._world.update(
-                dt_tick,
+            tick = session.step_tick(
+                dt_frame=dt_tick,
                 inputs=inputs,
-                auto_pick_perks=False,
-                game_mode=int(GameMode.SURVIVAL),
-                perk_progression_enabled=True,
-                rng_marks_out=world_step_marks,
             )
-            world_events = self._world.last_events
-            rng_after_world_step = int(self._state.rng.state)
-
-            # Scripted milestone spawns based on level.
-            stage, milestone_calls = advance_survival_spawn_stage(self._survival.stage, player_level=self._player.level)
-            self._survival.stage = stage
-            for call in milestone_calls:
-                self._creatures.spawn_template(
-                    int(call.template_id),
-                    call.pos,
-                    float(call.heading),
-                    self._state.rng,
-                    rand=self._state.rng.rand,
-                )
-            rng_after_stage_spawns = int(self._state.rng.state)
-
-            # Regular wave spawns based on elapsed time.
-            cooldown, wave_spawns = tick_survival_wave_spawns(
-                self._survival.spawn_cooldown,
-                dt_tick * 1000.0,
-                self._state.rng,
-                player_count=len(self._world.players),
-                survival_elapsed_ms=self._survival.elapsed_ms,
-                player_experience=self._player.experience,
-                terrain_width=int(self._world.world_size),
-                terrain_height=int(self._world.world_size),
+            self._world.apply_step_result(
+                tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=True,
+                update_camera=True,
             )
-            self._survival.spawn_cooldown = cooldown
-            self._creatures.spawn_inits(wave_spawns)
-            rng_after_wave_spawns = int(self._state.rng.state)
+            self._survival.elapsed_ms = float(session.elapsed_ms)
+            self._survival.stage = int(session.stage)
+            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+            world_events = tick.step.events
 
             if tick_index is not None:
                 self._record_replay_checkpoint(
                     int(tick_index),
-                    rng_marks={
-                        "before_world_step": int(rng_before_world_step),
-                        **world_step_marks,
-                        "after_world_step": int(rng_after_world_step),
-                        "after_stage_spawns": int(rng_after_stage_spawns),
-                        "after_wave_spawns": int(rng_after_wave_spawns),
-                    },
+                    rng_marks=tick.rng_marks,
                     deaths=world_events.deaths,
                     events=world_events,
+                    command_hash=str(tick.step.command_hash),
                 )
 
             if not any(player.health > 0.0 for player in self._world.players):

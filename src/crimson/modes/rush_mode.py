@@ -15,7 +15,6 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.view import ViewContext
 
-from ..creatures.spawn import tick_rush_mode_spawns
 from ..game_modes import GameMode
 from ..gameplay import PlayerInput, weapon_assign_player
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
@@ -34,6 +33,7 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.sessions import RushDeterministicSession
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -85,6 +85,7 @@ class RushMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
+        self._sim_session: RushDeterministicSession | None = None
 
     def _record_replay_checkpoint(
         self,
@@ -94,6 +95,7 @@ class RushMode(BaseGameplayMode):
         rng_marks: dict[str, int] | None = None,
         deaths: Sequence[object] | None = None,
         events: object | None = None,
+        command_hash: str | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
@@ -112,6 +114,7 @@ class RushMode(BaseGameplayMode):
                 rng_marks=rng_marks,
                 deaths=deaths,
                 events=events,
+                command_hash=command_hash,
             )
         )
         self._replay_checkpoints_last_tick = int(tick_index)
@@ -130,6 +133,18 @@ class RushMode(BaseGameplayMode):
             self._missing_assets.extend(self._ui_assets.missing)
         self._rush = _RushState()
         self._sim_clock.reset()
+        self._sim_session = RushDeterministicSession(
+            world=self._world.world_state,
+            world_size=float(self._world.world_size),
+            damage_scale_by_type=self._world._damage_scale_by_type,
+            fx_queue=self._world.fx_queue,
+            fx_queue_rotated=self._world.fx_queue_rotated,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=bool(self._world._game_tune_started),
+            clear_fx_queues_each_tick=False,
+            enforce_loadout=self._enforce_rush_loadout,
+        )
         self._enforce_rush_loadout()
         status = self._state.status
         weapon_usage_counts: tuple[int, ...] = ()
@@ -176,6 +191,7 @@ class RushMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
+        self._sim_session = None
         super().close()
 
     def _handle_input(self) -> None:
@@ -315,6 +331,23 @@ class RushMode(BaseGameplayMode):
         dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_input()
         input_tick = input_frame
+        session = self._sim_session
+        if session is None:
+            return
+        if self._world.audio_router is not None:
+            self._world.audio_router.audio = self._world.audio
+            self._world.audio_router.audio_rng = self._world.audio_rng
+            self._world.audio_router.demo_mode_active = self._world.demo_mode_active
+        if self._world.ground is not None:
+            self._world._sync_ground_settings()
+            self._world.ground.process_pending()
+        detail_preset = 5
+        fx_toggle = 0
+        if self._config is not None:
+            detail_preset = int(self._config.data.get("detail_preset", 5) or 5)
+            fx_toggle = int(self._config.data.get("fx_toggle", 0) or 0)
+        session.detail_preset = int(detail_preset)
+        session.fx_toggle = int(fx_toggle)
 
         for tick_offset in range(int(ticks_to_run)):
             if tick_offset:
@@ -326,51 +359,33 @@ class RushMode(BaseGameplayMode):
                     reload_pressed=False,
                 )
 
-            self._rush.elapsed_ms += dt_tick * 1000.0
-            self._enforce_rush_loadout()
             inputs = [input_tick for _ in self._world.players]
             recorder = self._replay_recorder
             if recorder is not None:
                 tick_index = recorder.record_tick(inputs)
             else:
                 tick_index = None
-            rng_before_world_step = int(self._state.rng.state)
-            world_step_marks: dict[str, int] = {}
-            self._world.update(
-                dt_tick,
+            tick = session.step_tick(
+                dt_frame=dt_tick,
                 inputs=inputs,
-                auto_pick_perks=False,
-                game_mode=int(GameMode.RUSH),
-                perk_progression_enabled=False,
-                rng_marks_out=world_step_marks,
             )
-            world_events = self._world.last_events
-            rng_after_world_step = int(self._state.rng.state)
-
-            cooldown, spawns = tick_rush_mode_spawns(
-                self._rush.spawn_cooldown_ms,
-                dt_tick * 1000.0,
-                self._state.rng,
-                player_count=len(self._world.players),
-                survival_elapsed_ms=int(self._rush.elapsed_ms),
-                terrain_width=float(self._world.world_size),
-                terrain_height=float(self._world.world_size),
+            self._world.apply_step_result(
+                tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=True,
+                update_camera=True,
             )
-            self._rush.spawn_cooldown_ms = cooldown
-            self._creatures.spawn_inits(spawns)
-            rng_after_rush_spawns = int(self._state.rng.state)
+            self._rush.elapsed_ms = float(session.elapsed_ms)
+            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+            world_events = tick.step.events
 
             if tick_index is not None:
                 self._record_replay_checkpoint(
                     int(tick_index),
-                    rng_marks={
-                        "before_world_step": int(rng_before_world_step),
-                        **world_step_marks,
-                        "after_world_step": int(rng_after_world_step),
-                        "after_rush_spawns": int(rng_after_rush_spawns),
-                    },
+                    rng_marks=tick.rng_marks,
                     deaths=world_events.deaths,
                     events=world_events,
+                    command_hash=str(tick.step.command_hash),
                 )
 
             if not any(player.health > 0.0 for player in self._world.players):
