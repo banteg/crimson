@@ -2623,6 +2623,34 @@
       "type": "quest_play_counts_t"
     },
     {
+      "address": "0x00485784",
+      "comment": "Status blob mode-play counter for Survival sessions.",
+      "name": "mode_play_survival",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485788",
+      "comment": "Status blob mode-play counter for Rush sessions.",
+      "name": "mode_play_rush",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048578c",
+      "comment": "Status blob mode-play counter for Typ-o-Shooter sessions.",
+      "name": "mode_play_typo",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00485790",
+      "comment": "Status blob mode-play counter for other gameplay modes (for example tutorial/legacy paths).",
+      "name": "mode_play_other",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00485794",
       "comment": "Saved game sequence id loaded from registry.",
       "name": "game_sequence_id",
@@ -2952,6 +2980,13 @@
       "address": "0x00487074",
       "comment": "Total creature kills (incremented on creature death paths); stored in high score record offset 0x34.",
       "name": "creature_kill_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00487078",
+      "comment": "High score record random tag at offset 0x38 (seeded from crt_rand with masks/offsets in gameplay_run_state_init/gameplay_reset_state/highscore_record_init).",
+      "name": "highscore_record_random_tag",
       "program": "crimsonland.exe",
       "type": "int"
     },
