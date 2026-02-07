@@ -28,6 +28,11 @@ ORIGINAL_CAPTURE_FORMAT_VERSION = 1
 ORIGINAL_CAPTURE_UNKNOWN_INT = -1
 ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap_v1"
 
+_CRT_RAND_MULT = 214013
+_CRT_RAND_INC = 2531011
+_CRT_RAND_MOD_MASK = 0xFFFFFFFF
+_CRT_RAND_INV_MULT = pow(_CRT_RAND_MULT, -1, 1 << 32)
+
 _RAW_TRACE_UNKNOWN_DEATH = ReplayDeathLedgerEntry(
     creature_index=-1,
     type_id=-1,
@@ -66,6 +71,7 @@ class OriginalCaptureTick:
     input_primary_down_true_calls: int = 0
     input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
     frame_dt_ms: float | None = None
+    rng_head: list[int] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -254,6 +260,25 @@ def _parse_int_map(raw: object, name: str) -> dict[str, int]:
     return out
 
 
+def _parse_rng_head(raw_rng_marks: object) -> list[int]:
+    if not isinstance(raw_rng_marks, dict):
+        return []
+    rand_head_raw = raw_rng_marks.get("rand_head")
+    if not isinstance(rand_head_raw, list):
+        return []
+    out: list[int] = []
+    for item in rand_head_raw:
+        if isinstance(item, dict):
+            value = _coerce_int_like(item.get("value"))
+        else:
+            value = _coerce_int_like(item)
+        if value is None:
+            continue
+        if 0 <= int(value) <= 0x7FFF:
+            out.append(int(value))
+    return out
+
+
 def _parse_tick(raw: object) -> OriginalCaptureTick:
     if not isinstance(raw, dict):
         raise OriginalCaptureError(f"tick must be an object: {raw!r}")
@@ -269,7 +294,9 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     deaths = [_parse_death(item) for item in deaths_raw]
 
     bonus_timers = _parse_int_map(raw.get("bonus_timers") or {}, "tick.bonus_timers")
-    rng_marks = _parse_int_map(raw.get("rng_marks") or {}, "tick.rng_marks")
+    raw_rng_marks = raw.get("rng_marks") or {}
+    rng_marks = _parse_int_map(raw_rng_marks, "tick.rng_marks")
+    rng_head = _parse_rng_head(raw_rng_marks)
     mode_hint = str(raw.get("mode_hint", ""))
     game_mode_id = _int_or(raw.get("game_mode_id"), -1)
     input_primary_edge_true_calls = _int_or(raw.get("input_primary_edge_true_calls"), 0)
@@ -317,6 +344,7 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         input_primary_down_true_calls=input_primary_down_true_calls,
         input_approx=input_approx,
         frame_dt_ms=frame_dt_ms,
+        rng_head=rng_head,
     )
 
 
@@ -653,6 +681,7 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
             ),
             input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
             frame_dt_ms=float(frame_dt_ms) if frame_dt_ms is not None else parsed.frame_dt_ms,
+            rng_head=list(parsed.rng_head),
         )
 
     if not saw_tick_rows:
@@ -734,6 +763,92 @@ def _infer_player_count(capture: OriginalCaptureSidecar) -> int:
         for sample in tick.input_approx:
             player_count = max(player_count, int(sample.player_index) + 1)
     return max(1, int(player_count))
+
+
+def _crt_rand_step(state: int) -> tuple[int, int]:
+    next_state = (int(state) * _CRT_RAND_MULT + _CRT_RAND_INC) & _CRT_RAND_MOD_MASK
+    return int(next_state), int((next_state >> 16) & 0x7FFF)
+
+
+def _seed_matches_rng_marks(
+    seed: int,
+    *,
+    rng_head: list[int],
+    rand_calls: object,
+    rand_last: object,
+) -> bool:
+    if not rng_head:
+        return False
+
+    parsed_rand_calls = _coerce_int_like(rand_calls)
+    parsed_rand_last = _coerce_int_like(rand_last)
+    required_calls = len(rng_head)
+    if parsed_rand_calls is not None and int(parsed_rand_calls) > 0:
+        required_calls = max(required_calls, int(parsed_rand_calls))
+
+    state = int(seed) & _CRT_RAND_MOD_MASK
+    output_at_rand_calls: int | None = None
+    for call_idx in range(1, int(required_calls) + 1):
+        state, out = _crt_rand_step(state)
+        if call_idx <= len(rng_head) and int(out) != int(rng_head[call_idx - 1]):
+            return False
+        if parsed_rand_calls is not None and int(parsed_rand_calls) > 0 and int(call_idx) == int(parsed_rand_calls):
+            output_at_rand_calls = int(out)
+
+    if parsed_rand_calls is not None and int(parsed_rand_calls) > 0 and parsed_rand_last is not None:
+        if output_at_rand_calls is None:
+            return False
+        return int(output_at_rand_calls) == int(parsed_rand_last)
+
+    return True
+
+
+def _infer_seed_from_rng_head(
+    *,
+    rng_head: list[int],
+    rand_calls: object,
+    rand_last: object,
+) -> int | None:
+    if not rng_head:
+        return None
+
+    first_rand = int(rng_head[0])
+    if first_rand < 0 or first_rand > 0x7FFF:
+        return None
+
+    best: int | None = None
+    for high_word in (int(first_rand), int(first_rand) | 0x8000):
+        state_prefix = int(high_word) << 16
+        for state_low in range(0x10000):
+            state_after_first = (int(state_prefix) | int(state_low)) & _CRT_RAND_MOD_MASK
+            seed = ((int(state_after_first) - _CRT_RAND_INC) * _CRT_RAND_INV_MULT) & _CRT_RAND_MOD_MASK
+            if not _seed_matches_rng_marks(
+                int(seed),
+                rng_head=rng_head,
+                rand_calls=rand_calls,
+                rand_last=rand_last,
+            ):
+                continue
+            # Seeds that differ only by bit 31 produce the same rand() stream.
+            canonical_seed = int(seed) & 0x7FFFFFFF
+            if best is None or int(canonical_seed) < int(best):
+                best = int(canonical_seed)
+    return best
+
+
+def infer_original_capture_seed(capture: OriginalCaptureSidecar) -> int:
+    for tick in sorted(capture.ticks, key=lambda item: int(item.tick_index)):
+        rng_head = [int(value) for value in tick.rng_head if 0 <= int(value) <= 0x7FFF]
+        if not rng_head:
+            continue
+        seed = _infer_seed_from_rng_head(
+            rng_head=rng_head,
+            rand_calls=tick.rng_marks.get("rand_calls"),
+            rand_last=tick.rng_marks.get("rand_last"),
+        )
+        if seed is not None:
+            return int(seed)
+    return 0
 
 
 def build_original_capture_dt_frame_overrides(
@@ -1019,11 +1134,12 @@ def convert_original_capture_to_checkpoints(
 def convert_original_capture_to_replay(
     capture: OriginalCaptureSidecar,
     *,
-    seed: int = 0,
+    seed: int | None = None,
     tick_rate: int = 60,
     world_size: float = 1024.0,
     game_mode_id: int | None = None,
 ) -> Replay:
+    resolved_seed = infer_original_capture_seed(capture) if seed is None else int(seed)
     player_count = _infer_player_count(capture)
     resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
 
@@ -1122,7 +1238,7 @@ def convert_original_capture_to_replay(
         version=FORMAT_VERSION,
         header=ReplayHeader(
             game_mode_id=int(resolved_mode_id),
-            seed=int(seed),
+            seed=int(resolved_seed),
             tick_rate=max(1, int(tick_rate)),
             player_count=int(player_count),
             world_size=float(world_size),

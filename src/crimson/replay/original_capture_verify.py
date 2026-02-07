@@ -41,7 +41,7 @@ class OriginalCaptureVerifyResult:
 def verify_original_capture(
     capture: OriginalCaptureSidecar,
     *,
-    seed: int = 0,
+    seed: int | None = None,
     max_ticks: int | None = None,
     strict_events: bool = False,
     trace_rng: bool = False,
@@ -52,7 +52,7 @@ def verify_original_capture(
         tick_cap = max(0, int(max_ticks))
         expected = [ckpt for ckpt in expected if int(ckpt.tick_index) < int(tick_cap)]
 
-    replay = convert_original_capture_to_replay(capture, seed=int(seed))
+    replay = convert_original_capture_to_replay(capture, seed=seed)
     dt_frame_overrides = build_original_capture_dt_frame_overrides(
         capture,
         tick_rate=int(replay.header.tick_rate),
