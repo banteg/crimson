@@ -15,6 +15,7 @@ This page defines the current per-tick contract used by:
 The shared implementation lives in `src/crimson/sim/step_pipeline.py`.
 Mode/session orchestration lives in `src/crimson/sim/sessions.py`.
 Feature hook registries now live under `src/crimson/features/`.
+Multiplayer input normalization lives in `src/crimson/sim/input_frame.py`.
 
 ## Tick contract
 
@@ -113,3 +114,11 @@ For original-game capture comparison, prefer matching at command/checksum level 
 3. deep state hashes / focused state diffs
 
 This gives a stable coarse-to-fine pipeline while data mapping from the original continues to improve.
+
+Original-capture sidecars now have a dedicated schema + converter:
+
+```bash
+uv run crimson replay convert-original-capture capture.json.gz expected.checkpoints.json.gz
+```
+
+The converted file can be compared directly with rewrite checkpoints using `replay diff-checkpoints`.

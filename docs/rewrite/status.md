@@ -102,6 +102,13 @@ under `docs/crimsonland-exe/`.
   - Bonus pickup hook registry: `src/crimson/features/bonuses/pickup_fx.py`
   - Presentation projectile-decal hook registry: `src/crimson/features/presentation/projectile_decals.py`
   - Architecture guard tests: `tests/test_feature_hook_registries.py`
+- Per-player deterministic input-frame normalization is now first-class and shared:
+  - Code: `src/crimson/sim/input_frame.py`
+  - Tests: `tests/test_input_frame_contract.py`
+- Original-capture sidecar schema and conversion into replay checkpoints is now available:
+  - Code: `src/crimson/replay/original_capture.py`
+  - CLI: `uv run crimson replay convert-original-capture <capture> <expected-checkpoints>`
+  - Tests: `tests/test_original_capture_conversion.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
