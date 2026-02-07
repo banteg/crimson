@@ -94,6 +94,7 @@ class RushMode(BaseGameplayMode):
         rng_marks: dict[str, int] | None = None,
         deaths: Sequence[object] | None = None,
         events: object | None = None,
+        command_hash: str | None = None,
     ) -> None:
         recorder = self._replay_recorder
         if recorder is None:
@@ -112,6 +113,7 @@ class RushMode(BaseGameplayMode):
                 rng_marks=rng_marks,
                 deaths=deaths,
                 events=events,
+                command_hash=command_hash,
             )
         )
         self._replay_checkpoints_last_tick = int(tick_index)
@@ -371,6 +373,7 @@ class RushMode(BaseGameplayMode):
                     },
                     deaths=world_events.deaths,
                     events=world_events,
+                    command_hash=str(self._world.last_command_hash),
                 )
 
             if not any(player.health > 0.0 for player in self._world.players):

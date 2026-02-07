@@ -319,11 +319,15 @@ def apply_world_presentation_step(
     demo_mode_active: bool,
     perk_progression_enabled: bool,
     rand: Callable[[], int],
+    rand_for: Callable[[str], Callable[[], int]] | None = None,
     detail_preset: int,
     fx_toggle: int,
     game_tune_started: bool,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
+    if rand_for is None:
+        def rand_for(_label: str) -> Callable[[], int]:
+            return rand
 
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         commands.sfx_keys.append("sfx_ui_levelup")
@@ -334,7 +338,7 @@ def apply_world_presentation_step(
             players=players,
             fx_queue=fx_queue,
             hits=hits,
-            rand=rand,
+            rand=rand_for("projectile_decals"),
             detail_preset=int(detail_preset),
             fx_toggle=int(fx_toggle),
         )
@@ -343,7 +347,7 @@ def apply_world_presentation_step(
             game_mode=int(game_mode),
             demo_mode_active=bool(demo_mode_active),
             game_tune_started=bool(game_tune_started),
-            rand=rand,
+            rand=rand_for("hit_sfx"),
         )
         commands.sfx_keys.extend(hit_sfx)
 
@@ -361,7 +365,7 @@ def apply_world_presentation_step(
         )
 
     if deaths:
-        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand))
+        commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand_for("death_sfx")))
 
     if pickups:
         for _ in pickups:

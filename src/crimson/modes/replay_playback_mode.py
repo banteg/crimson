@@ -16,9 +16,7 @@ from ..gameplay import (
     PlayerInput,
     perk_selection_current_choices,
     perk_selection_pick,
-    perks_rebuild_available,
     weapon_assign_player,
-    weapon_refresh_available,
 )
 from ..replay import (
     PerkMenuOpenEvent,
@@ -30,7 +28,8 @@ from ..replay import (
     unpack_input_flags,
     warn_on_game_version_mismatch,
 )
-from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot, time_scale_reflex_boost_bonus
+from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot
+from ..sim.step_pipeline import run_deterministic_step
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -234,27 +233,35 @@ class ReplayPlaybackMode:
         run.elapsed_ms += float(dt_frame_ms)
 
         state = world.state
-        state.game_mode = int(GameMode.SURVIVAL)
-        state.demo_mode_active = False
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
-
         self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
 
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
-        world.world_state.step(
-            float(dt_sim),
+        step = run_deterministic_step(
+            world=world.world_state,
+            dt_frame=float(dt_frame),
             inputs=player_inputs,
             world_size=float(world.world_size),
             damage_scale_by_type=self._damage_scale_by_type,
             detail_preset=5,
+            fx_toggle=0,
             fx_queue=world.fx_queue,
             fx_queue_rotated=world.fx_queue_rotated,
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
+            demo_mode_active=False,
             perk_progression_enabled=True,
+            presentation_rand=world.presentation_rng.rand,
+            game_tune_started=bool(world._game_tune_started),
         )
+        world.last_events = step.events
+        world.last_presentation = step.presentation
+        world.last_command_hash = step.command_hash
+        if step.presentation.trigger_game_tune:
+            world._game_tune_started = True
+            world.audio_router.trigger_game_tune()
+        for key in step.presentation.sfx_keys:
+            world.audio_router.play_sfx_resolved(key)
+        dt_sim = float(step.dt_sim)
 
         stage, milestone_calls = advance_survival_spawn_stage(run.stage, player_level=world.players[0].level if world.players else 1)
         run.stage = stage
@@ -293,27 +300,34 @@ class ReplayPlaybackMode:
         run.elapsed_ms += float(dt_frame_ms)
 
         state = world.state
-        state.game_mode = int(GameMode.RUSH)
-        state.demo_mode_active = False
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
-
         self._enforce_rush_loadout()
 
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
-        world.world_state.step(
-            float(dt_sim),
+        step = run_deterministic_step(
+            world=world.world_state,
+            dt_frame=float(dt_frame),
             inputs=player_inputs,
             world_size=float(world.world_size),
             damage_scale_by_type=self._damage_scale_by_type,
             detail_preset=5,
+            fx_toggle=0,
             fx_queue=world.fx_queue,
             fx_queue_rotated=world.fx_queue_rotated,
             auto_pick_perks=False,
             game_mode=int(GameMode.RUSH),
+            demo_mode_active=False,
             perk_progression_enabled=False,
+            presentation_rand=world.presentation_rng.rand,
+            game_tune_started=bool(world._game_tune_started),
         )
+        world.last_events = step.events
+        world.last_presentation = step.presentation
+        world.last_command_hash = step.command_hash
+        if step.presentation.trigger_game_tune:
+            world._game_tune_started = True
+            world.audio_router.trigger_game_tune()
+        for key in step.presentation.sfx_keys:
+            world.audio_router.play_sfx_resolved(key)
 
         cooldown, spawns = tick_rush_mode_spawns(
             run.spawn_cooldown_ms,
@@ -326,7 +340,7 @@ class ReplayPlaybackMode:
         )
         run.spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(spawns)
-        return float(dt_sim)
+        return float(step.dt_sim)
 
     def _tick_one(self) -> None:
         replay = self._replay
