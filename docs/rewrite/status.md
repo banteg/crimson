@@ -94,6 +94,9 @@ under `docs/crimsonland-exe/`.
 - Replay sidecar differential tooling now has a reusable first-divergence comparator and CLI:
   - Code: `src/crimson/replay/diff.py`
   - Command: `uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz`
+- Oracle headless output now steps through the deterministic session pipeline and emits `command_hash` per frame:
+  - Code: `src/crimson/oracle.py`
+  - Test: `tests/test_oracle_session_pipeline.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 

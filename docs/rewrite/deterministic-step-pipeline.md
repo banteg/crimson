@@ -10,6 +10,7 @@ This page defines the current per-tick contract used by:
 - playable runtime (`GameWorld.update`)
 - replay verification runners (`sim/runners/*`)
 - replay playback mode (`modes/replay_playback_mode.py`)
+- oracle headless emission (`oracle.py`)
 
 The shared implementation lives in `src/crimson/sim/step_pipeline.py`.
 Mode/session orchestration lives in `src/crimson/sim/sessions.py`.
@@ -40,6 +41,7 @@ These session adapters own mode-level elapsed timers and spawn pacing, and are n
 - replay runners (`run_survival_replay`, `run_rush_replay`)
 - replay playback mode
 - interactive Survival/Rush mode loops
+- oracle headless stepping (summary/full/hash output)
 
 ## Why this matters
 

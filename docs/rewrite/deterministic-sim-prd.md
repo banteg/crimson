@@ -172,7 +172,7 @@ Per sampled tick (minimum viable set):
 - [x] Define explicit headless session API for stepping ticks and collecting outputs.
 - [x] Refactor interactive/replay entrypoints to use headless session adapter directly.
 - [x] Ensure render/audio layers consume commands only.
-- [ ] Add smoke tests for all three runtime modes calling the same tick API.
+- [x] Add smoke tests for all three runtime modes calling the same tick API.
 
 Current scope for the checked items is Survival/Rush deterministic loops (interactive + playback + replay verification).
 
