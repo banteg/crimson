@@ -65,6 +65,7 @@ class OriginalCaptureTick:
     input_primary_edge_true_calls: int = 0
     input_primary_down_true_calls: int = 0
     input_approx: list["OriginalCaptureInputApprox"] = field(default_factory=list)
+    frame_dt_ms: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,6 +203,44 @@ def _coerce_int_like(value: object) -> int | None:
     return None
 
 
+def _coerce_float_like(value: object) -> float | None:
+    if isinstance(value, bool):
+        return float(int(value))
+    if isinstance(value, (int, float)):
+        out = float(value)
+        if not math.isfinite(out):
+            return None
+        return out
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            out = float(text)
+        except ValueError:
+            return None
+        if not math.isfinite(out):
+            return None
+        return out
+    return None
+
+
+def _parse_frame_dt_ms_from_globals(globals_obj: dict[str, object]) -> float | None:
+    dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
+    if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
+        return float(dt_ms_i32)
+
+    dt_ms_f32 = _coerce_float_like(globals_obj.get("frame_dt_ms_f32"))
+    if dt_ms_f32 is not None and float(dt_ms_f32) > 0.0:
+        return float(dt_ms_f32)
+
+    dt_seconds = _coerce_float_like(globals_obj.get("frame_dt"))
+    if dt_seconds is not None and float(dt_seconds) > 0.0:
+        return float(dt_seconds) * 1000.0
+
+    return None
+
+
 def _parse_int_map(raw: object, name: str) -> dict[str, int]:
     if raw is None:
         return {}
@@ -236,6 +275,9 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
     input_primary_edge_true_calls = _int_or(raw.get("input_primary_edge_true_calls"), 0)
     input_primary_down_true_calls = _int_or(raw.get("input_primary_down_true_calls"), 0)
     input_approx = _parse_input_approx(raw.get("input_approx"))
+    frame_dt_ms = _coerce_float_like(raw.get("frame_dt_ms"))
+    if frame_dt_ms is not None and float(frame_dt_ms) <= 0.0:
+        frame_dt_ms = None
     input_queries_raw = raw.get("input_queries")
     if isinstance(input_queries_raw, dict):
         stats_raw = input_queries_raw.get("stats")
@@ -274,6 +316,7 @@ def _parse_tick(raw: object) -> OriginalCaptureTick:
         input_primary_edge_true_calls=input_primary_edge_true_calls,
         input_primary_down_true_calls=input_primary_down_true_calls,
         input_approx=input_approx,
+        frame_dt_ms=frame_dt_ms,
     )
 
 
@@ -359,6 +402,20 @@ def _parse_v2_game_mode_id(raw: dict[str, object]) -> int:
         if mode_id is not None and int(mode_id) >= 0:
             return int(mode_id)
     return -1
+
+
+def _parse_v2_frame_dt_ms(raw: dict[str, object]) -> float | None:
+    for scope_name in ("after", "before"):
+        scope_raw = raw.get(scope_name)
+        if not isinstance(scope_raw, dict):
+            continue
+        globals_raw = scope_raw.get("globals")
+        if not isinstance(globals_raw, dict):
+            continue
+        frame_dt_ms = _parse_frame_dt_ms_from_globals(globals_raw)
+        if frame_dt_ms is not None and float(frame_dt_ms) > 0.0:
+            return float(frame_dt_ms)
+    return None
 
 
 def _parse_v2_input_query_true_calls(raw: dict[str, object], key: str) -> int:
@@ -559,6 +616,7 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
         tick_index = _int_or(checkpoint_obj.get("tick_index"), _int_or(obj.get("tick_index"), parsed.tick_index))
         mode_hint = str(obj.get("mode_hint", parsed.mode_hint))
         game_mode_id = _parse_v2_game_mode_id(obj)
+        frame_dt_ms = _parse_v2_frame_dt_ms(obj)
         input_primary_edge_true_calls = _parse_v2_input_query_true_calls(obj, "primary_edge")
         input_primary_down_true_calls = _parse_v2_input_query_true_calls(obj, "primary_down")
         input_approx = _enrich_v2_input_approx(
@@ -594,6 +652,7 @@ def _load_original_capture_v2_ticks(path: Path) -> OriginalCaptureSidecar | None
                 else int(parsed.input_primary_down_true_calls)
             ),
             input_approx=list(input_approx) if input_approx else list(parsed.input_approx),
+            frame_dt_ms=float(frame_dt_ms) if frame_dt_ms is not None else parsed.frame_dt_ms,
         )
 
     if not saw_tick_rows:
@@ -646,6 +705,7 @@ def _tick_from_trace_snapshot(frame: int, raw_snapshot: dict[str, object]) -> Or
         deaths=[_RAW_TRACE_UNKNOWN_DEATH],
         perk=ReplayPerkSnapshot(pending_count=ORIGINAL_CAPTURE_UNKNOWN_INT),
         events=ReplayEventSummary(hit_count=-1, pickup_count=-1, sfx_count=-1, sfx_head=[]),
+        frame_dt_ms=_parse_frame_dt_ms_from_globals(globals_obj),
     )
 
 
@@ -698,11 +758,16 @@ def build_original_capture_dt_frame_overrides(
 
     sorted_ticks = sorted(capture.ticks, key=lambda item: int(item.tick_index))
     out: dict[int, float] = {}
+    explicit_overrides: dict[int, float] = {}
     last_timed_tick: int | None = None
     last_timed_elapsed_ms: int | None = None
 
     for tick in sorted_ticks:
         tick_index = int(tick.tick_index)
+        if tick.frame_dt_ms is not None:
+            dt_frame = float(tick.frame_dt_ms) / 1000.0
+            if math.isfinite(dt_frame) and dt_frame > 0.0:
+                explicit_overrides[int(tick_index)] = float(dt_frame)
         elapsed_ms = int(tick.elapsed_ms)
         if elapsed_ms < 0:
             continue
@@ -719,8 +784,13 @@ def build_original_capture_dt_frame_overrides(
         last_timed_tick = int(tick_index)
         last_timed_elapsed_ms = int(elapsed_ms)
 
+    # Prefer direct per-tick frame timing samples (includes tick 0 when available).
+    out.update(explicit_overrides)
+
     # Trim values that are effectively nominal to keep sparse overrides compact.
     for tick_index in list(out.keys()):
+        if int(tick_index) in explicit_overrides:
+            continue
         if math.isclose(float(out[tick_index]), float(nominal_dt), rel_tol=1e-9, abs_tol=1e-9):
             del out[tick_index]
 
