@@ -242,7 +242,7 @@ LAB_10002631:
       ShowWindow(pHVar5,iVar13);
       SendMessageA((HWND)hwnd,0x80,1,(LPARAM)grim_window_icon_handle);
       SendMessageA((HWND)hwnd,0x80,0,(LPARAM)grim_window_icon_handle);
-      GetLocalTime((LPSYSTEMTIME)&grim_config_dialog_system_time);
+      GetLocalTime(&grim_config_dialog_system_time);
       UVar6 = (*grim_d3d8_probe->lpVtbl->GetAdapterCount)(grim_d3d8_probe);
       Adapter = 0;
       grim_config_dialog_has_supported_adapter = '\0';
@@ -913,7 +913,7 @@ int __fastcall FUN_10002fc0(char *arg1)
 
 {
   int iVar1;
-  undefined4 *puVar2;
+  char *pcVar2;
   tagRECT local_10;
   
   grim_noop();
@@ -945,12 +945,15 @@ int __fastcall FUN_10002fc0(char *arg1)
   *(LONG *)(arg1 + 0xc) = local_10.bottom;
   *(undefined4 *)(arg1 + 0x10) = grim_backbuffer_width;
   *(undefined4 *)(arg1 + 0xc) = grim_backbuffer_height;
-  puVar2 = &grim_working_dir;
+  pcVar2 = grim_working_dir;
   for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
+    pcVar2[0] = '\0';
+    pcVar2[1] = '\0';
+    pcVar2[2] = '\0';
+    pcVar2[3] = '\0';
+    pcVar2 = pcVar2 + 4;
   }
-  _getcwd((char *)&grim_working_dir,0x104);
+  _getcwd(grim_working_dir,0x104);
   local_10.left = local_10.left & 0xffffff00;
   _DAT_1005d1c8 = local_10.left;
   _DAT_1005d1cc = local_10.top;
@@ -1183,7 +1186,7 @@ undefined4 FUN_10003c00(void)
                 (grim_device_ready != '\0')) && (grim_timing_frozen == '\0')) {
               if (DAT_1005cc38 != '\0') {
                 grim_keyboard_poll();
-                pfVar6 = (float *)&grim_key_repeat_timers;
+                pfVar6 = grim_key_repeat_timers;
                 do {
                   fVar1 = *pfVar6 - _grim_frame_dt;
                   *pfVar6 = fVar1;
@@ -2454,10 +2457,10 @@ void FUN_100052f0(void)
     pcVar10 = pcVar10 + 1;
     pcVar12 = pcVar12 + 1;
   }
-  puVar9 = &grim_key_repeat_timers;
+  pfVar8 = grim_key_repeat_timers;
   for (iVar4 = 0x100; iVar4 != 0; iVar4 = iVar4 + -1) {
-    *puVar9 = 0;
-    puVar9 = puVar9 + 1;
+    *pfVar8 = 0.0;
+    pfVar8 = pfVar8 + 1;
   }
   grim_frame_callback = &LAB_10001140;
   grim_on_device_restore = &LAB_10001150;
@@ -2921,14 +2924,18 @@ int __fastcall grim_init_system(void)
   int *in_ECX;
   int iVar3;
   undefined4 *puVar4;
-  undefined4 *puVar5;
+  char *pcVar5;
+  undefined4 *puVar6;
   
-  puVar2 = &grim_working_dir;
+  pcVar5 = grim_working_dir;
   for (iVar3 = 0x41; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
+    pcVar5[0] = '\0';
+    pcVar5[1] = '\0';
+    pcVar5[2] = '\0';
+    pcVar5[3] = '\0';
+    pcVar5 = pcVar5 + 4;
   }
-  _getcwd((char *)&grim_working_dir,0x104);
+  _getcwd(grim_working_dir,0x104);
   iVar3 = grim_d3d_init();
   if ((char)iVar3 == '\0') {
     return iVar3;
@@ -2969,11 +2976,11 @@ int __fastcall grim_init_system(void)
   puVar2 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
   if (puVar2 != (undefined4 *)0x0) {
     puVar4 = puVar2;
-    puVar5 = &grim_font2_glyph_widths;
+    puVar6 = &grim_font2_glyph_widths;
     for (iVar3 = 0x40; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar5 = *puVar4;
+      *puVar6 = *puVar4;
       puVar4 = puVar4 + 1;
-      puVar5 = puVar5 + 1;
+      puVar6 = puVar6 + 1;
     }
   }
   return CONCAT31((int3)((uint)puVar2 >> 8),1);
@@ -3934,22 +3941,22 @@ int grim_was_key_pressed(uint key)
   iVar2 = grim_keyboard_key_down(key);
   if ((char)iVar2 == '\0') {
     uVar3 = key & 0xff;
-    (&grim_key_repeat_timers)[uVar3] = 0;
-    (&grim_key_repeat_first_press)[uVar3] = 1;
+    grim_key_repeat_timers[uVar3] = 0.0;
+    grim_key_repeat_first_press[uVar3] = '\x01';
   }
   else {
     uVar4 = key & 0xff;
-    fVar1 = (float)(&grim_key_repeat_timers)[uVar4];
+    fVar1 = grim_key_repeat_timers[uVar4];
     uVar3 = CONCAT22((short)((uint)iVar2 >> 0x10),
                      (ushort)(fVar1 < 0.0) << 8 | (ushort)NAN(fVar1) << 10 |
                      (ushort)(fVar1 == 0.0) << 0xe);
     if ((fVar1 == 0.0) != 0) {
       fVar1 = grim_key_repeat_delay;
-      if ((&grim_key_repeat_first_press)[uVar4] == '\0') {
+      if (grim_key_repeat_first_press[uVar4] == '\0') {
         fVar1 = grim_key_repeat_delay * 0.2;
       }
-      (&grim_key_repeat_timers)[uVar4] = fVar1;
-      (&grim_key_repeat_first_press)[uVar4] = 0;
+      grim_key_repeat_timers[uVar4] = fVar1;
+      grim_key_repeat_first_press[uVar4] = '\0';
       return CONCAT31((int3)(uVar3 >> 8),1);
     }
   }

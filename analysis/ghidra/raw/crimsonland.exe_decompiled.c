@@ -228,10 +228,10 @@ void console_cmd_exec(void)
     console_printf(&console_log_queue,s_exec_<script>_0047118c);
     return;
   }
-  fp = (FILE *)crt_fopen(console_cmd_arg1,&DAT_00471160);
+  fp = crt_fopen(console_cmd_arg1,&DAT_00471160);
   if (fp != (FILE *)0x0) {
     console_printf(&console_log_queue,s_Executing___s__00471164,console_cmd_arg1);
-    pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,(undefined4 *)fp);
+    pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,fp);
     while (pcVar1 != (char *)0x0) {
       pcVar1 = _strchr(&console_exec_line_buf,10);
       if (pcVar1 != (char *)0x0) {
@@ -243,7 +243,7 @@ void console_cmd_exec(void)
          ((console_exec_line_buf != '\0' && (console_exec_line_buf != '#')))) {
         console_exec_line(&console_log_queue,&console_exec_line_buf);
       }
-      pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,(undefined4 *)fp);
+      pcVar1 = crt_fgets(&console_exec_line_buf,0x1ff,fp);
     }
     crt_fclose(fp);
     return;
@@ -1676,11 +1676,11 @@ int __fastcall console_flush_log(void *console_state,char *filename)
   int iVar5;
   uint uVar6;
   char *in_stack_00000004;
-  char *pcVar7;
+  char *mode;
   
-  pcVar7 = &DAT_004712dc;
+  mode = &DAT_004712dc;
   pcVar2 = game_build_path(in_stack_00000004);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar7);
+  fp = crt_fopen(pcVar2,mode);
   if (fp == (FILE *)0x0) {
     return 0;
   }
@@ -1688,7 +1688,7 @@ int __fastcall console_flush_log(void *console_state,char *filename)
   do {
     iVar4 = iVar4 + -1;
     if (iVar4 < 0) {
-      crt_fflush((int *)fp);
+      crt_fflush(fp);
       iVar4 = crt_fclose(fp);
       return CONCAT31((int3)((uint)iVar4 >> 8),1);
     }
@@ -1708,7 +1708,7 @@ int __fastcall console_flush_log(void *console_state,char *filename)
       cVar1 = *pcVar2;
       pcVar2 = pcVar2 + 1;
     } while (cVar1 != '\0');
-    crt_fwrite((char *)*puVar3,~uVar6 - 1,1,(int *)fp);
+    crt_fwrite((char *)*puVar3,~uVar6 - 1,1,fp);
   } while( true );
 }
 
@@ -7535,7 +7535,7 @@ void console_hotkey_update(void)
         pcVar4 = s_shot__d_bmp_0047299c;
       }
       crt_sprintf(&screenshot_filename_buf,pcVar4);
-      fp = (FILE *)crt_fopen(&screenshot_filename_buf,&file_mode_read_binary);
+      fp = crt_fopen(&screenshot_filename_buf,&file_mode_read_binary);
       if (fp != (FILE *)0x0) {
         crt_fclose(fp);
       }
@@ -11410,45 +11410,45 @@ void game_save_status(void)
 {
   char cVar1;
   LONG LVar2;
-  char *pcVar3;
+  char *path;
   FILE *fp;
-  char cVar4;
+  char cVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
-  uint uVar7;
-  char *pcVar8;
+  uint uVar6;
+  char *mode;
   HKEY local_8;
   int local_4;
   
   LVar2 = RegCreateKeyExA((HKEY)0x80000002,(LPCSTR)&registry_key_status_root_path,0,(LPSTR)0x0,0,
                           0xf003f,(LPSECURITY_ATTRIBUTES)0x0,(PHKEY)&local_8,(LPDWORD)0x0);
-  uVar7 = _game_sequence_id;
+  uVar6 = _game_sequence_id;
   if (LVar2 == 0) {
     reg_write_dword(local_8,s_sequence_0047361c,_game_sequence_id);
-    reg_write_dword(local_8,s_dataPathId_0047367c,uVar7 * 0xd + 3 >> 1);
+    reg_write_dword(local_8,s_dataPathId_0047367c,uVar6 * 0xd + 3 >> 1);
     reg_write_dword(local_8,s_transferFailed_0047366c,0);
     RegCloseKey((HKEY)local_8);
   }
-  pcVar8 = &file_mode_write_binary;
-  pcVar3 = game_build_path(game_status_filename);
-  fp = (FILE *)crt_fopen(pcVar3,pcVar8);
+  mode = &file_mode_write_binary;
+  path = game_build_path(game_status_filename);
+  fp = crt_fopen(path,mode);
   if (fp != (FILE *)0x0) {
     _game_status_blob = quest_unlock_index;
     local_4 = 0;
-    iVar5 = 0;
+    iVar4 = 0;
     _DAT_00485542 = quest_unlock_index_full;
-    uVar7 = 0;
+    uVar6 = 0;
     do {
-      cVar1 = (&game_status_blob)[iVar5];
-      iVar6 = (cVar1 * 7 + iVar5) * (int)cVar1 + uVar7;
-      cVar4 = (char)iVar5;
-      uVar7 = uVar7 + 0x6f;
-      local_4 = local_4 + 0xd + iVar6;
-      (&game_status_blob)[iVar5] = ((cVar4 * '\a' + '\x0f') * cVar4 + '\x03') * cVar4 + cVar1 + 'o';
-      iVar5 = iVar5 + 1;
-    } while (uVar7 < 0x10b18);
-    crt_fwrite(&game_status_blob,0x268,1,(int *)fp);
-    crt_fwrite((char *)&local_4,4,1,(int *)fp);
+      cVar1 = (&game_status_blob)[iVar4];
+      iVar5 = (cVar1 * 7 + iVar4) * (int)cVar1 + uVar6;
+      cVar3 = (char)iVar4;
+      uVar6 = uVar6 + 0x6f;
+      local_4 = local_4 + 0xd + iVar5;
+      (&game_status_blob)[iVar4] = ((cVar3 * '\a' + '\x0f') * cVar3 + '\x03') * cVar3 + cVar1 + 'o';
+      iVar4 = iVar4 + 1;
+    } while (uVar6 < 0x10b18);
+    crt_fwrite(&game_status_blob,0x268,1,fp);
+    crt_fwrite(&local_4,4,1,fp);
     crt_fclose(fp);
     if (*(float *)((int)cv_verbose + 0xc) != 0.0) {
       console_printf(&console_log_queue,s_GAME_SaveStatus_OK__00473644);
@@ -11474,19 +11474,20 @@ void game_load_status(void)
 
 {
   char cVar1;
-  char *pcVar2;
+  char *path;
   FILE *fp;
+  long lVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
-  char *pcVar7;
+  uint uVar5;
+  int iVar6;
+  char *mode;
   int local_4;
   
-  pcVar7 = &file_mode_read_binary;
-  pcVar2 = game_build_path(game_status_filename);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar7);
-  uVar6 = 0;
+  mode = &file_mode_read_binary;
+  path = game_build_path(game_status_filename);
+  fp = crt_fopen(path,mode);
+  uVar5 = 0;
   if (fp == (FILE *)0x0) {
     console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__004736a0);
     console_printf(&console_log_queue,s_Generating_new_file___00473688);
@@ -11496,31 +11497,31 @@ void game_load_status(void)
     game_sequence_load();
   }
   else {
-    crt_fseek((int *)fp,0,2);
-    iVar3 = crt_ftell((char *)fp);
-    if (iVar3 != 0x26c) {
+    crt_fseek(fp,0,2);
+    lVar2 = crt_ftell(fp);
+    if (lVar2 != 0x26c) {
       crt_fclose(fp);
       console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__invalid_f_00473700);
       game_sequence_load();
       return;
     }
-    crt_fseek((int *)fp,0,0);
-    crt_fread(&game_status_blob,0x268,1,(int *)fp);
+    crt_fseek(fp,0,0);
+    crt_fread(&game_status_blob,0x268,1,fp);
     local_4 = 0;
-    crt_fread((char *)&local_4,4,1,(int *)fp);
+    crt_fread(&local_4,4,1,fp);
+    iVar6 = 0;
     iVar3 = 0;
-    iVar4 = 0;
     do {
-      cVar1 = (char)iVar4;
-      cVar1 = (&game_status_blob)[iVar4] +
+      cVar1 = (char)iVar3;
+      cVar1 = (&game_status_blob)[iVar3] +
               (-0x6f - ((cVar1 * '\a' + '\x0f') * cVar1 + '\x03') * cVar1);
-      (&game_status_blob)[iVar4] = cVar1;
-      iVar5 = (cVar1 * 7 + iVar4) * (int)cVar1 + uVar6;
-      uVar6 = uVar6 + 0x6f;
-      iVar4 = iVar4 + 1;
-      iVar3 = iVar3 + 0xd + iVar5;
-    } while (uVar6 < 0x10b18);
-    if (iVar3 != local_4) {
+      (&game_status_blob)[iVar3] = cVar1;
+      iVar4 = (cVar1 * 7 + iVar3) * (int)cVar1 + uVar5;
+      uVar5 = uVar5 + 0x6f;
+      iVar3 = iVar3 + 1;
+      iVar6 = iVar6 + 0xd + iVar4;
+    } while (uVar5 < 0x10b18);
+    if (iVar6 != local_4) {
       crt_fclose(fp);
       console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__check_su_004736d4);
       game_sequence_load();
@@ -17682,14 +17683,19 @@ int config_sync_from_grim(void)
   undefined4 *puVar3;
   char *pcVar4;
   FILE *pFVar5;
-  uint uVar6;
+  long lVar6;
   uint uVar7;
-  int iVar8;
-  int *piVar9;
-  char *pcVar10;
+  uint uVar8;
+  int iVar9;
+  int *piVar10;
+  char *pcVar11;
   char *pcStack_494;
   uint local_490 [4];
-  char acStack_480 [14];
+  undefined1 uStack_480;
+  undefined1 uStack_47f;
+  undefined1 uStack_47e;
+  undefined1 uStack_47d;
+  undefined2 uStack_47c;
   undefined1 uStack_472;
   undefined1 uStack_471;
   undefined1 uStack_470;
@@ -17777,28 +17783,28 @@ int config_sync_from_grim(void)
   puVar2 = (undefined1 *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_490,0x54);
   _config_player_name_length = player_name_length;
   DAT_004807b6 = *puVar2;
-  uVar6 = 0xffffffff;
+  uVar7 = 0xffffffff;
   pcVar4 = &highscore_active_record;
   do {
-    pcVar10 = pcVar4;
-    if (uVar6 == 0) break;
-    uVar6 = uVar6 - 1;
-    pcVar10 = pcVar4 + 1;
+    pcVar11 = pcVar4;
+    if (uVar7 == 0) break;
+    uVar7 = uVar7 - 1;
+    pcVar11 = pcVar4 + 1;
     cVar1 = *pcVar4;
-    pcVar4 = pcVar10;
+    pcVar4 = pcVar11;
   } while (cVar1 != '\0');
-  uVar6 = ~uVar6;
-  pcVar4 = pcVar10 + -uVar6;
-  pcVar10 = &config_player_name;
-  for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-    *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+  uVar7 = ~uVar7;
+  pcVar4 = pcVar11 + -uVar7;
+  pcVar11 = &config_player_name;
+  for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+    *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
     pcVar4 = pcVar4 + 4;
-    pcVar10 = pcVar10 + 4;
+    pcVar11 = pcVar11 + 4;
   }
-  for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-    *pcVar10 = *pcVar4;
+  for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+    *pcVar11 = *pcVar4;
     pcVar4 = pcVar4 + 1;
-    pcVar10 = pcVar10 + 1;
+    pcVar11 = pcVar11 + 1;
   }
   if (grim_config_invoked != '\0') {
     pcStack_494 = acStack_3d8;
@@ -17821,69 +17827,69 @@ int config_sync_from_grim(void)
     uStack_410 = 0x3f800000;
     uStack_13 = 0;
     acStack_40c[8] = 0;
-    iVar8 = 0;
-    piVar9 = aiStack_3f8;
+    iVar9 = 0;
+    piVar10 = aiStack_3f8;
     do {
-      uVar6 = 0xffffffff;
-      *piVar9 = iVar8;
+      uVar7 = 0xffffffff;
+      *piVar10 = iVar9;
       pcVar4 = s_default_0047131c;
       do {
-        pcVar10 = pcVar4;
-        if (uVar6 == 0) break;
-        uVar6 = uVar6 - 1;
-        pcVar10 = pcVar4 + 1;
+        pcVar11 = pcVar4;
+        if (uVar7 == 0) break;
+        uVar7 = uVar7 - 1;
+        pcVar11 = pcVar4 + 1;
         cVar1 = *pcVar4;
-        pcVar4 = pcVar10;
+        pcVar4 = pcVar11;
       } while (cVar1 != '\0');
-      uVar6 = ~uVar6;
-      piVar9 = piVar9 + 1;
-      pcVar4 = pcVar10 + -uVar6;
-      pcVar10 = pcStack_494;
-      for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-        *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+      uVar7 = ~uVar7;
+      piVar10 = piVar10 + 1;
+      pcVar4 = pcVar11 + -uVar7;
+      pcVar11 = pcStack_494;
+      for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+        *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
         pcVar4 = pcVar4 + 4;
-        pcVar10 = pcVar10 + 4;
+        pcVar11 = pcVar11 + 4;
       }
-      iVar8 = iVar8 + 1;
-      for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-        *pcVar10 = *pcVar4;
+      iVar9 = iVar9 + 1;
+      for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+        *pcVar11 = *pcVar4;
         pcVar4 = pcVar4 + 1;
-        pcVar10 = pcVar10 + 1;
+        pcVar11 = pcVar11 + 1;
       }
       pcStack_494 = pcStack_494 + 0x1b;
-    } while (iVar8 < 8);
-    acStack_480[3] = 0;
-    acStack_480[2] = 0;
+    } while (iVar9 < 8);
+    uStack_47d = 0;
+    uStack_47e = 0;
     pcVar4 = acStack_300;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
+    for (iVar9 = 8; iVar9 != 0; iVar9 = iVar9 + -1) {
       pcVar4[0] = '\0';
       pcVar4[1] = '\0';
       pcVar4[2] = '\0';
       pcVar4[3] = '\0';
       pcVar4 = pcVar4 + 4;
     }
-    uVar6 = 0xffffffff;
+    uVar7 = 0xffffffff;
     pcVar4 = &default_player_name;
     do {
-      pcVar10 = pcVar4;
-      if (uVar6 == 0) break;
-      uVar6 = uVar6 - 1;
-      pcVar10 = pcVar4 + 1;
+      pcVar11 = pcVar4;
+      if (uVar7 == 0) break;
+      uVar7 = uVar7 - 1;
+      pcVar11 = pcVar4 + 1;
       cVar1 = *pcVar4;
-      pcVar4 = pcVar10;
+      pcVar4 = pcVar11;
     } while (cVar1 != '\0');
-    uVar6 = ~uVar6;
-    pcVar4 = pcVar10 + -uVar6;
-    pcVar10 = acStack_300;
-    for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-      *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+    uVar7 = ~uVar7;
+    pcVar4 = pcVar11 + -uVar7;
+    pcVar11 = acStack_300;
+    for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+      *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
       pcVar4 = pcVar4 + 4;
-      pcVar10 = pcVar10 + 4;
+      pcVar11 = pcVar11 + 4;
     }
-    for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-      *pcVar10 = *pcVar4;
+    for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+      *pcVar11 = *pcVar4;
       pcVar4 = pcVar4 + 1;
-      pcVar10 = pcVar10 + 1;
+      pcVar11 = pcVar11 + 1;
     }
     uStack_3fc = 1;
     uStack_20 = 1;
@@ -17896,8 +17902,8 @@ int config_sync_from_grim(void)
     uStack_2ac = 0x20;
     uStack_400 = 0;
     uStack_10 = 5;
-    acStack_480[0] = '\0';
-    acStack_480[1] = 0;
+    uStack_480 = 0;
+    uStack_47f = 0;
     uStack_14 = 0;
     uStack_2d8 = 0;
     uStack_2d4 = 0;
@@ -17938,7 +17944,7 @@ int config_sync_from_grim(void)
     uStack_264 = 0x17e;
     uStack_260 = 0x17e;
     uStack_25c = 0xd3;
-    pcVar10 = &file_mode_read_binary;
+    pcVar11 = &file_mode_read_binary;
     uStack_258 = 0xd1;
     uStack_254 = 0x13f;
     uStack_250 = 0x140;
@@ -17947,53 +17953,52 @@ int config_sync_from_grim(void)
     uStack_244 = 0x17e;
     uStack_240 = 0x17e;
     uStack_23c = 0x17e;
-    acStack_480[4] = '\x01';
-    acStack_480[5] = '\x01';
+    uStack_47c = 0x101;
     pcVar4 = game_build_path(config_filename);
-    pFVar5 = (FILE *)crt_fopen(pcVar4,pcVar10);
+    pFVar5 = crt_fopen(pcVar4,pcVar11);
     if (pFVar5 != (FILE *)0x0) {
-      crt_fseek((int *)pFVar5,0,2);
-      iVar8 = crt_ftell((char *)pFVar5);
-      if (iVar8 == 0x480) {
-        crt_fseek((int *)pFVar5,0,0);
-        crt_fread(acStack_480,0x480,1,(int *)pFVar5);
-        uVar6 = 0xffffffff;
+      crt_fseek(pFVar5,0,2);
+      lVar6 = crt_ftell(pFVar5);
+      if (lVar6 == 0x480) {
+        crt_fseek(pFVar5,0,0);
+        crt_fread(&uStack_480,0x480,1,pFVar5);
+        uVar7 = 0xffffffff;
         pcVar4 = acStack_40c;
         do {
-          pcVar10 = pcVar4;
-          if (uVar6 == 0) break;
-          uVar6 = uVar6 - 1;
-          pcVar10 = pcVar4 + 1;
+          pcVar11 = pcVar4;
+          if (uVar7 == 0) break;
+          uVar7 = uVar7 - 1;
+          pcVar11 = pcVar4 + 1;
           cVar1 = *pcVar4;
-          pcVar4 = pcVar10;
+          pcVar4 = pcVar11;
         } while (cVar1 != '\0');
-        uVar6 = ~uVar6;
+        uVar7 = ~uVar7;
         config_fx_toggle = uStack_14;
-        pcVar4 = pcVar10 + -uVar6;
-        pcVar10 = &config_player_name_buf;
-        for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-          *(undefined4 *)pcVar10 = *(undefined4 *)pcVar4;
+        pcVar4 = pcVar11 + -uVar7;
+        pcVar11 = &config_player_name_buf;
+        for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *(undefined4 *)pcVar11 = *(undefined4 *)pcVar4;
           pcVar4 = pcVar4 + 4;
-          pcVar10 = pcVar10 + 4;
+          pcVar11 = pcVar11 + 4;
         }
-        for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-          *pcVar10 = *pcVar4;
+        for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
+          *pcVar11 = *pcVar4;
           pcVar4 = pcVar4 + 1;
-          pcVar10 = pcVar10 + 1;
+          pcVar11 = pcVar11 + 1;
         }
       }
       crt_fclose(pFVar5);
     }
   }
-  pcVar10 = &file_mode_write_binary;
+  pcVar11 = &file_mode_write_binary;
   pcVar4 = game_build_path(config_filename);
-  pFVar5 = (FILE *)crt_fopen(pcVar4,pcVar10);
-  iVar8 = 0;
+  pFVar5 = crt_fopen(pcVar4,pcVar11);
+  iVar9 = 0;
   if (pFVar5 != (FILE *)0x0) {
-    crt_fwrite(&config_blob,0x480,1,(int *)pFVar5);
-    iVar8 = crt_fclose(pFVar5);
+    crt_fwrite(&config_blob,0x480,1,pFVar5);
+    iVar9 = crt_fclose(pFVar5);
   }
-  return CONCAT31((int3)((uint)iVar8 >> 8),1);
+  return CONCAT31((int3)((uint)iVar9 >> 8),1);
 }
 
 
@@ -18011,7 +18016,7 @@ void config_ensure_file(void)
   
   pcVar3 = &file_mode_read_binary;
   pcVar1 = game_build_path(config_filename);
-  pFVar2 = (FILE *)crt_fopen(pcVar1,pcVar3);
+  pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
     crt_fclose(pFVar2);
     return;
@@ -18019,9 +18024,9 @@ void config_ensure_file(void)
   pcVar3 = &file_mode_write_binary;
   config_fx_toggle = 1;
   pcVar1 = game_build_path(config_filename);
-  pFVar2 = (FILE *)crt_fopen(pcVar1,pcVar3);
+  pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
-    crt_fwrite(&config_blob,0x480,1,(int *)pFVar2);
+    crt_fwrite(&config_blob,0x480,1,pFVar2);
     crt_fclose(pFVar2);
   }
   return;
@@ -18039,7 +18044,7 @@ uint config_load_presets(void)
 {
   char *pcVar1;
   FILE *fp;
-  int iVar2;
+  long lVar2;
   uint uVar3;
   int *piVar4;
   int *piVar5;
@@ -18071,20 +18076,20 @@ uint config_load_presets(void)
   player_alt_key_reserved_2 = 0xd3;
   player_alt_key_reserved_3 = 0xc9;
   pcVar1 = game_build_path(config_filename);
-  fp = (FILE *)crt_fopen(pcVar1,pcVar10);
+  fp = crt_fopen(pcVar1,pcVar10);
   if (fp == (FILE *)0x0) {
     return 0;
   }
-  crt_fseek((int *)fp,0,2);
-  iVar2 = crt_ftell((char *)fp);
-  if (iVar2 != 0x480) {
+  crt_fseek(fp,0,2);
+  lVar2 = crt_ftell(fp);
+  if (lVar2 != 0x480) {
     crt_fclose(fp);
     uVar3 = config_sync_from_grim();
     return uVar3 & 0xffffff00;
   }
   cVar9 = '\0';
-  crt_fseek((int *)fp,0,0);
-  crt_fread(&config_blob,0x480,1,(int *)fp);
+  crt_fseek(fp,0,0);
+  crt_fread(&config_blob,0x480,1,fp);
   uVar8 = 0x41f2ba;
   crt_fclose(fp);
   piVar6 = &player_state_table.input.move_key_backward;
@@ -23389,16 +23394,16 @@ void console_cmd_set_resource_paq(void)
   char *pcVar2;
   FILE *fp;
   uint in_stack_ffffffec;
-  char *pcVar3;
+  char *mode;
   
   iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_setresourcepaq_<resourcepaq>_00473f44);
     return;
   }
-  pcVar3 = &file_mode_read_binary;
+  mode = &file_mode_read_binary;
   pcVar2 = console_cmd_arg_get(1);
-  fp = (FILE *)crt_fopen(pcVar2,pcVar3);
+  fp = crt_fopen(pcVar2,mode);
   if (fp == (FILE *)0x0) {
     pcVar2 = console_cmd_arg_get(1);
     console_printf(&console_log_queue,s_File___s__not_found__00473f2c,pcVar2);
@@ -33149,7 +33154,7 @@ highscore_record_pack_for_submit(highscore_record_t *src,highscore_record_t *dst
 
 /* reads and validates a high score record from a file */
 
-char * __cdecl highscore_read_record(char *param_1,int *param_2)
+char * __cdecl highscore_read_record(char *buffer,void *fp)
 
 {
   uint uVar1;
@@ -33160,29 +33165,29 @@ char * __cdecl highscore_read_record(char *param_1,int *param_2)
   
   iVar3 = 0;
   local_4 = 0;
-  crt_fread(param_1,0x48,1,param_2);
-  if ((*(byte *)(param_2 + 3) & 0x10) != 0) {
+  crt_fread(buffer,0x48,1,fp);
+  if ((*(byte *)((int)fp + 0xc) & 0x10) != 0) {
     return (char *)0x0;
   }
-  crt_fread((char *)&local_4,4,1,param_2);
+  crt_fread(&local_4,4,1,fp);
   uVar1 = 0;
   do {
-    param_1[uVar1] = param_1[uVar1] + (-6 - ((char)uVar1 * '\x05' + '\x01') * (char)uVar1);
+    buffer[uVar1] = buffer[uVar1] + (-6 - ((char)uVar1 * '\x05' + '\x01') * (char)uVar1);
     uVar1 = uVar1 + 1;
   } while (uVar1 < 0x48);
   iVar4 = 0x48;
-  pcVar2 = param_1;
+  pcVar2 = buffer;
   do {
-    iVar3 = iVar3 + (int)(pcVar2 + (3 - (int)param_1)) * (int)*pcVar2 * 7;
+    iVar3 = iVar3 + (int)(pcVar2 + (3 - (int)buffer)) * (int)*pcVar2 * 7;
     pcVar2 = pcVar2 + 1;
     iVar4 = iVar4 + -1;
   } while (iVar4 != 0);
   if (local_4 != iVar3) {
-    param_1[0x1f] = '\0';
-    console_printf(&console_log_queue,s_WARN__checksum_failure_on_score_b_00477b40,param_1);
+    buffer[0x1f] = '\0';
+    console_printf(&console_log_queue,s_WARN__checksum_failure_on_score_b_00477b40,buffer);
     return (char *)0x0;
   }
-  return param_1;
+  return buffer;
 }
 
 
@@ -33299,12 +33304,12 @@ int __cdecl highscore_update_record(char *path,byte *record)
   local_1 = 0xff;
   local_10 = crt_rand();
   local_10 = local_10 & 0xfee050f;
-  fp = (FILE *)crt_fopen(path,&DAT_00477b68);
+  fp = crt_fopen(path,&DAT_00477b68);
   uVar5 = 0;
   if (fp != (FILE *)0x0) {
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
-      pcVar3 = highscore_read_record((char *)local_48,(int *)fp);
+      pcVar3 = highscore_read_record((char *)local_48,fp);
       if ((pcVar3 != (char *)0x0) &&
          (iVar4 = highscore_record_equals(record,local_48), (char)iVar4 != '\0')) {
         if ((local_4 & 2) != 0) {
@@ -33314,15 +33319,15 @@ int __cdecl highscore_update_record(char *path,byte *record)
         if (local_4 == 0) {
           record[0x44] = 2;
         }
-        crt_fseek((int *)fp,-0x4c,1);
-        highscore_write_record((undefined4 *)record,(int *)fp);
-        crt_fflush((int *)fp);
+        crt_fseek(fp,-0x4c,1);
+        highscore_write_record(record,fp);
+        crt_fflush(fp);
         iVar4 = crt_fclose(fp);
         return CONCAT31((int3)((uint)iVar4 >> 8),1);
       }
       bVar2 = (byte)fp->_flag;
     }
-    crt_fflush((int *)fp);
+    crt_fflush(fp);
     uVar5 = crt_fclose(fp);
   }
   return uVar5 & 0xffffff00;
@@ -33334,7 +33339,7 @@ int __cdecl highscore_update_record(char *path,byte *record)
 
 /* writes a high score record with date + checksum */
 
-void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
+void __cdecl highscore_write_record(byte *record,void *fp)
 
 {
   char cVar1;
@@ -33388,18 +33393,18 @@ void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
   local_1 = 0xff;
   uVar3 = crt_rand();
   local_10 = uVar3 & 0xfee050f;
-  if (*(char *)(param_1 + 0x10) == '\0') {
-    *(undefined1 *)(param_1 + 0x10) = (undefined1)local_system_day;
-    *(undefined1 *)((int)param_1 + 0x42) = local_system_time._2_1_;
-    *(char *)((int)param_1 + 0x43) = (char)local_system_time + '0';
+  if (record[0x40] == 0) {
+    record[0x40] = (byte)local_system_day;
+    record[0x42] = local_system_time._2_1_;
+    record[0x43] = (char)local_system_time + 0x30;
     iVar2 = highscore_date_checksum
                       (local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day);
-    *(char *)((int)param_1 + 0x41) = (char)iVar2;
+    record[0x41] = (byte)iVar2;
   }
   pcVar5 = local_48;
   for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *(undefined4 *)pcVar5 = *param_1;
-    param_1 = param_1 + 1;
+    *(undefined4 *)pcVar5 = *(undefined4 *)record;
+    record = record + 4;
     pcVar5 = pcVar5 + 4;
   }
   uVar3 = 0;
@@ -33412,8 +33417,8 @@ void __cdecl highscore_write_record(undefined4 *param_1,int *param_2)
     local_48[uVar3] = local_48[uVar3] + ((char)uVar3 * '\x05' + '\x01') * (char)uVar3 + '\x06';
     uVar3 = uVar3 + 1;
   } while (uVar3 < 0x48);
-  crt_fwrite(local_48,0x48,1,param_2);
-  crt_fwrite((char *)&local_4c,4,1,param_2);
+  crt_fwrite(local_48,0x48,1,fp);
+  crt_fwrite(&local_4c,4,1,fp);
   return;
 }
 
@@ -33656,13 +33661,13 @@ void highscore_load_table(void)
     puVar12 = puVar12 + 0x48;
   } while ((int)puVar12 < 0x484776);
   iVar8 = 0;
-  fp = (FILE *)crt_fopen(pcVar3,&file_mode_read_binary);
+  fp = crt_fopen(pcVar3,&file_mode_read_binary);
   if (fp != (FILE *)0x0) {
     uVar9 = highscore_date_checksum
                       (local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day);
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
-      pcVar3 = highscore_read_record((char *)local_48,(int *)fp);
+      pcVar3 = highscore_read_record((char *)local_48,fp);
       if ((pcVar3 == (char *)0x0) || ((local_20 & 0xff) != config_game_mode)) goto LAB_0043b2ba;
       if (config_game_mode == GAME_MODE_QUEST) {
         if (config_hardcore == '\0') {
@@ -33892,12 +33897,12 @@ void __cdecl highscore_save_record(byte *record)
   }
   if (((record[0x44] & 1) == 0) ||
      (iVar3 = highscore_update_record(path,record), (char)iVar3 == '\0')) {
-    fp = (FILE *)crt_fopen(path,&DAT_00477ba0);
+    fp = crt_fopen(path,&DAT_00477ba0);
     if (fp == (FILE *)0x0) {
       console_printf(&console_log_queue,s_Unable_to_save_score__disk_full_o_00477b6c);
       return;
     }
-    highscore_write_record((undefined4 *)record,(int *)fp);
+    highscore_write_record(record,fp);
     crt_fclose(fp);
   }
   return;
@@ -34233,22 +34238,22 @@ int __cdecl buffer_reader_find_tag(char *tag,int tag_len)
 
 /* reads a NUL-terminated pack entry name into DAT_004c3a68 */
 
-uint __cdecl resource_pack_read_cstring(undefined4 *param_1)
+int __cdecl resource_pack_read_cstring(void *fp)
 
 {
   byte bVar1;
-  uint uVar2;
+  int iVar2;
   int iVar3;
   
   iVar3 = 0;
-  bVar1 = *(byte *)(param_1 + 3);
-  while (((bVar1 & 0x10) == 0 && (uVar2 = crt_getc(param_1), uVar2 != 0))) {
-    (&resource_pack_entry_name_buf)[iVar3] = (char)uVar2;
-    bVar1 = *(byte *)(param_1 + 3);
+  bVar1 = *(byte *)((int)fp + 0xc);
+  while (((bVar1 & 0x10) == 0 && (iVar2 = crt_getc(fp), iVar2 != 0))) {
+    (&resource_pack_entry_name_buf)[iVar3] = (char)iVar2;
+    bVar1 = *(byte *)((int)fp + 0xc);
     iVar3 = iVar3 + 1;
   }
   (&resource_pack_entry_name_buf)[iVar3] = 0;
-  return (uint)~param_1[3] >> 4 & 1;
+  return ~*(uint *)((int)fp + 0xc) >> 4 & 1;
 }
 
 
@@ -34268,7 +34273,7 @@ int __cdecl resource_pack_set(char *path)
   char *pcVar5;
   char *pcVar6;
   
-  fp = (FILE *)crt_fopen(path,&file_mode_read_binary);
+  fp = crt_fopen(path,&file_mode_read_binary);
   if (fp == (FILE *)0x0) {
     resource_pack_path_buf._0_1_ = 0;
     resource_pack_enabled = 0;
@@ -34313,41 +34318,42 @@ int __cdecl resource_open_read(byte *path,int *size_out)
   int *piVar1;
   char cVar2;
   FILE *fp;
-  uint uVar3;
-  int iVar4;
+  int iVar3;
+  uint uVar4;
+  long lVar5;
   
   piVar1 = size_out;
   if (resource_pack_enabled != '\0') {
-    fp = (FILE *)crt_fopen((LPCSTR)&resource_pack_path_buf,&file_mode_read_binary);
+    fp = crt_fopen((char *)&resource_pack_path_buf,&file_mode_read_binary);
     resource_fp = (FILE *)fp;
     if (fp == (FILE *)0x0) {
       return 0;
     }
-    crt_fseek((int *)fp,4,0);
-    uVar3 = resource_pack_read_cstring((undefined4 *)fp);
-    cVar2 = (char)uVar3;
+    crt_fseek(fp,4,0);
+    iVar3 = resource_pack_read_cstring(fp);
+    cVar2 = (char)iVar3;
     while (cVar2 != '\0') {
-      crt_fread((char *)&size_out,4,1,(int *)fp);
+      crt_fread(&size_out,4,1,fp);
       *piVar1 = (int)size_out;
-      uVar3 = FUN_00462de0(size_out,&resource_pack_entry_name_buf,path);
-      iVar4 = 0;
-      if (uVar3 == 0) goto LAB_0043bac3;
-      crt_fseek((int *)fp,(int)size_out,1);
-      uVar3 = resource_pack_read_cstring((undefined4 *)fp);
-      cVar2 = (char)uVar3;
+      uVar4 = FUN_00462de0(size_out,&resource_pack_entry_name_buf,path);
+      iVar3 = 0;
+      if (uVar4 == 0) goto LAB_0043bac3;
+      crt_fseek(fp,(long)size_out,1);
+      iVar3 = resource_pack_read_cstring(fp);
+      cVar2 = (char)iVar3;
     }
     crt_fclose(fp);
   }
-  resource_fp = (FILE *)crt_fopen((LPCSTR)path,&file_mode_read_binary);
+  resource_fp = crt_fopen((char *)path,&file_mode_read_binary);
   if (resource_fp == (FILE *)0x0) {
     return 0;
   }
-  crt_fseek((int *)resource_fp,0,2);
-  iVar4 = crt_ftell((char *)resource_fp);
-  *piVar1 = iVar4;
-  iVar4 = crt_fseek((int *)resource_fp,0,0);
+  crt_fseek(resource_fp,0,2);
+  lVar5 = crt_ftell(resource_fp);
+  *piVar1 = lVar5;
+  iVar3 = crt_fseek(resource_fp,0,0);
 LAB_0043bac3:
-  return CONCAT31((int3)((uint)iVar4 >> 8),1);
+  return CONCAT31((int3)((uint)iVar3 >> 8),1);
 }
 
 
@@ -34498,19 +34504,19 @@ int __cdecl dsound_restore_buffer(void *buffer)
 int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
 
 {
-  FILE *pFVar1;
-  int iVar2;
-  char *pcVar3;
+  FILE *fp;
+  int iVar1;
+  void *ptr;
   
-  iVar2 = resource_open_read(path,(int *)out_size);
-  pFVar1 = resource_fp;
-  if ((char)iVar2 == '\0') {
-    return iVar2;
+  iVar1 = resource_open_read(path,(int *)out_size);
+  fp = resource_fp;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  pcVar3 = operator_new(*out_size);
-  crt_fread(pcVar3,*out_size,1,(int *)pFVar1);
+  ptr = operator_new(*out_size);
+  crt_fread(ptr,*out_size,1,fp);
   resource_close();
-  *out_data = pcVar3;
+  *out_data = ptr;
   return CONCAT31((int3)((uint)out_data >> 8),1);
 }
 
@@ -34523,10 +34529,10 @@ int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
 int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 
 {
-  FILE *pFVar1;
-  int iVar2;
-  void *pvVar3;
-  uint uVar4;
+  FILE *fp;
+  int iVar1;
+  void *pvVar2;
+  uint uVar3;
   uint unaff_EDI;
   char *dst;
   void *local_314;
@@ -34535,16 +34541,16 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
   uint local_1c;
   int local_18;
   
-  iVar2 = resource_open_read(path,(int *)&local_314);
-  pFVar1 = resource_fp;
-  if ((char)iVar2 == '\0') {
-    return iVar2;
+  iVar1 = resource_open_read(path,(int *)&local_314);
+  fp = resource_fp;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  pvVar3 = operator_new((int)local_314 + 8);
-  crt_fread((char *)((int)pvVar3 + 8),(uint)local_314,1,(int *)pFVar1);
+  pvVar2 = operator_new((int)local_314 + 8);
+  crt_fread((void *)((int)pvVar2 + 8),(uint)local_314,1,fp);
   resource_close();
-  iVar2 = vorbis_mem_open(local_310,pvVar3,local_314,unaff_EDI);
-  if ((char)iVar2 != '\0') {
+  iVar1 = vorbis_mem_open(local_310,pvVar2,local_314,unaff_EDI);
+  if ((char)iVar1 != '\0') {
     *(undefined4 *)entry = 0;
     *(undefined4 *)((int)entry + 4) = 0;
     *(undefined4 *)((int)entry + 8) = 0;
@@ -34552,28 +34558,28 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
     *(undefined2 *)((int)entry + 0x10) = 0;
     *(short *)((int)entry + 2) = (short)local_1c;
     *(undefined2 *)entry = 1;
-    uVar4 = (int)((local_1c & 0xffff) * 0x10) >> 3;
-    *(short *)((int)entry + 0xc) = (short)uVar4;
-    *(uint *)((int)entry + 8) = (uVar4 & 0xffff) * local_18;
+    uVar3 = (int)((local_1c & 0xffff) * 0x10) >> 3;
+    *(short *)((int)entry + 0xc) = (short)uVar3;
+    *(uint *)((int)entry + 8) = (uVar3 & 0xffff) * local_18;
     *(int *)((int)entry + 4) = local_18;
     *(undefined2 *)((int)entry + 0xe) = 0x10;
     *(undefined2 *)((int)entry + 0x10) = 0;
     *(uint *)((int)entry + 0x18) = local_2c;
-    pvVar3 = operator_new(local_2c);
+    pvVar2 = operator_new(local_2c);
     dst = *(char **)((int)entry + 0x18);
-    *(void **)((int)entry + 0x14) = pvVar3;
-    iVar2 = 1;
-    while ((dst != (char *)0x0 && (iVar2 != 0))) {
-      iVar2 = vorbis_read_pcm16(local_310,
+    *(void **)((int)entry + 0x14) = pvVar2;
+    iVar1 = 1;
+    while ((dst != (char *)0x0 && (iVar1 != 0))) {
+      iVar1 = vorbis_read_pcm16(local_310,
                                 (void *)((*(int *)((int)entry + 0x18) - (int)dst) +
                                         *(int *)((int)entry + 0x14)),dst,unaff_EDI);
-      dst = dst + -iVar2;
+      dst = dst + -iVar1;
     }
     vorbis_mem_close(local_310);
-    iVar2 = sfx_entry_create_buffers((int)entry);
-    return CONCAT31((int3)((uint)iVar2 >> 8),(char)iVar2 != '\0');
+    iVar1 = sfx_entry_create_buffers((int)entry);
+    return CONCAT31((int3)((uint)iVar1 >> 8),(char)iVar1 != '\0');
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -35005,14 +35011,14 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
 
 {
   ushort uVar1;
-  FILE *pFVar2;
-  int iVar3;
+  FILE *fp;
+  int iVar2;
   void *stream;
   void *this;
-  uint uVar4;
-  undefined4 *puVar5;
-  uint3 uVar6;
-  uint uVar7;
+  uint uVar3;
+  undefined4 *puVar4;
+  uint3 uVar5;
+  uint uVar6;
   uint unaff_EDI;
   undefined4 local_24 [4];
   void *local_14;
@@ -35021,19 +35027,19 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   undefined4 local_8;
   undefined4 local_4;
   
-  iVar3 = resource_open_read(path,(int *)&path);
-  pFVar2 = resource_fp;
-  if ((char)iVar3 == '\0') {
-    return iVar3;
+  iVar2 = resource_open_read(path,(int *)&path);
+  fp = resource_fp;
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
   stream = operator_new((uint)(path + 8));
-  crt_fread((char *)((int)stream + 8),(uint)path,1,(int *)pFVar2);
+  crt_fread((void *)((int)stream + 8),(uint)path,1,fp);
   resource_close();
   this = operator_new(0x310);
   *(void **)((int)entry + 0x74) = this;
-  iVar3 = vorbis_mem_open(this,stream,path,unaff_EDI);
-  if ((char)iVar3 == '\0') {
-    return iVar3;
+  iVar2 = vorbis_mem_open(this,stream,path,unaff_EDI);
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
   *(undefined4 *)entry = 0;
   *(undefined4 *)((int)entry + 4) = 0;
@@ -35046,27 +35052,27 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   *(undefined4 *)((int)entry + 4) = *(undefined4 *)(*(int *)((int)entry + 0x74) + 0x2f8);
   *(undefined2 *)((int)entry + 0xe) = 0x10;
   *(undefined2 *)((int)entry + 0x10) = 0;
-  uVar4 = (int)((uint)uVar1 * 0x10) >> 3;
-  *(short *)((int)entry + 0xc) = (short)uVar4;
-  iVar3 = (uVar4 & 0xffff) * *(int *)((int)entry + 4);
-  *(int *)((int)entry + 8) = iVar3;
-  uVar4 = iVar3 * 2;
-  *(uint *)((int)entry + 0x18) = uVar4;
-  puVar5 = operator_new(uVar4);
-  uVar4 = *(uint *)((int)entry + 0x18);
-  *(undefined4 **)((int)entry + 0x14) = puVar5;
-  for (uVar7 = uVar4 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  uVar3 = (int)((uint)uVar1 * 0x10) >> 3;
+  *(short *)((int)entry + 0xc) = (short)uVar3;
+  iVar2 = (uVar3 & 0xffff) * *(int *)((int)entry + 4);
+  *(int *)((int)entry + 8) = iVar2;
+  uVar3 = iVar2 * 2;
+  *(uint *)((int)entry + 0x18) = uVar3;
+  puVar4 = operator_new(uVar3);
+  uVar3 = *(uint *)((int)entry + 0x18);
+  *(undefined4 **)((int)entry + 0x14) = puVar4;
+  for (uVar6 = uVar3 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
-  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *(undefined1 *)puVar5 = 0;
-    puVar5 = (undefined4 *)((int)puVar5 + 1);
+  for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *(undefined1 *)puVar4 = 0;
+    puVar4 = (undefined4 *)((int)puVar4 + 1);
   }
-  puVar5 = local_24;
-  for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  puVar4 = local_24;
+  for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
   local_24[2] = *(undefined4 *)((int)entry + 0x18);
   local_10 = 0;
@@ -35076,13 +35082,13 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   local_24[1] = 0x180c0;
   local_c = 0;
   local_14 = entry;
-  iVar3 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,local_24,(int)entry + 0x24,0);
-  uVar6 = (uint3)((uint)iVar3 >> 8);
-  if (iVar3 < 0) {
-    return (uint)uVar6 << 8;
+  iVar2 = (**(code **)(*dsound_iface + 0xc))(dsound_iface,local_24,(int)entry + 0x24,0);
+  uVar5 = (uint3)((uint)iVar2 >> 8);
+  if (iVar2 < 0) {
+    return (uint)uVar5 << 8;
   }
   *(undefined4 *)((int)entry + 0x80) = 0;
-  return CONCAT31(uVar6,1);
+  return CONCAT31(uVar5,1);
 }
 
 
@@ -50724,7 +50730,7 @@ int weapon_pick_random_available(void)
   do {
     iVar1 = crt_rand();
     iVar1 = iVar1 % 0x21 + 1;
-    if (*(int *)(&weapon_usage_counts + iVar1 * 4) != 0) {
+    if (weapon_usage_counts[iVar1] != 0) {
       uVar2 = crt_rand();
       if ((uVar2 & 1) == 0) {
         iVar1 = crt_rand();
@@ -50754,8 +50760,7 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
   
   iVar1 = weapon_id;
   if (demo_mode_active == '\0') {
-    *(int *)(&weapon_usage_counts + weapon_id * 4) =
-         *(int *)(&weapon_usage_counts + weapon_id * 4) + 1;
+    weapon_usage_counts[weapon_id] = weapon_usage_counts[weapon_id] + 1;
   }
   (&player_state_table)[player_index].weapon_id = weapon_id;
   iVar2 = perk_id_ammo_maniac;
@@ -57231,9 +57236,9 @@ int __cdecl crt_fclose(FILE *fp)
   
   iVar1 = -1;
   if ((fp->_flag & 0x40) == 0) {
-    crt_lock_file((uint)fp);
+    crt_lock_file(fp);
     iVar1 = __fclose_lk(fp);
-    crt_unlock_file((uint)fp);
+    crt_unlock_file(fp);
   }
   else {
     fp->_flag = 0;
@@ -57250,19 +57255,19 @@ int __cdecl crt_fclose(FILE *fp)
    
    Library: Visual Studio 2003 Release */
 
-undefined4 __cdecl __fclose_lk(FILE *param_1)
+int __cdecl __fclose_lk(FILE *param_1)
 
 {
   int iVar1;
-  undefined4 uVar2;
+  int iVar2;
   
-  uVar2 = 0xffffffff;
+  iVar2 = -1;
   if ((param_1->_flag & 0x83) != 0) {
-    uVar2 = crt_flushbuf((int *)param_1);
+    iVar2 = crt_flushbuf(param_1);
     __freebuf(param_1);
     iVar1 = crt_close(param_1->_file);
     if (iVar1 < 0) {
-      uVar2 = 0xffffffff;
+      iVar2 = -1;
     }
     else if (param_1->_tmpfname != (char *)0x0) {
       crt_free_base(param_1->_tmpfname);
@@ -57270,7 +57275,7 @@ undefined4 __cdecl __fclose_lk(FILE *param_1)
     }
   }
   param_1->_flag = 0;
-  return uVar2;
+  return iVar2;
 }
 
 
@@ -57355,34 +57360,34 @@ char * __cdecl _strchr(char *_Str,int _Val)
 
 /* CRT fgets wrapper with file lock/unlock (reads until newline or size-1) */
 
-char * __cdecl crt_fgets(char *param_1,int param_2,undefined4 *param_3)
+char * __cdecl crt_fgets(char *dst,int dst_len,void *fp)
 
 {
   int *piVar1;
   uint uVar2;
   char *pcVar3;
   
-  if (param_2 < 1) {
-    param_1 = (char *)0x0;
+  if (dst_len < 1) {
+    dst = (char *)0x0;
   }
   else {
-    crt_lock_file((uint)param_3);
-    pcVar3 = param_1;
+    crt_lock_file(fp);
+    pcVar3 = dst;
     do {
-      param_2 = param_2 + -1;
-      if (param_2 == 0) break;
-      piVar1 = param_3 + 1;
+      dst_len = dst_len + -1;
+      if (dst_len == 0) break;
+      piVar1 = (int *)((int)fp + 4);
       *piVar1 = *piVar1 + -1;
       if (*piVar1 < 0) {
-        uVar2 = crt_filbuf(param_3);
+        uVar2 = crt_filbuf(fp);
       }
       else {
-        uVar2 = (uint)*(byte *)*param_3;
-        *param_3 = (byte *)*param_3 + 1;
+        uVar2 = (uint)**(byte **)fp;
+        *(byte **)fp = *(byte **)fp + 1;
       }
       if (uVar2 == 0xffffffff) {
-        if (pcVar3 == param_1) {
-          param_1 = (char *)0x0;
+        if (pcVar3 == dst) {
+          dst = (char *)0x0;
           goto LAB_00461000;
         }
         break;
@@ -57392,9 +57397,9 @@ char * __cdecl crt_fgets(char *param_1,int param_2,undefined4 *param_3)
     } while ((char)uVar2 != '\n');
     *pcVar3 = '\0';
 LAB_00461000:
-    crt_unlock_file((uint)param_3);
+    crt_unlock_file(fp);
   }
-  return param_1;
+  return dst;
 }
 
 
@@ -57403,19 +57408,19 @@ LAB_00461000:
 
 /* opens file with explicit share mode (fopen uses share=0x40) */
 
-undefined4 * __cdecl crt_fsopen(LPCSTR param_1,char *param_2,uint param_3)
+void * __cdecl crt_fsopen(char *path,char *mode,uint share)
 
 {
-  undefined4 *puVar1;
-  undefined4 *puVar2;
+  void *stream;
+  void *pvVar1;
   
-  puVar1 = crt_getstream();
-  if (puVar1 == (undefined4 *)0x0) {
-    return (undefined4 *)0x0;
+  stream = crt_getstream();
+  if (stream == (void *)0x0) {
+    return (void *)0x0;
   }
-  puVar2 = crt_openfile(param_1,param_2,param_3,puVar1);
-  crt_unlock_file((uint)puVar1);
-  return puVar2;
+  pvVar1 = crt_openfile(path,mode,share,stream);
+  crt_unlock_file(stream);
+  return pvVar1;
 }
 
 
@@ -57424,11 +57429,13 @@ undefined4 * __cdecl crt_fsopen(LPCSTR param_1,char *param_2,uint param_3)
 
 /* fopen wrapper (calls crt_fsopen with share=0x40) */
 
-void __cdecl crt_fopen(LPCSTR param_1,char *param_2)
+void * __cdecl crt_fopen(char *path,char *mode)
 
 {
-  crt_fsopen(param_1,param_2,0x40);
-  return;
+  void *pvVar1;
+  
+  pvVar1 = crt_fsopen(path,mode,0x40);
+  return pvVar1;
 }
 
 
@@ -57485,10 +57492,10 @@ int __cdecl crt_vsprintf(char *dst,char *fmt,void *args)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = 0x7fffffff;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,args);
+  iVar1 = crt_output(&local_24,fmt,args);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -57676,18 +57683,18 @@ int __cdecl _strncmp(char *_Str1,char *_Str2,size_t _MaxCount)
 
 /* CRT: fflush wrapper (NULL flushes all) */
 
-int __cdecl crt_fflush(int *param_1)
+int __cdecl crt_fflush(void *fp)
 
 {
   int iVar1;
   
-  if (param_1 == (int *)0x0) {
+  if (fp == (void *)0x0) {
     iVar1 = crt_flushall(0);
     return iVar1;
   }
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_fflush_nolock(param_1);
-  crt_unlock_file((uint)param_1);
+  crt_lock_file(fp);
+  iVar1 = crt_fflush_nolock(fp);
+  crt_unlock_file(fp);
   return iVar1;
 }
 
@@ -57697,17 +57704,17 @@ int __cdecl crt_fflush(int *param_1)
 
 /* CRT: fflush without lock */
 
-int __cdecl crt_fflush_nolock(int *param_1)
+int __cdecl crt_fflush_nolock(void *fp)
 
 {
   int iVar1;
   
-  iVar1 = crt_flushbuf(param_1);
+  iVar1 = crt_flushbuf(fp);
   if (iVar1 != 0) {
     return -1;
   }
-  if ((*(byte *)((int)param_1 + 0xd) & 0x40) != 0) {
-    iVar1 = crt_commit(param_1[4]);
+  if ((*(byte *)((int)fp + 0xd) & 0x40) != 0) {
+    iVar1 = crt_commit(*(int *)((int)fp + 0x10));
     return -(uint)(iVar1 != 0);
   }
   return 0;
@@ -57719,32 +57726,32 @@ int __cdecl crt_fflush_nolock(int *param_1)
 
 /* CRT: flush write buffer */
 
-undefined4 __cdecl crt_flushbuf(int *param_1)
+int __cdecl crt_flushbuf(void *fp)
 
 {
   uint uVar1;
-  undefined4 uVar2;
+  int iVar2;
   uint count;
   
-  uVar2 = 0;
-  if ((((byte)param_1[3] & 3) == 2) && ((param_1[3] & 0x108U) != 0)) {
-    count = *param_1 - param_1[2];
+  iVar2 = 0;
+  if ((((byte)*(uint *)((int)fp + 0xc) & 3) == 2) && ((*(uint *)((int)fp + 0xc) & 0x108) != 0)) {
+    count = *(int *)fp - (int)*(char **)((int)fp + 8);
     if (0 < (int)count) {
-      uVar1 = crt_write(param_1[4],(char *)param_1[2],count);
+      uVar1 = crt_write(*(int *)((int)fp + 0x10),*(char **)((int)fp + 8),count);
       if (uVar1 == count) {
-        if ((param_1[3] & 0x80U) != 0) {
-          param_1[3] = param_1[3] & 0xfffffffd;
+        if ((*(uint *)((int)fp + 0xc) & 0x80) != 0) {
+          *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) & 0xfffffffd;
         }
       }
       else {
-        param_1[3] = param_1[3] | 0x20;
-        uVar2 = 0xffffffff;
+        *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 0x20;
+        iVar2 = -1;
       }
     }
   }
-  param_1[1] = 0;
-  *param_1 = param_1[2];
-  return uVar2;
+  *(undefined4 *)((int)fp + 4) = 0;
+  *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
+  return iVar2;
 }
 
 
@@ -57759,41 +57766,41 @@ int __cdecl crt_flushall(int mode)
   FILE *pFVar1;
   int iVar2;
   int iVar3;
+  int stream_index;
   int iVar4;
-  int iVar5;
   
   iVar3 = 0;
-  iVar5 = 0;
-  crt_lock(2);
   iVar4 = 0;
+  crt_lock(2);
+  stream_index = 0;
   if (0 < crt_stream_count) {
     do {
-      pFVar1 = crt_stream_table[iVar4];
+      pFVar1 = crt_stream_table[stream_index];
       if ((pFVar1 != (FILE *)0x0) && (((byte)pFVar1[0xc] & 0x83) != 0)) {
-        crt_lock_file2(iVar4,(int)pFVar1);
-        pFVar1 = crt_stream_table[iVar4];
+        crt_lock_file2(stream_index,pFVar1);
+        pFVar1 = crt_stream_table[stream_index];
         if ((*(uint *)(pFVar1 + 0xc) & 0x83) != 0) {
           if (mode == 1) {
-            iVar2 = crt_fflush_nolock((int *)pFVar1);
+            iVar2 = crt_fflush_nolock(pFVar1);
             if (iVar2 != -1) {
               iVar3 = iVar3 + 1;
             }
           }
           else if ((mode == 0) && ((*(uint *)(pFVar1 + 0xc) & 2) != 0)) {
-            iVar2 = crt_fflush_nolock((int *)pFVar1);
+            iVar2 = crt_fflush_nolock(pFVar1);
             if (iVar2 == -1) {
-              iVar5 = -1;
+              iVar4 = -1;
             }
           }
         }
-        crt_unlock_file2(iVar4,(int)crt_stream_table[iVar4]);
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
-      iVar4 = iVar4 + 1;
-    } while (iVar4 < crt_stream_count);
+      stream_index = stream_index + 1;
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
   if (mode != 1) {
-    iVar3 = iVar5;
+    iVar3 = iVar4;
   }
   return iVar3;
 }
@@ -57804,14 +57811,14 @@ int __cdecl crt_flushall(int mode)
 
 /* fwrite wrapper with CRT lock/unlock */
 
-uint __cdecl crt_fwrite(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fwrite(void *ptr,uint size,uint count,void *fp)
 
 {
   uint uVar1;
   
-  crt_lock_file((uint)param_4);
-  uVar1 = crt_fwrite_nolock(param_1,param_2,param_3,param_4);
-  crt_unlock_file((uint)param_4);
+  crt_lock_file(fp);
+  uVar1 = crt_fwrite_nolock(ptr,size,count,fp);
+  crt_unlock_file(fp);
   return uVar1;
 }
 
@@ -57821,73 +57828,74 @@ uint __cdecl crt_fwrite(char *param_1,uint param_2,uint param_3,int *param_4)
 
 /* fwrite implementation (no locking) */
 
-uint __cdecl crt_fwrite_nolock(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fwrite_nolock(void *ptr,uint size,uint count,void *fp)
 
 {
-  int *piVar1;
-  int iVar2;
-  int *size;
-  uint uVar3;
-  int *piVar4;
-  int *piVar5;
-  int *piVar6;
+  void *fp_00;
+  int iVar1;
+  void *size_00;
+  uint uVar2;
+  void *pvVar3;
+  void *pvVar4;
+  void *pvVar5;
   
-  piVar1 = param_4;
-  piVar5 = (int *)(param_2 * param_3);
-  if (piVar5 == (int *)0x0) {
-    param_3 = 0;
+  fp_00 = fp;
+  pvVar4 = (void *)(size * count);
+  if (pvVar4 == (void *)0x0) {
+    count = 0;
   }
   else {
-    piVar4 = piVar5;
-    if ((*(ushort *)(param_4 + 3) & 0x10c) == 0) {
-      param_4 = (int *)0x1000;
+    pvVar3 = pvVar4;
+    if ((*(ushort *)((int)fp + 0xc) & 0x10c) == 0) {
+      fp = (void *)0x1000;
     }
     else {
-      param_4 = (int *)param_4[6];
+      fp = *(void **)((int)fp + 0x18);
     }
     do {
-      if (((piVar1[3] & 0x108U) == 0) || (piVar6 = (int *)piVar1[1], piVar6 == (int *)0x0)) {
-        if (param_4 <= piVar4) {
-          if (((piVar1[3] & 0x108U) != 0) && (iVar2 = crt_flushbuf(piVar1), iVar2 != 0)) {
+      uVar2 = *(uint *)((int)fp_00 + 0xc) & 0x108;
+      if ((uVar2 == 0) || (pvVar5 = *(void **)((int)fp_00 + 4), pvVar5 == (void *)0x0)) {
+        if (fp <= pvVar3) {
+          if ((uVar2 != 0) && (iVar1 = crt_flushbuf(fp_00), iVar1 != 0)) {
 LAB_004616de:
-            return (uint)((int)piVar5 - (int)piVar4) / param_2;
+            return (uint)((int)pvVar4 - (int)pvVar3) / size;
           }
-          piVar6 = piVar4;
-          if (param_4 != (int *)0x0) {
-            piVar6 = (int *)((int)piVar4 - (uint)piVar4 % (uint)param_4);
+          pvVar5 = pvVar3;
+          if (fp != (void *)0x0) {
+            pvVar5 = (void *)((int)pvVar3 - (uint)pvVar3 % (uint)fp);
           }
-          size = (int *)crt_write(piVar1[4],param_1,(uint)piVar6);
-          if ((size == (int *)0xffffffff) ||
-             (piVar4 = (int *)((int)piVar4 - (int)size), size < piVar6)) {
-            piVar1[3] = piVar1[3] | 0x20;
+          size_00 = (void *)crt_write(*(int *)((int)fp_00 + 0x10),ptr,(uint)pvVar5);
+          if ((size_00 == (void *)0xffffffff) ||
+             (pvVar3 = (void *)((int)pvVar3 - (int)size_00), size_00 < pvVar5)) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
             goto LAB_004616de;
           }
           goto LAB_00461695;
         }
-        uVar3 = crt_flsbuf((int)*param_1,piVar1);
-        if (uVar3 == 0xffffffff) goto LAB_004616de;
-        param_1 = param_1 + 1;
-        param_4 = (int *)piVar1[6];
-        piVar4 = (int *)((int)piVar4 - 1);
-        if ((int)param_4 < 1) {
-          param_4 = (int *)0x1;
+        iVar1 = crt_flsbuf((int)*(char *)ptr,fp_00);
+        if (iVar1 == -1) goto LAB_004616de;
+        ptr = (void *)((int)ptr + 1);
+        fp = *(void **)((int)fp_00 + 0x18);
+        pvVar3 = (void *)((int)pvVar3 - 1);
+        if ((int)fp < 1) {
+          fp = (void *)0x1;
         }
       }
       else {
-        size = piVar4;
-        if (piVar6 <= piVar4) {
-          size = piVar6;
+        size_00 = pvVar3;
+        if (pvVar5 <= pvVar3) {
+          size_00 = pvVar5;
         }
-        crt_bufcpy((void *)*piVar1,param_1,(size_t)size);
-        piVar1[1] = piVar1[1] - (int)size;
-        *piVar1 = *piVar1 + (int)size;
-        piVar4 = (int *)((int)piVar4 - (int)size);
+        crt_bufcpy(*(void **)fp_00,ptr,(size_t)size_00);
+        *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 4) - (int)size_00;
+        *(int *)fp_00 = *(int *)fp_00 + (int)size_00;
+        pvVar3 = (void *)((int)pvVar3 - (int)size_00);
 LAB_00461695:
-        param_1 = param_1 + (int)size;
+        ptr = (void *)((int)ptr + (int)size_00);
       }
-    } while (piVar4 != (int *)0x0);
+    } while (pvVar3 != (void *)0x0);
   }
-  return param_3;
+  return count;
 }
 
 
@@ -57909,10 +57917,10 @@ int __cdecl crt_sprintf(char *dst,char *fmt,...)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = 0x7fffffff;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,(undefined4 *)&stack0x0000000c);
+  iVar1 = crt_output(&local_24,fmt,&stack0x0000000c);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -58229,14 +58237,14 @@ void crt_array_unwind(void *ptr,uint size,int count,void *dtor)
 
 /* fread wrapper with CRT lock/unlock */
 
-uint __cdecl crt_fread(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fread(void *ptr,uint size,uint count,void *fp)
 
 {
   uint uVar1;
   
-  crt_lock_file((uint)param_4);
-  uVar1 = crt_fread_nolock(param_1,param_2,param_3,param_4);
-  crt_unlock_file((uint)param_4);
+  crt_lock_file(fp);
+  uVar1 = crt_fread_nolock(ptr,size,count,fp);
+  crt_unlock_file(fp);
   return uVar1;
 }
 
@@ -58246,75 +58254,74 @@ uint __cdecl crt_fread(char *param_1,uint param_2,uint param_3,int *param_4)
 
 /* fread implementation (no locking) */
 
-uint __cdecl crt_fread_nolock(char *param_1,uint param_2,uint param_3,int *param_4)
+uint __cdecl crt_fread_nolock(void *ptr,uint size,uint count,void *fp)
 
 {
-  int *piVar1;
-  char *pcVar2;
-  int iVar3;
-  uint uVar4;
-  char *pcVar5;
-  char *pcVar6;
-  char *size;
+  void *fp_00;
+  void *pvVar1;
+  int iVar2;
+  char *pcVar3;
+  void *pvVar4;
+  void *size_00;
   
-  piVar1 = param_4;
-  pcVar6 = (char *)(param_2 * param_3);
-  if (pcVar6 == (char *)0x0) {
-    param_3 = 0;
+  fp_00 = fp;
+  pvVar4 = (void *)(size * count);
+  if (pvVar4 == (void *)0x0) {
+    count = 0;
   }
   else {
-    pcVar5 = param_1;
-    param_1 = pcVar6;
-    if ((*(ushort *)(param_4 + 3) & 0x10c) == 0) {
-      param_4 = (int *)0x1000;
+    pcVar3 = ptr;
+    ptr = pvVar4;
+    if ((*(ushort *)((int)fp + 0xc) & 0x10c) == 0) {
+      fp = (void *)0x1000;
     }
     else {
-      param_4 = (int *)param_4[6];
+      fp = *(void **)((int)fp + 0x18);
     }
     do {
-      if (((*(ushort *)(piVar1 + 3) & 0x10c) == 0) ||
-         (pcVar2 = (char *)piVar1[1], pcVar2 == (char *)0x0)) {
-        if (param_1 < param_4) {
-          uVar4 = crt_filbuf(piVar1);
-          if (uVar4 == 0xffffffff) goto LAB_00461c02;
-          *pcVar5 = (char)uVar4;
-          param_4 = (int *)piVar1[6];
-          pcVar5 = pcVar5 + 1;
-          param_1 = param_1 + -1;
+      if (((*(ushort *)((int)fp_00 + 0xc) & 0x10c) == 0) ||
+         (pvVar1 = *(void **)((int)fp_00 + 4), pvVar1 == (void *)0x0)) {
+        if (ptr < fp) {
+          iVar2 = crt_filbuf(fp_00);
+          if (iVar2 == -1) goto LAB_00461c02;
+          *pcVar3 = (char)iVar2;
+          fp = *(void **)((int)fp_00 + 0x18);
+          pcVar3 = pcVar3 + 1;
+          ptr = (void *)((int)ptr + -1);
         }
         else {
-          pcVar2 = param_1;
-          if (param_4 != (int *)0x0) {
-            pcVar2 = param_1 + -((uint)param_1 % (uint)param_4);
+          pvVar1 = ptr;
+          if (fp != (void *)0x0) {
+            pvVar1 = (void *)((int)ptr - (uint)ptr % (uint)fp);
           }
-          iVar3 = crt_read(piVar1[4],pcVar5,(uint)pcVar2);
-          if (iVar3 == 0) {
-            piVar1[3] = piVar1[3] | 0x10;
+          iVar2 = crt_read(*(int *)((int)fp_00 + 0x10),pcVar3,(uint)pvVar1);
+          if (iVar2 == 0) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x10;
 LAB_00461c02:
-            return (uint)((int)pcVar6 - (int)param_1) / param_2;
+            return (uint)((int)pvVar4 - (int)ptr) / size;
           }
-          if (iVar3 == -1) {
-            piVar1[3] = piVar1[3] | 0x20;
+          if (iVar2 == -1) {
+            *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
             goto LAB_00461c02;
           }
-          param_1 = param_1 + -iVar3;
-          pcVar5 = pcVar5 + iVar3;
+          ptr = (void *)((int)ptr - iVar2);
+          pcVar3 = pcVar3 + iVar2;
         }
       }
       else {
-        size = param_1;
-        if (pcVar2 <= param_1) {
-          size = pcVar2;
+        size_00 = ptr;
+        if (pvVar1 <= ptr) {
+          size_00 = pvVar1;
         }
-        crt_bufcpy(pcVar5,(void *)*piVar1,(size_t)size);
-        param_1 = param_1 + -(int)size;
-        piVar1[1] = piVar1[1] - (int)size;
-        *piVar1 = (int)(size + *piVar1);
-        pcVar5 = pcVar5 + (int)size;
+        crt_bufcpy(pcVar3,*(void **)fp_00,(size_t)size_00);
+        ptr = (void *)((int)ptr - (int)size_00);
+        *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 4) - (int)size_00;
+        *(int *)fp_00 = *(int *)fp_00 + (int)size_00;
+        pcVar3 = pcVar3 + (int)size_00;
       }
-    } while (param_1 != (char *)0x0);
+    } while (ptr != (void *)0x0);
   }
-  return param_3;
+  return count;
 }
 
 
@@ -58323,15 +58330,15 @@ LAB_00461c02:
 
 /* CRT: ftell with file lock */
 
-int __cdecl crt_ftell(char *param_1)
+long __cdecl crt_ftell(void *fp)
 
 {
-  int iVar1;
+  long lVar1;
   
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_ftell_nolock(param_1);
-  crt_unlock_file((uint)param_1);
-  return iVar1;
+  crt_lock_file(fp);
+  lVar1 = crt_ftell_nolock(fp);
+  crt_unlock_file(fp);
+  return lVar1;
 }
 
 
@@ -58340,7 +58347,7 @@ int __cdecl crt_ftell(char *param_1)
 
 /* CRT: ftell without lock */
 
-int __cdecl crt_ftell_nolock(char *param_1)
+long __cdecl crt_ftell_nolock(void *fp)
 
 {
   uint fd;
@@ -58350,18 +58357,15 @@ int __cdecl crt_ftell_nolock(char *param_1)
   char *pcVar4;
   long lVar5;
   char *pcVar6;
-  char *pcVar7;
+  void *pvVar7;
   char *pcVar8;
   int local_c;
   int local_8;
   
-  pcVar7 = param_1;
-  fd = *(uint *)(param_1 + 0x10);
-  if (*(int *)(param_1 + 4) < 0) {
-    param_1[4] = '\0';
-    param_1[5] = '\0';
-    param_1[6] = '\0';
-    param_1[7] = '\0';
+  pvVar7 = fp;
+  fd = *(uint *)((int)fp + 0x10);
+  if (*(int *)((int)fp + 4) < 0) {
+    *(undefined4 *)((int)fp + 4) = 0;
   }
   local_8 = crt_lseek(fd,0,1);
   if (local_8 < 0) {
@@ -58369,12 +58373,12 @@ LAB_00461cbe:
     local_c = -1;
   }
   else {
-    uVar1 = *(uint *)(param_1 + 0xc);
+    uVar1 = *(uint *)((int)fp + 0xc);
     if ((uVar1 & 0x108) == 0) {
-      return local_8 - *(int *)(param_1 + 4);
+      return local_8 - *(int *)((int)fp + 4);
     }
-    pcVar4 = *(char **)param_1;
-    pcVar6 = *(char **)(param_1 + 8);
+    pcVar4 = *(char **)fp;
+    pcVar6 = *(char **)((int)fp + 8);
     local_c = (int)pcVar4 - (int)pcVar6;
     if ((uVar1 & 3) == 0) {
       if ((uVar1 & 0x80) == 0) {
@@ -58394,42 +58398,42 @@ LAB_00461cbe:
       }
     }
     if (local_8 != 0) {
-      if ((param_1[0xc] & 1U) != 0) {
-        if (*(int *)(param_1 + 4) == 0) {
+      if ((*(byte *)((int)fp + 0xc) & 1) != 0) {
+        if (*(int *)((int)fp + 4) == 0) {
           local_c = 0;
         }
         else {
-          pcVar4 = pcVar4 + (*(int *)(param_1 + 4) - (int)pcVar6);
+          pcVar4 = pcVar4 + (*(int *)((int)fp + 4) - (int)pcVar6);
           if (((uint)(&crt_pioinfo_table)[(int)fd >> 5][(fd & 0x1f) * 9 + 1] & 0x80) != 0) {
             lVar5 = crt_lseek(fd,0,2);
             if (lVar5 == local_8) {
-              pcVar6 = *(char **)(param_1 + 8);
+              pcVar6 = *(char **)((int)fp + 8);
               pcVar8 = pcVar4 + (int)pcVar6;
-              param_1 = pcVar4;
+              fp = pcVar4;
               for (; pcVar6 < pcVar8; pcVar6 = pcVar6 + 1) {
                 if (*pcVar6 == '\n') {
-                  param_1 = param_1 + 1;
+                  fp = (void *)((int)fp + 1);
                 }
               }
-              bVar2 = pcVar7[0xd] & 0x20;
+              bVar2 = *(byte *)((int)pvVar7 + 0xd) & 0x20;
             }
             else {
               crt_lseek(fd,local_8,0);
-              pcVar7 = (char *)0x200;
-              if ((((char *)0x200 < pcVar4) || ((*(uint *)(param_1 + 0xc) & 8) == 0)) ||
-                 ((*(uint *)(param_1 + 0xc) & 0x400) != 0)) {
-                pcVar7 = *(char **)(param_1 + 0x18);
+              pvVar7 = (void *)0x200;
+              if ((((char *)0x200 < pcVar4) || ((*(uint *)((int)fp + 0xc) & 8) == 0)) ||
+                 ((*(uint *)((int)fp + 0xc) & 0x400) != 0)) {
+                pvVar7 = *(void **)((int)fp + 0x18);
               }
               bVar2 = *(byte *)((&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 1) & 4;
-              param_1 = pcVar7;
+              fp = pvVar7;
             }
-            pcVar4 = param_1;
+            pcVar4 = fp;
             if (bVar2 != 0) {
-              pcVar4 = param_1 + 1;
+              pcVar4 = (void *)((int)fp + 1);
             }
           }
-          param_1 = pcVar4;
-          local_8 = local_8 - (int)param_1;
+          fp = pcVar4;
+          local_8 = local_8 - (int)fp;
         }
       }
       local_c = local_c + local_8;
@@ -58444,14 +58448,14 @@ LAB_00461cbe:
 
 /* fseek wrapper with CRT lock/unlock */
 
-int __cdecl crt_fseek(int *param_1,int param_2,DWORD param_3)
+int __cdecl crt_fseek(void *fp,long offset,int origin)
 
 {
   int iVar1;
   
-  crt_lock_file((uint)param_1);
-  iVar1 = crt_fseek_nolock(param_1,param_2,param_3);
-  crt_unlock_file((uint)param_1);
+  crt_lock_file(fp);
+  iVar1 = crt_fseek_nolock(fp,offset,origin);
+  crt_unlock_file(fp);
   return iVar1;
 }
 
@@ -58461,40 +58465,41 @@ int __cdecl crt_fseek(int *param_1,int param_2,DWORD param_3)
 
 /* fseek implementation (uses crt_lseek) */
 
-int __cdecl crt_fseek_nolock(int *param_1,int param_2,DWORD param_3)
+int __cdecl crt_fseek_nolock(void *fp,long offset,int origin)
 
 {
   uint uVar1;
-  int iVar2;
-  long lVar3;
-  int *piVar4;
+  long lVar2;
+  int *piVar3;
+  int iVar4;
   
-  if (((param_1[3] & 0x83U) == 0) || (((param_3 != 0 && (param_3 != 1)) && (param_3 != 2)))) {
-    piVar4 = crt_errno_ptr();
-    *piVar4 = 0x16;
-    iVar2 = -1;
+  if (((*(uint *)((int)fp + 0xc) & 0x83) == 0) ||
+     (((origin != 0 && (origin != 1)) && (origin != 2)))) {
+    piVar3 = crt_errno_ptr();
+    *piVar3 = 0x16;
+    iVar4 = -1;
   }
   else {
-    param_1[3] = param_1[3] & 0xffffffef;
-    if (param_3 == 1) {
-      iVar2 = crt_ftell_nolock((char *)param_1);
-      param_2 = param_2 + iVar2;
-      param_3 = 0;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) & 0xffffffef;
+    if (origin == 1) {
+      lVar2 = crt_ftell_nolock(fp);
+      offset = offset + lVar2;
+      origin = 0;
     }
-    crt_flushbuf(param_1);
-    uVar1 = param_1[3];
+    crt_flushbuf(fp);
+    uVar1 = *(uint *)((int)fp + 0xc);
     if ((uVar1 & 0x80) == 0) {
       if ((((uVar1 & 1) != 0) && ((uVar1 & 8) != 0)) && ((uVar1 & 0x400) == 0)) {
-        param_1[6] = 0x200;
+        *(undefined4 *)((int)fp + 0x18) = 0x200;
       }
     }
     else {
-      param_1[3] = uVar1 & 0xfffffffc;
+      *(uint *)((int)fp + 0xc) = uVar1 & 0xfffffffc;
     }
-    lVar3 = crt_lseek(param_1[4],param_2,param_3);
-    iVar2 = (lVar3 != -1) - 1;
+    lVar2 = crt_lseek(*(int *)((int)fp + 0x10),offset,origin);
+    iVar4 = (lVar2 != -1) - 1;
   }
-  return iVar2;
+  return iVar4;
 }
 
 
@@ -58516,10 +58521,10 @@ int __cdecl crt_snprintf(char *dst,int size,char *fmt,...)
   local_24 = dst;
   local_18 = 0x42;
   local_20 = size;
-  iVar1 = crt_output((int *)&local_24,(byte *)fmt,(undefined4 *)&stack0x00000010);
+  iVar1 = crt_output(&local_24,fmt,&stack0x00000010);
   local_20 = local_20 + -1;
   if (local_20 < 0) {
-    crt_flsbuf(0,(int *)&local_24);
+    crt_flsbuf(0,&local_24);
   }
   else {
     *local_24 = '\0';
@@ -58632,11 +58637,11 @@ int __cdecl FUN_00461fd5(byte *param_1)
   int iVar1;
   int iVar2;
   
-  crt_lock_file2(1,0x47b3f8);
+  crt_lock_file2(1,&DAT_0047b3f8);
   iVar1 = FUN_004666f5((int *)&DAT_0047b3f8);
-  iVar2 = crt_output((int *)&DAT_0047b3f8,param_1,(undefined4 *)&stack0x00000008);
+  iVar2 = crt_output(&DAT_0047b3f8,(char *)param_1,&stack0x00000008);
   FUN_00466782(iVar1,(int *)&DAT_0047b3f8);
-  crt_unlock_file2(1,0x47b3f8);
+  crt_unlock_file2(1,&DAT_0047b3f8);
   return iVar2;
 }
 
@@ -59842,23 +59847,23 @@ void __cdecl crt_swap(char *a,char *b,size_t width)
 
 /* CRT: get character with stream lock */
 
-uint __cdecl crt_getc(undefined4 *param_1)
+int __cdecl crt_getc(void *fp)
 
 {
   int *piVar1;
   uint uVar2;
   
-  crt_lock_file((uint)param_1);
-  piVar1 = param_1 + 1;
+  crt_lock_file(fp);
+  piVar1 = (int *)((int)fp + 4);
   *piVar1 = *piVar1 + -1;
   if (*piVar1 < 0) {
-    uVar2 = crt_filbuf(param_1);
+    uVar2 = crt_filbuf(fp);
   }
   else {
-    uVar2 = (uint)*(byte *)*param_1;
-    *param_1 = (byte *)*param_1 + 1;
+    uVar2 = (uint)**(byte **)fp;
+    *(byte **)fp = *(byte **)fp + 1;
   }
-  crt_unlock_file((uint)param_1);
+  crt_unlock_file(fp);
   return uVar2;
 }
 
@@ -61154,14 +61159,14 @@ uint __thiscall crt_isctype(void *this,int c,uint mask)
 
 /* lock a FILE stream (CRT lock or critical section) */
 
-void __cdecl crt_lock_file(uint param_1)
+void __cdecl crt_lock_file(void *fp)
 
 {
-  if ((0x47b3d7 < param_1) && (param_1 < 0x47b639)) {
-    crt_lock(((int)(param_1 - 0x47b3d8) >> 5) + 0x1c);
+  if (((void *)0x47b3d7 < fp) && (fp < (void *)0x47b639)) {
+    crt_lock(((int)fp + -0x47b3d8 >> 5) + 0x1c);
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(param_1 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61171,14 +61176,14 @@ void __cdecl crt_lock_file(uint param_1)
 
 /* CRT: lock FILE by index or per-stream critical section */
 
-void __cdecl crt_lock_file2(int param_1,int param_2)
+void __cdecl crt_lock_file2(int stream_index,void *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_lock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_lock(stream_index + 0x1c);
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61188,14 +61193,14 @@ void __cdecl crt_lock_file2(int param_1,int param_2)
 
 /* unlock a FILE stream (CRT lock or critical section) */
 
-void __cdecl crt_unlock_file(uint param_1)
+void __cdecl crt_unlock_file(void *fp)
 
 {
-  if ((0x47b3d7 < param_1) && (param_1 < 0x47b639)) {
-    crt_unlock(((int)(param_1 - 0x47b3d8) >> 5) + 0x1c);
+  if (((void *)0x47b3d7 < fp) && (fp < (void *)0x47b639)) {
+    crt_unlock(((int)fp + -0x47b3d8 >> 5) + 0x1c);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_1 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61205,14 +61210,14 @@ void __cdecl crt_unlock_file(uint param_1)
 
 /* CRT: unlock FILE by index or per-stream critical section */
 
-void __cdecl crt_unlock_file2(int param_1,int param_2)
+void __cdecl crt_unlock_file2(int stream_index,void *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_unlock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_unlock(stream_index + 0x1c);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)((int)fp + 0x20));
   return;
 }
 
@@ -61315,7 +61320,7 @@ void __cdecl __freebuf(FILE *_File)
 
 /* CRT: fill read buffer */
 
-uint __cdecl crt_filbuf(undefined4 *param_1)
+int __cdecl crt_filbuf(void *fp)
 
 {
   byte bVar1;
@@ -61323,21 +61328,21 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
   int iVar3;
   void **ppvVar4;
   
-  uVar2 = param_1[3];
+  uVar2 = *(uint *)((int)fp + 0xc);
   if (((uVar2 & 0x83) != 0) && ((uVar2 & 0x40) == 0)) {
     if ((uVar2 & 2) == 0) {
-      param_1[3] = uVar2 | 1;
+      *(uint *)((int)fp + 0xc) = uVar2 | 1;
       if ((uVar2 & 0x10c) == 0) {
-        crt_file_buffer_init(param_1);
+        crt_file_buffer_init(fp);
       }
       else {
-        *param_1 = param_1[2];
+        *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
       }
-      iVar3 = crt_read(param_1[4],(char *)param_1[2],param_1[6]);
-      param_1[1] = iVar3;
+      iVar3 = crt_read(*(int *)((int)fp + 0x10),*(char **)((int)fp + 8),*(uint *)((int)fp + 0x18));
+      *(int *)((int)fp + 4) = iVar3;
       if ((iVar3 != 0) && (iVar3 != -1)) {
-        if ((param_1[3] & 0x82) == 0) {
-          uVar2 = param_1[4];
+        if ((*(uint *)((int)fp + 0xc) & 0x82) == 0) {
+          uVar2 = *(uint *)((int)fp + 0x10);
           if (uVar2 == 0xffffffff) {
             ppvVar4 = (void **)&DAT_0047b930;
           }
@@ -61345,25 +61350,26 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
             ppvVar4 = (&crt_pioinfo_table)[(int)uVar2 >> 5] + (uVar2 & 0x1f) * 9;
           }
           if (((uint)ppvVar4[1] & 0x82) == 0x82) {
-            param_1[3] = param_1[3] | 0x2000;
+            *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 0x2000;
           }
         }
-        if (((param_1[6] == 0x200) && ((param_1[3] & 8) != 0)) && ((param_1[3] & 0x400) == 0)) {
-          param_1[6] = 0x1000;
+        if (((*(int *)((int)fp + 0x18) == 0x200) && ((*(uint *)((int)fp + 0xc) & 8) != 0)) &&
+           ((*(uint *)((int)fp + 0xc) & 0x400) == 0)) {
+          *(undefined4 *)((int)fp + 0x18) = 0x1000;
         }
-        param_1[1] = iVar3 + -1;
-        bVar1 = *(byte *)*param_1;
-        *param_1 = (byte *)*param_1 + 1;
+        *(int *)((int)fp + 4) = iVar3 + -1;
+        bVar1 = **(byte **)fp;
+        *(byte **)fp = *(byte **)fp + 1;
         return (uint)bVar1;
       }
-      param_1[3] = param_1[3] | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
-      param_1[1] = 0;
+      *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
+      *(undefined4 *)((int)fp + 4) = 0;
     }
     else {
-      param_1[3] = uVar2 | 0x20;
+      *(uint *)((int)fp + 0xc) = uVar2 | 0x20;
     }
   }
-  return 0xffffffff;
+  return -1;
 }
 
 
@@ -61373,7 +61379,7 @@ uint __cdecl crt_filbuf(undefined4 *param_1)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* CRT: open file with mode string parsing */
 
-undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,undefined4 *param_4)
+void * __cdecl crt_openfile(char *filename,char *mode,int shflag,void *stream)
 
 {
   char cVar1;
@@ -61386,7 +61392,7 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
   
   bVar4 = false;
   bVar3 = false;
-  cVar1 = *param_2;
+  cVar1 = *mode;
   if (cVar1 == 'a') {
     oflag = 0x109;
   }
@@ -61397,7 +61403,7 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
       goto LAB_00464071;
     }
     if (cVar1 != 'w') {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     oflag = 0x301;
   }
@@ -61405,21 +61411,21 @@ undefined4 * __cdecl crt_openfile(LPCSTR param_1,char *param_2,uint param_3,unde
 LAB_00464071:
   bVar2 = true;
 LAB_00464074:
-  cVar1 = param_2[1];
-  param_2 = param_2 + 1;
+  cVar1 = mode[1];
+  mode = mode + 1;
   if ((cVar1 == '\0') || (!bVar2)) {
-    iVar5 = crt_sopen(param_1,oflag,param_3,0x1a4);
+    iVar5 = crt_sopen(filename,oflag,shflag,0x1a4);
     if (iVar5 < 0) {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     _DAT_004d99d0 = _DAT_004d99d0 + 1;
-    param_4[3] = uVar6;
-    param_4[1] = 0;
-    *param_4 = 0;
-    param_4[2] = 0;
-    param_4[7] = 0;
-    param_4[4] = iVar5;
-    return param_4;
+    *(uint *)((int)stream + 0xc) = uVar6;
+    *(undefined4 *)((int)stream + 4) = 0;
+    *(undefined4 *)stream = 0;
+    *(undefined4 *)((int)stream + 8) = 0;
+    *(undefined4 *)((int)stream + 0x1c) = 0;
+    *(int *)((int)stream + 0x10) = iVar5;
+    return stream;
   }
   if (cVar1 < 'U') {
     if (cVar1 == 'T') {
@@ -61491,51 +61497,51 @@ LAB_00464154:
 
 /* CRT: allocate FILE struct from pool */
 
-undefined4 * crt_getstream(void)
+void * crt_getstream(void)
 
 {
   FILE *pFVar1;
-  int iVar2;
-  FILE *pFVar3;
+  int stream_index;
+  FILE *pFVar2;
   
-  pFVar3 = (FILE *)0x0;
+  pFVar2 = (FILE *)0x0;
   crt_lock(2);
-  iVar2 = 0;
+  stream_index = 0;
   if (0 < crt_stream_count) {
     do {
-      pFVar1 = crt_stream_table[iVar2];
+      pFVar1 = crt_stream_table[stream_index];
       if (pFVar1 == (FILE *)0x0) {
         pFVar1 = _malloc(0x38);
-        crt_stream_table[iVar2] = pFVar1;
-        if (crt_stream_table[iVar2] != (FILE *)0x0) {
-          InitializeCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[iVar2] + 0x20));
-          EnterCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[iVar2] + 0x20));
-          pFVar3 = crt_stream_table[iVar2];
+        crt_stream_table[stream_index] = pFVar1;
+        if (crt_stream_table[stream_index] != (FILE *)0x0) {
+          InitializeCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 0x20));
+          EnterCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 0x20));
+          pFVar2 = crt_stream_table[stream_index];
 LAB_00464244:
-          if (pFVar3 != (FILE *)0x0) {
-            *(undefined4 *)(pFVar3 + 0x10) = 0xffffffff;
-            *(undefined4 *)(pFVar3 + 4) = 0;
-            *(undefined4 *)(pFVar3 + 0xc) = 0;
-            *(undefined4 *)(pFVar3 + 8) = 0;
-            *(undefined4 *)pFVar3 = 0;
-            *(undefined4 *)(pFVar3 + 0x1c) = 0;
+          if (pFVar2 != (FILE *)0x0) {
+            *(undefined4 *)(pFVar2 + 0x10) = 0xffffffff;
+            *(undefined4 *)(pFVar2 + 4) = 0;
+            *(undefined4 *)(pFVar2 + 0xc) = 0;
+            *(undefined4 *)(pFVar2 + 8) = 0;
+            *(undefined4 *)pFVar2 = 0;
+            *(undefined4 *)(pFVar2 + 0x1c) = 0;
           }
         }
         break;
       }
       if (((byte)pFVar1[0xc] & 0x83) == 0) {
-        crt_lock_file2(iVar2,(int)pFVar1);
-        if (((byte)crt_stream_table[iVar2][0xc] & 0x83) == 0) {
-          pFVar3 = crt_stream_table[iVar2];
+        crt_lock_file2(stream_index,pFVar1);
+        if (((byte)crt_stream_table[stream_index][0xc] & 0x83) == 0) {
+          pFVar2 = crt_stream_table[stream_index];
           goto LAB_00464244;
         }
-        crt_unlock_file2(iVar2,(int)crt_stream_table[iVar2]);
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
-      iVar2 = iVar2 + 1;
-    } while (iVar2 < crt_stream_count);
+      stream_index = stream_index + 1;
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
-  return (undefined4 *)pFVar3;
+  return pFVar2;
 }
 
 
@@ -61544,72 +61550,72 @@ LAB_00464244:
 
 /* flush buffer or write single char (fputc core) */
 
-uint __cdecl crt_flsbuf(uint param_1,int *param_2)
+int __cdecl crt_flsbuf(int ch,void *fp)
 
 {
   uint uVar1;
   uint fd;
   char *buf;
-  int *piVar2;
-  byte bVar3;
+  void *fp_00;
+  byte bVar2;
   undefined3 extraout_var;
-  void **ppvVar4;
-  int *count;
+  void **ppvVar3;
+  void *count;
   
-  piVar2 = param_2;
-  uVar1 = param_2[3];
-  fd = param_2[4];
+  fp_00 = fp;
+  uVar1 = *(uint *)((int)fp + 0xc);
+  fd = *(uint *)((int)fp + 0x10);
   if (((uVar1 & 0x82) == 0) || ((uVar1 & 0x40) != 0)) {
 LAB_00464374:
-    param_2[3] = uVar1 | 0x20;
+    *(uint *)((int)fp + 0xc) = uVar1 | 0x20;
   }
   else {
     if ((uVar1 & 1) != 0) {
-      param_2[1] = 0;
+      *(undefined4 *)((int)fp + 4) = 0;
       if ((uVar1 & 0x10) == 0) goto LAB_00464374;
-      *param_2 = param_2[2];
-      param_2[3] = uVar1 & 0xfffffffe;
+      *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
+      *(uint *)((int)fp + 0xc) = uVar1 & 0xfffffffe;
     }
-    uVar1 = param_2[3];
-    param_2[1] = 0;
-    param_2 = (int *)0x0;
-    piVar2[3] = uVar1 & 0xffffffef | 2;
+    uVar1 = *(uint *)((int)fp + 0xc);
+    *(undefined4 *)((int)fp + 4) = 0;
+    fp = (void *)0x0;
+    *(uint *)((int)fp_00 + 0xc) = uVar1 & 0xffffffef | 2;
     if (((uVar1 & 0x10c) == 0) &&
-       (((piVar2 != (int *)&DAT_0047b3f8 && (piVar2 != (int *)&DAT_0047b418)) ||
-        (bVar3 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar3) == 0)))) {
-      crt_file_buffer_init(piVar2);
+       (((fp_00 != &DAT_0047b3f8 && (fp_00 != &DAT_0047b418)) ||
+        (bVar2 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar2) == 0)))) {
+      crt_file_buffer_init(fp_00);
     }
-    if ((*(ushort *)(piVar2 + 3) & 0x108) == 0) {
-      count = (int *)0x1;
-      param_2 = (int *)crt_write(fd,(char *)&param_1,1);
+    if ((*(ushort *)((int)fp_00 + 0xc) & 0x108) == 0) {
+      count = (void *)0x1;
+      fp = (void *)crt_write(fd,(char *)&ch,1);
     }
     else {
-      buf = (char *)piVar2[2];
-      count = (int *)(*piVar2 - (int)buf);
-      *piVar2 = (int)(buf + 1);
-      piVar2[1] = piVar2[6] + -1;
+      buf = *(char **)((int)fp_00 + 8);
+      count = (void *)(*(int *)fp_00 - (int)buf);
+      *(char **)fp_00 = buf + 1;
+      *(int *)((int)fp_00 + 4) = *(int *)((int)fp_00 + 0x18) + -1;
       if ((int)count < 1) {
         if (fd == 0xffffffff) {
-          ppvVar4 = (void **)&DAT_0047b930;
+          ppvVar3 = (void **)&DAT_0047b930;
         }
         else {
-          ppvVar4 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9;
+          ppvVar3 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9;
         }
-        if (((uint)ppvVar4[1] & 0x20) != 0) {
+        if (((uint)ppvVar3[1] & 0x20) != 0) {
           crt_lseek(fd,0,2);
         }
       }
       else {
-        param_2 = (int *)crt_write(fd,buf,(uint)count);
+        fp = (void *)crt_write(fd,buf,(uint)count);
       }
-      *(undefined1 *)piVar2[2] = (undefined1)param_1;
+      **(undefined1 **)((int)fp_00 + 8) = (undefined1)ch;
     }
-    if (param_2 == count) {
-      return param_1 & 0xff;
+    if (fp == count) {
+      return ch & 0xff;
     }
-    piVar2[3] = piVar2[3] | 0x20;
+    *(uint *)((int)fp_00 + 0xc) = *(uint *)((int)fp_00 + 0xc) | 0x20;
   }
-  return 0xffffffff;
+  return -1;
 }
 
 
@@ -61618,10 +61624,10 @@ LAB_00464374:
 
 /* CRT: core printf formatter */
 
-int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
+int __cdecl crt_output(void *stream,char *format,void *args)
 
 {
-  byte *pbVar1;
+  char *pcVar1;
   uint uVar2;
   WCHAR *pWVar3;
   void *pvVar4;
@@ -61658,12 +61664,12 @@ int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
   
   local_40 = 0;
   local_14 = (undefined1 *)0x0;
-  bVar8 = *param_2;
+  bVar8 = *format;
   local_18 = 0;
   local_34 = (WCHAR *)0x0;
-  pbVar1 = param_2;
+  pcVar1 = format;
   do {
-    if ((bVar8 == 0) || (param_2 = pbVar1 + 1, local_18 < 0)) {
+    if ((bVar8 == 0) || (format = pcVar1 + 1, local_18 < 0)) {
       return local_18;
     }
     if (((char)bVar8 < ' ') || ('x' < (char)bVar8)) {
@@ -61678,11 +61684,11 @@ int __cdecl crt_output(int *param_1,byte *param_2,undefined4 *param_3)
 switchD_004643fc_caseD_0:
       local_30 = 0;
       if ((crt_ctype_table[(uint)bVar8 * 2 + 1] & 0x80) != 0) {
-        crt_putc_nolock((int)(char)bVar8,param_1,&local_18);
-        bVar8 = *param_2;
-        param_2 = pbVar1 + 2;
+        crt_putc_nolock((int)(char)bVar8,stream,&local_18);
+        bVar8 = *format;
+        format = pcVar1 + 2;
       }
-      crt_putc_nolock((int)(char)bVar8,param_1,&local_18);
+      crt_putc_nolock((int)(char)bVar8,stream,&local_18);
       break;
     case 1:
       local_c = -1;
@@ -61712,7 +61718,7 @@ switchD_004643fc_caseD_0:
       break;
     case 3:
       if (bVar8 == 0x2a) {
-        local_2c = FUN_00464bbc((int *)&param_3);
+        local_2c = FUN_00464bbc((int *)&args);
         if (local_2c < 0) {
           local_8 = local_8 | 4;
           local_2c = -local_2c;
@@ -61727,7 +61733,7 @@ switchD_004643fc_caseD_0:
       break;
     case 5:
       if (bVar8 == 0x2a) {
-        local_c = FUN_00464bbc((int *)&param_3);
+        local_c = FUN_00464bbc((int *)&args);
         if (local_c < 0) {
           local_c = -1;
         }
@@ -61738,11 +61744,11 @@ switchD_004643fc_caseD_0:
       break;
     case 6:
       if (bVar8 == 0x49) {
-        if ((*param_2 != 0x36) || (pbVar1[2] != 0x34)) {
+        if ((*format != 0x36) || (pcVar1[2] != '4')) {
           local_40 = 0;
           goto switchD_004643fc_caseD_0;
         }
-        param_2 = pbVar1 + 3;
+        format = pcVar1 + 3;
         local_8 = local_8 | 0x8000;
       }
       else if (bVar8 == 0x68) {
@@ -61792,7 +61798,7 @@ LAB_00464837:
             goto LAB_004648a0;
           }
           if (bVar8 == 0x5a) {
-            psVar5 = (short *)FUN_00464bbc((int *)&param_3);
+            psVar5 = (short *)FUN_00464bbc((int *)&args);
             if ((psVar5 == (short *)0x0) ||
                (pWVar10 = *(WCHAR **)(psVar5 + 2), pWVar10 == (WCHAR *)0x0)) {
               local_10 = (WCHAR *)PTR_DAT_0047b658;
@@ -61811,12 +61817,12 @@ LAB_00464837:
           else if (bVar8 == 99) {
 LAB_00464651:
             if ((local_8 & 0x810) == 0) {
-              iVar9 = FUN_00464bbc((int *)&param_3);
+              iVar9 = FUN_00464bbc((int *)&args);
               local_250[0]._0_1_ = (undefined1)iVar9;
               local_14 = (undefined1 *)0x1;
             }
             else {
-              pvVar4 = FUN_00464bd9((int *)&param_3);
+              pvVar4 = FUN_00464bd9((int *)&args);
               local_14 = (undefined1 *)FUN_0046b0b5((LPSTR)local_250,(WCHAR)pvVar4);
               if ((int)local_14 < 0) {
                 local_3c = 1;
@@ -61852,9 +61858,9 @@ LAB_00464623:
             }
           }
           local_10 = pWVar3;
-          local_50 = *param_3;
-          local_4c = param_3[1];
-          param_3 = param_3 + 2;
+          local_50 = *(undefined4 *)args;
+          local_4c = *(undefined4 *)((int)args + 4);
+          args = (void *)((int)args + 8);
           (*(code *)PTR_FUN_0047b1a8)(&local_50,pWVar10,(int)(char)bVar8,local_c,local_44);
           uVar2 = local_8 & 0x80;
           if ((uVar2 != 0) && (local_c == 0)) {
@@ -61894,26 +61900,26 @@ LAB_004649d4:
 LAB_00464a0c:
           iVar9 = (local_2c - local_28) - (int)local_14;
           if ((local_8 & 0xc) == 0) {
-            crt_putc_repeat_nolock(0x20,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x20,iVar9,stream,&local_18);
           }
-          crt_putc_buffer_nolock(&local_1a,local_28,param_1,&local_18);
+          crt_putc_buffer_nolock(&local_1a,local_28,stream,&local_18);
           if (((uVar2 & 8) != 0) && ((uVar2 & 4) == 0)) {
-            crt_putc_repeat_nolock(0x30,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x30,iVar9,stream,&local_18);
           }
           if ((local_30 == 0) || (puVar11 = local_14, pWVar10 = local_10, (int)local_14 < 1)) {
-            crt_putc_buffer_nolock((char *)local_10,(int)local_14,param_1,&local_18);
+            crt_putc_buffer_nolock((char *)local_10,(int)local_14,stream,&local_18);
           }
           else {
             do {
               puVar11 = puVar11 + -1;
               iVar7 = FUN_0046b0b5(local_48,*pWVar10);
               if (iVar7 < 1) break;
-              crt_putc_buffer_nolock(local_48,iVar7,param_1,&local_18);
+              crt_putc_buffer_nolock(local_48,iVar7,stream,&local_18);
               pWVar10 = pWVar10 + 1;
             } while (puVar11 != (undefined1 *)0x0);
           }
           if ((local_8 & 4) != 0) {
-            crt_putc_repeat_nolock(0x20,iVar9,param_1,&local_18);
+            crt_putc_repeat_nolock(0x20,iVar9,stream,&local_18);
           }
         }
       }
@@ -61927,24 +61933,24 @@ LAB_004648a0:
           if ((local_8 & 0x8000) == 0) {
             if ((local_8 & 0x20) == 0) {
               if ((local_8 & 0x40) == 0) {
-                uVar2 = FUN_00464bbc((int *)&param_3);
+                uVar2 = FUN_00464bbc((int *)&args);
                 iVar9 = 0;
                 goto LAB_004648f3;
               }
-              uVar2 = FUN_00464bbc((int *)&param_3);
+              uVar2 = FUN_00464bbc((int *)&args);
             }
             else if ((local_8 & 0x40) == 0) {
-              uVar2 = FUN_00464bbc((int *)&param_3);
+              uVar2 = FUN_00464bbc((int *)&args);
               uVar2 = uVar2 & 0xffff;
             }
             else {
-              iVar9 = FUN_00464bbc((int *)&param_3);
+              iVar9 = FUN_00464bbc((int *)&args);
               uVar2 = (uint)(short)iVar9;
             }
             iVar9 = (int)uVar2 >> 0x1f;
           }
           else {
-            uVar2 = FUN_00464bc9((int *)&param_3);
+            uVar2 = FUN_00464bc9((int *)&args);
             iVar9 = extraout_EDX;
           }
 LAB_004648f3:
@@ -62017,7 +62023,7 @@ LAB_004645c1:
             if (local_c != -1) {
               iVar9 = local_c;
             }
-            pWVar3 = (WCHAR *)FUN_00464bbc((int *)&param_3);
+            pWVar3 = (WCHAR *)FUN_00464bbc((int *)&args);
             if ((local_8 & 0x810) == 0) {
               pWVar10 = pWVar3;
               if (pWVar3 == (WCHAR *)0x0) {
@@ -62049,7 +62055,7 @@ LAB_004645c1:
           }
           goto LAB_00464899;
         }
-        piVar6 = (int *)FUN_00464bbc((int *)&param_3);
+        piVar6 = (int *)FUN_00464bbc((int *)&args);
         if ((local_8 & 0x20) == 0) {
           *piVar6 = local_18;
         }
@@ -62063,8 +62069,8 @@ LAB_004645c1:
         local_34 = (WCHAR *)0x0;
       }
     }
-    bVar8 = *param_2;
-    pbVar1 = param_2;
+    bVar8 = *format;
+    pcVar1 = format;
   } while( true );
 }
 
@@ -62074,27 +62080,27 @@ LAB_004645c1:
 
 /* putc_nolock-style helper (increments count or sets -1 on error) */
 
-void __cdecl crt_putc_nolock(uint param_1,int *param_2,int *param_3)
+void __cdecl crt_putc_nolock(int ch,void *fp,int *count)
 
 {
   int *piVar1;
   uint uVar2;
   
-  piVar1 = param_2 + 1;
+  piVar1 = (int *)((int)fp + 4);
   *piVar1 = *piVar1 + -1;
   if (*piVar1 < 0) {
-    uVar2 = crt_flsbuf(param_1,param_2);
+    uVar2 = crt_flsbuf(ch,fp);
   }
   else {
-    *(undefined1 *)*param_2 = (undefined1)param_1;
-    *param_2 = *param_2 + 1;
-    uVar2 = param_1 & 0xff;
+    **(undefined1 **)fp = (undefined1)ch;
+    *(int *)fp = *(int *)fp + 1;
+    uVar2 = ch & 0xff;
   }
   if (uVar2 == 0xffffffff) {
-    *param_3 = -1;
+    *count = -1;
     return;
   }
-  *param_3 = *param_3 + 1;
+  *count = *count + 1;
   return;
 }
 
@@ -62104,16 +62110,16 @@ void __cdecl crt_putc_nolock(uint param_1,int *param_2,int *param_3)
 
 /* emit repeated chars via crt_putc_nolock (printf padding helper) */
 
-void __cdecl crt_putc_repeat_nolock(uint param_1,int param_2,int *param_3,int *param_4)
+void __cdecl crt_putc_repeat_nolock(int ch,int count,void *fp,int *out_count)
 
 {
   do {
-    if (param_2 < 1) {
+    if (count < 1) {
       return;
     }
-    param_2 = param_2 + -1;
-    crt_putc_nolock(param_1,param_3,param_4);
-  } while (*param_4 != -1);
+    count = count + -1;
+    crt_putc_nolock(ch,fp,out_count);
+  } while (*out_count != -1);
   return;
 }
 
@@ -62123,20 +62129,20 @@ void __cdecl crt_putc_repeat_nolock(uint param_1,int param_2,int *param_3,int *p
 
 /* emit buffer chars via crt_putc_nolock (printf string helper) */
 
-void __cdecl crt_putc_buffer_nolock(char *param_1,int param_2,int *param_3,int *param_4)
+void __cdecl crt_putc_buffer_nolock(char *buf,int count,void *fp,int *out_count)
 
 {
   char cVar1;
   
   do {
-    if (param_2 < 1) {
+    if (count < 1) {
       return;
     }
-    param_2 = param_2 + -1;
-    cVar1 = *param_1;
-    param_1 = param_1 + 1;
-    crt_putc_nolock((int)cVar1,param_3,param_4);
-  } while (*param_4 != -1);
+    count = count + -1;
+    cVar1 = *buf;
+    buf = buf + 1;
+    crt_putc_nolock((int)cVar1,fp,out_count);
+  } while (*out_count != -1);
   return;
 }
 
@@ -69060,25 +69066,25 @@ void __cdecl crt_unlock_fh(uint fd)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* CRT: allocate/init FILE buffer (4KB or fallback small buffer) */
 
-void __cdecl crt_file_buffer_init(undefined4 *param_1)
+void __cdecl crt_file_buffer_init(void *fp)
 
 {
   void *pvVar1;
   
   _DAT_004d99d0 = _DAT_004d99d0 + 1;
   pvVar1 = _malloc(0x1000);
-  param_1[2] = pvVar1;
+  *(void **)((int)fp + 8) = pvVar1;
   if (pvVar1 == (void *)0x0) {
-    param_1[3] = param_1[3] | 4;
-    param_1[2] = param_1 + 5;
-    param_1[6] = 2;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 4;
+    *(int *)((int)fp + 8) = (int)fp + 0x14;
+    *(undefined4 *)((int)fp + 0x18) = 2;
   }
   else {
-    param_1[3] = param_1[3] | 8;
-    param_1[6] = 0x1000;
+    *(uint *)((int)fp + 0xc) = *(uint *)((int)fp + 0xc) | 8;
+    *(undefined4 *)((int)fp + 0x18) = 0x1000;
   }
-  param_1[1] = 0;
-  *param_1 = param_1[2];
+  *(undefined4 *)((int)fp + 4) = 0;
+  *(undefined4 *)fp = *(undefined4 *)((int)fp + 8);
   return;
 }
 

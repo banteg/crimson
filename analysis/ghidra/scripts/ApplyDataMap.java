@@ -11,6 +11,7 @@ import com.google.gson.JsonParser;
 
 import ghidra.app.script.GhidraScript;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.data.ArrayDataType;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.PointerDataType;
@@ -29,8 +30,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApplyDataMap extends GhidraScript {
+    private static final Pattern ARRAY_TYPE_RE = Pattern.compile("^(?<base>.+?)\\[(?<count>\\d+)\\]$");
+    private static final Pattern FUNCTION_POINTER_RE =
+        Pattern.compile(".*\\(\\s*\\*\\s*[A-Za-z_0-9]*\\s*\\)\\s*\\([^)]*\\)$");
+
     private static class Row {
         String program;
         String address;
@@ -335,22 +342,60 @@ public class ApplyDataMap extends GhidraScript {
         if (name.isEmpty()) {
             return null;
         }
+        DataTypeManager dtm = currentProgram.getDataTypeManager();
+        int ptrSize = currentProgram.getDefaultPointerSize();
+
+        // Data-map function pointer strings are intended as pointer-sized globals.
+        if (FUNCTION_POINTER_RE.matcher(name).matches()) {
+            DataType voidType = findDataTypeByName(dtm, "void");
+            if (voidType == null) {
+                return null;
+            }
+            return new PointerDataType(voidType, ptrSize, dtm);
+        }
+
+        int arrayCount = 0;
+        Matcher arrayMatcher = ARRAY_TYPE_RE.matcher(name);
+        if (arrayMatcher.matches()) {
+            name = arrayMatcher.group("base").trim();
+            arrayCount = Integer.parseInt(arrayMatcher.group("count"));
+        }
+
         int pointerDepth = 0;
         while (name.endsWith("*")) {
             pointerDepth++;
             name = name.substring(0, name.length() - 1).trim();
         }
-        DataTypeManager dtm = currentProgram.getDataTypeManager();
         DataType base = findDataTypeByName(dtm, name);
         if (base == null) {
-            return null;
+            base = findAliasedDataType(dtm, name);
+            if (base == null) {
+                return null;
+            }
         }
         DataType resolved = base;
-        int ptrSize = currentProgram.getDefaultPointerSize();
         for (int i = 0; i < pointerDepth; i++) {
             resolved = new PointerDataType(resolved, ptrSize, dtm);
         }
+        if (arrayCount > 0) {
+            int elementLength = resolved.getLength();
+            if (elementLength <= 0) {
+                elementLength = ptrSize;
+            }
+            resolved = new ArrayDataType(resolved, arrayCount, elementLength);
+        }
         return resolved;
+    }
+
+    private DataType findAliasedDataType(DataTypeManager dtm, String name) {
+        if (name.equals("SYSTEMTIME")) {
+            DataType dt = findDataTypeByName(dtm, "_SYSTEMTIME");
+            if (dt != null) {
+                return dt;
+            }
+            return findDataTypeByName(dtm, "tagSYSTEMTIME");
+        }
+        return null;
     }
 
     private DataType findDataTypeByName(DataTypeManager dtm, String name) {
