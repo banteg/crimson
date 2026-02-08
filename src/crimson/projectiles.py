@@ -1039,7 +1039,10 @@ class ProjectilePool:
                     acc = Vec2()
 
                     hit_idx = None
+                    owner_creature_idx = int(proj.owner_id)
                     for idx, creature in enumerate(creatures):
+                        if idx == owner_creature_idx:
+                            continue
                         if not creature.active:
                             continue
                         if creature.hitbox_size <= 5.0:
@@ -1052,8 +1055,6 @@ class ProjectilePool:
                         ):
                             hit_idx = idx
                             break
-                    if hit_idx is not None and int(hit_idx) == int(proj.owner_id):
-                        hit_idx = None
 
                     if hit_idx is None:
                         if proj.hits_players:
@@ -1126,9 +1127,9 @@ class ProjectilePool:
 
                     if runtime_state is not None:
                         owner_id = int(proj.owner_id)
-                        if owner_id < 0 and owner_id != -100:
+                        if owner_id < 0:
                             shots_hit = runtime_state.shots_hit
-                            player_index = -1 - owner_id
+                            player_index = 0 if owner_id == -100 else (-1 - owner_id)
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
