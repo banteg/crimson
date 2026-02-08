@@ -54,6 +54,9 @@ class _DatabaseBaseView:
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
         self._action: str | None = None
 
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -67,6 +70,9 @@ class _DatabaseBaseView:
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
         self._action = None
 
         cache = _ensure_texture_cache(self._state)
@@ -85,9 +91,19 @@ class _DatabaseBaseView:
         self._button_textures = None
         self._assets = None
         self._ground = None
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
         self._action = None
 
     def take_action(self) -> str | None:
+        if self._pending_action is not None:
+            action = self._pending_action
+            self._pending_action = None
+            self._closing = False
+            self._close_action = None
+            self._timeline_ms = self._timeline_max_ms
+            return action
         action = self._action
         self._action = None
         return action
@@ -104,6 +120,12 @@ class _DatabaseBaseView:
             pos.x + MENU_PANEL_OFFSET_X * scale,
             pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
 
     def _draw_sign(self) -> None:
         assets = self._assets
@@ -147,6 +169,14 @@ class _DatabaseBaseView:
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
+            return
+
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
 
@@ -155,7 +185,7 @@ class _DatabaseBaseView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_previous"
+            self._begin_close_transition("back_to_previous")
             return
 
         textures = self._button_textures
@@ -170,6 +200,7 @@ class _DatabaseBaseView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        self._update_content_interaction(left_top_left=left_top_left, scale=scale, mouse=mouse)
 
         back_pos = self._back_button_pos()
         back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
@@ -183,7 +214,7 @@ class _DatabaseBaseView:
         ):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_previous"
+            self._begin_close_transition("back_to_previous")
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -270,23 +301,29 @@ class _DatabaseBaseView:
     ) -> None:
         raise NotImplementedError
 
+    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+        return
+
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []
-        self._selected_weapon_id: int = 2
+        self._selected_weapon_id: int | None = None
+        self._list_scroll_index: int = 0
 
     def open(self) -> None:
         super().open()
         self._weapon_ids = self._build_weapon_database_ids()
-        self._selected_weapon_id = 2 if 2 in self._weapon_ids else (self._weapon_ids[0] if self._weapon_ids else 2)
+        self._selected_weapon_id = None
+        self._list_scroll_index = 0
         cache = _ensure_texture_cache(self._state)
         self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
 
     def close(self) -> None:
         self._wicons_tex = None
+        self._selected_weapon_id = None
         super().close()
 
     def _back_button_pos(self) -> Vec2:
@@ -355,12 +392,17 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             rl.BLACK,
         )
 
-        # List items (oracle shows 9-row list widget; render the top slice for now).
+        # Oracle list widget is 10 rows tall.
         list_top_left = left + Vec2(218.0 * scale, 130.0 * scale)
         row_step = 16.0 * scale
-        for row, weapon_id in enumerate(weapon_ids[:9]):
+        visible_rows = 10
+        max_scroll = max(0, len(weapon_ids) - visible_rows)
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(len(weapon_ids), start + visible_rows)
+        visible_weapon_ids = weapon_ids[start:end]
+        for row, weapon_id in enumerate(visible_weapon_ids):
             name, _icon = self._weapon_label_and_icon(weapon_id)
-            row_color = text_color if int(weapon_id) == int(self._selected_weapon_id) else dim_color
+            row_color = text_color if self._selected_weapon_id is not None and int(weapon_id) == int(self._selected_weapon_id) else dim_color
             draw_small_text(
                 font,
                 name,
@@ -368,6 +410,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 text_scale,
                 row_color,
             )
+
+        if self._selected_weapon_id is None:
+            return
 
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
@@ -414,6 +459,41 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                     text_scale,
                     text_color,
                 )
+
+    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+        weapon_ids = self._weapon_ids
+        if not weapon_ids:
+            self._selected_weapon_id = None
+            self._list_scroll_index = 0
+            return
+
+        visible_rows = 10
+        max_scroll = max(0, len(weapon_ids) - visible_rows)
+        mouse_wheel = int(rl.get_mouse_wheel_move())
+        if mouse_wheel:
+            self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index) - mouse_wheel))
+        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        end = min(len(weapon_ids), start + visible_rows)
+        row_count = end - start
+        if row_count <= 0:
+            self._selected_weapon_id = None
+            return
+
+        row_step = 16.0 * scale
+        list_hit_x = left_top_left.x + 214.0 * scale
+        list_hit_y = left_top_left.y + 128.0 * scale
+        list_hit_w = 246.0 * scale
+        list_hit_h = min(160.0 * scale, row_step * float(row_count))
+        if (
+            list_hit_x <= mouse.x < list_hit_x + list_hit_w
+            and list_hit_y <= mouse.y < list_hit_y + list_hit_h
+        ):
+            list_text_top = left_top_left.y + 130.0 * scale
+            row = int((mouse.y - list_text_top) // row_step)
+            if 0 <= row < row_count:
+                self._selected_weapon_id = int(weapon_ids[start + row])
+                return
+        self._selected_weapon_id = None
 
     def _build_weapon_database_ids(self) -> list[int]:
         try:
