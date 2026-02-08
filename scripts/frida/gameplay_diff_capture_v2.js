@@ -2226,6 +2226,7 @@ function installHooks() {
         index: idx,
         requested_type_id: ctx.requested_type_id,
         actual_type_id: actualType,
+        spawned: spawned,
         owner_id: ctx.owner_id,
         angle_f32: round4(ctx.angle_f32),
         pos: ctx.pos,
