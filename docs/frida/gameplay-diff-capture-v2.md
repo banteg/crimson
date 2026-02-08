@@ -74,6 +74,23 @@ This path does not depend on replay playback parity. It reconstructs inputs from
 capture telemetry, runs headless sim, then compares checkpoint state fields at
 captured ticks and prints first divergent fields.
 
+## Divergence report + run narrative
+
+```text
+uv run python scripts/original_capture_divergence_report.py \
+  artifacts/frida/share/gameplay_diff_capture_v2.jsonl \
+  --float-abs-tol 2e-3 \
+  --window 24 \
+  --lead-lookback 1024 \
+  --run-summary
+```
+
+`--run-summary` prints a compact timeline from the original recording
+(bonus pickups, weapon assignments, perk picks when present, level-ups, and
+state transitions) so divergence debugging has immediate run context.
+
+Track each run in `docs/frida/differential-sessions.md`.
+
 ## Useful env knobs
 
 - `CRIMSON_FRIDA_V2_STATES=6,9,10` (override tracked game states)
