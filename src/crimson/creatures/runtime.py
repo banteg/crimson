@@ -678,7 +678,7 @@ class CreaturePool:
                 ):
                     creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
+                    creature.hitbox_size = f32(float(creature.hitbox_size) - float(dt))
                 if dt > 0.0:
                     self._tick_dead(
                         creature,
@@ -1117,20 +1117,27 @@ class CreaturePool:
         if dt <= 0.0:
             return
 
-        hitbox = float(creature.hitbox_size)
+        hitbox = f32(float(creature.hitbox_size))
         if hitbox <= 0.0:
-            creature.hitbox_size = hitbox - float(dt) * CREATURE_CORPSE_FADE_DECAY
+            creature.hitbox_size = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
 
-        new_hitbox = hitbox - float(dt) * CREATURE_DEATH_TIMER_DECAY
-        creature.hitbox_size = new_hitbox
+        new_hitbox = f32(hitbox - f32(float(dt) * CREATURE_DEATH_TIMER_DECAY))
+        creature.hitbox_size = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
-                slide = new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
-                creature.vel = Vec2.from_heading(creature.heading) * slide
-                creature.pos = (creature.pos - creature.vel).clamp_rect(0.0, 0.0, float(world_width), float(world_height))
+                slide = f32(new_hitbox * f32(float(dt)) * f32(CREATURE_DEATH_SLIDE_SCALE))
+                direction = heading_to_direction_f32(float(creature.heading))
+                creature.vel = Vec2(
+                    f32(float(direction.x) * float(slide)),
+                    f32(float(direction.y) * float(slide)),
+                )
+                creature.pos = Vec2(
+                    f32(float(creature.pos.x) - float(creature.vel.x)),
+                    f32(float(creature.pos.y) - float(creature.vel.y)),
+                )
             else:
                 creature.vel = Vec2()
             return
