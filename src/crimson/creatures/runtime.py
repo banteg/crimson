@@ -27,6 +27,7 @@ from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
     CreatureInit,
+    CreatureTypeId,
     SpawnEnv,
     SpawnPlan,
     SpawnSlotInit,
@@ -64,6 +65,14 @@ CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
+
+_CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
+    CreatureTypeId.ZOMBIE: ("sfx_zombie_attack_01", "sfx_zombie_attack_02"),
+    CreatureTypeId.LIZARD: ("sfx_lizard_attack_01", "sfx_lizard_attack_02"),
+    CreatureTypeId.ALIEN: ("sfx_alien_attack_01", "sfx_alien_attack_02"),
+    CreatureTypeId.SPIDER_SP1: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
+    CreatureTypeId.SPIDER_SP2: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
+}
 
 
 class _EffectsForCreatureSpawns(Protocol):
@@ -296,6 +305,17 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if float(creature.attack_cooldown) > 0.0:
         return
 
+    # Native contact-damage path consumes one `crt_rand()` draw for attack SFX
+    # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
+    try:
+        creature_type = CreatureTypeId(int(creature.type_id))
+    except ValueError:
+        creature_type = None
+    if creature_type is not None:
+        options = _CREATURE_CONTACT_SFX.get(creature_type)
+        if options is not None:
+            ctx.sfx.append(options[int(ctx.rand()) & 1])
+
     mr_melee_killed = False
     mr_melee_death_start_needed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -321,7 +341,6 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
-    creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
 
     if ctx.fx_queue is not None:
         push_dir = (ctx.player.pos - creature.pos).normalized()
@@ -329,6 +348,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             pos=ctx.player.pos + push_dir * 3.0,
             rand=ctx.rand,
         )
+
+    creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
 
     if mr_melee_killed and mr_melee_death_start_needed:
         ctx.deaths.append(
@@ -809,6 +830,13 @@ class CreaturePool:
                         creature.vel = Vec2.from_heading(creature.heading) * speed
                         creature.pos = (creature.pos + creature.vel * dt).clamp_rect(radius, radius, max_x, max_y)
 
+            # Native decrements contact/ranged cooldown before interaction checks,
+            # then lets contact hits raise it back by +1.0 in the same frame.
+            if creature.attack_cooldown <= 0.0:
+                creature.attack_cooldown = 0.0
+            else:
+                creature.attack_cooldown -= dt
+
             interaction_ctx = _CreatureInteractionCtx(
                 pool=self,
                 creature_index=int(idx),
@@ -832,11 +860,6 @@ class CreaturePool:
                     break
             if interaction_ctx.skip_creature:
                 continue
-
-            if creature.attack_cooldown <= 0.0:
-                creature.attack_cooldown = 0.0
-            else:
-                creature.attack_cooldown -= dt
 
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
