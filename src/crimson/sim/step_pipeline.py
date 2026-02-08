@@ -144,6 +144,7 @@ def run_deterministic_step(
         game_tune_started=bool(game_tune_started),
         trigger_game_tune=bool(events.trigger_game_tune),
         hit_sfx=events.hit_sfx,
+        death_sfx_preplanned=bool(events.death_sfx_preplanned),
     )
 
     command_hash = presentation_commands_hash(presentation)

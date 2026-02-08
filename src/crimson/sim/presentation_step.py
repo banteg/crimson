@@ -372,6 +372,7 @@ def apply_world_presentation_step(
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
     hit_sfx: Sequence[str] | None = None,
+    death_sfx_preplanned: bool = False,
 ) -> PresentationStepCommands:
     commands = PresentationStepCommands()
     if rand_for is None:
@@ -419,7 +420,7 @@ def apply_world_presentation_step(
             )
         )
 
-    if deaths:
+    if deaths and not death_sfx_preplanned:
         commands.sfx_keys.extend(plan_death_sfx_keys(deaths, rand=rand_for("death_sfx")))
 
     if pickups:

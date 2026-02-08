@@ -27,6 +27,7 @@ from ..projectiles import ProjectileHit
 from .input_frame import normalize_input_frame
 from .presentation_step import (
     ProjectileDecalPostCtx,
+    plan_death_sfx_keys,
     plan_hit_sfx_keys,
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
@@ -42,6 +43,7 @@ class WorldEvents:
     sfx: list[str]
     trigger_game_tune: bool = False
     hit_sfx: list[str] = field(default_factory=list)
+    death_sfx_preplanned: bool = False
 
 
 _WORLD_DT_STEPS = WORLD_DT_STEPS
@@ -294,6 +296,11 @@ class WorldState:
         self.state.sprite_effects.update(dt)
         _mark("ws_after_sprite_effects")
         _mark("ws_after_particles")
+        # Native `creature_apply_damage` consumes creature death SFX RNG draws during
+        # world update (before `player_update`). Pre-plan those here so replay/headless
+        # keeps the same RNG ordering.
+        planned_death_sfx = plan_death_sfx_keys(deaths, rand=self.state.rng.rand)
+        _mark("ws_after_death_sfx")
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
@@ -344,7 +351,8 @@ class WorldState:
             )
         _mark("ws_after_progression")
 
-        sfx = list(creature_result.sfx)
+        sfx = list(planned_death_sfx)
+        sfx.extend(creature_result.sfx)
         if self.state.sfx_queue:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
@@ -376,6 +384,7 @@ class WorldState:
             sfx=sfx,
             trigger_game_tune=bool(trigger_game_tune),
             hit_sfx=hit_sfx,
+            death_sfx_preplanned=True,
         )
 
     def _prepare_projectile_hit_presentation(
