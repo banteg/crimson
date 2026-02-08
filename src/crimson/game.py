@@ -3119,6 +3119,10 @@ class GameLoopView:
                     self._front_active = self._front_stack.pop()
                     if self._front_active in self._gameplay_views:
                         self._state.pause_background = None
+                    else:
+                        reopen_from_child = getattr(self._front_active, "reopen_from_child", None)
+                        if callable(reopen_from_child):
+                            reopen_from_child()
                     self._active = self._front_active
                     return
                 self._front_active.close()

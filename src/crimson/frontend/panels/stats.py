@@ -132,6 +132,21 @@ class StatisticsMenuView:
         self._close_action = None
         self._pending_action = None
 
+    def reopen_from_child(self) -> None:
+        self._action = None
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._btn_high_scores = UiButtonState("High scores", force_wide=True)
+        self._btn_weapons = UiButtonState("Weapons", force_wide=True)
+        self._btn_perks = UiButtonState("Perks", force_wide=True)
+        self._btn_credits = UiButtonState("Credits", force_wide=True)
+        self._btn_back = UiButtonState("Back", force_wide=False)
+        if self._state.audio is not None:
+            play_sfx(self._state.audio, "sfx_ui_panelclick", rng=self._state.rng)
+
     def take_action(self) -> str | None:
         if self._pending_action is not None:
             action = self._pending_action
