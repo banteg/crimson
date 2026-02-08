@@ -382,23 +382,8 @@ class WorldState:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
         _mark("ws_after_sfx_queue_merge")
-        pain_sfx = ("sfx_trooper_inpain_01", "sfx_trooper_inpain_02", "sfx_trooper_inpain_03")
-        death_sfx = ("sfx_trooper_die_01", "sfx_trooper_die_02")
-        rand = self.state.rng.rand
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_health):
-                continue
-            before = float(prev_health[idx])
-            after = float(player.health)
-            if after >= before - 1e-6:
-                continue
-            if before <= 0.0:
-                continue
-            if after <= 0.0:
-                # Prioritize death VO even if there are many other SFX this frame.
-                sfx.insert(0, death_sfx[int(rand()) & 1])
-            else:
-                sfx.append(pain_sfx[int(rand()) % len(pain_sfx)])
+        # Player-damage VO RNG work lives inside `player_take_damage` for native
+        # ordering parity (VO draw before heading-jitter draw).
         _mark("ws_after_player_damage_sfx")
         _mark("ws_after_sfx")
 
