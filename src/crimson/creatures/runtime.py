@@ -59,7 +59,9 @@ CREATURE_TURN_RATE_SCALE = 4.0 / 3.0
 
 # Native uses hitbox_size as a lifecycle sentinel:
 # - 16.0 means "alive" (normal AI/movement/anim update)
-# - once HP <= 0 it ramps down quickly and drives the death slide + corpse decal timing.
+# - once HP <= 0 it ramps down quickly and drives death slide + corpse decal timing.
+# - final deactivation (`hitbox_size < -10.0`) happens during render (creature_render_type),
+#   not during creature_update_all.
 CREATURE_HITBOX_ALIVE = 16.0
 CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
@@ -1071,8 +1073,6 @@ class CreaturePool:
         hitbox = float(creature.hitbox_size)
         if hitbox <= 0.0:
             creature.hitbox_size = hitbox - float(dt) * CREATURE_CORPSE_FADE_DECAY
-            if creature.hitbox_size < CREATURE_CORPSE_DESPAWN_HITBOX:
-                creature.active = False
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
@@ -1105,6 +1105,23 @@ class CreaturePool:
                 return
 
         self.kill_count += 1
+
+    def finalize_post_render_lifecycle(self) -> None:
+        """Mirror render-time corpse culling from native `creature_render_type`.
+
+        Native deactivates entries only after draw once `hitbox_size < -10.0`. Keeping
+        this outside `creature_update_all` preserves slot-allocation timing for same-tick
+        survival/rush spawns.
+        """
+
+        for creature in self._entries:
+            if not creature.active:
+                continue
+            if float(creature.hitbox_size) >= CREATURE_CORPSE_DESPAWN_HITBOX:
+                continue
+            if creature.spawn_slot_index is not None:
+                self._disable_spawn_slot(int(creature.spawn_slot_index))
+            creature.active = False
 
     def _start_death(
         self,

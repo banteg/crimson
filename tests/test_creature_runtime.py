@@ -319,3 +319,76 @@ def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
 
     assert idx == 0
     assert pool.entries[idx].link_index == 0
+
+
+def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> None:
+    pool = CreaturePool()
+    corpse = pool.entries[6]
+    corpse.active = True
+    corpse.hp = -231.675
+    corpse.hitbox_size = -9.656
+    corpse.pos = Vec2(588.6516, 379.7685)
+    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+
+    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+        corpse,
+        dt=0.018,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+
+    assert corpse.active is True
+    assert corpse.hitbox_size == pytest.approx(-10.016, abs=1e-6)
+
+    pool.finalize_post_render_lifecycle()
+    assert corpse.active is False
+
+
+def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
+    pool = CreaturePool(size=24)
+    for idx in range(22):
+        entry = pool.entries[idx]
+        entry.active = True
+        entry.hp = 1.0
+        entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.pos = Vec2(float(idx), 0.0)
+
+    corpse = pool.entries[6]
+    corpse.hp = -231.675
+    corpse.hitbox_size = -9.656
+    corpse.pos = Vec2(588.6516, 379.7685)
+    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+
+    pool.entries[22].active = False
+    pool.entries[22].hitbox_size = -10.21
+    pool.entries[22].hp = -45.9623
+
+    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+        corpse,
+        dt=0.018,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+    assert pool.entries[6].active is True
+
+    spawned_idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=-1,
+            pos=Vec2(-40.0, 463.0),
+            heading=0.0,
+            phase_seed=17.0,
+            type_id=CreatureTypeId.LIZARD,
+            health=60.6925,
+            max_health=60.6925,
+            move_speed=1.0,
+            reward_value=0.0,
+            size=50.0,
+            contact_damage=4.0,
+        )
+    )
+    assert spawned_idx == 22
+
+    pool.finalize_post_render_lifecycle()
+    assert pool.entries[6].active is False

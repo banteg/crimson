@@ -111,6 +111,7 @@ class SurvivalDeterministicSession:
         self.spawn_cooldown_ms = cooldown
         self.world.creatures.spawn_inits(wave_spawns)
         rng_marks["after_wave_spawns"] = int(state.rng.state)
+        self.world.creatures.finalize_post_render_lifecycle()
         self.elapsed_ms = float(elapsed_before_ms) + float(dt_frame_ms)
 
         return DeterministicSessionTick(
@@ -194,6 +195,7 @@ class RushDeterministicSession:
         self.spawn_cooldown_ms = cooldown
         self.world.creatures.spawn_inits(spawns)
         rng_marks["after_rush_spawns"] = int(state.rng.state)
+        self.world.creatures.finalize_post_render_lifecycle()
 
         return DeterministicSessionTick(
             step=step,
