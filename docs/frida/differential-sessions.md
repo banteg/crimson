@@ -615,3 +615,46 @@ Each entry should capture:
 
 - Continue reducing the remaining `+0.0346` near-miss gap with similarly narrow movement-heading rounding adjustments, then re-check whether tick `3453` gains the missing fifth hit.
 - In parallel, add hit-resolve sequence instrumentation in `src/crimson/projectiles.py` for the tick-3453 path to rule out a logic-order mismatch independent of geometry.
+
+---
+
+## Session 2026-02-09-p
+
+- **Session ID:** `2026-02-09-p`
+- **Capture:** `n/a (tooling update only; no new recording in this session)`
+- **Capture SHA256:** `n/a`
+- **Primary commands:**
+  - tooling validation:
+    `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+  - lint validation:
+    `uv run ruff check scripts/original_capture_divergence_report.py`
+- **First verifier mismatch:** `n/a`
+
+### Findings
+
+- Absolute tick windows are poor cross-session anchors because runs diverge in event chronology and RNG consumption even when the underlying root cause is unchanged.
+- We need RNG-order anchors (`global seq`, per-tick local call index, seed epoch) directly in capture output so later analysis can align by call order rather than by wall-clock tick.
+
+### Fixes from this session
+
+- Upgraded `scripts/frida/gameplay_diff_capture_v2.js` RNG diagnostics:
+  - every captured tick now stores RNG call sequence metadata (`seq`, `tick_call_index`, seed epoch, mirrored CRT state transitions) in `rng.head` and `checkpoint.rng_marks`.
+  - between-tick RNG draws are tracked and carried into the next tick (`outside_before_*`) so boundary activity is visible.
+  - added optional per-roll event emission (`event: "rng_roll"`) via `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1`, with cap control (`CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS`).
+  - added mirrored CRT state integrity tracking (`CRIMSON_FRIDA_V2_RNG_STATE_MIRROR`, mismatch counters) and exposed counters in heartbeat output.
+- Extended `scripts/original_capture_divergence_report.py` to ingest and surface new RNG sequence metadata:
+  - raw tick debug now captures seq range + seed epoch + outside-before counters,
+  - pre-focus RNG shortfall lead now reports sequence/epoch anchors,
+  - focus debug output now prints capture RNG sequence range and mirror mismatch totals.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` with the new RNG trace fields/knobs and a “full RNG divergence trace profile”.
+
+### Next probe
+
+- Record a new session using the full RNG trace profile:
+  - `CRIMSON_FRIDA_V2_RNG_ROLL_LOG=1`
+  - `CRIMSON_FRIDA_V2_MAX_RNG_ROLL_LOG_EVENTS=-1`
+  - `CRIMSON_FRIDA_V2_RNG_HEAD=-1`
+  - `CRIMSON_FRIDA_V2_RNG_CALLERS=-1`
+  - `CRIMSON_FRIDA_V2_RNG_OUTSIDE_TICK_HEAD=-1`
+  - `CRIMSON_FRIDA_V2_RNG_STATE_MIRROR=1`
+- Re-run divergence report on that capture and anchor the first shortfall by `seq_first/seq_last` instead of treating raw tick numbers as cross-session comparable.

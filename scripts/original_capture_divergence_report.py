@@ -628,6 +628,24 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         rng_rand_last = rng_obj.get("rand_last")
         if rng_rand_last is None:
             rng_rand_last = rng_top_obj.get("last_value")
+        rng_seq_first = _int_or(rng_obj.get("rand_seq_first"))
+        if rng_seq_first < 0:
+            rng_seq_first = _int_or(rng_top_obj.get("seq_first"))
+        rng_seq_last = _int_or(rng_obj.get("rand_seq_last"))
+        if rng_seq_last < 0:
+            rng_seq_last = _int_or(rng_top_obj.get("seq_last"))
+        rng_seed_epoch_enter = _int_or(rng_obj.get("rand_seed_epoch_enter"))
+        if rng_seed_epoch_enter < 0:
+            rng_seed_epoch_enter = _int_or(rng_top_obj.get("seed_epoch_enter"))
+        rng_seed_epoch_last = _int_or(rng_obj.get("rand_seed_epoch_last"))
+        if rng_seed_epoch_last < 0:
+            rng_seed_epoch_last = _int_or(rng_top_obj.get("seed_epoch_last"))
+        rng_outside_before_calls = _int_or(rng_obj.get("rand_outside_before_calls"))
+        if rng_outside_before_calls < 0:
+            rng_outside_before_calls = _int_or(rng_top_obj.get("outside_before_calls"))
+        rng_mirror_mismatch_total = _int_or(rng_obj.get("rand_mirror_mismatch_total"))
+        if rng_mirror_mismatch_total < 0:
+            rng_mirror_mismatch_total = _int_or(rng_top_obj.get("mirror_mismatch_total"))
         rng_callers = rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else []
         if not rng_callers:
             rng_callers = rng_callers_top_obj
@@ -678,6 +696,12 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "rng_rand_calls": rng_rand_calls,
             "rng_head_len": len(rng_head_obj),
             "rng_rand_last": rng_rand_last,
+            "rng_seq_first": rng_seq_first,
+            "rng_seq_last": rng_seq_last,
+            "rng_seed_epoch_enter": rng_seed_epoch_enter,
+            "rng_seed_epoch_last": rng_seed_epoch_last,
+            "rng_outside_before_calls": rng_outside_before_calls,
+            "rng_mirror_mismatch_total": rng_mirror_mismatch_total,
             "rng_callers": rng_callers,
             "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
             "spawn_death_count": _int_or(spawn_obj.get("event_count_death")),
@@ -1215,6 +1239,10 @@ def _find_first_rng_head_shortfall(
             raw_debug_by_tick=raw_debug_by_tick,
             ticks=[int(tick)],
         )
+        seq_first = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seq_first"), -1)
+        seq_last = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seq_last"), -1)
+        seed_epoch_enter = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seed_epoch_enter"), -1)
+        seed_epoch_last = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_seed_epoch_last"), -1)
         return {
             "tick": int(tick),
             "expected_head_len": int(expected_head_len),
@@ -1222,6 +1250,10 @@ def _find_first_rng_head_shortfall(
             "missing_draws": int(expected_head_len) - int(actual_rand_calls),
             "expected_rand_calls": int(expected_rand_calls),
             "caller_counts": caller_counts,
+            "seq_first": int(seq_first),
+            "seq_last": int(seq_last),
+            "seed_epoch_enter": int(seed_epoch_enter),
+            "seed_epoch_last": int(seed_epoch_last),
         }
     return None
 
@@ -1402,6 +1434,10 @@ def _build_investigation_leads(
         actual_rand_calls = _int_or(rng_head_shortfall.get("actual_rand_calls"), -1)
         missing_draws = _int_or(rng_head_shortfall.get("missing_draws"), -1)
         expected_rand_calls = _int_or(rng_head_shortfall.get("expected_rand_calls"), -1)
+        seq_first = _int_or(rng_head_shortfall.get("seq_first"), -1)
+        seq_last = _int_or(rng_head_shortfall.get("seq_last"), -1)
+        seed_epoch_enter = _int_or(rng_head_shortfall.get("seed_epoch_enter"), -1)
+        seed_epoch_last = _int_or(rng_head_shortfall.get("seed_epoch_last"), -1)
         caller_counts = (
             rng_head_shortfall.get("caller_counts") if isinstance(rng_head_shortfall.get("caller_counts"), list) else []
         )
@@ -1428,6 +1464,14 @@ def _build_investigation_leads(
         if expected_rand_calls >= 0 and expected_head_len >= 0:
             evidence.append(
                 f"capture rand_calls at that tick: {int(expected_rand_calls)} (head_len={int(expected_head_len)})"
+            )
+        if seq_first >= 0 or seq_last >= 0:
+            evidence.append(
+                f"capture RNG sequence range at shortfall tick: seq_first={int(seq_first)} seq_last={int(seq_last)}"
+            )
+        if seed_epoch_enter >= 0 or seed_epoch_last >= 0:
+            evidence.append(
+                f"capture RNG seed epoch at shortfall tick: enter={int(seed_epoch_enter)} leave={int(seed_epoch_last)}"
             )
         if top_callers:
             evidence.append(f"dominant native caller_static at shortfall tick: {top_callers}")
@@ -1845,6 +1889,12 @@ def _build_window_rows(
                 "expected_rand_calls": int(expected_rand_calls),
                 "actual_rand_calls": actual_rand_calls,
                 "rand_calls_delta": rand_calls_delta,
+                "capture_rng_seq_first": _int_or(raw.get("rng_seq_first"), -1),
+                "capture_rng_seq_last": _int_or(raw.get("rng_seq_last"), -1),
+                "capture_rng_seed_epoch_enter": _int_or(raw.get("rng_seed_epoch_enter"), -1),
+                "capture_rng_seed_epoch_last": _int_or(raw.get("rng_seed_epoch_last"), -1),
+                "capture_rng_outside_before_calls": _int_or(raw.get("rng_outside_before_calls"), -1),
+                "capture_rng_mirror_mismatch_total": _int_or(raw.get("rng_mirror_mismatch_total"), -1),
                 "actual_ps_draws": _int_or(act.rng_marks.get("ps_draws_total")),
                 "actual_rng_changed": bool(before >= 0 and after >= 0 and before != after),
                 "expected_pickups": int(exp.events.pickup_count),
@@ -2097,6 +2147,27 @@ def main() -> int:
             f"rand_calls={_int_or(focus_raw.get('rng_rand_calls'))} "
             f"rand_last={focus_raw.get('rng_rand_last')!r}"
         )
+        rng_seq_first = _int_or(focus_raw.get("rng_seq_first"), -1)
+        rng_seq_last = _int_or(focus_raw.get("rng_seq_last"), -1)
+        rng_seed_epoch_enter = _int_or(focus_raw.get("rng_seed_epoch_enter"), -1)
+        rng_seed_epoch_last = _int_or(focus_raw.get("rng_seed_epoch_last"), -1)
+        rng_outside_before_calls = _int_or(focus_raw.get("rng_outside_before_calls"), -1)
+        rng_mirror_mismatch_total = _int_or(focus_raw.get("rng_mirror_mismatch_total"), -1)
+        if (
+            rng_seq_first >= 0
+            or rng_seq_last >= 0
+            or rng_seed_epoch_enter >= 0
+            or rng_seed_epoch_last >= 0
+            or rng_outside_before_calls >= 0
+            or rng_mirror_mismatch_total >= 0
+        ):
+            print(
+                "  "
+                f"capture_rng_seq_range={int(rng_seq_first)}..{int(rng_seq_last)} "
+                f"capture_rng_seed_epoch={int(rng_seed_epoch_enter)}..{int(rng_seed_epoch_last)} "
+                f"capture_rng_outside_before_calls={int(rng_outside_before_calls)} "
+                f"capture_rng_mirror_mismatch_total={int(rng_mirror_mismatch_total)}"
+            )
         callers = focus_raw.get("rng_callers")
         if isinstance(callers, list) and callers:
             print(f"  capture_rand_callers_top={callers[:6]!r}")
