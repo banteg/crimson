@@ -266,6 +266,30 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
     assert math.isclose(player.heading, math.pi / 4.0, abs_tol=1e-9)
 
 
+def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
+    def _angular_distance(a: float, b: float) -> float:
+        diff = abs((a - b) % math.tau)
+        return min(diff, math.tau - diff)
+
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=0.0)
+    dt = 1.0 / 60.0
+    aim = Vec2(200.0, 100.0)
+
+    for _ in range(30):
+        player_update(player, PlayerInput(move=Vec2(0.0, -1.0), aim=aim), dt, state)
+
+    target_heading = Vec2(-1.0, -1.0).to_heading() % math.tau
+    start_diff = _angular_distance(player.heading % math.tau, target_heading)
+
+    for _ in range(20):
+        player_update(player, PlayerInput(move=Vec2(-1.0, -1.0), aim=aim), dt, state)
+
+    end_diff = _angular_distance(player.heading % math.tau, target_heading)
+    assert end_diff < start_diff - 0.25
+    assert end_diff < 0.4
+
+
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)
