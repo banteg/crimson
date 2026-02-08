@@ -166,12 +166,13 @@ class _DatabaseBaseView:
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         left_top_left = self._panel_top_left(pos=Vec2(LEFT_PANEL_POS_X, LEFT_PANEL_POS_Y), scale=scale)
+        font = self._ensure_small_font()
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=left_top_left + back_pos * scale,
@@ -243,7 +244,7 @@ class _DatabaseBaseView:
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
             back_pos = self._back_button_pos()
-            back_w = button_width(None, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(font, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             button_draw(
                 textures,
                 font,
@@ -416,20 +417,61 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
     def _build_weapon_database_ids(self) -> list[int]:
         try:
-            from ...weapons import WEAPON_TABLE
+            from ...weapons import WEAPON_TABLE, WeaponId
         except Exception:
             return []
+
+        available: list[bool] | None = None
+        try:
+            from ...gameplay import WEAPON_COUNT_SIZE, weapon_refresh_available
+        except Exception:
+            WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+            weapon_refresh_available = None
+
+        if weapon_refresh_available is not None:
+            class _Stub:
+                status: object | None
+                game_mode: int
+                demo_mode_active: bool
+                weapon_available: list[bool]
+                _weapon_available_game_mode: int
+                _weapon_available_unlock_index: int
+                _weapon_available_unlock_index_full: int
+
+            stub = _Stub()
+            stub.status = self._state.status
+            stub.game_mode = int(self._state.config.data.get("game_mode", 1) or 1)
+            stub.demo_mode_active = bool(getattr(self._state, "demo_enabled", False))
+            stub.weapon_available = [False] * int(WEAPON_COUNT_SIZE)
+            stub._weapon_available_game_mode = -1
+            stub._weapon_available_unlock_index = -1
+            stub._weapon_available_unlock_index_full = -1
+            try:
+                weapon_refresh_available(stub)  # type: ignore[arg-type]
+                available = stub.weapon_available
+            except Exception:
+                available = None
+
         status = self._state.status
         used: list[int] = []
         for weapon in WEAPON_TABLE:
             if weapon.name is None:
                 continue
             weapon_id = int(weapon.weapon_id)
-            try:
-                if status.weapon_usage_count(weapon_id) != 0:
-                    used.append(weapon_id)
-            except Exception:
-                continue
+            include = False
+            if available is not None:
+                if 0 <= weapon_id < len(available):
+                    include = bool(available[weapon_id])
+            else:
+                if weapon_id == int(WeaponId.PISTOL):
+                    include = True
+                else:
+                    try:
+                        include = bool(status.weapon_usage_count(weapon_id) != 0)
+                    except Exception:
+                        include = False
+            if include:
+                used.append(weapon_id)
         used.sort()
         return used
 

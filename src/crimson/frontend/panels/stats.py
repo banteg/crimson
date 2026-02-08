@@ -136,6 +136,9 @@ class StatisticsMenuView:
         if self._pending_action is not None:
             action = self._pending_action
             self._pending_action = None
+            self._closing = False
+            self._close_action = None
+            self._timeline_ms = self._timeline_max_ms
             return action
         action = self._action
         self._action = None
