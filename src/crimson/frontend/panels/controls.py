@@ -1,4 +1,7 @@
 from __future__ import annotations
+from dataclasses import dataclass
+import struct
+
 from grim.geom import Rect, Vec2
 
 import pyray as rl
@@ -15,11 +18,13 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
     RELOAD_BIND_SLOT,
-    controls_method_labels,
     controls_method_values,
     controls_rebind_slot_plan,
+    input_configure_for_label,
+    input_scheme_label,
 )
 from ...input_codes import INPUT_CODE_UNBOUND, config_keybinds, input_code_name
+from .hit_test import mouse_inside_rect_with_padding
 from ..types import GameState
 
 
@@ -33,6 +38,20 @@ CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
 
 
+@dataclass(frozen=True, slots=True)
+class _DropdownLayout:
+    pos: Vec2
+    width: float
+    header_h: float
+    row_h: float
+    rows_y0: float
+    full_h: float
+    arrow_pos: Vec2
+    arrow_size: Vec2
+    text_pos: Vec2
+    text_scale: float
+
+
 class ControlsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -44,11 +63,15 @@ class ControlsMenuView(PanelMenuView):
         )
         self._small_font: SmallFontData | None = None
         self._text_controls: rl.Texture | None = None
+        self._drop_on: rl.Texture | None = None
         self._drop_off: rl.Texture | None = None
         self._check_on: rl.Texture | None = None
         self._check_off: rl.Texture | None = None
 
         self._config_player = 1
+        self._move_method_open = False
+        self._aim_method_open = False
+        self._player_profile_open = False
         self._dirty = False
 
     def open(self) -> None:
@@ -56,9 +79,14 @@ class ControlsMenuView(PanelMenuView):
         cache = self._ensure_cache()
         # UI elements used by the classic controls screen.
         self._text_controls = cache.get_or_load("ui_textControls", "ui/ui_textControls.jaz").texture
+        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._config_player = max(1, min(2, int(self._config_player)))
+        self._move_method_open = False
+        self._aim_method_open = False
+        self._player_profile_open = False
         self._dirty = False
 
     def update(self, dt: float) -> None:
@@ -68,7 +96,14 @@ class ControlsMenuView(PanelMenuView):
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):
             return
-        if self._update_direction_arrow_checkbox():
+        panel_scale, _local_y_shift = self._menu_item_scale(0)
+        left_top_left = self._left_panel_top_left(panel_scale)
+        click_consumed = self._update_method_dropdowns(left_top_left=left_top_left, panel_scale=panel_scale)
+        if (not click_consumed) and self._update_direction_arrow_checkbox(
+            left_top_left=left_top_left,
+            panel_scale=panel_scale,
+            enabled=self._checkbox_enabled(),
+        ):
             self._dirty = True
 
     def _begin_close_transition(self, action: str) -> None:
@@ -87,11 +122,49 @@ class ControlsMenuView(PanelMenuView):
         self._small_font = load_small_font(self._state.assets_dir, missing_assets)
         return self._small_font
 
+    def _current_player_index(self) -> int:
+        return max(0, min(1, int(self._config_player) - 1))
+
+    def _left_panel_top_left(self, panel_scale: float) -> Vec2:
+        panel_w = MENU_PANEL_WIDTH * panel_scale
+        _, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+        )
+        return (
+            Vec2(
+                self._panel_pos.x + slide_x,
+                self._panel_pos.y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * panel_scale
+        )
+
+    def _right_panel_top_left(self, panel_scale: float) -> Vec2:
+        panel_w = MENU_PANEL_WIDTH * panel_scale
+        _, slide_x = MenuView._ui_element_anim(
+            self,
+            index=3,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=1,
+        )
+        return (
+            Vec2(
+                CONTROLS_RIGHT_PANEL_POS_X + slide_x,
+                CONTROLS_RIGHT_PANEL_POS_Y + self._widescreen_y_shift,
+            )
+            + self._panel_offset * panel_scale
+        )
+
     def _direction_arrow_enabled(self) -> bool:
         raw = self._state.config.data.get("hud_indicators", b"\x01\x01")
         if not isinstance(raw, (bytes, bytearray)):
             return True
-        player_idx = max(0, min(1, int(self._config_player) - 1))
+        player_idx = self._current_player_index()
         if player_idx >= len(raw):
             return True
         return bool(raw[player_idx])
@@ -101,21 +174,20 @@ class ControlsMenuView(PanelMenuView):
         values = bytearray(raw) if isinstance(raw, (bytes, bytearray)) else bytearray(b"\x01\x01")
         if len(values) < 2:
             values.extend(b"\x01" * (2 - len(values)))
-        player_idx = max(0, min(1, int(self._config_player) - 1))
+        player_idx = self._current_player_index()
         values[player_idx] = 1 if enabled else 0
         self._state.config.data["hud_indicators"] = bytes(values[:2])
 
-    def _update_direction_arrow_checkbox(self) -> bool:
+    def _checkbox_enabled(self) -> bool:
+        return not (self._move_method_open or self._aim_method_open)
+
+    def _checkbox_hovered(self, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+        if not enabled:
+            return False
         check_on = self._check_on
         check_off = self._check_off
         if check_on is None or check_off is None:
             return False
-
-        panel_scale, _local_y_shift = self._menu_item_scale(0)
-        left_top_left = (
-            Vec2(self._panel_pos.x, self._panel_pos.y + self._widescreen_y_shift) + self._panel_offset * panel_scale
-        )
-
         font = self._ensure_small_font()
         text_scale = 1.0 * panel_scale
         label = "Show direction arrow"
@@ -124,10 +196,188 @@ class ControlsMenuView(PanelMenuView):
         rect_w = float(check_on.width) * panel_scale + 6.0 * panel_scale + label_w
         rect_h = max(float(check_on.height) * panel_scale, font.cell_size * text_scale)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
-        hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
+        return Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
+
+    def _update_direction_arrow_checkbox(self, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+        if not enabled:
+            return False
+        check_on = self._check_on
+        check_off = self._check_off
+        if check_on is None or check_off is None:
+            return False
+
+        hovered = self._checkbox_hovered(left_top_left=left_top_left, panel_scale=panel_scale, enabled=enabled)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
             return True
+        return False
+
+    @staticmethod
+    def _coerce_blob(raw: object, size: int) -> bytearray:
+        values = bytearray(raw) if isinstance(raw, (bytes, bytearray)) else bytearray()
+        if len(values) < size:
+            values.extend(b"\x00" * (size - len(values)))
+        if len(values) > size:
+            del values[size:]
+        return values
+
+    def _set_player_move_mode(self, *, player_index: int, move_mode: int) -> None:
+        config = self._state.config
+        raw = self._coerce_blob(config.data.get("unknown_1c"), 0x28)
+        idx = max(0, min(3, int(player_index)))
+        struct.pack_into("<I", raw, idx * 4, int(move_mode))
+        config.data["unknown_1c"] = bytes(raw)
+
+    def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: int) -> None:
+        config = self._state.config
+        idx = max(0, min(3, int(player_index)))
+        scheme = int(aim_scheme)
+        if idx == 0:
+            config.data["unknown_44"] = scheme
+            return
+        if idx == 1:
+            config.data["unknown_48"] = scheme
+            return
+        raw = self._coerce_blob(config.data.get("unknown_4c"), 0x20)
+        struct.pack_into("<I", raw, (idx - 2) * 4, scheme)
+        config.data["unknown_4c"] = bytes(raw)
+
+    @staticmethod
+    def _move_method_items(*, move_mode: int) -> tuple[str, ...]:
+        items = [input_scheme_label(1), input_scheme_label(2), input_scheme_label(3)]
+        if int(move_mode) == 4:
+            items.append(input_scheme_label(4))
+        return tuple(items)
+
+    def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _DropdownLayout:
+        font = self._ensure_small_font()
+        text_scale = 1.0 * scale
+        max_label_w = 0.0
+        for label in items:
+            max_label_w = max(max_label_w, measure_small_text_width(font, label, text_scale))
+        width = max_label_w + 48.0 * scale
+        header_h = 16.0 * scale
+        row_h = 16.0 * scale
+        full_h = (float(len(items)) * 16.0 + 24.0) * scale
+        arrow = 16.0 * scale
+        return _DropdownLayout(
+            pos=pos,
+            width=width,
+            header_h=header_h,
+            row_h=row_h,
+            rows_y0=pos.y + 17.0 * scale,
+            full_h=full_h,
+            arrow_pos=Vec2(pos.x + width - arrow - 1.0 * scale, pos.y),
+            arrow_size=Vec2(arrow, arrow),
+            text_pos=pos + Vec2(4.0 * scale, 1.0 * scale),
+            text_scale=text_scale,
+        )
+
+    def _update_dropdown(
+        self,
+        *,
+        layout: _DropdownLayout,
+        item_count: int,
+        is_open: bool,
+        enabled: bool,
+        scale: float,
+    ) -> tuple[bool, int | None, bool]:
+        mouse = rl.get_mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
+            mouse,
+            pos=layout.pos,
+            width=layout.width,
+            height=14.0 * scale,
+        )
+        if hovered_header and click:
+            return (not is_open), None, True
+        if not is_open:
+            return is_open, None, False
+
+        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(Vec2.from_xy(mouse))
+        if click and not list_hovered:
+            return False, None, True
+
+        for idx in range(item_count):
+            item_y = layout.rows_y0 + layout.row_h * float(idx)
+            hovered = bool(enabled) and mouse_inside_rect_with_padding(
+                mouse,
+                pos=Vec2(layout.pos.x, item_y),
+                width=layout.width,
+                height=14.0 * scale,
+            )
+            if hovered and click:
+                return False, idx, True
+
+        return is_open, None, False
+
+    def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float) -> bool:
+        config = self._state.config
+        player_idx = self._current_player_index()
+        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        move_items = self._move_method_items(move_mode=move_mode)
+        aim_items = tuple(input_configure_for_label(i) for i in range(5))
+        player_items = ("Player 1", "Player 2")
+
+        move_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
+            items=move_items,
+            scale=panel_scale,
+        )
+        aim_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
+            items=aim_items,
+            scale=panel_scale,
+        )
+        player_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
+            items=player_items,
+            scale=panel_scale,
+        )
+
+        move_enabled = not (self._aim_method_open or self._player_profile_open)
+        aim_enabled = not (self._move_method_open or self._player_profile_open)
+        player_enabled = not (self._move_method_open or self._aim_method_open)
+
+        self._move_method_open, move_selected, consumed = self._update_dropdown(
+            layout=move_layout,
+            item_count=len(move_items),
+            is_open=self._move_method_open,
+            enabled=move_enabled,
+            scale=panel_scale,
+        )
+        if move_selected is not None:
+            self._set_player_move_mode(player_index=player_idx, move_mode=move_selected + 1)
+            self._dirty = True
+        if consumed:
+            return True
+
+        self._aim_method_open, aim_selected, consumed = self._update_dropdown(
+            layout=aim_layout,
+            item_count=len(aim_items),
+            is_open=self._aim_method_open,
+            enabled=aim_enabled,
+            scale=panel_scale,
+        )
+        if aim_selected is not None:
+            self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_selected)
+            self._dirty = True
+        if consumed:
+            return True
+
+        self._player_profile_open, player_selected, consumed = self._update_dropdown(
+            layout=player_layout,
+            item_count=len(player_items),
+            is_open=self._player_profile_open,
+            enabled=player_enabled,
+            scale=panel_scale,
+        )
+        if player_selected is not None:
+            self._config_player = max(1, min(2, player_selected + 1))
+        if consumed:
+            return True
+
         return False
 
     def _draw_panel(self) -> None:
@@ -141,20 +391,7 @@ class ControlsMenuView(PanelMenuView):
         panel_w = MENU_PANEL_WIDTH * panel_scale
 
         # Left (controls options) panel: standard 254px height => a single quad.
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-        )
-        left_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        left_top_left = self._left_panel_top_left(panel_scale)
         left_h = MENU_PANEL_HEIGHT * panel_scale
         draw_classic_menu_panel(
             panel,
@@ -164,21 +401,7 @@ class ControlsMenuView(PanelMenuView):
         )
 
         # Right (configured bindings) panel: tall 378px panel rendered as 3 vertical slices.
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=3,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
-            direction_flag=1,
-        )
-        right_top_left = (
-            Vec2(
-                CONTROLS_RIGHT_PANEL_POS_X + slide_x,
-                CONTROLS_RIGHT_PANEL_POS_Y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        right_top_left = self._right_panel_top_left(panel_scale)
         right_h = float(CONTROLS_RIGHT_PANEL_HEIGHT) * panel_scale
         draw_classic_menu_panel(
             panel,
@@ -193,22 +416,36 @@ class ControlsMenuView(PanelMenuView):
         # Positions are expressed relative to the panel top-left corners and scaled with the panel scale.
         panel_scale, _local_y_shift = self._menu_item_scale(0)
 
-        left_top_left = (
-            Vec2(self._panel_pos.x, self._panel_pos.y + self._widescreen_y_shift) + self._panel_offset * panel_scale
-        )
-        right_top_left = (
-            Vec2(
-                CONTROLS_RIGHT_PANEL_POS_X,
-                CONTROLS_RIGHT_PANEL_POS_Y + self._widescreen_y_shift,
-            )
-            + self._panel_offset * panel_scale
-        )
+        left_top_left = self._left_panel_top_left(panel_scale)
+        right_top_left = self._right_panel_top_left(panel_scale)
 
         font = self._ensure_small_font()
-        text_color = rl.Color(255, 255, 255, 255)
+        text_color_full = rl.Color(255, 255, 255, 255)
+        text_color_soft = rl.Color(255, 255, 255, 204)
         config = self._state.config
-        player_idx = max(0, min(3, int(self._config_player) - 1))
-        aim_label, move_label = controls_method_labels(config.data, player_index=player_idx)
+        player_idx = self._current_player_index()
+        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
+        move_items = self._move_method_items(move_mode=move_mode)
+        aim_items = tuple(input_configure_for_label(i) for i in range(5))
+        player_items = ("Player 1", "Player 2")
+        move_selected = max(0, min(len(move_items) - 1, int(move_mode) - 1))
+        aim_selected = max(0, min(len(aim_items) - 1, int(aim_scheme)))
+        player_selected = max(0, min(len(player_items) - 1, player_idx))
+        move_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
+            items=move_items,
+            scale=panel_scale,
+        )
+        aim_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
+            items=aim_items,
+            scale=panel_scale,
+        )
+        player_layout = self._dropdown_layout(
+            pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
+            items=player_items,
+            scale=panel_scale,
+        )
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
         if self._text_controls is not None:
@@ -231,14 +468,7 @@ class ControlsMenuView(PanelMenuView):
             "Configure for:",
             Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale),
             1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            f"Player {int(self._config_player)}",
-            Vec2(left_top_left.x + 344.0 * panel_scale, left_top_left.y + 57.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
+            text_color_soft,
         )
 
         draw_small_text(
@@ -246,14 +476,7 @@ class ControlsMenuView(PanelMenuView):
             "Aiming method:",
             Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale),
             1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            aim_label,
-            Vec2(left_top_left.x + 218.0 * panel_scale, left_top_left.y + 103.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
+            text_color_full,
         )
 
         draw_small_text(
@@ -261,14 +484,7 @@ class ControlsMenuView(PanelMenuView):
             "Moving method:",
             Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale),
             1.0 * panel_scale,
-            text_color,
-        )
-        draw_small_text(
-            font,
-            move_label,
-            Vec2(left_top_left.x + 218.0 * panel_scale, left_top_left.y + 145.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color,
+            text_color_full,
         )
 
         check_tex = self._check_on if self._direction_arrow_enabled() else self._check_off
@@ -286,34 +502,44 @@ class ControlsMenuView(PanelMenuView):
                 rotation_deg=0.0,
                 tint=rl.WHITE,
             )
+        checkbox_hovered = self._checkbox_hovered(
+            left_top_left=left_top_left,
+            panel_scale=panel_scale,
+            enabled=self._checkbox_enabled(),
+        )
+        checkbox_alpha = 255 if checkbox_hovered else 178
         draw_small_text(
             font,
             "Show direction arrow",
             Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale),
             1.0 * panel_scale,
-            text_color,
+            rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        drop_tex = self._drop_off
-        if drop_tex is not None:
-            for ox, oy in (
-                (418.0, 56.0),  # player dropdown
-                (336.0, 102.0),  # aiming dropdown
-                (336.0, 144.0),  # moving dropdown
-            ):
-                MenuView._draw_ui_quad(
-                    texture=drop_tex,
-                    src=rl.Rectangle(0.0, 0.0, float(drop_tex.width), float(drop_tex.height)),
-                    dst=rl.Rectangle(
-                        left_top_left.x + ox * panel_scale,
-                        left_top_left.y + oy * panel_scale,
-                        16.0 * panel_scale,
-                        16.0 * panel_scale,
-                    ),
-                    origin=rl.Vector2(0.0, 0.0),
-                    rotation_deg=0.0,
-                    tint=rl.WHITE,
-                )
+        self._draw_dropdown(
+            layout=player_layout,
+            items=player_items,
+            selected_index=player_selected,
+            is_open=self._player_profile_open,
+            enabled=not (self._move_method_open or self._aim_method_open),
+            scale=panel_scale,
+        )
+        self._draw_dropdown(
+            layout=aim_layout,
+            items=aim_items,
+            selected_index=aim_selected,
+            is_open=self._aim_method_open,
+            enabled=not (self._move_method_open or self._player_profile_open),
+            scale=panel_scale,
+        )
+        self._draw_dropdown(
+            layout=move_layout,
+            items=move_items,
+            selected_index=move_selected,
+            is_open=self._move_method_open,
+            enabled=not (self._aim_method_open or self._player_profile_open),
+            scale=panel_scale,
+        )
 
         # --- Right panel: configured bindings list ---
         pick_perk_key = int(config.data.get("keybind_pick_perk", 0x101) or 0x101)
@@ -374,7 +600,7 @@ class ControlsMenuView(PanelMenuView):
                 title,
                 Vec2(x_heading, y),
                 1.0 * panel_scale,
-                text_color,
+                text_color_full,
             )
             line = rl.Rectangle(
                 x_heading,
@@ -404,7 +630,6 @@ class ControlsMenuView(PanelMenuView):
                 row_y += 16.0 * panel_scale
             return row_y
 
-        aim_scheme, move_mode = controls_method_values(config.data, player_index=player_idx)
         aim_rows, move_rows, misc_rows = controls_rebind_slot_plan(
             aim_scheme=aim_scheme,
             move_mode=move_mode,
@@ -416,7 +641,7 @@ class ControlsMenuView(PanelMenuView):
             "Configured controls",
             Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale),
             1.0 * panel_scale,
-            text_color,
+            text_color_full,
         )
         header_w = measure_small_text_width(font, "Configured controls", 1.0 * panel_scale)
         header_line = rl.Rectangle(
@@ -439,3 +664,84 @@ class ControlsMenuView(PanelMenuView):
         if misc_rows:
             _draw_section_heading("Misc", y=y)
             _draw_section_rows(misc_rows, y=y + 18.0 * panel_scale)
+
+    def _draw_dropdown(
+        self,
+        *,
+        layout: _DropdownLayout,
+        items: tuple[str, ...],
+        selected_index: int,
+        is_open: bool,
+        enabled: bool,
+        scale: float,
+    ) -> None:
+        mouse = rl.get_mouse_position()
+        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
+            mouse,
+            pos=layout.pos,
+            width=layout.width,
+            height=14.0 * scale,
+        )
+        widget_h = layout.full_h if is_open else layout.header_h
+        rl.draw_rectangle(int(layout.pos.x), int(layout.pos.y), int(layout.width), int(widget_h), rl.WHITE)
+        inner_w = max(0, int(layout.width) - 2)
+        inner_h = max(0, int(widget_h) - 2)
+        rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
+
+        if (is_open or hovered_header) and enabled:
+            line_h = max(1, int(1.0 * scale))
+            rl.draw_rectangle(
+                int(layout.pos.x),
+                int(layout.pos.y + 15.0 * scale),
+                int(layout.width),
+                line_h,
+                rl.Color(255, 255, 255, 128),
+            )
+
+        arrow_tex = self._drop_on if ((is_open or hovered_header) and enabled) else self._drop_off
+        if arrow_tex is None:
+            arrow_tex = self._drop_off
+        if arrow_tex is not None:
+            rl.draw_texture_pro(
+                arrow_tex,
+                rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
+                rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+
+        idx = max(0, min(len(items) - 1, int(selected_index))) if items else 0
+        header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
+        if items:
+            draw_small_text(
+                self._ensure_small_font(),
+                items[idx],
+                layout.text_pos,
+                layout.text_scale,
+                rl.Color(255, 255, 255, header_alpha),
+            )
+
+        if not is_open:
+            return
+
+        for idx, item in enumerate(items):
+            item_y = layout.rows_y0 + layout.row_h * float(idx)
+            hovered = bool(enabled) and mouse_inside_rect_with_padding(
+                mouse,
+                pos=Vec2(layout.pos.x, item_y),
+                width=layout.width,
+                height=14.0 * scale,
+            )
+            alpha = 153
+            if hovered:
+                alpha = 242
+            if idx == selected_index:
+                alpha = max(alpha, 245)
+            draw_small_text(
+                self._ensure_small_font(),
+                item,
+                Vec2(layout.text_pos.x, item_y),
+                layout.text_scale,
+                rl.Color(255, 255, 255, alpha),
+            )
