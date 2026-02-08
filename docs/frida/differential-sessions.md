@@ -114,3 +114,31 @@ Each entry should capture:
 
 - Capture a focused run around tick `1794` with entity samples so we can compare native projectile/creature geometry directly at the kill boundary:
   `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=96`.
+
+---
+
+## Session 2026-02-08-d
+
+- **Session ID:** `2026-02-08-d`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 8 --lead-lookback 256 --run-summary-short --run-summary-short-max-rows 12`
+- **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
+
+### Findings
+
+- The active divergence path is secondary-projectile specific (`secondary_projectiles=182` rewrite-side calls at focus tick), but the capture lacked direct secondary projectile spawn telemetry.
+- Non-focused captures also omit per-tick entity samples, which prevents geometry-level comparison at tick `1794` without rerunning the recording.
+- This is now a concrete capture-coverage blocker rather than a replay-converter blocker.
+
+### Fixes from this session
+
+- Updated `scripts/frida/gameplay_diff_capture_v2.js` to hook `fx_spawn_secondary_projectile` and emit `secondary_projectile_spawn` events in `event_counts`/`event_heads`.
+- Added focused sampling of active `secondary_projectiles` (`samples.secondary_projectiles`) with a dedicated env knob:
+  `CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT`.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` to document the new secondary spawn telemetry and sample limit option.
+
+### Next probe
+
+- Record a new focused session using the updated script and include secondary projectile samples:
+  `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=128 CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT=64`.

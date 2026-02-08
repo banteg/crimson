@@ -110,6 +110,7 @@ const CONFIG = {
   maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
   creatureSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT", -1),
   projectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT", -1),
+  secondaryProjectileSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1),
   bonusSampleLimit: parseIntEnv("CRIMSON_FRIDA_V2_BONUS_SAMPLE_LIMIT", -1),
   enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_V2_INPUT_HOOKS", true),
   enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_HOOKS", true),
@@ -136,6 +137,7 @@ const FN = {
   weapon_assign_player: 0x00452d40,
   bonus_apply: 0x00409890,
   bonus_try_spawn_on_kill: 0x0041f8d0,
+  secondary_projectile_spawn: 0x00420360,
   projectile_spawn: 0x00420440,
   creature_apply_damage: 0x004207c0,
   player_take_damage: 0x00425e50,
@@ -252,6 +254,7 @@ const DATA = {
   status_weapon_usage_counts: 0x00485544,
 
   projectile_pool: 0x004926b8,
+  secondary_projectile_pool: 0x00495ad8,
   creature_pool: 0x0049bf38,
   bonus_pool: 0x00482948,
 
@@ -262,12 +265,14 @@ const DATA = {
 const STRIDES = {
   player: 0x360,
   projectile: 0x40,
+  secondary_projectile: 0x2c,
   creature: 0x98,
   bonus: 0x1c,
 };
 
 const COUNTS = {
   projectiles: 0x60,
+  secondary_projectiles: 0x40,
   creatures: 0x180,
   bonuses: 0x10,
 };
@@ -849,6 +854,44 @@ function readActiveProjectileSample(limit) {
   return out;
 }
 
+function readSecondaryProjectileEntry(index) {
+  const pool = dataPtrs.secondary_projectile_pool;
+  if (!pool || index < 0) return null;
+  const base = pool.add(index * STRIDES.secondary_projectile);
+  const active = safeReadU8(base);
+  if (!active) return null;
+  return {
+    index: index,
+    active: active,
+    pos: {
+      x: round4(safeReadF32(base.add(0x04))),
+      y: round4(safeReadF32(base.add(0x08))),
+    },
+    life_timer: round4(safeReadF32(base.add(0x0c))),
+    angle: round4(safeReadF32(base.add(0x10))),
+    vel: {
+      x: round4(safeReadF32(base.add(0x14))),
+      y: round4(safeReadF32(base.add(0x18))),
+    },
+    trail_timer: round4(safeReadF32(base.add(0x1c))),
+    type_id: safeReadS32(base.add(0x20)),
+    target_id: safeReadS32(base.add(0x24)),
+  };
+}
+
+function readActiveSecondaryProjectileSample(limit) {
+  const normalizedLimit = normalizeSampleLimit(limit);
+  const out = [];
+  if (!dataPtrs.secondary_projectile_pool || normalizedLimit === 0) return out;
+  for (let i = 0; i < COUNTS.secondary_projectiles; i++) {
+    const p = readSecondaryProjectileEntry(i);
+    if (!p) continue;
+    out.push(p);
+    if (normalizedLimit >= 0 && out.length >= normalizedLimit) break;
+  }
+  return out;
+}
+
 function readCreatureEntry(index) {
   const pool = dataPtrs.creature_pool;
   if (!pool || index < 0) return null;
@@ -1272,6 +1315,7 @@ function makeTickContext() {
       bonus_apply: 0,
       bonus_spawn: 0,
       projectile_spawn: 0,
+      secondary_projectile_spawn: 0,
       player_damage: 0,
       creature_damage: 0,
       creature_spawn: 0,
@@ -1293,6 +1337,7 @@ function makeTickContext() {
       bonus_apply: [],
       bonus_spawn: [],
       projectile_spawn: [],
+      secondary_projectile_spawn: [],
       player_damage: [],
       creature_damage: [],
       creature_spawn: [],
@@ -1809,6 +1854,7 @@ function finalizeTick() {
     out.samples = {
       creatures: readActiveCreatureSample(CONFIG.creatureSampleLimit),
       projectiles: readActiveProjectileSample(CONFIG.projectileSampleLimit),
+      secondary_projectiles: readActiveSecondaryProjectileSample(CONFIG.secondaryProjectileSampleLimit),
       bonuses: readActiveBonusSample(CONFIG.bonusSampleLimit),
     };
   }
@@ -2285,6 +2331,46 @@ function installHooks() {
       },
     });
   }
+
+  attachHook("secondary_projectile_spawn", fnPtrs.secondary_projectile_spawn, {
+    onEnter(args) {
+      this._ctx = {
+        pos: {
+          x: round4(safeReadF32(args[0])),
+          y: round4(safeReadF32(args[0].add(4))),
+        },
+        angle_f32: argAsF32(args[1]),
+        requested_type_id: args[2].toInt32(),
+        caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+      };
+    },
+    onLeave(retval) {
+      const ctx = this._ctx;
+      if (!ctx) return;
+      const idx = retval.toInt32();
+      const spawned = readSecondaryProjectileEntry(idx);
+      const actualType = spawned ? spawned.type_id : null;
+      const payload = {
+        index: idx,
+        requested_type_id: ctx.requested_type_id,
+        actual_type_id: actualType,
+        spawned: spawned,
+        angle_f32: round4(ctx.angle_f32),
+        pos: ctx.pos,
+        type_overridden: actualType == null ? null : actualType !== ctx.requested_type_id,
+        caller: ctx.caller,
+      };
+      addTickEvent(
+        "secondary_projectile_spawn",
+        payload,
+        "sps:" +
+          (payload.requested_type_id == null ? -1 : payload.requested_type_id) +
+          "->" +
+          (payload.actual_type_id == null ? -1 : payload.actual_type_id)
+      );
+      emitRawEvent(Object.assign({ event: "secondary_projectile_spawn" }, payload));
+    },
+  });
 
   attachHook("projectile_spawn", fnPtrs.projectile_spawn, {
     onEnter(args) {
@@ -2855,6 +2941,7 @@ function main() {
       max_creature_delta_ids: CONFIG.maxCreatureDeltaIds,
       creature_sample_limit: CONFIG.creatureSampleLimit,
       projectile_sample_limit: CONFIG.projectileSampleLimit,
+      secondary_projectile_sample_limit: CONFIG.secondaryProjectileSampleLimit,
       bonus_sample_limit: CONFIG.bonusSampleLimit,
       enable_input_hooks: CONFIG.enableInputHooks,
       enable_rng_hooks: CONFIG.enableRngHooks,

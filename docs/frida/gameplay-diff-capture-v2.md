@@ -32,7 +32,7 @@ just frida-gameplay-diff-capture-v2
 - Each tick includes `checkpoint` fields compatible with
   `replay convert-original-capture`.
 - Captures per-tick command/event summary (`projectile_spawn`, SFX, bonus apply,
-  weapon assign, damage, creature spawns, state transitions).
+  `secondary_projectile_spawn`, weapon assign, damage, creature spawns, state transitions).
 - Captures both template-level and low-level creature spawn paths
   (`creature_spawn_template`, `creature_spawn`, `survival_spawn_creature`,
   `creature_spawn_tinted`) with caller buckets.
@@ -117,6 +117,7 @@ Track each run in `docs/frida/differential-sessions.md`.
 - `CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY=30`
 - `CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT=24`
 - `CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT=32`
+- `CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT=32`
 - `CRIMSON_FRIDA_V2_BONUS_SAMPLE_LIMIT=12`
 - `CRIMSON_FRIDA_V2_INCLUDE_RAW_EVENTS=1`
 - `CRIMSON_FRIDA_V2_INPUT_HOOKS=0` (disable input query hooks)
@@ -126,7 +127,7 @@ Track each run in `docs/frida/differential-sessions.md`.
 - `CRIMSON_FRIDA_V2_RNG_CALLERS=-1` (per-tick RNG caller buckets; default unlimited)
 - `CRIMSON_FRIDA_PLAYER_COUNT=2` (optional override; default uses `config_player_count` from memory)
 
-Default sample limits are unlimited (`-1`), and `0` disables that sample stream.
+Default sample limits are unlimited (`-1`) for creature/projectile/secondary-projectile/bonus streams, and `0` disables that sample stream.
 Backtraces are off by default (`CRIMSON_FRIDA_INCLUDE_BT=0`).
 When `CRIMSON_FRIDA_V2_FOCUS_TICK` is set, raw events are emitted only for the
 focus window.
