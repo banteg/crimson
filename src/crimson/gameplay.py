@@ -2356,7 +2356,7 @@ def player_update(
     if moving_input:
         inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
         move = raw_move * inv
-        target_heading = move.to_heading()
+        target_heading = _normalize_heading_angle(move.to_heading())
         angle_diff = _player_heading_approach_target(player, target_heading, dt)
         move = Vec2.from_heading(player.heading)
         turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
@@ -2471,11 +2471,7 @@ def player_update(
 def _player_heading_approach_target(player: PlayerState, target_heading: float, dt: float) -> float:
     """Native `player_heading_approach_target`: ease heading and return angular diff."""
 
-    heading = float(player.heading)
-    while heading < 0.0:
-        heading += math.tau
-    while heading > math.tau:
-        heading -= math.tau
+    heading = _normalize_heading_angle(float(player.heading))
     player.heading = heading
 
     direct = abs(float(target_heading) - heading)
@@ -2491,6 +2487,14 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
     player.heading = heading + turn_sign * dt * diff * 5.0
     return diff
+
+
+def _normalize_heading_angle(value: float) -> float:
+    while value < 0.0:
+        value += math.tau
+    while value > math.tau:
+        value -= math.tau
+    return value
 
 
 @dataclass(slots=True)
