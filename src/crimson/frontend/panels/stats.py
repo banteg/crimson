@@ -31,6 +31,7 @@ from ..menu import (
 )
 from ..transitions import _draw_screen_fade
 from ..types import GameState
+from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
@@ -74,6 +75,11 @@ class StatisticsMenuView:
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
 
         self._action: str | None = None
 
@@ -91,6 +97,11 @@ class StatisticsMenuView:
         self._small_font = None
         self._cursor_pulse_time = 0.0
         self._action = None
+        self._timeline_ms = 0
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
 
         cache = _ensure_texture_cache(self._state)
         button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
@@ -117,8 +128,15 @@ class StatisticsMenuView:
         self._assets = None
         self._ground = None
         self._action = None
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
 
     def take_action(self) -> str | None:
+        if self._pending_action is not None:
+            action = self._pending_action
+            self._pending_action = None
+            return action
         action = self._action
         self._action = None
         return action
@@ -136,61 +154,91 @@ class StatisticsMenuView:
             STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_action = action
+
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._closing:
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
+            return
+
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
+        interactive = self._timeline_ms >= self._timeline_max_ms
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_menu"
+            self._begin_close_transition("back_to_menu")
             return
 
         textures = self._button_textures
         if textures is None or (textures.button_md is None and textures.button_sm is None):
             return
+        if not interactive:
+            return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_top_left = self._panel_top_left(scale=scale)
+        panel_w = MENU_PANEL_WIDTH * scale
+        _angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=0,
+        )
+        panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
         font = self._ensure_small_font()
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        dt_ms = min(float(dt), 0.1) * 1000.0
+        dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
             w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
-            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
+            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "open_high_scores"
+            self._begin_close_transition("open_high_scores")
             return
         if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "open_weapon_database"
+            self._begin_close_transition("open_weapon_database")
             return
         if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "open_perk_database"
+            self._begin_close_transition("open_perk_database")
             return
         if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "open_credits"
+            self._begin_close_transition("open_credits")
             return
 
         if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale)):
             if self._state.audio is not None:
                 play_sfx(self._state.audio, "sfx_ui_buttonclick", rng=self._state.rng)
-            self._action = "back_to_menu"
+            self._begin_close_transition("back_to_menu")
             return
 
     def draw(self) -> None:
@@ -207,9 +255,18 @@ class StatisticsMenuView:
             return
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
-        panel_top_left = self._panel_top_left(scale=scale)
+        panel_w = MENU_PANEL_WIDTH * scale
+        _angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+            direction_flag=0,
+        )
+        panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
         dst = rl.Rectangle(
-            panel_top_left.x, panel_top_left.y, MENU_PANEL_WIDTH * scale, STATISTICS_PANEL_HEIGHT * scale
+            panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale
         )
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
