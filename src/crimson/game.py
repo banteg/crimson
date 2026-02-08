@@ -57,8 +57,8 @@ from .frontend.high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
-    HS_LOCAL_DATE_X,
     HS_LOCAL_DATE_Y,
+    HS_LOCAL_DATE_CENTER_X,
     HS_LOCAL_FRAGS_X,
     HS_LOCAL_FRAGS_Y,
     HS_LOCAL_HIT_X,
@@ -73,6 +73,8 @@ from .frontend.high_scores_layout import (
     HS_LOCAL_SCORE_LABEL_Y,
     HS_LOCAL_SCORE_VALUE_X,
     HS_LOCAL_SCORE_VALUE_Y,
+    HS_LOCAL_CLOCK_X,
+    HS_LOCAL_CLOCK_Y,
     HS_LOCAL_TIME_LABEL_X,
     HS_LOCAL_TIME_LABEL_Y,
     HS_LOCAL_TIME_VALUE_X,
@@ -2102,6 +2104,8 @@ class HighScoresView:
         self._drop_off: rl.Texture | None = None
         self._arrow_tex: rl.Texture | None = None
         self._wicons_tex: rl.Texture | None = None
+        self._clock_table_tex: rl.Texture | None = None
+        self._clock_pointer_tex: rl.Texture | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -2135,13 +2139,9 @@ class HighScoresView:
         self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
         self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
         self._arrow_tex = cache.get_or_load("ui_arrow", "ui/ui_arrow.jaz").texture
-
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
-        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
-        if wicons_path.is_file():
-            self._wicons_tex = rl.load_texture(str(wicons_path))
+        self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
+        self._clock_table_tex = cache.get_or_load("ui_clockTable", "ui/ui_clockTable.jaz").texture
+        self._clock_pointer_tex = cache.get_or_load("ui_clockPointer", "ui/ui_clockPointer.jaz").texture
 
         request = self._state.pending_high_scores
         self._state.pending_high_scores = None
@@ -2179,9 +2179,9 @@ class HighScoresView:
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
+        self._wicons_tex = None
+        self._clock_table_tex = None
+        self._clock_pointer_tex = None
         self._assets = None
         self._button_tex = None
         self._button_textures = None
@@ -2680,7 +2680,9 @@ class HighScoresView:
         entry = self._records[idx]
 
         text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        text_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.8))
+        value_color = rl.Color(int(255 * 0.9), int(255 * 0.9), 255, 255)
+        lower_section_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.7))
         separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
         name = ""
@@ -2714,10 +2716,12 @@ class HighScoresView:
 
         date_text = self._format_score_date(entry)
         if date_text:
+            date_width = measure_small_text_width(font, date_text, text_scale)
+            date_x = (HS_LOCAL_DATE_CENTER_X * scale) - date_width * 0.5
             draw_small_text(
                 font,
                 date_text,
-                right_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale),
+                right_top_left + Vec2(date_x, HS_LOCAL_DATE_Y * scale),
                 text_scale,
                 text_color,
             )
@@ -2757,10 +2761,15 @@ class HighScoresView:
             score_value,
             right_top_left + Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale),
             text_scale,
-            text_color,
+            value_color,
         )
 
         elapsed_ms = int(getattr(entry, "survival_elapsed_ms", 0) or 0)
+        self._draw_clock_gauge(
+            elapsed_ms=elapsed_ms,
+            pos=right_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+            scale=scale,
+        )
         draw_small_text(
             font,
             self._format_elapsed_mm_ss(elapsed_ms),
@@ -2778,26 +2787,12 @@ class HighScoresView:
         )
 
         frags = int(getattr(entry, "creature_kill_count", 0) or 0)
-        draw_small_text(
-            font,
-            f"Frags: {frags}",
-            right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
-            text_scale,
-            text_color,
-        )
 
         shots_fired = int(getattr(entry, "shots_fired", 0) or 0)
         shots_hit = int(getattr(entry, "shots_hit", 0) or 0)
         hit_pct = 0
         if shots_fired > 0:
             hit_pct = int((shots_hit * 100) // shots_fired)
-        draw_small_text(
-            font,
-            f"Hit %: {hit_pct}%",
-            right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
-            text_scale,
-            text_color,
-        )
         rl.draw_line(
             int(right_top_left.x + 74.0 * scale),
             int(right_top_left.y + 142.0 * scale),
@@ -2819,7 +2814,21 @@ class HighScoresView:
             weapon_name,
             right_top_left + Vec2(HS_LOCAL_WEAPON_X * scale, HS_LOCAL_WEAPON_Y * scale),
             text_scale,
-            text_color,
+            lower_section_color,
+        )
+        draw_small_text(
+            font,
+            f"Frags: {frags}",
+            right_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
+            text_scale,
+            lower_section_color,
+        )
+        draw_small_text(
+            font,
+            f"Hit %: {hit_pct}%",
+            right_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
+            text_scale,
+            lower_section_color,
         )
         rl.draw_line(
             int(right_top_left.x + 74.0 * scale),
@@ -2829,6 +2838,35 @@ class HighScoresView:
             separator_color,
         )
 
+    def _draw_clock_gauge(self, *, elapsed_ms: int, pos: Vec2, scale: float) -> None:
+        table_tex = self._clock_table_tex
+        pointer_tex = self._clock_pointer_tex
+        if table_tex is None or pointer_tex is None:
+            return
+        draw_w = 32.0 * scale
+        draw_h = 32.0 * scale
+        dst = rl.Rectangle(pos.x, pos.y, draw_w, draw_h)
+        src_table = rl.Rectangle(0.0, 0.0, float(table_tex.width), float(table_tex.height))
+        src_pointer = rl.Rectangle(0.0, 0.0, float(pointer_tex.width), float(pointer_tex.height))
+        rl.draw_texture_pro(
+            table_tex,
+            src_table,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.WHITE,
+        )
+        seconds = max(0, int(elapsed_ms) // 1000)
+        rotation_deg = float(seconds) * 6.0
+        rl.draw_texture_pro(
+            pointer_tex,
+            src_pointer,
+            dst,
+            rl.Vector2(draw_w * 0.5, draw_h * 0.5),
+            rotation_deg,
+            rl.WHITE,
+        )
+
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
         tex = self._wicons_tex
         if tex is None:
@@ -2836,12 +2874,14 @@ class HighScoresView:
         idx = int(icon_index)
         if idx < 0 or idx > 31:
             return
-        cols = 4
-        rows = 8
-        icon_w = float(tex.width) / float(cols)
-        icon_h = float(tex.height) / float(rows)
-        src_x = float(idx % cols) * icon_w
-        src_y = float(idx // cols) * icon_h
+        grid = 8
+        cell_w = float(tex.width) / float(grid)
+        cell_h = float(tex.height) / float(grid)
+        frame = idx * 2
+        src_x = float(frame % grid) * cell_w
+        src_y = float(frame // grid) * cell_h
+        icon_w = cell_w * 2.0
+        icon_h = cell_h
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
