@@ -185,6 +185,8 @@ class ControlsMenuView(PanelMenuView):
             dst=rl.Rectangle(right_top_left.x, right_top_left.y, panel_w, right_h),
             tint=rl.WHITE,
             shadow=fx_detail,
+            # Original ui_element_slot_40 sets direction_flag=1, which mirrors panel UVs.
+            flip_x=True,
         )
 
     def _draw_contents(self) -> None:
