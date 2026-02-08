@@ -130,6 +130,16 @@ uv run python scripts/original_capture_focus_trace.py \
 This is especially useful when checkpoint fields still match but native RNG
 callers indicate hidden branch drift (for example corpse-hit resolution).
 
+`original_capture_focus_trace.py` now also prints `rng_value_alignment`:
+
+- exact native-vs-rewrite RNG value prefix length for the focus tick,
+- native-only tail draw count,
+- dominant native `caller_static` buckets in that missing tail,
+- a short inferred rewrite callsite preview for the missing native tail.
+
+This makes it much easier to tell whether a focus mismatch is a midstream value
+desync or a late-tick missing branch (prefix match + missing tail).
+
 ## Default capture profile
 
 Without any extra env vars, v2 now captures full detail for every tracked tick:

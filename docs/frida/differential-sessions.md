@@ -284,3 +284,44 @@ Each entry should capture:
   - divergence report for the first RNG shortfall tick,
   - focus trace at that tick and nearby onset tick for slot-index drift,
   to isolate whether the missing draw path is a pure projectile corpse-hit branch or an earlier creature-slot lifecycle mismatch.
+
+---
+
+## Session 2026-02-08-i
+
+- **Session ID:** `2026-02-08-i`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 4096 --run-summary-short --run-summary-short-max-rows 80 --json-out analysis/frida/divergence_report_latest.json`
+  - `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 4096 --focus-tick 3453 --json-out analysis/frida/divergence_report_focus3453_latest.json`
+  - `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_latest.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)`
+
+### Findings
+
+- Tick `3453` remains the first major shortfall (`native rand_calls=353`, rewrite `268`, missing `85`).
+- New focus-trace RNG value alignment confirms this is a pure late-tick branch omission:
+  - `prefix_match=268` (all rewrite draw values exactly match native prefix),
+  - native has an extra `85`-draw tail after rewrite stops.
+- Native-only tail callers are dominated by `projectile_update`/decal paths:
+  - `0x0042176f`, `0x0042184c`, `0x00427760`, `0x0042778e`, `0x004277b0`, `0x0042780b` (all `x9` in the missing tail),
+  - plus smaller `0x00421799`, `0x004217c6`, `0x0042ebc0..0x0042ec44` buckets.
+- This pattern is consistent with missing additional Gauss/Fire-Bullets hit-resolution presentation work (likely extra corpse-hit branches) rather than wrong RNG values in already-executed branches.
+- A float32 collision/math probe in rewrite did not change the shortfall (`3453` stayed `353/268`), so the issue is not trivially fixed by local f32 rounding in `_within_native_find_radius`.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_focus_trace.py` with `rng_value_alignment` diagnostics:
+  - capture/rewrite draw counts,
+  - exact value prefix-match length,
+  - first mismatch index/value (when present),
+  - native-only tail caller buckets,
+  - missing-tail preview rows with inferred rewrite callsites.
+- Added regression tests in `tests/test_original_capture_focus_trace.py` for RNG alignment summary behavior.
+- Updated `docs/frida/gameplay-diff-capture-v2.md` to document the new focus-trace RNG alignment section.
+
+### Next probe
+
+- Fix capture-side projectile hit telemetry reliability for these runs (`capture_projectile_find_hit_count` is still `0` at the shortfall tick despite clear native RNG tail evidence), then re-record.
+- After a capture with non-zero projectile hit rows at the shortfall tick, compare native hit-resolve sequence against rewrite to patch the exact missing corpse-hit path in `src/crimson/projectiles.py`.
