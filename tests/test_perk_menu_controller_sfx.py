@@ -180,3 +180,35 @@ def test_perk_menu_cancel_plays_button_click(monkeypatch) -> None:
 
     assert played == ["sfx_ui_buttonclick"]
     assert menu.open is False
+
+
+def test_wrap_small_text_native_inserts_newline_at_previous_space(monkeypatch) -> None:
+    menu = PerkMenuController()
+    monkeypatch.setattr(
+        "crimson.modes.components.perk_menu_controller.measure_small_text_width",
+        lambda _font, text, _scale: float(len(text)),
+    )
+    wrapped = menu._wrap_small_text_native(object(), "alpha beta", 6.0, scale=1.0)  # type: ignore[arg-type]
+    assert wrapped == "alpha\nbeta"
+
+
+def test_prewrapped_perk_desc_uses_cache(monkeypatch) -> None:
+    menu = PerkMenuController()
+    calls = {"count": 0}
+
+    def _fake_measure(_font, text: str, _scale: float) -> float:
+        calls["count"] += 1
+        return float(len(text))
+
+    monkeypatch.setattr("crimson.modes.components.perk_menu_controller.measure_small_text_width", _fake_measure)
+    monkeypatch.setattr(
+        "crimson.modes.components.perk_menu_controller.perk_display_description",
+        lambda _perk_id, *, fx_toggle=0: "alpha beta gamma",  # noqa: ARG005
+    )
+
+    first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0)  # type: ignore[arg-type]
+    count_after_first = calls["count"]
+    second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0)  # type: ignore[arg-type]
+
+    assert first == second
+    assert calls["count"] == count_after_first
