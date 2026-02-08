@@ -186,24 +186,68 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
 
         rng_marks = ckpt.get("rng_marks")
         rng_obj = rng_marks if isinstance(rng_marks, dict) else {}
+        rng_top = obj.get("rng")
+        rng_top_obj = rng_top if isinstance(rng_top, dict) else {}
         debug = ckpt.get("debug")
         debug_obj = debug if isinstance(debug, dict) else {}
         spawn = debug_obj.get("spawn")
         spawn_obj = spawn if isinstance(spawn, dict) else {}
         before_players = debug_obj.get("before_players")
         before_players_obj = before_players if isinstance(before_players, list) else []
+        if not before_players_obj:
+            top_before = obj.get("before")
+            top_before_obj = top_before if isinstance(top_before, dict) else {}
+            top_before_players = top_before_obj.get("players")
+            if isinstance(top_before_players, list):
+                before_players_obj = top_before_players
         lifecycle = debug_obj.get("creature_lifecycle")
         lifecycle_obj = lifecycle if isinstance(lifecycle, dict) else {}
+        event_counts = obj.get("event_counts")
+        event_counts_obj = event_counts if isinstance(event_counts, dict) else {}
+        event_heads = obj.get("event_heads")
+        event_heads_obj = event_heads if isinstance(event_heads, dict) else {}
+        creature_damage_head = event_heads_obj.get("creature_damage")
+        creature_damage_head_obj = creature_damage_head if isinstance(creature_damage_head, list) else []
+        projectile_spawn_head = event_heads_obj.get("projectile_spawn")
+        projectile_spawn_head_obj = projectile_spawn_head if isinstance(projectile_spawn_head, list) else []
+        creature_death_head = event_heads_obj.get("creature_death")
+        creature_death_head_obj = creature_death_head if isinstance(creature_death_head, list) else []
+        bonus_spawn_head = event_heads_obj.get("bonus_spawn")
+        bonus_spawn_head_obj = bonus_spawn_head if isinstance(bonus_spawn_head, list) else []
+        rng_callers_top = rng_top_obj.get("callers")
+        rng_callers_top_obj = rng_callers_top if isinstance(rng_callers_top, list) else []
+        rng_rand_calls = _int_or(rng_obj.get("rand_calls"))
+        if rng_rand_calls < 0:
+            rng_rand_calls = _int_or(rng_top_obj.get("calls"))
+        rng_rand_last = rng_obj.get("rand_last")
+        if rng_rand_last is None:
+            rng_rand_last = rng_top_obj.get("last_value")
+        rng_callers = rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else []
+        if not rng_callers:
+            rng_callers = rng_callers_top_obj
 
         out[int(tick)] = {
-            "rng_rand_calls": _int_or(rng_obj.get("rand_calls")),
-            "rng_rand_last": rng_obj.get("rand_last"),
-            "rng_callers": rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else [],
+            "rng_rand_calls": rng_rand_calls,
+            "rng_rand_last": rng_rand_last,
+            "rng_callers": rng_callers,
             "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
             "spawn_death_count": _int_or(spawn_obj.get("event_count_death")),
             "spawn_top_bonus_callers": (
                 spawn_obj.get("top_bonus_spawn_callers")
                 if isinstance(spawn_obj.get("top_bonus_spawn_callers"), list)
+                else []
+            ),
+            "creature_damage_count": _int_or(
+                event_counts_obj.get("creature_damage"),
+                _int_or(spawn_obj.get("event_count_creature_damage"), 0),
+            ),
+            "creature_damage_head": creature_damage_head_obj,
+            "projectile_spawn_head": projectile_spawn_head_obj,
+            "creature_death_head": creature_death_head_obj,
+            "bonus_spawn_head": bonus_spawn_head_obj,
+            "spawn_top_creature_damage_callers": (
+                spawn_obj.get("top_creature_damage_callers")
+                if isinstance(spawn_obj.get("top_creature_damage_callers"), list)
                 else []
             ),
             "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
@@ -691,6 +735,18 @@ def _build_investigation_leads(
             evidence.append(f"dominant native caller_static addresses on those ticks: {top_callers}")
         if native_text:
             evidence.append(f"resolved native functions from caller_static: {native_text}")
+        zero_rand_damage_ticks = [
+            int(tick)
+            for tick in rng_zero_ticks
+            if _int_or(raw_debug_by_tick.get(int(tick), {}).get("creature_damage_count"), 0) > 0
+        ]
+        if zero_rand_damage_ticks:
+            damage_sample = ", ".join(str(tick) for tick in zero_rand_damage_ticks[:8])
+            evidence.append(
+                "native creature_apply_damage hooks are present on zero-rand ticks: "
+                + damage_sample
+                + (" ..." if len(zero_rand_damage_ticks) > 8 else "")
+            )
         fallback_native = (
             "creature_update_all",
             "projectile_update",
@@ -748,6 +804,27 @@ def _build_investigation_leads(
         if score_onset is not None and int(score_onset.tick) == int(xp_onset.tick):
             evidence.append("score_xp divergence starts on the same tick, indicating a gameplay award timing mismatch")
         focus_raw = raw_debug_by_tick.get(int(xp_onset.tick), {})
+        focus_damage_count = _int_or(focus_raw.get("creature_damage_count"), 0)
+        if focus_damage_count > 0:
+            evidence.append(f"native creature_apply_damage count at XP-onset tick: {focus_damage_count}")
+            damage_head = focus_raw.get("creature_damage_head")
+            if isinstance(damage_head, list) and damage_head:
+                preview = []
+                for item in damage_head[:4]:
+                    if not isinstance(item, dict):
+                        continue
+                    preview.append(
+                        "idx="
+                        + str(_int_or(item.get("creature_index"), -1))
+                        + "/type="
+                        + str(_int_or(item.get("damage_type"), -1))
+                        + "/k="
+                        + str(1 if bool(item.get("killed")) else 0)
+                    )
+                if preview:
+                    evidence.append("native creature_apply_damage head: " + ", ".join(preview))
+        else:
+            evidence.append("native creature_apply_damage count at XP-onset tick: 0")
         focus_callers = focus_raw.get("rng_callers")
         if isinstance(focus_callers, list) and focus_callers:
             top = sorted(
@@ -999,6 +1076,7 @@ def main() -> int:
             "  "
             f"spawn_bonus_events={_int_or(focus_raw.get('spawn_bonus_count'))} "
             f"spawn_death_events={_int_or(focus_raw.get('spawn_death_count'))} "
+            f"creature_damage_events={_int_or(focus_raw.get('creature_damage_count'))} "
             f"rand_calls={_int_or(focus_raw.get('rng_rand_calls'))} "
             f"rand_last={focus_raw.get('rng_rand_last')!r}"
         )
@@ -1008,6 +1086,12 @@ def main() -> int:
         top_bonus = focus_raw.get("spawn_top_bonus_callers")
         if isinstance(top_bonus, list) and top_bonus:
             print(f"  capture_bonus_spawn_callers_top={top_bonus[:6]!r}")
+        top_damage = focus_raw.get("spawn_top_creature_damage_callers")
+        if isinstance(top_damage, list) and top_damage:
+            print(f"  capture_creature_damage_callers_top={top_damage[:6]!r}")
+        damage_head = focus_raw.get("creature_damage_head")
+        if isinstance(damage_head, list) and damage_head:
+            print(f"  capture_creature_damage_head={damage_head[:6]!r}")
         before_player = focus_raw.get("before_player0")
         if isinstance(before_player, dict):
             print(f"  before_player0={before_player!r}")
