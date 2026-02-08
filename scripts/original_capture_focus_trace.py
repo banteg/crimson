@@ -13,6 +13,7 @@ from typing import Any
 from grim.geom import Vec2
 
 import crimson.projectiles as projectiles_mod
+import crimson.sim.presentation_step as presentation_step_mod
 from crimson.game_modes import GameMode
 from crimson.gameplay import PlayerInput
 from crimson.replay.original_capture import (
@@ -69,7 +70,18 @@ class FocusTraceReport:
     projectile_diffs_top: list[dict[str, Any]]
     projectile_capture_only: list[dict[str, Any]]
     projectile_rewrite_only: list[dict[str, Any]]
+    decal_hook_rows: list[DecalHookRow]
     rng_alignment: RngAlignmentSummary
+
+
+@dataclass(slots=True)
+class DecalHookRow:
+    hook_index: int
+    type_id: int
+    handled: bool
+    rng_draws: int
+    target_x: float
+    target_y: float
 
 
 @dataclass(slots=True)
@@ -92,6 +104,7 @@ class RngAlignmentSummary:
     first_value_mismatch_rewrite: int | None
     missing_native_tail_count: int
     missing_native_tail_callers_top: list[tuple[str, int]]
+    missing_native_tail_inferred_callsites_top: list[tuple[str, int]]
     missing_native_tail_preview: list[RngAlignmentTailRow]
 
 
@@ -397,6 +410,13 @@ def _summarize_rng_alignment(
         for row in tail_rows_raw
         if isinstance(row, dict) and str(row.get("caller_static", "")).strip()
     )
+    tail_inferred_callsites = Counter(
+        str(caller_best.get(caller_static, "<unknown>"))
+        for row in tail_rows_raw
+        if isinstance(row, dict)
+        for caller_static in [str(row.get("caller_static", "")).strip()]
+        if caller_static
+    )
     tail_preview: list[RngAlignmentTailRow] = []
     for offset, row in enumerate(tail_rows_raw[: max(0, int(tail_preview_limit))]):
         if not isinstance(row, dict):
@@ -423,6 +443,9 @@ def _summarize_rng_alignment(
         first_value_mismatch_rewrite=mismatch_rewrite,
         missing_native_tail_count=int(missing_native_tail_count),
         missing_native_tail_callers_top=[(str(key), int(count)) for key, count in tail_callers.most_common(12)],
+        missing_native_tail_inferred_callsites_top=[
+            (str(key), int(count)) for key, count in tail_inferred_callsites.most_common(12)
+        ],
         missing_native_tail_preview=tail_preview,
     )
 
@@ -489,6 +512,7 @@ def trace_focus_tick(
     rng_values_callsites: list[str] = []
     collision_hits: list[CollisionRow] = []
     near_misses: list[CollisionRow] = []
+    decal_hook_rows: list[DecalHookRow] = []
     pre_projectiles: list[dict[str, Any]] = []
     post_projectiles: list[dict[str, Any]] = []
     focus_hits = 0
@@ -498,6 +522,7 @@ def trace_focus_tick(
     root = Path.cwd().resolve()
     orig_rand = world.state.rng.rand
     orig_within = projectiles_mod._within_native_find_radius
+    orig_run_projectile_decal_hooks = presentation_step_mod.run_projectile_decal_hooks
 
     try:
         for tick_index in range(int(tick) + 1):
@@ -604,8 +629,30 @@ def trace_focus_tick(
                         near_misses.append(row)
                     return bool(hit)
 
+                hook_index = 0
+
+                def traced_run_projectile_decal_hooks(ctx: Any) -> bool:
+                    nonlocal hook_index
+                    before = len(rng_values)
+                    handled = bool(orig_run_projectile_decal_hooks(ctx))
+                    after = len(rng_values)
+                    hit = ctx.hit
+                    decal_hook_rows.append(
+                        DecalHookRow(
+                            hook_index=int(hook_index),
+                            type_id=int(hit.type_id),
+                            handled=bool(handled),
+                            rng_draws=max(0, int(after - before)),
+                            target_x=float(hit.target.x),
+                            target_y=float(hit.target.y),
+                        )
+                    )
+                    hook_index += 1
+                    return bool(handled)
+
                 world.state.rng.rand = traced_rand  # type: ignore[assignment]
                 projectiles_mod._within_native_find_radius = traced_within_native_find_radius  # type: ignore[assignment]
+                presentation_step_mod.run_projectile_decal_hooks = traced_run_projectile_decal_hooks  # type: ignore[assignment]
 
             tick_result = session.step_tick(
                 dt_frame=float(dt_tick),
@@ -620,6 +667,7 @@ def trace_focus_tick(
                 focus_sfx = int(len(tick_result.step.events.sfx))
                 world.state.rng.rand = orig_rand  # type: ignore[assignment]
                 projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
+                presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
 
             draws = max(0, int(inter_tick_rand_draws))
             for _ in range(draws):
@@ -627,6 +675,7 @@ def trace_focus_tick(
     finally:
         world.state.rng.rand = orig_rand  # type: ignore[assignment]
         projectiles_mod._within_native_find_radius = orig_within  # type: ignore[assignment]
+        presentation_step_mod.run_projectile_decal_hooks = orig_run_projectile_decal_hooks  # type: ignore[assignment]
 
     near_misses.sort(key=lambda row: float(row.margin))
     collision_hits.sort(key=lambda row: (int(row.proj_index or -1), int(row.step or -1), int(row.creature_idx or -1)))
@@ -662,6 +711,7 @@ def trace_focus_tick(
         projectile_diffs_top=projectile_diffs_top,
         projectile_capture_only=projectile_capture_only,
         projectile_rewrite_only=projectile_rewrite_only,
+        decal_hook_rows=decal_hook_rows,
         rng_alignment=rng_alignment,
     )
 
@@ -690,6 +740,10 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
             print("  missing_native_tail_callers_top:")
             for caller_static, count in align.missing_native_tail_callers_top:
                 print(f"    {caller_static}: {int(count)}")
+        if align.missing_native_tail_inferred_callsites_top:
+            print("  missing_native_tail_inferred_callsites_top:")
+            for callsite, count in align.missing_native_tail_inferred_callsites_top:
+                print(f"    {callsite}: {int(count)}")
         if align.missing_native_tail_preview:
             print("  missing_native_tail_preview:")
             for row in align.missing_native_tail_preview[: max(1, int(diff_limit))]:
@@ -790,6 +844,18 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
     if not report.projectile_capture_only and not report.projectile_rewrite_only:
         print("  none")
 
+    print("\ndecal_hook_rows:")
+    if report.decal_hook_rows:
+        for row in report.decal_hook_rows[: max(1, int(diff_limit))]:
+            print(
+                f"  hook={int(row.hook_index):2d} type={int(row.type_id):2d} handled={int(bool(row.handled))} "
+                f"rng_draws={int(row.rng_draws):3d} target=({float(row.target_x):.4f},{float(row.target_y):.4f})"
+            )
+        if len(report.decal_hook_rows) > int(diff_limit):
+            print(f"  ... {len(report.decal_hook_rows) - int(diff_limit)} more")
+    else:
+        print("  none")
+
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -854,6 +920,7 @@ def main() -> int:
             "projectile_diffs_top": list(report.projectile_diffs_top),
             "projectile_capture_only": list(report.projectile_capture_only),
             "projectile_rewrite_only": list(report.projectile_rewrite_only),
+            "decal_hook_rows": [asdict(row) for row in report.decal_hook_rows],
             "rng_alignment": asdict(report.rng_alignment),
         }
         out_path = Path(args.json_out)

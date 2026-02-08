@@ -34,14 +34,29 @@ from crimson.sim.world_state import WorldState
 @dataclass(slots=True)
 class CreatureTrajectoryRow:
     tick: int
+    cap_type_id: int
+    rw_type_id: int
+    cap_flags: int
+    rw_flags: int
     cap_active: bool
     rw_active: bool
+    cap_target_player: int
+    rw_target_player: int
+    rw_ai_mode: int
     cap_hp: float
     rw_hp: float
     hp_delta: float
     cap_hitbox: float
     rw_hitbox: float
     hitbox_delta: float
+    cap_collision_flag: int
+    cap_state_flag: int
+    rw_plague_infected: bool
+    rw_attack_cooldown: float
+    rw_move_scale: float
+    rw_heading: float
+    rw_target_heading: float
+    rw_orbit_radius: float
     cap_x: float
     cap_y: float
     rw_x: float
@@ -237,14 +252,29 @@ def trace_creature_trajectory(
             out.append(
                 CreatureTrajectoryRow(
                     tick=int(tick_index),
+                    cap_type_id=int(sample.get("type_id", -1)),
+                    rw_type_id=int(creature.type_id),
+                    cap_flags=int(sample.get("flags", 0)),
+                    rw_flags=int(creature.flags),
                     cap_active=bool(int(sample.get("active", 0)) != 0),
                     rw_active=bool(creature.active),
+                    cap_target_player=int(sample.get("target_player", -1)),
+                    rw_target_player=int(creature.target_player),
+                    rw_ai_mode=int(creature.ai_mode),
                     cap_hp=float(sample.get("hp", 0.0)),
                     rw_hp=float(creature.hp),
                     hp_delta=float(creature.hp) - float(sample.get("hp", 0.0)),
                     cap_hitbox=float(sample.get("hitbox_size", 0.0)),
                     rw_hitbox=float(creature.hitbox_size),
                     hitbox_delta=float(creature.hitbox_size) - float(sample.get("hitbox_size", 0.0)),
+                    cap_collision_flag=int(sample.get("collision_flag", 0)),
+                    cap_state_flag=int(sample.get("state_flag", 0)),
+                    rw_plague_infected=bool(creature.plague_infected),
+                    rw_attack_cooldown=float(creature.attack_cooldown),
+                    rw_move_scale=float(creature.move_scale),
+                    rw_heading=float(creature.heading),
+                    rw_target_heading=float(creature.target_heading),
+                    rw_orbit_radius=float(creature.orbit_radius),
                     cap_x=cap_x,
                     cap_y=cap_y,
                     rw_x=rw_x,
@@ -284,6 +314,27 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
         f"dx={max_row.dx:.6f} dy={max_row.dy:.6f}"
     )
 
+    transitions = 0
+    print("\nai_mode_transitions:")
+    prev_mode = rows[0].rw_ai_mode
+    prev_target = rows[0].rw_target_player
+    prev_flags = rows[0].rw_flags
+    for row in rows[1:]:
+        if row.rw_ai_mode != prev_mode or row.rw_target_player != prev_target or row.rw_flags != prev_flags:
+            transitions += 1
+            print(
+                f"  tick={row.tick:4d} "
+                f"ai_mode {prev_mode}->{row.rw_ai_mode} "
+                f"target_player {prev_target}->{row.rw_target_player} "
+                f"flags {prev_flags}->{row.rw_flags} "
+                f"drift={row.drift_mag:.6f}"
+            )
+            prev_mode = row.rw_ai_mode
+            prev_target = row.rw_target_player
+            prev_flags = row.rw_flags
+    if transitions == 0:
+        print("  none")
+
     print("\nrows_sample:")
     step = max(1, int(print_every))
     for row in rows:
@@ -293,7 +344,8 @@ def _print_summary(rows: list[CreatureTrajectoryRow], *, print_every: int) -> No
                 f"dx={row.dx:+.6f} dy={row.dy:+.6f} mag={row.drift_mag:.6f} "
                 f"hp(e/a)={row.cap_hp:.3f}/{row.rw_hp:.3f} "
                 f"hitbox(e/a)={row.cap_hitbox:.6f}/{row.rw_hitbox:.6f} "
-                f"active(e/a)={int(row.cap_active)}/{int(row.rw_active)}"
+                f"active(e/a)={int(row.cap_active)}/{int(row.rw_active)} "
+                f"ai_mode={row.rw_ai_mode} target_player={row.rw_target_player}"
             )
 
 
