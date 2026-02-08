@@ -255,6 +255,7 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "lifecycle_before_count": _int_or(lifecycle_obj.get("before_count")),
             "lifecycle_after_count": _int_or(lifecycle_obj.get("after_count")),
             "before_player0": before_players_obj[0] if before_players_obj else None,
+            "input_player_keys": obj.get("input_player_keys") if isinstance(obj.get("input_player_keys"), list) else [],
         }
     return out
 
@@ -668,6 +669,45 @@ def _merge_paths(*groups: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(out)
 
 
+def _extract_player_input_keys(raw: dict[str, object], player_index: int = 0) -> dict[str, object]:
+    rows = raw.get("input_player_keys")
+    if not isinstance(rows, list):
+        return {}
+    for idx, item in enumerate(rows):
+        if not isinstance(item, dict):
+            continue
+        row_player = _int_or(item.get("player_index"), idx)
+        if int(row_player) == int(player_index):
+            return item
+    return {}
+
+
+def _input_has_opposite_direction_conflict(player_keys: dict[str, object]) -> bool:
+    left = player_keys.get("turn_left_pressed")
+    right = player_keys.get("turn_right_pressed")
+    forward = player_keys.get("move_forward_pressed")
+    backward = player_keys.get("move_backward_pressed")
+    horizontal_conflict = isinstance(left, bool) and isinstance(right, bool) and left and right
+    vertical_conflict = isinstance(forward, bool) and isinstance(backward, bool) and forward and backward
+    return bool(horizontal_conflict or vertical_conflict)
+
+
+def _find_input_conflict_ticks(
+    *,
+    raw_debug_by_tick: dict[int, dict[str, object]],
+    start_tick: int,
+    end_tick: int,
+    player_index: int = 0,
+) -> list[int]:
+    ticks: list[int] = []
+    for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
+        raw = raw_debug_by_tick.get(int(tick), {})
+        keys = _extract_player_input_keys(raw, player_index=player_index)
+        if keys and _input_has_opposite_direction_conflict(keys):
+            ticks.append(int(tick))
+    return ticks
+
+
 def _build_investigation_leads(
     *,
     divergence: Divergence,
@@ -790,6 +830,30 @@ def _build_investigation_leads(
                 evidence=tuple(evidence),
                 native_functions=("creature_update_all",),
                 code_paths=_port_paths_for_native_functions(("creature_update_all",)),
+            )
+        )
+
+    input_conflict_ticks = _find_input_conflict_ticks(
+        raw_debug_by_tick=raw_debug_by_tick,
+        start_tick=int(lookback_start),
+        end_tick=int(focus_tick),
+        player_index=0,
+    )
+    if input_conflict_ticks:
+        sample = ", ".join(str(tick) for tick in input_conflict_ticks[:10])
+        evidence = [
+            (
+                "capture reports opposite movement directions active in player_update "
+                f"for player0 on tick(s): {sample}" + (" ..." if len(input_conflict_ticks) > 10 else "")
+            ),
+            "this can make replay reconstruction ambiguous if key-state telemetry is missing",
+        ]
+        leads.append(
+            InvestigationLead(
+                title="Input capture contains opposite-direction key conflicts",
+                evidence=tuple(evidence),
+                native_functions=("player_update",),
+                code_paths=_port_paths_for_native_functions(("player_update",)),
             )
         )
 
@@ -1095,6 +1159,9 @@ def main() -> int:
         before_player = focus_raw.get("before_player0")
         if isinstance(before_player, dict):
             print(f"  before_player0={before_player!r}")
+        player_keys = _extract_player_input_keys(focus_raw, player_index=0)
+        if player_keys:
+            print(f"  input_player_keys[0]={player_keys!r}")
 
     zero_rand_consumed = [
         row
