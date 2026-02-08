@@ -280,18 +280,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         super().open()
         self._weapon_ids = self._build_weapon_database_ids()
         self._selected_weapon_id = 2 if 2 in self._weapon_ids else (self._weapon_ids[0] if self._weapon_ids else 2)
-
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
-        wicons_path = self._state.assets_dir / "crimson" / "ui" / "ui_wicons.png"
-        if wicons_path.is_file():
-            self._wicons_tex = rl.load_texture(str(wicons_path))
+        cache = _ensure_texture_cache(self._state)
+        self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
 
     def close(self) -> None:
-        if self._wicons_tex is not None:
-            rl.unload_texture(self._wicons_tex)
-            self._wicons_tex = None
+        self._wicons_tex = None
         super().close()
 
     def _back_button_pos(self) -> Vec2:
@@ -302,7 +295,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         left = left_top_left
         right = right_top_left
         text_scale = 1.0 * scale
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        text_color = rl.WHITE
 
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
         draw_small_text(
@@ -321,7 +315,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             f"{count} {weapon_label} in database",
             left + Vec2(210.0 * scale, 80.0 * scale),
             text_scale,
-            text_color,
+            dim_color,
         )
         draw_small_text(
             font,
@@ -352,7 +346,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             f"wepno #{weapon_id}",
             right + Vec2(240.0 * scale, 32.0 * scale),
             text_scale,
-            text_color,
+            rl.Color(255, 255, 255, int(255 * 0.4)),
         )
         draw_small_text(font, name, right + Vec2(50.0 * scale, 50.0 * scale), text_scale, text_color)
         if icon_index is not None:
@@ -364,18 +358,19 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             clip_raw = getattr(weapon, "clip_size", None)
             reload_time = float(reload_raw) if isinstance(reload_raw, (int, float)) else None
             clip_size = int(clip_raw) if isinstance(clip_raw, (int, float)) else None
-            if rpm is not None:
-                draw_small_text(
-                    font,
-                    f"Firerate: {rpm} rpm",
-                    right + Vec2(66.0 * scale, 128.0 * scale),
-                    text_scale,
-                    text_color,
-                )
+            ammo_class = int(getattr(weapon, "ammo_class", 0) or 0)
+            if ammo_class == 1:
+                firerate_text = "Firerate: n/a"
+            elif rpm is not None:
+                firerate_text = f"Firerate: {rpm} rpm"
+            else:
+                firerate_text = None
+            if firerate_text is not None:
+                draw_small_text(font, firerate_text, right + Vec2(66.0 * scale, 128.0 * scale), text_scale, text_color)
             if reload_time is not None:
                 draw_small_text(
                     font,
-                    f"Reload time: {reload_time:g} secs",
+                    f"Reload time: {reload_time:.1f} secs",
                     right + Vec2(66.0 * scale, 146.0 * scale),
                     text_scale,
                     text_color,
@@ -434,12 +429,14 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         idx = int(icon_index)
         if idx < 0 or idx > 31:
             return
-        cols = 4
-        rows = 8
-        icon_w = float(tex.width) / float(cols)
-        icon_h = float(tex.height) / float(rows)
-        src_x = float(idx % cols) * icon_w
-        src_y = float(idx // cols) * icon_h
+        grid = 8
+        cell_w = float(tex.width) / float(grid)
+        cell_h = float(tex.height) / float(grid)
+        frame = idx * 2
+        src_x = float(frame % grid) * cell_w
+        src_y = float(frame // grid) * cell_h
+        icon_w = cell_w * 2.0
+        icon_h = cell_h
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
