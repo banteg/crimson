@@ -155,13 +155,14 @@ class StatisticsMenuView:
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         panel_top_left = self._panel_top_left(scale=scale)
+        font = self._ensure_small_font()
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
+            w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
             return button_update(btn, pos=pos, width=w, dt_ms=dt_ms, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
@@ -258,7 +259,7 @@ class StatisticsMenuView:
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):
             button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
             for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-                w = button_width(None, btn.label, scale=scale, force_wide=btn.force_wide)
+                w = button_width(font, btn.label, scale=scale, force_wide=btn.force_wide)
                 button_draw(
                     textures,
                     font,
@@ -268,7 +269,7 @@ class StatisticsMenuView:
                     scale=scale,
                 )
 
-            back_w = button_width(None, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+            back_w = button_width(font, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
             button_draw(
                 textures,
                 font,

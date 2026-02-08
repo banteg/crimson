@@ -2307,7 +2307,6 @@ class HighScoresView:
         )
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
-        highlight_rank = request.highlight_rank if request is not None else None
 
         scale = 0.9 if float(self._state.config.screen_width) < 641.0 else 1.0
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
@@ -2430,6 +2429,21 @@ class HighScoresView:
         start = max(0, int(self._scroll_index))
         end = min(len(self._records), start + rows)
         y = left_panel_top_left.y + 103.0 * scale
+        selected_rank = int(request.highlight_rank) if (request is not None and request.highlight_rank is not None) else None
+        mouse = Vec2.from_xy(rl.get_mouse_position())
+        frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
+        frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
+        frame_w = HS_SCORE_FRAME_W * scale
+        frame_h = HS_SCORE_FRAME_H * scale
+        if (
+            frame_x <= mouse.x < frame_x + frame_w
+            and frame_y <= mouse.y < frame_y + frame_h
+            and y <= mouse.y < y + row_step * rows
+        ):
+            row = int((mouse.y - y) // row_step)
+            hovered_idx = start + row
+            if start <= hovered_idx < end:
+                selected_rank = hovered_idx
 
         if start >= end:
             draw_small_text(
@@ -2455,7 +2469,7 @@ class HighScoresView:
                 value = f"{int(getattr(entry, 'score_xp', 0))}"
 
                 color = rl.Color(255, 255, 255, int(255 * 0.7))
-                if highlight_rank is not None and int(highlight_rank) == idx:
+                if selected_rank is not None and int(selected_rank) == idx:
                     color = rl.Color(255, 255, 255, 255)
 
                 draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), 1.0 * scale, color)
@@ -2492,7 +2506,7 @@ class HighScoresView:
             right_top_left=right_panel_top_left,
             scale=scale,
             mode_id=mode_id,
-            highlight_rank=highlight_rank,
+            highlight_rank=selected_rank,
         )
         self._draw_sign(assets)
         _draw_menu_cursor(self._state, pulse_time=self._cursor_pulse_time)
@@ -2506,7 +2520,7 @@ class HighScoresView:
         mode_id: int,
         highlight_rank: int | None,
     ) -> None:
-        if int(mode_id) == 3:
+        if highlight_rank is None:
             self._draw_right_panel_quest_options(font=font, right_top_left=right_top_left, scale=scale)
             return
         self._draw_right_panel_local_score(
