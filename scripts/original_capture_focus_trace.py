@@ -72,6 +72,8 @@ class FocusTraceReport:
     projectile_rewrite_only: list[dict[str, Any]]
     decal_hook_rows: list[DecalHookRow]
     rng_alignment: RngAlignmentSummary
+    native_caller_gaps_top: list[NativeCallerGapRow]
+    fire_bullets_loop_parity: FireBulletsLoopParity | None
 
 
 @dataclass(slots=True)
@@ -106,6 +108,57 @@ class RngAlignmentSummary:
     missing_native_tail_callers_top: list[tuple[str, int]]
     missing_native_tail_inferred_callsites_top: list[tuple[str, int]]
     missing_native_tail_preview: list[RngAlignmentTailRow]
+    capture_caller_counts: list[tuple[str, int]]
+    rewrite_callsite_counts: list[tuple[str, int]]
+    caller_static_to_rewrite_callsite: list[tuple[str, str]]
+
+
+@dataclass(slots=True)
+class NativeCallerGapRow:
+    native_caller_static: str
+    native_label: str
+    capture_count: int
+    inferred_rewrite_callsite: str
+    rewrite_count: int
+    gap: int
+
+
+@dataclass(slots=True)
+class FireBulletsLoopParity:
+    capture_iterations: int
+    rewrite_iterations: int
+    missing_iterations: int
+    loop_iterations_per_hit: int
+    estimated_missing_hits: float
+    capture_midrange_rolls: int
+    rewrite_midrange_rolls: int
+    capture_farrange_rolls: int
+    rewrite_farrange_rolls: int
+    capture_pre_freeze_rolls: int
+    rewrite_pre_freeze_rolls: int
+
+
+_NATIVE_CALLER_LABELS: dict[str, str] = {
+    "0x0042176f": "projectile_update.fire_bullets_loop_seed",
+    "0x00421799": "projectile_update.fire_bullets_midrange_reroll",
+    "0x004217c6": "projectile_update.fire_bullets_farrange_reroll",
+    "0x0042184c": "projectile_update.fire_bullets_pre_freeze_rand",
+    "0x00427760": "fx_queue_add_random.gray_tint_rand",
+    "0x0042778e": "fx_queue_add_random.size_rand",
+    "0x004277b0": "fx_queue_add_random.rotation_rand",
+    "0x0042780b": "fx_queue_add_random.effect_id_rand",
+    "0x0042ebc0": "effect_spawn_blood_splatter.rotation_rand",
+    "0x0042ebe3": "effect_spawn_blood_splatter.half_size_rand",
+    "0x0042ec00": "effect_spawn_blood_splatter.speed_x_rand",
+    "0x0042ec1d": "effect_spawn_blood_splatter.speed_y_rand",
+    "0x0042ec44": "effect_spawn_blood_splatter.scale_step_rand",
+}
+
+_FIRE_BULLETS_SEED_CALLER = "0x0042176f"
+_FIRE_BULLETS_MIDRANGE_CALLER = "0x00421799"
+_FIRE_BULLETS_FARRANGE_CALLER = "0x004217c6"
+_FIRE_BULLETS_PRE_FREEZE_CALLER = "0x0042184c"
+_FIRE_BULLETS_LOOP_ITERS_PER_HIT = 6
 
 
 def _read_capture_tick(path: Path, tick: int) -> dict[str, Any] | None:
@@ -366,6 +419,12 @@ def _summarize_rng_alignment(
     tail_preview_limit: int = 24,
 ) -> RngAlignmentSummary:
     capture_values = [int(row.get("value", 0)) for row in capture_rng_head if isinstance(row, dict)]
+    capture_caller_counts = Counter(
+        str(row.get("caller_static", "")).strip()
+        for row in capture_rng_head
+        if isinstance(row, dict) and str(row.get("caller_static", "")).strip()
+    )
+    rewrite_callsite_counts = Counter(str(callsite) for callsite in rewrite_rng_callsites if str(callsite))
     capture_calls = max(int(capture_rng_calls), len(capture_values))
     rewrite_calls = len(rewrite_rng_values)
     min_len = min(len(capture_values), rewrite_calls)
@@ -447,6 +506,123 @@ def _summarize_rng_alignment(
             (str(key), int(count)) for key, count in tail_inferred_callsites.most_common(12)
         ],
         missing_native_tail_preview=tail_preview,
+        capture_caller_counts=[(str(key), int(count)) for key, count in capture_caller_counts.most_common()],
+        rewrite_callsite_counts=[(str(key), int(count)) for key, count in rewrite_callsite_counts.most_common()],
+        caller_static_to_rewrite_callsite=sorted(
+            ((str(caller_static), str(rewrite_callsite)) for caller_static, rewrite_callsite in caller_best.items()),
+            key=lambda item: item[0],
+        ),
+    )
+
+
+def _build_native_caller_gaps(
+    rng_alignment: RngAlignmentSummary,
+    *,
+    limit: int = 20,
+) -> list[NativeCallerGapRow]:
+    caller_map = {
+        str(caller_static): str(rewrite_callsite)
+        for caller_static, rewrite_callsite in rng_alignment.caller_static_to_rewrite_callsite
+    }
+    rewrite_counts = Counter(
+        {
+            str(callsite): int(count)
+            for callsite, count in rng_alignment.rewrite_callsite_counts
+            if str(callsite)
+        }
+    )
+    rows: list[NativeCallerGapRow] = []
+    for caller_static, capture_count in rng_alignment.capture_caller_counts:
+        native_caller_static = str(caller_static)
+        if not native_caller_static:
+            continue
+        inferred_rewrite_callsite = str(caller_map.get(native_caller_static, ""))
+        rewrite_count = int(rewrite_counts.get(inferred_rewrite_callsite, 0)) if inferred_rewrite_callsite else 0
+        gap = int(capture_count) - int(rewrite_count)
+        if gap <= 0:
+            continue
+        rows.append(
+            NativeCallerGapRow(
+                native_caller_static=native_caller_static,
+                native_label=str(_NATIVE_CALLER_LABELS.get(native_caller_static, "")),
+                capture_count=int(capture_count),
+                inferred_rewrite_callsite=inferred_rewrite_callsite,
+                rewrite_count=int(rewrite_count),
+                gap=int(gap),
+            )
+        )
+    rows.sort(
+        key=lambda row: (
+            -int(row.gap),
+            -int(row.capture_count),
+            str(row.native_caller_static),
+        )
+    )
+    return rows[: max(0, int(limit))]
+
+
+def _build_fire_bullets_loop_parity(rng_alignment: RngAlignmentSummary) -> FireBulletsLoopParity | None:
+    caller_map = {
+        str(caller_static): str(rewrite_callsite)
+        for caller_static, rewrite_callsite in rng_alignment.caller_static_to_rewrite_callsite
+    }
+    capture_counts = Counter(
+        {
+            str(caller_static): int(count)
+            for caller_static, count in rng_alignment.capture_caller_counts
+            if str(caller_static)
+        }
+    )
+    rewrite_counts = Counter(
+        {
+            str(callsite): int(count)
+            for callsite, count in rng_alignment.rewrite_callsite_counts
+            if str(callsite)
+        }
+    )
+
+    seed_callsite = str(caller_map.get(_FIRE_BULLETS_SEED_CALLER, ""))
+    seed_capture = int(capture_counts.get(_FIRE_BULLETS_SEED_CALLER, 0))
+    seed_rewrite = int(rewrite_counts.get(seed_callsite, 0)) if seed_callsite else 0
+
+    pre_freeze_callsite = str(caller_map.get(_FIRE_BULLETS_PRE_FREEZE_CALLER, ""))
+    pre_freeze_capture = int(capture_counts.get(_FIRE_BULLETS_PRE_FREEZE_CALLER, 0))
+    pre_freeze_rewrite = int(rewrite_counts.get(pre_freeze_callsite, 0)) if pre_freeze_callsite else 0
+
+    midrange_callsite = str(caller_map.get(_FIRE_BULLETS_MIDRANGE_CALLER, ""))
+    midrange_capture = int(capture_counts.get(_FIRE_BULLETS_MIDRANGE_CALLER, 0))
+    midrange_rewrite = int(rewrite_counts.get(midrange_callsite, 0)) if midrange_callsite else 0
+
+    farrange_callsite = str(caller_map.get(_FIRE_BULLETS_FARRANGE_CALLER, ""))
+    farrange_capture = int(capture_counts.get(_FIRE_BULLETS_FARRANGE_CALLER, 0))
+    farrange_rewrite = int(rewrite_counts.get(farrange_callsite, 0)) if farrange_callsite else 0
+
+    if (
+        seed_capture <= 0
+        and seed_rewrite <= 0
+        and pre_freeze_capture <= 0
+        and pre_freeze_rewrite <= 0
+        and midrange_capture <= 0
+        and midrange_rewrite <= 0
+        and farrange_capture <= 0
+        and farrange_rewrite <= 0
+    ):
+        return None
+
+    missing_iterations = max(0, int(seed_capture) - int(seed_rewrite))
+    estimated_missing_hits = float(missing_iterations) / float(_FIRE_BULLETS_LOOP_ITERS_PER_HIT)
+    return FireBulletsLoopParity(
+        capture_iterations=int(seed_capture),
+        rewrite_iterations=int(seed_rewrite),
+        missing_iterations=int(missing_iterations),
+        loop_iterations_per_hit=int(_FIRE_BULLETS_LOOP_ITERS_PER_HIT),
+        estimated_missing_hits=float(estimated_missing_hits),
+        capture_midrange_rolls=int(midrange_capture),
+        rewrite_midrange_rolls=int(midrange_rewrite),
+        capture_farrange_rolls=int(farrange_capture),
+        rewrite_farrange_rolls=int(farrange_rewrite),
+        capture_pre_freeze_rolls=int(pre_freeze_capture),
+        rewrite_pre_freeze_rolls=int(pre_freeze_rewrite),
     )
 
 
@@ -690,6 +866,8 @@ def trace_focus_tick(
         rewrite_rng_values=rng_values,
         rewrite_rng_callsites=rng_values_callsites,
     )
+    native_caller_gaps_top = _build_native_caller_gaps(rng_alignment)
+    fire_bullets_loop_parity = _build_fire_bullets_loop_parity(rng_alignment)
 
     return FocusTraceReport(
         tick=int(tick),
@@ -713,6 +891,8 @@ def trace_focus_tick(
         projectile_rewrite_only=projectile_rewrite_only,
         decal_hook_rows=decal_hook_rows,
         rng_alignment=rng_alignment,
+        native_caller_gaps_top=native_caller_gaps_top,
+        fire_bullets_loop_parity=fire_bullets_loop_parity,
     )
 
 
@@ -755,6 +935,49 @@ def _print_report(report: FocusTraceReport, *, top_rng: int, near_miss_limit: in
                 )
             if len(align.missing_native_tail_preview) > int(diff_limit):
                 print(f"    ... {len(align.missing_native_tail_preview) - int(diff_limit)} more")
+
+    if report.native_caller_gaps_top:
+        print("\nnative_caller_gaps_top:")
+        for row in report.native_caller_gaps_top[: max(1, int(diff_limit))]:
+            label = str(row.native_label) if str(row.native_label) else "<unmapped>"
+            inferred = str(row.inferred_rewrite_callsite) if str(row.inferred_rewrite_callsite) else "<unknown>"
+            print(
+                "  "
+                f"{row.native_caller_static} ({label}) "
+                f"capture={int(row.capture_count)} rewrite={int(row.rewrite_count)} "
+                f"gap={int(row.gap)} inferred={inferred}"
+            )
+        if len(report.native_caller_gaps_top) > int(diff_limit):
+            print(f"  ... {len(report.native_caller_gaps_top) - int(diff_limit)} more")
+
+    if report.fire_bullets_loop_parity is not None:
+        parity = report.fire_bullets_loop_parity
+        print("\nfire_bullets_loop_parity:")
+        print(
+            "  "
+            f"seed_iterations capture={int(parity.capture_iterations)} rewrite={int(parity.rewrite_iterations)} "
+            f"missing={int(parity.missing_iterations)}"
+        )
+        print(
+            "  "
+            f"estimated_missing_hits={float(parity.estimated_missing_hits):.3f} "
+            f"(iters_per_hit={int(parity.loop_iterations_per_hit)})"
+        )
+        print(
+            "  "
+            f"midrange_rerolls capture={int(parity.capture_midrange_rolls)} "
+            f"rewrite={int(parity.rewrite_midrange_rolls)}"
+        )
+        print(
+            "  "
+            f"farrange_rerolls capture={int(parity.capture_farrange_rolls)} "
+            f"rewrite={int(parity.rewrite_farrange_rolls)}"
+        )
+        print(
+            "  "
+            f"pre_freeze_rolls capture={int(parity.capture_pre_freeze_rolls)} "
+            f"rewrite={int(parity.rewrite_pre_freeze_rolls)}"
+        )
 
     print("\nrng_callsites_top:")
     for key, count in report.rng_callsites_top[: max(1, int(top_rng))]:
@@ -922,6 +1145,10 @@ def main() -> int:
             "projectile_rewrite_only": list(report.projectile_rewrite_only),
             "decal_hook_rows": [asdict(row) for row in report.decal_hook_rows],
             "rng_alignment": asdict(report.rng_alignment),
+            "native_caller_gaps_top": [asdict(row) for row in report.native_caller_gaps_top],
+            "fire_bullets_loop_parity": (
+                asdict(report.fire_bullets_loop_parity) if report.fire_bullets_loop_parity is not None else None
+            ),
         }
         out_path = Path(args.json_out)
         out_path.parent.mkdir(parents=True, exist_ok=True)

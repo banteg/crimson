@@ -466,3 +466,52 @@ Each entry should capture:
 - Patch one narrow `projectile_update`/post-hit parity slice to recover missing late-tick hit-resolution work at tick `3453`:
   - compare rewrite hit/decal loop sequencing against the native tail mix (`queue_large_hit_decal_streak`, `fx_queue_add_random`, `spawn_blood_splatter`),
   - focus first on extra corpse/non-damaging hit resolve branches that can consume RNG without changing sampled world state immediately.
+
+---
+
+## Session 2026-02-08-m
+
+- **Session ID:** `2026-02-08-m`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace with caller-gap diagnostics:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch6b.json`
+  - divergence check (non-zero exit on divergence is expected):
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch7.json`
+  - tooling validation:
+    `uv run pytest tests/test_original_capture_focus_trace.py tests/test_original_capture_divergence_report_rng_calls.py`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Earliest divergence points remain unchanged:
+  - first pre-focus RNG shortfall still `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch still `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- New focus-trace caller-gap diagnostics now quantify the shortfall in branch-level units:
+  - Fire-Bullets/Gauss loop-seed caller (`0x0042176f`) counts are `capture=30`, `rewrite=24`, gap `6`.
+  - With native loop width fixed at `6` iterations per handled hit, this is exactly **one missing hit-equivalent decal loop**.
+  - Matching `+6` gaps appear for `0x0042184c` and each `fx_queue_add_random` RNG caller (`0x00427760/8e/b0/0b`), reinforcing the same single-hit deficit.
+- Blood-splatter RNG caller counts (`0x0042ebc0/ebe3/ec00/ec1d/ec44`) show `capture=24`, `rewrite=16`, gap `8`, consistent with missing post-hit presentation work tied to that same missed resolution path.
+- Collision evidence at tick `3453` remains unchanged: projectile `3` near-misses creature `19` at substep `57` with margin `+0.0991395`, which aligns with the one-missing-hit interpretation.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_focus_trace.py` with native-vs-rewrite caller-count parity diagnostics:
+  - per-caller capture/rewrite count gaps with native caller labels,
+  - Fire-Bullets loop parity summary (`capture/rewrite iterations`, `missing iterations`, `estimated missing hits`),
+  - JSON output fields for these new diagnostics.
+- Added regression coverage in `tests/test_original_capture_focus_trace.py` for caller-gap and Fire-Bullets loop-parity inference helpers.
+
+### Validation
+
+- `uv run pytest tests/test_original_capture_focus_trace.py tests/test_original_capture_divergence_report_rng_calls.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch6b.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch7.json` *(expected non-zero exit while diverged)*
+
+### Next probe
+
+- Use the new Fire-Bullets loop parity metric as the primary acceptance target for the next sim patch:
+  - reduce `seed_iterations` gap at tick `3453` from `6` to `0`,
+  - confirm rewrite reaches `5` handled Gauss/Fire-Bullets decal hooks at that tick (from current `4`),
+  - then re-run divergence to check whether the first checkpoint mismatch moves past tick `3504`.
