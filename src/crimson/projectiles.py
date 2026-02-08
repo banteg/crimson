@@ -214,6 +214,18 @@ def _hit_radius_for(creature: _SizeLike) -> float:
     return max(0.0, size * 0.14285715 + 3.0)
 
 
+def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, target_size: float) -> bool:
+    """Mirror native `creature_find_in_radius` / `player_find_in_radius` predicate.
+
+    Native uses:
+      sqrt(dx*dx + dy*dy) - radius < size * 0.14285715 + 3.0
+    """
+
+    dx = float(target.x) - float(origin.x)
+    dy = float(target.y) - float(origin.y)
+    return math.sqrt(dx * dx + dy * dy) - float(radius) < float(target_size) * 0.14285715 + 3.0
+
+
 def _apply_damage_to_creature(
     creatures: Sequence[Damageable],
     creature_index: int,
@@ -1010,9 +1022,12 @@ class ProjectilePool:
                             continue
                         if creature.hitbox_size <= 5.0:
                             continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = proj.hit_radius + creature_radius
-                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
+                        if _within_native_find_radius(
+                            origin=proj.pos,
+                            target=creature.pos,
+                            radius=float(proj.hit_radius),
+                            target_size=float(creature.size),
+                        ):
                             hit_idx = idx
                             break
                     if hit_idx is not None and int(hit_idx) == int(proj.owner_id):
@@ -1029,11 +1044,11 @@ class ProjectilePool:
                                         continue
                                     if float(player.health) <= 0.0:
                                         continue
-                                    player_radius = _hit_radius_for(player)
-                                    hit_r = proj.hit_radius + player_radius
-                                    if (
-                                        Vec2.distance_sq(proj.pos, player.pos)
-                                        <= hit_r * hit_r
+                                    if _within_native_find_radius(
+                                        origin=proj.pos,
+                                        target=player.pos,
+                                        radius=float(proj.hit_radius),
+                                        target_size=float(player.size),
                                     ):
                                         hit_player_idx = idx
                                         break
