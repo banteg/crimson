@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import bisect
+from collections import Counter
 import functools
 import gzip
 import json
@@ -9,7 +10,9 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 import re
 
+from crimson.bonuses import bonus_label
 from crimson.game_modes import GameMode
+from crimson.perks import perk_label
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.diff import ReplayFieldDiff, checkpoint_field_diffs
 from crimson.replay.original_capture import (
@@ -20,6 +23,7 @@ from crimson.replay.original_capture import (
     load_original_capture_sidecar,
 )
 from crimson.sim.runners import run_rush_replay, run_survival_replay
+from crimson.weapons import WEAPON_BY_ID
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +57,13 @@ class InvestigationLead:
     evidence: tuple[str, ...]
     native_functions: tuple[str, ...] = ()
     code_paths: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class RunSummaryEvent:
+    tick_index: int
+    kind: str
+    detail: str
 
 
 NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
@@ -167,6 +178,272 @@ def _iter_jsonl_objects(path: Path):
                 continue
             if isinstance(obj, dict):
                 yield obj
+
+
+def _weapon_name(weapon_id: int) -> str:
+    entry = WEAPON_BY_ID.get(int(weapon_id))
+    name = entry.name if entry is not None else None
+    if name is None:
+        return f"Weapon {int(weapon_id)}"
+    return f"{name} ({int(weapon_id)})"
+
+
+def _bonus_name(bonus_id: int) -> str:
+    if int(bonus_id) < 0:
+        return f"Bonus {int(bonus_id)}"
+    return f"{bonus_label(int(bonus_id))} ({int(bonus_id)})"
+
+
+def _append_run_summary_event(
+    out: list[RunSummaryEvent],
+    *,
+    seen: set[tuple[int, str, str]],
+    tick: int,
+    kind: str,
+    detail: str,
+) -> None:
+    key = (int(tick), str(kind), str(detail))
+    if key in seen:
+        return
+    seen.add(key)
+    out.append(
+        RunSummaryEvent(
+            tick_index=int(tick),
+            kind=str(kind),
+            detail=str(detail),
+        )
+    )
+
+
+def _parse_raw_player_perk_counts(checkpoint_obj: dict[str, object]) -> dict[int, Counter[int]]:
+    perk_obj = checkpoint_obj.get("perk")
+    if not isinstance(perk_obj, dict):
+        return {}
+    raw_counts = perk_obj.get("player_nonzero_counts")
+    if not isinstance(raw_counts, list):
+        return {}
+
+    out: dict[int, Counter[int]] = {}
+    for player_idx, player_counts in enumerate(raw_counts):
+        if not isinstance(player_counts, list):
+            continue
+        counts = Counter()
+        for pair in player_counts:
+            if isinstance(pair, (list, tuple)) and len(pair) == 2:
+                perk_id = _int_or(pair[0], -1)
+                perk_count = _int_or(pair[1], 0)
+            elif isinstance(pair, dict):
+                perk_id = _int_or(pair.get("perk_id"), -1)
+                perk_count = _int_or(pair.get("count"), 0)
+            else:
+                continue
+            if perk_id < 0 or perk_count <= 0:
+                continue
+            counts[int(perk_id)] = int(perk_count)
+        if counts:
+            out[int(player_idx)] = counts
+    return out
+
+
+def _build_run_summary_events_from_raw_capture(path: Path) -> list[RunSummaryEvent]:
+    events: list[RunSummaryEvent] = []
+    seen: set[tuple[int, str, str]] = set()
+    prev_levels: dict[int, int] = {}
+    prev_perk_counts: dict[int, Counter[int]] = {}
+
+    for obj in _iter_jsonl_objects(path):
+        if obj.get("event") != "tick":
+            continue
+
+        raw_checkpoint = obj.get("checkpoint")
+        checkpoint_obj = raw_checkpoint if isinstance(raw_checkpoint, dict) else obj
+        tick = _int_or(checkpoint_obj.get("tick_index"), _int_or(obj.get("tick_index"), -1))
+        if tick < 0:
+            continue
+
+        event_heads = obj.get("event_heads")
+        heads = event_heads if isinstance(event_heads, dict) else {}
+
+        raw_bonus_apply = heads.get("bonus_apply")
+        bonus_apply = raw_bonus_apply if isinstance(raw_bonus_apply, list) else []
+        for item in bonus_apply:
+            if not isinstance(item, dict):
+                continue
+            player_index = _int_or(item.get("player_index"), 0)
+            bonus_id = _int_or(item.get("bonus_id"), -1)
+            detail = f"p{player_index} picked {_bonus_name(int(bonus_id))}"
+            if int(bonus_id) == 3:
+                weapon_id = _int_or(item.get("amount_i32"), -1)
+                if weapon_id >= 0:
+                    detail += f" -> {_weapon_name(int(weapon_id))}"
+            _append_run_summary_event(
+                events,
+                seen=seen,
+                tick=int(tick),
+                kind="bonus_pickup",
+                detail=detail,
+            )
+
+        raw_weapon_assign = heads.get("weapon_assign")
+        weapon_assign = raw_weapon_assign if isinstance(raw_weapon_assign, list) else []
+        for item in weapon_assign:
+            if not isinstance(item, dict):
+                continue
+            player_index = _int_or(item.get("player_index"), 0)
+            weapon_before = _int_or(item.get("weapon_before"), -1)
+            weapon_after = _int_or(item.get("weapon_after"), _int_or(item.get("weapon_id"), -1))
+            detail = (
+                f"p{player_index} weapon "
+                f"{_weapon_name(int(weapon_before))} -> {_weapon_name(int(weapon_after))}"
+            )
+            _append_run_summary_event(
+                events,
+                seen=seen,
+                tick=int(tick),
+                kind="weapon_assign",
+                detail=detail,
+            )
+
+        raw_state_transition = heads.get("state_transition")
+        state_transition = raw_state_transition if isinstance(raw_state_transition, list) else []
+        for item in state_transition:
+            if not isinstance(item, dict):
+                continue
+            before_state = _int_or(
+                (item.get("before") or {}).get("id") if isinstance(item.get("before"), dict) else None,
+                -1,
+            )
+            after_state = _int_or(
+                (item.get("after") or {}).get("id") if isinstance(item.get("after"), dict) else item.get("target_state"),
+                _int_or(item.get("target_state"), -1),
+            )
+            _append_run_summary_event(
+                events,
+                seen=seen,
+                tick=int(tick),
+                kind="state_transition",
+                detail=f"state {before_state} -> {after_state}",
+            )
+
+        players_raw = checkpoint_obj.get("players")
+        players = players_raw if isinstance(players_raw, list) else []
+        for player_index, player_obj in enumerate(players):
+            if not isinstance(player_obj, dict):
+                continue
+            level = _int_or(player_obj.get("level"), -1)
+            if level < 0:
+                continue
+            prev_level = prev_levels.get(int(player_index))
+            if prev_level is not None and int(level) > int(prev_level):
+                experience = _int_or(player_obj.get("experience"), -1)
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick),
+                    kind="level_up",
+                    detail=f"p{int(player_index)} level {int(prev_level)} -> {int(level)} (xp={int(experience)})",
+                )
+            prev_levels[int(player_index)] = int(level)
+
+        perk_counts = _parse_raw_player_perk_counts(checkpoint_obj)
+        for player_index, player_counts in perk_counts.items():
+            previous = prev_perk_counts.get(int(player_index), Counter())
+            for perk_id, perk_count in sorted(player_counts.items()):
+                previous_count = int(previous.get(int(perk_id), 0))
+                if int(perk_count) <= int(previous_count):
+                    continue
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick),
+                    kind="perk_pick",
+                    detail=(
+                        f"p{int(player_index)} perk {perk_label(int(perk_id))} ({int(perk_id)}) "
+                        f"x{int(perk_count)}"
+                    ),
+                )
+            prev_perk_counts[int(player_index)] = Counter(player_counts)
+
+    events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
+    return events
+
+
+def _build_run_summary_events_from_checkpoints(expected: list[ReplayCheckpoint]) -> list[RunSummaryEvent]:
+    events: list[RunSummaryEvent] = []
+    seen: set[tuple[int, str, str]] = set()
+    prev_weapons: dict[int, int] = {}
+    prev_levels: dict[int, int] = {}
+    prev_perk_counts: dict[int, Counter[int]] = {}
+
+    for checkpoint in expected:
+        tick = int(checkpoint.tick_index)
+
+        for player_index, player in enumerate(checkpoint.players):
+            weapon_id = int(player.weapon_id)
+            prev_weapon_id = prev_weapons.get(int(player_index))
+            if prev_weapon_id is not None and int(prev_weapon_id) != int(weapon_id):
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick),
+                    kind="weapon_assign",
+                    detail=(
+                        f"p{int(player_index)} weapon "
+                        f"{_weapon_name(int(prev_weapon_id))} -> {_weapon_name(int(weapon_id))}"
+                    ),
+                )
+            prev_weapons[int(player_index)] = int(weapon_id)
+
+            level = int(player.level)
+            prev_level = prev_levels.get(int(player_index))
+            if prev_level is not None and int(level) > int(prev_level):
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick),
+                    kind="level_up",
+                    detail=f"p{int(player_index)} level {int(prev_level)} -> {int(level)} (xp={int(player.experience)})",
+                )
+            prev_levels[int(player_index)] = int(level)
+
+        for player_index, pairs in enumerate(checkpoint.perk.player_nonzero_counts):
+            counts = Counter()
+            for pair in pairs:
+                if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+                    continue
+                perk_id = _int_or(pair[0], -1)
+                perk_count = _int_or(pair[1], 0)
+                if perk_id < 0 or perk_count <= 0:
+                    continue
+                counts[int(perk_id)] = int(perk_count)
+            previous = prev_perk_counts.get(int(player_index), Counter())
+            for perk_id, perk_count in sorted(counts.items()):
+                previous_count = int(previous.get(int(perk_id), 0))
+                if int(perk_count) <= int(previous_count):
+                    continue
+                _append_run_summary_event(
+                    events,
+                    seen=seen,
+                    tick=int(tick),
+                    kind="perk_pick",
+                    detail=(
+                        f"p{int(player_index)} perk {perk_label(int(perk_id))} ({int(perk_id)}) "
+                        f"x{int(perk_count)}"
+                    ),
+                )
+            prev_perk_counts[int(player_index)] = counts
+
+    events.sort(key=lambda item: (int(item.tick_index), str(item.kind), str(item.detail)))
+    return events
+
+
+def _build_run_summary_events(capture_path: Path, *, expected: list[ReplayCheckpoint]) -> list[RunSummaryEvent]:
+    lower = capture_path.name.lower()
+    if lower.endswith(".jsonl") or lower.endswith(".jsonl.gz"):
+        events = _build_run_summary_events_from_raw_capture(capture_path)
+        if events:
+            return events
+    return _build_run_summary_events_from_checkpoints(expected)
 
 
 def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
@@ -1014,6 +1291,21 @@ def _print_investigation_leads(leads: list[InvestigationLead]) -> None:
             print(f"     - suggested_paths: {', '.join(lead.code_paths)}")
 
 
+def _print_run_summary(events: list[RunSummaryEvent], *, max_rows: int = 120) -> None:
+    if not events:
+        print()
+        print("run_summary: (no significant events found)")
+        return
+
+    print()
+    print("run_summary:")
+    limit = max(1, int(max_rows))
+    for event in events[:limit]:
+        print(f"  - tick={int(event.tick_index):5d} [{event.kind}] {event.detail}")
+    if len(events) > limit:
+        print(f"  ... truncated {len(events) - limit} additional events")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Report the next original-capture divergence with context window + RNG diagnostics.",
@@ -1051,6 +1343,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c"),
         help="path to Ghidra decompiled C used for caller_static -> native function mapping",
+    )
+    parser.add_argument(
+        "--run-summary",
+        action="store_true",
+        help="print a compact timeline of native run events (bonus/weapon/perk/state/level)",
     )
     parser.add_argument("--json-out", type=Path, default=None, help="optional machine-readable report output path")
     return parser
@@ -1092,6 +1389,11 @@ def main() -> int:
         f"quest_unlock_index_full={int(replay.header.status.quest_unlock_index_full)}, "
         f"weapon_usage_counts_len={len(replay.header.status.weapon_usage_counts)})"
     )
+
+    run_summary_events: list[RunSummaryEvent] = []
+    if bool(args.run_summary):
+        run_summary_events = _build_run_summary_events(capture_path, expected=expected)
+        _print_run_summary(run_summary_events)
 
     if divergence is None:
         print("result=ok (no divergence found with current settings)")
@@ -1203,6 +1505,8 @@ def main() -> int:
             "investigation_leads": [asdict(lead) for lead in leads],
             "focus_capture_debug": focus_raw,
         }
+        if bool(args.run_summary):
+            payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
         args.json_out.parent.mkdir(parents=True, exist_ok=True)
         args.json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print()
