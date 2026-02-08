@@ -375,6 +375,7 @@ def test_load_original_capture_sidecar_supports_v2_tick_jsonl(tmp_path: Path) ->
                     "players": [
                         {
                             "player_index": 0,
+                            "move_mode": 1,
                             "move_forward": 17,
                             "move_backward": 31,
                             "turn_left": 30,
@@ -578,6 +579,7 @@ def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_headin
                     "players": [
                         {
                             "player_index": 0,
+                            "move_mode": 1,
                             "move_forward": 17,
                             "move_backward": 31,
                             "turn_left": 30,
@@ -614,6 +616,7 @@ def test_convert_original_capture_to_replay_v2_prefers_discrete_input_and_headin
                     "players": [
                         {
                             "player_index": 0,
+                            "move_mode": 1,
                             "move_forward": 17,
                             "move_backward": 31,
                             "turn_left": 30,
@@ -734,6 +737,7 @@ def test_convert_original_capture_to_replay_v2_prefers_input_player_keys_over_an
                     "players": [
                         {
                             "player_index": 0,
+                            "move_mode": 1,
                             "move_forward": 17,
                             "move_backward": 31,
                             "turn_left": 30,

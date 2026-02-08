@@ -85,6 +85,8 @@ class OriginalCaptureInputApprox:
     aim_x: float = 0.0
     aim_y: float = 0.0
     aim_heading: float | None = None
+    move_mode: int | None = None
+    aim_scheme: int | None = None
     fired_events: int = 0
     reload_active: bool = False
     move_forward_pressed: bool | None = None
@@ -451,6 +453,10 @@ def _parse_input_approx(raw: object) -> list[OriginalCaptureInputApprox]:
             aim_x=_float_or(item.get("aim_x"), 0.0),
             aim_y=_float_or(item.get("aim_y"), 0.0),
             aim_heading=_float_or(item.get("aim_heading"), 0.0) if item.get("aim_heading") is not None else None,
+            move_mode=_coerce_int_like(
+                item.get("move_mode", item.get("player_mode_flag", item.get("player_mode_flags")))
+            ),
+            aim_scheme=_coerce_int_like(item.get("aim_scheme")),
             fired_events=_int_or(item.get("fired_events"), 0),
             reload_active=bool(item.get("reload_active", False)),
             move_forward_pressed=(
@@ -556,9 +562,31 @@ def _parse_v2_player_keybinds(raw: dict[str, object]) -> list[dict[str, int | No
                 "turn_right": _coerce_int_like(item.get("turn_right")),
                 "fire": _coerce_int_like(item.get("fire")),
                 "reload": _coerce_int_like(item.get("reload")),
+                "move_mode": _coerce_int_like(item.get("move_mode")),
+                "aim_scheme": _coerce_int_like(item.get("aim_scheme")),
             }
         )
     return out
+
+
+def _parse_v2_alternate_single_keybind(raw: dict[str, object]) -> dict[str, int | None]:
+    before_raw = raw.get("before")
+    if not isinstance(before_raw, dict):
+        return {}
+    input_bindings = before_raw.get("input_bindings")
+    if not isinstance(input_bindings, dict):
+        return {}
+    alternate_raw = input_bindings.get("alternate_single")
+    if not isinstance(alternate_raw, dict):
+        return {}
+    return {
+        "move_forward": _coerce_int_like(alternate_raw.get("move_forward")),
+        "move_backward": _coerce_int_like(alternate_raw.get("move_backward")),
+        "turn_left": _coerce_int_like(alternate_raw.get("turn_left")),
+        "turn_right": _coerce_int_like(alternate_raw.get("turn_right")),
+        "fire": _coerce_int_like(alternate_raw.get("fire")),
+        "reload": _coerce_int_like(alternate_raw.get("reload")),
+    }
 
 
 def _parse_v2_aim_heading_by_player(raw: dict[str, object]) -> dict[int, float]:
@@ -616,6 +644,7 @@ def _enrich_v2_input_approx(
     by_player: dict[int, OriginalCaptureInputApprox] = {int(sample.player_index): sample for sample in samples}
     pressed_key_codes = _parse_v2_pressed_key_codes(raw)
     keybinds = _parse_v2_player_keybinds(raw)
+    alternate_single = _parse_v2_alternate_single_keybind(raw)
     aim_heading_by_player = _parse_v2_aim_heading_by_player(raw)
     player_key_states = _parse_v2_player_key_states(raw)
     player_count = max(
@@ -638,6 +667,8 @@ def _enrich_v2_input_approx(
         turn_right_key = keybind.get("turn_right")
         fire_key = keybind.get("fire")
         reload_key = keybind.get("reload")
+        move_mode = existing.move_mode
+        aim_scheme = existing.aim_scheme
 
         move_forward_pressed = existing.move_forward_pressed
         move_backward_pressed = existing.move_backward_pressed
@@ -663,24 +694,50 @@ def _enrich_v2_input_approx(
         if key_state.get("reload_pressed") is not None:
             reload_pressed = bool(key_state["reload_pressed"])
 
+        raw_move_mode = keybind.get("move_mode")
+        if raw_move_mode is not None:
+            move_mode = int(raw_move_mode)
+        raw_aim_scheme = keybind.get("aim_scheme")
+        if raw_aim_scheme is not None:
+            aim_scheme = int(raw_aim_scheme)
+
+        alt_move_forward_key = alternate_single.get("move_forward") if player_index == 0 else None
+        alt_move_backward_key = alternate_single.get("move_backward") if player_index == 0 else None
+        alt_turn_left_key = alternate_single.get("turn_left") if player_index == 0 else None
+        alt_turn_right_key = alternate_single.get("turn_right") if player_index == 0 else None
+        alt_fire_key = alternate_single.get("fire") if player_index == 0 else None
+        alt_reload_key = alternate_single.get("reload") if player_index == 0 else None
+
         if move_forward_key is not None:
             if key_state.get("move_forward_pressed") is None:
                 move_forward_pressed = bool(int(move_forward_key) in pressed_key_codes)
+        if alt_move_forward_key is not None and key_state.get("move_forward_pressed") is None:
+            move_forward_pressed = bool(move_forward_pressed) or bool(int(alt_move_forward_key) in pressed_key_codes)
         if move_backward_key is not None:
             if key_state.get("move_backward_pressed") is None:
                 move_backward_pressed = bool(int(move_backward_key) in pressed_key_codes)
+        if alt_move_backward_key is not None and key_state.get("move_backward_pressed") is None:
+            move_backward_pressed = bool(move_backward_pressed) or bool(int(alt_move_backward_key) in pressed_key_codes)
         if turn_left_key is not None:
             if key_state.get("turn_left_pressed") is None:
                 turn_left_pressed = bool(int(turn_left_key) in pressed_key_codes)
+        if alt_turn_left_key is not None and key_state.get("turn_left_pressed") is None:
+            turn_left_pressed = bool(turn_left_pressed) or bool(int(alt_turn_left_key) in pressed_key_codes)
         if turn_right_key is not None:
             if key_state.get("turn_right_pressed") is None:
                 turn_right_pressed = bool(int(turn_right_key) in pressed_key_codes)
+        if alt_turn_right_key is not None and key_state.get("turn_right_pressed") is None:
+            turn_right_pressed = bool(turn_right_pressed) or bool(int(alt_turn_right_key) in pressed_key_codes)
         if fire_key is not None:
             if key_state.get("fire_down") is None:
                 fire_down = bool(int(fire_key) in pressed_key_codes)
+        if alt_fire_key is not None and key_state.get("fire_down") is None:
+            fire_down = bool(fire_down) or bool(int(alt_fire_key) in pressed_key_codes)
         if reload_key is not None:
             if key_state.get("reload_pressed") is None:
                 reload_pressed = bool(int(reload_key) in pressed_key_codes)
+        if alt_reload_key is not None and key_state.get("reload_pressed") is None:
+            reload_pressed = bool(reload_pressed) or bool(int(alt_reload_key) in pressed_key_codes)
         if int(player_index) in aim_heading_by_player:
             aim_heading = float(aim_heading_by_player[int(player_index)])
 
@@ -691,6 +748,8 @@ def _enrich_v2_input_approx(
             aim_x=float(existing.aim_x),
             aim_y=float(existing.aim_y),
             aim_heading=aim_heading,
+            move_mode=move_mode,
+            aim_scheme=aim_scheme,
             fired_events=int(existing.fired_events),
             reload_active=bool(existing.reload_active),
             move_forward_pressed=move_forward_pressed,
@@ -878,6 +937,50 @@ def _infer_player_count(capture: OriginalCaptureSidecar) -> int:
     return max(1, int(player_count))
 
 
+def _infer_digital_move_enabled_by_player(capture: OriginalCaptureSidecar, *, player_count: int) -> list[bool]:
+    """Infer whether original-capture replay should decode digital movement per player.
+
+    If capture telemetry explicitly reports `move_mode`, we only enable digital
+    reconstruction for players that stay on mode `1` throughout the capture.
+    When mode telemetry is absent (older captures), we keep legacy behavior and
+    enable digital reconstruction when per-tick key-state telemetry is present.
+    """
+
+    size = max(1, int(player_count))
+    saw_mode: list[bool] = [False for _ in range(size)]
+    saw_mode1: list[bool] = [False for _ in range(size)]
+    saw_non_mode1: list[bool] = [False for _ in range(size)]
+    saw_digital_keys: list[bool] = [False for _ in range(size)]
+
+    for tick in capture.ticks:
+        for sample in tick.input_approx:
+            player_index = int(sample.player_index)
+            if not (0 <= player_index < len(saw_mode)):
+                continue
+            if (
+                sample.move_forward_pressed is not None
+                or sample.move_backward_pressed is not None
+                or sample.turn_left_pressed is not None
+                or sample.turn_right_pressed is not None
+            ):
+                saw_digital_keys[player_index] = True
+            if sample.move_mode is None:
+                continue
+            saw_mode[player_index] = True
+            if int(sample.move_mode) == 1:
+                saw_mode1[player_index] = True
+            else:
+                saw_non_mode1[player_index] = True
+
+    out: list[bool] = []
+    for player_index in range(len(saw_mode)):
+        if saw_mode[player_index]:
+            out.append(bool(saw_mode1[player_index] and not saw_non_mode1[player_index]))
+        else:
+            out.append(bool(saw_digital_keys[player_index]))
+    return out
+
+
 def _infer_status_snapshot(capture: OriginalCaptureSidecar) -> ReplayStatusSnapshot:
     unlock_index = -1
     unlock_index_full = -1
@@ -1051,7 +1154,11 @@ def build_original_capture_dt_frame_overrides(
     return out
 
 
-def _capture_bootstrap_payload(tick: OriginalCaptureTick) -> dict[str, object]:
+def _capture_bootstrap_payload(
+    tick: OriginalCaptureTick,
+    *,
+    digital_move_enabled_by_player: list[bool] | None = None,
+) -> dict[str, object]:
     players: list[dict[str, object]] = []
     for player in tick.players:
         players.append(
@@ -1071,6 +1178,11 @@ def _capture_bootstrap_payload(tick: OriginalCaptureTick) -> dict[str, object]:
         "perk_pending": int(tick.perk_pending),
         "bonus_timers_ms": dict(tick.bonus_timers),
         "players": players,
+        "digital_move_enabled_by_player": (
+            [bool(value) for value in digital_move_enabled_by_player]
+            if digital_move_enabled_by_player is not None
+            else []
+        ),
     }
 
 
@@ -1280,6 +1392,10 @@ def convert_original_capture_to_replay(
 ) -> Replay:
     resolved_seed = infer_original_capture_seed(capture) if seed is None else int(seed)
     player_count = _infer_player_count(capture)
+    digital_move_enabled_by_player = _infer_digital_move_enabled_by_player(
+        capture,
+        player_count=int(player_count),
+    )
     resolved_mode_id = _infer_game_mode_id(capture) if game_mode_id is None else int(game_mode_id)
     status_snapshot = _infer_status_snapshot(capture)
 
@@ -1309,7 +1425,12 @@ def convert_original_capture_to_replay(
                     or sample.turn_left_pressed is not None
                     or sample.turn_right_pressed is not None
                 )
-                if has_digital_move:
+                use_digital_move = bool(
+                    has_digital_move
+                    and 0 <= int(player_index) < len(digital_move_enabled_by_player)
+                    and bool(digital_move_enabled_by_player[int(player_index)])
+                )
+                if use_digital_move:
                     move_x = float(bool(sample.turn_right_pressed)) - float(bool(sample.turn_left_pressed))
                     move_y = float(bool(sample.move_backward_pressed)) - float(bool(sample.move_forward_pressed))
                 else:
@@ -1395,7 +1516,12 @@ def convert_original_capture_to_replay(
             UnknownEvent(
                 tick_index=int(bootstrap_tick),
                 kind=ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[_capture_bootstrap_payload(first_tick)],
+                payload=[
+                    _capture_bootstrap_payload(
+                        first_tick,
+                        digital_move_enabled_by_player=digital_move_enabled_by_player,
+                    )
+                ],
             )
         )
 
