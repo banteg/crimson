@@ -196,7 +196,6 @@ class ProjectileDecalPostCtx:
     hit: ProjectileHit
     base_angle: float
     type_id: int
-    hook_handled: bool
     freeze_active: bool
 
 
@@ -243,15 +242,6 @@ def queue_projectile_decals_pre_hit(
     type_id = int(hit.type_id)
 
     base_angle = (hit.hit - hit.origin).to_angle()
-
-    hook_handled = run_projectile_decal_hooks(
-        ProjectileDecalCtx(
-            hit=hit,
-            base_angle=float(base_angle),
-            fx_queue=fx_queue,
-            rand=rand,
-        )
-    )
 
     # Native `projectile_update` spawns blood splatter before terrain decals.
     if bloody:
@@ -311,7 +301,6 @@ def queue_projectile_decals_pre_hit(
         hit=hit,
         base_angle=float(base_angle),
         type_id=int(type_id),
-        hook_handled=bool(hook_handled),
         freeze_active=bool(freeze_active),
     )
 
@@ -329,7 +318,16 @@ def queue_projectile_decals_post_hit(
     # post-hit terrain decal burst branch.
     rand()
 
-    if post_ctx.hook_handled or int(post_ctx.type_id) in ION_TYPES or bool(post_ctx.freeze_active):
+    hook_handled = run_projectile_decal_hooks(
+        ProjectileDecalCtx(
+            hit=hit,
+            base_angle=float(base_angle),
+            fx_queue=fx_queue,
+            rand=rand,
+        )
+    )
+
+    if bool(hook_handled) or int(post_ctx.type_id) in ION_TYPES or bool(post_ctx.freeze_active):
         return
 
     for _ in range(3):

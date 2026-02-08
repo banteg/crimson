@@ -150,6 +150,25 @@ class WorldState:
         _mark("ws_after_creatures")
 
         deaths = list(creature_result.deaths)
+        planned_death_sfx: list[str] = []
+        planned_death_sfx_cap = 3
+
+        def _plan_death_sfx_now(death: CreatureDeath) -> None:
+            if len(planned_death_sfx) >= planned_death_sfx_cap:
+                return
+            keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
+            if not keys:
+                return
+            remain = int(planned_death_sfx_cap) - len(planned_death_sfx)
+            if remain <= 0:
+                return
+            planned_death_sfx.extend(keys[:remain])
+
+        for death in deaths:
+            _plan_death_sfx_now(death)
+        trigger_game_tune = False
+        hit_sfx: list[str] = []
+        hit_audio_game_tune_started = bool(game_tune_started)
 
         def _apply_projectile_damage_to_creature(
             creature_index: int,
@@ -177,19 +196,19 @@ class WorldState:
                 rand=self.state.rng.rand,
             )
             if killed and death_start_needed:
-                deaths.append(
-                    self.creatures.handle_death(
-                        idx,
-                        state=self.state,
-                        players=self.players,
-                        rand=self.state.rng.rand,
-                        dt=float(dt),
-                        detail_preset=int(detail_preset),
-                        world_width=float(world_size),
-                        world_height=float(world_size),
-                        fx_queue=fx_queue,
-                    )
+                death = self.creatures.handle_death(
+                    idx,
+                    state=self.state,
+                    players=self.players,
+                    rand=self.state.rng.rand,
+                    dt=float(dt),
+                    detail_preset=int(detail_preset),
+                    world_width=float(world_size),
+                    world_height=float(world_size),
+                    fx_queue=fx_queue,
                 )
+                deaths.append(death)
+                _plan_death_sfx_now(death)
 
         def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
             return self._prepare_projectile_hit_presentation(
@@ -200,12 +219,25 @@ class WorldState:
             )
 
         def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
+            nonlocal trigger_game_tune, hit_audio_game_tune_started
             if not isinstance(post_ctx, ProjectileDecalPostCtx):
                 return
             self._finalize_projectile_hit_presentation(
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
             )
+            hit_trigger, keys = plan_hit_sfx_keys(
+                [_hit],
+                game_mode=int(game_mode),
+                demo_mode_active=bool(self.state.demo_mode_active),
+                game_tune_started=bool(hit_audio_game_tune_started),
+                rand=self.state.rng.rand,
+            )
+            if hit_trigger:
+                trigger_game_tune = True
+                hit_audio_game_tune_started = True
+            if keys:
+                hit_sfx.extend(keys)
 
         hits = self.state.projectiles.update(
             dt,
@@ -222,11 +254,6 @@ class WorldState:
             on_hit_post=_on_projectile_hit_post,
         )
         _mark("ws_after_projectiles")
-        trigger_game_tune, hit_sfx = self._plan_projectile_hit_audio(
-            hits=hits,
-            game_mode=int(game_mode),
-            game_tune_started=bool(game_tune_started),
-        )
         _mark("ws_after_hit_sfx")
         self.state.secondary_projectiles.update_pulse_gun(
             dt,
@@ -269,20 +296,20 @@ class WorldState:
                 return
 
             creature.last_hit_owner_id = int(owner_id)
-            deaths.append(
-                self.creatures.handle_death(
-                    idx,
-                    state=self.state,
-                    players=self.players,
-                    rand=self.state.rng.rand,
-                    dt=float(dt),
-                    detail_preset=int(detail_preset),
-                    world_width=float(world_size),
-                    world_height=float(world_size),
-                    fx_queue=fx_queue,
-                    keep_corpse=False,
-                )
+            death = self.creatures.handle_death(
+                idx,
+                state=self.state,
+                players=self.players,
+                rand=self.state.rng.rand,
+                dt=float(dt),
+                detail_preset=int(detail_preset),
+                world_width=float(world_size),
+                world_height=float(world_size),
+                fx_queue=fx_queue,
+                keep_corpse=False,
             )
+            deaths.append(death)
+            _plan_death_sfx_now(death)
 
         self.state.particles.update(
             dt,
@@ -296,10 +323,6 @@ class WorldState:
         self.state.sprite_effects.update(dt)
         _mark("ws_after_sprite_effects")
         _mark("ws_after_particles")
-        # Native `creature_apply_damage` consumes creature death SFX RNG draws during
-        # world update (before `player_update`). Pre-plan those here so replay/headless
-        # keeps the same RNG ordering.
-        planned_death_sfx = plan_death_sfx_keys(deaths, rand=self.state.rng.rand)
         _mark("ws_after_death_sfx")
 
         for idx, player in enumerate(self.players):
@@ -414,21 +437,6 @@ class WorldState:
         queue_projectile_decals_post_hit(
             fx_queue=fx_queue,
             post_ctx=post_ctx,
-            rand=self.state.rng.rand,
-        )
-
-    def _plan_projectile_hit_audio(
-        self,
-        *,
-        hits: list[ProjectileHit],
-        game_mode: int,
-        game_tune_started: bool,
-    ) -> tuple[bool, list[str]]:
-        return plan_hit_sfx_keys(
-            hits,
-            game_mode=int(game_mode),
-            demo_mode_active=bool(self.state.demo_mode_active),
-            game_tune_started=bool(game_tune_started),
             rand=self.state.rng.rand,
         )
 
