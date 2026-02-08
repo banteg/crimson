@@ -1431,8 +1431,20 @@ def convert_original_capture_to_replay(
                     and bool(digital_move_enabled_by_player[int(player_index)])
                 )
                 if use_digital_move:
-                    move_x = float(bool(sample.turn_right_pressed)) - float(bool(sample.turn_left_pressed))
-                    move_y = float(bool(sample.move_backward_pressed)) - float(bool(sample.move_forward_pressed))
+                    turn_left = bool(sample.turn_left_pressed)
+                    turn_right = bool(sample.turn_right_pressed)
+                    move_forward = bool(sample.move_forward_pressed)
+                    move_backward = bool(sample.move_backward_pressed)
+                    move_x = float(turn_right) - float(turn_left)
+                    move_y = float(move_backward) - float(move_forward)
+                    # Rare capture artifacts can report opposite digital keys as
+                    # simultaneously pressed for a frame. When that happens, keep
+                    # deterministic replay moving in the observed analog direction
+                    # instead of collapsing the axis to 0.0.
+                    if turn_left and turn_right:
+                        move_x = max(-1.0, min(1.0, float(sample.move_dx)))
+                    if move_forward and move_backward:
+                        move_y = max(-1.0, min(1.0, float(sample.move_dy)))
                 else:
                     move_x = max(-1.0, min(1.0, float(sample.move_dx)))
                     move_y = max(-1.0, min(1.0, float(sample.move_dy)))
