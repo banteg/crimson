@@ -178,3 +178,37 @@ Each entry should capture:
 ### Next probe
 
 - Record a new capture with the latest v2 script defaults (`48a07c61`, full-detail tick sampling by default), then rerun divergence to compare `samples.secondary_projectiles`/`samples.creatures` at the first mismatch tick directly.
+
+---
+
+## Session 2026-02-08-f
+
+- **Session ID:** `2026-02-08-f`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 20 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_latest.json`
+- **First mismatch:** `tick 3504 (players[0].experience, score_xp)`
+
+### Findings
+
+- Rewrite still awards a rewrite-only kill at tick `3504` (`+35 XP`) while native reports `rand_calls=0` and no `creature_damage`/`creature_death` events on that tick.
+- Geometry at the focus window confirms native projectile `index 4` (`type_id=6`) travels with angle `0.7043`; rewrite shot angle differs by then because the RNG stream has already drifted.
+- Root-cause signal appears earlier: first pre-focus RNG head shortfall is tick `3453` (`expected_head_len=353`, `actual_rand_calls=268`, shortfall `85` draws), which indicates missing rewrite RNG-consuming branches before the XP divergence.
+- Tick `3453` still has close creature/projectile state parity in sampled values (including death outcomes), so this shortfall is likely in repeated hit/presentation RNG work (e.g. extra corpse-hit visual/audio branches), not a large state jump.
+
+### Fixes from this session
+
+- Extended `scripts/original_capture_divergence_report.py` with a new investigation lead:
+  `Pre-focus RNG-head shortfall indicates missing RNG-consuming branch`.
+- The new lead reports:
+  - first shortfall tick,
+  - expected RNG head length vs rewrite rand calls,
+  - missing draw count,
+  - dominant native caller_static and resolved native function hints.
+- Added regression coverage in `tests/test_original_capture_divergence_report_rng_calls.py` for:
+  - shortfall detection helper,
+  - lead emission with native function mapping.
+
+### Next probe
+
+- Instrument/compare `projectile_update` hit-loop parity at tick `3453` (Gauss/Fire-Bullets corpse-hit path) to explain the missing pre-focus RNG draws before tick `3504`.

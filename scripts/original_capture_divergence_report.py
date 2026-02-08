@@ -106,6 +106,11 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
         "src/crimson/effects.py",
         "src/crimson/views/projectile_fx.py",
     ),
+    "effect_spawn_blood_splatter": (
+        "src/crimson/effects.py",
+        "src/crimson/sim/presentation_step.py",
+        "src/crimson/features/bonuses/fire_bullets.py",
+    ),
 }
 
 RNG_STAGE_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
@@ -620,6 +625,12 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         rng_callers = rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else []
         if not rng_callers:
             rng_callers = rng_callers_top_obj
+        rng_head = rng_obj.get("rand_head")
+        rng_head_obj = rng_head if isinstance(rng_head, list) else []
+        if not rng_head_obj:
+            rng_head_top = rng_top_obj.get("head")
+            if isinstance(rng_head_top, list):
+                rng_head_obj = rng_head_top
 
         sample_creatures_head: list[dict[str, object]] = []
         for item in sample_creatures_obj[:6]:
@@ -659,6 +670,7 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
 
         out[int(tick)] = {
             "rng_rand_calls": rng_rand_calls,
+            "rng_head_len": len(rng_head_obj),
             "rng_rand_last": rng_rand_last,
             "rng_callers": rng_callers,
             "spawn_bonus_count": _int_or(spawn_obj.get("event_count_bonus_spawn")),
@@ -1153,6 +1165,46 @@ def _top_native_functions_from_callers(
     return ranked[: max(1, int(limit))]
 
 
+def _find_first_rng_head_shortfall(
+    *,
+    expected_by_tick: dict[int, ReplayCheckpoint],
+    actual_by_tick: dict[int, ReplayCheckpoint],
+    raw_debug_by_tick: dict[int, dict[str, object]],
+    start_tick: int,
+    end_tick: int,
+) -> dict[str, object] | None:
+    for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
+        exp = expected_by_tick.get(int(tick))
+        act = actual_by_tick.get(int(tick))
+        if exp is None or act is None:
+            continue
+        expected_head_len = _int_or(raw_debug_by_tick.get(int(tick), {}).get("rng_head_len"), -1)
+        if expected_head_len <= 0:
+            continue
+        actual_rand_calls = _actual_rand_calls_for_checkpoint(act)
+        if actual_rand_calls is None:
+            continue
+        if int(actual_rand_calls) >= int(expected_head_len):
+            continue
+        expected_rand_calls = _int_or(
+            raw_debug_by_tick.get(int(tick), {}).get("rng_rand_calls"),
+            _int_or(exp.rng_marks.get("rand_calls"), -1),
+        )
+        caller_counts = _aggregate_rng_callers(
+            raw_debug_by_tick=raw_debug_by_tick,
+            ticks=[int(tick)],
+        )
+        return {
+            "tick": int(tick),
+            "expected_head_len": int(expected_head_len),
+            "actual_rand_calls": int(actual_rand_calls),
+            "missing_draws": int(expected_head_len) - int(actual_rand_calls),
+            "expected_rand_calls": int(expected_rand_calls),
+            "caller_counts": caller_counts,
+        }
+    return None
+
+
 def _port_paths_for_native_functions(function_names: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     out: list[str] = []
     seen: set[str] = set()
@@ -1263,6 +1315,73 @@ def _build_investigation_leads(
                 code_paths=(
                     "scripts/frida/gameplay_diff_capture_v2.js",
                     "docs/frida/gameplay-diff-capture-v2.md",
+                ),
+            )
+        )
+
+    rng_head_shortfall = _find_first_rng_head_shortfall(
+        expected_by_tick=expected_by_tick,
+        actual_by_tick=actual_by_tick,
+        raw_debug_by_tick=raw_debug_by_tick,
+        start_tick=int(lookback_start),
+        end_tick=int(focus_tick),
+    )
+    if rng_head_shortfall is not None:
+        shortfall_tick = _int_or(rng_head_shortfall.get("tick"), -1)
+        expected_head_len = _int_or(rng_head_shortfall.get("expected_head_len"), -1)
+        actual_rand_calls = _int_or(rng_head_shortfall.get("actual_rand_calls"), -1)
+        missing_draws = _int_or(rng_head_shortfall.get("missing_draws"), -1)
+        expected_rand_calls = _int_or(rng_head_shortfall.get("expected_rand_calls"), -1)
+        caller_counts = (
+            rng_head_shortfall.get("caller_counts") if isinstance(rng_head_shortfall.get("caller_counts"), list) else []
+        )
+        top_native = _top_native_functions_from_callers(
+            caller_counts=caller_counts,
+            native_ranges=native_ranges,
+            limit=5,
+        )
+        native_names = tuple(name for name, _calls in top_native)
+        native_text = ", ".join(f"{name} x{calls}" for name, calls in top_native)
+        top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])
+
+        evidence = [
+            (
+                f"first pre-focus tick with native RNG-head shortfall: tick={int(shortfall_tick)} "
+                f"(expected_head_len={int(expected_head_len)}, actual_rand_calls={int(actual_rand_calls)}, "
+                f"missing={int(missing_draws)})"
+            ),
+            (
+                "this means rewrite consumed fewer draws than native before the focus mismatch, "
+                "so later gameplay RNG decisions can diverge even if sampled state still matches"
+            ),
+        ]
+        if expected_rand_calls >= 0 and expected_head_len >= 0:
+            evidence.append(
+                f"capture rand_calls at that tick: {int(expected_rand_calls)} (head_len={int(expected_head_len)})"
+            )
+        if top_callers:
+            evidence.append(f"dominant native caller_static at shortfall tick: {top_callers}")
+        if native_text:
+            evidence.append(f"resolved native functions at shortfall tick: {native_text}")
+
+        fallback_native = (
+            "projectile_update",
+            "effect_spawn_blood_splatter",
+            "fx_queue_add_random",
+        )
+        effective_native = native_names if native_names else fallback_native
+        leads.append(
+            InvestigationLead(
+                title="Pre-focus RNG-head shortfall indicates missing RNG-consuming branch",
+                evidence=tuple(evidence),
+                native_functions=tuple(effective_native),
+                code_paths=_merge_paths(
+                    _port_paths_for_native_functions(effective_native),
+                    (
+                        "src/crimson/projectiles.py",
+                        "src/crimson/sim/presentation_step.py",
+                        "src/crimson/effects.py",
+                    ),
                 ),
             )
         )

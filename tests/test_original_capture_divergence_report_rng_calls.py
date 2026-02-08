@@ -204,3 +204,111 @@ def test_investigation_leads_flag_missing_focus_samples() -> None:
         native_ranges=tuple(),
     )
     assert any(lead.title == "Capture lacks entity samples at the focus tick" for lead in leads)
+
+
+def test_find_first_rng_head_shortfall_detects_pre_focus_gap() -> None:
+    report = _load_report_module()
+    start = 0x10203040
+    after_two = _step_crt_state(start, 2)
+
+    expected_ckpt = _checkpoint(
+        tick=7,
+        rng_marks={"rand_calls": 3},
+    )
+    actual_ckpt = _checkpoint(
+        tick=7,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after_two,
+            "after_wave_spawns": after_two,
+        },
+    )
+
+    shortfall = report._find_first_rng_head_shortfall(
+        expected_by_tick={7: expected_ckpt},
+        actual_by_tick={7: actual_ckpt},
+        raw_debug_by_tick={
+            7: {
+                "rng_head_len": 3,
+                "rng_rand_calls": 3,
+                "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
+            }
+        },
+        start_tick=0,
+        end_tick=16,
+    )
+
+    assert shortfall is not None
+    assert int(shortfall["tick"]) == 7
+    assert int(shortfall["expected_head_len"]) == 3
+    assert int(shortfall["actual_rand_calls"]) == 2
+    assert int(shortfall["missing_draws"]) == 1
+
+
+def test_investigation_leads_include_rng_head_shortfall() -> None:
+    report = _load_report_module()
+    start = 0x55667788
+    after_two = _step_crt_state(start, 2)
+
+    expected_shortfall = _checkpoint(
+        tick=7,
+        rng_marks={"rand_calls": 3},
+    )
+    actual_shortfall = _checkpoint(
+        tick=7,
+        rng_marks={
+            "before_world_step": start,
+            "after_world_step": after_two,
+            "after_wave_spawns": after_two,
+        },
+    )
+
+    expected_focus = _checkpoint(
+        tick=10,
+        rng_marks={"rand_calls": 0},
+    )
+    actual_focus = _checkpoint(
+        tick=10,
+        rng_marks={
+            "before_world_step": after_two,
+            "after_world_step": after_two,
+            "after_wave_spawns": after_two,
+        },
+    )
+
+    divergence = report.Divergence(
+        tick_index=10,
+        kind="state_mismatch",
+        field_diffs=tuple(),
+        expected=expected_focus,
+        actual=actual_focus,
+    )
+
+    leads = report._build_investigation_leads(
+        divergence=divergence,
+        focus_tick=10,
+        lookback_ticks=8,
+        float_abs_tol=1e-3,
+        expected_by_tick={7: expected_shortfall, 10: expected_focus},
+        actual_by_tick={7: actual_shortfall, 10: actual_focus},
+        raw_debug_by_tick={
+            7: {
+                "rng_head_len": 3,
+                "rng_rand_calls": 3,
+                "rng_callers": [{"caller_static": "0x00420fd7", "calls": 3}],
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+            },
+            10: {
+                "rng_head_len": 0,
+                "rng_rand_calls": 0,
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+            },
+        },
+        native_ranges=(
+            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
+        ),
+    )
+
+    lead = next((item for item in leads if item.title == "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"), None)
+    assert lead is not None
+    assert "projectile_update" in lead.native_functions
