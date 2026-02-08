@@ -568,3 +568,50 @@ Each entry should capture:
 - Pivot from broad movement precision tweaks to the earliest missed-hit path itself at tick `3453`:
   - instrument `projectile_update` hit-resolve ordering around corpse/non-corpse handling in `src/crimson/projectiles.py`,
   - verify whether rewrite skips one native-equivalent Gauss hit resolve that drives `queue_large_hit_decal_streak`/`fx_queue_add_random` tail calls.
+
+---
+
+## Session 2026-02-08-o
+
+- **Session ID:** `2026-02-08-o`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace for orbit-phase rounding variants:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch14_orbit_phase_mul_order.json`
+  - divergence check for selected variant:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch15_orbit_phase_order_only.json`
+  - focused trajectory context:
+    `uv run python scripts/original_capture_creature_trajectory.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --creature-index 19 --start-tick 0 --end-tick 3453 --inter-tick-rand-draws 1 --json-out analysis/frida/creature19_trajectory_0_3453_patch11.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Changing AI orbit-phase rounding order materially reduced the known tick-3453 miss geometry but did not yet flip it:
+  - creature `19` drift at tick `3453` improved from `x_delta=-0.126840` to `x_delta=-0.061776`,
+  - near-miss margin improved from `+0.099141` to `+0.034608` (still a miss).
+- Earliest divergence points are still unchanged:
+  - pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Fire-Bullets loop parity still indicates one missing hit-equivalent loop at the shortfall tick:
+  - `seed_iterations capture=30 rewrite=24 missing=6`.
+
+### Fixes from this session
+
+- Updated AI movement-target prep in `src/crimson/creatures/ai.py`:
+  - changed orbit-phase construction to mirror native-like intermediate rounding order:
+    - from `f32(seed * 3.7 * pi)` style
+    - to `f32(seed * 3.7f) * pi` style,
+  - removed float32 truncation of `_distance_f32` intermediate distance before threshold checks.
+
+### Validation
+
+- `uv run ruff check src/crimson/creatures/ai.py`
+- `uv run pytest tests/test_creature_ai.py tests/test_math_parity.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch14_orbit_phase_mul_order.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch15_orbit_phase_order_only.json`
+
+### Next probe
+
+- Continue reducing the remaining `+0.0346` near-miss gap with similarly narrow movement-heading rounding adjustments, then re-check whether tick `3453` gains the missing fifth hit.
+- In parallel, add hit-resolve sequence instrumentation in `src/crimson/projectiles.py` for the tick-3453 path to rule out a logic-order mismatch independent of geometry.
