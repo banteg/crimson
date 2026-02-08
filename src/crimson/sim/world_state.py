@@ -18,6 +18,7 @@ from ..gameplay import (
     PlayerInput,
     PlayerState,
     bonus_update,
+    bonus_update_pre_pickup_timers,
     perks_update_effects,
     player_update,
     survival_progression_update,
@@ -345,6 +346,7 @@ class WorldState:
             self._advance_player_anim(dt, prev_positions)
 
         camera_shake_update(self.state, dt)
+        bonus_update_pre_pickup_timers(self.state, dt)
 
         pickups = bonus_update(
             self.state,

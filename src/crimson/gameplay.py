@@ -3202,9 +3202,8 @@ def bonus_update(
     )
 
     if dt > 0.0:
-        state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)
-        state.bonuses.reflex_boost = max(0.0, state.bonuses.reflex_boost - dt)
-        state.bonuses.energizer = max(0.0, state.bonuses.energizer - dt)
+        # Native `bonus_update` decrements Freeze + Double XP here; other global
+        # timers are advanced earlier in the gameplay loop.
         state.bonuses.double_experience = max(0.0, state.bonuses.double_experience - dt)
         state.bonuses.freeze = max(0.0, state.bonuses.freeze - dt)
 
@@ -3212,3 +3211,13 @@ def bonus_update(
         bonus_hud_update(state, players, dt=dt)
 
     return pickups
+
+
+def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
+    """Advance global timers that native decrements before `bonus_update`."""
+
+    if dt <= 0.0:
+        return
+    state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)
+    state.bonuses.energizer = max(0.0, state.bonuses.energizer - dt)
+    state.bonuses.reflex_boost = max(0.0, state.bonuses.reflex_boost - dt)
