@@ -113,6 +113,23 @@ vs rewrite `events.hit_count`).
 
 Track each run in `docs/frida/differential-sessions.md`.
 
+## Focus tick trace
+
+When the divergence report points at a suspicious tick and you need deeper
+rewrite-side mechanics (RNG callsites + collision near-misses + indexed sample
+diffs), run:
+
+```text
+uv run python scripts/original_capture_focus_trace.py \
+  artifacts/frida/share/gameplay_diff_capture_v2.jsonl \
+  --tick 3453 \
+  --near-miss-threshold 0.35 \
+  --json-out analysis/frida/focus_trace_tick3453.json
+```
+
+This is especially useful when checkpoint fields still match but native RNG
+callers indicate hidden branch drift (for example corpse-hit resolution).
+
 ## Default capture profile
 
 Without any extra env vars, v2 now captures full detail for every tracked tick:
