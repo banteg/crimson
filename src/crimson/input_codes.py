@@ -68,14 +68,56 @@ def input_code_name(key_code: int) -> str:
         return "MWheelUp"
     if key_code == 0x10A:
         return "MWheelDown"
-    if key_code == 0x13F:
-        return "JoyAxisX"
-    if key_code == 0x140:
-        return "JoyAxisY"
-    if key_code == 0x141:
-        return "JoyAxisZ"
-    if key_code == 0x153:
-        return "JoyAxisR"
+
+    extended_name = {
+        0x11F: "Joys1",
+        0x120: "Joys2",
+        0x121: "Joys3",
+        0x122: "Joys4",
+        0x123: "Joys5",
+        0x124: "Joys6",
+        0x125: "Joys7",
+        0x126: "Joys8",
+        0x127: "Joys9",
+        0x128: "Joys10",
+        0x129: "Joys11",
+        0x12A: "Joys12",
+        0x131: "JoysUp",
+        0x132: "JoysDown",
+        0x133: "JoysLeft",
+        0x134: "JoysRight",
+        0x13F: "JoyAxisX",
+        0x140: "JoyAxisY",
+        0x141: "JoyAxisZ",
+        0x153: "JoyRotX",
+        0x154: "JoyRotY",
+        0x155: "JoyRotZ",
+        0x163: "RIM0XAxis",
+        0x164: "RIM1XAxis",
+        0x165: "RIM2XAxis",
+        0x168: "RIM0YAxis",
+        0x169: "RIM1YAxis",
+        0x16A: "RIM2YAxis",
+        0x16D: "RIM0Btn1",
+        0x16E: "RIM0Btn2",
+        0x16F: "RIM0Btn3",
+        0x170: "RIM0Btn4",
+        0x171: "RIM0Btn5",
+        0x172: "RIM1Btn1",
+        0x173: "RIM1Btn2",
+        0x174: "RIM1Btn3",
+        0x175: "RIM1Btn4",
+        0x176: "RIM1Btn5",
+        0x177: "RIM2Btn1",
+        0x178: "RIM2Btn2",
+        0x179: "RIM2Btn3",
+        0x17A: "RIM2Btn4",
+        0x17B: "RIM2Btn5",
+    }.get(key_code)
+    if extended_name is not None:
+        return extended_name
+    if key_code > 0x163:
+        return "RawInput ?"
 
     if key_code < 0x100:
         name = {
@@ -173,4 +215,3 @@ def player_move_fire_binds(keybinds: Sequence[int], player_index: int) -> tuple[
         if 0 <= src < len(keybinds):
             values[idx] = int(keybinds[src])
     return values[0], values[1], values[2], values[3], values[4]
-
