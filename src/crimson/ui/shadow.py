@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pyray as rl
+from raylib import defines as rd
 
 # ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
 # blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).
@@ -19,21 +20,21 @@ def draw_ui_quad_shadow(
     # NOTE: raylib/rlgl tracks custom blend factors as state; some backends
     # only apply them when switching the blend mode.
     rl.rl_set_blend_factors_separate(
-        rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-        rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-        rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-        rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-        rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-        rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+        rd.RL_ZERO,
+        rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_ZERO,
+        rd.RL_ONE,
+        rd.RL_FUNC_ADD,
+        rd.RL_FUNC_ADD,
     )
     rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
     rl.rl_set_blend_factors_separate(
-        rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-        rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-        rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-        rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-        rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-        rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+        rd.RL_ZERO,
+        rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_ZERO,
+        rd.RL_ONE,
+        rd.RL_FUNC_ADD,
+        rd.RL_FUNC_ADD,
     )
     rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, UI_SHADOW_TINT)
     rl.end_blend_mode()

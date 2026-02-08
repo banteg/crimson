@@ -7,6 +7,7 @@ from typing import Iterator
 from typing import Iterable, Sequence
 
 import pyray as rl
+from raylib import defines as rd
 
 from .geom import Vec2
 from .rand import CrtRand
@@ -312,12 +313,12 @@ class GroundRenderer:
         # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
         # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
         with _blend_custom_separate(
-            rl.RL_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         ):
             if layers >= 1:
                 self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
@@ -354,12 +355,12 @@ class GroundRenderer:
 
         rl.begin_texture_mode(self.render_target)
         with _blend_custom_separate(
-            rl.RL_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         ):
             for decal in decals:
                 w = decal.width
@@ -493,12 +494,12 @@ class GroundRenderer:
             )
 
         with _blend_custom_separate(
-            rl.RL_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         ):
             for patch in self._fallback_patches:
                 draw_decal(patch)
@@ -525,12 +526,12 @@ class GroundRenderer:
         with _maybe_alpha_test(self.alpha_test):
             if self._fallback_corpse_shadow:
                 with _blend_custom_separate(
-                    rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-                    rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-                    rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-                    rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-                    rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-                    rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+                    rd.RL_ZERO,
+                    rd.RL_ONE_MINUS_SRC_ALPHA,
+                    rd.RL_ZERO,
+                    rd.RL_ONE,
+                    rd.RL_FUNC_ADD,
+                    rd.RL_FUNC_ADD,
                 ):
                     for decal in self._fallback_corpse_decals:
                         src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
@@ -541,12 +542,12 @@ class GroundRenderer:
                         draw_corpse(size, pivot, rotation_deg, tint, src)
 
             with _blend_custom_separate(
-                rl.RL_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-                rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-                rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-                rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-                rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-                rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+                rd.RL_SRC_ALPHA,
+                rd.RL_ONE_MINUS_SRC_ALPHA,
+                rd.RL_ZERO,
+                rd.RL_ONE,
+                rd.RL_FUNC_ADD,
+                rd.RL_FUNC_ADD,
             ):
                 for decal in self._fallback_corpse_decals:
                     src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
@@ -599,7 +600,7 @@ class GroundRenderer:
             rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
-        with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):  # ty: ignore[unresolved-attribute]
+        with _blend_custom(rd.RL_ONE, rd.RL_ZERO, rd.RL_FUNC_ADD):
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
@@ -762,12 +763,12 @@ class GroundRenderer:
         offset: float,
     ) -> None:
         with _blend_custom_separate(
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+            rd.RL_ZERO,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         ):
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
@@ -799,12 +800,12 @@ class GroundRenderer:
         offset: float,
     ) -> None:
         with _blend_custom_separate(
-            rl.RL_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE_MINUS_SRC_ALPHA,  # ty: ignore[unresolved-attribute]
-            rl.RL_ZERO,  # ty: ignore[unresolved-attribute]
-            rl.RL_ONE,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
-            rl.RL_FUNC_ADD,  # ty: ignore[unresolved-attribute]
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_ZERO,
+            rd.RL_ONE,
+            rd.RL_FUNC_ADD,
+            rd.RL_FUNC_ADD,
         ):
             for decal in decals:
                 src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
