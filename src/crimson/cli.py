@@ -264,14 +264,19 @@ def cmd_replay_verify(
         "--strict-events/--lenient-events",
         help="fail on unsupported replay events/perk picks (default: lenient)",
     ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="include presentation RNG draw marks in verification checkpoints",
+    ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    from dataclasses import asdict
     import hashlib
 
     from .game_modes import GameMode
     from .replay import load_replay
     from .replay.checkpoints import default_checkpoints_path, load_checkpoints_file
+    from .replay.diff import compare_checkpoints
     from .sim.runners import ReplayRunnerError, run_rush_replay, run_survival_replay
 
     replay_bytes = Path(replay_file).read_bytes()
@@ -302,6 +307,7 @@ def cmd_replay_verify(
                 replay,
                 max_ticks=max_ticks,
                 strict_events=bool(strict_events),
+                trace_rng=bool(trace_rng),
                 checkpoints_out=actual,
                 checkpoint_ticks=checkpoint_ticks,
             )
@@ -309,6 +315,7 @@ def cmd_replay_verify(
             result = run_rush_replay(
                 replay,
                 max_ticks=max_ticks,
+                trace_rng=bool(trace_rng),
                 checkpoints_out=actual,
                 checkpoint_ticks=checkpoint_ticks,
             )
@@ -319,72 +326,21 @@ def cmd_replay_verify(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
-    first_rng_only_tick: int | None = None
-    rng_mark_order = (
-        "before_world_step",
-        "gw_begin",
-        "gw_after_weapon_refresh",
-        "gw_after_perks_rebuild",
-        "gw_after_time_scale",
-        "ws_begin",
-        "ws_after_perk_effects",
-        "ws_after_effects_update",
-        "ws_after_creatures",
-        "ws_after_projectiles",
-        "ws_after_secondary_projectiles",
-        "ws_after_particles_update",
-        "ws_after_sprite_effects",
-        "ws_after_particles",
-        "ws_after_player_update_p0",
-        "ws_after_player_update",
-        "ws_after_bonus_update",
-        "ws_after_progression",
-        "ws_after_sfx_queue_merge",
-        "ws_after_player_damage_sfx",
-        "ws_after_sfx",
-        "after_world_step",
-        "after_stage_spawns",
-        "after_wave_spawns",
-        "after_rush_spawns",
-    )
-    for exp in expected.checkpoints:
-        act = actual_by_tick.get(int(exp.tick_index))
-        if act is None:
-            typer.echo(f"checkpoint missing at tick={int(exp.tick_index)}", err=True)
-            raise typer.Exit(code=1)
-        if str(exp.state_hash) != str(act.state_hash):
-            exp_no_rng = asdict(exp)
-            act_no_rng = asdict(act)
-            for key in ("state_hash", "rng_state", "rng_marks"):
-                exp_no_rng.pop(key, None)
-                act_no_rng.pop(key, None)
-            # Legacy sidecars (without `events`) store unknown sentinel values.
-            if int(exp.events.hit_count) < 0:
-                exp_no_rng["events"] = act_no_rng.get("events")
-            if exp_no_rng == act_no_rng:
-                if first_rng_only_tick is None:
-                    first_rng_only_tick = int(exp.tick_index)
-                continue
+    diff = compare_checkpoints(expected.checkpoints, actual)
+    if not diff.ok:
+        failure = diff.failure
+        assert failure is not None
+        exp = failure.expected
+        act = failure.actual
 
-            typer.echo(f"checkpoint mismatch at tick={int(exp.tick_index)}", err=True)
-            typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
-            typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
-            typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
-            typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
-            typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
-            typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
-            mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
-            mark_mismatch = [key for key in mark_keys if int(exp.rng_marks.get(key, -1)) != int(act.rng_marks.get(key, -1))]
-            if mark_mismatch:
-                first = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0])
-                typer.echo(
-                    f"  rng_mark[{first}] expected={exp.rng_marks.get(first)} actual={act.rng_marks.get(first)}",
-                    err=True,
-                )
-            typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
-            if exp.deaths or act.deaths:
-                typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        if failure.kind == "missing_checkpoint":
+            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
+            raise typer.Exit(code=1)
+
+        if failure.kind == "command_mismatch":
+            assert act is not None
+            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
+            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
             if int(exp.events.hit_count) >= 0:
                 typer.echo(
                     "  events "
@@ -392,22 +348,290 @@ def cmd_replay_verify(
                     f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
                     err=True,
                 )
-            if exp.perk != act.perk:
-                typer.echo(
-                    "  perk snapshot differs "
-                    f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
-                    f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
-                    err=True,
-                )
             raise typer.Exit(code=1)
+
+        assert act is not None
+        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+        if failure.first_rng_mark is not None:
+            key = str(failure.first_rng_mark)
+            typer.echo(
+                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
+                err=True,
+            )
+        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+        if exp.deaths or act.deaths:
+            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        if int(exp.events.hit_count) >= 0:
+            typer.echo(
+                "  events "
+                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                err=True,
+            )
+        if exp.perk != act.perk:
+            typer.echo(
+                "  perk snapshot differs "
+                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                err=True,
+            )
+        raise typer.Exit(code=1)
 
     message = (
         f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
         f"score_xp={result.score_xp} kills={result.creature_kill_count}"
     )
-    if first_rng_only_tick is not None:
-        message += f"; rng-only drift starts at tick={first_rng_only_tick}"
+    if diff.first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
     typer.echo(message)
+
+
+@replay_app.command("diff-checkpoints")
+def cmd_replay_diff_checkpoints(
+    expected_file: Path = typer.Argument(..., help="expected checkpoints sidecar (.json.gz)"),
+    actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.json.gz)"),
+) -> None:
+    """Compare two checkpoint sidecars and report the first divergence."""
+    from .replay.checkpoints import load_checkpoints_file
+    from .replay.diff import compare_checkpoints
+
+    expected = load_checkpoints_file(Path(expected_file))
+    actual = load_checkpoints_file(Path(actual_file))
+    diff = compare_checkpoints(expected.checkpoints, actual.checkpoints)
+    if not diff.ok:
+        failure = diff.failure
+        assert failure is not None
+        exp = failure.expected
+        act = failure.actual
+
+        if failure.kind == "missing_checkpoint":
+            typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
+            raise typer.Exit(code=1)
+
+        if failure.kind == "command_mismatch":
+            assert act is not None
+            typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
+            typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
+            if int(exp.events.hit_count) >= 0:
+                typer.echo(
+                    "  events "
+                    f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                    f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                    err=True,
+                )
+            raise typer.Exit(code=1)
+
+        assert act is not None
+        typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
+        typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+        typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
+        typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
+        typer.echo(f"  creature_count expected={exp.creature_count} actual={act.creature_count}", err=True)
+        typer.echo(f"  perk_pending expected={exp.perk_pending} actual={act.perk_pending}", err=True)
+        if failure.first_rng_mark is not None:
+            key = str(failure.first_rng_mark)
+            typer.echo(
+                f"  rng_mark[{key}] expected={exp.rng_marks.get(key)} actual={act.rng_marks.get(key)}",
+                err=True,
+            )
+        typer.echo(f"  deaths expected={len(exp.deaths)} actual={len(act.deaths)}", err=True)
+        if exp.deaths or act.deaths:
+            typer.echo(f"  first death expected={exp.deaths[:1]} actual={act.deaths[:1]}", err=True)
+        if int(exp.events.hit_count) >= 0:
+            typer.echo(
+                "  events "
+                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
+                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
+                err=True,
+            )
+        if exp.perk != act.perk:
+            typer.echo(
+                "  perk snapshot differs "
+                f"(expected pending={exp.perk.pending_count} choices={exp.perk.choices}, "
+                f"actual pending={act.perk.pending_count} choices={act.perk.choices})",
+                err=True,
+            )
+        raise typer.Exit(code=1)
+
+    message = f"ok: {len(expected.checkpoints)} checkpoints match"
+    if diff.first_rng_only_tick is not None:
+        message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
+    typer.echo(message)
+
+
+@replay_app.command("verify-original-capture")
+def cmd_replay_verify_original_capture(
+    capture_file: Path = typer.Argument(
+        ...,
+        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+    ),
+    max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full capture)"),
+    seed: int | None = typer.Option(
+        None,
+        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
+    ),
+    strict_events: bool = typer.Option(
+        False,
+        "--strict-events/--lenient-events",
+        help="fail on unsupported replay events/perk picks (default: lenient)",
+    ),
+    trace_rng: bool = typer.Option(
+        False,
+        "--trace-rng",
+        help="include presentation RNG draw marks in generated checkpoints",
+    ),
+    max_field_diffs: int = typer.Option(
+        16,
+        "--max-field-diffs",
+        min=1,
+        help="max field-level diffs to print for first mismatching tick",
+    ),
+    float_abs_tol: float = typer.Option(
+        0.001,
+        "--float-abs-tol",
+        min=0.0,
+        help="absolute tolerance for float field comparisons",
+    ),
+) -> None:
+    """Verify original-capture ticks directly against rewrite simulation state."""
+    from .replay.original_capture import load_original_capture_sidecar
+    from .replay.original_capture_verify import (
+        OriginalCaptureVerifyError,
+        verify_original_capture,
+    )
+    from .sim.runners import ReplayRunnerError
+
+    capture = load_original_capture_sidecar(Path(capture_file))
+
+    try:
+        result, run_result = verify_original_capture(
+            capture,
+            seed=seed,
+            max_ticks=max_ticks,
+            strict_events=bool(strict_events),
+            trace_rng=bool(trace_rng),
+            max_field_diffs=int(max_field_diffs),
+            float_abs_tol=float(float_abs_tol),
+        )
+    except (ReplayRunnerError, OriginalCaptureVerifyError) as exc:
+        typer.echo(f"original-capture verification failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    if not result.ok:
+        failure = result.failure
+        assert failure is not None
+        typer.echo(f"capture mismatch at tick={int(failure.tick_index)}", err=True)
+        typer.echo(
+            "  note: compared checkpoint state fields only "
+            "(ignoring command_hash/state_hash/rng_state/rng_marks domains)",
+            err=True,
+        )
+        if result.elapsed_baseline_tick is not None and result.elapsed_offset_ms is not None:
+            typer.echo(
+                "  elapsed baseline "
+                f"tick={result.elapsed_baseline_tick} offset_ms(actual-expected)={result.elapsed_offset_ms}",
+                err=True,
+            )
+
+        if failure.kind == "missing_checkpoint":
+            typer.echo("  checkpoint missing in rewrite output", err=True)
+            typer.echo(
+                f"  checked={result.checked_count}/{result.expected_count} actual_samples={result.actual_count}",
+                err=True,
+            )
+            typer.echo(
+                "  run_result "
+                f"ticks={run_result.ticks} score_xp={run_result.score_xp} kills={run_result.creature_kill_count}",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        assert failure.actual is not None
+        if not failure.field_diffs:
+            typer.echo("  mismatch detected but no detailed field diff was collected", err=True)
+        else:
+            for field_diff in failure.field_diffs:
+                typer.echo(
+                    f"  {field_diff.field}: expected={field_diff.expected!r} actual={field_diff.actual!r}",
+                    err=True,
+                )
+        typer.echo(
+            "  run_result "
+            f"ticks={run_result.ticks} score_xp={run_result.score_xp} kills={run_result.creature_kill_count}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    message = (
+        f"ok: {result.checked_count} capture checkpoints match "
+        f"(state fields); ticks={run_result.ticks} score_xp={run_result.score_xp} "
+        f"kills={run_result.creature_kill_count}"
+    )
+    if result.elapsed_baseline_tick is not None and result.elapsed_offset_ms is not None:
+        message += (
+            f"; elapsed baseline tick={result.elapsed_baseline_tick} "
+            f"offset_ms(actual-expected)={result.elapsed_offset_ms}"
+        )
+    typer.echo(message)
+
+
+@replay_app.command("convert-original-capture")
+def cmd_replay_convert_original_capture(
+    capture_file: Path = typer.Argument(
+        ...,
+        help="original capture sidecar (.json/.json.gz) or raw gameplay trace (.jsonl/.jsonl.gz)",
+    ),
+    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.json.gz)"),
+    replay_file: Path | None = typer.Option(
+        None,
+        "--replay",
+        help="output replay path (.crdemo.gz); default: derive from checkpoints path",
+    ),
+    replay_sha256: str = typer.Option(
+        "",
+        help="optional replay sha256 to store in the converted sidecar",
+    ),
+    seed: int | None = typer.Option(
+        None,
+        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
+    ),
+) -> None:
+    """Convert original-capture data into replay + checkpoint artifacts."""
+    import hashlib
+
+    from .replay import dump_replay
+    from .replay.checkpoints import dump_checkpoints_file
+    from .replay.original_capture import (
+        convert_original_capture_to_checkpoints,
+        convert_original_capture_to_replay,
+        default_original_capture_replay_path,
+        load_original_capture_sidecar,
+    )
+
+    capture = load_original_capture_sidecar(Path(capture_file))
+    replay = convert_original_capture_to_replay(capture, seed=seed)
+    replay_path = (
+        Path(replay_file) if replay_file is not None else default_original_capture_replay_path(Path(output_file))
+    )
+    replay_blob = dump_replay(replay)
+    replay_path.write_bytes(replay_blob)
+    digest = hashlib.sha256(replay_blob).hexdigest()
+
+    checkpoints = convert_original_capture_to_checkpoints(
+        capture,
+        replay_sha256=str(replay_sha256 or digest),
+    )
+    dump_checkpoints_file(Path(output_file), checkpoints)
+    typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
+    typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
+    typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
 
 
 @app.callback(invoke_without_command=True)

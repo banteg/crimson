@@ -1,33 +1,38 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Callable
+from dataclasses import dataclass, field
 
-from grim.color import RGBA
 from grim.geom import Vec2
 
-from ..bonuses import BonusId
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage
-from ..creatures.runtime import CreatureDeath, CreaturePool
-from ..creatures.runtime import CREATURE_HITBOX_ALIVE
+from ..creatures.runtime import CREATURE_HITBOX_ALIVE, CreatureDeath, CreaturePool
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
+from ..features.bonuses import emit_bonus_pickup_effects
+from ..features.perks import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..gameplay import (
     BonusPickupEvent,
     GameplayState,
     PlayerInput,
     PlayerState,
     bonus_update,
-    perk_active,
+    bonus_update_pre_pickup_timers,
     perks_update_effects,
     player_update,
     survival_progression_update,
 )
-from ..perks import PerkId
 from ..player_damage import player_take_projectile_damage
 from ..projectiles import ProjectileHit
+from .input_frame import normalize_input_frame
+from .presentation_step import (
+    ProjectileDecalPostCtx,
+    plan_death_sfx_keys,
+    plan_hit_sfx_keys,
+    queue_projectile_decals_post_hit,
+    queue_projectile_decals_pre_hit,
+)
 from .world_defs import CREATURE_ANIM
 
 
@@ -37,103 +42,13 @@ class WorldEvents:
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
     sfx: list[str]
+    trigger_game_tune: bool = False
+    hit_sfx: list[str] = field(default_factory=list)
+    death_sfx_preplanned: bool = False
 
 
-@dataclass(slots=True)
-class _WorldDtCtx:
-    dt: float
-    players: list[PlayerState]
-
-
-_WorldDtStep = Callable[[_WorldDtCtx], None]
-
-
-def _world_dt_reflex_boosted(ctx: _WorldDtCtx) -> None:
-    if ctx.dt > 0.0 and ctx.players and perk_active(ctx.players[0], PerkId.REFLEX_BOOSTED):
-        ctx.dt *= 0.9
-
-
-_WORLD_DT_STEPS: tuple[_WorldDtStep, ...] = (_world_dt_reflex_boosted,)
-
-
-@dataclass(slots=True)
-class _PlayerDeathCtx:
-    state: GameplayState
-    creatures: CreaturePool
-    players: list[PlayerState]
-    player_index: int
-    player: PlayerState
-    dt: float
-    world_size: float
-    detail_preset: int
-    fx_queue: FxQueue
-    deaths: list[CreatureDeath]
-
-
-_PlayerDeathHook = Callable[[_PlayerDeathCtx], None]
-
-
-def _player_death_final_revenge(ctx: _PlayerDeathCtx) -> None:
-    player = ctx.player
-    if not perk_active(player, PerkId.FINAL_REVENGE):
-        return
-
-    player_pos = player.pos
-    rand = ctx.state.rng.rand
-    ctx.state.effects.spawn_explosion_burst(
-        pos=player_pos,
-        scale=1.8,
-        rand=rand,
-        detail_preset=int(ctx.detail_preset),
-    )
-
-    prev_guard = bool(ctx.state.bonus_spawn_guard)
-    ctx.state.bonus_spawn_guard = True
-    for creature_idx, creature in enumerate(ctx.creatures.entries):
-        if not creature.active:
-            continue
-        if float(creature.hp) <= 0.0:
-            continue
-
-        delta = creature.pos - player_pos
-        if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:
-            continue
-
-        remaining = 512.0 - delta.length()
-        if remaining <= 0.0:
-            continue
-
-        damage = remaining * 5.0
-        death_start_needed = float(creature.hp) > 0.0 and float(creature.hitbox_size) == CREATURE_HITBOX_ALIVE
-        killed = creature_apply_damage(
-            creature,
-            damage_amount=damage,
-            damage_type=3,
-            impulse=Vec2(),
-            owner_id=-1 - int(player.index),
-            dt=float(ctx.dt),
-            players=ctx.players,
-            rand=rand,
-        )
-        if killed and death_start_needed:
-            ctx.deaths.append(
-                ctx.creatures.handle_death(
-                    int(creature_idx),
-                    state=ctx.state,
-                    players=ctx.players,
-                    rand=rand,
-                    detail_preset=int(ctx.detail_preset),
-                    world_width=float(ctx.world_size),
-                    world_height=float(ctx.world_size),
-                    fx_queue=ctx.fx_queue,
-                )
-            )
-    ctx.state.bonus_spawn_guard = prev_guard
-    ctx.state.sfx_queue.append("sfx_explosion_large")
-    ctx.state.sfx_queue.append("sfx_shockwave")
-
-
-_PLAYER_DEATH_HOOKS: tuple[_PlayerDeathHook, ...] = (_player_death_final_revenge,)
+_WORLD_DT_STEPS = WORLD_DT_STEPS
+_PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
 @dataclass(slots=True)
@@ -181,11 +96,13 @@ class WorldState:
         world_size: float,
         damage_scale_by_type: dict[int, float],
         detail_preset: int,
+        fx_toggle: int = 0,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         auto_pick_perks: bool,
         game_mode: int,
         perk_progression_enabled: bool,
+        game_tune_started: bool = False,
         rng_marks: dict[str, int] | None = None,
     ) -> WorldEvents:
         def _mark(name: str) -> None:
@@ -193,14 +110,11 @@ class WorldState:
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
 
-        dt_ctx = _WorldDtCtx(dt=float(dt), players=self.players)
+        dt = float(dt)
         for step in _WORLD_DT_STEPS:
-            step(dt_ctx)
-        dt = float(dt_ctx.dt)
+            dt = float(step(dt=dt, players=self.players))
         _mark("ws_begin")
-
-        if inputs is None:
-            inputs = [PlayerInput() for _ in self.players]
+        inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
 
         prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
@@ -237,6 +151,25 @@ class WorldState:
         _mark("ws_after_creatures")
 
         deaths = list(creature_result.deaths)
+        planned_death_sfx: list[str] = []
+        planned_death_sfx_cap = 3
+
+        def _plan_death_sfx_now(death: CreatureDeath) -> None:
+            if len(planned_death_sfx) >= planned_death_sfx_cap:
+                return
+            keys = plan_death_sfx_keys([death], rand=self.state.rng.rand)
+            if not keys:
+                return
+            remain = int(planned_death_sfx_cap) - len(planned_death_sfx)
+            if remain <= 0:
+                return
+            planned_death_sfx.extend(keys[:remain])
+
+        for death in deaths:
+            _plan_death_sfx_now(death)
+        trigger_game_tune = False
+        hit_sfx: list[str] = []
+        hit_audio_game_tune_started = bool(game_tune_started)
 
         def _apply_projectile_damage_to_creature(
             creature_index: int,
@@ -264,18 +197,48 @@ class WorldState:
                 rand=self.state.rng.rand,
             )
             if killed and death_start_needed:
-                deaths.append(
-                    self.creatures.handle_death(
-                        idx,
-                        state=self.state,
-                        players=self.players,
-                        rand=self.state.rng.rand,
-                        detail_preset=int(detail_preset),
-                        world_width=float(world_size),
-                        world_height=float(world_size),
-                        fx_queue=fx_queue,
-                    )
+                death = self.creatures.handle_death(
+                    idx,
+                    state=self.state,
+                    players=self.players,
+                    rand=self.state.rng.rand,
+                    dt=float(dt),
+                    detail_preset=int(detail_preset),
+                    world_width=float(world_size),
+                    world_height=float(world_size),
+                    fx_queue=fx_queue,
                 )
+                deaths.append(death)
+                _plan_death_sfx_now(death)
+
+        def _on_projectile_hit_pre(hit: ProjectileHit) -> ProjectileDecalPostCtx:
+            return self._prepare_projectile_hit_presentation(
+                hit=hit,
+                fx_queue=fx_queue,
+                detail_preset=int(detail_preset),
+                fx_toggle=int(fx_toggle),
+            )
+
+        def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
+            nonlocal trigger_game_tune, hit_audio_game_tune_started
+            if not isinstance(post_ctx, ProjectileDecalPostCtx):
+                return
+            self._finalize_projectile_hit_presentation(
+                post_ctx=post_ctx,
+                fx_queue=fx_queue,
+            )
+            hit_trigger, keys = plan_hit_sfx_keys(
+                [_hit],
+                game_mode=int(game_mode),
+                demo_mode_active=bool(self.state.demo_mode_active),
+                game_tune_started=bool(hit_audio_game_tune_started),
+                rand=self.state.rng.rand,
+            )
+            if hit_trigger:
+                trigger_game_tune = True
+                hit_audio_game_tune_started = True
+            if keys:
+                hit_sfx.extend(keys)
 
         hits = self.state.projectiles.update(
             dt,
@@ -288,8 +251,11 @@ class WorldState:
             players=self.players,
             apply_player_damage=_apply_projectile_damage_to_player,
             apply_creature_damage=_apply_projectile_damage_to_creature,
+            on_hit=_on_projectile_hit_pre,
+            on_hit_post=_on_projectile_hit_post,
         )
         _mark("ws_after_projectiles")
+        _mark("ws_after_hit_sfx")
         self.state.secondary_projectiles.update_pulse_gun(
             dt,
             self.creatures.entries,
@@ -307,20 +273,18 @@ class WorldState:
                 continue
             if float(player.health) >= 0.0:
                 continue
-            death_ctx = _PlayerDeathCtx(
-                state=self.state,
-                creatures=self.creatures,
-                players=self.players,
-                player_index=int(idx),
-                player=player,
-                dt=float(dt),
-                world_size=float(world_size),
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                deaths=deaths,
-            )
             for hook in _PLAYER_DEATH_HOOKS:
-                hook(death_ctx)
+                hook(
+                    state=self.state,
+                    creatures=self.creatures,
+                    players=self.players,
+                    player=player,
+                    dt=float(dt),
+                    world_size=float(world_size),
+                    detail_preset=int(detail_preset),
+                    fx_queue=fx_queue,
+                    deaths=deaths,
+                )
 
         def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
             idx = int(creature_index)
@@ -333,19 +297,20 @@ class WorldState:
                 return
 
             creature.last_hit_owner_id = int(owner_id)
-            deaths.append(
-                self.creatures.handle_death(
-                    idx,
-                    state=self.state,
-                    players=self.players,
-                    rand=self.state.rng.rand,
-                    detail_preset=int(detail_preset),
-                    world_width=float(world_size),
-                    world_height=float(world_size),
-                    fx_queue=fx_queue,
-                    keep_corpse=False,
-                )
+            death = self.creatures.handle_death(
+                idx,
+                state=self.state,
+                players=self.players,
+                rand=self.state.rng.rand,
+                dt=float(dt),
+                detail_preset=int(detail_preset),
+                world_width=float(world_size),
+                world_height=float(world_size),
+                fx_queue=fx_queue,
+                keep_corpse=False,
             )
+            deaths.append(death)
+            _plan_death_sfx_now(death)
 
         self.state.particles.update(
             dt,
@@ -359,6 +324,7 @@ class WorldState:
         self.state.sprite_effects.update(dt)
         _mark("ws_after_sprite_effects")
         _mark("ws_after_particles")
+        _mark("ws_after_death_sfx")
 
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
@@ -380,6 +346,7 @@ class WorldState:
             self._advance_player_anim(dt, prev_positions)
 
         camera_shake_update(self.state, dt)
+        bonus_update_pre_pickup_timers(self.state, dt)
 
         pickups = bonus_update(
             self.state,
@@ -391,29 +358,11 @@ class WorldState:
             detail_preset=int(detail_preset),
         )
         if pickups:
-            for pickup in pickups:
-                if pickup.bonus_id != int(BonusId.NUKE):
-                    self.state.effects.spawn_burst(
-                        pos=pickup.pos,
-                        count=12,
-                        rand=self.state.rng.rand,
-                        detail_preset=detail_preset,
-                        lifetime=0.4,
-                        scale_step=0.1,
-                        color=RGBA(0.4, 0.5, 1.0, 0.5),
-                    )
-                if pickup.bonus_id == int(BonusId.REFLEX_BOOST):
-                    self.state.effects.spawn_ring(
-                        pos=pickup.pos,
-                        detail_preset=detail_preset,
-                        color=RGBA(0.6, 0.6, 1.0, 1.0),
-                    )
-                elif pickup.bonus_id == int(BonusId.FREEZE):
-                    self.state.effects.spawn_ring(
-                        pos=pickup.pos,
-                        detail_preset=detail_preset,
-                        color=RGBA(0.3, 0.5, 0.8, 1.0),
-                    )
+            emit_bonus_pickup_effects(
+                state=self.state,
+                pickups=pickups,
+                detail_preset=int(detail_preset),
+            )
         _mark("ws_after_bonus_update")
 
         if perk_progression_enabled:
@@ -427,32 +376,56 @@ class WorldState:
             )
         _mark("ws_after_progression")
 
-        sfx = list(creature_result.sfx)
+        sfx = list(planned_death_sfx)
+        sfx.extend(creature_result.sfx)
         if self.state.sfx_queue:
             sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
         _mark("ws_after_sfx_queue_merge")
-        pain_sfx = ("sfx_trooper_inpain_01", "sfx_trooper_inpain_02", "sfx_trooper_inpain_03")
-        death_sfx = ("sfx_trooper_die_01", "sfx_trooper_die_02")
-        rand = self.state.rng.rand
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_health):
-                continue
-            before = float(prev_health[idx])
-            after = float(player.health)
-            if after >= before - 1e-6:
-                continue
-            if before <= 0.0:
-                continue
-            if after <= 0.0:
-                # Prioritize death VO even if there are many other SFX this frame.
-                sfx.insert(0, death_sfx[int(rand()) & 1])
-            else:
-                sfx.append(pain_sfx[int(rand()) % len(pain_sfx)])
+        # Player-damage VO RNG work lives inside `player_take_damage` for native
+        # ordering parity (VO draw before heading-jitter draw).
         _mark("ws_after_player_damage_sfx")
         _mark("ws_after_sfx")
 
-        return WorldEvents(hits=hits, deaths=tuple(deaths), pickups=pickups, sfx=sfx)
+        return WorldEvents(
+            hits=hits,
+            deaths=tuple(deaths),
+            pickups=pickups,
+            sfx=sfx,
+            trigger_game_tune=bool(trigger_game_tune),
+            hit_sfx=hit_sfx,
+            death_sfx_preplanned=True,
+        )
+
+    def _prepare_projectile_hit_presentation(
+        self,
+        hit: ProjectileHit,
+        *,
+        fx_queue: FxQueue,
+        detail_preset: int,
+        fx_toggle: int,
+    ) -> ProjectileDecalPostCtx:
+        return queue_projectile_decals_pre_hit(
+            state=self.state,
+            players=self.players,
+            fx_queue=fx_queue,
+            hit=hit,
+            rand=self.state.rng.rand,
+            detail_preset=int(detail_preset),
+            fx_toggle=int(fx_toggle),
+        )
+
+    def _finalize_projectile_hit_presentation(
+        self,
+        *,
+        post_ctx: ProjectileDecalPostCtx,
+        fx_queue: FxQueue,
+    ) -> None:
+        queue_projectile_decals_post_hit(
+            fx_queue=fx_queue,
+            post_ctx=post_ctx,
+            rand=self.state.rng.rand,
+        )
 
     def _advance_creature_anim(self, dt: float) -> None:
         if float(self.state.bonuses.freeze) > 0.0:

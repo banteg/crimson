@@ -6,9 +6,11 @@ from dataclasses import dataclass
 
 import pytest
 
+from crimson.effects import FxQueue
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState, PlayerState
 from crimson.creatures.runtime import CREATURE_HITBOX_ALIVE, CreaturePool
-from crimson.creatures.spawn import SpawnEnv, SpawnSlotInit, build_spawn_plan
+from crimson.creatures.spawn import CreatureFlags, CreatureInit, CreatureTypeId, SpawnEnv, SpawnSlotInit, build_spawn_plan
 from crimson.weapons import WeaponId
 from grim.rand import Crand
 
@@ -164,3 +166,229 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert death.xp_awarded == 10
     assert player.experience == 10
     assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+
+
+def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
+    state = GameplayState()
+    state.game_mode = int(GameMode.RUSH)
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 0.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    fx_queue = FxQueue()
+    calls = 0
+    orig_add_random = fx_queue.add_random
+
+    def _add_random(**kwargs):  # noqa: ANN003
+        nonlocal calls
+        calls += 1
+        return orig_add_random(**kwargs)
+
+    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=fx_queue,
+    )
+
+    assert calls == 0
+
+
+def test_handle_death_freeze_enqueues_fx_queue_random_once() -> None:
+    state = GameplayState()
+    state.game_mode = int(GameMode.RUSH)
+    state.bonuses.freeze = 1.0
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 0.0
+    creature.pos = Vec2(100.0, 100.0)
+
+    fx_queue = FxQueue()
+    calls = 0
+    orig_add_random = fx_queue.add_random
+
+    def _add_random(**kwargs):  # noqa: ANN003
+        nonlocal calls
+        calls += 1
+        return orig_add_random(**kwargs)
+
+    fx_queue.add_random = _add_random  # type: ignore[method-assign]
+
+    pool.handle_death(
+        0,
+        state=state,
+        players=[player],
+        rand=state.rng.rand,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=fx_queue,
+    )
+
+    assert calls == 1
+
+
+def test_spawn_inits_resets_native_spawn_state_fields() -> None:
+    pool = CreaturePool()
+    (idx,) = pool.spawn_inits(
+        [
+            CreatureInit(
+                origin_template_id=0x99,
+                pos=Vec2(100.0, 200.0),
+                heading=0.75,
+                phase_seed=10.0,
+                type_id=CreatureTypeId.ALIEN,
+                health=40.0,
+                max_health=40.0,
+                move_speed=2.0,
+                reward_value=12.0,
+                size=45.0,
+                contact_damage=6.0,
+            )
+        ]
+    )
+    entry = pool.entries[idx]
+
+    assert entry.active is True
+    assert entry.vel == Vec2()
+    assert entry.force_target == 0
+    assert entry.attack_cooldown == pytest.approx(0.0, abs=1e-9)
+    assert entry.collision_timer == pytest.approx(0.0, abs=1e-9)
+    assert entry.hit_flash_timer == pytest.approx(0.0, abs=1e-9)
+    assert entry.anim_phase == pytest.approx(0.0, abs=1e-9)
+    assert entry.last_hit_owner_id == -100
+
+
+def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
+    pool = CreaturePool()
+    pool.entries[0].link_index = -1
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0x75,
+            pos=Vec2(1064.0, 392.0),
+            heading=0.0,
+            phase_seed=0.0,
+            type_id=CreatureTypeId.SPIDER_SP1,
+            flags=CreatureFlags.AI7_LINK_TIMER,
+            ai_mode=0,
+            health=54.0,
+            max_health=54.0,
+            move_speed=1.17,
+            reward_value=0.0,
+            size=56.0,
+            contact_damage=5.0,
+        )
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].link_index == -1
+
+
+def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
+    pool = CreaturePool()
+    pool.entries[0].link_index = -1
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0x38,
+            pos=Vec2(1064.0, 392.0),
+            heading=0.0,
+            phase_seed=0.0,
+            type_id=CreatureTypeId.SPIDER_SP1,
+            flags=CreatureFlags.AI7_LINK_TIMER,
+            ai_mode=0,
+            ai_timer=0,
+            health=50.0,
+            max_health=50.0,
+            move_speed=4.8,
+            reward_value=433.0,
+            size=43.0,
+            contact_damage=10.0,
+        )
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].link_index == 0
+
+
+def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> None:
+    pool = CreaturePool()
+    corpse = pool.entries[6]
+    corpse.active = True
+    corpse.hp = -231.675
+    corpse.hitbox_size = -9.656
+    corpse.pos = Vec2(588.6516, 379.7685)
+    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+
+    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+        corpse,
+        dt=0.018,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+
+    assert corpse.active is True
+    assert corpse.hitbox_size == pytest.approx(-10.016, abs=1e-6)
+
+    pool.finalize_post_render_lifecycle()
+    assert corpse.active is False
+
+
+def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
+    pool = CreaturePool(size=24)
+    for idx in range(22):
+        entry = pool.entries[idx]
+        entry.active = True
+        entry.hp = 1.0
+        entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.pos = Vec2(float(idx), 0.0)
+
+    corpse = pool.entries[6]
+    corpse.hp = -231.675
+    corpse.hitbox_size = -9.656
+    corpse.pos = Vec2(588.6516, 379.7685)
+    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+
+    pool.entries[22].active = False
+    pool.entries[22].hitbox_size = -10.21
+    pool.entries[22].hp = -45.9623
+
+    pool._tick_dead(  # noqa: SLF001 - validate native timing detail.
+        corpse,
+        dt=0.018,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+    assert pool.entries[6].active is True
+
+    spawned_idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=-1,
+            pos=Vec2(-40.0, 463.0),
+            heading=0.0,
+            phase_seed=17.0,
+            type_id=CreatureTypeId.LIZARD,
+            health=60.6925,
+            max_health=60.6925,
+            move_speed=1.0,
+            reward_value=0.0,
+            size=50.0,
+            contact_damage=4.0,
+        )
+    )
+    assert spawned_idx == 22
+
+    pool.finalize_post_render_lifecycle()
+    assert pool.entries[6].active is False

@@ -27,6 +27,7 @@ from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .spawn import (
     CreatureFlags,
     CreatureInit,
+    CreatureTypeId,
     SpawnEnv,
     SpawnPlan,
     SpawnSlotInit,
@@ -58,12 +59,22 @@ CREATURE_TURN_RATE_SCALE = 4.0 / 3.0
 
 # Native uses hitbox_size as a lifecycle sentinel:
 # - 16.0 means "alive" (normal AI/movement/anim update)
-# - once HP <= 0 it ramps down quickly and drives the death slide + corpse decal timing.
+# - once HP <= 0 it ramps down quickly and drives death slide + corpse decal timing.
+# - final deactivation (`hitbox_size < -10.0`) happens during render (creature_render_type),
+#   not during creature_update_all.
 CREATURE_HITBOX_ALIVE = 16.0
 CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
+
+_CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
+    CreatureTypeId.ZOMBIE: ("sfx_zombie_attack_01", "sfx_zombie_attack_02"),
+    CreatureTypeId.LIZARD: ("sfx_lizard_attack_01", "sfx_lizard_attack_02"),
+    CreatureTypeId.ALIEN: ("sfx_alien_attack_01", "sfx_alien_attack_02"),
+    CreatureTypeId.SPIDER_SP1: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
+    CreatureTypeId.SPIDER_SP2: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
+}
 
 
 class _EffectsForCreatureSpawns(Protocol):
@@ -82,14 +93,37 @@ def _wrap_angle(angle: float) -> float:
 
 
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
-    delta = _wrap_angle(target - current)
-    step_scale = min(1.0, abs(delta))
-    step = float(dt) * step_scale * float(rate)
-    if delta >= 0.0:
-        current += step
+    # Native parity (`angle_approach`, 0x0041f430):
+    # - normalize to [0, 2*pi]
+    # - choose shortest arc using direct/wrap distances
+    # - advance by `frame_dt * min(1, dist) * rate`
+    # - do not re-wrap after the step (next call normalizes again)
+    angle = float(current)
+    target = float(target)
+    tau = 6.2831855
+
+    while angle < 0.0:
+        angle += tau
+    while angle > tau:
+        angle -= tau
+
+    direct = abs(target - angle)
+    hi = target if angle < target else angle
+    lo = target if target < angle else angle
+    wrap = abs((tau - hi) + lo)
+
+    step_scale = direct if direct < wrap else wrap
+    if step_scale > 1.0:
+        step_scale = 1.0
+    step = float(dt) * float(step_scale) * float(rate)
+
+    if direct <= wrap:
+        if angle < target:
+            return angle + step
     else:
-        current -= step
-    return _wrap_angle(current)
+        if target < angle:
+            return angle + step
+    return angle - step
 
 
 def _owner_id_to_player_index(owner_id: int) -> int | None:
@@ -124,7 +158,10 @@ class CreatureState:
     ai_mode: int = 0
     flags: CreatureFlags = CreatureFlags(0)
 
-    link_index: int = 0
+    # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
+    # leave it untouched (notably survival_spawn_creature AI7 spiders), so stale
+    # values can affect early AI7 timer phase.
+    link_index: int = -1
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
@@ -241,6 +278,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             state=ctx.state,
             players=ctx.players,
             rand=ctx.rand,
+            dt=float(ctx.dt),
             detail_preset=int(ctx.detail_preset),
             world_width=float(ctx.world_width),
             world_height=float(ctx.world_height),
@@ -254,21 +292,31 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
+    ctx.contact_dist_sq = Vec2.distance_sq(creature.pos, ctx.player.pos)
+    if creature.hitbox_size != CREATURE_HITBOX_ALIVE:
+        return
+    if float(creature.size) <= 16.0:
+        return
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    creature_pos = creature.pos
-    ctx.contact_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
-    contact_r = (float(creature.size) + float(ctx.player.size)) * 0.25 + 20.0
-    in_contact = ctx.contact_dist_sq <= contact_r * contact_r
-    if not in_contact:
+    if ctx.contact_dist_sq >= 30.0 * 30.0:
+        return
+    if float(ctx.player.health) <= 0.0:
+        return
+    if float(creature.attack_cooldown) > 0.0:
         return
 
-    creature.collision_timer -= ctx.dt
-    if creature.collision_timer >= 0.0:
-        return
-
-    creature.collision_timer += CONTACT_DAMAGE_PERIOD
+    # Native contact-damage path consumes one `crt_rand()` draw for attack SFX
+    # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
+    try:
+        creature_type = CreatureTypeId(int(creature.type_id))
+    except ValueError:
+        creature_type = None
+    if creature_type is not None:
+        options = _CREATURE_CONTACT_SFX.get(creature_type)
+        if options is not None:
+            ctx.sfx.append(options[int(ctx.rand()) & 1])
 
     mr_melee_killed = False
     mr_melee_death_start_needed = False
@@ -297,11 +345,13 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     player_take_damage(ctx.state, ctx.player, float(creature.contact_damage), dt=ctx.dt, rand=ctx.rand)
 
     if ctx.fx_queue is not None:
-        push_dir = (ctx.player.pos - creature_pos).normalized()
+        push_dir = (ctx.player.pos - creature.pos).normalized()
         ctx.fx_queue.add_random(
             pos=ctx.player.pos + push_dir * 3.0,
             rand=ctx.rand,
         )
+
+    creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
 
     if mr_melee_killed and mr_melee_death_start_needed:
         ctx.deaths.append(
@@ -310,6 +360,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                 state=ctx.state,
                 players=ctx.players,
                 rand=ctx.rand,
+                dt=float(ctx.dt),
                 detail_preset=int(ctx.detail_preset),
                 world_width=float(ctx.world_width),
                 world_height=float(ctx.world_height),
@@ -409,7 +460,9 @@ class CreaturePool:
         """Materialize a single `CreatureInit` into the runtime pool."""
 
         idx = self._alloc_slot(rand=rand)
-        entry = CreatureState()
+        # Reuse the allocated slot so fields that native spawn paths do not touch
+        # (e.g. link_index for survival AI7 spiders) retain stale values.
+        entry = self._entries[idx]
         self._apply_init(entry, init)
 
         # Direct init does not have plan-local indices; preserve any raw linkage.
@@ -451,7 +504,8 @@ class CreaturePool:
         # 1) Allocate pool slots for every creature.
         for init in plan.creatures:
             pool_idx = self._alloc_slot(rand=rand)
-            entry = CreatureState()
+            # Reuse the allocated slot so untouched fields keep native-like stale state.
+            entry = self._entries[pool_idx]
             self._apply_init(entry, init)
             self._entries[pool_idx] = entry
             self.spawned_count += 1
@@ -580,6 +634,14 @@ class CreaturePool:
                 continue
 
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
+                # Native still ticks AI7 link-timer state (and its RNG draws) for
+                # dead creatures inside `creature_update_all`.
+                if (
+                    dt > 0.0
+                    and float(state.bonuses.freeze) <= 0.0
+                    and (creature.flags & CreatureFlags.AI7_LINK_TIMER)
+                ):
+                    creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                     creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
                 if dt > 0.0:
@@ -634,6 +696,7 @@ class CreaturePool:
                         state=state,
                         players=players,
                         rand=rand,
+                        dt=float(dt),
                         detail_preset=int(detail_preset),
                         world_width=world_width,
                         world_height=world_height,
@@ -666,6 +729,7 @@ class CreaturePool:
                                 state=state,
                                 players=players,
                                 rand=rand,
+                                dt=float(dt),
                                 detail_preset=int(detail_preset),
                                 world_width=world_width,
                                 world_height=world_height,
@@ -731,6 +795,7 @@ class CreaturePool:
                                 state=state,
                                 players=players,
                                 rand=rand,
+                                dt=float(dt),
                                 world_width=world_width,
                                 world_height=world_height,
                                 fx_queue=fx_queue,
@@ -775,6 +840,13 @@ class CreaturePool:
                         creature.vel = Vec2.from_heading(creature.heading) * speed
                         creature.pos = (creature.pos + creature.vel * dt).clamp_rect(radius, radius, max_x, max_y)
 
+            # Native decrements contact/ranged cooldown before interaction checks,
+            # then lets contact hits raise it back by +1.0 in the same frame.
+            if creature.attack_cooldown <= 0.0:
+                creature.attack_cooldown = 0.0
+            else:
+                creature.attack_cooldown -= dt
+
             interaction_ctx = _CreatureInteractionCtx(
                 pool=self,
                 creature_index=int(idx),
@@ -802,11 +874,6 @@ class CreaturePool:
             if (not frozen_by_evil_eyes) and (creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
                 # around the 0x004276xx ranged-fire branch).
-                if creature.attack_cooldown <= 0.0:
-                    creature.attack_cooldown = 0.0
-                else:
-                    creature.attack_cooldown -= dt
-
                 dist = (creature.pos - player.pos).length()
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
@@ -873,6 +940,7 @@ class CreaturePool:
         state: GameplayState,
         players: list[PlayerState],
         rand: Callable[[], int],
+        dt: float = 0.0,
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
@@ -891,12 +959,12 @@ class CreaturePool:
             detail_preset=int(detail_preset),
             world_width=world_width,
             world_height=world_height,
-            fx_queue=fx_queue,
         )
 
         if keep_corpse:
-            if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
-                creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
+            # Native `creature_handle_death` always decrements hitbox_size by
+            # frame_dt for corpse-keeping deaths, independent of current value.
+            creature.hitbox_size = float(creature.hitbox_size) - float(dt)
         else:
             creature.active = False
 
@@ -917,6 +985,8 @@ class CreaturePool:
                 rand=rand,
                 detail_preset=int(detail_preset),
             )
+            if fx_queue is not None:
+                fx_queue.add_random(pos=creature_pos, rand=rand)
             self.kill_count += 1
             creature.active = False
 
@@ -930,6 +1000,10 @@ class CreaturePool:
         entry.target_heading = float(init.heading)
         entry.target = init.pos
         entry.phase_seed = float(init.phase_seed)
+        # Native spawn paths zero velocity and a few per-frame state fields on every
+        # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
+        entry.vel = Vec2()
+        entry.force_target = 0
 
         entry.flags = init.flags or CreatureFlags(0)
         entry.ai_mode = int(init.ai_mode)
@@ -956,7 +1030,7 @@ class CreaturePool:
         entry.orbit_radius = orbit_radius
 
         entry.spawn_slot_index = None
-        entry.link_index = 0
+        entry.attack_cooldown = 0.0
 
         entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
         entry.bonus_duration_override = int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
@@ -964,8 +1038,11 @@ class CreaturePool:
         entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
 
         entry.plague_infected = False
-        entry.collision_timer = CONTACT_DAMAGE_PERIOD
+        entry.collision_timer = 0.0
         entry.hitbox_size = CREATURE_HITBOX_ALIVE
+        entry.hit_flash_timer = 0.0
+        entry.anim_phase = 0.0
+        entry.last_hit_owner_id = -100
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
@@ -996,8 +1073,6 @@ class CreaturePool:
         hitbox = float(creature.hitbox_size)
         if hitbox <= 0.0:
             creature.hitbox_size = hitbox - float(dt) * CREATURE_CORPSE_FADE_DECAY
-            if creature.hitbox_size < CREATURE_CORPSE_DESPAWN_HITBOX:
-                creature.active = False
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
@@ -1031,6 +1106,23 @@ class CreaturePool:
 
         self.kill_count += 1
 
+    def finalize_post_render_lifecycle(self) -> None:
+        """Mirror render-time corpse culling from native `creature_render_type`.
+
+        Native deactivates entries only after draw once `hitbox_size < -10.0`. Keeping
+        this outside `creature_update_all` preserves slot-allocation timing for same-tick
+        survival/rush spawns.
+        """
+
+        for creature in self._entries:
+            if not creature.active:
+                continue
+            if float(creature.hitbox_size) >= CREATURE_CORPSE_DESPAWN_HITBOX:
+                continue
+            if creature.spawn_slot_index is not None:
+                self._disable_spawn_slot(int(creature.spawn_slot_index))
+            creature.active = False
+
     def _start_death(
         self,
         idx: int,
@@ -1042,10 +1134,7 @@ class CreaturePool:
         detail_preset: int = 5,
         world_width: float,
         world_height: float,
-        fx_queue: FxQueue | None,
     ) -> CreatureDeath:
-        creature.hp = 0.0
-
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
 
@@ -1113,9 +1202,6 @@ class CreaturePool:
                     rand=rand,
                     detail_preset=int(detail_preset),
                 )
-
-        if fx_queue is not None:
-            fx_queue.add_random(pos=creature.pos, rand=rand)
 
         return CreatureDeath(
             index=int(idx),

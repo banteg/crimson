@@ -454,10 +454,8 @@ class FxQueue:
 
     def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool:
         """Port of `fx_queue_add_random` (effect ids 3..7 with grayscale tint)."""
-
-        if self._count >= self._max_count:
-            return False
-
+        # Native `fx_queue_add_random` always consumes RNG even when the queue
+        # is full, then lets `fx_queue_add` fail silently.
         gray = float(int(rand()) & 0xF) * 0.01 + 0.84
         w = float(int(rand()) % 0x18 - 0x0C) + 30.0
         rotation = float(int(rand()) % 0x274) * 0.01

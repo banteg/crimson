@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 import pyray as rl
@@ -9,16 +8,13 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
 from grim.view import ViewContext
 
-from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..gameplay import (
     PlayerInput,
     perk_selection_current_choices,
     perk_selection_pick,
-    perks_rebuild_available,
     weapon_assign_player,
-    weapon_refresh_available,
 )
 from ..replay import (
     PerkMenuOpenEvent,
@@ -30,7 +26,13 @@ from ..replay import (
     unpack_input_flags,
     warn_on_game_version_mismatch,
 )
-from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot, time_scale_reflex_boost_bonus
+from ..replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_original_capture_bootstrap_payload,
+    original_capture_bootstrap_payload_from_event_payload,
+)
+from ..sim.runners.common import build_damage_scale_by_type, status_from_snapshot
+from ..sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -38,19 +40,6 @@ _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
 _SKIP_SHORT_SECONDS = 5.0
 _SKIP_LONG_SECONDS = 30.0
-
-
-@dataclass(slots=True)
-class _SurvivalPlaybackState:
-    elapsed_ms: float = 0.0
-    stage: int = 0
-    spawn_cooldown_ms: float = 0.0
-
-
-@dataclass(slots=True)
-class _RushPlaybackState:
-    elapsed_ms: float = 0.0
-    spawn_cooldown_ms: float = 0.0
 
 
 class ReplayPlaybackMode:
@@ -76,8 +65,8 @@ class ReplayPlaybackMode:
         self._paused = False
         self._speed_index = _DEFAULT_SPEED_INDEX
 
-        self._survival: _SurvivalPlaybackState | None = None
-        self._rush: _RushPlaybackState | None = None
+        self._survival: SurvivalDeterministicSession | None = None
+        self._rush: RushDeterministicSession | None = None
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -134,13 +123,37 @@ class ReplayPlaybackMode:
         self._world = world
 
         if int(replay.header.game_mode_id) == int(GameMode.SURVIVAL):
-            self._survival = _SurvivalPlaybackState()
+            self._survival = SurvivalDeterministicSession(
+                world=world.world_state,
+                world_size=float(world.world_size),
+                damage_scale_by_type=self._damage_scale_by_type,
+                fx_queue=world.fx_queue,
+                fx_queue_rotated=world.fx_queue_rotated,
+                detail_preset=5,
+                fx_toggle=0,
+                game_tune_started=bool(world._game_tune_started),
+                clear_fx_queues_each_tick=False,
+            )
             self._rush = None
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
-            if replay.events:
+            if any(
+                not (isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND)
+                for event in replay.events
+            ):
                 raise ValueError("rush replay does not support events")
             self._survival = None
-            self._rush = _RushPlaybackState()
+            self._rush = RushDeterministicSession(
+                world=world.world_state,
+                world_size=float(world.world_size),
+                damage_scale_by_type=self._damage_scale_by_type,
+                fx_queue=world.fx_queue,
+                fx_queue_rotated=world.fx_queue_rotated,
+                detail_preset=5,
+                fx_toggle=0,
+                game_tune_started=bool(world._game_tune_started),
+                clear_fx_queues_each_tick=False,
+                enforce_loadout=self._enforce_rush_loadout,
+            )
             self._enforce_rush_loadout()
         else:
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.header.game_mode_id)}")
@@ -199,6 +212,19 @@ class ReplayPlaybackMode:
                     raise ValueError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
             if isinstance(event, UnknownEvent):
+                if str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+                    payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+                    if payload is None:
+                        raise ValueError(f"invalid bootstrap payload at tick={tick_index}")
+                    elapsed = apply_original_capture_bootstrap_payload(
+                        payload,
+                        state=world.state,
+                        players=list(world.players),
+                    )
+                    if elapsed is not None:
+                        elapsed_f = float(elapsed)
+                        world._elapsed_ms = elapsed_f
+                    continue
                 raise ValueError(f"unsupported replay event kind={event.kind!r} at tick={tick_index}")
             raise ValueError(f"unsupported replay event type: {type(event).__name__}")
 
@@ -226,107 +252,47 @@ class ReplayPlaybackMode:
     def _tick_survival(self, *, tick_index: int, dt_frame: float) -> float:
         replay = self._replay
         world = self._world
-        run = self._survival
-        if replay is None or world is None or run is None:
+        session = self._survival
+        if replay is None or world is None or session is None:
             return 0.0
-
-        dt_frame_ms = float(dt_frame) * 1000.0
-        run.elapsed_ms += float(dt_frame_ms)
-
-        state = world.state
-        state.game_mode = int(GameMode.SURVIVAL)
-        state.demo_mode_active = False
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
 
         self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
 
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
-        world.world_state.step(
-            float(dt_sim),
+        tick = session.step_tick(
+            dt_frame=float(dt_frame),
             inputs=player_inputs,
-            world_size=float(world.world_size),
-            damage_scale_by_type=self._damage_scale_by_type,
-            detail_preset=5,
-            fx_queue=world.fx_queue,
-            fx_queue_rotated=world.fx_queue_rotated,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
-            perk_progression_enabled=True,
+        )
+        world.apply_step_result(
+            tick.step,
+            game_tune_started=bool(session.game_tune_started),
+            apply_audio=True,
+            update_camera=False,
         )
 
-        stage, milestone_calls = advance_survival_spawn_stage(run.stage, player_level=world.players[0].level if world.players else 1)
-        run.stage = stage
-        for call in milestone_calls:
-            world.creatures.spawn_template(
-                int(call.template_id),
-                call.pos,
-                float(call.heading),
-                state.rng,
-                rand=state.rng.rand,
-            )
-
-        cooldown, wave_spawns = tick_survival_wave_spawns(
-            run.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=float(run.elapsed_ms),
-            player_experience=int(world.players[0].experience) if world.players else 0,
-            terrain_width=int(world.world_size),
-            terrain_height=int(world.world_size),
-        )
-        run.spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(wave_spawns)
-
-        return float(dt_sim)
+        return float(tick.step.dt_sim)
 
     def _tick_rush(self, *, tick_index: int, dt_frame: float) -> float:
         replay = self._replay
         world = self._world
-        run = self._rush
-        if replay is None or world is None or run is None:
+        session = self._rush
+        if replay is None or world is None or session is None:
             return 0.0
 
-        dt_frame_ms = float(dt_frame) * 1000.0
-        run.elapsed_ms += float(dt_frame_ms)
+        self._apply_tick_events(tick_index=tick_index, dt_frame=dt_frame)
 
-        state = world.state
-        state.game_mode = int(GameMode.RUSH)
-        state.demo_mode_active = False
-        weapon_refresh_available(state)
-        perks_rebuild_available(state)
-
-        self._enforce_rush_loadout()
-
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
         player_inputs = self._build_tick_inputs(tick_index=tick_index)
-        world.world_state.step(
-            float(dt_sim),
+        tick = session.step_tick(
+            dt_frame=float(dt_frame),
             inputs=player_inputs,
-            world_size=float(world.world_size),
-            damage_scale_by_type=self._damage_scale_by_type,
-            detail_preset=5,
-            fx_queue=world.fx_queue,
-            fx_queue_rotated=world.fx_queue_rotated,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            perk_progression_enabled=False,
         )
-
-        cooldown, spawns = tick_rush_mode_spawns(
-            run.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=int(run.elapsed_ms),
-            terrain_width=float(world.world_size),
-            terrain_height=float(world.world_size),
+        world.apply_step_result(
+            tick.step,
+            game_tune_started=bool(session.game_tune_started),
+            apply_audio=True,
+            update_camera=False,
         )
-        run.spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(spawns)
-        return float(dt_sim)
+        return float(tick.step.dt_sim)
 
     def _tick_one(self) -> None:
         replay = self._replay

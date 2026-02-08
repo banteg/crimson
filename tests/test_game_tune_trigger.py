@@ -31,7 +31,7 @@ def test_game_tune_triggers_in_typo_mode(monkeypatch) -> None:
     router.play_hit_sfx(_hits(2), game_mode=int(GameMode.TYPO), rand=lambda: 0, beam_types=frozenset())
 
     assert len(triggered) == 1
-    assert played == ["sfx_bullet_hit_01"]
+    assert played == ["sfx_bullet_hit_01", "sfx_bullet_hit_01"]
 
 
 def test_game_tune_not_triggered_in_rush_mode(monkeypatch) -> None:

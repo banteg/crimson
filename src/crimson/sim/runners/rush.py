@@ -1,16 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
 
 from grim.geom import Vec2
 
-from ...camera import camera_shake_update
-from ...creatures.spawn import tick_rush_mode_spawns
 from ...game_modes import GameMode
-from ...gameplay import PlayerInput, perks_rebuild_available, weapon_assign_player, weapon_refresh_available
-from ...replay import Replay, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
+from ...gameplay import PlayerInput, weapon_assign_player
+from ...replay import Replay, UnknownEvent, unpack_packed_player_input, unpack_input_flags, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay.original_capture import (
+    ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND,
+    apply_original_capture_bootstrap_payload,
+    original_capture_bootstrap_payload_from_event_payload,
+)
 from ...weapons import WeaponId
+from ..sessions import RushDeterministicSession
 from ..world_state import WorldState
 from .common import (
     ReplayRunnerError,
@@ -21,16 +25,9 @@ from .common import (
     player0_shots,
     reset_players,
     status_from_snapshot,
-    time_scale_reflex_boost_bonus,
 )
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-
-
-@dataclass(slots=True)
-class RushRunState:
-    elapsed_ms: float = 0.0
-    spawn_cooldown_ms: float = 0.0
 
 
 def _enforce_rush_loadout(world: WorldState) -> None:
@@ -41,13 +38,53 @@ def _enforce_rush_loadout(world: WorldState) -> None:
         player.ammo = float(max(0, int(player.clip_size)))
 
 
+def _resolve_dt_frame(
+    *,
+    tick_index: int,
+    default_dt_frame: float,
+    dt_frame_overrides: dict[int, float] | None,
+) -> float:
+    if not dt_frame_overrides:
+        return float(default_dt_frame)
+    override = dt_frame_overrides.get(int(tick_index))
+    if override is None:
+        return float(default_dt_frame)
+    dt_frame = float(override)
+    if not math.isfinite(dt_frame) or dt_frame <= 0.0:
+        return float(default_dt_frame)
+    return float(dt_frame)
+
+
+def _decode_digital_move_keys(mx: float, my: float) -> tuple[bool, bool, bool, bool] | None:
+    if not math.isfinite(float(mx)) or not math.isfinite(float(my)):
+        return None
+    nearest_x = round(float(mx))
+    nearest_y = round(float(my))
+    if not math.isclose(float(mx), float(nearest_x), abs_tol=1e-6):
+        return None
+    if not math.isclose(float(my), float(nearest_y), abs_tol=1e-6):
+        return None
+    if nearest_x not in (-1, 0, 1) or nearest_y not in (-1, 0, 1):
+        return None
+    return (
+        bool(nearest_y < 0),  # move_forward_pressed
+        bool(nearest_y > 0),  # move_backward_pressed
+        bool(nearest_x < 0),  # turn_left_pressed
+        bool(nearest_x > 0),  # turn_right_pressed
+    )
+
+
 def run_rush_replay(
     replay: Replay,
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
+    trace_rng: bool = False,
+    checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
+    dt_frame_overrides: dict[int, float] | None = None,
+    inter_tick_rand_draws: int = 0,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -57,14 +94,27 @@ def run_rush_replay(
     if warn_on_version_mismatch:
         warn_on_game_version_mismatch(replay, action="verification")
 
-    if replay.events:
+    events_by_tick: dict[int, list[UnknownEvent]] = {}
+    original_capture_replay = False
+    digital_move_enabled_by_player: set[int] = set()
+    for event in replay.events:
+        if isinstance(event, UnknownEvent) and str(event.kind) == ORIGINAL_CAPTURE_BOOTSTRAP_EVENT_KIND:
+            original_capture_replay = True
+            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            if isinstance(payload, dict):
+                enabled_raw = payload.get("digital_move_enabled_by_player")
+                if isinstance(enabled_raw, list):
+                    for player_index, enabled in enumerate(enabled_raw):
+                        if bool(enabled):
+                            digital_move_enabled_by_player.add(int(player_index))
+            events_by_tick.setdefault(int(event.tick_index), []).append(event)
+            continue
         raise ReplayRunnerError("rush replay does not support events")
 
     tick_rate = int(replay.header.tick_rate)
     if tick_rate <= 0:
         raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
     dt_frame = 1.0 / float(tick_rate)
-    dt_frame_ms = dt_frame * 1000.0
 
     world_size = float(replay.header.world_size)
     world = WorldState.build(
@@ -90,26 +140,60 @@ def run_rush_replay(
 
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
     damage_scale_by_type = build_damage_scale_by_type()
-
-    run = RushRunState()
+    session = RushDeterministicSession(
+        world=world,
+        world_size=float(world_size),
+        damage_scale_by_type=damage_scale_by_type,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        detail_preset=5,
+        fx_toggle=0,
+        game_tune_started=False,
+        clear_fx_queues_each_tick=True,
+        enforce_loadout=lambda: _enforce_rush_loadout(world),
+    )
 
     inputs = replay.inputs
     tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
 
     for tick_index in range(tick_limit):
-        run.elapsed_ms += float(dt_frame_ms)
-
         state = world.state
         state.game_mode = int(GameMode.RUSH)
         state.demo_mode_active = False
+        dt_tick = _resolve_dt_frame(
+            tick_index=int(tick_index),
+            default_dt_frame=float(dt_frame),
+            dt_frame_overrides=dt_frame_overrides,
+        )
 
-        _enforce_rush_loadout(world)
+        for event in events_by_tick.get(int(tick_index), []):
+            payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+            if payload is None:
+                raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
+            apply_original_capture_bootstrap_payload(
+                payload,
+                state=state,
+                players=list(world.players),
+            )
 
         packed_tick = inputs[tick_index]
         player_inputs: list[PlayerInput] = []
-        for packed in packed_tick:
+        for player_index, packed in enumerate(packed_tick):
             mx, my, ax, ay, flags = unpack_packed_player_input(packed)
             fire_down, fire_pressed, _reload_pressed = unpack_input_flags(int(flags))
+            move_forward_pressed: bool | None = None
+            move_backward_pressed: bool | None = None
+            turn_left_pressed: bool | None = None
+            turn_right_pressed: bool | None = None
+            if original_capture_replay and int(player_index) in digital_move_enabled_by_player:
+                digital_move = _decode_digital_move_keys(float(mx), float(my))
+                if digital_move is not None:
+                    (
+                        move_forward_pressed,
+                        move_backward_pressed,
+                        turn_left_pressed,
+                        turn_right_pressed,
+                    ) = digital_move
             player_inputs.append(
                 PlayerInput(
                     move=Vec2(float(mx), float(my)),
@@ -117,73 +201,56 @@ def run_rush_replay(
                     fire_down=fire_down,
                     fire_pressed=fire_pressed,
                     reload_pressed=False,
+                    move_forward_pressed=move_forward_pressed,
+                    move_backward_pressed=move_backward_pressed,
+                    turn_left_pressed=turn_left_pressed,
+                    turn_right_pressed=turn_right_pressed,
                 )
             )
 
-        rng_before_world_step = int(state.rng.state)
-        world_step_marks: dict[str, int] = {"gw_begin": int(rng_before_world_step)}
-        weapon_refresh_available(state)
-        world_step_marks["gw_after_weapon_refresh"] = int(state.rng.state)
-        perks_rebuild_available(state)
-        world_step_marks["gw_after_perks_rebuild"] = int(state.rng.state)
-        dt_sim = time_scale_reflex_boost_bonus(state, dt_frame)
-        world_step_marks["gw_after_time_scale"] = int(state.rng.state)
-        events = world.step(
-            dt_sim,
+        tick = session.step_tick(
+            dt_frame=float(dt_tick),
             inputs=player_inputs,
-            world_size=world_size,
-            damage_scale_by_type=damage_scale_by_type,
-            detail_preset=5,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            perk_progression_enabled=False,
-            rng_marks=world_step_marks,
+            trace_rng=bool(trace_rng),
         )
-        # `GameWorld.update` runs camera shake update after simulation.
-        camera_shake_update(state, dt_sim)
-        rng_after_world_step = int(state.rng.state)
-        # Live gameplay clears terrain FX queues during render (`bake_fx_queues(clear=True)`).
-        # Headless verification has no render pass, so clear explicitly per simulated tick.
-        fx_queue.clear()
-        fx_queue_rotated.clear()
-
-        cooldown, spawns = tick_rush_mode_spawns(
-            run.spawn_cooldown_ms,
-            dt_frame_ms,
-            state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=int(run.elapsed_ms),
-            terrain_width=float(world_size),
-            terrain_height=float(world_size),
-        )
-        run.spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(spawns)
-        rng_after_rush_spawns = int(state.rng.state)
+        step = tick.step
+        events = step.events
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoints_out.append(
                 build_checkpoint(
                     tick_index=int(tick_index),
                     world=world,
-                    elapsed_ms=float(run.elapsed_ms),
-                    rng_marks={
-                        "before_world_step": int(rng_before_world_step),
-                        **world_step_marks,
-                        "after_world_step": int(rng_after_world_step),
-                        "after_rush_spawns": int(rng_after_rush_spawns),
-                    },
+                    elapsed_ms=float(tick.elapsed_ms),
+                    creature_count_override=(
+                        int(tick.creature_count_world_step) if checkpoint_use_world_step_creature_count else None
+                    ),
+                    rng_marks=tick.rng_marks,
                     deaths=events.deaths,
                     events=events,
+                    command_hash=str(step.command_hash),
                 )
             )
+
+        draws = max(0, int(inter_tick_rand_draws))
+        for _ in range(draws):
+            world.state.rng.rand()
 
         if not any(player.health > 0.0 for player in world.players):
             tick_index += 1
             break
     else:
         tick_index = tick_limit
+
+    for event in events_by_tick.get(int(tick_index), []):
+        payload = original_capture_bootstrap_payload_from_event_payload(list(event.payload))
+        if payload is None:
+            raise ReplayRunnerError(f"invalid bootstrap payload at tick={tick_index}")
+        apply_original_capture_bootstrap_payload(
+            payload,
+            state=world.state,
+            players=list(world.players),
+        )
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
@@ -193,7 +260,7 @@ def run_rush_replay(
         game_mode_id=int(GameMode.RUSH),
         tick_rate=tick_rate,
         ticks=int(tick_index),
-        elapsed_ms=int(run.elapsed_ms),
+        elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
         most_used_weapon_id=int(most_used_weapon_id),

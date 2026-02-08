@@ -155,6 +155,9 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
+_CREATURE_HITBOX_ALIVE = 16.0
+
+
 def _rng_zero() -> int:
     return 0
 
@@ -212,6 +215,37 @@ def _hit_radius_for(creature: _SizeLike) -> float:
 
     size = float(creature.size)
     return max(0.0, size * 0.14285715 + 3.0)
+
+
+def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, target_size: float) -> bool:
+    """Mirror native `creature_find_in_radius` / `player_find_in_radius` predicate.
+
+    Native uses:
+      sqrt(dx*dx + dy*dy) - radius < size * 0.14285715 + 3.0
+    """
+
+    dx = float(target.x) - float(origin.x)
+    dy = float(target.y) - float(origin.y)
+    return math.sqrt(dx * dx + dy * dy) - float(radius) < float(target_size) * 0.14285715 + 3.0
+
+
+def _creature_find_nearest_for_secondary(*, creatures: Sequence[Damageable], origin: Vec2) -> int:
+    """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
+
+    best_idx = 0
+    best_dist_sq = 1_000_000.0
+    max_index = min(len(creatures), 0x180)
+    for idx in range(max_index):
+        creature = creatures[idx]
+        if not creature.active:
+            continue
+        if float(creature.hitbox_size) != _CREATURE_HITBOX_ALIVE:
+            continue
+        dist_sq = Vec2.distance_sq(origin, creature.pos)
+        if dist_sq < best_dist_sq:
+            best_dist_sq = dist_sq
+            best_idx = idx
+    return best_idx
 
 
 def _apply_damage_to_creature(
@@ -872,6 +906,8 @@ class ProjectilePool:
         players: Sequence[PlayerDamageable] | None = None,
         apply_player_damage: Callable[[int, float], None] | None = None,
         apply_creature_damage: CreatureDamageApplier | None = None,
+        on_hit: Callable[[ProjectileHit], object | None] | None = None,
+        on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None,
     ) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
@@ -974,9 +1010,6 @@ class ProjectilePool:
                 if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
                     _reset_shock_chain_if_owner(proj_index)
                 behavior.linger(ctx, proj)
-
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             if (
@@ -986,8 +1019,6 @@ class ProjectilePool:
                 or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             steps = int(proj.base_damage)
@@ -1008,24 +1039,20 @@ class ProjectilePool:
                     acc = Vec2()
 
                     hit_idx = None
-                    ion_hit_test = int(proj.type_id) in (
-                        int(ProjectileTypeId.ION_RIFLE),
-                        int(ProjectileTypeId.ION_MINIGUN),
-                        int(ProjectileTypeId.ION_CANNON),
-                    )
+                    owner_creature_idx = int(proj.owner_id)
                     for idx, creature in enumerate(creatures):
-                        if idx == proj.owner_id:
+                        if idx == owner_creature_idx:
                             continue
-                        if ion_hit_test:
-                            if not creature.active:
-                                continue
-                            if creature.hitbox_size <= 5.0:
-                                continue
-                        elif creature.hp <= 0.0:
+                        if not creature.active:
                             continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = proj.hit_radius + creature_radius
-                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
+                        if creature.hitbox_size <= 5.0:
+                            continue
+                        if _within_native_find_radius(
+                            origin=proj.pos,
+                            target=creature.pos,
+                            radius=float(proj.hit_radius),
+                            target_size=float(creature.size),
+                        ):
                             hit_idx = idx
                             break
 
@@ -1040,11 +1067,11 @@ class ProjectilePool:
                                         continue
                                     if float(player.health) <= 0.0:
                                         continue
-                                    player_radius = _hit_radius_for(player)
-                                    hit_r = proj.hit_radius + player_radius
-                                    if (
-                                        Vec2.distance_sq(proj.pos, player.pos)
-                                        <= hit_r * hit_r
+                                    if _within_native_find_radius(
+                                        origin=proj.pos,
+                                        target=player.pos,
+                                        radius=float(proj.hit_radius),
+                                        target_size=float(player.size),
                                     ):
                                         hit_player_idx = idx
                                         break
@@ -1056,14 +1083,16 @@ class ProjectilePool:
                             type_id = proj.type_id
                             assert players is not None
                             player = players[int(hit_player_idx)]
-                            hits.append(
-                                ProjectileHit(
-                                    type_id=int(type_id),
-                                    origin=proj.origin,
-                                    hit=proj.pos,
-                                    target=player.pos,
-                                )
+                            hit = ProjectileHit(
+                                type_id=int(type_id),
+                                origin=proj.origin,
+                                hit=proj.pos,
+                                target=player.pos,
                             )
+                            hits.append(hit)
+                            hit_ctx: object | None = None
+                            if on_hit is not None:
+                                hit_ctx = on_hit(hit)
 
                             proj.life_timer = 0.25
                             if apply_player_damage is not None:
@@ -1071,6 +1100,9 @@ class ProjectilePool:
                             else:
                                 if float(player.shield_timer) <= 0.0:
                                     player.health -= 10.0
+
+                            if on_hit_post is not None:
+                                on_hit_post(hit, hit_ctx)
 
                             break
 
@@ -1095,21 +1127,23 @@ class ProjectilePool:
 
                     if runtime_state is not None:
                         owner_id = int(proj.owner_id)
-                        if owner_id < 0 and owner_id != -100:
+                        if owner_id < 0:
                             shots_hit = runtime_state.shots_hit
-                            player_index = -1 - owner_id
+                            player_index = 0 if owner_id == -100 else (-1 - owner_id)
                             if 0 <= player_index < len(shots_hit):
                                 shots_hit[player_index] += 1
 
                     target = creature.pos
-                    hits.append(
-                        ProjectileHit(
-                            type_id=int(type_id),
-                            origin=proj.origin,
-                            hit=proj.pos,
-                            target=target,
-                        )
+                    hit = ProjectileHit(
+                        type_id=int(type_id),
+                        origin=proj.origin,
+                        hit=proj.pos,
+                        target=target,
                     )
+                    hits.append(hit)
+                    hit_ctx: object | None = None
+                    if on_hit is not None:
+                        hit_ctx = on_hit(hit)
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTypeId.FIRE_BULLETS,
@@ -1139,7 +1173,7 @@ class ProjectilePool:
                     damage_scale = _damage_scale(type_id)
                     damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
 
-                    if damage_amount > 0.0 and (creature.hp > 0.0 or ion_hit_test):
+                    if damage_amount > 0.0 and creature.hp > 0.0:
                         remaining = proj.damage_pool - 1.0
                         proj.damage_pool = remaining
                         impulse = direction * float(proj.speed_scale)
@@ -1157,7 +1191,6 @@ class ProjectilePool:
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
-                            hp_before = float(creature.hp)
                             _apply_damage_to_creature(
                                 creatures,
                                 int(hit_idx),
@@ -1167,7 +1200,7 @@ class ProjectilePool:
                                 owner_id=int(proj.owner_id),
                                 apply_creature_damage=apply_creature_damage,
                             )
-                            proj.damage_pool -= hp_before
+                            proj.damage_pool -= float(creature.hp)
 
                     if proj.damage_pool == 1.0 and proj.life_timer != 0.25:
                         proj.damage_pool = 0.0
@@ -1178,10 +1211,17 @@ class ProjectilePool:
                         ProjectileTypeId.GAUSS_GUN,
                         ProjectileTypeId.BLADE_GUN,
                     ):
+                        if on_hit_post is not None:
+                            on_hit_post(hit, hit_ctx)
                         break
 
                     if proj.damage_pool <= 0.0:
+                        if on_hit_post is not None:
+                            on_hit_post(hit, hit_ctx)
                         break
+
+                    if on_hit_post is not None:
+                        on_hit_post(hit, hit_ctx)
 
                 step += 3
 
@@ -1235,8 +1275,6 @@ class ProjectilePool:
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             if (
@@ -1246,8 +1284,6 @@ class ProjectilePool:
                 or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
@@ -1422,6 +1458,8 @@ class SecondaryProjectilePool:
                 radius_sq = radius * radius
                 damage = dt * scale * 700.0
                 for creature_idx, creature in enumerate(creatures):
+                    if not creature.active:
+                        continue
                     if creature.hp <= 0.0:
                         continue
                     d_sq = Vec2.distance_sq(entry.pos, creature.pos)
@@ -1461,22 +1499,16 @@ class SecondaryProjectilePool:
             else:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
-                if not (0 <= target_id < len(creatures)) or creatures[target_id].hp <= 0.0:
+                if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
                     search_pos = entry.pos
                     if entry.target_hint_active:
                         entry.target_hint_active = False
                         search_pos = entry.target_hint
-                    best_idx = -1
-                    best_dist = 0.0
-                    for idx, creature in enumerate(creatures):
-                        if creature.hp <= 0.0:
-                            continue
-                        d = Vec2.distance_sq(search_pos, creature.pos)
-                        if best_idx == -1 or d < best_dist:
-                            best_idx = idx
-                            best_dist = d
-                    entry.target_id = best_idx
-                    target_id = best_idx
+                    entry.target_id = _creature_find_nearest_for_secondary(
+                        creatures=creatures,
+                        origin=search_pos,
+                    )
+                    target_id = entry.target_id
 
                 if 0 <= target_id < len(creatures):
                     target = creatures[target_id]
@@ -1509,11 +1541,17 @@ class SecondaryProjectilePool:
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
             for idx, creature in enumerate(creatures):
-                if creature.hp <= 0.0:
+                if not creature.active:
                     continue
-                creature_radius = _hit_radius_for(creature)
-                hit_r = 8.0 + creature_radius
-                if Vec2.distance_sq(entry.pos, creature.pos) <= hit_r * hit_r:
+                # Native `creature_find_in_radius` also gates on `hitbox_size > 5.0`.
+                if float(creature.hitbox_size) <= 5.0:
+                    continue
+                if _within_native_find_radius(
+                    origin=entry.pos,
+                    target=creature.pos,
+                    radius=8.0,
+                    target_size=float(creature.size),
+                ):
                     hit_idx = idx
                     break
             if hit_idx is not None:

@@ -20,6 +20,11 @@ __all__ = [
 ]
 
 
+# Native code uses literal `3.1415927` (float32-ish) in creature orbit-phase math.
+# Using Python's full-precision `math.pi` here measurably drifts long-run trajectories.
+_NATIVE_PI = 3.1415927
+
+
 class PositionLike(Protocol):
     pos: Vec2
 
@@ -96,7 +101,7 @@ def creature_ai_update_target(
 
     dist_to_player = (player_pos - creature.pos).length()
 
-    orbit_phase = float(int(creature.phase_seed)) * 3.7 * math.pi
+    orbit_phase = float(int(creature.phase_seed)) * 3.7 * _NATIVE_PI
     orbit_offset = Vec2.from_angle(orbit_phase)
     move_scale = 1.0
     self_damage: float | None = None

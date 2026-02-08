@@ -55,6 +55,10 @@ class PlayerInput:
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False
+    move_forward_pressed: bool | None = None
+    move_backward_pressed: bool | None = None
+    turn_left_pressed: bool | None = None
+    turn_right_pressed: bool | None = None
 
 
 PERK_COUNT_SIZE = 0x80
@@ -67,12 +71,13 @@ class PlayerState:
     index: int
     pos: Vec2
     health: float = 100.0
-    size: float = 50.0
+    size: float = 48.0
 
     speed_multiplier: float = 2.0
     move_speed: float = 0.0
     move_phase: float = 0.0
     heading: float = 0.0
+    turn_speed: float = 1.0
     death_timer: float = 16.0
     low_health_timer: float = 100.0
 
@@ -256,6 +261,9 @@ def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> in
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
+        # Native bonus code uses a writable sentinel entry when allocation/spacing
+        # checks fail. Some callers still mutate it, which affects RNG consumption.
+        self._sentinel = BonusEntry()
 
     @property
     def entries(self) -> list[BonusEntry]:
@@ -277,6 +285,15 @@ class BonusPool:
             if entry.bonus_id == 0:
                 return entry
         return None
+
+    def _alloc_slot_or_sentinel(self) -> BonusEntry:
+        entry = self._alloc_slot()
+        if entry is not None:
+            return entry
+        return self._sentinel
+
+    def _is_sentinel_entry(self, entry: BonusEntry) -> bool:
+        return entry is self._sentinel
 
     def _clear_entry(self, entry: BonusEntry) -> None:
         entry.bonus_id = 0
@@ -329,29 +346,28 @@ class BonusPool:
         players: list["PlayerState"],
         world_width: float = 1024.0,
         world_height: float = 1024.0,
-    ) -> BonusEntry | None:
+    ) -> BonusEntry:
         if int(state.game_mode) == int(GameMode.RUSH):
-            return None
+            return self._sentinel
         if (
             pos.x < BONUS_SPAWN_MARGIN
             or pos.y < BONUS_SPAWN_MARGIN
             or pos.x > world_width - BONUS_SPAWN_MARGIN
             or pos.y > world_height - BONUS_SPAWN_MARGIN
         ):
-            return None
+            return self._sentinel
 
-        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
-        for entry in self._entries:
-            if entry.bonus_id == 0:
-                continue
-            if Vec2.distance_sq(pos, entry.pos) < min_dist_sq:
-                return None
-
-        entry = self._alloc_slot()
-        if entry is None:
-            return None
+        entry = self._alloc_slot_or_sentinel()
 
         bonus_id = bonus_pick_random_type(self, state, players)
+        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
+        for active_entry in self._entries:
+            if active_entry.bonus_id == 0:
+                continue
+            if Vec2.distance_sq(pos, active_entry.pos) < min_dist_sq:
+                entry = self._sentinel
+                break
+
         entry.bonus_id = int(bonus_id)
         entry.picked = False
         entry.pos = pos
@@ -400,8 +416,6 @@ class BonusPool:
                     world_width=world_width,
                     world_height=world_height,
                 )
-                if entry is None:
-                    return None
 
                 entry.bonus_id = int(BonusId.WEAPON)
                 weapon_id = int(weapon_pick_random_available(state))
@@ -421,6 +435,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+                if self._is_sentinel_entry(entry):
+                    return None
                 return entry
 
         base_roll = int(rng.rand())
@@ -442,8 +458,6 @@ class BonusPool:
             world_width=world_width,
             world_height=world_height,
         )
-        if entry is None:
-            return None
 
         if entry.bonus_id == int(BonusId.WEAPON):
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
@@ -469,6 +483,8 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
+        if self._is_sentinel_entry(entry):
+            return None
         return entry
 
     def update(
@@ -2001,6 +2017,54 @@ _PLAYER_PERK_TICK_STEPS: tuple[_PlayerPerkTickStep, ...] = (
 )
 
 
+_NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
+    int(WeaponId.PISTOL): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.ASSAULT_RIFLE): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.SHOTGUN): ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
+    int(WeaponId.SAWED_OFF_SHOTGUN): ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
+    int(WeaponId.SUBMACHINE_GUN): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_GUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+    int(WeaponId.ROCKET_LAUNCHER): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.SEEKER_ROCKETS): ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
+    int(WeaponId.MINI_ROCKET_SWARMERS): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    int(WeaponId.ROCKET_MINIGUN): ((25.0, 1.0, 0.34),),
+    int(WeaponId.JACKHAMMER): ((15.0, 2.0, 0.223),),
+    int(WeaponId.SHRINKIFIER_5K): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    int(WeaponId.GAUSS_SHOTGUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+}
+
+_NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
+    {
+        int(WeaponId.PISTOL),
+        int(WeaponId.SHRINKIFIER_5K),
+    }
+)
+
+
+def _spawn_native_fire_muzzle_sprites(
+    *,
+    state: GameplayState,
+    weapon_id: int,
+    muzzle: Vec2,
+    aim_heading: float,
+    fire_bullets_active: bool,
+) -> None:
+    if fire_bullets_active:
+        specs: tuple[tuple[float, float, float], ...] = ((25.0, 1.0, 0.413),)
+    else:
+        specs = _NATIVE_FIRE_MUZZLE_SPRITES.get(int(weapon_id), ())
+    if not specs:
+        return
+
+    for speed, scale, alpha in specs:
+        state.sprite_effects.spawn(
+            pos=muzzle,
+            vel=Vec2.from_heading(aim_heading) * float(speed),
+            scale=float(scale),
+            color=RGBA(0.5, 0.5, 0.5, float(alpha)),
+        )
+
+
 def player_fire_weapon(
     player: PlayerState,
     input_state: PlayerInput,
@@ -2098,8 +2162,23 @@ def player_fire_weapon(
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
         particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
+    # Native `player_fire_weapon` consumes one RNG draw for shot SFX variant
+    # selection on every non-Fire-Bullets shot.
+    if not is_fire_bullets:
+        state.rng.rand()
+
     owner_id = _owner_id_for_player(player.index)
+    projectile_owner_id = _owner_id_for_player_projectiles(state, player.index)
     shot_count = 1
+    spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
+    if not spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
 
     # `player_fire_weapon` (crimsonland.exe) uses weapon-specific extra angular jitter for pellet
     # weapons. This is separate from aim-point jitter driven by `player.spread_heat`.
@@ -2123,7 +2202,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
@@ -2208,7 +2287,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=_projectile_meta_for_type_id(type_id),
             )
     elif weapon_id == WeaponId.PLASMA_SHOTGUN:
@@ -2222,7 +2301,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
@@ -2237,7 +2316,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -2252,7 +2331,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -2272,7 +2351,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner_id=owner_id,
+                owner_id=projectile_owner_id,
                 base_damage=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).
@@ -2283,6 +2362,15 @@ def player_fire_weapon(
         state.shots_fired[int(player.index)] += int(shot_count)
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
+
+    if spawn_muzzle_after_projectile:
+        _spawn_native_fire_muzzle_sprites(
+            state=state,
+            weapon_id=int(weapon_id),
+            muzzle=muzzle,
+            aim_heading=float(aim_heading),
+            fire_bullets_active=bool(is_fire_bullets),
+        )
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
@@ -2345,59 +2433,130 @@ def player_update(
         player.aim_dir = aim_dir
         player.aim_heading = aim_dir.to_heading()
 
-    # Movement.
-    raw_move = input_state.move
-    raw_mag = raw_move.length()
-    # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
-    # heading alignment slowdown; don't apply a deadzone there.
-    moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
-
-    turn_alignment_scale = 1.0
-    if moving_input:
-        inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-        move = raw_move * inv
-        target_heading = _normalize_heading_angle(move.to_heading())
-        angle_diff = _player_heading_approach_target(player, target_heading, dt)
-        move = Vec2.from_heading(player.heading)
-        turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
-        if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
-            if player.move_speed < 2.0:
-                player.move_speed = float(player.move_speed + dt * 4.0)
-            player.move_speed = float(player.move_speed + dt)
-            if player.move_speed > 2.8:
-                player.move_speed = 2.8
-        else:
-            player.move_speed = float(player.move_speed + dt * 5.0)
-            if player.move_speed > 2.0:
-                player.move_speed = 2.0
-    else:
-        player.move_speed = float(player.move_speed - dt * 15.0)
-        if player.move_speed < 0.0:
-            player.move_speed = 0.0
-        move = Vec2.from_heading(player.heading)
-
-    if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-        player.move_speed = 0.8
-
     speed_multiplier = float(player.speed_multiplier)
     if player.speed_bonus_timer > 0.0:
         speed_multiplier += 1.0
 
-    speed = player.move_speed * speed_multiplier * 25.0
-    if moving_input:
-        speed *= min(1.0, raw_mag)
-        speed *= turn_alignment_scale
-    if perk_active(player, PerkId.ALTERNATE_WEAPON):
-        speed *= 0.8
+    # Movement.
+    raw_move = input_state.move
+    raw_mag = raw_move.length()
+    use_digital_move = (
+        input_state.move_forward_pressed is not None
+        and input_state.move_backward_pressed is not None
+        and input_state.turn_left_pressed is not None
+        and input_state.turn_right_pressed is not None
+    )
+    phase_sign = 1.0
+    if use_digital_move:
+        moving_forward = bool(input_state.move_forward_pressed)
+        moving_backward = bool(input_state.move_backward_pressed)
+        turning_left = bool(input_state.turn_left_pressed)
+        turning_right = bool(input_state.turn_right_pressed)
 
+        player.turn_speed = min(7.0, max(1.0, float(player.turn_speed)))
+        turned = False
+        if turning_left and not turning_right:
+            player.turn_speed = float(player.turn_speed + dt * 10.0)
+            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.heading = float(player.heading - turn_delta)
+            player.aim_heading = float(player.aim_heading - turn_delta)
+            turned = True
+        elif turning_right and not turning_left:
+            player.turn_speed = float(player.turn_speed + dt * 10.0)
+            turn_delta = float(player.turn_speed) * dt * 0.5
+            player.heading = float(player.heading + turn_delta)
+            player.aim_heading = float(player.aim_heading + turn_delta)
+            turned = True
+
+        move_sign = 1.0
+        if moving_forward and not moving_backward:
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+        elif moving_backward and not moving_forward:
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+            move_sign = -1.0
+            phase_sign = -1.0
+        else:
+            if not turned:
+                player.turn_speed = 1.0
+            player.move_speed = float(player.move_speed - dt * 15.0)
+            if player.move_speed < 0.0:
+                player.move_speed = 0.0
+
+        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+            player.move_speed = 0.8
+
+        move = Vec2.from_heading(player.heading)
+        speed = player.move_speed * speed_multiplier * 25.0 * move_sign
+        if perk_active(player, PerkId.ALTERNATE_WEAPON):
+            speed *= 0.8
+    else:
+        # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
+        # heading alignment slowdown; don't apply a deadzone there.
+        moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
+
+        turn_alignment_scale = 1.0
+        if moving_input:
+            inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
+            move = raw_move * inv
+            # Native normalizes this heading into [0, 2pi] before calling
+            # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
+            target_heading = _normalize_heading_angle(move.to_heading())
+            angle_diff = _player_heading_approach_target(player, target_heading, dt)
+            move = Vec2.from_heading(player.heading)
+            turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
+            if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
+                if player.move_speed < 2.0:
+                    player.move_speed = float(player.move_speed + dt * 4.0)
+                player.move_speed = float(player.move_speed + dt)
+                if player.move_speed > 2.8:
+                    player.move_speed = 2.8
+            else:
+                player.move_speed = float(player.move_speed + dt * 5.0)
+                if player.move_speed > 2.0:
+                    player.move_speed = 2.0
+        else:
+            player.move_speed = float(player.move_speed - dt * 15.0)
+            if player.move_speed < 0.0:
+                player.move_speed = 0.0
+            move = Vec2.from_heading(player.heading)
+
+        if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+            player.move_speed = 0.8
+
+        speed = player.move_speed * speed_multiplier * 25.0
+        if moving_input:
+            speed *= min(1.0, raw_mag)
+            speed *= turn_alignment_scale
+        if perk_active(player, PerkId.ALTERNATE_WEAPON):
+            speed *= 0.8
+
+    half_size = max(0.0, float(player.size) * 0.5)
     player.pos = (player.pos + move * (speed * dt)).clamp_rect(
-        0.0,
-        0.0,
-        float(world_size),
-        float(world_size),
+        half_size,
+        half_size,
+        float(world_size) - half_size,
+        float(world_size) - half_size,
     )
 
-    player.move_phase += dt * player.move_speed * 19.0
+    player.move_phase += phase_sign * dt * player.move_speed * 19.0
 
     move_delta = player.pos - prev_pos
     stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
@@ -2487,7 +2646,6 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
     player.heading = heading + turn_sign * dt * diff * 5.0
     return diff
-
 
 def _normalize_heading_angle(value: float) -> float:
     while value < 0.0:
@@ -3044,13 +3202,27 @@ def bonus_update(
     )
 
     if dt > 0.0:
-        state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)
-        state.bonuses.reflex_boost = max(0.0, state.bonuses.reflex_boost - dt)
-        state.bonuses.energizer = max(0.0, state.bonuses.energizer - dt)
-        state.bonuses.double_experience = max(0.0, state.bonuses.double_experience - dt)
-        state.bonuses.freeze = max(0.0, state.bonuses.freeze - dt)
+        # Native `bonus_update` decrements Freeze + Double XP here; other global
+        # timers are advanced earlier in the gameplay loop.
+        if float(state.bonuses.double_experience) > 0.0:
+            state.bonuses.double_experience = float(state.bonuses.double_experience) - float(dt)
+        if float(state.bonuses.freeze) > 0.0:
+            state.bonuses.freeze = float(state.bonuses.freeze) - float(dt)
 
     if update_hud:
         bonus_hud_update(state, players, dt=dt)
 
     return pickups
+
+
+def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
+    """Advance global timers that native decrements before `bonus_update`."""
+
+    if dt <= 0.0:
+        return
+    if float(state.bonuses.weapon_power_up) > 0.0:
+        state.bonuses.weapon_power_up = float(state.bonuses.weapon_power_up) - float(dt)
+    if float(state.bonuses.energizer) > 0.0:
+        state.bonuses.energizer = float(state.bonuses.energizer) - float(dt)
+    if float(state.bonuses.reflex_boost) > 0.0:
+        state.bonuses.reflex_boost = float(state.bonuses.reflex_boost) - float(dt)

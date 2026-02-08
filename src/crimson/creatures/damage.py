@@ -73,7 +73,7 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     jitter = float((int(ctx.rand()) & 0x7F) - 0x40) * 0.002
     size = max(1e-6, float(creature.size))
     turn = jitter / (size * 0.025)
-    turn = max(-math.pi / 2.0, min(math.pi / 2.0, turn))
+    turn = min(math.pi / 2.0, turn)
     creature.heading += turn
 
 

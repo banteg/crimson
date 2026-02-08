@@ -420,6 +420,21 @@ def test_secondary_projectile_pool_type2_uses_hint_for_initial_target() -> None:
     assert entry.target_hint_active is False
 
 
+def test_secondary_projectile_pool_type2_target_pick_uses_active_hitbox_sentinel() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos=Vec2(), angle=0.0, type_id=2, target_hint=Vec2(300.0, 0.0))
+    creatures = [
+        _Creature(pos=Vec2(300.0, 0.0), hp=100.0, hitbox_size=15.0),
+        _Creature(pos=Vec2(500.0, 0.0), hp=0.0, hitbox_size=16.0),
+    ]
+
+    pool.update_pulse_gun(0.01, creatures)
+    entry = pool.entries[0]
+    assert entry.active
+    assert entry.type_id == 2
+    assert entry.target_id == 1
+
+
 def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     state = GameplayState()
     fx_queue = FxQueue()
@@ -443,6 +458,21 @@ def test_secondary_projectile_pool_hit_queues_sfx_and_fx() -> None:
     pool.update_pulse_gun(0.5, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
     assert not entry.active
     assert any(int(fx_entry.effect_id) == 0x10 for fx_entry in fx_queue.iter_active())
+
+
+def test_secondary_projectile_pool_hit_scan_ignores_hp_gate_and_uses_active_flag() -> None:
+    state = GameplayState()
+    fx_queue = FxQueue()
+
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn(pos=Vec2(), angle=0.0, type_id=2)
+
+    creatures = [_Creature(pos=Vec2(), hp=0.0, active=True, hitbox_size=16.0)]
+
+    pool.update_pulse_gun(0.01, creatures, runtime_state=state, fx_queue=fx_queue, detail_preset=5)
+    entry = pool.entries[0]
+    assert entry.active
+    assert entry.type_id == 3
 
 
 def test_secondary_projectile_pool_detonation_radius_does_not_pad_creature_radius() -> None:

@@ -86,6 +86,34 @@ under `docs/crimsonland-exe/`.
   - Test: `tests/test_ground_dump_fixtures.py`
 - There is broad unit test coverage for deterministic subsystems (spawn plans, timelines, perks, config, etc):
   - Tests: `tests/test_spawn_plan.py`, `tests/test_survival_wave.py`, `tests/test_quest_spawn_timeline.py`, …
+- Deterministic tick pipeline parity (live `GameWorld.update` vs headless replay runners) is covered with command-hash checks:
+  - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
+- Survival/Rush deterministic orchestration now flows through shared session adapters:
+  - Code: `src/crimson/sim/sessions.py`
+  - Consumers: `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/sim/runners/*.py`
+- Replay sidecar differential tooling now has a reusable first-divergence comparator and CLI:
+  - Code: `src/crimson/replay/diff.py`
+  - Command: `uv run crimson replay diff-checkpoints expected.checkpoints.json.gz actual.checkpoints.json.gz`
+- Oracle headless output now steps through the deterministic session pipeline and emits `command_hash` per frame:
+  - Code: `src/crimson/oracle.py`
+  - Test: `tests/test_oracle_session_pipeline.py`
+- Studyability-first feature hook extraction is now in place for key deterministic paths:
+  - Perk hook registry: `src/crimson/features/perks/registry.py`
+  - Bonus pickup hook registry: `src/crimson/features/bonuses/pickup_fx.py`
+  - Presentation projectile-decal hook registry: `src/crimson/features/presentation/projectile_decals.py`
+  - Architecture guard tests: `tests/test_feature_hook_registries.py`
+- Per-player deterministic input-frame normalization is now first-class and shared:
+  - Code: `src/crimson/sim/input_frame.py`
+  - Tests: `tests/test_input_frame_contract.py`
+- Original-capture sidecar schema and conversion into replay checkpoints is now available:
+  - Code: `src/crimson/replay/original_capture.py`
+  - CLI: `uv run crimson replay convert-original-capture <capture> <expected-checkpoints>`
+    (also writes `<expected>.crdemo.gz` by default)
+  - Tests: `tests/test_original_capture_conversion.py`
+- Capture-native differential verification is now available (without replay playback parity dependency):
+  - Code: `src/crimson/replay/original_capture_verify.py`
+  - CLI: `uv run crimson replay verify-original-capture <capture>`
+  - Tests: `tests/test_original_capture_verify.py`
 
 ## Biggest remaining parity gaps (vs v1.9.93)
 
