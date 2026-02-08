@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 import pytest
 
+from crimson.math_parity import f32
 from grim.geom import Vec2
 from crimson.creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from crimson.creatures.spawn import CreatureFlags
@@ -81,3 +82,11 @@ def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:
     assert ai.self_damage is None
     assert c.ai_mode == 7
     assert c.orbit_radius == pytest.approx(1.0, abs=1e-6)
+
+
+def test_ai_targets_and_heading_are_float32_quantized() -> None:
+    c = StubCreature(pos=Vec2(0.125, -0.25), ai_mode=0, phase_seed=13.0)
+    creature_ai_update_target(c, player_pos=Vec2(123.5, 456.25), creatures=[c], dt=1.0 / 60.0)
+    assert c.target.x == pytest.approx(f32(c.target.x), abs=0.0)
+    assert c.target.y == pytest.approx(f32(c.target.y), abs=0.0)
+    assert c.target_heading == pytest.approx(f32(c.target_heading), abs=0.0)
