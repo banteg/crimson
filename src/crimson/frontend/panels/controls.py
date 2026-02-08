@@ -616,6 +616,8 @@ class ControlsMenuView(PanelMenuView):
         def _draw_section_rows(rows: tuple[tuple[str, int], ...], *, y: float) -> float:
             row_y = y
             for label, slot in rows:
+                value_text = input_code_name(_slot_key(slot))
+                value_pos = Vec2(right_top_left.x + 180.0 * panel_scale, row_y)
                 draw_small_text(
                     font,
                     label,
@@ -625,9 +627,18 @@ class ControlsMenuView(PanelMenuView):
                 )
                 draw_small_text(
                     font,
-                    input_code_name(_slot_key(slot)),
-                    Vec2(right_top_left.x + 180.0 * panel_scale, row_y),
+                    value_text,
+                    value_pos,
                     1.0 * panel_scale,
+                    CONTROLS_REBIND_VALUE_COLOR,
+                )
+                value_w = measure_small_text_width(font, value_text, 1.0 * panel_scale)
+                underline_y = row_y + 13.0 * panel_scale
+                rl.draw_line(
+                    int(value_pos.x),
+                    int(underline_y),
+                    int(value_pos.x + value_w),
+                    int(underline_y),
                     CONTROLS_REBIND_VALUE_COLOR,
                 )
                 row_y += 16.0 * panel_scale
