@@ -34,7 +34,13 @@ def _step_crt_state(state: int, calls: int) -> int:
     return value
 
 
-def _checkpoint(*, tick: int, rng_marks: dict[str, int], deaths: list[ReplayDeathLedgerEntry] | None = None) -> ReplayCheckpoint:
+def _checkpoint(
+    *,
+    tick: int,
+    rng_marks: dict[str, int],
+    deaths: list[ReplayDeathLedgerEntry] | None = None,
+    events: ReplayEventSummary | None = None,
+) -> ReplayCheckpoint:
     return ReplayCheckpoint(
         tick_index=int(tick),
         rng_state=int(rng_marks.get("after_wave_spawns", rng_marks.get("after_world_step", 0))),
@@ -59,7 +65,7 @@ def _checkpoint(*, tick: int, rng_marks: dict[str, int], deaths: list[ReplayDeat
         rng_marks=dict(rng_marks),
         deaths=list(deaths or []),
         perk=ReplayPerkSnapshot(),
-        events=ReplayEventSummary(),
+        events=events if events is not None else ReplayEventSummary(),
     )
 
 
@@ -310,5 +316,86 @@ def test_investigation_leads_include_rng_head_shortfall() -> None:
     )
 
     lead = next((item for item in leads if item.title == "Pre-focus RNG-head shortfall indicates missing RNG-consuming branch"), None)
+    assert lead is not None
+    assert "projectile_update" in lead.native_functions
+
+
+def test_find_first_projectile_hit_shortfall_detects_gap() -> None:
+    report = _load_report_module()
+    actual_ckpt = _checkpoint(
+        tick=12,
+        rng_marks={
+            "before_world_step": 0x11111111,
+            "after_world_step": 0x11111111,
+            "after_wave_spawns": 0x11111111,
+        },
+        events=ReplayEventSummary(hit_count=4, pickup_count=0, sfx_count=0, sfx_head=[]),
+    )
+
+    shortfall = report._find_first_projectile_hit_shortfall(
+        actual_by_tick={12: actual_ckpt},
+        raw_debug_by_tick={
+            12: {
+                "projectile_find_hit_count": 5,
+                "projectile_find_hit_corpse_count": 1,
+                "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 5}],
+            }
+        },
+        start_tick=0,
+        end_tick=16,
+    )
+
+    assert shortfall is not None
+    assert int(shortfall["tick"]) == 12
+    assert int(shortfall["capture_hits"]) == 5
+    assert int(shortfall["actual_hits"]) == 4
+    assert int(shortfall["missing_hits"]) == 1
+
+
+def test_investigation_leads_include_projectile_hit_shortfall() -> None:
+    report = _load_report_module()
+    expected_focus = _checkpoint(
+        tick=10,
+        rng_marks={"rand_calls": 0},
+    )
+    actual_focus = _checkpoint(
+        tick=10,
+        rng_marks={
+            "before_world_step": 0x12345678,
+            "after_world_step": 0x12345678,
+            "after_wave_spawns": 0x12345678,
+        },
+        events=ReplayEventSummary(hit_count=4, pickup_count=0, sfx_count=0, sfx_head=[]),
+    )
+    divergence = report.Divergence(
+        tick_index=10,
+        kind="state_mismatch",
+        field_diffs=tuple(),
+        expected=expected_focus,
+        actual=actual_focus,
+    )
+
+    leads = report._build_investigation_leads(
+        divergence=divergence,
+        focus_tick=10,
+        lookback_ticks=8,
+        float_abs_tol=1e-3,
+        expected_by_tick={10: expected_focus},
+        actual_by_tick={10: actual_focus},
+        raw_debug_by_tick={
+            10: {
+                "rng_rand_calls": 0,
+                "projectile_find_hit_count": 6,
+                "projectile_find_hit_corpse_count": 2,
+                "spawn_top_projectile_find_hit_callers": [{"key": "0x00420fd7", "count": 6}],
+                "sample_counts": {"creatures": 1, "projectiles": 1, "secondary_projectiles": 0, "bonuses": 0},
+            }
+        },
+        native_ranges=(
+            report.NativeFunctionRange(name="projectile_update", start=0x00420B90, end=0x00422C70),
+        ),
+    )
+
+    lead = next((item for item in leads if item.title == "Native projectile hit resolves exceed rewrite hit events"), None)
     assert lead is not None
     assert "projectile_update" in lead.native_functions

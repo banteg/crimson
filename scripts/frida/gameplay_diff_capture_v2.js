@@ -139,6 +139,7 @@ const FN = {
   bonus_try_spawn_on_kill: 0x0041f8d0,
   secondary_projectile_spawn: 0x00420360,
   projectile_spawn: 0x00420440,
+  creature_find_in_radius: 0x004206a0,
   creature_apply_damage: 0x004207c0,
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
@@ -1307,6 +1308,7 @@ function makeTickContext() {
       bonus_apply: 0,
       bonus_spawn: 0,
       projectile_spawn: 0,
+      projectile_find_hit: 0,
       secondary_projectile_spawn: 0,
       player_damage: 0,
       creature_damage: 0,
@@ -1329,6 +1331,7 @@ function makeTickContext() {
       bonus_apply: [],
       bonus_spawn: [],
       projectile_spawn: [],
+      projectile_find_hit: [],
       secondary_projectile_spawn: [],
       player_damage: [],
       creature_damage: [],
@@ -1373,6 +1376,7 @@ function makeTickContext() {
     spawn_callers_low: {},
     spawn_sources_low: {},
     creature_damage_callers: {},
+    projectile_find_hit_callers: {},
     death_callers: {},
     bonus_spawn_callers: {},
     mode_samples: [],
@@ -1727,11 +1731,13 @@ function finalizeTick() {
     event_count_template: tick.event_counts.creature_spawn || 0,
     event_count_low_level: tick.event_counts.creature_spawn_low || 0,
     event_count_creature_damage: tick.event_counts.creature_damage || 0,
+    event_count_projectile_find_hit: tick.event_counts.projectile_find_hit || 0,
     event_count_death: deathHookEventCount,
     top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
     top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
     top_creature_damage_callers: topCounterPairs(tick.creature_damage_callers, 8),
+    top_projectile_find_hit_callers: topCounterPairs(tick.projectile_find_hit_callers, 8),
     top_death_callers: topCounterPairs(tick.death_callers, 8),
     event_count_bonus_spawn: tick.event_counts.bonus_spawn || 0,
     top_bonus_spawn_callers: topCounterPairs(tick.bonus_spawn_callers, 8),
@@ -2406,6 +2412,57 @@ function installHooks() {
           (payload.actual_type_id == null ? -1 : payload.actual_type_id)
       );
       emitRawEvent(Object.assign({ event: "projectile_spawn" }, payload));
+    },
+  });
+
+  attachHook("creature_find_in_radius", fnPtrs.creature_find_in_radius, {
+    onEnter(args) {
+      const callerStatic = runtimeToStatic(this.returnAddress);
+      if (!isProjectileUpdateCaller(callerStatic)) {
+        return;
+      }
+      this._ctx = {
+        pos: {
+          x: round4(safeReadF32(args[0])),
+          y: round4(safeReadF32(args[0].add(4))),
+        },
+        radius_f32: round4(argAsF32(args[1])),
+        start_index: args[2] ? args[2].toInt32() : null,
+        caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+        caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+        backtrace: maybeBacktrace(this.context),
+      };
+    },
+    onLeave(retval) {
+      const ctx = this._ctx;
+      if (!ctx) return;
+      const creatureIndex = retval ? retval.toInt32() : -1;
+      if (creatureIndex < 0) return;
+      const creature = readCreatureLifecycleEntry(creatureIndex);
+      const payload = {
+        creature_index: creatureIndex,
+        start_index: ctx.start_index,
+        radius_f32: ctx.radius_f32,
+        query_pos: ctx.pos,
+        creature: creature,
+        corpse_hit:
+          creature && creature.hp != null && Number.isFinite(creature.hp)
+            ? creature.hp <= 0
+            : null,
+        caller: ctx.caller,
+        caller_static: ctx.caller_static,
+        backtrace: ctx.backtrace,
+      };
+      const tick = outState.currentTick;
+      if (tick && payload.caller_static) {
+        bumpCounterMap(tick.projectile_find_hit_callers, payload.caller_static);
+      }
+      addTickEvent(
+        "projectile_find_hit",
+        payload,
+        "pfh:" + String(payload.creature_index == null ? -1 : payload.creature_index)
+      );
+      emitRawEvent(Object.assign({ event: "projectile_find_hit" }, payload));
     },
   });
 

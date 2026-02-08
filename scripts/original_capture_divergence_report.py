@@ -84,6 +84,10 @@ NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
         "src/crimson/creatures/damage.py",
         "src/crimson/creatures/runtime.py",
     ),
+    "creature_find_in_radius": (
+        "src/crimson/projectiles.py",
+        "src/crimson/creatures/runtime.py",
+    ),
     "creature_handle_death": ("src/crimson/creatures/runtime.py",),
     "projectile_update": (
         "src/crimson/projectiles.py",
@@ -614,6 +618,8 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         creature_death_head_obj = creature_death_head if isinstance(creature_death_head, list) else []
         bonus_spawn_head = event_heads_obj.get("bonus_spawn")
         bonus_spawn_head_obj = bonus_spawn_head if isinstance(bonus_spawn_head, list) else []
+        projectile_find_hit_head = event_heads_obj.get("projectile_find_hit")
+        projectile_find_hit_head_obj = projectile_find_hit_head if isinstance(projectile_find_hit_head, list) else []
         rng_callers_top = rng_top_obj.get("callers")
         rng_callers_top_obj = rng_callers_top if isinstance(rng_callers_top, list) else []
         rng_rand_calls = _int_or(rng_obj.get("rand_calls"))
@@ -690,9 +696,24 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "secondary_projectile_spawn_head": secondary_projectile_spawn_head_obj,
             "creature_death_head": creature_death_head_obj,
             "bonus_spawn_head": bonus_spawn_head_obj,
+            "projectile_find_hit_count": _int_or(
+                event_counts_obj.get("projectile_find_hit"),
+                len(projectile_find_hit_head_obj),
+            ),
+            "projectile_find_hit_head": projectile_find_hit_head_obj,
+            "projectile_find_hit_corpse_count": sum(
+                1
+                for item in projectile_find_hit_head_obj
+                if isinstance(item, dict) and bool(item.get("corpse_hit"))
+            ),
             "spawn_top_creature_damage_callers": (
                 spawn_obj.get("top_creature_damage_callers")
                 if isinstance(spawn_obj.get("top_creature_damage_callers"), list)
+                else []
+            ),
+            "spawn_top_projectile_find_hit_callers": (
+                spawn_obj.get("top_projectile_find_hit_callers")
+                if isinstance(spawn_obj.get("top_projectile_find_hit_callers"), list)
                 else []
             ),
             "lifecycle_before_hash": lifecycle_obj.get("before_hash"),
@@ -1205,6 +1226,55 @@ def _find_first_rng_head_shortfall(
     return None
 
 
+def _find_first_projectile_hit_shortfall(
+    *,
+    actual_by_tick: dict[int, ReplayCheckpoint],
+    raw_debug_by_tick: dict[int, dict[str, object]],
+    start_tick: int,
+    end_tick: int,
+) -> dict[str, object] | None:
+    for tick in range(max(0, int(start_tick)), int(end_tick) + 1):
+        raw = raw_debug_by_tick.get(int(tick), {})
+        capture_hits = _int_or(raw.get("projectile_find_hit_count"), -1)
+        if capture_hits < 0:
+            continue
+        act = actual_by_tick.get(int(tick))
+        if act is None:
+            continue
+        actual_hits = _int_or(act.events.hit_count, -1)
+        if actual_hits < 0:
+            continue
+        if int(capture_hits) <= int(actual_hits):
+            continue
+        caller_counts = raw.get("spawn_top_projectile_find_hit_callers")
+        if not isinstance(caller_counts, list):
+            caller_counts = []
+        if not caller_counts:
+            head = raw.get("projectile_find_hit_head")
+            head_rows = head if isinstance(head, list) else []
+            reduced: dict[str, int] = {}
+            for item in head_rows:
+                if not isinstance(item, dict):
+                    continue
+                key = item.get("caller_static")
+                if key is None:
+                    continue
+                reduced[str(key)] = int(reduced.get(str(key), 0)) + 1
+            caller_counts = [
+                {"key": key, "count": count}
+                for key, count in sorted(reduced.items(), key=lambda item: (-int(item[1]), str(item[0])))
+            ]
+        return {
+            "tick": int(tick),
+            "capture_hits": int(capture_hits),
+            "actual_hits": int(actual_hits),
+            "missing_hits": int(capture_hits) - int(actual_hits),
+            "capture_corpse_hits": _int_or(raw.get("projectile_find_hit_corpse_count"), -1),
+            "caller_counts": caller_counts,
+        }
+    return None
+
+
 def _port_paths_for_native_functions(function_names: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     out: list[str] = []
     seen: set[str] = set()
@@ -1381,6 +1451,78 @@ def _build_investigation_leads(
                         "src/crimson/projectiles.py",
                         "src/crimson/sim/presentation_step.py",
                         "src/crimson/effects.py",
+                    ),
+                ),
+            )
+        )
+
+    projectile_hit_shortfall = _find_first_projectile_hit_shortfall(
+        actual_by_tick=actual_by_tick,
+        raw_debug_by_tick=raw_debug_by_tick,
+        start_tick=int(lookback_start),
+        end_tick=int(focus_tick),
+    )
+    if projectile_hit_shortfall is not None:
+        shortfall_tick = _int_or(projectile_hit_shortfall.get("tick"), -1)
+        capture_hits = _int_or(projectile_hit_shortfall.get("capture_hits"), -1)
+        actual_hits = _int_or(projectile_hit_shortfall.get("actual_hits"), -1)
+        missing_hits = _int_or(projectile_hit_shortfall.get("missing_hits"), -1)
+        corpse_hits = _int_or(projectile_hit_shortfall.get("capture_corpse_hits"), -1)
+        caller_counts_raw = (
+            projectile_hit_shortfall.get("caller_counts")
+            if isinstance(projectile_hit_shortfall.get("caller_counts"), list)
+            else []
+        )
+        caller_counts: list[tuple[str, int]] = []
+        for item in caller_counts_raw:
+            if not isinstance(item, dict):
+                continue
+            key = item.get("key")
+            if key is None:
+                key = item.get("caller_static")
+            if key is None:
+                continue
+            caller_counts.append((str(key), _int_or(item.get("count"), _int_or(item.get("calls"), 1))))
+        caller_counts = sorted(caller_counts, key=lambda entry: (-int(entry[1]), str(entry[0])))
+        top_callers = ", ".join(f"{addr} x{calls}" for addr, calls in caller_counts[:6])
+        top_native = _top_native_functions_from_callers(
+            caller_counts=caller_counts,
+            native_ranges=native_ranges,
+            limit=5,
+        )
+        native_names = tuple(name for name, _calls in top_native)
+        native_text = ", ".join(f"{name} x{calls}" for name, calls in top_native)
+
+        evidence = [
+            (
+                f"first tick where native projectile hit resolves exceed rewrite hits: tick={int(shortfall_tick)} "
+                f"(capture_hits={int(capture_hits)}, actual_hits={int(actual_hits)}, missing={int(missing_hits)})"
+            ),
+            (
+                "this points to a missing rewrite hit-resolution path (often corpse hits that consume RNG/presentation "
+                "without creating extra creature_damage events)"
+            ),
+        ]
+        if corpse_hits >= 0:
+            evidence.append(f"capture projectile hit resolves marked as corpse hits at that tick: {int(corpse_hits)}")
+        if top_callers:
+            evidence.append(f"dominant projectile_find_hit caller_static at shortfall tick: {top_callers}")
+        if native_text:
+            evidence.append(f"resolved native functions at shortfall tick: {native_text}")
+
+        fallback_native = ("projectile_update", "creature_find_in_radius", "fx_queue_add_random")
+        effective_native = native_names if native_names else fallback_native
+        leads.append(
+            InvestigationLead(
+                title="Native projectile hit resolves exceed rewrite hit events",
+                evidence=tuple(evidence),
+                native_functions=tuple(effective_native),
+                code_paths=_merge_paths(
+                    _port_paths_for_native_functions(effective_native),
+                    (
+                        "src/crimson/projectiles.py",
+                        "src/crimson/sim/world_state.py",
+                        "scripts/frida/gameplay_diff_capture_v2.js",
                     ),
                 ),
             )
@@ -1711,7 +1853,9 @@ def _build_window_rows(
                 "actual_sfx": int(act.events.sfx_count),
                 "capture_bonus_spawn_events": _int_or(raw.get("spawn_bonus_count")),
                 "capture_death_events": _int_or(raw.get("spawn_death_count")),
+                "capture_projectile_find_hits": _int_or(raw.get("projectile_find_hit_count"), -1),
                 "actual_deaths": int(len(act.deaths)),
+                "actual_hits": int(act.events.hit_count),
             }
         )
     return rows
@@ -1721,7 +1865,7 @@ def _print_window(rows: list[dict[str, object]]) -> None:
     print()
     print(
         "tick  w(e/a)   ammo(e/a)  xp(e/a)   score(e/a)  creatures(e/a)"
-        "  rand_calls(e/a/d)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  pickups(e/a)  sfx(e/a)"
+        "  rand_calls(e/a/d)  ps_draws(a)  rng_changed(a)  bonus_spawn(e)  deaths(e/a)  p_hits(e/a)  pickups(e/a)  sfx(e/a)"
     )
     for row in rows:
         expected_rand_calls = _int_or(row.get("expected_rand_calls"), -1)
@@ -1740,6 +1884,7 @@ def _print_window(rows: list[dict[str, object]]) -> None:
             f"{'Y' if bool(row['actual_rng_changed']) else 'N':>1}           "
             f"{int(row['capture_bonus_spawn_events']):4d}       "
             f"{int(row['capture_death_events']):3d}/{int(row['actual_deaths']):3d}      "
+            f"{int(row['capture_projectile_find_hits']):3d}/{int(row['actual_hits']):3d}      "
             f"{int(row['expected_pickups']):3d}/{int(row['actual_pickups']):3d}      "
             f"{int(row['expected_sfx']):3d}/{int(row['actual_sfx']):3d}"
         )
@@ -1964,6 +2109,19 @@ def main() -> int:
         damage_head = focus_raw.get("creature_damage_head")
         if isinstance(damage_head, list) and damage_head:
             print(f"  capture_creature_damage_head={damage_head[:6]!r}")
+        projectile_find_hit_count = _int_or(focus_raw.get("projectile_find_hit_count"), -1)
+        if projectile_find_hit_count >= 0:
+            print(
+                "  "
+                f"capture_projectile_find_hit_count={int(projectile_find_hit_count)} "
+                f"capture_projectile_find_hit_corpse_count={_int_or(focus_raw.get('projectile_find_hit_corpse_count'), -1)}"
+            )
+        top_projectile_hits = focus_raw.get("spawn_top_projectile_find_hit_callers")
+        if isinstance(top_projectile_hits, list) and top_projectile_hits:
+            print(f"  capture_projectile_find_hit_callers_top={top_projectile_hits[:6]!r}")
+        projectile_find_hit_head = focus_raw.get("projectile_find_hit_head")
+        if isinstance(projectile_find_hit_head, list) and projectile_find_hit_head:
+            print(f"  capture_projectile_find_hit_head={projectile_find_hit_head[:6]!r}")
         secondary_spawn_count = _int_or(focus_raw.get("secondary_projectile_spawn_count"), 0)
         if secondary_spawn_count > 0:
             print(f"  capture_secondary_projectile_spawn_count={secondary_spawn_count}")
