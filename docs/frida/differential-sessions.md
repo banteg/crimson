@@ -515,3 +515,56 @@ Each entry should capture:
   - reduce `seed_iterations` gap at tick `3453` from `6` to `0`,
   - confirm rewrite reaches `5` handled Gauss/Fire-Bullets decal hooks at that tick (from current `4`),
   - then re-run divergence to check whether the first checkpoint mismatch moves past tick `3504`.
+
+---
+
+## Session 2026-02-08-n
+
+- **Session ID:** `2026-02-08-n`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - focus trace after truncation cleanup:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch11_truncation_cleanup.json`
+  - divergence check after truncation cleanup:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch11_truncation_cleanup.json`
+  - movement/parity validation:
+    `uv run pytest tests/test_math_parity.py tests/test_creature_ai.py tests/test_creature_runtime.py tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- This truncation-boundary cleanup did not move the earliest divergence points:
+  - first pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Fire-Bullets loop parity is unchanged:
+  - `seed_iterations capture=30 rewrite=24 missing=6` (still one missing hit-equivalent loop).
+- The known near-miss boundary is effectively unchanged:
+  - tick `3453`, projectile `3`, creature `19`, substep `57`, margin `+0.099141`.
+- Creature drift distribution shifted slightly but not materially:
+  - creature `19` remains `x_delta=-0.126840` at tick `3453`.
+
+### Fixes from this session
+
+- Reduced excess intermediate float32 truncation in movement/heading parity helpers and AI targeting chains:
+  - `src/crimson/math_parity.py`
+    - switched native constants to exact float32 bit patterns,
+    - collapsed heading/trig chains to one float32 store boundary where appropriate.
+  - `src/crimson/creatures/ai.py`
+    - removed intermediate float32 truncation in `_orbit_target_f32`,
+    - removed intermediate float32 truncation in AI6 orbit target calculation.
+  - `src/crimson/creatures/runtime.py`
+    - kept intermediate math in `_angle_approach`, `_movement_delta_from_heading_f32`, and `_velocity_from_delta_f32` in higher precision, with float32 stores at state boundaries.
+
+### Validation
+
+- `uv run ruff check src/crimson/math_parity.py src/crimson/creatures/ai.py src/crimson/creatures/runtime.py`
+- `uv run pytest tests/test_math_parity.py tests/test_creature_ai.py tests/test_creature_runtime.py tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --top-rng 20 --diff-limit 12 --json-out analysis/frida/focus_trace_tick3453_precision_patch11_truncation_cleanup.json`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch11_truncation_cleanup.json`
+
+### Next probe
+
+- Pivot from broad movement precision tweaks to the earliest missed-hit path itself at tick `3453`:
+  - instrument `projectile_update` hit-resolve ordering around corpse/non-corpse handling in `src/crimson/projectiles.py`,
+  - verify whether rewrite skips one native-equivalent Gauss hit resolve that drives `queue_large_hit_decal_streak`/`fx_queue_add_random` tail calls.
