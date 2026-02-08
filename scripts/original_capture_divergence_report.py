@@ -200,6 +200,41 @@ def _allow_one_tick_creature_count_lag(
     return False
 
 
+def _allow_capture_sample_creature_count(
+    *,
+    tick: int,
+    field_diffs: list[ReplayFieldDiff],
+    expected_by_tick: dict[int, ReplayCheckpoint],
+    actual_by_tick: dict[int, ReplayCheckpoint],
+    capture_sample_creature_counts: dict[int, int],
+) -> bool:
+    if not field_diffs:
+        return False
+    if any(str(diff.field) != "creature_count" for diff in field_diffs):
+        return False
+    if not capture_sample_creature_counts:
+        return False
+
+    sample_count = capture_sample_creature_counts.get(int(tick))
+    if sample_count is None or int(sample_count) < 0:
+        return False
+
+    expected_tick = expected_by_tick.get(int(tick))
+    actual_tick = actual_by_tick.get(int(tick))
+    if expected_tick is None or actual_tick is None:
+        return False
+
+    expected_count = int(expected_tick.creature_count)
+    actual_count = int(actual_tick.creature_count)
+    if expected_count < 0 or actual_count < 0:
+        return False
+
+    # v2 capture `creature_active_count` can transiently disagree with sampled
+    # active slots. When our sim count matches the sampled list exactly and this
+    # is the only field mismatch, keep scanning for a stronger divergence.
+    return actual_count == int(sample_count) and expected_count != int(sample_count)
+
+
 def _iter_jsonl_objects(path: Path):
     open_fn = gzip.open if path.suffix == ".gz" else open
     with open_fn(path, "rt", encoding="utf-8") as handle:
@@ -213,6 +248,28 @@ def _iter_jsonl_objects(path: Path):
                 continue
             if isinstance(obj, dict):
                 yield obj
+
+
+def _load_capture_sample_creature_counts(path: Path) -> dict[int, int]:
+    lower = str(path).lower()
+    if not (lower.endswith(".jsonl") or lower.endswith(".jsonl.gz")):
+        return {}
+
+    out: dict[int, int] = {}
+    for obj in _iter_jsonl_objects(path):
+        if obj.get("event") != "tick":
+            continue
+        tick_index = _int_or(obj.get("tick_index"), -1)
+        if tick_index < 0:
+            continue
+        samples = obj.get("samples")
+        if not isinstance(samples, dict):
+            continue
+        creatures = samples.get("creatures")
+        if not isinstance(creatures, list):
+            continue
+        out[int(tick_index)] = int(len(creatures))
+    return out
 
 
 def _weapon_name(weapon_id: int) -> str:
@@ -672,7 +729,6 @@ def _run_actual_checkpoints(
             max_ticks=max_ticks,
             strict_events=False,
             trace_rng=True,
-            checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
@@ -683,7 +739,6 @@ def _run_actual_checkpoints(
             replay,
             max_ticks=max_ticks,
             trace_rng=True,
-            checkpoint_use_world_step_creature_count=True,
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
             dt_frame_overrides=dt_frame_overrides,
@@ -701,9 +756,11 @@ def _find_first_divergence(
     *,
     float_abs_tol: float,
     max_field_diffs: int,
+    capture_sample_creature_counts: dict[int, int] | None = None,
 ) -> Divergence | None:
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected}
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
+    sample_counts = capture_sample_creature_counts or {}
 
     for exp in expected:
         tick = int(exp.tick_index)
@@ -733,6 +790,14 @@ def _find_first_divergence(
             field_diffs=field_diffs,
             expected_by_tick=expected_by_tick,
             actual_by_tick=actual_by_tick,
+        ):
+            continue
+        if _allow_capture_sample_creature_count(
+            tick=int(tick),
+            field_diffs=field_diffs,
+            expected_by_tick=expected_by_tick,
+            actual_by_tick=actual_by_tick,
+            capture_sample_creature_counts=sample_counts,
         ):
             continue
         if field_diffs:
@@ -1666,11 +1731,13 @@ def main() -> int:
         seed=args.seed,
         inter_tick_rand_draws=args.inter_tick_rand_draws,
     )
+    capture_sample_creature_counts = _load_capture_sample_creature_counts(capture_path)
     divergence = _find_first_divergence(
         expected,
         actual,
         float_abs_tol=float(args.float_abs_tol),
         max_field_diffs=max(1, int(args.max_field_diffs)),
+        capture_sample_creature_counts=capture_sample_creature_counts,
     )
 
     print(f"capture={capture_path}")
