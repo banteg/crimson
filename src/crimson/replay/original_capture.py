@@ -235,6 +235,29 @@ def _coerce_float_like(value: object) -> float | None:
     return None
 
 
+def _coerce_optional_bool(value: object) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return bool(value)
+    if isinstance(value, int):
+        return bool(value)
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            return None
+        return bool(int(value))
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if not text:
+            return None
+        if text in {"1", "true", "yes", "on"}:
+            return True
+        if text in {"0", "false", "no", "off"}:
+            return False
+        return None
+    return None
+
+
 def _parse_frame_dt_ms_from_globals(globals_obj: dict[str, object]) -> float | None:
     dt_ms_i32 = _coerce_int_like(globals_obj.get("frame_dt_ms_i32"))
     if dt_ms_i32 is not None and int(dt_ms_i32) > 0:
@@ -559,6 +582,32 @@ def _parse_v2_aim_heading_by_player(raw: dict[str, object]) -> dict[int, float]:
     return out
 
 
+def _parse_v2_player_key_states(raw: dict[str, object]) -> dict[int, dict[str, bool | None]]:
+    raw_states = raw.get("input_player_keys")
+    if not isinstance(raw_states, list):
+        return {}
+
+    out: dict[int, dict[str, bool | None]] = {}
+    fields = (
+        "move_forward_pressed",
+        "move_backward_pressed",
+        "turn_left_pressed",
+        "turn_right_pressed",
+        "fire_down",
+        "fire_pressed",
+        "reload_pressed",
+    )
+    for idx, item in enumerate(raw_states):
+        if not isinstance(item, dict):
+            continue
+        player_index = _int_or(item.get("player_index"), idx)
+        values: dict[str, bool | None] = {}
+        for key_name in fields:
+            values[key_name] = _coerce_optional_bool(item.get(key_name))
+        out[int(player_index)] = values
+    return out
+
+
 def _enrich_v2_input_approx(
     raw: dict[str, object],
     *,
@@ -568,9 +617,11 @@ def _enrich_v2_input_approx(
     pressed_key_codes = _parse_v2_pressed_key_codes(raw)
     keybinds = _parse_v2_player_keybinds(raw)
     aim_heading_by_player = _parse_v2_aim_heading_by_player(raw)
+    player_key_states = _parse_v2_player_key_states(raw)
     player_count = max(
         len(keybinds),
         len(aim_heading_by_player),
+        (max(player_key_states) + 1) if player_key_states else 0,
         (max(by_player) + 1) if by_player else 0,
     )
 
@@ -580,6 +631,7 @@ def _enrich_v2_input_approx(
             existing = OriginalCaptureInputApprox(player_index=int(player_index))
 
         keybind = keybinds[player_index] if player_index < len(keybinds) else {}
+        key_state = player_key_states.get(int(player_index), {})
         move_forward_key = keybind.get("move_forward")
         move_backward_key = keybind.get("move_backward")
         turn_left_key = keybind.get("turn_left")
@@ -592,21 +644,43 @@ def _enrich_v2_input_approx(
         turn_left_pressed = existing.turn_left_pressed
         turn_right_pressed = existing.turn_right_pressed
         fire_down = existing.fire_down
+        fire_pressed = existing.fire_pressed
         reload_pressed = existing.reload_pressed
         aim_heading = existing.aim_heading
 
+        if key_state.get("move_forward_pressed") is not None:
+            move_forward_pressed = bool(key_state["move_forward_pressed"])
+        if key_state.get("move_backward_pressed") is not None:
+            move_backward_pressed = bool(key_state["move_backward_pressed"])
+        if key_state.get("turn_left_pressed") is not None:
+            turn_left_pressed = bool(key_state["turn_left_pressed"])
+        if key_state.get("turn_right_pressed") is not None:
+            turn_right_pressed = bool(key_state["turn_right_pressed"])
+        if key_state.get("fire_down") is not None:
+            fire_down = bool(key_state["fire_down"])
+        if key_state.get("fire_pressed") is not None:
+            fire_pressed = bool(key_state["fire_pressed"])
+        if key_state.get("reload_pressed") is not None:
+            reload_pressed = bool(key_state["reload_pressed"])
+
         if move_forward_key is not None:
-            move_forward_pressed = bool(int(move_forward_key) in pressed_key_codes)
+            if key_state.get("move_forward_pressed") is None:
+                move_forward_pressed = bool(int(move_forward_key) in pressed_key_codes)
         if move_backward_key is not None:
-            move_backward_pressed = bool(int(move_backward_key) in pressed_key_codes)
+            if key_state.get("move_backward_pressed") is None:
+                move_backward_pressed = bool(int(move_backward_key) in pressed_key_codes)
         if turn_left_key is not None:
-            turn_left_pressed = bool(int(turn_left_key) in pressed_key_codes)
+            if key_state.get("turn_left_pressed") is None:
+                turn_left_pressed = bool(int(turn_left_key) in pressed_key_codes)
         if turn_right_key is not None:
-            turn_right_pressed = bool(int(turn_right_key) in pressed_key_codes)
+            if key_state.get("turn_right_pressed") is None:
+                turn_right_pressed = bool(int(turn_right_key) in pressed_key_codes)
         if fire_key is not None:
-            fire_down = bool(int(fire_key) in pressed_key_codes)
+            if key_state.get("fire_down") is None:
+                fire_down = bool(int(fire_key) in pressed_key_codes)
         if reload_key is not None:
-            reload_pressed = bool(int(reload_key) in pressed_key_codes)
+            if key_state.get("reload_pressed") is None:
+                reload_pressed = bool(int(reload_key) in pressed_key_codes)
         if int(player_index) in aim_heading_by_player:
             aim_heading = float(aim_heading_by_player[int(player_index)])
 
@@ -624,7 +698,7 @@ def _enrich_v2_input_approx(
             turn_left_pressed=turn_left_pressed,
             turn_right_pressed=turn_right_pressed,
             fire_down=fire_down,
-            fire_pressed=existing.fire_pressed,
+            fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
         )
 
