@@ -84,3 +84,33 @@ Each entry should capture:
 
 - Capture a focused run around tick `1794` with entity samples enabled so native projectile/creature positions can be compared directly:
   `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=64`.
+
+---
+
+## Session 2026-02-08-c
+
+- **Session ID:** `2026-02-08-c`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 16 --lead-lookback 512 --run-summary --json-out analysis/frida/divergence_report_latest.json`
+- **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
+
+### Findings
+
+- Divergence is unchanged at tick `1794`: rewrite resolves a secondary-projectile kill (`creature_index=25`, `xp_awarded=41`) while capture reports no `creature_damage`/`creature_death` events and only two native RNG calls.
+- Rewrite-only RNG-on-zero-native ticks (`1590`, `1654`, `1671`, `1673`, `1688`, `1709`, `1710`, `1715`, `1791`) were traced to `creature_ai7_tick_link_timer`.
+- Experimental disabling/removal of AI7 timer RNG behavior moved divergence much earlier (`tick 736`), so AI7 timer draws are likely required behavior (or capture tick-boundary attribution), not the primary fix target.
+
+### Fixes from this session
+
+- Added mode-aware input reconstruction for original-capture replays:
+  - parse/store `move_mode` + `aim_scheme`,
+  - include alternate single-player keybinds,
+  - compute `digital_move_enabled_by_player` and emit it in bootstrap payload.
+- Updated survival/rush replay runners to decode digital movement keys only when bootstrap enables it for that player.
+- Added `--run-summary-short` to `scripts/original_capture_divergence_report.py` for concise native-run highlight output (`bonus/weapon/perk/level/state`), with row-limit knobs.
+
+### Next probe
+
+- Capture a focused run around tick `1794` with entity samples so we can compare native projectile/creature geometry directly at the kill boundary:
+  `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=96`.

@@ -66,6 +66,15 @@ class RunSummaryEvent:
     detail: str
 
 
+RUN_SUMMARY_SHORT_KINDS = {
+    "bonus_pickup",
+    "weapon_assign",
+    "perk_pick",
+    "level_up",
+    "state_transition",
+}
+
+
 NATIVE_FUNCTION_TO_PORT_PATHS: dict[str, tuple[str, ...]] = {
     "creature_update_all": (
         "src/crimson/creatures/runtime.py",
@@ -470,6 +479,18 @@ def _build_run_summary_events(capture_path: Path, *, expected: list[ReplayCheckp
         if events:
             return events
     return _build_run_summary_events_from_checkpoints(expected)
+
+
+def _build_short_run_summary_events(events: list[RunSummaryEvent], *, max_rows: int = 24) -> list[RunSummaryEvent]:
+    """Return a concise subset of run-summary events for quick mental-model checks."""
+
+    if not events:
+        return []
+    limit = max(1, int(max_rows))
+    out = [event for event in events if str(event.kind) in RUN_SUMMARY_SHORT_KINDS]
+    if not out:
+        out = list(events)
+    return out[:limit]
 
 
 def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> dict[int, dict[str, object]]:
@@ -1466,14 +1487,14 @@ def _print_investigation_leads(leads: list[InvestigationLead]) -> None:
             print(f"     - suggested_paths: {', '.join(lead.code_paths)}")
 
 
-def _print_run_summary(events: list[RunSummaryEvent], *, max_rows: int = 120) -> None:
+def _print_run_summary(events: list[RunSummaryEvent], *, max_rows: int = 120, title: str = "run_summary") -> None:
     if not events:
         print()
-        print("run_summary: (no significant events found)")
+        print(f"{title}: (no significant events found)")
         return
 
     print()
-    print("run_summary:")
+    print(f"{title}:")
     limit = max(1, int(max_rows))
     for event in events[:limit]:
         print(f"  - tick={int(event.tick_index):5d} [{event.kind}] {event.detail}")
@@ -1524,6 +1545,23 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print a compact timeline of native run events (bonus/weapon/perk/state/level)",
     )
+    parser.add_argument(
+        "--run-summary-short",
+        action="store_true",
+        help="print a shorter native run timeline (bonus/weapon/perk/level/state highlights)",
+    )
+    parser.add_argument(
+        "--run-summary-max-rows",
+        type=int,
+        default=120,
+        help="max rows to print for --run-summary",
+    )
+    parser.add_argument(
+        "--run-summary-short-max-rows",
+        type=int,
+        default=24,
+        help="max rows to print for --run-summary-short",
+    )
     parser.add_argument("--json-out", type=Path, default=None, help="optional machine-readable report output path")
     return parser
 
@@ -1566,9 +1604,25 @@ def main() -> int:
     )
 
     run_summary_events: list[RunSummaryEvent] = []
-    if bool(args.run_summary):
+    run_summary_short_events: list[RunSummaryEvent] = []
+    if bool(args.run_summary) or bool(args.run_summary_short):
         run_summary_events = _build_run_summary_events(capture_path, expected=expected)
-        _print_run_summary(run_summary_events)
+        if bool(args.run_summary_short):
+            run_summary_short_events = _build_short_run_summary_events(
+                run_summary_events,
+                max_rows=max(1, int(args.run_summary_short_max_rows)),
+            )
+            _print_run_summary(
+                run_summary_short_events,
+                max_rows=max(1, int(args.run_summary_short_max_rows)),
+                title="run_summary_short",
+            )
+        if bool(args.run_summary):
+            _print_run_summary(
+                run_summary_events,
+                max_rows=max(1, int(args.run_summary_max_rows)),
+                title="run_summary",
+            )
 
     if divergence is None:
         print("result=ok (no divergence found with current settings)")
@@ -1718,8 +1772,9 @@ def main() -> int:
                 else {}
             ),
         }
-        if bool(args.run_summary):
+        if bool(args.run_summary) or bool(args.run_summary_short):
             payload["run_summary_events"] = [asdict(event) for event in run_summary_events]
+            payload["run_summary_short_events"] = [asdict(event) for event in run_summary_short_events]
         args.json_out.parent.mkdir(parents=True, exist_ok=True)
         args.json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print()

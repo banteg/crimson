@@ -163,3 +163,22 @@ def test_run_summary_events_fall_back_to_checkpoints() -> None:
     assert any(event.kind == "weapon_assign" and "Pistol (1)" in event.detail for event in events)
     assert any(event.kind == "level_up" and "level 1 -> 2" in event.detail for event in events)
     assert any(event.kind == "perk_pick" and "Telekinetic (20)" in event.detail for event in events)
+
+
+def test_build_short_run_summary_events_prefers_key_kinds() -> None:
+    report = _load_report_module()
+    events = [
+        report.RunSummaryEvent(tick_index=10, kind="weapon_assign", detail="weapon change"),
+        report.RunSummaryEvent(tick_index=11, kind="perk_pick", detail="perk pick"),
+        report.RunSummaryEvent(tick_index=12, kind="debug_note", detail="ignored detail"),
+        report.RunSummaryEvent(tick_index=13, kind="bonus_pickup", detail="bonus"),
+        report.RunSummaryEvent(tick_index=14, kind="state_transition", detail="state"),
+    ]
+
+    short_events = report._build_short_run_summary_events(events, max_rows=3)
+
+    assert [event.kind for event in short_events] == [
+        "weapon_assign",
+        "perk_pick",
+        "bonus_pickup",
+    ]

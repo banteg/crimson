@@ -89,6 +89,18 @@ uv run python scripts/original_capture_divergence_report.py \
 (bonus pickups, weapon assignments, perk picks when present, level-ups, and
 state transitions) so divergence debugging has immediate run context.
 
+If you only want a quick "what happened in this run?" mental model, use:
+
+```text
+uv run python scripts/original_capture_divergence_report.py \
+  artifacts/frida/share/gameplay_diff_capture_v2.jsonl \
+  --run-summary-short
+```
+
+`--run-summary-short` prints a shorter highlight list (bonus/weapon/perk/level/state).
+Both modes can be tuned with `--run-summary-max-rows` and
+`--run-summary-short-max-rows`.
+
 The report also infers rewrite-side `rand_calls` from checkpoint RNG marks and
 prints `rand_calls(e/a/d)` in the window table (`expected/actual/delta`), plus
 focus-tick stage attribution (`secondary_projectiles`, `creatures`, etc.) and
