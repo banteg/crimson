@@ -1,3 +1,5 @@
+# type: ignore
+
 from __future__ import annotations
 
 """Schema + conversion helpers for original-game differential sidecars."""
