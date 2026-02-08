@@ -47,7 +47,7 @@ just frida-gameplay-diff-capture-v2
 - Emits session fingerprint metadata (`session_id`, module hash, pointer hash) for
   run-to-run provenance.
 - Emits compact `before`/`after` snapshots (including input + bindings) and
-  optional detailed entity samples.
+  detailed entity samples each captured tick by default.
 
 ## Convert to checkpoints
 
@@ -108,13 +108,24 @@ rewrite death ledger head to localize large RNG bursts quickly.
 
 Track each run in `docs/frida/differential-sessions.md`.
 
-## Useful env knobs
+## Default capture profile
+
+Without any extra env vars, v2 now captures full detail for every tracked tick:
+
+- `before`/`after` snapshots on every tick.
+- Detailed entity samples (`creatures`, `projectiles`, `secondary_projectiles`, `bonuses`) on every tick.
+- Unlimited per-tick sample stream limits (`*_SAMPLE_LIMIT=-1` semantics).
+- Unlimited RNG sample/caller heads (`CRIMSON_FRIDA_V2_RNG_HEAD=-1`, `CRIMSON_FRIDA_V2_RNG_CALLERS=-1`).
+- Unlimited event/phase head + tick event budget (`CRIMSON_FRIDA_V2_MAX_HEAD=-1`, `CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK=-1`).
+- Player count resolved from game memory (`config_player_count`) unless manually overridden.
+
+Backtraces remain off by default (`CRIMSON_FRIDA_INCLUDE_BT=0`).
+
+## Optional env knobs
 
 - `CRIMSON_FRIDA_V2_STATES=6,9,10` (override tracked game states)
 - `CRIMSON_FRIDA_V2_ALL_STATES=1` (capture ticks for all states)
-- `CRIMSON_FRIDA_V2_FOCUS_TICK=1234` (capture full snapshots/samples only around a specific tick)
-- `CRIMSON_FRIDA_V2_FOCUS_RADIUS=30` (window around focus tick; default `0`)
-- `CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY=30`
+- `CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY=30` (throttle detailed entity samples)
 - `CRIMSON_FRIDA_V2_CREATURE_SAMPLE_LIMIT=24`
 - `CRIMSON_FRIDA_V2_PROJECTILE_SAMPLE_LIMIT=32`
 - `CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT=32`
@@ -126,8 +137,4 @@ Track each run in `docs/frida/differential-sessions.md`.
 - `CRIMSON_FRIDA_V2_RNG_HEAD=-1` (per-tick RNG sample head size; default unlimited, `0` disables head samples)
 - `CRIMSON_FRIDA_V2_RNG_CALLERS=-1` (per-tick RNG caller buckets; default unlimited)
 - `CRIMSON_FRIDA_PLAYER_COUNT=2` (optional override; default uses `config_player_count` from memory)
-
-Default sample limits are unlimited (`-1`) for creature/projectile/secondary-projectile/bonus streams, and `0` disables that sample stream.
-Backtraces are off by default (`CRIMSON_FRIDA_INCLUDE_BT=0`).
-When `CRIMSON_FRIDA_V2_FOCUS_TICK` is set, raw events are emitted only for the
-focus window.
+- `CRIMSON_FRIDA_V2_FOCUS_TICK=1234` and `CRIMSON_FRIDA_V2_FOCUS_RADIUS=30` (optional focus tagging for diagnostics; does not gate snapshots/samples)

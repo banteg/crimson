@@ -101,10 +101,10 @@ const CONFIG = {
   playerCountOverride: parseIntEnv("CRIMSON_FRIDA_PLAYER_COUNT", 0),
   focusTick: parseIntEnv("CRIMSON_FRIDA_V2_FOCUS_TICK", -1),
   focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_V2_FOCUS_RADIUS", 0)),
-  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY", 60)),
+  tickDetailsEvery: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_TICK_DETAILS_EVERY", 1)),
   heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_V2_HEARTBEAT_MS", 1000)),
-  maxHeadPerKind: Math.max(4, parseIntEnv("CRIMSON_FRIDA_V2_MAX_HEAD", 16)),
-  maxEventsPerTick: Math.max(32, parseIntEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", 512)),
+  maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_HEAD", -1, 0),
+  maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_MAX_EVENTS_PER_TICK", -1, 0),
   maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_HEAD", -1, 0),
   maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_V2_RNG_CALLERS", -1, 1),
   maxCreatureDeltaIds: Math.max(1, parseIntEnv("CRIMSON_FRIDA_V2_CREATURE_DELTA_IDS", 32)),
@@ -605,16 +605,8 @@ function isFocusTick(tickIndex) {
   return Math.abs((tickIndex | 0) - (CONFIG.focusTick | 0)) <= CONFIG.focusRadius;
 }
 
-function currentTickIsFocused() {
-  const tick = outState.currentTick;
-  if (!tick) return !hasFocusWindow();
-  return isFocusTick(tick.tick_index);
-}
-
 function shouldEmitRawEvent() {
-  if (!CONFIG.includeRawEvents) return false;
-  if (!hasFocusWindow()) return true;
-  return currentTickIsFocused();
+  return !!CONFIG.includeRawEvents;
 }
 
 function hashModuleSample(exeModule) {
@@ -1391,7 +1383,8 @@ function makeTickContext() {
 }
 
 function pushHead(head, item) {
-  if (!head || head.length >= CONFIG.maxHeadPerKind) return;
+  if (!head) return;
+  if (CONFIG.maxHeadPerKind >= 0 && head.length >= CONFIG.maxHeadPerKind) return;
   head.push(item);
 }
 
@@ -1434,7 +1427,7 @@ function addTickEvent(kind, payload, commandToken) {
     return;
   }
   tick.event_counts[kind] = (tick.event_counts[kind] || 0) + 1;
-  if (tick.event_total >= CONFIG.maxEventsPerTick) {
+  if (CONFIG.maxEventsPerTick >= 0 && tick.event_total >= CONFIG.maxEventsPerTick) {
     tick.overflow = true;
     return;
   }
@@ -1584,7 +1577,7 @@ function finalizeTick() {
   const beforeGlobals = tick.before && tick.before.globals ? tick.before.globals : {};
   const beforeStatus = tick.before && tick.before.status ? tick.before.status : {};
   const beforePlayers = tick.before && tick.before.players ? tick.before.players : [];
-  const focused = tick.focus_tick || isFocusTick(tick.tick_index);
+  const focused = isFocusTick(tick.tick_index);
   const tsLeave = nowMs();
   const afterPlayers = after.players;
   const globals = after.globals;
@@ -1845,12 +1838,12 @@ function finalizeTick() {
     out.creature_lifecycle = creatureLifecycleDiagnostics;
   }
 
-  if (CONFIG.includeTickSnapshots && focused) {
+  if (CONFIG.includeTickSnapshots) {
     out.before = tick.before;
     out.after = after;
   }
 
-  if (focused && maybeDetailedSamples(tick.tick_index)) {
+  if (maybeDetailedSamples(tick.tick_index)) {
     out.samples = {
       creatures: readActiveCreatureSample(CONFIG.creatureSampleLimit),
       projectiles: readActiveProjectileSample(CONFIG.projectileSampleLimit),

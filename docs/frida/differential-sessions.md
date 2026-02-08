@@ -34,6 +34,15 @@ Each entry should capture:
 
 ---
 
+## Capture policy (current default)
+
+- Record full-detail v2 captures by default (no focus window, no sample limits).
+- Keep `artifacts/frida/share/gameplay_diff_capture_v2.jsonl` as the source artifact and always log SHA256 per session.
+- Use `--run-summary` or `--run-summary-short` in divergence reports so each session entry includes a native-run narrative.
+- If any env knob is used to throttle capture volume, list the exact knob/value in that session entry.
+
+---
+
 ## Session 2026-02-08-a
 
 - **Session ID:** `2026-02-08-a`
