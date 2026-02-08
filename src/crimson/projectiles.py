@@ -976,9 +976,6 @@ class ProjectilePool:
                 if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
                     _reset_shock_chain_if_owner(proj_index)
                 behavior.linger(ctx, proj)
-
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             if (
@@ -988,8 +985,6 @@ class ProjectilePool:
                 or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             steps = int(proj.base_damage)
@@ -1242,8 +1237,6 @@ class ProjectilePool:
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             if (
@@ -1253,8 +1246,6 @@ class ProjectilePool:
                 or proj.pos.y > world_size + margin
             ):
                 proj.life_timer -= dt
-                if proj.life_timer <= 0.0:
-                    proj.active = False
                 continue
 
             speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
