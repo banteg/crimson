@@ -37,6 +37,9 @@ CONTROLS_RIGHT_PANEL_HEIGHT = 378.0
 CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
 
+# `ui_menu_item_update`: idle rebind value tint (rgb 70,180,240 @ alpha 0.6).
+CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
+
 
 @dataclass(frozen=True, slots=True)
 class _DropdownLayout:
@@ -625,7 +628,7 @@ class ControlsMenuView(PanelMenuView):
                     input_code_name(_slot_key(slot)),
                     Vec2(right_top_left.x + 180.0 * panel_scale, row_y),
                     1.0 * panel_scale,
-                    rl.Color(255, 255, 255, 178),
+                    CONTROLS_REBIND_VALUE_COLOR,
                 )
                 row_y += 16.0 * panel_scale
             return row_y
