@@ -530,6 +530,16 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         event_counts_obj = event_counts if isinstance(event_counts, dict) else {}
         event_heads = obj.get("event_heads")
         event_heads_obj = event_heads if isinstance(event_heads, dict) else {}
+        samples = obj.get("samples")
+        samples_obj = samples if isinstance(samples, dict) else {}
+        sample_creatures = samples_obj.get("creatures")
+        sample_creatures_obj = sample_creatures if isinstance(sample_creatures, list) else []
+        sample_projectiles = samples_obj.get("projectiles")
+        sample_projectiles_obj = sample_projectiles if isinstance(sample_projectiles, list) else []
+        sample_secondary = samples_obj.get("secondary_projectiles")
+        sample_secondary_obj = sample_secondary if isinstance(sample_secondary, list) else []
+        sample_bonuses = samples_obj.get("bonuses")
+        sample_bonuses_obj = sample_bonuses if isinstance(sample_bonuses, list) else []
         creature_damage_head = event_heads_obj.get("creature_damage")
         creature_damage_head_obj = creature_damage_head if isinstance(creature_damage_head, list) else []
         projectile_spawn_head = event_heads_obj.get("projectile_spawn")
@@ -553,6 +563,42 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
         rng_callers = rng_obj.get("rand_callers") if isinstance(rng_obj.get("rand_callers"), list) else []
         if not rng_callers:
             rng_callers = rng_callers_top_obj
+
+        sample_creatures_head: list[dict[str, object]] = []
+        for item in sample_creatures_obj[:6]:
+            if not isinstance(item, dict):
+                continue
+            pos_obj = item.get("pos") if isinstance(item.get("pos"), dict) else {}
+            sample_creatures_head.append(
+                {
+                    "index": _int_or(item.get("index")),
+                    "type_id": _int_or(item.get("type_id")),
+                    "hp": _float_or(item.get("hp")),
+                    "hitbox_size": _float_or(item.get("hitbox_size")),
+                    "pos": {
+                        "x": _float_or(pos_obj.get("x")),
+                        "y": _float_or(pos_obj.get("y")),
+                    },
+                }
+            )
+
+        sample_secondary_head: list[dict[str, object]] = []
+        for item in sample_secondary_obj[:6]:
+            if not isinstance(item, dict):
+                continue
+            pos_obj = item.get("pos") if isinstance(item.get("pos"), dict) else {}
+            sample_secondary_head.append(
+                {
+                    "index": _int_or(item.get("index")),
+                    "type_id": _int_or(item.get("type_id")),
+                    "target_id": _int_or(item.get("target_id")),
+                    "life_timer": _float_or(item.get("life_timer")),
+                    "pos": {
+                        "x": _float_or(pos_obj.get("x")),
+                        "y": _float_or(pos_obj.get("y")),
+                    },
+                }
+            )
 
         out[int(tick)] = {
             "rng_rand_calls": rng_rand_calls,
@@ -586,6 +632,15 @@ def _load_raw_tick_debug(path: Path, tick_indices: set[int] | None = None) -> di
             "lifecycle_after_count": _int_or(lifecycle_obj.get("after_count")),
             "before_player0": before_players_obj[0] if before_players_obj else None,
             "input_player_keys": obj.get("input_player_keys") if isinstance(obj.get("input_player_keys"), list) else [],
+            "sample_streams_present": bool(samples_obj),
+            "sample_counts": {
+                "creatures": len(sample_creatures_obj) if isinstance(sample_creatures, list) else -1,
+                "projectiles": len(sample_projectiles_obj) if isinstance(sample_projectiles, list) else -1,
+                "secondary_projectiles": len(sample_secondary_obj) if isinstance(sample_secondary, list) else -1,
+                "bonuses": len(sample_bonuses_obj) if isinstance(sample_bonuses, list) else -1,
+            },
+            "sample_creatures_head": sample_creatures_head,
+            "sample_secondary_head": sample_secondary_head,
         }
     return out
 
@@ -1119,6 +1174,34 @@ def _build_investigation_leads(
     focus_exp = expected_by_tick.get(int(focus_tick))
     focus_act = actual_by_tick.get(int(focus_tick))
     focus_raw = raw_debug_by_tick.get(int(focus_tick), {})
+    sample_counts = focus_raw.get("sample_counts") if isinstance(focus_raw.get("sample_counts"), dict) else {}
+    sample_counts_int = [
+        _int_or(sample_counts.get(key), -1)
+        for key in ("creatures", "projectiles", "secondary_projectiles", "bonuses")
+    ]
+    samples_missing = bool(not sample_counts or all(int(value) < 0 for value in sample_counts_int))
+    if samples_missing:
+        leads.append(
+            InvestigationLead(
+                title="Capture lacks entity samples at the focus tick",
+                evidence=(
+                    (
+                        "focus tick has no `samples` payload in the capture; geometry-level comparison "
+                        "for creatures/projectiles is unavailable on this run"
+                    ),
+                    (
+                        "use the latest v2 capture script defaults (full-detail per tick) so "
+                        "`samples.secondary_projectiles` and `samples.creatures` are present at divergence ticks"
+                    ),
+                ),
+                native_functions=(),
+                code_paths=(
+                    "scripts/frida/gameplay_diff_capture_v2.js",
+                    "docs/frida/gameplay-diff-capture-v2.md",
+                ),
+            )
+        )
+
     if focus_exp is not None and focus_act is not None:
         expected_rand_calls = _int_or(
             focus_raw.get("rng_rand_calls"),
@@ -1707,6 +1790,15 @@ def main() -> int:
         player_keys = _extract_player_input_keys(focus_raw, player_index=0)
         if player_keys:
             print(f"  input_player_keys[0]={player_keys!r}")
+        sample_counts = focus_raw.get("sample_counts")
+        if isinstance(sample_counts, dict) and sample_counts:
+            print(f"  sample_counts={sample_counts!r}")
+        sample_secondary_head = focus_raw.get("sample_secondary_head")
+        if isinstance(sample_secondary_head, list) and sample_secondary_head:
+            print(f"  sample_secondary_head={sample_secondary_head[:6]!r}")
+        sample_creatures_head = focus_raw.get("sample_creatures_head")
+        if isinstance(sample_creatures_head, list) and sample_creatures_head:
+            print(f"  sample_creatures_head={sample_creatures_head[:6]!r}")
     if focus_actual_ckpt is not None:
         actual_rand_calls = _actual_rand_calls_for_checkpoint(focus_actual_ckpt)
         stage_calls = _actual_rand_stage_calls(focus_actual_ckpt)

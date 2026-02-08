@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
 
@@ -140,3 +141,66 @@ def test_window_rows_include_actual_rand_calls_and_delta() -> None:
     assert int(row["actual_rand_calls"]) == 10
     assert int(row["rand_calls_delta"]) == 8
     assert int(row["actual_deaths"]) == 1
+
+
+def test_load_raw_tick_debug_tracks_sample_coverage(tmp_path: Path) -> None:
+    report = _load_report_module()
+    capture_path = tmp_path / "capture.jsonl"
+    row = {
+        "event": "tick",
+        "tick_index": 42,
+        "checkpoint": {"tick_index": 42},
+        "samples": {
+            "creatures": [{"index": 5, "type_id": 2, "hp": 100.0, "hitbox_size": 16.0, "pos": {"x": 10.0, "y": 20.0}}],
+            "projectiles": [],
+            "secondary_projectiles": [
+                {"index": 7, "type_id": 1, "target_id": -1, "life_timer": 0.9, "pos": {"x": 15.0, "y": 25.0}}
+            ],
+            "bonuses": [],
+        },
+    }
+    capture_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    raw = report._load_raw_tick_debug(capture_path, {42})
+    assert 42 in raw
+    tick = raw[42]
+    assert tick["sample_streams_present"] is True
+    assert tick["sample_counts"]["creatures"] == 1
+    assert tick["sample_counts"]["secondary_projectiles"] == 1
+    assert tick["sample_secondary_head"][0]["index"] == 7
+    assert tick["sample_creatures_head"][0]["index"] == 5
+
+
+def test_investigation_leads_flag_missing_focus_samples() -> None:
+    report = _load_report_module()
+    expected_ckpt = _checkpoint(
+        tick=5,
+        rng_marks={"rand_calls": 0},
+    )
+    actual_ckpt = _checkpoint(
+        tick=5,
+        rng_marks={
+            "before_world_step": 0x11111111,
+            "after_world_step": 0x11111111,
+            "after_wave_spawns": 0x11111111,
+        },
+    )
+    divergence = report.Divergence(
+        tick_index=5,
+        kind="state_mismatch",
+        field_diffs=tuple(),
+        expected=expected_ckpt,
+        actual=actual_ckpt,
+    )
+
+    leads = report._build_investigation_leads(
+        divergence=divergence,
+        focus_tick=5,
+        lookback_ticks=32,
+        float_abs_tol=1e-3,
+        expected_by_tick={5: expected_ckpt},
+        actual_by_tick={5: actual_ckpt},
+        raw_debug_by_tick={5: {}},
+        native_ranges=tuple(),
+    )
+    assert any(lead.title == "Capture lacks entity samples at the focus tick" for lead in leads)

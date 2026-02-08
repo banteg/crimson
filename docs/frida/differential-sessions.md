@@ -173,6 +173,7 @@ Each entry should capture:
 - Updated `src/crimson/projectiles.py` homing secondary target selection to match native nearest-target sentinel behavior (active + hitbox sentinel, no HP gate fallback path).
 - Updated secondary projectile scan logic to use `active` checks (native-like) instead of HP-only checks for lock-on/collision candidate filtering, and added explicit `active` guard in detonation radius damage loop.
 - Added regression tests in `tests/test_projectiles.py` for native-like homing target sentinel behavior and HP-agnostic active collision scan behavior.
+- Updated `scripts/original_capture_divergence_report.py` to surface focus-tick sample coverage (`sample_counts`) and emit an explicit blocker lead when entity samples are missing at divergence ticks, with tests in `tests/test_original_capture_divergence_report_rng_calls.py`.
 
 ### Next probe
 
