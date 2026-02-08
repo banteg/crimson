@@ -151,3 +151,29 @@ Each entry should capture:
 
 - Record a new focused session using the updated script and include secondary projectile samples:
   `CRIMSON_FRIDA_V2_FOCUS_TICK=1794 CRIMSON_FRIDA_V2_FOCUS_RADIUS=128 CRIMSON_FRIDA_V2_SECONDARY_PROJECTILE_SAMPLE_LIMIT=64`.
+
+---
+
+## Session 2026-02-08-e
+
+- **Session ID:** `2026-02-08-e`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `a40e7fed4ea7b4658d420bc31f6101307864c8de1b06f926d9ddf7c0010ac2ee`
+- **Verifier command:** `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 20 --json-out analysis/frida/divergence_report_latest.json`
+- **First mismatch:** `tick 1794 (players[0].experience, score_xp)`
+
+### Findings
+
+- Divergence is still the same (`tick 1794`, rewrite-only `+182` RNG draws in `secondary_projectiles`, rewrite-only kill worth `+41 XP`).
+- This capture still lacks per-tick `samples` rows at the divergence tick, so we still cannot do geometry-level native-vs-rewrite comparison for projectile/creature positions on this recording.
+- Ghidra comparison found a concrete secondary homing mismatch: native lock-on uses `creature_find_nearest(origin, -1, 0.0)` semantics (active + `hitbox_size == 16.0`, no HP gate, fallback index `0`), while rewrite still used HP-based candidate gating.
+
+### Fixes from this session
+
+- Updated `src/crimson/projectiles.py` homing secondary target selection to match native nearest-target sentinel behavior (active + hitbox sentinel, no HP gate fallback path).
+- Updated secondary projectile scan logic to use `active` checks (native-like) instead of HP-only checks for lock-on/collision candidate filtering, and added explicit `active` guard in detonation radius damage loop.
+- Added regression tests in `tests/test_projectiles.py` for native-like homing target sentinel behavior and HP-agnostic active collision scan behavior.
+
+### Next probe
+
+- Record a new capture with the latest v2 script defaults (`48a07c61`, full-detail tick sampling by default), then rerun divergence to compare `samples.secondary_projectiles`/`samples.creatures` at the first mismatch tick directly.
