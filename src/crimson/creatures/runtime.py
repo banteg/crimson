@@ -632,6 +632,14 @@ class CreaturePool:
                 continue
 
             if creature.hitbox_size != CREATURE_HITBOX_ALIVE or creature.hp <= 0.0:
+                # Native still ticks AI7 link-timer state (and its RNG draws) for
+                # dead creatures inside `creature_update_all`.
+                if (
+                    dt > 0.0
+                    and float(state.bonuses.freeze) <= 0.0
+                    and (creature.flags & CreatureFlags.AI7_LINK_TIMER)
+                ):
+                    creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=rand)
                 if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
                     creature.hitbox_size = CREATURE_HITBOX_ALIVE - 0.001
                 if dt > 0.0:
