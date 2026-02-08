@@ -234,6 +234,7 @@ class _DatabaseBaseView:
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
             shadow=fx_detail,
+            flip_x=True,
         )
 
         font = self._ensure_small_font()
