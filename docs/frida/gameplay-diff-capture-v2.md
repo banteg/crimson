@@ -38,6 +38,9 @@ just frida-gameplay-diff-capture-v2
   `creature_spawn_tinted`) with caller buckets.
 - Captures input-query telemetry (`input_primary_*`, `input_any_key_pressed`) and
   RNG usage (`crt_rand`) per tick, including hashes/callers.
+- Emits per-player key state snapshots (`input_player_keys`) derived from
+  `player_update` key queries, so replay conversion can avoid ambiguous
+  `input_any_key` unions when opposite directions appear in the same tick.
 - Emits per-tick diagnostics for timing/sampling analysis:
   `diagnostics.timing`, `diagnostics.spawn`, plus `checkpoint.debug`.
   Spawn diagnostics include low-level source buckets (`top_low_level_sources`).

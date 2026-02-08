@@ -124,6 +124,7 @@ const CONFIG = {
 };
 
 const FN = {
+  player_update: 0x004136b0,
   gameplay_update_and_render: 0x0040aab0,
   quest_mode_update: 0x004070e0,
   rush_mode_update: 0x004072b0,
@@ -153,6 +154,9 @@ const FN = {
   sfx_play_panned: 0x0043d260,
   sfx_play_exclusive: 0x0043d460,
 };
+
+// Ghidra (latest sync): first function after `player_update`.
+const PLAYER_UPDATE_END_RVA = 0x00417640;
 
 const FN_GRIM_RVA = {
   grim_is_key_active: 0x00006fe0,
@@ -1171,10 +1175,86 @@ function makeCoreSnapshot() {
   };
 }
 
+function parseHexU32(value) {
+  if (value == null) return null;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return null;
+    return value >>> 0;
+  }
+  const text = String(value).trim();
+  if (!text) return null;
+  const parsed = parseInt(text, 16);
+  if (!Number.isFinite(parsed)) return null;
+  return parsed >>> 0;
+}
+
+function buildEmptyPlayerKeyState(playerIndex) {
+  return {
+    player_index: playerIndex | 0,
+    move_forward_pressed: null,
+    move_backward_pressed: null,
+    turn_left_pressed: null,
+    turn_right_pressed: null,
+    fire_down: null,
+    fire_pressed: null,
+    reload_pressed: null,
+  };
+}
+
+function ensurePlayerKeyState(tick, playerIndex) {
+  if (!tick) return null;
+  const idx = playerIndex | 0;
+  if (!tick.input_player_keys[idx]) {
+    tick.input_player_keys[idx] = buildEmptyPlayerKeyState(idx);
+  }
+  return tick.input_player_keys[idx];
+}
+
+function isPlayerUpdateCaller(callerStaticHex) {
+  const caller = parseHexU32(callerStaticHex);
+  if (caller == null) return false;
+  return caller >= (FN.player_update >>> 0) && caller < (PLAYER_UPDATE_END_RVA >>> 0);
+}
+
+function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStaticHex) {
+  if (!tick || !isPlayerUpdateCaller(callerStaticHex)) return;
+  if (!Number.isFinite(keyCode)) return;
+  const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
+  if (!Array.isArray(bindings) || bindings.length === 0) return;
+
+  const key = keyCode | 0;
+  const down = !!pressed;
+  for (let i = 0; i < bindings.length; i++) {
+    const binding = bindings[i];
+    if (!binding || typeof binding !== "object") continue;
+    const state = ensurePlayerKeyState(tick, i);
+    if (!state) continue;
+    if ((binding.move_forward | 0) === key) state.move_forward_pressed = down;
+    if ((binding.move_backward | 0) === key) state.move_backward_pressed = down;
+    if ((binding.turn_left | 0) === key) state.turn_left_pressed = down;
+    if ((binding.turn_right | 0) === key) state.turn_right_pressed = down;
+    if ((binding.fire | 0) === key) {
+      if (queryName === "grim_is_key_active") state.fire_down = down;
+      if (queryName === "grim_was_key_pressed") state.fire_pressed = down;
+    }
+    if ((binding.reload | 0) === key && queryName === "grim_was_key_pressed") {
+      state.reload_pressed = down;
+    }
+  }
+}
+
 function makeTickContext() {
   const before = makeCoreSnapshot();
   const creatureDigestBefore = CONFIG.enableCreatureLifecycleDigest ? captureCreatureDigest() : null;
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
+  const playerBindings =
+    before && before.input_bindings && Array.isArray(before.input_bindings.players)
+      ? before.input_bindings.players
+      : [];
+  const inputPlayerKeys = [];
+  for (let i = 0; i < Math.max(playerBindings.length, outState.playerCountResolved | 0); i++) {
+    inputPlayerKeys.push(buildEmptyPlayerKeyState(i));
+  }
   return {
     tick_index: tickIndex,
     gameplay_frame: outState.gameplayFrame,
@@ -1234,6 +1314,7 @@ function makeTickContext() {
       primary_down: { calls: 0, true_calls: 0 },
       any_key: { calls: 0, true_calls: 0 },
     },
+    input_player_keys: inputPlayerKeys,
     rng: {
       calls: 0,
       last_value: null,
@@ -1698,6 +1779,7 @@ function finalizeTick() {
       stats: tick.input_queries,
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
+    input_player_keys: tick.input_player_keys,
     rng: {
       calls: tick.rng.calls,
       last_value: tick.rng.last_value,
@@ -1945,6 +2027,7 @@ function installHooks() {
             console_open: readDataU32("console_open_flag"),
             primary_latch: readDataU32("input_primary_latch"),
           };
+          updatePlayerInputKeyState(outState.currentTick, name, ctx.arg0, pressed, ctx.caller_static);
           const token = tokenPrefix + ":" + String(ctx.arg0 == null ? "na" : ctx.arg0);
           registerInputQuery(queryKey, pressed, token, payload);
           emitRawEvent(Object.assign({ event: name }, payload));
