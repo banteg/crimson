@@ -375,3 +375,47 @@ Each entry should capture:
 
 - Keep this math-parity slice as groundwork, but pivot the next increment to a narrower branch-level investigation at tick `3453`:
   - compare native vs rewrite hit-resolve sequencing around Fire-Bullets/Gauss decal emission (`queue_large_hit_decal_streak` + `fx_queue_add_random`) and validate whether rewrite misses a corpse/secondary resolve branch independent of movement precision.
+
+---
+
+## Session 2026-02-08-k
+
+- **Session ID:** `2026-02-08-k`
+- **Capture:** `artifacts/frida/share/gameplay_diff_capture_v2.jsonl`
+- **Capture SHA256:** `251b2ef83c9ac247197fbce5f621e1a8e3e47acb7d709cb3869a7123ae651cd6`
+- **Primary commands:**
+  - dead-state parity run:
+    `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch3.json`
+  - focus trace after dead-state parity run:
+    `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch3.json`
+- **First verifier mismatch:** `tick 3504 (players[0].experience, score_xp)` (unchanged)
+
+### Findings
+
+- Dead-state f32 parity changes did not shift the earliest divergence points:
+  - first pre-focus RNG shortfall remains `tick 3453` (`expected_head_len=353`, rewrite `268`, missing `85`),
+  - first checkpoint-field mismatch remains `tick 3504` (`players[0].experience`, `score_xp`, `+35 XP`).
+- Dominant native caller buckets at the shortfall tick are unchanged:
+  - `0x0042176f`, `0x0042184c`, `0x00427760`, `0x0042778e`, `0x004277b0`, `0x0042780b` (all `x30` in the shortfall view).
+- Focus-trace alignment remains a perfect prefix + missing tail:
+  - `prefix_match=268`, `missing_native_tail=85`.
+- Known near-miss boundary still moved in the wrong direction for the missing hit candidate:
+  - tick `3453`, creature `19`, substep `57` margin is `+0.0991395` (vs `+0.0888205` in baseline).
+
+### Fixes from this session
+
+- Tightened dead-creature hitbox transition and decay math to float32 boundaries in `src/crimson/creatures/runtime.py`.
+- Updated dead-slide velocity/position update to use explicit float32 heading/trig conversion and float32 stores.
+- Removed dead-slide world clamp in the dead branch to match native `creature_update_all` flow.
+
+### Validation
+
+- `uv run ruff check src/crimson/creatures/runtime.py`
+- `uv run pytest tests/test_creature_runtime.py tests/test_creature_ai.py tests/test_math_parity.py tests/test_energizer_bonus.py`
+- `uv run pytest tests/test_original_capture_divergence_report_rng_calls.py tests/test_original_capture_focus_trace.py`
+- `uv run python scripts/original_capture_divergence_report.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --float-abs-tol 1e-3 --window 24 --lead-lookback 1024 --run-summary-short --run-summary-short-max-rows 30 --json-out analysis/frida/divergence_report_precision_patch3.json`
+- `uv run python scripts/original_capture_focus_trace.py artifacts/frida/share/gameplay_diff_capture_v2.jsonl --tick 3453 --near-miss-threshold 0.35 --json-out analysis/frida/focus_trace_tick3453_precision_patch3.json`
+
+### Next probe
+
+- Keep the dead-state parity patch as groundwork, then patch one narrow hit-resolve branch in `src/crimson/projectiles.py` to recover the missing fifth hit at tick `3453` (creature `19`, substep `57`) before iterating on broader movement precision again.
