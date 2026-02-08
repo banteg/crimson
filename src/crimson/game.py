@@ -58,7 +58,7 @@ from .frontend.high_scores_layout import (
     HS_BUTTON_X,
     HS_BUTTON_Y0,
     HS_LOCAL_DATE_Y,
-    HS_LOCAL_DATE_CENTER_X,
+    HS_LOCAL_DATE_X,
     HS_LOCAL_FRAGS_X,
     HS_LOCAL_FRAGS_Y,
     HS_LOCAL_HIT_X,
@@ -79,7 +79,6 @@ from .frontend.high_scores_layout import (
     HS_LOCAL_TIME_LABEL_Y,
     HS_LOCAL_TIME_VALUE_X,
     HS_LOCAL_TIME_VALUE_Y,
-    HS_LOCAL_WEAPON_X,
     HS_LOCAL_WEAPON_Y,
     HS_LOCAL_WICON_X,
     HS_LOCAL_WICON_Y,
@@ -2682,6 +2681,7 @@ class HighScoresView:
         text_scale = 1.0 * scale
         text_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.8))
         value_color = rl.Color(int(255 * 0.9), int(255 * 0.9), 255, 255)
+        game_time_color = rl.Color(255, 255, 255, int(255 * 0.8))
         lower_section_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.7))
         separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
@@ -2716,12 +2716,10 @@ class HighScoresView:
 
         date_text = self._format_score_date(entry)
         if date_text:
-            date_width = measure_small_text_width(font, date_text, text_scale)
-            date_x = (HS_LOCAL_DATE_CENTER_X * scale) - date_width * 0.5
             draw_small_text(
                 font,
                 date_text,
-                right_top_left + Vec2(date_x, HS_LOCAL_DATE_Y * scale),
+                right_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale),
                 text_scale,
                 text_color,
             )
@@ -2745,7 +2743,7 @@ class HighScoresView:
             "Game time",
             right_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
             text_scale,
-            text_color,
+            game_time_color,
         )
         rl.draw_line(
             int(right_top_left.x + 170.0 * scale),
@@ -2775,7 +2773,7 @@ class HighScoresView:
             self._format_elapsed_mm_ss(elapsed_ms),
             right_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
             text_scale,
-            text_color,
+            game_time_color,
         )
 
         draw_small_text(
@@ -2809,10 +2807,14 @@ class HighScoresView:
                 pos=right_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
                 scale=scale,
             )
+        weapon_name_x = HS_LOCAL_WICON_X * scale + max(
+            0.0,
+            32.0 * scale - measure_small_text_width(font, weapon_name, text_scale) * 0.5,
+        )
         draw_small_text(
             font,
             weapon_name,
-            right_top_left + Vec2(HS_LOCAL_WEAPON_X * scale, HS_LOCAL_WEAPON_Y * scale),
+            right_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale),
             text_scale,
             lower_section_color,
         )
