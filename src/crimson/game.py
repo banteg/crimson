@@ -2858,10 +2858,11 @@ class HighScoresView:
         )
         seconds = max(0, int(elapsed_ms) // 1000)
         rotation_deg = float(seconds) * 6.0
+        center = Vec2(pos.x + draw_w * 0.5, pos.y + draw_h * 0.5)
         rl.draw_texture_pro(
             pointer_tex,
             src_pointer,
-            dst,
+            rl.Rectangle(center.x, center.y, draw_w, draw_h),
             rl.Vector2(draw_w * 0.5, draw_h * 0.5),
             rotation_deg,
             rl.WHITE,
