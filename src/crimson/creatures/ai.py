@@ -81,7 +81,7 @@ def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) ->
 def _distance_f32(a: Vec2, b: Vec2) -> float:
     dx = float(b.x) - float(a.x)
     dy = float(b.y) - float(a.y)
-    return f32(math.sqrt(dx * dx + dy * dy))
+    return float(math.sqrt(dx * dx + dy * dy))
 
 
 def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
@@ -121,7 +121,7 @@ def creature_ai_update_target(
     """
 
     dist_to_player = _distance_f32(creature.pos, player_pos)
-    orbit_phase = f32(float(int(creature.phase_seed)) * 3.7 * NATIVE_PI)
+    orbit_phase = f32(float(int(creature.phase_seed)) * f32(3.7)) * NATIVE_PI
     move_scale = 1.0
     self_damage: float | None = None
 
