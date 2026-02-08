@@ -115,6 +115,7 @@ const CONFIG = {
   enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_V2_RNG_HOOKS", true),
   enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SFX", true),
   enableDamageHooks: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE", true),
+  creatureDamageProjectileOnly: parseBoolEnv("CRIMSON_FRIDA_V2_DAMAGE_PROJECTILE_ONLY", true),
   enableSpawnHooks: parseBoolEnv("CRIMSON_FRIDA_V2_SPAWNS", true),
   enableCreatureSpawnHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_SPAWN_HOOK", true),
   enableCreatureDeathHook: parseBoolEnv("CRIMSON_FRIDA_V2_CREATURE_DEATH_HOOK", true),
@@ -135,6 +136,7 @@ const FN = {
   bonus_apply: 0x00409890,
   bonus_try_spawn_on_kill: 0x0041f8d0,
   projectile_spawn: 0x00420440,
+  creature_apply_damage: 0x004207c0,
   player_take_damage: 0x00425e50,
   creature_spawn: 0x00428240,
   creature_handle_death: 0x0041e910,
@@ -267,6 +269,8 @@ const COUNTS = {
 };
 
 const STATUS_WEAPON_USAGE_COUNT = 53;
+const PROJECTILE_UPDATE_START = 0x00420b90;
+const PROJECTILE_UPDATE_END = 0x00422c6f;
 
 const fnPtrs = {};
 const grimFnPtrs = {};
@@ -275,6 +279,7 @@ const fireContextByTid = {};
 const assignContextByTid = {};
 const bonusContextByTid = {};
 const damageContextByTid = {};
+const creatureDamageContextByTid = {};
 const creatureSpawnContextByTid = {};
 const creatureDeathContextByTid = {};
 const bonusSpawnContextByTid = {};
@@ -482,6 +487,12 @@ function runtimeToStatic(addr) {
   } catch (_) {
     return null;
   }
+}
+
+function isProjectileUpdateCaller(callerStatic) {
+  if (callerStatic == null) return false;
+  const addr = callerStatic >>> 0;
+  return addr >= PROJECTILE_UPDATE_START && addr <= PROJECTILE_UPDATE_END;
 }
 
 function formatCaller(addr) {
@@ -1182,6 +1193,7 @@ function makeTickContext() {
       bonus_spawn: 0,
       projectile_spawn: 0,
       player_damage: 0,
+      creature_damage: 0,
       creature_spawn: 0,
       creature_spawn_low: 0,
       creature_death: 0,
@@ -1202,6 +1214,7 @@ function makeTickContext() {
       bonus_spawn: [],
       projectile_spawn: [],
       player_damage: [],
+      creature_damage: [],
       creature_spawn: [],
       creature_spawn_low: [],
       creature_death: [],
@@ -1241,6 +1254,7 @@ function makeTickContext() {
     spawn_callers_template: {},
     spawn_callers_low: {},
     spawn_sources_low: {},
+    creature_damage_callers: {},
     death_callers: {},
     bonus_spawn_callers: {},
     mode_samples: [],
@@ -1593,10 +1607,12 @@ function finalizeTick() {
     creature_count_delta: creatureCountDeltaInTick,
     event_count_template: tick.event_counts.creature_spawn || 0,
     event_count_low_level: tick.event_counts.creature_spawn_low || 0,
+    event_count_creature_damage: tick.event_counts.creature_damage || 0,
     event_count_death: deathHookEventCount,
     top_template_callers: topCounterPairs(tick.spawn_callers_template, 8),
     top_low_level_callers: topCounterPairs(tick.spawn_callers_low, 8),
     top_low_level_sources: topCounterPairs(tick.spawn_sources_low, 8),
+    top_creature_damage_callers: topCounterPairs(tick.creature_damage_callers, 8),
     top_death_callers: topCounterPairs(tick.death_callers, 8),
     event_count_bonus_spawn: tick.event_counts.bonus_spawn || 0,
     top_bonus_spawn_callers: topCounterPairs(tick.bonus_spawn_callers, 8),
@@ -2231,6 +2247,70 @@ function installHooks() {
   });
 
   if (CONFIG.enableDamageHooks) {
+    attachHook("creature_apply_damage", fnPtrs.creature_apply_damage, {
+      onEnter(args) {
+        const creatureIndex = args[0] ? args[0].toInt32() : -1;
+        const callerStatic = runtimeToStatic(this.returnAddress);
+        if (CONFIG.creatureDamageProjectileOnly && !isProjectileUpdateCaller(callerStatic)) {
+          return;
+        }
+        const impulsePtr = args[3];
+        creatureDamageContextByTid[this.threadId] = {
+          creature_index: creatureIndex,
+          damage_f32: round4(argAsF32(args[1])),
+          damage_type: args[2] ? args[2].toInt32() : null,
+          impulse_x: round4(impulsePtr ? safeReadF32(impulsePtr) : null),
+          impulse_y: round4(impulsePtr ? safeReadF32(impulsePtr.add(4)) : null),
+          before: readCreatureLifecycleEntry(creatureIndex),
+          caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
+          caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
+          backtrace: maybeBacktrace(this.context),
+        };
+      },
+      onLeave(retval) {
+        const ctx = creatureDamageContextByTid[this.threadId];
+        delete creatureDamageContextByTid[this.threadId];
+        if (!ctx) return;
+        const after = readCreatureLifecycleEntry(ctx.creature_index);
+        const killReturn = retval ? retval.toInt32() : null;
+        const payload = {
+          creature_index: ctx.creature_index,
+          damage_f32: ctx.damage_f32,
+          damage_type: ctx.damage_type,
+          impulse_x: ctx.impulse_x,
+          impulse_y: ctx.impulse_y,
+          hp_before: ctx.before ? ctx.before.hp : null,
+          hp_after: after ? after.hp : null,
+          hp_delta:
+            ctx.before && after && ctx.before.hp != null && after.hp != null
+              ? round4(after.hp - ctx.before.hp)
+              : null,
+          killed: killReturn == null ? null : killReturn !== 0,
+          kill_return: killReturn,
+          active_before: ctx.before ? ctx.before.active : null,
+          active_after: after ? after.active : null,
+          caller: ctx.caller,
+          caller_static: ctx.caller_static,
+          backtrace: ctx.backtrace,
+        };
+        const tick = outState.currentTick;
+        if (tick && payload.caller_static) {
+          bumpCounterMap(tick.creature_damage_callers, payload.caller_static);
+        }
+        addTickEvent(
+          "creature_damage",
+          payload,
+          "cda:" +
+            String(payload.creature_index == null ? -1 : payload.creature_index) +
+            ":" +
+            String(payload.damage_type == null ? -1 : payload.damage_type) +
+            ":" +
+            String(payload.killed ? 1 : 0)
+        );
+        emitRawEvent(Object.assign({ event: "creature_apply_damage" }, payload));
+      },
+    });
+
     attachHook("player_take_damage", fnPtrs.player_take_damage, {
       onEnter(args) {
         const playerIndex = args[0].toInt32();
@@ -2696,6 +2776,7 @@ function main() {
       enable_rng_hooks: CONFIG.enableRngHooks,
       enable_sfx_hooks: CONFIG.enableSfxHooks,
       enable_damage_hooks: CONFIG.enableDamageHooks,
+      creature_damage_projectile_only: CONFIG.creatureDamageProjectileOnly,
       enable_spawn_hooks: CONFIG.enableSpawnHooks,
       enable_creature_spawn_hook: CONFIG.enableCreatureSpawnHook,
       enable_creature_death_hook: CONFIG.enableCreatureDeathHook,
